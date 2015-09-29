@@ -1,3 +1,46 @@
+2015-09-29  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/65105
+	* config/i386/i386.c: Include dbgcnt.h.
+	(has_non_address_hard_reg): New.
+	(convertible_comparison_p): New.
+	(scalar_to_vector_candidate_p): New.
+	(remove_non_convertible_regs): New.
+	(scalar_chain): New.
+	(scalar_chain::scalar_chain): New.
+	(scalar_chain::~scalar_chain): New.
+	(scalar_chain::add_to_queue): New.
+	(scalar_chain::mark_dual_mode_def): New.
+	(scalar_chain::analyze_register_chain): New.
+	(scalar_chain::add_insn): New.
+	(scalar_chain::build): New.
+	(scalar_chain::compute_convert_gain): New.
+	(scalar_chain::replace_with_subreg): New.
+	(scalar_chain::replace_with_subreg_in_insn): New.
+	(scalar_chain::emit_conversion_insns): New.
+	(scalar_chain::make_vector_copies): New.
+	(scalar_chain::convert_reg): New.
+	(scalar_chain::convert_op): New.
+	(scalar_chain::convert_insn): New.
+	(scalar_chain::convert): New.
+	(convert_scalars_to_vector): New.
+	(pass_data_stv): New.
+	(pass_stv): New.
+	(make_pass_stv): New.
+	(ix86_option_override): Created and register stv pass.
+	(flag_opts): Add -mstv.
+	(ix86_option_override_internal): Likewise.
+	* config/i386/i386.md (SWIM1248x): New.
+	(*movdi_internal): Add xmm to mem alternative for TARGET_STV.
+	(and<mode>3): Use SWIM1248x iterator instead of SWIM.
+	(*anddi3_doubleword): New.
+	(*zext<mode>_doubleword): New.
+	(*zextsi_doubleword): New.
+	(<code><mode>3): Use SWIM1248x iterator instead of SWIM.
+	(*<code>di3_doubleword): New.
+	* config/i386/i386.opt (mstv): New.
+	* dbgcnt.def (stv_conversion): New.
+
 2015-09-29  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-cfg.c (dump_function_to_file): Dump function attributes.

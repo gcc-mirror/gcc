@@ -87,6 +87,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
+#include "dbgcnt.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2602,6 +2603,908 @@ rest_of_handle_insert_vzeroupper (void)
   return 0;
 }
 
+/* Return 1 if INSN uses or defines a hard register.
+   Hard register uses in a memory address are ignored.
+   Clobbers and flags definitions are ignored.  */
+
+static bool
+has_non_address_hard_reg (rtx_insn *insn)
+{
+  df_ref ref;
+  FOR_EACH_INSN_DEF (ref, insn)
+    if (HARD_REGISTER_P (DF_REF_REAL_REG (ref))
+	&& !DF_REF_FLAGS_IS_SET (ref, DF_REF_MUST_CLOBBER)
+	&& DF_REF_REGNO (ref) != FLAGS_REG)
+      return true;
+
+  FOR_EACH_INSN_USE (ref, insn)
+    if (!DF_REF_REG_MEM_P (ref) && HARD_REGISTER_P (DF_REF_REAL_REG (ref)))
+      return true;
+
+  return false;
+}
+
+/* Check if comparison INSN may be transformed
+   into vector comparison.  Currently we transform
+   zero checks only which look like:
+
+   (set (reg:CCZ 17 flags)
+        (compare:CCZ (ior:SI (subreg:SI (reg:DI x) 4)
+                             (subreg:SI (reg:DI x) 0))
+		     (const_int 0 [0])))  */
+
+static bool
+convertible_comparison_p (rtx_insn *insn)
+{
+  if (!TARGET_SSE4_1)
+    return false;
+
+  rtx def_set = single_set (insn);
+
+  gcc_assert (def_set);
+
+  rtx src = SET_SRC (def_set);
+  rtx dst = SET_DEST (def_set);
+
+  gcc_assert (GET_CODE (src) == COMPARE);
+
+  if (GET_CODE (dst) != REG
+      || REGNO (dst) != FLAGS_REG
+      || GET_MODE (dst) != CCZmode)
+    return false;
+
+  rtx op1 = XEXP (src, 0);
+  rtx op2 = XEXP (src, 1);
+
+  if (op2 != CONST0_RTX (GET_MODE (op2)))
+    return false;
+
+  if (GET_CODE (op1) != IOR)
+    return false;
+
+  op2 = XEXP (op1, 1);
+  op1 = XEXP (op1, 0);
+
+  if (!SUBREG_P (op1)
+      || !SUBREG_P (op2)
+      || GET_MODE (op1) != SImode
+      || GET_MODE (op2) != SImode
+      || ((SUBREG_BYTE (op1) != 0
+	   || SUBREG_BYTE (op2) != GET_MODE_SIZE (SImode))
+	  && (SUBREG_BYTE (op2) != 0
+	      || SUBREG_BYTE (op1) != GET_MODE_SIZE (SImode))))
+    return false;
+
+  op1 = SUBREG_REG (op1);
+  op2 = SUBREG_REG (op2);
+
+  if (op1 != op2
+      || !REG_P (op1)
+      || GET_MODE (op1) != DImode)
+    return false;
+
+  return true;
+}
+
+/* Return 1 if INSN may be converted into vector
+   instruction.  */
+
+static bool
+scalar_to_vector_candidate_p (rtx_insn *insn)
+{
+  rtx def_set = single_set (insn);
+
+  if (!def_set)
+    return false;
+
+  if (has_non_address_hard_reg (insn))
+    return false;
+
+  rtx src = SET_SRC (def_set);
+  rtx dst = SET_DEST (def_set);
+
+  if (GET_CODE (src) == COMPARE)
+    return convertible_comparison_p (insn);
+
+  /* We are interested in DImode promotion only.  */
+  if (GET_MODE (src) != DImode
+      || GET_MODE (dst) != DImode)
+    return false;
+
+  if (!REG_P (dst) && !MEM_P (dst))
+    return false;
+
+  switch (GET_CODE (src))
+    {
+    case PLUS:
+    case MINUS:
+    case IOR:
+    case XOR:
+    case AND:
+      break;
+
+    case REG:
+      return true;
+
+    case MEM:
+      return REG_P (dst);
+
+    default:
+      return false;
+    }
+
+  if (!REG_P (XEXP (src, 0)) && !MEM_P (XEXP (src, 0)))
+      return false;
+
+  if (!REG_P (XEXP (src, 1)) && !MEM_P (XEXP (src, 1)))
+      return false;
+
+  if (GET_MODE (XEXP (src, 0)) != DImode
+      || GET_MODE (XEXP (src, 1)) != DImode)
+    return false;
+
+  return true;
+}
+
+/* For a given bitmap of insn UIDs scans all instruction and
+   remove insn from CANDIDATES in case it has both convertible
+   and not convertible definitions.
+
+   All insns in a bitmap are conversion candidates according to
+   scalar_to_vector_candidate_p.  Currently it implies all insns
+   are single_set.  */
+
+static void
+remove_non_convertible_regs (bitmap candidates)
+{
+  bitmap_iterator bi;
+  unsigned id;
+  bitmap regs = BITMAP_ALLOC (NULL);
+
+  EXECUTE_IF_SET_IN_BITMAP (candidates, 0, id, bi)
+    {
+      rtx def_set = single_set (DF_INSN_UID_GET (id)->insn);
+      rtx reg = SET_DEST (def_set);
+
+      if (!REG_P (reg)
+	  || bitmap_bit_p (regs, REGNO (reg))
+	  || HARD_REGISTER_P (reg))
+	continue;
+
+      for (df_ref def = DF_REG_DEF_CHAIN (REGNO (reg));
+	   def;
+	   def = DF_REF_NEXT_REG (def))
+	{
+	  if (!bitmap_bit_p (candidates, DF_REF_INSN_UID (def)))
+	    {
+	      if (dump_file)
+		fprintf (dump_file,
+			 "r%d has non convertible definition in insn %d\n",
+			 REGNO (reg), DF_REF_INSN_UID (def));
+
+	      bitmap_set_bit (regs, REGNO (reg));
+	      break;
+	    }
+	}
+    }
+
+  EXECUTE_IF_SET_IN_BITMAP (regs, 0, id, bi)
+    {
+      for (df_ref def = DF_REG_DEF_CHAIN (id);
+	   def;
+	   def = DF_REF_NEXT_REG (def))
+	if (bitmap_bit_p (candidates, DF_REF_INSN_UID (def)))
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, "Removing insn %d from candidates list\n",
+		       DF_REF_INSN_UID (def));
+
+	    bitmap_clear_bit (candidates, DF_REF_INSN_UID (def));
+	  }
+    }
+
+  BITMAP_FREE (regs);
+}
+
+class scalar_chain
+{
+ public:
+  scalar_chain ();
+  ~scalar_chain ();
+
+  static unsigned max_id;
+
+  /* ID of a chain.  */
+  unsigned int chain_id;
+  /* A queue of instructions to be included into a chain.  */
+  bitmap queue;
+  /* Instructions included into a chain.  */
+  bitmap insns;
+  /* All registers defined by a chain.  */
+  bitmap defs;
+  /* Registers used in both vector and sclar modes.  */
+  bitmap defs_conv;
+
+  void build (bitmap candidates, unsigned insn_uid);
+  int compute_convert_gain ();
+  int convert ();
+
+ private:
+  void add_insn (bitmap candidates, unsigned insn_uid);
+  void add_to_queue (unsigned insn_uid);
+  void mark_dual_mode_def (df_ref def);
+  void analyze_register_chain (bitmap candidates, df_ref ref);
+  rtx replace_with_subreg (rtx x, rtx reg, rtx subreg);
+  void emit_conversion_insns (rtx insns, rtx_insn *pos);
+  void replace_with_subreg_in_insn (rtx_insn *insn, rtx reg, rtx subreg);
+  void convert_insn (rtx_insn *insn);
+  void convert_op (rtx *op, rtx_insn *insn);
+  void convert_reg (unsigned regno);
+  void make_vector_copies (unsigned regno);
+};
+
+unsigned scalar_chain::max_id = 0;
+
+/* Initialize new chain.  */
+
+scalar_chain::scalar_chain ()
+{
+  chain_id = ++max_id;
+
+   if (dump_file)
+    fprintf (dump_file, "Created a new instruction chain #%d\n", chain_id);
+
+  bitmap_obstack_initialize (NULL);
+  insns = BITMAP_ALLOC (NULL);
+  defs = BITMAP_ALLOC (NULL);
+  defs_conv = BITMAP_ALLOC (NULL);
+  queue = NULL;
+}
+
+/* Free chain's data.  */
+
+scalar_chain::~scalar_chain ()
+{
+  BITMAP_FREE (insns);
+  BITMAP_FREE (defs);
+  BITMAP_FREE (defs_conv);
+  bitmap_obstack_release (NULL);
+}
+
+/* Add instruction into chains' queue.  */
+
+void
+scalar_chain::add_to_queue (unsigned insn_uid)
+{
+  if (bitmap_bit_p (insns, insn_uid)
+      || bitmap_bit_p (queue, insn_uid))
+    return;
+
+  if (dump_file)
+    fprintf (dump_file, "  Adding insn %d into chain's #%d queue\n",
+	     insn_uid, chain_id);
+  bitmap_set_bit (queue, insn_uid);
+}
+
+/* Mark register defined by DEF as requiring conversion.  */
+
+void
+scalar_chain::mark_dual_mode_def (df_ref def)
+{
+  gcc_assert (DF_REF_REG_DEF_P (def));
+
+  if (bitmap_bit_p (defs_conv, DF_REF_REGNO (def)))
+    return;
+
+  if (dump_file)
+    fprintf (dump_file,
+	     "  Mark r%d def in insn %d as requiring both modes in chain #%d\n",
+	     DF_REF_REGNO (def), DF_REF_INSN_UID (def), chain_id);
+
+  bitmap_set_bit (defs_conv, DF_REF_REGNO (def));
+}
+
+/* Check REF's chain to add new insns into a queue
+   and find registers requiring conversion.  */
+
+void
+scalar_chain::analyze_register_chain (bitmap candidates, df_ref ref)
+{
+  df_link *chain;
+
+  gcc_assert (bitmap_bit_p (insns, DF_REF_INSN_UID (ref))
+	      || bitmap_bit_p (candidates, DF_REF_INSN_UID (ref)));
+  add_to_queue (DF_REF_INSN_UID (ref));
+
+  for (chain = DF_REF_CHAIN (ref); chain; chain = chain->next)
+    {
+      unsigned uid = DF_REF_INSN_UID (chain->ref);
+      if (!DF_REF_REG_MEM_P (chain->ref))
+	{
+	  if (bitmap_bit_p (insns, uid))
+	    continue;
+
+	  if (bitmap_bit_p (candidates, uid))
+	    {
+	      add_to_queue (uid);
+	      continue;
+	    }
+	}
+
+      if (DF_REF_REG_DEF_P (chain->ref))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "  r%d def in insn %d isn't convertible\n",
+		     DF_REF_REGNO (chain->ref), uid);
+	  mark_dual_mode_def (chain->ref);
+	}
+      else
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "  r%d use in insn %d isn't convertible\n",
+		     DF_REF_REGNO (chain->ref), uid);
+	  mark_dual_mode_def (ref);
+	}
+    }
+}
+
+/* Add instruction into a chain.  */
+
+void
+scalar_chain::add_insn (bitmap candidates, unsigned int insn_uid)
+{
+  if (bitmap_bit_p (insns, insn_uid))
+    return;
+
+  if (dump_file)
+    fprintf (dump_file, "  Adding insn %d to chain #%d\n", insn_uid, chain_id);
+
+  bitmap_set_bit (insns, insn_uid);
+
+  rtx_insn *insn = DF_INSN_UID_GET (insn_uid)->insn;
+  rtx def_set = single_set (insn);
+  if (def_set && REG_P (SET_DEST (def_set))
+      && !HARD_REGISTER_P (SET_DEST (def_set)))
+    bitmap_set_bit (defs, REGNO (SET_DEST (def_set)));
+
+  df_ref ref;
+  df_ref def;
+  for (ref = DF_INSN_UID_DEFS (insn_uid); ref; ref = DF_REF_NEXT_LOC (ref))
+    if (!HARD_REGISTER_P (DF_REF_REG (ref)))
+      for (def = DF_REG_DEF_CHAIN (DF_REF_REGNO (ref));
+	   def;
+	   def = DF_REF_NEXT_REG (def))
+	analyze_register_chain (candidates, def);
+  for (ref = DF_INSN_UID_USES (insn_uid); ref; ref = DF_REF_NEXT_LOC (ref))
+    if (!DF_REF_REG_MEM_P (ref))
+      analyze_register_chain (candidates, ref);
+}
+
+/* Build new chain starting from insn INSN_UID recursively
+   adding all dependent uses and definitions.  */
+
+void
+scalar_chain::build (bitmap candidates, unsigned insn_uid)
+{
+  queue = BITMAP_ALLOC (NULL);
+  bitmap_set_bit (queue, insn_uid);
+
+  if (dump_file)
+    fprintf (dump_file, "Building chain #%d...\n", chain_id);
+
+  while (!bitmap_empty_p (queue))
+    {
+      insn_uid = bitmap_first_set_bit (queue);
+      bitmap_clear_bit (queue, insn_uid);
+      bitmap_clear_bit (candidates, insn_uid);
+      add_insn (candidates, insn_uid);
+    }
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Collected chain #%d...\n", chain_id);
+      fprintf (dump_file, "  insns: ");
+      dump_bitmap (dump_file, insns);
+      if (!bitmap_empty_p (defs_conv))
+	{
+	  bitmap_iterator bi;
+	  unsigned id;
+	  const char *comma = "";
+	  fprintf (dump_file, "  defs to convert: ");
+	  EXECUTE_IF_SET_IN_BITMAP (defs_conv, 0, id, bi)
+	    {
+	      fprintf (dump_file, "%sr%d", comma, id);
+	      comma = ", ";
+	    }
+	  fprintf (dump_file, "\n");
+	}
+    }
+
+  BITMAP_FREE (queue);
+}
+
+/* Compute a gain for chain conversion.  */
+
+int
+scalar_chain::compute_convert_gain ()
+{
+  bitmap_iterator bi;
+  unsigned insn_uid;
+  int gain = 0;
+  int cost = 0;
+
+  if (dump_file)
+    fprintf (dump_file, "Computing gain for chain #%d...\n", chain_id);
+
+  EXECUTE_IF_SET_IN_BITMAP (insns, 0, insn_uid, bi)
+    {
+      rtx_insn *insn = DF_INSN_UID_GET (insn_uid)->insn;
+      rtx def_set = single_set (insn);
+      rtx src = SET_SRC (def_set);
+      rtx dst = SET_DEST (def_set);
+
+      if (REG_P (src) && REG_P (dst))
+	gain += COSTS_N_INSNS (2) - ix86_cost->sse_move;
+      else if (REG_P (src) && MEM_P (dst))
+	gain += 2 * ix86_cost->int_store[2] - ix86_cost->sse_store[1];
+      else if (MEM_P (src) && REG_P (dst))
+	gain += 2 * ix86_cost->int_load[2] - ix86_cost->sse_load[1];
+      else if (GET_CODE (src) == PLUS
+	       || GET_CODE (src) == MINUS
+	       || GET_CODE (src) == IOR
+	       || GET_CODE (src) == XOR
+	       || GET_CODE (src) == AND)
+	gain += ix86_cost->add;
+      else if (GET_CODE (src) == COMPARE)
+	{
+	  /* Assume comparison cost is the same.  */
+	}
+      else
+	gcc_unreachable ();
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "  Instruction convertion gain: %d\n", gain);
+
+  EXECUTE_IF_SET_IN_BITMAP (defs_conv, 0, insn_uid, bi)
+    cost += DF_REG_DEF_COUNT (insn_uid) * ix86_cost->mmxsse_to_integer;
+
+  if (dump_file)
+    fprintf (dump_file, "  Registers convertion cost: %d\n", cost);
+
+  gain -= cost;
+
+  if (dump_file)
+    fprintf (dump_file, "  Total gain: %d\n", gain);
+
+  return gain;
+}
+
+/* Replace REG in X with a V2DI subreg of NEW_REG.  */
+
+rtx
+scalar_chain::replace_with_subreg (rtx x, rtx reg, rtx new_reg)
+{
+  if (x == reg)
+    return gen_rtx_SUBREG (V2DImode, new_reg, 0);
+
+  const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
+  int i, j;
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	XEXP (x, i) = replace_with_subreg (XEXP (x, i), reg, new_reg);
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  XVECEXP (x, i, j) = replace_with_subreg (XVECEXP (x, i, j),
+						   reg, new_reg);
+    }
+
+  return x;
+}
+
+/* Replace REG in INSN with a V2DI subreg of NEW_REG.  */
+
+void
+scalar_chain::replace_with_subreg_in_insn (rtx_insn *insn, rtx reg, rtx new_reg)
+{
+  replace_with_subreg (single_set (insn), reg, new_reg);
+}
+
+/* Insert generated conversion instruction sequence INSNS
+   after instruction AFTER.  New BB may be required in case
+   instruction has EH region attached.  */
+
+void
+scalar_chain::emit_conversion_insns (rtx insns, rtx_insn *after)
+{
+  if (!control_flow_insn_p (after))
+    {
+      emit_insn_after (insns, after);
+      return;
+    }
+
+  basic_block bb = BLOCK_FOR_INSN (after);
+  edge e = find_fallthru_edge (bb->succs);
+  gcc_assert (e);
+
+  basic_block new_bb = split_edge (e);
+  emit_insn_after (insns, BB_HEAD (new_bb));
+}
+
+/* Make vector copies for all register REGNO definitions
+   and replace its uses in a chain.  */
+
+void
+scalar_chain::make_vector_copies (unsigned regno)
+{
+  rtx reg = regno_reg_rtx[regno];
+  rtx vreg = gen_reg_rtx (DImode);
+  df_ref ref;
+
+  for (ref = DF_REG_DEF_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
+    if (!bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
+      {
+	rtx_insn *insn = DF_REF_INSN (ref);
+
+	start_sequence ();
+	if (TARGET_SSE4_1)
+	  {
+	    emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
+					CONST0_RTX (V4SImode),
+					gen_rtx_SUBREG (SImode, reg, 0)));
+	    emit_insn (gen_sse4_1_pinsrd (gen_rtx_SUBREG (V4SImode, vreg, 0),
+					  gen_rtx_SUBREG (V4SImode, vreg, 0),
+					  gen_rtx_SUBREG (SImode, reg, 4),
+					  GEN_INT (2)));
+	  }
+	else if (TARGET_INTER_UNIT_MOVES_TO_VEC)
+	  {
+	    rtx tmp = gen_reg_rtx (DImode);
+	    emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
+					CONST0_RTX (V4SImode),
+					gen_rtx_SUBREG (SImode, reg, 0)));
+	    emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, tmp, 0),
+					CONST0_RTX (V4SImode),
+					gen_rtx_SUBREG (SImode, reg, 4)));
+	    emit_insn (gen_vec_interleave_lowv4si
+		       (gen_rtx_SUBREG (V4SImode, vreg, 0),
+			gen_rtx_SUBREG (V4SImode, vreg, 0),
+			gen_rtx_SUBREG (V4SImode, tmp, 0)));
+	  }
+	else
+	  {
+	    rtx tmp = assign_386_stack_local (DImode, SLOT_TEMP);
+	    emit_move_insn (adjust_address (tmp, SImode, 0),
+			    gen_rtx_SUBREG (SImode, reg, 0));
+	    emit_move_insn (adjust_address (tmp, SImode, 4),
+			    gen_rtx_SUBREG (SImode, reg, 4));
+	    emit_move_insn (vreg, tmp);
+	  }
+	emit_conversion_insns (get_insns (), insn);
+	end_sequence ();
+
+	if (dump_file)
+	  fprintf (dump_file,
+		   "  Copied r%d to a vector register r%d for insn %d\n",
+		   regno, REGNO (vreg), DF_REF_INSN_UID (ref));
+      }
+
+  for (ref = DF_REG_USE_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
+    if (bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
+      {
+	replace_with_subreg_in_insn (DF_REF_INSN (ref), reg, vreg);
+
+	if (dump_file)
+	  fprintf (dump_file, "  Replaced r%d with r%d in insn %d\n",
+		   regno, REGNO (vreg), DF_REF_INSN_UID (ref));
+      }
+}
+
+/* Convert all definitions of register REGNO
+   and fix its uses.  Scalar copies may be created
+   in case register is used in not convertible insn.  */
+
+void
+scalar_chain::convert_reg (unsigned regno)
+{
+  bool scalar_copy = bitmap_bit_p (defs_conv, regno);
+  rtx reg = regno_reg_rtx[regno];
+  rtx scopy = NULL_RTX;
+  df_ref ref;
+  bitmap conv;
+
+  conv = BITMAP_ALLOC (NULL);
+  bitmap_copy (conv, insns);
+
+  if (scalar_copy)
+    scopy = gen_reg_rtx (DImode);
+
+  for (ref = DF_REG_DEF_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
+    {
+      rtx_insn *insn = DF_REF_INSN (ref);
+      rtx def_set = single_set (insn);
+      rtx src = SET_SRC (def_set);
+      rtx reg = DF_REF_REG (ref);
+
+      if (!MEM_P (src))
+	{
+	  replace_with_subreg_in_insn (insn, reg, reg);
+	  bitmap_clear_bit (conv, INSN_UID (insn));
+	}
+
+      if (scalar_copy)
+	{
+	  rtx vcopy = gen_reg_rtx (V2DImode);
+
+	  start_sequence ();
+	  if (TARGET_INTER_UNIT_MOVES_FROM_VEC)
+	    {
+	      emit_move_insn (vcopy, gen_rtx_SUBREG (V2DImode, reg, 0));
+	      emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 0),
+			      gen_rtx_SUBREG (SImode, vcopy, 0));
+	      emit_move_insn (vcopy,
+			      gen_rtx_LSHIFTRT (V2DImode, vcopy, GEN_INT (32)));
+	      emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 4),
+			      gen_rtx_SUBREG (SImode, vcopy, 0));
+	    }
+	  else
+	    {
+	      rtx tmp = assign_386_stack_local (DImode, SLOT_TEMP);
+	      emit_move_insn (tmp, reg);
+	      emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 0),
+			      adjust_address (tmp, SImode, 0));
+	      emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 4),
+			      adjust_address (tmp, SImode, 4));
+	    }
+	  emit_conversion_insns (get_insns (), insn);
+	  end_sequence ();
+
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "  Copied r%d to a scalar register r%d for insn %d\n",
+		     regno, REGNO (scopy), INSN_UID (insn));
+	}
+    }
+
+  for (ref = DF_REG_USE_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
+    if (bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
+      {
+	if (bitmap_bit_p (conv, DF_REF_INSN_UID (ref)))
+	  {
+	    rtx def_set = single_set (DF_REF_INSN (ref));
+	    if (!MEM_P (SET_DEST (def_set))
+		|| !REG_P (SET_SRC (def_set)))
+	      replace_with_subreg_in_insn (DF_REF_INSN (ref), reg, reg);
+	    bitmap_clear_bit (conv, DF_REF_INSN_UID (ref));
+	  }
+      }
+    else
+      {
+	replace_rtx (DF_REF_INSN (ref), reg, scopy);
+	df_insn_rescan (DF_REF_INSN (ref));
+      }
+
+  BITMAP_FREE (conv);
+}
+
+/* Convert operand OP in INSN.  All register uses
+   are converted during registers conversion.
+   Therefore we should just handle memory operands.  */
+
+void
+scalar_chain::convert_op (rtx *op, rtx_insn *insn)
+{
+  *op = copy_rtx_if_shared (*op);
+
+  if (MEM_P (*op))
+    {
+      rtx tmp = gen_reg_rtx (DImode);
+
+      emit_insn_before (gen_move_insn (tmp, *op), insn);
+      *op = gen_rtx_SUBREG (V2DImode, tmp, 0);
+
+      if (dump_file)
+	fprintf (dump_file, "  Preloading operand for insn %d into r%d\n",
+		 INSN_UID (insn), REGNO (tmp));
+    }
+  else
+    {
+      gcc_assert (SUBREG_P (*op));
+      gcc_assert (GET_MODE (*op) == V2DImode);
+    }
+}
+
+/* Convert INSN to vector mode.  */
+
+void
+scalar_chain::convert_insn (rtx_insn *insn)
+{
+  rtx def_set = single_set (insn);
+  rtx src = SET_SRC (def_set);
+  rtx dst = SET_DEST (def_set);
+  rtx subreg;
+
+  if (MEM_P (dst) && !REG_P (src))
+    {
+      /* There are no scalar integer instructions and therefore
+	 temporary register usage is required.  */
+      rtx tmp = gen_reg_rtx (DImode);
+      emit_conversion_insns (gen_move_insn (dst, tmp), insn);
+      dst = gen_rtx_SUBREG (V2DImode, tmp, 0);
+    }
+
+  switch (GET_CODE (src))
+    {
+    case PLUS:
+    case MINUS:
+    case IOR:
+    case XOR:
+    case AND:
+      convert_op (&XEXP (src, 0), insn);
+      convert_op (&XEXP (src, 1), insn);
+      PUT_MODE (src, V2DImode);
+      break;
+
+    case MEM:
+      if (!REG_P (dst))
+	convert_op (&src, insn);
+      break;
+
+    case REG:
+      break;
+
+    case SUBREG:
+      gcc_assert (GET_MODE (src) == V2DImode);
+      break;
+
+    case COMPARE:
+      src = SUBREG_REG (XEXP (XEXP (src, 0), 0));
+
+      gcc_assert ((REG_P (src) && GET_MODE (src) == DImode)
+		  || (SUBREG_P (src) && GET_MODE (src) == V2DImode));
+
+      if (REG_P (src))
+	subreg = gen_rtx_SUBREG (V2DImode, src, 0);
+      else
+	subreg = copy_rtx_if_shared (src);
+      emit_insn_before (gen_vec_interleave_lowv2di (copy_rtx_if_shared (subreg),
+						    copy_rtx_if_shared (subreg),
+						    copy_rtx_if_shared (subreg)),
+			insn);
+      dst = gen_rtx_REG (CCmode, FLAGS_REG);
+      src = gen_rtx_UNSPEC (CCmode, gen_rtvec (2, copy_rtx_if_shared (src),
+					       copy_rtx_if_shared (src)),
+			    UNSPEC_PTEST);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  SET_SRC (def_set) = src;
+  SET_DEST (def_set) = dst;
+
+  /* Drop possible dead definitions.  */
+  PATTERN (insn) = def_set;
+
+  INSN_CODE (insn) = -1;
+  recog_memoized (insn);
+  df_insn_rescan (insn);
+}
+
+/* Convert whole chain creating required register
+   conversions and copies.  */
+
+int
+scalar_chain::convert ()
+{
+  bitmap_iterator bi;
+  unsigned id;
+  int converted_insns = 0;
+
+  if (!dbg_cnt (stv_conversion))
+    return 0;
+
+  if (dump_file)
+    fprintf (dump_file, "Converting chain #%d...\n", chain_id);
+
+  EXECUTE_IF_SET_IN_BITMAP (defs, 0, id, bi)
+    convert_reg (id);
+
+  EXECUTE_IF_AND_COMPL_IN_BITMAP (defs_conv, defs, 0, id, bi)
+    make_vector_copies (id);
+
+  EXECUTE_IF_SET_IN_BITMAP (insns, 0, id, bi)
+    {
+      convert_insn (DF_INSN_UID_GET (id)->insn);
+      converted_insns++;
+    }
+
+  return converted_insns;
+}
+
+/* Main STV pass function.  Find and convert scalar
+   instructions into vector mode when profitable.  */
+
+static unsigned int
+convert_scalars_to_vector ()
+{
+  basic_block bb;
+  bitmap candidates;
+  int converted_insns = 0;
+
+  bitmap_obstack_initialize (NULL);
+  candidates = BITMAP_ALLOC (NULL);
+
+  calculate_dominance_info (CDI_DOMINATORS);
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+  df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
+  df_md_add_problem ();
+  df_analyze ();
+
+  /* Find all instructions we want to convert into vector mode.  */
+  if (dump_file)
+    fprintf (dump_file, "Searching for mode convertion candidates...\n");
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      rtx_insn *insn;
+      FOR_BB_INSNS (bb, insn)
+	if (scalar_to_vector_candidate_p (insn))
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, "  insn %d is marked as a candidate\n",
+		       INSN_UID (insn));
+
+	    bitmap_set_bit (candidates, INSN_UID (insn));
+	  }
+    }
+
+  remove_non_convertible_regs (candidates);
+
+  if (bitmap_empty_p (candidates))
+    if (dump_file)
+      fprintf (dump_file, "There are no candidates for optimization.\n");
+
+  while (!bitmap_empty_p (candidates))
+    {
+      unsigned uid = bitmap_first_set_bit (candidates);
+      scalar_chain chain;
+
+      /* Find instructions chain we want to convert to vector mode.
+	 Check all uses and definitions to estimate all required
+	 conversions.  */
+      chain.build (candidates, uid);
+
+      if (chain.compute_convert_gain () > 0)
+	converted_insns += chain.convert ();
+      else
+	if (dump_file)
+	  fprintf (dump_file, "Chain #%d conversion is not profitable\n",
+		   chain.chain_id);
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "Total insns converted: %d\n", converted_insns);
+
+  BITMAP_FREE (candidates);
+  bitmap_obstack_release (NULL);
+  df_process_deferred_rescans ();
+
+  /* Conversion means we may have 128bit register spills/fills
+     which require aligned stack.  */
+  if (converted_insns)
+    {
+      if (crtl->stack_alignment_needed < 128)
+	crtl->stack_alignment_needed = 128;
+      if (crtl->stack_alignment_estimated < 128)
+	crtl->stack_alignment_estimated = 128;
+    }
+
+  return 0;
+}
+
 namespace {
 
 const pass_data pass_data_insert_vzeroupper =
@@ -2639,12 +3542,51 @@ public:
 
 }; // class pass_insert_vzeroupper
 
+const pass_data pass_data_stv =
+{
+  RTL_PASS, /* type */
+  "stv", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_df_finish, /* todo_flags_finish */
+};
+
+class pass_stv : public rtl_opt_pass
+{
+public:
+  pass_stv (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_stv, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return !TARGET_64BIT && TARGET_STV && TARGET_SSE2 && optimize > 1;
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return convert_scalars_to_vector ();
+    }
+
+}; // class pass_stv
+
 } // anon namespace
 
 rtl_opt_pass *
 make_pass_insert_vzeroupper (gcc::context *ctxt)
 {
   return new pass_insert_vzeroupper (ctxt);
+}
+
+rtl_opt_pass *
+make_pass_stv (gcc::context *ctxt)
+{
+  return new pass_stv (ctxt);
 }
 
 /* Return true if a red-zone is in use.  */
@@ -2756,6 +3698,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mvect8-ret-in-mem",		MASK_VECT8_RETURNS },
     { "-m8bit-idiv",			MASK_USE_8BIT_IDIV },
     { "-mvzeroupper",			MASK_VZEROUPPER },
+    { "-mstv",				MASK_STV},
     { "-mavx256-split-unaligned-load",	MASK_AVX256_SPLIT_UNALIGNED_LOAD},
     { "-mavx256-split-unaligned-store",	MASK_AVX256_SPLIT_UNALIGNED_STORE},
     { "-mprefer-avx128",		MASK_PREFER_AVX128},
@@ -4372,6 +5315,8 @@ ix86_option_override_internal (bool main_args_p,
 
   if (!(opts_set->x_target_flags & MASK_VZEROUPPER))
     opts->x_target_flags |= MASK_VZEROUPPER;
+  if (!(opts_set->x_target_flags & MASK_STV))
+    opts->x_target_flags |= MASK_STV;
   if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL]
       && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
     opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
@@ -4485,12 +5430,18 @@ ix86_option_override (void)
     = { pass_insert_vzeroupper, "reload",
 	1, PASS_POS_INSERT_AFTER
       };
+  opt_pass *pass_stv = make_pass_stv (g);
+  struct register_pass_info stv_info
+    = { pass_stv, "combine",
+	1, PASS_POS_INSERT_AFTER
+      };
 
   ix86_option_override_internal (true, &global_options, &global_options_set);
 
 
   /* This needs to be done at start up.  It's convenient to do it here.  */
   register_pass (&insert_vzeroupper_info);
+  register_pass (&stv_info);
 }
 
 /* Implement the TARGET_OFFLOAD_OPTIONS hook.  */

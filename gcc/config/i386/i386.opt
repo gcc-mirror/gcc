@@ -567,6 +567,11 @@ Target Report Mask(VZEROUPPER) Save
 Generate vzeroupper instruction before a transfer of control flow out of
 the function.
 
+mstv
+Target Report Mask(STV) Save
+Disable Scalar to Vector optimization pass transforming 64-bit integer
+computations into a vector ones.
+
 mdispatch-scheduler
 Target RejectNegative Var(flag_dispatch_scheduler)
 Do dispatch scheduling if processor is bdver1 or bdver2 or bdver3 or bdver4 and Haifa scheduling
