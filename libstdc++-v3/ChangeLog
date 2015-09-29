@@ -1,5 +1,9 @@
 2015-09-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/ext/string_conversions.h (__stoa): Save and restore errno.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/errno.cc:
+	New.
+
 	PR libstdc++/67583
 	* testsuite/27_io/basic_stringbuf/seekoff/char/1.cc: Fix sputn call
 	with mismatched arguments.
