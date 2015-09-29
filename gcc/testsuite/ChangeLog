@@ -1,3 +1,12 @@
+2015-09-29  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/65105
+	* gcc.target/i386/pr65105-1.c: New.
+	* gcc.target/i386/pr65105-2.c: New.
+	* gcc.target/i386/pr65105-3.c: New.
+	* gcc.target/i386/pr65105-4.C: New.
+	* gcc.dg/lower-subreg-1.c: Add -mno-stv options for ia32.
+
 2015-09-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.dg/asm-4.c: Use braced words for the regular expressions.
