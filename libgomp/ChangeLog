@@ -1,3 +1,9 @@
+2015-09-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (ARRAYSIZE): Delete.
+	(cuda_errlist): Delete.
+	(cuda_error): Reimplement.
+
 2015-09-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* libgomp.h (acc_dispatch_t): Replace separate geometry args with

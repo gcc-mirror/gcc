@@ -47,84 +47,21 @@
 #include <unistd.h>
 #include <assert.h>
 
-#define	ARRAYSIZE(X) (sizeof (X) / sizeof ((X)[0]))
-
-static const struct
-{
-  CUresult r;
-  const char *m;
-} cuda_errlist[]=
-{
-  { CUDA_ERROR_INVALID_VALUE, "invalid value" },
-  { CUDA_ERROR_OUT_OF_MEMORY, "out of memory" },
-  { CUDA_ERROR_NOT_INITIALIZED, "not initialized" },
-  { CUDA_ERROR_DEINITIALIZED, "deinitialized" },
-  { CUDA_ERROR_PROFILER_DISABLED, "profiler disabled" },
-  { CUDA_ERROR_PROFILER_NOT_INITIALIZED, "profiler not initialized" },
-  { CUDA_ERROR_PROFILER_ALREADY_STARTED, "already started" },
-  { CUDA_ERROR_PROFILER_ALREADY_STOPPED, "already stopped" },
-  { CUDA_ERROR_NO_DEVICE, "no device" },
-  { CUDA_ERROR_INVALID_DEVICE, "invalid device" },
-  { CUDA_ERROR_INVALID_IMAGE, "invalid image" },
-  { CUDA_ERROR_INVALID_CONTEXT, "invalid context" },
-  { CUDA_ERROR_CONTEXT_ALREADY_CURRENT, "context already current" },
-  { CUDA_ERROR_MAP_FAILED, "map error" },
-  { CUDA_ERROR_UNMAP_FAILED, "unmap error" },
-  { CUDA_ERROR_ARRAY_IS_MAPPED, "array is mapped" },
-  { CUDA_ERROR_ALREADY_MAPPED, "already mapped" },
-  { CUDA_ERROR_NO_BINARY_FOR_GPU, "no binary for gpu" },
-  { CUDA_ERROR_ALREADY_ACQUIRED, "already acquired" },
-  { CUDA_ERROR_NOT_MAPPED, "not mapped" },
-  { CUDA_ERROR_NOT_MAPPED_AS_ARRAY, "not mapped as array" },
-  { CUDA_ERROR_NOT_MAPPED_AS_POINTER, "not mapped as pointer" },
-  { CUDA_ERROR_ECC_UNCORRECTABLE, "ecc uncorrectable" },
-  { CUDA_ERROR_UNSUPPORTED_LIMIT, "unsupported limit" },
-  { CUDA_ERROR_CONTEXT_ALREADY_IN_USE, "context already in use" },
-  { CUDA_ERROR_PEER_ACCESS_UNSUPPORTED, "peer access unsupported" },
-  { CUDA_ERROR_INVALID_SOURCE, "invalid source" },
-  { CUDA_ERROR_FILE_NOT_FOUND, "file not found" },
-  { CUDA_ERROR_SHARED_OBJECT_SYMBOL_NOT_FOUND,
-                                           "shared object symbol not found" },
-  { CUDA_ERROR_SHARED_OBJECT_INIT_FAILED, "shared object init error" },
-  { CUDA_ERROR_OPERATING_SYSTEM, "operating system" },
-  { CUDA_ERROR_INVALID_HANDLE, "invalid handle" },
-  { CUDA_ERROR_NOT_FOUND, "not found" },
-  { CUDA_ERROR_NOT_READY, "not ready" },
-  { CUDA_ERROR_LAUNCH_FAILED, "launch error" },
-  { CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES, "launch out of resources" },
-  { CUDA_ERROR_LAUNCH_TIMEOUT, "launch timeout" },
-  { CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING,
-                                             "launch incompatibe texturing" },
-  { CUDA_ERROR_PEER_ACCESS_ALREADY_ENABLED, "peer access already enabled" },
-  { CUDA_ERROR_PEER_ACCESS_NOT_ENABLED, "peer access not enabled " },
-  { CUDA_ERROR_PRIMARY_CONTEXT_ACTIVE, "primary cotext active" },
-  { CUDA_ERROR_CONTEXT_IS_DESTROYED, "context is destroyed" },
-  { CUDA_ERROR_ASSERT, "assert" },
-  { CUDA_ERROR_TOO_MANY_PEERS, "too many peers" },
-  { CUDA_ERROR_HOST_MEMORY_ALREADY_REGISTERED,
-                                           "host memory already registered" },
-  { CUDA_ERROR_HOST_MEMORY_NOT_REGISTERED, "host memory not registered" },
-  { CUDA_ERROR_NOT_PERMITTED, "not permitted" },
-  { CUDA_ERROR_NOT_SUPPORTED, "not supported" },
-  { CUDA_ERROR_UNKNOWN, "unknown" }
-};
-
 static const char *
 cuda_error (CUresult r)
 {
-  int i;
+#if CUDA_VERSION < 7000
+  /* Specified in documentation and present in library from at least
+     5.5.  Not declared in header file prior to 7.0.  */
+  extern CUresult cuGetErrorString (CUresult, const char **);
+#endif
+  const char *desc;
 
-  for (i = 0; i < ARRAYSIZE (cuda_errlist); i++)
-    {
-      if (cuda_errlist[i].r == r)
-	return cuda_errlist[i].m;
-    }
+  r = cuGetErrorString (r, &desc);
+  if (r != CUDA_SUCCESS)
+    desc = "unknown cuda error";
 
-  static char errmsg[30];
-
-  snprintf (errmsg, sizeof (errmsg), "unknown error code: %d", r);
-
-  return errmsg;
+  return desc;
 }
 
 static unsigned int instantiated_devices = 0;
