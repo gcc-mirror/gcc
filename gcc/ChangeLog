@@ -1,5 +1,7 @@
 2015-09-29  Jeff Law  <law@redhat.com>
 
+	* config/i386/t-interix (winnt-stubs.o): Fix compilation rule.
+
 	* config/sh/sh.c (gen_shl_and): Fix undefined left shift
 	behaviour.
 	(gen_shl_sext): Likewise.
