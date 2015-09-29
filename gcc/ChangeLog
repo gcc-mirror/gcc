@@ -1,3 +1,30 @@
+2015-09-29  Sebastian Pop  <s.pop@samsung.com>
+            Aditya Kumar  <aditya.k7@samsung.com>
+
+            * graphite-sese-to-poly.c (gsi_for_phi_node): Remove.
+            (nb_data_writes_in_bb): Remove.
+            (split_pbb): Remove.
+            (split_reduction_stmt): Remove.
+            (is_reduction_operation_p): Remove.
+            (phi_contains_arg): Remove.
+            (follow_ssa_with_commutative_ops): Remove.
+            (detect_commutative_reduction_arg): Remove.
+            (detect_commutative_reduction_assign): Remove.
+            (follow_inital_value_to_phi): Remove.
+            (edge_initial_value_for_loop_phi): Remove.
+            (initial_value_for_loop_phi): Remove.
+            (used_outside_reduction): Remove.
+            (detect_commutative_reduction): Remove.
+            (translate_scalar_reduction_to_array_for_stmt): Remove.
+            (remove_phi): Remove.
+            (dr_indices_valid_in_loop): Remove.
+            (close_phi_written_to_memory): Remove.
+            (translate_scalar_reduction_to_array): Remove.
+            (rewrite_commutative_reductions_out_of_ssa_close_phi): Remove.
+            (rewrite_commutative_reductions_out_of_ssa_loop): Remove.
+            (rewrite_commutative_reductions_out_of_ssa): Remove.
+            (build_poly_scop): Remove call to rewrite_commutative_reductions_out_of_ssa.
+
 2015-09-29  Evandro Menezes  <e.menezes@samsung.com>
 
 	* config/arm/types.md (neon_ldp, neon_ldp_q, neon_stp, neon_stp_q):
