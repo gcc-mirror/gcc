@@ -1,3 +1,8 @@
+2015-09-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_function_arg): Fix typo in comments.
+	(ix86_nsaved_sseregs): Likewise.
+
 2015-09-29  Jeff Law  <law@redhat.com>
 
 	* config/microblaze/microblaze.c (microblaze_version_to_int): Remove
