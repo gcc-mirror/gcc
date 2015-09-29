@@ -870,11 +870,11 @@
 ; vec_mladd -> vec_vmal
 ; vmalb, vmalh, vmalf, vmalg
 (define_insn "vec_vmal<mode>"
-  [(set (match_operand:VI_HW 0 "register_operand" "=v")
-	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand" "v")
-		       (match_operand:VI_HW 2 "register_operand" "v")
-		       (match_operand:VI_HW 3 "register_operand" "v")]
-		      UNSPEC_VEC_VMAL))]
+  [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
+			   (match_operand:VI_HW_QHS 2 "register_operand" "v")
+			   (match_operand:VI_HW_QHS 3 "register_operand" "v")]
+			  UNSPEC_VEC_VMAL))]
   "TARGET_VX"
   "vmal<bhfgq><w>\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
@@ -883,22 +883,22 @@
 
 ; vmahb; vmahh, vmahf, vmahg
 (define_insn "vec_vmah<mode>"
-  [(set (match_operand:VI_HW 0 "register_operand" "=v")
-	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand" "v")
-		       (match_operand:VI_HW 2 "register_operand" "v")
-		       (match_operand:VI_HW 3 "register_operand" "v")]
-		      UNSPEC_VEC_VMAH))]
+  [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
+			   (match_operand:VI_HW_QHS 2 "register_operand" "v")
+			   (match_operand:VI_HW_QHS 3 "register_operand" "v")]
+			  UNSPEC_VEC_VMAH))]
   "TARGET_VX"
   "vmah<bhfgq>\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
 ; vmalhb; vmalhh, vmalhf, vmalhg
 (define_insn "vec_vmalh<mode>"
-  [(set (match_operand:VI_HW 0 "register_operand" "=v")
-	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand" "v")
-		       (match_operand:VI_HW 2 "register_operand" "v")
-		       (match_operand:VI_HW 3 "register_operand" "v")]
-		      UNSPEC_VEC_VMALH))]
+  [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
+			   (match_operand:VI_HW_QHS 2 "register_operand" "v")
+			   (match_operand:VI_HW_QHS 3 "register_operand" "v")]
+			  UNSPEC_VEC_VMALH))]
   "TARGET_VX"
   "vmalh<bhfgq>\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])

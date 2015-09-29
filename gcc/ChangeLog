@@ -3,6 +3,14 @@
 	Backport from mainline
 	2015-09-10  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/vx-builtins.md ("vec_vmal<mode>", "vec_vmah<mode>")
+	("vec_vmalh<mode>"): Change mode iterator from VI_HW to VI_HW_QHS.
+
+2015-09-29  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-09-10  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c: Add V1TImode to constant pool modes.
 
 2015-09-29  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
