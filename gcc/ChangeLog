@@ -1,3 +1,9 @@
+2015-09-29  James Bowman  <james.bowman@ftdichip.com>
+
+	* config/ft32/predicates.md (ft32_imm_operand): New predicate.
+	* config/ft32/ft32.md (movmemsi, setmemsi): Use ft32_imm_operand
+	predicate, disallow register for operand 2.
+
 2015-09-29  Aditya Kumar  <aditya.k7@samsung.com>
 
 	* graphite-dependences.c (scop_get_dependences): Moved in down

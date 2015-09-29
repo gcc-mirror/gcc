@@ -80,6 +80,10 @@
        (and (match_code "const_int")
             (match_test "IN_RANGE (INTVAL (op), -512, 511)"))))
 
+(define_predicate "ft32_imm_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), -512, 511)")))
+
 (define_predicate "ft32_bwidth_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 1, 16)")))
