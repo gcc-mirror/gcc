@@ -35,6 +35,7 @@
 
 
 static uint32_t engine_index;
+static char *engine_dir;
 
 
 extern "C"
@@ -68,7 +69,7 @@ SYMBOL_VERSION (COIEngineGetIndex, 1) (COI_ISA_TYPE *type,
 {
   COITRACE ("COIEngineGetIndex");
 
-  /* type is not used in liboffload.  */
+  /* type is not used in liboffloadmic.  */
   *index = engine_index;
 
   return COI_SUCCESS;
@@ -86,50 +87,144 @@ SYMBOL_VERSION (COIPipelineStartExecutingRunFunctions, 1) ()
 }
 
 
+/* The start routine for the COI pipeline thread.  */
+
+static void *
+pipeline_thread_routine (void *in_pipeline_num)
+{
+  uint32_t pipeline_num = *(uint32_t *) in_pipeline_num;
+  free (in_pipeline_num);
+
+  /* Open pipes.  */
+  char *pipe_host2tgt_path, *pipe_tgt2host_path;
+  MALLOCN (char *, pipe_host2tgt_path,
+	  strlen (engine_dir) + sizeof (PIPE_HOST2TGT_NAME "0000000000"));
+  MALLOCN (char *, pipe_tgt2host_path,
+	  strlen (engine_dir) + sizeof (PIPE_TGT2HOST_NAME "0000000000"));
+  sprintf (pipe_host2tgt_path, "%s" PIPE_HOST2TGT_NAME "%010d", engine_dir,
+	   pipeline_num);
+  sprintf (pipe_tgt2host_path, "%s" PIPE_TGT2HOST_NAME "%010d", engine_dir,
+	   pipeline_num);
+  int pipe_host2tgt = open (pipe_host2tgt_path, O_CLOEXEC | O_RDONLY);
+  if (pipe_host2tgt < 0)
+    COIERRORN ("Cannot open host-to-target pipe.");
+  int pipe_tgt2host = open (pipe_tgt2host_path, O_CLOEXEC | O_WRONLY);
+  if (pipe_tgt2host < 0)
+    COIERRORN ("Cannot open target-to-host pipe.");
+
+  free (pipe_host2tgt_path);
+  free (pipe_tgt2host_path);
+
+  while (1)
+    {
+      /* Read and execute command.  */
+      cmd_t cmd = CMD_PIPELINE_DESTROY;
+      int cmd_len = read (pipe_host2tgt, &cmd, sizeof (cmd_t));
+      if (cmd_len != sizeof (cmd_t) && cmd_len != 0)
+	COIERRORN ("Cannot read from pipe.");
+
+      if (cmd == CMD_PIPELINE_DESTROY)
+	break;
+      else if (cmd == CMD_PIPELINE_RUN_FUNCTION)
+	{
+	  /* Receive data from host.  */
+	  void (*func) (uint32_t, void **, uint64_t *, void *, uint16_t, void *,
+			uint16_t);
+	  uint32_t buffer_count;
+	  READN (pipe_host2tgt, &func, sizeof (void *));
+	  READN (pipe_host2tgt, &buffer_count, sizeof (uint32_t));
+	  void **buffers;
+	  uint64_t *buffers_len;
+	  MALLOCN (void **, buffers, buffer_count * sizeof (void *));
+	  MALLOCN (uint64_t *, buffers_len, buffer_count * sizeof (uint64_t));
+	  for (uint32_t i = 0; i < buffer_count; i++)
+	    {
+	      READN (pipe_host2tgt, &buffers_len[i], sizeof (uint64_t));
+	      READN (pipe_host2tgt, &buffers[i], sizeof (void *));
+	    }
+	  uint16_t misc_data_len;
+	  READN (pipe_host2tgt, &misc_data_len, sizeof (uint16_t));
+	  void *misc_data = NULL;
+	  if (misc_data_len > 0)
+	    {
+	      MALLOCN (void *, misc_data, misc_data_len);
+	      READN (pipe_host2tgt, misc_data, misc_data_len);
+	    }
+	  uint16_t return_data_len;
+	  READN (pipe_host2tgt, &return_data_len, sizeof (uint16_t));
+	  void *return_data;
+	  if (return_data_len > 0)
+	    MALLOCN (void *, return_data, return_data_len);
+
+	  /* Run function.  */
+	  func (buffer_count, buffers, buffers_len, misc_data,
+		misc_data_len, return_data, return_data_len);
+
+	  /* Send data to host if any or just send notification.  */
+	  WRITEN (pipe_tgt2host, return_data_len > 0 ? return_data : &cmd,
+		  return_data_len > 0 ? return_data_len : sizeof (cmd_t));
+
+	  /* Clean up.  */
+	  free (buffers);
+	  free (buffers_len);
+	  if (misc_data_len > 0)
+	    free (misc_data);
+	  if (return_data_len > 0)
+	    free (return_data);
+	}
+      else
+	COIERRORN ("Unrecognizable command from host.");
+    }
+
+  /* Close pipes.  */
+  if (close (pipe_host2tgt) < 0)
+    COIERRORN ("Cannot close host-to-target pipe.");
+  if (close (pipe_tgt2host) < 0)
+    COIERRORN ("Cannot close target-to-host pipe.");
+
+  return NULL;
+}
+
+
 COIRESULT
 SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 {
   COITRACE ("COIProcessWaitForShutdown");
 
-  char *mic_dir = getenv (MIC_DIR_ENV);
+  engine_dir = getenv (MIC_DIR_ENV);
   char *mic_index = getenv (MIC_INDEX_ENV);
-  char *pipe_host_path, *pipe_target_path;
-  int pipe_host, pipe_target;
-  int cmd_len;
-  pid_t ppid = getppid ();
-  cmd_t cmd;
-
-  assert (mic_dir != NULL && mic_index != NULL);
+  assert (engine_dir != NULL && mic_index != NULL);
 
   /* Get engine index.  */
   engine_index = atoi (mic_index);
 
-  /* Open pipes.  */
-  MALLOC (char *, pipe_host_path,
-	  strlen (PIPE_HOST_PATH) + strlen (mic_dir) + 1);
-  MALLOC (char *, pipe_target_path,
-	  strlen (PIPE_TARGET_PATH) + strlen (mic_dir) + 1);
-  sprintf (pipe_host_path, "%s" PIPE_HOST_PATH, mic_dir);
-  sprintf (pipe_target_path, "%s" PIPE_TARGET_PATH, mic_dir);
-  pipe_host = open (pipe_host_path, O_CLOEXEC | O_WRONLY);
-  if (pipe_host < 0)
-    COIERROR ("Cannot open target-to-host pipe.");
-  pipe_target = open (pipe_target_path, O_CLOEXEC | O_RDONLY);
-  if (pipe_target < 0)
-    COIERROR ("Cannot open host-to-target pipe.");
+  /* Open main pipes.  */
+  char *pipe_host2tgt_path, *pipe_tgt2host_path;
+  MALLOC (char *, pipe_host2tgt_path,
+	  strlen (engine_dir) + sizeof (PIPE_HOST2TGT_NAME "mainpipe"));
+  MALLOC (char *, pipe_tgt2host_path,
+	  strlen (engine_dir) + sizeof (PIPE_TGT2HOST_NAME "mainpipe"));
+  sprintf (pipe_host2tgt_path, "%s" PIPE_HOST2TGT_NAME "mainpipe", engine_dir);
+  sprintf (pipe_tgt2host_path, "%s" PIPE_TGT2HOST_NAME "mainpipe", engine_dir);
+  int pipe_host2tgt = open (pipe_host2tgt_path, O_CLOEXEC | O_RDONLY);
+  if (pipe_host2tgt < 0)
+    COIERROR ("Cannot open host-to-target main pipe.");
+  int pipe_tgt2host = open (pipe_tgt2host_path, O_CLOEXEC | O_WRONLY);
+  if (pipe_tgt2host < 0)
+    COIERROR ("Cannot open target-to-host main pipe.");
 
   /* Clean up.  */
-  free (pipe_host_path);
-  free (pipe_target_path);
+  free (pipe_host2tgt_path);
+  free (pipe_tgt2host_path);
 
   /* Handler.  */
   while (1)
     {
       /* Read and execute command.  */
-      cmd = CMD_SHUTDOWN;
-      cmd_len = read (pipe_target, &cmd, sizeof (cmd_t));
+      cmd_t cmd = CMD_SHUTDOWN;
+      int cmd_len = read (pipe_host2tgt, &cmd, sizeof (cmd_t));
       if (cmd_len != sizeof (cmd_t) && cmd_len != 0)
-	COIERROR ("Cannot read from pipe.");
+	COIERROR ("Cannot read from main pipe.");
 
       switch (cmd)
 	{
@@ -139,34 +234,33 @@ SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 	    void *dest, *source;
 
 	    /* Receive data from host.  */
-	    READ (pipe_target, &dest, sizeof (void *));
-	    READ (pipe_target, &source, sizeof (void *));
-	    READ (pipe_target, &len, sizeof (uint64_t));
+	    READ (pipe_host2tgt, &dest, sizeof (void *));
+	    READ (pipe_host2tgt, &source, sizeof (void *));
+	    READ (pipe_host2tgt, &len, sizeof (uint64_t));
 
 	    /* Copy.  */
 	    memcpy (dest, source, len);
 
 	    /* Notify host about completion.  */
-	    WRITE (pipe_host, &cmd, sizeof (cmd_t));
+	    WRITE (pipe_tgt2host, &cmd, sizeof (cmd_t));
 
 	    break;
 	  }
 	case CMD_BUFFER_MAP:
 	  {
 	    char *name;
-	    int fd;
 	    size_t len;
 	    uint64_t buffer_len;
 	    void *buffer;
 
 	    /* Receive data from host.  */
-	    READ (pipe_target, &len, sizeof (size_t));
+	    READ (pipe_host2tgt, &len, sizeof (size_t));
 	    MALLOC (char *, name, len);
-	    READ (pipe_target, name, len);
-	    READ (pipe_target, &buffer_len, sizeof (uint64_t));
+	    READ (pipe_host2tgt, name, len);
+	    READ (pipe_host2tgt, &buffer_len, sizeof (uint64_t));
 
 	    /* Open shared memory.  */
-	    fd = shm_open (name, O_CLOEXEC | O_RDWR, S_IRUSR | S_IWUSR);
+	    int fd = shm_open (name, O_CLOEXEC | O_RDWR, S_IRUSR | S_IWUSR);
 	    if (fd < 0)
 	      COIERROR ("Cannot open shared memory.");
 
@@ -177,8 +271,8 @@ SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 	      COIERROR ("Cannot map shared memory.");
 
 	    /* Send data to host.  */
-	    WRITE (pipe_host, &fd, sizeof (int));
-	    WRITE (pipe_host, &buffer, sizeof (void *));
+	    WRITE (pipe_tgt2host, &fd, sizeof (int));
+	    WRITE (pipe_tgt2host, &buffer, sizeof (void *));
 
 	    /* Clean up.  */
 	    free (name);
@@ -192,9 +286,9 @@ SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 	    void *buffer;
 
 	    /* Receive data from host.  */
-	    READ (pipe_target, &fd, sizeof (int));
-	    READ (pipe_target, &buffer, sizeof (void *));
-	    READ (pipe_target, &buffer_len, sizeof (uint64_t));
+	    READ (pipe_host2tgt, &fd, sizeof (int));
+	    READ (pipe_host2tgt, &buffer, sizeof (void *));
+	    READ (pipe_host2tgt, &buffer_len, sizeof (uint64_t));
 
 	    /* Unmap buffer.  */
 	    if (munmap (buffer, buffer_len) < 0)
@@ -205,7 +299,7 @@ SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 	      COIERROR ("Cannot close shared memory file.");
 
 	    /* Notify host about completion.  */
-	    WRITE (pipe_host, &cmd, sizeof (cmd_t));
+	    WRITE (pipe_tgt2host, &cmd, sizeof (cmd_t));
 
 	    break;
 	  }
@@ -213,20 +307,19 @@ SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 	  {
 	    char *name;
 	    size_t len;
-	    void *ptr;
 
 	    /* Receive data from host.  */
-	    READ (pipe_target, &len, sizeof (size_t));
+	    READ (pipe_host2tgt, &len, sizeof (size_t));
 	    MALLOC (char *, name, len);
-	    READ (pipe_target, name, len);
+	    READ (pipe_host2tgt, name, len);
 
 	    /* Find function.  */
-	    ptr = dlsym (RTLD_DEFAULT, name);
+	    void *ptr = dlsym (RTLD_DEFAULT, name);
 	    if (ptr == NULL)
 	      COIERROR ("Cannot find symbol %s.", name);
 
 	    /* Send data to host.  */
-	    WRITE (pipe_host, &ptr, sizeof (void *));
+	    WRITE (pipe_tgt2host, &ptr, sizeof (void *));
 
 	    /* Clean up.  */
 	    free (name);
@@ -237,20 +330,19 @@ SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 	  {
 	    char *lib_path;
 	    size_t len;
-	    void *handle;
 
 	    /* Receive data from host.  */
-	    READ (pipe_target, &len, sizeof (size_t));
+	    READ (pipe_host2tgt, &len, sizeof (size_t));
 	    MALLOC (char *, lib_path, len);
-	    READ (pipe_target, lib_path, len);
+	    READ (pipe_host2tgt, lib_path, len);
 
 	    /* Open library.  */
-	    handle = dlopen (lib_path, RTLD_LAZY | RTLD_GLOBAL);
+	    void *handle = dlopen (lib_path, RTLD_LAZY | RTLD_GLOBAL);
 	    if (handle == NULL)
 	      COIERROR ("Cannot load %s: %s", lib_path, dlerror ());
 
 	    /* Send data to host.  */
-	    WRITE (pipe_host, &handle, sizeof (void *));
+	    WRITE (pipe_tgt2host, &handle, sizeof (void *));
 
 	    /* Clean up.  */
 	    free (lib_path);
@@ -261,67 +353,30 @@ SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 	  {
 	    /* Receive data from host.  */
 	    void *handle;
-	    READ (pipe_target, &handle, sizeof (void *));
+	    READ (pipe_host2tgt, &handle, sizeof (void *));
 
 	    dlclose (handle);
 
 	    break;
 	  }
-	case CMD_RUN_FUNCTION:
+	case CMD_PIPELINE_CREATE:
 	  {
-	    uint16_t misc_data_len, return_data_len;
-	    uint32_t buffer_count, i;
-	    uint64_t *buffers_len, size;
-	    void *ptr;
-	    void **buffers, *misc_data, *return_data;
-
-	    void (*func) (uint32_t, void **, uint64_t *,
-			  void *, uint16_t, void*, uint16_t);
-
 	    /* Receive data from host.  */
-	    READ (pipe_target, &func, sizeof (void *));
-	    READ (pipe_target, &buffer_count, sizeof (uint32_t));
-	    MALLOC (void **, buffers, buffer_count * sizeof (void *));
-	    MALLOC (uint64_t *, buffers_len, buffer_count * sizeof (uint64_t));
+	    uint32_t *pipeline_num = (uint32_t *) malloc (sizeof (uint32_t));
+	    READ (pipe_host2tgt, pipeline_num, sizeof (*pipeline_num));
 
-	    for (i = 0; i < buffer_count; i++)
-	      {
-		READ (pipe_target, &(buffers_len[i]), sizeof (uint64_t));
-		READ (pipe_target, &(buffers[i]), sizeof (void *));
-	      }
-	    READ (pipe_target, &misc_data_len, sizeof (uint16_t));
-	    if (misc_data_len > 0)
-	      {
-		MALLOC (void *, misc_data, misc_data_len);
-		READ (pipe_target, misc_data, misc_data_len);
-	      }
-	    READ (pipe_target, &return_data_len, sizeof (uint16_t));
-	    if (return_data_len > 0)
-	      MALLOC (void *, return_data, return_data_len);
-
-	    /* Run function.  */
-	    func (buffer_count, buffers, buffers_len, misc_data,
-		  misc_data_len, return_data, return_data_len);
-
-	    /* Send data to host if any or just send notification.  */
-	    WRITE (pipe_host, return_data_len > 0 ? return_data : &cmd,
-		   return_data_len > 0 ? return_data_len : sizeof (cmd_t));
-
-	    /* Clean up.  */
-	    free (buffers);
-	    free (buffers_len);
-	    if (misc_data_len > 0)
-	      free (misc_data);
-	    if (return_data_len > 0)
-	      free (return_data);
-
+	    /* Create a new thread for the pipeline.  */
+	    pthread_t thread;
+	    if (pthread_create (&thread, NULL, pipeline_thread_routine,
+				pipeline_num))
+	      COIERROR ("Cannot create new thread.");
 	    break;
 	  }
 	case CMD_SHUTDOWN:
-	  if (close (pipe_host) < 0)
-	    COIERROR ("Cannot close target-to-host pipe.");
-	  if (close (pipe_target) < 0)
-	    COIERROR ("Cannot close host-to-target pipe.");
+	  if (close (pipe_host2tgt) < 0)
+	    COIERROR ("Cannot close host-to-target main pipe.");
+	  if (close (pipe_tgt2host) < 0)
+	    COIERROR ("Cannot close target-to-host main pipe.");
 	  return COI_SUCCESS;
 	default:
 	  COIERROR ("Unrecognizable command from host.");

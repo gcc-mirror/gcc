@@ -42,6 +42,7 @@
 
 #define LD_LIBRARY_PATH_ENV	"LD_LIBRARY_PATH"
 #define MIC_LD_LIBRARY_PATH_ENV	"MIC_LD_LIBRARY_PATH"
+#define OFFLOAD_ACTIVE_WAIT_ENV	"OFFLOAD_ACTIVE_WAIT"
 
 #ifdef DEBUG
 #define TRACE(...)					    \
@@ -115,18 +116,23 @@ static VarDesc vd_tgt2host = {
 };
 
 
-/* Add path specified in LD_LIBRARY_PATH to MIC_LD_LIBRARY_PATH, which is
-   required by liboffloadmic.  */
 __attribute__((constructor))
 static void
 init (void)
 {
   const char *ld_lib_path = getenv (LD_LIBRARY_PATH_ENV);
   const char *mic_lib_path = getenv (MIC_LD_LIBRARY_PATH_ENV);
+  const char *active_wait = getenv (OFFLOAD_ACTIVE_WAIT_ENV);
+
+  /* Disable active wait by default to avoid useless CPU usage.  */
+  if (!active_wait)
+    setenv (OFFLOAD_ACTIVE_WAIT_ENV, "0", 0);
 
   if (!ld_lib_path)
     goto out;
 
+  /* Add path specified in LD_LIBRARY_PATH to MIC_LD_LIBRARY_PATH, which is
+     required by liboffloadmic.  */
   if (!mic_lib_path)
     setenv (MIC_LD_LIBRARY_PATH_ENV, ld_lib_path, 1);
   else
