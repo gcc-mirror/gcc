@@ -8998,7 +8998,7 @@ ix86_function_arg (cumulative_args_t cum_v, machine_mode omode,
   HOST_WIDE_INT bytes, words;
   rtx arg;
 
-  /* All pointer bounds argumntas are handled separately here.  */
+  /* All pointer bounds arguments are handled separately here.  */
   if ((type && POINTER_BOUNDS_TYPE_P (type))
       || POINTER_BOUNDS_MODE_P (mode))
     {
@@ -11084,7 +11084,7 @@ ix86_nsaved_regs (void)
   return nregs;
 }
 
-/* Return number of saved SSE registrers.  */
+/* Return number of saved SSE registers.  */
 
 static int
 ix86_nsaved_sseregs (void)
