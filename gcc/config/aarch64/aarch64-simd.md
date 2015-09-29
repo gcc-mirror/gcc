@@ -4327,7 +4327,7 @@
    #
    stp\\t%q1, %R1, %0
    ldp\\t%q0, %R0, %1"
-  [(set_attr "type" "multiple,neon_store2_2reg_q,neon_load2_2reg_q")
+  [(set_attr "type" "multiple,neon_stp_q,neon_ldp_q")
    (set (attr "length") (symbol_ref "aarch64_simd_attr_length_move (insn)"))]
 )
 

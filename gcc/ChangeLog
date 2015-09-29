@@ -1,3 +1,15 @@
+2015-09-29  Evandro Menezes  <e.menezes@samsung.com>
+
+	* config/arm/types.md (neon_ldp, neon_ldp_q, neon_stp, neon_stp_q):
+	Add new insn types for vector load and store pairs.
+	* config/arm/cortex-a53.md (cortex_a53_f_load_2reg): Add insn
+	types "neon_ldp{,_q}".
+	* config/arm/cortex-a57.md (neon_load_c): Add insn types
+	"neon_ldp{,_q}".
+	(neon_store_complex): Add insn types "neon_stp{,_q}".
+	* config/aarch64/aarch64-simd.md (aarch64_be_movoi): Add insn types
+	"neon_{ldp,stp}_q".
+
 2015-09-29  Jeff Law  <law@redhat.com>
 
 	* config/rl78/rl78-expand.md (movqi): Fix undefined left shift
