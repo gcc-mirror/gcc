@@ -4342,7 +4342,7 @@ gen_shl_and (rtx dest, rtx left_rtx, rtx mask_rtx, rtx source)
 	 that don't matter.  This way, we might be able to get a shorter
 	 signed constant.  */
       if (mask & ((HOST_WIDE_INT) 1 << (31 - total_shift)))
-	mask |= (HOST_WIDE_INT) ~0 << (31 - total_shift);
+	mask |= (HOST_WIDE_INT) ((HOST_WIDE_INT_M1U) << (31 - total_shift));
     case 2:
       /* Don't expand fine-grained when combining, because that will
          make the pattern fail.  */
@@ -4626,7 +4626,7 @@ gen_shl_sext (rtx dest, rtx left_rtx, rtx size_rtx, rtx source)
 	}
       emit_insn (gen_andsi3 (dest, source, GEN_INT ((1 << insize) - 1)));
       emit_insn (gen_xorsi3 (dest, dest, GEN_INT (1 << (insize - 1))));
-      emit_insn (gen_addsi3 (dest, dest, GEN_INT (-1 << (insize - 1))));
+      emit_insn (gen_addsi3 (dest, dest, GEN_INT (HOST_WIDE_INT_M1U << (insize - 1))));
       operands[0] = dest;
       operands[2] = kind == 7 ? GEN_INT (left + 1) : left_rtx;
       gen_shifty_op (ASHIFT, operands);

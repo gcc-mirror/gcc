@@ -3052,7 +3052,7 @@
 	  tab_base = force_reg (DImode, tab_base);
 	}
       if (TARGET_DIVIDE_INV20U)
-	i2p27 = force_reg (DImode, GEN_INT (-2 << 27));
+	i2p27 = force_reg (DImode, GEN_INT ((unsigned HOST_WIDE_INT)-2 << 27));
       else
 	i2p27 = GEN_INT (0);
       if (TARGET_DIVIDE_INV20U || TARGET_DIVIDE_INV20L)
@@ -7875,7 +7875,7 @@ label:
 	      break;
 	    }
 	  /* Try movi / mshflo.l w/ r63.  */
-	  val2 = val + ((HOST_WIDE_INT) -1 << 32);
+	  val2 = val + ((HOST_WIDE_INT) (HOST_WIDE_INT_M1U << 32));
 	  if ((HOST_WIDE_INT) val2 < 0 && CONST_OK_FOR_I16 (val2))
 	    {
 	      operands[1] = gen_mshflo_l_di (operands[0], operands[0],
