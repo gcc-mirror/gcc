@@ -1870,6 +1870,11 @@ GLIBCXX_3.4.22 {
     # std::uncaught_exceptions()
     _ZSt19uncaught_exceptionsv;
 
+    # std::thread::_State::~_State()
+    _ZT[ISV]NSt6thread6_StateE;
+    _ZNSt6thread6_StateD[012]Ev;
+    _ZNSt6thread15_M_start_threadESt10unique_ptrINS_6_StateESt14default_deleteIS1_EEPFvvE;
+
 } GLIBCXX_3.4.21;
 
 # Symbols in the support library (libsupc++) have their own tag.
