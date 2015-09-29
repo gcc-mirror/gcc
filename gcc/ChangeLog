@@ -1,3 +1,13 @@
+2015-09-29  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/vx-builtins.md
+	("vec_scatter_element<mode>_<non_vec_int>")
+	("vec_scatter_element<V_HW_64:mode>_SI"): Replace gf mode
+	attribute with bhfgq.
+
 2015-09-29  Andrew Pinski  <apinski@cavium.com>    
 
 	* config/aarch64/aarch64.md (prefetch):
@@ -1117,20 +1127,7 @@
 	* doc/invoke.texi (i386 and x86-64 Options): -mno-fancy-math-387
 	is not actually the default on FreeBSD.
 
-2015-07-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
-
-	Backport from mainline
-	2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
-
-	* config/s390/vx-builtins.md
-	("vec_scatter_element<mode>_<non_vec_int>")
-	("vec_scatter_element<V_HW_64:mode>_SI"): Replace gf mode
-	attribute with bhfgq.
-
-2015-07-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
-
-	Backport from mainline
-	2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390-builtins.def: Fix vpopct instruction comments.
 

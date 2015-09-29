@@ -414,7 +414,7 @@
 	(unspec:<non_vec> [(match_operand:V_HW_64                0 "register_operand"  "v")
 			   (match_dup 3)] UNSPEC_VEC_EXTRACT))]
   "TARGET_VX && !TARGET_64BIT"
-  "vsce<V_HW_64:gf>\t%v0,%O2(%v1,%R2),%3"
+  "vsce<V_HW_64:bhfgq>\t%v0,%O2(%v1,%R2),%3"
   [(set_attr "op_type" "VRV")])
 
 ; Element size and target adress size is the same
@@ -428,7 +428,7 @@
 	(unspec:<non_vec> [(match_operand:V_HW_32_64     0 "register_operand"  "v")
 			   (match_dup 3)] UNSPEC_VEC_EXTRACT))]
   "TARGET_VX"
-  "vsce<gf>\t%v0,%O2(%v1,%R2),%3"
+  "vsce<bhfgq>\t%v0,%O2(%v1,%R2),%3"
   [(set_attr "op_type" "VRV")])
 
 ; Depending on the address size we have to expand a different pattern.
