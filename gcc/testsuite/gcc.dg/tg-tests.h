@@ -82,7 +82,7 @@ foo_1 (float f, double d, long double ld,
 
   /* Sign bit of zeros and nans is not preserved in unsafe math mode.  */
 #ifdef UNSAFE
-  if (!res_isnan && d != 0)
+  if (!res_isnan && f != 0 && d != 0 && ld != 0)
 #endif
     {
       if ((__builtin_signbit (f) ? 1 : 0) != res_signbit)
