@@ -1,3 +1,9 @@
+2015-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67741
+	* tree-ssa-math-opts.c (pass_cse_sincos::execute): Only recognize
+	builtin calls with correct signature.
+
 2015-09-29  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/65105
