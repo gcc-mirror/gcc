@@ -1640,7 +1640,7 @@ microblaze_version_to_int (const char *version)
 	{			/* Looking for major  */
           if (*p == '.')
             {
-              *v++;
+              v++;
             }
           else
             {

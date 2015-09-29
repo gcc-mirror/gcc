@@ -1,5 +1,8 @@
 2015-09-29  Jeff Law  <law@redhat.com>
 
+	* config/microblaze/microblaze.c (microblaze_version_to_int): Remove
+	computation of unused value.
+
 	* config/pdp11/pdp11.c (pdp11_branch_cost): New function.
 	* config/pdp11/pdp11.h (BRANCH_COST): Call function rather than
 	inline macro expansion.
