@@ -1738,15 +1738,14 @@ pass_cse_sincos::execute (function *fun)
 	     of a basic block.  */
 	  cleanup_eh = false;
 
-	  if (is_gimple_call (stmt)
-	      && gimple_call_lhs (stmt)
-	      && (fndecl = gimple_call_fndecl (stmt))
-	      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+	  if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL)
+	      && gimple_call_lhs (stmt))
 	    {
 	      tree arg, arg0, arg1, result;
 	      HOST_WIDE_INT n;
 	      location_t loc;
 
+	      fndecl = gimple_call_fndecl (stmt);
 	      switch (DECL_FUNCTION_CODE (fndecl))
 		{
 		CASE_FLT_FN (BUILT_IN_COS):

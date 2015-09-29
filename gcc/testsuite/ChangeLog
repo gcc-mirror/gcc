@@ -1,3 +1,8 @@
+2015-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67741
+	* gcc.dg/torture/pr67741.c: New testcase.
+
 2015-09-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tg-tests.h (foo_1) [UNSAFE]: Also check if f and ld are
