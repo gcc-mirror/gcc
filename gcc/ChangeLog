@@ -1,5 +1,8 @@
 2015-09-29  Jeff Law  <law@redhat.com>
 
+	* config/rl78/rl78-expand.md (movqi): Fix undefined left shift
+	behaviour.
+
 	* config/msp430/msp430.c (msp430_legitimate_constant): Fix undefined
 	left shift behaviour.
 	* config/msp430/constraints.md ('L' constraint): Similarly.
