@@ -998,7 +998,7 @@ msp430_legitimate_constant (machine_mode mode, rtx x)
     /* GCC does not know the width of the PSImode, so make
        sure that it does not try to use a constant value that
        is out of range.  */
-    || (INTVAL (x) < (1 << 20) && INTVAL (x) >= (-1 << 20));
+    || (INTVAL (x) < (1 << 20) && INTVAL (x) >= (HOST_WIDE_INT)(HOST_WIDE_INT_M1U << 20));
 }
 
 
