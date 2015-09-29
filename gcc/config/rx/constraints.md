@@ -28,28 +28,28 @@
 (define_constraint "Int08"
   "@internal A signed or unsigned 8-bit immediate value"
   (and (match_code "const_int")
-       (match_test "IN_RANGE (ival, (-1 << 8), (1 << 8) - 1)")
+       (match_test "IN_RANGE (ival, (HOST_WIDE_INT_M1U << 8), (1 << 8) - 1)")
   )
 )
 
 (define_constraint "Sint08"
   "@internal A signed 8-bit immediate value"
   (and (match_code "const_int")
-       (match_test "IN_RANGE (ival, (-1 << 7), (1 << 7) - 1)")
+       (match_test "IN_RANGE (ival, (HOST_WIDE_INT_M1U << 7), (1 << 7) - 1)")
   )
 )
 
 (define_constraint "Sint16"
   "@internal A signed 16-bit immediate value"
   (and (match_code "const_int")
-       (match_test "IN_RANGE (ival, (-1 << 15), (1 << 15) - 1)")
+       (match_test "IN_RANGE (ival, (HOST_WIDE_INT_M1U << 15), (1 << 15) - 1)")
   )
 )
 
 (define_constraint "Sint24"
   "@internal A signed 24-bit immediate value"
   (and (match_code "const_int")
-       (match_test "IN_RANGE (ival, (-1 << 23), (1 << 23) - 1)")
+       (match_test "IN_RANGE (ival, (HOST_WIDE_INT_M1U << 23), (1 << 23) - 1)")
   )
 )
 
