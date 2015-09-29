@@ -1,3 +1,9 @@
+2015-09-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* builtins.c (expand_builtin_acc_on_device): Delete.
+	(expand_builtin): Don't call it.
+	(fold_builtin_1): Fold acc_on_device.
+
 2015-09-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_function_arg): Fix typo in comments.

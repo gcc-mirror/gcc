@@ -620,10 +620,12 @@ acc_set_device_num (int ord, acc_device_t d)
 
 ialias (acc_set_device_num)
 
-int
+/* Compile on_device with optimization, so that the compiler expands
+   this, rather than generating infinitely recursive code.  */
+
+int __attribute__ ((__optimize__ ("O2")))
 acc_on_device (acc_device_t dev)
 {
-  /* Just rely on the compiler builtin.  */
   return __builtin_acc_on_device (dev);
 }
 
