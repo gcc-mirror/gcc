@@ -3,6 +3,14 @@
 	Backport from mainline
 	2015-09-10  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_contiguous_bitmask_vector_p): Reject if
+	the vector element is bigger than 64 bit.
+
+2015-09-29  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-09-10  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/vx-builtins.md ("vec_vmal<mode>", "vec_vmah<mode>")
 	("vec_vmalh<mode>"): Change mode iterator from VI_HW to VI_HW_QHS.
 

@@ -1,3 +1,15 @@
+2015-09-29  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-09-10  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/vector/vec-genbytemask-1.c: Add check for V1TI
+	initialization with a byte mask.  No change expected here.
+	* gcc.target/s390/vector/vec-genmask-1.c: Fix whitespace.
+	* gcc.target/s390/vector/vec-genmask-2.c: Add check for V1TI
+	initialization with contigious bitmask.  Literal pool is expectd
+	to be used here.
+
 2015-09-28  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
