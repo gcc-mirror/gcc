@@ -12,6 +12,11 @@
 
 2015-09-29  Jeff Law  <law@redhat.com>
 
+	* config/rx/constraints.md (Int08): Fix undefined left shift
+	behaviour.
+	(Sint08, Sint16, Sint24): Likewise.
+	* config/rx/rx.c (rx_get_stack_layout): Likewise.
+
 	* config/rl78/rl78-expand.md (movqi): Fix undefined left shift
 	behaviour.
 
