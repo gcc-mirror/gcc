@@ -1,3 +1,11 @@
+2015-09-29  Jeff Law  <law@redhat.com>
+
+	* config/sh/sh.c (gen_shl_and): Fix undefined left shift
+	behaviour.
+	(gen_shl_sext): Likewise.
+	* config/sh/sh.md (divsi3): Likewise.
+	(imm->ext_dest_operand splitter): Likewise.
+
 2015-09-29  Sebastian Pop  <s.pop@samsung.com>
             Aditya Kumar  <aditya.k7@samsung.com>
 
