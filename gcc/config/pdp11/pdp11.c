@@ -1933,4 +1933,10 @@ pdp11_scalar_mode_supported_p (machine_mode mode)
   return default_scalar_mode_supported_p (mode);
 }
 
+int
+pdp11_branch_cost ()
+{
+  return (TARGET_BRANCH_CHEAP ? 0 : 1);
+}
+
 struct gcc_target targetm = TARGET_INITIALIZER;
