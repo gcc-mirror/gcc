@@ -1,3 +1,7 @@
+2015-09-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/asm-4.c: Use braced words for the regular expressions.
+
 2015-09-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40054
