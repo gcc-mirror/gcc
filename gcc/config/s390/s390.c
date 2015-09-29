@@ -7705,11 +7705,12 @@ replace_ltrel_base (rtx *x)
 /* We keep a list of constants which we have to add to internal
    constant tables in the middle of large functions.  */
 
-#define NR_C_MODES 31
+#define NR_C_MODES 32
 machine_mode constant_modes[NR_C_MODES] =
 {
   TFmode, TImode, TDmode,
-  V16QImode, V8HImode, V4SImode, V2DImode, V4SFmode, V2DFmode, V1TFmode,
+  V16QImode, V8HImode, V4SImode, V2DImode, V1TImode,
+  V4SFmode, V2DFmode, V1TFmode,
   DFmode, DImode, DDmode,
   V8QImode, V4HImode, V2SImode, V1DImode, V2SFmode, V1DFmode,
   SFmode, SImode, SDmode,
