@@ -1,3 +1,8 @@
+2015-09-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tg-tests.h (foo_1) [UNSAFE]: Also check if f and ld are
+	non-zero for __builtin_signbit tests.
+
 2015-09-29  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/65105
@@ -72,10 +77,10 @@
 	* gfortran.dg/graphite/block-2.f: Same.
 
 2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
-            Sebastian Pop  <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
-        PR tree-optimization/67700
-        * testsuite/gcc.dg/graphite/run-id-pr67700.c: New.
+	PR tree-optimization/67700
+	* testsuite/gcc.dg/graphite/run-id-pr67700.c: New.
 
 2015-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
 
