@@ -1,5 +1,22 @@
 2015-09-29  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/67170
+	* tree-ssa-alias.h (get_continuation_for_phi): Adjust
+	the translate function pointer parameter to get the
+	bool whether to disambiguate only by reference.
+	(walk_non_aliased_vuses): Likewise.
+	* tree-ssa-alias.c (maybe_skip_until): Adjust.
+	(get_continuation_for_phi_1): Likewise.
+	(get_continuation_for_phi): Likewise.
+	(walk_non_aliased_vuses): Likewise.
+	* tree-ssa-sccvn.c (const_parms): New bitmap.
+	(vn_reference_lookup_3): Adjust for interface change.
+	Disambiguate parameters pointing to readonly memory.
+	(free_scc_vn): Free const_parms.
+	(run_scc_vn): Initialize const_parms from a fn spec attribute.
+
+2015-09-29  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/67741
 	* tree-ssa-math-opts.c (pass_cse_sincos::execute): Only recognize
 	builtin calls with correct signature.
