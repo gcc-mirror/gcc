@@ -1,3 +1,10 @@
+2015-09-29  Jeff Law  <law@redhat.com>
+
+	* config/msp430/msp430.c (msp430_legitimate_constant): Fix undefined
+	left shift behaviour.
+	* config/msp430/constraints.md ('L' constraint): Similarly.
+	('Ys' constraint): Similarly.
+
 2015-09-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67170
