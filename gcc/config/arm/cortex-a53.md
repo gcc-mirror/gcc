@@ -325,7 +325,7 @@
 
 (define_insn_reservation "cortex_a53_f_load_2reg" 5
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "neon_load2_2reg_q"))
+       (eq_attr "type" "neon_ldp, neon_ldp_q, neon_load2_2reg_q"))
   "(cortex_a53_slot_any+cortex_a53_ls)*2")
 
 (define_insn_reservation "cortex_a53_f_loadq" 5

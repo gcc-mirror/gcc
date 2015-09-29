@@ -376,6 +376,8 @@
 ; neon_from_gp
 ; neon_from_gp_q
 ; neon_ldr
+; neon_ldp
+; neon_ldp_q
 ; neon_load1_1reg
 ; neon_load1_1reg_q
 ; neon_load1_2reg
@@ -409,6 +411,8 @@
 ; neon_load4_one_lane
 ; neon_load4_one_lane_q
 ; neon_str
+; neon_stp
+; neon_stp_q
 ; neon_store1_1reg
 ; neon_store1_1reg_q
 ; neon_store1_2reg
@@ -889,6 +893,8 @@
   neon_from_gp_q,\
 \
   neon_ldr,\
+  neon_ldp,\
+  neon_ldp_q,\
   neon_load1_1reg,\
   neon_load1_1reg_q,\
   neon_load1_2reg,\
@@ -926,6 +932,8 @@
   neon_load4_one_lane_q,\
 \
   neon_str,\
+  neon_stp,\
+  neon_stp_q,\
   neon_store1_1reg,\
   neon_store1_1reg_q,\
   neon_store1_2reg,\
@@ -1128,7 +1136,8 @@
           neon_sat_mla_s_long, neon_sat_mla_h_scalar_long,\
           neon_sat_mla_s_scalar_long,\
           neon_to_gp, neon_to_gp_q, neon_from_gp, neon_from_gp_q,\
-          neon_ldr, neon_load1_1reg, neon_load1_1reg_q, neon_load1_2reg,\
+	   neon_ldr, neon_ldp, neon_ldp_q,\
+	   neon_load1_1reg, neon_load1_1reg_q, neon_load1_2reg,\
           neon_load1_2reg_q, neon_load1_3reg, neon_load1_3reg_q,\
           neon_load1_4reg, neon_load1_4reg_q, neon_load1_all_lanes,\
           neon_load1_all_lanes_q, neon_load1_one_lane, neon_load1_one_lane_q,\
@@ -1139,7 +1148,8 @@
           neon_load3_all_lanes_q, neon_load3_one_lane, neon_load3_one_lane_q,\
           neon_load4_4reg, neon_load4_4reg_q, neon_load4_all_lanes,\
           neon_load4_all_lanes_q, neon_load4_one_lane, neon_load4_one_lane_q,\
-          neon_str, neon_store1_1reg, neon_store1_1reg_q, neon_store1_2reg,\
+	   neon_str, neon_stp, neon_stp_q,\
+	   neon_store1_1reg, neon_store1_1reg_q, neon_store1_2reg,\
           neon_store1_2reg_q, neon_store1_3reg, neon_store1_3reg_q,\
           neon_store1_4reg, neon_store1_4reg_q, neon_store1_one_lane,\
           neon_store1_one_lane_q, neon_store2_2reg, neon_store2_2reg_q,\
