@@ -1,5 +1,9 @@
 2015-09-29  Jeff Law  <law@redhat.com>
 
+	* config/pdp11/pdp11.c (pdp11_branch_cost): New function.
+	* config/pdp11/pdp11.h (BRANCH_COST): Call function rather than
+	inline macro expansion.
+
 	* config/i386/t-interix (winnt-stubs.o): Fix compilation rule.
 
 	* config/sh/sh.c (gen_shl_and): Fix undefined left shift

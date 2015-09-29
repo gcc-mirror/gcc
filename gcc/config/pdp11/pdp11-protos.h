@@ -47,3 +47,4 @@ extern void output_ascii (FILE *, const char *, int);
 extern void pdp11_asm_output_var (FILE *, const char *, int, int, bool);
 extern void pdp11_expand_prologue (void);
 extern void pdp11_expand_epilogue (void);
+extern int pdp11_branch_cost (void);
