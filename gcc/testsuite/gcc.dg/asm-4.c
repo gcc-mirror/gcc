@@ -11,7 +11,6 @@ int main()
   asm volatile ("test3 %[in]" : [inout] "=g"(x) : "[inout]" (x), [in] "g" (y));
 }
 
-/* ??? Someone explain why the back reference dosn't work.  */
-/* { dontdg-final { scan-assembler "test0 X(.*)Y\1Z" } } */
-/* { dontdg-final { scan-assembler "test1 X(.*)Y\1Z" } } */
-/* { dontdg-final { scan-assembler "test2 X(.*)Y\1Z" } } */
+/* { dg-final { scan-assembler {test0 X(.*)Y\1Z} } } */
+/* { dg-final { scan-assembler {test1 X(.*)Y\1Z} } } */
+/* { dg-final { scan-assembler {test2 X(.*)Y\1Z} } } */
