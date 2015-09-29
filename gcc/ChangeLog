@@ -1,3 +1,7 @@
+2015-09-29  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-cfg.c (dump_function_to_file): Dump function attributes.
+
 2015-09-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/67716

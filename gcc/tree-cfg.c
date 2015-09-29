@@ -7369,6 +7369,13 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
     }
   fprintf (file, ")\n");
 
+  if (DECL_ATTRIBUTES (fndecl) != NULL_TREE)
+    {
+      fprintf (file, "[ ");
+      print_generic_expr (file, DECL_ATTRIBUTES (fndecl), dump_flags);
+      fprintf (file, "]\n");
+    }
+
   if (flags & TDF_VERBOSE)
     print_node (file, "", fndecl, 2);
 
