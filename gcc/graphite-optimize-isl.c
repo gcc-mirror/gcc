@@ -327,9 +327,10 @@ optimize_isl (scop_p scop)
   isl_options_set_schedule_max_constant_term (scop->ctx, CONSTANT_BOUND);
   isl_options_set_schedule_maximize_band_depth (scop->ctx, 1);
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  /* ISL-0.15 or later.  */
   isl_options_set_schedule_serialize_sccs (scop->ctx, 1);
 #else
-  isl_options_set_schedule_fuse (scop->ctx, ISL_SCHEDULE_FUSE_MAX);
+  isl_options_set_schedule_fuse (scop->ctx, ISL_SCHEDULE_FUSE_MIN);
 #endif
 
 #ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE

@@ -1,3 +1,10 @@
+2015-09-29  Sebastian Pop  <s.pop@samsung.com>
+            Aditya Kumar  <aditya.k7@samsung.com>
+
+	PR tree-optimization/67754
+	* graphite-optimize-isl.c (optimize_isl): Call
+	isl_options_set_schedule_fuse with ISL_SCHEDULE_FUSE_MIN for ISL-14.
+
 2015-09-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* builtins.c (expand_builtin_acc_on_device): Delete.
