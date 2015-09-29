@@ -1,3 +1,9 @@
+2015-09-29  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-dependences.c (scop_get_dependences): Moved in down
+	in order to be visible to its caller.
+	* graphite-poly.h: Removed compute_deps, and extend_schedule.
+
 2015-09-29  Sebastian Pop  <s.pop@samsung.com>
             Aditya Kumar  <aditya.k7@samsung.com>
 
