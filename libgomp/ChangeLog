@@ -1,5 +1,9 @@
 2015-09-29  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* oacc-init.c (acc_on_device): Force optimization level.
+
+2015-09-29  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* plugin/plugin-nvptx.c (ARRAYSIZE): Delete.
 	(cuda_errlist): Delete.
 	(cuda_error): Reimplement.
