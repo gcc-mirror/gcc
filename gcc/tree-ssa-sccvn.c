@@ -120,6 +120,7 @@ along with GCC; see the file COPYING3.  If not see
 static tree *last_vuse_ptr;
 static vn_lookup_kind vn_walk_kind;
 static vn_lookup_kind default_vn_walk_kind;
+bitmap const_parms;
 
 /* vn_nary_op hashtable helpers.  */
 
@@ -1656,20 +1657,34 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
 /* Callback for walk_non_aliased_vuses.  Tries to perform a lookup
    from the statement defining VUSE and if not successful tries to
    translate *REFP and VR_ through an aggregate copy at the definition
-   of VUSE.  */
+   of VUSE.  If *DISAMBIGUATE_ONLY is true then do not perform translation
+   of *REF and *VR.  If only disambiguation was performed then
+   *DISAMBIGUATE_ONLY is set to true.  */
 
 static void *
 vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
-		       bool disambiguate_only)
+		       bool *disambiguate_only)
 {
   vn_reference_t vr = (vn_reference_t)vr_;
   gimple *def_stmt = SSA_NAME_DEF_STMT (vuse);
-  tree base;
+  tree base = ao_ref_base (ref);
   HOST_WIDE_INT offset, maxsize;
   static vec<vn_reference_op_s>
     lhs_ops = vNULL;
   ao_ref lhs_ref;
   bool lhs_ref_ok = false;
+
+  /* If the reference is based on a parameter that was determined as
+     pointing to readonly memory it doesn't change.  */
+  if (TREE_CODE (base) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
+      && SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (base, 0))
+      && bitmap_bit_p (const_parms,
+		       SSA_NAME_VERSION (TREE_OPERAND (base, 0))))
+    {
+      *disambiguate_only = true;
+      return NULL;
+    }
 
   /* First try to disambiguate after value-replacing in the definitions LHS.  */
   if (is_gimple_assign (def_stmt))
@@ -1687,7 +1702,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 						      TREE_TYPE (lhs), lhs_ops);
 	  if (lhs_ref_ok
 	      && !refs_may_alias_p_1 (ref, &lhs_ref, true))
-	    return NULL;
+	    {
+	      *disambiguate_only = true;
+	      return NULL;
+	    }
 	}
       else
 	{
@@ -1723,14 +1741,16 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  for (unsigned i = 0; i < gimple_call_num_args (def_stmt); ++i)
 	    gimple_call_set_arg (def_stmt, i, oldargs[i]);
 	  if (!res)
-	    return NULL;
+	    {
+	      *disambiguate_only = true;
+	      return NULL;
+	    }
 	}
     }
 
-  if (disambiguate_only)
+  if (*disambiguate_only)
     return (void *)-1;
 
-  base = ao_ref_base (ref);
   offset = ref->offset;
   maxsize = ref->max_size;
 
@@ -4342,6 +4362,8 @@ free_scc_vn (void)
   XDELETE (valid_info);
   free_vn_table (optimistic_info);
   XDELETE (optimistic_info);
+
+  BITMAP_FREE (const_parms);
 }
 
 /* Set *ID according to RESULT.  */
@@ -4676,6 +4698,29 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
   default_vn_walk_kind = default_vn_walk_kind_;
 
   init_scc_vn ();
+
+  /* Collect pointers we know point to readonly memory.  */
+  const_parms = BITMAP_ALLOC (NULL);
+  tree fnspec = lookup_attribute ("fn spec",
+				  TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)));
+  if (fnspec)
+    {
+      fnspec = TREE_VALUE (TREE_VALUE (fnspec));
+      i = 1;
+      for (tree arg = DECL_ARGUMENTS (cfun->decl);
+	   arg; arg = DECL_CHAIN (arg), ++i)
+	{
+	  if (i >= (unsigned) TREE_STRING_LENGTH (fnspec))
+	    break;
+	  if (TREE_STRING_POINTER (fnspec)[i]  == 'R'
+	      || TREE_STRING_POINTER (fnspec)[i] == 'r')
+	    {
+	      tree name = ssa_default_def (cfun, arg);
+	      if (name)
+		bitmap_set_bit (const_parms, SSA_NAME_VERSION (name));
+	    }
+	}
+    }
 
   /* Mark all edges as possibly executable.  */
   FOR_ALL_BB_FN (bb, cfun)
