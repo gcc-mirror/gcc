@@ -456,22 +456,6 @@ scop_set_nb_params (scop_p scop, graphite_dim_t nb_params)
 }
 
 bool graphite_legal_transform (scop_p);
-__isl_give isl_union_map *extend_schedule (__isl_take isl_union_map *);
-
-void
-compute_deps (scop_p scop, vec<poly_bb_p> pbbs,
-	      isl_union_map **must_raw,
-	      isl_union_map **may_raw,
-	      isl_union_map **must_raw_no_source,
-	      isl_union_map **may_raw_no_source,
-	      isl_union_map **must_war,
-	      isl_union_map **may_war,
-	      isl_union_map **must_war_no_source,
-	      isl_union_map **may_war_no_source,
-	      isl_union_map **must_waw,
-	      isl_union_map **may_waw,
-	      isl_union_map **must_waw_no_source,
-	      isl_union_map **may_waw_no_source);
 
 isl_union_map *
 scop_get_dependences (scop_p scop);

@@ -47,35 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-poly.h"
 
 
-isl_union_map *
-scop_get_dependences (scop_p scop)
-{
-  isl_union_map *dependences;
-
-  if (!scop->must_raw)
-    compute_deps (scop, SCOP_BBS (scop),
-		  &scop->must_raw, &scop->may_raw,
-		  &scop->must_raw_no_source, &scop->may_raw_no_source,
-		  &scop->must_war, &scop->may_war,
-		  &scop->must_war_no_source, &scop->may_war_no_source,
-		  &scop->must_waw, &scop->may_waw,
-		  &scop->must_waw_no_source, &scop->may_waw_no_source);
-
-  dependences = isl_union_map_copy (scop->must_raw);
-  dependences = isl_union_map_union (dependences,
-				     isl_union_map_copy (scop->must_war));
-  dependences = isl_union_map_union (dependences,
-				     isl_union_map_copy (scop->must_waw));
-  dependences = isl_union_map_union (dependences,
-				     isl_union_map_copy (scop->may_raw));
-  dependences = isl_union_map_union (dependences,
-				     isl_union_map_copy (scop->may_war));
-  dependences = isl_union_map_union (dependences,
-				     isl_union_map_copy (scop->may_waw));
-
-  return dependences;
-}
-
 /* Add the constraints from the set S to the domain of MAP.  */
 
 static isl_map *
@@ -252,7 +223,7 @@ extend_schedule_1 (__isl_take isl_map *map, void *user)
 
 /* Return a relation that has uniform output dimensions.  */
 
-__isl_give isl_union_map *
+static __isl_give isl_union_map *
 extend_schedule (__isl_take isl_union_map *x)
 {
   int max = 0;
@@ -519,7 +490,7 @@ subtract_commutative_associative_deps (scop_p scop,
 /* Compute the original data dependences in SCOP for all the reads and
    writes in PBBS.  */
 
-void
+static void
 compute_deps (scop_p scop, vec<poly_bb_p> pbbs,
 	      isl_union_map **must_raw,
 	      isl_union_map **may_raw,
@@ -593,6 +564,35 @@ transform_is_safe (scop_p scop, isl_union_map *transform)
 
   isl_union_map_free (transform);
   return res;
+}
+
+isl_union_map *
+scop_get_dependences (scop_p scop)
+{
+  isl_union_map *dependences;
+
+  if (!scop->must_raw)
+    compute_deps (scop, SCOP_BBS (scop),
+		  &scop->must_raw, &scop->may_raw,
+		  &scop->must_raw_no_source, &scop->may_raw_no_source,
+		  &scop->must_war, &scop->may_war,
+		  &scop->must_war_no_source, &scop->may_war_no_source,
+		  &scop->must_waw, &scop->may_waw,
+		  &scop->must_waw_no_source, &scop->may_waw_no_source);
+
+  dependences = isl_union_map_copy (scop->must_raw);
+  dependences = isl_union_map_union (dependences,
+				     isl_union_map_copy (scop->must_war));
+  dependences = isl_union_map_union (dependences,
+				     isl_union_map_copy (scop->must_waw));
+  dependences = isl_union_map_union (dependences,
+				     isl_union_map_copy (scop->may_raw));
+  dependences = isl_union_map_union (dependences,
+				     isl_union_map_copy (scop->may_war));
+  dependences = isl_union_map_union (dependences,
+				     isl_union_map_copy (scop->may_waw));
+
+  return dependences;
 }
 
 /* Return true when the SCOP transformed schedule is correct.  */
