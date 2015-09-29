@@ -88,8 +88,10 @@ void test04()
   VERIFY( strmsz_2 != strmsz_1 );
   VERIFY( strmsz_2 == 1 );
   // end part three
+  str_tmp = " ravi shankar meets carlos santana in LoHa   ";
+  str_tmp += str_tmp;
   strmsz_1 = strb_01.str().size();
-  strmsz_2 = strb_01.sputn(" ravi shankar meets carlos santana in LoHa", 90);
+  strmsz_2 = strb_01.sputn(str_tmp.c_str(), str_tmp.size());
   strb_01.pubseekoff(0, std::ios_base::end);
   strb_01.sputc('<');
   str_tmp = strb_01.str();

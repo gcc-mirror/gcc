@@ -1,5 +1,10 @@
 2015-09-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/67583
+	* testsuite/27_io/basic_stringbuf/seekoff/char/1.cc: Fix sputn call
+	with mismatched arguments.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/1.cc: Likewise.
+
 	PR libstdc++/65393
 	* config/abi/pre/gnu.ver: Export new symbols.
 	* include/std/thread (thread::_State, thread::_State_impl): New types.
