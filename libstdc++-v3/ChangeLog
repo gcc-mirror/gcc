@@ -1,3 +1,20 @@
+2015-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65393
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* include/std/thread (thread::_State, thread::_State_impl): New types.
+	(thread::_M_start_thread): Add overload taking unique_ptr<_State>.
+	(thread::_M_make_routine): Remove.
+	(thread::_S_make_state): Add.
+	(thread::_Impl_base, thread::_Impl, thread::_M_start_thread)
+	[_GLIBCXX_THREAD_ABI_COMPAT] Only declare conditionally.
+	* src/c++11/thread.cc (execute_native_thread_routine): Rename to
+	execute_native_thread_routine_compat and re-define to use _State.
+	(thread::_State::~_State()): Define.
+	(thread::_M_make_thread): Define new overload.
+	(thread::_M_make_thread) [_GLIBCXX_THREAD_ABI_COMPAT]: Only define old
+	overloads conditionally.
+
 2015-09-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/condition_variable (condition_variable::wait): Add
