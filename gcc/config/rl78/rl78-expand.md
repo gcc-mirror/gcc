@@ -48,7 +48,7 @@
 	&& ! REG_P (operands[0]))
 	operands[1] = copy_to_mode_reg (QImode, operands[1]);
 
-    if (CONST_INT_P (operands[1]) && ! IN_RANGE (INTVAL (operands[1]), (-1 << 8) + 1, (1 << 8) - 1))
+    if (CONST_INT_P (operands[1]) && ! IN_RANGE (INTVAL (operands[1]), (HOST_WIDE_INT_M1U << 8) + 1, (1 << 8) - 1))
       FAIL;
   }
 )
