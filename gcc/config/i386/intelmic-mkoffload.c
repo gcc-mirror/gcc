@@ -42,8 +42,7 @@ int num_temps = 0;
 const int MAX_NUM_TEMPS = 10;
 const char *temp_files[MAX_NUM_TEMPS];
 
-/* Shows if we should compile binaries for i386 instead of x86-64.  */
-bool target_ilp32 = false;
+enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
 
 /* Delete tempfiles and exit function.  */
 void
@@ -200,10 +199,17 @@ out:
 static void
 compile_for_target (struct obstack *argv_obstack)
 {
-  if (target_ilp32)
-    obstack_ptr_grow (argv_obstack, "-m32");
-  else
-    obstack_ptr_grow (argv_obstack, "-m64");
+  switch (offload_abi)
+    {
+    case OFFLOAD_ABI_LP64:
+      obstack_ptr_grow (argv_obstack, "-m64");
+      break;
+    case OFFLOAD_ABI_ILP32:
+      obstack_ptr_grow (argv_obstack, "-m32");
+      break;
+    default:
+      gcc_unreachable ();
+    }
   obstack_ptr_grow (argv_obstack, NULL);
   char **argv = XOBFINISH (argv_obstack, char **);
 
@@ -379,10 +385,17 @@ generate_host_descr_file (const char *host_compiler)
   new_argv[new_argc++] = "-c";
   new_argv[new_argc++] = "-fPIC";
   new_argv[new_argc++] = "-shared";
-  if (target_ilp32)
-    new_argv[new_argc++] = "-m32";
-  else
-    new_argv[new_argc++] = "-m64";
+  switch (offload_abi)
+    {
+    case OFFLOAD_ABI_LP64:
+      new_argv[new_argc++] = "-m64";
+      break;
+    case OFFLOAD_ABI_ILP32:
+      new_argv[new_argc++] = "-m32";
+      break;
+    default:
+      gcc_unreachable ();
+    }
   new_argv[new_argc++] = src_filename;
   new_argv[new_argc++] = "-o";
   new_argv[new_argc++] = obj_filename;
@@ -442,10 +455,17 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   objcopy_argv[3] = "-I";
   objcopy_argv[4] = "binary";
   objcopy_argv[5] = "-O";
-  if (target_ilp32)
-    objcopy_argv[6] = "elf32-i386";
-  else
-    objcopy_argv[6] = "elf64-x86-64";
+  switch (offload_abi)
+    {
+    case OFFLOAD_ABI_LP64:
+      objcopy_argv[6] = "elf64-x86-64";
+      break;
+    case OFFLOAD_ABI_ILP32:
+      objcopy_argv[6] = "elf32-i386";
+      break;
+    default:
+      gcc_unreachable ();
+    }
   objcopy_argv[7] = target_so_filename;
   objcopy_argv[8] = "--rename-section";
   objcopy_argv[9] = rename_section_opt;
@@ -518,17 +538,22 @@ main (int argc, char **argv)
      passed with @file.  Expand them into argv before processing.  */
   expandargv (&argc, &argv);
 
-  /* Find out whether we should compile binaries for i386 or x86-64.  */
-  for (int i = argc - 1; i > 0; i--)
-    if (strncmp (argv[i], "-foffload-abi=", sizeof ("-foffload-abi=") - 1) == 0)
-      {
-	if (strstr (argv[i], "ilp32"))
-	  target_ilp32 = true;
-	else if (!strstr (argv[i], "lp64"))
-	  fatal_error (input_location,
-		       "unrecognizable argument of option -foffload-abi");
-	break;
-      }
+  /* Scan the argument vector.  */
+  for (int i = 1; i < argc; i++)
+    {
+#define STR "-foffload-abi="
+      if (strncmp (argv[i], STR, strlen (STR)) == 0)
+	{
+	  if (strcmp (argv[i] + strlen (STR), "lp64") == 0)
+	    offload_abi = OFFLOAD_ABI_LP64;
+	  else if (strcmp (argv[i] + strlen (STR), "ilp32") == 0)
+	    offload_abi = OFFLOAD_ABI_ILP32;
+	  else
+	    fatal_error (input_location,
+			 "unrecognizable argument of option " STR);
+	}
+#undef STR
+    }
 
   const char *target_so_filename
     = prepare_target_image (target_compiler, argc, argv);
@@ -541,10 +566,17 @@ main (int argc, char **argv)
   const char *new_argv[9];
   new_argv[new_argc++] = "ld";
   new_argv[new_argc++] = "-m";
-  if (target_ilp32)
-    new_argv[new_argc++] = "elf_i386";
-  else
-    new_argv[new_argc++] = "elf_x86_64";
+  switch (offload_abi)
+    {
+    case OFFLOAD_ABI_LP64:
+      new_argv[new_argc++] = "elf_x86_64";
+      break;
+    case OFFLOAD_ABI_ILP32:
+      new_argv[new_argc++] = "elf_i386";
+      break;
+    default:
+      gcc_unreachable ();
+    }
   new_argv[new_argc++] = "--relocatable";
   new_argv[new_argc++] = host_descr_filename;
   new_argv[new_argc++] = target_so_filename;
