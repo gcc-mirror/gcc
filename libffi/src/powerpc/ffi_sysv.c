@@ -93,7 +93,7 @@ ffi_prep_cif_sysv_core (ffi_cif *cif)
 {
   ffi_type **ptr;
   unsigned bytes;
-  unsigned i, fparg_count = 0, intarg_count = 0;
+  unsigned i, fpr_count = 0, gpr_count = 0, stack_count = 0;
   unsigned flags = cif->flags;
   unsigned struct_copy_size = 0;
   unsigned type = cif->rtype->type;
@@ -155,7 +155,7 @@ ffi_prep_cif_sysv_core (ffi_cif *cif)
 	  flags |= FLAG_RETURNS_SMST;
 	  break;
 	}
-      intarg_count++;
+      gpr_count++;
       flags |= FLAG_RETVAL_REFERENCE;
       /* Fall through.  */
     case FFI_TYPE_VOID:
@@ -182,24 +182,41 @@ ffi_prep_cif_sysv_core (ffi_cif *cif)
 	{
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 	case FFI_TYPE_LONGDOUBLE:
-	  fparg_count++;
-	  /* Fall thru */
+	  if (fpr_count >= NUM_FPR_ARG_REGISTERS - 1)
+	    {
+	      fpr_count = NUM_FPR_ARG_REGISTERS;
+	      /* 8-byte align long doubles.  */
+	      stack_count += stack_count & 1;
+	      stack_count += 4;
+	    }
+	  else
+	    fpr_count += 2;
+#ifdef __NO_FPRS__
+	  return FFI_BAD_ABI;
 #endif
+	  break;
+#endif
+
 	case FFI_TYPE_DOUBLE:
-	  fparg_count++;
-	  /* If this FP arg is going on the stack, it must be
-	     8-byte-aligned.  */
-	  if (fparg_count > NUM_FPR_ARG_REGISTERS
-	      && intarg_count >= NUM_GPR_ARG_REGISTERS
-	      && intarg_count % 2 != 0)
-	    intarg_count++;
+	  if (fpr_count >= NUM_FPR_ARG_REGISTERS)
+	    {
+	      /* 8-byte align doubles.  */
+	      stack_count += stack_count & 1;
+	      stack_count += 2;
+	    }
+	  else
+	    fpr_count += 1;
 #ifdef __NO_FPRS__
 	  return FFI_BAD_ABI;
 #endif
 	  break;
 
 	case FFI_TYPE_FLOAT:
-	  fparg_count++;
+	  if (fpr_count >= NUM_FPR_ARG_REGISTERS)
+	    /* Yes, we don't follow the ABI, but neither does gcc.  */
+	    stack_count += 1;
+	  else
+	    fpr_count += 1;
 #ifdef __NO_FPRS__
 	  return FFI_BAD_ABI;
 #endif
@@ -208,11 +225,13 @@ ffi_prep_cif_sysv_core (ffi_cif *cif)
 	case FFI_TYPE_UINT128:
 	  /* A long double in FFI_LINUX_SOFT_FLOAT can use only a set
 	     of four consecutive gprs. If we do not have enough, we
-	     have to adjust the intarg_count value.  */
-	  if (intarg_count >= NUM_GPR_ARG_REGISTERS - 3
-	      && intarg_count < NUM_GPR_ARG_REGISTERS)
-	    intarg_count = NUM_GPR_ARG_REGISTERS;
-	  intarg_count += 4;
+	     have to adjust the gpr_count value.  */
+	  if (gpr_count >= NUM_GPR_ARG_REGISTERS - 3)
+	    gpr_count = NUM_GPR_ARG_REGISTERS;
+	  if (gpr_count >= NUM_GPR_ARG_REGISTERS)
+	    stack_count += 4;
+	  else
+	    gpr_count += 4;
 	  break;
 
 	case FFI_TYPE_UINT64:
@@ -225,10 +244,14 @@ ffi_prep_cif_sysv_core (ffi_cif *cif)
 	     Also, only certain register pairs can be used for
 	     passing long long int -- specifically (r3,r4), (r5,r6),
 	     (r7,r8), (r9,r10).  */
-	  if (intarg_count == NUM_GPR_ARG_REGISTERS-1
-	      || intarg_count % 2 != 0)
-	    intarg_count++;
-	  intarg_count += 2;
+	  gpr_count += gpr_count & 1;
+	  if (gpr_count >= NUM_GPR_ARG_REGISTERS)
+	    {
+	      stack_count += stack_count & 1;
+	      stack_count += 2;
+	    }
+	  else
+	    gpr_count += 2;
 	  break;
 
 	case FFI_TYPE_STRUCT:
@@ -249,7 +272,10 @@ ffi_prep_cif_sysv_core (ffi_cif *cif)
 	case FFI_TYPE_SINT8:
 	  /* Everything else is passed as a 4-byte word in a GPR, either
 	     the object itself or a pointer to it.  */
-	  intarg_count++;
+	  if (gpr_count >= NUM_GPR_ARG_REGISTERS)
+	    stack_count += 1;
+	  else
+	    gpr_count += 1;
 	  break;
 
 	default:
@@ -257,22 +283,19 @@ ffi_prep_cif_sysv_core (ffi_cif *cif)
 	}
     }
 
-  if (fparg_count != 0)
+  if (fpr_count != 0)
     flags |= FLAG_FP_ARGUMENTS;
-  if (intarg_count > 4)
+  if (gpr_count > 4)
     flags |= FLAG_4_GPR_ARGUMENTS;
   if (struct_copy_size != 0)
     flags |= FLAG_ARG_NEEDS_COPY;
 
   /* Space for the FPR registers, if needed.  */
-  if (fparg_count != 0)
+  if (fpr_count != 0)
     bytes += NUM_FPR_ARG_REGISTERS * sizeof (double);
 
   /* Stack space.  */
-  if (intarg_count > NUM_GPR_ARG_REGISTERS)
-    bytes += (intarg_count - NUM_GPR_ARG_REGISTERS) * sizeof (int);
-  if (fparg_count > NUM_FPR_ARG_REGISTERS)
-    bytes += (fparg_count - NUM_FPR_ARG_REGISTERS) * sizeof (double);
+  bytes += stack_count * sizeof (int);
 
   /* The stack space allocated needs to be a multiple of 16 bytes.  */
   bytes = (bytes + 15) & ~0xF;
@@ -367,13 +390,13 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
   /* 'gpr_base' points at the space for gpr3, and grows upwards as
      we use GPR registers.  */
   valp gpr_base;
-  int intarg_count;
+  valp gpr_end;
 
 #ifndef __NO_FPRS__
   /* 'fpr_base' points at the space for fpr1, and grows upwards as
      we use FPR registers.  */
   valp fpr_base;
-  int fparg_count;
+  valp fpr_end;
 #endif
 
   /* 'copy_space' grows down as we put structures in it.  It should
@@ -405,11 +428,11 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
   unsigned gprvalue;
 
   stacktop.c = (char *) stack + bytes;
-  gpr_base.u = stacktop.u - ASM_NEEDS_REGISTERS - NUM_GPR_ARG_REGISTERS;
-  intarg_count = 0;
+  gpr_end.u = stacktop.u - ASM_NEEDS_REGISTERS;
+  gpr_base.u = gpr_end.u - NUM_GPR_ARG_REGISTERS;
 #ifndef __NO_FPRS__
-  fpr_base.d = gpr_base.d - NUM_FPR_ARG_REGISTERS;
-  fparg_count = 0;
+  fpr_end.d = gpr_base.d;
+  fpr_base.d = fpr_end.d - NUM_FPR_ARG_REGISTERS;
   copy_space.c = ((flags & FLAG_FP_ARGUMENTS) ? fpr_base.c : gpr_base.c);
 #else
   copy_space.c = gpr_base.c;
@@ -425,10 +448,7 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
 
   /* Deal with return values that are actually pass-by-reference.  */
   if (flags & FLAG_RETVAL_REFERENCE)
-    {
-      *gpr_base.u++ = (unsigned long) (char *) ecif->rvalue;
-      intarg_count++;
-    }
+    *gpr_base.u++ = (unsigned) (char *) ecif->rvalue;
 
   /* Now for the arguments.  */
   p_argv.v = ecif->avalue;
@@ -448,14 +468,11 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
 	case FFI_TYPE_LONGDOUBLE:
 	  double_tmp = (*p_argv.d)[0];
 
-	  if (fparg_count >= NUM_FPR_ARG_REGISTERS - 1)
+	  if (fpr_base.d >= fpr_end.d - 1)
 	    {
-	      if (intarg_count >= NUM_GPR_ARG_REGISTERS
-		  && intarg_count % 2 != 0)
-		{
-		  intarg_count++;
-		  next_arg.u++;
-		}
+	      fpr_base.d = fpr_end.d;
+	      if (((next_arg.u - stack) & 1) != 0)
+		next_arg.u += 1;
 	      *next_arg.d = double_tmp;
 	      next_arg.u += 2;
 	      double_tmp = (*p_argv.d)[1];
@@ -468,42 +485,33 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
 	      double_tmp = (*p_argv.d)[1];
 	      *fpr_base.d++ = double_tmp;
 	    }
-
-	  fparg_count += 2;
 	  FFI_ASSERT (flags & FLAG_FP_ARGUMENTS);
 	  break;
 # endif
 	case FFI_TYPE_DOUBLE:
 	  double_tmp = **p_argv.d;
 
-	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
+	  if (fpr_base.d >= fpr_end.d)
 	    {
-	      if (intarg_count >= NUM_GPR_ARG_REGISTERS
-		  && intarg_count % 2 != 0)
-		{
-		  intarg_count++;
-		  next_arg.u++;
-		}
+	      if (((next_arg.u - stack) & 1) != 0)
+		next_arg.u += 1;
 	      *next_arg.d = double_tmp;
 	      next_arg.u += 2;
 	    }
 	  else
 	    *fpr_base.d++ = double_tmp;
-	  fparg_count++;
 	  FFI_ASSERT (flags & FLAG_FP_ARGUMENTS);
 	  break;
 
 	case FFI_TYPE_FLOAT:
 	  double_tmp = **p_argv.f;
-	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
+	  if (fpr_base.d >= fpr_end.d)
 	    {
 	      *next_arg.f = (float) double_tmp;
 	      next_arg.u += 1;
-	      intarg_count++;
 	    }
 	  else
 	    *fpr_base.d++ = double_tmp;
-	  fparg_count++;
 	  FFI_ASSERT (flags & FLAG_FP_ARGUMENTS);
 	  break;
 #endif /* have FPRs */
@@ -513,42 +521,34 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
 	     is passed in four consecutive GPRs if available.  A maximum of 2
 	     long doubles can be passed in gprs.  If we do not have 4 GPRs
 	     left, the long double is passed on the stack, 4-byte aligned.  */
-	  {
-	    unsigned int int_tmp;
-	    unsigned int ii;
-	    if (intarg_count >= NUM_GPR_ARG_REGISTERS - 3)
-	      {
-		if (intarg_count < NUM_GPR_ARG_REGISTERS)
-		  intarg_count = NUM_GPR_ARG_REGISTERS;
-		for (ii = 0; ii < 4; ii++)
-		  {
-		    int_tmp = (*p_argv.ui)[ii];
-		    *next_arg.u++ = int_tmp;
-		  }
-	      }
-	    else
-	      {
-		for (ii = 0; ii < 4; ii++)
-		  {
-		    int_tmp = (*p_argv.ui)[ii];
-		    *gpr_base.u++ = int_tmp;
-		  }
-	      }
-	    intarg_count += 4;
-	    break;
-	  }
+	  if (gpr_base.u >= gpr_end.u - 3)
+	    {
+	      unsigned int ii;
+	      gpr_base.u = gpr_end.u;
+	      for (ii = 0; ii < 4; ii++)
+		{
+		  unsigned int int_tmp = (*p_argv.ui)[ii];
+		  *next_arg.u++ = int_tmp;
+		}
+	    }
+	  else
+	    {
+	      unsigned int ii;
+	      for (ii = 0; ii < 4; ii++)
+		{
+		  unsigned int int_tmp = (*p_argv.ui)[ii];
+		  *gpr_base.u++ = int_tmp;
+		}
+	    }
+	  break;
 
 	case FFI_TYPE_UINT64:
 	case FFI_TYPE_SINT64:
-	  if (intarg_count == NUM_GPR_ARG_REGISTERS-1)
-	    intarg_count++;
-	  if (intarg_count >= NUM_GPR_ARG_REGISTERS)
+	  if (gpr_base.u >= gpr_end.u - 1)
 	    {
-	      if (intarg_count % 2 != 0)
-		{
-		  intarg_count++;
-		  next_arg.u++;
-		}
+	      gpr_base.u = gpr_end.u;
+	      if (((next_arg.u - stack) & 1) != 0)
+		next_arg.u++;
 	      *next_arg.ll = **p_argv.ll;
 	      next_arg.u += 2;
 	    }
@@ -559,14 +559,10 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
 		 (r5,r6), (r7,r8), (r9,r10).  If next arg is long long
 		 but not correct starting register of pair then skip
 		 until the proper starting register.  */
-	      if (intarg_count % 2 != 0)
-		{
-		  intarg_count ++;
-		  gpr_base.u++;
-		}
+	      if (((gpr_end.u - gpr_base.u) & 1) != 0)
+		gpr_base.u++;
 	      *gpr_base.ll++ = **p_argv.ll;
 	    }
-	  intarg_count += 2;
 	  break;
 
 	case FFI_TYPE_STRUCT:
@@ -601,29 +597,22 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
 	  gprvalue = **p_argv.ui;
 
 	putgpr:
-	  if (intarg_count >= NUM_GPR_ARG_REGISTERS)
+	  if (gpr_base.u >= gpr_end.u)
 	    *next_arg.u++ = gprvalue;
 	  else
 	    *gpr_base.u++ = gprvalue;
-	  intarg_count++;
 	  break;
 	}
     }
 
   /* Check that we didn't overrun the stack...  */
   FFI_ASSERT (copy_space.c >= next_arg.c);
-  FFI_ASSERT (gpr_base.u <= stacktop.u - ASM_NEEDS_REGISTERS);
-  /* The assert below is testing that the number of integer arguments agrees
-     with the number found in ffi_prep_cif_machdep().  However, intarg_count
-     is incremented whenever we place an FP arg on the stack, so account for
-     that before our assert test.  */
+  FFI_ASSERT (gpr_base.u <= gpr_end.u);
 #ifndef __NO_FPRS__
-  if (fparg_count > NUM_FPR_ARG_REGISTERS)
-    intarg_count -= fparg_count - NUM_FPR_ARG_REGISTERS;
-  FFI_ASSERT (fpr_base.u
-	      <= stacktop.u - ASM_NEEDS_REGISTERS - NUM_GPR_ARG_REGISTERS);
+  FFI_ASSERT (fpr_base.u <= fpr_end.u);
 #endif
-  FFI_ASSERT (flags & FLAG_4_GPR_ARGUMENTS || intarg_count <= 4);
+  FFI_ASSERT (((flags & FLAG_4_GPR_ARGUMENTS) != 0)
+	      == (gpr_end.u - gpr_base.u < 4));
 }
 
 #define MIN_CACHE_LINE_SIZE 8
