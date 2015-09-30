@@ -4326,7 +4326,6 @@ LCF0:
 	    [Define if your assembler supports .ref])])
 	;;
     esac
-    ;;
 
     case $target in
       *-*-aix*)
