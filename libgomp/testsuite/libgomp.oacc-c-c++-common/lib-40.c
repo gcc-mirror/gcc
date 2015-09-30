@@ -1,5 +1,6 @@
 /* { dg-do run } */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -20,6 +21,7 @@ main (int argc, char **argv)
       h[i] = i;
     }
 
+  fprintf (stderr, "CheCKpOInT\n");
   d = acc_present_or_copyin (h, 0);
   if (!d)
     abort ();
@@ -39,5 +41,6 @@ main (int argc, char **argv)
   return 0;
 }
 
+/* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
 /* { dg-output "\\\[\[0-9a-fA-FxX\]+,\\\+0\\\] is a bad range" } */
 /* { dg-shouldfail "" } */

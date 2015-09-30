@@ -21,6 +21,7 @@ main (int argc, char **argv)
     d = (float *) acc_malloc (N * sizeof (float));
     acc_map_data (c, d, N * sizeof (float));
 
+    fprintf (stderr, "CheCKpOInT\n");
 #pragma acc data present (a[0:N]) present (c[0:N]) present (b[0:N])
     {
 #pragma acc parallel
@@ -45,5 +46,7 @@ main (int argc, char **argv)
 
     return 0;
 }
+
+/* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
 /* { dg-output "present clause: !acc_is_present" } */
 /* { dg-shouldfail "" } */

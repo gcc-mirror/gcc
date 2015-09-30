@@ -1,5 +1,6 @@
 /* { dg-do run } */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <openacc.h>
 
@@ -21,6 +22,7 @@ main (int argc, char **argv)
 
   acc_copyout (h, N);
 
+  fprintf (stderr, "CheCKpOInT\n");
   acc_copyout (h, N);
 
   free (h);
@@ -28,5 +30,6 @@ main (int argc, char **argv)
   return 0;
 }
 
+/* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
 /* { dg-output "\\\[\[0-9a-fA-FxX\]+,256\\\] is not mapped" } */
 /* { dg-shouldfail "" } */

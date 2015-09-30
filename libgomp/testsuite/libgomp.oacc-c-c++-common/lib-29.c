@@ -1,5 +1,6 @@
 /* { dg-do run } */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <openacc.h>
 
@@ -16,6 +17,7 @@ main (int argc, char **argv)
   if (!d)
     abort ();
 
+  fprintf (stderr, "CheCKpOInT\n");
   acc_delete (h, 0);
 
   free (h);
@@ -23,5 +25,6 @@ main (int argc, char **argv)
   return 0;
 }
 
+/* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
 /* { dg-output "\\\[\[0-9a-fA-FxX\]+,0\\\] is not mapped" } */
 /* { dg-shouldfail "" } */
