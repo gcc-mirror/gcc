@@ -1,3 +1,13 @@
+2015-09-30  Nathan Sidwell  <nathan@codesourcery.com>
+	    Bernd Schmidt <bernds@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (targ_fn_launch): Use GOMP_DIM_MAX.
+	(struct targ_ptx_obj): New.
+	(nvptx_tdata): Move earlier, change data format.
+	(link_ptx): Take targ_ptx_obj ptr and count.  Allow multiple
+	objects.
+	(GOMP_OFFLOAD_load_image): Adjust.
+
 2015-09-30  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/abort-1.c: Add checkpoint.
