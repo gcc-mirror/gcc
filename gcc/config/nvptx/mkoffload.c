@@ -843,39 +843,53 @@ process (FILE *in, FILE *out)
   Token *tok = tokenize (input);
   const char *comma;
   id_map const *id;
+  unsigned obj_count = 0;
+  unsigned ix;
 
   do
     tok = parse_file (tok);
   while (tok->kind);
 
-  fprintf (out, "static const char ptx_code[] = \n");
+  fprintf (out, "static const char ptx_code_%u[] = \n", obj_count++);
   write_stmts (out, rev_stmts (decls));
   write_stmts (out, rev_stmts (vars));
   write_stmts (out, rev_stmts (fns));
   fprintf (out, ";\n\n");
 
+  /* Dump out array of pointers to ptx object strings.  */
+  fprintf (out, "static const struct ptx_obj {\n"
+	   "  const char *code;\n"
+	   "  __SIZE_TYPE__ size;\n"
+	   "} ptx_objs[] = {");
+  for (comma = "", ix = 0; ix != obj_count; comma = ",", ix++)
+    fprintf (out, "%s\n\t{ptx_code_%u, sizeof (ptx_code_%u)}", comma, ix, ix);
+  fprintf (out, "\n};\n\n");
+
+  /* Dump out variable idents.  */
   fprintf (out, "static const char *const var_mappings[] = {");
   for (comma = "", id = var_ids; id; comma = ",", id = id->next)
     fprintf (out, "%s\n\t%s", comma, id->ptx_name);
   fprintf (out, "\n};\n\n");
 
+  /* Dump out function idents.  */
   fprintf (out, "static const struct nvptx_fn {\n"
 	   "  const char *name;\n"
-	   "  unsigned short dim[3];\n"
-	   "} func_mappings[] = {\n");
+	   "  unsigned short dim[%d];\n"
+	   "} func_mappings[] = {\n", GOMP_DIM_MAX);
   for (comma = "", id = func_ids; id; comma = ",", id = id->next)
     fprintf (out, "%s\n\t{%s}", comma, id->ptx_name);
   fprintf (out, "\n};\n\n");
 
   fprintf (out,
 	   "static const struct nvptx_tdata {\n"
-	   "  const char *ptx_src;\n"
+	   "  const struct ptx_obj *ptx_objs;\n"
+	   "  unsigned ptx_num;\n"
 	   "  const char *const *var_names;\n"
-	   "  __SIZE_TYPE__ var_num;\n"
+	   "  unsigned var_num;\n"
 	   "  const struct nvptx_fn *fn_names;\n"
-	   "  __SIZE_TYPE__ fn_num;\n"
+	   "  unsigned fn_num;\n"
 	   "} target_data = {\n"
-	   "  ptx_code,\n"
+	   "  ptx_objs, sizeof (ptx_objs) / sizeof (ptx_objs[0]),\n"
 	   "  var_mappings,"
 	   "  sizeof (var_mappings) / sizeof (var_mappings[0]),\n"
 	   "  func_mappings,"

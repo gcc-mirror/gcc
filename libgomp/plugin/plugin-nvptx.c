@@ -224,8 +224,30 @@ map_push (struct ptx_stream *s, int async, size_t size, void **h, void **d)
 struct targ_fn_launch
 {
   const char *fn;
-  unsigned short dim[3];
+  unsigned short dim[GOMP_DIM_MAX];
 };
+
+/* Target PTX object information.  */
+
+struct targ_ptx_obj
+{
+  const char *code;
+  size_t size;
+};
+
+/* Target data image information.  */
+
+typedef struct nvptx_tdata
+{
+  const struct targ_ptx_obj *ptx_objs;
+  unsigned ptx_num;
+
+  const char *const *var_names;
+  unsigned var_num;
+
+  const struct targ_fn_launch *fn_descs;
+  unsigned fn_num;
+} nvptx_tdata_t;
 
 /* Descriptor of a loaded function.  */
 
@@ -688,7 +710,8 @@ nvptx_get_num_devices (void)
 
 
 static void
-link_ptx (CUmodule *module, const char *ptx_code)
+link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
+	  unsigned num_objs)
 {
   CUjit_option opts[7];
   void *optvals[7];
@@ -701,8 +724,6 @@ link_ptx (CUmodule *module, const char *ptx_code)
   CUresult r;
   void *linkout;
   size_t linkoutsize __attribute__ ((unused));
-
-  GOMP_PLUGIN_debug (0, "attempting to load:\n---\n%s\n---\n", ptx_code);
 
   opts[0] = CU_JIT_WALL_TIME;
   optvals[0] = &elapsed;
@@ -758,25 +779,37 @@ link_ptx (CUmodule *module, const char *ptx_code)
 			 cuda_error (r));
     }
 
-  /* cuLinkAddData's 'data' argument erroneously omits the const qualifier.  */
-  r = cuLinkAddData (linkstate, CU_JIT_INPUT_PTX, (char *)ptx_code,
-              strlen (ptx_code) + 1, 0, 0, 0, 0);
-  if (r != CUDA_SUCCESS)
+  for (; num_objs--; ptx_objs++)
     {
-      GOMP_PLUGIN_error ("Link error log %s\n", &elog[0]);
-      GOMP_PLUGIN_fatal ("cuLinkAddData (ptx_code) error: %s", cuda_error (r));
+      /* cuLinkAddData's 'data' argument erroneously omits the const
+	 qualifier.  */
+      GOMP_PLUGIN_debug (0, "Loading:\n---\n%s\n---\n", ptx_objs->code);
+      r = cuLinkAddData (linkstate, CU_JIT_INPUT_PTX, (char*)ptx_objs->code,
+			 ptx_objs->size, 0, 0, 0, 0);
+      if (r != CUDA_SUCCESS)
+	{
+	  GOMP_PLUGIN_error ("Link error log %s\n", &elog[0]);
+	  GOMP_PLUGIN_fatal ("cuLinkAddData (ptx_code) error: %s",
+			     cuda_error (r));
+	}
     }
 
+  GOMP_PLUGIN_debug (0, "Linking\n");
   r = cuLinkComplete (linkstate, &linkout, &linkoutsize);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuLinkComplete error: %s", cuda_error (r));
 
   GOMP_PLUGIN_debug (0, "Link complete: %fms\n", elapsed);
   GOMP_PLUGIN_debug (0, "Link log %s\n", &ilog[0]);
 
+  if (r != CUDA_SUCCESS)
+    GOMP_PLUGIN_fatal ("cuLinkComplete error: %s", cuda_error (r));
+
   r = cuModuleLoadData (module, linkout);
   if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuModuleLoadData error: %s", cuda_error (r));
+
+  r = cuLinkDestroy (linkstate);
+  if (r != CUDA_SUCCESS)
+    GOMP_PLUGIN_fatal ("cuLinkDestory error: %s", cuda_error (r));
 }
 
 static void
@@ -1502,19 +1535,6 @@ GOMP_OFFLOAD_fini_device (int n)
   pthread_mutex_unlock (&ptx_dev_lock);
 }
 
-/* Data emitted by mkoffload.  */
-
-typedef struct nvptx_tdata
-{
-  const char *ptx_src;
-
-  const char *const *var_names;
-  size_t var_num;
-
-  const struct targ_fn_launch *fn_descs;
-  size_t fn_num;
-} nvptx_tdata_t;
-
 /* Return the libgomp version number we're compatible with.  There is
    no requirement for cross-version compatibility.  */
 
@@ -1553,7 +1573,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   
   nvptx_attach_host_thread_to_device (ord);
 
-  link_ptx (&module, img_header->ptx_src);
+  link_ptx (&module, img_header->ptx_objs, img_header->ptx_num);
 
   /* The mkoffload utility emits a struct of pointers/integers at the
      start of each offload image.  The array of kernel names and the
