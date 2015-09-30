@@ -1,3 +1,8 @@
+2015-09-30  Thomas Schwinge  <thomas@codesourcery.com>
+	    Ulrich Drepper  <drepper@gmail.com>
+
+	* jit-builtins.h: Undefine DEF_FUNCTION_TYPE_VAR_6 after use.
+
 2015-09-30  Matthias Klose  <doko@ubuntu.com>
 
 	* jit-builtins.h Define DEF_FUNCTION_TYPE_VAR_6,
