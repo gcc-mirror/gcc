@@ -685,6 +685,8 @@ compile_offload_image (const char *target, const char *compiler_path,
       struct obstack argv_obstack;
       obstack_init (&argv_obstack);
       obstack_ptr_grow (&argv_obstack, compiler);
+      if (verbose)
+	obstack_ptr_grow (&argv_obstack, "-v");
       obstack_ptr_grow (&argv_obstack, "-o");
       obstack_ptr_grow (&argv_obstack, filename);
 

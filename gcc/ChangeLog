@@ -1,4 +1,14 @@
 2015-09-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/i386/intelmic-mkoffload.c (main): Parse "-v" flag.
+	(generate_target_descr_file, generate_target_offloadend_file)
+	(generate_host_descr_file, prepare_target_image, main): Pass it
+	on.
+	* config/nvptx/mkoffload.c (main): Parse "-v" flag.
+	(compile_native, main): Pass it on.
+	* lto-wrapper.c (compile_offload_image): Likewise.
+
+2015-09-30  Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
 	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
 
