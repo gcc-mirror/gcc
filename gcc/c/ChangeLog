@@ -1,3 +1,9 @@
+2015-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67730
+	* c-typeck.c (c_finish_return): Use the expansion point location for
+	certain "return with value" warnings.
+
 2015-09-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c-parser.c (pragma_lex): Add loc argument.
