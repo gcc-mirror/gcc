@@ -2247,6 +2247,42 @@ if test x$gcc_cv_ld != x; then
 fi
 AC_MSG_RESULT($ld_is_gold)
 
+AC_MSG_CHECKING(gold linker with split stack support as non default)
+# Check to see if default ld is not gold, but gold is
+# available and has support for split stack.  If gcc was configured
+# with gold then no checking is done.
+# 
+if test x$ld_is_gold = xno && which ${gcc_cv_ld}.gold >/dev/null 2>&1; then
+
+# For platforms other than powerpc64*, enable as appropriate.
+
+  gold_non_default=no
+  ld_gold=`which ${gcc_cv_ld}.gold`
+# Make sure this gold has minimal split stack support
+  if $ld_gold --help 2>/dev/null | grep split-stack-adjust-size >/dev/null 2>&1; then
+    ld_vers=`$ld_gold --version | sed 1q`
+    gold_vers=`echo $ld_vers | sed -n \
+          -e 's,^[[^)]]*[[  ]]\([[0-9]][[0-9]]*\.[[0-9]][[0-9]]*[[^)]]*\)) .*$,\1,p'`
+    case $target in
+# check that the gold version contains the complete split stack support
+# on powerpc64 big and little endian
+      powerpc64*-*-*)
+        case "$gold_vers" in
+          2.25.[[1-9]]*|2.2[[6-9]][[.0-9]]*|2.[[3-9]][[.0-9]]*|[[3-9]].[[.0-9]]*) gold_non_default=yes
+          ;;
+          *) gold_non_default=no
+          ;;
+        esac
+        ;;
+    esac
+  fi
+  if test $gold_non_default = yes; then
+    AC_DEFINE(HAVE_GOLD_NON_DEFAULT_SPLIT_STACK, 1,
+    	    [Define if the gold linker supports split stack and is available as a non-default])
+  fi
+fi
+AC_MSG_RESULT($gold_non_default)
+
 ORIGINAL_LD_FOR_TARGET=$gcc_cv_ld
 AC_SUBST(ORIGINAL_LD_FOR_TARGET)
 case "$ORIGINAL_LD_FOR_TARGET" in

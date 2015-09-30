@@ -940,6 +940,14 @@ ncrtn.o%s"
 #undef TARGET_ASAN_SHADOW_OFFSET
 #define TARGET_ASAN_SHADOW_OFFSET rs6000_asan_shadow_offset
 
+/* On ppc64 and ppc64le, split stack is only support for
+   64 bit. */
+#undef TARGET_CAN_SPLIT_STACK_64BIT
+#if TARGET_GLIBC_MAJOR > 2 \
+  || (TARGET_GLIBC_MAJOR == 2 && TARGET_GLIBC_MINOR >= 18)
+#define TARGET_CAN_SPLIT_STACK_64BIT
+#endif
+
 /* This target uses the sysv4.opt file.  */
 #define TARGET_USES_SYSV4_OPT 1
 
