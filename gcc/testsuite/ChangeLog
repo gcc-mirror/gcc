@@ -6,6 +6,9 @@
 	PR tree-optimization/67690
 	* gcc.dg/torture/pr67690.c: New test.
 
+	PR c/67730
+	* gcc.dg/pr67730.c: New test.
+
 2015-09-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline

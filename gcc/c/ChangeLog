@@ -1,3 +1,12 @@
+2015-09-30  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2015-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67730
+	* c-typeck.c (c_finish_return): Use the expansion point location for
+	certain "return with value" warnings.
+
 2015-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/67502
