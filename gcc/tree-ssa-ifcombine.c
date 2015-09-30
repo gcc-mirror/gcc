@@ -769,16 +769,7 @@ pass_tree_ifcombine::execute (function *fun)
 	  {
 	    /* Clear range info from all stmts in BB which is now executed
 	       conditional on a always true/false condition.  */
-	    for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
-		 !gsi_end_p (gsi); gsi_next (&gsi))
-	      {
-		gimple *stmt = gsi_stmt (gsi);
-		ssa_op_iter i;
-		tree op;
-		FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF)
-		  reset_flow_sensitive_info (op);
-	      }
-
+	    reset_flow_sensitive_info_in_bb (bb);
 	    cfg_changed |= true;
 	  }
     }

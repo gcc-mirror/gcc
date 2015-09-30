@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "hard-reg-set.h"
 #include "ssa.h"
 #include "alias.h"
@@ -544,6 +545,29 @@ reset_flow_sensitive_info (tree name)
     SSA_NAME_RANGE_INFO (name) = NULL;
 }
 
+/* Clear all flow sensitive data from all statements and PHI definitions
+   in BB.  */
+
+void
+reset_flow_sensitive_info_in_bb (basic_block bb)
+{
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      ssa_op_iter i;
+      tree op;
+      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF)
+	reset_flow_sensitive_info (op);
+    }
+
+  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      tree phi_def = gimple_phi_result (gsi.phi ());
+      reset_flow_sensitive_info (phi_def);
+    }
+}
 
 /* Release all the SSA_NAMEs created by STMT.  */
 
