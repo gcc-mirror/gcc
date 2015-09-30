@@ -1,3 +1,14 @@
+2015-09-30  François Dumont  <fdumont@gcc.gnu.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/gnu/messages_members.cc (Catalog_info, Catalogs):
+	Move...
+	* config/locale/gnu/c++locale_internal.h: ...here in std namespace.
+	* config/locale/gnu/c_locale.cc: Move implementation of latter here.
+	* src/c++98/Makefile.am: Compile c++locale.cc with -fimplicit-templates.
+	* src/c++98/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Adjust.
+
 2015-09-30  Matthias Klose  <doko@ubuntu.com>
 
 	* config/cpu/alpha, config/cpu/ia64: Remove empty directories.

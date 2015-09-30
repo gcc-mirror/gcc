@@ -31,8 +31,11 @@
 #include <locale>
 #include <stdexcept>
 #include <limits>
+#include <algorithm>
 #include <langinfo.h>
 #include <bits/c++locale_internal.h>
+
+#include <backward/auto_ptr.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -168,6 +171,85 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  "newlocale error"));
       }
     return __changed;
+  }
+
+  struct _CatalogIdComp
+  {
+    bool
+    operator()(messages_base::catalog __cat, const Catalog_info* __info) const
+    { return __cat < __info->_M_id; }
+
+    bool
+    operator()(const Catalog_info* __info, messages_base::catalog __cat) const
+    { return __info->_M_id < __cat; }
+  };
+
+  Catalogs::~Catalogs()
+  {
+    for (vector<Catalog_info*>::iterator __it = _M_infos.begin();
+	 __it != _M_infos.end(); ++__it)
+      delete *__it;
+  }
+
+  messages_base::catalog
+  Catalogs::_M_add(const char* __domain, locale __l)
+  {
+    __gnu_cxx::__scoped_lock lock(_M_mutex);
+
+    // The counter is not likely to roll unless catalogs keep on being
+    // opened/closed which is consider as an application mistake for the
+    // moment.
+    if (_M_catalog_counter == numeric_limits<messages_base::catalog>::max())
+      return -1;
+
+    auto_ptr<Catalog_info> info(new Catalog_info(_M_catalog_counter++,
+						 __domain, __l));
+
+    // Check if we managed to allocate memory for domain.
+    if (!info->_M_domain)
+      return -1;
+
+    _M_infos.push_back(info.get());
+    return info.release()->_M_id;
+  }
+
+  void
+  Catalogs::_M_erase(messages_base::catalog __c)
+  {
+    __gnu_cxx::__scoped_lock lock(_M_mutex);
+
+    vector<Catalog_info*>::iterator __res =
+      lower_bound(_M_infos.begin(), _M_infos.end(), __c, _CatalogIdComp());
+    if (__res == _M_infos.end() || (*__res)->_M_id != __c)
+      return;
+
+    delete *__res;
+    _M_infos.erase(__res);
+
+    // Just in case closed catalog was the last open.
+    if (__c == _M_catalog_counter - 1)
+      --_M_catalog_counter;
+  }
+
+  const Catalog_info*
+  Catalogs::_M_get(messages_base::catalog __c) const
+  {
+    __gnu_cxx::__scoped_lock lock(_M_mutex);
+
+    vector<Catalog_info*>::const_iterator __res =
+      lower_bound(_M_infos.begin(), _M_infos.end(), __c, _CatalogIdComp());
+
+    if (__res != _M_infos.end() && (*__res)->_M_id == __c)
+      return *__res;
+
+    return 0;
+  }
+
+  Catalogs&
+  get_catalogs()
+  {
+    static Catalogs __catalogs;
+    return __catalogs;
   }
 
 _GLIBCXX_END_NAMESPACE_VERSION
