@@ -148,6 +148,7 @@ along with GCC; see the file COPYING3.  If not see
   INSERT_PASSES_AFTER (all_passes)
   NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_lower_eh_dispatch);
+  NEXT_PASS (pass_oacc_device_lower);
   NEXT_PASS (pass_all_optimizations);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations)
       NEXT_PASS (pass_remove_cgraph_callee_edges);

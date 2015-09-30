@@ -1639,6 +1639,27 @@ int, (struct cgraph_node *), NULL)
 
 HOOK_VECTOR_END (simd_clone)
 
+/* Functions relating to openacc.  */
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_GOACC_"
+HOOK_VECTOR (TARGET_GOACC, goacc)
+
+DEFHOOK
+(validate_dims,
+"This hook should check the launch dimensions provided for an OpenACC\n\
+compute region, or routine.  Defaulted values are represented as -1\n\
+and non-constant values as 0. The @var{fn_level} is negative for the\n\
+function corresponding to the compute region.  For a routine is is the\n\
+outermost level at which partitioned execution may be spawned.  It\n\
+should fill in anything that needs to default to non-unity and verify\n\
+non-defaults.  Diagnostics should be issued as appropriate.  Return\n\
+true, if changes have been made.  You must override this hook to\n\
+provide dimensions larger than 1.",
+bool, (tree decl, int dims[], int fn_level),
+default_goacc_validate_dims)
+
+HOOK_VECTOR_END (goacc)
+
 /* Functions relating to vectorization.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_VECTORIZE_"
