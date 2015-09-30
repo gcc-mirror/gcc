@@ -27,6 +27,7 @@ main (int argc, char **argv)
     d = (float *) acc_malloc (N * sizeof (float));
     acc_map_data (c, d, N * sizeof (float));
 
+    fprintf (stderr, "CheCKpOInT\n");
 #pragma acc parallel copyin (a[0:N]) present_or_create (c[0:N+1]) copyout (b[0:N])
     {
         int ii;
@@ -64,5 +65,7 @@ main (int argc, char **argv)
 
     return 0;
 }
+
+/* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
 /* { dg-output "Trying to map into device \\\[\[0-9a-fA-FxX\]+..\[0-9a-fA-FxX\]+\\\) object when \\\[\[0-9a-fA-FxX\]+..\[0-9a-fA-FxX\]+\\\) is already mapped" } */
 /* { dg-shouldfail "" } */
