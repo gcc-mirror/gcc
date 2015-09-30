@@ -7121,6 +7121,41 @@ spu_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       *code = (int)swap_condition ((enum rtx_code)*code);
     }
 }
+
+/* Expand an atomic fetch-and-operate pattern.  CODE is the binary operation
+   to perform.  MEM is the memory on which to operate.  VAL is the second
+   operand of the binary operator.  BEFORE and AFTER are optional locations to
+   return the value of MEM either before of after the operation.  */
+void
+spu_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
+		      rtx orig_before, rtx orig_after)
+{
+  machine_mode mode = GET_MODE (mem);
+  rtx before = orig_before, after = orig_after;
+
+  if (before == NULL_RTX)
+    before = gen_reg_rtx (mode);
+
+  emit_move_insn (before, mem);
+
+  if (code == MULT)  /* NAND operation */
+    {
+      rtx x = expand_simple_binop (mode, AND, before, val,
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      after = expand_simple_unop (mode, NOT, x, after, 1);
+    }
+  else
+    {
+      after = expand_simple_binop (mode, code, before, val,
+				   after, 1, OPTAB_LIB_WIDEN);
+    }
+
+  emit_move_insn (mem, after);
+
+  if (orig_after && after != orig_after)
+    emit_move_insn (orig_after, after);
+}
+
 
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =

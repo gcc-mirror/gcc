@@ -1,3 +1,15 @@
+2015-09-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu-protos.h (spu_expand_atomic_op): Add prototype.
+	* config/spu/spu.c (spu_expand_atomic_op): New function.
+	* config/spu/spu.md (AINT): New mode iterator.
+	(ATOMIC): New code iterator.
+	(atomic_name, atomic_pred): New code predicates.
+	("atomic_load<mode>", "atomic_store<mode>"): New expanders.
+	("atomic_compare_and_swap<mode>", "atomic_exchange<mode>"): Likewise.
+	(""atomic_<atomic_name><mode>", "atomic_fetch_<atomic_name><mode>",
+	"atomic_<atomic_name>_fetch<mode>"): Likewise.
+
 2015-09-30  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* config/i386/i386.c (scalar_chain::analyze_register_chain): Ignore
