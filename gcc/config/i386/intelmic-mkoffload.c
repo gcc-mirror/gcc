@@ -281,6 +281,8 @@ generate_target_descr_file (const char *target_compiler)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, target_compiler);
+  if (verbose)
+    obstack_ptr_grow (&argv_obstack, "-v");
   obstack_ptr_grow (&argv_obstack, "-c");
   obstack_ptr_grow (&argv_obstack, "-shared");
   obstack_ptr_grow (&argv_obstack, "-fPIC");
@@ -319,6 +321,8 @@ generate_target_offloadend_file (const char *target_compiler)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, target_compiler);
+  if (verbose)
+    obstack_ptr_grow (&argv_obstack, "-v");
   obstack_ptr_grow (&argv_obstack, "-c");
   obstack_ptr_grow (&argv_obstack, "-shared");
   obstack_ptr_grow (&argv_obstack, "-fPIC");
@@ -382,6 +386,8 @@ generate_host_descr_file (const char *host_compiler)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, host_compiler);
+  if (verbose)
+    obstack_ptr_grow (&argv_obstack, "-v");
   obstack_ptr_grow (&argv_obstack, "-c");
   obstack_ptr_grow (&argv_obstack, "-fPIC");
   obstack_ptr_grow (&argv_obstack, "-shared");
@@ -428,6 +434,8 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, target_compiler);
+  if (verbose)
+    obstack_ptr_grow (&argv_obstack, "-v");
   obstack_ptr_grow (&argv_obstack, "-xlto");
   obstack_ptr_grow (&argv_obstack, "-shared");
   obstack_ptr_grow (&argv_obstack, "-fPIC");
@@ -560,6 +568,8 @@ main (int argc, char **argv)
 			 "unrecognizable argument of option " STR);
 	}
 #undef STR
+      else if (strcmp (argv[i], "-v") == 0)
+	verbose = true;
     }
 
   const char *target_so_filename

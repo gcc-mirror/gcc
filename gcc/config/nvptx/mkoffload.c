@@ -925,6 +925,8 @@ compile_native (const char *infile, const char *outfile, const char *compiler)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, compiler);
+  if (verbose)
+    obstack_ptr_grow (&argv_obstack, "-v");
   switch (offload_abi)
     {
     case OFFLOAD_ABI_LP64:
@@ -1028,11 +1030,15 @@ main (int argc, char **argv)
 			 "unrecognizable argument of option " STR);
 	}
 #undef STR
+      else if (strcmp (argv[i], "-v") == 0)
+	verbose = true;
     }
 
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, driver);
+  if (verbose)
+    obstack_ptr_grow (&argv_obstack, "-v");
   obstack_ptr_grow (&argv_obstack, "-xlto");
   switch (offload_abi)
     {
