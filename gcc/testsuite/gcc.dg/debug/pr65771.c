@@ -1,6 +1,6 @@
 /* PR debug/65771 */
 /* { dg-do link } */
-/* { dg-require-effective-target tls } */
+/* { dg-require-effective-target tls_runtime } */
 /* { dg-add-options tls } */
 
 struct S { int s; int t; };

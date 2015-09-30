@@ -1,3 +1,7 @@
+2015-09-29  Jonathan Roelofs  <jonathan@codesourcery.com>
+
+	* gcc.dg/debug/pr65771.c: Use tls_runtime instead of tls.
+
 2015-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	gfortran.dg/ieee/ieee_4.f90: xfail on i386-*-freebsd*
