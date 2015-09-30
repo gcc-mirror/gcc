@@ -95,6 +95,7 @@ extern tree duplicate_ssa_name_fn (struct function *, tree, gimple);
 extern void duplicate_ssa_name_range_info (tree, enum value_range_type,
 					   struct range_info_def *);
 extern void reset_flow_sensitive_info (tree);
+extern void reset_flow_sensitive_info_in_bb (basic_block);
 extern void release_defs (gimple);
 extern void replace_ssa_name_symbol (tree, tree);
 

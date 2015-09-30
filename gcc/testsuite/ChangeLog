@@ -1,3 +1,11 @@
+2015-09-30  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2015-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/67690
+	* gcc.dg/torture/pr67690.c: New test.
+
 2015-09-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline

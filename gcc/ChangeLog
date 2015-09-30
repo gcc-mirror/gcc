@@ -1,3 +1,17 @@
+2015-09-30  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2015-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/67690
+	* tree-ssa-ifcombine.c (pass_tree_ifcombine::execute): Call
+	reset_flow_sensitive_info_in_bb.
+	* tree-ssa-tail-merge.c: Include "stringpool.h" and "tree-ssanames.h".
+	(replace_block_by): Call reset_flow_sensitive_info_in_bb.
+	* tree-ssanames.c: Include "gimple-iterator.h".
+	(reset_flow_sensitive_info_in_bb): New function.
+	* tree-ssanames.h (reset_flow_sensitive_info_in_bb): Declare.
+
 2015-09-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
