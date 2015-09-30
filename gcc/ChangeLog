@@ -1,3 +1,8 @@
+2015-09-30  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Remove extraneous ;;.
+	* configure: Regenerate.
+
 2015-09-29  James Bowman  <james.bowman@ftdichip.com>
 
 	* config/ft32/predicates.md (ft32_imm_operand): New predicate.
