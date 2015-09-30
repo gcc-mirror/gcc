@@ -1,3 +1,10 @@
+2015-09-30  Matthias Klose  <doko@ubuntu.com>
+
+	* jit-builtins.h Define DEF_FUNCTION_TYPE_VAR_6,
+	remove DEF_FUNCTION_TYPE_VAR_11.
+	* jit-builtins.c (builtins_manager::make_type): Define and handle
+	DEF_FUNCTION_TYPE_VAR_6, remove DEF_FUNCTION_TYPE_VAR_11.
+
 2015-08-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/topics/contexts.rst
