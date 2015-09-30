@@ -5097,3 +5097,150 @@ DONE;
    (set_attr "type" "multi1")]
 )
 
+; Atomic operations
+;
+; SPU execution is always single-threaded, so there is no need for real
+; atomic operations.  We provide the atomic primitives anyway so that
+; code expecting the builtins to be present (like libgfortran) will work.
+
+;; Types that we should provide atomic instructions for.
+(define_mode_iterator AINT [QI HI SI DI TI])
+
+(define_code_iterator ATOMIC [plus minus ior xor and mult])
+(define_code_attr atomic_name
+  [(plus "add") (minus "sub")
+   (ior "or") (xor "xor") (and "and") (mult "nand")])
+(define_code_attr atomic_pred
+  [(plus "spu_arith_operand") (minus "spu_reg_operand")
+   (ior "spu_logical_operand") (xor "spu_logical_operand")
+   (and "spu_logical_operand") (mult "spu_logical_operand")])
+
+(define_expand "atomic_load<mode>"
+  [(set (match_operand:AINT 0 "spu_reg_operand" "")		;; output
+	(match_operand:AINT 1 "memory_operand" ""))		;; memory
+   (use (match_operand:SI 2 "const_int_operand" ""))]		;; model
+  ""
+{
+  if (MEM_ADDR_SPACE (operands[1]))
+    FAIL;
+
+  emit_move_insn (operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "atomic_store<mode>"
+  [(set (match_operand:AINT 0 "memory_operand" "")		;; memory
+	(match_operand:AINT 1 "spu_reg_operand" ""))		;; input
+   (use (match_operand:SI 2 "const_int_operand" ""))]		;; model
+  ""
+{
+  if (MEM_ADDR_SPACE (operands[0]))
+    FAIL;
+
+  emit_move_insn (operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "atomic_compare_and_swap<mode>"
+  [(match_operand:SI 0 "spu_reg_operand" "")		;; bool out
+   (match_operand:AINT 1 "spu_reg_operand" "")		;; val out
+   (match_operand:AINT 2 "memory_operand" "")		;; memory
+   (match_operand:AINT 3 "spu_nonmem_operand" "")	;; expected
+   (match_operand:AINT 4 "spu_nonmem_operand" "")	;; desired
+   (match_operand:SI 5 "const_int_operand" "")		;; is_weak
+   (match_operand:SI 6 "const_int_operand" "")		;; model succ
+   (match_operand:SI 7 "const_int_operand" "")]		;; model fail
+  ""
+{
+  rtx boolval, retval, label;
+
+  if (MEM_ADDR_SPACE (operands[2]))
+    FAIL;
+
+  boolval = gen_reg_rtx (SImode);
+  retval = gen_reg_rtx (<MODE>mode);
+  label = gen_label_rtx ();
+
+  emit_move_insn (retval, operands[2]);
+  emit_move_insn (boolval, const0_rtx);
+
+  emit_cmp_and_jump_insns (retval, operands[3], NE, NULL_RTX,
+                           <MODE>mode, 1, label);
+
+  emit_move_insn (operands[2], operands[4]);
+  emit_move_insn (boolval, const1_rtx);
+
+  emit_label (label);
+
+  emit_move_insn (operands[0], boolval);
+  emit_move_insn (operands[1], retval);
+  DONE;
+})
+
+(define_expand "atomic_exchange<mode>"
+  [(match_operand:AINT 0 "spu_reg_operand" "")		;; output
+   (match_operand:AINT 1 "memory_operand" "")		;; memory
+   (match_operand:AINT 2 "spu_nonmem_operand" "")	;; input
+   (match_operand:SI 3 "const_int_operand" "")]		;; model
+  ""
+{
+  rtx retval;
+
+  if (MEM_ADDR_SPACE (operands[1]))
+    FAIL;
+
+  retval = gen_reg_rtx (<MODE>mode);
+
+  emit_move_insn (retval, operands[1]);
+  emit_move_insn (operands[1], operands[2]);
+  emit_move_insn (operands[0], retval);
+  DONE;
+})
+
+(define_expand "atomic_<atomic_name><mode>"
+  [(ATOMIC:AINT
+     (match_operand:AINT 0 "memory_operand" "")		;; memory
+     (match_operand:AINT 1 "<atomic_pred>" ""))		;; operand
+   (match_operand:SI 2 "const_int_operand" "")]		;; model
+  ""
+{
+  if (MEM_ADDR_SPACE (operands[0]))
+    FAIL;
+
+  spu_expand_atomic_op (<CODE>, operands[0], operands[1],
+			NULL_RTX, NULL_RTX);
+  DONE;
+})
+
+(define_expand "atomic_fetch_<atomic_name><mode>"
+  [(match_operand:AINT 0 "spu_reg_operand" "")		;; output
+   (ATOMIC:AINT
+     (match_operand:AINT 1 "memory_operand" "")		;; memory
+     (match_operand:AINT 2 "<atomic_pred>" ""))		;; operand
+   (match_operand:SI 3 "const_int_operand" "")]		;; model
+  ""
+{ 
+  if (MEM_ADDR_SPACE (operands[1]))
+    FAIL;
+
+  spu_expand_atomic_op (<CODE>, operands[1], operands[2],
+			operands[0], NULL_RTX);
+  DONE;
+})
+
+(define_expand "atomic_<atomic_name>_fetch<mode>"
+  [(match_operand:AINT 0 "spu_reg_operand" "")		;; output
+   (ATOMIC:AINT
+     (match_operand:AINT 1 "memory_operand" "")		;; memory
+     (match_operand:AINT 2 "<atomic_pred>" ""))		;; operand
+   (match_operand:SI 3 "const_int_operand" "")]		;; model
+  ""
+{
+  if (MEM_ADDR_SPACE (operands[1]))
+    FAIL;
+
+  spu_expand_atomic_op (<CODE>, operands[1], operands[2],
+			NULL_RTX, operands[0]);
+  DONE;
+})
+

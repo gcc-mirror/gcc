@@ -5092,6 +5092,8 @@ proc check_effective_target_sync_int_128 { } {
     if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
 	 && ![is-effective-target ia32] } {
 	return 1
+    } elseif { [istarget spu-*-*] } {
+	return 1
     } else {
 	return 0
     }
@@ -5115,6 +5117,8 @@ proc check_effective_target_sync_int_128_runtime { } {
 		}
 	    } ""
 	}]
+    } elseif { [istarget spu-*-*] } {
+	return 1
     } else {
 	return 0
     }
@@ -5129,7 +5133,8 @@ proc check_effective_target_sync_long_long { } {
 	 || [istarget aarch64*-*-*]
 	 || [istarget arm*-*-*]
 	 || [istarget alpha*-*-*]
-	 || ([istarget sparc*-*-*] && [check_effective_target_lp64]) } {
+	 || ([istarget sparc*-*-*] && [check_effective_target_lp64])
+	 || [istarget spu-*-*] } {
 	return 1
     } else {
 	return 0
@@ -5178,6 +5183,8 @@ proc check_effective_target_sync_long_long_runtime { } {
     } elseif { ([istarget sparc*-*-*]
 		 && [check_effective_target_lp64]
 		 && [check_effective_target_ultrasparc_hw]) } {
+	return 1
+    } elseif { [istarget spu-*-*] } {
 	return 1
     } elseif { [istarget powerpc*-*-*] && [check_effective_target_lp64] } {
 	return 1
@@ -5292,6 +5299,7 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget powerpc*-*-*]
 	     || [istarget crisv32-*-*] || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
+	     || [istarget spu-*-*]
 	     || [check_effective_target_mips_llsc] } {
            set et_sync_int_long_saved 1
         }
@@ -5322,6 +5330,7 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget powerpc*-*-*]
 	     || [istarget crisv32-*-*] || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
+	     || [istarget spu-*-*]
 	     || [check_effective_target_mips_llsc] } {
            set et_sync_char_short_saved 1
         }
