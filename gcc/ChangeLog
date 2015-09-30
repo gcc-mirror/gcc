@@ -1,3 +1,17 @@
+2015-09-30  Bernd Schmidt  <bernds@redhat.com>
+
+	* gimple-ssa.h (gimple_df): Add free_ssanames_queue field.
+	* passes.c: Include tree-ssanames.h.
+	(execute_function_todo): Flush the pending free SSA_NAMEs after
+	eliminating unreachable basic blocks.
+	* tree-ssanames.c (FREE_SSANAMES_QUEUE): new.
+	(init_ssanames): Initialize FREE_SSANAMES_QUEUE.
+	(fini_ssanames): Finalize FREE_SSANAMES_QUEUE.
+	(flush_ssanames_freelist): New function.
+	(release_ssaname_fn): Put released names on the queue.
+	(pass_release_ssa_names::execute): Call flush_ssanames_freelist.
+	* tree-ssanames.h (flush_ssanames_freelist): Declare.
+
 2015-09-30  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/i386/intelmic-mkoffload.c (main): Parse "-v" flag.
