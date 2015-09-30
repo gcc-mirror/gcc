@@ -17,6 +17,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* Legacy warning!  Please add no further builtin simplifications here
+   (apart from pure constant folding) - builtin simplifications should go
+   to match.pd or gimple-fold.c instead.  */
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

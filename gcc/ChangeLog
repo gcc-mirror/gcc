@@ -1,3 +1,8 @@
+2015-09-30  Richard Biener  <rguenther@suse.de>
+
+	* builtins.c: Add comment that no new simplifications shouldd
+	be added here.
+
 2015-09-30  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/67690
