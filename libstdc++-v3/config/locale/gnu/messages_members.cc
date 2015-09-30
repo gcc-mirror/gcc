@@ -31,114 +31,12 @@
 #include <locale>
 #include <bits/c++locale_internal.h>
 
-#include <limits>
-#include <algorithm>
-#include <vector>
 #include <cstdlib>	// std::free
 #include <string.h>	// ::strdup
-
-#include <backward/auto_ptr.h>
-#include <ext/concurrence.h>
 
 namespace
 {
   using namespace std;
-
-  typedef messages_base::catalog catalog;
-
-  struct Catalog_info
-    {
-    Catalog_info(catalog __id, const string& __domain, locale __loc)
-      : _M_id(__id), _M_domain(__domain), _M_locale(__loc)
-    { }
-
-    catalog _M_id;
-    string _M_domain;
-    locale _M_locale;
-  };
-
-  class Catalogs
-  {
-  public:
-    Catalogs() : _M_catalog_counter(0) { }
-
-    ~Catalogs()
-    {
-      for (vector<Catalog_info*>::iterator __it = _M_infos.begin();
-	   __it != _M_infos.end(); ++__it)
-	delete *__it;
-    }
-
-    catalog
-    _M_add(const string& __domain, locale __l)
-    {
-      __gnu_cxx::__scoped_lock lock(_M_mutex);
-
-      // The counter is not likely to roll unless catalogs keep on being
-      // opened/closed which is consider as an application mistake for the
-      // moment.
-      if (_M_catalog_counter == numeric_limits<catalog>::max())
-	return -1;
-
-      std::auto_ptr<Catalog_info> info(new Catalog_info(_M_catalog_counter++,
-							__domain, __l));
-      _M_infos.push_back(info.get());
-      return info.release()->_M_id;
-    }
-
-    void
-    _M_erase(catalog __c)
-    {
-      __gnu_cxx::__scoped_lock lock(_M_mutex);
-
-      vector<Catalog_info*>::iterator __res =
-	lower_bound(_M_infos.begin(), _M_infos.end(), __c, _Comp());
-      if (__res == _M_infos.end() || (*__res)->_M_id != __c)
-	return;
-
-      delete *__res;
-      _M_infos.erase(__res);
-
-      // Just in case closed catalog was the last open.
-      if (__c == _M_catalog_counter - 1)
-	--_M_catalog_counter;
-    }
-
-    const Catalog_info*
-    _M_get(catalog __c) const
-    {
-      __gnu_cxx::__scoped_lock lock(_M_mutex);
-
-      vector<Catalog_info*>::const_iterator __res =
-	lower_bound(_M_infos.begin(), _M_infos.end(), __c, _Comp());
-
-      if (__res != _M_infos.end() && (*__res)->_M_id == __c)
-	return *__res;
-
-      return 0;
-    }
-
-  private:
-    struct _Comp
-    {
-      bool operator()(catalog __cat, const Catalog_info* __info) const
-      { return __cat < __info->_M_id; }
-
-      bool operator()(const Catalog_info* __info, catalog __cat) const
-      { return __info->_M_id < __cat; }
-    };
-
-    mutable __gnu_cxx::__mutex _M_mutex;
-    catalog _M_catalog_counter;
-    std::vector<Catalog_info*> _M_infos;
-  };
-
-  Catalogs&
-  get_catalogs()
-  {
-    static Catalogs __catalogs;
-    return __catalogs;
-  }
 
   const char*
   get_glibc_msg(__c_locale __locale_messages __attribute__((unused)),
@@ -180,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bind_textdomain_codeset(__s.c_str(),
 	  __nl_langinfo_l(CODESET, __codecvt._M_c_locale_codecvt));
-      return get_catalogs()._M_add(__s, __l);
+      return get_catalogs()._M_add(__s.c_str(), __l);
     }
 
   template<>
@@ -202,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __dfault;
 
       return get_glibc_msg(_M_c_locale_messages, _M_name_messages,
-			   __cat_info->_M_domain.c_str(),
+			   __cat_info->_M_domain,
 			   __dfault.c_str());
     }
 
@@ -218,7 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bind_textdomain_codeset(__s.c_str(),
 	  __nl_langinfo_l(CODESET, __codecvt._M_c_locale_codecvt));
 
-      return get_catalogs()._M_add(__s, __l);
+      return get_catalogs()._M_add(__s.c_str(), __l);
     }
 
   template<>
@@ -248,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __builtin_memset(&__state, 0, sizeof(mbstate_t));
       {
 	const wchar_t* __wdfault_next;
-	size_t __mb_size = __wdfault.size() * __conv.max_length();;
+	size_t __mb_size = __wdfault.size() * __conv.max_length();
 	char* __dfault =
 	  static_cast<char*>(__builtin_alloca(sizeof(char) * (__mb_size + 1)));
 	char* __dfault_next;
@@ -260,7 +158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// Make sure string passed to dgettext is \0 terminated.
 	*__dfault_next = '\0';
 	__translation = get_glibc_msg(_M_c_locale_messages, _M_name_messages,
-				      __cat_info->_M_domain.c_str(), __dfault);
+				      __cat_info->_M_domain, __dfault);
 
 	// If we end up getting default value back we can simply return original
 	// default value.
