@@ -1534,6 +1534,10 @@ replace_block_by (basic_block bb1, basic_block bb2)
       e2->probability = GCOV_COMPUTE_SCALE (e2->count, out_sum);
     }
 
+  /* Clear range info from all stmts in BB2 -- this transformation
+     could make them out of date.  */
+  reset_flow_sensitive_info_in_bb (bb2);
+
   /* Do updates that use bb1, before deleting bb1.  */
   release_last_vdef (bb1);
   same_succ_flush_bb (bb1);
