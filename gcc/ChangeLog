@@ -1,3 +1,9 @@
+2015-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Don't set
+	r2_setup_needed when TARGET_SINGLE_PIC_BASE.
+	(rs6000_output_mi_thunk): Likewise.
+
 2015-09-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/mkoffload.c (process): Change offload data format.
