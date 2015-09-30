@@ -126,8 +126,7 @@ static id_map *var_ids, **vars_tail = &var_ids;
 static const char *ptx_name;
 static const char *ptx_cfile_name;
 
-/* Shows if we should compile binaries for i386 instead of x86-64.  */
-bool target_ilp32 = false;
+enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
 
 /* Delete tempfiles.  */
 
@@ -926,7 +925,17 @@ compile_native (const char *infile, const char *outfile, const char *compiler)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, compiler);
-  obstack_ptr_grow (&argv_obstack, target_ilp32 ? "-m32" : "-m64");
+  switch (offload_abi)
+    {
+    case OFFLOAD_ABI_LP64:
+      obstack_ptr_grow (&argv_obstack, "-m64");
+      break;
+    case OFFLOAD_ABI_ILP32:
+      obstack_ptr_grow (&argv_obstack, "-m32");
+      break;
+    default:
+      gcc_unreachable ();
+    }
   obstack_ptr_grow (&argv_obstack, infile);
   obstack_ptr_grow (&argv_obstack, "-c");
   obstack_ptr_grow (&argv_obstack, "-o");
@@ -1004,23 +1013,38 @@ main (int argc, char **argv)
      passed with @file.  Expand them into argv before processing.  */
   expandargv (&argc, &argv);
 
-  /* Find out whether we should compile binaries for i386 or x86-64.  */
-  for (int i = argc - 1; i > 0; i--)
-    if (strncmp (argv[i], "-foffload-abi=", sizeof ("-foffload-abi=") - 1) == 0)
-      {
-	if (strstr (argv[i], "ilp32"))
-	  target_ilp32 = true;
-	else if (!strstr (argv[i], "lp64"))
-	  fatal_error (input_location,
-		       "unrecognizable argument of option -foffload-abi");
-	break;
-      }
+  /* Scan the argument vector.  */
+  for (int i = 1; i < argc; i++)
+    {
+#define STR "-foffload-abi="
+      if (strncmp (argv[i], STR, strlen (STR)) == 0)
+	{
+	  if (strcmp (argv[i] + strlen (STR), "lp64") == 0)
+	    offload_abi = OFFLOAD_ABI_LP64;
+	  else if (strcmp (argv[i] + strlen (STR), "ilp32") == 0)
+	    offload_abi = OFFLOAD_ABI_ILP32;
+	  else
+	    fatal_error (input_location,
+			 "unrecognizable argument of option " STR);
+	}
+#undef STR
+    }
 
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, driver);
   obstack_ptr_grow (&argv_obstack, "-xlto");
-  obstack_ptr_grow (&argv_obstack, target_ilp32 ? "-m32" : "-m64");
+  switch (offload_abi)
+    {
+    case OFFLOAD_ABI_LP64:
+      obstack_ptr_grow (&argv_obstack, "-m64");
+      break;
+    case OFFLOAD_ABI_ILP32:
+      obstack_ptr_grow (&argv_obstack, "-m32");
+      break;
+    default:
+      gcc_unreachable ();
+    }
   obstack_ptr_grow (&argv_obstack, "-S");
 
   for (int ix = 1; ix != argc; ix++)
@@ -1039,7 +1063,7 @@ main (int argc, char **argv)
 
   /* PR libgomp/65099: Currently, we only support offloading in 64-bit
      configurations.  */
-  if (!target_ilp32)
+  if (offload_abi == OFFLOAD_ABI_LP64)
     {
       ptx_name = make_temp_file (".mkoffload");
       obstack_ptr_grow (&argv_obstack, "-o");
