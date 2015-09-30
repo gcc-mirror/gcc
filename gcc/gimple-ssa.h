@@ -90,6 +90,9 @@ struct GTY(()) gimple_df {
   /* Free list of SSA_NAMEs.  */
   vec<tree, va_gc> *free_ssanames;
 
+  /* Queue of SSA_NAMEs to be freed at the next opportunity.  */
+  vec<tree, va_gc> *free_ssanames_queue;
+
   /* Hashtable holding definition for symbol.  If this field is not NULL, it
      means that the first reference to this variable in the function is a
      USE or a VUSE.  In those cases, the SSA renamer creates an SSA name

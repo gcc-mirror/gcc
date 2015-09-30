@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgrtl.h"
 #include "tree-ssa-live.h"  /* For remove_unused_locals.  */
 #include "tree-cfgcleanup.h"
+#include "tree-ssanames.h"
 
 using namespace gcc;
 
@@ -1912,6 +1913,14 @@ execute_function_todo (function *fn, void *data)
   if (flags & TODO_cleanup_cfg)
     {
       cleanup_tree_cfg ();
+
+      /* Once unreachable nodes have been removed from the CFG,
+	 there can't be any lingering references to released
+	 SSA_NAMES (because there is no more unreachable code).
+
+	 Thus, now is the time to flush the SSA_NAMEs freelist.  */
+      if (fn->gimple_df)
+	flush_ssaname_freelist ();
 
       /* When cleanup_tree_cfg merges consecutive blocks, it may
 	 perform some simplistic propagation when removing single

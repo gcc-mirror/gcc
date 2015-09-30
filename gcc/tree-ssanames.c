@@ -70,6 +70,7 @@ unsigned int ssa_name_nodes_reused;
 unsigned int ssa_name_nodes_created;
 
 #define FREE_SSANAMES(fun) (fun)->gimple_df->free_ssanames
+#define FREE_SSANAMES_QUEUE(fun) (fun)->gimple_df->free_ssanames_queue
 
 
 /* Initialize management of SSA_NAMEs to default SIZE.  If SIZE is
@@ -92,6 +93,7 @@ init_ssanames (struct function *fn, int size)
      least 50 elements reserved in it.  */
   SSANAMES (fn)->quick_push (NULL_TREE);
   FREE_SSANAMES (fn) = NULL;
+  FREE_SSANAMES_QUEUE (fn) = NULL;
 
   fn->gimple_df->ssa_renaming_needed = 0;
   fn->gimple_df->rename_vops = 0;
@@ -104,6 +106,7 @@ fini_ssanames (void)
 {
   vec_free (SSANAMES (cfun));
   vec_free (FREE_SSANAMES (cfun));
+  vec_free (FREE_SSANAMES_QUEUE (cfun));
 }
 
 /* Dump some simple statistics regarding the re-use of SSA_NAME nodes.  */
@@ -113,6 +116,22 @@ ssanames_print_statistics (void)
 {
   fprintf (stderr, "SSA_NAME nodes allocated: %u\n", ssa_name_nodes_created);
   fprintf (stderr, "SSA_NAME nodes reused: %u\n", ssa_name_nodes_reused);
+}
+
+/* Move all SSA_NAMEs from FREE_SSA_NAMES_QUEUE to FREE_SSA_NAMES.
+
+   We do not, but should have a mode to verify the state of the SSA_NAMEs
+   lists.  In particular at this point every name must be in the IL,
+   on the free list or in the queue.  Anything else is an error.  */
+
+void
+flush_ssaname_freelist (void)
+{
+  while (!vec_safe_is_empty (FREE_SSANAMES_QUEUE (cfun)))
+    {
+      tree t = FREE_SSANAMES_QUEUE (cfun)->pop ();
+      vec_safe_push (FREE_SSANAMES (cfun), t);
+    }
 }
 
 /* Return an SSA_NAME node for variable VAR defined in statement STMT
@@ -349,8 +368,8 @@ release_ssa_name_fn (struct function *fn, tree var)
       /* Note this SSA_NAME is now in the first list.  */
       SSA_NAME_IN_FREE_LIST (var) = 1;
 
-      /* And finally put it on the free list.  */
-      vec_safe_push (FREE_SSANAMES (fn), var);
+      /* And finally queue it so that it will be put on the free list.  */
+      vec_safe_push (FREE_SSANAMES_QUEUE (fn), var);
     }
 }
 
@@ -631,6 +650,7 @@ unsigned int
 pass_release_ssa_names::execute (function *fun)
 {
   unsigned i, j;
+  flush_ssaname_freelist ();
   int n = vec_safe_length (FREE_SSANAMES (fun));
 
   /* Now release the freelist.  */
