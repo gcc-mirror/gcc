@@ -2919,6 +2919,10 @@ scalar_chain::analyze_register_chain (bitmap candidates, df_ref ref)
   for (chain = DF_REF_CHAIN (ref); chain; chain = chain->next)
     {
       unsigned uid = DF_REF_INSN_UID (chain->ref);
+
+      if (!NONDEBUG_INSN_P (DF_REF_INSN (chain->ref)))
+	continue;
+
       if (!DF_REF_REG_MEM_P (chain->ref))
 	{
 	  if (bitmap_bit_p (insns, uid))
@@ -3279,7 +3283,7 @@ scalar_chain::convert_reg (unsigned regno)
 	    bitmap_clear_bit (conv, DF_REF_INSN_UID (ref));
 	  }
       }
-    else
+    else if (NONDEBUG_INSN_P (DF_REF_INSN (ref)))
       {
 	replace_rtx (DF_REF_INSN (ref), reg, scopy);
 	df_insn_rescan (DF_REF_INSN (ref));
