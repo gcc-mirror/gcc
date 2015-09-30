@@ -11,7 +11,7 @@
 	* graphite-poly.h: Removed compute_deps, and extend_schedule.
 
 2015-09-29  Sebastian Pop  <s.pop@samsung.com>
-            Aditya Kumar  <aditya.k7@samsung.com>
+	    Aditya Kumar  <aditya.k7@samsung.com>
 
 	PR tree-optimization/67754
 	* graphite-optimize-isl.c (optimize_isl): Call
@@ -46,31 +46,32 @@
 	(imm->ext_dest_operand splitter): Likewise.
 
 2015-09-29  Sebastian Pop  <s.pop@samsung.com>
-            Aditya Kumar  <aditya.k7@samsung.com>
+	    Aditya Kumar  <aditya.k7@samsung.com>
 
-            * graphite-sese-to-poly.c (gsi_for_phi_node): Remove.
-            (nb_data_writes_in_bb): Remove.
-            (split_pbb): Remove.
-            (split_reduction_stmt): Remove.
-            (is_reduction_operation_p): Remove.
-            (phi_contains_arg): Remove.
-            (follow_ssa_with_commutative_ops): Remove.
-            (detect_commutative_reduction_arg): Remove.
-            (detect_commutative_reduction_assign): Remove.
-            (follow_inital_value_to_phi): Remove.
-            (edge_initial_value_for_loop_phi): Remove.
-            (initial_value_for_loop_phi): Remove.
-            (used_outside_reduction): Remove.
-            (detect_commutative_reduction): Remove.
-            (translate_scalar_reduction_to_array_for_stmt): Remove.
-            (remove_phi): Remove.
-            (dr_indices_valid_in_loop): Remove.
-            (close_phi_written_to_memory): Remove.
-            (translate_scalar_reduction_to_array): Remove.
-            (rewrite_commutative_reductions_out_of_ssa_close_phi): Remove.
-            (rewrite_commutative_reductions_out_of_ssa_loop): Remove.
-            (rewrite_commutative_reductions_out_of_ssa): Remove.
-            (build_poly_scop): Remove call to rewrite_commutative_reductions_out_of_ssa.
+	* graphite-sese-to-poly.c (gsi_for_phi_node): Remove.
+	(nb_data_writes_in_bb): Remove.
+	(split_pbb): Remove.
+	(split_reduction_stmt): Remove.
+	(is_reduction_operation_p): Remove.
+	(phi_contains_arg): Remove.
+	(follow_ssa_with_commutative_ops): Remove.
+	(detect_commutative_reduction_arg): Remove.
+	(detect_commutative_reduction_assign): Remove.
+	(follow_inital_value_to_phi): Remove.
+	(edge_initial_value_for_loop_phi): Remove.
+	(initial_value_for_loop_phi): Remove.
+	(used_outside_reduction): Remove.
+	(detect_commutative_reduction): Remove.
+	(translate_scalar_reduction_to_array_for_stmt): Remove.
+	(remove_phi): Remove.
+	(dr_indices_valid_in_loop): Remove.
+	(close_phi_written_to_memory): Remove.
+	(translate_scalar_reduction_to_array): Remove.
+	(rewrite_commutative_reductions_out_of_ssa_close_phi): Remove.
+	(rewrite_commutative_reductions_out_of_ssa_loop): Remove.
+	(rewrite_commutative_reductions_out_of_ssa): Remove.
+	(build_poly_scop): Remove call to
+	rewrite_commutative_reductions_out_of_ssa.
 
 2015-09-29  Evandro Menezes  <e.menezes@samsung.com>
 
@@ -175,7 +176,7 @@
 	* config/sh/sh.c (sh_override_options_after_change): New.
 	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): Define.
 	(sh_option_override): Move align_loops, align_jumps and
-        align_functions handling into sh_override_options_after_change.
+	align_functions handling into sh_override_options_after_change.
 
 2015-09-28  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -196,12 +197,12 @@
 	* omp-builtins.def (BUILT_IN_GOACC_PARALLEL): Change target fn name.
 
 2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
-            Sebastian Pop  <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	* sese.c (invariant_in_sese_p_rec): Remove unused variable.
 
 2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
-            Sebastian Pop  <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	* graphite-optimize-isl.c (optimize_isl): Use ISL_SCHEDULE_FUSE_MAX.
 	* graphite-scop-detection.c (struct sese_l): New type.
@@ -231,8 +232,7 @@
 	(mark_exit_edges): Deleted.
 	(create_sese_edges): Deleted.
 	(build_graphite_scops): Deleted.
-	(canonicalize_loop_closed_ssa): Recompute all dominators at the
-	end.
+	(canonicalize_loop_closed_ssa): Recompute all dominators at the end.
 	(build_scops): Use the new scop_builder to build scops.
 	(dot_all_scops_1): Use the new pretty printer.  Print loop father
 	as well.
@@ -263,8 +263,7 @@
 	constitute a valid SCoP.
 	(region_has_one_loop): Returns true of a region has only one loop.
 	(add_scop): Add SCoP to the list of valid scops.  Removes an
-	already existing scop if it intersects with or subsumed by this
-	one.
+	already existing scop if it intersects with or subsumed by this one.
 	(harmful_stmt_in_region): Returns true if SCoP has any statment
 	which cannot be represented by Graphite.
 	(subsumes): Returns true of SCoP S1 subsumes SCoP S2.
@@ -272,8 +271,7 @@
 	SCoPs, if subsumed by S1.
 	(intersects): Return true if region bounded by SCoPs S1 and S2
 	intersect.
-	(remove_intersecting_scops): Remove any SCoP which intersects with
-	S1.
+	(remove_intersecting_scops): Remove any SCoP which intersects with S1.
 	* graphite.c (print_graphite_scop_statistics):
 	(print_graphite_statistics): Print SCoP info while debugging.
 	(graphite_initialize): Early exit in case number of loops in a
@@ -287,7 +285,7 @@
 	loops.
 
 2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
-            Sebastian Pop  <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	PR tree-optimization/67700
 	* graphite-sese-to-poly.c (parameter_index_in_region): Call
@@ -299,8 +297,7 @@
 
 2015-09-28  David Wohlferd  <dw@LimeGreenSocks.com>
 
-        * doc/extend.texi (Asm Labels): Break out text for data vs
-	functions.
+	* doc/extend.texi (Asm Labels): Break out text for data vs functions.
 
 2015-09-28  Jiong Wang  <jiong.wang@arm.com>
 
@@ -388,7 +385,7 @@
 	without FPU.
 	(untyped_return): Do not load %f0 for a target without FPU.
 
-2015-09-28  Andrew Pinski  <apinski@cavium.com>    
+2015-09-28  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.md (prefetch):
 	Change the predicate of operand 0 to register_operand.
