@@ -14020,4 +14020,146 @@ omp_finish_file (void)
     }
 }
 
+/* Validate and update the dimensions for offloaded FN.  ATTRS is the
+   raw attribute.  DIMS is an array of dimensions, which is returned.
+   Returns the function level dimensionality --  the level at which an
+   offload routine wishes to partition a loop.  */
+
+static int
+oacc_validate_dims (tree fn, tree attrs, int *dims)
+{
+  tree purpose[GOMP_DIM_MAX];
+  unsigned ix;
+  tree pos = TREE_VALUE (attrs);
+  int fn_level = -1;
+
+  /* Make sure the attribute creator attached the dimension
+     information.  */
+  gcc_assert (pos);
+
+  for (ix = 0; ix != GOMP_DIM_MAX; ix++)
+    {
+      purpose[ix] = TREE_PURPOSE (pos);
+
+      if (purpose[ix])
+	{
+	  if (integer_zerop (purpose[ix]))
+	    fn_level = ix + 1;
+	  else if (fn_level < 0)
+	    fn_level = ix;
+	}
+
+      tree val = TREE_VALUE (pos);
+      dims[ix] = val ? TREE_INT_CST_LOW (val) : -1;
+      pos = TREE_CHAIN (pos);
+    }
+
+  bool changed = targetm.goacc.validate_dims (fn, dims, fn_level);
+
+  /* Default anything left to 1.  */
+  for (ix = 0; ix != GOMP_DIM_MAX; ix++)
+    if (dims[ix] < 0)
+      {
+	dims[ix] = 1;
+	changed = true;
+      }
+
+  if (changed)
+    {
+      /* Replace the attribute with new values.  */
+      pos = NULL_TREE;
+      for (ix = GOMP_DIM_MAX; ix--;)
+	pos = tree_cons (purpose[ix],
+			 build_int_cst (integer_type_node, dims[ix]),
+			 pos);
+      replace_oacc_fn_attrib (fn, pos);
+    }
+
+  return fn_level;
+}
+
+/* Main entry point for oacc transformations which run on the device
+   compiler after LTO, so we know what the target device is at this
+   point (including the host fallback).  */
+
+static unsigned int
+execute_oacc_device_lower ()
+{
+  tree attrs = get_oacc_fn_attrib (current_function_decl);
+  int dims[GOMP_DIM_MAX];
+  
+  if (!attrs)
+    /* Not an offloaded function.  */
+    return 0;
+
+  oacc_validate_dims (current_function_decl, attrs, dims);
+  
+  return 0;
+}
+
+/* Default launch dimension validator.  Force everything to 1.  A
+   backend that wants to provide larger dimensions must override this
+   hook.  */
+
+bool
+default_goacc_validate_dims (tree ARG_UNUSED (decl), int *dims,
+			     int ARG_UNUSED (fn_level))
+{
+  bool changed = false;
+
+  for (unsigned ix = 0; ix != GOMP_DIM_MAX; ix++)
+    {
+      if (dims[ix] != 1)
+	{
+	  dims[ix] = 1;
+	  changed = true;
+	}
+    }
+
+  return changed;
+}
+
+namespace {
+
+const pass_data pass_data_oacc_device_lower =
+{
+  GIMPLE_PASS, /* type */
+  "oaccdevlow", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0 /* Possibly PROP_gimple_eomp.  */, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_update_ssa | TODO_cleanup_cfg, /* todo_flags_finish */
+};
+
+class pass_oacc_device_lower : public gimple_opt_pass
+{
+public:
+  pass_oacc_device_lower (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_oacc_device_lower, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *)
+    {
+      bool gate = (flag_openacc != 0 && !seen_error ());
+
+      if (!gate)
+	return 0;
+
+      return execute_oacc_device_lower ();
+    }
+
+}; // class pass_oacc_transform
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_oacc_device_lower (gcc::context *ctxt)
+{
+  return new pass_oacc_device_lower (ctxt);
+}
+
 #include "gt-omp-low.h"

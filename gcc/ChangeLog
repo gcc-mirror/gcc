@@ -1,3 +1,23 @@
+2015-09-30  Nathan Sidwell  <nathan@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims): New.
+	(TARGET_GOACC_VALIDATE_DIMS): Override.
+	* target.def (TARGET_GOACC): New target hook prefix.
+	(validate_dims): New hook.
+	* targhooks.h (default_goacc_validate_dims): New.
+	* omp-low.c (oacc_validate_dims): New.
+	(execute_oacc_device_lower): New.
+	(default_goacc_validate_dims): New.
+	(pass_data_oacc_device_lower): New.
+	(pass_oacc_device_lower): New pass.
+	(make_pass_oacc_device_lower): New.
+	* tree-pass.h (make_pass_oacc_device_lower): Declare.
+	* passes.def (pass_oacc_device_lower): Add it.
+	* doc/tm.texi: Rebuilt.
+	* doc/tm.texi.in (TARGET_GOACC_VALIDATE_DIMS): Add hook.
+	* doc/invoke.texi (oaccdevlow): Document tree dump flag.
+
 2015-09-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR rtl-optimization/67037

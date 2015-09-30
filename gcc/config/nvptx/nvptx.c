@@ -2141,6 +2141,22 @@ nvptx_file_end (void)
   fputs (func_decls.str().c_str(), asm_out_file);
 }
 
+/* Validate compute dimensions of an OpenACC offload or routine, fill
+   in non-unity defaults.  FN_LEVEL indicates the level at which a
+   routine might spawn a loop.  It is negative for non-routines.  */
+
+static bool
+nvptx_goacc_validate_dims (tree ARG_UNUSED (decl), int *ARG_UNUSED (dims),
+			   int ARG_UNUSED (fn_level))
+{
+  bool changed = false;
+
+  /* TODO: Leave dimensions unaltered.  Partitioned execution needs
+     porting before filtering dimensions makes sense.  */
+
+  return changed;
+}
+
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override
 
@@ -2226,6 +2242,9 @@ nvptx_file_end (void)
 
 #undef TARGET_VECTOR_ALIGNMENT
 #define TARGET_VECTOR_ALIGNMENT nvptx_vector_alignment
+
+#undef TARGET_GOACC_VALIDATE_DIMS
+#define TARGET_GOACC_VALIDATE_DIMS nvptx_goacc_validate_dims
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
