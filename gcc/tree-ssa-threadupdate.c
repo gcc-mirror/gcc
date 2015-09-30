@@ -260,7 +260,7 @@ struct thread_stats_d thread_stats;
    Also remove all outgoing edges except the edge which reaches DEST_BB.
    If DEST_BB is NULL, then remove all outgoing edges.  */
 
-static void
+void
 remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 {
   gimple_stmt_iterator gsi;
@@ -2537,6 +2537,37 @@ valid_jump_thread_path (vec<jump_thread_edge *> *path)
       return false;
 
   return true;
+}
+
+/* Remove any queued jump threads that start at BB.  */
+
+void
+remove_jump_threads_starting_at (basic_block bb)
+{
+  if (!paths.exists ())
+    return;
+
+  for (unsigned i = 0; i < paths.length ();)
+    {
+      vec<jump_thread_edge *> *path = paths[i];
+
+      /* Sadly, FSM jump threads have a slightly different
+	 representation than the rest of the jump threads.  */
+      if ((*path)[0]->type == EDGE_FSM_THREAD
+	  && (*path)[0]->e->src == bb)
+	{
+	  delete_jump_thread_path (path);
+	  paths.unordered_remove (i);
+	}
+      else if ((*path)[0]->type != EDGE_FSM_THREAD
+	       && (*path)[0]->e->dest == bb)
+	{
+	  delete_jump_thread_path (path);
+	  paths.unordered_remove (i);
+	}
+      else
+	i++;
+    }
 }
 
 /* Walk through all blocks and thread incoming edges to the appropriate

@@ -1,3 +1,12 @@
+2015-09-30  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (optimize_stmt): Collapse control flow statements
+	with constant conditions.
+	* tree-ssa-threadupdate.c (remove_jump_threads_starting_at): New.
+	(remove_ctrl_stmt_and_useless_edges): No longer static.
+	* tree-ssa-threadupdate.h (remove_jump_threads_starting_at): Prototype.
+	(remove_ctrl_stmt_and_useless_edges): Likewise.
+
 2015-09-30  Nathan Sidwell  <nathan@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

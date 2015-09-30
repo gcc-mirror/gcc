@@ -1820,31 +1820,8 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
   if (is_gimple_assign (stmt))
     record_equivalences_from_stmt (stmt, may_optimize_p, avail_exprs_stack);
 
-  /* If STMT is a COND_EXPR and it was modified, then we may know
-     where it goes.  If that is the case, then mark the CFG as altered.
-
-     This will cause us to later call remove_unreachable_blocks and
-     cleanup_tree_cfg when it is safe to do so.  It is not safe to
-     clean things up here since removal of edges and such can trigger
-     the removal of PHI nodes, which in turn can release SSA_NAMEs to
-     the manager.
-
-     That's all fine and good, except that once SSA_NAMEs are released
-     to the manager, we must not call create_ssa_name until all references
-     to released SSA_NAMEs have been eliminated.
-
-     All references to the deleted SSA_NAMEs can not be eliminated until
-     we remove unreachable blocks.
-
-     We can not remove unreachable blocks until after we have completed
-     any queued jump threading.
-
-     We can not complete any queued jump threads until we have taken
-     appropriate variables out of SSA form.  Taking variables out of
-     SSA form can call create_ssa_name and thus we lose.
-
-     Ultimately I suspect we're going to need to change the interface
-     into the SSA_NAME manager.  */
+  /* If STMT is a COND_EXPR or SWITCH_EXPR and it was modified, then we may
+     know where it goes.  */
   if (gimple_modified_p (stmt) || modified_p)
     {
       tree val = NULL;
@@ -1858,8 +1835,27 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
       else if (gswitch *swtch_stmt = dyn_cast <gswitch *> (stmt))
 	val = gimple_switch_index (swtch_stmt);
 
-      if (val && TREE_CODE (val) == INTEGER_CST && find_taken_edge (bb, val))
-	cfg_altered = true;
+      if (val && TREE_CODE (val) == INTEGER_CST)
+	{
+	  edge taken_edge = find_taken_edge (bb, val);
+	  if (taken_edge)
+	    {
+	      /* Delete threads that start at BB.  */
+	      remove_jump_threads_starting_at (bb);
+
+	      /* Now clean up the control statement at the end of
+		 BB and remove unexecutable edges.  */
+	      remove_ctrl_stmt_and_useless_edges (bb, taken_edge->dest);
+
+	      /* Fixup the flags on the single remaining edge.  */
+	      taken_edge->flags
+		&= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE | EDGE_ABNORMAL);
+	      taken_edge->flags |= EDGE_FALLTHRU;
+
+	      /* Further simplifications may be possible.  */
+	      cfg_altered = true;
+	    }
+	}
 
       /* If we simplified a statement in such a way as to be shown that it
 	 cannot trap, update the eh information and the cfg to match.  */
