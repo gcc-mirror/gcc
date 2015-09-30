@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "cselib.h"
 #include "ira.h"
+#include "ira-int.h"
 #include "target.h"
 
 #ifdef INSN_SCHEDULING
@@ -2907,7 +2908,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 
       extract_insn (insn);
       preprocess_constraints (insn);
-      ira_implicitly_set_insn_hard_regs (&temp);
+      alternative_mask prefrred = get_preferred_alternatives (insn);
+      ira_implicitly_set_insn_hard_regs (&temp, prefrred);
       AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
       IOR_HARD_REG_SET (implicit_reg_pending_clobbers, temp);
     }

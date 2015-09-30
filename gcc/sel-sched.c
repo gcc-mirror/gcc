@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtlhooks-def.h"
 #include "emit-rtl.h"
 #include "ira.h"
+#include "ira-int.h"
 #include "rtl-iter.h"
 
 #ifdef INSN_SCHEDULING
@@ -2124,7 +2125,8 @@ implicit_clobber_conflict_p (insn_t through_insn, expr_t expr)
   /* Calculate implicit clobbers.  */
   extract_insn (insn);
   preprocess_constraints (insn);
-  ira_implicitly_set_insn_hard_regs (&temp);
+  alternative_mask prefrred = get_preferred_alternatives (insn);
+  ira_implicitly_set_insn_hard_regs (&temp, prefrred);
   AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
 
   /* If any implicit clobber registers intersect with regular ones in

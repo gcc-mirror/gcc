@@ -190,7 +190,6 @@ extern void ira_init (void);
 extern void ira_setup_eliminable_regset (void);
 extern rtx ira_eliminate_regs (rtx, machine_mode);
 extern void ira_set_pseudo_classes (bool, FILE *);
-extern void ira_implicitly_set_insn_hard_regs (HARD_REG_SET *);
 extern void ira_expand_reg_equiv (void);
 extern void ira_update_equiv_info_by_shuffle_insn (int, int, rtx_insn *);
 

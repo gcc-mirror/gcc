@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "params.h"
 #include "df.h"
+#include "recog.h"
 #include "ira-int.h"
 
 typedef struct allocno_hard_regs *allocno_hard_regs_t;

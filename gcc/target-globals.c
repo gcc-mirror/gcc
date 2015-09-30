@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "libfuncs.h"
 #include "cfgloop.h"
+#include "recog.h"
 #include "ira-int.h"
 #include "builtins.h"
 #include "gcse.h"
