@@ -1,3 +1,7 @@
+2015-09-30  Matthias Klose  <doko@ubuntu.com>
+
+	* config/cpu/alpha, config/cpu/ia64: Remove empty directories.
+
 2015-09-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/ext/string_conversions.h (__stoa): Save and restore errno.
