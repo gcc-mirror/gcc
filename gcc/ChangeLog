@@ -1,3 +1,11 @@
+2015-09-30  Thomas Schwinge  <thomas@codesourcery.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+
+	* config/i386/intelmic-mkoffload.c (generate_host_descr_file)
+	(prepare_target_image, main): Refactor argv building to use
+	obstacks.
+
 2015-09-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu-protos.h (spu_expand_atomic_op): Add prototype.

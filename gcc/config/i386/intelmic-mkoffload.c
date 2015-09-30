@@ -379,29 +379,31 @@ generate_host_descr_file (const char *host_compiler)
 
   fclose (src_file);
 
-  unsigned new_argc = 0;
-  const char *new_argv[9];
-  new_argv[new_argc++] = host_compiler;
-  new_argv[new_argc++] = "-c";
-  new_argv[new_argc++] = "-fPIC";
-  new_argv[new_argc++] = "-shared";
+  struct obstack argv_obstack;
+  obstack_init (&argv_obstack);
+  obstack_ptr_grow (&argv_obstack, host_compiler);
+  obstack_ptr_grow (&argv_obstack, "-c");
+  obstack_ptr_grow (&argv_obstack, "-fPIC");
+  obstack_ptr_grow (&argv_obstack, "-shared");
   switch (offload_abi)
     {
     case OFFLOAD_ABI_LP64:
-      new_argv[new_argc++] = "-m64";
+      obstack_ptr_grow (&argv_obstack, "-m64");
       break;
     case OFFLOAD_ABI_ILP32:
-      new_argv[new_argc++] = "-m32";
+      obstack_ptr_grow (&argv_obstack, "-m32");
       break;
     default:
       gcc_unreachable ();
     }
-  new_argv[new_argc++] = src_filename;
-  new_argv[new_argc++] = "-o";
-  new_argv[new_argc++] = obj_filename;
-  new_argv[new_argc++] = NULL;
+  obstack_ptr_grow (&argv_obstack, src_filename);
+  obstack_ptr_grow (&argv_obstack, "-o");
+  obstack_ptr_grow (&argv_obstack, obj_filename);
+  obstack_ptr_grow (&argv_obstack, NULL);
 
-  fork_execute (new_argv[0], CONST_CAST (char **, new_argv), false);
+  char **argv = XOBFINISH (&argv_obstack, char **);
+  fork_execute (argv[0], argv, false);
+  obstack_free (&argv_obstack, NULL);
 
   return obj_filename;
 }
@@ -448,29 +450,31 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   char *rename_section_opt
     = XALLOCAVEC (char, sizeof (".data=") + strlen (image_section_name));
   sprintf (rename_section_opt, ".data=%s", image_section_name);
-  const char *objcopy_argv[11];
-  objcopy_argv[0] = "objcopy";
-  objcopy_argv[1] = "-B";
-  objcopy_argv[2] = "i386";
-  objcopy_argv[3] = "-I";
-  objcopy_argv[4] = "binary";
-  objcopy_argv[5] = "-O";
+  obstack_init (&argv_obstack);
+  obstack_ptr_grow (&argv_obstack, "objcopy");
+  obstack_ptr_grow (&argv_obstack, "-B");
+  obstack_ptr_grow (&argv_obstack, "i386");
+  obstack_ptr_grow (&argv_obstack, "-I");
+  obstack_ptr_grow (&argv_obstack, "binary");
+  obstack_ptr_grow (&argv_obstack, "-O");
   switch (offload_abi)
     {
     case OFFLOAD_ABI_LP64:
-      objcopy_argv[6] = "elf64-x86-64";
+      obstack_ptr_grow (&argv_obstack, "elf64-x86-64");
       break;
     case OFFLOAD_ABI_ILP32:
-      objcopy_argv[6] = "elf32-i386";
+      obstack_ptr_grow (&argv_obstack, "elf32-i386");
       break;
     default:
       gcc_unreachable ();
     }
-  objcopy_argv[7] = target_so_filename;
-  objcopy_argv[8] = "--rename-section";
-  objcopy_argv[9] = rename_section_opt;
-  objcopy_argv[10] = NULL;
-  fork_execute (objcopy_argv[0], CONST_CAST (char **, objcopy_argv), false);
+  obstack_ptr_grow (&argv_obstack, target_so_filename);
+  obstack_ptr_grow (&argv_obstack, "--rename-section");
+  obstack_ptr_grow (&argv_obstack, rename_section_opt);
+  obstack_ptr_grow (&argv_obstack, NULL);
+  char **new_argv = XOBFINISH (&argv_obstack, char **);
+  fork_execute (new_argv[0], new_argv, false);
+  obstack_free (&argv_obstack, NULL);
 
   /* Objcopy has created symbols, containing the input file name with
      non-alphanumeric characters replaced by underscores.
@@ -500,16 +504,19 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   sprintf (opt_for_objcopy[1], "_binary_%s_end=%s", symbol_name, symbols[1]);
   sprintf (opt_for_objcopy[2], "_binary_%s_size=%s", symbol_name, symbols[2]);
 
-  objcopy_argv[0] = "objcopy";
-  objcopy_argv[1] = target_so_filename;
-  objcopy_argv[2] = "--redefine-sym";
-  objcopy_argv[3] = opt_for_objcopy[0];
-  objcopy_argv[4] = "--redefine-sym";
-  objcopy_argv[5] = opt_for_objcopy[1];
-  objcopy_argv[6] = "--redefine-sym";
-  objcopy_argv[7] = opt_for_objcopy[2];
-  objcopy_argv[8] = NULL;
-  fork_execute (objcopy_argv[0], CONST_CAST (char **, objcopy_argv), false);
+  obstack_init (&argv_obstack);
+  obstack_ptr_grow (&argv_obstack, "objcopy");
+  obstack_ptr_grow (&argv_obstack, target_so_filename);
+  obstack_ptr_grow (&argv_obstack, "--redefine-sym");
+  obstack_ptr_grow (&argv_obstack, opt_for_objcopy[0]);
+  obstack_ptr_grow (&argv_obstack, "--redefine-sym");
+  obstack_ptr_grow (&argv_obstack, opt_for_objcopy[1]);
+  obstack_ptr_grow (&argv_obstack, "--redefine-sym");
+  obstack_ptr_grow (&argv_obstack, opt_for_objcopy[2]);
+  obstack_ptr_grow (&argv_obstack, NULL);
+  new_argv = XOBFINISH (&argv_obstack, char **);
+  fork_execute (new_argv[0], new_argv, false);
+  obstack_free (&argv_obstack, NULL);
 
   return target_so_filename;
 }
@@ -562,41 +569,46 @@ main (int argc, char **argv)
 
   /* Perform partial linking for the target image and host side descriptor.
      As a result we'll get a finalized object file with all offload data.  */
-  unsigned new_argc = 0;
-  const char *new_argv[9];
-  new_argv[new_argc++] = "ld";
-  new_argv[new_argc++] = "-m";
+  struct obstack argv_obstack;
+  obstack_init (&argv_obstack);
+  obstack_ptr_grow (&argv_obstack, "ld");
+  obstack_ptr_grow (&argv_obstack, "-m");
   switch (offload_abi)
     {
     case OFFLOAD_ABI_LP64:
-      new_argv[new_argc++] = "elf_x86_64";
+      obstack_ptr_grow (&argv_obstack, "elf_x86_64");
       break;
     case OFFLOAD_ABI_ILP32:
-      new_argv[new_argc++] = "elf_i386";
+      obstack_ptr_grow (&argv_obstack, "elf_i386");
       break;
     default:
       gcc_unreachable ();
     }
-  new_argv[new_argc++] = "--relocatable";
-  new_argv[new_argc++] = host_descr_filename;
-  new_argv[new_argc++] = target_so_filename;
-  new_argv[new_argc++] = "-o";
-  new_argv[new_argc++] = out_obj_filename;
-  new_argv[new_argc++] = NULL;
-  fork_execute (new_argv[0], CONST_CAST (char **, new_argv), false);
+  obstack_ptr_grow (&argv_obstack, "--relocatable");
+  obstack_ptr_grow (&argv_obstack, host_descr_filename);
+  obstack_ptr_grow (&argv_obstack, target_so_filename);
+  obstack_ptr_grow (&argv_obstack, "-o");
+  obstack_ptr_grow (&argv_obstack, out_obj_filename);
+  obstack_ptr_grow (&argv_obstack, NULL);
+  char **new_argv = XOBFINISH (&argv_obstack, char **);
+  fork_execute (new_argv[0], new_argv, false);
+  obstack_free (&argv_obstack, NULL);
 
   /* Run objcopy on the resultant object file to localize generated symbols
      to avoid conflicting between different DSO and an executable.  */
-  new_argv[0] = "objcopy";
-  new_argv[1] = "-L";
-  new_argv[2] = symbols[0];
-  new_argv[3] = "-L";
-  new_argv[4] = symbols[1];
-  new_argv[5] = "-L";
-  new_argv[6] = symbols[2];
-  new_argv[7] = out_obj_filename;
-  new_argv[8] = NULL;
-  fork_execute (new_argv[0], CONST_CAST (char **, new_argv), false);
+  obstack_init (&argv_obstack);
+  obstack_ptr_grow (&argv_obstack, "objcopy");
+  obstack_ptr_grow (&argv_obstack, "-L");
+  obstack_ptr_grow (&argv_obstack, symbols[0]);
+  obstack_ptr_grow (&argv_obstack, "-L");
+  obstack_ptr_grow (&argv_obstack, symbols[1]);
+  obstack_ptr_grow (&argv_obstack, "-L");
+  obstack_ptr_grow (&argv_obstack, symbols[2]);
+  obstack_ptr_grow (&argv_obstack, out_obj_filename);
+  obstack_ptr_grow (&argv_obstack, NULL);
+  new_argv = XOBFINISH (&argv_obstack, char **);
+  fork_execute (new_argv[0], new_argv, false);
+  obstack_free (&argv_obstack, NULL);
 
   return 0;
 }
