@@ -1310,6 +1310,13 @@
 #endif
 
 
+/* Define if the gold linker supports split stack and is available as a
+   non-default */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GOLD_NON_DEFAULT_SPLIT_STACK
+#endif
+
+
 /* Define if you have the iconv() function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_ICONV
@@ -1836,6 +1843,12 @@
 /* Define to 1 if `vfork' works. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_WORKING_VFORK
+#endif
+
+
+/* Define if your assembler supports .dwsect 0xB0000 */
+#ifndef USED_FOR_TARGET
+#undef HAVE_XCOFF_DWARF_EXTRAS
 #endif
 
 

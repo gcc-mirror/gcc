@@ -1,3 +1,9 @@
+2015-10-01  Lynn Boger  <laboger@linux.vnet.ibm.com>
+
+	PR target/66870
+	* gospec.c (lang_specific_driver): Set appropriate split stack
+	options for 64 bit compiles based on TARGET_CAN_SPLIT_STACK_64BIT.
+
 2015-09-10  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc (Gcc_backend::type_size): Return -1 for

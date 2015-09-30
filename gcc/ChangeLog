@@ -1,3 +1,13 @@
+2015-10-01  Lynn Boger  <laboger@linux.vnet.ibm.com>
+
+	PR target/66870
+	* config/rs6000/sysv4.h (TARGET_CAN_SPLIT_STACK_64BIT): Define.
+	* configure.ac: Define HAVE_GOLD_ALTERNATE_SPLIT_STACK on Power
+	based on gold linker version.
+	* gcc.c: Add -fuse-ld=gold to STACK_SPLIT_SPEC if
+	HAVE_GOLD_ALTERNATE_SPLIT_STACK defined.
+	* configure, config.in: Regenerate.
+
 2015-10-01  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Don't set
