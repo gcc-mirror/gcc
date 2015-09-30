@@ -1,6 +1,6 @@
 // PR c++/52764
-// { dg-require-effective-target stdint_types }
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target stdint_types }
 
 #include <stdint.h>
 

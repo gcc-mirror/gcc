@@ -1,3 +1,28 @@
+2015-09-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* g++.dg/cpp0x/stdint.C: Move dg-require-effective-target after
+	dg-do.
+	* g++.dg/gomp/tls-wrap4.C: Likewise.
+	* gcc.dg/atomic-op-optimize.c: Likewise.
+	* gcc.dg/pr54087.c: Likewise.
+	* gcc.dg/tls/section-2.c: Likewise.
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a-pr63175.c:
+	Likewise.
+	* gcc.dg/vect/costmodel/ppc/costmodel-pr37194.c: Likewise.
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Likewise.
+	* gcc.target/arm/divzero.c: Likewise.
+	* gcc.target/arm/sibcall-2.c: Likewise.
+	* gcc.target/arm/thumb1-Os-mult.c: Likewise.
+	* gcc.target/arm/thumb1-load-64bit-constant-1.c: Likewise.
+	* gcc.target/arm/thumb1-load-64bit-constant-2.c: Likewise.
+	* gcc.target/arm/thumb1-load-64bit-constant-3.c: Likewise.
+	* gcc.target/arm/volatile-bitfields-1.c: Likewise.
+	* gcc.target/arm/volatile-bitfields-2.c: Likewise.
+	* gcc.target/arm/volatile-bitfields-3.c: Likewise.
+	* gcc.target/arm/volatile-bitfields-4.c: Likewise.
+	* gfortran.dg/default_format_2.f90: Likewise.
+	* gfortran.dg/default_format_denormal_2.f90: Likewise.
+
 2015-09-29  Jonathan Roelofs  <jonathan@codesourcery.com>
 
 	* gcc.dg/debug/pr65771.c: Use tls_runtime instead of tls.

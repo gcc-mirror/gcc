@@ -1,6 +1,6 @@
+/* { dg-do run } */
 /* { dg-require-effective-target arm_eabi } */
 /* { dg-options "" } */
-/* { dg-do run } */
 
 /* Check that long long divmod functions pass the right argument to
    __aeabi_ldiv0 on divide by zero.  */
