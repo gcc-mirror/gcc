@@ -1,3 +1,7 @@
+2015-09-30  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* gcc.target/i386/pr67761.c: New test.
+
 2015-09-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c/67730

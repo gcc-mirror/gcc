@@ -1,3 +1,9 @@
+2015-09-30  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* config/i386/i386.c (scalar_chain::analyze_register_chain): Ignore
+	debug insns.
+	(scalar_chain::convert_reg): Likewise.
+
 2015-09-30  Richard Biener  <rguenther@suse.de>
 
 	* builtins.c: Add comment that no new simplifications shouldd
