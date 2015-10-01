@@ -1,3 +1,11 @@
+2015-10-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr65105-1.c: Require sse2 effective target.
+	(main): Rename to sse2_test.  Abort if count != 5.
+	(dg-options): Add -save-temps.  Use "-msse2 -mtune=slm" instead
+	of -march=slm.
+	* gcc.target/i386/pr46865-2.c (dg-options): Remove -save-temps.
+
 2015-10-01  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-fre-7.c: Adjust.
@@ -38,14 +46,12 @@
 
 2015-09-30  Christophe Lyon  <christophe.lyon@linaro.org>
 
-	* g++.dg/cpp0x/stdint.C: Move dg-require-effective-target after
-	dg-do.
+	* g++.dg/cpp0x/stdint.C: Move dg-require-effective-target after dg-do.
 	* g++.dg/gomp/tls-wrap4.C: Likewise.
 	* gcc.dg/atomic-op-optimize.c: Likewise.
 	* gcc.dg/pr54087.c: Likewise.
 	* gcc.dg/tls/section-2.c: Likewise.
-	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a-pr63175.c:
-	Likewise.
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a-pr63175.c: Likewise.
 	* gcc.dg/vect/costmodel/ppc/costmodel-pr37194.c: Likewise.
 	* gcc.dg/vect/trapv-vect-reduc-4.c: Likewise.
 	* gcc.target/arm/divzero.c: Likewise.
@@ -67,8 +73,8 @@
 
 2015-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	gfortran.dg/ieee/ieee_4.f90: xfail on i386-*-freebsd*
-	gfortran.dg/round_4.f90: ditto.
+	* gfortran.dg/ieee/ieee_4.f90: xfail on i386-*-freebsd*
+	* gfortran.dg/round_4.f90: ditto.
 
 2015-09-29  Richard Biener  <rguenther@suse.de>
 
@@ -120,7 +126,7 @@
 2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
-	* gcc/testsuite/gcc.dg/graphite/run-id-pr67700-1.c: New test case.
+	* gcc.dg/graphite/run-id-pr67700-1.c: New test case.
 	* gcc.dg/graphite/block-1.c: Modified to match the pattern.
 	* gcc.dg/graphite/block-3.c: Same.
 	* gcc.dg/graphite/block-4.c: Same.
@@ -162,7 +168,7 @@
 	    Sebastian Pop  <s.pop@samsung.com>
 
 	PR tree-optimization/67700
-	* testsuite/gcc.dg/graphite/run-id-pr67700.c: New.
+	* gcc.dg/graphite/run-id-pr67700.c: New.
 
 2015-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
 
@@ -1243,19 +1249,19 @@
 
 2015-08-28  Nathan Sidwell  <nathan@acm.org>
 
-	* gcc/testsuite/gcc.dg/compat/struct-layout-1_generate.c: Simply
+	* gcc.dg/compat/struct-layout-1_generate.c: Simply
 	use exit code for failure.
 
-	* gcc/testsuite/gcc.dg/torture/matrix-1.c: Use plain printf.
-	* gcc/testsuite/gcc.dg/torture/matrix-2.c: Likewise.
-	* gcc/testsuite/gcc.dg/torture/matrix-5.c: Likewise.
-	* gcc/testsuite/gcc.dg/torture/matrix-6.c: Likewise.
-	* gcc/testsuite/gcc.dg/torture/transpose-1.c: Likewise.
-	* gcc/testsuite/gcc.dg/torture/transpose-2.c: Likewise.
-	* gcc/testsuite/gcc.dg/torture/transpose-3.c: Likewise.
-	* gcc/testsuite/gcc.dg/torture/transpose-4.c: Likewise.
-	* gcc/testsuite/gcc.dg/torture/transpose-5.c: Likewise.
-	* gcc/testsuite/gcc.dg/torture/transpose-6.c: Likewise.
+	* gcc.dg/torture/matrix-1.c: Use plain printf.
+	* gcc.dg/torture/matrix-2.c: Likewise.
+	* gcc.dg/torture/matrix-5.c: Likewise.
+	* gcc.dg/torture/matrix-6.c: Likewise.
+	* gcc.dg/torture/transpose-1.c: Likewise.
+	* gcc.dg/torture/transpose-2.c: Likewise.
+	* gcc.dg/torture/transpose-3.c: Likewise.
+	* gcc.dg/torture/transpose-4.c: Likewise.
+	* gcc.dg/torture/transpose-5.c: Likewise.
+	* gcc.dg/torture/transpose-6.c: Likewise.
 
 2015-08-28  Jeff Law  <law@redhat.com>
 
@@ -1440,38 +1446,37 @@
 
 2015-08-24  Nathan Sidwell  <nathan@acm.org>
 
-	* gcc/testsuite/gcc.dg/pr49551.c: Needs -fdata-sections.
+	* gcc.dg/pr49551.c: Needs -fdata-sections.
 
-	* gcc/testsuite/gcc.dg/pr64935-2.c: Needs scheduling.
+	* gcc.dg/pr64935-2.c: Needs scheduling.
 
-	* gcc/testsuite/gcc.dg/torture/pr66101.c: Needs nonlocal goto.
-	* gcc/testsuite/gcc.dg/torture/pr63738.c: Likewise.
-	* gcc/testsuite/gcc.dg/torture/pr64728.c: Likewise.
-	* gcc/testsuite/gcc.dg/pr63748.c: Likewise.
-	* gcc/testsuite/gcc.dg/20020312-2.c: Likewise.
+	* gcc.dg/torture/pr66101.c: Needs nonlocal goto.
+	* gcc.dg/torture/pr63738.c: Likewise.
+	* gcc.dg/torture/pr64728.c: Likewise.
+	* gcc.dg/pr63748.c: Likewise.
+	* gcc.dg/20020312-2.c: Likewise.
 
-	* gcc/testsuite/gcc.dg/torture/pr66123.c: Needs label_values.
+	* gcc.dg/torture/pr66123.c: Needs label_values.
 
-	* gcc/testsuite/gcc.dg/torture/pr41261.c: Needs profiling.
-	* gcc/testsuite/gcc.dg/pr26570.c: Likewise.
-	* gcc/testsuite/gcc.dg/pr61776.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/ssa-lim-11.c: Likewise.
-	* gcc/testsuite/gcc.dg/gomp/pr34610.c: Likewise.
-	* gcc/testsuite/gcc.dg/pr54121.c: Likewise.
-	* gcc/testsuite/gcc.dg/20050325-1.c: Likewise.
-	* gcc/testsuite/gcc.dg/pr66899.c: Likewise.
-	* gcc/testsuite/gcc.dg/pr48770.c: Likewise.
-	* gcc/testsuite/gcc.dg/pr24225.c: Likewise.
+	* gcc.dg/torture/pr41261.c: Needs profiling.
+	* gcc.dg/pr26570.c: Likewise.
+	* gcc.dg/pr61776.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-lim-11.c: Likewise.
+	* gcc.dg/gomp/pr34610.c: Likewise.
+	* gcc.dg/pr54121.c: Likewise.
+	* gcc.dg/20050325-1.c: Likewise.
+	* gcc.dg/pr66899.c: Likewise.
+	* gcc.dg/pr48770.c: Likewise.
+	* gcc.dg/pr24225.c: Likewise.
 
-	* gcc/testsuite/gcc.dg/pr27531-1.c: Needs io.
-	* gcc/testsuite/gcc.dg/pr44606.c: Likewise.
+	* gcc.dg/pr27531-1.c: Needs io.
+	* gcc.dg/pr44606.c: Likewise.
 
-	* gcc/testsuite/gcc.dg/tree-ssa/nonzero-1.c: Needs weak.
+	* gcc.dg/tree-ssa/nonzero-1.c: Needs weak.
 
-	* gcc/testsuite/gcc.dg/pr51990.c: Needs alloca.
+	* gcc.dg/pr51990.c: Needs alloca.
 
-	* gcc/testsuite/gcc.misc-tests/options.exp: Disable profiling
-	check for nvptx.
+	* gcc.misc-tests/options.exp: Disable profiling check for nvptx.
 
 2015-08-24  Tom de Vries  <tom@codesourcery.com>
 
@@ -4492,7 +4497,7 @@
 
 2015-06-10  Uros Bizjak  <ubizjak@gmail.com>
 
-	* g++.dg/abi/mangle-regparm.C (dg-optiond): Add -save-temps.
+	* g++.dg/abi/mangle-regparm.C (dg-options): Add -save-temps.
 
 2015-06-10  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -4714,10 +4719,10 @@
 
 2015-06-04  Sriraman Tallam  <tmsriram@google.com>
 
-	* testsuite/gcc.target/i386/noplt-1.c: New test.
-	* testsuite/gcc.target/i386/noplt-2.c: New test.
-	* testsuite/gcc.target/i386/noplt-3.c: New test.
-	* testsuite/gcc.target/i386/noplt-4.c: New test.
+	* gcc.target/i386/noplt-1.c: New test.
+	* gcc.target/i386/noplt-2.c: New test.
+	* gcc.target/i386/noplt-3.c: New test.
+	* gcc.target/i386/noplt-4.c: New test.
 
 2015-06-04  Thomas Koenig  <tkoenig@netcologne.de>
 
@@ -6041,14 +6046,14 @@
 
 	PR c/65179
 	* c-c++-common/Wshift-negative-value-1.c: New test.
-	* testsuite/c-c++-common/Wshift-negative-value-2.c: New test.
-	* testsuite/c-c++-common/Wshift-negative-value-3.c: New test.
-	* testsuite/c-c++-common/Wshift-negative-value-4.c: New test.
-	* testsuite/c-c++-common/Wshift-negative-value-5.c: New test.
-	* testsuite/c-c++-common/Wshift-negative-value-6.c: New test.
-	* testsuite/gcc.dg/c90-left-shift-1.c: New test.
-	* testsuite/gcc.dg/c99-const-expr-7.c: Add dg-error.
-	* testsuite/gcc.dg/c99-left-shift-1.c: New test.
+	* c-c++-common/Wshift-negative-value-2.c: New test.
+	* c-c++-common/Wshift-negative-value-3.c: New test.
+	* c-c++-common/Wshift-negative-value-4.c: New test.
+	* c-c++-common/Wshift-negative-value-5.c: New test.
+	* c-c++-common/Wshift-negative-value-6.c: New test.
+	* gcc.dg/c90-left-shift-1.c: New test.
+	* gcc.dg/c99-const-expr-7.c: Add dg-error.
+	* gcc.dg/c99-left-shift-1.c: New test.
 
 2015-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -8955,8 +8960,8 @@
 2015-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/64158
-	* gcc.dg/pr44194-1.c: Add two extra {} pairs to fix up powerpc*-*-linux*
-	and nvptx-*-* blacklisting.
+	* gcc.dg/pr44194-1.c: Add two extra {} pairs to fix up
+	powerpc*-*-linux* and nvptx-*-* blacklisting.
 
 	* gcc.dg/sibcall-9.c: New test.
 	* gcc.dg/sibcall-10.c: New test.

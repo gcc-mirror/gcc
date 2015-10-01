@@ -1,8 +1,11 @@
 /* PR target/pr65105 */
 /* { dg-do run { target { ia32 } } } */
-/* { dg-options "-O2 -march=slm" } */
+/* { dg-options "-O2 -msse2 -mtune=slm -save-temps" } */
+/* { dg-require-effective-target sse2 } */
 /* { dg-final { scan-assembler "por" } } */
 /* { dg-final { scan-assembler "pand" } } */
+
+#include "sse2-check.h"
 
 #include "stdlib.h"
 
@@ -40,11 +43,13 @@ fill_data (long long *arr)
   arr[5] = 0xff000000L;
 }
 
-int
-main (int argc, const char **argv)
+static void
+sse2_test (void)
 {
   long long arr[6];
   fill_data (arr);
   test (arr);
-  return count - 5;
+
+  if (count != 5)
+    __builtin_abort ();
 }
