@@ -1,3 +1,12 @@
+2015-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/diagnostics.xml: Document use of errno.
+	* doc/html/*: Regenerate.
+	* config/locale/generic/c_locale.cc (_Save_errno): New helper.
+	(__convert_to_v): Use _Save_errno.
+	* include/ext/string_conversions.h (__stoa): Only restore errno when
+	it isn't set to non-zero.
+
 2015-09-30  François Dumont  <fdumont@gcc.gnu.org>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
