@@ -1,3 +1,10 @@
+2015-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-06-09  Shiva Chen  <shiva0217@gmail.com>
+
+	* gcc.target/arm/stl-cond.c: New test.
+
 2015-09-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

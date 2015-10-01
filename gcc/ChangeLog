@@ -1,3 +1,11 @@
+2015-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-06-09  Shiva Chen  <shiva0217@gmail.com>
+
+	* sync.md (atomic_load<mode>): Add conditional code for lda/ldr
+	(atomic_store<mode>): Likewise.
+
 2015-09-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
