@@ -53128,13 +53128,13 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
   if (!TARGET_80387 && !TARGET_SSE_MATH)
     return;
-  tree exceptions_var = create_tmp_var (integer_type_node);
+  tree exceptions_var = create_tmp_var_raw (integer_type_node);
   if (TARGET_80387)
     {
       tree fenv_index_type = build_index_type (size_int (6));
       tree fenv_type = build_array_type (unsigned_type_node, fenv_index_type);
-      tree fenv_var = create_tmp_var (fenv_type);
-      mark_addressable (fenv_var);
+      tree fenv_var = create_tmp_var_raw (fenv_type);
+      TREE_ADDRESSABLE (fenv_var) = 1;
       tree fenv_ptr = build_pointer_type (fenv_type);
       tree fenv_addr = build1 (ADDR_EXPR, fenv_ptr, fenv_var);
       fenv_addr = fold_convert (ptr_type_node, fenv_addr);
@@ -53144,10 +53144,12 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
       tree fnclex = ix86_builtins[IX86_BUILTIN_FNCLEX];
       tree hold_fnstenv = build_call_expr (fnstenv, 1, fenv_addr);
       tree hold_fnclex = build_call_expr (fnclex, 0);
-      *hold = build2 (COMPOUND_EXPR, void_type_node, hold_fnstenv,
+      fenv_var = build4 (TARGET_EXPR, fenv_type, fenv_var, hold_fnstenv,
+			 NULL_TREE, NULL_TREE);
+      *hold = build2 (COMPOUND_EXPR, void_type_node, fenv_var,
 		      hold_fnclex);
       *clear = build_call_expr (fnclex, 0);
-      tree sw_var = create_tmp_var (short_unsigned_type_node);
+      tree sw_var = create_tmp_var_raw (short_unsigned_type_node);
       tree fnstsw_call = build_call_expr (fnstsw, 0);
       tree sw_mod = build2 (MODIFY_EXPR, short_unsigned_type_node,
 			    sw_var, fnstsw_call);
@@ -53161,8 +53163,8 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
     }
   if (TARGET_SSE_MATH)
     {
-      tree mxcsr_orig_var = create_tmp_var (unsigned_type_node);
-      tree mxcsr_mod_var = create_tmp_var (unsigned_type_node);
+      tree mxcsr_orig_var = create_tmp_var_raw (unsigned_type_node);
+      tree mxcsr_mod_var = create_tmp_var_raw (unsigned_type_node);
       tree stmxcsr = ix86_builtins[IX86_BUILTIN_STMXCSR];
       tree ldmxcsr = ix86_builtins[IX86_BUILTIN_LDMXCSR];
       tree stmxcsr_hold_call = build_call_expr (stmxcsr, 0);

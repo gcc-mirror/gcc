@@ -1,5 +1,11 @@
 2015-10-01  Marek Polacek  <polacek@redhat.com>
 
+	PR c/65345
+	* gcc.dg/atomic/pr65345-4.c: New test.
+	* gcc.dg/pr65345-3.c: New test.
+
+2015-10-01  Marek Polacek  <polacek@redhat.com>
+
 	PR tree-optimization/67769
 	* gcc.dg/torture/pr67769.c: New test.
 
