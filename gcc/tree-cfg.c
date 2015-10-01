@@ -72,6 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "wide-int-print.h"
 #include "gimplify.h"
+#include "attribs.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -7352,6 +7353,30 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
 		  && decl_is_tm_clone (fndecl));
   struct function *fun = DECL_STRUCT_FUNCTION (fndecl);
 
+  if (DECL_ATTRIBUTES (fndecl) != NULL_TREE)
+    {
+      fprintf (file, "__attribute__((");
+
+      bool first = true;
+      tree chain;
+      for (chain = DECL_ATTRIBUTES (fndecl); chain;
+	   first = false, chain = TREE_CHAIN (chain))
+	{
+	  if (!first)
+	    fprintf (file, ", ");
+
+	  print_generic_expr (file, get_attribute_name (chain), dump_flags);
+	  if (TREE_VALUE (chain) != NULL_TREE)
+	    {
+	      fprintf (file, " (");
+	      print_generic_expr (file, TREE_VALUE (chain), dump_flags);
+	      fprintf (file, ")");
+	    }
+	}
+
+      fprintf (file, "))\n");
+    }
+
   current_function_decl = fndecl;
   fprintf (file, "%s %s(", function_name (fun), tmclone ? "[tm-clone] " : "");
 
@@ -7368,13 +7393,6 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
       arg = DECL_CHAIN (arg);
     }
   fprintf (file, ")\n");
-
-  if (DECL_ATTRIBUTES (fndecl) != NULL_TREE)
-    {
-      fprintf (file, "[ ");
-      print_generic_expr (file, DECL_ATTRIBUTES (fndecl), dump_flags);
-      fprintf (file, "]\n");
-    }
 
   if (flags & TDF_VERBOSE)
     print_node (file, "", fndecl, 2);

@@ -1,3 +1,9 @@
+2015-10-01  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-cfg.c (dump_function_to_file): Dump function attributes using
+	__attribute__(()) string.  Move dumping of function attributes to before
+	function name.
+
 2015-10-01  Lynn Boger  <laboger@linux.vnet.ibm.com>
 
 	PR target/66870
