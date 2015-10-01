@@ -1,3 +1,14 @@
+2015-10-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2015-09-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_solaris_crts): New test.
+	* configure. Regenerate.
+	* config.in: Regenerate.
+	* config/sol2.h (STARTFILE_SPEC): Simplify, provide
+	HAVE_SOLARIS_CRTS variant.
+
 2015-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline

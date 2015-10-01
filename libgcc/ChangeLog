@@ -1,3 +1,24 @@
+2015-10-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2015-09-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (libgcc_cv_solaris_crts): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sol2/crtp.c, config/sol2/crtpg.c: New files.
+	* config/gmon-sol2.c: Rename to ...
+	* config/sol2/gmon.c: ... this.
+	Include auto-target.h.
+	(internal_mcount): Wrap setup handling in !HAVE_SOLARIS_CRTS.
+	* config/t-sol2: Rename to ...
+	* config/sol2/t-sol2: ... this.
+	(gmon.o): Reflect renaming.
+	(crtp.o, crtpg.o): New rules.
+	* config.host (*-*-solaris2*): Reflect renaming.
+	Use system CRTs if present.
+	Remove default CRT case.
+
 2015-09-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/linux-atomic.c (__kernel_cmpxchg2): Reorder error checks.

@@ -4704,6 +4704,38 @@ fi
 $as_echo "$libgcc_cv_mips_hard_float" >&6; }
 esac
 
+case ${host} in
+*-*-solaris2*)
+  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking system-provided CRTs on Solaris" >&5
+$as_echo_n "checking system-provided CRTs on Solaris... " >&6; }
+if test "${libgcc_cv_solaris_crts+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  libgcc_cv_solaris_crts=no
+     libgcc_sysroot="`${CC} -print-sysroot`"
+     libgcc_libdir="$libgcc_sysroot/usr/lib"
+     # At the time they were added, gcrt1.o became a symlink for backwards
+     # compatibility on x86, while crt1.o was added on sparc, so check for that.
+     case ${host} in
+       i?86-*-solaris2* | x86_64-*-solaris2*)
+         if test -h "$libgcc_libdir/gcrt1.o"; then libgcc_cv_solaris_crts=yes; fi
+	 ;;
+       sparc*-*-solaris2*)
+         if test -f "$libgcc_libdir/crt1.o"; then libgcc_cv_solaris_crts=yes; fi
+	 ;;
+     esac
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_solaris_crts" >&5
+$as_echo "$libgcc_cv_solaris_crts" >&6; }
+  if test $libgcc_cv_solaris_crts = yes; then
+
+$as_echo "#define HAVE_SOLARIS_CRTS 1" >>confdefs.h
+
+  fi
+  ;;
+esac
+
 # Determine the version of glibc, if any, used on the target.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for target glibc version" >&5
 $as_echo_n "checking for target glibc version... " >&6; }

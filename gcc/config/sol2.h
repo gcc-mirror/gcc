@@ -156,14 +156,24 @@ along with GCC; see the file COPYING3.  If not see
 
 /* We don't use the standard svr4 STARTFILE_SPEC because it's wrong for us.  */
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared: \
-			 %{!symbolic: \
-			  %{p:mcrt1.o%s} \
-                          %{!p: \
-	                    %{pg:gcrt1.o%s gmon.o%s} \
-                            %{!pg:crt1.o%s}}}} \
+#ifdef HAVE_SOLARIS_CRTS
+/* Since Solaris 11.x and Solaris 12, the OS delivers crt1.o, crti.o, and
+   crtn.o, with a hook for compiler-dependent stuff like profile handling.  */
+#define STARTFILE_SPEC "%{!shared:%{!symbolic: \
+			  crt1.o%s \
+			  %{p:%e-p is not supported; \
+			    pg:crtpg.o%s gmon.o%s; \
+			      :crtp.o%s}}} \
 			crti.o%s %(startfile_arch) \
 			crtbegin.o%s"
+#else
+#define STARTFILE_SPEC "%{!shared:%{!symbolic: \
+			  %{p:mcrt1.o%s; \
+                            pg:gcrt1.o%s gmon.o%s; \
+                              :crt1.o%s}}} \
+			crti.o%s %(startfile_arch) \
+			crtbegin.o%s"
+#endif
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \

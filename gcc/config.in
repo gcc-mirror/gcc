@@ -1580,6 +1580,12 @@
 #endif
 
 
+/* Define if the system-provided CRTs are present on Solaris. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_SOLARIS_CRTS
+#endif
+
+
 /* Define to 1 if you have the <stddef.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_STDDEF_H

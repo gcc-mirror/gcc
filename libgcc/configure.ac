@@ -342,6 +342,31 @@ mips*-*-*)
     [libgcc_cv_mips_hard_float=no])])
 esac
 
+case ${host} in
+*-*-solaris2*)
+  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  AC_CACHE_CHECK([system-provided CRTs on Solaris],
+    		 [libgcc_cv_solaris_crts],
+    [libgcc_cv_solaris_crts=no
+     libgcc_sysroot="`${CC} -print-sysroot`"
+     libgcc_libdir="$libgcc_sysroot/usr/lib"
+     # At the time they were added, gcrt1.o became a symlink for backwards
+     # compatibility on x86, while crt1.o was added on sparc, so check for that.
+     case ${host} in
+       i?86-*-solaris2* | x86_64-*-solaris2*)
+         if test -h "$libgcc_libdir/gcrt1.o"; then libgcc_cv_solaris_crts=yes; fi
+	 ;;
+       sparc*-*-solaris2*)
+         if test -f "$libgcc_libdir/crt1.o"; then libgcc_cv_solaris_crts=yes; fi
+	 ;;
+     esac])
+  if test $libgcc_cv_solaris_crts = yes; then
+    AC_DEFINE(HAVE_SOLARIS_CRTS, 1,
+      [Define if the system-provided CRTs are present on Solaris.])
+  fi
+  ;;
+esac
+
 # Determine the version of glibc, if any, used on the target.
 AC_MSG_CHECKING([for target glibc version])
 AC_ARG_WITH([glibc-version],

@@ -265,7 +265,7 @@ case ${host} in
 *-*-solaris2*)
   # Unless linker support and dl_iterate_phdr are present,
   # unwind-dw2-fde-dip.c automatically falls back to unwind-dw2-fde.c.
-  tmake_file="$tmake_file t-sol2 t-eh-dw2-dip t-libgcc-pic t-slibgcc t-slibgcc-elf-ver"
+  tmake_file="$tmake_file sol2/t-sol2 t-eh-dw2-dip t-libgcc-pic t-slibgcc t-slibgcc-elf-ver"
   if test $with_gnu_ld = yes; then
     tmake_file="$tmake_file t-slibgcc-gld"
   else
@@ -274,19 +274,22 @@ case ${host} in
   # Add cpu-specific t-sol2 after t-slibgcc-* so it can augment SHLIB_MAPFILES.
   tmake_file="$tmake_file $cpu_type/t-sol2"
   extra_parts="gmon.o crtbegin.o crtend.o"
-  case ${host} in
-    i?86-*-solaris2.1[0-9]* | x86_64-*-solaris2.1[0-9]*)
-      # Solaris 10+/x86 provides crt1.o, crti.o, crtn.o, and gcrt1.o as
-      # part of the base system.
-      ;;
-    sparc*-*-solaris2.1[0-9]*)
-      # Solaris 10+/SPARC lacks crt1.o and gcrt1.o.
-      extra_parts="$extra_parts crt1.o gcrt1.o"
-      ;;
-    *)
-      extra_parts="$extra_parts crt1.o crti.o crtn.o gcrt1.o"
-      ;;
-  esac
+  if test "${libgcc_cv_solaris_crts}" = yes; then
+    # Solaris 11.x and 12 provide crt1.o, crti.o, and crtn.o as part of the
+    # base system.  crtp.o and crtpg.o implement the compiler-dependent parts.
+    extra_parts="$extra_parts crtp.o crtpg.o"
+  else
+    case ${host} in
+      i?86-*-solaris2.1[0-9]* | x86_64-*-solaris2.1[0-9]*)
+        # Solaris 10+/x86 provides crt1.o, crti.o, crtn.o, and gcrt1.o as
+        # part of the base system.
+        ;;
+      sparc*-*-solaris2.1[0-9]*)
+        # Solaris 10+/SPARC lacks crt1.o and gcrt1.o.
+        extra_parts="$extra_parts crt1.o gcrt1.o"
+        ;;
+    esac
+  fi
   ;;
 *-*-uclinux*)
   extra_parts="crtbegin.o crtend.o"

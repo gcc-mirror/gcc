@@ -5224,6 +5224,37 @@ if test x"$gcc_cv_ld_sysroot" = xyes; then
   [Define if your linker supports --sysroot.])
 fi	  
 
+case $target in
+*-*-solaris2*)
+  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  AC_CACHE_CHECK([system-provided CRTs on Solaris],
+    gcc_cv_solaris_crts,
+    [gcc_cv_solaris_crts=no
+     if test x$host != x$target; then
+       if test "x$with_sysroot" = xyes; then
+         target_sysroot="${test_exec_prefix}/${target_noncanonical}/sys-root"
+       else
+         target_sysroot="${with_sysroot}"
+       fi
+     fi
+     target_libdir="$target_sysroot/usr/lib"
+     # At the time they were added, gcrt1.o became a symlink for backwards
+     # compatibility on x86, while crt1.o was added on sparc, so check for that.
+     case $target in
+       i?86-*-solaris2* | x86_64-*-solaris2*)
+         if test -h "$target_libdir/gcrt1.o"; then gcc_cv_solaris_crts=yes; fi
+	 ;;
+       sparc*-*-solaris2*)
+         if test -f "$target_libdir/crt1.o"; then gcc_cv_solaris_crts=yes; fi
+	 ;;
+     esac])
+  ;;
+esac
+if test x$gcc_cv_solaris_crts = xyes; then
+  AC_DEFINE(HAVE_SOLARIS_CRTS, 1,
+  	    [Define if the system-provided CRTs are present on Solaris.])
+fi
+
 # Test for stack protector support in target C library.
 AC_CACHE_CHECK(__stack_chk_fail in target C library,
       gcc_cv_libc_provides_ssp,

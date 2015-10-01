@@ -27734,6 +27734,44 @@ $as_echo "#define HAVE_LD_SYSROOT 1" >>confdefs.h
 
 fi
 
+case $target in
+*-*-solaris2*)
+  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking system-provided CRTs on Solaris" >&5
+$as_echo_n "checking system-provided CRTs on Solaris... " >&6; }
+if test "${gcc_cv_solaris_crts+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_solaris_crts=no
+     if test x$host != x$target; then
+       if test "x$with_sysroot" = xyes; then
+         target_sysroot="${test_exec_prefix}/${target_noncanonical}/sys-root"
+       else
+         target_sysroot="${with_sysroot}"
+       fi
+     fi
+     target_libdir="$target_sysroot/usr/lib"
+     # At the time they were added, gcrt1.o became a symlink for backwards
+     # compatibility on x86, while crt1.o was added on sparc, so check for that.
+     case $target in
+       i?86-*-solaris2* | x86_64-*-solaris2*)
+         if test -h "$target_libdir/gcrt1.o"; then gcc_cv_solaris_crts=yes; fi
+	 ;;
+       sparc*-*-solaris2*)
+         if test -f "$target_libdir/crt1.o"; then gcc_cv_solaris_crts=yes; fi
+	 ;;
+     esac
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_solaris_crts" >&5
+$as_echo "$gcc_cv_solaris_crts" >&6; }
+  ;;
+esac
+if test x$gcc_cv_solaris_crts = xyes; then
+
+$as_echo "#define HAVE_SOLARIS_CRTS 1" >>confdefs.h
+
+fi
+
 # Test for stack protector support in target C library.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking __stack_chk_fail in target C library" >&5
 $as_echo_n "checking __stack_chk_fail in target C library... " >&6; }
