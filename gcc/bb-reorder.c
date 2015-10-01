@@ -2444,10 +2444,19 @@ reorder_basic_blocks (void)
   set_edge_can_fallthru_flag ();
   mark_dfs_back_edges ();
 
-  if (1)
-    reorder_basic_blocks_software_trace_cache ();
-  else
-    reorder_basic_blocks_simple ();
+  switch (flag_reorder_blocks_algorithm)
+    {
+    case REORDER_BLOCKS_ALGORITHM_SIMPLE:
+      reorder_basic_blocks_simple ();
+      break;
+
+    case REORDER_BLOCKS_ALGORITHM_STC:
+      reorder_basic_blocks_software_trace_cache ();
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
 
   relink_block_chain (/*stay_in_cfglayout_mode=*/true);
 

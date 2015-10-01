@@ -109,6 +109,13 @@ enum stack_reuse_level
   SR_ALL
 };
 
+/* The algorithm used for basic block reordering.  */
+enum reorder_blocks_algorithm
+{
+  REORDER_BLOCKS_ALGORITHM_SIMPLE,
+  REORDER_BLOCKS_ALGORITHM_STC
+};
+
 /* The algorithm used for the integrated register allocator (IRA).  */
 enum ira_algorithm
 {
