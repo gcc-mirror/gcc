@@ -2226,23 +2226,14 @@ update_crossing_jump_flags (void)
 	}
 }
 
-/* Reorder basic blocks.  The main entry point to this file.  FLAGS is
-   the set of flags to pass to cfg_layout_initialize().  */
+/* Reorder basic blocks using the software trace cache (STC) algorithm.  */
 
 static void
-reorder_basic_blocks (void)
+reorder_basic_blocks_software_trace_cache (void)
 {
   int n_traces;
   int i;
   struct trace *traces;
-
-  gcc_assert (current_ir_type () == IR_RTL_CFGLAYOUT);
-
-  if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1)
-    return;
-
-  set_edge_can_fallthru_flag ();
-  mark_dfs_back_edges ();
 
   /* We are estimating the length of uncond jump insn only once since the code
      for getting the insn length always returns the minimal length now.  */
@@ -2268,6 +2259,22 @@ reorder_basic_blocks (void)
   connect_traces (n_traces, traces);
   FREE (traces);
   FREE (bbd);
+}
+
+/* Reorder basic blocks.  The main entry point to this file.  */
+
+static void
+reorder_basic_blocks (void)
+{
+  gcc_assert (current_ir_type () == IR_RTL_CFGLAYOUT);
+
+  if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1)
+    return;
+
+  set_edge_can_fallthru_flag ();
+  mark_dfs_back_edges ();
+
+  reorder_basic_blocks_software_trace_cache ();
 
   relink_block_chain (/*stay_in_cfglayout_mode=*/true);
 
