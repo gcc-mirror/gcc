@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "tree-eh.h"
 #include "gimple-match.h"
+#include "gomp-constants.h"
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -2708,6 +2709,47 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
   return true;
 }
 
+/* Fold a call to __builtin_acc_on_device.  */
+
+static bool
+gimple_fold_builtin_acc_on_device (gimple_stmt_iterator *gsi, tree arg0)
+{
+  /* Defer folding until we know which compiler we're in.  */
+  if (symtab->state != EXPANSION)
+    return false;
+
+  unsigned val_host = GOMP_DEVICE_HOST;
+  unsigned val_dev = GOMP_DEVICE_NONE;
+
+#ifdef ACCEL_COMPILER
+  val_host = GOMP_DEVICE_NOT_HOST;
+  val_dev = ACCEL_COMPILER_acc_device;
+#endif
+
+  location_t loc = gimple_location (gsi_stmt (*gsi));
+  
+  tree host_eq = make_ssa_name (boolean_type_node);
+  gimple *host_ass = gimple_build_assign
+    (host_eq, EQ_EXPR, arg0, build_int_cst (TREE_TYPE (arg0), val_host));
+  gimple_set_location (host_ass, loc);
+  gsi_insert_before (gsi, host_ass, GSI_SAME_STMT);
+
+  tree dev_eq = make_ssa_name (boolean_type_node);
+  gimple *dev_ass = gimple_build_assign
+    (dev_eq, EQ_EXPR, arg0, build_int_cst (TREE_TYPE (arg0), val_dev));
+  gimple_set_location (dev_ass, loc);
+  gsi_insert_before (gsi, dev_ass, GSI_SAME_STMT);
+
+  tree result = make_ssa_name (boolean_type_node);
+  gimple *result_ass = gimple_build_assign
+    (result, BIT_IOR_EXPR, host_eq, dev_eq);
+  gimple_set_location (result_ass, loc);
+  gsi_insert_before (gsi, result_ass, GSI_SAME_STMT);
+
+  replace_call_with_value (gsi, result);
+
+  return true;
+}
 
 /* Fold the non-target builtin at *GSI and return whether any simplification
    was made.  */
@@ -2848,6 +2890,9 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					   n == 3
 					   ? gimple_call_arg (stmt, 2)
 					   : NULL_TREE, fcode);
+    case BUILT_IN_ACC_ON_DEVICE:
+      return gimple_fold_builtin_acc_on_device (gsi,
+						gimple_call_arg (stmt, 0));
     default:;
     }
 

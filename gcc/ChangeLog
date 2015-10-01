@@ -1,3 +1,11 @@
+2015-10-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* builtins.c: Don't include gomp-constants.h.
+	(fold_builtin_1): Don't fold acc_on_device here.
+	* gimple-fold.c: Include gomp-constants.h.
+	(gimple_fold_builtin_acc_on_device): New.
+	(gimple_fold_builtin): Call it.
+
 2015-10-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/x86-tune.def (X86_TUNE_USE_BT): Enable for

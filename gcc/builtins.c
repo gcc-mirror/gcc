@@ -68,7 +68,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
-#include "gomp-constants.h"
 
 
 static tree do_mpc_arg1 (tree, tree, int (*)(mpc_ptr, mpc_srcptr, mpc_rnd_t));
@@ -10232,27 +10231,6 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
     case BUILT_IN_FREE:
       if (integer_zerop (arg0))
 	return build_empty_stmt (loc);
-      break;
-
-    case BUILT_IN_ACC_ON_DEVICE:
-      /* Don't fold on_device until we know which compiler is active.  */
-      if (symtab->state == EXPANSION)
-	{
-	  unsigned val_host = GOMP_DEVICE_HOST;
-	  unsigned val_dev = GOMP_DEVICE_NONE;
-
-#ifdef ACCEL_COMPILER
-	  val_host = GOMP_DEVICE_NOT_HOST;
-	  val_dev = ACCEL_COMPILER_acc_device;
-#endif
-	  tree host = build2 (EQ_EXPR, boolean_type_node, arg0,
-			      build_int_cst (integer_type_node, val_host));
-	  tree dev = build2 (EQ_EXPR, boolean_type_node, arg0,
-			     build_int_cst (integer_type_node, val_dev));
-
-	  tree result = build2 (TRUTH_OR_EXPR, boolean_type_node, host, dev);
-	  return fold_convert (integer_type_node, result);
-	}
       break;
 
     default:
