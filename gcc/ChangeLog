@@ -1,5 +1,15 @@
 2015-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* doc/invoke.texi (Optimization Options): Add
+	-freorder-blocks-algorithm=.
+	(Optimize Options) <-O>: Add -freorder-blocks.
+	<-O2>: Remove -freorder-blocks.  Add -freorder-blocks-algorithm=stc.
+	<-Os>: Add -freorder-blocks-algorithm=stc as not enabled.
+	<-freorder-blocks>: Also enabled at levels -O and -Os.
+	<-freorder-blocks-algorithm=>: Document new option.
+
+2015-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* bb-reorder.c (reorder_basic_blocks): Use the algorithm selected
 	with flag_reorder_blocks_algorithm.
 	* common.opt (freorder-blocks-algorithm=): New flag.
