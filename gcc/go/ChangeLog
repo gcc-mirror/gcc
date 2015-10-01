@@ -1,3 +1,9 @@
+2015-10-01  Ian Lance Taylor  <iant@google.com>
+
+	PR go/66870
+	* gospec.c (lang_specific_driver): Only look for OPT_m32 if
+	TARGET_CAN_SPLIT_STACK_64BIT is defined.
+
 2015-10-01  Lynn Boger  <laboger@linux.vnet.ibm.com>
 
 	PR target/66870

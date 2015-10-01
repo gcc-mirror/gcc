@@ -158,9 +158,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	    library = (library == 0) ? 1 : library;
 	  break;
 
+#ifdef TARGET_CAN_SPLIT_STACK_64BIT
 	case OPT_m32:
 	  saw_opt_m32 = true;
 	  break;
+#endif
 
 	case OPT_pg:
 	case OPT_p:
