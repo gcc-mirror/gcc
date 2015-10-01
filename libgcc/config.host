@@ -265,7 +265,7 @@ case ${host} in
 *-*-solaris2*)
   # Unless linker support and dl_iterate_phdr are present,
   # unwind-dw2-fde-dip.c automatically falls back to unwind-dw2-fde.c.
-  tmake_file="$tmake_file sol2/t-sol2 t-eh-dw2-dip t-libgcc-pic t-slibgcc t-slibgcc-elf-ver"
+  tmake_file="$tmake_file sol2/t-sol2 t-eh-dw2-dip t-crtstuff-pic t-libgcc-pic t-slibgcc t-slibgcc-elf-ver"
   if test $with_gnu_ld = yes; then
     tmake_file="$tmake_file t-slibgcc-gld"
   else
@@ -278,6 +278,8 @@ case ${host} in
     # Solaris 11.x and 12 provide crt1.o, crti.o, and crtn.o as part of the
     # base system.  crtp.o and crtpg.o implement the compiler-dependent parts.
     extra_parts="$extra_parts crtp.o crtpg.o"
+    # If the Solaris CRTs are present, both ld and gld will have PIE support.
+    extra_parts="$extra_parts crtbeginS.o crtendS.o"
   else
     case ${host} in
       i?86-*-solaris2.1[0-9]* | x86_64-*-solaris2.1[0-9]*)

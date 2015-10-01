@@ -3,6 +3,27 @@
 	Backport from mainline
 	2015-09-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (gcc_cv_ld_pie): Check for gld >= 2.26 on Solaris.
+	Check for ld -type pie on Solaris 11.x and 12.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+	* config/sol2.h (STARTFILE_CRTBEGIN_SPEC): Define.
+	(STARTFILE_SPEC): Use it.
+	(ENDFILE_CRTEND_SPEC): Define.
+	(ENDFILE_SPEC): Use it and ENDFILE_ARCH_SPEC.
+	(SUBTARGET_EXTRA_SPECS): Add STARTFILE_CRTBEGIN_SPEC,
+	ENDFILE_ARCH_SPEC, ENDFILE_CRTEND_SPEC.
+	(LINK_PIE_SPEC): Define.
+	* config/i386/sol2.h (ENDFILE_SPEC): Remove.
+	(ENDFILE_ARCH_SPEC): Define.
+	* config/sparc/sol2.h (ENDFILE_ARCH_SPEC): Define.
+
+2015-10-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2015-09-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac (gcc_cv_solaris_crts): New test.
 	* configure. Regenerate.
 	* config.in: Regenerate.
