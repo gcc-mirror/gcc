@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Use of errno by the library</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="diagnostics.html" title="Chapter 5.  Diagnostics" /><link rel="prev" href="diagnostics.html" title="Chapter 5.  Diagnostics" /><link rel="next" href="concept_checking.html" title="Concept Checking" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Use of errno by the library</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="diagnostics.html">Prev</a> </td><th width="60%" align="center">Chapter 5. 
+  Diagnostics
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="concept_checking.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.diagnostics.errno"></a>Use of errno by the library</h2></div></div></div><p>
+    The C and POSIX standards guarantee that <code class="varname">errno</code>
+    is never set to zero by any library function.
+    The C++ standard has less to say about when <code class="varname">errno</code>
+    is or isn't set, but libstdc++ follows the same rule and never sets
+    it to zero.
+  </p><p>
+    On the other hand, there are few guarantees about when the C++ library
+    sets <code class="varname">errno</code> on error, beyond what is specified for
+    functions that come from the C library.
+    For example, when <code class="function">std::stoi</code> throws an exception of
+    type <code class="classname">std::out_of_range</code>, <code class="varname">errno</code>
+    may or may not have been set to <code class="constant">ERANGE</code>.
+  </p><p>
+    Parts of the C++ library may be implemented in terms of C library
+    functions, which may result in <code class="varname">errno</code> being set
+    with no explicit call to a C function. For example, on a target where
+    <code class="function">operator new</code> uses <code class="function">malloc</code>
+    a failed memory allocation with <code class="function">operator new</code> might
+    set <code class="varname">errno</code> to <code class="constant">ENOMEM</code>.
+    Which C++ library functions can set <code class="varname">errno</code> in this way
+    is unspecified because it may vary between platforms and between releases.
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="diagnostics.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="diagnostics.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="concept_checking.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 5. 
+  Diagnostics
+  
+ </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Concept Checking</td></tr></table></div></body></html>

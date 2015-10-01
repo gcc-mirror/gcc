@@ -1,5 +1,7 @@
 2015-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/html/manual/errno.html: Add new file.
+
 	* doc/xml/manual/diagnostics.xml: Document use of errno.
 	* doc/html/*: Regenerate.
 	* config/locale/generic/c_locale.cc (_Save_errno): New helper.
