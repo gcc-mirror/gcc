@@ -805,6 +805,18 @@ loop_body_is_valid_scop (loop_p loop, sese_l scop)
 	return false;
     }
   free (bbs);
+
+  if (loop->inner)
+    {
+      loop = loop->inner;
+      while (loop)
+	{
+	  if (!loop_body_is_valid_scop (loop, scop))
+	    return false;
+	  loop = loop->next;
+	}
+    }
+
   return true;
 }
 
