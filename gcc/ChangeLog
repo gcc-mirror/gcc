@@ -4,7 +4,7 @@
 	(aarch_accumulator_forwarding): New.
 	(aarch_forward_to_shift_is_not_shifted_reg): Likewise.
 	* config/arm/aarch-common.c (aarch_accumulator_forwarding): New.
-	(aarch_forward_to_shift_is_not_shifted_reg): Liekwise.
+	(aarch_forward_to_shift_is_not_shifted_reg): Likewise.
 	* config/arm/cortex-a53.md: Rewrite.
 
 2015-10-01  Richard Biener  <rguenther@suse.de>
