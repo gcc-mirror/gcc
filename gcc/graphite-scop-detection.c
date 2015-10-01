@@ -62,9 +62,24 @@ struct sese_l
   : entry (e), exit (x)
   { }
 
+  /* This is to push objects of sese_l in a vec.  */
+  sese_l (int i)
+  : entry (NULL), exit (NULL)
+  {
+    gcc_assert (i == 0);
+  }
+
   operator bool () const
   {
     return entry && exit;
+  }
+
+  const sese_l&
+  operator= (const sese_l &s)
+  {
+    entry = s.entry;
+    exit = s.exit;
+    return *this;
   }
 
   edge entry;
@@ -823,13 +838,20 @@ loop_body_is_valid_scop (loop_p loop, sese_l scop)
 class scop_builder
 {
  public:
-  scop_builder (vec<scop_p> *s)
-    : scops (s)
+  scop_builder ()
+    : scops (vNULL)
   { }
 
   static sese_l invalid_sese;
 
-  sese_l get_sese (loop_p loop)
+  vec<sese_l>
+    get_scops ()
+  {
+    return scops;
+  }
+
+  sese_l
+    get_sese (loop_p loop)
   {
     if (!loop)
       return invalid_sese;
@@ -908,10 +930,7 @@ class scop_builder
   }
 
   /* Merge scops at same loop depth and returns the new sese.
-     TODO: Free the already allocated sese's first and second, or reuse.
-     Returns SECOND when first is NULL.  SECOND cannot be NULL.
-     Frees up SECOND and returns a new SESE when merge was successful.
-  */
+     Returns a new SESE when merge was successful, INVALID_SESE otherwise.  */
 
   static sese_l
     merge_sese (sese_l first, sese_l second)
@@ -962,7 +981,7 @@ class scop_builder
 
     /* For now we just want to bail out when exit does not post-dominate entry.
        TODO: We might just add a basic_block at the exit to make exit
-       post-dominate entry (the entrire region).  */
+       post-dominate entry (the entire region).  */
     if (!dominated_by_p (CDI_POST_DOMINATORS, get_entry_bb (entry),
                          get_exit_bb (exit))
 	|| !dominated_by_p (CDI_DOMINATORS, get_exit_bb (exit),
@@ -1137,8 +1156,6 @@ class scop_builder
     add_scop (sese_l s)
   {
     gcc_assert (s);
-    edge scop_begin = s.entry;
-    edge scop_end = s.exit;
 
     /* Do not add scops with only one loop.  */
     if (region_has_one_loop (s))
@@ -1148,7 +1165,7 @@ class scop_builder
 	return;
       }
 
-    if (get_exit_bb (scop_end) == EXIT_BLOCK_PTR_FOR_FN (cfun))
+    if (get_exit_bb (s.exit) == EXIT_BLOCK_PTR_FOR_FN (cfun))
       {
 	DEBUG_PRINT (dp << "\n[scop-detection-fail] "
 		        << "Discarding SCoP exiting to return";
@@ -1156,16 +1173,13 @@ class scop_builder
 	return;
       }
 
-    sese sese_reg = new_sese (scop_begin, scop_end);
-    scop_p newscop = new_scop (sese_reg);
-
     /* Remove all the scops which are subsumed by s.  */
-    remove_subscops (newscop);
+    remove_subscops (s);
 
     /* Replace this with split-intersecting scops.  */
-    remove_intersecting_scops (newscop);
+    remove_intersecting_scops (s);
 
-    scops->safe_push (newscop);
+    scops.safe_push (s);
     DEBUG_PRINT (dp << "\nAdding SCoP "; print_sese (dump_file, s));
   }
 
@@ -1210,31 +1224,29 @@ class scop_builder
 
   /* Returns true if S1 subsumes/surrounds S2.  */
   static bool
-    subsumes (scop_p s1, scop_p s2)
+    subsumes (sese_l s1, sese_l s2)
   {
-    if (dominated_by_p (CDI_DOMINATORS, get_entry_bb (s2->region->entry),
-			get_entry_bb (s1->region->entry))
-	&& dominated_by_p (CDI_POST_DOMINATORS, get_entry_bb (s2->region->exit),
-			   get_entry_bb (s1->region->exit)))
+    if (dominated_by_p (CDI_DOMINATORS, get_entry_bb (s2.entry),
+			get_entry_bb (s1.entry))
+	&& dominated_by_p (CDI_POST_DOMINATORS, get_entry_bb (s2.exit),
+			   get_entry_bb (s1.exit)))
       return true;
     return false;
   }
 
-  /* TODO: Maybe vec<scops_p> can be made as vec<sese_l> so that it consumes
-   less memory and later push only the relevant scops to vec <scops_p>.  */
+  /* Remove a SCoP which is subsumed by S1.  */
   void
-    remove_subscops (scop_p s1)
+    remove_subscops (sese_l s1)
   {
     int j;
-    scop_p s2;
-    FOR_EACH_VEC_ELT_REVERSE (*scops, j, s2)
+    sese_l s2 (0);
+    FOR_EACH_VEC_ELT_REVERSE (scops, j, s2)
       {
 	if (subsumes (s1, s2))
 	  {
 	    DEBUG_PRINT (dp << "\nRemoving sub-SCoP";
-		 print_sese (dump_file,
-			     sese_l (s2->region->entry, s2->region->exit)));
-	    scops->unordered_remove (j);
+		 print_sese (dump_file, s2));
+	    scops.unordered_remove (j);
 	  }
       }
   }
@@ -1243,15 +1255,15 @@ class scop_builder
      not subsume S2 or vice-versa, we only check for entry bbs.  */
 
   static bool
-    intersects (scop_p s1, scop_p s2)
+    intersects (sese_l s1, sese_l s2)
   {
-    if (dominated_by_p (CDI_DOMINATORS, get_entry_bb (s2->region->entry),
-			get_entry_bb (s1->region->entry))
-	&& !dominated_by_p (CDI_DOMINATORS, get_entry_bb (s2->region->entry),
-			    get_exit_bb (s1->region->exit)))
+    if (dominated_by_p (CDI_DOMINATORS, get_entry_bb (s2.entry),
+			get_entry_bb (s1.entry))
+	&& !dominated_by_p (CDI_DOMINATORS, get_entry_bb (s2.entry),
+			    get_exit_bb (s1.exit)))
       return true;
-    if ((s1->region->exit == s2->region->entry)
-	|| (s2->region->exit == s1->region->entry))
+    if ((s1.exit == s2.entry)
+	|| (s2.exit == s1.entry))
       return true;
 
     return false;
@@ -1260,30 +1272,28 @@ class scop_builder
   /* Remove one of the scops when it intersects with any other.  */
 
   void
-    remove_intersecting_scops (scop_p s1)
+    remove_intersecting_scops (sese_l s1)
   {
     int j;
-    scop_p s2;
-    FOR_EACH_VEC_ELT_REVERSE (*scops, j, s2)
+    sese_l s2 (0);
+    FOR_EACH_VEC_ELT_REVERSE (scops, j, s2)
       {
 	if (intersects (s1, s2))
 	  {
 	    DEBUG_PRINT (dp << "\nRemoving intersecting SCoP";
-		print_sese (dump_file, sese_l (s2->region->entry,
-					       s2->region->exit));
+		print_sese (dump_file, s2);
 		dp << "Intersects with:";
-		print_sese (dump_file, sese_l (s1->region->entry,
-					       s1->region->exit)));
-	    scops->unordered_remove (j);
+		print_sese (dump_file, s1));
+	    scops.unordered_remove (j);
 	  }
       }
   }
 
  private:
-  vec<scop_p> *scops;
+  vec<sese_l> scops;
 };
 
-sese_l scop_builder::invalid_sese (NULL, NULL);
+sese_l scop_builder::invalid_sese (0);
 
 /* Find Static Control Parts (SCoP) in the current function and pushes
    them to SCOPS.  */
@@ -1296,8 +1306,19 @@ build_scops (vec<scop_p> *scops)
 
   canonicalize_loop_closed_ssa_form ();
 
-  scop_builder s (scops);
-  s.build_scop_depth (scop_builder::invalid_sese, current_loops->tree_root);
+  scop_builder sb;
+  sb.build_scop_depth (scop_builder::invalid_sese, current_loops->tree_root);
+
+  /* Now create scops from the lightweight SESEs.  */
+  vec<sese_l> scops_l = sb.get_scops ();
+  int i;
+  sese_l s (0);
+  FOR_EACH_VEC_ELT (scops_l, i, s)
+  {
+    sese sese_reg = new_sese (s.entry, s.exit);
+    scops->safe_push (new_scop (sese_reg));
+  }
+
   DEBUG_PRINT (dp << "number of SCoPs: " << (scops ? scops->length () : 0););
 }
 
