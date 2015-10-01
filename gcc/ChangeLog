@@ -1,5 +1,15 @@
 2015-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* bb-reorder.c (reorder_basic_blocks): Use the algorithm selected
+	with flag_reorder_blocks_algorithm.
+	* common.opt (freorder-blocks-algorithm=): New flag.
+	(reorder_blocks_algorithm): New enum.
+	* flag-types.h (reorder_blocks_algorithm): New enum.
+	* opts.c (default_options_table): Use -freorder-blocks at -O1 and up,
+	and -freorder-blocks-algorithm=stc at -O2 and up (not at -Os).
+
+2015-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* bb-reorder.c: Add intro comment.
 	(reorder_basic_blocks_software_trace_cache): Print a header to
 	the dump file.

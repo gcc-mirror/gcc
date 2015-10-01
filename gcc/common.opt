@@ -1910,6 +1910,19 @@ freorder-blocks
 Common Report Var(flag_reorder_blocks) Optimization
 Reorder basic blocks to improve code placement
 
+freorder-blocks-algorithm=
+Common Joined RejectNegative Enum(reorder_blocks_algorithm) Var(flag_reorder_blocks_algorithm) Init(REORDER_BLOCKS_ALGORITHM_SIMPLE) Optimization
+-freorder-blocks-algorithm=[simple|stc] Set the used basic block reordering algorithm
+
+Enum
+Name(reorder_blocks_algorithm) Type(enum reorder_blocks_algorithm) UnknownError(unknown basic block reordering algorithm %qs)
+
+EnumValue
+Enum(reorder_blocks_algorithm) String(simple) Value(REORDER_BLOCKS_ALGORITHM_SIMPLE)
+
+EnumValue
+Enum(reorder_blocks_algorithm) String(stc) Value(REORDER_BLOCKS_ALGORITHM_STC)
+
 freorder-blocks-and-partition
 Common Report Var(flag_reorder_blocks_and_partition) Optimization
 Reorder basic blocks and partition into hot and cold sections
