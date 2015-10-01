@@ -1,5 +1,19 @@
 2015-10-01  Aditya Kumar  <aditya.k7@samsung.com>
 
+	* graphite-scop-detection.c (struct sese_l): New conversion constructor
+	so that this type can be pushed into a vec.
+	(class scop_builder): use sese_l to collect scops.
+	(get_scops): New getter function.
+	(remove_intersecting_scops): Use sese_l instead of scops_p.
+	(intersects): Same.
+	(add_scop): Same.
+	(subsumes): Same.
+	(remove_subscops): Same.
+	(build_scops): Add scops to vec<scops_p> once all the scops have been
+	detected.
+
+2015-10-01  Aditya Kumar  <aditya.k7@samsung.com>
+
 	* graphite-isl-ast-to-gimple.c (class translate_isl_ast_to_gimple):
 	Renamed type from gimple_bb_p to gimple_poly_bb_p.
 	(translate_isl_ast_node_user): Same.
