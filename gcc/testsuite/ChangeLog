@@ -1,3 +1,7 @@
+2015-10-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/lto/pr55113_0.c: Skip on all x86 targets.
+
 2015-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
@@ -202,7 +206,7 @@
 2015-07-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Backport from mainline
-        2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/63408
 	* gcc.target/arm/pr63408.c: New test.
