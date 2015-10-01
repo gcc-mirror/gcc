@@ -180,7 +180,7 @@ new_poly_bb (scop_p scop, void *black_box)
   pbb_set_black_box (pbb, black_box);
   PBB_DRS (pbb).create (3);
   PBB_IS_REDUCTION (pbb) = false;
-  GBB_PBB ((gimple_bb_p) black_box) = pbb;
+  GBB_PBB ((gimple_poly_bb_p) black_box) = pbb;
 
   return pbb;
 }
@@ -324,7 +324,7 @@ print_pbb_domain (FILE *file, poly_bb_p pbb, int verbosity ATTRIBUTE_UNUSED)
 /* Dump the cases of a graphite basic block GBB on FILE.  */
 
 static void
-dump_gbb_cases (FILE *file, gimple_bb_p gbb)
+dump_gbb_cases (FILE *file, gimple_poly_bb_p gbb)
 {
   int i;
   gimple *stmt;
@@ -351,7 +351,7 @@ dump_gbb_cases (FILE *file, gimple_bb_p gbb)
 /* Dump conditions of a graphite basic block GBB on FILE.  */
 
 static void
-dump_gbb_conditions (FILE *file, gimple_bb_p gbb)
+dump_gbb_conditions (FILE *file, gimple_poly_bb_p gbb)
 {
   int i;
   gimple *stmt;

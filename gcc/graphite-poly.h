@@ -277,7 +277,7 @@ struct poly_bb
   bool is_reduction;
 };
 
-#define PBB_BLACK_BOX(PBB) ((gimple_bb_p) PBB->black_box)
+#define PBB_BLACK_BOX(PBB) ((gimple_poly_bb_p) PBB->black_box)
 #define PBB_SCOP(PBB) (PBB->scop)
 #define PBB_DRS(PBB) (PBB->drs)
 #define PBB_IS_REDUCTION(PBB) (PBB->is_reduction)
@@ -319,10 +319,10 @@ extern void debug_gmp_value (mpz_t);
 
 /* Returns a gimple_bb from BB.  */
 
-static inline gimple_bb_p
+static inline gimple_poly_bb_p
 gbb_from_bb (basic_block bb)
 {
-  return (gimple_bb_p) bb->aux;
+  return (gimple_poly_bb_p) bb->aux;
 }
 
 /* The poly_bb of the BB.  */

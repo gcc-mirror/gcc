@@ -259,7 +259,7 @@ class translate_isl_ast_to_gimple
      FIXME: Instead of using a vec<tree> that maps each loop id to a possible
      chrec, we could consider using a map<int, tree> that maps loop ids to the
      corresponding tree expressions.  */
-  void build_iv_mapping (vec<tree> iv_map, gimple_bb_p gbb,
+  void build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
 			 __isl_keep isl_ast_expr *user_expr, ivs_params &ip,
 			 sese region);
 private:
@@ -739,7 +739,7 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
 
 void
 translate_isl_ast_to_gimple::
-build_iv_mapping (vec<tree> iv_map, gimple_bb_p gbb,
+build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
 		  __isl_keep isl_ast_expr *user_expr, ivs_params &ip,
 		  sese region)
 {
@@ -775,7 +775,7 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
   isl_id *name_id = isl_ast_expr_get_id (name_expr);
   poly_bb_p pbb = (poly_bb_p) isl_id_get_user (name_id);
   gcc_assert (pbb);
-  gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
+  gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
   vec<tree> iv_map;
   isl_ast_expr_free (name_expr);
   isl_id_free (name_id);

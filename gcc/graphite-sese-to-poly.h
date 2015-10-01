@@ -21,11 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GRAPHITE_SESE_TO_POLY_H
 #define GCC_GRAPHITE_SESE_TO_POLY_H
 
-struct base_alias_pair
+typedef struct base_alias_pair
 {
   int base_obj_set;
   int *alias_set;
-};
+} *base_alias_pair_p;
 
 void build_poly_scop (scop_p);
 

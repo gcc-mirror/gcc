@@ -198,12 +198,12 @@ reduction_phi_p (sese region, gphi_iterator *psi)
 
 /* Store the GRAPHITE representation of BB.  */
 
-static gimple_bb_p
+static gimple_poly_bb_p
 new_gimple_bb (basic_block bb, vec<data_reference_p> drs)
 {
-  struct gimple_bb *gbb;
+  gimple_poly_bb_p gbb;
 
-  gbb = XNEW (struct gimple_bb);
+  gbb = XNEW (struct gimple_poly_bb);
   bb->aux = gbb;
   GBB_BB (gbb) = bb;
   GBB_DATA_REFS (gbb) = drs;
@@ -217,12 +217,12 @@ static void
 free_data_refs_aux (vec<data_reference_p> datarefs)
 {
   unsigned int i;
-  struct data_reference *dr;
+  data_reference_p dr;
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     if (dr->aux)
       {
-	base_alias_pair *bap = (base_alias_pair *)(dr->aux);
+	base_alias_pair_p bap = (base_alias_pair_p)(dr->aux);
 
 	free (bap->alias_set);
 
@@ -233,7 +233,7 @@ free_data_refs_aux (vec<data_reference_p> datarefs)
 /* Frees GBB.  */
 
 static void
-free_gimple_bb (struct gimple_bb *gbb)
+free_gimple_bb (gimple_poly_bb_p gbb)
 {
   free_data_refs_aux (GBB_DATA_REFS (gbb));
   free_data_refs (GBB_DATA_REFS (gbb));
@@ -277,7 +277,7 @@ free_scops (vec<scop_p> scops)
 /* Generates a polyhedral black box only if the bb contains interesting
    information.  */
 
-static gimple_bb_p
+static gimple_poly_bb_p
 try_generate_gimple_bb (scop_p scop, basic_block bb)
 {
   vec<data_reference_p> drs;
@@ -526,7 +526,7 @@ build_scop_scattering (scop_p scop)
 {
   int i;
   poly_bb_p pbb;
-  gimple_bb_p previous_gbb = NULL;
+  gimple_poly_bb_p previous_gbb = NULL;
   isl_space *dc = isl_set_get_space (scop->context);
   isl_aff *static_sched;
 
@@ -541,7 +541,7 @@ build_scop_scattering (scop_p scop)
 
   FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     {
-      gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
+      gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
       int prefix;
 
       if (previous_gbb)
@@ -876,7 +876,7 @@ scan_tree_for_params (sese s, tree e)
    access functions, conditions and loop bounds.  */
 
 static void
-find_params_in_bb (sese region, gimple_bb_p gbb)
+find_params_in_bb (sese region, gimple_poly_bb_p gbb)
 {
   int i;
   unsigned j;
@@ -1133,7 +1133,7 @@ add_conditions_to_domain (poly_bb_p pbb)
 {
   unsigned int i;
   gimple *stmt;
-  gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
+  gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
 
   if (GBB_CONDITIONS (gbb).is_empty ())
     return;
@@ -1229,7 +1229,7 @@ sese_dom_walker::sese_dom_walker (cdi_direction direction, sese region)
 void
 sese_dom_walker::before_dom_children (basic_block bb)
 {
-  gimple_bb_p gbb;
+  gimple_poly_bb_p gbb;
   gcond *stmt;
 
   if (!bb_in_sese_p (bb, m_region))
@@ -1900,7 +1900,7 @@ static void
 analyze_drs_in_stmts (scop_p scop, basic_block bb, vec<gimple *> stmts)
 {
   loop_p nest;
-  gimple_bb_p gbb;
+  gimple_poly_bb_p gbb;
   gimple *stmt;
   int i;
   sese region = SCOP_REGION (scop);
@@ -1982,8 +1982,8 @@ new_pbb_from_pbb (scop_p scop, poly_bb_p pbb, basic_block bb)
 {
   vec<data_reference_p> drs;
   drs.create (3);
-  gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
-  gimple_bb_p gbb1 = new_gimple_bb (bb, drs);
+  gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
+  gimple_poly_bb_p gbb1 = new_gimple_bb (bb, drs);
   poly_bb_p pbb1 = new_poly_bb (scop, gbb1);
   int index, n = SCOP_BBS (scop).length ();
 
