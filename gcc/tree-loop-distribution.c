@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* A Reduced Dependence Graph (RDG) vertex representing a statement.  */
-typedef struct rdg_vertex
+struct rdg_vertex
 {
   /* The statement represented by this vertex.  */
   gimple *stmt;
@@ -86,7 +86,7 @@ typedef struct rdg_vertex
 
   /* True when the statement contains a read from memory.  */
   bool has_mem_reads;
-} *rdg_vertex_p;
+};
 
 #define RDGV_STMT(V)     ((struct rdg_vertex *) ((V)->data))->stmt
 #define RDGV_DATAREFS(V) ((struct rdg_vertex *) ((V)->data))->datarefs
@@ -110,11 +110,11 @@ enum rdg_dep_type
 
 /* Dependence information attached to an edge of the RDG.  */
 
-typedef struct rdg_edge
+struct rdg_edge
 {
   /* Type of the dependence.  */
   enum rdg_dep_type type;
-} *rdg_edge_p;
+};
 
 #define RDGE_TYPE(E)        ((struct rdg_edge *) ((E)->data))->type
 
@@ -474,7 +474,7 @@ enum partition_kind {
     PKIND_NORMAL, PKIND_MEMSET, PKIND_MEMCPY
 };
 
-typedef struct partition_s
+struct partition
 {
   bitmap stmts;
   bitmap loops;
@@ -485,15 +485,15 @@ typedef struct partition_s
   data_reference_p secondary_dr;
   tree niter;
   bool plus_one;
-} *partition_t;
+};
 
 
 /* Allocate and initialize a partition from BITMAP.  */
 
-static partition_t
+static partition *
 partition_alloc (bitmap stmts, bitmap loops)
 {
-  partition_t partition = XCNEW (struct partition_s);
+  partition *partition = XCNEW (struct partition);
   partition->stmts = stmts ? stmts : BITMAP_ALLOC (NULL);
   partition->loops = loops ? loops : BITMAP_ALLOC (NULL);
   partition->reduction_p = false;
@@ -504,7 +504,7 @@ partition_alloc (bitmap stmts, bitmap loops)
 /* Free PARTITION.  */
 
 static void
-partition_free (partition_t partition)
+partition_free (partition *partition)
 {
   BITMAP_FREE (partition->stmts);
   BITMAP_FREE (partition->loops);
@@ -514,7 +514,7 @@ partition_free (partition_t partition)
 /* Returns true if the partition can be generated as a builtin.  */
 
 static bool
-partition_builtin_p (partition_t partition)
+partition_builtin_p (partition *partition)
 {
   return partition->kind != PKIND_NORMAL;
 }
@@ -522,7 +522,7 @@ partition_builtin_p (partition_t partition)
 /* Returns true if the partition contains a reduction.  */
 
 static bool
-partition_reduction_p (partition_t partition)
+partition_reduction_p (partition *partition)
 {
   return partition->reduction_p;
 }
@@ -530,7 +530,7 @@ partition_reduction_p (partition_t partition)
 /* Merge PARTITION into the partition DEST.  */
 
 static void
-partition_merge_into (partition_t dest, partition_t partition)
+partition_merge_into (partition *dest, partition *partition)
 {
   dest->kind = PKIND_NORMAL;
   bitmap_ior_into (dest->stmts, partition->stmts);
@@ -615,7 +615,7 @@ create_bb_after_loop (struct loop *loop)
    basic blocks of a loop are taken in dom order.  */
 
 static void
-generate_loops_for_partition (struct loop *loop, partition_t partition,
+generate_loops_for_partition (struct loop *loop, partition *partition,
 			      bool copy_p)
 {
   unsigned i;
@@ -776,7 +776,7 @@ const_with_all_bytes_same (tree val)
 /* Generate a call to memset for PARTITION in LOOP.  */
 
 static void
-generate_memset_builtin (struct loop *loop, partition_t partition)
+generate_memset_builtin (struct loop *loop, partition *partition)
 {
   gimple_stmt_iterator gsi;
   gimple *stmt, *fn_call;
@@ -832,7 +832,7 @@ generate_memset_builtin (struct loop *loop, partition_t partition)
 /* Generate a call to memcpy for PARTITION in LOOP.  */
 
 static void
-generate_memcpy_builtin (struct loop *loop, partition_t partition)
+generate_memcpy_builtin (struct loop *loop, partition *partition)
 {
   gimple_stmt_iterator gsi;
   gimple *stmt, *fn_call;
@@ -927,7 +927,7 @@ destroy_loop (struct loop *loop)
 
 static void
 generate_code_for_partition (struct loop *loop,
-			     partition_t partition, bool copy_p)
+			     partition *partition, bool copy_p)
 {
   switch (partition->kind)
     {
@@ -960,10 +960,10 @@ generate_code_for_partition (struct loop *loop,
 /* Returns a partition with all the statements needed for computing
    the vertex V of the RDG, also including the loop exit conditions.  */
 
-static partition_t
+static partition *
 build_rdg_partition_for_vertex (struct graph *rdg, int v)
 {
-  partition_t partition = partition_alloc (NULL, NULL);
+  partition *partition = partition_alloc (NULL, NULL);
   auto_vec<int, 3> nodes;
   unsigned i;
   int x;
@@ -984,7 +984,7 @@ build_rdg_partition_for_vertex (struct graph *rdg, int v)
    For the moment we detect only the memset zero pattern.  */
 
 static void
-classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
+classify_partition (loop_p loop, struct graph *rdg, partition *partition)
 {
   bitmap_iterator bi;
   unsigned i;
@@ -1167,8 +1167,8 @@ ref_base_address (data_reference_p dr)
    accesses in RDG.  */
 
 static bool
-similar_memory_accesses (struct graph *rdg, partition_t partition1,
-			 partition_t partition2)
+similar_memory_accesses (struct graph *rdg, partition *partition1,
+			 partition *partition2)
 {
   unsigned i, j, k, l;
   bitmap_iterator bi, bj;
@@ -1210,7 +1210,7 @@ similar_memory_accesses (struct graph *rdg, partition_t partition1,
 static void
 rdg_build_partitions (struct graph *rdg,
 		      vec<gimple *> starting_stmts,
-		      vec<partition_t> *partitions)
+		      vec<partition *> *partitions)
 {
   bitmap processed = BITMAP_ALLOC (NULL);
   int i;
@@ -1229,7 +1229,7 @@ rdg_build_partitions (struct graph *rdg,
       if (bitmap_bit_p (processed, v))
 	continue;
 
-      partition_t partition = build_rdg_partition_for_vertex (rdg, v);
+      partition *partition = build_rdg_partition_for_vertex (rdg, v);
       bitmap_ior_into (processed, partition->stmts);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1250,20 +1250,20 @@ rdg_build_partitions (struct graph *rdg,
 /* Dump to FILE the PARTITIONS.  */
 
 static void
-dump_rdg_partitions (FILE *file, vec<partition_t> partitions)
+dump_rdg_partitions (FILE *file, vec<partition *> partitions)
 {
   int i;
-  partition_t partition;
+  partition *partition;
 
   FOR_EACH_VEC_ELT (partitions, i, partition)
     debug_bitmap_file (file, partition->stmts);
 }
 
 /* Debug PARTITIONS.  */
-extern void debug_rdg_partitions (vec<partition_t> );
+extern void debug_rdg_partitions (vec<partition *> );
 
 DEBUG_FUNCTION void
-debug_rdg_partitions (vec<partition_t> partitions)
+debug_rdg_partitions (vec<partition *> partitions)
 {
   dump_rdg_partitions (stderr, partitions);
 }
@@ -1291,7 +1291,7 @@ number_of_rw_in_rdg (struct graph *rdg)
    the RDG.  */
 
 static int
-number_of_rw_in_partition (struct graph *rdg, partition_t partition)
+number_of_rw_in_partition (struct graph *rdg, partition *partition)
 {
   int res = 0;
   unsigned i;
@@ -1314,10 +1314,10 @@ number_of_rw_in_partition (struct graph *rdg, partition_t partition)
 
 static bool
 partition_contains_all_rw (struct graph *rdg,
-			   vec<partition_t> partitions)
+			   vec<partition *> partitions)
 {
   int i;
-  partition_t partition;
+  partition *partition;
   int nrw = number_of_rw_in_rdg (rdg);
 
   FOR_EACH_VEC_ELT (partitions, i, partition)
@@ -1410,7 +1410,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 		 control_dependences *cd, int *nb_calls)
 {
   struct graph *rdg;
-  partition_t partition;
+  partition *partition;
   bool any_builtin;
   int i, nbp;
   graph *pg = NULL;
@@ -1435,7 +1435,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg (dump_file, rdg);
 
-  auto_vec<partition_t, 3> partitions;
+  auto_vec<struct partition *, 3> partitions;
   rdg_build_partitions (rdg, stmts, &partitions);
 
   any_builtin = false;
@@ -1458,7 +1458,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
      were not classified as builtins.  This also avoids chopping
      a loop into pieces, separated by builtin calls.  That is, we
      only want no or a single loop body remaining.  */
-  partition_t into;
+  struct partition *into;
   if (!flag_tree_loop_distribution)
     {
       for (i = 0; partitions.iterate (i, &into); ++i)
@@ -1535,7 +1535,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
     {
       pg = new_graph (partitions.length ());
       struct pgdata {
-	  partition_t partition;
+	  struct partition *partition;
 	  vec<data_reference_p> writes;
 	  vec<data_reference_p> reads;
       };
@@ -1559,7 +1559,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	      else
 		data->writes.safe_push (dr);
 	}
-      partition_t partition1, partition2;
+      struct partition *partition1, *partition2;
       for (i = 0; partitions.iterate (i, &partition1); ++i)
 	for (int j = i + 1; partitions.iterate (j, &partition2); ++j)
 	  {
@@ -1599,7 +1599,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
       num_sccs = graphds_scc (pg, NULL);
       for (i = 0; i < num_sccs; ++i)
 	{
-	  partition_t first;
+	  struct partition *first;
 	  int j;
 	  for (j = 0; partitions.iterate (j, &first); ++j)
 	    if (pg->vertices[j].component == i)

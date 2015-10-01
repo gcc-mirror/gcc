@@ -121,9 +121,7 @@ struct comparison
   bool inputs_valid;
 };
   
-typedef struct comparison *comparison_struct_p;
-
-static vec<comparison_struct_p> all_compares;
+static vec<comparison *> all_compares;
 
 /* Look for a "conforming" comparison, as defined above.  If valid, return
    the rtx for the COMPARE itself.  */

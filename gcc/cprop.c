@@ -71,8 +71,6 @@ struct cprop_occr
   rtx_insn *insn;
 };
 
-typedef struct cprop_occr *occr_t;
-
 /* Hash table entry for assignment expressions.  */
 
 struct cprop_expr
