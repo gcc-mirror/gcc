@@ -2,6 +2,17 @@
 	    Aditya Kumar  <aditya.k7@samsung.com>
 
 	PR tree-optimization/67754
+	* graphite-scop-detection.c (stmt_has_simple_data_refs_p): Call
+	scev analysis on the same loop nest as analyze_drs_in_stmts.
+	* graphite-sese-to-poly.c (outermost_loop_in_sese_1): Moved and renamed...
+	(try_generate_gimple_bb): Call outermost_loop_in_sese.
+	(analyze_drs_in_stmts): Same.
+	* sese.c (outermost_loop_in_sese): ...here.
+
+2015-10-01  Sebastian Pop  <s.pop@samsung.com>
+	    Aditya Kumar  <aditya.k7@samsung.com>
+
+	PR tree-optimization/67754
 	* graphite-scop-detection.c (loop_body_is_valid_scop): Add missing
 	recursion on the inner loops.
 

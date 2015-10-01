@@ -262,46 +262,37 @@ graphite_can_represent_expr (sese_l scop, loop_p loop, tree expr)
 static bool
 stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 {
-  data_reference_p dr;
-  int j;
-  bool res = true;
+  sese region = new_sese (scop.entry, scop.exit);
+  loop_p nest = outermost_loop_in_sese (region, gimple_bb (stmt));
+  loop_p loop = loop_containing_stmt (stmt);
   vec<data_reference_p> drs = vNULL;
-  loop_p outer;
-  loop_p loop_around_scop = get_entry_bb (scop.entry)->loop_father;
 
-  for (outer = loop_containing_stmt (stmt); outer && outer != loop_around_scop;
-       outer = loop_outer (outer))
+  graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
+
+  int j;
+  data_reference_p dr;
+  FOR_EACH_VEC_ELT (drs, j, dr)
     {
-      graphite_find_data_references_in_stmt (outer,
-					     loop_containing_stmt (stmt),
-					     stmt, &drs);
+      int nb_subscripts = DR_NUM_DIMENSIONS (dr);
+      tree ref = DR_REF (dr);
 
-      FOR_EACH_VEC_ELT (drs, j, dr)
+      for (int i = nb_subscripts - 1; i >= 0; i--)
 	{
-	  int nb_subscripts = DR_NUM_DIMENSIONS (dr);
-	  tree ref = DR_REF (dr);
-
-	  for (int i = nb_subscripts - 1; i >= 0; i--)
+	  if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i))
+	      || (TREE_CODE (ref) != ARRAY_REF
+		  && TREE_CODE (ref) != MEM_REF
+		  && TREE_CODE (ref) != COMPONENT_REF))
 	    {
-	      if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i))
-		  || (TREE_CODE (ref) != ARRAY_REF
-		      && TREE_CODE (ref) != MEM_REF
-		      && TREE_CODE (ref) != COMPONENT_REF))
-		{
-		  free_data_refs (drs);
-		  return false;
-		}
-
-	      ref = TREE_OPERAND (ref, 0);
+	      free_data_refs (drs);
+	      return false;
 	    }
-	}
 
-      free_data_refs (drs);
-      drs.create (0);
+	  ref = TREE_OPERAND (ref, 0);
+	}
     }
 
   free_data_refs (drs);
-  return res;
+  return true;
 }
 
 /* Return true only when STMT is simple enough for being handled by Graphite.
