@@ -544,6 +544,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
     }
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, new_var);
+  reset_flow_sensitive_info_in_bb (cond_bb);
 
   /* Note that we optimized this PHI.  */
   return true;
@@ -1174,6 +1175,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
   gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
+  reset_flow_sensitive_info_in_bb (cond_bb);
+
   return true;
 }
 
@@ -1292,6 +1295,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
     }
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
+  reset_flow_sensitive_info_in_bb (cond_bb);
 
   /* Note that we optimized this PHI.  */
   return true;

@@ -1,3 +1,14 @@
+2015-10-01  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2015-10-01  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/67769
+	* tree-ssa-phiopt.c (conditional_replacement): Call
+	reset_flow_sensitive_info_in_bb.
+	(minmax_replacement): Likewise.
+	(abs_replacement): Likewise.
+
 2015-10-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline
