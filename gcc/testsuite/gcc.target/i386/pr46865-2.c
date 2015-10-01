@@ -1,6 +1,6 @@
 /* PR rtl-optimization/46865 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -save-temps" } */
+/* { dg-options "-O2" } */
 
 extern unsigned long f;
 
