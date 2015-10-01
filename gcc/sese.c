@@ -693,7 +693,7 @@ if_region_set_false_region (ifsese if_region, sese region)
       memcpy (loop_exit, *((struct loop_exit **) slot), sizeof (struct loop_exit));
       current_loops->exits->clear_slot (slot);
 
-							hashval_t hash = htab_hash_pointer (false_edge);
+      hashval_t hash = htab_hash_pointer (false_edge);
       slot = current_loops->exits->find_slot_with_hash (false_edge, hash,
 							INSERT);
       loop_exit->e = false_edge;
@@ -752,7 +752,8 @@ move_sese_in_condition (sese region)
   ifsese if_region;
 
   SESE_ENTRY (region) = single_succ_edge (pred_block);
-  if_region = create_if_region_on_edge (single_pred_edge (pred_block), integer_one_node);
+  if_region = create_if_region_on_edge (single_pred_edge (pred_block),
+					integer_one_node);
   if_region_set_false_region (if_region, region);
 
   return if_region;

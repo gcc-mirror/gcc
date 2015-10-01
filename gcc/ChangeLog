@@ -1,3 +1,23 @@
+2015-10-01  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-isl-ast-to-gimple.c (class translate_isl_ast_to_gimple):
+	Renamed type from gimple_bb_p to gimple_poly_bb_p.
+	(translate_isl_ast_node_user): Same.
+	* graphite-poly.c (new_poly_bb): Same.
+	* graphite-poly.h (gbb_from_bb): Same.
+	* sese.h: Same.
+	* graphite-sese-to-poly.c (new_gimple_bb): gimple_bb_p -> gimple_poly_bb_p
+	(build_scop_scattering): Same.
+	(find_params_in_bb): Same.
+	(add_conditions_to_domain): Same.
+	(sese_dom_walker::before_dom_children): Same.
+	(analyze_drs_in_stmts): Same.
+	(new_pbb_from_pbb): Same.
+	(free_data_refs_aux): New pointer to type base_alias_pair.
+	* graphite-sese-to-poly.h: Same.
+	* sese.c (if_region_set_false_region): Fixed Indentation.
+	(move_sese_in_condition): Same.
+
 2015-10-01  Sebastian Pop  <s.pop@samsung.com>
 	    Aditya Kumar  <aditya.k7@samsung.com>
 
