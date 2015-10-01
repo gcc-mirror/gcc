@@ -394,6 +394,112 @@ arm_mac_accumulator_is_result (rtx producer, rtx consumer)
           && !reg_overlap_mentioned_p (result, op1));
 }
 
+/* Return non-zero if the destination of PRODUCER feeds the accumulator
+   operand of an MLA-like operation.  */
+
+int
+aarch_accumulator_forwarding (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx producer_set = single_set (producer);
+  rtx consumer_set = single_set (consumer);
+
+  /* We are looking for a SET feeding a SET.  */
+  if (!producer_set || !consumer_set)
+    return 0;
+
+  rtx dest = SET_DEST (producer_set);
+  rtx mla = SET_SRC (consumer_set);
+
+  /* We're looking for a register SET.  */
+  if (!REG_P (dest))
+    return 0;
+
+  rtx accumulator;
+
+  /* Strip a zero_extend.  */
+  if (GET_CODE (mla) == ZERO_EXTEND)
+    mla = XEXP (mla, 0);
+
+  switch (GET_CODE (mla))
+    {
+    case PLUS:
+      /* Possibly an MADD.  */
+      if (GET_CODE (XEXP (mla, 0)) == MULT)
+	accumulator = XEXP (mla, 1);
+      else
+	return 0;
+      break;
+    case MINUS:
+      /* Possibly an MSUB.  */
+      if (GET_CODE (XEXP (mla, 1)) == MULT)
+	accumulator = XEXP (mla, 0);
+      else
+	return 0;
+      break;
+    case FMA:
+	{
+	  /* Possibly an FMADD/FMSUB/FNMADD/FNMSUB.  */
+	  if (REG_P (XEXP (mla, 1))
+	      && REG_P (XEXP (mla, 2))
+	      && (REG_P (XEXP (mla, 0))
+		  || GET_CODE (XEXP (mla, 0)) == NEG))
+
+	    {
+	      /* FMADD/FMSUB.  */
+	      accumulator = XEXP (mla, 2);
+	    }
+	  else if (REG_P (XEXP (mla, 1))
+		   && GET_CODE (XEXP (mla, 2)) == NEG
+		   && (REG_P (XEXP (mla, 0))
+		       || GET_CODE (XEXP (mla, 0)) == NEG))
+	    {
+	      /* FNMADD/FNMSUB.  */
+	      accumulator = XEXP (XEXP (mla, 2), 0);
+	    }
+	  else
+	    return 0;
+	  break;
+	}
+      default:
+	/* Not an MLA-like operation.  */
+	return 0;
+    }
+
+  return (REGNO (dest) == REGNO (accumulator));
+}
+
+/* Return nonzero if the CONSUMER instruction is some sort of
+   arithmetic or logic + shift operation, and the register we are
+   writing in PRODUCER is not used in a register shift by register
+   operation.  */
+
+int
+aarch_forward_to_shift_is_not_shifted_reg (rtx_insn *producer,
+					   rtx_insn *consumer)
+{
+  rtx value, op;
+  rtx early_op;
+
+  if (!arm_get_set_operands (producer, consumer, &value, &op))
+    return 0;
+
+  if ((early_op = arm_find_shift_sub_rtx (op)))
+    {
+      if (REG_P (early_op))
+	early_op = op;
+
+      /* Any other canonicalisation of a shift is a shift-by-constant
+	 so we don't care.  */
+      if (GET_CODE (early_op) == ASHIFT)
+	return (!REG_P (XEXP (early_op, 0))
+		|| !REG_P (XEXP (early_op, 1)));
+      else
+	return 1;
+    }
+
+  return 0;
+}
+
 /* Return non-zero if the consumer (a multiply-accumulate instruction)
    has an accumulator dependency on the result of the producer (a
    multiplication instruction) and no other dependency on that result.  */
