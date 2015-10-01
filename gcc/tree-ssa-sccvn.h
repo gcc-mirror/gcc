@@ -165,8 +165,8 @@ typedef struct vn_ssa_aux
 {
   /* Value number. This may be an SSA name or a constant.  */
   tree valnum;
-  /* Representative expression, if not a direct constant. */
-  tree expr;
+  /* Statements to insert if needs_insertion is true.  */
+  gimple_seq expr;
 
   /* Unique identifier that all expressions with the same value have. */
   unsigned int value_id;
@@ -177,8 +177,6 @@ typedef struct vn_ssa_aux
   unsigned visited : 1;
   unsigned on_sccstack : 1;
 
-  /* Whether the representative expression contains constants.  */
-  unsigned has_constants : 1;
   /* Whether the SSA_NAME has been value numbered already.  This is
      only saying whether visit_use has been called on it at least
      once.  It cannot be used to avoid visitation for SSA_NAME's

@@ -4877,22 +4877,28 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
      edges if there are intermediate VARYING defs.  For this reason
      do not follow SSA edges here even though SCCVN can technically
      just deal fine with that.  */
-  if (gimple_simplify (stmt, &rcode, ops, NULL, gvalueize, valueize)
-      && rcode.is_tree_code ()
-      && (TREE_CODE_LENGTH ((tree_code) rcode) == 0
-	  || ((tree_code) rcode) == ADDR_EXPR)
-      && is_gimple_val (ops[0]))
+  if (gimple_simplify (stmt, &rcode, ops, NULL, gvalueize, valueize))
     {
-      tree res = ops[0];
-      if (dump_file && dump_flags & TDF_DETAILS)
+      tree res = NULL_TREE;
+      if (rcode.is_tree_code ()
+	  && (TREE_CODE_LENGTH ((tree_code) rcode) == 0
+	      || ((tree_code) rcode) == ADDR_EXPR)
+	  && is_gimple_val (ops[0]))
+	res = ops[0];
+      else if (mprts_hook)
+	res = mprts_hook (rcode, gimple_expr_type (stmt), ops);
+      if (res)
 	{
-	  fprintf (dump_file, "Match-and-simplified ");
-	  print_gimple_expr (dump_file, stmt, 0, TDF_SLIM);
-	  fprintf (dump_file, " to ");
-	  print_generic_expr (dump_file, res, 0);
-	  fprintf (dump_file, "\n");
+	  if (dump_file && dump_flags & TDF_DETAILS)
+	    {
+	      fprintf (dump_file, "Match-and-simplified ");
+	      print_gimple_expr (dump_file, stmt, 0, TDF_SLIM);
+	      fprintf (dump_file, " to ");
+	      print_generic_expr (dump_file, res, 0);
+	      fprintf (dump_file, "\n");
+	    }
+	  return res;
 	}
-      return res;
     }
 
   location_t loc = gimple_location (stmt);
