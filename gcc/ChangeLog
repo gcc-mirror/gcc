@@ -1,5 +1,15 @@
 2015-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* bb-reorder.c: Add intro comment.
+	(reorder_basic_blocks_software_trace_cache): Print a header to
+	the dump file.
+	(edge_order): New function.
+	(reorder_basic_blocks_simple): New function.
+	(reorder_basic_blocks): Choose between the STC and the simple
+	algorithms (always choose the former).
+
+2015-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* bb-reorder.c (reorder_basic_blocks_software_trace_cache): New
 	function, factored out from ...
 	(reorder_basic_blocks): ... here.
