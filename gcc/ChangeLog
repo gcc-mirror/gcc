@@ -1,5 +1,11 @@
 2015-10-01  Marek Polacek  <polacek@redhat.com>
 
+	PR c/65345
+	* config/i386/i386.c (ix86_atomic_assign_expand_fenv): Adjust to use
+	create_tmp_var_raw rather than create_tmp_var.
+
+2015-10-01  Marek Polacek  <polacek@redhat.com>
+
 	PR tree-optimization/67769
 	* tree-ssa-phiopt.c (conditional_replacement): Call
 	reset_flow_sensitive_info_in_bb.
