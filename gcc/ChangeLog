@@ -1,3 +1,10 @@
+2015-10-01  Sebastian Pop  <s.pop@samsung.com>
+	    Aditya Kumar  <aditya.k7@samsung.com>
+
+	PR tree-optimization/67754
+	* graphite-scop-detection.c (loop_body_is_valid_scop): Add missing
+	recursion on the inner loops.
+
 2015-10-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* cfganal.c, compare-elim.c, coverage.c, cprop.c, df-scan.c,
