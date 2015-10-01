@@ -1,3 +1,9 @@
+2015-10-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_USE_BT): Enable for
+	Lakemont.
+	(X86_TUNE_ZERO_EXTEND_WITH_AND): Disable for Lakemont.
+
 2015-10-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/aarch-common-protos.h
