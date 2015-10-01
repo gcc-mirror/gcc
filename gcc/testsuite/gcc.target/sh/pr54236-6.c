@@ -14,7 +14,7 @@
 /* { dg-final { scan-assembler-times {tst	#1,r0} 1 } }  */
 /* { dg-final { scan-assembler-times {subc	r} 1 } }  */
 
-/* { dg-final { scan-assembler-not "movt|not|neg\movrt" } }  */
+/* { dg-final { scan-assembler-not "movt|not\t|neg\t|movrt" } }  */
 
 
 struct inode
