@@ -5690,8 +5690,18 @@ maybe_warn_string_init (location_t loc, tree type, struct c_expr expr)
    ERRTYPE says whether it is argument passing, assignment,
    initialization or return.
 
-   LOCATION is the location of the assignment, EXPR_LOC is the location of
-   the RHS or, for a function, location of an argument.
+   In the following example, '~' denotes where EXPR_LOC and '^' where
+   LOCATION point to:
+
+     f (var);      [ic_argpass]
+     ^  ~~~
+     x = var;      [ic_assign]
+       ^ ~~~;
+     int x = var;  [ic_init]
+	     ^^^
+     return x;     [ic_return]
+	    ^
+
    FUNCTION is a tree for the function being called.
    PARMNUM is the number of the argument, for printing in error messages.  */
 
