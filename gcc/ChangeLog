@@ -1,6 +1,13 @@
 2015-10-01  Sebastian Pop  <s.pop@samsung.com>
 	    Aditya Kumar  <aditya.k7@samsung.com>
 
+	PR tree-optimization/66980
+	* graphite-scop-detection.c (stmt_has_simple_data_refs_p): Return false
+	when data reference analysis has failed.
+
+2015-10-01  Sebastian Pop  <s.pop@samsung.com>
+	    Aditya Kumar  <aditya.k7@samsung.com>
+
 	PR tree-optimization/67754
 	* graphite-scop-detection.c (stmt_has_simple_data_refs_p): Call
 	scev analysis on the same loop nest as analyze_drs_in_stmts.
