@@ -1,3 +1,9 @@
+2015-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* bb-reorder.c (reorder_basic_blocks_software_trace_cache): New
+	function, factored out from ...
+	(reorder_basic_blocks): ... here.
+
 2015-10-01  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-cfg.c (dump_function_to_file): Dump function attributes using
