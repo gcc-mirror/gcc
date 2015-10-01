@@ -10725,6 +10725,11 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
 {
   tree stmt, range_expr;
 
+  /* Get the range declaration momentarily out of the way so that
+     the range expression doesn't clash with it. */
+  if (range_decl != error_mark_node)
+    pop_binding (DECL_NAME (range_decl), range_decl);
+
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
       bool expr_non_constant_p;
@@ -10732,6 +10737,10 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
     }
   else
     range_expr = cp_parser_expression (parser);
+
+  /* Put the range declaration back into scope. */
+  if (range_decl != error_mark_node)
+    push_binding (DECL_NAME (range_decl), range_decl, current_binding_level);
 
   /* If in template, STMT is converted to a normal for-statement
      at instantiation. If not, it is done just ahead. */

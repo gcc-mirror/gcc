@@ -1,3 +1,12 @@
+2015-10-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/54430
+	* name-lookup.c (push_binding): Make non-static.
+	* name-lookup.h (push_binding): Declare it.
+	* parser.c (cp_parser_range_for): Use it, get the range
+	declaration away from the scope until the range expression
+	has been parsed, then restore the declaration.
+
 2015-09-23  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Fix small typos in the coding rule enforcement warnings.
