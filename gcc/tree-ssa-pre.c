@@ -3945,21 +3945,23 @@ eliminate_push_avail (tree op)
 static tree
 eliminate_insert (gimple_stmt_iterator *gsi, tree val)
 {
-  tree expr = vn_get_expr_for (val);
-  if (!CONVERT_EXPR_P (expr)
-      && TREE_CODE (expr) != VIEW_CONVERT_EXPR)
+  gimple *stmt = gimple_seq_first_stmt (VN_INFO (val)->expr);
+  if (!is_gimple_assign (stmt)
+      || (!CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
+	  && gimple_assign_rhs_code (stmt) != VIEW_CONVERT_EXPR))
     return NULL_TREE;
 
-  tree op = TREE_OPERAND (expr, 0);
+  tree op = gimple_assign_rhs1 (stmt);
+  if (gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR)
+    op = TREE_OPERAND (op, 0);
   tree leader = TREE_CODE (op) == SSA_NAME ? eliminate_avail (op) : op;
   if (!leader)
     return NULL_TREE;
 
-  tree res = make_temp_ssa_name (TREE_TYPE (val), NULL, "pretmp");
-  gassign *tem = gimple_build_assign (res,
-				      fold_build1 (TREE_CODE (expr),
-						   TREE_TYPE (expr), leader));
-  gsi_insert_before (gsi, tem, GSI_SAME_STMT);
+  gimple_seq stmts = NULL;
+  tree res = gimple_build (&stmts, gimple_assign_rhs_code (stmt),
+			   TREE_TYPE (val), leader);
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
   VN_INFO_GET (res)->valnum = val;
 
   if (TREE_CODE (leader) == SSA_NAME)
@@ -3969,7 +3971,7 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Inserted ");
-      print_gimple_stmt (dump_file, tem, 0, 0);
+      print_gimple_stmt (dump_file, SSA_NAME_DEF_STMT (res), 0, 0);
     }
 
   return res;
@@ -4093,7 +4095,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      if (val != VN_TOP
 		  && TREE_CODE (val) == SSA_NAME
 		  && VN_INFO (val)->needs_insertion
-		  && VN_INFO (val)->expr != NULL_TREE
+		  && VN_INFO (val)->expr != NULL
 		  && (sprime = eliminate_insert (&gsi, val)) != NULL_TREE)
 		eliminate_push_avail (sprime);
 	    }

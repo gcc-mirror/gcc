@@ -1,3 +1,32 @@
+2015-10-01  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match.h (mprts_hook): Declare.
+	* gimple-match.head.c (mprts_hook): Define.
+	(maybe_push_res_to_seq): Use new hook.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Likewise.
+	* tree-ssa-sccvn.h (vn_ssa_aux::expr): Change to a gimple_seq.
+	(vn_ssa_aux::has_constants): Remove.
+	* tree-ssa-sccvn.c: Include gimple-match.h.
+	(VN_INFO_GET): Assert we don't re-use SSA names.
+	(vn_get_expr_for): Remove.
+	(expr_has_constants): Likewise.
+	(stmt_has_constants): Likewise.
+	(simplify_binary_expression): Likewise.
+	(simplify_unary_expression): Likewise.
+	(vn_lookup_simplify_result): New hook.
+	(visit_copy): Adjust.
+	(visit_reference_op_call): Likewise.
+	(visit_phi): Likewise.
+	(visit_use): Likewise.
+	(process_scc): Likewise.
+	(init_scc_vn): Likewise.
+	(visit_reference_op_load): Likewise.  Use match-and-simplify and
+	a gimple seq for inserted expressions.
+	(try_to_simplify): Remove GENERIC stmt combining code.
+	(sccvn_dom_walker::before_dom_children): Use match-and-simplify.
+	* tree-ssa-pre.c (eliminate_insert): Adjust.
+	(eliminate_dom_walker::before_dom_children): Likewise.
+
 2015-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/invoke.texi (Optimization Options): Add

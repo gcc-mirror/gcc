@@ -293,6 +293,8 @@ maybe_build_generic_op (enum tree_code code, tree type,
     }
 }
 
+tree (*mprts_hook) (code_helper, tree, tree *);
+
 /* Push the exploded expression described by RCODE, TYPE and OPS
    as a statement to SEQ if necessary and return a gimple value
    denoting the value of the expression.  If RES is not NULL
@@ -310,6 +312,12 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
 	      || ((tree_code) rcode) == ADDR_EXPR)
 	  && is_gimple_val (ops[0]))
 	return ops[0];
+      if (mprts_hook)
+	{
+	  tree tem = mprts_hook (rcode, type, ops);
+	  if (tem)
+	    return tem;
+	}
       if (!seq)
 	return NULL_TREE;
       /* Play safe and do not allow abnormals to be mentioned in
