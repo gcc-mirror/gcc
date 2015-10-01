@@ -1,7 +1,7 @@
 2015-10-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236
-	* gcc.target/sh/pr54236-6.c: Fix assembler-no string.
+	* gcc.target/sh/pr54236-6.c: Fix assembler-not string.
 
 2015-10-01  Uros Bizjak  <ubizjak@gmail.com>
 
