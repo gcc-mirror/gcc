@@ -156,9 +156,7 @@ static void do_use_return_reg (rtx, void *);
 /* Stack of nested functions.  */
 /* Keep track of the cfun stack.  */
 
-typedef struct function *function_p;
-
-static vec<function_p> function_context_stack;
+static vec<function *> function_context_stack;
 
 /* Save the current context for compilation of a nested function.
    This is called from language-specific code.  */
@@ -4745,7 +4743,7 @@ set_cfun (struct function *new_cfun)
 
 /* Initialized with NOGC, making this poisonous to the garbage collector.  */
 
-static vec<function_p> cfun_stack;
+static vec<function *> cfun_stack;
 
 /* Push the current cfun onto the stack, and set cfun to new_cfun.  Also set
    current_function_decl accordingly.  */

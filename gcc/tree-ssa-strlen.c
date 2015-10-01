@@ -66,7 +66,7 @@ static vec<int> ssa_ver_to_stridx;
 static int max_stridx;
 
 /* String information record.  */
-typedef struct strinfo_struct
+struct strinfo
 {
   /* String length of this string.  */
   tree length;
@@ -110,10 +110,10 @@ typedef struct strinfo_struct
   /* A flag for the next maybe_invalidate that this strinfo shouldn't
      be invalidated.  Always cleared by maybe_invalidate.  */
   bool dont_invalidate;
-} *strinfo;
+};
 
 /* Pool for allocating strinfo_struct entries.  */
-static object_allocator<strinfo_struct> strinfo_pool ("strinfo_struct pool");
+static object_allocator<strinfo> strinfo_pool ("strinfo pool");
 
 /* Vector mapping positive string indexes to strinfo, for the
    current basic block.  The first pointer in the vector is special,
@@ -121,7 +121,7 @@ static object_allocator<strinfo_struct> strinfo_pool ("strinfo_struct pool");
    a basic block pointer to the owner basic_block if shared.
    If some other bb wants to modify the vector, the vector needs
    to be unshared first, and only the owner bb is supposed to free it.  */
-static vec<strinfo, va_heap, vl_embed> *stridx_to_strinfo;
+static vec<strinfo *, va_heap, vl_embed> *stridx_to_strinfo;
 
 /* One OFFSET->IDX mapping.  */
 struct stridxlist
@@ -155,11 +155,11 @@ struct laststmt_struct
   int stridx;
 } laststmt;
 
-static int get_stridx_plus_constant (strinfo, HOST_WIDE_INT, tree);
+static int get_stridx_plus_constant (strinfo *, HOST_WIDE_INT, tree);
 
 /* Return strinfo vector entry IDX.  */
 
-static inline strinfo
+static inline strinfo *
 get_strinfo (int idx)
 {
   if (vec_safe_length (stridx_to_strinfo) <= (unsigned int) idx)
@@ -230,7 +230,7 @@ get_stridx (tree exp)
 	    return 0;
 	  if (ssa_ver_to_stridx[SSA_NAME_VERSION (rhs1)])
 	    {
-	      strinfo si
+	      strinfo *si
 		= get_strinfo (ssa_ver_to_stridx[SSA_NAME_VERSION (rhs1)]);
 	      if (si
 		  && si->length
@@ -279,7 +279,7 @@ strinfo_shared (void)
 static void
 unshare_strinfo_vec (void)
 {
-  strinfo si;
+  strinfo *si;
   unsigned int i = 0;
 
   gcc_assert (strinfo_shared ());
@@ -383,10 +383,10 @@ new_addr_stridx (tree exp)
 
 /* Create a new strinfo.  */
 
-static strinfo
+static strinfo *
 new_strinfo (tree ptr, int idx, tree length)
 {
-  strinfo si = strinfo_pool.allocate ();
+  strinfo *si = strinfo_pool.allocate ();
   si->length = length;
   si->ptr = ptr;
   si->stmt = NULL;
@@ -404,7 +404,7 @@ new_strinfo (tree ptr, int idx, tree length)
 /* Decrease strinfo refcount and free it if not referenced anymore.  */
 
 static inline void
-free_strinfo (strinfo si)
+free_strinfo (strinfo *si)
 {
   if (si && --si->refcount == 0)
     strinfo_pool.remove (si);
@@ -413,7 +413,7 @@ free_strinfo (strinfo si)
 /* Set strinfo in the vector entry IDX to SI.  */
 
 static inline void
-set_strinfo (int idx, strinfo si)
+set_strinfo (int idx, strinfo *si)
 {
   if (vec_safe_length (stridx_to_strinfo) && (*stridx_to_strinfo)[0])
     unshare_strinfo_vec ();
@@ -425,7 +425,7 @@ set_strinfo (int idx, strinfo si)
 /* Return string length, or NULL if it can't be computed.  */
 
 static tree
-get_string_length (strinfo si)
+get_string_length (strinfo *si)
 {
   if (si->length)
     return si->length;
@@ -542,7 +542,7 @@ get_string_length (strinfo si)
 static bool
 maybe_invalidate (gimple *stmt)
 {
-  strinfo si;
+  strinfo *si;
   unsigned int i;
   bool nonempty = false;
 
@@ -571,10 +571,10 @@ maybe_invalidate (gimple *stmt)
    if stridx_to_strinfo vector is shared with some other
    bbs.  */
 
-static strinfo
-unshare_strinfo (strinfo si)
+static strinfo *
+unshare_strinfo (strinfo *si)
 {
-  strinfo nsi;
+  strinfo *nsi;
 
   if (si->refcount == 1 && !strinfo_shared ())
     return si;
@@ -595,10 +595,10 @@ unshare_strinfo (strinfo si)
    if all strinfos in between belong to the chain, otherwise
    NULL.  */
 
-static strinfo
-verify_related_strinfos (strinfo origsi)
+static strinfo *
+verify_related_strinfos (strinfo *origsi)
 {
-  strinfo si = origsi, psi;
+  strinfo *si = origsi, *psi;
 
   if (origsi->first == 0)
     return NULL;
@@ -622,7 +622,7 @@ verify_related_strinfos (strinfo origsi)
    been created.  */
 
 static int
-get_stridx_plus_constant (strinfo basesi, HOST_WIDE_INT off, tree ptr)
+get_stridx_plus_constant (strinfo *basesi, HOST_WIDE_INT off, tree ptr)
 {
   gcc_checking_assert (TREE_CODE (ptr) == SSA_NAME);
 
@@ -636,7 +636,7 @@ get_stridx_plus_constant (strinfo basesi, HOST_WIDE_INT off, tree ptr)
     return 0;
 
   HOST_WIDE_INT len = tree_to_shwi (basesi->length) - off;
-  strinfo si = basesi, chainsi;
+  strinfo *si = basesi, *chainsi;
   if (si->first || si->prev || si->next)
     si = verify_related_strinfos (basesi);
   if (si == NULL
@@ -676,7 +676,7 @@ get_stridx_plus_constant (strinfo basesi, HOST_WIDE_INT off, tree ptr)
   set_strinfo (idx, si);
   if (chainsi->next)
     {
-      strinfo nextsi = unshare_strinfo (get_strinfo (chainsi->next));
+      strinfo *nextsi = unshare_strinfo (get_strinfo (chainsi->next));
       si->next = nextsi->idx;
       nextsi->prev = idx;
     }
@@ -697,10 +697,10 @@ get_stridx_plus_constant (strinfo basesi, HOST_WIDE_INT off, tree ptr)
    to a zero-length string and if possible chain it to a related strinfo
    chain whose part is or might be CHAINSI.  */
 
-static strinfo
-zero_length_string (tree ptr, strinfo chainsi)
+static strinfo *
+zero_length_string (tree ptr, strinfo *chainsi)
 {
-  strinfo si;
+  strinfo *si;
   int idx;
   if (ssa_ver_to_stridx.length () <= SSA_NAME_VERSION (ptr))
     ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
@@ -779,16 +779,16 @@ zero_length_string (tree ptr, strinfo chainsi)
    but don't adjust ORIGSI).  */
 
 static void
-adjust_related_strinfos (location_t loc, strinfo origsi, tree adj)
+adjust_related_strinfos (location_t loc, strinfo *origsi, tree adj)
 {
-  strinfo si = verify_related_strinfos (origsi);
+  strinfo *si = verify_related_strinfos (origsi);
 
   if (si == NULL)
     return;
 
   while (1)
     {
-      strinfo nsi;
+      strinfo *nsi;
 
       if (si != origsi)
 	{
@@ -878,11 +878,11 @@ find_equal_ptrs (tree ptr, int idx)
    strinfo.  */
 
 static void
-adjust_last_stmt (strinfo si, gimple *stmt, bool is_strcat)
+adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
 {
   tree vuse, callee, len;
   struct laststmt_struct last = laststmt;
-  strinfo lastsi, firstsi;
+  strinfo *lastsi, *firstsi;
   unsigned len_arg_no = 2;
 
   laststmt.stmt = NULL;
@@ -913,7 +913,7 @@ adjust_last_stmt (strinfo si, gimple *stmt, bool is_strcat)
 	return;
       while (firstsi != lastsi)
 	{
-	  strinfo nextsi;
+	  strinfo *nextsi;
 	  if (firstsi->next == 0)
 	    return;
 	  nextsi = get_strinfo (firstsi->next);
@@ -1010,7 +1010,7 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
   idx = get_stridx (src);
   if (idx)
     {
-      strinfo si = NULL;
+      strinfo *si = NULL;
       tree rhs;
 
       if (idx < 0)
@@ -1061,7 +1061,7 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
     return;
   if (idx)
     {
-      strinfo si = new_strinfo (src, idx, lhs);
+      strinfo *si = new_strinfo (src, idx, lhs);
       set_strinfo (idx, si);
       find_equal_ptrs (src, idx);
     }
@@ -1090,7 +1090,7 @@ handle_builtin_strchr (gimple_stmt_iterator *gsi)
   idx = get_stridx (src);
   if (idx)
     {
-      strinfo si = NULL;
+      strinfo *si = NULL;
       tree rhs;
 
       if (idx < 0)
@@ -1165,7 +1165,7 @@ handle_builtin_strchr (gimple_stmt_iterator *gsi)
 	  tree srcu = fold_convert_loc (loc, size_type_node, src);
 	  tree length = fold_build2_loc (loc, MINUS_EXPR,
 					 size_type_node, lhsu, srcu);
-	  strinfo si = new_strinfo (src, idx, length);
+	  strinfo *si = new_strinfo (src, idx, length);
 	  si->endptr = lhs;
 	  set_strinfo (idx, si);
 	  find_equal_ptrs (src, idx);
@@ -1188,7 +1188,7 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
   tree src, dst, srclen, len, lhs, args, type, fn, oldlen;
   bool success;
   gimple *stmt = gsi_stmt (*gsi);
-  strinfo si, dsi, olddsi, zsi;
+  strinfo *si, *dsi, *olddsi, *zsi;
   location_t loc;
   bool with_bounds = gimple_call_with_bounds_p (stmt);
 
@@ -1274,7 +1274,7 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
   if (dsi->length == NULL_TREE)
     {
-      strinfo chainsi;
+      strinfo *chainsi;
 
       /* If string length of src is unknown, use delayed length
 	 computation.  If string lenth of dst will be needed, it
@@ -1439,7 +1439,7 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
   int idx, didx;
   tree src, dst, len, lhs, oldlen, newlen;
   gimple *stmt = gsi_stmt (*gsi);
-  strinfo si, dsi, olddsi;
+  strinfo *si, *dsi, *olddsi;
   bool with_bounds = gimple_call_with_bounds_p (stmt);
 
   len = gimple_call_arg (stmt, with_bounds ? 4 : 2);
@@ -1582,7 +1582,7 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
   tree src, dst, srclen, dstlen, len, lhs, args, type, fn, objsz, endptr;
   bool success;
   gimple *stmt = gsi_stmt (*gsi);
-  strinfo si, dsi;
+  strinfo *si, *dsi;
   location_t loc;
   bool with_bounds = gimple_call_with_bounds_p (stmt);
 
@@ -1792,7 +1792,7 @@ handle_builtin_malloc (enum built_in_function bcode, gimple_stmt_iterator *gsi)
   tree length = NULL_TREE;
   if (bcode == BUILT_IN_CALLOC)
     length = build_int_cst (size_type_node, 0);
-  strinfo si = new_strinfo (lhs, idx, length);
+  strinfo *si = new_strinfo (lhs, idx, length);
   if (bcode == BUILT_IN_CALLOC)
     si->endptr = lhs;
   set_strinfo (idx, si);
@@ -1815,7 +1815,7 @@ handle_builtin_memset (gimple_stmt_iterator *gsi)
   int idx1 = get_stridx (ptr);
   if (idx1 <= 0)
     return true;
-  strinfo si1 = get_strinfo (idx1);
+  strinfo *si1 = get_strinfo (idx1);
   if (!si1)
     return true;
   gimple *stmt1 = si1->stmt;
@@ -1866,7 +1866,7 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
   gimple *stmt = gsi_stmt (*gsi);
   tree lhs = gimple_assign_lhs (stmt), off;
   int idx = get_stridx (gimple_assign_rhs1 (stmt));
-  strinfo si, zsi;
+  strinfo *si, *zsi;
 
   if (idx == 0)
     return;
@@ -1916,7 +1916,7 @@ static bool
 handle_char_store (gimple_stmt_iterator *gsi)
 {
   int idx = -1;
-  strinfo si = NULL;
+  strinfo *si = NULL;
   gimple *stmt = gsi_stmt (*gsi);
   tree ssaname = NULL_TREE, lhs = gimple_assign_lhs (stmt);
 
@@ -2224,7 +2224,7 @@ strlen_dom_walker::before_dom_children (basic_block bb)
     stridx_to_strinfo = NULL;
   else
     {
-      stridx_to_strinfo = ((vec<strinfo, va_heap, vl_embed> *) dombb->aux);
+      stridx_to_strinfo = ((vec<strinfo *, va_heap, vl_embed> *) dombb->aux);
       if (stridx_to_strinfo)
 	{
 	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
@@ -2246,7 +2246,7 @@ strlen_dom_walker::before_dom_children (basic_block bb)
 		      if (!strinfo_shared ())
 			{
 			  unsigned int i;
-			  strinfo si;
+			  strinfo *si;
 
 			  for (i = 1;
 			       vec_safe_iterate (stridx_to_strinfo, i, &si);
@@ -2294,7 +2294,7 @@ strlen_dom_walker::before_dom_children (basic_block bb)
 
   bb->aux = stridx_to_strinfo;
   if (vec_safe_length (stridx_to_strinfo) && !strinfo_shared ())
-    (*stridx_to_strinfo)[0] = (strinfo) bb;
+    (*stridx_to_strinfo)[0] = (strinfo *) bb;
 }
 
 /* Callback for walk_dominator_tree.  Free strinfo vector if it is
@@ -2305,12 +2305,12 @@ strlen_dom_walker::after_dom_children (basic_block bb)
 {
   if (bb->aux)
     {
-      stridx_to_strinfo = ((vec<strinfo, va_heap, vl_embed> *) bb->aux);
+      stridx_to_strinfo = ((vec<strinfo *, va_heap, vl_embed> *) bb->aux);
       if (vec_safe_length (stridx_to_strinfo)
-	  && (*stridx_to_strinfo)[0] == (strinfo) bb)
+	  && (*stridx_to_strinfo)[0] == (strinfo *) bb)
 	{
 	  unsigned int i;
-	  strinfo si;
+	  strinfo *si;
 
 	  for (i = 1; vec_safe_iterate (stridx_to_strinfo, i, &si); ++i)
 	    free_strinfo (si);

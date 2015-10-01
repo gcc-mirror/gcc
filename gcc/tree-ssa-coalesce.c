@@ -51,13 +51,12 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This structure defines a pair entry.  */
 
-typedef struct coalesce_pair
+struct coalesce_pair
 {
   int first_element;
   int second_element;
   int cost;
-} * coalesce_pair_p;
-typedef const struct coalesce_pair *const_coalesce_pair_p;
+};
 
 /* Coalesce pair hashtable helpers.  */
 
@@ -92,22 +91,22 @@ typedef hash_table<coalesce_pair_hasher> coalesce_table_type;
 typedef coalesce_table_type::iterator coalesce_iterator_type;
 
 
-typedef struct cost_one_pair_d
+struct cost_one_pair
 {
   int first_element;
   int second_element;
-  struct cost_one_pair_d *next;
-} * cost_one_pair_p;
+  cost_one_pair *next;
+};
 
 /* This structure maintains the list of coalesce pairs.  */
 
-typedef struct coalesce_list_d
+struct coalesce_list
 {
   coalesce_table_type *list;	/* Hash table.  */
-  coalesce_pair_p *sorted;	/* List when sorted.  */
+  coalesce_pair **sorted;	/* List when sorted.  */
   int num_sorted;		/* Number in the sorted list.  */
-  cost_one_pair_p cost_one_list;/* Single use coalesces with cost 1.  */
-} *coalesce_list_p;
+  cost_one_pair *cost_one_list;/* Single use coalesces with cost 1.  */
+};
 
 #define NO_BEST_COALESCE	-1
 #define MUST_COALESCE_COST	INT_MAX
@@ -185,9 +184,9 @@ coalesce_cost_edge (edge e)
    NO_BEST_COALESCE is returned if there aren't any.  */
 
 static inline int
-pop_cost_one_pair (coalesce_list_p cl, int *p1, int *p2)
+pop_cost_one_pair (coalesce_list *cl, int *p1, int *p2)
 {
-  cost_one_pair_p ptr;
+  cost_one_pair *ptr;
 
   ptr = cl->cost_one_list;
   if (!ptr)
@@ -207,9 +206,9 @@ pop_cost_one_pair (coalesce_list_p cl, int *p1, int *p2)
    NO_BEST_COALESCE is returned if the coalesce list is empty.  */
 
 static inline int
-pop_best_coalesce (coalesce_list_p cl, int *p1, int *p2)
+pop_best_coalesce (coalesce_list *cl, int *p1, int *p2)
 {
-  coalesce_pair_p node;
+  coalesce_pair *node;
   int ret;
 
   if (cl->sorted == NULL)
@@ -230,16 +229,16 @@ pop_best_coalesce (coalesce_list_p cl, int *p1, int *p2)
 
 /* Create a new empty coalesce list object and return it.  */
 
-static inline coalesce_list_p
+static inline coalesce_list *
 create_coalesce_list (void)
 {
-  coalesce_list_p list;
+  coalesce_list *list;
   unsigned size = num_ssa_names * 3;
 
   if (size < 40)
     size = 40;
 
-  list = (coalesce_list_p) xmalloc (sizeof (struct coalesce_list_d));
+  list = (coalesce_list *) xmalloc (sizeof (struct coalesce_list));
   list->list = new coalesce_table_type (size);
   list->sorted = NULL;
   list->num_sorted = 0;
@@ -251,7 +250,7 @@ create_coalesce_list (void)
 /* Delete coalesce list CL.  */
 
 static inline void
-delete_coalesce_list (coalesce_list_p cl)
+delete_coalesce_list (coalesce_list *cl)
 {
   gcc_assert (cl->cost_one_list == NULL);
   delete cl->list;
@@ -266,8 +265,8 @@ delete_coalesce_list (coalesce_list_p cl)
    one isn't found, return NULL if CREATE is false, otherwise create a new
    coalesce pair object and return it.  */
 
-static coalesce_pair_p
-find_coalesce_pair (coalesce_list_p cl, int p1, int p2, bool create)
+static coalesce_pair *
+find_coalesce_pair (coalesce_list *cl, int p1, int p2, bool create)
 {
   struct coalesce_pair p;
   coalesce_pair **slot;
@@ -304,11 +303,11 @@ find_coalesce_pair (coalesce_list_p cl, int p1, int p2, bool create)
 }
 
 static inline void
-add_cost_one_coalesce (coalesce_list_p cl, int p1, int p2)
+add_cost_one_coalesce (coalesce_list *cl, int p1, int p2)
 {
-  cost_one_pair_p pair;
+  cost_one_pair *pair;
 
-  pair = XNEW (struct cost_one_pair_d);
+  pair = XNEW (cost_one_pair);
   pair->first_element = p1;
   pair->second_element = p2;
   pair->next = cl->cost_one_list;
@@ -319,9 +318,9 @@ add_cost_one_coalesce (coalesce_list_p cl, int p1, int p2)
 /* Add a coalesce between P1 and P2 in list CL with a cost of VALUE.  */
 
 static inline void
-add_coalesce (coalesce_list_p cl, int p1, int p2, int value)
+add_coalesce (coalesce_list *cl, int p1, int p2, int value)
 {
-  coalesce_pair_p node;
+  coalesce_pair *node;
 
   gcc_assert (cl->sorted == NULL);
   if (p1 == p2)
@@ -345,8 +344,8 @@ add_coalesce (coalesce_list_p cl, int p1, int p2, int value)
 static int
 compare_pairs (const void *p1, const void *p2)
 {
-  const_coalesce_pair_p const *const pp1 = (const_coalesce_pair_p const *) p1;
-  const_coalesce_pair_p const *const pp2 = (const_coalesce_pair_p const *) p2;
+  const coalesce_pair *const *const pp1 = (const coalesce_pair *const *) p1;
+  const coalesce_pair *const *const pp2 = (const coalesce_pair *const *) p2;
   int result;
 
   result = (* pp1)->cost - (* pp2)->cost;
@@ -367,7 +366,7 @@ compare_pairs (const void *p1, const void *p2)
 /* Return the number of unique coalesce pairs in CL.  */
 
 static inline int
-num_coalesce_pairs (coalesce_list_p cl)
+num_coalesce_pairs (coalesce_list *cl)
 {
   return cl->list->elements ();
 }
@@ -383,10 +382,10 @@ num_coalesce_pairs (coalesce_list_p cl)
    in order from most important coalesce to least important.  */
 
 static void
-sort_coalesce_list (coalesce_list_p cl)
+sort_coalesce_list (coalesce_list *cl)
 {
   unsigned x, num;
-  coalesce_pair_p p;
+  coalesce_pair *p;
   coalesce_iterator_type ppi;
 
   gcc_assert (cl->sorted == NULL);
@@ -397,7 +396,7 @@ sort_coalesce_list (coalesce_list_p cl)
     return;
 
   /* Allocate a vector for the pair pointers.  */
-  cl->sorted = XNEWVEC (coalesce_pair_p, num);
+  cl->sorted = XNEWVEC (coalesce_pair *, num);
 
   /* Populate the vector with pointers to the pairs.  */
   x = 0;
@@ -421,16 +420,16 @@ sort_coalesce_list (coalesce_list_p cl)
      ??? Maybe std::sort will do better, provided that compare_pairs
      can be inlined.  */
   if (num > 2)
-      qsort (cl->sorted, num, sizeof (coalesce_pair_p), compare_pairs);
+      qsort (cl->sorted, num, sizeof (coalesce_pair *), compare_pairs);
 }
 
 
 /* Send debug info for coalesce list CL to file F.  */
 
 static void
-dump_coalesce_list (FILE *f, coalesce_list_p cl)
+dump_coalesce_list (FILE *f, coalesce_list *cl)
 {
-  coalesce_pair_p node;
+  coalesce_pair *node;
   coalesce_iterator_type ppi;
 
   int x;
@@ -472,20 +471,20 @@ dump_coalesce_list (FILE *f, coalesce_list_p cl)
    A full matrix is used for conflicts rather than just upper triangular form.
    this make sit much simpler and faster to perform conflict merges.  */
 
-typedef struct ssa_conflicts_d
+struct ssa_conflicts
 {
   bitmap_obstack obstack;	/* A place to allocate our bitmaps.  */
   vec<bitmap> conflicts;
-} * ssa_conflicts_p;
+};
 
 /* Return an empty new conflict graph for SIZE elements.  */
 
-static inline ssa_conflicts_p
+static inline ssa_conflicts *
 ssa_conflicts_new (unsigned size)
 {
-  ssa_conflicts_p ptr;
+  ssa_conflicts *ptr;
 
-  ptr = XNEW (struct ssa_conflicts_d);
+  ptr = XNEW (ssa_conflicts);
   bitmap_obstack_initialize (&ptr->obstack);
   ptr->conflicts.create (size);
   ptr->conflicts.safe_grow_cleared (size);
@@ -496,7 +495,7 @@ ssa_conflicts_new (unsigned size)
 /* Free storage for conflict graph PTR.  */
 
 static inline void
-ssa_conflicts_delete (ssa_conflicts_p ptr)
+ssa_conflicts_delete (ssa_conflicts *ptr)
 {
   bitmap_obstack_release (&ptr->obstack);
   ptr->conflicts.release ();
@@ -507,7 +506,7 @@ ssa_conflicts_delete (ssa_conflicts_p ptr)
 /* Test if elements X and Y conflict in graph PTR.  */
 
 static inline bool
-ssa_conflicts_test_p (ssa_conflicts_p ptr, unsigned x, unsigned y)
+ssa_conflicts_test_p (ssa_conflicts *ptr, unsigned x, unsigned y)
 {
   bitmap bx = ptr->conflicts[x];
   bitmap by = ptr->conflicts[y];
@@ -525,7 +524,7 @@ ssa_conflicts_test_p (ssa_conflicts_p ptr, unsigned x, unsigned y)
 /* Add a conflict with Y to the bitmap for X in graph PTR.  */
 
 static inline void
-ssa_conflicts_add_one (ssa_conflicts_p ptr, unsigned x, unsigned y)
+ssa_conflicts_add_one (ssa_conflicts *ptr, unsigned x, unsigned y)
 {
   bitmap bx = ptr->conflicts[x];
   /* If there are no conflicts yet, allocate the bitmap and set bit.  */
@@ -538,7 +537,7 @@ ssa_conflicts_add_one (ssa_conflicts_p ptr, unsigned x, unsigned y)
 /* Add conflicts between X and Y in graph PTR.  */
 
 static inline void
-ssa_conflicts_add (ssa_conflicts_p ptr, unsigned x, unsigned y)
+ssa_conflicts_add (ssa_conflicts *ptr, unsigned x, unsigned y)
 {
   gcc_checking_assert (x != y);
   ssa_conflicts_add_one (ptr, x, y);
@@ -549,7 +548,7 @@ ssa_conflicts_add (ssa_conflicts_p ptr, unsigned x, unsigned y)
 /* Merge all Y's conflict into X in graph PTR.  */
 
 static inline void
-ssa_conflicts_merge (ssa_conflicts_p ptr, unsigned x, unsigned y)
+ssa_conflicts_merge (ssa_conflicts *ptr, unsigned x, unsigned y)
 {
   unsigned z;
   bitmap_iterator bi;
@@ -589,7 +588,7 @@ ssa_conflicts_merge (ssa_conflicts_p ptr, unsigned x, unsigned y)
 /* Dump a conflicts graph.  */
 
 static void
-ssa_conflicts_dump (FILE *file, ssa_conflicts_p ptr)
+ssa_conflicts_dump (FILE *file, ssa_conflicts *ptr)
 {
   unsigned x;
   bitmap b;
@@ -617,28 +616,28 @@ ssa_conflicts_dump (FILE *file, ssa_conflicts_p ptr)
    marked as being live.  This delays clearing of these bitmaps until
    they are actually needed again.  */
 
-typedef struct live_track_d
+struct live_track
 {
   bitmap_obstack obstack;	/* A place to allocate our bitmaps.  */
   bitmap live_base_var;		/* Indicates if a basevar is live.  */
   bitmap *live_base_partitions;	/* Live partitions for each basevar.  */
   var_map map;			/* Var_map being used for partition mapping.  */
-} * live_track_p;
+};
 
 
 /* This routine will create a new live track structure based on the partitions
    in MAP.  */
 
-static live_track_p
+static live_track *
 new_live_track (var_map map)
 {
-  live_track_p ptr;
+  live_track *ptr;
   int lim, x;
 
   /* Make sure there is a partition view in place.  */
   gcc_assert (map->partition_to_base_index != NULL);
 
-  ptr = (live_track_p) xmalloc (sizeof (struct live_track_d));
+  ptr = (live_track *) xmalloc (sizeof (live_track));
   ptr->map = map;
   lim = num_basevars (map);
   bitmap_obstack_initialize (&ptr->obstack);
@@ -653,7 +652,7 @@ new_live_track (var_map map)
 /* This routine will free the memory associated with PTR.  */
 
 static void
-delete_live_track (live_track_p ptr)
+delete_live_track (live_track *ptr)
 {
   bitmap_obstack_release (&ptr->obstack);
   free (ptr->live_base_partitions);
@@ -664,7 +663,7 @@ delete_live_track (live_track_p ptr)
 /* This function will remove PARTITION from the live list in PTR.  */
 
 static inline void
-live_track_remove_partition (live_track_p ptr, int partition)
+live_track_remove_partition (live_track *ptr, int partition)
 {
   int root;
 
@@ -679,7 +678,7 @@ live_track_remove_partition (live_track_p ptr, int partition)
 /* This function will adds PARTITION to the live list in PTR.  */
 
 static inline void
-live_track_add_partition (live_track_p ptr, int partition)
+live_track_add_partition (live_track *ptr, int partition)
 {
   int root;
 
@@ -696,7 +695,7 @@ live_track_add_partition (live_track_p ptr, int partition)
 /* Clear the live bit for VAR in PTR.  */
 
 static inline void
-live_track_clear_var (live_track_p ptr, tree var)
+live_track_clear_var (live_track *ptr, tree var)
 {
   int p;
 
@@ -709,7 +708,7 @@ live_track_clear_var (live_track_p ptr, tree var)
 /* Return TRUE if VAR is live in PTR.  */
 
 static inline bool
-live_track_live_p (live_track_p ptr, tree var)
+live_track_live_p (live_track *ptr, tree var)
 {
   int p, root;
 
@@ -728,7 +727,7 @@ live_track_live_p (live_track_p ptr, tree var)
    ssa live map and the live bitmap for the root of USE.  */
 
 static inline void
-live_track_process_use (live_track_p ptr, tree use)
+live_track_process_use (live_track *ptr, tree use)
 {
   int p;
 
@@ -746,7 +745,7 @@ live_track_process_use (live_track_p ptr, tree use)
    variable, conflicts will be added to GRAPH.  */
 
 static inline void
-live_track_process_def (live_track_p ptr, tree def, ssa_conflicts_p graph)
+live_track_process_def (live_track *ptr, tree def, ssa_conflicts *graph)
 {
   int p, root;
   bitmap b;
@@ -774,7 +773,7 @@ live_track_process_def (live_track_p ptr, tree def, ssa_conflicts_p graph)
 /* Initialize PTR with the partitions set in INIT.  */
 
 static inline void
-live_track_init (live_track_p ptr, bitmap init)
+live_track_init (live_track *ptr, bitmap init)
 {
   unsigned p;
   bitmap_iterator bi;
@@ -788,7 +787,7 @@ live_track_init (live_track_p ptr, bitmap init)
 /* This routine will clear all live partitions in PTR.   */
 
 static inline void
-live_track_clear_base_vars (live_track_p ptr)
+live_track_clear_base_vars (live_track *ptr)
 {
   /* Simply clear the live base list.  Anything marked as live in the element
      lists will be cleared later if/when the base variable ever comes alive
@@ -802,14 +801,14 @@ live_track_clear_base_vars (live_track_p ptr)
    conflict graph.  Only conflicts between ssa_name partitions with the same
    base variable are added.  */
 
-static ssa_conflicts_p
+static ssa_conflicts *
 build_ssa_conflict_graph (tree_live_info_p liveinfo)
 {
-  ssa_conflicts_p graph;
+  ssa_conflicts *graph;
   var_map map;
   basic_block bb;
   ssa_op_iter iter;
-  live_track_p live;
+  live_track *live;
   basic_block entry;
 
   /* If inter-variable coalescing is enabled, we may attempt to
@@ -992,7 +991,7 @@ register_default_def (tree var, void *map_)
    coalescing.  */
 
 static void
-coalesce_with_default (tree var, coalesce_list_p cl, bitmap used_in_copy)
+coalesce_with_default (tree var, coalesce_list *cl, bitmap used_in_copy)
 {
   if (SSA_NAME_IS_DEFAULT_DEF (var)
       || !SSA_NAME_VAR (var)
@@ -1013,7 +1012,7 @@ coalesce_with_default (tree var, coalesce_list_p cl, bitmap used_in_copy)
    a coalesce list for use later in the out of ssa process.  */
 
 static var_map
-create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
+create_outofssa_var_map (coalesce_list *cl, bitmap used_in_copy)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
@@ -1237,7 +1236,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
    DEBUG, if it is nun-NULL.  */
 
 static inline bool
-attempt_coalesce (var_map map, ssa_conflicts_p graph, int x, int y,
+attempt_coalesce (var_map map, ssa_conflicts *graph, int x, int y,
 		  FILE *debug)
 {
   int z;
@@ -1303,7 +1302,7 @@ attempt_coalesce (var_map map, ssa_conflicts_p graph, int x, int y,
    GRAPH.  Debug output is sent to DEBUG if it is non-NULL.  */
 
 static void
-coalesce_partitions (var_map map, ssa_conflicts_p graph, coalesce_list_p cl,
+coalesce_partitions (var_map map, ssa_conflicts *graph, coalesce_list *cl,
 		     FILE *debug)
 {
   int x = 0, y = 0;
@@ -1523,7 +1522,7 @@ gimple_can_coalesce_p (tree name1, tree name2)
 
 static void
 compute_optimized_partition_bases (var_map map, bitmap used_in_copies,
-				   coalesce_list_p cl)
+				   coalesce_list *cl)
 {
   int parts = num_var_partitions (map);
   partition tentative = partition_new (parts);
@@ -1532,7 +1531,7 @@ compute_optimized_partition_bases (var_map map, bitmap used_in_copies,
      pair, both of its members are in the same partition in
      TENTATIVE.  */
   gcc_assert (!cl->sorted);
-  coalesce_pair_p node;
+  coalesce_pair *node;
   coalesce_iterator_type ppi;
   FOR_EACH_PARTITION_PAIR (node, ppi, cl)
     {
@@ -1548,7 +1547,7 @@ compute_optimized_partition_bases (var_map map, bitmap used_in_copies,
     }
 
   /* We have to deal with cost one pairs too.  */
-  for (cost_one_pair_d *co = cl->cost_one_list; co; co = co->next)
+  for (cost_one_pair *co = cl->cost_one_list; co; co = co->next)
     {
       tree v1 = ssa_name (co->first_element);
       int p1 = partition_find (tentative, var_to_partition (map, v1));
@@ -1726,8 +1725,8 @@ extern var_map
 coalesce_ssa_name (void)
 {
   tree_live_info_p liveinfo;
-  ssa_conflicts_p graph;
-  coalesce_list_p cl;
+  ssa_conflicts *graph;
+  coalesce_list *cl;
   bitmap used_in_copies = BITMAP_ALLOC (NULL);
   var_map map;
   unsigned int i;

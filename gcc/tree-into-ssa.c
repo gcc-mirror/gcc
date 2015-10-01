@@ -65,7 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Structure to map a variable VAR to the set of blocks that contain
    definitions for VAR.  */
-struct def_blocks_d
+struct def_blocks
 {
   /* Blocks that contain definitions of VAR.  Bit I will be set if the
      Ith block contains a definition of VAR.  */
@@ -78,9 +78,6 @@ struct def_blocks_d
      DEF_BLOCKS.  */
   bitmap livein_blocks;
 };
-
-typedef struct def_blocks_d *def_blocks_p;
-
 
 /* Stack of trees used to restore the global currdefs to its original
    state after completing rewriting of a block and its dominator
@@ -169,7 +166,7 @@ enum need_phi_state {
 };
 
 /* Information stored for both SSA names and decls.  */
-struct common_info_d
+struct common_info
 {
   /* This field indicates whether or not the variable may need PHI nodes.
      See the enum's definition for more detailed information about the
@@ -180,29 +177,23 @@ struct common_info_d
   tree current_def;
 
   /* Definitions for this var.  */
-  struct def_blocks_d def_blocks;
+  struct def_blocks def_blocks;
 };
 
-/* The information associated with decls and SSA names.  */
-typedef struct common_info_d *common_info_p;
-
 /* Information stored for decls.  */
-struct var_info_d
+struct var_info
 {
   /* The variable.  */
   tree var;
 
   /* Information stored for both SSA names and decls.  */
-  struct common_info_d info;
+  common_info info;
 };
-
-/* The information associated with decls.  */
-typedef struct var_info_d *var_info_p;
 
 
 /* VAR_INFOS hashtable helpers.  */
 
-struct var_info_hasher : free_ptr_hash <var_info_d>
+struct var_info_hasher : free_ptr_hash <var_info>
 {
   static inline hashval_t hash (const value_type &);
   static inline bool equal (const value_type &, const compare_type &);
@@ -238,13 +229,10 @@ struct ssa_name_info
   bitmap repl_set;
 
   /* Information stored for both SSA names and decls.  */
-  struct common_info_d info;
+  common_info info;
 };
 
-/* The information associated with names.  */
-typedef struct ssa_name_info *ssa_name_info_p;
-
-static vec<ssa_name_info_p> info_for_ssa_name;
+static vec<ssa_name_info *> info_for_ssa_name;
 static unsigned current_info_for_ssa_name_age;
 
 static bitmap_obstack update_ssa_obstack;
@@ -339,7 +327,7 @@ set_register_defs (gimple *stmt, bool register_defs_p)
 
 /* Get the information associated with NAME.  */
 
-static inline ssa_name_info_p
+static inline ssa_name_info *
 get_ssa_name_ann (tree name)
 {
   unsigned ver = SSA_NAME_VERSION (name);
@@ -376,16 +364,16 @@ get_ssa_name_ann (tree name)
 
 /* Return and allocate the auxiliar information for DECL.  */
 
-static inline var_info_p
+static inline var_info *
 get_var_info (tree decl)
 {
-  struct var_info_d vi;
-  var_info_d **slot;
+  var_info vi;
+  var_info **slot;
   vi.var = decl;
   slot = var_infos->find_slot_with_hash (&vi, DECL_UID (decl), INSERT);
   if (*slot == NULL)
     {
-      var_info_p v = XCNEW (struct var_info_d);
+      var_info *v = XCNEW (var_info);
       v->var = decl;
       *slot = v;
       return v;
@@ -409,7 +397,7 @@ clear_ssa_name_info (void)
 
 /* Get access to the auxiliar information stored per SSA name or decl.  */
 
-static inline common_info_p
+static inline common_info *
 get_common_info (tree var)
 {
   if (TREE_CODE (var) == SSA_NAME)
@@ -480,10 +468,10 @@ mark_block_for_update (basic_block bb)
    where VAR is live on entry (livein).  If no entry is found in
    DEF_BLOCKS, a new one is created and returned.  */
 
-static inline struct def_blocks_d *
-get_def_blocks_for (common_info_p info)
+static inline def_blocks *
+get_def_blocks_for (common_info *info)
 {
-  struct def_blocks_d *db_p = &info->def_blocks;
+  def_blocks *db_p = &info->def_blocks;
   if (!db_p->def_blocks)
     {
       db_p->def_blocks = BITMAP_ALLOC (&update_ssa_obstack);
@@ -501,8 +489,8 @@ get_def_blocks_for (common_info_p info)
 static void
 set_def_block (tree var, basic_block bb, bool phi_p)
 {
-  struct def_blocks_d *db_p;
-  common_info_p info;
+  def_blocks *db_p;
+  common_info *info;
 
   info = get_common_info (var);
   db_p = get_def_blocks_for (info);
@@ -536,8 +524,8 @@ set_def_block (tree var, basic_block bb, bool phi_p)
 static void
 set_livein_block (tree var, basic_block bb)
 {
-  common_info_p info;
-  struct def_blocks_d *db_p;
+  common_info *info;
+  def_blocks *db_p;
 
   info = get_common_info (var);
   db_p = get_def_blocks_for (info);
@@ -935,10 +923,10 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
    where VAR is live on entry (livein).  Return NULL, if no entry is
    found in DEF_BLOCKS.  */
 
-static inline struct def_blocks_d *
+static inline def_blocks *
 find_def_blocks_for (tree var)
 {
-  def_blocks_p p = &get_common_info (var)->def_blocks;
+  def_blocks *p = &get_common_info (var)->def_blocks;
   if (!p->def_blocks)
     return NULL;
   return p;
@@ -992,7 +980,7 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
   gphi *phi;
   basic_block bb;
   bitmap_iterator bi;
-  struct def_blocks_d *def_map = find_def_blocks_for (var);
+  def_blocks *def_map = find_def_blocks_for (var);
 
   /* Remove the blocks where we already have PHI nodes for VAR.  */
   bitmap_and_compl_into (phi_insertion_points, def_map->phi_blocks);
@@ -1068,8 +1056,8 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 static int
 insert_phi_nodes_compare_var_infos (const void *a, const void *b)
 {
-  const struct var_info_d *defa = *(struct var_info_d * const *)a;
-  const struct var_info_d *defb = *(struct var_info_d * const *)b;
+  const var_info *defa = *(var_info * const *)a;
+  const var_info *defb = *(var_info * const *)b;
   if (DECL_UID (defa->var) < DECL_UID (defb->var))
     return -1;
   else
@@ -1085,11 +1073,11 @@ insert_phi_nodes (bitmap_head *dfs)
 {
   hash_table<var_info_hasher>::iterator hi;
   unsigned i;
-  var_info_p info;
+  var_info *info;
 
   timevar_push (TV_TREE_INSERT_PHI_NODES);
 
-  auto_vec<var_info_p> vars (var_infos->elements ());
+  auto_vec<var_info *> vars (var_infos->elements ());
   FOR_EACH_HASH_TABLE_ELEMENT (*var_infos, info, var_info_p, hi)
     if (info->info.need_phi_state != NEED_PHI_STATE_NO)
       vars.quick_push (info);
@@ -1115,7 +1103,7 @@ insert_phi_nodes (bitmap_head *dfs)
 static void
 register_new_def (tree def, tree sym)
 {
-  common_info_p info = get_common_info (sym);
+  common_info *info = get_common_info (sym);
   tree currdef;
 
   /* If this variable is set in a single basic block and all uses are
@@ -1183,7 +1171,7 @@ register_new_def (tree def, tree sym)
 static tree
 get_reaching_def (tree var)
 {
-  common_info_p info = get_common_info (var);
+  common_info *info = get_common_info (var);
   tree currdef;
 
   /* Lookup the current reaching definition for VAR.  */
@@ -1215,7 +1203,7 @@ rewrite_debug_stmt_uses (gimple *stmt)
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
     {
       tree var = USE_FROM_PTR (use_p), def;
-      common_info_p info = get_common_info (var);
+      common_info *info = get_common_info (var);
       gcc_checking_assert (DECL_P (var));
       def = info->current_def;
       if (!def)
@@ -1282,7 +1270,7 @@ rewrite_debug_stmt_uses (gimple *stmt)
 	    ;
 	  else
 	    {
-	      struct def_blocks_d *db_p = get_def_blocks_for (info);
+	      def_blocks *db_p = get_def_blocks_for (info);
 
 	      /* If there are some non-debug uses in the current bb,
 		 it is fine.  */
@@ -1602,7 +1590,7 @@ dump_currdefs (FILE *file)
   fprintf (file, "\n\nCurrent reaching definitions\n\n");
   FOR_EACH_VEC_ELT (symbols_to_rename, i, var)
     {
-      common_info_p info = get_common_info (var);
+      common_info *info = get_common_info (var);
       fprintf (file, "CURRDEF (");
       print_generic_expr (file, var, 0);
       fprintf (file, ") = ");
@@ -1689,9 +1677,9 @@ debug_tree_ssa_stats (void)
 /* Callback for htab_traverse to dump the VAR_INFOS hash table.  */
 
 int
-debug_var_infos_r (var_info_d **slot, FILE *file)
+debug_var_infos_r (var_info **slot, FILE *file)
 {
-  struct var_info_d *info = *slot;
+  var_info *info = *slot;
 
   fprintf (file, "VAR: ");
   print_generic_expr (file, info->var, dump_flags);
@@ -1731,7 +1719,7 @@ debug_var_infos (void)
 static inline void
 register_new_update_single (tree new_name, tree old_name)
 {
-  common_info_p info = get_common_info (old_name);
+  common_info *info = get_common_info (old_name);
   tree currdef = info->current_def;
 
   /* Push the current reaching definition into BLOCK_DEFS_STACK.
@@ -2487,7 +2475,7 @@ mark_use_interesting (tree var, gimple *stmt, basic_block bb,
      replace it).  */
   if (insert_phi_p)
     {
-      struct def_blocks_d *db_p = get_def_blocks_for (get_common_info (var));
+      def_blocks *db_p = get_def_blocks_for (get_common_info (var));
       if (!bitmap_bit_p (db_p->def_blocks, bb->index))
 	set_livein_block (var, bb);
     }
@@ -3006,7 +2994,7 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
                               unsigned update_flags)
 {
   basic_block entry;
-  struct def_blocks_d *db;
+  def_blocks *db;
   bitmap idf, pruned_idf;
   bitmap_iterator bi;
   unsigned i;

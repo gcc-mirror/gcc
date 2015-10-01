@@ -36,28 +36,28 @@ static FILE *statistics_dump_file;
 /* Statistics entry.  A integer counter associated to a string ID
    and value.  */
 
-typedef struct statistics_counter_s {
+struct statistics_counter {
   const char *id;
   int val;
   bool histogram_p;
   unsigned HOST_WIDE_INT count;
   unsigned HOST_WIDE_INT prev_dumped_count;
-} statistics_counter_t;
+};
 
 /* Hashtable helpers.  */
 
-struct stats_counter_hasher : pointer_hash <statistics_counter_t>
+struct stats_counter_hasher : pointer_hash <statistics_counter>
 {
-  static inline hashval_t hash (const statistics_counter_t *);
-  static inline bool equal (const statistics_counter_t *,
-			    const statistics_counter_t *);
-  static inline void remove (statistics_counter_t *);
+  static inline hashval_t hash (const statistics_counter *);
+  static inline bool equal (const statistics_counter *,
+			    const statistics_counter *);
+  static inline void remove (statistics_counter *);
 };
 
 /* Hash a statistic counter by its string ID.  */
 
 inline hashval_t
-stats_counter_hasher::hash (const statistics_counter_t *c)
+stats_counter_hasher::hash (const statistics_counter *c)
 {
   return htab_hash_string (c->id) + c->val;
 }
@@ -65,8 +65,8 @@ stats_counter_hasher::hash (const statistics_counter_t *c)
 /* Compare two statistic counters by their string IDs.  */
 
 inline bool
-stats_counter_hasher::equal (const statistics_counter_t *c1,
-			     const statistics_counter_t *c2)
+stats_counter_hasher::equal (const statistics_counter *c1,
+			     const statistics_counter *c2)
 {
   return c1->val == c2->val && strcmp (c1->id, c2->id) == 0;
 }
@@ -74,7 +74,7 @@ stats_counter_hasher::equal (const statistics_counter_t *c1,
 /* Free a statistics entry.  */
 
 inline void
-stats_counter_hasher::remove (statistics_counter_t *v)
+stats_counter_hasher::remove (statistics_counter *v)
 {
   free (CONST_CAST (char *, v->id));
   free (v);
@@ -120,10 +120,10 @@ curr_statistics_hash (void)
    since the last dump for the pass dump files.  */
 
 int
-statistics_fini_pass_1 (statistics_counter_t **slot,
+statistics_fini_pass_1 (statistics_counter **slot,
 			void *data ATTRIBUTE_UNUSED)
 {
-  statistics_counter_t *counter = *slot;
+  statistics_counter *counter = *slot;
   unsigned HOST_WIDE_INT count = counter->count - counter->prev_dumped_count;
   if (count == 0)
     return 1;
@@ -141,10 +141,10 @@ statistics_fini_pass_1 (statistics_counter_t **slot,
    since the last dump for the statistics dump.  */
 
 int
-statistics_fini_pass_2 (statistics_counter_t **slot,
+statistics_fini_pass_2 (statistics_counter **slot,
 			void *data ATTRIBUTE_UNUSED)
 {
-  statistics_counter_t *counter = *slot;
+  statistics_counter *counter = *slot;
   unsigned HOST_WIDE_INT count = counter->count - counter->prev_dumped_count;
   if (count == 0)
     return 1;
@@ -172,10 +172,10 @@ statistics_fini_pass_2 (statistics_counter_t **slot,
 /* Helper for statistics_fini_pass, reset the counters.  */
 
 int
-statistics_fini_pass_3 (statistics_counter_t **slot,
+statistics_fini_pass_3 (statistics_counter **slot,
 			void *data ATTRIBUTE_UNUSED)
 {
-  statistics_counter_t *counter = *slot;
+  statistics_counter *counter = *slot;
   counter->prev_dumped_count = counter->count;
   return 1;
 }
@@ -210,9 +210,9 @@ statistics_fini_pass (void)
 /* Helper for printing summary information.  */
 
 int
-statistics_fini_1 (statistics_counter_t **slot, opt_pass *pass)
+statistics_fini_1 (statistics_counter **slot, opt_pass *pass)
 {
-  statistics_counter_t *counter = *slot;
+  statistics_counter *counter = *slot;
   if (counter->count == 0)
     return 1;
   if (counter->histogram_p)
@@ -280,18 +280,18 @@ statistics_init (void)
 /* Lookup or add a statistics counter in the hashtable HASH with ID, VAL
    and HISTOGRAM_P.  */
 
-static statistics_counter_t *
+static statistics_counter *
 lookup_or_add_counter (stats_counter_table_type *hash, const char *id, int val,
 		       bool histogram_p)
 {
-  statistics_counter_t **counter;
-  statistics_counter_t c;
+  statistics_counter **counter;
+  statistics_counter c;
   c.id = id;
   c.val = val;
   counter = hash->find_slot (&c, INSERT);
   if (!*counter)
     {
-      *counter = XNEW (struct statistics_counter_s);
+      *counter = XNEW (statistics_counter);
       (*counter)->id = xstrdup (id);
       (*counter)->val = val;
       (*counter)->histogram_p = histogram_p;
@@ -308,7 +308,7 @@ lookup_or_add_counter (stats_counter_table_type *hash, const char *id, int val,
 void
 statistics_counter_event (struct function *fn, const char *id, int incr)
 {
-  statistics_counter_t *counter;
+  statistics_counter *counter;
 
   if ((!(dump_flags & TDF_STATS)
        && !statistics_dump_file)
@@ -342,7 +342,7 @@ statistics_counter_event (struct function *fn, const char *id, int incr)
 void
 statistics_histogram_event (struct function *fn, const char *id, int val)
 {
-  statistics_counter_t *counter;
+  statistics_counter *counter;
 
   if (!(dump_flags & TDF_STATS)
       && !statistics_dump_file)

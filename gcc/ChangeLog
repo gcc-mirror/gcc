@@ -1,3 +1,11 @@
+2015-10-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* cfganal.c, compare-elim.c, coverage.c, cprop.c, df-scan.c,
+	function.c, read-rtl.c, statistics.c, trans-mem.c, tree-if-conv.c,
+	tree-into-ssa.c, tree-loop-distribution.c, tree-ssa-coalesce.c,
+	tree-ssa-loop-ivopts.c, tree-ssa-reassoc.c, tree-ssa-strlen.c,
+	tree-ssa-tail-merge.c, tree-vrp.c, var-tracking.c: Remove
+
 2015-10-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65345

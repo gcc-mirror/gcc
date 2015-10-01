@@ -131,7 +131,7 @@ static bool aggressive_if_conv;
 
 /* Structure used to predicate basic blocks.  This is attached to the
    ->aux field of the BBs in the loop to be if-converted.  */
-typedef struct bb_predicate_s {
+struct bb_predicate {
 
   /* The condition under which this basic block is executed.  */
   tree predicate;
@@ -140,7 +140,7 @@ typedef struct bb_predicate_s {
      recorded here, in order to avoid the duplication of computations
      that occur in previous conditions.  See PR44483.  */
   gimple_seq predicate_gimplified_stmts;
-} *bb_predicate_p;
+};
 
 /* Returns true when the basic block BB has a predicate.  */
 
@@ -155,7 +155,7 @@ bb_has_predicate (basic_block bb)
 static inline tree
 bb_predicate (basic_block bb)
 {
-  return ((bb_predicate_p) bb->aux)->predicate;
+  return ((struct bb_predicate *) bb->aux)->predicate;
 }
 
 /* Sets the gimplified predicate COND for basic block BB.  */
@@ -166,7 +166,7 @@ set_bb_predicate (basic_block bb, tree cond)
   gcc_assert ((TREE_CODE (cond) == TRUTH_NOT_EXPR
 	       && is_gimple_condexpr (TREE_OPERAND (cond, 0)))
 	      || is_gimple_condexpr (cond));
-  ((bb_predicate_p) bb->aux)->predicate = cond;
+  ((struct bb_predicate *) bb->aux)->predicate = cond;
 }
 
 /* Returns the sequence of statements of the gimplification of the
@@ -175,7 +175,7 @@ set_bb_predicate (basic_block bb, tree cond)
 static inline gimple_seq
 bb_predicate_gimplified_stmts (basic_block bb)
 {
-  return ((bb_predicate_p) bb->aux)->predicate_gimplified_stmts;
+  return ((struct bb_predicate *) bb->aux)->predicate_gimplified_stmts;
 }
 
 /* Sets the sequence of statements STMTS of the gimplification of the
@@ -184,7 +184,7 @@ bb_predicate_gimplified_stmts (basic_block bb)
 static inline void
 set_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
 {
-  ((bb_predicate_p) bb->aux)->predicate_gimplified_stmts = stmts;
+  ((struct bb_predicate *) bb->aux)->predicate_gimplified_stmts = stmts;
 }
 
 /* Adds the sequence of statements STMTS to the sequence of statements
@@ -194,7 +194,7 @@ static inline void
 add_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
 {
   gimple_seq_add_seq
-    (&(((bb_predicate_p) bb->aux)->predicate_gimplified_stmts), stmts);
+    (&(((struct bb_predicate *) bb->aux)->predicate_gimplified_stmts), stmts);
 }
 
 /* Initializes to TRUE the predicate of basic block BB.  */
@@ -202,7 +202,7 @@ add_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
 static inline void
 init_bb_predicate (basic_block bb)
 {
-  bb->aux = XNEW (struct bb_predicate_s);
+  bb->aux = XNEW (struct bb_predicate);
   set_bb_predicate_gimplified_stmts (bb, NULL);
   set_bb_predicate (bb, boolean_true_node);
 }

@@ -267,10 +267,6 @@ struct iv_inv_expr_ent
 
 /* The data used by the induction variable optimizations.  */
 
-typedef struct iv_use *iv_use_p;
-
-typedef struct iv_cand *iv_cand_p;
-
 /* Hashtable helpers.  */
 
 struct iv_inv_expr_hasher : free_ptr_hash <iv_inv_expr_ent>
@@ -326,10 +322,10 @@ struct ivopts_data
   bitmap relevant;
 
   /* The uses of induction variables.  */
-  vec<iv_use_p> iv_uses;
+  vec<iv_use *> iv_uses;
 
   /* The candidates.  */
-  vec<iv_cand_p> iv_candidates;
+  vec<iv_cand *> iv_candidates;
 
   /* A bitmap of important candidates.  */
   bitmap important_candidates;
@@ -3747,12 +3743,12 @@ enum ainc_type
   AINC_NONE		/* Also the number of auto increment types.  */
 };
 
-typedef struct address_cost_data_s
+struct address_cost_data
 {
   HOST_WIDE_INT min_offset, max_offset;
   unsigned costs[2][2][2][2];
   unsigned ainc_costs[AINC_NONE];
-} *address_cost_data;
+};
 
 
 static comp_cost
@@ -3763,9 +3759,9 @@ get_address_cost (bool symbol_present, bool var_present,
 		  bool stmt_after_inc, bool *may_autoinc)
 {
   machine_mode address_mode = targetm.addr_space.address_mode (as);
-  static vec<address_cost_data> address_cost_data_list;
+  static vec<address_cost_data *> address_cost_data_list;
   unsigned int data_index = (int) as * MAX_MACHINE_MODE + (int) mem_mode;
-  address_cost_data data;
+  address_cost_data *data;
   static bool has_preinc[MAX_MACHINE_MODE], has_postinc[MAX_MACHINE_MODE];
   static bool has_predec[MAX_MACHINE_MODE], has_postdec[MAX_MACHINE_MODE];
   unsigned cost, acost, complexity;
@@ -3789,7 +3785,7 @@ get_address_cost (bool symbol_present, bool var_present,
       rtx addr, base;
       rtx reg0, reg1;
 
-      data = (address_cost_data) xcalloc (1, sizeof (*data));
+      data = (address_cost_data *) xcalloc (1, sizeof (*data));
 
       reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
 
