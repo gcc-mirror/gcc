@@ -58,8 +58,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Ret __ret;
 
       _CharT* __endptr;
-      const int __saved_errno = errno;
-      errno = 0;
+
+      struct _Save_errno {
+	_Save_errno() : _M_errno(errno) { errno = 0; }
+	~_Save_errno() { if (errno == 0) errno = _M_errno; }
+	int _M_errno;
+      } const __save_errno;
+
       const _TRet __tmp = __convf(__str, &__endptr, __base...);
 
       if (__endptr == __str)
@@ -71,7 +76,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::__throw_out_of_range(__name);
       else
 	__ret = __tmp;
-      errno = __saved_errno;
 
       if (__idx)
 	*__idx = __endptr - __str;

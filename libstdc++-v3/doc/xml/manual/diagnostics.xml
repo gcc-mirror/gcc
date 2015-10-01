@@ -71,6 +71,39 @@
   </section>
 </section>
 
+<section xml:id="std.diagnostics.errno" xreflabel="errno"><info><title>Use of errno by the library</title></info>
+  <?dbhtml filename="errno.html"?>
+
+  <para>
+    The C and POSIX standards guarantee that <varname>errno</varname>
+    is never set to zero by any library function.
+    The C++ standard has less to say about when <varname>errno</varname>
+    is or isn't set, but libstdc++ follows the same rule and never sets
+    it to zero.
+  </para>
+
+  <para>
+    On the other hand, there are few guarantees about when the C++ library
+    sets <varname>errno</varname> on error, beyond what is specified for
+    functions that come from the C library.
+    For example, when <function>std::stoi</function> throws an exception of
+    type <classname>std::out_of_range</classname>, <varname>errno</varname>
+    may or may not have been set to <constant>ERANGE</constant>.
+  </para>
+
+  <para>
+    Parts of the C++ library may be implemented in terms of C library
+    functions, which may result in <varname>errno</varname> being set
+    with no explicit call to a C function. For example, on a target where
+    <function>operator new</function> uses <function>malloc</function>
+    a failed memory allocation with <function>operator new</function> might
+    set <varname>errno</varname> to <constant>ENOMEM</constant>.
+    Which C++ library functions can set <varname>errno</varname> in this way
+    is unspecified because it may vary between platforms and between releases.
+  </para>
+
+</section>
+
 <section xml:id="std.diagnostics.concept_checking" xreflabel="Concept Checking"><info><title>Concept Checking</title></info>
   <?dbhtml filename="concept_checking.html"?>
   
