@@ -274,6 +274,13 @@ stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
   FOR_EACH_VEC_ELT (drs, j, dr)
     {
       int nb_subscripts = DR_NUM_DIMENSIONS (dr);
+
+      if (nb_subscripts < 1)
+	{
+	  free_data_refs (drs);
+	  return false;
+	}
+
       tree ref = DR_REF (dr);
 
       for (int i = nb_subscripts - 1; i >= 0; i--)
