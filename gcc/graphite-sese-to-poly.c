@@ -274,32 +274,6 @@ free_scops (vec<scop_p> scops)
   scops.release ();
 }
 
-/* Same as outermost_loop_in_sese, returns the outermost loop
-   containing BB in REGION, but makes sure that the returned loop
-   belongs to the REGION, and so this returns the first loop in the
-   REGION when the loop containing BB does not belong to REGION.  */
-
-static loop_p
-outermost_loop_in_sese_1 (sese region, basic_block bb)
-{
-  loop_p nest = outermost_loop_in_sese (region, bb);
-
-  if (loop_in_sese_p (nest, region))
-    return nest;
-
-  /* When the basic block BB does not belong to a loop in the region,
-     return the first loop in the region.  */
-  nest = nest->inner;
-  while (nest)
-    if (loop_in_sese_p (nest, region))
-      break;
-    else
-      nest = nest->next;
-
-  gcc_assert (nest);
-  return nest;
-}
-
 /* Generates a polyhedral black box only if the bb contains interesting
    information.  */
 
@@ -309,7 +283,7 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   vec<data_reference_p> drs;
   drs.create (5);
   sese region = SCOP_REGION (scop);
-  loop_p nest = outermost_loop_in_sese_1 (region, bb);
+  loop_p nest = outermost_loop_in_sese (region, bb);
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1934,7 +1908,7 @@ analyze_drs_in_stmts (scop_p scop, basic_block bb, vec<gimple *> stmts)
   if (!bb_in_sese_p (bb, region))
     return;
 
-  nest = outermost_loop_in_sese_1 (region, bb);
+  nest = outermost_loop_in_sese (region, bb);
   gbb = gbb_from_bb (bb);
 
   FOR_EACH_VEC_ELT (stmts, i, stmt)

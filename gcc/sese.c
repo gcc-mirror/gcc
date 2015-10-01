@@ -615,7 +615,7 @@ copy_bb_and_scalar_dependences (basic_block bb, sese region,
 /* Returns the outermost loop in SCOP that contains BB.  */
 
 struct loop *
-outermost_loop_in_sese (sese region, basic_block bb)
+outermost_loop_in_sese_1 (sese region, basic_block bb)
 {
   struct loop *nest;
 
@@ -624,6 +624,32 @@ outermost_loop_in_sese (sese region, basic_block bb)
 	 && loop_in_sese_p (loop_outer (nest), region))
     nest = loop_outer (nest);
 
+  return nest;
+}
+
+/* Same as outermost_loop_in_sese_1, returns the outermost loop
+   containing BB in REGION, but makes sure that the returned loop
+   belongs to the REGION, and so this returns the first loop in the
+   REGION when the loop containing BB does not belong to REGION.  */
+
+loop_p
+outermost_loop_in_sese (sese region, basic_block bb)
+{
+  loop_p nest = outermost_loop_in_sese_1 (region, bb);
+
+  if (loop_in_sese_p (nest, region))
+    return nest;
+
+  /* When the basic block BB does not belong to a loop in the region,
+     return the first loop in the region.  */
+  nest = nest->inner;
+  while (nest)
+    if (loop_in_sese_p (nest, region))
+      break;
+    else
+      nest = nest->next;
+
+  gcc_assert (nest);
   return nest;
 }
 
