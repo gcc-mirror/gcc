@@ -292,7 +292,7 @@ DEF_TUNE (X86_TUNE_USE_CLTD, "use_cltd",
 /* X86_TUNE_USE_BT: Enable use of BT (bit test) instructions.  */
 DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
           m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_KNL | m_INTEL
-	  | m_AMD_MULTIPLE | m_GENERIC)
+	  | m_LAKEMONT | m_AMD_MULTIPLE | m_GENERIC)
 
 /*****************************************************************************/
 /* 387 instruction selection tuning                                          */
@@ -448,7 +448,7 @@ DEF_TUNE (X86_TUNE_SHIFT1, "shift1", ~m_486)
 /* X86_TUNE_ZERO_EXTEND_WITH_AND: Use AND instruction instead
    of mozbl/movwl.  */
 DEF_TUNE (X86_TUNE_ZERO_EXTEND_WITH_AND, "zero_extend_with_and",
-	  m_486 | m_PENT | m_LAKEMONT)
+	  m_486 | m_PENT)
 
 /* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
    and SImode multiply, but 386 and 486 do HImode multiply faster.  */
