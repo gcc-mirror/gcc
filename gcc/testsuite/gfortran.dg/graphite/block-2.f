@@ -16,4 +16,5 @@
       RETURN
       END
 
-! { dg-final { scan-tree-dump-times "number of SCoPs: 2" 1 "graphite" } }
+! Disabled for now as it requires delinearization.
+! { dg-final { scan-tree-dump-times "number of SCoPs: 2" 1 "graphite" { xfail *-*-* } } }
