@@ -1,5 +1,9 @@
 2015-10-02  Marek Polacek  <polacek@redhat.com>
 
+	* c.opt (Wduplicated-cond): Don't enable by -Wall anymore.
+
+2015-10-02  Marek Polacek  <polacek@redhat.com>
+
 	PR c/64249
 	* c-common.c (warn_duplicated_cond_add_or_warn): New function.
 	* c-common.h (warn_duplicated_cond_add_or_warn): Declare.

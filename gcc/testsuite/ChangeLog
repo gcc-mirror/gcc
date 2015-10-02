@@ -1,3 +1,7 @@
+2015-10-02  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/Wduplicated-cond-2.c: Skip until PR67819 is resolved.
+
 2015-10-02  Sebastian Pop  <s.pop@samsung.com>
 
 	PR tree-optimization/67754
