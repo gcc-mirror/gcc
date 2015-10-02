@@ -1085,9 +1085,10 @@ See RS/6000 and PowerPC Options.
 -mrecip -mrecip=@var{opt} @gol
 -mvzeroupper -mprefer-avx128 @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
--mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd -msha @gol
--maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma -mprefetchwt1 @gol
--mclflushopt -mxsavec -mxsaves @gol
+-mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd -mavx512vl @gol
+-mavx512bw -mavx512dq -mavx512ifma -mavx512vbmi -msha -maes @gol
+-mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
+-mprefetchwt1 -mclflushopt -mxsavec -mxsaves @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
 -mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mmwaitx -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
@@ -22822,31 +22823,58 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex msse
 @need 200
 @itemx -msse2
+@opindex msse2
 @need 200
 @itemx -msse3
+@opindex msse3
 @need 200
 @itemx -mssse3
+@opindex mssse3
 @need 200
 @itemx -msse4
+@opindex msse4
 @need 200
 @itemx -msse4a
+@opindex msse4a
 @need 200
 @itemx -msse4.1
+@opindex msse4.1
 @need 200
 @itemx -msse4.2
+@opindex msse4.2
 @need 200
 @itemx -mavx
 @opindex mavx
 @need 200
 @itemx -mavx2
+@opindex mavx2
 @need 200
 @itemx -mavx512f
+@opindex mavx512f
 @need 200
 @itemx -mavx512pf
+@opindex mavx512pf
 @need 200
 @itemx -mavx512er
+@opindex mavx512er
 @need 200
 @itemx -mavx512cd
+@opindex mavx512cd
+@need 200
+@itemx -mavx512vl
+@opindex mavx512vl
+@need 200
+@itemx -mavx512bw
+@opindex mavx512bw
+@need 200
+@itemx -mavx512dq
+@opindex mavx512dq
+@need 200
+@itemx -mavx512ifma
+@opindex mavx512ifma
+@need 200
+@itemx -mavx512vbmi
+@opindex mavx512vbmi
 @need 200
 @itemx -msha
 @opindex msha
@@ -22873,8 +22901,10 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex mfma
 @need 200
 @itemx -mfma4
+@opindex mfma4
 @need 200
 @itemx -mno-fma4
+@opindex mno-fma4
 @need 200
 @itemx -mprefetchwt1
 @opindex mprefetchwt1
@@ -22931,7 +22961,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
-BMI, BMI2, FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX or 3DNow!@:
+AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA AVX512VBMI, BMI, BMI2, FXSR,
+XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX or 3DNow!@:
 extended instruction sets.  Each has a corresponding @option{-mno-} option
 to disable use of these instructions.
 
