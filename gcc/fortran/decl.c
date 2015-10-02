@@ -1439,7 +1439,12 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  /* Update initializer character length according symbol.  */
 	  else if (sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
 	    {
-	      int len = mpz_get_si (sym->ts.u.cl->length->value.integer);
+	      int len;
+
+	      if (!gfc_specification_expr (sym->ts.u.cl->length))
+		return false;
+
+	      len = mpz_get_si (sym->ts.u.cl->length->value.integer);
 
 	      if (init->expr_type == EXPR_CONSTANT)
 		gfc_set_constant_character_len (len, init, -1);
