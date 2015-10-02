@@ -1,5 +1,5 @@
 ; Options for the Ada front end.
-; Copyright (C) 2003-2013 Free Software Foundation, Inc.
+; Copyright (C) 2003-2015 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -87,5 +87,9 @@ Set name of output ALI file (internal switch)
 gnat
 Ada AdaWhy AdaSCIL Joined
 -gnat<options>	Specify options to GNAT
+
+fbuiltin-printf
+Ada Undocumented
+Ignored
 
 ; This comment is to ensure we retain the blank line above.
