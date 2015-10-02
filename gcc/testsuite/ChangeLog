@@ -1,3 +1,12 @@
+2015-10-02  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/tlsle12_tiny_1.c: New testcase for tiny model.
+	* gcc.target/aarch64/tlsle24_tiny_1.c: Likewise.
+	* gcc.target/aarch64/tlsle_sizeadj_tiny_1.c: TLS size truncation test
+	for tiny model.
+	* gcc.target/aarch64/tlsle_sizeadj_small_1.c: TLS size truncation test
+	for small model.
+
 2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/vect-pack-trunc-1.c: New test.
