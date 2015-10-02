@@ -1,3 +1,13 @@
+2015-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/67788
+	PR target/67789
+	* config/rs6000/rs6000.c (TARGET_CANNOT_COPY_INSN_P): New.
+	(rs6000_cannot_copy_insn_p): New function.
+	* config/rs6000/rs6000.md (cannot_copy): New attribute.
+	(load_toc_v4_PIC_1_normal): Set cannot_copy.
+	(load_toc_v4_PIC_1_476): Ditto.
+
 2015-10-01  Aditya Kumar  <aditya.k7@samsung.com>
 
 	* graphite-scop-detection.c (struct sese_l): New conversion constructor
