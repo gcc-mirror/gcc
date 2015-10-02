@@ -1,3 +1,11 @@
+2015-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67747
+	* src/filesystem/dir.cc (native_readdir): Remove.
+	(_Dir::advance): Use readdir instead of native_readdir.
+	(recursive_directory_iterator(const path&, directory_options,
+	error_code*)): Use swap instead of reset.
+
 2015-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/html/manual/errno.html: Add new file.
