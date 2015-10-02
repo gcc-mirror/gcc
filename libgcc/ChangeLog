@@ -1,3 +1,8 @@
+2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * config/i386/cpuinfo.c (processor_features): Add
+	FEATURE_AVX512VBMI and FEATURE_AVX512VBMI.
+
 2015-09-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* soft-fp/adddf3.c: Update from glibc.

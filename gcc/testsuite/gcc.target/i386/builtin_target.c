@@ -200,6 +200,10 @@ check_features (unsigned int ecx, unsigned int edx,
 	assert (__builtin_cpu_supports ("avx512bw"));
       if (ebx & bit_AVX512DQ)
 	assert (__builtin_cpu_supports ("avx512dq"));
+      if (ebx & bit_AVX512IFMA)
+	assert (__builtin_cpu_supports ("avx512ifma"));
+      if (ebx & bit_AVX512VBMI)
+	assert (__builtin_cpu_supports ("avx512vbmi"));
     }
 }
 

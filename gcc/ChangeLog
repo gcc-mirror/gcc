@@ -1,3 +1,8 @@
+2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
+	* config/i386/i386.c (processor_features): Add F_AVX512VBMI,
+	F_AVX512IFMA.
+	(isa_names_table): Handle F_AVX512VBMI and F_AVX512IFMA.
+
 2015-10-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/aarch64-elf.h (TARGET_ASM_NAMED_SECTION): Delete.

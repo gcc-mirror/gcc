@@ -36591,6 +36591,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     F_AVX512CD,
     F_AVX512ER,
     F_AVX512PF,
+    F_AVX512VBMI,
+    F_AVX512IFMA,
     F_MAX
   };
 
@@ -36699,6 +36701,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"avx512cd",F_AVX512CD},
       {"avx512er",F_AVX512ER},
       {"avx512pf",F_AVX512PF},
+      {"avx512vbmi",F_AVX512VBMI},
+      {"avx512ifma",F_AVX512IFMA},
     };
 
   tree __processor_model_type = build_processor_model_struct ();
