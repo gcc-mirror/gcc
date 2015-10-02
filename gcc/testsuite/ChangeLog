@@ -1,3 +1,9 @@
+2015-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/67788
+	PR target/67789
+	* gcc.target/powerpc/pr67789.c: New testcase.
+
 2015-10-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran.67802
