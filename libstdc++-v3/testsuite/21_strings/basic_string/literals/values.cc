@@ -27,15 +27,19 @@ test01()
   using namespace std::literals::string_literals;
 
   std::string planet = "Mercury"s;
+#ifdef _GLIBCXX_USE_WCHAR_T
   std::wstring wplanet = L"Venus"s;
+#endif
   std::string u8planet = u8"Mars"s;
-  std::u16string u16planet = u"Juiter"s;
+  std::u16string u16planet = u"Jupiter"s;
   std::u32string u32planet = U"Saturn"s;
 
   VERIFY( planet == std::string("Mercury") );
+#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( wplanet == std::wstring(L"Venus") );
+#endif
   VERIFY( u8planet == std::string(u8"Mars") );
-  VERIFY( u16planet == std::u16string(u"Juiter") );
+  VERIFY( u16planet == std::u16string(u"Jupiter") );
   VERIFY( u32planet == std::u32string(U"Saturn") );
 }
 

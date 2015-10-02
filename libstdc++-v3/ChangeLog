@@ -1,5 +1,14 @@
 2015-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/21_strings/basic_string/literals/types.cc: Guard use of
+	wchar_t with _GLIBCXX_USE_WCHAR_T.
+	* testsuite/21_strings/basic_string/literals/values.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/citerators.cc:
+	Likewise.
+	* testsuite/22_locale/messages/13631.cc: Likewise.
+	* testsuite/experimental/string_view/literals/types.cc: Likewise.
+	* testsuite/experimental/string_view/literals/values.cc: Likewise.
+
 	* src/filesystem/Makefile.am: Add cxx11_abi_sources.
 	* src/filesystem/Makefile.in: Regenerate.
 	* src/filesystem/cow-dir.cc: New.
