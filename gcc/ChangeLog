@@ -1,3 +1,11 @@
+2015-10-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-09-15  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+        * config/s390/s390.c (s390_const_operand_ok): Add missing
+	brackets.
+
 2015-10-01  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
