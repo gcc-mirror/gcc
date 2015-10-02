@@ -1,5 +1,7 @@
 2015-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (GLIBCXX_ENABLE_DEBUG_FLAGS): Fix comment.
+
 	* include/bits/locale_conv.h [!_GLIBCXX_USE_WCHAR_T]
 	(__do_str_codecvt, __str_codecvt_in, __str_codecvt_out): Enable.
 	* include/experimental/fs_path.h [!_GLIBCXX_USE_WCHAR_T]
