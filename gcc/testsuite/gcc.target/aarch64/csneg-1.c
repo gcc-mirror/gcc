@@ -56,3 +56,15 @@ int test_csneg_cmp(int x)
     x = -x;
   return x;
 }
+
+unsigned long long
+test_csneg_uxtw (unsigned int a,
+		 unsigned int b,
+		 unsigned int c)
+{
+  /* { dg-final { scan-assembler "csneg\tw\[0-9\]*.*ne" } } */
+  /* { dg-final { scan-assembler-not "uxtw\tw\[0-9\]*.*" } } */
+  unsigned int val;
+  val = a ? b: -c;
+  return val;
+}

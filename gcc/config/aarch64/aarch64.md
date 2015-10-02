@@ -3144,6 +3144,18 @@
   [(set_attr "type" "csel")]
 )
 
+(define_insn "csneg3_uxtw_insn"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (if_then_else:SI
+	    (match_operand 1 "aarch64_comparison_operation" "")
+	    (neg:SI (match_operand:SI 2 "register_operand" "r"))
+	    (match_operand:SI 3 "aarch64_reg_or_zero" "rZ"))))]
+  ""
+  "csneg\\t%w0, %w3, %w2, %M1"
+  [(set_attr "type" "csel")]
+)
+
 (define_insn "csneg3<mode>_insn"
   [(set (match_operand:GPI 0 "register_operand" "=r")
         (if_then_else:GPI
