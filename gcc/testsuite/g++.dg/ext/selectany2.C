@@ -18,7 +18,7 @@ struct  f
 };
 __declspec (selectany) struct f  F= {1}; // OK
 
-__declspec (selectany) int boo;	//{ dg-error "selectany" }
+__declspec (selectany) int boo;	//  OK
 
 __declspec (selectany) static int bar = 1; // { dg-error "selectany" }
 int use_bar = bar;  //  Avoid defined but not used warning. 

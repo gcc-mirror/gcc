@@ -1,3 +1,8 @@
+2015-10-02  Kai Tietz  <ktietz70@googlemail.com>
+
+	PR target/51726
+	* g++.dg/ext/selectany2.C: Allow uninitialized variable case.
+
 2015-10-01  Louis Krupp     <louis.krupp@zoho.com>
 
 	PR fortran/62242
