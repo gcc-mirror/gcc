@@ -1,5 +1,16 @@
 2015-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/locale_conv.h [!_GLIBCXX_USE_WCHAR_T]
+	(__do_str_codecvt, __str_codecvt_in, __str_codecvt_out): Enable.
+	* include/experimental/fs_path.h [!_GLIBCXX_USE_WCHAR_T]
+	(path::wstring, path::generic_wstring): Disable.
+	* src/filesystem/path.cc (path::_S_convert_loc)
+	[!_GLIBCXX_USE_WCHAR_T]: Skip conversion.
+	* testsuite/experimental/filesystem/path/assign/assign.cc: Check for
+	wchar_t support.
+	* testsuite/experimental/filesystem/path/concat/strings.cc: Likewise.
+	* testsuite/experimental/filesystem/path/construct/range.cc: Likewise.
+
 	* testsuite/util/testsuite_fs.h (nonexistent_path): Use less generic
 	name for paths. Prefer snprintf to sprintf.
 
