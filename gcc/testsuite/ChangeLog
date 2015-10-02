@@ -1,3 +1,8 @@
+2015-10-02  Renlin Li  <renlin.li@arm.com>
+
+	PR target/66776
+	* gcc.target/aarch64/pr66776.c: New.
+
 2015-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/warn13.adb: New test.

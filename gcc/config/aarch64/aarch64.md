@@ -3010,6 +3010,18 @@
   [(set_attr "type" "csel")]
 )
 
+(define_insn "*cmovdi_insn_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(if_then_else:DI
+	 (match_operator 1 "aarch64_comparison_operator"
+	  [(match_operand 2 "cc_register" "") (const_int 0)])
+	 (zero_extend:DI (match_operand:SI 3 "register_operand" "r"))
+	 (zero_extend:DI (match_operand:SI 4 "register_operand" "r"))))]
+  ""
+  "csel\\t%w0, %w3, %w4, %m1"
+  [(set_attr "type" "csel")]
+)
+
 (define_insn "*cmov<mode>_insn"
   [(set (match_operand:GPF 0 "register_operand" "=w")
 	(if_then_else:GPF
