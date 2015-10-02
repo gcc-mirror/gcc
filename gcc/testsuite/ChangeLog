@@ -1,3 +1,8 @@
+2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/builtin_target.c: Handle "avx512ifma"
+	and "avx512vbmi".
+
 2015-10-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/67756

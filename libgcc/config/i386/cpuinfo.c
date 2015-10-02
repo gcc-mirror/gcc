@@ -110,7 +110,9 @@ enum processor_features
   FEATURE_AVX512DQ,
   FEATURE_AVX512CD,
   FEATURE_AVX512ER,
-  FEATURE_AVX512PF
+  FEATURE_AVX512PF,
+  FEATURE_AVX512VBMI,
+  FEATURE_AVX512IFMA
 };
 
 struct __processor_model
@@ -336,6 +338,10 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	features |= (1 << FEATURE_AVX512PF);
       if (ebx & bit_AVX512ER)
 	features |= (1 << FEATURE_AVX512ER);
+      if (ebx & bit_AVX512IFMA)
+	features |= (1 << FEATURE_AVX512IFMA);
+      if (ecx & bit_AVX512VBMI)
+	features |= (1 << FEATURE_AVX512VBMI);
     }
 
   unsigned int ext_level;
