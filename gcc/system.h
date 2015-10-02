@@ -481,18 +481,6 @@ extern char *stpcpy (char *, const char *);
 int unsetenv(const char *);
 #endif
 
-#ifdef __cplusplus
-}
-#endif
-
-#ifdef HAVE_MALLOC_H
-#include <malloc.h>
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #if defined (HAVE_DECL_MALLOC) && !HAVE_DECL_MALLOC
 extern void *malloc (size_t);
 #endif
