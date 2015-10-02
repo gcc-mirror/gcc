@@ -164,6 +164,11 @@ gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
       /* This is handled by the middle-end.  */
       break;
 
+    case OPT_fbuiltin_printf:
+      /* This is ignored in Ada but needs to be accepted so it can be
+	 defaulted.  */
+      break;
+
     default:
       gcc_unreachable ();
     }

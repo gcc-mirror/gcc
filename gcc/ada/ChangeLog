@@ -1,3 +1,11 @@
+2015-10-02  Doug Rupp  <rupp@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/lang.opt (fbuiltin-printf): Accept.
+	* gcc-interface/misc.c (gnat_handle_option): Ignore it.
+	* gcc-interface/lang-specs.h (@ada, @adawhy, @adascil): Propagate -f*
+	flags as -g* and -m* flags past -gnatez.
+
 2015-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Pragma_to_gnu) <Pragma_Warnings>: Replace
