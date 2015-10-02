@@ -1,5 +1,8 @@
 2015-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_fs.h (nonexistent_path): Use less generic
+	name for paths. Prefer snprintf to sprintf.
+
 	PR libstdc++/67747
 	* src/filesystem/dir.cc (native_readdir): Remove.
 	(_Dir::advance): Use readdir instead of native_readdir.
