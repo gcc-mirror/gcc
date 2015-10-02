@@ -1592,7 +1592,7 @@ C++ ObjC++ Alias(std=c++1z) Undocumented
 
 std=c11
 C ObjC
-Conform to the ISO 2011 C standard (experimental and incomplete support)
+Conform to the ISO 2011 C standard
 
 std=c1x
 C ObjC Alias(std=c11)
@@ -1648,7 +1648,7 @@ C++ ObjC++ Alias(std=gnu++1z) Undocumented
 
 std=gnu11
 C ObjC
-Conform to the ISO 2011 C standard with GNU extensions (experimental and incomplete support)
+Conform to the ISO 2011 C standard with GNU extensions
 
 std=gnu1x
 C ObjC Alias(std=gnu11)
@@ -1688,7 +1688,7 @@ Deprecated in favor of -std=iso9899:1999
 
 std=iso9899:2011
 C ObjC Alias(std=c11)
-Conform to the ISO 2011 C standard (experimental and incomplete support)
+Conform to the ISO 2011 C standard
 
 traditional
 Driver
