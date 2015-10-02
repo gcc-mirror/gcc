@@ -811,12 +811,40 @@ dot_scop (scop_p scop)
 #endif
 }
 
+/* Can all ivs be represented by a signed integer?
+   As ISL might generate negative values in its expressions, signed loop ivs
+   are required in the backend.  */
+
+static bool
+loop_ivs_can_be_represented (loop_p loop)
+{
+  for (gphi_iterator psi = gsi_start_phis (loop->header);
+       !gsi_end_p (psi); gsi_next (&psi))
+    {
+      gphi *phi = psi.phi ();
+      tree res = PHI_RESULT (phi);
+      tree type = TREE_TYPE (res);
+
+      if (TYPE_UNSIGNED (type)
+	  && TYPE_PRECISION (type) >= TYPE_PRECISION (long_long_integer_type_node))
+        return false;
+    }
+  return true;
+}
+
 /* Return true when the body of LOOP has statements that can be represented as a
    valid scop.  */
 
 static bool
 loop_body_is_valid_scop (loop_p loop, sese_l scop)
 {
+  if (!loop_ivs_can_be_represented (loop))
+    {
+      DEBUG_PRINT (dp << "[scop-detection-fail] loop_"
+		      << loop->num << "IV cannot be represented.\n");
+      return false;
+    }
+
   if (!loop_nest_has_data_refs (loop))
     {
       DEBUG_PRINT (dp << "[scop-detection-fail] loop_"

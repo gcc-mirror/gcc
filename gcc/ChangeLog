@@ -1,3 +1,17 @@
+2015-10-02  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-scop-detection.c (loop_ivs_can_be_represented): New.
+	(loop_body_is_valid_scop): Call loop_ivs_can_be_represented.
+	* graphite-sese-to-poly.c (new_gimple_bb): Renamed new_gimple_poly_bb.
+	(free_gimple_bb): Renamed free_gimple_poly_bb.
+	(try_generate_gimple_bb): Hoist loop invariant code.
+	(analyze_drs_in_stmts): Same.
+	(build_scop_drs): Call renamed functions.
+	(new_pbb_from_pbb): Same.
+	(scop_ivs_can_be_represented): Delete as functionality now moved to
+	graphite-scop-detection.c
+	(build_poly_scop): Remove call to scop_ivs_can_be_represented.
+
 2015-10-02  Aditya Kumar  <hiraditya@msn.com>
 
 	* graphite-scop-detection.c (stmt_has_side_effects): New function

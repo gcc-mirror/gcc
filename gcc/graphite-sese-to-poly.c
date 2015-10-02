@@ -199,7 +199,7 @@ reduction_phi_p (sese region, gphi_iterator *psi)
 /* Store the GRAPHITE representation of BB.  */
 
 static gimple_poly_bb_p
-new_gimple_bb (basic_block bb, vec<data_reference_p> drs)
+new_gimple_poly_bb (basic_block bb, vec<data_reference_p> drs)
 {
   gimple_poly_bb_p gbb;
 
@@ -233,7 +233,7 @@ free_data_refs_aux (vec<data_reference_p> datarefs)
 /* Frees GBB.  */
 
 static void
-free_gimple_bb (gimple_poly_bb_p gbb)
+free_gimple_poly_bb (gimple_poly_bb_p gbb)
 {
   free_data_refs_aux (GBB_DATA_REFS (gbb));
   free_data_refs (GBB_DATA_REFS (gbb));
@@ -253,7 +253,7 @@ remove_gbbs_in_scop (scop_p scop)
   poly_bb_p pbb;
 
   FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
-    free_gimple_bb (PBB_BLACK_BOX (pbb));
+    free_gimple_poly_bb (PBB_BLACK_BOX (pbb));
 }
 
 /* Deletes all scops in SCOPS.  */
@@ -283,25 +283,23 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   vec<data_reference_p> drs;
   drs.create (5);
   sese region = SCOP_REGION (scop);
-  loop_p nest = outermost_loop_in_sese (region, bb);
-  gimple_stmt_iterator gsi;
 
+  loop_p nest = outermost_loop_in_sese (region, bb);
+  loop_p loop = bb->loop_father;
+  if (!loop_in_sese_p (loop, region))
+    loop = nest;
+
+  gimple_stmt_iterator gsi;
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
-      loop_p loop;
-
       if (is_gimple_debug (stmt))
 	continue;
-
-      loop = loop_containing_stmt (stmt);
-      if (!loop_in_sese_p (loop, region))
-	loop = nest;
 
       graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
     }
 
-  return new_gimple_bb (bb, drs);
+  return new_gimple_poly_bb (bb, drs);
 }
 
 /* Returns true if all predecessors of BB, that are not dominated by BB, are
@@ -1861,7 +1859,7 @@ build_scop_drs (scop_p scop)
   for (i = 0; SCOP_BBS (scop).iterate (i, &pbb); i++)
     if (GBB_DATA_REFS (PBB_BLACK_BOX (pbb)).is_empty ())
       {
-	free_gimple_bb (PBB_BLACK_BOX (pbb));
+	free_gimple_poly_bb (PBB_BLACK_BOX (pbb));
 	free_poly_bb (pbb);
 	SCOP_BBS (scop).ordered_remove (i);
 	i--;
@@ -1909,18 +1907,17 @@ analyze_drs_in_stmts (scop_p scop, basic_block bb, vec<gimple *> stmts)
     return;
 
   nest = outermost_loop_in_sese (region, bb);
+
+  loop_p loop = bb->loop_father;
+  if (!loop_in_sese_p (loop, region))
+    loop = nest;
+
   gbb = gbb_from_bb (bb);
 
   FOR_EACH_VEC_ELT (stmts, i, stmt)
     {
-      loop_p loop;
-
       if (is_gimple_debug (stmt))
 	continue;
-
-      loop = loop_containing_stmt (stmt);
-      if (!loop_in_sese_p (loop, region))
-	loop = nest;
 
       graphite_find_data_references_in_stmt (nest, loop, stmt,
 					     &GBB_DATA_REFS (gbb));
@@ -1983,7 +1980,7 @@ new_pbb_from_pbb (scop_p scop, poly_bb_p pbb, basic_block bb)
   vec<data_reference_p> drs;
   drs.create (3);
   gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
-  gimple_poly_bb_p gbb1 = new_gimple_bb (bb, drs);
+  gimple_poly_bb_p gbb1 = new_gimple_poly_bb (bb, drs);
   poly_bb_p pbb1 = new_poly_bb (scop, gbb1);
   int index, n = SCOP_BBS (scop).length ();
 
@@ -2473,43 +2470,6 @@ nb_pbbs_in_loops (scop_p scop)
   return res;
 }
 
-/* Can all ivs be represented by a signed integer?
-   As ISL might generate negative values in its expressions, signed loop ivs
-   are required in the backend. */
-
-static bool
-scop_ivs_can_be_represented (scop_p scop)
-{
-  loop_p loop;
-  gphi_iterator psi;
-  bool result = true;
-
-  FOR_EACH_LOOP (loop, 0)
-    {
-      if (!loop_in_sese_p (loop, SCOP_REGION (scop)))
-	continue;
-
-      for (psi = gsi_start_phis (loop->header);
-	   !gsi_end_p (psi); gsi_next (&psi))
-	{
-	  gphi *phi = psi.phi ();
-	  tree res = PHI_RESULT (phi);
-	  tree type = TREE_TYPE (res);
-
-	  if (TYPE_UNSIGNED (type)
-	      && TYPE_PRECISION (type) >= TYPE_PRECISION (long_long_integer_type_node))
-	    {
-	      result = false;
-	      break;
-	    }
-	}
-      if (!result)
-	break;
-    }
-
-  return result;
-}
-
 /* Builds the polyhedral representation for a SESE region.  */
 
 void
@@ -2523,9 +2483,6 @@ build_poly_scop (scop_p scop)
   /* Do not optimize a scop containing only PBBs that do not belong
      to any loops.  */
   if (nb_pbbs_in_loops (scop) == 0)
-    return;
-
-  if (!scop_ivs_can_be_represented (scop))
     return;
 
   build_sese_loop_nests (region);
