@@ -381,8 +381,8 @@
   [(V16HI "TARGET_AVX2") V8HI
    (V8SI "TARGET_AVX2") V4SI])
 
-(define_mode_iterator VI124_AVX512F
-  [(V32QI "TARGET_AVX2") V16QI
+(define_mode_iterator VI124_AVX2_24_AVX512F_1_AVX512BW
+  [(V64QI "TARGET_AVX512BW") (V32QI "TARGET_AVX2") V16QI
    (V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX2") V8HI
    (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX2") V4SI])
 
@@ -398,9 +398,9 @@
   [(V8SI "TARGET_AVX2") V4SI
    (V4DI "TARGET_AVX2") V2DI])
 
-(define_mode_iterator VI248_AVX2_8_AVX512F
-  [(V16HI "TARGET_AVX2") V8HI
-   (V8SI "TARGET_AVX2") V4SI
+(define_mode_iterator VI248_AVX2_8_AVX512F_24_AVX512BW
+  [(V32HI "TARGET_AVX512BW") (V16HI "TARGET_AVX2") V8HI
+   (V16SI "TARGET_AVX512BW") (V8SI "TARGET_AVX2") V4SI
    (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX2") V2DI])
 
 (define_mode_iterator VI248_AVX512BW_AVX512VL
@@ -8749,7 +8749,7 @@
       (match_operand:<avx512fmaskmode> 2 "register_operand")))]
   "TARGET_AVX512F")
 
-(define_insn "*avx512bw_<code>v32hiv32qi2"
+(define_insn "avx512bw_<code>v32hiv32qi2"
   [(set (match_operand:V32QI 0 "nonimmediate_operand" "=v,m")
 	(any_truncate:V32QI
 	    (match_operand:V32HI 1 "register_operand" "v,v")))]
@@ -11331,8 +11331,8 @@
 
 (define_expand "vec_pack_trunc_<mode>"
   [(match_operand:<ssepackmode> 0 "register_operand")
-   (match_operand:VI248_AVX2_8_AVX512F 1 "register_operand")
-   (match_operand:VI248_AVX2_8_AVX512F 2 "register_operand")]
+   (match_operand:VI248_AVX2_8_AVX512F_24_AVX512BW 1 "register_operand")
+   (match_operand:VI248_AVX2_8_AVX512F_24_AVX512BW 2 "register_operand")]
   "TARGET_SSE2"
 {
   rtx op1 = gen_lowpart (<ssepackmode>mode, operands[1]);
@@ -13221,25 +13221,25 @@
 
 (define_expand "vec_unpacks_lo_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
-   (match_operand:VI124_AVX512F 1 "register_operand")]
+   (match_operand:VI124_AVX2_24_AVX512F_1_AVX512BW 1 "register_operand")]
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands[0], operands[1], false, false); DONE;")
 
 (define_expand "vec_unpacks_hi_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
-   (match_operand:VI124_AVX512F 1 "register_operand")]
+   (match_operand:VI124_AVX2_24_AVX512F_1_AVX512BW 1 "register_operand")]
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands[0], operands[1], false, true); DONE;")
 
 (define_expand "vec_unpacku_lo_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
-   (match_operand:VI124_AVX512F 1 "register_operand")]
+   (match_operand:VI124_AVX2_24_AVX512F_1_AVX512BW 1 "register_operand")]
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands[0], operands[1], true, false); DONE;")
 
 (define_expand "vec_unpacku_hi_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
-   (match_operand:VI124_AVX512F 1 "register_operand")]
+   (match_operand:VI124_AVX2_24_AVX512F_1_AVX512BW 1 "register_operand")]
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands[0], operands[1], true, true); DONE;")
 
