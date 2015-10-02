@@ -1030,6 +1030,7 @@ main (int argc, char **argv)
   expandargv (&argc, &argv);
 
   /* Scan the argument vector.  */
+  bool fopenmp = false;
   for (int i = 1; i < argc; i++)
     {
 #define STR "-foffload-abi="
@@ -1044,6 +1045,8 @@ main (int argc, char **argv)
 			 "unrecognizable argument of option " STR);
 	}
 #undef STR
+      else if (strcmp (argv[i], "-fopenmp") == 0)
+	fopenmp = true;
       else if (strcmp (argv[i], "-v") == 0)
 	verbose = true;
     }
@@ -1082,8 +1085,8 @@ main (int argc, char **argv)
     fatal_error (input_location, "cannot open '%s'", ptx_cfile_name);
 
   /* PR libgomp/65099: Currently, we only support offloading in 64-bit
-     configurations.  */
-  if (offload_abi == OFFLOAD_ABI_LP64)
+     configurations.  PR target/67822: OpenMP offloading to nvptx fails.  */
+  if (offload_abi == OFFLOAD_ABI_LP64 && !fopenmp)
     {
       ptx_name = make_temp_file (".mkoffload");
       obstack_ptr_grow (&argv_obstack, "-o");
