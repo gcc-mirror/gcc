@@ -1,3 +1,18 @@
+2015-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/nvptx/mkoffload.c (Kind, Vis): Remove enums.
+	(Token, Stmt): Remove structs.
+	(decls, vars, fns): Remove variables.
+	(alloc_comment, append_stmt, is_keyword): Remove macros.
+	(tokenize, write_token, write_tokens, alloc_stmt, rev_stmts)
+	(write_stmt, write_stmts, parse_insn, parse_list_nosemi)
+	(parse_init, parse_file): Remove functions.
+	(read_file): Accept a pointer to a length and store into it.
+	(process): Don't try to parse the input file, just write it out as
+	a string, but looking for maps.  Also write out the length.
+	(main): Don't use "-S" to compile PTX code.
+
 2015-10-02  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (optimize_stmt): Note when loop structures need

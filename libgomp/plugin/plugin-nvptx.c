@@ -34,7 +34,6 @@
 #include "openacc.h"
 #include "config.h"
 #include "libgomp-plugin.h"
-#include "oacc-ptx.h"
 #include "oacc-plugin.h"
 #include "gomp-constants.h"
 
@@ -749,35 +748,6 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
   r = cuLinkCreate (7, opts, optvals, &linkstate);
   if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuLinkCreate error: %s", cuda_error (r));
-
-  char *abort_ptx = ABORT_PTX;
-  r = cuLinkAddData (linkstate, CU_JIT_INPUT_PTX, abort_ptx,
-		     strlen (abort_ptx) + 1, 0, 0, 0, 0);
-  if (r != CUDA_SUCCESS)
-    {
-      GOMP_PLUGIN_error ("Link error log %s\n", &elog[0]);
-      GOMP_PLUGIN_fatal ("cuLinkAddData (abort) error: %s", cuda_error (r));
-    }
-
-  char *acc_on_device_ptx = ACC_ON_DEVICE_PTX;
-  r = cuLinkAddData (linkstate, CU_JIT_INPUT_PTX, acc_on_device_ptx,
-		     strlen (acc_on_device_ptx) + 1, 0, 0, 0, 0);
-  if (r != CUDA_SUCCESS)
-    {
-      GOMP_PLUGIN_error ("Link error log %s\n", &elog[0]);
-      GOMP_PLUGIN_fatal ("cuLinkAddData (acc_on_device) error: %s",
-			 cuda_error (r));
-    }
-
-  char *goacc_internal_ptx = GOACC_INTERNAL_PTX;
-  r = cuLinkAddData (linkstate, CU_JIT_INPUT_PTX, goacc_internal_ptx,
-		     strlen (goacc_internal_ptx) + 1, 0, 0, 0, 0);
-  if (r != CUDA_SUCCESS)
-    {
-      GOMP_PLUGIN_error ("Link error log %s\n", &elog[0]);
-      GOMP_PLUGIN_fatal ("cuLinkAddData (goacc_internal_ptx) error: %s",
-			 cuda_error (r));
-    }
 
   for (; num_objs--; ptx_objs++)
     {
