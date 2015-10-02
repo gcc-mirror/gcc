@@ -1,3 +1,8 @@
+2015-10-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_elf_asm_named_section): Delete.
+	(TLS_SECTION_ASM_FLAG): Delete.
+
 2015-10-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64249
