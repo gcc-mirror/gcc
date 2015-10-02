@@ -369,6 +369,21 @@ do {						   \
    in the main unit, i.e. the full declaration is available.  */
 #define DECL_TAFT_TYPE_P(NODE) DECL_LANG_FLAG_0 (TYPE_DECL_CHECK (NODE))
 
+/* Nonzero in a PARM_DECL passed by reference but for which only a restricted
+   form of aliasing is allowed.  The first restriction comes explicitly from
+   the RM 6.2(12) clause: there is no read-after-write dependency between a
+   store based on such a PARM_DECL and a load not based on this PARM_DECL,
+   so stores based on such PARM_DECLs can be sunk past all loads based on
+   a distinct object.  The second restriction can be inferred from the same
+   clause: there is no write-after-write dependency between a store based
+   on such a PARM_DECL and a store based on a distinct such PARM_DECL, as
+   the compiler would be allowed to pass the parameters by copy and the
+   order of assignment to actual parameters after a call is arbitrary as
+   per the RM 6.4.1(17) clause, so stores based on distinct such PARM_DECLs
+   can be swapped.  */
+#define DECL_RESTRICTED_ALIASING_P(NODE) \
+  DECL_LANG_FLAG_0 (PARM_DECL_CHECK (NODE))
+
 /* Nonzero in a DECL if it is always used by reference, i.e. an INDIRECT_REF
    is needed to access the object.  */
 #define DECL_BY_REF_P(NODE) DECL_LANG_FLAG_1 (NODE)

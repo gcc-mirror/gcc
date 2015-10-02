@@ -1,3 +1,10 @@
+2015-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vect15.ad[sb]: New test.
+	* gnat.dg/vect16.ad[sb]: Likewise.
+	* gnat.dg/vect17.ad[sb]: Likewise.
+	* gnat.dg/vect18.ad[sb]: Likewise.
+
 2015-10-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/67786

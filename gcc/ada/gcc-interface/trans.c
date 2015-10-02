@@ -2714,6 +2714,89 @@ can_be_lower_p (tree val1, tree val2)
   return tree_int_cst_lt (val1, val2);
 }
 
+/* Helper function for walk_tree, used by independent_iterations_p below.  */
+
+static tree
+scan_rhs_r (tree *tp, int *walk_subtrees, void *data)
+{
+  bitmap *params = (bitmap *)data;
+  tree t = *tp;
+
+  /* No need to walk into types or decls.  */
+  if (IS_TYPE_OR_DECL_P (t))
+    *walk_subtrees = 0;
+
+  if (TREE_CODE (t) == PARM_DECL && bitmap_bit_p (*params, DECL_UID (t)))
+    return t;
+
+  return NULL_TREE;
+}
+
+/* Return true if STMT_LIST generates independent iterations in a loop.  */
+
+static bool
+independent_iterations_p (tree stmt_list)
+{
+  tree_stmt_iterator tsi;
+  bitmap params = BITMAP_GGC_ALLOC();
+  auto_vec<tree> rhs;
+  tree iter;
+  int i;
+
+  if (TREE_CODE (stmt_list) == BIND_EXPR)
+    stmt_list = BIND_EXPR_BODY (stmt_list);
+
+  /* Scan the list and return false on anything that is not either a check
+     or an assignment to a parameter with restricted aliasing.  */
+  for (tsi = tsi_start (stmt_list); !tsi_end_p (tsi); tsi_next (&tsi))
+    {
+      tree stmt = tsi_stmt (tsi);
+
+      switch (TREE_CODE (stmt))
+	{
+	case COND_EXPR:
+	  {
+	    if (COND_EXPR_ELSE (stmt))
+	      return false;
+	    if (TREE_CODE (COND_EXPR_THEN (stmt)) != CALL_EXPR)
+	      return false;
+	    tree func = get_callee_fndecl (COND_EXPR_THEN (stmt));
+	    if (!(func && TREE_THIS_VOLATILE (func)))
+	      return false;
+	    break;
+	  }
+
+	case MODIFY_EXPR:
+	  {
+	    tree lhs = TREE_OPERAND (stmt, 0);
+	    while (handled_component_p (lhs))
+	      lhs = TREE_OPERAND (lhs, 0);
+	    if (TREE_CODE (lhs) != INDIRECT_REF)
+	      return false;
+	    lhs = TREE_OPERAND (lhs, 0);
+	    if (!(TREE_CODE (lhs) == PARM_DECL
+		  && DECL_RESTRICTED_ALIASING_P (lhs)))
+	      return false;
+	    bitmap_set_bit (params, DECL_UID (lhs));
+	    rhs.safe_push (TREE_OPERAND (stmt, 1));
+	    break;
+	  }
+
+	default:
+	  return false;
+	}
+    }
+
+  /* At this point we know that the list contains only statements that will
+     modify parameters with restricted aliasing.  Check that the statements
+     don't at the time read from these parameters.  */
+  FOR_EACH_VEC_ELT (rhs, i, iter)
+    if (walk_tree_without_duplicates (&iter, scan_rhs_r, &params))
+      return false;
+
+  return true;
+}
+
 /* Subroutine of gnat_to_gnu to translate gnat_node, an N_Loop_Statement,
    to a GCC tree, which is returned.  */
 
@@ -3037,6 +3120,13 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
 	    add_stmt_with_node_force (rci->invariant_cond, gnat_node);
 	  }
+
+      /* Second, if loop vectorization is enabled and the iterations of the
+	 loop can easily be proved as independent, mark the loop.  */
+      if (optimize
+	  && flag_tree_loop_vectorize
+	  && independent_iterations_p (LOOP_STMT_BODY (gnu_loop_stmt)))
+	LOOP_STMT_IVDEP (gnu_loop_stmt) = 1;
 
       add_stmt (gnu_loop_stmt);
       gnat_poplevel ();
