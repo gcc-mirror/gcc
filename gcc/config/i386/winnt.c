@@ -89,17 +89,23 @@ tree
 ix86_handle_selectany_attribute (tree *node, tree name, tree, int,
 				 bool *no_add_attrs)
 {
+  tree decl = *node;
   /* The attribute applies only to objects that are initialized and have
      external linkage.  However, we may not know about initialization
-     until the language frontend has processed the decl. We'll check for
-     initialization later in encode_section_info.  */
-  if (TREE_CODE (*node) != VAR_DECL || !TREE_PUBLIC (*node))
-    {	
-      error ("%qE attribute applies only to initialized variables"
-       	     " with external linkage", name);
-      *no_add_attrs = true;
+     until the language frontend has processed the decl.   Therefore
+     we make sure that variable isn't initialized as common.  */
+  if (TREE_CODE (decl) != VAR_DECL || !TREE_PUBLIC (decl))
+    error ("%qE attribute applies only to initialized variables"
+       	   " with external linkage", name);
+  else
+    {
+      make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+      /* A variable with attribute selectany never can be common.  */
+      DECL_COMMON (decl) = 0;
     }
 
+  /* We don't need to keep attribute itself.  */
+  *no_add_attrs = true;
   return NULL_TREE;
 }
 
@@ -320,23 +326,7 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
   switch (TREE_CODE (decl))
     {
     case FUNCTION_DECL:
-      break;
-
     case VAR_DECL:
-      if (lookup_attribute ("selectany", DECL_ATTRIBUTES (decl)))
-	{
-	  if (DECL_INITIAL (decl)
-	      /* If an object is initialized with a ctor, the static
-		 initialization and destruction code for it is present in
-		 each unit defining the object.  The code that calls the
-		 ctor is protected by a link-once guard variable, so that
-		 the object still has link-once semantics,  */
-	      || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
-	    make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
-	  else
-	    error ("%q+D:'selectany' attribute applies only to "
-		   "initialized objects", decl);
-	}
       break;
 
     default:

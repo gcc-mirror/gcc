@@ -1,3 +1,10 @@
+2015-10-02  Kai Tietz  <ktietz70@googlemail.com>
+
+	PR target/51726
+	* config/i386/winnt.c (ix86_handle_selectany_attribute): Handle
+	selectany within this function without need to keep attribute.
+	(i386_pe_encode_section_info): Remove selectany-code.
+
 2015-10-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (has_VN_INFO): New function.
