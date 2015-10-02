@@ -1,14 +1,14 @@
-2015-10-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+2015-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67802
 	* gfortran.dg/pr67802.f90: New test.
 
-2015-10-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+2015-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67616
 	* gfortran.dg/pr67616.f90: New test.
 
-2015-10-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+2015-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66979
 	gfortran.dg/pr66979.f90: new test.
