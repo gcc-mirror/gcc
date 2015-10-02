@@ -24,12 +24,12 @@
  
 #if _GLIBCXX_USE_CXX11_ABI && defined(_GLIBCXX_USE_WCHAR_T)
 using C = wchar_t;
-const C c = 'a';
+const C c = L'a';
 using traits = std::char_traits<C>;
 
 using __gnu_test::SimpleAllocator;
 
-template class std::basic_string<C,traits, SimpleAllocator<C>>;
+template class std::basic_string<C, traits, SimpleAllocator<C>>;
 
 void test01()
 {
@@ -47,4 +47,5 @@ void test01() { }
 int main()
 {
   test01();
+  return 0;
 }
