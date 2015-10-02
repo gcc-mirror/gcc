@@ -317,44 +317,33 @@ stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
   return true;
 }
 
-/* Return true only when STMT is simple enough for being handled by Graphite.
-   This depends on SCOP, as the parameters are initialized relatively to
-   this basic block, the linear functions are initialized based on the outermost
-   loop containing STMT inside the SCOP.  BB is the place where we try to
-   evaluate the STMT.  */
+/* GIMPLE_ASM and GIMPLE_CALL may embed arbitrary side effects.
+   Calls have side-effects, except those to const or pure
+   functions.  */
 
 static bool
-stmt_simple_for_scop_p (sese_l scop, gimple *stmt, basic_block bb)
+stmt_has_side_effects (gimple *stmt)
 {
-  loop_p loop = bb->loop_father;
-
-  gcc_assert (scop);
-
-  /* GIMPLE_ASM and GIMPLE_CALL may embed arbitrary side effects.
-     Calls have side-effects, except those to const or pure
-     functions.  */
   if (gimple_has_volatile_ops (stmt)
       || (gimple_code (stmt) == GIMPLE_CALL
 	  && !(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
       || (gimple_code (stmt) == GIMPLE_ASM))
     {
       DEBUG_PRINT (dp << "[scop-detection-fail] "
-		      << "Graphite cannot handle this stmt:\n";
+		      << "Statement has side-effects:\n";
 	print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS));
-      return false;
+      return true;
     }
+  return false;
+}
 
-  if (is_gimple_debug (stmt))
-    return true;
+/* Returns true if STMT can be represented in polyhedral model. LABEL,
+   simple COND stmts, pure calls, and assignments can be repesented.  */
 
-  if (!stmt_has_simple_data_refs_p (scop, stmt))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] "
-		      << "Graphite cannot handle data-refs in stmt:\n";
-	print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS););
-      return false;
-    }
-
+static bool
+graphite_can_represent_stmt (sese_l scop, gimple *stmt, basic_block bb)
+{
+  loop_p loop = bb->loop_father;
   switch (gimple_code (stmt))
     {
     case GIMPLE_LABEL:
@@ -365,15 +354,15 @@ stmt_simple_for_scop_p (sese_l scop, gimple *stmt, basic_block bb)
 	/* We can handle all binary comparisons.  Inequalities are
 	   also supported as they can be represented with union of
 	   polyhedra.  */
-        enum tree_code code = gimple_cond_code (stmt);
-        if (!(code == LT_EXPR
+	enum tree_code code = gimple_cond_code (stmt);
+	if (!(code == LT_EXPR
 	      || code == GT_EXPR
 	      || code == LE_EXPR
 	      || code == GE_EXPR
 	      || code == EQ_EXPR
 	      || code == NE_EXPR))
-          {
-	    DEBUG_PRINT (dp <<  "[scop-detection-fail] "
+	  {
+	    DEBUG_PRINT (dp << "[scop-detection-fail] "
 			    << "Graphite cannot handle cond stmt:\n";
 	      print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS));
 	    return false;
@@ -407,8 +396,34 @@ stmt_simple_for_scop_p (sese_l scop, gimple *stmt, basic_block bb)
 	print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS));
       return false;
     }
+}
 
-  return false;
+/* Return true only when STMT is simple enough for being handled by Graphite.
+   This depends on SCOP, as the parameters are initialized relatively to
+   this basic block, the linear functions are initialized based on the outermost
+   loop containing STMT inside the SCOP.  BB is the place where we try to
+   evaluate the STMT.  */
+
+static bool
+stmt_simple_for_scop_p (sese_l scop, gimple *stmt, basic_block bb)
+{
+  gcc_assert (scop);
+
+  if (is_gimple_debug (stmt))
+    return true;
+
+  if (stmt_has_side_effects (stmt))
+    return false;
+
+  if (!stmt_has_simple_data_refs_p (scop, stmt))
+    {
+      DEBUG_PRINT (dp << "[scop-detection-fail] "
+		      << "Graphite cannot handle data-refs in stmt:\n";
+	print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS););
+      return false;
+    }
+
+  return graphite_can_represent_stmt (scop, stmt, bb);
 }
 
 /* Return true when BB contains a harmful operation for a scop: that
