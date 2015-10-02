@@ -1,5 +1,17 @@
 2015-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (DECL_RESTRICTED_ALIASING_P): New flag.
+	* gcc-interface/decl.c (gnat_to_gnu_param): For parameters passed by
+	reference but whose type isn't by-ref and whose mechanism hasn't been
+	forced to by-ref, set the DECL_RESTRICTED_ALIASING_P flag directly on
+	them instead of changing their type.
+	* gcc-interface/trans.c (scan_rhs_r): New helper function.
+	(independent_iterations_p): New predicate.
+	(Loop_Statement_to_gnu): For a loop with an iteration scheme, set an
+	ivdep pragma if the iterations are independent.
+
+2015-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (find_loop_for): Use FOR_EACH_VEC_ELT_REVERSE.
 	(Loop_Statement_to_gnu): Use FOR_EACH_VEC_ELT.
 	(finalize_nrv): Use FOR_EACH_VEC_SAFE_ELT and initialize field.
