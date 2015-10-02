@@ -73,7 +73,7 @@ namespace __gnu_test
   {
     std::experimental::filesystem::path p;
 #if defined(_GNU_SOURCE) || _XOPEN_SOURCE >= 500 || _POSIX_C_SOURCE >= 200112L
-    char tmp[] = "test.XXXXXX";
+    char tmp[] = "filesystem-ts-test.XXXXXX";
     int fd = ::mkstemp(tmp);
     if (fd == -1)
       throw std::experimental::filesystem::filesystem_error("mkstemp failed",
@@ -83,7 +83,11 @@ namespace __gnu_test
     p = tmp;
 #else
     char buf[64];
-    std::sprintf(buf, "test.%lu", (unsigned long)::getpid());
+#if _GLIBCXX_USE_C99
+    std::snprintf(buf, 64, "filesystem-ts-test.%lu", (unsigned long)::getpid());
+#else
+    std::sprintf(buf, "filesystem-ts-test.%lu", (unsigned long)::getpid());
+#endif
     p = buf;
 #endif
     return p;
