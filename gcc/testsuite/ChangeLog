@@ -1,3 +1,7 @@
+2015-10-02  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect_combine_zeroes_1.c: New.
+
 2015-10-02  Kai Tietz  <ktietz70@googlemail.com>
 
 	PR target/51726

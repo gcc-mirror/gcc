@@ -2530,23 +2530,33 @@
 ;; dest vector.
 
 (define_insn "*aarch64_combinez<mode>"
-  [(set (match_operand:<VDBL> 0 "register_operand" "=&w")
+  [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
         (vec_concat:<VDBL>
-	   (match_operand:VD_BHSI 1 "register_operand" "w")
-	   (match_operand:VD_BHSI 2 "aarch64_simd_imm_zero" "Dz")))]
+	   (match_operand:VD_BHSI 1 "general_operand" "w,r,m")
+	   (match_operand:VD_BHSI 2 "aarch64_simd_imm_zero" "Dz,Dz,Dz")))]
   "TARGET_SIMD && !BYTES_BIG_ENDIAN"
-  "mov\\t%0.8b, %1.8b"
-  [(set_attr "type" "neon_move<q>")]
+  "@
+   mov\\t%0.8b, %1.8b
+   fmov\t%d0, %1
+   ldr\\t%d0, %1"
+  [(set_attr "type" "neon_move<q>, neon_from_gp, neon_load1_1reg")
+   (set_attr "simd" "yes,*,yes")
+   (set_attr "fp" "*,yes,*")]
 )
 
 (define_insn "*aarch64_combinez_be<mode>"
-  [(set (match_operand:<VDBL> 0 "register_operand" "=&w")
+  [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
         (vec_concat:<VDBL>
-	   (match_operand:VD_BHSI 2 "aarch64_simd_imm_zero" "Dz")
-	   (match_operand:VD_BHSI 1 "register_operand" "w")))]
+	   (match_operand:VD_BHSI 2 "aarch64_simd_imm_zero" "Dz,Dz,Dz")
+	   (match_operand:VD_BHSI 1 "general_operand" "w,r,m")))]
   "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "mov\\t%0.8b, %1.8b"
-  [(set_attr "type" "neon_move<q>")]
+  "@
+   mov\\t%0.8b, %1.8b
+   fmov\t%d0, %1
+   ldr\\t%d0, %1"
+  [(set_attr "type" "neon_move<q>, neon_from_gp, neon_load1_1reg")
+   (set_attr "simd" "yes,*,yes")
+   (set_attr "fp" "*,yes,*")]
 )
 
 (define_expand "aarch64_combine<mode>"
