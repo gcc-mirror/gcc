@@ -1,5 +1,11 @@
 2015-10-02  Marek Polacek  <polacek@redhat.com>
 
+	PR c/67730
+	* c-typeck.c (convert_for_assignment): Use the expansion point
+	location throughout.
+
+2015-10-02  Marek Polacek  <polacek@redhat.com>
+
 	PR c/64249
 	* c-parser.c (c_parser_statement_after_labels): Add CHAIN parameter
 	and pass it down to c_parser_if_statement.

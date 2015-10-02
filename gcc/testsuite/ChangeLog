@@ -1,5 +1,12 @@
 2015-10-02  Marek Polacek  <polacek@redhat.com>
 
+	PR c/67730
+	* gcc.dg/pr67730-1.c: New test.
+	* gcc.dg/pr67730-2.c: New test.
+	* gcc.dg/pr67730.h: New test.
+
+2015-10-02  Marek Polacek  <polacek@redhat.com>
+
 	* c-c++-common/Wduplicated-cond-2.c: Skip until PR67819 is resolved.
 
 2015-10-02  Sebastian Pop  <s.pop@samsung.com>

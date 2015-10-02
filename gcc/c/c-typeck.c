@@ -5718,6 +5718,10 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   tree rname = NULL_TREE;
   bool objc_ok = false;
 
+  /* Use the expansion point location to handle cases such as user's
+     function returning a wrong-type macro defined in a system header.  */
+  location = expansion_point_location_if_in_system_header (location);
+
   if (errtype == ic_argpass)
     {
       tree selector;
