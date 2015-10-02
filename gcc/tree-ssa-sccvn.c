@@ -365,6 +365,16 @@ static vec<tree> sccstack;
 static vec<vn_ssa_aux_t> vn_ssa_aux_table;
 static struct obstack vn_ssa_aux_obstack;
 
+/* Return whether there is value numbering information for a given SSA name.  */
+
+bool
+has_VN_INFO (tree name)
+{
+  if (SSA_NAME_VERSION (name) < vn_ssa_aux_table.length ())
+    return vn_ssa_aux_table[SSA_NAME_VERSION (name)] != NULL;
+  return false;
+}
+
 /* Return the value numbering information for a given SSA name.  */
 
 vn_ssa_aux_t
@@ -3316,34 +3326,118 @@ visit_use (tree use)
   /* Handle uninitialized uses.  */
   if (SSA_NAME_IS_DEFAULT_DEF (use))
     changed = set_ssa_val_to (use, use);
-  else
+  else if (gimple_code (stmt) == GIMPLE_PHI)
+    changed = visit_phi (stmt);
+  else if (gimple_has_volatile_ops (stmt))
+    changed = defs_to_varying (stmt);
+  else if (gassign *ass = dyn_cast <gassign *> (stmt))
     {
-      if (gimple_code (stmt) == GIMPLE_PHI)
-	changed = visit_phi (stmt);
-      else if (gimple_has_volatile_ops (stmt))
-	changed = defs_to_varying (stmt);
-      else if (is_gimple_assign (stmt))
-	{
-	  enum tree_code code = gimple_assign_rhs_code (stmt);
-	  tree lhs = gimple_assign_lhs (stmt);
-	  tree rhs1 = gimple_assign_rhs1 (stmt);
-	  tree simplified;
+      enum tree_code code = gimple_assign_rhs_code (ass);
+      tree lhs = gimple_assign_lhs (ass);
+      tree rhs1 = gimple_assign_rhs1 (ass);
+      tree simplified;
 
-	  /* Shortcut for copies. Simplifying copies is pointless,
-	     since we copy the expression and value they represent.  */
-	  if (code == SSA_NAME
-	      && TREE_CODE (lhs) == SSA_NAME)
+      /* Shortcut for copies. Simplifying copies is pointless,
+	 since we copy the expression and value they represent.  */
+      if (code == SSA_NAME
+	  && TREE_CODE (lhs) == SSA_NAME)
+	{
+	  changed = visit_copy (lhs, rhs1);
+	  goto done;
+	}
+      simplified = try_to_simplify (ass);
+      if (simplified)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      changed = visit_copy (lhs, rhs1);
-	      goto done;
+	      fprintf (dump_file, "RHS ");
+	      print_gimple_expr (dump_file, ass, 0, 0);
+	      fprintf (dump_file, " simplified to ");
+	      print_generic_expr (dump_file, simplified, 0);
+	      fprintf (dump_file, "\n");
 	    }
-	  simplified = try_to_simplify (as_a <gassign *> (stmt));
+	}
+      /* Setting value numbers to constants will occasionally
+	 screw up phi congruence because constants are not
+	 uniquely associated with a single ssa name that can be
+	 looked up.  */
+      if (simplified
+	  && is_gimple_min_invariant (simplified)
+	  && TREE_CODE (lhs) == SSA_NAME)
+	{
+	  changed = set_ssa_val_to (lhs, simplified);
+	  goto done;
+	}
+      else if (simplified
+	       && TREE_CODE (simplified) == SSA_NAME
+	       && TREE_CODE (lhs) == SSA_NAME)
+	{
+	  changed = visit_copy (lhs, simplified);
+	  goto done;
+	}
+
+      if ((TREE_CODE (lhs) == SSA_NAME
+	   /* We can substitute SSA_NAMEs that are live over
+	      abnormal edges with their constant value.  */
+	   && !(gimple_assign_copy_p (ass)
+		&& is_gimple_min_invariant (rhs1))
+	   && !(simplified
+		&& is_gimple_min_invariant (simplified))
+	   && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+	  /* Stores or copies from SSA_NAMEs that are live over
+	     abnormal edges are a problem.  */
+	  || (code == SSA_NAME
+	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1)))
+	changed = defs_to_varying (ass);
+      else if (REFERENCE_CLASS_P (lhs)
+	       || DECL_P (lhs))
+	changed = visit_reference_op_store (lhs, rhs1, ass);
+      else if (TREE_CODE (lhs) == SSA_NAME)
+	{
+	  if ((gimple_assign_copy_p (ass)
+	       && is_gimple_min_invariant (rhs1))
+	      || (simplified
+		  && is_gimple_min_invariant (simplified)))
+	    {
+	      if (simplified)
+		changed = set_ssa_val_to (lhs, simplified);
+	      else
+		changed = set_ssa_val_to (lhs, rhs1);
+	    }
+	  else
+	    {
+	      /* Visit the original statement.  */
+	      switch (vn_get_stmt_kind (ass))
+		{
+		case VN_NARY:
+		changed = visit_nary_op (lhs, ass);
+		break;
+		case VN_REFERENCE:
+		changed = visit_reference_op_load (lhs, rhs1, ass);
+		break;
+		default:
+		changed = defs_to_varying (ass);
+		break;
+		}
+	    }
+	}
+      else
+	changed = defs_to_varying (ass);
+    }
+  else if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
+    {
+      tree lhs = gimple_call_lhs (call_stmt);
+      if (lhs && TREE_CODE (lhs) == SSA_NAME)
+	{
+	  /* Try constant folding based on our current lattice.  */
+	  tree simplified = gimple_fold_stmt_to_constant_1 (call_stmt,
+							    vn_valueize);
 	  if (simplified)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
-		  fprintf (dump_file, "RHS ");
-		  print_gimple_expr (dump_file, stmt, 0, 0);
+		  fprintf (dump_file, "call ");
+		  print_gimple_expr (dump_file, call_stmt, 0, 0);
 		  fprintf (dump_file, " simplified to ");
 		  print_generic_expr (dump_file, simplified, 0);
 		  fprintf (dump_file, "\n");
@@ -3354,168 +3448,57 @@ visit_use (tree use)
 	     uniquely associated with a single ssa name that can be
 	     looked up.  */
 	  if (simplified
-	      && is_gimple_min_invariant (simplified)
-	      && TREE_CODE (lhs) == SSA_NAME)
+	      && is_gimple_min_invariant (simplified))
 	    {
 	      changed = set_ssa_val_to (lhs, simplified);
+	      if (gimple_vdef (call_stmt))
+		changed |= set_ssa_val_to (gimple_vdef (call_stmt),
+					   SSA_VAL (gimple_vuse (call_stmt)));
 	      goto done;
 	    }
 	  else if (simplified
-		   && TREE_CODE (simplified) == SSA_NAME
-		   && TREE_CODE (lhs) == SSA_NAME)
+		   && TREE_CODE (simplified) == SSA_NAME)
 	    {
 	      changed = visit_copy (lhs, simplified);
+	      if (gimple_vdef (call_stmt))
+		changed |= set_ssa_val_to (gimple_vdef (call_stmt),
+					   SSA_VAL (gimple_vuse (call_stmt)));
 	      goto done;
 	    }
-
-	  if ((TREE_CODE (lhs) == SSA_NAME
-	       /* We can substitute SSA_NAMEs that are live over
-		  abnormal edges with their constant value.  */
-	       && !(gimple_assign_copy_p (stmt)
-		    && is_gimple_min_invariant (rhs1))
-	       && !(simplified
-		    && is_gimple_min_invariant (simplified))
-	       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
-	      /* Stores or copies from SSA_NAMEs that are live over
-		 abnormal edges are a problem.  */
-	      || (code == SSA_NAME
-		  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1)))
-	    changed = defs_to_varying (stmt);
-	  else if (REFERENCE_CLASS_P (lhs)
-		   || DECL_P (lhs))
-	    changed = visit_reference_op_store (lhs, rhs1, stmt);
-	  else if (TREE_CODE (lhs) == SSA_NAME)
+	  else if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	    {
-	      if ((gimple_assign_copy_p (stmt)
-		   && is_gimple_min_invariant (rhs1))
-		  || (simplified
-		      && is_gimple_min_invariant (simplified)))
-		{
-		  if (simplified)
-		    changed = set_ssa_val_to (lhs, simplified);
-		  else
-		    changed = set_ssa_val_to (lhs, rhs1);
-		}
-	      else
-		{
-		  /* First try to lookup the simplified expression.  */
-		  if (simplified)
-		    {
-		      enum gimple_rhs_class rhs_class;
-
-
-		      rhs_class = get_gimple_rhs_class (TREE_CODE (simplified));
-		      if ((rhs_class == GIMPLE_UNARY_RHS
-			   || rhs_class == GIMPLE_BINARY_RHS
-			   || rhs_class == GIMPLE_TERNARY_RHS)
-			  && valid_gimple_rhs_p (simplified))
-			{
-			  tree result = vn_nary_op_lookup (simplified, NULL);
-			  if (result)
-			    {
-			      changed = set_ssa_val_to (lhs, result);
-			      goto done;
-			    }
-			}
-		    }
-
-		  /* Otherwise visit the original statement.  */
-		  switch (vn_get_stmt_kind (stmt))
-		    {
-		    case VN_NARY:
-		      changed = visit_nary_op (lhs, stmt);
-		      break;
-		    case VN_REFERENCE:
-		      changed = visit_reference_op_load (lhs, rhs1, stmt);
-		      break;
-		    default:
-		      changed = defs_to_varying (stmt);
-		      break;
-		    }
-		}
+	      changed = defs_to_varying (call_stmt);
+	      goto done;
 	    }
-	  else
-	    changed = defs_to_varying (stmt);
 	}
-      else if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
-	{
-	  tree lhs = gimple_call_lhs (stmt);
-	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	    {
-	      /* Try constant folding based on our current lattice.  */
-	      tree simplified = gimple_fold_stmt_to_constant_1 (stmt,
-								vn_valueize);
-	      if (simplified)
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      fprintf (dump_file, "call ");
-		      print_gimple_expr (dump_file, stmt, 0, 0);
-		      fprintf (dump_file, " simplified to ");
-		      print_generic_expr (dump_file, simplified, 0);
-		      fprintf (dump_file, "\n");
-		    }
-		}
-	      /* Setting value numbers to constants will occasionally
-		 screw up phi congruence because constants are not
-		 uniquely associated with a single ssa name that can be
-		 looked up.  */
-	      if (simplified
-		  && is_gimple_min_invariant (simplified))
-		{
-		  changed = set_ssa_val_to (lhs, simplified);
-		  if (gimple_vdef (stmt))
-		    changed |= set_ssa_val_to (gimple_vdef (stmt),
-					       SSA_VAL (gimple_vuse (stmt)));
-		  goto done;
-		}
-	      else if (simplified
-		       && TREE_CODE (simplified) == SSA_NAME)
-		{
-		  changed = visit_copy (lhs, simplified);
-		  if (gimple_vdef (stmt))
-		    changed |= set_ssa_val_to (gimple_vdef (stmt),
-					       SSA_VAL (gimple_vuse (stmt)));
-		  goto done;
-		}
-	      else
-		{
-		  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
-		    {
-		      changed = defs_to_varying (stmt);
-		      goto done;
-		    }
-		}
-	    }
 
-	  if (!gimple_call_internal_p (stmt)
-	      && (/* Calls to the same function with the same vuse
-		     and the same operands do not necessarily return the same
-		     value, unless they're pure or const.  */
-		  gimple_call_flags (stmt) & (ECF_PURE | ECF_CONST)
-		  /* If calls have a vdef, subsequent calls won't have
-		     the same incoming vuse.  So, if 2 calls with vdef have the
-		     same vuse, we know they're not subsequent.
-		     We can value number 2 calls to the same function with the
-		     same vuse and the same operands which are not subsequent
-		     the same, because there is no code in the program that can
-		     compare the 2 values...  */
-		  || (gimple_vdef (stmt)
-		      /* ... unless the call returns a pointer which does
-		         not alias with anything else.  In which case the
-			 information that the values are distinct are encoded
-			 in the IL.  */
-		      && !(gimple_call_return_flags (call_stmt) & ERF_NOALIAS)
-		      /* Only perform the following when being called from PRE
-			 which embeds tail merging.  */
-		      && default_vn_walk_kind == VN_WALK)))
-	    changed = visit_reference_op_call (lhs, call_stmt);
-	  else
-	    changed = defs_to_varying (stmt);
-	}
+      if (!gimple_call_internal_p (call_stmt)
+	  && (/* Calls to the same function with the same vuse
+		 and the same operands do not necessarily return the same
+		 value, unless they're pure or const.  */
+	      gimple_call_flags (call_stmt) & (ECF_PURE | ECF_CONST)
+	      /* If calls have a vdef, subsequent calls won't have
+		 the same incoming vuse.  So, if 2 calls with vdef have the
+		 same vuse, we know they're not subsequent.
+		 We can value number 2 calls to the same function with the
+		 same vuse and the same operands which are not subsequent
+		 the same, because there is no code in the program that can
+		 compare the 2 values...  */
+	      || (gimple_vdef (call_stmt)
+		  /* ... unless the call returns a pointer which does
+		     not alias with anything else.  In which case the
+		     information that the values are distinct are encoded
+		     in the IL.  */
+		  && !(gimple_call_return_flags (call_stmt) & ERF_NOALIAS)
+		  /* Only perform the following when being called from PRE
+		     which embeds tail merging.  */
+		  && default_vn_walk_kind == VN_WALK)))
+	changed = visit_reference_op_call (lhs, call_stmt);
       else
-	changed = defs_to_varying (stmt);
+	changed = defs_to_varying (call_stmt);
     }
+  else
+    changed = defs_to_varying (stmt);
  done:
   return changed;
 }
@@ -4001,8 +3984,7 @@ free_scc_vn (void)
     {
       tree name = ssa_name (i);
       if (name
-	  && SSA_NAME_VERSION (name) < vn_ssa_aux_table.length ()
-	  && vn_ssa_aux_table[SSA_NAME_VERSION (name)]
+	  && has_VN_INFO (name)
 	  && VN_INFO (name)->needs_insertion)
 	release_ssa_name (name);
     }

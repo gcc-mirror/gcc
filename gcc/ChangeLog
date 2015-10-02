@@ -1,3 +1,10 @@
+2015-10-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (has_VN_INFO): New function.
+	(free_scc_vn): Use it.
+	(visit_use): Remove dead code and refactor to use gassign
+	and use less indentation.
+
 2015-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/67788
