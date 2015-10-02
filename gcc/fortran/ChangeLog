@@ -1,5 +1,11 @@
 2015-10-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/67802
+	* decl.c (add_init_expr_to_sym): Numeric constant for character
+	length must be an INTEGER.
+
+2015-10-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/67616
 	* primary.c (gfc_match_structure_constructor): Use a possibly
 	host-associated symtree to prevent ICE.
