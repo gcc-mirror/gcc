@@ -1,3 +1,7 @@
+2015-10-02  Sebastian Pop  <s.pop@samsung.com>
+
+	* gcc.dg/graphite/scop-23.c: New.
+
 2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/builtin_target.c: Handle "avx512ifma"
