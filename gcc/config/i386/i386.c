@@ -8651,7 +8651,7 @@ function_arg_advance_64 (CUMULATIVE_ARGS *cum, machine_mode mode,
   else
     {
       int align = ix86_function_arg_boundary (mode, type) / BITS_PER_WORD;
-      cum->words = (cum->words + align - 1) & ~(align - 1);
+      cum->words = ROUND_UP (cum->words, align);
       cum->words += words;
       return 0;
     }
@@ -11285,7 +11285,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
          16-byte aligned default stack, and thus we don't need to be
 	 within the re-aligned local stack frame to save them.  */
       gcc_assert (INCOMING_STACK_BOUNDARY >= 128);
-      offset = (offset + 16 - 1) & -16;
+      offset = ROUND_UP (offset, 16);
       offset += frame->nsseregs * 16;
     }
   frame->sse_reg_save_offset = offset;
@@ -11295,7 +11295,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
      sure that no value happens to be the same before and after, force
      the alignment computation below to add a non-zero value.  */
   if (stack_realign_fp)
-    offset = (offset + stack_alignment_needed) & -stack_alignment_needed;
+    offset = ROUND_UP (offset, stack_alignment_needed);
 
   /* Va-arg area */
   frame->va_arg_size = ix86_varargs_gpr_size + ix86_varargs_fpr_size;
@@ -11308,7 +11308,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
       || !crtl->is_leaf
       || cfun->calls_alloca
       || ix86_current_function_calls_tls_descriptor)
-    offset = (offset + stack_alignment_needed - 1) & -stack_alignment_needed;
+    offset = ROUND_UP (offset, stack_alignment_needed);
 
   /* Frame pointer points here.  */
   frame->frame_pointer_offset = offset;
@@ -11334,7 +11334,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
      or using alloca.  */
   if (!crtl->is_leaf || cfun->calls_alloca
       || ix86_current_function_calls_tls_descriptor)
-    offset = (offset + preferred_alignment - 1) & -preferred_alignment;
+    offset = ROUND_UP (offset, preferred_alignment);
 
   /* We've reached end of stack frame.  */
   frame->stack_pointer_offset = offset;
@@ -12050,7 +12050,7 @@ ix86_adjust_stack_and_probe (const HOST_WIDE_INT size)
 
       /* Step 1: round SIZE to the previous multiple of the interval.  */
 
-      rounded_size = size & -PROBE_INTERVAL;
+      rounded_size = ROUND_DOWN (size, PROBE_INTERVAL);
 
 
       /* Step 2: compute initial and final value of the loop counter.  */
@@ -12204,7 +12204,7 @@ ix86_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 
       /* Step 1: round SIZE to the previous multiple of the interval.  */
 
-      rounded_size = size & -PROBE_INTERVAL;
+      rounded_size = ROUND_DOWN (size, PROBE_INTERVAL);
 
 
       /* Step 2: compute initial and final value of the loop counter.  */
@@ -12663,7 +12663,7 @@ ix86_expand_prologue (void)
          pointer is no longer valid.  As for the value of sp_offset,
 	 see ix86_compute_frame_layout, which we need to match in order
 	 to pass verification of stack_pointer_offset at the end.  */
-      m->fs.sp_offset = (m->fs.sp_offset + align_bytes) & -align_bytes;
+      m->fs.sp_offset = ROUND_UP (m->fs.sp_offset, align_bytes);
       m->fs.sp_valid = false;
     }
 
@@ -24692,8 +24692,8 @@ expand_set_or_movmem_via_rep (rtx destmem, rtx srcmem,
     destexp = gen_rtx_PLUS (Pmode, destptr, countreg);
   if ((!issetmem || orig_value == const0_rtx) && CONST_INT_P (count))
     {
-      rounded_count = (INTVAL (count)
-		       & ~((HOST_WIDE_INT) GET_MODE_SIZE (mode) - 1));
+      rounded_count
+	= ROUND_DOWN (INTVAL (count), (HOST_WIDE_INT) GET_MODE_SIZE (mode));
       destmem = shallow_copy_rtx (destmem);
       set_mem_size (destmem, rounded_count);
     }
@@ -24719,8 +24719,8 @@ expand_set_or_movmem_via_rep (rtx destmem, rtx srcmem,
 	srcexp = gen_rtx_PLUS (Pmode, srcptr, countreg);
       if (CONST_INT_P (count))
 	{
-	  rounded_count = (INTVAL (count)
-			   & ~((HOST_WIDE_INT) GET_MODE_SIZE (mode) - 1));
+	  rounded_count
+	    = ROUND_DOWN (INTVAL (count), (HOST_WIDE_INT) GET_MODE_SIZE (mode));
 	  srcmem = shallow_copy_rtx (srcmem);
 	  set_mem_size (srcmem, rounded_count);
 	}

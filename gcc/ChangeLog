@@ -1,3 +1,19 @@
+2015-10-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* system.h (ROUND_UP): New macro definition.
+	(ROUND_DOWN): Ditto.
+	* ggc-page.c (ROUND_UP): Remove local macro definition.
+	(PAGE_ALIGN): Implement using ROUND_UP macro.
+
+	* config/i386/i386.h (PUSH_ROUNDING): Implement using ROUND_UP macro.
+	* config/i386/i386.c (function_arg_advance_64): Use ROUND_UP macro
+	to align values.
+	(ix86_compute_frame_layout): Ditto.
+	(ix86_expand_prologue): Ditto.
+	(ix86_adjust_stack_and_probe): Use ROUND_DOWN macro
+	to round down values.
+	(expand_set_or_movmem_via_rep): Ditto.
+
 2015-10-02  Marek Polacek  <polacek@redhat.com>
 
 	* genemit.c (gen_exp): Remove -Wduplicated-cond hack.
@@ -188,7 +204,8 @@
 	PR tree-optimization/67754
 	* graphite-scop-detection.c (stmt_has_simple_data_refs_p): Call
 	scev analysis on the same loop nest as analyze_drs_in_stmts.
-	* graphite-sese-to-poly.c (outermost_loop_in_sese_1): Moved and renamed...
+	* graphite-sese-to-poly.c (outermost_loop_in_sese_1): Moved and
+	renamed...
 	(try_generate_gimple_bb): Call outermost_loop_in_sese.
 	(analyze_drs_in_stmts): Same.
 	* sese.c (outermost_loop_in_sese): ...here.
@@ -232,8 +249,7 @@
 
 2015-10-01  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/x86-tune.def (X86_TUNE_USE_BT): Enable for
-	Lakemont.
+	* config/i386/x86-tune.def (X86_TUNE_USE_BT): Enable for Lakemont.
 	(X86_TUNE_ZERO_EXTEND_WITH_AND): Disable for Lakemont.
 
 2015-10-01  James Greenhalgh  <james.greenhalgh@arm.com>
@@ -388,8 +404,7 @@
 
 	* config/i386/intelmic-mkoffload.c (main): Parse "-v" flag.
 	(generate_target_descr_file, generate_target_offloadend_file)
-	(generate_host_descr_file, prepare_target_image, main): Pass it
-	on.
+	(generate_host_descr_file, prepare_target_image, main): Pass it on.
 	* config/nvptx/mkoffload.c (main): Parse "-v" flag.
 	(compile_native, main): Pass it on.
 	* lto-wrapper.c (compile_offload_image): Likewise.
@@ -422,7 +437,7 @@
 
 2015-09-30  Richard Biener  <rguenther@suse.de>
 
-	* builtins.c: Add comment that no new simplifications shouldd
+	* builtins.c: Add comment that no new simplifications should
 	be added here.
 
 2015-09-30  Marek Polacek  <polacek@redhat.com>
@@ -488,8 +503,7 @@
 
 	* config/i386/t-interix (winnt-stubs.o): Fix compilation rule.
 
-	* config/sh/sh.c (gen_shl_and): Fix undefined left shift
-	behaviour.
+	* config/sh/sh.c (gen_shl_and): Fix undefined left shift behaviour.
 	(gen_shl_sext): Likewise.
 	* config/sh/sh.md (divsi3): Likewise.
 	(imm->ext_dest_operand splitter): Likewise.
@@ -1349,7 +1363,7 @@
 	(define_insn "*<code><mode>3"): ... Into new pattern using
 	VI12_AVX_AVX512F iterators without masking.
 
-2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
+2015-09-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config.gcc: Support "skylake-avx512".
 	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
@@ -1364,14 +1378,14 @@
 	(processor_type): Add PROCESSOR_SKYLAKE_AVX512.
 	* doc/invoke.texi (skylake-avx512): New.
 
-2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
+2015-09-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc/config/i386/i386.md (define_insn "kunpckhi"): Fix
 	operand in pattern.
 	(define_insn "kunpcksi"): Ditto.
 	(define_insn "kunpckdi"): Ditto.
 
-2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
+2015-09-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc/config/i386/i386.md (define_split not/xor SWI1248x): Use
 	iterator instead of fixed modes.
@@ -3273,7 +3287,7 @@
 
 2015-09-04  Andrey Turetskiy  <andrey.turetskiy@intel.com>
 	    Petr Murzin  <petr.murzin@intel.com>
-	    Kirill Yukhin <kirill.yukhin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/i386-builtin-types.def
 	(VOID_PFLOAT_HI_V8DI_V16SF_INT): New.
@@ -3296,7 +3310,7 @@
 
 2015-09-04  Andrey Turetskiy  <andrey.turetskiy@intel.com>
 	    Petr Murzin  <petr.murzin@intel.com>
-	    Kirill Yukhin <kirill.yukhin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* doc/tm.texi.in (TARGET_VECTORIZE_BUILTIN_SCATTER): New.
 	* doc/tm.texi: Regenerate.
