@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1965 }
+// { dg-error "no matching" "" { target *-*-* } 1966 }
 
 #include <deque>
 

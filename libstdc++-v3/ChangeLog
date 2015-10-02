@@ -1,5 +1,19 @@
 2015-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/67707
+	* include/bits/stl_deque.h (_Deque_base::_M_move_impl): Initialize
+	empty object.
+	* testsuite/23_containers/deque/allocator/move.cc: Check moved-from
+	deque.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 	PR libstdc++/65142
 	* src/c++11/random.cc (random_device::_M_getval()): Check read result
 	and retry after short reads.
