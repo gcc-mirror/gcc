@@ -153,9 +153,6 @@ ASM_MABI_SPEC
 #undef TYPE_OPERAND_FMT
 #define TYPE_OPERAND_FMT	"%%%s"
 
-#undef TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION  aarch64_elf_asm_named_section
-
 /* Stabs debug not required.  */
 #undef DBX_DEBUGGING_INFO
 
