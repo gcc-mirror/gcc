@@ -1,3 +1,7 @@
+2015-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* system.h (malloc.h): Don't include obsolete header.
+
 2015-10-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_elf_asm_named_section): Delete.
