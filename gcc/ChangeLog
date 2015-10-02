@@ -1,3 +1,10 @@
+2015-10-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/67756
+	* lra-constraints.c (match_reload): Add a new parameter.  Use it
+	for creating a pseudo with the same value.
+	(curr_insn_transform): Pass a new argument to match_reload.
+
 2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/i386.c (expand_vec_perm_even_odd_trunc): New.

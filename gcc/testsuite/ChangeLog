@@ -1,3 +1,8 @@
+2015-10-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/67756
+	* gcc.target/arm/pr67756.c: New.
+
 2015-10-02  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/tlsle12_tiny_1.c: New testcase for tiny model.
