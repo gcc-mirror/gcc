@@ -1,5 +1,25 @@
 2015-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/65049
+	* include/bits/char_traits.h (char_traits<char>::compare,
+	char_traits<char>::find, char_traits<char>::move,
+	char_traits<char>::copy, char_traits<char>::assign): Check for zero
+	length.
+	(char_traits<wchar_t>::compare, char_traits<wchar_t>::find,
+	char_traits<wchar_t>::move, char_traits<wchar_t>::copy,
+	char_traits<wchar_t>::assign): Likewise.
+	(char_traits<char16_t>::move, char_traits<char16_t>::copy): Likewise.
+	(char_traits<char32_t>::move, char_traits<char32_t>::copy): Likewise.
+	* include/ext/pod_char_traits.h (char_traits<character<>>::move,
+	char_traits<character<>>::copy): Likewise.
+	* testsuite/21_strings/char_traits/requirements/char/65049.cc: New.
+	* testsuite/21_strings/char_traits/requirements/char16_t/65049.cc:
+	New.
+	* testsuite/21_strings/char_traits/requirements/char32_t/65049.cc:
+	New.
+	* testsuite/21_strings/char_traits/requirements/wchar_t/65049.cc:
+	New.
+
 	PR libstdc++/67707
 	* include/bits/stl_deque.h (_Deque_base::_M_move_impl): Initialize
 	empty object.
