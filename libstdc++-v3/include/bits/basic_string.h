@@ -3441,7 +3441,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  element of the %string.
        */
       const_reference
-      front() const _GLIBCXX_NOEXCEPT
+      front() const noexcept
       {
 	__glibcxx_assert(!empty());
 	return operator[](0);
@@ -3463,7 +3463,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  last element of the %string.
        */
       const_reference
-      back() const _GLIBCXX_NOEXCEPT
+      back() const noexcept
       {
 	__glibcxx_assert(!empty());
 	return operator[](this->size() - 1);

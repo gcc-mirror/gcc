@@ -1,5 +1,10 @@
 2015-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::front() const, basic_string::back() const): Use
+	noexcept instead of _GLIBCXX_NOEXCEPT macro.
+	(__versa_string::front, __versa_string::back): Likewise.
+
 	* acinclude.m4 (GLIBCXX_ENABLE_DEBUG_FLAGS): Fix comment.
 
 	* include/bits/locale_conv.h [!_GLIBCXX_USE_WCHAR_T]
