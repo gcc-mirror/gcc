@@ -1,5 +1,10 @@
 2015-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/21_strings/basic_string/allocator/char/minimal.cc: Guard
+	explicit instantiation with check for new ABI.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/minimal.cc:
+	Likewise. Use wchar_t as char_type.
+
 	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
 	(basic_string::front() const, basic_string::back() const): Use
 	noexcept instead of _GLIBCXX_NOEXCEPT macro.

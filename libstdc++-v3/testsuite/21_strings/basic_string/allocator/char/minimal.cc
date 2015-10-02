@@ -22,25 +22,27 @@
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
  
+#if _GLIBCXX_USE_CXX11_ABI
 using C = char;
 const C c = 'a';
 using traits = std::char_traits<C>;
 
 using __gnu_test::SimpleAllocator;
 
-template class std::basic_string<C,traits, SimpleAllocator<C>>;
+template class std::basic_string<C, traits, SimpleAllocator<C>>;
 
 void test01()
 {
-#if _GLIBCXX_USE_CXX11_ABI
   typedef SimpleAllocator<C> alloc_type;
   typedef std::allocator_traits<alloc_type> traits_type;
   typedef std::basic_string<C, traits, alloc_type> test_type;
   test_type v(alloc_type{});
   v.assign(1, c);
   v.assign(100, c);
-#endif
 }
+#else
+void test01() { }
+#endif
 
 int main()
 {
