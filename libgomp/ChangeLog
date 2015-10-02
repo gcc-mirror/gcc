@@ -1,3 +1,13 @@
+2015-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-ptx.h: Remove file, moving its content into...
+	* config/nvptx/fortran.c: ... here...
+	* config/nvptx/oacc-init.c: ..., here...
+	* config/nvptx/oacc-parallel.c: ..., and here.
+	* config/nvptx/openacc.f90: New file.
+	* plugin/plugin-nvptx.c: Don't include "oacc-ptx.h".
+	(link_ptx): Don't link in predefined bits of PTX code.
+
 2015-09-30  Nathan Sidwell  <nathan@codesourcery.com>
 	    Bernd Schmidt <bernds@codesourcery.com>
 
