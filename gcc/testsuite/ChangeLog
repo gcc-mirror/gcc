@@ -1,3 +1,8 @@
+2015-10-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/66979
+	gfortran.dg/pr66979.f90: new test.
+
 2015-10-01  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline

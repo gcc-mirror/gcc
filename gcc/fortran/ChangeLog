@@ -1,3 +1,9 @@
+2015-10-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/66979
+	* io.c (gfc_resolve_filepos): Check for a UNIT number.  Add a nearby
+	missing 'return false'.
+
 2015-10-01  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/67721
