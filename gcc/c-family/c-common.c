@@ -12921,4 +12921,45 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
   return false;
 }
 
+/* If we're creating an if-else-if condition chain, first see if we
+   already have this COND in the CHAIN.  If so, warn and don't add COND
+   into the vector, otherwise add the COND there.  LOC is the location
+   of COND.  */
+
+void
+warn_duplicated_cond_add_or_warn (location_t loc, tree cond, vec<tree> **chain)
+{
+  /* No chain has been created yet.  Do nothing.  */
+  if (*chain == NULL)
+    return;
+
+  if (TREE_SIDE_EFFECTS (cond))
+    {
+      /* Uh-oh!  This condition has a side-effect, thus invalidates
+	 the whole chain.  */
+      delete *chain;
+      *chain = NULL;
+      return;
+    }
+
+  unsigned int ix;
+  tree t;
+  bool found = false;
+  FOR_EACH_VEC_ELT (**chain, ix, t)
+    if (operand_equal_p (cond, t, 0))
+      {
+	if (warning_at (loc, OPT_Wduplicated_cond,
+			"duplicated %<if%> condition"))
+	  inform (EXPR_LOCATION (t), "previously used here");
+	found = true;
+	break;
+      }
+
+  if (!found
+      && !CONSTANT_CLASS_P (cond)
+      /* Don't infinitely grow the chain.  */
+      && (*chain)->length () < 512)
+    (*chain)->safe_push (cond);
+}
+
 #include "gt-c-family-c-common.h"

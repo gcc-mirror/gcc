@@ -1,3 +1,10 @@
+2015-10-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64249
+	* c-common.c (warn_duplicated_cond_add_or_warn): New function.
+	* c-common.h (warn_duplicated_cond_add_or_warn): Declare.
+	* c.opt (Wduplicated-cond): New option.
+
 2015-10-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* c.opt (std=c11): Do not describe as experimental.

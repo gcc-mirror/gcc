@@ -1,3 +1,13 @@
+2015-10-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64249
+	* c-parser.c (c_parser_statement_after_labels): Add CHAIN parameter
+	and pass it down to c_parser_if_statement.
+	(c_parser_else_body): Add CHAIN parameter and pass it down to
+	c_parser_statement_after_labels.
+	(c_parser_if_statement): Add CHAIN parameter.  Add code to warn about
+	duplicated if-else-if conditions.
+
 2015-10-01  Marek Polacek  <polacek@redhat.com>
 
 	* c-typeck.c (convert_for_assignment): Improve commentary.

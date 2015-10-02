@@ -242,7 +242,7 @@ Objective-C and Objective-C++ Dialects}.
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
 -Waggressive-loop-optimizations -Warray-bounds -Warray-bounds=@var{n} @gol
--Wbool-compare -Wframe-address @gol
+-Wbool-compare -Wduplicated-cond -Wframe-address @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc90-c99-compat -Wc99-c11-compat @gol
 -Wc++-compat -Wc++11-compat -Wc++14-compat -Wcast-align  -Wcast-qual  @gol
@@ -3522,6 +3522,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wimplicit-int @r{(C and Objective-C only)} @gol
 -Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
 -Wbool-compare  @gol
+-Wduplicated-cond  @gol
 -Wcomment  @gol
 -Wformat   @gol
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
@@ -4550,6 +4551,17 @@ always false:
 int n = 5;
 @dots{}
 if ((n > 1) == 2) @{ @dots{} @}
+@end smallexample
+This warning is enabled by @option{-Wall}.
+
+@item -Wduplicated-cond
+@opindex Wno-duplicated-cond
+@opindex Wduplicated-cond
+Warn about duplicated conditions in an if-else-if chain.  For instance,
+warn for the following code:
+@smallexample
+if (p->q != NULL) @{ @dots{} @}
+else if (p->q != NULL) @{ @dots{} @}
 @end smallexample
 This warning is enabled by @option{-Wall}.
 
