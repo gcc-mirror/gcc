@@ -1,3 +1,8 @@
+2015-10-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* sync.md (atomic_load<mode>): Fix output modifier for lda.
+	(atomic_store<mode>): Likewise for stl.
+
 2015-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline

@@ -79,7 +79,7 @@
         || model == MEMMODEL_RELEASE)
       return \"ldr%(<sync_sfx>%)\\t%0, %1\";
     else
-      return \"lda%(<sync_sfx>%)\\t%0, %1\";
+      return \"lda<sync_sfx>%?\\t%0, %1\";
   }
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
@@ -98,7 +98,7 @@
         || model == MEMMODEL_ACQUIRE)
       return \"str%(<sync_sfx>%)\t%1, %0\";
     else
-      return \"stl%(<sync_sfx>%)\t%1, %0\";
+      return \"stl<sync_sfx>%?\t%1, %0\";
   }
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
