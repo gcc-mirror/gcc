@@ -1799,6 +1799,29 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 }
 
 
+/* The array constructor code can create a string length with an operand
+   in the form of a temporary variable.  This variable will retain its
+   context (current_function_decl).  If we store this length tree in a
+   gfc_charlen structure which is shared by a variable in another
+   context, the resulting gfc_charlen structure with a variable in a
+   different context, we could trip the assertion in expand_expr_real_1
+   when it sees that a variable has been created in one context and
+   referenced in another.
+
+   If this might be the case, we create a new gfc_charlen structure and
+   link it into the current namespace.  */
+
+static void
+store_backend_decl (gfc_charlen **clp, tree len, bool force_new_cl)
+{
+  if (force_new_cl)
+    {
+      gfc_charlen *new_cl = gfc_new_charlen (gfc_current_ns, *clp);
+      *clp = new_cl;
+    }
+  (*clp)->backend_decl = len;
+}
+
 /* A catch-all to obtain the string length for anything that is not
    a substring of non-constant length, a constant, array or variable.  */
 
@@ -1836,7 +1859,7 @@ get_array_ctor_all_strlen (stmtblock_t *block, gfc_expr *e, tree *len)
       gfc_add_block_to_block (block, &se.pre);
       gfc_add_block_to_block (block, &se.post);
 
-      e->ts.u.cl->backend_decl = *len;
+      store_backend_decl (&e->ts.u.cl, *len, true);
     }
 }
 
@@ -2226,6 +2249,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   if (expr->ts.type == BT_CHARACTER)
     {
       bool const_string;
+      bool force_new_cl = false;
 
       /* get_array_ctor_strlen walks the elements of the constructor, if a
 	 typespec was given, we already know the string length and want the one
@@ -2244,14 +2268,17 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 	  gfc_add_block_to_block (&outer_loop->post, &length_se.post);
 	}
       else
-	const_string = get_array_ctor_strlen (&outer_loop->pre, c,
-					      &ss_info->string_length);
+	{
+	  const_string = get_array_ctor_strlen (&outer_loop->pre, c,
+						&ss_info->string_length);
+	  force_new_cl = true;
+	}
 
       /* Complex character array constructors should have been taken care of
 	 and not end up here.  */
       gcc_assert (ss_info->string_length);
 
-      expr->ts.u.cl->backend_decl = ss_info->string_length;
+      store_backend_decl (&expr->ts.u.cl, ss_info->string_length, force_new_cl);
 
       type = gfc_get_character_type_len (expr->ts.kind, ss_info->string_length);
       if (const_string)
@@ -2589,7 +2616,8 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  if (expr->ts.type == BT_CHARACTER
 	      && ss_info->string_length == NULL
 	      && expr->ts.u.cl
-	      && expr->ts.u.cl->length)
+	      && expr->ts.u.cl->length
+	      && expr->ts.u.cl->length->expr_type == EXPR_CONSTANT)
 	    {
 	      gfc_init_se (&se, NULL);
 	      gfc_conv_expr_type (&se, expr->ts.u.cl->length,

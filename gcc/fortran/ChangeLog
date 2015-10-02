@@ -1,3 +1,15 @@
+2015-10-01  Louis Krupp <louis.krupp@zoho.com>
+
+	PR fortran/62242
+	PR fortran/52332
+	* trans-array.c
+	(store_backend_decl): Create new gfc_charlen instance if requested
+	(get_array_ctor_all_strlen): Call store_backend_decl requesting
+	new gfc_charlen
+	(trans_array_constructor): Call store_backend_decl requesting
+	new gfc_charlen if get_array_ctor_strlen was called
+	(gfc_add_loop_ss_code): Don't try to convert non-constant length
+
 2015-10-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran.67802
