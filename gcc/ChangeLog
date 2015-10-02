@@ -1,3 +1,10 @@
+2015-10-02  Jason Merrill  <jason@redhat.com>
+
+	PR c/59218
+	* trans-mem.c (volatile_lvalue_p): Rename from volatile_var_p.
+	(diagnose_tm_1_op): Also diagnose volatile accesses in
+	transaction_safe function.
+
 2015-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* system.h (malloc.h): Don't include obsolete header.
