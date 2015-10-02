@@ -2644,9 +2644,7 @@ find_loop_for (tree var)
 
   gcc_assert (vec_safe_length (gnu_loop_stack) > 0);
 
-  for (i = vec_safe_length (gnu_loop_stack) - 1;
-       vec_safe_iterate (gnu_loop_stack, i, &iter);
-       i--)
+  FOR_EACH_VEC_ELT_REVERSE (*gnu_loop_stack, i, iter)
     if (var == iter->loop_var)
       break;
 
@@ -3014,9 +3012,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	       - the front-end quickly generates useless or redundant checks
 		 that can be entirely optimized away in the end.  */
       if (1 <= n_checks && n_checks <= 4)
-	for (i = 0;
-	     vec_safe_iterate (gnu_loop_info->checks, i, &rci);
-	     i++)
+	FOR_EACH_VEC_ELT (*gnu_loop_info->checks, i, rci)
 	  {
 	    tree low_ok
 	      = rci->low_bound
@@ -3426,8 +3422,9 @@ finalize_nrv (tree fndecl, bitmap nrv, vec<tree, va_gc> *other, Node_Id gnat_ret
   /* Prune the candidates that are referenced by other return values.  */
   data.nrv = nrv;
   data.result = NULL_TREE;
+  data.gnat_ret = Empty;
   data.visited = NULL;
-  for (i = 0; vec_safe_iterate (other, i, &iter); i++)
+  FOR_EACH_VEC_SAFE_ELT (other, i, iter)
     walk_tree_without_duplicates (&iter, prune_nrv_r, &data);
   if (bitmap_empty_p (nrv))
     return;
@@ -7905,10 +7902,12 @@ static tree
 build_stmt_group (List_Id gnat_list, bool binding_p)
 {
   start_stmt_group ();
+
   if (binding_p)
     gnat_pushlevel ();
 
   add_stmt_list (gnat_list);
+
   if (binding_p)
     gnat_poplevel ();
 

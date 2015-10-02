@@ -1,10 +1,17 @@
+2015-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (find_loop_for): Use FOR_EACH_VEC_ELT_REVERSE.
+	(Loop_Statement_to_gnu): Use FOR_EACH_VEC_ELT.
+	(finalize_nrv): Use FOR_EACH_VEC_SAFE_ELT and initialize field.
+	(build_stmt_group): Add blank lines.
+
 2015-09-30  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_VAR_11): Don't define.
 
 2015-09-28  Tom de Vries  <tom@codesourcery.com>
 
-	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_VAR_6): Define
+	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_VAR_6): Define.
 
 2015-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
