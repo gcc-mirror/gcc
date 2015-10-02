@@ -3003,7 +3003,8 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
 	  gcc_assert (sset);
 
 	  if (contains_mem_rtx_p (SET_SRC (sset))
-	      || !REG_P (SET_DEST (sset)))
+	      || !REG_P (SET_DEST (sset))
+	      || reg_overlap_mentioned_p (SET_DEST (sset), cond))
 	    goto free_bitmap_and_fail;
 
 	  potential_cost += insn_rtx_cost (sset, speed_p);

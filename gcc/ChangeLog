@@ -1,3 +1,10 @@
+2015-10-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/67786
+	PR rtl-optimization/67787
+	* ifcvt.c (bb_valid_for_noce_process_p): Reject basic block if
+	it modifies a reg used in the condition calculation.
+
 2015-10-02  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd.md (*aarch64_combinez<mode>): Add
