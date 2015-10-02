@@ -406,6 +406,10 @@ Wdiv-by-zero
 C ObjC C++ ObjC++ Var(warn_div_by_zero) Init(1) Warning
 Warn about compile-time integer division by zero
 
+Wduplicated-cond
+C ObjC C++ ObjC++ Var(warn_duplicated_cond) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about duplicated conditions in an if-else-if chain
+
 Weffc++
 C++ ObjC++ Var(warn_ecpp) Warning
 Warn about violations of Effective C++ style rules
