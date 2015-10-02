@@ -1,5 +1,9 @@
 2015-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/warn13.adb: New test.
+
+2015-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/vect15.ad[sb]: New test.
 	* gnat.dg/vect16.ad[sb]: Likewise.
 	* gnat.dg/vect17.ad[sb]: Likewise.

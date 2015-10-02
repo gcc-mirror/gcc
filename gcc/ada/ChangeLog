@@ -1,5 +1,11 @@
 2015-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Pragma_to_gnu) <Pragma_Warnings>: Replace
+	linear search with call to find_opt and issue warnings if the -W
+	switch is not appropriate.
+
+2015-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (DECL_RESTRICTED_ALIASING_P): New flag.
 	* gcc-interface/decl.c (gnat_to_gnu_param): For parameters passed by
 	reference but whose type isn't by-ref and whose mechanism hasn't been

@@ -1442,21 +1442,28 @@ Pragma_to_gnu (Node_Id gnat_node)
 	  gcc_unreachable ();
 
 	/* This is the same implementation as in the C family of compilers.  */
+	const unsigned int lang_mask = CL_Ada | CL_COMMON;
 	if (Present (gnat_expr))
 	  {
 	    tree gnu_expr = gnat_to_gnu (gnat_expr);
-	    const char *opt_string = TREE_STRING_POINTER (gnu_expr);
+	    const char *option_string = TREE_STRING_POINTER (gnu_expr);
 	    const int len = TREE_STRING_LENGTH (gnu_expr);
-	    if (len < 3 || opt_string[0] != '-' || opt_string[1] != 'W')
+	    if (len < 3 || option_string[0] != '-' || option_string[1] != 'W')
 	      break;
-	    for (option_index = 0;
-		 option_index < cl_options_count;
-		 option_index++)
-	      if (strcmp (cl_options[option_index].opt_text, opt_string) == 0)
-		break;
-	    if (option_index == cl_options_count)
+	    option_index = find_opt (option_string + 1, lang_mask);
+	    if (option_index == OPT_SPECIAL_unknown)
 	      {
-		post_error ("unknown -W switch", gnat_node);
+		post_error ("?unknown -W switch", gnat_node);
+		break;
+	      }
+	    else if (!(cl_options[option_index].flags & CL_WARNING))
+	      {
+		post_error ("?-W switch does not control warning", gnat_node);
+		break;
+	      }
+	    else if (!(cl_options[option_index].flags & lang_mask))
+	      {
+		post_error ("?-W switch not valid for Ada", gnat_node);
 		break;
 	      }
 	  }
@@ -1465,7 +1472,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 
 	set_default_handlers (&handlers);
 	control_warning_option (option_index, (int) kind, imply, location,
-				CL_Ada, &handlers, &global_options,
+				lang_mask, &handlers, &global_options,
 				&global_options_set, global_dc);
       }
       break;
