@@ -1,3 +1,11 @@
+2015-10-02  Aditya Kumar  <hiraditya@msn.com>
+
+	* graphite-scop-detection.c (stmt_has_side_effects): New function
+	  outlined from stmt_simple_for_scop_p.
+	(graphite_can_represent_stmt): Same.
+	(stmt_simple_for_scop_p): Moved code out of this function for better
+	readability.
+
 2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
 	* config/i386/i386.c (processor_features): Add F_AVX512VBMI,
 	F_AVX512IFMA.
