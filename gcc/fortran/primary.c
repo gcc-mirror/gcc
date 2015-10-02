@@ -2697,7 +2697,7 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
   gfc_expr *e;
   gfc_symtree *symtree;
 
-  gfc_get_sym_tree (sym->name, NULL, &symtree, false);   /* Can't fail */
+  gfc_get_ha_sym_tree (sym->name, &symtree);
 
   e = gfc_get_expr ();
   e->symtree = symtree;
