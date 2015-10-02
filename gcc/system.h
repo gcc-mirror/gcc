@@ -369,6 +369,12 @@ extern int errno;
 /* Returns the least number N such that N * Y >= X.  */
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
+/* This macro rounds x up to the y boundary.  */
+#define ROUND_UP(x,y) (((x) + (y) - 1) & ~((y) - 1))
+
+/* This macro rounds x down to the y boundary.  */
+#define ROUND_DOWN(x,y) ((x) & ~((y) - 1))
+ 	
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
