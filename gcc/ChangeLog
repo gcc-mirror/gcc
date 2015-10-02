@@ -1,3 +1,8 @@
+2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* doc/invoke.texi: Mention -mavx512vl, -mavx512bw, -mavx512dq,
+	-mavx521vbmi, -mavx512ifma. Add missing opindex-es.
+
 2015-10-02  Jason Merrill  <jason@redhat.com>
 
 	PR c/59218
