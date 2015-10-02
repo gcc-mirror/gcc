@@ -1,3 +1,8 @@
+2015-10-02  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (optimize_stmt): Note when loop structures need
+	fixups.
+
 2015-10-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR target/67822
