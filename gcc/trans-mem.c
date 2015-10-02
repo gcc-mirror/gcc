@@ -594,32 +594,36 @@ struct diagnose_tm
   gimple *stmt;
 };
 
-/* Return true if T is a volatile variable of some kind.  */
+/* Return true if T is a volatile lvalue of some kind.  */
 
 static bool
-volatile_var_p (tree t)
+volatile_lvalue_p (tree t)
 {
-  return (SSA_VAR_P (t)
+  return ((SSA_VAR_P (t) || REFERENCE_CLASS_P (t))
 	  && TREE_THIS_VOLATILE (TREE_TYPE (t)));
 }
 
 /* Tree callback function for diagnose_tm pass.  */
 
 static tree
-diagnose_tm_1_op (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		  void *data)
+diagnose_tm_1_op (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   struct diagnose_tm *d = (struct diagnose_tm *) wi->info;
 
-  if (volatile_var_p (*tp)
-      && d->block_flags & DIAG_TM_SAFE
-      && !d->saw_volatile)
+  if (TYPE_P (*tp))
+    *walk_subtrees = false;
+  else if (volatile_lvalue_p (*tp)
+	   && !d->saw_volatile)
     {
       d->saw_volatile = 1;
-      error_at (gimple_location (d->stmt),
-		"invalid volatile use of %qD inside transaction",
-		*tp);
+      if (d->block_flags & DIAG_TM_SAFE)
+	error_at (gimple_location (d->stmt),
+		  "invalid use of volatile lvalue inside transaction");
+      else if (d->func_flags & DIAG_TM_SAFE)
+	error_at (gimple_location (d->stmt),
+		  "invalid use of volatile lvalue inside %<transaction_safe%>"
+		  "function");
     }
 
   return NULL_TREE;
@@ -4298,7 +4302,7 @@ ipa_tm_scan_irr_block (basic_block bb)
 	    {
 	      tree lhs = gimple_assign_lhs (stmt);
 	      tree rhs = gimple_assign_rhs1 (stmt);
-	      if (volatile_var_p (lhs) || volatile_var_p (rhs))
+	      if (volatile_lvalue_p (lhs) || volatile_lvalue_p (rhs))
 		return true;
 	    }
 	  break;
@@ -4306,7 +4310,7 @@ ipa_tm_scan_irr_block (basic_block bb)
 	case GIMPLE_CALL:
 	  {
 	    tree lhs = gimple_call_lhs (stmt);
-	    if (lhs && volatile_var_p (lhs))
+	    if (lhs && volatile_lvalue_p (lhs))
 	      return true;
 
 	    if (is_tm_pure_call (stmt))
