@@ -1,6 +1,7 @@
 /* PR c/64249 */
 /* { dg-do compile } */
 /* { dg-options "-Wall" } */
+/* { dg-skip-if "PR67819" { *-*-* } } */
 
 #ifndef __cplusplus
 # define bool _Bool

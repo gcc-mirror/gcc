@@ -1,3 +1,7 @@
+2015-10-02  Marek Polacek  <polacek@redhat.com>
+
+	* genemit.c (gen_exp): Remove -Wduplicated-cond hack.
+
 2015-10-02  Aditya Kumar  <aditya.k7@samsung.com>
 
 	* graphite-scop-detection.c (loop_ivs_can_be_represented): New.
