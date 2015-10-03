@@ -1,5 +1,8 @@
 2015-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter): Remove support
+	for _Manager_alloc.
+
 	* src/c++98/locale.cc: Fix comment.
 	* src/c++98/locale_init.cc: Likewise.
 
