@@ -1,3 +1,7 @@
+2015-10-03  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config.host (xtensa*-*-uclinux*): New configuration.
+
 2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
 
         * config/i386/cpuinfo.c (processor_features): Add

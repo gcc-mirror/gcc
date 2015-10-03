@@ -2995,6 +2995,11 @@ xtensa*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/linux.h"
 	tmake_file="${tmake_file} xtensa/t-xtensa"
 	;;
+xtensa*-*-uclinux*)
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/uclinux.h"
+	tmake_file="${tmake_file} xtensa/t-xtensa"
+	extra_options="${extra_options} xtensa/uclinux.opt"
+	;;
 am33_2.0-*-linux*)
 	tm_file="mn10300/mn10300.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h mn10300/linux.h"
 	gas=yes gnu_ld=yes
