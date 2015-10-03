@@ -1,5 +1,8 @@
 2015-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++98/locale.cc: Fix comment.
+	* src/c++98/locale_init.cc: Likewise.
+
 	* testsuite/21_strings/basic_string/literals/types.cc: Guard use of
 	wchar_t with _GLIBCXX_USE_WCHAR_T.
 	* testsuite/21_strings/basic_string/literals/values.cc: Likewise.
