@@ -2,6 +2,8 @@
 /* { dg-require-effective-target arm_hard_vfp_ok } */
 /* { dg-options "-O2 -mapcs -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16" } */
 
+int inode_permission (), try_break_deleg ();
+int mutex_lock (), mutex_unlock ();
 struct mutex
 {
 };

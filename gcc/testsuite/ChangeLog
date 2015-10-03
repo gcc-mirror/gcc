@@ -1,3 +1,7 @@
+2015-10-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.target/arm/pr67756.c: Fixed warnings.
+
 2015-10-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/67730
