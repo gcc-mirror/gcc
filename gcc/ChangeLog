@@ -1,9 +1,20 @@
+2015-10-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2015-09-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/67716
+	* config/sh/sh.c (sh_override_options_after_change): New.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): Define.
+	(sh_option_override): Move align_loops, align_jumps and
+	align_functions handling into sh_override_options_after_change.
+
 2015-10-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline
 	2015-09-15  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
-        * config/s390/s390.c (s390_const_operand_ok): Add missing
+	* config/s390/s390.c (s390_const_operand_ok): Add missing
 	brackets.
 
 2015-10-01  Marek Polacek  <polacek@redhat.com>

@@ -222,6 +222,7 @@ static bool noncall_uses_reg (rtx, rtx_insn *, rtx *);
 static rtx_insn *gen_block_redirect (rtx_insn *, int, int);
 static void sh_reorg (void);
 static void sh_option_override (void);
+static void sh_override_options_after_change (void);
 static void output_stack_adjust (int, rtx, int, HARD_REG_SET *, bool);
 static rtx_insn *frame_insn (rtx);
 static rtx push (int);
@@ -411,6 +412,10 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE sh_option_override
+
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE \
+  sh_override_options_after_change
 
 #undef TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND sh_print_operand
@@ -1064,6 +1069,64 @@ sh_option_override (void)
       TARGET_ACCUMULATE_OUTGOING_ARGS = 1;
     }
 
+  /* The linker relaxation code breaks when a function contains
+     alignments that are larger than that at the start of a
+     compilation unit.  */
+  if (TARGET_RELAX)
+    {
+      int min_align = align_loops > align_jumps ? align_loops : align_jumps;
+
+      /* Also take possible .long constants / mova tables into account.	*/
+      if (min_align < 4)
+	min_align = 4;
+      if (align_functions < min_align)
+	align_functions = min_align;
+    }
+
+  if (flag_unsafe_math_optimizations)
+    {
+      /* Enable fsca insn for SH4A if not otherwise specified by the user.  */
+      if (global_options_set.x_TARGET_FSCA == 0 && TARGET_SH4A_FP)
+	TARGET_FSCA = 1;
+
+      /* Enable fsrra insn for SH4A if not otherwise specified by the user.  */
+      if (global_options_set.x_TARGET_FSRRA == 0 && TARGET_SH4A_FP)
+	TARGET_FSRRA = 1;
+    }
+
+  /*  Allow fsrra insn only if -funsafe-math-optimizations and
+      -ffinite-math-only is enabled.  */
+  TARGET_FSRRA = TARGET_FSRRA
+		 && flag_unsafe_math_optimizations
+		 && flag_finite_math_only;
+
+  /* If the -mieee option was not explicitly set by the user, turn it on
+     unless -ffinite-math-only was specified.  See also PR 33135.  */
+  if (! global_options_set.x_TARGET_IEEE)
+    TARGET_IEEE = ! flag_finite_math_only;
+
+  if (sh_fixed_range_str)
+    sh_fix_range (sh_fixed_range_str);
+
+  /* This target defaults to strict volatile bitfields.  */
+  if (flag_strict_volatile_bitfields < 0 && abi_version_at_least(2))
+    flag_strict_volatile_bitfields = 1;
+
+  sh_override_options_after_change ();
+
+  /* Parse atomic model option and make sure it is valid for the current
+     target CPU.  */
+  selected_atomic_model_
+    = parse_validate_atomic_model_option (sh_atomic_model_str);
+
+  register_sh_passes ();
+}
+
+/* Implement targetm.override_options_after_change.  */
+
+static void
+sh_override_options_after_change (void)
+{
   /*  Adjust loop, jump and function alignment values (in bytes), if those
       were not specified by the user using -falign-loops, -falign-jumps
       and -falign-functions options.
@@ -1113,42 +1176,6 @@ sh_option_override (void)
       if (align_functions < min_align)
 	align_functions = min_align;
     }
-
-  if (flag_unsafe_math_optimizations)
-    {
-      /* Enable fsca insn for SH4A if not otherwise specified by the user.  */
-      if (global_options_set.x_TARGET_FSCA == 0 && TARGET_SH4A_FP)
-	TARGET_FSCA = 1;
-
-      /* Enable fsrra insn for SH4A if not otherwise specified by the user.  */
-      if (global_options_set.x_TARGET_FSRRA == 0 && TARGET_SH4A_FP)
-	TARGET_FSRRA = 1;
-    }
-
-  /*  Allow fsrra insn only if -funsafe-math-optimizations and
-      -ffinite-math-only is enabled.  */
-  TARGET_FSRRA = TARGET_FSRRA
-		 && flag_unsafe_math_optimizations
-		 && flag_finite_math_only;
-
-  /* If the -mieee option was not explicitly set by the user, turn it on
-     unless -ffinite-math-only was specified.  See also PR 33135.  */
-  if (! global_options_set.x_TARGET_IEEE)
-    TARGET_IEEE = ! flag_finite_math_only;
-
-  if (sh_fixed_range_str)
-    sh_fix_range (sh_fixed_range_str);
-
-  /* This target defaults to strict volatile bitfields.  */
-  if (flag_strict_volatile_bitfields < 0 && abi_version_at_least(2))
-    flag_strict_volatile_bitfields = 1;
-
-  /* Parse atomic model option and make sure it is valid for the current
-     target CPU.  */
-  selected_atomic_model_
-    = parse_validate_atomic_model_option (sh_atomic_model_str);
-
-  register_sh_passes ();
 }
 
 /* Print the operand address in x to the stream.  */
