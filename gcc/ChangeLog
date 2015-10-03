@@ -1,3 +1,9 @@
+2015-10-03  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config.gcc (xtensa*-*-uclinux*): New configuration.
+	* config/xtensa/uclinux.h: New file.
+	* config/xtensa/uclinux.opt: New file.
+
 2015-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/cpp.texi (Standard Predefined Macros): Document value of
