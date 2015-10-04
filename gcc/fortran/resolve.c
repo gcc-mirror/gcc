@@ -918,6 +918,12 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
 
   for (; csym; csym = csym->common_next)
     {
+      /* gfc_add_in_common may have been called before, but the reported errors
+	 have been ignored to continue parsing.
+	 We do the checks again here.  */
+      if (!csym->attr.use_assoc)
+	gfc_add_in_common (&csym->attr, csym->name, &common_block->where);
+
       if (csym->value || csym->attr.data)
 	{
 	  if (!csym->ns->is_block_data)
