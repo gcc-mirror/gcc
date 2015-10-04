@@ -594,6 +594,12 @@ const struct c_common_resword c_common_reswords[] =
   { "wchar_t",		RID_WCHAR,	D_CXXONLY },
   { "while",		RID_WHILE,	0 },
 
+  /* C++ transactional memory.  */
+  { "synchronized",	RID_SYNCHRONIZED, D_CXX_OBJC | D_TRANSMEM },
+  { "atomic_noexcept",	RID_ATOMIC_NOEXCEPT, D_CXXONLY | D_TRANSMEM },
+  { "atomic_cancel",	RID_ATOMIC_CANCEL, D_CXXONLY | D_TRANSMEM },
+  { "atomic_commit",	RID_TRANSACTION_ATOMIC, D_CXXONLY | D_TRANSMEM },
+
   /* Concepts-related keywords */
   { "concept",		RID_CONCEPT,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
   { "requires", 	RID_REQUIRES,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
@@ -609,7 +615,6 @@ const struct c_common_resword c_common_reswords[] =
   { "protocol",		RID_AT_PROTOCOL,	D_OBJC },
   { "selector",		RID_AT_SELECTOR,	D_OBJC },
   { "finally",		RID_AT_FINALLY,		D_OBJC },
-  { "synchronized",	RID_AT_SYNCHRONIZED,	D_OBJC },
   { "optional",		RID_AT_OPTIONAL,	D_OBJC },
   { "required",		RID_AT_REQUIRED,	D_OBJC },
   { "property",		RID_AT_PROPERTY,	D_OBJC },
@@ -728,8 +733,10 @@ const struct attribute_spec c_common_attribute_table[] =
   { "transaction_callable",   0, 0, false, true,  false,
 			      handle_tm_attribute, false },
   { "transaction_unsafe",     0, 0, false, true,  false,
-			      handle_tm_attribute, false },
+			      handle_tm_attribute, true },
   { "transaction_safe",       0, 0, false, true,  false,
+			      handle_tm_attribute, true },
+  { "transaction_safe_dynamic", 0, 0, true, false,  false,
 			      handle_tm_attribute, false },
   { "transaction_may_cancel_outer", 0, 0, false, true, false,
 			      handle_tm_attribute, false },
@@ -9135,6 +9142,23 @@ handle_tm_attribute (tree *node, tree name, tree args,
 	  *no_add_attrs = false;
       }
       break;
+
+    case FUNCTION_DECL:
+      {
+	/* transaction_safe_dynamic goes on the FUNCTION_DECL, but we also
+	   want to set transaction_safe on the type.  */
+	gcc_assert (is_attribute_p ("transaction_safe_dynamic", name));
+	if (!TYPE_P (DECL_CONTEXT (*node)))
+	  error_at (DECL_SOURCE_LOCATION (*node),
+		    "%<transaction_safe_dynamic%> may only be specified for "
+		    "a virtual function");
+	*no_add_attrs = false;
+	decl_attributes (&TREE_TYPE (*node),
+			 build_tree_list (get_identifier ("transaction_safe"),
+					  NULL_TREE),
+			 0);
+	break;
+      }
 
     case POINTER_TYPE:
       {

@@ -592,6 +592,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define COMPLETE_OR_UNBOUND_ARRAY_TYPE_P(NODE) \
   (COMPLETE_TYPE_P (TREE_CODE (NODE) == ARRAY_TYPE ? TREE_TYPE (NODE) : (NODE)))
 
+#define FUNC_OR_METHOD_TYPE_P(NODE) \
+  (TREE_CODE (NODE) == FUNCTION_TYPE || TREE_CODE (NODE) == METHOD_TYPE)
+
 /* Define many boolean fields that all tree nodes have.  */
 
 /* In VAR_DECL, PARM_DECL and RESULT_DECL nodes, nonzero means address

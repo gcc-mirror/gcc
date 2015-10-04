@@ -5017,6 +5017,8 @@ comp_type_attributes (const_tree type1, const_tree type2)
       if (!a)
         return 1;
     }
+  if (lookup_attribute ("transaction_safe", CONST_CAST_TREE (a)))
+    return 0;
   /* As some type combinations - like default calling-convention - might
      be compatible, we have to call the target hook to get the final result.  */
   return targetm.comp_type_attributes (type1, type2);

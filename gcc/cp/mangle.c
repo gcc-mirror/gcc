@@ -1911,7 +1911,13 @@ write_type (tree type)
     {
       tree t = TYPE_MAIN_VARIANT (type);
       if (TYPE_ATTRIBUTES (t) && !OVERLOAD_TYPE_P (t))
-	t = cp_build_type_attribute_variant (t, NULL_TREE);
+	{
+	  tree attrs = NULL_TREE;
+	  if (tx_safe_fn_type_p (type))
+	    attrs = tree_cons (get_identifier ("transaction_safe"),
+			       NULL_TREE, attrs);
+	  t = cp_build_type_attribute_variant (t, attrs);
+	}
       gcc_assert (t != type);
       if (TREE_CODE (t) == FUNCTION_TYPE
 	  || TREE_CODE (t) == METHOD_TYPE)
@@ -2209,6 +2215,7 @@ write_CV_qualifiers_for_type (const tree type)
 	  tree name = get_attribute_name (a);
 	  const attribute_spec *as = lookup_attribute_spec (name);
 	  if (as && as->affects_type_identity
+	      && !is_attribute_p ("transaction_safe", name)
 	      && !is_attribute_p ("abi_tag", name))
 	    vec.safe_push (a);
 	}
@@ -2469,6 +2476,9 @@ write_function_type (const tree type)
       tree this_type = class_of_this_parm (type);
       write_CV_qualifiers_for_type (this_type);
     }
+
+  if (tx_safe_fn_type_p (type))
+    write_string ("Dx");
 
   write_char ('F');
   /* We don't track whether or not a type is `extern "C"'.  Note that

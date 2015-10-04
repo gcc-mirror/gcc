@@ -1591,6 +1591,7 @@ begin_scope (scope_kind kind, tree entity)
     case sk_class:
     case sk_scoped_enum:
     case sk_function_parms:
+    case sk_transaction:
     case sk_omp:
       scope->keep = keep_next_level_flag;
       break;

@@ -1,3 +1,9 @@
+2015-10-04  Jason Merrill  <jason@redhat.com>
+
+	* c-parser.c (c_lex_one_token): Handle @synchronized.
+	* c-decl.c (match_builtin_function_types): A declaration of a built-in
+	can change whether the function is transaction_safe.
+
 2015-10-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/67730

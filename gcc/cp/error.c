@@ -868,6 +868,8 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
 			      TREE_CODE (t) == FUNCTION_TYPE
 			      && (flags & TFF_POINTER));
 	dump_ref_qualifier (pp, t, flags);
+	if (tx_safe_fn_type_p (t))
+	  pp_cxx_ws_string (pp, "transaction_safe");
 	dump_exception_spec (pp, TYPE_RAISES_EXCEPTIONS (t), flags);
 	dump_type_suffix (pp, TREE_TYPE (t), flags);
 	break;
@@ -1568,6 +1570,12 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 	  pp->padding = pp_before;
 	  pp_cxx_cv_qualifier_seq (pp, class_of_this_parm (fntype));
 	  dump_ref_qualifier (pp, fntype, flags);
+	}
+
+      if (tx_safe_fn_type_p (fntype))
+	{
+	  pp->padding = pp_before;
+	  pp_cxx_ws_string (pp, "transaction_safe");
 	}
 
       if (flags & TFF_EXCEPTION_SPECIFICATION)

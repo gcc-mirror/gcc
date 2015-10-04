@@ -1,3 +1,7 @@
+2015-10-04  Jason Merrill  <jason@redhat.com>
+
+	* builtins.def (BUILT_IN_ABORT): Add transaction_pure attribute.
+
 2015-10-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_nsaved_regs): Use GENERAL_REGNO_P to

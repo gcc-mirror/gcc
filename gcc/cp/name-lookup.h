@@ -121,6 +121,7 @@ enum scope_kind {
 			specialization.  Since, by definition, an
 			explicit specialization is introduced by
 			"template <>", this scope is always empty.  */
+  sk_transaction,    /* A synchronized or atomic statement.  */
   sk_omp	     /* An OpenMP structured block.  */
 };
 

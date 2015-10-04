@@ -686,6 +686,9 @@ d_dump (struct demangle_component *dc, int indent)
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
       printf ("rvalue reference this\n");
       break;
+    case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
+      printf ("transaction_safe this\n");
+      break;
     case DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL:
       printf ("vendor type qualifier\n");
       break;
@@ -970,6 +973,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_RESTRICT_THIS:
     case DEMANGLE_COMPONENT_VOLATILE_THIS:
     case DEMANGLE_COMPONENT_CONST_THIS:
+    case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
     case DEMANGLE_COMPONENT_REFERENCE_THIS:
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
     case DEMANGLE_COMPONENT_ARGLIST:
@@ -1212,6 +1216,7 @@ has_return_type (struct demangle_component *dc)
     case DEMANGLE_COMPONENT_CONST_THIS:
     case DEMANGLE_COMPONENT_REFERENCE_THIS:
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
+    case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
       return has_return_type (d_left (dc));
     }
 }
@@ -1268,6 +1273,7 @@ d_encoding (struct d_info *di, int top_level)
 	  while (dc->type == DEMANGLE_COMPONENT_RESTRICT_THIS
 		 || dc->type == DEMANGLE_COMPONENT_VOLATILE_THIS
 		 || dc->type == DEMANGLE_COMPONENT_CONST_THIS
+		 || dc->type == DEMANGLE_COMPONENT_TRANSACTION_SAFE
 		 || dc->type == DEMANGLE_COMPONENT_REFERENCE_THIS
 		 || dc->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS)
 	    dc = d_left (dc);
@@ -1284,6 +1290,7 @@ d_encoding (struct d_info *di, int top_level)
 	      while (dcr->type == DEMANGLE_COMPONENT_RESTRICT_THIS
 		     || dcr->type == DEMANGLE_COMPONENT_VOLATILE_THIS
 		     || dcr->type == DEMANGLE_COMPONENT_CONST_THIS
+		     || dcr->type == DEMANGLE_COMPONENT_TRANSACTION_SAFE
 		     || dcr->type == DEMANGLE_COMPONENT_REFERENCE_THIS
 		     || dcr->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS)
 		dcr = d_left (dcr);
@@ -2281,7 +2288,8 @@ cplus_demangle_type (struct d_info *di)
      names.  */
 
   peek = d_peek_char (di);
-  if (peek == 'r' || peek == 'V' || peek == 'K')
+  if (peek == 'r' || peek == 'V' || peek == 'K'
+      || (peek == 'D' && d_peek_next_char (di) == 'x'))
     {
       struct demangle_component **pret;
 
@@ -2592,7 +2600,7 @@ cplus_demangle_type (struct d_info *di)
   return ret;
 }
 
-/* <CV-qualifiers> ::= [r] [V] [K]  */
+/* <CV-qualifiers> ::= [r] [V] [K] [Dx] */
 
 static struct demangle_component **
 d_cv_qualifiers (struct d_info *di,
@@ -2603,7 +2611,8 @@ d_cv_qualifiers (struct d_info *di,
 
   pstart = pret;
   peek = d_peek_char (di);
-  while (peek == 'r' || peek == 'V' || peek == 'K')
+  while (peek == 'r' || peek == 'V' || peek == 'K'
+	 || (peek == 'D' && d_peek_next_char (di) == 'x'))
     {
       enum demangle_component_type t;
 
@@ -2622,12 +2631,18 @@ d_cv_qualifiers (struct d_info *di,
 	       : DEMANGLE_COMPONENT_VOLATILE);
 	  di->expansion += sizeof "volatile";
 	}
-      else
+      else if (peek == 'K')
 	{
 	  t = (member_fn
 	       ? DEMANGLE_COMPONENT_CONST_THIS
 	       : DEMANGLE_COMPONENT_CONST);
 	  di->expansion += sizeof "const";
+	}
+      else
+	{
+	  t = DEMANGLE_COMPONENT_TRANSACTION_SAFE;
+	  di->expansion += sizeof "transaction_safe";
+	  d_advance (di, 1);
 	}
 
       *pret = d_make_comp (di, t, NULL, NULL);
@@ -2694,7 +2709,7 @@ d_ref_qualifier (struct d_info *di, struct demangle_component *sub)
   return ret;
 }
 
-/* <function-type> ::= F [Y] <bare-function-type> [<ref-qualifier>] E  */
+/* <function-type> ::= F [Y] <bare-function-type> [<ref-qualifier>] [T] E  */
 
 static struct demangle_component *
 d_function_type (struct d_info *di)
@@ -3899,6 +3914,7 @@ d_count_templates_scopes (int *num_templates, int *num_scopes,
     case DEMANGLE_COMPONENT_CONST_THIS:
     case DEMANGLE_COMPONENT_REFERENCE_THIS:
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
+    case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
     case DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL:
     case DEMANGLE_COMPONENT_POINTER:
     case DEMANGLE_COMPONENT_COMPLEX:
@@ -4420,6 +4436,7 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 		&& typed_name->type != DEMANGLE_COMPONENT_VOLATILE_THIS
 		&& typed_name->type != DEMANGLE_COMPONENT_CONST_THIS
 		&& typed_name->type != DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS
+		&& typed_name->type != DEMANGLE_COMPONENT_TRANSACTION_SAFE
 		&& typed_name->type != DEMANGLE_COMPONENT_REFERENCE_THIS)
 	      break;
 
@@ -4461,6 +4478,7 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 		   || local_name->type == DEMANGLE_COMPONENT_VOLATILE_THIS
 		   || local_name->type == DEMANGLE_COMPONENT_CONST_THIS
 		   || local_name->type == DEMANGLE_COMPONENT_REFERENCE_THIS
+		   || local_name->type == DEMANGLE_COMPONENT_TRANSACTION_SAFE
 		   || (local_name->type
 		       == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS))
 	      {
@@ -4796,6 +4814,7 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
     case DEMANGLE_COMPONENT_POINTER:
     case DEMANGLE_COMPONENT_COMPLEX:
     case DEMANGLE_COMPONENT_IMAGINARY:
+    case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
     modifier:
       {
 	/* We keep a list of modifiers on the stack.  */
@@ -5484,6 +5503,7 @@ d_print_mod_list (struct d_print_info *dpi, int options,
 	      || mods->mod->type == DEMANGLE_COMPONENT_VOLATILE_THIS
 	      || mods->mod->type == DEMANGLE_COMPONENT_CONST_THIS
 	      || mods->mod->type == DEMANGLE_COMPONENT_REFERENCE_THIS
+	      || mods->mod->type == DEMANGLE_COMPONENT_TRANSACTION_SAFE
 	      || (mods->mod->type
 		  == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS))))
     {
@@ -5542,6 +5562,7 @@ d_print_mod_list (struct d_print_info *dpi, int options,
 	     || dc->type == DEMANGLE_COMPONENT_VOLATILE_THIS
 	     || dc->type == DEMANGLE_COMPONENT_CONST_THIS
 	     || dc->type == DEMANGLE_COMPONENT_REFERENCE_THIS
+	     || dc->type == DEMANGLE_COMPONENT_TRANSACTION_SAFE
 	     || dc->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS)
 	dc = d_left (dc);
 
@@ -5577,6 +5598,9 @@ d_print_mod (struct d_print_info *dpi, int options,
     case DEMANGLE_COMPONENT_CONST:
     case DEMANGLE_COMPONENT_CONST_THIS:
       d_append_string (dpi, " const");
+      return;
+    case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
+      d_append_string (dpi, " transaction_safe");
       return;
     case DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL:
       d_append_char (dpi, ' ');
@@ -5668,6 +5692,7 @@ d_print_function_type (struct d_print_info *dpi, int options,
 	case DEMANGLE_COMPONENT_CONST_THIS:
 	case DEMANGLE_COMPONENT_REFERENCE_THIS:
 	case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
+	case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
 	  break;
 	default:
 	  break;
@@ -6200,6 +6225,7 @@ is_ctor_or_dtor (const char *mangled,
 	  case DEMANGLE_COMPONENT_CONST_THIS:
 	  case DEMANGLE_COMPONENT_REFERENCE_THIS:
 	  case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
+	  case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
 	  default:
 	    dc = NULL;
 	    break;
