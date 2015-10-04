@@ -1,3 +1,13 @@
+2015-10-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vect-pack-trunc-1.c: Require avx512bw
+	effective target.
+	* gcc.target/i386/vect-pack-trunc-2.c: Ditto.
+	* gcc.target/i386/vect-perm-even-1.c: Ditto.
+	* gcc.target/i386/vect-perm-odd-1.c: Ditto.
+	* gcc.target/i386/vect-unpack-1.c: Ditto.
+	* gcc.target/i386/vect-unpack-2.c: Ditto.
+
 2015-10-04  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/67758
