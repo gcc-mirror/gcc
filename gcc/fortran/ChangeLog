@@ -1,5 +1,14 @@
 2015-10-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	PR fortran/67758
+	* match.c (gfc_match_common): Delay the common_block pointer
+	assignment after error checking.
+	Delay the call to gfc_add_in_common attribute after the handling
+	of array specs.
+	* resolve.c (resolve_common_vars): Call gfc_add_in_common again.
+
+2015-10-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* resolve.c (resolve_common_vars): Move access to the common
 	block's head symbol inside the function.
 	(resolve_common_blocks, resolve_types): Update callers.
@@ -101,7 +110,6 @@
 2015-09-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* resolve.c (nonscalar_typebound_assign): Fix typos in comment.
-
 
 2015-09-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 

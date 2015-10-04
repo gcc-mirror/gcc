@@ -4330,10 +4330,6 @@ gfc_match_common (void)
 	  if (m == MATCH_NO)
 	    goto syntax;
 
-          /* Store a ref to the common block for error checking.  */
-          sym->common_block = t;
-          sym->common_block->refs++;
-
           /* See if we know the current common block is bind(c), and if
              so, then see if we can check if the symbol is (which it'll
              need to be).  This can happen if the bind(c) attr stmt was
@@ -4376,8 +4372,8 @@ gfc_match_common (void)
 		goto cleanup;
 	    }
 
-	  if (!gfc_add_in_common (&sym->attr, sym->name, NULL))
-	    goto cleanup;
+	  sym->common_block = t;
+	  sym->common_block->refs++;
 
 	  if (tail != NULL)
 	    tail->common_next = sym;
@@ -4415,6 +4411,10 @@ gfc_match_common (void)
 	      as = NULL;
 
 	    }
+
+	  /* Add the in_common attribute, but ignore the reported errors
+	     if any, and continue matching.  */
+	  gfc_add_in_common (&sym->attr, sym->name, NULL);
 
 	  sym->common_head = t;
 
