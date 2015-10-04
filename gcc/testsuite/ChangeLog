@@ -1,5 +1,10 @@
 2015-10-04  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR rtl-optimization/67447
+	* gcc.target/i386/pr67447.c: New test.
+
+2015-10-04  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/vect-pack-trunc-1.c: Require avx512bw
 	effective target.
 	* gcc.target/i386/vect-pack-trunc-2.c: Ditto.
