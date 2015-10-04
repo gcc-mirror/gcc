@@ -877,6 +877,10 @@ c_cpp_builtins (cpp_reader *pfile)
 	/* Use a value smaller than the 201507 specified in
 	   the TS, since we don't yet support extended auto.  */
 	cpp_define (pfile, "__cpp_concepts=201500");
+      if (flag_tm)
+	/* Use a value smaller than the 201505 specified in
+	   the TS, since we don't yet support atomic_cancel.  */
+	cpp_define (pfile, "__cpp_transactional_memory=210500");
       if (flag_sized_deallocation)
 	cpp_define (pfile, "__cpp_sized_deallocation=201309");
     }

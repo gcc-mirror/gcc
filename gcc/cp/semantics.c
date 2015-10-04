@@ -1355,7 +1355,14 @@ begin_compound_stmt (unsigned int flags)
       keep_next_level (false);
     }
   else
-    r = do_pushlevel (flags & BCS_TRY_BLOCK ? sk_try : sk_block);
+    {
+      scope_kind sk = sk_block;
+      if (flags & BCS_TRY_BLOCK)
+	sk = sk_try;
+      else if (flags & BCS_TRANSACTION)
+	sk = sk_transaction;
+      r = do_pushlevel (sk);
+    }
 
   /* When processing a template, we need to remember where the braces were,
      so that we can set up identical scopes when instantiating the template

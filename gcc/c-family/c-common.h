@@ -154,6 +154,9 @@ enum rid
   /* C++ concepts */
   RID_CONCEPT, RID_REQUIRES,
 
+  /* C++ transactional memory.  */
+  RID_ATOMIC_NOEXCEPT, RID_ATOMIC_CANCEL, RID_SYNCHRONIZED,
+
   /* Cilk Plus keywords.  */
   RID_CILK_SPAWN, RID_CILK_SYNC, RID_CILK_FOR,
   
@@ -246,7 +249,7 @@ enum rid
    is found elsewhere, it follows the rules of the C/C++ language.
  */
 #define OBJC_IS_CXX_KEYWORD(rid) \
-  (rid == RID_CLASS							\
+  (rid == RID_CLASS || rid == RID_SYNCHRONIZED			\
    || rid == RID_PUBLIC || rid == RID_PROTECTED || rid == RID_PRIVATE	\
    || rid == RID_TRY || rid == RID_THROW || rid == RID_CATCH)
 
@@ -391,6 +394,7 @@ extern machine_mode c_default_pointer_mode;
 #define D_CXX_OBJC	0x100	/* In Objective C, and C++, but not C.  */
 #define D_CXXWARN	0x200	/* In C warn with -Wcxx-compat.  */
 #define D_CXX_CONCEPTS  0x400   /* In C++, only with concepts. */
+#define D_TRANSMEM	0X800   /* C++ transactional memory TS.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 

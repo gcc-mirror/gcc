@@ -1,3 +1,47 @@
+2015-10-04  Jason Merrill  <jason@redhat.com>
+
+	Implement N4514, C++ Extensions for Transactional Memory.
+	* cp-tree.h (struct cp_declarator): Add tx_qualifier field.
+	(BCS_NORMAL, BCS_TRANSACTION): New enumerators.
+	* lex.c (init_reswords): Limit TM kewords to -fgnu-tm.
+	* parser.c (cp_lexer_get_preprocessor_token): Fix @synchronized.
+	(make_call_declarator): Take tx_qualifier.
+	(cp_parser_tx_qualifier_opt): New.
+	(cp_parser_lambda_declarator_opt): Use it.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_statement): Handle atomic_noexcept, atomic_cancel.
+	(cp_parser_compound_statement): Change in_try parameter to bcs_flags.
+	(cp_parser_std_attribute): Map optimize_for_synchronized to
+	transaction_callable.
+	(cp_parser_transaction): Take the token.  Handle atomic_noexcept.
+	* lambda.c (maybe_add_lambda_conv_op): Handle transaction-safety.
+	* call.c (enum conversion_kind): Add ck_tsafe.
+	(standard_conversion): Handle transaction-safety conversion.
+	(convert_like_real, resolve_address_of_overloaded_function): Likewise.
+	(check_methods): Diagnose transaction_safe_dynamic on non-virtual
+	function.
+	(look_for_tm_attr_overrides): Don't inherit transaction_safe_dynamic.
+	* cvt.c (tx_safe_fn_type_p, tx_unsafe_fn_variant)
+	(can_convert_tx_safety): New.
+	* typeck.c (composite_pointer_type): Handle transaction-safety.
+	* name-lookup.h (enum scope_kind): Add sk_transaction.
+	* name-lookup.c (begin_scope): Handle it.
+	* semantics.c (begin_compound_stmt): Pass it.
+	* decl.c (check_previous_goto_1): Check it.
+	(struct named_label_entry): Add in_transaction_scope.
+	(poplevel_named_label_1): Set it.
+	(check_goto): Check it.
+	(duplicate_decls): A specialization can be transaction_safe
+	independently of its template.
+	(grokdeclarator): Handle tx-qualifier.
+	* rtti.c (ptr_initializer): Handle transaction-safe.
+	* search.c (check_final_overrider): Check transaction_safe_dynamic.
+	Don't check transaction_safe.
+	* mangle.c (write_function_type): Mangle transaction_safe here.
+	(write_CV_qualifiers_for_type): Not here.
+	(write_type): Preserve transaction_safe when stripping attributes.
+	* error.c (dump_type_suffix): Print transaction_safe.
+
 2015-10-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64249

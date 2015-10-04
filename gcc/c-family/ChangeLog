@@ -1,3 +1,18 @@
+2015-10-04  Jason Merrill  <jason@redhat.com>
+
+	Implement N4514, C++ Extensions for Transactional Memory.
+	* c-common.c (c_common_reswords): Add C++ TM TS keywords.
+	(c_common_attribute_table): Add transaction_safe_dynamic.
+	transaction_safe now affects type identity.
+	(handle_tm_attribute): Handle transaction_safe_dynamic.
+	* c-common.h (enum rid): Add RID_ATOMIC_NOEXCEPT,
+	RID_ATOMIC_CANCEL, RID_SYNCHRONIZED.
+	(OBJC_IS_CXX_KEYWORD): Add RID_SYNCHRONIZED.
+	(D_TRANSMEM): New.
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_transactional_memory.
+	* c-pretty-print.c (pp_c_attributes_display): Don't print
+	transaction_safe in C++.
+
 2015-10-02  Marek Polacek  <polacek@redhat.com>
 
 	* c.opt (Wduplicated-cond): Don't enable by -Wall anymore.

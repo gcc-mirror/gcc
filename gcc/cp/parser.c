@@ -829,6 +829,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
 	case RID_THROW:     token->keyword = RID_AT_THROW; break;
 	case RID_TRY:       token->keyword = RID_AT_TRY; break;
 	case RID_CATCH:     token->keyword = RID_AT_CATCH; break;
+	case RID_SYNCHRONIZED: token->keyword = RID_AT_SYNCHRONIZED; break;
 	default:            token->keyword = C_RID_CODE (token->u.value);
 	}
     }
@@ -1343,7 +1344,7 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
    VAR_DECLs or FUNCTION_DECLs) should do that directly.  */
 
 static cp_declarator *make_call_declarator
-  (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, cp_ref_qualifier, tree, tree, tree);
+  (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, cp_ref_qualifier, tree, tree, tree, tree);
 static cp_declarator *make_array_declarator
   (cp_declarator *, tree);
 static cp_declarator *make_pointer_declarator
@@ -1521,6 +1522,7 @@ make_call_declarator (cp_declarator *target,
 		      cp_cv_quals cv_qualifiers,
 		      cp_virt_specifiers virt_specifiers,
 		      cp_ref_qualifier ref_qualifier,
+		      tree tx_qualifier,
 		      tree exception_specification,
 		      tree late_return_type,
 		      tree requires_clause)
@@ -1533,6 +1535,7 @@ make_call_declarator (cp_declarator *target,
   declarator->u.function.qualifiers = cv_qualifiers;
   declarator->u.function.virt_specifiers = virt_specifiers;
   declarator->u.function.ref_qualifier = ref_qualifier;
+  declarator->u.function.tx_qualifier = tx_qualifier;
   declarator->u.function.exception_specification = exception_specification;
   declarator->u.function.late_return_type = late_return_type;
   declarator->u.function.requires_clause = requires_clause;
@@ -2029,7 +2032,7 @@ static void cp_parser_label_for_labeled_statement
 static tree cp_parser_expression_statement
   (cp_parser *, tree);
 static tree cp_parser_compound_statement
-  (cp_parser *, tree, bool, bool);
+  (cp_parser *, tree, int, bool);
 static void cp_parser_statement_seq_opt
   (cp_parser *, tree);
 static tree cp_parser_selection_statement
@@ -2138,6 +2141,8 @@ static cp_cv_quals cp_parser_cv_qualifier_seq_opt
 static cp_virt_specifiers cp_parser_virt_specifier_seq_opt
   (cp_parser *);
 static cp_ref_qualifier cp_parser_ref_qualifier_opt
+  (cp_parser *);
+static tree cp_parser_tx_qualifier_opt
   (cp_parser *);
 static tree cp_parser_late_return_type_opt
   (cp_parser *, cp_declarator *, tree &, cp_cv_quals);
@@ -2346,7 +2351,7 @@ static tree cp_parser_nested_requirement
 /* Transactional Memory Extensions */
 
 static tree cp_parser_transaction
-  (cp_parser *, enum rid);
+  (cp_parser *, cp_token *);
 static tree cp_parser_transaction_expression
   (cp_parser *, enum rid);
 static bool cp_parser_function_transaction
@@ -4262,7 +4267,7 @@ cp_parser_statement_expr (cp_parser *parser)
   /* Start the statement-expression.  */
   tree expr = begin_stmt_expr ();
   /* Parse the compound-statement.  */
-  cp_parser_compound_statement (parser, expr, false, false);
+  cp_parser_compound_statement (parser, expr, BCS_NORMAL, false);
   /* Finish up.  */
   expr = finish_stmt_expr (expr, false);
   /* Consume the ')'.  */
@@ -9630,6 +9635,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   tree attributes = NULL_TREE;
   tree exception_spec = NULL_TREE;
   tree template_param_list = NULL_TREE;
+  tree tx_qual = NULL_TREE;
 
   /* The template-parameter-list is optional, but must begin with
      an opening angle if present.  */
@@ -9680,6 +9686,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
           LAMBDA_EXPR_MUTABLE_P (lambda_expr) = 1;
         }
 
+      tx_qual = cp_parser_tx_qualifier_opt (parser);
+
       /* Parse optional exception specification.  */
       exception_spec = cp_parser_exception_specification_opt (parser);
 
@@ -9727,6 +9735,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     declarator = make_call_declarator (declarator, param_list, quals,
 				       VIRT_SPEC_UNSPECIFIED,
                                        REF_QUAL_NONE,
+				       tx_qual,
 				       exception_spec,
                                        /*late_return_type=*/NULL_TREE,
                                        /*requires_clause*/NULL_TREE);
@@ -10043,7 +10052,10 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  
 	case RID_TRANSACTION_ATOMIC:
 	case RID_TRANSACTION_RELAXED:
-	  statement = cp_parser_transaction (parser, keyword);
+	case RID_SYNCHRONIZED:
+	case RID_ATOMIC_NOEXCEPT:
+	case RID_ATOMIC_CANCEL:
+	  statement = cp_parser_transaction (parser, token);
 	  break;
 	case RID_TRANSACTION_CANCEL:
 	  statement = cp_parser_transaction_cancel (parser);
@@ -10072,7 +10084,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     }
   /* Anything that starts with a `{' must be a compound-statement.  */
   else if (token->type == CPP_OPEN_BRACE)
-    statement = cp_parser_compound_statement (parser, NULL, false, false);
+    statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
   /* CPP_PRAGMA is a #pragma inside a function body, which constitutes
      a statement all its own.  */
   else if (token->type == CPP_PRAGMA)
@@ -10327,7 +10339,7 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
 
 static tree
 cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,
-			      bool in_try, bool function_body)
+			      int bcs_flags, bool function_body)
 {
   tree compound_stmt;
 
@@ -10339,7 +10351,7 @@ cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,
     pedwarn (input_location, OPT_Wpedantic,
 	     "compound-statement in constexpr function");
   /* Begin the compound-statement.  */
-  compound_stmt = begin_compound_stmt (in_try ? BCS_TRY_BLOCK : 0);
+  compound_stmt = begin_compound_stmt (bcs_flags);
   /* If the next keyword is `__label__' we have a label declaration.  */
   while (cp_lexer_next_token_is_keyword (parser->lexer, RID_LABEL))
     cp_parser_label_declaration (parser);
@@ -11500,7 +11512,7 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser, bool *if_p,
     }
   /* if a compound is opened, we simply parse the statement directly.  */
   else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
-    statement = cp_parser_compound_statement (parser, NULL, false, false);
+    statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
   /* If the token is not a `{', then we must take special action.  */
   else
     {
@@ -18451,6 +18463,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  cv_quals = cp_parser_cv_qualifier_seq_opt (parser);
 		  /* Parse the ref-qualifier. */
 		  ref_qual = cp_parser_ref_qualifier_opt (parser);
+		  /* Parse the tx-qualifier.  */
+		  tree tx_qual = cp_parser_tx_qualifier_opt (parser);
 		  /* And the exception-specification.  */
 		  exception_specification
 		    = cp_parser_exception_specification_opt (parser);
@@ -18489,6 +18503,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 						     cv_quals,
 						     virt_specifiers,
 						     ref_qual,
+						     tx_qual,
 						     exception_specification,
 						     late_return,
 						     requires_clause);
@@ -19099,6 +19114,41 @@ cp_parser_ref_qualifier_opt (cp_parser* parser)
     }
 
   return ref_qual;
+}
+
+/* Parse an optional tx-qualifier.
+
+   tx-qualifier:
+     transaction_safe
+     transaction_safe_dynamic  */
+
+static tree
+cp_parser_tx_qualifier_opt (cp_parser *parser)
+{
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  if (token->type == CPP_NAME)
+    {
+      tree name = token->u.value;
+      const char *p = IDENTIFIER_POINTER (name);
+      const int len = strlen ("transaction_safe");
+      if (!strncmp (p, "transaction_safe", len))
+	{
+	  p += len;
+	  if (*p == '\0'
+	      || !strcmp (p, "_dynamic"))
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      if (!flag_tm)
+		{
+		  error ("%E requires %<-fgnu-tm%>", name);
+		  return NULL_TREE;
+		}
+	      else
+		return name;
+	    }
+	}
+    }
+  return NULL_TREE;
 }
 
 /* Parse an (optional) virt-specifier-seq.
@@ -20109,7 +20159,9 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
 static void
 cp_parser_function_body (cp_parser *parser, bool in_function_try_block)
 {
-  cp_parser_compound_statement (parser, NULL, in_function_try_block, true);
+  cp_parser_compound_statement (parser, NULL, (in_function_try_block
+					       ? BCS_TRY_BLOCK : BCS_NORMAL),
+				true);
 }
 
 /* Parse a ctor-initializer-opt followed by a function-body.  Return
@@ -22598,7 +22650,7 @@ cp_parser_try_block (cp_parser* parser)
     error ("%<try%> in %<constexpr%> function");
 
   try_block = begin_try_block ();
-  cp_parser_compound_statement (parser, NULL, true, false);
+  cp_parser_compound_statement (parser, NULL, BCS_TRY_BLOCK, false);
   finish_try_block (try_block);
   cp_parser_handler_seq (parser);
   finish_handler_sequence (try_block);
@@ -22675,7 +22727,7 @@ cp_parser_handler (cp_parser* parser)
   declaration = cp_parser_exception_declaration (parser);
   finish_handler_parms (declaration, handler);
   cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
-  cp_parser_compound_statement (parser, NULL, false, false);
+  cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
   finish_handler (handler);
 }
 
@@ -23354,6 +23406,14 @@ cp_parser_std_attribute (cp_parser *parser)
 		     " use %<gnu::deprecated%>");
 	  TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
 	}
+      /* Transactional Memory TS optimize_for_synchronized attribute is
+	 equivalent to GNU transaction_callable.  */
+      else if (is_attribute_p ("optimize_for_synchronized", attr_id))
+	TREE_PURPOSE (attribute)
+	  = get_identifier ("transaction_callable");
+      /* Transactional Memory attributes are GNU attributes.  */
+      else if (tm_attr_to_mask (attr_id))
+	TREE_PURPOSE (attribute) = attr_id;
     }
 
   /* Now parse the optional argument clause of the attribute.  */
@@ -28391,7 +28451,7 @@ cp_parser_objc_try_catch_finally_statement (cp_parser *parser)
   /* NB: The @try block needs to be wrapped in its own STATEMENT_LIST
      node, lest it get absorbed into the surrounding block.  */
   stmt = push_stmt_list ();
-  cp_parser_compound_statement (parser, NULL, false, false);
+  cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
   objc_begin_try_stmt (location, pop_stmt_list (stmt));
 
   while (cp_lexer_next_token_is_keyword (parser->lexer, RID_AT_CATCH))
@@ -28447,7 +28507,7 @@ cp_parser_objc_try_catch_finally_statement (cp_parser *parser)
 	     forget about the closing parenthesis and keep going.  */
 	}
       objc_begin_catch_clause (parameter_declaration);
-      cp_parser_compound_statement (parser, NULL, false, false);
+      cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
       objc_finish_catch_clause ();
     }
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_AT_FINALLY))
@@ -28457,7 +28517,7 @@ cp_parser_objc_try_catch_finally_statement (cp_parser *parser)
       /* NB: The @finally block needs to be wrapped in its own STATEMENT_LIST
 	 node, lest it get absorbed into the surrounding block.  */
       stmt = push_stmt_list ();
-      cp_parser_compound_statement (parser, NULL, false, false);
+      cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
       objc_build_finally_clause (location, pop_stmt_list (stmt));
     }
 
@@ -28488,7 +28548,7 @@ cp_parser_objc_synchronized_statement (cp_parser *parser)
   /* NB: The @synchronized block needs to be wrapped in its own STATEMENT_LIST
      node, lest it get absorbed into the surrounding block.  */
   stmt = push_stmt_list ();
-  cp_parser_compound_statement (parser, NULL, false, false);
+  cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
 
   return objc_build_synchronized (location, lock, pop_stmt_list (stmt));
 }
@@ -33964,8 +34024,8 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
 	attribute
 	[ [ identifier ] ]
 
-   ??? Simplify this when C++0x bracket attributes are
-   implemented properly.  */
+   We use this instead of cp_parser_attributes_opt for transactions to avoid
+   the pedwarn in C++98 mode.  */
 
 static tree
 cp_parser_txn_attribute_opt (cp_parser *parser)
@@ -34012,21 +34072,17 @@ cp_parser_txn_attribute_opt (cp_parser *parser)
 */
 
 static tree
-cp_parser_transaction (cp_parser *parser, enum rid keyword)
+cp_parser_transaction (cp_parser *parser, cp_token *token)
 {
   unsigned char old_in = parser->in_transaction;
   unsigned char this_in = 1, new_in;
-  cp_token *token;
+  enum rid keyword = token->keyword;
   tree stmt, attrs, noex;
 
-  gcc_assert (keyword == RID_TRANSACTION_ATOMIC
-      || keyword == RID_TRANSACTION_RELAXED);
-  token = cp_parser_require_keyword (parser, keyword,
-      (keyword == RID_TRANSACTION_ATOMIC ? RT_TRANSACTION_ATOMIC
-	  : RT_TRANSACTION_RELAXED));
-  gcc_assert (token != NULL);
+  cp_lexer_consume_token (parser->lexer);
 
-  if (keyword == RID_TRANSACTION_RELAXED)
+  if (keyword == RID_TRANSACTION_RELAXED
+      || keyword == RID_SYNCHRONIZED)
     this_in |= TM_STMT_ATTR_RELAXED;
   else
     {
@@ -34036,7 +34092,16 @@ cp_parser_transaction (cp_parser *parser, enum rid keyword)
     }
 
   /* Parse a noexcept specification.  */
-  noex = cp_parser_noexcept_specification_opt (parser, true, NULL, true);
+  if (keyword == RID_ATOMIC_NOEXCEPT)
+    noex = boolean_true_node;
+  else if (keyword == RID_ATOMIC_CANCEL)
+    {
+      /* cancel-and-throw is unimplemented.  */
+      sorry ("atomic_cancel");
+      noex = NULL_TREE;
+    }
+  else
+    noex = cp_parser_noexcept_specification_opt (parser, true, NULL, true);
 
   /* Keep track if we're in the lexical scope of an outer transaction.  */
   new_in = this_in | (old_in & TM_STMT_ATTR_OUTER);
@@ -34044,7 +34109,7 @@ cp_parser_transaction (cp_parser *parser, enum rid keyword)
   stmt = begin_transaction_stmt (token->location, NULL, this_in);
 
   parser->in_transaction = new_in;
-  cp_parser_compound_statement (parser, NULL, false, false);
+  cp_parser_compound_statement (parser, NULL, BCS_TRANSACTION, false);
   parser->in_transaction = old_in;
 
   finish_transaction_stmt (stmt, NULL, this_in, noex);

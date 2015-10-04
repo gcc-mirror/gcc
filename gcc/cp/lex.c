@@ -176,6 +176,8 @@ init_reswords (void)
     mask |= D_CXX11;
   if (!flag_concepts)
     mask |= D_CXX_CONCEPTS;
+  if (!flag_tm)
+    mask |= D_TRANSMEM;
   if (flag_no_asm)
     mask |= D_ASM | D_EXT;
   if (flag_no_gnu_keywords)
