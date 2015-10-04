@@ -1,5 +1,9 @@
 2015-10-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* match.c (gfc_match_common): Remove dead variable old_blank_common.
+
+2015-10-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	PR fortran/67758
 	* match.c (gfc_match_common): Delay the common_block pointer
 	assignment after error checking.
