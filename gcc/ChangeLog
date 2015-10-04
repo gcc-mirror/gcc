@@ -1,3 +1,12 @@
+2015-10-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_nsaved_regs): Use GENERAL_REGNO_P to
+	check for general register.
+	(ix86_emit_save_regs): Ditto.
+	(ix86_emit_save_regs_using_mov): Ditto.
+	(ix86_emit_restore_regs_using_pop): Ditto.
+	(ix86_emit_restore_regs_using_mov): Ditto.
+
 2015-10-03  Marek Polacek  <polacek@redhat.com>
 
 	* Makefile.in (insn-latencytab.o): Remove -Wno-duplicated-cond.
