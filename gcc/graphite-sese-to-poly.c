@@ -274,134 +274,6 @@ free_scops (vec<scop_p> scops)
   scops.release ();
 }
 
-/* Generates a polyhedral black box only if the bb contains interesting
-   information.  */
-
-static gimple_poly_bb_p
-try_generate_gimple_bb (scop_p scop, basic_block bb)
-{
-  vec<data_reference_p> drs;
-  drs.create (5);
-  sese region = SCOP_REGION (scop);
-
-  loop_p nest = outermost_loop_in_sese (region, bb);
-  loop_p loop = bb->loop_father;
-  if (!loop_in_sese_p (loop, region))
-    loop = nest;
-
-  gimple_stmt_iterator gsi;
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      gimple *stmt = gsi_stmt (gsi);
-      if (is_gimple_debug (stmt))
-	continue;
-
-      graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
-    }
-
-  return new_gimple_poly_bb (bb, drs);
-}
-
-/* Returns true if all predecessors of BB, that are not dominated by BB, are
-   marked in MAP.  The predecessors dominated by BB are loop latches and will
-   be handled after BB.  */
-
-static bool
-all_non_dominated_preds_marked_p (basic_block bb, sbitmap map)
-{
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (!bitmap_bit_p (map, e->src->index)
-	&& !dominated_by_p (CDI_DOMINATORS, e->src, bb))
-	return false;
-
-  return true;
-}
-
-/* Compare the depth of two basic_block's P1 and P2.  */
-
-static int
-compare_bb_depths (const void *p1, const void *p2)
-{
-  const_basic_block const bb1 = *(const_basic_block const*)p1;
-  const_basic_block const bb2 = *(const_basic_block const*)p2;
-  int d1 = loop_depth (bb1->loop_father);
-  int d2 = loop_depth (bb2->loop_father);
-
-  if (d1 < d2)
-    return 1;
-
-  if (d1 > d2)
-    return -1;
-
-  return 0;
-}
-
-/* Sort the basic blocks from DOM such that the first are the ones at
-   a deepest loop level.  */
-
-static void
-graphite_sort_dominated_info (vec<basic_block> dom)
-{
-  dom.qsort (compare_bb_depths);
-}
-
-/* Recursive helper function for build_scops_bbs.  */
-
-static void
-build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb)
-{
-  sese region = SCOP_REGION (scop);
-  vec<basic_block> dom;
-  poly_bb_p pbb;
-
-  if (bitmap_bit_p (visited, bb->index)
-      || !bb_in_sese_p (bb, region))
-    return;
-
-  pbb = new_poly_bb (scop, try_generate_gimple_bb (scop, bb));
-  SCOP_BBS (scop).safe_push (pbb);
-  bitmap_set_bit (visited, bb->index);
-
-  dom = get_dominated_by (CDI_DOMINATORS, bb);
-
-  if (!dom.exists ())
-    return;
-
-  graphite_sort_dominated_info (dom);
-
-  while (!dom.is_empty ())
-    {
-      int i;
-      basic_block dom_bb;
-
-      FOR_EACH_VEC_ELT (dom, i, dom_bb)
-	if (all_non_dominated_preds_marked_p (dom_bb, visited))
-	  {
-	    build_scop_bbs_1 (scop, visited, dom_bb);
-	    dom.unordered_remove (i);
-	    break;
-	  }
-    }
-
-  dom.release ();
-}
-
-/* Gather the basic blocks belonging to the SCOP.  */
-
-static void
-build_scop_bbs (scop_p scop)
-{
-  sbitmap visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
-  sese region = SCOP_REGION (scop);
-
-  bitmap_clear (visited);
-  build_scop_bbs_1 (scop, visited, SESE_ENTRY_BB (region));
-  sbitmap_free (visited);
-}
-
 /* Return an ISL identifier for the polyhedral basic block PBB.  */
 
 static isl_id *
@@ -931,17 +803,24 @@ find_scop_parameters (scop_p scop)
   nbp = sese_nb_params (region);
   scop_set_nb_params (scop, nbp);
   SESE_ADD_PARAMS (region) = false;
+}
 
-  {
-    tree e;
-    isl_space *space = isl_space_set_alloc (scop->ctx, nbp, 0);
+/* Assign dimension for each parameter in SCOP.  */
 
-    FOR_EACH_VEC_ELT (SESE_PARAMS (region), i, e)
-      space = isl_space_set_dim_id (space, isl_dim_param, i,
-				    isl_id_for_ssa_name (scop, e));
+static void
+set_scop_parameter_dim (scop_p scop)
+{
+  sese region = SCOP_REGION (scop);
+  unsigned nbp = sese_nb_params (region);
+  isl_space *space = isl_space_set_alloc (scop->ctx, nbp, 0);
 
-    scop->context = isl_set_universe (space);
-  }
+  unsigned i;
+  tree e;
+  FOR_EACH_VEC_ELT (SESE_PARAMS (region), i, e)
+    space = isl_space_set_dim_id (space, isl_dim_param, i,
+                                  isl_id_for_ssa_name (scop, e));
+
+  scop->context = isl_set_universe (space);
 }
 
 /* Builds the constraint polyhedra for LOOP in SCOP.  OUTER_PH gives
@@ -2454,46 +2333,17 @@ rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
     }
 }
 
-/* Returns the number of pbbs that are in loops contained in SCOP.  */
-
-static int
-nb_pbbs_in_loops (scop_p scop)
-{
-  int i;
-  poly_bb_p pbb;
-  int res = 0;
-
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
-    if (loop_in_sese_p (gbb_loop (PBB_BLACK_BOX (pbb)), SCOP_REGION (scop)))
-      res++;
-
-  return res;
-}
-
 /* Builds the polyhedral representation for a SESE region.  */
 
 void
 build_poly_scop (scop_p scop)
 {
-  sese region = SCOP_REGION (scop);
-  graphite_dim_t max_dim;
-
-  build_scop_bbs (scop);
-
-  /* Do not optimize a scop containing only PBBs that do not belong
-     to any loops.  */
-  if (nb_pbbs_in_loops (scop) == 0)
-    return;
-
-  build_sese_loop_nests (region);
-  /* Record all conditions in REGION.  */
-  sese_dom_walker (CDI_DOMINATORS, region).walk (cfun->cfg->x_entry_block_ptr);
   find_scop_parameters (scop);
 
-  max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);
+  graphite_dim_t max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);
   if (scop_nb_params (scop) > max_dim)
     return;
-
+  set_scop_parameter_dim (scop);
   build_scop_iteration_domain (scop);
   build_scop_context (scop);
   add_conditions_to_constraints (scop);
