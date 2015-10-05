@@ -1,3 +1,12 @@
+2015-10-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR 67844.
+	* include/std/tuple (_TC::_NonNestedTuple): Eagerly reject
+	conversions from tuple types same as the target tuple.
+	* testsuite/20_util/tuple/67844.cc: New.
+	* testsuite/20_util/tuple/cons/nested_tuple_construct.cc: Add
+	a missing copyright header.
+
 2015-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter): Remove support
