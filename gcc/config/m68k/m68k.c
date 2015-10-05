@@ -4336,11 +4336,10 @@ standard_68881_constant_p (rtx x)
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 
-  /* Use REAL_VALUES_IDENTICAL instead of real_equal so that -0.0
-     is rejected.  */
+  /* Use real_identical instead of real_equal so that -0.0 is rejected.  */
   for (i = 0; i < 6; i++)
     {
-      if (REAL_VALUES_IDENTICAL (r, values_68881[i]))
+      if (real_identical (&r, &values_68881[i]))
         return (codes_68881[i]);
     }
   

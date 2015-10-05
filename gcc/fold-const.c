@@ -2815,8 +2815,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 				       TREE_FIXED_CST (arg1));
 
       case REAL_CST:
-	if (REAL_VALUES_IDENTICAL (TREE_REAL_CST (arg0),
-				   TREE_REAL_CST (arg1)))
+	if (real_identical (&TREE_REAL_CST (arg0), &TREE_REAL_CST (arg1)))
 	  return 1;
 
 

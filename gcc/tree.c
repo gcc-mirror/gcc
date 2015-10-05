@@ -7362,7 +7362,7 @@ simple_cst_equal (const_tree t1, const_tree t2)
       return wi::to_widest (t1) == wi::to_widest (t2);
 
     case REAL_CST:
-      return REAL_VALUES_IDENTICAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));
+      return real_identical (&TREE_REAL_CST (t1), &TREE_REAL_CST (t2));
 
     case FIXED_CST:
       return FIXED_VALUES_IDENTICAL (TREE_FIXED_CST (t1), TREE_FIXED_CST (t2));
