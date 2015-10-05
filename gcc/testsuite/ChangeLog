@@ -1,3 +1,8 @@
+2015-10-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vcvt_f16.c (TEST_MSG): Fix typo.
+	(exec_vcvt): Add comments.
+
 2015-10-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/67447
