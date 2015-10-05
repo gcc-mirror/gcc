@@ -1014,7 +1014,6 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	     <bb 4>:
 	     # u_3 = PHI <u_6(3), 4294967295(2)>  */
 	  SSA_NAME_RANGE_INFO (lhs) = NULL;
-	  SSA_NAME_ANTI_RANGE_P (lhs) = 0;
 	  /* If available, we can use VR of phi result at least.  */
 	  tree phires = gimple_phi_result (phi);
 	  struct range_info_def *phires_range_info
