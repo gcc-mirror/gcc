@@ -4940,8 +4940,15 @@ check_default_tmpl_args (tree decl, tree parms, bool is_primary,
   else if (is_partial)
     msg = G_("default template arguments may not be used in "
 	     "partial specializations");
-  else
+  else if (current_class_type && CLASSTYPE_IS_TEMPLATE (current_class_type))
     msg = G_("default argument for template parameter for class enclosing %qD");
+  else
+    /* Per [temp.param]/9, "A default template-argument shall not be
+       specified in the template-parameter-lists of the definition of
+       a member of a class template that appears outside of the member's
+       class.", thus if we aren't handling a member of a class template
+       there is no need to examine the parameters.  */
+    return true;
 
   if (current_class_type && TYPE_BEING_DEFINED (current_class_type))
     /* If we're inside a class definition, there's no need to

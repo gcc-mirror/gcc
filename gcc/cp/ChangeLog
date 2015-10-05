@@ -1,3 +1,10 @@
+2015-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53856
+	* pt.c (check_default_tmpl_args): Per [temp.param]/9, do not
+	reject default template arguments in out of class definitions
+	of members of non-template classes.
+
 2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree.c (cp_tree_equal): Use real_equal instead of
