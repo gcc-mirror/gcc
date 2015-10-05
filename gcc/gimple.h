@@ -1734,15 +1734,6 @@ gimple_location_safe (const gimple *g)
   return g ? gimple_location (g) : UNKNOWN_LOCATION;
 }
 
-/* Return pointer to location information for statement G.  */
-
-static inline const location_t *
-gimple_location_ptr (const gimple *g)
-{
-  return &g->location;
-}
-
-
 /* Set location information for statement G.  */
 
 static inline void
