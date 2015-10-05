@@ -1,5 +1,10 @@
 2015-10-05  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* gimple.h (gimple_asm_input_op_ptr): Remove.
+	(gimple_asm_output_op_ptr): Likewise.
+
+2015-10-05  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* gimple.h (gimple_location_ptr): Remove.
 	* tree-vrp.c (check_all_array_refs): Adjust.
 
