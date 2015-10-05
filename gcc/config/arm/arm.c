@@ -12107,7 +12107,7 @@ arm_const_double_rtx (rtx x)
   if (REAL_VALUE_MINUS_ZERO (r))
     return 0;
 
-  if (REAL_VALUES_EQUAL (r, value_fp0))
+  if (real_equal (&r, &value_fp0))
     return 1;
 
   return 0;
@@ -12319,7 +12319,7 @@ neon_valid_immediate (rtx op, machine_mode mode, int inverse,
 
           REAL_VALUE_FROM_CONST_DOUBLE (re, elt);
 
-          if (!REAL_VALUES_EQUAL (r0, re))
+          if (!real_equal (&r0, &re))
             return -1;
         }
 
@@ -17594,7 +17594,7 @@ fp_const_from_val (REAL_VALUE_TYPE *r)
   if (!fp_consts_inited)
     init_fp_table ();
 
-  gcc_assert (REAL_VALUES_EQUAL (*r, value_fp0));
+  gcc_assert (real_equal (r, &value_fp0));
   return "0";
 }
 

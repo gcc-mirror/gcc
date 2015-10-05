@@ -7131,13 +7131,6 @@ array of @code{HOST_WIDE_INT}, but all code should treat it as an opaque
 quantity.
 @end defmac
 
-@deftypefn Macro int REAL_VALUES_EQUAL (REAL_VALUE_TYPE @var{x}, REAL_VALUE_TYPE @var{y})
-Compares for equality the two values, @var{x} and @var{y}.  If the target
-floating point format supports negative zeroes and/or NaNs,
-@samp{REAL_VALUES_EQUAL (-0.0, 0.0)} is true, and
-@samp{REAL_VALUES_EQUAL (NaN, NaN)} is false.
-@end deftypefn
-
 @deftypefn Macro int REAL_VALUES_LESS (REAL_VALUE_TYPE @var{x}, REAL_VALUE_TYPE @var{y})
 Tests whether @var{x} is less than @var{y}.
 @end deftypefn

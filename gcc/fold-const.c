@@ -1176,7 +1176,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       /* Don't perform operation if it would raise a division
 	 by zero exception.  */
       if (code == RDIV_EXPR
-	  && REAL_VALUES_EQUAL (d2, dconst0)
+	  && real_equal (&d2, &dconst0)
 	  && (flag_trapping_math || ! MODE_HAS_INFINITIES (mode)))
 	return NULL_TREE;
 

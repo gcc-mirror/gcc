@@ -2546,7 +2546,7 @@ real_zerop (const_tree expr)
   switch (TREE_CODE (expr))
     {
     case REAL_CST:
-      return REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst0)
+      return real_equal (&TREE_REAL_CST (expr), &dconst0)
 	     && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr))));
     case COMPLEX_CST:
       return real_zerop (TREE_REALPART (expr))
@@ -2576,7 +2576,7 @@ real_onep (const_tree expr)
   switch (TREE_CODE (expr))
     {
     case REAL_CST:
-      return REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst1)
+      return real_equal (&TREE_REAL_CST (expr), &dconst1)
 	     && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr))));
     case COMPLEX_CST:
       return real_onep (TREE_REALPART (expr))
@@ -2605,7 +2605,7 @@ real_minus_onep (const_tree expr)
   switch (TREE_CODE (expr))
     {
     case REAL_CST:
-      return REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconstm1)
+      return real_equal (&TREE_REAL_CST (expr), &dconstm1)
 	     && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr))));
     case COMPLEX_CST:
       return real_minus_onep (TREE_REALPART (expr))

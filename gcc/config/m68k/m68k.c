@@ -4336,7 +4336,7 @@ standard_68881_constant_p (rtx x)
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 
-  /* Use REAL_VALUES_IDENTICAL instead of REAL_VALUES_EQUAL so that -0.0
+  /* Use REAL_VALUES_IDENTICAL instead of real_equal so that -0.0
      is rejected.  */
   for (i = 0; i < 6; i++)
     {
@@ -4347,7 +4347,7 @@ standard_68881_constant_p (rtx x)
   if (GET_MODE (x) == SFmode)
     return 0;
 
-  if (REAL_VALUES_EQUAL (r, values_68881[6]))
+  if (real_equal (&r, &values_68881[6]))
     return (codes_68881[6]);
 
   /* larger powers of ten in the constants ram are not used
@@ -4371,7 +4371,7 @@ floating_exact_log2 (rtx x)
 
   exp = real_exponent (&r);
   real_2expN (&r1, exp, DFmode);
-  if (REAL_VALUES_EQUAL (r1, r))
+  if (real_equal (&r1, &r))
     return exp;
 
   return 0;

@@ -10006,7 +10006,7 @@ fp_zero_operand (rtx op)
     return false;
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-  return REAL_VALUES_EQUAL (r, dconst0) && ! REAL_VALUE_MINUS_ZERO (r);
+  return real_equal (&r, &dconst0) && ! REAL_VALUE_MINUS_ZERO (r);
 }
 
 /* Returns true if OP is a floating point value with value 1.0.  */
@@ -10019,7 +10019,7 @@ fp_one_operand (rtx op)
     return false;
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-  return REAL_VALUES_EQUAL (r, dconst1);
+  return real_equal (&r, &dconst1);
 }
 
 /* Return the TLS type for TLS symbols.  */

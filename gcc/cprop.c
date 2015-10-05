@@ -1355,7 +1355,7 @@ implicit_set_cond_p (const_rtx cond)
 	{
 	  REAL_VALUE_TYPE d;
 	  REAL_VALUE_FROM_CONST_DOUBLE (d, cst);
-	  if (REAL_VALUES_EQUAL (d, dconst0))
+	  if (real_equal (&d, &dconst0))
 	    return 0;
 	}
       else

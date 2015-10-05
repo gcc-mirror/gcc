@@ -661,11 +661,11 @@ vax_float_literal (rtx c)
       bool ok;
       real_from_integer (&s, mode, x, SIGNED);
 
-      if (REAL_VALUES_EQUAL (r, s))
+      if (real_equal (&r, &s))
 	return true;
       ok = exact_real_inverse (mode, &s);
       gcc_assert (ok);
-      if (REAL_VALUES_EQUAL (r, s))
+      if (real_equal (&r, &s))
 	return true;
     }
   return false;

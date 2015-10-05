@@ -1078,6 +1078,14 @@ real_value_abs (const REAL_VALUE_TYPE *op0)
   return r;
 }
 
+/* Return whether OP0 == OP1.  */
+
+bool
+real_equal (const REAL_VALUE_TYPE *op0, const REAL_VALUE_TYPE *op1)
+{
+  return do_compare (op0, op1, -1) == 0;
+}
+
 bool
 real_compare (int icode, const REAL_VALUE_TYPE *op0,
 	      const REAL_VALUE_TYPE *op1)
@@ -1095,7 +1103,7 @@ real_compare (int icode, const REAL_VALUE_TYPE *op0,
     case GE_EXPR:
       return do_compare (op0, op1, -1) >= 0;
     case EQ_EXPR:
-      return do_compare (op0, op1, -1) == 0;
+      return real_equal (op0, op1);
     case NE_EXPR:
       return do_compare (op0, op1, -1) != 0;
     case UNORDERED_EXPR:

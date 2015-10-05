@@ -895,7 +895,7 @@ fr30_const_double_is_zero (rtx operand)
 
   REAL_VALUE_FROM_CONST_DOUBLE (d, operand);
 
-  return REAL_VALUES_EQUAL (d, dconst0);
+  return real_equal (&d, &dconst0);
 }
 
 /*}}}*/

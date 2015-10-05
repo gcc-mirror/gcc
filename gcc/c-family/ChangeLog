@@ -1,3 +1,8 @@
+2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-lex.c (interpret_float): Use real_equal instead of
+	REAL_VALUES_EQUAL.
+
 2015-10-04  Jason Merrill  <jason@redhat.com>
 
 	Implement N4514, C++ Extensions for Transactional Memory.

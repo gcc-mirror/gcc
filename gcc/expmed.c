@@ -3239,7 +3239,7 @@ expand_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
       REAL_VALUE_TYPE d;
       REAL_VALUE_FROM_CONST_DOUBLE (d, scalar_op1);
 
-      if (REAL_VALUES_EQUAL (d, dconst2))
+      if (real_equal (&d, &dconst2))
 	{
 	  op0 = force_reg (GET_MODE (op0), op0);
 	  return expand_binop (mode, add_optab, op0, op0,

@@ -1145,7 +1145,7 @@ representable_as_half_series_p (REAL_VALUE_TYPE c, unsigned n,
 
       /* We have hit zero.  The number is representable as a sum
          of powers of 0.5.  */
-      if (REAL_VALUES_EQUAL (res, dconst0))
+      if (real_equal (&res, &dconst0))
 	{
 	  info->factors[i] = true;
 	  info->deepest = i + 1;
@@ -1509,7 +1509,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
      unless signed zeros must be maintained.  pow(-0,0.5) = +0, while
      sqrt(-0) = -0.  */
   if (sqrtfn
-      && REAL_VALUES_EQUAL (c, dconsthalf)
+      && real_equal (&c, &dconsthalf)
       && !HONOR_SIGNED_ZEROS (mode))
     return build_and_insert_call (gsi, loc, sqrtfn, arg0);
 
@@ -1527,7 +1527,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   if (flag_unsafe_math_optimizations
       && cbrtfn
       && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
-      && REAL_VALUES_EQUAL (c, dconst1_3))
+      && real_equal (&c, &dconst1_3))
     return build_and_insert_call (gsi, loc, cbrtfn, arg0);
   
   /* Optimize pow(x,1./6.) = cbrt(sqrt(x)).  Don't do this optimization
@@ -1541,7 +1541,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
       && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
       && speed_p
       && hw_sqrt_exists
-      && REAL_VALUES_EQUAL (c, dconst1_6))
+      && real_equal (&c, &dconst1_6))
     {
       /* sqrt(x)  */
       sqrt_arg0 = build_and_insert_call (gsi, loc, sqrtfn, arg0);
@@ -1556,7 +1556,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   if (flag_unsafe_math_optimizations
       && sqrtfn
       && hw_sqrt_exists
-      && (speed_p || REAL_VALUES_EQUAL (c, dconst1_4))
+      && (speed_p || real_equal (&c, &dconst1_4))
       && !HONOR_SIGNED_ZEROS (mode))
     {
       unsigned int max_depth = speed_p
@@ -3589,9 +3589,9 @@ pass_optimize_widening_mul::execute (function *fun)
 		      case BUILT_IN_POW:
 		      case BUILT_IN_POWL:
 			if (TREE_CODE (gimple_call_arg (stmt, 1)) == REAL_CST
-			    && REAL_VALUES_EQUAL
-			         (TREE_REAL_CST (gimple_call_arg (stmt, 1)),
-				  dconst2)
+			    && real_equal
+			         (&TREE_REAL_CST (gimple_call_arg (stmt, 1)),
+				  &dconst2)
 			    && convert_mult_to_fma (stmt,
 						    gimple_call_arg (stmt, 0),
 						    gimple_call_arg (stmt, 0)))

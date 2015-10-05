@@ -2472,11 +2472,11 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  REAL_VALUE_TYPE d;
 	  REAL_VALUE_FROM_CONST_DOUBLE (d, trueop1);
 
-	  if (REAL_VALUES_EQUAL (d, dconst2))
+	  if (real_equal (&d, &dconst2))
 	    return simplify_gen_binary (PLUS, mode, op0, copy_rtx (op0));
 
 	  if (!HONOR_SNANS (mode)
-	      && REAL_VALUES_EQUAL (d, dconstm1))
+	      && real_equal (&d, &dconstm1))
 	    return simplify_gen_unary (NEG, mode, op0, mode);
 	}
 
@@ -3102,14 +3102,14 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      REAL_VALUE_FROM_CONST_DOUBLE (d, trueop1);
 
 	      /* x/-1.0 is -x.  */
-	      if (REAL_VALUES_EQUAL (d, dconstm1)
+	      if (real_equal (&d, &dconstm1)
 		  && !HONOR_SNANS (mode))
 		return simplify_gen_unary (NEG, mode, op0, mode);
 
 	      /* Change FP division by a constant into multiplication.
 		 Only do this with -freciprocal-math.  */
 	      if (flag_reciprocal_math
-		  && !REAL_VALUES_EQUAL (d, dconst0))
+		  && !real_equal (&d, &dconst0))
 		{
 		  REAL_ARITHMETIC (d, RDIV_EXPR, dconst1, d);
 		  tem = CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
@@ -3872,7 +3872,7 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	    return 0;
 
 	  if (code == DIV
-	      && REAL_VALUES_EQUAL (f1, dconst0)
+	      && real_equal (&f1, &dconst0)
 	      && (flag_trapping_math || ! MODE_HAS_INFINITIES (mode)))
 	    return 0;
 
@@ -3905,9 +3905,9 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 
 	  if (code == MULT && MODE_HAS_INFINITIES (mode) && HONOR_NANS (mode)
 	      && flag_trapping_math
-	      && ((REAL_VALUE_ISINF (f0) && REAL_VALUES_EQUAL (f1, dconst0))
+	      && ((REAL_VALUE_ISINF (f0) && real_equal (&f1, &dconst0))
 		  || (REAL_VALUE_ISINF (f1)
-		      && REAL_VALUES_EQUAL (f0, dconst0))))
+		      && real_equal (&f0, &dconst0))))
 	    /* Inf * 0 = NaN plus exception.  */
 	    return 0;
 
@@ -4942,7 +4942,7 @@ simplify_const_relational_operation (enum rtx_code code,
 	  }
 
       return comparison_result (code,
-				(REAL_VALUES_EQUAL (d0, d1) ? CMP_EQ :
+				(real_equal (&d0, &d1) ? CMP_EQ :
 				 REAL_VALUES_LESS (d0, d1) ? CMP_LT : CMP_GT));
     }
 

@@ -8432,22 +8432,22 @@ fold_builtin_pow (location_t loc, tree fndecl, tree arg0, tree arg1, tree type)
       c = TREE_REAL_CST (arg1);
 
       /* Optimize pow(x,0.0) = 1.0.  */
-      if (REAL_VALUES_EQUAL (c, dconst0))
+      if (real_equal (&c, &dconst0))
 	return omit_one_operand_loc (loc, type, build_real (type, dconst1),
 				 arg0);
 
       /* Optimize pow(x,1.0) = x.  */
-      if (REAL_VALUES_EQUAL (c, dconst1))
+      if (real_equal (&c, &dconst1))
 	return arg0;
 
       /* Optimize pow(x,-1.0) = 1.0/x.  */
-      if (REAL_VALUES_EQUAL (c, dconstm1))
+      if (real_equal (&c, &dconstm1))
 	return fold_build2_loc (loc, RDIV_EXPR, type,
 			    build_real (type, dconst1), arg0);
 
       /* Optimize pow(x,0.5) = sqrt(x).  */
       if (flag_unsafe_math_optimizations
-	  && REAL_VALUES_EQUAL (c, dconsthalf))
+	  && real_equal (&c, &dconsthalf))
 	{
 	  tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
 
@@ -8461,7 +8461,7 @@ fold_builtin_pow (location_t loc, tree fndecl, tree arg0, tree arg1, tree type)
 	  const REAL_VALUE_TYPE dconstroot
 	    = real_value_truncate (TYPE_MODE (type), dconst_third ());
 
-	  if (REAL_VALUES_EQUAL (c, dconstroot))
+	  if (real_equal (&c, &dconstroot))
 	    {
 	      tree cbrtfn = mathfn_built_in (type, BUILT_IN_CBRT);
 	      if (cbrtfn != NULL_TREE)
@@ -8480,7 +8480,7 @@ fold_builtin_pow (location_t loc, tree fndecl, tree arg0, tree arg1, tree type)
 	      && !TREE_OVERFLOW (arg0)
 	      && (n > 0
 		  || (!flag_trapping_math && !flag_errno_math)
-		  || !REAL_VALUES_EQUAL (TREE_REAL_CST (arg0), dconst0)))
+		  || !real_equal (&TREE_REAL_CST (arg0), &dconst0)))
 	    {
 	      REAL_VALUE_TYPE x;
 	      bool inexact;
@@ -9373,7 +9373,7 @@ fold_builtin_load_exponent (location_t loc, tree arg0, tree arg1,
 
 		  /* Only proceed if the target mode can hold the
 		     resulting value.  */
-		  if (REAL_VALUES_EQUAL (initial_result, trunc_result))
+		  if (real_equal (&initial_result, &trunc_result))
 		    return build_real (type, trunc_result);
 		}
 	    }
