@@ -10573,7 +10573,7 @@ standard_80387_constant_rtx (int idx)
       gcc_unreachable ();
     }
 
-  return CONST_DOUBLE_FROM_REAL_VALUE (ext_80387_constants_table[i],
+  return const_double_from_real_value (ext_80387_constants_table[i],
 				       XFmode);
 }
 
@@ -40143,7 +40143,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	rtx tmp;
 
 	real_inf (&inf);
-	tmp = CONST_DOUBLE_FROM_REAL_VALUE (inf, mode);
+	tmp = const_double_from_real_value (inf, mode);
 
 	tmp = validize_mem (force_const_mem (mode, tmp));
 
@@ -47021,7 +47021,7 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
 
   emit_insn (gen_absxf2 (tmp, op1));
   test = gen_rtx_GE (VOIDmode, tmp,
-    CONST_DOUBLE_FROM_REAL_VALUE (
+    const_double_from_real_value (
        REAL_VALUE_ATOF ("0.29289321881345247561810596348408353", XFmode),
        XFmode));
   emit_jump_insn (gen_cbranchxf4 (test, XEXP (test, 0), XEXP (test, 1), label1));
@@ -47095,7 +47095,7 @@ void ix86_emit_i387_round (rtx op0, rtx op1)
   e2 = gen_reg_rtx (inmode);
   res = gen_reg_rtx (outmode);
 
-  half = CONST_DOUBLE_FROM_REAL_VALUE (dconsthalf, inmode);
+  half = const_double_from_real_value (dconsthalf, inmode);
 
   /* round(a) = sgn(a) * floor(fabs(a) + 0.5) */
 
@@ -47227,10 +47227,10 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode,
   e3 = gen_reg_rtx (mode);
 
   real_from_integer (&r, VOIDmode, -3, SIGNED);
-  mthree = CONST_DOUBLE_FROM_REAL_VALUE (r, SFmode);
+  mthree = const_double_from_real_value (r, SFmode);
 
   real_arithmetic (&r, NEGATE_EXPR, &dconsthalf, NULL);
-  mhalf = CONST_DOUBLE_FROM_REAL_VALUE (r, SFmode);
+  mhalf = const_double_from_real_value (r, SFmode);
   unspec = UNSPEC_RSQRT;
 
   if (VECTOR_MODE_P (mode))

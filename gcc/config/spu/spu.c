@@ -1031,7 +1031,7 @@ hwint_to_const_double (machine_mode mode, HOST_WIDE_INT v)
       tv[0] = v >> 32;
     }
   real_from_target (&rv, tv, mode);
-  return CONST_DOUBLE_FROM_REAL_VALUE (rv, mode);
+  return const_double_from_real_value (rv, mode);
 }
 
 void
@@ -3075,7 +3075,7 @@ spu_float_const (const char *string, machine_mode mode)
 {
   REAL_VALUE_TYPE value;
   value = REAL_VALUE_ATOF (string, mode);
-  return CONST_DOUBLE_FROM_REAL_VALUE (value, mode);
+  return const_double_from_real_value (value, mode);
 }
 
 int

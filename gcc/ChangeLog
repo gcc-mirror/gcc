@@ -1,5 +1,42 @@
 2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* real.h (CONST_DOUBLE_ATOF): Use const_double_from_real_value
+	instead of CONST_DOUBLE_FROM_REAL_VALUE.
+	(CONST_DOUBLE_FROM_REAL_VALUE): Delete.
+	* config/c6x/c6x.md (divsf3, divdf3): Use const_double_from_real_value
+	instead of CONST_DOUBLE_FROM_REAL_VALUE.
+	* config/epiphany/epiphany.md (fixuns_truncsfsi2): Likewise.
+	* config/i386/i386.c (standard_80387_constant_rtx): Likewise.
+	(ix86_expand_builtin, ix86_emit_i387_log1p, ix86_emit_i387_round)
+	(ix86_emit_swsqrtsf): Likewise.
+	* config/ia64/ia64.c (ia64_expand_builtin): Likewise.
+	* config/mips/mips.md (fixuns_truncdfsi2, fixuns_truncdfdi2)
+	(fixuns_truncsfsi2, fixuns_truncsfdi2): Likewise.
+	* config/pa/pa.c (pa_expand_builtin): Likewise.
+	* config/rs6000/rs6000.c (rs6000_load_constant_and_splat): Likewise.
+	(rs6000_scale_v2df): Likewise.
+	* config/rs6000/rs6000.md (*cmptf_internal2): Likewise.
+	* config/s390/s390.md (fixuns_truncdddi2, fixuns_trunctddi2)
+	(fixuns_trunc<BFP:mode><GPR:mode>2): Likewise.
+	* config/s390/vx-builtins.md (vec_ctd_s64, vec_ctd_u64, vec_ctsl)
+	(vec_ctul): Likewise.
+	* config/sparc/sparc.c (sparc_emit_fixunsdi): Likewise.
+	* config/spu/spu.c (hwint_to_const_double, spu_float_const): Likewise.
+	* config/spu/spu.md (floatunsdisf2, floatunstisf2): Likewise.
+	* cse.c (fold_rtx): Likewise.
+	* emit-rtl.c (immed_double_const): Likewise (in comments).
+	(init_emit_once): Likewise.
+	* expr.c (compress_float_constant, expand_expr_real_1)
+	(const_vector_from_tree): Likewise.
+	* optabs.c (expand_float, expand_fix): Likewise.
+	* reg-stack.c (reg_to_stack): Likewise.
+	* simplify-rtx.c (avoid_constant_pool_reference): Likewise.
+	(simplify_const_unary_operation, simplify_binary_operation_1)
+	(simplify_const_binary_operation, simplify_relational_operation)
+	(simplify_immed_subreg): Likewise.
+
+2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* doc/tm.texi.in (REAL_ARITHMETIC): Delete.
 	* doc/tm.texi: Regenerate.
 	* real.h (REAL_ARITHMETIC): Delete.

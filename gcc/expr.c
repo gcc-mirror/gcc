@@ -3654,7 +3654,7 @@ compress_float_constant (rtx x, rtx y)
       if (! exact_real_truncate (srcmode, &r))
 	continue;
 
-      trunc_y = CONST_DOUBLE_FROM_REAL_VALUE (r, srcmode);
+      trunc_y = const_double_from_real_value (r, srcmode);
 
       if (targetm.legitimate_constant_p (srcmode, trunc_y))
 	{
@@ -9708,7 +9708,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	 many insns, so we'd end up copying it to a register in any case.
 
 	 Now, we do the copying in expand_binop, if appropriate.  */
-      return CONST_DOUBLE_FROM_REAL_VALUE (TREE_REAL_CST (exp),
+      return const_double_from_real_value (TREE_REAL_CST (exp),
 					   TYPE_MODE (TREE_TYPE (exp)));
 
     case FIXED_CST:
@@ -11339,7 +11339,7 @@ const_vector_from_tree (tree exp)
       elt = VECTOR_CST_ELT (exp, i);
 
       if (TREE_CODE (elt) == REAL_CST)
-	RTVEC_ELT (v, i) = CONST_DOUBLE_FROM_REAL_VALUE (TREE_REAL_CST (elt),
+	RTVEC_ELT (v, i) = const_double_from_real_value (TREE_REAL_CST (elt),
 							 inner);
       else if (TREE_CODE (elt) == FIXED_CST)
 	RTVEC_ELT (v, i) = CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),

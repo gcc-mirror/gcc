@@ -228,7 +228,7 @@ avoid_constant_pool_reference (rtx x)
 	  REAL_VALUE_TYPE d;
 
 	  REAL_VALUE_FROM_CONST_DOUBLE (d, c);
-	  return CONST_DOUBLE_FROM_REAL_VALUE (d, GET_MODE (x));
+	  return const_double_from_real_value (d, GET_MODE (x));
 	}
       return x;
 
@@ -1684,7 +1684,7 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 
       real_from_integer (&d, mode, std::make_pair (op, op_mode), SIGNED);
       d = real_value_truncate (mode, d);
-      return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
+      return const_double_from_real_value (d, mode);
     }
   else if (code == UNSIGNED_FLOAT && CONST_SCALAR_INT_P (op))
     {
@@ -1702,7 +1702,7 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 
       real_from_integer (&d, mode, std::make_pair (op, op_mode), UNSIGNED);
       d = real_value_truncate (mode, d);
-      return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
+      return const_double_from_real_value (d, mode);
     }
 
   if (CONST_SCALAR_INT_P (op) && width > 0)
@@ -1832,7 +1832,7 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	default:
 	  gcc_unreachable ();
 	}
-      return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
+      return const_double_from_real_value (d, mode);
     }
   else if (CONST_DOUBLE_AS_FLOAT_P (op)
 	   && SCALAR_FLOAT_MODE_P (GET_MODE (op))
@@ -3112,7 +3112,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 		  && !real_equal (&d, &dconst0))
 		{
 		  real_arithmetic (&d, RDIV_EXPR, &dconst1, &d);
-		  tem = CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
+		  tem = const_double_from_real_value (d, mode);
 		  return simplify_gen_binary (MULT, mode, op0, tem);
 		}
 	    }
@@ -3855,7 +3855,7 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	      }
 	    }
 	   real_from_target (&r, tmp0, mode);
-	   return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
+	   return const_double_from_real_value (r, mode);
 	}
       else
 	{
@@ -3936,7 +3936,7 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	      && (inexact || !real_identical (&result, &value)))
 	    return NULL_RTX;
 
-	  return CONST_DOUBLE_FROM_REAL_VALUE (result, mode);
+	  return const_double_from_real_value (result, mode);
 	}
     }
 
@@ -4462,7 +4462,7 @@ simplify_relational_operation (enum rtx_code code, machine_mode mode,
 	  {
 	    REAL_VALUE_TYPE val;
 	    val = FLOAT_STORE_FLAG_VALUE (mode);
-	    return CONST_DOUBLE_FROM_REAL_VALUE (val, mode);
+	    return const_double_from_real_value (val, mode);
 	  }
 #else
 	  return NULL_RTX;
@@ -5760,7 +5760,7 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
 	      }
 
 	    real_from_target (&r, tmp, outer_submode);
-	    elems[elem] = CONST_DOUBLE_FROM_REAL_VALUE (r, outer_submode);
+	    elems[elem] = const_double_from_real_value (r, outer_submode);
 	  }
 	  break;
 

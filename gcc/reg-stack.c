@@ -3241,7 +3241,7 @@ reg_to_stack (void)
       REAL_VALUE_TYPE r;
 
       real_nan (&r, "", 1, SFmode);
-      not_a_num = CONST_DOUBLE_FROM_REAL_VALUE (r, SFmode);
+      not_a_num = const_double_from_real_value (r, SFmode);
       not_a_num = force_const_mem (SFmode, not_a_num);
     }
 

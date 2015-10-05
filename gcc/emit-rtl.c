@@ -648,7 +648,7 @@ immed_wide_int_const (const wide_int_ref &v, machine_mode mode)
    implied upper bits are copies of the high bit of i1.  The value
    itself is neither signed nor unsigned.  Do not use this routine for
    non-integer modes; convert to REAL_VALUE_TYPE and use
-   CONST_DOUBLE_FROM_REAL_VALUE.  */
+   const_double_from_real_value.  */
 
 rtx
 immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, machine_mode mode)
@@ -5936,13 +5936,13 @@ init_emit_once (void)
 	   mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	const_tiny_rtx[i][(int) mode] =
-	  CONST_DOUBLE_FROM_REAL_VALUE (*r, mode);
+	  const_double_from_real_value (*r, mode);
 
       for (mode = GET_CLASS_NARROWEST_MODE (MODE_DECIMAL_FLOAT);
 	   mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	const_tiny_rtx[i][(int) mode] =
-	  CONST_DOUBLE_FROM_REAL_VALUE (*r, mode);
+	  const_double_from_real_value (*r, mode);
 
       const_tiny_rtx[i][(int) VOIDmode] = GEN_INT (i);
 

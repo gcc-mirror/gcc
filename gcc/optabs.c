@@ -4605,7 +4605,7 @@ expand_float (rtx to, rtx from, int unsignedp)
 
       real_2expN (&offset, GET_MODE_PRECISION (GET_MODE (from)), fmode);
       temp = expand_binop (fmode, add_optab, target,
-			   CONST_DOUBLE_FROM_REAL_VALUE (offset, fmode),
+			   const_double_from_real_value (offset, fmode),
 			   target, 0, OPTAB_LIB_WIDEN);
       if (temp != target)
 	emit_move_insn (target, temp);
@@ -4748,7 +4748,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
 
 	  bitsize = GET_MODE_PRECISION (GET_MODE (to));
 	  real_2expN (&offset, bitsize - 1, fmode);
-	  limit = CONST_DOUBLE_FROM_REAL_VALUE (offset, fmode);
+	  limit = const_double_from_real_value (offset, fmode);
 	  lab1 = gen_label_rtx ();
 	  lab2 = gen_label_rtx ();
 

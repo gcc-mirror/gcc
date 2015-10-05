@@ -3342,7 +3342,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 	  if (SCALAR_FLOAT_MODE_P (mode))
 	    {
 #ifdef FLOAT_STORE_FLAG_VALUE
-	      true_rtx = (CONST_DOUBLE_FROM_REAL_VALUE
+	      true_rtx = (const_double_from_real_value
 			  (FLOAT_STORE_FLAG_VALUE (mode), mode));
 #else
 	      true_rtx = NULL_RTX;

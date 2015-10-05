@@ -8067,7 +8067,7 @@ sparc_emit_fixunsdi (rtx *operands, machine_mode mode)
   f0 = gen_reg_rtx (mode);
 
   emit_move_insn (limit,
-		  CONST_DOUBLE_FROM_REAL_VALUE (
+		  const_double_from_real_value (
 		    REAL_VALUE_ATOF ("9223372036854775808.0", mode), mode));
   emit_cmp_and_jump_insns (in, limit, GE, NULL_RTX, mode, 0, neglab);
 

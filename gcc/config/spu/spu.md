@@ -751,7 +751,7 @@
     emit_insn (gen_shlqby_ti (op3_ti, op2_ti, GEN_INT (4)));
 
     emit_move_insn (operands[4],
-		    CONST_DOUBLE_FROM_REAL_VALUE (scale, SFmode));
+		    const_double_from_real_value (scale, SFmode));
     emit_insn (gen_fmasf4 (operands[0],
 			   operands[2], operands[4], operands[3]));
     DONE;
@@ -810,7 +810,7 @@
     emit_insn (gen_shlqby_ti (op3_ti, op2_ti, GEN_INT (4)));
 
     emit_move_insn (operands[4],
-		    CONST_DOUBLE_FROM_REAL_VALUE (scale, SFmode));
+		    const_double_from_real_value (scale, SFmode));
     emit_insn (gen_fmasf4 (operands[2],
 			   operands[2], operands[4], operands[3]));
 
