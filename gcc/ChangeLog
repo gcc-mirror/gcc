@@ -1,3 +1,12 @@
+2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* real.h (build_real_truncate): Declare.
+	* tree.c (build_real_truncate): New function.
+	(strip_float_extensions): Use it.
+	* builtins.c (fold_builtin_cabs, fold_builtin_sqrt, fold_builtin_cbrt)
+	(fold_builtin_hypot, fold_builtin_pow): Likewise.
+	* match.pd: Likewise.
+
 2015-10-05 James Greenhalgh <james.greenhalgh@arm.com>
 	   Jiong Wang  <jiong.wang@arm.com>
 

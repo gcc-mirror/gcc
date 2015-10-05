@@ -1877,6 +1877,14 @@ build_real (tree type, REAL_VALUE_TYPE d)
   return v;
 }
 
+/* Like build_real, but first truncate D to the type.  */
+
+tree
+build_real_truncate (tree type, REAL_VALUE_TYPE d)
+{
+  return build_real (type, real_value_truncate (TYPE_MODE (type), d));
+}
+
 /* Return a new REAL_CST node whose type is TYPE
    and whose value is the integer value of the INTEGER_CST node I.  */
 
@@ -12093,7 +12101,7 @@ strip_float_extensions (tree exp)
 	       && exact_real_truncate (TYPE_MODE (double_type_node), &orig))
 	type = double_type_node;
       if (type)
-	return build_real (type, real_value_truncate (TYPE_MODE (type), orig));
+	return build_real_truncate (type, orig);
     }
 
   if (!CONVERT_EXPR_P (exp))

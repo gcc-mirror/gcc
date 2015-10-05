@@ -2189,8 +2189,7 @@ along with GCC; see the file COPYING3.  If not see
        {
        CASE_FLT_FN (BUILT_IN_EXP):
          /* Prepare to do logN(exp(exponent) -> exponent*logN(e).  */
-	 x = build_real (type, real_value_truncate (TYPE_MODE (type),
-						    dconst_e ()));
+	 x = build_real_truncate (type, dconst_e ());
          break;
        CASE_FLT_FN (BUILT_IN_EXP2):
          /* Prepare to do logN(exp2(exponent) -> exponent*logN(2).  */
@@ -2226,8 +2225,7 @@ along with GCC; see the file COPYING3.  If not see
          break;
        CASE_FLT_FN (BUILT_IN_CBRT):
 	 /* Prepare to do logN(cbrt(x) -> (1/3)*logN(x).  */
-         x = build_real (type, real_value_truncate (TYPE_MODE (type),
-						    dconst_third ()));
+         x = build_real_truncate (type, dconst_third ());
          break;
        default:
 	 gcc_unreachable ();
