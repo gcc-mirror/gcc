@@ -1,3 +1,24 @@
+2015-10-05  Martin Jambor  <mjambor@suse.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (ipcp_alignment_lattice): New type.
+	(ipcp_param_lattices): Use the above to represent alignment.
+	(ipcp_alignment_lattice::print): New function.
+	(print_all_lattices): Use it to print alignment information.
+	(ipcp_alignment_lattice::top_p): New function.
+	(ipcp_alignment_lattice::bottom_p): Likewise.
+	(ipcp_alignment_lattice::set_to_bottom): Likewise.
+	(ipcp_alignment_lattice::meet_with_1): Likewise.
+	(ipcp_alignment_lattice::meet_with): Two new overloaded functions.
+	(set_all_contains_variable): Use set_to_bottom of alignment lattice.
+	(initialize_node_lattices): Likewise.
+	(propagate_alignment_accross_jump_function): Work with the new class
+	for alignment lattices.
+	(propagate_constants_accross_call): Pass only the alignment lattice to
+	propagate_alignment_accross_jump_function.
+	(ipcp_store_alignment_results): Work with the new class for alignment
+	lattices.
+
 2015-10-05  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/67821
