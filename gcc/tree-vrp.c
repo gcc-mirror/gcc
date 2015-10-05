@@ -6717,8 +6717,9 @@ check_all_array_refs (void)
 	    continue;
 
 	  memset (&wi, 0, sizeof (wi));
-	  wi.info = CONST_CAST (void *, (const void *)
-				gimple_location_ptr (stmt));
+
+	  location_t loc = gimple_location (stmt);
+	  wi.info = &loc;
 
 	  walk_gimple_op (gsi_stmt (si),
 			  check_array_bounds,

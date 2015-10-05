@@ -1,5 +1,10 @@
 2015-10-05  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* gimple.h (gimple_location_ptr): Remove.
+	* tree-vrp.c (check_all_array_refs): Adjust.
+
+2015-10-05  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree-ssa-operands.c (build_uses): store tree * instead of
 	tree.
 	(finalize_ssa_uses): Adjust.
