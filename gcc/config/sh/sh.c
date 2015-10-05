@@ -12106,7 +12106,7 @@ sh_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
        __builtin_sh_set_fpscr (masked_fenv);  */
 
-  fenv_var = create_tmp_var (unsigned_type_node);
+  fenv_var = create_tmp_var_raw (unsigned_type_node);
   mask = build_int_cst (unsigned_type_node,
 			~((SH_FE_ALL_EXCEPT << SH_FE_EXCEPT_SHIFT)
 			  | SH_FE_ALL_EXCEPT));
@@ -12114,9 +12114,11 @@ sh_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 		    fenv_var, build_call_expr (sh_builtin_get_fpscr, 0));
   masked_fenv = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var, mask);
   hold_fnclex = build_call_expr (sh_builtin_set_fpscr, 1, masked_fenv);
-  *hold = build2 (COMPOUND_EXPR, void_type_node,
-		  build2 (COMPOUND_EXPR, void_type_node, masked_fenv, ld_fenv),
-		  hold_fnclex);
+  fenv_var = build4 (TARGET_EXPR, unsigned_type_node, fenv_var,
+		     build2 (COMPOUND_EXPR, void_type_node, masked_fenv,
+			     ld_fenv),
+		     NULL_TREE, NULL_TREE);
+  *hold = build2 (COMPOUND_EXPR, void_type_node, fenv_var, hold_fnclex);
 
   /* Store the value of masked_fenv to clear the exceptions:
      __builtin_sh_set_fpscr (masked_fenv);  */
@@ -12131,7 +12133,7 @@ sh_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
        __atomic_feraiseexcept (new_fenv_var);  */
 
-  new_fenv_var = create_tmp_var (unsigned_type_node);
+  new_fenv_var = create_tmp_var_raw (unsigned_type_node);
   reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node, new_fenv_var,
 			build_call_expr (sh_builtin_get_fpscr, 0));
   restore_fnenv = build_call_expr (sh_builtin_set_fpscr, 1, fenv_var);
