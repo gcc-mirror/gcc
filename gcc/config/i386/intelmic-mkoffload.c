@@ -45,6 +45,7 @@ const char *temp_files[MAX_NUM_TEMPS];
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
 
 /* Delete tempfiles and exit function.  */
+
 void
 tool_cleanup (bool from_signal ATTRIBUTE_UNUSED)
 {
@@ -53,19 +54,24 @@ tool_cleanup (bool from_signal ATTRIBUTE_UNUSED)
 }
 
 static void
-mkoffload_atexit (void)
+mkoffload_cleanup (void)
 {
   tool_cleanup (false);
 }
 
-/* Unlink FILE unless we are debugging.  */
+/* Unlink FILE unless requested otherwise.  */
+
 void
 maybe_unlink (const char *file)
 {
-  if (debug)
-    notice ("[Leaving %s]\n", file);
-  else
-    unlink_if_ordinary (file);
+  if (!save_temps)
+    {
+      if (unlink_if_ordinary (file)
+	  && errno != ENOENT)
+	fatal_error (input_location, "deleting file %s: %m", file);
+    }
+  else if (verbose)
+    fprintf (stderr, "[Leaving %s]\n", file);
 }
 
 /* Add or change the value of an environment variable, outputting the
@@ -281,6 +287,8 @@ generate_target_descr_file (const char *target_compiler)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, target_compiler);
+  if (save_temps)
+    obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
   obstack_ptr_grow (&argv_obstack, "-c");
@@ -321,6 +329,8 @@ generate_target_offloadend_file (const char *target_compiler)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, target_compiler);
+  if (save_temps)
+    obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
   obstack_ptr_grow (&argv_obstack, "-c");
@@ -386,6 +396,8 @@ generate_host_descr_file (const char *host_compiler)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, host_compiler);
+  if (save_temps)
+    obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
   obstack_ptr_grow (&argv_obstack, "-c");
@@ -434,6 +446,8 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, target_compiler);
+  if (save_temps)
+    obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
   obstack_ptr_grow (&argv_obstack, "-xlto");
@@ -536,7 +550,7 @@ main (int argc, char **argv)
   gcc_init_libintl ();
   diagnostic_initialize (global_dc, 0);
 
-  if (atexit (mkoffload_atexit) != 0)
+  if (atexit (mkoffload_cleanup) != 0)
     fatal_error (input_location, "atexit failed");
 
   const char *host_compiler = getenv ("COLLECT_GCC");
@@ -568,6 +582,8 @@ main (int argc, char **argv)
 			 "unrecognizable argument of option " STR);
 	}
 #undef STR
+      else if (strcmp (argv[i], "-save-temps") == 0)
+	save_temps = true;
       else if (strcmp (argv[i], "-v") == 0)
 	verbose = true;
     }

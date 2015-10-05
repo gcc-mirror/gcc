@@ -1,3 +1,24 @@
+2015-10-05  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/65021
+	* config/i386/intelmic-mkoffload.c (mkoffload_atexit): Rename
+	function to...
+	(mkoffload_cleanup): ... this.  Adjust all users.
+	(maybe_unlink): Look at save_temps and verbose flags instead of
+	debug flag.
+	(main): Parse "-save-temps" flag.
+	(generate_target_descr_file, generate_target_offloadend_file)
+	(generate_host_descr_file, prepare_target_image): Pass it on.
+	* config/nvptx/mkoffload.c (tool_cleanup): Implement.
+	(mkoffload_cleanup): New function.
+	(maybe_unlink): Look at save_temps and verbose flags instead of
+	debug flag.
+	(main): Instead of calling utils_cleanup, register atexit handler
+	for mkoffload_cleanup.
+	(main): Parse "-save-temps" flag.
+	(compile_native, main): Pass it on.
+	* lto-wrapper.c (compile_offload_image): Likewise.
+
 2015-10-05  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* gimple.h (gimple_op_ptr): Require a non const gimple *.
@@ -763,7 +784,7 @@
 
 	* config/i386/intelmic-mkoffload.c (main): Parse "-v" flag.
 	(generate_target_descr_file, generate_target_offloadend_file)
-	(generate_host_descr_file, prepare_target_image, main): Pass it on.
+	(generate_host_descr_file, prepare_target_image): Pass it on.
 	* config/nvptx/mkoffload.c (main): Parse "-v" flag.
 	(compile_native, main): Pass it on.
 	* lto-wrapper.c (compile_offload_image): Likewise.
