@@ -4365,7 +4365,7 @@ floating_exact_log2 (rtx x)
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 
-  if (REAL_VALUES_LESS (r, dconst1))
+  if (real_less (&r, &dconst1))
     return 0;
 
   exp = real_exponent (&r);

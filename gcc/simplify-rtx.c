@@ -1862,13 +1862,13 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  /* Test against the signed upper bound.  */
 	  wmax = wi::max_value (width, SIGNED);
 	  real_from_integer (&t, VOIDmode, wmax, SIGNED);
-	  if (REAL_VALUES_LESS (t, x))
+	  if (real_less (&t, &x))
 	    return immed_wide_int_const (wmax, mode);
 
 	  /* Test against the signed lower bound.  */
 	  wmin = wi::min_value (width, SIGNED);
 	  real_from_integer (&t, VOIDmode, wmin, SIGNED);
-	  if (REAL_VALUES_LESS (x, t))
+	  if (real_less (&x, &t))
 	    return immed_wide_int_const (wmin, mode);
 
 	  return immed_wide_int_const (real_to_integer (&x, &fail, width), mode);
@@ -1881,7 +1881,7 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  /* Test against the unsigned upper bound.  */
 	  wmax = wi::max_value (width, UNSIGNED);
 	  real_from_integer (&t, VOIDmode, wmax, UNSIGNED);
-	  if (REAL_VALUES_LESS (t, x))
+	  if (real_less (&t, &x))
 	    return immed_wide_int_const (wmax, mode);
 
 	  return immed_wide_int_const (real_to_integer (&x, &fail, width),
@@ -4943,7 +4943,7 @@ simplify_const_relational_operation (enum rtx_code code,
 
       return comparison_result (code,
 				(real_equal (&d0, &d1) ? CMP_EQ :
-				 REAL_VALUES_LESS (d0, d1) ? CMP_LT : CMP_GT));
+				 real_less (&d0, &d1) ? CMP_LT : CMP_GT));
     }
 
   /* Otherwise, see if the operands are both integers.  */

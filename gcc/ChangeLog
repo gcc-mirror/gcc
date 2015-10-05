@@ -1,5 +1,23 @@
 2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/tm.texi.in (REAL_VALUES_LESS): Delete.
+	* doc/tm.texi: Regenerate.
+	* real.h (real_less): Declare.
+	(REAL_VALUES_LESS): Delete.
+	* real.c (real_less): New function.
+	(real_compare): Use it.
+	* config/m68k/m68k.c (floating_exact_log2): Use real_less instead
+	of REAL_VALUES_LESS.
+	* config/microblaze/microblaze.c (microblaze_const_double_ok):
+	Likewise.
+	* fold-const.c (fold_convert_const_int_from_real): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise.
+	(simplify_const_relational_operation): Likewise.
+	* tree-call-cdce.c (check_pow): Likewise.
+	(gen_conditions_for_pow_cst_base): Likewise.
+
+2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* real.h (REAL_VALUES_IDENTICAL): Delete.
 	* config/m68k/m68k.c (standard_68881_constant_p): Use real_identical
 	instead of REAL_VALUES_IDENTICAL.

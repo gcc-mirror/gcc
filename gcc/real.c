@@ -1086,6 +1086,14 @@ real_equal (const REAL_VALUE_TYPE *op0, const REAL_VALUE_TYPE *op1)
   return do_compare (op0, op1, -1) == 0;
 }
 
+/* Return whether OP0 < OP1.  */
+
+bool
+real_less (const REAL_VALUE_TYPE *op0, const REAL_VALUE_TYPE *op1)
+{
+  return do_compare (op0, op1, 1) < 0;
+}
+
 bool
 real_compare (int icode, const REAL_VALUE_TYPE *op0,
 	      const REAL_VALUE_TYPE *op1)
@@ -1095,7 +1103,7 @@ real_compare (int icode, const REAL_VALUE_TYPE *op0,
   switch (code)
     {
     case LT_EXPR:
-      return do_compare (op0, op1, 1) < 0;
+      return real_less (op0, op1);
     case LE_EXPR:
       return do_compare (op0, op1, 1) <= 0;
     case GT_EXPR:

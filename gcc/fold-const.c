@@ -1877,7 +1877,7 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg
     {
       tree lt = TYPE_MIN_VALUE (type);
       REAL_VALUE_TYPE l = real_value_from_int_cst (NULL_TREE, lt);
-      if (REAL_VALUES_LESS (r, l))
+      if (real_less (&r, &l))
 	{
 	  overflow = true;
 	  val = lt;
@@ -1890,7 +1890,7 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg
       if (ut)
 	{
 	  REAL_VALUE_TYPE u = real_value_from_int_cst (NULL_TREE, ut);
-	  if (REAL_VALUES_LESS (u, r))
+	  if (real_less (&u, &r))
 	    {
 	      overflow = true;
 	      val = ut;
