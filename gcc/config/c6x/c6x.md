@@ -2811,7 +2811,7 @@
   "TARGET_FP && flag_reciprocal_math"
 {
   operands[3] = force_reg (SFmode,
-			   CONST_DOUBLE_FROM_REAL_VALUE (dconst2, SFmode));
+			   const_double_from_real_value (dconst2, SFmode));
   operands[4] = gen_reg_rtx (SFmode);
   operands[5] = gen_reg_rtx (SFmode);
   operands[6] = gen_reg_rtx (SFmode);
@@ -2836,7 +2836,7 @@
   "TARGET_FP && flag_reciprocal_math"
 {
   operands[3] = force_reg (DFmode,
-			   CONST_DOUBLE_FROM_REAL_VALUE (dconst2, DFmode));
+			   const_double_from_real_value (dconst2, DFmode));
   operands[4] = gen_reg_rtx (DFmode);
   operands[5] = gen_reg_rtx (DFmode);
   operands[6] = gen_reg_rtx (DFmode);

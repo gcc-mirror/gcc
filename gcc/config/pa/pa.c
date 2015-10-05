@@ -652,7 +652,7 @@ pa_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	rtx tmp;
 
 	real_inf (&inf);
-	tmp = CONST_DOUBLE_FROM_REAL_VALUE (inf, target_mode);
+	tmp = const_double_from_real_value (inf, target_mode);
 
 	tmp = validize_mem (force_const_mem (target_mode, tmp));
 

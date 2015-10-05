@@ -31849,19 +31849,19 @@ rs6000_load_constant_and_splat (machine_mode mode, REAL_VALUE_TYPE dconst)
 
   if (mode == SFmode || mode == DFmode)
     {
-      rtx d = CONST_DOUBLE_FROM_REAL_VALUE (dconst, mode);
+      rtx d = const_double_from_real_value (dconst, mode);
       reg = force_reg (mode, d);
     }
   else if (mode == V4SFmode)
     {
-      rtx d = CONST_DOUBLE_FROM_REAL_VALUE (dconst, SFmode);
+      rtx d = const_double_from_real_value (dconst, SFmode);
       rtvec v = gen_rtvec (4, d, d, d, d);
       reg = gen_reg_rtx (mode);
       rs6000_expand_vector_init (reg, gen_rtx_PARALLEL (mode, v));
     }
   else if (mode == V2DFmode)
     {
-      rtx d = CONST_DOUBLE_FROM_REAL_VALUE (dconst, DFmode);
+      rtx d = const_double_from_real_value (dconst, DFmode);
       rtvec v = gen_rtvec (2, d, d);
       reg = gen_reg_rtx (mode);
       rs6000_expand_vector_init (reg, gen_rtx_PARALLEL (mode, v));
@@ -32699,7 +32699,7 @@ rs6000_scale_v2df (rtx tgt, rtx src, int scale)
   rtx elt;
   rtx scale_vec = gen_reg_rtx (V2DFmode);
   (void)real_powi (&r_pow, DFmode, &dconst2, hwi_scale);
-  elt = CONST_DOUBLE_FROM_REAL_VALUE (r_pow, DFmode);
+  elt = const_double_from_real_value (r_pow, DFmode);
   RTVEC_ELT (v, 0) = elt;
   RTVEC_ELT (v, 1) = elt;
   rs6000_expand_vector_init (scale_vec, gen_rtx_PARALLEL (V2DFmode, v));
