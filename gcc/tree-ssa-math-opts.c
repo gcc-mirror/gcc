@@ -1140,7 +1140,7 @@ representable_as_half_series_p (REAL_VALUE_TYPE c, unsigned n,
       REAL_VALUE_TYPE res;
 
       /* If something inexact happened bail out now.  */
-      if (REAL_ARITHMETIC (res, MINUS_EXPR, remainder, factor))
+      if (real_arithmetic (&res, MINUS_EXPR, &remainder, &factor))
 	return false;
 
       /* We have hit zero.  The number is representable as a sum
@@ -1160,7 +1160,7 @@ representable_as_half_series_p (REAL_VALUE_TYPE c, unsigned n,
       else
 	info->factors[i] = false;
 
-      REAL_ARITHMETIC (factor, MULT_EXPR, factor, dconsthalf);
+      real_arithmetic (&factor, MULT_EXPR, &factor, &dconsthalf);
     }
   return false;
 }
@@ -1317,7 +1317,7 @@ expand_pow_as_sqrts (gimple_stmt_iterator *gsi, location_t loc,
   REAL_VALUE_TYPE frac_part;
 
   real_floor (&whole_part, mode, &exp);
-  REAL_ARITHMETIC (frac_part, MINUS_EXPR, exp, whole_part);
+  real_arithmetic (&frac_part, MINUS_EXPR, &exp, &whole_part);
 
 
   REAL_VALUE_TYPE ceil_whole = dconst0;
@@ -1326,7 +1326,7 @@ expand_pow_as_sqrts (gimple_stmt_iterator *gsi, location_t loc,
   if (neg_exp)
     {
       real_ceil (&ceil_whole, mode, &exp);
-      REAL_ARITHMETIC (ceil_fract, MINUS_EXPR, ceil_whole, exp);
+      real_arithmetic (&ceil_fract, MINUS_EXPR, &ceil_whole, &exp);
     }
 
   if (!representable_as_half_series_p (frac_part, max_depth, &synth_info))

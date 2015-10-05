@@ -3111,7 +3111,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      if (flag_reciprocal_math
 		  && !real_equal (&d, &dconst0))
 		{
-		  REAL_ARITHMETIC (d, RDIV_EXPR, dconst1, d);
+		  real_arithmetic (&d, RDIV_EXPR, &dconst1, &d);
 		  tem = CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
 		  return simplify_gen_binary (MULT, mode, op0, tem);
 		}

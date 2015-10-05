@@ -9048,8 +9048,8 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
       /* Compute the exact value calc_type'Pred (0.5) at compile time.  */
       fmt = REAL_MODE_FORMAT (TYPE_MODE (calc_type));
       real_2expN (&half_minus_pred_half, -(fmt->p) - 1, TYPE_MODE (calc_type));
-      REAL_ARITHMETIC (pred_half, MINUS_EXPR, dconsthalf,
-		       half_minus_pred_half);
+      real_arithmetic (&pred_half, MINUS_EXPR, &dconsthalf,
+		       &half_minus_pred_half);
       gnu_pred_half = build_real (calc_type, pred_half);
 
       /* If the input is strictly negative, subtract this value

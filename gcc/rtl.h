@@ -3452,7 +3452,7 @@ extern int regstack_completed;
 extern int cse_not_expected;
 
 /* Translates rtx code to tree code, for those codes needed by
-   REAL_ARITHMETIC.  The function returns an int because the caller may not
+   real_arithmetic.  The function returns an int because the caller may not
    know what `enum tree_code' means.  */
 
 extern int rtx_to_tree_code (enum rtx_code);

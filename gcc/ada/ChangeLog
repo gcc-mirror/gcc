@@ -1,5 +1,10 @@
 2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc-interface/trans.c (convert_with_check): Use real_arithmetic
+	instead of REAL_ARITHMETIC.
+
+2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc-interface/trans.c (convert_with_check): Use real_less instead
 	of REAL_VALUES_LESS.
 

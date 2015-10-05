@@ -1699,8 +1699,8 @@ along with GCC; see the file COPYING3.  If not see
       (with
        {
          REAL_VALUE_TYPE c2;
-	 REAL_ARITHMETIC (c2, MULT_EXPR,
-			  TREE_REAL_CST (@1), TREE_REAL_CST (@1));
+	 real_arithmetic (&c2, MULT_EXPR,
+			  &TREE_REAL_CST (@1), &TREE_REAL_CST (@1));
 	 real_convert (&c2, TYPE_MODE (TREE_TYPE (@0)), &c2);
        }
        (if (REAL_VALUE_ISINF (c2))
@@ -1714,8 +1714,8 @@ along with GCC; see the file COPYING3.  If not see
       (with
        {
        	 REAL_VALUE_TYPE c2;
-	 REAL_ARITHMETIC (c2, MULT_EXPR,
-			  TREE_REAL_CST (@1), TREE_REAL_CST (@1));
+	 real_arithmetic (&c2, MULT_EXPR,
+			  &TREE_REAL_CST (@1), &TREE_REAL_CST (@1));
 	 real_convert (&c2, TYPE_MODE (TREE_TYPE (@0)), &c2);
        }
        (if (REAL_VALUE_ISINF (c2))
