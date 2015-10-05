@@ -1,8 +1,8 @@
-/* Check that interwork between static functions is correctly resolved. */
+/* Check interwork between static functions for thumb2. */
 
-/* { dg-skip-if "" { ! { arm_thumb1_ok || arm_thumb2_ok } } } */
-/* { dg-options "-O0 -march=armv7-a -mfloat-abi=hard" } */
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_arch_v7a_ok } */
+/* { dg-options "-O0 -march=armv7-a" } */
 
 struct _NSPoint
 {
