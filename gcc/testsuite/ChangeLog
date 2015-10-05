@@ -1,3 +1,7 @@
+2015-10-05  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/builtin_target.c: Add check for "skylake-avx512".
+
 2015-10-05  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.target/arm/attr_thumb-static2.c: Cleanup directives.

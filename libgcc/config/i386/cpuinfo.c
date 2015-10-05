@@ -78,6 +78,7 @@ enum processor_subtypes
   INTEL_COREI7_HASWELL,
   INTEL_COREI7_BROADWELL,
   INTEL_COREI7_SKYLAKE,
+  INTEL_COREI7_SKYLAKE_AVX512,
   CPU_SUBTYPE_MAX
 };
 
@@ -259,6 +260,11 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      /* Skylake.  */
 	      __cpu_model.__cpu_type = INTEL_COREI7;
 	      __cpu_model.__cpu_subtype = INTEL_COREI7_SKYLAKE;
+	      break;
+	    case 0x55:
+	      /* Skylake with AVX-512 support.  */
+	      __cpu_model.__cpu_type = INTEL_COREI7;
+	      __cpu_model.__cpu_subtype = INTEL_COREI7_SKYLAKE_AVX512;
 	      break;
 	    case 0x17:
 	    case 0x1d:
