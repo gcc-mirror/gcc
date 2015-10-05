@@ -1,5 +1,83 @@
 2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* real.h (REAL_VALUE_FROM_CONST_DOUBLE): Delete.
+	* config/aarch64/aarch64.c (aarch64_float_const_zero_rtx_p)
+	(aarch64_print_operand, aarch64_float_const_representable_p)
+	(aarch64_output_simd_mov_immediate): Use CONST_DOUBLE_REAL_VALUE
+	instead of REAL_VALUE_FROM_CONST_DOUBLE.
+	* config/arc/arc.c (arc_print_operand): Likewise.
+	* config/arm/arm.c (arm_const_double_rtx, vfp3_const_double_index)
+	(neon_valid_immediate, arm_print_operand, arm_emit_fp16_const)
+	(vfp3_const_double_for_fract_bits, vfp3_const_double_for_bits):
+	Likewise.
+	* config/arm/arm.md (*arm32_movhf, consttable_4, consttable_8)
+	(consttable_16): Likewise.
+	* config/arm/vfp.md (*movhf_vfp_neon, *movhf_vfp): Likewise.
+	* config/avr/avr.c (avr_print_operand): Likewise.
+	* config/bfin/bfin.md: Likewise (in a define_split).
+	* config/c6x/c6x.md: Likewise (in a define_split).
+	* config/cr16/cr16.c (cr16_const_double_ok): Likewise.
+	(cr16_print_operand): Likewise.
+	* config/cris/cris.c (cris_print_operand): Likewise.
+	* config/epiphany/epiphany.c (epiphany_print_operand): Likewise.
+	* config/fr30/fr30.c (fr30_print_operand): Likewise.
+	(fr30_const_double_is_zero): Likewise.
+	* config/frv/frv.c (frv_print_operand, output_move_single): Likewise.
+	* config/frv/frv.md: Likewise (in a define_split).
+	* config/frv/predicates.md (int_2word_operand): Likewise.
+	* config/h8300/h8300.c (h8300_print_operand): Likewise.
+	* config/i386/i386.c (standard_80387_constant_p): Likewise.
+	(ix86_print_operand, ix86_split_to_parts): Likewise.
+	* config/i386/i386.md: Likewise (in a define_split).
+	* config/ia64/ia64.c (ia64_split_tmode, ia64_print_operand): Likewise.
+	* config/iq2000/iq2000.md (movsf_lo_sum, movsf_high): Likewise.
+	* config/m32r/m32r.c (easy_df_const, m32r_print_operand): Likewise.
+	* config/m68k/m68k.c (handle_move_double, standard_68881_constant_p)
+	(print_operand): Likewise.
+	* config/m68k/m68k.md (movsf_cf_hard, movdf_cf_hard): Likewise.
+	* config/mep/mep.md: Likewise (in define_split).
+	* config/microblaze/microblaze.c (microblaze_const_double_ok)
+	(print_operand): Likewise.
+	* config/mips/mips.md (consttable_float): Likewise.
+	* config/mmix/mmix.c (mmix_intval): Likewise.
+	* config/mn10300/mn10300.c (mn10300_print_operand): Likewise.
+	* config/nvptx/nvptx.c (nvptx_print_operand): Likewise.
+	* config/pa/pa.c (pa_singlemove_string): Likewise.
+	* config/pdp11/pdp11.c (pdp11_expand_operands): Likewise.
+	(pdp11_asm_print_operand, legitimate_const_double_p): Likewise.
+	* config/rs6000/rs6000.c (num_insns_constant, rs6000_emit_cmove)
+	(output_toc): Likewise.
+	* config/rs6000/rs6000.md: Likewise (in define_splits).
+	* config/rx/rx.c (rx_print_operand): Likewise.
+	* config/s390/s390.c (s390_output_pool_entry): Likewise.
+	* config/sh/sh.c (fp_zero_operand, fp_one_operand): Likewise.
+	* config/sh/sh.md (consttable_sf, consttable_df): Likewise
+	(and also in define_splits).
+	* config/sparc/sparc.c (fp_sethi_p, fp_mov_p): Likewise.
+	(fp_high_losum_p): Likewise.
+	* config/sparc/sparc.md (*movsf_insn, *movsf_lo_sum): Likewise.
+	(*movsf_high): Likewise.
+	* config/spu/spu.c (const_double_to_hwint): Likewise.
+	* config/v850/v850.c (const_double_split): Likewise.
+	* config/vax/vax.c (vax_float_literal): Likewise.
+	* config/visium/visium.c (visium_expand_copysign): Likewise.
+	* config/visium/visium.md: Likewise (in define_split).
+	* config/xtensa/predicates.md (const_float_1_operand): Likewise.
+	* config/xtensa/xtensa.c (print_operand): Likewise.
+	(xtensa_output_literal): Likewise.
+	* cprop.c (implicit_set_cond_p): Likewise.
+	* dwarf2out.c (insert_float): Likewise.
+	* expmed.c (expand_mult, make_tree): Likewise.
+	* expr.c (compress_float_constant): Likewise.
+	* rtlanal.c (split_double): Likewise.
+	* simplify-rtx.c (avoid_constant_pool_reference): Likewise.
+	(simplify_const_unary_operation, simplify_binary_operation_1)
+	(simplify_const_binary_operation): Likewise.
+	(simplify_const_relational_operation): Likewise.
+	* varasm.c (output_constant_pool_2): Likewise.
+
+2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* real.h (CONST_DOUBLE_ATOF): Use const_double_from_real_value
 	instead of CONST_DOUBLE_FROM_REAL_VALUE.
 	(CONST_DOUBLE_FROM_REAL_VALUE): Delete.

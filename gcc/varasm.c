@@ -3841,11 +3841,8 @@ output_constant_pool_2 (machine_mode mode, rtx x, unsigned int align)
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
       {
-	REAL_VALUE_TYPE r;
-
 	gcc_assert (CONST_DOUBLE_AS_FLOAT_P (x));
-	REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	assemble_real (r, mode, align);
+	assemble_real (*CONST_DOUBLE_REAL_VALUE (x), mode, align);
 	break;
       }
 

@@ -3234,17 +3234,12 @@ expand_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
  skip_synth:
 
   /* Expand x*2.0 as x+x.  */
-  if (CONST_DOUBLE_AS_FLOAT_P (scalar_op1))
+  if (CONST_DOUBLE_AS_FLOAT_P (scalar_op1)
+      && real_equal (CONST_DOUBLE_REAL_VALUE (scalar_op1), &dconst2))
     {
-      REAL_VALUE_TYPE d;
-      REAL_VALUE_FROM_CONST_DOUBLE (d, scalar_op1);
-
-      if (real_equal (&d, &dconst2))
-	{
-	  op0 = force_reg (GET_MODE (op0), op0);
-	  return expand_binop (mode, add_optab, op0, op0,
-			       target, unsignedp, OPTAB_LIB_WIDEN);
-	}
+      op0 = force_reg (GET_MODE (op0), op0);
+      return expand_binop (mode, add_optab, op0, op0,
+			   target, unsignedp, OPTAB_LIB_WIDEN);
     }
 
   /* This used to use umul_optab if unsigned, but for non-widening multiply
@@ -4997,12 +4992,7 @@ make_tree (tree type, rtx x)
 			      wide_int::from_array (&CONST_DOUBLE_LOW (x), 2,
 						    HOST_BITS_PER_WIDE_INT * 2));
       else
-	{
-	  REAL_VALUE_TYPE d;
-
-	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  t = build_real (type, d);
-	}
+	t = build_real (type, *CONST_DOUBLE_REAL_VALUE (x));
 
       return t;
 

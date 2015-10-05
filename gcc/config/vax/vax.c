@@ -640,7 +640,8 @@ static bool
 vax_float_literal (rtx c)
 {
   machine_mode mode;
-  REAL_VALUE_TYPE r, s;
+  const REAL_VALUE_TYPE *r;
+  REAL_VALUE_TYPE s;
   int i;
 
   if (GET_CODE (c) != CONST_DOUBLE)
@@ -653,7 +654,7 @@ vax_float_literal (rtx c)
       || c == const_tiny_rtx[(int) mode][2])
     return true;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, c);
+  r = CONST_DOUBLE_REAL_VALUE (c);
 
   for (i = 0; i < 7; i++)
     {
@@ -661,11 +662,11 @@ vax_float_literal (rtx c)
       bool ok;
       real_from_integer (&s, mode, x, SIGNED);
 
-      if (real_equal (&r, &s))
+      if (real_equal (r, &s))
 	return true;
       ok = exact_real_inverse (mode, &s);
       gcc_assert (ok);
-      if (real_equal (&r, &s))
+      if (real_equal (r, &s))
 	return true;
     }
   return false;

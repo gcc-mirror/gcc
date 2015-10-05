@@ -699,11 +699,9 @@ fr30_print_operand (FILE *file, rtx x, int code)
       /* We handle SFmode constants here as output_addr_const doesn't.  */
       if (GET_MODE (x) == SFmode)
 	{
-	  REAL_VALUE_TYPE d;
 	  long l;
 
-	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  REAL_VALUE_TO_TARGET_SINGLE (d, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
 	  fprintf (file, "0x%08lx", l);
 	  break;
 	}
@@ -888,14 +886,10 @@ fr30_check_multiple_regs (rtx *operands, int num_operands, int descending)
 int
 fr30_const_double_is_zero (rtx operand)
 {
-  REAL_VALUE_TYPE d;
-
   if (operand == NULL || GET_CODE (operand) != CONST_DOUBLE)
     return 0;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (d, operand);
-
-  return real_equal (&d, &dconst0);
+  return real_equal (CONST_DOUBLE_REAL_VALUE (operand), &dconst0);
 }
 
 /*}}}*/

@@ -2710,16 +2710,11 @@ mmix_intval (const_rtx x)
 
   if (GET_CODE (x) == CONST_DOUBLE)
     {
-      REAL_VALUE_TYPE value;
-
-      /* FIXME:  This macro is not in the manual but should be.  */
-      REAL_VALUE_FROM_CONST_DOUBLE (value, x);
-
       if (GET_MODE (x) == DFmode)
 	{
 	  long bits[2];
 
-	  REAL_VALUE_TO_TARGET_DOUBLE (value, bits);
+	  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), bits);
 
 	  /* The double cast is necessary to avoid getting the long
 	     sign-extended to unsigned long long(!) when they're of
@@ -2732,7 +2727,7 @@ mmix_intval (const_rtx x)
       else if (GET_MODE (x) == SFmode)
 	{
 	  long bits;
-	  REAL_VALUE_TO_TARGET_SINGLE (value, bits);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), bits);
 
 	  return (unsigned long) bits;
 	}

@@ -2397,12 +2397,10 @@ print_operand (FILE *file, rtx x, int letter)
 	}
       else if (GET_CODE (x) == CONST_DOUBLE)
 	{
-	  REAL_VALUE_TYPE r;
-	  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 	  if (GET_MODE (x) == SFmode)
 	    {
 	      long l;
-	      REAL_VALUE_TO_TARGET_SINGLE (r, l);
+	      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
 	      fprintf (file, "0x%08lx@%c", l, letter == 't' ? 'h' : 'l');
 	    }
 	  else
@@ -2436,10 +2434,8 @@ print_operand (FILE *file, rtx x, int letter)
       if (GET_CODE (x) == CONST_DOUBLE &&
 	  GET_MODE (x) == SFmode)
 	{
-	  REAL_VALUE_TYPE r;
 	  long l;
-	  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	  REAL_VALUE_TO_TARGET_SINGLE (r, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
 	  fprintf (file, "0x%08lx", l);
 	  break;
 	}
@@ -2555,7 +2551,6 @@ void
 xtensa_output_literal (FILE *file, rtx x, machine_mode mode, int labelno)
 {
   long value_long[2];
-  REAL_VALUE_TYPE r;
   int size;
   rtx first, second;
 
@@ -2566,18 +2561,19 @@ xtensa_output_literal (FILE *file, rtx x, machine_mode mode, int labelno)
     case MODE_FLOAT:
       gcc_assert (GET_CODE (x) == CONST_DOUBLE);
 
-      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
       switch (mode)
 	{
 	case SFmode:
-	  REAL_VALUE_TO_TARGET_SINGLE (r, value_long[0]);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x),
+				       value_long[0]);
 	  if (HOST_BITS_PER_LONG > 32)
 	    value_long[0] &= 0xffffffff;
 	  fprintf (file, "0x%08lx\n", value_long[0]);
 	  break;
 
 	case DFmode:
-	  REAL_VALUE_TO_TARGET_DOUBLE (r, value_long);
+	  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x),
+				       value_long);
 	  if (HOST_BITS_PER_LONG > 32)
 	    {
 	      value_long[0] &= 0xffffffff;

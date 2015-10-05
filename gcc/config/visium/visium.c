@@ -2039,9 +2039,7 @@ visium_expand_copysign (rtx *operands, enum machine_mode mode)
       if (op0 != CONST0_RTX (mode))
 	{
 	  long l;
-	  REAL_VALUE_TYPE rv;
-	  REAL_VALUE_FROM_CONST_DOUBLE (rv, op0);
-	  REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op0), l);
 	  op0 = force_reg (SImode, GEN_INT (trunc_int_for_mode (l, SImode)));
 	}
     }

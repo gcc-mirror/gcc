@@ -6634,12 +6634,11 @@
       return \"mov%?\\t%0, %1\\t%@ __fp16\";
     case 3:	/* ARM register from constant */
       {
-	REAL_VALUE_TYPE r;
 	long bits;
 	rtx ops[4];
 
-	REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
-	bits = real_to_target (NULL, &r, HFmode);
+	bits = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (operands[1]),
+			       HFmode);
 	ops[0] = operands[0];
 	ops[1] = GEN_INT (bits);
 	ops[2] = GEN_INT (bits & 0xff00);
@@ -10854,12 +10853,9 @@
     switch (GET_MODE_CLASS (GET_MODE (x)))
       {
       case MODE_FLOAT:
-	{
-	  REAL_VALUE_TYPE r;
-	  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	  assemble_real (r, GET_MODE (x), BITS_PER_WORD);
-	  break;
-	}
+	assemble_real (*CONST_DOUBLE_REAL_VALUE (x), GET_MODE (x),
+		       BITS_PER_WORD);
+	break;
       default:
 	/* XXX: Sometimes gcc does something really dumb and ends up with
 	   a HIGH in a constant pool entry, usually because it's trying to
@@ -10886,13 +10882,10 @@
     making_const_table = TRUE;
     switch (GET_MODE_CLASS (GET_MODE (operands[0])))
       {
-       case MODE_FLOAT:
-        {
-          REAL_VALUE_TYPE r;
-          REAL_VALUE_FROM_CONST_DOUBLE (r, operands[0]);
-          assemble_real (r, GET_MODE (operands[0]), BITS_PER_WORD);
-          break;
-        }
+      case MODE_FLOAT:
+	assemble_real (*CONST_DOUBLE_REAL_VALUE (operands[0]),
+		       GET_MODE (operands[0]), BITS_PER_WORD);
+	break;
       default:
         assemble_integer (operands[0], 8, BITS_PER_WORD, 1);
         break;
@@ -10911,13 +10904,10 @@
     making_const_table = TRUE;
     switch (GET_MODE_CLASS (GET_MODE (operands[0])))
       {
-       case MODE_FLOAT:
-        {
-          REAL_VALUE_TYPE r;
-          REAL_VALUE_FROM_CONST_DOUBLE (r, operands[0]);
-          assemble_real (r, GET_MODE (operands[0]), BITS_PER_WORD);
-          break;
-        }
+      case MODE_FLOAT:
+	assemble_real (*CONST_DOUBLE_REAL_VALUE (operands[0]),
+		       GET_MODE (operands[0]), BITS_PER_WORD);
+	break;
       default:
         assemble_integer (operands[0], 16, BITS_PER_WORD, 1);
         break;

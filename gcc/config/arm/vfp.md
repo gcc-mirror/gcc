@@ -238,12 +238,11 @@
       return \"vmov\\t%0, %1\";
     case 8:	/* ARM register from constant */
       {
-        REAL_VALUE_TYPE r;
 	long bits;
 	rtx ops[4];
 
-        REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
-	bits = real_to_target (NULL, &r, HFmode);
+	bits = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (operands[1]),
+			       HFmode);
 	ops[0] = operands[0];
 	ops[1] = GEN_INT (bits);
 	ops[2] = GEN_INT (bits & 0xff00);
@@ -289,12 +288,11 @@
       return \"vmov\\t%0, %1\";
     case 6:	/* ARM register from constant */
       {
-        REAL_VALUE_TYPE r;
 	long bits;
 	rtx ops[4];
 
-        REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
-	bits = real_to_target (NULL, &r, HFmode);
+	bits = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (operands[1]),
+			       HFmode);
 	ops[0] = operands[0];
 	ops[1] = GEN_INT (bits);
 	ops[2] = GEN_INT (bits & 0xff00);

@@ -504,7 +504,6 @@
   (match_code "const_int,const_double,symbol_ref,label_ref,const")
 {
   HOST_WIDE_INT value;
-  REAL_VALUE_TYPE rv;
   long l;
 
   switch (GET_CODE (op))
@@ -540,8 +539,7 @@
     case CONST_DOUBLE:
       if (GET_MODE (op) == SFmode)
 	{
-	  REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-	  REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op), l);
 	  value = l;
 	  return ! IN_RANGE (value, -32768, 32767);
 	}

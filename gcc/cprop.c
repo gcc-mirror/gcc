@@ -1351,13 +1351,9 @@ implicit_set_cond_p (const_rtx cond)
 	 the optimization can't be performed.  */
       /* ??? The complex and vector checks are not implemented yet.  We just
 	 always return zero for them.  */
-      if (CONST_DOUBLE_AS_FLOAT_P (cst))
-	{
-	  REAL_VALUE_TYPE d;
-	  REAL_VALUE_FROM_CONST_DOUBLE (d, cst);
-	  if (real_equal (&d, &dconst0))
-	    return 0;
-	}
+      if (CONST_DOUBLE_AS_FLOAT_P (cst)
+	  && real_equal (CONST_DOUBLE_REAL_VALUE (cst), &dconst0))
+	return 0;
       else
 	return 0;
     }

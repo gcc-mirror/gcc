@@ -1415,12 +1415,10 @@ ia64_split_tmode (rtx out[2], rtx in, bool reversed, bool dead)
 	/* split_double does not understand how to split a TFmode
 	   quantity into a pair of DImode constants.  */
 	{
-	  REAL_VALUE_TYPE r;
 	  unsigned HOST_WIDE_INT p[2];
 	  long l[4];  /* TFmode is 128 bits */
 
-	  REAL_VALUE_FROM_CONST_DOUBLE (r, in);
-	  real_to_target (l, &r, TFmode);
+	  real_to_target (l, CONST_DOUBLE_REAL_VALUE (in), TFmode);
 
 	  if (FLOAT_WORDS_BIG_ENDIAN)
 	    {
@@ -5362,9 +5360,7 @@ ia64_print_operand (FILE * file, rtx x, int code)
     case 'G':
       {
 	long val[4];
-	REAL_VALUE_TYPE rv;
-	REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-	real_to_target (val, &rv, GET_MODE (x));
+	real_to_target (val, CONST_DOUBLE_REAL_VALUE (x), GET_MODE (x));
 	if (GET_MODE (x) == SFmode)
 	  fprintf (file, "0x%08lx", val[0] & 0xffffffff);
 	else if (GET_MODE (x) == DFmode)
