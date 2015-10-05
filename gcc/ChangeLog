@@ -1,5 +1,21 @@
 2015-10-05  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* gimple.h (gimple_op_ptr): Require a non const gimple *.
+	(gimple_assign_lhs_ptr): Likewise.
+	(gimple_assign_rhs1_ptr): Likewise.
+	(gimple_assign_rhs2_ptr): Likewise.
+	(gimple_assign_rhs3_ptr): Likewise.
+	(gimple_call_lhs_ptr): Likewise.
+	(gimple_call_fn_ptr): Likewise.
+	(gimple_call_chain_ptr): Likewise.
+		(gimple_call_arg_ptr): Likewise.
+		(gimple_cond_lhs_ptr): Likewise.
+	(gimple_cond_rhs_ptr): Likewise.
+	(gimple_switch_index_ptr): Likewise.
+	(gimple_return_retval_ptr): Likewise.
+
+2015-10-05  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* gimple.h (gimple_asm_input_op_ptr): Remove.
 	(gimple_asm_output_op_ptr): Likewise.
 
