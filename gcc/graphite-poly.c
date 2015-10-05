@@ -257,11 +257,72 @@ debug_pdr (poly_dr_p pdr, int verbosity)
   print_pdr (stderr, pdr, verbosity);
 }
 
-/* Creates a new SCOP containing REGION.  */
+/* Store the GRAPHITE representation of BB.  */
+
+gimple_poly_bb_p
+new_gimple_poly_bb (basic_block bb, vec<data_reference_p> drs)
+{
+  gimple_poly_bb_p gbb;
+
+  gbb = XNEW (struct gimple_poly_bb);
+  bb->aux = gbb;
+  GBB_BB (gbb) = bb;
+  GBB_DATA_REFS (gbb) = drs;
+  GBB_CONDITIONS (gbb).create (0);
+  GBB_CONDITION_CASES (gbb).create (0);
+
+  return gbb;
+}
+
+static void
+free_data_refs_aux (vec<data_reference_p> datarefs)
+{
+  unsigned int i;
+  data_reference_p dr;
+
+  FOR_EACH_VEC_ELT (datarefs, i, dr)
+    if (dr->aux)
+      {
+	base_alias_pair_p bap = (base_alias_pair_p)(dr->aux);
+
+	free (bap->alias_set);
+
+	free (bap);
+	dr->aux = NULL;
+      }
+}
+/* Frees GBB.  */
+
+void
+free_gimple_poly_bb (gimple_poly_bb_p gbb)
+{
+  free_data_refs_aux (GBB_DATA_REFS (gbb));
+  free_data_refs (GBB_DATA_REFS (gbb));
+
+  GBB_CONDITIONS (gbb).release ();
+  GBB_CONDITION_CASES (gbb).release ();
+  GBB_BB (gbb)->aux = 0;
+  XDELETE (gbb);
+}
+
+/* Deletes all gimple bbs in SCOP.  */
+
+static void
+remove_gbbs_in_scop (scop_p scop)
+{
+  int i;
+  poly_bb_p pbb;
+
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+    free_gimple_poly_bb (PBB_BLACK_BOX (pbb));
+}
+
+/* Creates a new SCOP containing the region (ENTRY, EXIT).  */
 
 scop_p
-new_scop (sese region)
+new_scop (edge entry, edge exit)
 {
+  sese region = new_sese (entry, exit);
   scop_p scop = XNEW (struct scop);
 
   scop->context = NULL;
@@ -291,6 +352,9 @@ free_scop (scop_p scop)
 {
   int i;
   poly_bb_p pbb;
+
+  remove_gbbs_in_scop (scop);
+  free_sese (SCOP_REGION (scop));
 
   FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     free_poly_bb (pbb);

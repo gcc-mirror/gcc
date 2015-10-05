@@ -149,23 +149,6 @@ same_close_phi_node (gphi *p1, gphi *p2)
 			  gimple_phi_arg_def (p2, 0), 0);
 }
 
-/* Store the GRAPHITE representation of BB.  */
-
-static gimple_poly_bb_p
-new_gimple_poly_bb (basic_block bb, vec<data_reference_p> drs)
-{
-  gimple_poly_bb_p gbb;
-
-  gbb = XNEW (struct gimple_poly_bb);
-  bb->aux = gbb;
-  GBB_BB (gbb) = bb;
-  GBB_DATA_REFS (gbb) = drs;
-  GBB_CONDITIONS (gbb).create (0);
-  GBB_CONDITION_CASES (gbb).create (0);
-
-  return gbb;
-}
-
 /* Compare the depth of two basic_block's P1 and P2.  */
 
 static int
@@ -1690,6 +1673,171 @@ scop_detection::nb_pbbs_in_loops (scop_p scop)
   return res;
 }
 
+/* When parameter NAME is in REGION, returns its index in SESE_PARAMS.
+   Otherwise returns -1.  */
+
+static inline int
+parameter_index_in_region_1 (tree name, sese region)
+{
+  int i;
+  tree p;
+
+  gcc_assert (TREE_CODE (name) == SSA_NAME);
+
+  FOR_EACH_VEC_ELT (SESE_PARAMS (region), i, p)
+    if (p == name)
+      return i;
+
+  return -1;
+}
+
+/* When the parameter NAME is in REGION, returns its index in
+   SESE_PARAMS.  Otherwise this function inserts NAME in SESE_PARAMS
+   and returns the index of NAME.  */
+
+static int
+parameter_index_in_region (tree name, sese region)
+{
+  int i;
+
+  gcc_assert (TREE_CODE (name) == SSA_NAME);
+
+  /* Cannot constrain on anything else than INTEGER_TYPE parameters.  */
+  if (TREE_CODE (TREE_TYPE (name)) != INTEGER_TYPE)
+    return -1;
+
+  if (!invariant_in_sese_p_rec (name, region))
+    return -1;
+
+  i = parameter_index_in_region_1 (name, region);
+  if (i != -1)
+    return i;
+
+  gcc_assert (SESE_ADD_PARAMS (region));
+
+  i = SESE_PARAMS (region).length ();
+  SESE_PARAMS (region).safe_push (name);
+  return i;
+}
+
+/* In the context of sese S, scan the expression E and translate it to
+   a linear expression C.  When parsing a symbolic multiplication, K
+   represents the constant multiplier of an expression containing
+   parameters.  */
+
+static void
+scan_tree_for_params (sese s, tree e)
+{
+  if (e == chrec_dont_know)
+    return;
+
+  switch (TREE_CODE (e))
+    {
+    case POLYNOMIAL_CHREC:
+      scan_tree_for_params (s, CHREC_LEFT (e));
+      break;
+
+    case MULT_EXPR:
+      if (chrec_contains_symbols (TREE_OPERAND (e, 0)))
+	scan_tree_for_params (s, TREE_OPERAND (e, 0));
+      else
+	scan_tree_for_params (s, TREE_OPERAND (e, 1));
+      break;
+
+    case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
+    case MINUS_EXPR:
+      scan_tree_for_params (s, TREE_OPERAND (e, 0));
+      scan_tree_for_params (s, TREE_OPERAND (e, 1));
+      break;
+
+    case NEGATE_EXPR:
+    case BIT_NOT_EXPR:
+    CASE_CONVERT:
+    case NON_LVALUE_EXPR:
+      scan_tree_for_params (s, TREE_OPERAND (e, 0));
+      break;
+
+    case SSA_NAME:
+      parameter_index_in_region (e, s);
+      break;
+
+    case INTEGER_CST:
+    case ADDR_EXPR:
+    case REAL_CST:
+    case COMPLEX_CST:
+    case VECTOR_CST:
+      break;
+
+   default:
+      gcc_unreachable ();
+      break;
+    }
+}
+
+/* Find parameters with respect to REGION in BB. We are looking in memory
+   access functions, conditions and loop bounds.  */
+
+static void
+find_params_in_bb (sese region, gimple_poly_bb_p gbb)
+{
+  int i;
+  unsigned j;
+  data_reference_p dr;
+  gimple *stmt;
+  loop_p loop = GBB_BB (gbb)->loop_father;
+
+  /* Find parameters in the access functions of data references.  */
+  FOR_EACH_VEC_ELT (GBB_DATA_REFS (gbb), i, dr)
+    for (j = 0; j < DR_NUM_DIMENSIONS (dr); j++)
+      scan_tree_for_params (region, DR_ACCESS_FN (dr, j));
+
+  /* Find parameters in conditional statements.  */
+  FOR_EACH_VEC_ELT (GBB_CONDITIONS (gbb), i, stmt)
+    {
+      tree lhs = scalar_evolution_in_region (region, loop,
+					     gimple_cond_lhs (stmt));
+      tree rhs = scalar_evolution_in_region (region, loop,
+					     gimple_cond_rhs (stmt));
+
+      scan_tree_for_params (region, lhs);
+      scan_tree_for_params (region, rhs);
+    }
+}
+
+/* Record the parameters used in the SCOP.  A variable is a parameter
+   in a scop if it does not vary during the execution of that scop.  */
+
+static void
+find_scop_parameters (scop_p scop)
+{
+  poly_bb_p pbb;
+  unsigned i;
+  sese region = SCOP_REGION (scop);
+  struct loop *loop;
+  int nbp;
+
+  /* Find the parameters used in the loop bounds.  */
+  FOR_EACH_VEC_ELT (SESE_LOOP_NEST (region), i, loop)
+    {
+      tree nb_iters = number_of_latch_executions (loop);
+
+      if (!chrec_contains_symbols (nb_iters))
+	continue;
+
+      nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
+      scan_tree_for_params (region, nb_iters);
+    }
+
+  /* Find the parameters used in data accesses.  */
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+    find_params_in_bb (region, PBB_BLACK_BOX (pbb));
+
+  nbp = sese_nb_params (region);
+  scop_set_nb_params (scop, nbp);
+  SESE_ADD_PARAMS (region) = false;
+}
+
 class sese_dom_walker : public dom_walker
 {
 public:
@@ -1779,30 +1927,39 @@ build_scops (vec<scop_p> *scops)
   sese_l s (0);
   FOR_EACH_VEC_ELT (scops_l, i, s)
     {
-      sese sese_reg = new_sese (s.entry, s.exit);
-      scop_p scop = new_scop (sese_reg);
+      scop_p scop = new_scop (s.entry, s.exit);
 
+      sb.build_scop_bbs (scop);
       /* Do not optimize a scop containing only PBBs that do not belong
 	 to any loops.  */
       if (sb.nb_pbbs_in_loops (scop) == 0)
 	{
-	  free_sese (sese_reg);
+	  DEBUG_PRINT (dp << "[scop-detection-fail] no data references.\n");
+	  free_scop (scop);
+	  continue;
+	}
+
+      build_sese_loop_nests (scop->region);
+      /* Record all conditions in REGION.  */
+      sese_dom_walker (CDI_DOMINATORS, scop->region).walk
+	(cfun->cfg->x_entry_block_ptr);
+
+      find_scop_parameters (scop);
+      graphite_dim_t max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);
+
+      if (scop_nb_params (scop) > max_dim)
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] too many parameters: "
+		          << scop_nb_params (scop)
+		          << " larger than --param graphite-max-nb-scop-params="
+		          << max_dim << ".\n");
+
 	  free_scop (scop);
 	  continue;
 	}
 
       scops->safe_push (scop);
     }
-
-  scop_p scop;
-  FOR_EACH_VEC_ELT (*scops, i, scop)
-  {
-    sb.build_scop_bbs (scop);
-    sese region = SCOP_REGION (scop);
-    build_sese_loop_nests (region);
-    /* Record all conditions in REGION.  */
-    sese_dom_walker (CDI_DOMINATORS, region).walk (cfun->cfg->x_entry_block_ptr);
-  }
 
   DEBUG_PRINT (dp << "number of SCoPs: " << (scops ? scops->length () : 0););
 }
