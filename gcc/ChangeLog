@@ -1,3 +1,12 @@
+2015-10-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Move
+	call handling ...
+	(create_expression_by_pieces): ... here and build GIMPLE
+	calls directly.  Use gimple_build API and avoid force_gimple_operand.
+	(insert_into_preds_of_block): Simplify.
+	(do_regular_insertion): Add comment.
+
 2015-10-04  Jason Merrill  <jason@redhat.com>
 
 	* builtins.def (BUILT_IN_ABORT): Add transaction_pure attribute.
