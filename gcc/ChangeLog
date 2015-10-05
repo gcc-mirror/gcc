@@ -1,6 +1,33 @@
 2015-10-05  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-poly.c (new_gimple_poly_bb): ... here.
+	(free_data_refs_aux): ... here.
+	(free_gimple_poly_bb): ... here.
+	(remove_gbbs_in_scop): ... here.
+	(new_scop): Call new_sese.
+	(free_scop): Call remove_gbbs_in_scop and free_sese.
+	* graphite-poly.h (base_alias_pair): ... here.
+	(new_gimple_poly_bb): Declare.
+	(free_gimple_poly_bb): Declare.
+	* graphite-scop-detection.c (parameter_index_in_region_1):
+	(parameter_index_in_region): ... here.
+	(scan_tree_for_params): ... here.
+	(find_params_in_bb): ... here.
+	(find_scop_parameters): ... here.
+	(build_scops): Call find_scop_parameters.
+	* graphite-sese-to-poly.c (free_gimple_poly_bb): Move...
+	(free_scops): Move...
+	(single_pred_cond_non_loop_exit): Move...
+	(sese_dom_walker::before_dom_children): Move...
+	(sese_dom_walker::after_dom_children): Move...
+	(build_poly_scop): Move...
+	* graphite-sese-to-poly.h (base_alias_pair): Move...
+	* graphite.c (free_scops): ... here.
+
+2015-10-05  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-scop-detection.c: Include domwalk.h and tree-cfg.h.
 	(trivially_empty_bb_p): Move...
 	(same_close_phi_node): Move...
