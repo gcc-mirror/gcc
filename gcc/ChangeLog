@@ -1,3 +1,10 @@
+2015-10-05  Marek Polacek  <polacek@redhat.com>
+
+	* tree-ssa-loop-im.c
+	(move_computations_dom_walker::before_dom_children): Don't set
+	SSA_NAME_ANTI_RANGE_P.
+	* tree-ssa-phiopt.c (value_replacement): Likewise.
+
 2015-10-05  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
