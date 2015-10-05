@@ -1,3 +1,9 @@
+2015-10-05  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/67821
+	* gcc.dg/torture/pr67821-2.c: New test.
+	* gcc.dg/torture/pr67821.c: New test.
+
 2015-10-05  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/builtin_target.c: Add check for "skylake-avx512".
