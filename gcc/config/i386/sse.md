@@ -14881,7 +14881,7 @@
   /* load nextafter (0.5, 0.0) */
   fmt = REAL_MODE_FORMAT (scalar_mode);
   real_2expN (&half_minus_pred_half, -(fmt->p) - 1, scalar_mode);
-  REAL_ARITHMETIC (pred_half, MINUS_EXPR, dconsthalf, half_minus_pred_half);
+  real_arithmetic (&pred_half, MINUS_EXPR, &dconsthalf, &half_minus_pred_half);
   half = const_double_from_real_value (pred_half, scalar_mode);
 
   vec_half = ix86_build_const_vector (<MODE>mode, true, half);

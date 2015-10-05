@@ -1,5 +1,23 @@
 2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/tm.texi.in (REAL_ARITHMETIC): Delete.
+	* doc/tm.texi: Regenerate.
+	* real.h (REAL_ARITHMETIC): Delete.
+	* config/i386/i386.c (ix86_expand_lround, ix86_expand_round)
+	(ix86_expand_round_sse4): Use real_arithmetic instead of
+	REAL_ARITHMETIC.
+	* config/i386/sse.md (round<mode>2): Likewise.
+	* rtl.h (rtx_to_tree_code): Likewise (in comment).
+	* explow.c (rtx_to_tree_code): Likewise (in comment).
+	* match.pd: Likewise.
+	* simplify-rtx.c (simplify_binary_operation_1): Likewise.
+	* tree-ssa-math-opts.c (representable_as_half_series_p): Likewise.
+	(expand_pow_as_sqrts): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Remove code that
+	was conditional on REAL_ARITHMETIC being undefined.
+
+2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* doc/tm.texi.in (REAL_VALUES_LESS): Delete.
 	* doc/tm.texi: Regenerate.
 	* real.h (real_less): Declare.

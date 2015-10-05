@@ -1428,7 +1428,6 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
 	if (TREE_OVERFLOW (node))
 	  pp_string (pp, " overflow");
 
-#if !defined(REAL_IS_NOT_DOUBLE) || defined(REAL_ARITHMETIC)
 	d = TREE_REAL_CST (node);
 	if (REAL_VALUE_ISINF (d))
 	  pp_string (pp, REAL_VALUE_NEGATIVE (d) ? " -Inf" : " Inf");
@@ -1440,15 +1439,6 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
 	    real_to_decimal (string, &d, sizeof (string), 0, 1);
 	    pp_string (pp, string);
 	  }
-#else
-	{
-	  HOST_WIDE_INT i;
-	  unsigned char *p = (unsigned char *) &TREE_REAL_CST (node);
-	  pp_string (pp, "0x");
-	  for (i = 0; i < sizeof TREE_REAL_CST (node); i++)
-	    output_formatted_integer (pp, "%02x", *p++);
-	}
-#endif
 	break;
       }
 

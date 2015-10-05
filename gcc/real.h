@@ -331,9 +331,6 @@ extern const struct real_format arm_half_format;
 /* ====================================================================== */
 /* Crap.  */
 
-#define REAL_ARITHMETIC(value, code, d1, d2) \
-  real_arithmetic (&(value), code, &(d1), &(d2))
-
 /* Determine whether a floating-point value X is infinite.  */
 #define REAL_VALUE_ISINF(x)		real_isinf (&(x))
 

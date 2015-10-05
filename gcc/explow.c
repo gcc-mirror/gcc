@@ -1900,7 +1900,7 @@ hard_libcall_value (machine_mode mode, rtx fun)
 }
 
 /* Look up the tree code for a given rtx code
-   to provide the arithmetic operation for REAL_ARITHMETIC.
+   to provide the arithmetic operation for real_arithmetic.
    The function returns an int because the caller may not know
    what `enum tree_code' means.  */
 
