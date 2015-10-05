@@ -3717,16 +3717,6 @@ gimple_asm_input_op (const gasm *asm_stmt, unsigned index)
   return asm_stmt->op[index + asm_stmt->no];
 }
 
-/* Return a pointer to input operand INDEX of GIMPLE_ASM ASM_STMT.  */
-
-static inline tree *
-gimple_asm_input_op_ptr (const gasm *asm_stmt, unsigned index)
-{
-  gcc_gimple_checking_assert (index < asm_stmt->ni);
-  return const_cast<tree *> (&asm_stmt->op[index + asm_stmt->no]);
-}
-
-
 /* Set IN_OP to be input operand INDEX in GIMPLE_ASM ASM_STMT.  */
 
 static inline void
@@ -3746,16 +3736,6 @@ gimple_asm_output_op (const gasm *asm_stmt, unsigned index)
   gcc_gimple_checking_assert (index < asm_stmt->no);
   return asm_stmt->op[index];
 }
-
-/* Return a pointer to output operand INDEX of GIMPLE_ASM ASM_STMT.  */
-
-static inline tree *
-gimple_asm_output_op_ptr (const gasm *asm_stmt, unsigned index)
-{
-  gcc_gimple_checking_assert (index < asm_stmt->no);
-  return const_cast<tree *> (&asm_stmt->op[index]);
-}
-
 
 /* Set OUT_OP to be output operand INDEX in GIMPLE_ASM ASM_STMT.  */
 
