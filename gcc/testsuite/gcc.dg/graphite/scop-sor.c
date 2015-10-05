@@ -14,5 +14,4 @@ void sor(int N1, int N2){
 #pragma endscop
 }
 
-/* This requires more than 3 parameters.  */
-/* { dg-final { scan-tree-dump-times "number of SCoPs: 0" 1 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" } } */
