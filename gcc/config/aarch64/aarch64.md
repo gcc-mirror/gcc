@@ -4738,7 +4738,7 @@
 		      ]
 		      UNSPEC_GOTTINYTLS)))]
   ""
-  "ldr\\t%w0, %L1\;add\\t%<w>0, %<w>0, %<w>2"
+  "ldr\\t%w0, %L1\;add\\t%w0, %w0, %w2"
   [(set_attr "type" "multiple")
    (set_attr "length" "8")]
 )

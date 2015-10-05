@@ -1,3 +1,8 @@
+2015-10-05 James Greenhalgh <james.greenhalgh@arm.com>
+	   Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.md (tlsie_tiny_sidi): Replace "<w>" with "w".
+
 2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* real.h (REAL_VALUE_FROM_CONST_DOUBLE): Delete.
