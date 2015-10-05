@@ -2030,8 +2030,8 @@ sem_variable::equals (tree t1, tree t2)
       /* Real constants are the same only if the same width of type.  */
       if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
         return return_false_with_msg ("REAL_CST precision mismatch");
-      return return_with_debug (REAL_VALUES_IDENTICAL (TREE_REAL_CST (t1),
-						       TREE_REAL_CST (t2)));
+      return return_with_debug (real_identical (&TREE_REAL_CST (t1),
+						&TREE_REAL_CST (t2)));
     case VECTOR_CST:
       {
 	unsigned i;

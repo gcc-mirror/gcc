@@ -333,7 +333,6 @@ extern const struct real_format arm_half_format;
 #define REAL_ARITHMETIC(value, code, d1, d2) \
   real_arithmetic (&(value), code, &(d1), &(d2))
 
-#define REAL_VALUES_IDENTICAL(x, y)	real_identical (&(x), &(y))
 #define REAL_VALUES_LESS(x, y)		real_compare (LT_EXPR, &(x), &(y))
 
 /* Determine whether a floating-point value X is infinite.  */

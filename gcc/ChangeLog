@@ -1,5 +1,26 @@
 2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* real.h (REAL_VALUES_IDENTICAL): Delete.
+	* config/m68k/m68k.c (standard_68881_constant_p): Use real_identical
+	instead of REAL_VALUES_IDENTICAL.
+	* fold-const.c (operand_equal_p): Likewise.
+	* ipa-icf.c (sem_variable::equals): Likewise.
+	* tree-complex.c (some_nonzerop): Likewise.
+	(expand_complex_multiplication): Likewise.
+	* tree.c (simple_cst_equal): Likewise.
+	* varasm.c (compare_constant): Likewise.
+---
+ gcc/config/m68k/m68k.c | 5 ++---
+ gcc/fold-const.c       | 3 +--
+ gcc/ipa-icf.c          | 4 ++--
+ gcc/real.h             | 1 -
+ gcc/tree-complex.c     | 4 ++--
+ gcc/tree.c             | 2 +-
+ gcc/varasm.c           | 2 +-
+ 7 files changed, 9 insertions(+), 12 deletions(-)
+
+2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* real.h (real_equal): Declare.
 	(REAL_VALUES_EQUAL): Delete.
 	* real.c (real_equal): New function.

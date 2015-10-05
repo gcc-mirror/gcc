@@ -118,7 +118,7 @@ some_nonzerop (tree t)
      cannot be treated the same as operations with a real or imaginary
      operand if we care about the signs of zeros in the result.  */
   if (TREE_CODE (t) == REAL_CST && !flag_signed_zeros)
-    zerop = REAL_VALUES_IDENTICAL (TREE_REAL_CST (t), dconst0);
+    zerop = real_identical (&TREE_REAL_CST (t), &dconst0);
   else if (TREE_CODE (t) == FIXED_CST)
     zerop = fixed_zerop (t);
   else if (TREE_CODE (t) == INTEGER_CST)
@@ -1021,7 +1021,7 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree inner_type,
     case PAIR (ONLY_IMAG, ONLY_REAL):
       rr = ar;
       if (TREE_CODE (ai) == REAL_CST
-	  && REAL_VALUES_IDENTICAL (TREE_REAL_CST (ai), dconst1))
+	  && real_identical (&TREE_REAL_CST (ai), &dconst1))
 	ri = br;
       else
 	ri = gimplify_build2 (gsi, MULT_EXPR, inner_type, ai, br);
