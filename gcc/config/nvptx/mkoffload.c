@@ -58,24 +58,34 @@ enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
 
 /* Delete tempfiles.  */
 
-/* Unlink a temporary file unless requested otherwise.  */
+void
+tool_cleanup (bool from_signal ATTRIBUTE_UNUSED)
+{
+  if (ptx_cfile_name)
+    maybe_unlink (ptx_cfile_name);
+  if (ptx_name)
+    maybe_unlink (ptx_name);
+}
+
+static void
+mkoffload_cleanup (void)
+{
+  tool_cleanup (false);
+}
+
+/* Unlink FILE unless requested otherwise.  */
 
 void
 maybe_unlink (const char *file)
 {
-  if (! debug)
+  if (!save_temps)
     {
       if (unlink_if_ordinary (file)
 	  && errno != ENOENT)
 	fatal_error (input_location, "deleting file %s: %m", file);
     }
-  else
+  else if (verbose)
     fprintf (stderr, "[Leaving %s]\n", file);
-}
-
-void
-tool_cleanup (bool)
-{
 }
 
 /* Add or change the value of an environment variable, outputting the
@@ -353,6 +363,8 @@ compile_native (const char *infile, const char *outfile, const char *compiler)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, compiler);
+  if (save_temps)
+    obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
   switch (offload_abi)
@@ -386,6 +398,9 @@ main (int argc, char **argv)
 
   progname = "mkoffload";
   diagnostic_initialize (global_dc, 0);
+
+  if (atexit (mkoffload_cleanup) != 0)
+    fatal_error (input_location, "atexit failed");
 
   char *collect_gcc = getenv ("COLLECT_GCC");
   if (collect_gcc == NULL)
@@ -461,6 +476,8 @@ main (int argc, char **argv)
 #undef STR
       else if (strcmp (argv[i], "-fopenmp") == 0)
 	fopenmp = true;
+      else if (strcmp (argv[i], "-save-temps") == 0)
+	save_temps = true;
       else if (strcmp (argv[i], "-v") == 0)
 	verbose = true;
     }
@@ -468,6 +485,8 @@ main (int argc, char **argv)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, driver);
+  if (save_temps)
+    obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
   obstack_ptr_grow (&argv_obstack, "-xlto");
@@ -531,8 +550,6 @@ main (int argc, char **argv)
   fclose (out);
 
   compile_native (ptx_cfile_name, outname, collect_gcc);
-
-  utils_cleanup (false);
 
   return 0;
 }
