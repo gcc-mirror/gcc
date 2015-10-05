@@ -250,6 +250,7 @@ extern bool real_isnegzero (const REAL_VALUE_TYPE *);
 /* Test relationships between reals.  */
 extern bool real_identical (const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 extern bool real_equal (const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
+extern bool real_less (const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 
 /* Extend or truncate to a new mode.  */
 extern void real_convert (REAL_VALUE_TYPE *, machine_mode,
@@ -332,8 +333,6 @@ extern const struct real_format arm_half_format;
 
 #define REAL_ARITHMETIC(value, code, d1, d2) \
   real_arithmetic (&(value), code, &(d1), &(d2))
-
-#define REAL_VALUES_LESS(x, y)		real_compare (LT_EXPR, &(x), &(y))
 
 /* Determine whether a floating-point value X is infinite.  */
 #define REAL_VALUE_ISINF(x)		real_isinf (&(x))
