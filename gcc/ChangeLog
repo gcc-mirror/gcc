@@ -1,3 +1,11 @@
+2015-10-05  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2015-10-05  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/67821
+	* tree-ssanames.c (duplicate_ssa_name_range_info): Remove an assert.
+
 2015-10-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
