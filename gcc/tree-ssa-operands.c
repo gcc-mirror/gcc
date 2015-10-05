@@ -108,7 +108,7 @@ along with GCC; see the file COPYING3.  If not see
 #define opf_address_taken (1 << 5)
 
 /* Array for building all the use operands.  */
-static vec<tree> build_uses;
+static vec<tree *> build_uses;
 
 /* The built VDEF operand.  */
 static tree build_vdef;
@@ -359,8 +359,7 @@ finalize_ssa_defs (struct function *fn, gimple *stmt)
 }
 
 
-/* Takes elements from build_uses and turns them into use operands of STMT.
-   TODO -- Make build_uses vec of tree *.  */
+/* Takes elements from build_uses and turns them into use operands of STMT.  */
 
 static inline void
 finalize_ssa_uses (struct function *fn, gimple *stmt)
@@ -379,7 +378,7 @@ finalize_ssa_uses (struct function *fn, gimple *stmt)
       if (oldvuse != (build_vuse != NULL_TREE
 		      ? build_vuse : build_vdef))
 	gimple_set_vuse (stmt, NULL_TREE);
-      build_uses.safe_insert (0, (tree)gimple_vuse_ptr (stmt));
+      build_uses.safe_insert (0, gimple_vuse_ptr (stmt));
     }
 
   new_list.next = NULL;
@@ -415,7 +414,7 @@ finalize_ssa_uses (struct function *fn, gimple *stmt)
   /* Now create nodes for all the new nodes.  */
   for (new_i = 0; new_i < build_uses.length (); new_i++)
     {
-      tree *op = (tree *) build_uses[new_i];
+      tree *op = build_uses[new_i];
       last = add_use_op (fn, stmt, op, last);
     }
 
@@ -463,7 +462,7 @@ start_ssa_stmt_operands (void)
 static inline void
 append_use (tree *use_p)
 {
-  build_uses.safe_push ((tree) use_p);
+  build_uses.safe_push (use_p);
 }
 
 
@@ -964,7 +963,7 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
   def_operand_p def_p;
   ssa_op_iter iter;
   unsigned i;
-  tree use, def;
+  tree def;
   bool volatile_p = gimple_has_volatile_ops (stmt);
 
   /* build_ssa_operands w/o finalizing them.  */
@@ -990,7 +989,7 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
       return true;
     }
 
-  use = gimple_vuse (stmt);
+  tree use = gimple_vuse (stmt);
   if (use
       && TREE_CODE (use) == SSA_NAME)
     use = SSA_NAME_VAR (use);
@@ -1009,11 +1008,12 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
 
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
     {
-      FOR_EACH_VEC_ELT (build_uses, i, use)
+      tree *op;
+      FOR_EACH_VEC_ELT (build_uses, i, op)
 	{
-	  if (use_p->use == (tree *)use)
+	  if (use_p->use == op)
 	    {
-	      build_uses[i] = NULL_TREE;
+	      build_uses[i] = NULL;
 	      break;
 	    }
 	}
@@ -1024,11 +1024,13 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
 	  return true;
 	}
     }
-  FOR_EACH_VEC_ELT (build_uses, i, use)
-    if (use != NULL_TREE)
+
+  tree *op;
+  FOR_EACH_VEC_ELT (build_uses, i, op)
+    if (op != NULL)
       {
 	error ("use operand missing for stmt");
-	debug_generic_expr (*(tree *)use);
+	debug_generic_expr (*op);
 	return true;
       }
 

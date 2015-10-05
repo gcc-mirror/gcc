@@ -1,3 +1,11 @@
+2015-10-05  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* tree-ssa-operands.c (build_uses): store tree * instead of
+	tree.
+	(finalize_ssa_uses): Adjust.
+	(append_use): Likewise.
+	(verify_ssa_operands): Likewise.
+
 2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* real.h (build_real_truncate): Declare.
