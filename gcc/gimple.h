@@ -2346,12 +2346,12 @@ gimple_op (const gimple *gs, unsigned i)
 /* Return a pointer to operand I for statement GS.  */
 
 static inline tree *
-gimple_op_ptr (const gimple *gs, unsigned i)
+gimple_op_ptr (gimple *gs, unsigned i)
 {
   if (gimple_has_ops (gs))
     {
       gcc_gimple_checking_assert (i < gimple_num_ops (gs));
-      return gimple_ops (CONST_CAST_GIMPLE (gs)) + i;
+      return gimple_ops (gs) + i;
     }
   else
     return NULL;
@@ -2407,15 +2407,15 @@ gimple_assign_lhs (const gimple *gs)
 /* Return a pointer to the LHS of assignment statement GS.  */
 
 static inline tree *
-gimple_assign_lhs_ptr (const gassign *gs)
+gimple_assign_lhs_ptr (gassign *gs)
 {
-  return const_cast<tree *> (&gs->op[0]);
+  return &gs->op[0];
 }
 
 static inline tree *
-gimple_assign_lhs_ptr (const gimple *gs)
+gimple_assign_lhs_ptr (gimple *gs)
 {
-  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  gassign *ass = GIMPLE_CHECK2<gassign *> (gs);
   return gimple_assign_lhs_ptr (ass);
 }
 
@@ -2459,15 +2459,15 @@ gimple_assign_rhs1 (const gimple *gs)
    statement GS.  */
 
 static inline tree *
-gimple_assign_rhs1_ptr (const gassign *gs)
+gimple_assign_rhs1_ptr (gassign *gs)
 {
-  return const_cast<tree *> (&gs->op[1]);
+  return &gs->op[1];
 }
 
 static inline tree *
-gimple_assign_rhs1_ptr (const gimple *gs)
+gimple_assign_rhs1_ptr (gimple *gs)
 {
-  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  gassign *ass = GIMPLE_CHECK2<gassign *> (gs);
   return gimple_assign_rhs1_ptr (ass);
 }
 
@@ -2511,16 +2511,16 @@ gimple_assign_rhs2 (const gimple *gs)
    statement GS.  */
 
 static inline tree *
-gimple_assign_rhs2_ptr (const gassign *gs)
+gimple_assign_rhs2_ptr (gassign *gs)
 {
   gcc_gimple_checking_assert (gimple_num_ops (gs) >= 3);
-  return const_cast<tree *> (&gs->op[2]);
+  return &gs->op[2];
 }
 
 static inline tree *
-gimple_assign_rhs2_ptr (const gimple *gs)
+gimple_assign_rhs2_ptr (gimple *gs)
 {
-  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  gassign *ass = GIMPLE_CHECK2<gassign *> (gs);
   return gimple_assign_rhs2_ptr (ass);
 }
 
@@ -2564,11 +2564,11 @@ gimple_assign_rhs3 (const gimple *gs)
    statement GS.  */
 
 static inline tree *
-gimple_assign_rhs3_ptr (const gimple *gs)
+gimple_assign_rhs3_ptr (gimple *gs)
 {
-  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  gassign *ass = GIMPLE_CHECK2<gassign *> (gs);
   gcc_gimple_checking_assert (gimple_num_ops (gs) >= 4);
-  return const_cast<tree *> (&ass->op[3]);
+  return &ass->op[3];
 }
 
 
@@ -2764,15 +2764,15 @@ gimple_call_lhs (const gimple *gs)
 /* Return a pointer to the LHS of call statement GS.  */
 
 static inline tree *
-gimple_call_lhs_ptr (const gcall *gs)
+gimple_call_lhs_ptr (gcall *gs)
 {
-  return const_cast<tree *> (&gs->op[0]);
+  return &gs->op[0];
 }
 
 static inline tree *
-gimple_call_lhs_ptr (const gimple *gs)
+gimple_call_lhs_ptr (gimple *gs)
 {
-  const gcall *gc = GIMPLE_CHECK2<const gcall *> (gs);
+  gcall *gc = GIMPLE_CHECK2<gcall *> (gs);
   return gimple_call_lhs_ptr (gc);
 }
 
@@ -2948,15 +2948,15 @@ gimple_call_fn (const gimple *gs)
    statement GS.  */
 
 static inline tree *
-gimple_call_fn_ptr (const gcall *gs)
+gimple_call_fn_ptr (gcall *gs)
 {
-  return const_cast<tree *> (&gs->op[1]);
+  return &gs->op[1];
 }
 
 static inline tree *
-gimple_call_fn_ptr (const gimple *gs)
+gimple_call_fn_ptr (gimple *gs)
 {
-  const gcall *gc = GIMPLE_CHECK2<const gcall *> (gs);
+  gcall *gc = GIMPLE_CHECK2<gcall *> (gs);
   return gimple_call_fn_ptr (gc);
 }
 
@@ -3052,9 +3052,9 @@ gimple_call_chain (const gimple *gs)
 /* Return a pointer to the static chain for call statement CALL_STMT.  */
 
 static inline tree *
-gimple_call_chain_ptr (const gcall *call_stmt)
+gimple_call_chain_ptr (gcall *call_stmt)
 {
-  return const_cast<tree *> (&call_stmt->op[2]);
+  return &call_stmt->op[2];
 }
 
 /* Set CHAIN to be the static chain for call statement CALL_STMT.  */
@@ -3103,16 +3103,16 @@ gimple_call_arg (const gimple *gs, unsigned index)
    statement GS.  */
 
 static inline tree *
-gimple_call_arg_ptr (const gcall *gs, unsigned index)
+gimple_call_arg_ptr (gcall *gs, unsigned index)
 {
   gcc_gimple_checking_assert (gimple_num_ops (gs) > index + 3);
-  return const_cast<tree *> (&gs->op[index + 3]);
+  return &gs->op[index + 3];
 }
 
 static inline tree *
-gimple_call_arg_ptr (const gimple *gs, unsigned index)
+gimple_call_arg_ptr (gimple *gs, unsigned index)
 {
-  const gcall *gc = GIMPLE_CHECK2<const gcall *> (gs);
+  gcall *gc = GIMPLE_CHECK2<gcall *> (gs);
   return gimple_call_arg_ptr (gc, index);
 }
 
@@ -3370,9 +3370,9 @@ gimple_cond_lhs (const gimple *gs)
    statement GS.  */
 
 static inline tree *
-gimple_cond_lhs_ptr (const gcond *gs)
+gimple_cond_lhs_ptr (gcond *gs)
 {
-  return const_cast<tree *> (&gs->op[0]);
+  return &gs->op[0];
 }
 
 /* Set LHS to be the LHS operand of the predicate computed by
@@ -3404,9 +3404,9 @@ gimple_cond_rhs (const gimple *gs)
    conditional GS.  */
 
 static inline tree *
-gimple_cond_rhs_ptr (const gcond *gs)
+gimple_cond_rhs_ptr (gcond *gs)
 {
-  return const_cast<tree *> (&gs->op[1]);
+  return &gs->op[1];
 }
 
 
@@ -4387,9 +4387,9 @@ gimple_switch_index (const gswitch *gs)
 /* Return a pointer to the index variable for the switch statement GS.  */
 
 static inline tree *
-gimple_switch_index_ptr (const gswitch *gs)
+gimple_switch_index_ptr (gswitch *gs)
 {
-  return const_cast<tree *> (&gs->op[0]);
+  return &gs->op[0];
 }
 
 
@@ -5773,9 +5773,9 @@ gimple_transaction_set_subcode (gtransaction *transaction_stmt,
 /* Return a pointer to the return value for GIMPLE_RETURN GS.  */
 
 static inline tree *
-gimple_return_retval_ptr (const greturn *gs)
+gimple_return_retval_ptr (greturn *gs)
 {
-  return const_cast<tree *> (&gs->op[0]);
+  return &gs->op[0];
 }
 
 /* Return the return value for GIMPLE_RETURN GS.  */
