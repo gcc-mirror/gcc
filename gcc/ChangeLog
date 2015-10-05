@@ -1,3 +1,67 @@
+2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* real.h (real_equal): Declare.
+	(REAL_VALUES_EQUAL): Delete.
+	* real.c (real_equal): New function.
+	(real_compare): Use it.
+	* doc/tm.texi.in (REAL_VALUES_EQUAL): Delete.
+	* doc/tm.texi: Regenerate.
+	* builtins.c (fold_builtin_pow, fold_builtin_load_exponent): Use
+	real_equal instead of REAL_VALUES_EQUAL.
+	* config/aarch64/aarch64.c (aarch64_float_const_zero_rtx_p): Likewise.
+	* config/arm/arm.c (arm_const_double_rtx, neon_valid_immediate)
+	(fp_const_from_val): Likewise.
+	* config/fr30/fr30.c (fr30_const_double_is_zero): Likewise.
+	* config/m68k/m68k.c (standard_68881_constant_p): Likewise.
+	(floating_exact_log2): Likewise.
+	* config/sh/sh.c (fp_zero_operand, fp_one_operand): Likewise.
+	* config/vax/vax.c (vax_float_literal): Likewise.
+	* config/xtensa/predicates.md (const_float_1_operand): Likewise.
+	* cprop.c (implicit_set_cond_p): Likewise.
+	* expmed.c (expand_mult): Likewise.
+	* fold-const.c (const_binop): Likewise.
+	* simplify-rtx.c (simplify_binary_operation_1): Likewise.
+	(simplify_const_binary_operation): Likewise.
+	(simplify_const_relational_operation): Likewise.
+	* tree-call-cdce.c (check_pow): Likewise.
+	(gen_conditions_for_pow_cst_base): Likewise.
+	* tree-inline.c (estimate_num_insns): Likewise.
+	* tree-ssa-dom.c (record_equality): Likewise.
+	* tree-ssa-math-opts.c (representable_as_half_series_p): Likewise.
+	(gimple_expand_builtin_pow): Likewise.
+	(pass_optimize_widening_mul::execute): Likewise.
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Likewise.
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Likewise.
+	* tree.c (real_zerop, real_onep, real_minus_onep): Likewise.
+---
+ gcc/builtins.c                  | 14 +++++++-------
+ gcc/c-family/c-lex.c            |  6 +++---
+ gcc/c/c-typeck.c                |  2 +-
+ gcc/config/aarch64/aarch64.c    |  2 +-
+ gcc/config/arm/arm.c            |  6 +++---
+ gcc/config/fr30/fr30.c          |  2 +-
+ gcc/config/m68k/m68k.c          |  6 +++---
+ gcc/config/sh/sh.c              |  4 ++--
+ gcc/config/vax/vax.c            |  4 ++--
+ gcc/config/xtensa/predicates.md |  2 +-
+ gcc/cp/tree.c                   |  2 +-
+ gcc/cprop.c                     |  2 +-
+ gcc/doc/tm.texi                 |  7 -------
+ gcc/doc/tm.texi.in              |  7 -------
+ gcc/expmed.c                    |  2 +-
+ gcc/fold-const.c                |  2 +-
+ gcc/real.c                      | 10 +++++++++-
+ gcc/real.h                      |  4 ++--
+ gcc/simplify-rtx.c              | 16 ++++++++--------
+ gcc/tree-call-cdce.c            |  4 ++--
+ gcc/tree-inline.c               |  5 +++--
+ gcc/tree-ssa-dom.c              |  2 +-
+ gcc/tree-ssa-math-opts.c        | 16 ++++++++--------
+ gcc/tree-ssa-uncprop.c          |  2 +-
+ gcc/tree-vect-patterns.c        |  4 ++--
+ gcc/tree.c                      |  6 +++---
+ 26 files changed, 67 insertions(+), 72 deletions(-)
+
 2015-10-05  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/67783

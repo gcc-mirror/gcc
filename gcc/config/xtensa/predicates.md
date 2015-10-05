@@ -152,7 +152,7 @@
 {
   REAL_VALUE_TYPE d;
   REAL_VALUE_FROM_CONST_DOUBLE (d, op);
-  return REAL_VALUES_EQUAL (d, dconst1);
+  return real_equal (&d, &dconst1);
 })
 
 (define_predicate "fpmem_offset_operand"

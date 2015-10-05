@@ -247,8 +247,9 @@ extern bool real_isneg (const REAL_VALUE_TYPE *);
 /* Determine whether a floating-point value X is minus zero.  */
 extern bool real_isnegzero (const REAL_VALUE_TYPE *);
 
-/* Compare two floating-point objects for bitwise identity.  */
+/* Test relationships between reals.  */
 extern bool real_identical (const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
+extern bool real_equal (const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 
 /* Extend or truncate to a new mode.  */
 extern void real_convert (REAL_VALUE_TYPE *, machine_mode,
@@ -333,7 +334,6 @@ extern const struct real_format arm_half_format;
   real_arithmetic (&(value), code, &(d1), &(d2))
 
 #define REAL_VALUES_IDENTICAL(x, y)	real_identical (&(x), &(y))
-#define REAL_VALUES_EQUAL(x, y)		real_compare (EQ_EXPR, &(x), &(y))
 #define REAL_VALUES_LESS(x, y)		real_compare (LT_EXPR, &(x), &(y))
 
 /* Determine whether a floating-point value X is infinite.  */

@@ -1084,7 +1084,7 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
   if ((tree_fits_shwi_p (exp)
        && tree_to_shwi (exp) == 2)
       || (TREE_CODE (exp) == REAL_CST
-          && REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconst2)))
+          && real_equal (&TREE_REAL_CST (exp), &dconst2)))
     {
       *type_in = TREE_TYPE (base);
 
@@ -1095,7 +1095,7 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
 
   /* Catch square root.  */
   if (TREE_CODE (exp) == REAL_CST
-      && REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconsthalf))
+      && real_equal (&TREE_REAL_CST (exp), &dconsthalf))
     {
       tree newfn = mathfn_built_in (TREE_TYPE (base), BUILT_IN_SQRT);
       *type_in = get_vectype_for_scalar_type (TREE_TYPE (base));

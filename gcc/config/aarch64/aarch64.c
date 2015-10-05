@@ -3771,7 +3771,7 @@ aarch64_float_const_zero_rtx_p (rtx x)
   REAL_VALUE_FROM_CONST_DOUBLE (r, x);
   if (REAL_VALUE_MINUS_ZERO (r))
     return !HONOR_SIGNED_ZEROS (GET_MODE (x));
-  return REAL_VALUES_EQUAL (r, dconst0);
+  return real_equal (&r, &dconst0);
 }
 
 /* Return the fixed registers used for condition codes.  */

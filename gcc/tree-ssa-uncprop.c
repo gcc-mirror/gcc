@@ -153,7 +153,7 @@ associate_equivalences_with_edges (void)
 		     this value unless we know that the value is nonzero.  */
 		  if (HONOR_SIGNED_ZEROS (op0)
 		      && (TREE_CODE (op1) != REAL_CST
-			  || REAL_VALUES_EQUAL (dconst0, TREE_REAL_CST (op1))))
+			  || real_equal (&dconst0, &TREE_REAL_CST (op1))))
 		    continue;
 
 		  equivalency = XNEW (struct edge_equivalency);

@@ -4092,8 +4092,9 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
 		    case BUILT_IN_POWF:
 		    case BUILT_IN_POWL:
 		      if (TREE_CODE (gimple_call_arg (stmt, 1)) == REAL_CST
-			  && REAL_VALUES_EQUAL
-			  (TREE_REAL_CST (gimple_call_arg (stmt, 1)), dconst2))
+			  && (real_equal
+			      (&TREE_REAL_CST (gimple_call_arg (stmt, 1)),
+			       &dconst2)))
 			return estimate_operator_cost
 			    (MULT_EXPR, weights, gimple_call_arg (stmt, 0),
 			     gimple_call_arg (stmt, 0));
