@@ -457,6 +457,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
+  template<typename... _Elements>
+    class tuple;
 
   // Concept utility functions, reused in conditionally-explicit
   // constructors.
@@ -490,7 +492,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _SrcTuple>
     static constexpr bool _NonNestedTuple()
     {
-      return  __and_<__not_<is_convertible<_SrcTuple, _Elements...>>,
+      return  __and_<__not_<is_same<tuple<_Elements...>,
+                                   typename remove_cv<
+                                     typename remove_reference<_SrcTuple>::type
+                                   >::type>>,
+                     __not_<is_convertible<_SrcTuple, _Elements...>>,
                      __not_<is_constructible<_Elements..., _SrcTuple>>
               >::value;
     }
