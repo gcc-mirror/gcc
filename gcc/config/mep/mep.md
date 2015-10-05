@@ -760,13 +760,11 @@
   [(const_int 0)]
   "
 {
-  REAL_VALUE_TYPE rv;
   HOST_WIDE_INT value;
   HOST_WIDE_INT lo, hi;
   rtx out;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (rv, operands[1]);
-  REAL_VALUE_TO_TARGET_SINGLE (rv, value);
+  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (operands[1]), value);
 
   lo = value & 0xffff;
   hi = trunc_int_for_mode (value & 0xffff0000, SImode);

@@ -8719,16 +8719,13 @@ s390_chunkify_cancel (struct constant_pool *pool_list)
 void
 s390_output_pool_entry (rtx exp, machine_mode mode, unsigned int align)
 {
-  REAL_VALUE_TYPE r;
-
   switch (GET_MODE_CLASS (mode))
     {
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
       gcc_assert (GET_CODE (exp) == CONST_DOUBLE);
 
-      REAL_VALUE_FROM_CONST_DOUBLE (r, exp);
-      assemble_real (r, mode, align);
+      assemble_real (*CONST_DOUBLE_REAL_VALUE (exp), mode, align);
       break;
 
     case MODE_INT:

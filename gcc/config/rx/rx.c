@@ -886,10 +886,8 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	case CONST_DOUBLE:
 	  {
 	    unsigned long val;
-	    REAL_VALUE_TYPE rv;
 
-	    REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
+	    REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op), val);
 	    if (print_hash)
 	      fprintf (file, "#");
 	    fprintf (file, TARGET_AS100_SYNTAX ? "0%lxH" : "0x%lx", val);

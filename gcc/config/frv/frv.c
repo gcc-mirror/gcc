@@ -2767,11 +2767,9 @@ frv_print_operand (FILE * file, rtx x, int code)
     {
       if (GET_MODE (x) == SFmode)
 	{
-	  REAL_VALUE_TYPE rv;
 	  long l;
 
-	  REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-	  REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
 	  value = l;
 	}
 
@@ -4290,11 +4288,10 @@ output_move_single (rtx operands[], rtx insn)
 
 	      else if (mode == SFmode)
 		{
-		  REAL_VALUE_TYPE rv;
 		  long l;
 
-		  REAL_VALUE_FROM_CONST_DOUBLE (rv, src);
-		  REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+		  REAL_VALUE_TO_TARGET_SINGLE
+		    (*CONST_DOUBLE_REAL_VALUE (src), l);
 		  value = l;
 		}
 

@@ -3763,15 +3763,12 @@ aarch64_legitimate_address_p (machine_mode mode, rtx x,
 bool
 aarch64_float_const_zero_rtx_p (rtx x)
 {
-  REAL_VALUE_TYPE r;
-
   if (GET_MODE (x) == VOIDmode)
     return false;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-  if (REAL_VALUE_MINUS_ZERO (r))
+  if (REAL_VALUE_MINUS_ZERO (*CONST_DOUBLE_REAL_VALUE (x)))
     return !HONOR_SIGNED_ZEROS (GET_MODE (x));
-  return real_equal (&r, &dconst0);
+  return real_equal (CONST_DOUBLE_REAL_VALUE (x), &dconst0);
 }
 
 /* Return the fixed registers used for condition codes.  */
@@ -4401,9 +4398,8 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	    {
 #define buf_size 20
 	      char float_buf[buf_size] = {'\0'};
-	      REAL_VALUE_TYPE r;
-	      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	      real_to_decimal_for_mode (float_buf, &r,
+	      real_to_decimal_for_mode (float_buf,
+					CONST_DOUBLE_REAL_VALUE (x),
 					buf_size, buf_size,
 					1, GET_MODE (x));
 	      asm_fprintf (asm_out_file, "%s", float_buf);
@@ -11309,7 +11305,7 @@ aarch64_float_const_representable_p (rtx x)
   if (GET_MODE (x) == VOIDmode || GET_MODE (x) == HFmode)
     return false;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+  r = *CONST_DOUBLE_REAL_VALUE (x);
 
   /* We cannot represent infinities, NaNs or +/-zero.  We won't
      know if we have +zero until we analyse the mantissa, but we
@@ -11401,10 +11397,10 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
       else
 	{
 #define buf_size 20
-	  REAL_VALUE_TYPE r;
-	  REAL_VALUE_FROM_CONST_DOUBLE (r, info.value);
 	  char float_buf[buf_size] = {'\0'};
-	  real_to_decimal_for_mode (float_buf, &r, buf_size, buf_size, 1, mode);
+	  real_to_decimal_for_mode (float_buf,
+				    CONST_DOUBLE_REAL_VALUE (info.value),
+				    buf_size, buf_size, 1, mode);
 #undef buf_size
 
 	  if (lane_count == 1)

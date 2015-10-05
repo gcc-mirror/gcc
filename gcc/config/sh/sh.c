@@ -10000,26 +10000,23 @@ system_reg_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 bool
 fp_zero_operand (rtx op)
 {
-  REAL_VALUE_TYPE r;
+  const REAL_VALUE_TYPE *r;
 
   if (GET_MODE (op) != SFmode)
     return false;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-  return real_equal (&r, &dconst0) && ! REAL_VALUE_MINUS_ZERO (r);
+  r = CONST_DOUBLE_REAL_VALUE (op);
+  return real_equal (r, &dconst0) && ! REAL_VALUE_MINUS_ZERO (*r);
 }
 
 /* Returns true if OP is a floating point value with value 1.0.  */
 bool
 fp_one_operand (rtx op)
 {
-  REAL_VALUE_TYPE r;
-
   if (GET_MODE (op) != SFmode)
     return false;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-  return real_equal (&r, &dconst1);
+  return real_equal (CONST_DOUBLE_REAL_VALUE (op), &dconst1);
 }
 
 /* Return the TLS type for TLS symbols.  */

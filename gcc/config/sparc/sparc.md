@@ -2218,11 +2218,9 @@
           || which_alternative == 4
           || which_alternative == 5))
     {
-      REAL_VALUE_TYPE r;
       long i;
 
-      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
-      REAL_VALUE_TO_TARGET_SINGLE (r, i);
+      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (operands[1]), i);
       operands[1] = GEN_INT (i);
     }
 
@@ -2265,11 +2263,9 @@
                    (match_operand:SF 2 "fp_const_high_losum_operand" "S")))]
   ""
 {
-  REAL_VALUE_TYPE r;
   long i;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, operands[2]);
-  REAL_VALUE_TO_TARGET_SINGLE (r, i);
+  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (operands[2]), i);
   operands[2] = GEN_INT (i);
   return "or\t%1, %%lo(%a2), %0";
 })
@@ -2279,11 +2275,9 @@
         (high:SF (match_operand:SF 1 "fp_const_high_losum_operand" "S")))]
   ""
 {
-  REAL_VALUE_TYPE r;
   long i;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
-  REAL_VALUE_TO_TARGET_SINGLE (r, i);
+  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (operands[1]), i);
   operands[1] = GEN_INT (i);
   return "sethi\t%%hi(%1), %0";
 })

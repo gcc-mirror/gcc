@@ -3295,11 +3295,10 @@ handle_move_double (rtx operands[2],
 	{
 	  if (GET_CODE (operands[1]) == CONST_DOUBLE)
 	    {
-	      REAL_VALUE_TYPE r;
 	      long l[3];
 
-	      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
-	      REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
+	      REAL_VALUE_TO_TARGET_LONG_DOUBLE
+		(*CONST_DOUBLE_REAL_VALUE (operands[1]), l);
 	      operands[1] = GEN_INT (l[0]);
 	      middlehalf[1] = GEN_INT (l[1]);
 	      latehalf[1] = GEN_INT (l[2]);
@@ -4323,7 +4322,7 @@ init_68881_table (void)
 int
 standard_68881_constant_p (rtx x)
 {
-  REAL_VALUE_TYPE r;
+  const REAL_VALUE_TYPE *r;
   int i;
 
   /* fmovecr must be emulated on the 68040 and 68060, so it shouldn't be
@@ -4334,19 +4333,19 @@ standard_68881_constant_p (rtx x)
   if (! inited_68881_table)
     init_68881_table ();
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+  r = CONST_DOUBLE_REAL_VALUE (x);
 
   /* Use real_identical instead of real_equal so that -0.0 is rejected.  */
   for (i = 0; i < 6; i++)
     {
-      if (real_identical (&r, &values_68881[i]))
+      if (real_identical (r, &values_68881[i]))
         return (codes_68881[i]);
     }
   
   if (GET_MODE (x) == SFmode)
     return 0;
 
-  if (real_equal (&r, &values_68881[6]))
+  if (real_equal (r, &values_68881[6]))
     return (codes_68881[6]);
 
   /* larger powers of ten in the constants ram are not used
@@ -4360,17 +4359,18 @@ standard_68881_constant_p (rtx x)
 int
 floating_exact_log2 (rtx x)
 {
-  REAL_VALUE_TYPE r, r1;
+  const REAL_VALUE_TYPE *r;
+  REAL_VALUE_TYPE r1;
   int exp;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+  r = CONST_DOUBLE_REAL_VALUE (x);
 
-  if (real_less (&r, &dconst1))
+  if (real_less (r, &dconst1))
     return 0;
 
-  exp = real_exponent (&r);
+  exp = real_exponent (r);
   real_2expN (&r1, exp, DFmode);
-  if (real_equal (&r1, &r))
+  if (real_equal (&r1, r))
     return exp;
 
   return 0;
@@ -4480,27 +4480,21 @@ print_operand (FILE *file, rtx op, int letter)
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == SFmode)
     {
-      REAL_VALUE_TYPE r;
       long l;
-      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      REAL_VALUE_TO_TARGET_SINGLE (r, l);
+      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op), l);
       asm_fprintf (file, "%I0x%lx", l & 0xFFFFFFFF);
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == XFmode)
     {
-      REAL_VALUE_TYPE r;
       long l[3];
-      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
+      REAL_VALUE_TO_TARGET_LONG_DOUBLE (*CONST_DOUBLE_REAL_VALUE (op), l);
       asm_fprintf (file, "%I0x%lx%08lx%08lx", l[0] & 0xFFFFFFFF,
 		   l[1] & 0xFFFFFFFF, l[2] & 0xFFFFFFFF);
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == DFmode)
     {
-      REAL_VALUE_TYPE r;
       long l[2];
-      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      REAL_VALUE_TO_TARGET_DOUBLE (r, l);
+      REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (op), l);
       asm_fprintf (file, "%I0x%lx%08lx", l[0] & 0xFFFFFFFF, l[1] & 0xFFFFFFFF);
     }
   else

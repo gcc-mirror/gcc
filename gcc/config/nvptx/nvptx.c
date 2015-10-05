@@ -1857,9 +1857,7 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 
 	case CONST_DOUBLE:
 	  long vals[2];
-	  REAL_VALUE_TYPE real;
-	  REAL_VALUE_FROM_CONST_DOUBLE (real, x);
-	  real_to_target (vals, &real, GET_MODE (x));
+	  real_to_target (vals, CONST_DOUBLE_REAL_VALUE (x), GET_MODE (x));
 	  vals[0] &= 0xffffffff;
 	  vals[1] &= 0xffffffff;
 	  if (GET_MODE (x) == SFmode)

@@ -1154,14 +1154,11 @@ cris_print_operand (FILE *file, rtx x, int code)
       else
 	{
 	  /* Only single precision is allowed as plain operands the
-	     moment.  FIXME:  REAL_VALUE_FROM_CONST_DOUBLE isn't
-	     documented.  */
-	  REAL_VALUE_TYPE r;
+	     moment.  */
 	  long l;
 
 	  /* FIXME:  Perhaps check overflow of the "single".  */
-	  REAL_VALUE_FROM_CONST_DOUBLE (r, operand);
-	  REAL_VALUE_TO_TARGET_SINGLE (r, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (operand), l);
 
 	  fprintf (file, "0x%lx", l);
 	}

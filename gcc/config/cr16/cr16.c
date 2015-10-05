@@ -1386,10 +1386,8 @@ cr16_const_double_ok (rtx op)
 {
   if (GET_MODE (op) == SFmode)
     {
-      REAL_VALUE_TYPE r;
       long l;
-      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      REAL_VALUE_TO_TARGET_SINGLE (r, l);
+      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op), l);
       return UNSIGNED_INT_FITS_N_BITS (l, 4) ? 1 : 0;
     }
 
@@ -1521,11 +1519,9 @@ cr16_print_operand (FILE * file, rtx x, int code)
 
 	case CONST_DOUBLE:
 	  {
-	    REAL_VALUE_TYPE r;
 	    long l;
 
-	    REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	    REAL_VALUE_TO_TARGET_SINGLE (r, l);
+	    REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
 
 	    fprintf (file, "$0x%lx", l);
 	    return;

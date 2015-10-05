@@ -277,20 +277,17 @@ const_double_split (rtx x, HOST_WIDE_INT * p_high, HOST_WIDE_INT * p_low)
   if (GET_CODE (x) == CONST_DOUBLE)
     {
       long t[2];
-      REAL_VALUE_TYPE rv;
 
       switch (GET_MODE (x))
 	{
 	case DFmode:
-	  REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-	  REAL_VALUE_TO_TARGET_DOUBLE (rv, t);
+	  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), t);
 	  *p_high = t[1];	/* since v850 is little endian */
 	  *p_low = t[0];	/* high is second word */
 	  return;
 
 	case SFmode:
-	  REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-	  REAL_VALUE_TO_TARGET_SINGLE (rv, *p_high);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), *p_high);
 	  *p_low = 0;
 	  return;
 

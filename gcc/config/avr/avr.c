@@ -2431,11 +2431,9 @@ avr_print_operand (FILE *file, rtx x, int code)
   else if (GET_CODE (x) == CONST_DOUBLE)
     {
       long val;
-      REAL_VALUE_TYPE rv;
       if (GET_MODE (x) != SFmode)
         fatal_insn ("internal compiler error.  Unknown mode:", x);
-      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-      REAL_VALUE_TO_TARGET_SINGLE (rv, val);
+      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), val);
       fprintf (file, "0x%lx", val);
     }
   else if (GET_CODE (x) == CONST_STRING)

@@ -650,11 +650,9 @@ easy_di_const (rtx op)
 int
 easy_df_const (rtx op)
 {
-  REAL_VALUE_TYPE r;
   long l[2];
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-  REAL_VALUE_TO_TARGET_DOUBLE (r, l);
+  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (op), l);
   if (l[0] == 0 && l[1] == 0)
     return 1;
   if ((l[0] & 0xffff) == 0 && l[1] == 0)
@@ -2280,11 +2278,9 @@ m32r_print_operand (FILE * file, rtx x, int code)
       /* We handle SFmode constants here as output_addr_const doesn't.  */
       if (GET_MODE (x) == SFmode)
 	{
-	  REAL_VALUE_TYPE d;
 	  long l;
 
-	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  REAL_VALUE_TO_TARGET_SINGLE (d, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
 	  fprintf (file, "0x%08lx", l);
 	  break;
 	}

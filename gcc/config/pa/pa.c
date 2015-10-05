@@ -2346,14 +2346,12 @@ pa_singlemove_string (rtx *operands)
   if (GET_CODE (operands[1]) == CONST_DOUBLE)
     {
       long i;
-      REAL_VALUE_TYPE d;
 
       gcc_assert (GET_MODE (operands[1]) == SFmode);
 
       /* Translate the CONST_DOUBLE to a CONST_INT with the same target
 	 bit pattern.  */
-      REAL_VALUE_FROM_CONST_DOUBLE (d, operands[1]);
-      REAL_VALUE_TO_TARGET_SINGLE (d, i);
+      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (operands[1]), i);
 
       operands[1] = GEN_INT (i);
       /* Fall through to CONST_INT case.  */

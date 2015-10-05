@@ -15575,12 +15575,10 @@ insert_wide_int (const wide_int &val, unsigned char *dest, int elt_size)
 static void
 insert_float (const_rtx rtl, unsigned char *array)
 {
-  REAL_VALUE_TYPE rv;
   long val[4];
   int i;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (rv, rtl);
-  real_to_target (val, &rv, GET_MODE (rtl));
+  real_to_target (val, CONST_DOUBLE_REAL_VALUE (rtl), GET_MODE (rtl));
 
   /* real_to_target puts 32-bit pieces in each long.  Pack them.  */
   for (i = 0; i < GET_MODE_SIZE (GET_MODE (rtl)) / 4; i++)

@@ -8011,10 +8011,8 @@ label:
 {
   int endian = WORDS_BIG_ENDIAN ? 1 : 0;
   long values[2];
-  REAL_VALUE_TYPE value;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (value, operands[1]);
-  REAL_VALUE_TO_TARGET_DOUBLE (value, values);
+  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (operands[1]), values);
 
   if (HOST_BITS_PER_WIDE_INT >= 64)
     operands[2] = immed_double_const ((unsigned long) values[endian]
@@ -8718,10 +8716,8 @@ label:
   [(set (match_dup 3) (match_dup 2))]
 {
   long values;
-  REAL_VALUE_TYPE value;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (value, operands[1]);
-  REAL_VALUE_TO_TARGET_SINGLE (value, values);
+  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (operands[1]), values);
   operands[2] = GEN_INT (values);
 
   operands[3] = gen_rtx_REG (DImode, true_regnum (operands[0]));
@@ -12454,11 +12450,8 @@ label:
  ""
 {
   if (operands[1] != const0_rtx)
-    {
-      REAL_VALUE_TYPE d;
-      REAL_VALUE_FROM_CONST_DOUBLE (d, operands[0]);
-      assemble_real (d, SFmode, GET_MODE_ALIGNMENT (SFmode));
-    }
+    assemble_real (*CONST_DOUBLE_REAL_VALUE (operands[0]),
+		   SFmode, GET_MODE_ALIGNMENT (SFmode));
   return "";
 }
  [(set_attr "length" "4")
@@ -12472,11 +12465,8 @@ label:
  ""
 {
   if (operands[1] != const0_rtx)
-    {
-      REAL_VALUE_TYPE d;
-      REAL_VALUE_FROM_CONST_DOUBLE (d, operands[0]);
-      assemble_real (d, DFmode, GET_MODE_ALIGNMENT (DFmode));
-    }
+    assemble_real (*CONST_DOUBLE_REAL_VALUE (operands[0]),
+		   DFmode, GET_MODE_ALIGNMENT (DFmode));
   return "";
 }
  [(set_attr "length" "8")

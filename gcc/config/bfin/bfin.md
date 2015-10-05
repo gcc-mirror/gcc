@@ -848,12 +848,10 @@
    (set (match_dup 2) (lo_sum:SI (match_dup 2) (match_dup 3)))]
 {
   long values;
-  REAL_VALUE_TYPE value;
 
   gcc_assert (GET_CODE (operands[1]) == CONST_DOUBLE);
 
-  REAL_VALUE_FROM_CONST_DOUBLE (value, operands[1]);
-  REAL_VALUE_TO_TARGET_SINGLE (value, values);
+  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (operands[1]), values);
 
   operands[2] = gen_rtx_REG (SImode, true_regnum (operands[0]));
   operands[3] = GEN_INT (trunc_int_for_mode (values, SImode));

@@ -1596,9 +1596,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
 	case CONST_DOUBLE:
 	  {
 	    long val;
-	    REAL_VALUE_TYPE rv;
-	    REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
+	    REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), val);
 	    fprintf (file, "#%ld", ((val >> 16) & 0xffff));
 	    break;
 	  }
@@ -1626,9 +1624,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
 	case CONST_DOUBLE:
 	  {
 	    long val;
-	    REAL_VALUE_TYPE rv;
-	    REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
+	    REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), val);
 	    fprintf (file, "#%ld", (val & 0xffff));
 	    break;
 	  }
@@ -1785,9 +1781,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
 	case CONST_DOUBLE:
 	  {
 	    long val;
-	    REAL_VALUE_TYPE rv;
-	    REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
+	    REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), val);
 	    fprintf (file, "#%ld", val);
 	    break;
 	  }

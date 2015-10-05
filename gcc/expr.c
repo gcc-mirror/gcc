@@ -3626,11 +3626,11 @@ compress_float_constant (rtx x, rtx y)
   machine_mode dstmode = GET_MODE (x);
   machine_mode orig_srcmode = GET_MODE (y);
   machine_mode srcmode;
-  REAL_VALUE_TYPE r;
+  const REAL_VALUE_TYPE *r;
   int oldcost, newcost;
   bool speed = optimize_insn_for_speed_p ();
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, y);
+  r = CONST_DOUBLE_REAL_VALUE (y);
 
   if (targetm.legitimate_constant_p (dstmode, y))
     oldcost = set_src_cost (y, orig_srcmode, speed);
@@ -3651,10 +3651,10 @@ compress_float_constant (rtx x, rtx y)
 	continue;
 
       /* Skip if the narrowed value isn't exact.  */
-      if (! exact_real_truncate (srcmode, &r))
+      if (! exact_real_truncate (srcmode, r))
 	continue;
 
-      trunc_y = const_double_from_real_value (r, srcmode);
+      trunc_y = const_double_from_real_value (*r, srcmode);
 
       if (targetm.legitimate_constant_p (srcmode, trunc_y))
 	{
