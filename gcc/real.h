@@ -440,6 +440,9 @@ bool real_can_shorten_arithmetic (machine_mode, machine_mode);
 /* In tree.c: wrap up a REAL_VALUE_TYPE in a tree node.  */
 extern tree build_real (tree, REAL_VALUE_TYPE);
 
+/* Likewise, but first truncate the value to the type.  */
+extern tree build_real_truncate (tree, REAL_VALUE_TYPE);
+
 /* Calculate R as X raised to the integer exponent N in mode MODE.  */
 extern bool real_powi (REAL_VALUE_TYPE *, machine_mode,
 		       const REAL_VALUE_TYPE *, HOST_WIDE_INT);
