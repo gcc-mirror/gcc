@@ -127,9 +127,6 @@ struct data_reference
 
   /* Alias information for the data reference.  */
   struct dr_alias alias;
-
-  /* The alias set for this data reference.  */
-  int alias_set;
 };
 
 #define DR_STMT(DR)                (DR)->stmt

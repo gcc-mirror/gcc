@@ -930,11 +930,11 @@ build_scop_iteration_domain (scop_p scop)
    domain.  */
 
 static isl_map *
-pdr_add_alias_set (isl_map *acc, data_reference_p dr)
+pdr_add_alias_set (isl_map *acc, dr_info &dri)
 {
   isl_constraint *c = isl_equality_alloc
       (isl_local_space_from_space (isl_map_get_space (acc)));
-  c = isl_constraint_set_constant_si (c, -dr->alias_set);
+  c = isl_constraint_set_constant_si (c, -dri.alias_set);
   c = isl_constraint_set_coefficient_si (c, isl_dim_out, 0, 1);
 
   return isl_map_add_constraint (acc, c);
@@ -968,8 +968,10 @@ set_index (isl_map *map, int pos, isl_pw_aff *index)
    PBB is the poly_bb_p that contains the data reference DR.  */
 
 static isl_map *
-pdr_add_memory_accesses (isl_map *acc, data_reference_p dr, poly_bb_p pbb)
+pdr_add_memory_accesses (isl_map *acc, dr_info &dri)
 {
+  data_reference_p dr = dri.dr;
+  poly_bb_p pbb = dri.pbb;
   int i, nb_subscripts = DR_NUM_DIMENSIONS (dr);
   scop_p scop = PBB_SCOP (pbb);
 
@@ -1056,10 +1058,12 @@ pdr_add_data_dimensions (isl_set *subscript_sizes, scop_p scop,
 /* Build data accesses for DR in PBB.  */
 
 static void
-build_poly_dr (data_reference_p dr, poly_bb_p pbb)
+build_poly_dr (dr_info &dri)
 {
   isl_map *acc;
   isl_set *subscript_sizes;
+  poly_bb_p pbb = dri.pbb;
+  data_reference_p dr = dri.dr;
   scop_p scop = PBB_SCOP (pbb);
 
   {
@@ -1072,19 +1076,18 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
     acc = isl_map_set_tuple_id (acc, isl_dim_out, isl_id_for_dr (scop, dr));
   }
 
-  acc = pdr_add_alias_set (acc, dr);
-  acc = pdr_add_memory_accesses (acc, dr, pbb);
+  acc = pdr_add_alias_set (acc, dri);
+  acc = pdr_add_memory_accesses (acc, dri);
 
   {
     isl_id *id = isl_id_for_dr (scop, dr);
     int nb = 1 + DR_NUM_DIMENSIONS (dr);
     isl_space *space = isl_space_set_alloc (scop->isl_context, 0, nb);
-    int alias_set_num = dr->alias_set;
 
     space = isl_space_set_tuple_id (space, isl_dim_set, id);
     subscript_sizes = isl_set_nat_universe (space);
     subscript_sizes = isl_set_fix_si (subscript_sizes, isl_dim_set, 0,
-				      alias_set_num);
+				      dri.alias_set);
     subscript_sizes = pdr_add_data_dimensions (subscript_sizes, scop, dr);
   }
 
@@ -1096,17 +1099,17 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
 /* Compute alias-sets for all data references in DRS.  */
 
 static void
-build_alias_set (vec<data_reference_p> drs)
+build_alias_set (scop_p scop)
 {
-  int num_vertices = drs.length ();
+  int num_vertices = scop->drs.length ();
   struct graph *g = new_graph (num_vertices);
-  data_reference_p dr1, dr2;
+  dr_info dr1 (0), dr2 (0);
   int i, j;
   int *all_vertices;
 
-  FOR_EACH_VEC_ELT (drs, i, dr1)
-    for (j = i+1; drs.iterate (j, &dr2); j++)
-      if (dr_may_alias_p (dr1, dr2, true))
+  FOR_EACH_VEC_ELT (scop->drs, i, dr1)
+    for (j = i+1; scop->drs.iterate (j, &dr2); j++)
+      if (dr_may_alias_p (dr1.dr, dr2.dr, true))
 	{
 	  add_edge (g, i, j);
 	  add_edge (g, j, i);
@@ -1120,22 +1123,9 @@ build_alias_set (vec<data_reference_p> drs)
   free (all_vertices);
 
   for (i = 0; i < g->n_vertices; i++)
-    drs[i]->alias_set = g->vertices[i].component + 1;
+    scop->drs[i].alias_set = g->vertices[i].component + 1;
 
   free_graph (g);
-}
-
-/* Build the data references for PBB.  */
-
-static void
-build_pbb_drs (poly_bb_p pbb)
-{
-  int j;
-  data_reference_p dr;
-  vec<data_reference_p> gbb_drs = GBB_DATA_REFS (PBB_BLACK_BOX (pbb));
-
-  FOR_EACH_VEC_ELT (gbb_drs, j, dr)
-    build_poly_dr (dr, pbb);
 }
 
 /* Build data references in SCOP.  */
@@ -1143,7 +1133,7 @@ build_pbb_drs (poly_bb_p pbb)
 static void
 build_scop_drs (scop_p scop)
 {
-  int i;
+  int i, j;
   poly_bb_p pbb;
 
   /* Remove all the PBBs that do not have data references: these basic
@@ -1157,16 +1147,17 @@ build_scop_drs (scop_p scop)
 	i--;
       }
 
-  auto_vec<data_reference_p, 3> drs;
+  data_reference_p dr;
   FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
-    drs.safe_splice (GBB_DATA_REFS (PBB_BLACK_BOX (pbb)));
+    if (pbb)
+      FOR_EACH_VEC_ELT (GBB_DATA_REFS (PBB_BLACK_BOX (pbb)), j, dr)
+	scop->drs.safe_push (dr_info (dr, -1, pbb));
 
-  build_alias_set (drs);
+  build_alias_set (scop);
 
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
-    build_pbb_drs (pbb);
-
-  drs.release ();
+  dr_info dri (0);
+  FOR_EACH_VEC_ELT (scop->drs, i, dri)
+    build_poly_dr (dri);
 }
 
 /* Analyze all the data references of STMTS and add them to the
