@@ -55,7 +55,7 @@ scop_get_domains (scop_p scop ATTRIBUTE_UNUSED)
 {
   int i;
   poly_bb_p pbb;
-  isl_space *space = isl_set_get_space (scop->context);
+  isl_space *space = isl_set_get_space (scop->param_context);
   isl_union_set *res = isl_union_set_empty (space);
 
   FOR_EACH_VEC_ELT (scop->bbs, i, pbb)
@@ -294,12 +294,12 @@ bool
 optimize_isl (scop_p scop)
 {
 #ifdef HAVE_ISL_CTX_MAX_OPERATIONS
-  int old_max_operations = isl_ctx_get_max_operations (scop->ctx);
+  int old_max_operations = isl_ctx_get_max_operations (scop->isl_context);
   int max_operations = PARAM_VALUE (PARAM_MAX_ISL_OPERATIONS);
   if (max_operations)
-    isl_ctx_set_max_operations (scop->ctx, max_operations);
+    isl_ctx_set_max_operations (scop->isl_context, max_operations);
 #endif
-  isl_options_set_on_error (scop->ctx, ISL_ON_ERROR_CONTINUE);
+  isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_CONTINUE);
 
   isl_union_set *domain = scop_get_domains (scop);
   isl_union_map *dependences = scop_get_dependences (scop);
@@ -324,11 +324,11 @@ optimize_isl (scop_p scop)
 						validity);
 #endif
 
-  isl_options_set_schedule_max_constant_term (scop->ctx, CONSTANT_BOUND);
-  isl_options_set_schedule_maximize_band_depth (scop->ctx, 1);
+  isl_options_set_schedule_max_constant_term (scop->isl_context, CONSTANT_BOUND);
+  isl_options_set_schedule_maximize_band_depth (scop->isl_context, 1);
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   /* ISL-0.15 or later.  */
-  isl_options_set_schedule_serialize_sccs (scop->ctx, 1);
+  isl_options_set_schedule_serialize_sccs (scop->isl_context, 1);
 #else
   isl_options_set_schedule_fuse (scop->ctx, ISL_SCHEDULE_FUSE_MIN);
 #endif
@@ -341,12 +341,12 @@ optimize_isl (scop_p scop)
     = isl_union_set_compute_schedule (domain, validity, proximity);
 #endif
 
-  isl_options_set_on_error (scop->ctx, ISL_ON_ERROR_ABORT);
+  isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_ABORT);
 
 #ifdef HAVE_ISL_CTX_MAX_OPERATIONS
-  isl_ctx_reset_operations (scop->ctx);
-  isl_ctx_set_max_operations (scop->ctx, old_max_operations);
-  if (!schedule || isl_ctx_last_error (scop->ctx) == isl_error_quota)
+  isl_ctx_reset_operations (scop->isl_context);
+  isl_ctx_set_max_operations (scop->isl_context, old_max_operations);
+  if (!schedule || isl_ctx_last_error (scop->isl_context) == isl_error_quota)
     {
       if (dump_file && dump_flags)
 	fprintf (dump_file, "ISL timed out at %d operations\n",
