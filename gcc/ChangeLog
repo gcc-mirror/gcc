@@ -1,9 +1,18 @@
+2015-10-06  Alexander Fomin  <alexander.fomin@intel.com>
+
+	PR target/67849
+	* config/i386/sse.md (define_split vec_select/V8FI): Restrict
+	split for upper-bank registers when target does not support
+	AVX512VL.
+	(define_insn "vec_extract_lo_<mode><mask_name>"): Restrict
+	split when target does not support AVX512VL.
+
 2015-10-06  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR c/65345
 	* config/rs6000/rs6000.c (rs6000_atomic_assign_expand_fenv):
 	Adjust to use create_tmp_var_raw instead of create_tmp_var.
-	
+
 2015-10-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_rtx_costs): Improve cost estimates for
@@ -596,6 +605,7 @@
 	readability.
 
 2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
+
 	* config/i386/i386.c (processor_features): Add F_AVX512VBMI,
 	F_AVX512IFMA.
 	(isa_names_table): Handle F_AVX512VBMI and F_AVX512IFMA.
