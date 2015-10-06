@@ -1,3 +1,9 @@
+2015-10-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR c/65345
+	* config/rs6000/rs6000.c (rs6000_atomic_assign_expand_fenv):
+	Adjust to use create_tmp_var_raw instead of create_tmp_var.
+	
 2015-10-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_rtx_costs): Improve cost estimates for
