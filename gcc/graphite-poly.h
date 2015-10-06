@@ -417,12 +417,6 @@ struct scop
 #define SCOP_CONTEXT(S) (NULL)
 #define POLY_SCOP_P(S) (S->poly_scop_p)
 
-typedef struct base_alias_pair
-{
-  int base_obj_set;
-  int *alias_set;
-} *base_alias_pair_p;
-
 extern scop_p new_scop (edge, edge);
 extern void free_scop (scop_p);
 extern gimple_poly_bb_p new_gimple_poly_bb (basic_block, vec<data_reference_p>);
