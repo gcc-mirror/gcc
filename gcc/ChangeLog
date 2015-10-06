@@ -1,3 +1,21 @@
+2015-10-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (ATTR_NOINIT): New constant.
+	(ATTR_PERSIST): New constant.
+	(msp430_data_attr): New function - verifies an attribute that only
+	applies to variables.
+	(msp430_attributes): Add noinit and persistent attributes.
+	(noinit_section): New variable.
+	(presis_section): New variable.
+	(TARGET_ASM_INIT_SECTIONS): Define.
+	(msp430_init_sections): New function - initialises the noinit and
+	persist section variables.
+	(msp430_select_section): Add support for noinit and persist
+	attributes.
+	(msp430_section_type_flags): Likewise.
+	* doc/extend.texi:  Document the reent, critical, wakeup, noinit
+	and persistent attributes.
+
 2015-10-05  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 

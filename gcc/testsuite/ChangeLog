@@ -1,3 +1,11 @@
+2015-10-06  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.target/msp430: New directory.
+	* gcc.target/msp430/msp430.exp: New file.  Runs MSP430 specific
+	tests.
+	* gcc.target/msp430/data-attributes.c: New file.  Checks the
+	noinit and persistent data attributes.
+
 2015-10-06  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/builtin_target.c: Fix AVX-512VBMI detection.
