@@ -8262,9 +8262,7 @@
   [(set (match_operand 0 "memory_operand" "=m")
         (unspec [(const_int 0)] UNSPEC_PROBE_STACK))]
   "TARGET_32BIT"
-{
-  return "str%?\\tr0, %0";
-}
+  "str%?\\tr0, %0"
   [(set_attr "type" "store1")
    (set_attr "predicable" "yes")]
 )

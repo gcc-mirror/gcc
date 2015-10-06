@@ -1,3 +1,10 @@
+2015-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.c (arm_emit_probe_stack_range): Adjust comment.
+	(output_probe_stack_range): Rotate the loop and simplify.
+	(thumb1_expand_prologue): Tweak sorry message.
+	* config/arm/arm.md (probe_stack): Use bare string.
+
 2015-10-06  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (lm32-elf): Add newlib-stdint.h to tm_file.
