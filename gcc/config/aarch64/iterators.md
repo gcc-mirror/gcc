@@ -537,6 +537,7 @@
 			   (V4HI "w") (V8HI "w")
 			   (V2SI "w") (V4SI "w")
 			   (DI   "x") (V2DI "x")
+			   (V4HF "w") (V8HF "w")
 			   (V2SF "w") (V4SF "w")
 			   (V2DF "x")])
 
