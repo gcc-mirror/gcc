@@ -1,3 +1,16 @@
+2015-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_statement_after_labels): Use
+	protected_set_expr_location.
+	(c_parser_omp_clause_num_gangs): Likewise.
+	(c_parser_omp_clause_num_threads): Likewise.
+	(c_parser_omp_clause_num_workers): Likewise.
+	(c_parser_omp_clause_vector_length): Likewise.
+	(c_parser_omp_clause_num_teams): Likewise.
+	(c_parser_omp_clause_thread_limit): Likewise.
+	* c-typeck.c (build_c_cast): Likewise.
+	(c_cast_expr): Likewise.
+
 2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-typeck.c (c_tree_equal): Use real_equal instead of
