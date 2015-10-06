@@ -1065,7 +1065,6 @@ pdr_add_data_dimensions (isl_set *subscript_sizes, scop_p scop,
 static void
 build_poly_dr (data_reference_p dr, poly_bb_p pbb)
 {
-  int dr_base_object_set;
   isl_map *acc;
   isl_set *subscript_sizes;
   scop_p scop = PBB_SCOP (pbb);
@@ -1100,131 +1099,21 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
     subscript_sizes = pdr_add_data_dimensions (subscript_sizes, scop, dr);
   }
 
-  gcc_assert (dr->aux);
-  dr_base_object_set = ((base_alias_pair *)(dr->aux))->base_obj_set;
-
-  new_poly_dr (pbb, dr_base_object_set,
+  new_poly_dr (pbb,
 	       DR_IS_READ (dr) ? PDR_READ : PDR_WRITE,
 	       dr, DR_NUM_DIMENSIONS (dr), acc, subscript_sizes);
 }
 
-/* Write to FILE the alias graph of data references in DIMACS format.  */
+/* Compute alias-sets for all data references in DRS.  */
 
-static inline bool
-write_alias_graph_to_ascii_dimacs (FILE *file, char *comment,
-				   vec<data_reference_p> drs)
-{
-  int num_vertex = drs.length ();
-  int edge_num = 0;
-  data_reference_p dr1, dr2;
-  int i, j;
-
-  if (num_vertex == 0)
-    return true;
-
-  FOR_EACH_VEC_ELT (drs, i, dr1)
-    for (j = i + 1; drs.iterate (j, &dr2); j++)
-      if (dr_may_alias_p (dr1, dr2, true))
-	edge_num++;
-
-  fprintf (file, "$\n");
-
-  if (comment)
-    fprintf (file, "c %s\n", comment);
-
-  fprintf (file, "p edge %d %d\n", num_vertex, edge_num);
-
-  FOR_EACH_VEC_ELT (drs, i, dr1)
-    for (j = i + 1; drs.iterate (j, &dr2); j++)
-      if (dr_may_alias_p (dr1, dr2, true))
-	fprintf (file, "e %d %d\n", i + 1, j + 1);
-
-  return true;
-}
-
-/* Write to FILE the alias graph of data references in DOT format.  */
-
-static inline bool
-write_alias_graph_to_ascii_dot (FILE *file, char *comment,
-				vec<data_reference_p> drs)
-{
-  int num_vertex = drs.length ();
-  data_reference_p dr1, dr2;
-  int i, j;
-
-  if (num_vertex == 0)
-    return true;
-
-  fprintf (file, "$\n");
-
-  if (comment)
-    fprintf (file, "c %s\n", comment);
-
-  /* First print all the vertices.  */
-  FOR_EACH_VEC_ELT (drs, i, dr1)
-    fprintf (file, "n%d;\n", i);
-
-  FOR_EACH_VEC_ELT (drs, i, dr1)
-    for (j = i + 1; drs.iterate (j, &dr2); j++)
-      if (dr_may_alias_p (dr1, dr2, true))
-	fprintf (file, "n%d n%d\n", i, j);
-
-  return true;
-}
-
-/* Write to FILE the alias graph of data references in ECC format.  */
-
-static inline bool
-write_alias_graph_to_ascii_ecc (FILE *file, char *comment,
-				vec<data_reference_p> drs)
-{
-  int num_vertex = drs.length ();
-  data_reference_p dr1, dr2;
-  int i, j;
-
-  if (num_vertex == 0)
-    return true;
-
-  fprintf (file, "$\n");
-
-  if (comment)
-    fprintf (file, "c %s\n", comment);
-
-  FOR_EACH_VEC_ELT (drs, i, dr1)
-    for (j = i + 1; drs.iterate (j, &dr2); j++)
-      if (dr_may_alias_p (dr1, dr2, true))
-	fprintf (file, "%d %d\n", i, j);
-
-  return true;
-}
-
-/* Check if DR1 and DR2 are in the same object set.  */
-
-static bool
-dr_same_base_object_p (const struct data_reference *dr1,
-		       const struct data_reference *dr2)
-{
-  return operand_equal_p (DR_BASE_OBJECT (dr1), DR_BASE_OBJECT (dr2), 0);
-}
-
-/* Uses DFS component number as representative of alias-sets. Also tests for
-   optimality by verifying if every connected component is a clique. Returns
-   true (1) if the above test is true, and false (0) otherwise.  */
-
-static int
-build_alias_set_optimal_p (vec<data_reference_p> drs)
+static void
+build_alias_set (vec<data_reference_p> drs)
 {
   int num_vertices = drs.length ();
   struct graph *g = new_graph (num_vertices);
   data_reference_p dr1, dr2;
   int i, j;
-  int num_connected_components;
-  int v_indx1, v_indx2, num_vertices_in_component;
   int *all_vertices;
-  int *vertices;
-  struct graph_edge *e;
-  int this_component_is_clique;
-  int all_components_are_cliques = 1;
 
   FOR_EACH_VEC_ELT (drs, i, dr1)
     for (j = i+1; drs.iterate (j, &dr2); j++)
@@ -1235,103 +1124,25 @@ build_alias_set_optimal_p (vec<data_reference_p> drs)
 	}
 
   all_vertices = XNEWVEC (int, num_vertices);
-  vertices = XNEWVEC (int, num_vertices);
   for (i = 0; i < num_vertices; i++)
     all_vertices[i] = i;
 
-  num_connected_components = graphds_dfs (g, all_vertices, num_vertices,
-					  NULL, true, NULL);
-  for (i = 0; i < g->n_vertices; i++)
-    {
-      data_reference_p dr = drs[i];
-      base_alias_pair *bap;
-
-      gcc_assert (dr->aux);
-      bap = (base_alias_pair *)(dr->aux);
-
-      bap->alias_set = XNEW (int);
-      *(bap->alias_set) = g->vertices[i].component + 1;
-    }
-
-  /* Verify if the DFS numbering results in optimal solution.  */
-  for (i = 0; i < num_connected_components; i++)
-    {
-      num_vertices_in_component = 0;
-      /* Get all vertices whose DFS component number is the same as i.  */
-      for (j = 0; j < num_vertices; j++)
-	if (g->vertices[j].component == i)
-	  vertices[num_vertices_in_component++] = j;
-
-      /* Now test if the vertices in 'vertices' form a clique, by testing
-	 for edges among each pair.  */
-      this_component_is_clique = 1;
-      for (v_indx1 = 0; v_indx1 < num_vertices_in_component; v_indx1++)
-	{
-	  for (v_indx2 = v_indx1+1; v_indx2 < num_vertices_in_component; v_indx2++)
-	    {
-	      /* Check if the two vertices are connected by iterating
-		 through all the edges which have one of these are source.  */
-	      e = g->vertices[vertices[v_indx2]].pred;
-	      while (e)
-		{
-		  if (e->src == vertices[v_indx1])
-		    break;
-		  e = e->pred_next;
-		}
-	      if (!e)
-		{
-		  this_component_is_clique = 0;
-		  break;
-		}
-	    }
-	  if (!this_component_is_clique)
-	    all_components_are_cliques = 0;
-	}
-    }
-
+  graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL);
   free (all_vertices);
-  free (vertices);
-  free_graph (g);
-  return all_components_are_cliques;
-}
 
-/* Group each data reference in DRS with its base object set num.  */
-
-static void
-build_base_obj_set_for_drs (vec<data_reference_p> drs)
-{
-  int num_vertex = drs.length ();
-  struct graph *g = new_graph (num_vertex);
-  data_reference_p dr1, dr2;
-  int i, j;
-  int *queue;
-
-  FOR_EACH_VEC_ELT (drs, i, dr1)
-    for (j = i + 1; drs.iterate (j, &dr2); j++)
-      if (dr_same_base_object_p (dr1, dr2))
-	{
-	  add_edge (g, i, j);
-	  add_edge (g, j, i);
-	}
-
-  queue = XNEWVEC (int, num_vertex);
-  for (i = 0; i < num_vertex; i++)
-    queue[i] = i;
-
-  graphds_dfs (g, queue, num_vertex, NULL, true, NULL);
+  data_reference_p dr;
+  FOR_EACH_VEC_ELT (drs, i, dr)
+    dr->aux = XNEW (base_alias_pair);
 
   for (i = 0; i < g->n_vertices; i++)
     {
       data_reference_p dr = drs[i];
-      base_alias_pair *bap;
-
-      gcc_assert (dr->aux);
-      bap = (base_alias_pair *)(dr->aux);
-
-      bap->base_obj_set = g->vertices[i].component + 1;
+      base_alias_pair *bap = (base_alias_pair *)(dr->aux);
+      bap->alias_set = XNEW (int);
+      int c = g->vertices[i].component + 1;
+      *(bap->alias_set) = c;
     }
 
-  free (queue);
   free_graph (g);
 }
 
@@ -1348,48 +1159,12 @@ build_pbb_drs (poly_bb_p pbb)
     build_poly_dr (dr, pbb);
 }
 
-/* Dump to file the alias graphs for the data references in DRS.  */
-
-static void
-dump_alias_graphs (vec<data_reference_p> drs)
-{
-  char comment[100];
-  FILE *file_dimacs, *file_ecc, *file_dot;
-
-  file_dimacs = fopen ("/tmp/dr_alias_graph_dimacs", "ab");
-  if (file_dimacs)
-    {
-      snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
-		current_function_name ());
-      write_alias_graph_to_ascii_dimacs (file_dimacs, comment, drs);
-      fclose (file_dimacs);
-    }
-
-  file_ecc = fopen ("/tmp/dr_alias_graph_ecc", "ab");
-  if (file_ecc)
-    {
-      snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
-		current_function_name ());
-      write_alias_graph_to_ascii_ecc (file_ecc, comment, drs);
-      fclose (file_ecc);
-    }
-
-  file_dot = fopen ("/tmp/dr_alias_graph_dot", "ab");
-  if (file_dot)
-    {
-      snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
-		current_function_name ());
-      write_alias_graph_to_ascii_dot (file_dot, comment, drs);
-      fclose (file_dot);
-    }
-}
-
 /* Build data references in SCOP.  */
 
 static void
 build_scop_drs (scop_p scop)
 {
-  int i, j;
+  int i;
   poly_bb_p pbb;
 
   /* Remove all the PBBs that do not have data references: these basic
@@ -1403,32 +1178,16 @@ build_scop_drs (scop_p scop)
 	i--;
       }
 
-  data_reference_p dr;
   auto_vec<data_reference_p, 3> drs;
   FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
-    for (j = 0; GBB_DATA_REFS (PBB_BLACK_BOX (pbb)).iterate (j, &dr); j++)
-      drs.safe_push (dr);
+    drs.safe_splice (GBB_DATA_REFS (PBB_BLACK_BOX (pbb)));
 
-  FOR_EACH_VEC_ELT (drs, i, dr)
-    dr->aux = XNEW (base_alias_pair);
-
-  if (!build_alias_set_optimal_p (drs))
-    {
-      /* TODO: Add support when building alias set is not optimal.  */
-      ;
-    }
-
-  build_base_obj_set_for_drs (drs);
-
-  /* When debugging, enable the following code.  This cannot be used
-     in production compilers.  */
-  if (0)
-    dump_alias_graphs (drs);
-
-  drs.release ();
+  build_alias_set (drs);
 
   FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     build_pbb_drs (pbb);
+
+  drs.release ();
 }
 
 /* Analyze all the data references of STMTS and add them to the

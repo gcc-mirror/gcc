@@ -1,3 +1,23 @@
+2015-10-06  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-poly.c (new_poly_dr): Remove dr_base_object_set.
+	Do not set PDR_BASE_OBJECT_SET.
+	* graphite-poly.h (poly_dr): Same.
+	(PDR_BASE_OBJECT_SET): Remove.
+	(new_poly_dr): Update decl.
+	* graphite-sese-to-poly.c (build_poly_dr): Update call to
+	new_poly_dr.
+	(write_alias_graph_to_ascii_dimacs): Remove.
+	(write_alias_graph_to_ascii_dot): Remove.
+	(write_alias_graph_to_ascii_ecc): Remove.
+	(dr_same_base_object_p): Remove.
+	(build_alias_set_optimal_p): Rename build_alias_set.  Remove dead
+	code.
+	(build_base_obj_set_for_drs): Remove.
+	(dump_alias_graphs): Remove.
+	(build_scop_drs): Remove dead code.
+
 2015-10-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 
