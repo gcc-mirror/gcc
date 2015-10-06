@@ -173,6 +173,10 @@ check_features (unsigned int ecx, unsigned int edx,
     assert (__builtin_cpu_supports ("sse2"));
   if (ecx & bit_POPCNT)
     assert (__builtin_cpu_supports ("popcnt"));
+  if (ecx & bit_AES)
+    assert (__builtin_cpu_supports ("aes"));
+  if (ecx & bit_PCLMUL)
+    assert (__builtin_cpu_supports ("pclmul"));
   if (ecx & bit_SSE3)
     assert (__builtin_cpu_supports ("sse3"));
   if (ecx & bit_SSSE3)
