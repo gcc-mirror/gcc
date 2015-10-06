@@ -1,3 +1,22 @@
+2015-10-06  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/i386.c (expand_vec_perm_even_odd_trunc): New.
+	(expand_vec_perm_even_odd_1): Handle V64QImode.
+	(ix86_expand_vec_perm_const_1): Try expansion with
+	expand_vec_perm_even_odd_trunc as well.
+	* config/i386/sse.md (VI124_AVX512F): Rename to ...
+	(define_mode_iterator VI124_AVX2_24_AVX512F_1_AVX512BW): This. Extend
+	to V54QI.
+	(define_mode_iterator VI248_AVX2_8_AVX512F): Rename to ...
+	(define_mode_iterator VI248_AVX2_8_AVX512F_24_AVX512BW): This. Extend
+	to V32HI and V16SI.
+	(define_insn "avx512bw_<code>v32hiv32qi2"): Unhide pattern name.
+	(define_expand "vec_pack_trunc_<mode>"): Update iterator name.
+	(define_expand "vec_unpacks_lo_<mode>"): Ditto.
+	(define_expand "vec_unpacks_hi_<mode>"): Ditto.
+	(define_expand "vec_unpacku_lo_<mode>"): Ditto.
+	(define_expand "vec_unpacku_hi_<mode>"): Ditto.
+
 2015-10-05  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline

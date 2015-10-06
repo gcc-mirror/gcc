@@ -48960,6 +48960,62 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* A subroutine of expand_vec_perm_even_odd_1.  Implement extract-even
+   and extract-odd permutations of two V64QI operands
+   with two "shifts", two "truncs" and one "concat" insns for "odd"
+   and two "truncs" and one concat insn for "even."
+   Have already failed all two instruction sequences.  */
+
+static bool
+expand_vec_perm_even_odd_trunc (struct expand_vec_perm_d *d)
+{
+  rtx t1, t2, t3, t4;
+  unsigned i, odd, nelt = d->nelt;
+
+  if (!TARGET_AVX512BW
+      || d->one_operand_p
+      || d->vmode != V64QImode)
+    return false;
+
+  /* Check that permutation is even or odd.  */
+  odd = d->perm[0];
+  if (odd > 1)
+    return false;
+
+  for (i = 1; i < nelt; ++i)
+    if (d->perm[i] != 2 * i + odd)
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+
+  if (odd)
+    {
+      t1 = gen_reg_rtx (V32HImode);
+      t2 = gen_reg_rtx (V32HImode);
+      emit_insn (gen_lshrv32hi3 (t1,
+				 gen_lowpart (V32HImode, d->op0),
+				 GEN_INT (8)));
+      emit_insn (gen_lshrv32hi3 (t2,
+				 gen_lowpart (V32HImode, d->op1),
+				 GEN_INT (8)));
+    }
+  else
+    {
+      t1 = gen_lowpart (V32HImode, d->op0);
+      t2 = gen_lowpart (V32HImode, d->op1);
+    }
+
+  t3 = gen_reg_rtx (V32QImode);
+  t4 = gen_reg_rtx (V32QImode);
+  emit_insn (gen_avx512bw_truncatev32hiv32qi2 (t3, t1));
+  emit_insn (gen_avx512bw_truncatev32hiv32qi2 (t4, t2));
+  emit_insn (gen_avx_vec_concatv64qi (d->target, t3, t4));
+
+  return true;
+}
+
 /* A subroutine of ix86_expand_vec_perm_builtin_1.  Implement extract-even
    and extract-odd permutations.  */
 
@@ -49061,6 +49117,9 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
     case V16HImode:
     case V32QImode:
       return expand_vec_perm_even_odd_pack (d);
+
+    case V64QImode:
+      return expand_vec_perm_even_odd_trunc (d);
 
     case V4DImode:
       if (!TARGET_AVX2)
@@ -49523,6 +49582,8 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 
   /* Try sequences of four instructions.  */
 
+  if (expand_vec_perm_even_odd_trunc (d))
+    return true;
   if (expand_vec_perm_vpshufb2_vpermq (d))
     return true;
 
