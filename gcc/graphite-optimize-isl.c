@@ -330,7 +330,7 @@ optimize_isl (scop_p scop)
   /* ISL-0.15 or later.  */
   isl_options_set_schedule_serialize_sccs (scop->isl_context, 1);
 #else
-  isl_options_set_schedule_fuse (scop->ctx, ISL_SCHEDULE_FUSE_MIN);
+  isl_options_set_schedule_fuse (scop->isl_context, ISL_SCHEDULE_FUSE_MIN);
 #endif
 
 #ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
