@@ -1,3 +1,14 @@
+2015-10-05  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-dependences.c (scop_get_transformed_schedule): Remove.
+	(no_violations): Remove.
+	(subtract_commutative_associative_deps): Remove.
+	(compute_deps): Do not call subtract_commutative_associative_deps.
+	(transform_is_safe): Remove.
+	(graphite_legal_transform): Remove.
+	* graphite-poly.h (graphite_legal_transform): Remove.
+
 2015-10-05  Aditya Kumar  <hiraditya@msn.com>
 
 	* graphite-sese-to-poly.c (build_loop_iteration_domains): Only loops

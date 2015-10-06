@@ -436,7 +436,6 @@ extern void print_generated_program (FILE *, scop_p);
 extern void debug_generated_program (scop_p);
 extern int unify_scattering_dimensions (scop_p);
 extern bool apply_poly_transforms (scop_p);
-extern bool graphite_legal_transform (scop_p);
 
 /* Set the region of SCOP to REGION.  */
 
@@ -461,8 +460,6 @@ scop_set_nb_params (scop_p scop, graphite_dim_t nb_params)
 {
   scop->nb_params = nb_params;
 }
-
-bool graphite_legal_transform (scop_p);
 
 isl_union_map *
 scop_get_dependences (scop_p scop);
