@@ -1,3 +1,8 @@
+2015-10-06  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* varasm.c (default_elf_asm_named_section): Remove ATTRIBUTE_UNUSED
+	from the decl parameter.
+
 2015-10-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR 67861
