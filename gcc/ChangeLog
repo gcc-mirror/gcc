@@ -1,5 +1,9 @@
 2015-10-06  Nick Clifton  <nickc@redhat.com>
 
+	* config.gcc (lm32-elf): Add newlib-stdint.h to tm_file.
+
+2015-10-06  Nick Clifton  <nickc@redhat.com>
+
 	* config/msp430/msp430.c (ATTR_NOINIT): New constant.
 	(ATTR_PERSIST): New constant.
 	(msp430_data_attr): New function - verifies an attribute that only

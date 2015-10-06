@@ -1834,7 +1834,7 @@ iq2000*-*-elf*)
         md_file=iq2000/iq2000.md
         ;;
 lm32-*-elf*)
-        tm_file="dbxelf.h elfos.h ${tm_file}"
+        tm_file="dbxelf.h elfos.h ${tm_file} newlib-stdint.h"
 	tmake_file="${tmake_file} lm32/t-lm32"
         ;;
 lm32-*-rtems*)
