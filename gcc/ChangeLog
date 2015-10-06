@@ -1,3 +1,9 @@
+2015-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67859
+	* tree-ssa-pre.c (create_expression_by_pieces): Properly
+	discard not inserted stmts.
+
 2015-10-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/extend.texi (Template Instantiation): Reorder options and

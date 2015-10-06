@@ -1,3 +1,8 @@
+2015-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67859
+	* gcc.dg/torture/pr67859.c: New testcase.
+
 2015-10-05  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/builtin_target.c: Add check for AES and PCLMUL.

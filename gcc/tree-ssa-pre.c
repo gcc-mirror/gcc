@@ -2897,11 +2897,16 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 
   folded = gimple_convert (&forced_stmts, exprtype, folded);
 
-  /* If everything simplified to an exisiting SSA name or constant just
-     return that.  */
-  if (gimple_seq_empty_p (forced_stmts)
-      || is_gimple_min_invariant (folded))
+  /* If there is nothing to insert, return the simplified result.  */
+  if (gimple_seq_empty_p (forced_stmts))
     return folded;
+  /* If we simplified to a constant return it and discard eventually
+     built stmts.  */
+  if (is_gimple_min_invariant (folded))
+    {
+      gimple_seq_discard (forced_stmts);
+      return folded;
+    }
 
   gcc_assert (TREE_CODE (folded) == SSA_NAME);
 
