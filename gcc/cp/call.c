@@ -5144,7 +5144,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
     return error_mark_node;
 
  valid_operands:
-  result = build3 (COND_EXPR, result_type, arg1, arg2, arg3);
+  result = build3_loc (loc, COND_EXPR, result_type, arg1, arg2, arg3);
   if (!cp_unevaluated_operand)
     /* Avoid folding within decltype (c++/42013) and noexcept.  */
     result = fold_if_not_in_template (result);
