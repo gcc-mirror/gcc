@@ -1,3 +1,41 @@
+2015-10-06  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
+
+	* config.gcc (i[34567]86-*-linux* | ...): Add znver1.
+	(case ${target}): Add znver1.
+	* config/i386/cpuid.h(bit_CLZERO):  Define.
+	* config/i386/driver-i386.c: (host_detect_local_cpu): Let
+	-march=native recognize znver1 processors. 
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	znver1, clzero def_and_undef. 
+	* config/i386/i386.c (struct processor_costs znver1_cost): New.
+	(m_znver1): New definition.
+	(m_AMD_MULTIPLE): Includes m_znver1.
+	(processor_target_table): Add znver1 entry.
+	(ix86_target_string) : Add clzero entry.
+	(static const char *const cpu_names): Add znver1 entry.
+	(ix86_option_override_internal): Add znver1 instruction sets.
+	(PTA_CLZERO) :  New definition.
+	(ix86_option_override_internal): Handle new clzerooption.
+	(ix86_issue_rate): Add znver1.
+	(ix86_adjust_cost): Add znver1.                
+	(ia32_multipass_dfa_lookahead): Add znver1.
+	(has_dispatch): Add znver1.       
+	* config/i386/i386.h (TARGET_znver1): New definition. 
+	(TARGET_CLZERO): Define.
+	(TARGET_CLZERO_P): Define.
+	(struct ix86_size_cost): Add TARGET_ZNVER1.
+	(enum processor_type): Add PROCESSOR_znver1.
+	* config/i386/i386.md (define_attr "cpu"): Add znver1.
+	(set_attr znver1_decode): New definitions for znver1.
+	* config/i386/i386.opt (flag_dispatch_scheduler): Add znver1.
+	(mclzero): New.
+	* config/i386/mmx.md (set_attr znver1_decode): New definitions
+	for znver1.
+	* config/i386/sse.md (set_attr znver1_decode): Likewise.
+	* config/i386/x86-tune.def:  Add znver1 tunings.
+	* config/i386/znver1.md: Introduce znver1 cpu and include new md file.
+	* gcc/doc/invoke.texi: Add details about znver1
+
 2015-10-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67859

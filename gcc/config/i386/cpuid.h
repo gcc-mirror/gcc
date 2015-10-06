@@ -65,6 +65,9 @@
 #define bit_3DNOWP	(1 << 30)
 #define bit_3DNOW	(1 << 31)
 
+/* %ebx.  */
+#define bit_CLZERO	(1 << 0)
+
 /* Extended Features (%eax == 7) */
 /* %ebx */
 #define bit_FSGSBASE	(1 << 0)
