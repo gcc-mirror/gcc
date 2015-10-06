@@ -2890,6 +2890,7 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					   n == 3
 					   ? gimple_call_arg (stmt, 2)
 					   : NULL_TREE, fcode);
+      break;
     case BUILT_IN_ACC_ON_DEVICE:
       return gimple_fold_builtin_acc_on_device (gsi,
 						gimple_call_arg (stmt, 0));

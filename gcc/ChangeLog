@@ -1,3 +1,9 @@
+2015-10-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR 67861
+	* gimple-fold.c (gimple_fold_builtin): Add break after
+	BUILT_IN_PRINTF_CHK, BUILT_IN_VPRINTF_CHK folding.
+
 2015-10-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* graphite-optimize-isl.c (optimize_isl): Rename scop->ctx
