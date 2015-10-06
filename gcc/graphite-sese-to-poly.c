@@ -595,6 +595,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 
   tree nb_iters = number_of_latch_executions (loop);
   sese region = SCOP_REGION (scop);
+  gcc_assert (loop_in_sese_p (loop, region));
 
   isl_set *inner = isl_set_copy (outer);
   int pos = isl_set_dim (outer, isl_dim_set);
@@ -679,7 +680,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
   else
     gcc_unreachable ();
 
-  if (loop->inner && loop_in_sese_p (loop->inner, region))
+  if (loop->inner)
     build_loop_iteration_domains (scop, loop->inner, nb + 1,
 				  isl_set_copy (inner), doms);
 
