@@ -1,12 +1,17 @@
+2015-10-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_rtx_costs): Improve cost estimates for
+	multiplication.
+
 2015-10-06  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
 
 	* config.gcc (i[34567]86-*-linux* | ...): Add znver1.
 	(case ${target}): Add znver1.
 	* config/i386/cpuid.h(bit_CLZERO):  Define.
 	* config/i386/driver-i386.c: (host_detect_local_cpu): Let
-	-march=native recognize znver1 processors. 
+	-march=native recognize znver1 processors.
 	* config/i386/i386-c.c (ix86_target_macros_internal): Add
-	znver1, clzero def_and_undef. 
+	znver1, clzero def_and_undef.
 	* config/i386/i386.c (struct processor_costs znver1_cost): New.
 	(m_znver1): New definition.
 	(m_AMD_MULTIPLE): Includes m_znver1.
@@ -17,10 +22,10 @@
 	(PTA_CLZERO) :  New definition.
 	(ix86_option_override_internal): Handle new clzerooption.
 	(ix86_issue_rate): Add znver1.
-	(ix86_adjust_cost): Add znver1.                
+	(ix86_adjust_cost): Add znver1.
 	(ia32_multipass_dfa_lookahead): Add znver1.
-	(has_dispatch): Add znver1.       
-	* config/i386/i386.h (TARGET_znver1): New definition. 
+	(has_dispatch): Add znver1.
+	* config/i386/i386.h (TARGET_znver1): New definition.
 	(TARGET_CLZERO): Define.
 	(TARGET_CLZERO_P): Define.
 	(struct ix86_size_cost): Add TARGET_ZNVER1.
