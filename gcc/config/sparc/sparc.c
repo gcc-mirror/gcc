@@ -12540,20 +12540,23 @@ sparc_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
        __builtin_load_fsr (&tmp1_var);  */
 
-  tree fenv_var = create_tmp_var (unsigned_type_node);
-  mark_addressable (fenv_var);
+  tree fenv_var = create_tmp_var_raw (unsigned_type_node);
+  TREE_ADDRESSABLE (fenv_var) = 1;
   tree fenv_addr = build_fold_addr_expr (fenv_var);
   tree stfsr = sparc_builtins[SPARC_BUILTIN_STFSR];
-  tree hold_stfsr = build_call_expr (stfsr, 1, fenv_addr);
+  tree hold_stfsr
+    = build4 (TARGET_EXPR, unsigned_type_node, fenv_var,
+	      build_call_expr (stfsr, 1, fenv_addr), NULL_TREE, NULL_TREE);
 
-  tree tmp1_var = create_tmp_var (unsigned_type_node);
-  mark_addressable (tmp1_var);
+  tree tmp1_var = create_tmp_var_raw (unsigned_type_node);
+  TREE_ADDRESSABLE (tmp1_var) = 1;
   tree masked_fenv_var
     = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var,
 	      build_int_cst (unsigned_type_node,
 			     ~(accrued_exception_mask | trap_enable_mask)));
   tree hold_mask
-    = build2 (MODIFY_EXPR, void_type_node, tmp1_var, masked_fenv_var);
+    = build4 (TARGET_EXPR, unsigned_type_node, tmp1_var, masked_fenv_var,
+	      NULL_TREE, NULL_TREE);
 
   tree tmp1_addr = build_fold_addr_expr (tmp1_var);
   tree ldfsr = sparc_builtins[SPARC_BUILTIN_LDFSR];
@@ -12578,10 +12581,12 @@ sparc_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
          tmp2_var >>= 5;
        __atomic_feraiseexcept ((int) tmp2_var);  */
 
-  tree tmp2_var = create_tmp_var (unsigned_type_node);
-  mark_addressable (tmp2_var);
-  tree tmp3_addr = build_fold_addr_expr (tmp2_var);
-  tree update_stfsr = build_call_expr (stfsr, 1, tmp3_addr);
+  tree tmp2_var = create_tmp_var_raw (unsigned_type_node);
+  TREE_ADDRESSABLE (tmp2_var) = 1;
+  tree tmp2_addr = build_fold_addr_expr (tmp2_var);
+  tree update_stfsr
+    = build4 (TARGET_EXPR, unsigned_type_node, tmp2_var,
+	      build_call_expr (stfsr, 1, tmp2_addr), NULL_TREE, NULL_TREE);
 
   tree update_ldfsr = build_call_expr (ldfsr, 1, fenv_addr);
 
