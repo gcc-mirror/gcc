@@ -897,6 +897,7 @@ new_loop_vec_info (struct loop *loop)
   unsigned int i, nbbs;
 
   res = (loop_vec_info) xcalloc (1, sizeof (struct _loop_vec_info));
+  res->kind = vec_info::loop;
   LOOP_VINFO_LOOP (res) = loop;
 
   bbs = get_loop_body (loop);
@@ -924,7 +925,7 @@ new_loop_vec_info (struct loop *loop)
               loop_vec_info inner_loop_vinfo =
                 STMT_VINFO_LOOP_VINFO (stmt_info);
               gcc_assert (loop->inner == LOOP_VINFO_LOOP (inner_loop_vinfo));
-              STMT_VINFO_LOOP_VINFO (stmt_info) = res;
+              stmt_info->vinfo = res;
             }
           for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
            {
@@ -933,7 +934,7 @@ new_loop_vec_info (struct loop *loop)
               loop_vec_info inner_loop_vinfo =
                  STMT_VINFO_LOOP_VINFO (stmt_info);
               gcc_assert (loop->inner == LOOP_VINFO_LOOP (inner_loop_vinfo));
-              STMT_VINFO_LOOP_VINFO (stmt_info) = res;
+              stmt_info->vinfo = res;
            }
         }
       else
@@ -943,14 +944,14 @@ new_loop_vec_info (struct loop *loop)
             {
 	      gimple *phi = gsi_stmt (si);
               gimple_set_uid (phi, 0);
-              set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, res, NULL));
+              set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, res));
             }
 
           for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
             {
 	      gimple *stmt = gsi_stmt (si);
               gimple_set_uid (stmt, 0);
-              set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, res, NULL));
+              set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, res));
             }
         }
     }
@@ -1055,7 +1056,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
     }
 
   free (LOOP_VINFO_BBS (loop_vinfo));
-  vect_destroy_datarefs (loop_vinfo, NULL);
+  vect_destroy_datarefs (loop_vinfo);
   free_dependence_relations (LOOP_VINFO_DDRS (loop_vinfo));
   LOOP_VINFO_LOOP_NEST (loop_vinfo).release ();
   LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).release ();
@@ -1767,7 +1768,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
      FORNOW: Handle only simple, array references, which
      alignment can be forced, and aligned pointer-references.  */
 
-  ok = vect_analyze_data_refs (loop_vinfo, NULL, &min_vf, &n_stmts);
+  ok = vect_analyze_data_refs (loop_vinfo, &min_vf, &n_stmts);
   if (!ok)
     {
       if (dump_enabled_p ())
@@ -1781,14 +1782,14 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
 
   vect_analyze_scalar_cycles (loop_vinfo);
 
-  vect_pattern_recog (loop_vinfo, NULL);
+  vect_pattern_recog (loop_vinfo);
 
   vect_fixup_scalar_cycles_with_patterns (loop_vinfo);
 
   /* Analyze the access patterns of the data-refs in the loop (consecutive,
      complex, etc.). FORNOW: Only handle consecutive access pattern.  */
 
-  ok = vect_analyze_data_ref_accesses (loop_vinfo, NULL);
+  ok = vect_analyze_data_ref_accesses (loop_vinfo);
   if (!ok)
     {
       if (dump_enabled_p ())
@@ -1840,7 +1841,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
     }
 
   /* Check the SLP opportunities in the loop, analyze and build SLP trees.  */
-  ok = vect_analyze_slp (loop_vinfo, NULL, n_stmts);
+  ok = vect_analyze_slp (loop_vinfo, n_stmts);
   if (!ok)
     return false;
 
@@ -1858,7 +1859,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
   /* Analyze the alignment of the data-refs in the loop.
      Fail if a data reference is found that cannot be vectorized.  */
 
-  ok = vect_analyze_data_refs_alignment (loop_vinfo, NULL);
+  ok = vect_analyze_data_refs_alignment (loop_vinfo);
   if (!ok)
     {
       if (dump_enabled_p ())
@@ -2646,7 +2647,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple *phi,
       gimple *negate_stmt = gimple_build_assign (negrhs, NEGATE_EXPR, rhs);
       gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);
       set_vinfo_for_stmt (negate_stmt, new_stmt_vec_info (negate_stmt, 
-							  loop_info, NULL));
+							  loop_info));
       gsi_insert_before (&gsi, negate_stmt, GSI_NEW_STMT);
       gimple_assign_set_rhs2 (def_stmt, negrhs);
       gimple_assign_set_rhs_code (def_stmt, PLUS_EXPR);
@@ -3508,7 +3509,7 @@ get_initial_def_for_induction (gimple *iv_phi)
 						 new_stmt);
 	  gcc_assert (!new_bb);
 	  set_vinfo_for_stmt (new_stmt,
-			      new_stmt_vec_info (new_stmt, loop_vinfo, NULL));
+			      new_stmt_vec_info (new_stmt, loop_vinfo));
 	}
     }
   else
@@ -3610,7 +3611,7 @@ get_initial_def_for_induction (gimple *iv_phi)
   vec_dest = vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_");
   induction_phi = create_phi_node (vec_dest, iv_loop->header);
   set_vinfo_for_stmt (induction_phi,
-		      new_stmt_vec_info (induction_phi, loop_vinfo, NULL));
+		      new_stmt_vec_info (induction_phi, loop_vinfo));
   induc_def = PHI_RESULT (induction_phi);
 
   /* Create the iv update inside the loop  */
@@ -3618,8 +3619,7 @@ get_initial_def_for_induction (gimple *iv_phi)
   vec_def = make_ssa_name (vec_dest, new_stmt);
   gimple_assign_set_lhs (new_stmt, vec_def);
   gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
-  set_vinfo_for_stmt (new_stmt, new_stmt_vec_info (new_stmt, loop_vinfo,
-                                                   NULL));
+  set_vinfo_for_stmt (new_stmt, new_stmt_vec_info (new_stmt, loop_vinfo));
 
   /* Set the arguments of the phi node:  */
   add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
@@ -3684,7 +3684,7 @@ get_initial_def_for_induction (gimple *iv_phi)
 	      gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
 	    }
 	  set_vinfo_for_stmt (new_stmt,
-			      new_stmt_vec_info (new_stmt, loop_vinfo, NULL));
+			      new_stmt_vec_info (new_stmt, loop_vinfo));
 	  STMT_VINFO_RELATED_STMT (prev_stmt_vinfo) = new_stmt;
 	  prev_stmt_vinfo = vinfo_for_stmt (new_stmt);
 	}
@@ -3752,7 +3752,7 @@ get_initial_def_for_induction (gimple *iv_phi)
       si = gsi_after_labels (bb);
       gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
       set_vinfo_for_stmt (new_stmt,
-			  new_stmt_vec_info (new_stmt, loop_vinfo, NULL));
+			  new_stmt_vec_info (new_stmt, loop_vinfo));
       STMT_VINFO_RELATED_STMT (vinfo_for_stmt (new_stmt))
 	= STMT_VINFO_RELATED_STMT (vinfo_for_stmt (induction_phi));
     }
@@ -4177,7 +4177,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
         {
 	  tree new_def = copy_ssa_name (def);
           phi = create_phi_node (new_def, exit_bb);
-          set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, loop_vinfo, NULL));
+          set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, loop_vinfo));
           if (j == 0)
             new_phis.quick_push (phi);
           else
@@ -4205,7 +4205,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	  SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
 			   PHI_RESULT (phi));
 	  set_vinfo_for_stmt (outer_phi, new_stmt_vec_info (outer_phi,
-							    loop_vinfo, NULL));
+							    loop_vinfo));
 	  inner_phis.quick_push (phi);
 	  new_phis[i] = outer_phi;
 	  prev_phi_info = vinfo_for_stmt (outer_phi);
@@ -4217,7 +4217,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	      SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
 			       PHI_RESULT (phi));
 	      set_vinfo_for_stmt (outer_phi, new_stmt_vec_info (outer_phi,
-							loop_vinfo, NULL));
+								loop_vinfo));
 	      STMT_VINFO_RELATED_STMT (prev_phi_info) = outer_phi;
 	      prev_phi_info = vinfo_for_stmt (outer_phi);
 	    }
@@ -4558,8 +4558,7 @@ vect_finalize_reduction:
       if (nested_in_vect_loop)
         {
           set_vinfo_for_stmt (epilog_stmt,
-                              new_stmt_vec_info (epilog_stmt, loop_vinfo,
-                                                 NULL));
+                              new_stmt_vec_info (epilog_stmt, loop_vinfo));
           STMT_VINFO_RELATED_STMT (vinfo_for_stmt (epilog_stmt)) =
                 STMT_VINFO_RELATED_STMT (vinfo_for_stmt (new_phi));
 
@@ -4730,7 +4729,7 @@ vect_finalize_reduction:
                   /* Create vector phi node.  */
                   vect_phi = create_phi_node (vec_initial_def, bb);
                   new_phi_vinfo = new_stmt_vec_info (vect_phi,
-                                    loop_vec_info_for_loop (outer_loop), NULL);
+                                    loop_vec_info_for_loop (outer_loop));
                   set_vinfo_for_stmt (vect_phi, new_phi_vinfo);
 
                   /* Create vs0 - initial def of the double reduction phi.  */
@@ -5037,7 +5036,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       if (i == 0 && code == COND_EXPR)
         continue;
 
-      is_simple_use = vect_is_simple_use_1 (ops[i], stmt, loop_vinfo, NULL,
+      is_simple_use = vect_is_simple_use_1 (ops[i], stmt, loop_vinfo,
 					    &def_stmt, &def, &dt, &tem);
       if (!vectype_in)
 	vectype_in = tem;
@@ -5058,7 +5057,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
         }
     }
 
-  is_simple_use = vect_is_simple_use_1 (ops[i], stmt, loop_vinfo, NULL,
+  is_simple_use = vect_is_simple_use_1 (ops[i], stmt, loop_vinfo,
 					&def_stmt, &def, &dt, &tem);
   if (!vectype_in)
     vectype_in = tem;
@@ -5387,8 +5386,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
                  operand.  */
               new_phi = create_phi_node (vec_dest, loop->header);
               set_vinfo_for_stmt (new_phi,
-                                  new_stmt_vec_info (new_phi, loop_vinfo,
-                                                     NULL));
+                                  new_stmt_vec_info (new_phi, loop_vinfo));
                if (j == 0 || slp_node)
                  phis.quick_push (new_phi);
             }
@@ -5440,14 +5438,14 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	      gimple *dummy_stmt;
               tree dummy;
 
-              vect_is_simple_use (ops[!reduc_index], stmt, loop_vinfo, NULL,
+              vect_is_simple_use (ops[!reduc_index], stmt, loop_vinfo,
                                   &dummy_stmt, &dummy, &dt);
               loop_vec_def0 = vect_get_vec_def_for_stmt_copy (dt,
                                                               loop_vec_def0);
               vec_oprnds0[0] = loop_vec_def0;
               if (op_type == ternary_op)
                 {
-                  vect_is_simple_use (op1, stmt, loop_vinfo, NULL, &dummy_stmt,
+                  vect_is_simple_use (op1, stmt, loop_vinfo, &dummy_stmt,
                                       &dummy, &dt);
                   loop_vec_def1 = vect_get_vec_def_for_stmt_copy (dt,
                                                                 loop_vec_def1);
@@ -5749,8 +5747,7 @@ vectorizable_live_operation (gimple *stmt,
       else
 	op = gimple_op (stmt, i + 1);
       if (op
-          && !vect_is_simple_use (op, stmt, loop_vinfo, NULL, &def_stmt, &def,
-				  &dt))
+          && !vect_is_simple_use (op, stmt, loop_vinfo, &def_stmt, &def, &dt))
         {
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6218,7 +6215,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		    dump_printf_loc (MSG_NOTE, vect_location,
 				     "=== scheduling SLP instances ===\n");
 
-		  vect_schedule_slp (loop_vinfo, NULL);
+		  vect_schedule_slp (loop_vinfo);
 		}
 
 	      /* Hybrid SLP stmts must be vectorized in addition to SLP.  */

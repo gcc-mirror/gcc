@@ -1,3 +1,45 @@
+2015-10-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vec_info): New base class for...
+	(_loop_vec_info): ... this and ...
+	(_bb_vec_info): ... this.
+	(vect_is_simple_use, vect_is_simple_use_1, new_stmt_vec_info,
+	vect_analyze_data_refs_alignment, vect_verify_datarefs_alignment,
+	vect_analyze_data_ref_accesses, vect_analyze_data_refs,
+	vect_schedule_slp, vect_analyze_slp, vect_pattern_recog,
+	vect_destroy_datarefs): Adjust interface to take a vec_info *
+	rather than both a loop_vec_info and a bb_vec_info argument.
+	* tree-vect-data-refs.c (vect_compute_data_refs_alignment,
+	vect_verify_datarefs_alignment, vect_enhance_data_refs_alignment,
+	vect_analyze_data_refs_alignment, vect_analyze_data_ref_accesses,
+	vect_analyze_data_refs, vect_create_data_ref_ptr): Adjust
+	accordingly.
+	* tree-vect-loop.c (new_loop_vec_info): Initialize base class.
+	(destroy_loop_vec_info, vect_analyze_loop_2,
+	vect_is_simple_reduction_1, get_initial_def_for_induction,
+	vect_create_epilog_for_reduction, vectorizable_reduction,
+	vectorizable_live_operation, vect_transform_loop): Adjust.
+	* tree-vect-patterns.c (type_conversion_p,
+	vect_recog_widen_mult_pattern, vect_recog_widen_shift_pattern,
+	vect_recog_rotate_pattern, vect_recog_vector_vector_shift_pattern,
+	vect_recog_divmod_pattern, vect_recog_mixed_size_cond_pattern,
+	check_bool_pattern, vect_recog_bool_pattern,
+	vect_mark_pattern_stmts, vect_pattern_recog): Likewise.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs,
+	vect_build_slp_tree_1, vect_build_slp_tree, vect_analyze_slp_cost_1,
+	vect_analyze_slp_instance, vect_analyze_slp, destroy_bb_vec_info,
+	vect_slp_analyze_bb_1, vect_schedule_slp): Likewise.
+	(new_bb_vec_info): Initialize base classs.
+	* tree-vect-stmts.c (record_stmt_cost, process_use,
+	vect_get_vec_def_for_operand, vect_finish_stmt_generation,
+	vectorizable_mask_load_store, vectorizable_call,
+	vectorizable_simd_clone_call, vectorizable_conversion,
+	vectorizable_assignment, vectorizable_shift,
+	vectorizable_operation, vectorizable_store,
+	vectorizable_load, vect_is_simple_cond, vectorizable_condition,
+	new_stmt_vec_info, vect_is_simple_use, vect_is_simple_use_1): Likewise.
+	* tree-vectorizer.c (vect_destroy_datarefs): Likewise.
+
 2015-10-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR c/65345
