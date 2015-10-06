@@ -134,20 +134,16 @@ static void
 sese_build_liveouts_use (sese region, bitmap liveouts, basic_block bb,
 			 tree use)
 {
-  unsigned ver;
-  basic_block def_bb;
-
+  gcc_assert (!bb_in_sese_p (bb, region));
   if (TREE_CODE (use) != SSA_NAME)
     return;
 
-  ver = SSA_NAME_VERSION (use);
-  def_bb = gimple_bb (SSA_NAME_DEF_STMT (use));
+  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (use));
 
-  if (!def_bb
-      || !bb_in_sese_p (def_bb, region)
-      || bb_in_sese_p (bb, region))
+  if (!def_bb || !bb_in_sese_p (def_bb, region))
     return;
 
+  unsigned ver = SSA_NAME_VERSION (use);
   bitmap_set_bit (liveouts, ver);
 }
 
@@ -188,24 +184,21 @@ static bool
 sese_bad_liveouts_use (sese region, bitmap liveouts, basic_block bb,
 		       tree use)
 {
-  unsigned ver;
-  basic_block def_bb;
+  gcc_assert (!bb_in_sese_p (bb, region));
 
   if (TREE_CODE (use) != SSA_NAME)
     return false;
 
-  ver = SSA_NAME_VERSION (use);
+  unsigned ver = SSA_NAME_VERSION (use);
 
   /* If it's in liveouts, the variable will get a new PHI node, and
      the debug use will be properly adjusted.  */
   if (bitmap_bit_p (liveouts, ver))
     return false;
 
-  def_bb = gimple_bb (SSA_NAME_DEF_STMT (use));
+  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (use));
 
-  if (!def_bb
-      || !bb_in_sese_p (def_bb, region)
-      || bb_in_sese_p (bb, region))
+  if (!def_bb || !bb_in_sese_p (def_bb, region))
     return false;
 
   return true;
@@ -247,11 +240,16 @@ sese_build_liveouts (sese region, bitmap liveouts)
 {
   basic_block bb;
 
+  /* FIXME: We could start iterating form the successor of sese.  */
   FOR_EACH_BB_FN (bb, cfun)
-    sese_build_liveouts_bb (region, liveouts, bb);
+    if (!bb_in_sese_p (bb, region))
+      sese_build_liveouts_bb (region, liveouts, bb);
+
+  /* FIXME: We could start iterating form the successor of sese.  */
   if (MAY_HAVE_DEBUG_STMTS)
     FOR_EACH_BB_FN (bb, cfun)
-      sese_reset_debug_liveouts_bb (region, liveouts, bb);
+      if (!bb_in_sese_p (bb, region))
+	sese_reset_debug_liveouts_bb (region, liveouts, bb);
 }
 
 /* Builds a new SESE region from edges ENTRY and EXIT.  */

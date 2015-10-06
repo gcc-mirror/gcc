@@ -1,3 +1,13 @@
+2015-10-05  Aditya Kumar  <hiraditya@msn.com>
+
+	* graphite-sese-to-poly.c (build_loop_iteration_domains): Only loops
+	which are in this region are passed so gcc_assert and remove redundant
+	computation.
+	* sese.c (sese_build_liveouts): Pass only those bbs which are not in region.
+	(sese_bad_liveouts_use): Only BBs which are not in region are passed so
+	gcc_assert on that and remove unnecessary computation.
+	(sese_build_liveouts_use): Same.
+
 2015-10-05  Aditya Kumar  <aditya.k7@samsung.com>
 
 	* graphite-dependences.c (scop_get_reads): Renamed scop->context
