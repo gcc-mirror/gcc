@@ -1,3 +1,10 @@
+2015-10-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Template Instantiation): Reorder options and
+	de-emphasize -frepo.
+	* doc/invoke.texi (C++ Dialect Options): Use -fstrict-enums in
+	example instead of -frepo.
+
 2015-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c/65345
