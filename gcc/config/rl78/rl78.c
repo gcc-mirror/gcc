@@ -4165,21 +4165,42 @@ rl78_rtx_costs (rtx          x,
       return true;
     }
 
+  if (mode == HImode)
+    {
+      if (code == MULT && ! speed)
+	{
+	  * total = COSTS_N_INSNS (8);
+	  return true;
+	}
+      return false;
+    }
+
   if (mode == SImode)
     {
       switch (code)
 	{
 	case MULT:
-	  if (RL78_MUL_G14)
+	  if (! speed)
+	    /* If we are compiling for space then we do not want to use the
+	       inline SImode multiplication patterns or shift sequences.
+	       The cost is not set to 1 or 5 however as we have to allow for
+	       the possibility that we might be converting a leaf function
+	       into a non-leaf function.  (There is no way to tell here).
+	       A value of 13 seems to be a reasonable compromise for the
+	       moment.  */
+	    * total = COSTS_N_INSNS (13);
+	  else if (RL78_MUL_G14)
 	    *total = COSTS_N_INSNS (14);
 	  else if (RL78_MUL_G13)
 	    *total = COSTS_N_INSNS (29);
 	  else
 	    *total = COSTS_N_INSNS (500);
 	  return true;
+
 	case PLUS:
 	  *total = COSTS_N_INSNS (8);
 	  return true;
+
 	case ASHIFT:
 	case ASHIFTRT:
 	case LSHIFTRT:
@@ -4205,6 +4226,9 @@ rl78_rtx_costs (rtx          x,
 	  else
 	    *total = COSTS_N_INSNS (10+4*16);
 	  return true;
+
+	default:
+	  break;
 	}
     }
   return false;
