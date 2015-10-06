@@ -5141,9 +5141,8 @@ c_parser_statement_after_labels (c_parser *parser, vec<tree> *chain)
      (recursively) all of the component statements should already have
      line numbers assigned.  ??? Can we discard no-op statements
      earlier?  */
-  if (CAN_HAVE_LOCATION_P (stmt)
-      && EXPR_LOCATION (stmt) == UNKNOWN_LOCATION)
-    SET_EXPR_LOCATION (stmt, loc);
+  if (EXPR_LOCATION (stmt) == UNKNOWN_LOCATION)
+    protected_set_expr_location (stmt, loc);
 
   parser->in_if_block = in_if_block;
 }
@@ -10681,8 +10680,7 @@ c_parser_omp_clause_num_gangs (c_parser *parser, tree list)
       /* Attempt to statically determine when the number isn't positive.  */
       c = fold_build2_loc (expr_loc, LE_EXPR, boolean_type_node, t,
 		       build_int_cst (TREE_TYPE (t), 0));
-      if (CAN_HAVE_LOCATION_P (c))
-	SET_EXPR_LOCATION (c, expr_loc);
+      protected_set_expr_location (c, expr_loc);
       if (c == boolean_true_node)
 	{
 	  warning_at (expr_loc, 0,
@@ -10726,8 +10724,7 @@ c_parser_omp_clause_num_threads (c_parser *parser, tree list)
       /* Attempt to statically determine when the number isn't positive.  */
       c = fold_build2_loc (expr_loc, LE_EXPR, boolean_type_node, t,
 		       build_int_cst (TREE_TYPE (t), 0));
-      if (CAN_HAVE_LOCATION_P (c))
-	SET_EXPR_LOCATION (c, expr_loc);
+      protected_set_expr_location (c, expr_loc);
       if (c == boolean_true_node)
 	{
 	  warning_at (expr_loc, 0,
@@ -10771,8 +10768,7 @@ c_parser_omp_clause_num_workers (c_parser *parser, tree list)
       /* Attempt to statically determine when the number isn't positive.  */
       c = fold_build2_loc (expr_loc, LE_EXPR, boolean_type_node, t,
 		       build_int_cst (TREE_TYPE (t), 0));
-      if (CAN_HAVE_LOCATION_P (c))
-	SET_EXPR_LOCATION (c, expr_loc);
+      protected_set_expr_location (c, expr_loc);
       if (c == boolean_true_node)
 	{
 	  warning_at (expr_loc, 0,
@@ -11116,8 +11112,7 @@ c_parser_omp_clause_vector_length (c_parser *parser, tree list)
       /* Attempt to statically determine when the number isn't positive.  */
       c = fold_build2_loc (expr_loc, LE_EXPR, boolean_type_node, t,
 		       build_int_cst (TREE_TYPE (t), 0));
-      if (CAN_HAVE_LOCATION_P (c))
-	SET_EXPR_LOCATION (c, expr_loc);
+      protected_set_expr_location (c, expr_loc);
       if (c == boolean_true_node)
 	{
 	  warning_at (expr_loc, 0,
@@ -11193,8 +11188,7 @@ c_parser_omp_clause_num_teams (c_parser *parser, tree list)
       /* Attempt to statically determine when the number isn't positive.  */
       c = fold_build2_loc (expr_loc, LE_EXPR, boolean_type_node, t,
 			   build_int_cst (TREE_TYPE (t), 0));
-      if (CAN_HAVE_LOCATION_P (c))
-	SET_EXPR_LOCATION (c, expr_loc);
+      protected_set_expr_location (c, expr_loc);
       if (c == boolean_true_node)
 	{
 	  warning_at (expr_loc, 0, "%<num_teams%> value must be positive");
@@ -11237,8 +11231,7 @@ c_parser_omp_clause_thread_limit (c_parser *parser, tree list)
       /* Attempt to statically determine when the number isn't positive.  */
       c = fold_build2_loc (expr_loc, LE_EXPR, boolean_type_node, t,
 			   build_int_cst (TREE_TYPE (t), 0));
-      if (CAN_HAVE_LOCATION_P (c))
-	SET_EXPR_LOCATION (c, expr_loc);
+      protected_set_expr_location (c, expr_loc);
       if (c == boolean_true_node)
 	{
 	  warning_at (expr_loc, 0, "%<thread_limit%> value must be positive");
