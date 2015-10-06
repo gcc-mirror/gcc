@@ -1,6 +1,21 @@
 2015-10-06  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-poly.c (new_scop): Initialize drs.
+	* graphite-poly.h (struct dr_info): New.
+	(struct scop): Add drs.
+	* graphite-sese-to-poly.c (pdr_add_alias_set): Use dr_info.
+	(pdr_add_memory_accesses): Same.
+	(build_poly_dr): Same.
+	(build_alias_set): Same.
+	(build_scop_drs): Same.
+	(build_pbb_drs): Remove.
+	* tree-data-ref.c (create_data_ref): Do not initialize alias_set.
+	* tree-data-ref.h (data_reference): Remove alias_set.
+
+2015-10-06  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-poly.c (free_data_refs_aux): Remove.
 	(free_gimple_poly_bb): Do not call free_data_refs_aux.
 	* graphite-poly.h (struct base_alias_pair): Remove.

@@ -1080,7 +1080,6 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
   DR_STMT (dr) = stmt;
   DR_REF (dr) = memref;
   DR_IS_READ (dr) = is_read;
-  dr->alias_set = 0;
 
   dr_analyze_innermost (dr, nest);
   dr_analyze_indices (dr, nest, loop);

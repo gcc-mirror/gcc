@@ -322,6 +322,7 @@ new_scop (edge entry, edge exit)
   scop_set_region (scop, region);
   SCOP_BBS (scop).create (3);
   POLY_SCOP_P (scop) = false;
+  scop->drs.create (3);
 
   return scop;
 }
