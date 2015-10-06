@@ -4543,10 +4543,15 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 {
   gfc_ref *char_ref;
   gfc_expr *start, *end;
+  gfc_typespec *ts = NULL;
 
   for (char_ref = e->ref; char_ref; char_ref = char_ref->next)
-    if (char_ref->type == REF_SUBSTRING)
-      break;
+    {
+      if (char_ref->type == REF_SUBSTRING)
+      	break;
+      if (char_ref->type == REF_COMPONENT)
+	ts = &char_ref->u.c.component->ts;
+    }
 
   if (!char_ref)
     return;
@@ -4576,7 +4581,11 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   if (char_ref->u.ss.end)
     end = gfc_copy_expr (char_ref->u.ss.end);
   else if (e->expr_type == EXPR_VARIABLE)
-    end = gfc_copy_expr (e->symtree->n.sym->ts.u.cl->length);
+    {
+      if (!ts)
+	ts = &e->symtree->n.sym->ts;
+      end = gfc_copy_expr (ts->u.cl->length);
+    }
   else
     end = NULL;
 

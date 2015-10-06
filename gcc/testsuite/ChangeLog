@@ -2,6 +2,11 @@
 
 	* gcc.target/aarch64/get_lane_f16_1.c: New test.
 
+2015-10-06  Louis Krupp     <louis.krupp@zoho.com>
+
+	PR fortran/65766
+	* gfortran.dg/substr_alloc_string_comp_1.f90: New.
+
 2015-10-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/67863
