@@ -136,15 +136,14 @@ apply_poly_transforms (scop_p scop)
    NB_SUBSCRIPTS.  */
 
 void
-new_poly_dr (poly_bb_p pbb, int dr_base_object_set,
-	     enum poly_dr_type type, data_reference_p cdr, graphite_dim_t nb_subscripts,
+new_poly_dr (poly_bb_p pbb, enum poly_dr_type type, data_reference_p cdr,
+	     graphite_dim_t nb_subscripts,
 	     isl_map *acc, isl_set *subscript_sizes)
 {
   static int id = 0;
   poly_dr_p pdr = XNEW (struct poly_dr);
 
   PDR_ID (pdr) = id++;
-  PDR_BASE_OBJECT_SET (pdr) = dr_base_object_set;
   PDR_NB_REFS (pdr) = 1;
   PDR_PBB (pdr) = pbb;
   pdr->accesses = acc;

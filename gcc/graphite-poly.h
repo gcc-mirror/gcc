@@ -182,10 +182,6 @@ struct poly_dr
   isl_map *accesses;
   isl_set *subscript_sizes;
 
-  /* Data reference's base object set number, we must assure 2 pdrs are in the
-     same base object set before dependency checking.  */
-  int dr_base_object_set;
-
   /* The number of subscripts.  */
   graphite_dim_t nb_subscripts;
 };
@@ -196,10 +192,9 @@ struct poly_dr
 #define PDR_PBB(PDR) (PDR->pbb)
 #define PDR_TYPE(PDR) (PDR->type)
 #define PDR_ACCESSES(PDR) (NULL)
-#define PDR_BASE_OBJECT_SET(PDR) (PDR->dr_base_object_set)
 #define PDR_NB_SUBSCRIPTS(PDR) (PDR->nb_subscripts)
 
-void new_poly_dr (poly_bb_p, int, enum poly_dr_type, data_reference_p,
+void new_poly_dr (poly_bb_p, enum poly_dr_type, data_reference_p,
 		  graphite_dim_t, isl_map *, isl_set *);
 void free_poly_dr (poly_dr_p);
 void debug_pdr (poly_dr_p, int);
