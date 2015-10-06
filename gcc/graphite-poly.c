@@ -137,7 +137,7 @@ apply_poly_transforms (scop_p scop)
 
 void
 new_poly_dr (poly_bb_p pbb, int dr_base_object_set,
-	     enum poly_dr_type type, void *cdr, graphite_dim_t nb_subscripts,
+	     enum poly_dr_type type, data_reference_p cdr, graphite_dim_t nb_subscripts,
 	     isl_map *acc, isl_set *subscript_sizes)
 {
   static int id = 0;
@@ -168,7 +168,7 @@ free_poly_dr (poly_dr_p pdr)
 /* Create a new polyhedral black box.  */
 
 poly_bb_p
-new_poly_bb (scop_p scop, void *black_box)
+new_poly_bb (scop_p scop, gimple_poly_bb_p black_box)
 {
   poly_bb_p pbb = XNEW (struct poly_bb);
 
@@ -325,7 +325,7 @@ new_scop (edge entry, edge exit)
   sese region = new_sese (entry, exit);
   scop_p scop = XNEW (struct scop);
 
-  scop->context = NULL;
+  scop->param_context = NULL;
   scop->must_raw = NULL;
   scop->may_raw = NULL;
   scop->must_raw_no_source = NULL;
@@ -361,7 +361,7 @@ free_scop (scop_p scop)
 
   SCOP_BBS (scop).release ();
 
-  isl_set_free (scop->context);
+  isl_set_free (scop->param_context);
   isl_union_map_free (scop->must_raw);
   isl_union_map_free (scop->may_raw);
   isl_union_map_free (scop->must_raw_no_source);
@@ -620,8 +620,8 @@ print_scop_context (FILE *file, scop_p scop, int verbosity)
   if (verbosity > 0)
     fprintf (file, "# Context (\n");
 
-  if (scop->context)
-    print_isl_set (file, scop->context);
+  if (scop->param_context)
+    print_isl_set (file, scop->param_context);
 
   if (verbosity > 0)
     fprintf (file, "# )\n");

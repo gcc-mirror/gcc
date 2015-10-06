@@ -79,7 +79,7 @@ scop_get_reads (scop_p scop, vec<poly_bb_p> pbbs)
   int i, j;
   poly_bb_p pbb;
   poly_dr_p pdr;
-  isl_space *space = isl_set_get_space (scop->context);
+  isl_space *space = isl_set_get_space (scop->param_context);
   isl_union_map *res = isl_union_map_empty (space);
 
   FOR_EACH_VEC_ELT (pbbs, i, pbb)
@@ -100,7 +100,7 @@ scop_get_must_writes (scop_p scop, vec<poly_bb_p> pbbs)
   int i, j;
   poly_bb_p pbb;
   poly_dr_p pdr;
-  isl_space *space = isl_set_get_space (scop->context);
+  isl_space *space = isl_set_get_space (scop->param_context);
   isl_union_map *res = isl_union_map_empty (space);
 
   FOR_EACH_VEC_ELT (pbbs, i, pbb)
@@ -121,7 +121,7 @@ scop_get_may_writes (scop_p scop, vec<poly_bb_p> pbbs)
   int i, j;
   poly_bb_p pbb;
   poly_dr_p pdr;
-  isl_space *space = isl_set_get_space (scop->context);
+  isl_space *space = isl_set_get_space (scop->param_context);
   isl_union_map *res = isl_union_map_empty (space);
 
   FOR_EACH_VEC_ELT (pbbs, i, pbb)
@@ -141,7 +141,7 @@ scop_get_original_schedule (scop_p scop, vec<poly_bb_p> pbbs)
 {
   int i;
   poly_bb_p pbb;
-  isl_space *space = isl_set_get_space (scop->context);
+  isl_space *space = isl_set_get_space (scop->param_context);
   isl_union_map *res = isl_union_map_empty (space);
 
   FOR_EACH_VEC_ELT (pbbs, i, pbb)
@@ -161,7 +161,7 @@ scop_get_transformed_schedule (scop_p scop, vec<poly_bb_p> pbbs)
 {
   int i;
   poly_bb_p pbb;
-  isl_space *space = isl_set_get_space (scop->context);
+  isl_space *space = isl_set_get_space (scop->param_context);
   isl_union_map *res = isl_union_map_empty (space);
 
   FOR_EACH_VEC_ELT (pbbs, i, pbb)
@@ -356,7 +356,7 @@ subtract_commutative_associative_deps (scop_p scop,
   int i, j;
   poly_bb_p pbb;
   poly_dr_p pdr;
-  isl_space *space = isl_set_get_space (scop->context);
+  isl_space *space = isl_set_get_space (scop->param_context);
 
   FOR_EACH_VEC_ELT (pbbs, i, pbb)
     if (PBB_IS_REDUCTION (pbb))

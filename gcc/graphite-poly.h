@@ -59,7 +59,7 @@ struct poly_dr
   int nb_refs;
 
   /* A pointer to compiler's data reference description.  */
-  void *compiler_dr;
+  data_reference_p compiler_dr;
 
   /* A pointer to the PBB that contains this data reference.  */
   poly_bb_p pbb;
@@ -199,7 +199,7 @@ struct poly_dr
 #define PDR_BASE_OBJECT_SET(PDR) (PDR->dr_base_object_set)
 #define PDR_NB_SUBSCRIPTS(PDR) (PDR->nb_subscripts)
 
-void new_poly_dr (poly_bb_p, int, enum poly_dr_type, void *,
+void new_poly_dr (poly_bb_p, int, enum poly_dr_type, data_reference_p,
 		  graphite_dim_t, isl_map *, isl_set *);
 void free_poly_dr (poly_dr_p);
 void debug_pdr (poly_dr_p, int);
@@ -232,7 +232,7 @@ pdr_may_write_p (poly_dr_p pdr)
 struct poly_bb
 {
   /* Pointer to a basic block or a statement in the compiler.  */
-  void *black_box;
+  gimple_poly_bb_p black_box;
 
   /* Pointer to the SCOP containing this PBB.  */
   scop_p scop;
@@ -282,7 +282,7 @@ struct poly_bb
 #define PBB_DRS(PBB) (PBB->drs)
 #define PBB_IS_REDUCTION(PBB) (PBB->is_reduction)
 
-extern poly_bb_p new_poly_bb (scop_p, void *);
+extern poly_bb_p new_poly_bb (scop_p, gimple_poly_bb_p);
 extern void free_poly_bb (poly_bb_p);
 extern void debug_loop_vec (poly_bb_p);
 extern void print_pbb_domain (FILE *, poly_bb_p, int);
@@ -366,7 +366,7 @@ pdr_scop (poly_dr_p pdr)
 /* Set black box of PBB to BLACKBOX.  */
 
 static inline void
-pbb_set_black_box (poly_bb_p pbb, void *black_box)
+pbb_set_black_box (poly_bb_p pbb, gimple_poly_bb_p black_box)
 {
   pbb->black_box = black_box;
 }
@@ -399,10 +399,10 @@ struct scop
   -128 >= a >= 127
      0 >= b >= 65,535
      c = 2a + b  */
-  isl_set *context;
+  isl_set *param_context;
 
   /* The context used internally by ISL.  */
-  isl_ctx *ctx;
+  isl_ctx *isl_context;
 
   /* The original dependence relations:
      RAW are read after write dependences,

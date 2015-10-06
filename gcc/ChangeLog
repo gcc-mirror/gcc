@@ -1,3 +1,64 @@
+2015-10-05  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-dependences.c (scop_get_reads): Renamed scop->context
+	to scop->param_context.
+	(scop_get_must_writes): Same.
+	(scop_get_may_writes): Same.
+	(scop_get_original_schedule): Same.
+	(scop_get_transformed_schedule): Same.
+	(subtract_commutative_associative_deps): Same.
+	* graphite-isl-ast-to-gimple.c (add_parameters_to_ivs_params): Same.
+	(generate_isl_context): Same.
+	(generate_isl_schedule): Same.
+	(scop_to_isl_ast): Same.
+	(graphite_regenerate_ast_isl): Same.
+	* graphite-optimize-isl.c (scop_get_domains): Same.
+	(optimize_isl): Renamed scop->context to scop->param_context.
+	* graphite-poly.c (new_poly_bb): Change the type of argument to
+	gimple_poly_bb_p.
+	(new_scop): Renamed scop->context to scop->param_context.
+	(free_scop): Same.
+	(print_scop_context): Same.
+	* graphite-poly.h (new_poly_dr): Change the type of argument from
+	void* to data_reference_p.
+	(struct poly_bb): Change the type of black_box to gimple_poly_bb_p.
+	(new_poly_bb): Change the type of argument from void* to
+	gimple_poly_bb_p.
+	(pbb_set_black_box): Same.
+	(struct scop): Rename context to param_context, ctx to isl_context.
+	* graphite-scop-detection.c (scop_detection::build_scop_bbs_1):
+	Move declarations closer to assignment.
+	(find_params_in_bb): Same.
+	(find_scop_parameters): Same.
+	* graphite-sese-to-poly.c (unsigned ssa_name_version_typesize):
+	Global to be used for statement IDs.
+	(isl_id_for_pbb): Use ssa_name_version_typesize.
+	(simple_copy_phi_p): Move declarations closer to assignment.
+	(build_pbb_scattering_polyhedrons): Same.
+	(build_scop_scattering): Same.
+	(isl_id_for_ssa_name): Same.
+	(extract_affine_name): Same.
+	(extract_affine_int): Same.
+	(extract_affine): Same.
+	(set_scop_parameter_dim): Use renamed member.
+	(build_loop_iteration_domains): Same.
+	(add_param_constraints): Same.
+	(build_scop_iteration_domain): Same.
+	(pdr_add_data_dimensions): Same.
+	(build_poly_dr): Same.
+	(build_scop_drs): Move declarations closer to assignment.
+	(analyze_drs_in_stmts): Same.
+	(insert_out_of_ssa_copy): Same.
+	(insert_out_of_ssa_copy_on_edge): Same.
+	(propagate_expr_outside_region): Same.
+	(rewrite_phi_out_of_ssa): Same.
+	(rewrite_degenerate_phi): Same.
+	(rewrite_reductions_out_of_ssa): Same.
+	(rewrite_cross_bb_scalar_dependence): Same.
+	(handle_scalar_deps_crossing_scop_limits): Same.
+	(rewrite_cross_bb_scalar_deps): Same.
+	* graphite.c (graphite_transform_loops): Use renamed member.
+
 2015-10-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR c/65345

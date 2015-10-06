@@ -1610,17 +1610,15 @@ void
 scop_detection::build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb)
 {
   sese region = SCOP_REGION (scop);
-  vec<basic_block> dom;
-  poly_bb_p pbb;
 
   if (bitmap_bit_p (visited, bb->index) || !bb_in_sese_p (bb, region))
     return;
 
-  pbb = new_poly_bb (scop, try_generate_gimple_bb (scop, bb));
+  poly_bb_p pbb = new_poly_bb (scop, try_generate_gimple_bb (scop, bb));
   SCOP_BBS (scop).safe_push (pbb);
   bitmap_set_bit (visited, bb->index);
 
-  dom = get_dominated_by (CDI_DOMINATORS, bb);
+  vec<basic_block> dom = get_dominated_by (CDI_DOMINATORS, bb);
 
   if (!dom.exists ())
     return;
@@ -1781,18 +1779,16 @@ scan_tree_for_params (sese s, tree e)
 static void
 find_params_in_bb (sese region, gimple_poly_bb_p gbb)
 {
-  int i;
-  unsigned j;
-  data_reference_p dr;
-  gimple *stmt;
-  loop_p loop = GBB_BB (gbb)->loop_father;
-
   /* Find parameters in the access functions of data references.  */
+  int i;
+  data_reference_p dr;
   FOR_EACH_VEC_ELT (GBB_DATA_REFS (gbb), i, dr)
-    for (j = 0; j < DR_NUM_DIMENSIONS (dr); j++)
+    for (unsigned j = 0; j < DR_NUM_DIMENSIONS (dr); j++)
       scan_tree_for_params (region, DR_ACCESS_FN (dr, j));
 
   /* Find parameters in conditional statements.  */
+  gimple *stmt;
+  loop_p loop = GBB_BB (gbb)->loop_father;
   FOR_EACH_VEC_ELT (GBB_CONDITIONS (gbb), i, stmt)
     {
       tree lhs = scalar_evolution_in_region (region, loop,
@@ -1811,11 +1807,9 @@ find_params_in_bb (sese region, gimple_poly_bb_p gbb)
 static void
 find_scop_parameters (scop_p scop)
 {
-  poly_bb_p pbb;
   unsigned i;
   sese region = SCOP_REGION (scop);
   struct loop *loop;
-  int nbp;
 
   /* Find the parameters used in the loop bounds.  */
   FOR_EACH_VEC_ELT (SESE_LOOP_NEST (region), i, loop)
@@ -1830,10 +1824,11 @@ find_scop_parameters (scop_p scop)
     }
 
   /* Find the parameters used in data accesses.  */
+  poly_bb_p pbb;
   FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     find_params_in_bb (region, PBB_BLACK_BOX (pbb));
 
-  nbp = sese_nb_params (region);
+  int nbp = sese_nb_params (region);
   scop_set_nb_params (scop, nbp);
   SESE_ADD_PARAMS (region) = false;
 }

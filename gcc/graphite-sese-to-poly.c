@@ -68,6 +68,8 @@ extern "C" {
 #include "graphite-sese-to-poly.h"
 
 
+static const unsigned ssa_name_version_typesize =  sizeof(unsigned);
+
 /* Assigns to RES the value of the INTEGER_CST T.  */
 
 static inline void
@@ -146,12 +148,10 @@ remove_invariant_phi (sese region, gphi_iterator *psi)
 static inline bool
 simple_copy_phi_p (gphi *phi)
 {
-  tree res;
-
   if (gimple_phi_num_args (phi) != 2)
     return false;
 
-  res = gimple_phi_result (phi);
+  tree res = gimple_phi_result (phi);
   return (res == gimple_phi_arg_def (phi, 0)
 	  || res == gimple_phi_arg_def (phi, 1));
 }
@@ -201,9 +201,9 @@ reduction_phi_p (sese region, gphi_iterator *psi)
 static isl_id *
 isl_id_for_pbb (scop_p s, poly_bb_p pbb)
 {
-  char name[50];
+  char name[ssa_name_version_typesize];
   snprintf (name, sizeof (name), "S_%d", pbb_index (pbb));
-  return isl_id_alloc (s->ctx, name, pbb);
+  return isl_id_alloc (s->isl_context, name, pbb);
 }
 
 /* Converts the STATIC_SCHEDULE of PBB into a scattering polyhedron.
@@ -237,18 +237,16 @@ static void
 build_pbb_scattering_polyhedrons (isl_aff *static_sched,
 				  poly_bb_p pbb)
 {
-  int i;
   isl_val *val;
-  isl_space *dc, *dm;
 
   int scattering_dimensions = isl_set_dim (pbb->domain, isl_dim_set) * 2 + 1;
 
-  dc = isl_set_get_space (pbb->domain);
-  dm = isl_space_add_dims (isl_space_from_domain (dc),
-			   isl_dim_out, scattering_dimensions);
+  isl_space *dc = isl_set_get_space (pbb->domain);
+  isl_space *dm = isl_space_add_dims (isl_space_from_domain (dc),
+				      isl_dim_out, scattering_dimensions);
   pbb->schedule = isl_map_universe (dm);
 
-  for (i = 0; i < scattering_dimensions; i++)
+  for (int i = 0; i < scattering_dimensions; i++)
     {
       /* Textual order inside this loop.  */
       if ((i % 2) == 0)
@@ -316,10 +314,8 @@ build_pbb_scattering_polyhedrons (isl_aff *static_sched,
 static void
 build_scop_scattering (scop_p scop)
 {
-  int i;
-  poly_bb_p pbb;
   gimple_poly_bb_p previous_gbb = NULL;
-  isl_space *dc = isl_set_get_space (scop->context);
+  isl_space *dc = isl_set_get_space (scop->param_context);
   isl_aff *static_sched;
 
   dc = isl_space_add_dims (dc, isl_dim_set, number_of_loops (cfun));
@@ -331,15 +327,15 @@ build_scop_scattering (scop_p scop)
      incremented before copying.  */
   static_sched = isl_aff_add_coefficient_si (static_sched, isl_dim_in, 0, -1);
 
+  int i;
+  poly_bb_p pbb;
   FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     {
       gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
-      int prefix;
+      int prefix = 0;
 
       if (previous_gbb)
 	prefix = nb_common_loops (SCOP_REGION (scop), previous_gbb, gbb);
-      else
-	prefix = 0;
 
       previous_gbb = gbb;
 
@@ -402,12 +398,12 @@ isl_id_for_ssa_name (scop_p s, tree e)
   isl_id *id;
 
   if (name)
-    id = isl_id_alloc (s->ctx, name, e);
+    id = isl_id_alloc (s->isl_context, name, e);
   else
     {
-      char name1[50];
+      char name1[ssa_name_version_typesize];
       snprintf (name1, sizeof (name1), "P_%d", SSA_NAME_VERSION (e));
-      id = isl_id_alloc (s->ctx, name1, e);
+      id = isl_id_alloc (s->isl_context, name1, e);
     }
 
   return id;
@@ -421,7 +417,7 @@ isl_id_for_dr (scop_p s, data_reference_p dr ATTRIBUTE_UNUSED)
   /* Data references all get the same isl_id.  They need to be comparable
      and are distinguished through the first dimension, which contains the
      alias set number.  */
-  return isl_id_alloc (s->ctx, "", 0);
+  return isl_id_alloc (s->isl_context, "", 0);
 }
 
 /* Extract an affine expression from the ssa_name E.  */
@@ -429,16 +425,11 @@ isl_id_for_dr (scop_p s, data_reference_p dr ATTRIBUTE_UNUSED)
 static isl_pw_aff *
 extract_affine_name (scop_p s, tree e, __isl_take isl_space *space)
 {
-  isl_aff *aff;
-  isl_set *dom;
-  isl_id *id;
-  int dimension;
-
-  id = isl_id_for_ssa_name (s, e);
-  dimension = isl_space_find_dim_by_id (space, isl_dim_param, id);
+  isl_id *id = isl_id_for_ssa_name (s, e);
+  int dimension = isl_space_find_dim_by_id (space, isl_dim_param, id);
   isl_id_free (id);
-  dom = isl_set_universe (isl_space_copy (space));
-  aff = isl_aff_zero_on_domain (isl_local_space_from_space (space));
+  isl_set *dom = isl_set_universe (isl_space_copy (space));
+  isl_aff *aff = isl_aff_zero_on_domain (isl_local_space_from_space (space));
   aff = isl_aff_add_coefficient_si (aff, isl_dim_param, dimension, 1);
   return isl_pw_aff_alloc (dom, aff);
 }
@@ -451,11 +442,8 @@ extract_affine_gmp (mpz_t g, __isl_take isl_space *space)
   isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
   isl_aff *aff = isl_aff_zero_on_domain (ls);
   isl_set *dom = isl_set_universe (space);
-  isl_val *v;
-  isl_ctx *ct;
-
-  ct = isl_aff_get_ctx (aff);
-  v = isl_val_int_from_gmp (ct, g);
+  isl_ctx *ct = isl_aff_get_ctx (aff);
+  isl_val *v = isl_val_int_from_gmp (ct, g);
   aff = isl_aff_add_constant_val (aff, v);
 
   return isl_pw_aff_alloc (dom, aff);
@@ -466,12 +454,11 @@ extract_affine_gmp (mpz_t g, __isl_take isl_space *space)
 static isl_pw_aff *
 extract_affine_int (tree e, __isl_take isl_space *space)
 {
-  isl_pw_aff *res;
   mpz_t g;
 
   mpz_init (g);
   tree_int_to_gmp (e, g);
-  res = extract_affine_gmp (g, space);
+  isl_pw_aff *res = extract_affine_gmp (g, space);
   mpz_clear (g);
 
   return res;
@@ -515,7 +502,6 @@ static isl_pw_aff *
 extract_affine (scop_p s, tree e, __isl_take isl_space *space)
 {
   isl_pw_aff *lhs, *rhs, *res;
-  tree type;
 
   if (e == chrec_dont_know) {
     isl_space_free (space);
@@ -573,7 +559,7 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
       break;
     }
 
-  type = TREE_TYPE (e);
+  tree type = TREE_TYPE (e);
   if (TYPE_UNSIGNED (type))
     res = wrap (res, TYPE_PRECISION (type));
 
@@ -587,7 +573,7 @@ set_scop_parameter_dim (scop_p scop)
 {
   sese region = SCOP_REGION (scop);
   unsigned nbp = sese_nb_params (region);
-  isl_space *space = isl_space_set_alloc (scop->ctx, nbp, 0);
+  isl_space *space = isl_space_set_alloc (scop->isl_context, nbp, 0);
 
   unsigned i;
   tree e;
@@ -595,7 +581,7 @@ set_scop_parameter_dim (scop_p scop)
     space = isl_space_set_dim_id (space, isl_dim_param, i,
                                   isl_id_for_ssa_name (scop, e));
 
-  scop->context = isl_set_universe (space);
+  scop->param_context = isl_set_universe (space);
 }
 
 /* Builds the constraint polyhedra for LOOP in SCOP.  OUTER_PH gives
@@ -606,12 +592,11 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
                               int nb,
 			      isl_set *outer, isl_set **doms)
 {
+
   tree nb_iters = number_of_latch_executions (loop);
   sese region = SCOP_REGION (scop);
 
   isl_set *inner = isl_set_copy (outer);
-  isl_space *space;
-  isl_constraint *c;
   int pos = isl_set_dim (outer, isl_dim_set);
   isl_val *v;
   mpz_t g;
@@ -619,10 +604,10 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
   mpz_init (g);
 
   inner = isl_set_add_dims (inner, isl_dim_set, 1);
-  space = isl_set_get_space (inner);
+  isl_space *space = isl_set_get_space (inner);
 
   /* 0 <= loop_i */
-  c = isl_inequality_alloc
+  isl_constraint *c = isl_inequality_alloc
       (isl_local_space_from_space (isl_space_copy (space)));
   c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, 1);
   inner = isl_set_add_constraint (inner, c);
@@ -634,7 +619,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 	  (isl_local_space_from_space (isl_space_copy (space)));
       c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, -1);
       tree_int_to_gmp (nb_iters, g);
-      v = isl_val_int_from_gmp (scop->ctx, g);
+      v = isl_val_int_from_gmp (scop->isl_context, g);
       c = isl_constraint_set_constant_val (c, v);
       inner = isl_set_add_constraint (inner, c);
     }
@@ -642,28 +627,24 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
   /* loop_i <= expr_nb_iters */
   else if (!chrec_contains_undetermined (nb_iters))
     {
-      widest_int nit;
       isl_pw_aff *aff;
-      isl_set *valid;
-      isl_local_space *ls;
-      isl_aff *al;
-      isl_set *le;
 
       nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
 
       aff = extract_affine (scop, nb_iters, isl_set_get_space (inner));
-      valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (aff));
+      isl_set *valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (aff));
       valid = isl_set_project_out (valid, isl_dim_set, 0,
 				   isl_set_dim (valid, isl_dim_set));
-      scop->context = isl_set_intersect (scop->context, valid);
+      scop->param_context = isl_set_intersect (scop->param_context, valid);
 
-      ls = isl_local_space_from_space (isl_space_copy (space));
-      al = isl_aff_set_coefficient_si (isl_aff_zero_on_domain (ls),
-				       isl_dim_in, pos, 1);
-      le = isl_pw_aff_le_set (isl_pw_aff_from_aff (al),
-			      isl_pw_aff_copy (aff));
+      isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
+      isl_aff *al = isl_aff_set_coefficient_si (isl_aff_zero_on_domain (ls),
+						isl_dim_in, pos, 1);
+      isl_set *le = isl_pw_aff_le_set (isl_pw_aff_from_aff (al),
+				       isl_pw_aff_copy (aff));
       inner = isl_set_intersect (inner, le);
 
+      widest_int nit;
       if (max_stmt_executions (loop, &nit))
 	{
 	  /* Insert in the context the constraints from the
@@ -672,24 +653,22 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 	     names) NB_ITERS.  First, build the affine expression
 	     "NIT - NB_ITERS" and then say that it is positive,
 	     i.e., NIT approximates NB_ITERS: "NIT >= NB_ITERS".  */
-	  isl_pw_aff *approx;
 	  mpz_t g;
-	  isl_set *x;
-	  isl_constraint *c;
-
 	  mpz_init (g);
 	  wi::to_mpz (nit, g, SIGNED);
 	  mpz_sub_ui (g, g, 1);
-	  approx = extract_affine_gmp (g, isl_set_get_space (inner));
-	  x = isl_pw_aff_ge_set (approx, aff);
+
+	  isl_pw_aff *approx
+	    = extract_affine_gmp (g, isl_set_get_space (inner));
+	  isl_set *x = isl_pw_aff_ge_set (approx, aff);
 	  x = isl_set_project_out (x, isl_dim_set, 0,
 				   isl_set_dim (x, isl_dim_set));
-	  scop->context = isl_set_intersect (scop->context, x);
+	  scop->param_context = isl_set_intersect (scop->param_context, x);
 
-	  c = isl_inequality_alloc
+	  isl_constraint *c = isl_inequality_alloc
 	      (isl_local_space_from_space (isl_space_copy (space)));
 	  c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, -1);
-	  v = isl_val_int_from_gmp (scop->ctx, g);
+	  v = isl_val_int_from_gmp (scop->isl_context, g);
 	  mpz_clear (g);
 	  c = isl_constraint_set_constant_val (c, v);
 	  inner = isl_set_add_constraint (inner, c);
@@ -855,7 +834,7 @@ add_param_constraints (scop_p scop, graphite_dim_t p)
 
   if (lb)
     {
-      isl_space *space = isl_set_get_space (scop->context);
+      isl_space *space = isl_set_get_space (scop->param_context);
       isl_constraint *c;
       mpz_t g;
       isl_val *v;
@@ -863,18 +842,18 @@ add_param_constraints (scop_p scop, graphite_dim_t p)
       c = isl_inequality_alloc (isl_local_space_from_space (space));
       mpz_init (g);
       tree_int_to_gmp (lb, g);
-      v = isl_val_int_from_gmp (scop->ctx, g);
+      v = isl_val_int_from_gmp (scop->isl_context, g);
       v = isl_val_neg (v);
       mpz_clear (g);
       c = isl_constraint_set_constant_val (c, v);
       c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, 1);
 
-      scop->context = isl_set_add_constraint (scop->context, c);
+      scop->param_context = isl_set_add_constraint (scop->param_context, c);
     }
 
   if (ub)
     {
-      isl_space *space = isl_set_get_space (scop->context);
+      isl_space *space = isl_set_get_space (scop->param_context);
       isl_constraint *c;
       mpz_t g;
       isl_val *v;
@@ -883,12 +862,12 @@ add_param_constraints (scop_p scop, graphite_dim_t p)
 
       mpz_init (g);
       tree_int_to_gmp (ub, g);
-      v = isl_val_int_from_gmp (scop->ctx, g);
+      v = isl_val_int_from_gmp (scop->isl_context, g);
       mpz_clear (g);
       c = isl_constraint_set_constant_val (c, v);
       c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, -1);
 
-      scop->context = isl_set_add_constraint (scop->context, c);
+      scop->param_context = isl_set_add_constraint (scop->param_context, c);
     }
 }
 
@@ -912,18 +891,18 @@ build_scop_context (scop_p scop)
 static void
 build_scop_iteration_domain (scop_p scop)
 {
-  struct loop *loop;
   sese region = SCOP_REGION (scop);
-  int i;
-  poly_bb_p pbb;
   int nb_loops = number_of_loops (cfun);
   isl_set **doms = XCNEWVEC (isl_set *, nb_loops);
 
+  int i;
+  struct loop *loop;
   FOR_EACH_VEC_ELT (SESE_LOOP_NEST (region), i, loop)
     if (!loop_in_sese_p (loop_outer (loop), region))
       build_loop_iteration_domains (scop, loop, 0,
-				    isl_set_copy (scop->context), doms);
+				    isl_set_copy (scop->param_context), doms);
 
+  poly_bb_p pbb;
   FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     {
       loop = pbb_loop (pbb);
@@ -931,13 +910,13 @@ build_scop_iteration_domain (scop_p scop)
       if (doms[loop->num])
 	pbb->domain = isl_set_copy (doms[loop->num]);
       else
-	pbb->domain = isl_set_copy (scop->context);
+	pbb->domain = isl_set_copy (scop->param_context);
 
       pbb->domain = isl_set_set_tuple_id (pbb->domain,
 					  isl_id_for_pbb (scop, pbb));
     }
 
-  for (i = 0; i < nb_loops; i++)
+  for (int i = 0; i < nb_loops; i++)
     if (doms[i])
       isl_set_free (doms[i]);
 
@@ -1058,7 +1037,7 @@ pdr_add_data_dimensions (isl_set *subscript_sizes, scop_p scop,
 	  valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (ub));
 	  valid = isl_set_project_out (valid, isl_dim_set, 0,
 				       isl_set_dim (valid, isl_dim_set));
-	  scop->context = isl_set_intersect (scop->context, valid);
+	  scop->param_context = isl_set_intersect (scop->param_context, valid);
 
 	  aff = isl_aff_zero_on_domain (isl_local_space_from_space (space));
 	  aff = isl_aff_add_coefficient_si (aff, isl_dim_in, i + 1, 1);
@@ -1106,7 +1085,7 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
   {
     isl_id *id = isl_id_for_dr (scop, dr);
     int nb = 1 + DR_NUM_DIMENSIONS (dr);
-    isl_space *space = isl_space_set_alloc (scop->ctx, 0, nb);
+    isl_space *space = isl_space_set_alloc (scop->isl_context, 0, nb);
     int alias_set_num = 0;
     base_alias_pair *bap = (base_alias_pair *)(dr->aux);
 
@@ -1411,8 +1390,6 @@ build_scop_drs (scop_p scop)
 {
   int i, j;
   poly_bb_p pbb;
-  data_reference_p dr;
-  auto_vec<data_reference_p, 3> drs;
 
   /* Remove all the PBBs that do not have data references: these basic
      blocks are not handled in the polyhedral representation.  */
@@ -1425,6 +1402,8 @@ build_scop_drs (scop_p scop)
 	i--;
       }
 
+  data_reference_p dr;
+  auto_vec<data_reference_p, 3> drs;
   FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     for (j = 0; GBB_DATA_REFS (PBB_BLACK_BOX (pbb)).iterate (j, &dr); j++)
       drs.safe_push (dr);
@@ -1457,23 +1436,19 @@ build_scop_drs (scop_p scop)
 static void
 analyze_drs_in_stmts (scop_p scop, basic_block bb, vec<gimple *> stmts)
 {
-  loop_p nest;
-  gimple_poly_bb_p gbb;
-  gimple *stmt;
-  int i;
   sese region = SCOP_REGION (scop);
-
   if (!bb_in_sese_p (bb, region))
     return;
 
-  nest = outermost_loop_in_sese (region, bb);
-
+  loop_p nest = outermost_loop_in_sese (region, bb);
   loop_p loop = bb->loop_father;
   if (!loop_in_sese_p (loop, region))
     loop = nest;
 
-  gbb = gbb_from_bb (bb);
+  gimple_poly_bb_p gbb = gbb_from_bb (bb);
 
+  gimple *stmt;
+  int i;
   FOR_EACH_VEC_ELT (stmts, i, stmt)
     {
       if (is_gimple_debug (stmt))
@@ -1508,13 +1483,14 @@ insert_stmts (scop_p scop, gimple *stmt, gimple_seq stmts,
 static void
 insert_out_of_ssa_copy (scop_p scop, tree res, tree expr, gimple *after_stmt)
 {
-  gimple_seq stmts;
   gimple_stmt_iterator gsi;
+  auto_vec<gimple *, 3> x;
+  gimple_seq stmts;
   tree var = force_gimple_operand (expr, &stmts, true, NULL_TREE);
   gassign *stmt = gimple_build_assign (unshare_expr (res), var);
-  auto_vec<gimple *, 3> x;
 
   gimple_seq_add_stmt (&stmts, stmt);
+
   for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
     x.safe_push (gsi_stmt (gsi));
 
@@ -1564,20 +1540,19 @@ new_pbb_from_pbb (scop_p scop, poly_bb_p pbb, basic_block bb)
 static void
 insert_out_of_ssa_copy_on_edge (scop_p scop, edge e, tree res, tree expr)
 {
-  gimple_stmt_iterator gsi;
   gimple_seq stmts = NULL;
   tree var = force_gimple_operand (expr, &stmts, true, NULL_TREE);
   gimple *stmt = gimple_build_assign (unshare_expr (res), var);
-  basic_block bb;
   auto_vec<gimple *, 3> x;
 
   gimple_seq_add_stmt (&stmts, stmt);
+  gimple_stmt_iterator gsi;
   for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
     x.safe_push (gsi_stmt (gsi));
 
   gsi_insert_seq_on_edge (e, stmts);
   gsi_commit_edge_inserts ();
-  bb = gimple_bb (stmt);
+  basic_block bb = gimple_bb (stmt);
 
   if (!bb_in_sese_p (bb, SCOP_REGION (scop)))
     return;
@@ -1623,8 +1598,6 @@ scalar_close_phi_node_p (gimple *phi)
 static void
 propagate_expr_outside_region (tree def, tree expr, sese region)
 {
-  imm_use_iterator imm_iter;
-  gimple *use_stmt;
   gimple_seq stmts;
   bool replaced_once = false;
 
@@ -1633,6 +1606,8 @@ propagate_expr_outside_region (tree def, tree expr, sese region)
   expr = force_gimple_operand (unshare_expr (expr), &stmts, true,
 			       NULL_TREE);
 
+  imm_use_iterator imm_iter;
+  gimple *use_stmt;
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
     if (!is_gimple_debug (use_stmt)
 	&& !bb_in_sese_p (gimple_bb (use_stmt), region))
@@ -1742,14 +1717,12 @@ rewrite_close_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
 static void
 rewrite_phi_out_of_ssa (scop_p scop, gphi_iterator *psi)
 {
-  size_t i;
   gphi *phi = psi->phi ();
   basic_block bb = gimple_bb (phi);
   tree res = gimple_phi_result (phi);
   tree zero_dim_array = create_zero_dim_array (res, "phi_out_of_ssa");
-  gimple *stmt;
 
-  for (i = 0; i < gimple_phi_num_args (phi); i++)
+  for (size_t i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree arg = gimple_phi_arg_def (phi, i);
       edge e = gimple_phi_arg_edge (phi, i);
@@ -1765,7 +1738,7 @@ rewrite_phi_out_of_ssa (scop_p scop, gphi_iterator *psi)
 	insert_out_of_ssa_copy_on_edge (scop, e, zero_dim_array, arg);
     }
 
-  stmt = gimple_build_assign (res, unshare_expr (zero_dim_array));
+  gimple *stmt = gimple_build_assign (res, unshare_expr (zero_dim_array));
   remove_phi_node (psi, false);
   insert_stmts (scop, stmt, NULL, gsi_after_labels (bb));
 }
@@ -1776,21 +1749,17 @@ rewrite_phi_out_of_ssa (scop_p scop, gphi_iterator *psi)
 static void
 rewrite_degenerate_phi (gphi_iterator *psi)
 {
-  tree rhs;
-  gimple *stmt;
-  gimple_stmt_iterator gsi;
   gphi *phi = psi->phi ();
   tree res = gimple_phi_result (phi);
-  basic_block bb;
 
-  bb = gimple_bb (phi);
-  rhs = degenerate_phi_result (phi);
+  basic_block bb = gimple_bb (phi);
+  tree rhs = degenerate_phi_result (phi);
   gcc_assert (rhs);
 
-  stmt = gimple_build_assign (res, rhs);
+  gimple *stmt = gimple_build_assign (res, rhs);
   remove_phi_node (psi, false);
 
-  gsi = gsi_after_labels (bb);
+  gimple_stmt_iterator gsi = gsi_after_labels (bb);
   gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
 }
 
@@ -1800,12 +1769,11 @@ static void
 rewrite_reductions_out_of_ssa (scop_p scop)
 {
   basic_block bb;
-  gphi_iterator psi;
   sese region = SCOP_REGION (scop);
 
   FOR_EACH_BB_FN (bb, cfun)
     if (bb_in_sese_p (bb, region))
-      for (psi = gsi_start_phis (bb); !gsi_end_p (psi);)
+      for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);)
 	{
 	  gphi *phi = psi.phi ();
 
@@ -1839,19 +1807,16 @@ static void
 rewrite_cross_bb_scalar_dependence (scop_p scop, tree zero_dim_array,
 				    tree def, gimple *use_stmt)
 {
-  gimple *name_stmt;
-  tree name;
-  ssa_op_iter iter;
-  use_operand_p use_p;
-
   gcc_assert (gimple_code (use_stmt) != GIMPLE_PHI);
 
-  name = copy_ssa_name (def);
-  name_stmt = gimple_build_assign (name, zero_dim_array);
+  tree name = copy_ssa_name (def);
+  gimple *name_stmt = gimple_build_assign (name, zero_dim_array);
 
   gimple_assign_set_lhs (name_stmt, name);
   insert_stmts (scop, name_stmt, NULL, gsi_for_stmt (use_stmt));
 
+  ssa_op_iter iter;
+  use_operand_p use_p;
   FOR_EACH_SSA_USE_OPERAND (use_p, use_stmt, iter, SSA_OP_ALL_USES)
     if (operand_equal_p (def, USE_FROM_PTR (use_p), 0))
       replace_exp (use_p, name);
@@ -1869,15 +1834,15 @@ handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple *stmt)
   tree var = create_tmp_reg (TREE_TYPE (def));
   tree new_name = make_ssa_name (var, stmt);
   bool needs_copy = false;
-  use_operand_p use_p;
-  imm_use_iterator imm_iter;
-  gimple *use_stmt;
   sese region = SCOP_REGION (scop);
 
+  imm_use_iterator imm_iter;
+  gimple *use_stmt;
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
     {
       if (!bb_in_sese_p (gimple_bb (use_stmt), region))
 	{
+	  use_operand_p use_p;
 	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
 	    {
 	      SET_USE (use_p, new_name);
@@ -1911,7 +1876,6 @@ rewrite_cross_bb_scalar_deps (scop_p scop, gimple_stmt_iterator *gsi)
   gimple *stmt = gsi_stmt (*gsi);
   imm_use_iterator imm_iter;
   tree def;
-  basic_block def_bb;
   tree zero_dim_array = NULL_TREE;
   gimple *use_stmt;
   bool res = false;
@@ -1946,7 +1910,7 @@ rewrite_cross_bb_scalar_deps (scop_p scop, gimple_stmt_iterator *gsi)
       return true;
     }
 
-  def_bb = gimple_bb (stmt);
+  basic_block def_bb = gimple_bb (stmt);
 
   handle_scalar_deps_crossing_scop_limits (scop, def, stmt);
 

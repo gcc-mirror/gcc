@@ -328,7 +328,7 @@ graphite_transform_loops (void)
   FOR_EACH_VEC_ELT (scops, i, scop)
     if (dbg_cnt (graphite_scop))
       {
-	scop->ctx = ctx;
+	scop->isl_context = ctx;
 	build_poly_scop (scop);
 
 	if (dump_file && dump_flags)
