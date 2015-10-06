@@ -2771,6 +2771,37 @@ class Unnamed_label
   Blabel* blabel_;
 };
 
+// An alias for an imported package.
+
+class Package_alias
+{
+ public:
+  Package_alias(Location location)
+      : location_(location), used_(0)
+  { }
+
+  // The location of the import statement.
+  Location
+  location()
+  { return this->location_; }
+
+  // How many symbols from the package were used under this alias.
+  size_t
+  used() const
+  { return this->used_; }
+
+  // Note that some symbol was used under this alias.
+  void
+  note_usage()
+  { this->used_++; }
+
+ private:
+  // The location of the import statement.
+  Location location_;
+  // The amount of times some name from this package was used under this alias.
+  size_t used_;
+};
+
 // An imported package.
 
 class Package
@@ -2793,7 +2824,7 @@ class Package
   void
   set_pkgpath_symbol(const std::string&);
 
-  // Return the location of the import statement.
+  // Return the location of the most recent import statement.
   Location
   location() const
   { return this->location_; }
@@ -2829,15 +2860,18 @@ class Package
   bindings()
   { return this->bindings_; }
 
-  // Whether some symbol from the package was used.
-  bool
-  used() const
-  { return this->used_ > 0; }
+  // Type used to map import names to package aliases.
+  typedef std::map<std::string, Package_alias*> Aliases;
 
-  // Note that some symbol from this package was used.
+  // Return the set of package aliases.
+  const Aliases&
+  aliases() const
+  { return this->aliases_; }
+
+  // Note that some symbol from this package was used and qualified by ALIAS.
+  // For dot imports, the ALIAS should be ".PACKAGE_NAME".
   void
-  note_usage() const
-  { this->used_++; }
+  note_usage(const std::string& alias) const;
 
   // Note that USAGE might be a fake usage of this package.
   void
@@ -2851,36 +2885,6 @@ class Package
   // Clear the used field for the next file.
   void
   clear_used();
-
-  // Whether this package was imported in the current file.
-  bool
-  is_imported() const
-  { return this->is_imported_; }
-
-  // Note that this package was imported in the current file.
-  void
-  set_is_imported()
-  { this->is_imported_ = true; }
-
-  // Clear the imported field for the next file.
-  void
-  clear_is_imported()
-  { this->is_imported_ = false; }
-
-  // Whether this package was imported with a name of "_".
-  bool
-  uses_sink_alias() const
-  { return this->uses_sink_alias_; }
-
-  // Note that this package was imported with a name of "_".
-  void
-  set_uses_sink_alias()
-  { this->uses_sink_alias_ = true; }
-
-  // Clear the sink alias field for the next file.
-  void
-  clear_uses_sink_alias()
-  { this->uses_sink_alias_ = false; }
 
   // Look up a name in the package.  Returns NULL if the name is not
   // found.
@@ -2897,6 +2901,10 @@ class Package
   void
   set_location(Location location)
   { this->location_ = location; }
+
+  // Add a package name as an ALIAS for this package.
+  Package_alias*
+  add_alias(const std::string& alias, Location);
 
   // Add a constant to the package.
   Named_object*
@@ -2942,18 +2950,13 @@ class Package
   // than the priority of all of the packages that it imports.  This
   // is used to run init functions in the right order.
   int priority_;
-  // The location of the import statement.
+  // The location of the most recent import statement.
   Location location_;
-  // The amount of times some name from this package was used.  This is mutable
-  // because we can use a package even if we have a const pointer to it.
-  mutable size_t used_;
-  // A set of possibly fake uses of this package.  This is mutable because we
+  // The set of aliases associated with this package.
+  Aliases aliases_;
+  // A set of possibly fake uses of this package. This is mutable because we
   // can track fake uses of a package even if we have a const pointer to it.
   mutable std::set<Expression*> fake_uses_;
-  // True if this package was imported in the current file.
-  bool is_imported_;
-  // True if this package was imported with a name of "_".
-  bool uses_sink_alias_;
 };
 
 // Return codes for the traversal functions.  This is not an enum

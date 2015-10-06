@@ -516,7 +516,6 @@ Gogo::import_package(const std::string& filename,
     {
       Package* package = p->second;
       package->set_location(location);
-      package->set_is_imported();
       std::string ln = local_name;
       bool is_ln_exported = is_local_name_exported;
       if (ln.empty())
@@ -525,7 +524,9 @@ Gogo::import_package(const std::string& filename,
 	  go_assert(!ln.empty());
 	  is_ln_exported = Lex::is_exported_name(ln);
 	}
-      if (ln == ".")
+      if (ln == "_")
+        ;
+      else if (ln == ".")
 	{
 	  Bindings* bindings = package->bindings();
 	  for (Bindings::const_declarations_iterator p =
@@ -533,11 +534,12 @@ Gogo::import_package(const std::string& filename,
 	       p != bindings->end_declarations();
 	       ++p)
 	    this->add_dot_import_object(p->second);
+          std::string dot_alias = "." + package->package_name();
+          package->add_alias(dot_alias, location);
 	}
-      else if (ln == "_")
-	package->set_uses_sink_alias();
       else
 	{
+          package->add_alias(ln, location);
 	  ln = this->pack_hidden_name(ln, is_ln_exported);
 	  this->package_->bindings()->add_package(ln, package);
 	}
@@ -563,7 +565,6 @@ Gogo::import_package(const std::string& filename,
 		  "being compiled (see -fgo-pkgpath option)"));
 
       this->imports_.insert(std::make_pair(filename, package));
-      package->set_is_imported();
     }
 
   delete stream;
@@ -1544,7 +1545,10 @@ Gogo::lookup(const std::string& name, Named_object** pfunction) const
       if (ret != NULL)
 	{
 	  if (ret->package() != NULL)
-	    ret->package()->note_usage();
+            {
+              std::string dot_alias = "." + ret->package()->package_name();
+              ret->package()->note_usage(dot_alias);
+            }
 	  return ret;
 	}
     }
@@ -1594,10 +1598,14 @@ Gogo::add_imported_package(const std::string& real_name,
 
   *padd_to_globals = false;
 
-  if (alias_arg == ".")
-    *padd_to_globals = true;
-  else if (alias_arg == "_")
-    ret->set_uses_sink_alias();
+  if (alias_arg == "_")
+    ;
+  else if (alias_arg == ".")
+    {
+      *padd_to_globals = true;
+      std::string dot_alias = "." + real_name;
+      ret->add_alias(dot_alias, location);
+    }
   else
     {
       std::string alias = alias_arg;
@@ -1606,6 +1614,7 @@ Gogo::add_imported_package(const std::string& real_name,
 	  alias = real_name;
 	  is_alias_exported = Lex::is_exported_name(alias);
 	}
+      ret->add_alias(alias, location);
       alias = this->pack_hidden_name(alias, is_alias_exported);
       Named_object* no = this->package_->bindings()->add_package(alias, ret);
       if (!no->is_package())
@@ -2356,15 +2365,30 @@ Gogo::clear_file_scope()
        ++p)
     {
       Package* package = p->second;
-      if (package != this->package_
-	  && package->is_imported()
-	  && !package->used()
-	  && !package->uses_sink_alias()
-	  && !quiet)
-	error_at(package->location(), "imported and not used: %s",
-		 Gogo::message_name(package->package_name()).c_str());
-      package->clear_is_imported();
-      package->clear_uses_sink_alias();
+      if (package != this->package_ && !quiet)
+        {
+          for (Package::Aliases::const_iterator p1 = package->aliases().begin();
+               p1 != package->aliases().end();
+               ++p1)
+            {
+              if (!p1->second->used())
+                {
+                  // Give a more refined error message if the alias name is known.
+                  std::string pkg_name = package->package_name();
+                  if (p1->first != pkg_name && p1->first[0] != '.')
+                    {
+                      error_at(p1->second->location(),
+                               "imported and not used: %s as %s",
+                               Gogo::message_name(pkg_name).c_str(),
+                               Gogo::message_name(p1->first).c_str());
+                    }
+                  else
+                    error_at(p1->second->location(),
+                             "imported and not used: %s",
+                             Gogo::message_name(pkg_name).c_str());
+                }
+            }
+        }
       package->clear_used();
     }
 }
@@ -7741,8 +7765,7 @@ Package::Package(const std::string& pkgpath,
 		 const std::string& pkgpath_symbol, Location location)
   : pkgpath_(pkgpath), pkgpath_symbol_(pkgpath_symbol),
     package_name_(), bindings_(new Bindings(NULL)), priority_(0),
-    location_(location), used_(false), is_imported_(false),
-    uses_sink_alias_(false)
+    location_(location)
 {
   go_assert(!pkgpath.empty());
   
@@ -7796,6 +7819,16 @@ Package::set_priority(int priority)
     this->priority_ = priority;
 }
 
+// Note that symbol from this package was and qualified by ALIAS.
+
+void
+Package::note_usage(const std::string& alias) const
+{
+  Aliases::const_iterator p = this->aliases_.find(alias);
+  go_assert(p != this->aliases_.end());
+  p->second->note_usage();
+}
+
 // Forget a given usage.  If forgetting this usage means this package becomes
 // unused, report that error.
 
@@ -7811,7 +7844,7 @@ Package::forget_usage(Expression* usage) const
 
   if (this->fake_uses_.empty())
     error_at(this->location(), "imported and not used: %s",
-	     Gogo::message_name(this->package_name()).c_str());
+             Gogo::message_name(this->package_name()).c_str());
 }
 
 // Clear the used field for the next file.  If the only usages of this package
@@ -7820,10 +7853,26 @@ Package::forget_usage(Expression* usage) const
 void
 Package::clear_used()
 {
-  if (this->used_ > this->fake_uses_.size())
+  std::string dot_alias = "." + this->package_name();
+  Aliases::const_iterator p = this->aliases_.find(dot_alias);
+  if (p != this->aliases_.end() && p->second->used() > this->fake_uses_.size())
     this->fake_uses_.clear();
 
-  this->used_ = 0;
+  this->aliases_.clear();
+}
+
+Package_alias*
+Package::add_alias(const std::string& alias, Location location)
+{
+  Aliases::const_iterator p = this->aliases_.find(alias);
+  if (p == this->aliases_.end())
+    {
+      std::pair<Aliases::iterator, bool> ret;
+      ret = this->aliases_.insert(std::make_pair(alias,
+                                                 new Package_alias(location)));
+      p = ret.first;
+    }
+  return p->second;
 }
 
 // Determine types of constants.  Everything else in a package
