@@ -21262,11 +21262,12 @@ arm_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size,
 
       /* Step 3: the loop
 
-	 while (TEST_ADDR != LAST_ADDR)
+	 do
 	   {
 	     TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
 	     probe at TEST_ADDR
 	   }
+	 while (TEST_ADDR != LAST_ADDR)
 
 	 probes at FIRST + N * PROBE_INTERVAL for values of N from 1
 	 until it is equal to ROUNDED_SIZE.  */
@@ -21311,22 +21312,22 @@ output_probe_stack_range (rtx reg1, rtx reg2)
 
   ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno++);
 
+  /* Loop.  */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
 
-   /* Test if TEST_ADDR == LAST_ADDR.  */
+  /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
   xops[0] = reg1;
+  xops[1] = GEN_INT (PROBE_INTERVAL);
+  output_asm_insn ("sub\t%0, %0, %1", xops);
+
+  /* Probe at TEST_ADDR.  */
+  output_asm_insn ("str\tr0, [%0, #0]", xops);
+
+  /* Test if TEST_ADDR == LAST_ADDR.  */
   xops[1] = reg2;
   output_asm_insn ("cmp\t%0, %1", xops);
 
-  if (TARGET_THUMB2)
-    fputs ("\tittt\tne\n", asm_out_file);
-
-  /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
-  xops[1] = GEN_INT (PROBE_INTERVAL);
-  output_asm_insn ("subne\t%0, %0, %1", xops);
-
-  /* Probe at TEST_ADDR and branch.  */
-  output_asm_insn ("strne\tr0, [%0, #0]", xops);
+  /* Branch.  */
   fputs ("\tbne\t", asm_out_file);
   assemble_name_raw (asm_out_file, loop_lab);
   fputc ('\n', asm_out_file);
@@ -24869,7 +24870,7 @@ thumb1_expand_prologue (void)
 
   /* If we have a frame, then do stack checking.  FIXME: not implemented.  */
   if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK && size)
-    sorry ("-fstack-check=specific for THUMB1");
+    sorry ("-fstack-check=specific for Thumb-1");
 
   amount = offsets->outgoing_args - offsets->saved_regs;
   amount -= 4 * thumb1_extra_regs_pushed (offsets, true);
