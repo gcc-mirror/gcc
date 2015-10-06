@@ -154,26 +154,6 @@ scop_get_original_schedule (scop_p scop, vec<poly_bb_p> pbbs)
   return res;
 }
 
-/* Returns all the transformed schedules in SCOP.  */
-
-static isl_union_map *
-scop_get_transformed_schedule (scop_p scop, vec<poly_bb_p> pbbs)
-{
-  int i;
-  poly_bb_p pbb;
-  isl_space *space = isl_set_get_space (scop->param_context);
-  isl_union_map *res = isl_union_map_empty (space);
-
-  FOR_EACH_VEC_ELT (pbbs, i, pbb)
-    {
-      res = isl_union_map_add_map
-	(res, constrain_domain (isl_map_copy (pbb->transformed),
-				isl_set_copy (pbb->domain)));
-    }
-
-  return res;
-}
-
 /* Helper function used on each MAP of a isl_union_map.  Computes the
    maximal output dimension.  */
 
@@ -262,33 +242,6 @@ apply_schedule_on_deps (__isl_keep isl_union_map *schedule,
   return x;
 }
 
-/* Return true when SCHEDULE does not violate the data DEPS: that is
-   when the intersection of LEX with the DEPS transformed by SCHEDULE
-   is empty.  LEX is the relation in which the outputs occur before
-   the inputs.  */
-
-static bool
-no_violations (__isl_keep isl_union_map *schedule,
-	       __isl_keep isl_union_map *deps)
-{
-  bool res;
-  isl_space *space;
-  isl_map *lex, *x;
-
-  if (isl_union_map_is_empty (deps))
-    return true;
-
-  x = apply_schedule_on_deps (schedule, deps);
-  space = isl_map_get_space (x);
-  space = isl_space_range (space);
-  lex = isl_map_lex_ge (space);
-  x = isl_map_intersect (x, lex);
-  res = isl_map_is_empty (x);
-
-  isl_map_free (x);
-  return res;
-}
-
 /* Return true when DEPS is non empty and the intersection of LEX with
    the DEPS transformed by SCHEDULE is non empty.  LEX is the relation
    in which all the inputs before DEPTH occur at the same time as the
@@ -332,161 +285,6 @@ carries_deps (__isl_keep isl_union_map *schedule,
   return res;
 }
 
-/* Subtract from the RAW, WAR, and WAW dependences those relations
-   that have been marked as belonging to an associative commutative
-   reduction.  */
-
-static void
-subtract_commutative_associative_deps (scop_p scop,
-				       vec<poly_bb_p> pbbs,
-				       isl_union_map *original,
-				       isl_union_map **must_raw,
-				       isl_union_map **may_raw,
-				       isl_union_map **must_raw_no_source,
-				       isl_union_map **may_raw_no_source,
-				       isl_union_map **must_war,
-				       isl_union_map **may_war,
-				       isl_union_map **must_war_no_source,
-				       isl_union_map **may_war_no_source,
-				       isl_union_map **must_waw,
-				       isl_union_map **may_waw,
-				       isl_union_map **must_waw_no_source,
-				       isl_union_map **may_waw_no_source)
-{
-  int i, j;
-  poly_bb_p pbb;
-  poly_dr_p pdr;
-  isl_space *space = isl_set_get_space (scop->param_context);
-
-  FOR_EACH_VEC_ELT (pbbs, i, pbb)
-    if (PBB_IS_REDUCTION (pbb))
-      {
-	isl_union_map *r = isl_union_map_empty (isl_space_copy (space));
-	isl_union_map *must_w = isl_union_map_empty (isl_space_copy (space));
-	isl_union_map *may_w = isl_union_map_empty (isl_space_copy (space));
-	isl_union_map *all_w;
-	isl_union_map *empty;
-	isl_union_map *x_must_raw;
-	isl_union_map *x_may_raw;
-	isl_union_map *x_must_raw_no_source;
-	isl_union_map *x_may_raw_no_source;
-	isl_union_map *x_must_war;
-	isl_union_map *x_may_war;
-	isl_union_map *x_must_war_no_source;
-	isl_union_map *x_may_war_no_source;
-	isl_union_map *x_must_waw;
-	isl_union_map *x_may_waw;
-	isl_union_map *x_must_waw_no_source;
-	isl_union_map *x_may_waw_no_source;
-
-	FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
-	  if (pdr_read_p (pdr))
-	    r = isl_union_map_add_map (r, add_pdr_constraints (pdr, pbb));
-
-	FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
-	  if (pdr_write_p (pdr))
-	    must_w = isl_union_map_add_map (must_w,
-					    add_pdr_constraints (pdr, pbb));
-
-	FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
-	  if (pdr_may_write_p (pdr))
-	    may_w = isl_union_map_add_map (may_w,
-					   add_pdr_constraints (pdr, pbb));
-
-	all_w = isl_union_map_union
-	  (isl_union_map_copy (must_w), isl_union_map_copy (may_w));
-	empty = isl_union_map_empty (isl_union_map_get_space (all_w));
-
-	isl_union_map_compute_flow (isl_union_map_copy (r),
-				    isl_union_map_copy (must_w),
-				    isl_union_map_copy (may_w),
-				    isl_union_map_copy (original),
-				    &x_must_raw, &x_may_raw,
-				    &x_must_raw_no_source,
-				    &x_may_raw_no_source);
-	isl_union_map_compute_flow (isl_union_map_copy (all_w),
-				    r, empty,
-				    isl_union_map_copy (original),
-				    &x_must_war, &x_may_war,
-				    &x_must_war_no_source,
-				    &x_may_war_no_source);
-	isl_union_map_compute_flow (all_w, must_w, may_w,
-				    isl_union_map_copy (original),
-				    &x_must_waw, &x_may_waw,
-				    &x_must_waw_no_source,
-				    &x_may_waw_no_source);
-
-	if (must_raw)
-	  *must_raw = isl_union_map_subtract (*must_raw, x_must_raw);
-	else
-	  isl_union_map_free (x_must_raw);
-
-	if (may_raw)
-	  *may_raw = isl_union_map_subtract (*may_raw, x_may_raw);
-	else
-	  isl_union_map_free (x_may_raw);
-
-	if (must_raw_no_source)
-	  *must_raw_no_source = isl_union_map_subtract (*must_raw_no_source,
-						        x_must_raw_no_source);
-	else
-	  isl_union_map_free (x_must_raw_no_source);
-
-	if (may_raw_no_source)
-	  *may_raw_no_source = isl_union_map_subtract (*may_raw_no_source,
-						       x_may_raw_no_source);
-	else
-	  isl_union_map_free (x_may_raw_no_source);
-
-	if (must_war)
-	  *must_war = isl_union_map_subtract (*must_war, x_must_war);
-	else
-	  isl_union_map_free (x_must_war);
-
-	if (may_war)
-	  *may_war = isl_union_map_subtract (*may_war, x_may_war);
-	else
-	  isl_union_map_free (x_may_war);
-
-	if (must_war_no_source)
-	  *must_war_no_source = isl_union_map_subtract (*must_war_no_source,
-						        x_must_war_no_source);
-	else
-	  isl_union_map_free (x_must_war_no_source);
-
-	if (may_war_no_source)
-	  *may_war_no_source = isl_union_map_subtract (*may_war_no_source,
-						       x_may_war_no_source);
-	else
-	  isl_union_map_free (x_may_war_no_source);
-
-	if (must_waw)
-	  *must_waw = isl_union_map_subtract (*must_waw, x_must_waw);
-	else
-	  isl_union_map_free (x_must_waw);
-
-	if (may_waw)
-	  *may_waw = isl_union_map_subtract (*may_waw, x_may_waw);
-	else
-	  isl_union_map_free (x_may_waw);
-
-	if (must_waw_no_source)
-	  *must_waw_no_source = isl_union_map_subtract (*must_waw_no_source,
-						        x_must_waw_no_source);
-	else
-	  isl_union_map_free (x_must_waw_no_source);
-
-	if (may_waw_no_source)
-	  *may_waw_no_source = isl_union_map_subtract (*may_waw_no_source,
-						       x_may_waw_no_source);
-	else
-	  isl_union_map_free (x_may_waw_no_source);
-      }
-
-  isl_union_map_free (original);
-  isl_space_free (space);
-}
-
 /* Compute the original data dependences in SCOP for all the reads and
    writes in PBBS.  */
 
@@ -526,44 +324,9 @@ compute_deps (scop_p scop, vec<poly_bb_p> pbbs,
 			      must_war, may_war, must_war_no_source,
 			      may_war_no_source);
   isl_union_map_compute_flow (all_writes, must_writes, may_writes,
-			      isl_union_map_copy (original),
+			      original,
 			      must_waw, may_waw, must_waw_no_source,
 			      may_waw_no_source);
-
-  subtract_commutative_associative_deps
-    (scop, pbbs, original,
-     must_raw, may_raw, must_raw_no_source, may_raw_no_source,
-     must_war, may_war, must_war_no_source, may_war_no_source,
-     must_waw, may_waw, must_waw_no_source, may_waw_no_source);
-}
-
-/* Given a TRANSFORM, check whether it respects the original
-   dependences in SCOP.  Returns true when TRANSFORM is a safe
-   transformation.  */
-
-static bool
-transform_is_safe (scop_p scop, isl_union_map *transform)
-{
-  bool res;
-
-  if (!scop->must_raw)
-    compute_deps (scop, SCOP_BBS (scop),
-		  &scop->must_raw, &scop->may_raw,
-		  &scop->must_raw_no_source, &scop->may_raw_no_source,
-		  &scop->must_war, &scop->may_war,
-		  &scop->must_war_no_source, &scop->may_war_no_source,
-		  &scop->must_waw, &scop->may_waw,
-		  &scop->must_waw_no_source, &scop->may_waw_no_source);
-
-  res = (no_violations (transform, scop->must_raw)
-	 && no_violations (transform, scop->may_raw)
-	 && no_violations (transform, scop->must_war)
-	 && no_violations (transform, scop->may_war)
-	 && no_violations (transform, scop->must_waw)
-	 && no_violations (transform, scop->may_waw));
-
-  isl_union_map_free (transform);
-  return res;
 }
 
 isl_union_map *
@@ -593,22 +356,6 @@ scop_get_dependences (scop_p scop)
 				     isl_union_map_copy (scop->may_waw));
 
   return dependences;
-}
-
-/* Return true when the SCOP transformed schedule is correct.  */
-
-bool
-graphite_legal_transform (scop_p scop)
-{
-  int res;
-  isl_union_map *transform;
-
-  timevar_push (TV_GRAPHITE_DATA_DEPS);
-  transform = scop_get_transformed_schedule (scop, SCOP_BBS (scop));
-  res = transform_is_safe (scop, transform);
-  timevar_pop (TV_GRAPHITE_DATA_DEPS);
-
-  return res;
 }
 
 #endif /* HAVE_isl */
