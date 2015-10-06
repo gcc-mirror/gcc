@@ -1,6 +1,18 @@
 2015-10-06  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-poly.c (free_data_refs_aux): Remove.
+	(free_gimple_poly_bb): Do not call free_data_refs_aux.
+	* graphite-poly.h (struct base_alias_pair): Remove.
+	* graphite-sese-to-poly.c (pdr_add_alias_set): Remove all uses of
+	base_alias_pair and dr->aux.
+	(build_alias_set): Same.
+	* tree-data-ref.c (create_data_ref): Initialize alias_set.
+	* tree-data-ref.h (data_reference): Add alias_set.
+
+2015-10-06  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-poly.c (new_poly_dr): Remove dr_base_object_set.
 	Do not set PDR_BASE_OBJECT_SET.
 	* graphite-poly.h (poly_dr): Same.

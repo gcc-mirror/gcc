@@ -273,29 +273,11 @@ new_gimple_poly_bb (basic_block bb, vec<data_reference_p> drs)
   return gbb;
 }
 
-static void
-free_data_refs_aux (vec<data_reference_p> datarefs)
-{
-  unsigned int i;
-  data_reference_p dr;
-
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
-    if (dr->aux)
-      {
-	base_alias_pair_p bap = (base_alias_pair_p)(dr->aux);
-
-	free (bap->alias_set);
-
-	free (bap);
-	dr->aux = NULL;
-      }
-}
 /* Frees GBB.  */
 
 void
 free_gimple_poly_bb (gimple_poly_bb_p gbb)
 {
-  free_data_refs_aux (GBB_DATA_REFS (gbb));
   free_data_refs (GBB_DATA_REFS (gbb));
 
   GBB_CONDITIONS (gbb).release ();

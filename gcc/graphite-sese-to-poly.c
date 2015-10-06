@@ -932,16 +932,9 @@ build_scop_iteration_domain (scop_p scop)
 static isl_map *
 pdr_add_alias_set (isl_map *acc, data_reference_p dr)
 {
-  isl_constraint *c;
-  int alias_set_num = 0;
-  base_alias_pair *bap = (base_alias_pair *)(dr->aux);
-
-  if (bap && bap->alias_set)
-    alias_set_num = *(bap->alias_set);
-
-  c = isl_equality_alloc
+  isl_constraint *c = isl_equality_alloc
       (isl_local_space_from_space (isl_map_get_space (acc)));
-  c = isl_constraint_set_constant_si (c, -alias_set_num);
+  c = isl_constraint_set_constant_si (c, -dr->alias_set);
   c = isl_constraint_set_coefficient_si (c, isl_dim_out, 0, 1);
 
   return isl_map_add_constraint (acc, c);
@@ -1086,11 +1079,7 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
     isl_id *id = isl_id_for_dr (scop, dr);
     int nb = 1 + DR_NUM_DIMENSIONS (dr);
     isl_space *space = isl_space_set_alloc (scop->isl_context, 0, nb);
-    int alias_set_num = 0;
-    base_alias_pair *bap = (base_alias_pair *)(dr->aux);
-
-    if (bap && bap->alias_set)
-      alias_set_num = *(bap->alias_set);
+    int alias_set_num = dr->alias_set;
 
     space = isl_space_set_tuple_id (space, isl_dim_set, id);
     subscript_sizes = isl_set_nat_universe (space);
@@ -1130,18 +1119,8 @@ build_alias_set (vec<data_reference_p> drs)
   graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL);
   free (all_vertices);
 
-  data_reference_p dr;
-  FOR_EACH_VEC_ELT (drs, i, dr)
-    dr->aux = XNEW (base_alias_pair);
-
   for (i = 0; i < g->n_vertices; i++)
-    {
-      data_reference_p dr = drs[i];
-      base_alias_pair *bap = (base_alias_pair *)(dr->aux);
-      bap->alias_set = XNEW (int);
-      int c = g->vertices[i].component + 1;
-      *(bap->alias_set) = c;
-    }
+    drs[i]->alias_set = g->vertices[i].component + 1;
 
   free_graph (g);
 }
