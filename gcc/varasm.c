@@ -6233,7 +6233,7 @@ default_no_named_section (const char *name ATTRIBUTE_UNUSED,
 
 void
 default_elf_asm_named_section (const char *name, unsigned int flags,
-			       tree decl ATTRIBUTE_UNUSED)
+			       tree decl)
 {
   char flagchars[10], *f = flagchars;
 
