@@ -1,3 +1,7 @@
+2015-10-05  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/builtin_target.c: Add check for AES and PCLMUL.
+
 2015-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53856
