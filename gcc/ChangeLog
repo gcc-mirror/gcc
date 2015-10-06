@@ -1,3 +1,8 @@
+2015-10-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/aarch64/iterators.md (vwcore): Add missing cases for
+	 V4HF/V8HF modes.
+
 2015-10-06  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
