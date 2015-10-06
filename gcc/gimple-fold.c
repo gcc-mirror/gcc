@@ -693,7 +693,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	      unlink_stmt_vdef (stmt);
 	      release_defs (stmt);
 	    }
-	  gsi_replace (si_p, gimple_build_nop (), true);
+	  gsi_replace (si_p, gimple_build_nop (), false);
 	  return;
 	}
     }
@@ -734,7 +734,7 @@ replace_call_with_value (gimple_stmt_iterator *gsi, tree val)
       unlink_stmt_vdef (stmt);
       release_ssa_name (vdef);
     }
-  gsi_replace (gsi, repl, true);
+  gsi_replace (gsi, repl, false);
 }
 
 /* Replace the call at *GSI with the new call REPL and fold that
@@ -753,7 +753,7 @@ replace_call_with_call_and_fold (gimple_stmt_iterator *gsi, gimple repl)
       gimple_set_vuse (repl, gimple_vuse (stmt));
       SSA_NAME_DEF_STMT (gimple_vdef (repl)) = repl;
     }
-  gsi_replace (gsi, repl, true);
+  gsi_replace (gsi, repl, false);
   fold_stmt (gsi);
 }
 
@@ -800,7 +800,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	  unlink_stmt_vdef (stmt);
 	  release_ssa_name (vdef);
 	}
-      gsi_replace (gsi, repl, true);
+      gsi_replace (gsi, repl, false);
       return true;
     }
 
@@ -813,7 +813,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	release_ssa_name (gimple_vdef (stmt));
       if (!lhs)
 	{
-	  gsi_replace (gsi, gimple_build_nop (), true);
+	  gsi_replace (gsi, gimple_build_nop (), false);
 	  return true;
 	}
       goto done;
@@ -895,7 +895,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 			SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 		      if (!lhs)
 			{
-			  gsi_replace (gsi, new_stmt, true);
+			  gsi_replace (gsi, new_stmt, false);
 			  return true;
 			}
 		      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
@@ -1175,7 +1175,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
       if (!lhs)
 	{
-	  gsi_replace (gsi, new_stmt, true);
+	  gsi_replace (gsi, new_stmt, false);
 	  return true;
 	}
       gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
@@ -1193,7 +1193,7 @@ done:
   dest = force_gimple_operand_gsi (gsi, dest, false, NULL_TREE, true,
 				   GSI_SAME_STMT);
   gimple repl = gimple_build_assign (lhs, dest);
-  gsi_replace (gsi, repl, true);
+  gsi_replace (gsi, repl, false);
   return true;
 }
 
@@ -1275,7 +1275,7 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
   if (gimple_call_lhs (stmt))
     {
       gimple asgn = gimple_build_assign (gimple_call_lhs (stmt), dest);
-      gsi_replace (gsi, asgn, true);
+      gsi_replace (gsi, asgn, false);
     }
   else
     {
@@ -2125,7 +2125,7 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
   gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
   gassign *ret = gimple_build_assign (gimple_call_lhs (stmt),
 				      POINTER_PLUS_EXPR, dest, tem);
-  gsi_replace (gsi, ret, true);
+  gsi_replace (gsi, ret, false);
   /* Finally fold the memcpy call.  */
   gimple_stmt_iterator gsi2 = *gsi;
   gsi_prev (&gsi2);
@@ -3207,7 +3207,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 		  && tree_int_cst_le (gimple_call_arg (stmt, 1),
 				      gimple_call_arg (stmt, 2))))
 	    {
-	      gsi_replace (gsi, gimple_build_nop (), true);
+	      gsi_replace (gsi, gimple_build_nop (), false);
 	      unlink_stmt_vdef (stmt);
 	      release_defs (stmt);
 	      return true;

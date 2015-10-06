@@ -1,3 +1,16 @@
+2015-10-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67563
+	* gcc.dg/pr67563.c: New testcase.
+
+	2015-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR lto/67699
+	* g++.dg/pr67699.C: New testcase.
+
 2015-10-06  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/vect-pack-trunc-1.c: New test.
