@@ -18535,13 +18535,14 @@ Do not generate GP-relative accesses.
 
 @item local
 Generate GP-relative accesses for small data objects that are not 
-external or weak.  Also use GP-relative addressing for objects that
+external, weak, or uninitialized common symbols.  
+Also use GP-relative addressing for objects that
 have been explicitly placed in a small data section via a @code{section}
 attribute.
 
 @item global
 As for @samp{local}, but also generate GP-relative accesses for
-small data objects that are external or weak.  If you use this option,
+small data objects that are external, weak, or common.  If you use this option,
 you must ensure that all parts of your program (including libraries) are
 compiled with the same @option{-G} setting.
 

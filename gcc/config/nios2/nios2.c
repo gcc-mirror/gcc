@@ -2099,13 +2099,17 @@ nios2_symbol_ref_in_small_data_p (rtx sym)
 
     case gpopt_local:
       /* Use GP-relative addressing for small data symbols that are
-	 not external or weak, plus any symbols that have explicitly
-	 been placed in a small data section.  */
+	 not external or weak or uninitialized common, plus any symbols
+	 that have explicitly been placed in a small data section.  */
       if (decl && DECL_SECTION_NAME (decl))
 	return nios2_small_section_name_p (DECL_SECTION_NAME (decl));
       return (SYMBOL_REF_SMALL_P (sym)
 	      && !SYMBOL_REF_EXTERNAL_P (sym)
-	      && !(decl && DECL_WEAK (decl)));
+	      && !(decl && DECL_WEAK (decl))
+	      && !(decl && DECL_COMMON (decl)
+		   && (DECL_INITIAL (decl) == NULL
+		       || (!in_lto_p
+			   && DECL_INITIAL (decl) == error_mark_node))));
 
     case gpopt_global:
       /* Use GP-relative addressing for small data symbols, even if

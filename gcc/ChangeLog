@@ -1,3 +1,9 @@
+2015-10-06  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (nios2_symbol_ref_in_small_data_p):
+	For -mgpopt=local, also exclude unintialized common symbols.
+	* doc/invoke.texi (Nios II Options): Document the change.
+
 2015-10-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* config/aarch64/iterators.md (vwcore): Add missing cases for
