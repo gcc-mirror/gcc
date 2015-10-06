@@ -3319,6 +3319,24 @@ one pass over the objects and does the best that it can.  Using the
 options can help the packing however, since they produce smaller,
 easier to pack regions.
 
+@item reentrant
+On the MSP430 a function can be given the @code{reentant} attribute.
+This makes the function disable interrupts upon entry and enable
+interrupts upon exit.  Reentrant functions cannot be @code{naked}.
+
+@item critical
+On the MSP430 a function can be given the @code{critical} attribute.
+This makes the function disable interrupts upon entry and restore the
+previous interrupt enabled/disabled state upon exit.  A function
+cannot have both the @code{reentrant} and @code{critical} attributes.
+Critical functions cannot be @code{naked}.
+
+@item wakeup
+On the MSP430 a function can be given the @code{wakeup} attribute.
+Such a function must also have the @code{interrupt} attribute.  When a
+function with the @code{wakeup} attribute exists the processor will be
+woken up from any low-power state in which it may be residing.
+
 @end table
 
 @c This is the end of the target-independent attribute table
@@ -5264,6 +5282,7 @@ attributes.
 * M32R/D Variable Attributes::
 * MeP Variable Attributes::
 * Microsoft Windows Variable Attributes::
+* MSP430 Variable Attributes::
 * PowerPC Variable Attributes::
 * SPU Variable Attributes::
 * x86 Variable Attributes::
@@ -5852,6 +5871,38 @@ linkers work.  See @code{section} attribute for more information.
 
 The @code{shared} attribute is only available on Microsoft Windows@.
 
+@end table
+
+@node MSP430 Variable Attributes
+@subsection MSP430 Variable Attributes
+
+@table @code
+@item noinit
+@cindex @code{noinit} MSP430 variable attribute
+Any data with the @code{noinit} attribute will not be initialised by
+the C runtime startup code, or the program loader.  Not initialising
+data in this way can reduce program startup times.
+
+@item persistent
+@cindex @code{persistent} MSP430 variable attribute
+Any variable with the @code{persistent} attribute will not be
+initialised by the C runtime startup code.  Instead its value will be
+set once, when the application is loaded, and then never initialised
+again, even if the processor is reset or the program restarts.
+Persistent data is intended to be placed into FLASH RAM, where its
+value will be retained across resets.  The linker script being used to
+create the application should ensure that persistent data is correctly
+placed.
+
+@item lower
+@itemx upper
+@itemx either
+@cindex @code{lower} memory region on the MSP430
+@cindex @code{upper} memory region on the MSP430
+@cindex @code{either} memory region on the MSP430
+These attributes are the same as the MSP430 function attributes of the
+same name.  These attributes can be applied to both functions and
+variables.
 @end table
 
 @node PowerPC Variable Attributes

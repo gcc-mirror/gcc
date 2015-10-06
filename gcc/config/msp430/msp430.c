@@ -1148,6 +1148,8 @@ const char * const  ATTR_CRIT   = "critical";
 const char * const  ATTR_LOWER  = "lower";
 const char * const  ATTR_UPPER  = "upper";
 const char * const  ATTR_EITHER = "either";
+const char * const  ATTR_NOINIT = "noinit";
+const char * const  ATTR_PERSIST = "persistent";
 
 static inline bool
 has_attr (const char * attr, tree decl)
@@ -1278,7 +1280,7 @@ msp430_attr (tree * node,
       if (is_naked_func (* node))
 	message = "naked functions cannot be critical";
       else if (is_reentrant_func (* node))
-	message = "reentranct functions cannot be critical";
+	message = "reentrant functions cannot be critical";
     }
   else if (TREE_NAME_EQ (name, ATTR_NAKED))
     {
@@ -1344,6 +1346,39 @@ msp430_section_attr (tree * node,
   return NULL_TREE;
 }
 
+static tree
+msp430_data_attr (tree * node,
+		  tree   name,
+		  tree   args,
+		  int    flags ATTRIBUTE_UNUSED,
+		  bool * no_add_attrs ATTRIBUTE_UNUSED)
+{
+  const char * message = NULL;
+
+  gcc_assert (DECL_P (* node));
+  gcc_assert (args == NULL);
+
+  if (TREE_CODE (* node) != VAR_DECL)
+    message = "%qE attribute only applies to variables";
+
+  if (DECL_SECTION_NAME (* node))
+    message = "%qE attribute cannot be applied to variables with specific sections";
+
+  /* If this var is thought to be common, then change this.  Common variables
+     are assigned to sections before the backend has a chance to process them.  */
+  if (DECL_COMMON (* node))
+    DECL_COMMON (* node) = 0;
+
+  if (message)
+    {
+      warning (OPT_Wattributes, message, name);
+      * no_add_attrs = true;
+    }
+    
+  return NULL_TREE;
+}
+
+
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE		msp430_attribute_table
 
@@ -1362,6 +1397,9 @@ const struct attribute_spec msp430_attribute_table[] =
   { ATTR_LOWER,       0, 0, true,  false, false, msp430_section_attr, false },
   { ATTR_UPPER,       0, 0, true,  false, false, msp430_section_attr, false },
   { ATTR_EITHER,      0, 0, true,  false, false, msp430_section_attr, false },
+
+  { ATTR_NOINIT,      0, 0, true,  false, false, msp430_data_attr, false },
+  { ATTR_PERSIST,     0, 0, true,  false, false, msp430_data_attr, false },
 
   { NULL,             0, 0, false, false, false, NULL,        false }
 };
@@ -1536,6 +1574,19 @@ gen_prefix (tree decl)
   return NULL;
 }
 
+static section * noinit_section;
+static section * persist_section;
+
+#undef  TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS msp430_init_sections
+
+static void
+msp430_init_sections (void)
+{
+  noinit_section = get_unnamed_section (0, output_section_asm_op, ".section .noinit,\"aw\"");
+  persist_section = get_unnamed_section (0, output_section_asm_op, ".section .persistent,\"aw\"");
+}
+
 #undef  TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION msp430_select_section
 
@@ -1561,6 +1612,10 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
     {
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	return text_section;
+      else if (has_attr (ATTR_NOINIT, decl))
+	return noinit_section;
+      else if (has_attr (ATTR_PERSIST, decl))
+	return persist_section;
       else
 	return default_select_section (decl, reloc, align);
     }
@@ -1629,7 +1684,11 @@ msp430_section_type_flags (tree decl, const char * name, int reloc)
     name += strlen (upper_prefix);
   else if (strncmp (name, either_prefix, strlen (either_prefix)) == 0)
     name += strlen (either_prefix);
-
+  else if (strcmp (name, ".noinit") == 0)
+    return SECTION_WRITE | SECTION_BSS | SECTION_NOTYPE;
+  else if (strcmp (name, ".persisten") == 0)
+    return SECTION_WRITE | SECTION_NOTYPE;
+  
   return default_section_type_flags (decl, name, reloc);
 }
 
