@@ -4021,6 +4021,7 @@
    (set_attr "amdfam10_decode" "vector,double,*")
    (set_attr "bdver1_decode" "double,direct,*")
    (set_attr "btver2_decode" "double,double,double")
+   (set_attr "znver1_decode" "double,double,double")
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "SF")])
 
@@ -4413,6 +4414,7 @@
    (set_attr "amdfam10_decode" "vector,double,*")
    (set_attr "bdver1_decode" "double,direct,*")
    (set_attr "btver2_decode" "double,double,double")
+   (set_attr "znver1_decode" "double,double,double")
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "DF")])
 
@@ -13404,6 +13406,7 @@
    (set (attr "length_vex")
      (symbol_ref ("3 + REX_SSE_REGNO_P (REGNO (operands[2]))")))
    (set_attr "prefix" "maybe_vex")
+   (set_attr "znver1_decode" "vector")
    (set_attr "mode" "TI")])
 
 (define_insn "sse_ldmxcsr"
@@ -14341,6 +14344,7 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "btver2_decode" "vector,vector,vector")
+   (set_attr "znver1_decode" "vector,vector,vector")
    (set_attr "mode" "<MODE>")])
 
 ;; Mode attribute used by `vmovntdqa' pattern
@@ -14376,6 +14380,7 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "btver2_decode" "vector,vector,vector")
+   (set_attr "znver1_decode" "vector,vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<sse4_1_avx2>_packusdw<mask_name>"
