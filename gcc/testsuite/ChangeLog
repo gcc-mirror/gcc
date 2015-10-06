@@ -1,3 +1,7 @@
+2015-10-06  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/builtin_target.c: Fix AVX-512VBMI detection.
+
 2015-10-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67859
