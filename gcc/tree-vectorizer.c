@@ -329,25 +329,19 @@ shrink_simd_arrays
 /* A helper function to free data refs.  */
 
 void
-vect_destroy_datarefs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
+vect_destroy_datarefs (vec_info *vinfo)
 {
-  vec<data_reference_p> datarefs;
   struct data_reference *dr;
   unsigned int i;
 
- if (loop_vinfo)
-    datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
-  else
-    datarefs = BB_VINFO_DATAREFS (bb_vinfo);
-
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
+  FOR_EACH_VEC_ELT (vinfo->datarefs, i, dr)
     if (dr->aux)
       {
         free (dr->aux);
         dr->aux = NULL;
       }
 
-  free_data_refs (datarefs);
+  free_data_refs (vinfo->datarefs);
 }
 
 
