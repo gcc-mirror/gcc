@@ -1,3 +1,9 @@
+2015-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c/65345
+	* config/sparc/sparc.c (sparc_atomic_assign_expand_fenv): Adjust to
+	use create_tmp_var_raw rather than create_tmp_var.
+
 2015-10-06  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vec_info): New base class for...
