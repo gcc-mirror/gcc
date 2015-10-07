@@ -87,7 +87,7 @@ along with GCC; see the file COPYING3.  If not see
 source_location vect_location;
 
 /* Vector mapping GIMPLE stmt to stmt_vec_info. */
-vec<vec_void_p> stmt_vec_info_vec;
+vec<stmt_vec_info> stmt_vec_info_vec;
 
 /* For mapping simduid to vectorization factor.  */
 

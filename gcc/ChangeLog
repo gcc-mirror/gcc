@@ -1,3 +1,17 @@
+2015-10-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (stmt_vec_info_vec): Use vec<stmt_vec_info>.
+	(vinfo_for_stmt): Adjust.
+	(set_vinfo_for_stmt): Likewise.
+	* tree-vectorizer.c (stmt_vec_info_vec): Likewise.
+	* tree-vect-stmts.c (free_stmt_vec_info_vec): Likewise.
+	* tree-vect-loop.c (new_loop_vec_info): Remove special-casing
+	of inner loop.
+	(vect_analyze_loop_1): Remove.
+	(vect_analyze_loop_form_1): Avoid building a loop_vec_info for
+	inner loop when vectorizing an outer loop by splitting out from ...
+	(vect_analyze_loop_form): ... here.
+
 2015-10-07  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR c/65345

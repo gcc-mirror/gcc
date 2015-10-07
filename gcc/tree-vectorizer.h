@@ -741,10 +741,7 @@ struct dataref_aux {
 /* The maximum vectorization factor supported by any target (V64QI).  */
 #define MAX_VECTORIZATION_FACTOR 64
 
-/* Avoid GTY(()) on stmt_vec_info.  */
-typedef void *vec_void_p;
-
-extern vec<vec_void_p> stmt_vec_info_vec;
+extern vec<stmt_vec_info> stmt_vec_info_vec;
 
 void init_stmt_vec_info_vec (void);
 void free_stmt_vec_info_vec (void);
@@ -758,7 +755,7 @@ vinfo_for_stmt (gimple *stmt)
   if (uid == 0)
     return NULL;
 
-  return (stmt_vec_info) stmt_vec_info_vec[uid - 1];
+  return stmt_vec_info_vec[uid - 1];
 }
 
 /* Set vectorizer information INFO for STMT.  */
@@ -772,10 +769,10 @@ set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
       gcc_checking_assert (info);
       uid = stmt_vec_info_vec.length () + 1;
       gimple_set_uid (stmt, uid);
-      stmt_vec_info_vec.safe_push ((vec_void_p) info);
+      stmt_vec_info_vec.safe_push (info);
     }
   else
-    stmt_vec_info_vec[uid - 1] = (vec_void_p) info;
+    stmt_vec_info_vec[uid - 1] = info;
 }
 
 /* Return the earlier statement between STMT1 and STMT2.  */

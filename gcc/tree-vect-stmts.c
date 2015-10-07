@@ -8033,10 +8033,10 @@ void
 free_stmt_vec_info_vec (void)
 {
   unsigned int i;
-  vec_void_p info;
+  stmt_vec_info info;
   FOR_EACH_VEC_ELT (stmt_vec_info_vec, i, info)
     if (info != NULL)
-      free_stmt_vec_info (STMT_VINFO_STMT ((stmt_vec_info) info));
+      free_stmt_vec_info (STMT_VINFO_STMT (info));
   gcc_assert (stmt_vec_info_vec.exists ());
   stmt_vec_info_vec.release ();
 }
