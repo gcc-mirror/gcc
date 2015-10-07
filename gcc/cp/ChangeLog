@@ -1,5 +1,10 @@
 2015-10-07  Marek Polacek  <polacek@redhat.com>
 
+	PR sanitizer/67867
+	* search.c (accessible_p): Initialize OTYPE to NULL_TREE.
+
+2015-10-07  Marek Polacek  <polacek@redhat.com>
+
 	* cp-gimplify.c (genericize_if_stmt): Use protected_set_expr_location.
 	(genericize_cp_loop): Likewise.
 	* decl.c (cxx_maybe_build_cleanup): Likewise.
