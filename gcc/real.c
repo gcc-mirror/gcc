@@ -2395,21 +2395,26 @@ dconst_e_ptr (void)
   return &value;
 }
 
-/* Returns the special REAL_VALUE_TYPE corresponding to 1/3.  */
+/* Returns a cached REAL_VALUE_TYPE corresponding to 1/n, for various n.  */
 
-const REAL_VALUE_TYPE *
-dconst_third_ptr (void)
-{
-  static REAL_VALUE_TYPE value;
+#define CACHED_FRACTION(NAME, N)					\
+  const REAL_VALUE_TYPE *						\
+  NAME (void)								\
+  {									\
+    static REAL_VALUE_TYPE value;					\
+									\
+    /* Initialize mathematical constants for constant folding builtins.	\
+       These constants need to be given to at least 160 bits		\
+       precision.  */							\
+    if (value.cl == rvc_zero)						\
+      real_arithmetic (&value, RDIV_EXPR, &dconst1, real_digit (N));	\
+    return &value;							\
+  }
 
-  /* Initialize mathematical constants for constant folding builtins.
-     These constants need to be given to at least 160 bits precision.  */
-  if (value.cl == rvc_zero)
-    {
-      real_arithmetic (&value, RDIV_EXPR, &dconst1, real_digit (3));
-    }
-  return &value;
-}
+CACHED_FRACTION (dconst_third_ptr, 3)
+CACHED_FRACTION (dconst_quarter_ptr, 4)
+CACHED_FRACTION (dconst_sixth_ptr, 6)
+CACHED_FRACTION (dconst_ninth_ptr, 9)
 
 /* Returns the special REAL_VALUE_TYPE corresponding to sqrt(2).  */
 

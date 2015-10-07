@@ -1,3 +1,14 @@
+2015-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* real.h (dconst_quarter, dconst_sixth, dconst_ninth): New macros.
+	(dconst_quarter_ptr, dconst_sixth_ptr, dconst_ninth_ptr): Declare.
+	* real.c (CACHED_FRACTION): New helper macro.
+	(dconst_third_ptr): Use it.
+	(dconst_quarter_ptr, dconst_sixth_ptr, dconst_ninth_ptr): New.
+	* builtins.c (fold_builtin_sqrt): Use dconst_quarter and
+	dconst_sixth.
+	(fold_builtin_cbrt): Use dconst_sixth and dconst_ninth.
+
 2015-10-06  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/67816
