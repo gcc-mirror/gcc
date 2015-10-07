@@ -215,6 +215,18 @@ redirection_data::equal (const redirection_data *p1, const redirection_data *p2)
   return true;
 }
 
+/* Rather than search all the edges in jump thread paths each time
+   DOM is able to simply if control statement, we build a hash table
+   with the deleted edges.  We only care about the address of the edge,
+   not its contents.  */
+struct removed_edges : nofree_ptr_hash<edge_def>
+{
+  static hashval_t hash (edge e) { return htab_hash_pointer (e); }
+  static bool equal (edge e1, edge e2) { return e1 == e2; }
+};
+
+static hash_table<removed_edges> *removed_edges;
+
 /* Data structure of information to pass to hash table traversal routines.  */
 struct ssa_local_info_t
 {
@@ -2539,35 +2551,23 @@ valid_jump_thread_path (vec<jump_thread_edge *> *path)
   return true;
 }
 
-/* Remove any queued jump threads that start at BB.  */
+/* Remove any queued jump threads that include edge E.
+
+   We don't actually remove them here, just record the edges into ax
+   hash table.  That way we can do the search once per iteration of
+   DOM/VRP rather than for every case where DOM optimizes away a COND_EXPR.  */
 
 void
-remove_jump_threads_starting_at (basic_block bb)
+remove_jump_threads_including (edge_def *e)
 {
   if (!paths.exists ())
     return;
 
-  for (unsigned i = 0; i < paths.length ();)
-    {
-      vec<jump_thread_edge *> *path = paths[i];
+  if (!removed_edges)
+    removed_edges = new hash_table<struct removed_edges> (17);
 
-      /* Sadly, FSM jump threads have a slightly different
-	 representation than the rest of the jump threads.  */
-      if ((*path)[0]->type == EDGE_FSM_THREAD
-	  && (*path)[0]->e->src == bb)
-	{
-	  delete_jump_thread_path (path);
-	  paths.unordered_remove (i);
-	}
-      else if ((*path)[0]->type != EDGE_FSM_THREAD
-	       && (*path)[0]->e->dest == bb)
-	{
-	  delete_jump_thread_path (path);
-	  paths.unordered_remove (i);
-	}
-      else
-	i++;
-    }
+  edge *slot = removed_edges->find_slot (e, INSERT);
+  *slot = e;
 }
 
 /* Walk through all blocks and thread incoming edges to the appropriate
@@ -2591,10 +2591,36 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   struct loop *loop;
 
   if (!paths.exists ())
-    return false;
+    {
+      retval = false;
+      goto out;
+    }
 
   threaded_blocks = BITMAP_ALLOC (NULL);
   memset (&thread_stats, 0, sizeof (thread_stats));
+
+  /* Remove any paths that referenced removed edges.  */
+  if (removed_edges)
+    for (i = 0; i < paths.length (); )
+      {
+	unsigned int j;
+	vec<jump_thread_edge *> *path = paths[i];
+
+	for (j = 0; j < path->length (); j++)
+	  {
+	    edge e = (*path)[j]->e;
+	    if (removed_edges->find_slot (e, NO_INSERT))
+	      break;
+	  }
+
+	if (j != path->length ())
+	  {
+	    delete_jump_thread_path (path);
+	    paths.unordered_remove (i);
+	    continue;
+	  }
+	i++;
+      }
 
   /* Jump-thread all FSM threads before other jump-threads.  */
   for (i = 0; i < paths.length ();)
@@ -2778,6 +2804,9 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   if (retval)
     loops_state_set (LOOPS_NEED_FIXUP);
 
+ out:
+  delete removed_edges;
+  removed_edges = NULL;
   return retval;
 }
 

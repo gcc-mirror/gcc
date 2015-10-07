@@ -43,7 +43,7 @@ public:
 };
 
 extern void register_jump_thread (vec <class jump_thread_edge *> *);
-extern void remove_jump_threads_starting_at (basic_block);
+extern void remove_jump_threads_including (edge);
 extern void delete_jump_thread_path (vec <class jump_thread_edge *> *);
 extern void remove_ctrl_stmt_and_useless_edges (basic_block, basic_block);
 #endif
