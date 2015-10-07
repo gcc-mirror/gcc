@@ -307,8 +307,8 @@
    so use addressing relative to the data segment.
  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL) \
-  ((GLOBAL) ? (DW_EH_PE_indirect | DW_EH_PE_datarel | DW_EH_PE_sdata4) \
-	    : (DW_EH_PE_pcrel | DW_EH_PE_sdata4))
+  (((GLOBAL) ? DW_EH_PE_indirect | DW_EH_PE_datarel : DW_EH_PE_pcrel) \
+   | (TARGET_64BIT ? DW_EH_PE_sdata8 : DW_EH_PE_sdata4))
 
 #define EH_FRAME_THROUGH_COLLECT2 1
 #define EH_TABLES_CAN_BE_READ_ONLY 1
