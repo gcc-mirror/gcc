@@ -1,3 +1,10 @@
+2015-10-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/67850
+	* config/i386/i386.c (ix86_maybe_switch_abi): Merged with ...
+	(ix86_set_current_function): This.
+	(TARGET_EXPAND_TO_RTL_HOOK): Removed.
+
 2015-10-07  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (stmt_vec_info_vec): Use vec<stmt_vec_info>.
