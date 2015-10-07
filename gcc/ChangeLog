@@ -1,3 +1,8 @@
+2015-10-07  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/xcoff.h (ASM_PREFERRED_EH_DATA_FORMAT): Use 64-bit
+	encoding in 64-bit mode.
+
 2015-10-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66697
