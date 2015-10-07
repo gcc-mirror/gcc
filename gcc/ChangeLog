@@ -1,3 +1,18 @@
+2015-10-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66697
+	* config/i386/i386.c (ix86_option_override_internal): Always use
+	8-byte minimum stack boundary in 64-bit mode.
+	(ix86_compute_frame_layout): Remove assert on INCOMING_STACK_BOUNDARY.
+	(ix86_emit_save_reg_using_mov): Support unaligned SSE store.
+	Add a REG_CFA_EXPRESSION note if needed.
+	(ix86_emit_restore_sse_regs_using_mov): Support unaligned SSE load.
+	(ix86_handle_force_align_arg_pointer_attribute): New.
+	(ix86_minimum_incoming_stack_boundary): Remove TARGET_64BIT check.
+	(ix86_attribute_table): Set ix86_force_align_arg_pointer_string
+	with ix86_handle_force_align_arg_pointer_attribute.
+	* config/i386/i386.h (MIN_STACK_BOUNDARY): Set to BITS_PER_WORD.
+
 2015-10-07  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
@@ -287,7 +302,8 @@
 	* graphite-sese-to-poly.c (build_loop_iteration_domains): Only loops
 	which are in this region are passed so gcc_assert and remove redundant
 	computation.
-	* sese.c (sese_build_liveouts): Pass only those bbs which are not in region.
+	* sese.c (sese_build_liveouts): Pass only those bbs which are not
+	in region.
 	(sese_bad_liveouts_use): Only BBs which are not in region are passed so
 	gcc_assert on that and remove unnecessary computation.
 	(sese_build_liveouts_use): Same.
@@ -500,7 +516,7 @@
 2015-10-05  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
-        * params.def (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Increase to 7.
+	* params.def (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Increase to 7.
 
 2015-10-05  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
@@ -1111,7 +1127,8 @@
 	* graphite-poly.c (new_poly_bb): Same.
 	* graphite-poly.h (gbb_from_bb): Same.
 	* sese.h: Same.
-	* graphite-sese-to-poly.c (new_gimple_bb): gimple_bb_p -> gimple_poly_bb_p
+	* graphite-sese-to-poly.c (new_gimple_bb):
+	gimple_bb_p -> gimple_poly_bb_p
 	(build_scop_scattering): Same.
 	(find_params_in_bb): Same.
 	(add_conditions_to_domain): Same.

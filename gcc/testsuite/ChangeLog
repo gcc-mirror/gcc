@@ -1,6 +1,14 @@
+2015-10-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66697
+	* gcc.target/i386/20060512-1.c: Remove ia32 requirement.
+	(PUSH, POP): New defines.
+	(sse2_test): Use PUSH and POP to misalign runtime stack.
+	* gcc.target/i386/20060512-2.c: Remove ia32 requirement.
+
 2015-10-07  James Norris  <jnorris@codesourcery.com>
 
-	* testsuite/lib/atomic-dg.exp (atomic_link_flags): Move flag setting
+	* lib/atomic-dg.exp (atomic_link_flags): Move flag setting
 	to atomic_init. (atomic_init): Restrict flags usage.
 
 2015-10-07  Andre Vehreschild  <vehre@gcc.gnu.org>
@@ -62,12 +70,12 @@
 2015-10-05  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
-        * gcc.dg/graphite/scop-sor.c: Un-xfail.
+	* gcc.dg/graphite/scop-sor.c: Un-xfail.
 
 2015-10-05  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
-        * gcc.dg/graphite/scop-sor.c: Xfail.
+	* gcc.dg/graphite/scop-sor.c: Xfail.
 
 2015-10-05  Martin Jambor  <mjambor@suse.cz>
 	    Jan Hubicka  <hubicka@ucw.cz>
