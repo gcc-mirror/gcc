@@ -1671,8 +1671,6 @@ parameter_index_in_region (tree name, sese_info_p region)
   if (i != -1)
     return i;
 
-  gcc_assert (SESE_ADD_PARAMS (region));
-
   i = SESE_PARAMS (region).length ();
   SESE_PARAMS (region).safe_push (name);
   return i;
@@ -1790,7 +1788,6 @@ find_scop_parameters (scop_p scop)
 
   int nbp = sese_nb_params (region);
   scop_set_nb_params (scop, nbp);
-  SESE_ADD_PARAMS (region) = false;
 }
 
 class sese_dom_walker : public dom_walker
