@@ -1,3 +1,10 @@
+2015-10-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* expr.c (store_expr_with_bounds): Handle aggregate moves from
+	BLKmode.
+	* gimple-expr.c (useless_type_conversion_p): Do not use TYPE_CANONICAL
+	to define gimple type system; compare aggregates only by size.
+
 2015-10-07  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (optimize_stmt): Don't set LOOPS_NEED_FIXUP here.
@@ -5,7 +12,6 @@
 	here instead.  Tighten test to avoid setting LOOPS_NEED_FIXUP 
 	unnecessarily.
 
-@@ -1848,12 +1848,6 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 2015-10-07  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
