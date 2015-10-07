@@ -14964,8 +14964,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
      a "jumpy" behaviour for users of debuggers when they step around
      the end of the block.  So let's unset the location of the
      destructor call instead.  */
-  if (cleanup != NULL && EXPR_P (cleanup))
-    SET_EXPR_LOCATION (cleanup, UNKNOWN_LOCATION);
+  protected_set_expr_location (cleanup, UNKNOWN_LOCATION);
 
   if (cleanup
       && !lookup_attribute ("warn_unused", TYPE_ATTRIBUTES (TREE_TYPE (decl)))

@@ -207,8 +207,8 @@ genericize_if_stmt (tree *stmt_p)
     stmt = else_;
   else
     stmt = build3 (COND_EXPR, void_type_node, cond, then_, else_);
-  if (CAN_HAVE_LOCATION_P (stmt) && !EXPR_HAS_LOCATION (stmt))
-    SET_EXPR_LOCATION (stmt, locus);
+  if (!EXPR_HAS_LOCATION (stmt))
+    protected_set_expr_location (stmt, locus);
   *stmt_p = stmt;
 }
 
@@ -231,8 +231,7 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
   blab = begin_bc_block (bc_break, start_locus);
   clab = begin_bc_block (bc_continue, start_locus);
 
-  if (incr && EXPR_P (incr))
-    SET_EXPR_LOCATION (incr, start_locus);
+  protected_set_expr_location (incr, start_locus);
 
   cp_walk_tree (&cond, cp_genericize_r, data, NULL);
   cp_walk_tree (&body, cp_genericize_r, data, NULL);
