@@ -8612,8 +8612,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 					 rhs, rhs_type, &overload,
 					 complain_flags (decltype_p));
       current.lhs_type = current.tree_type;
-      if (EXPR_P (current.lhs))
-	SET_EXPR_LOCATION (current.lhs, current.loc);
+      protected_set_expr_location (current.lhs, current.loc);
 
       /* If the binary operator required the use of an overloaded operator,
 	 then this expression cannot be an integral constant-expression.
@@ -32046,8 +32045,8 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	    incr = cp_parser_omp_for_incr (parser, real_decl);
 	  else
 	    incr = cp_parser_expression (parser);
-	  if (CAN_HAVE_LOCATION_P (incr) && !EXPR_HAS_LOCATION (incr))
-	    SET_EXPR_LOCATION (incr, input_location);
+	  if (!EXPR_HAS_LOCATION (incr))
+	    protected_set_expr_location (incr, input_location);
 	}
 
       if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
@@ -34045,8 +34044,7 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
       gcc_unreachable ();
     }
 
-  if (stmt)
-    SET_EXPR_LOCATION (stmt, pragma_tok->location);
+  protected_set_expr_location (stmt, pragma_tok->location);
 }
 
 /* Transactional Memory parsing routines.  */

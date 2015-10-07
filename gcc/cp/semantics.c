@@ -7086,9 +7086,8 @@ finish_transaction_stmt (tree stmt, tree compound_stmt, int flags, tree noex)
     {
       tree body = build_must_not_throw_expr (TRANSACTION_EXPR_BODY (stmt),
 					     noex);
-      /* This may not be true when the STATEMENT_LIST is empty.  */
-      if (EXPR_P (body))
-        SET_EXPR_LOCATION (body, EXPR_LOCATION (TRANSACTION_EXPR_BODY (stmt)));
+      protected_set_expr_location
+	(body, EXPR_LOCATION (TRANSACTION_EXPR_BODY (stmt)));
       TREE_SIDE_EFFECTS (body) = 1;
       TRANSACTION_EXPR_BODY (stmt) = body;
     }
@@ -7108,8 +7107,7 @@ build_transaction_expr (location_t loc, tree expr, int flags, tree noex)
   if (noex)
     {
       expr = build_must_not_throw_expr (expr, noex);
-      if (EXPR_P (expr))
-	SET_EXPR_LOCATION (expr, loc);
+      protected_set_expr_location (expr, loc);
       TREE_SIDE_EFFECTS (expr) = 1;
     }
   ret = build1 (TRANSACTION_EXPR, TREE_TYPE (expr), expr);

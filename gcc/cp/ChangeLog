@@ -1,3 +1,14 @@
+2015-10-07  Marek Polacek  <polacek@redhat.com>
+
+	* cp-gimplify.c (genericize_if_stmt): Use protected_set_expr_location.
+	(genericize_cp_loop): Likewise.
+	* decl.c (cxx_maybe_build_cleanup): Likewise.
+	* parser.c (cp_parser_binary_expression): Likewise.
+	(cp_parser_omp_for_loop): Likewise.
+	(cp_parser_omp_construct): Likewise.
+	* semantics.c (finish_transaction_stmt): Likewise.
+	(build_transaction_expr): Likewise.
+
 2015-10-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67810
