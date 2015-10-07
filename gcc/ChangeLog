@@ -1,5 +1,11 @@
 2015-10-07  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_conditional_register_usage): Use
+	CALL_USED_REGISTERS_MASK.
+	* config/i386/i386.h (CALL_USED_REGISTERS_MASK): New macro.
+
+2015-10-07  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR bootstrap/67385
 	* configure.ac (gcc_cv_readelf): Check $READELF_FOR_TARGET.
 	* configure: Regenerated.
