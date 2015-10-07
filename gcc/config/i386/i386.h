@@ -1018,6 +1018,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
    Proper values are computed in TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
+#define CALL_USED_REGISTERS_MASK(IS_64BIT_MS_ABI) \
+  ((IS_64BIT_MS_ABI) ? (1 << 3) : TARGET_64BIT ? (1 << 2) : (1 << 1))
+
 #define CALL_USED_REGISTERS					\
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7*/	\
 {  1, 1, 1, 0, 4, 4, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,	\

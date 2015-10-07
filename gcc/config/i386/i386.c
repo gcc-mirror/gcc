@@ -5583,9 +5583,7 @@ ix86_conditional_register_usage (void)
     }
 
   /*  See the definition of CALL_USED_REGISTERS in i386.h.  */
-  c_mask = (TARGET_64BIT_MS_ABI ? (1 << 3)
-	    : TARGET_64BIT ? (1 << 2)
-	    : (1 << 1));
+  c_mask = CALL_USED_REGISTERS_MASK (TARGET_64BIT_MS_ABI);
   
   CLEAR_HARD_REG_SET (reg_class_contents[(int)CLOBBERED_REGS]);
 
