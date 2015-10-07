@@ -1,5 +1,11 @@
 2015-10-07  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR bootstrap/67385
+	* configure.ac (gcc_cv_readelf): Check $READELF_FOR_TARGET.
+	* configure: Regenerated.
+
+2015-10-07  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/67850
 	* config/i386/i386.c (ix86_maybe_switch_abi): Merged with ...
 	(ix86_set_current_function): This.
