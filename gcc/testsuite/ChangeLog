@@ -1,3 +1,8 @@
+2015-10-07  James Norris  <jnorris@codesourcery.com>
+
+	* testsuite/lib/atomic-dg.exp (atomic_link_flags): Move flag setting
+	to atomic_init. (atomic_init): Restrict flags usage.
+
 2015-10-07  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/65889
