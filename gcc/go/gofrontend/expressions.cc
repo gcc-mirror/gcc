@@ -5200,13 +5200,13 @@ Binary_expression::do_flatten(Gogo* gogo, Named_object*,
       || (is_idiv_op
 	  && (gogo->check_divide_by_zero() || gogo->check_divide_overflow())))
     {
-      if (!this->left_->is_variable())
+      if (!this->left_->is_variable() && !this->left_->is_constant())
         {
           temp = Statement::make_temporary(NULL, this->left_, loc);
           inserter->insert(temp);
           this->left_ = Expression::make_temporary_reference(temp, loc);
         }
-      if (!this->right_->is_variable())
+      if (!this->right_->is_variable() && !this->right_->is_constant())
         {
           temp =
               Statement::make_temporary(NULL, this->right_, loc);
