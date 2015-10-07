@@ -1,3 +1,9 @@
+2015-10-07  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR c/65345
+	* config/arm/arm-builtins.c (arm_atomic_assign_expand_fenv):
+	Use create_tmp_var_raw instead of create_tmp_var.
+
 2015-10-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* real.h (dconst_quarter, dconst_sixth, dconst_ninth): New macros.
