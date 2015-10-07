@@ -407,7 +407,7 @@ struct dr_info
 struct scop
 {
   /* A SCOP is defined as a SESE region.  */
-  sese region;
+  sese_info_p region;
 
   /* Number of parameters in SCoP.  */
   graphite_dim_t nb_params;
@@ -468,7 +468,7 @@ extern bool apply_poly_transforms (scop_p);
 /* Set the region of SCOP to REGION.  */
 
 static inline void
-scop_set_region (scop_p scop, sese region)
+scop_set_region (scop_p scop, sese_info_p region)
 {
   scop->region = region;
 }
