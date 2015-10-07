@@ -442,13 +442,21 @@ func (fd *netFD) accept() (netfd *netFD, err error) {
 	return netfd, nil
 }
 
+// Use a helper function to call fcntl.  This is defined in C in
+// libgo/runtime.
+//extern __go_fcntl_uintptr
+func fcntl(uintptr, uintptr, uintptr) (uintptr, uintptr)
+
 // tryDupCloexec indicates whether F_DUPFD_CLOEXEC should be used.
 // If the kernel doesn't support it, this is set to 0.
 var tryDupCloexec = int32(1)
 
 func dupCloseOnExec(fd int) (newfd int, err error) {
 	if atomic.LoadInt32(&tryDupCloexec) == 1 && syscall.F_DUPFD_CLOEXEC != 0 {
-		r0, _, e1 := syscall.Syscall(syscall.SYS_FCNTL, uintptr(fd), syscall.F_DUPFD_CLOEXEC, 0)
+		syscall.Entersyscall()
+		r0, errno := fcntl(uintptr(fd), syscall.F_DUPFD_CLOEXEC, 0)
+		syscall.Exitsyscall()
+		e1 := syscall.Errno(errno)
 		if runtime.GOOS == "darwin" && e1 == syscall.EBADF {
 			// On OS X 10.6 and below (but we only support
 			// >= 10.6), F_DUPFD_CLOEXEC is unsupported
