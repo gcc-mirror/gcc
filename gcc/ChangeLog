@@ -1,3 +1,38 @@
+2015-10-07  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-dependences.c (scop_get_dependences): Do not use SCOP_BBS.
+	* graphite-isl-ast-to-gimple.c (get_max_schedule_dimensions): Same.
+	(generate_isl_schedule): Same.
+	* graphite-optimize-isl.c (scop_get_domains): Same.
+	(apply_schedule_map_to_scop): Same.
+	* graphite-poly.c (print_iteration_domains): Same.
+	(remove_gbbs_in_scop): Same.
+	(new_scop): Same.
+	(free_scop): Same.
+	(print_scop): Same.
+	* graphite-poly.h (struct scop): Rename bbs to pbbs.
+	(SCOP_BBS): Remove.
+	* graphite-scop-detection.c (compare_bb_depths): Remove.
+	(graphite_sort_dominated_info): Remove.
+	(try_generate_gimple_bb): Move out of scop_detection.
+	(all_non_dominated_preds_marked_p): Remove.
+	(build_scop_bbs_1): Remove.
+	(build_scop_bbs): Remove.
+	(nb_pbbs_in_loops): Do not use SCOP_BBS.
+	(find_scop_parameters): Same.
+	(sese_dom_walker): Rename gather_bbs.
+	(before_dom_children): Call try_generate_gimple_bb and collect gbb
+	and pbb.
+	(build_scops): Call gather_bbs.
+	* graphite-sese-to-poly.c (build_scop_scattering): Do not use SCOP_BBS.
+	(add_conditions_to_constraints): Same.
+	(build_scop_iteration_domain): Same.
+	(build_scop_drs): Same.
+	(new_pbb_from_pbb): Same.
+	* sese.c (new_sese_info): Create bbs.
+	* sese.h (struct sese_info_t): Add bbs.
+
 2015-10-07  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/xcoff.h (ASM_PREFERRED_EH_DATA_FORMAT): Use 64-bit

@@ -335,7 +335,7 @@ scop_get_dependences (scop_p scop)
   isl_union_map *dependences;
 
   if (!scop->must_raw)
-    compute_deps (scop, SCOP_BBS (scop),
+    compute_deps (scop, scop->pbbs,
 		  &scop->must_raw, &scop->may_raw,
 		  &scop->must_raw_no_source, &scop->may_raw_no_source,
 		  &scop->must_war, &scop->may_war,

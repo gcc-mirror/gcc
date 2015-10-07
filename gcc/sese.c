@@ -265,6 +265,7 @@ new_sese_info (edge entry, edge exit)
   SESE_LOOP_NEST (region).create (3);
   SESE_PARAMS (region).create (3);
   region->parameter_rename_map = new parameter_rename_map_t;
+  region->bbs.create (3);
 
   return region;
 }

@@ -87,7 +87,7 @@ print_iteration_domains (FILE *file, scop_p scop, int verbosity)
   int i;
   poly_bb_p pbb;
 
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     print_iteration_domain (file, pbb, verbosity);
 }
 
@@ -294,7 +294,7 @@ remove_gbbs_in_scop (scop_p scop)
   int i;
   poly_bb_p pbb;
 
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     free_gimple_poly_bb (PBB_BLACK_BOX (pbb));
 }
 
@@ -320,7 +320,7 @@ new_scop (edge entry, edge exit)
   scop->must_waw_no_source = NULL;
   scop->may_waw_no_source = NULL;
   scop_set_region (scop, region);
-  SCOP_BBS (scop).create (3);
+  scop->pbbs.create (3);
   POLY_SCOP_P (scop) = false;
   scop->drs.create (3);
 
@@ -338,10 +338,10 @@ free_scop (scop_p scop)
   remove_gbbs_in_scop (scop);
   free_sese_info (SCOP_REGION (scop));
 
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     free_poly_bb (pbb);
 
-  SCOP_BBS (scop).release ();
+  scop->pbbs.release ();
 
   isl_set_free (scop->param_context);
   isl_union_map_free (scop->must_raw);
@@ -625,9 +625,9 @@ print_scop (FILE *file, scop_p scop, int verbosity)
   if (verbosity > 0)
     fprintf (file, "# Number of statements\n");
 
-  fprintf (file, "%d\n", SCOP_BBS (scop).length ());
+  fprintf (file, "%d\n", scop->pbbs.length ());
 
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     print_pbb (file, pbb, verbosity);
 
   fprintf (file, "#)\n");
