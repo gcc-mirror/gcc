@@ -1,3 +1,20 @@
+2015-10-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* reorg.c (emit_delay_sequence): Store list of delay slot insns
+	in a vector instead of rtx_insn_list.
+	(add_to_delay_list): Likewise.
+	(delete_from_delay_slot): Likewise.
+	(optimize_skip): Likewise.
+	(redirect_with_delay_list_safe_p): Likewise.
+	(check_annul_list_true_false): Likewise.
+	(steal_delay_list_from_target): Likewise.
+	(steal_delay_list_from_fallthrough): Likewise.
+	(redundant_insn): Likewise.
+	(fill_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	(fill_eager_delay_slots): Likewise.
+	(relax_delay_slots): Likewise.
+
 2015-10-06  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.c (nios2_symbol_ref_in_small_data_p):
