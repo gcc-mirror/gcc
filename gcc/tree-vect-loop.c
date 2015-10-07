@@ -907,53 +907,19 @@ new_loop_vec_info (struct loop *loop)
     {
       basic_block bb = bbs[i];
 
-      /* BBs in a nested inner-loop will have been already processed (because
-         we will have called vect_analyze_loop_form for any nested inner-loop).
-         Therefore, for stmts in an inner-loop we just want to update the
-         STMT_VINFO_LOOP_VINFO field of their stmt_info to point to the new
-         loop_info of the outer-loop we are currently considering to vectorize
-         (instead of the loop_info of the inner-loop).
-         For stmts in other BBs we need to create a stmt_info from scratch.  */
-      if (bb->loop_father != loop)
-        {
-          /* Inner-loop bb.  */
-          gcc_assert (loop->inner && bb->loop_father == loop->inner);
-          for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
-            {
-	      gimple *phi = gsi_stmt (si);
-              stmt_vec_info stmt_info = vinfo_for_stmt (phi);
-              loop_vec_info inner_loop_vinfo =
-                STMT_VINFO_LOOP_VINFO (stmt_info);
-              gcc_assert (loop->inner == LOOP_VINFO_LOOP (inner_loop_vinfo));
-              stmt_info->vinfo = res;
-            }
-          for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-           {
-	     gimple *stmt = gsi_stmt (si);
-              stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-              loop_vec_info inner_loop_vinfo =
-                 STMT_VINFO_LOOP_VINFO (stmt_info);
-              gcc_assert (loop->inner == LOOP_VINFO_LOOP (inner_loop_vinfo));
-              stmt_info->vinfo = res;
-           }
-        }
-      else
-        {
-          /* bb in current nest.  */
-          for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
-            {
-	      gimple *phi = gsi_stmt (si);
-              gimple_set_uid (phi, 0);
-              set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, res));
-            }
+      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+	{
+	  gimple *phi = gsi_stmt (si);
+	  gimple_set_uid (phi, 0);
+	  set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, res));
+	}
 
-          for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-            {
-	      gimple *stmt = gsi_stmt (si);
-              gimple_set_uid (stmt, 0);
-              set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, res));
-            }
-        }
+      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+	{
+	  gimple *stmt = gsi_stmt (si);
+	  gimple_set_uid (stmt, 0);
+	  set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, res));
+	}
     }
 
   /* CHECKME: We want to visit all BBs before their successors (except for
@@ -1150,39 +1116,7 @@ vect_get_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 }
 
 
-/* Function vect_analyze_loop_1.
-
-   Apply a set of analyses on LOOP, and create a loop_vec_info struct
-   for it. The different analyses will record information in the
-   loop_vec_info struct.  This is a subset of the analyses applied in
-   vect_analyze_loop, to be applied on an inner-loop nested in the loop
-   that is now considered for (outer-loop) vectorization.  */
-
-static loop_vec_info
-vect_analyze_loop_1 (struct loop *loop)
-{
-  loop_vec_info loop_vinfo;
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "===== analyze_loop_nest_1 =====\n");
-
-  /* Check the CFG characteristics of the loop (nesting, entry/exit, etc.  */
-
-  loop_vinfo = vect_analyze_loop_form (loop);
-  if (!loop_vinfo)
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "bad inner-loop form.\n");
-      return NULL;
-    }
-
-  return loop_vinfo;
-}
-
-
-/* Function vect_analyze_loop_form.
+/* Function vect_analyze_loop_form_1.
 
    Verify that certain CFG restrictions hold, including:
    - the loop has a pre-header
@@ -1190,14 +1124,11 @@ vect_analyze_loop_1 (struct loop *loop)
    - the loop exit condition is simple enough, and the number of iterations
      can be analyzed (a countable loop).  */
 
-loop_vec_info
-vect_analyze_loop_form (struct loop *loop)
+bool
+vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
+			  tree *number_of_iterationsm1,
+			  tree *number_of_iterations, gcond **inner_loop_cond)
 {
-  loop_vec_info loop_vinfo;
-  gcond *loop_cond;
-  tree number_of_iterations = NULL, number_of_iterationsm1 = NULL;
-  loop_vec_info inner_loop_vinfo = NULL;
-
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "=== vect_analyze_loop_form ===\n");
@@ -1225,7 +1156,7 @@ vect_analyze_loop_form (struct loop *loop)
           if (dump_enabled_p ())
             dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "not vectorized: control flow in loop.\n");
-          return NULL;
+          return false;
         }
 
       if (empty_block_p (loop->header))
@@ -1233,7 +1164,7 @@ vect_analyze_loop_form (struct loop *loop)
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "not vectorized: empty loop.\n");
-	  return NULL;
+	  return false;
 	}
     }
   else
@@ -1263,28 +1194,7 @@ vect_analyze_loop_form (struct loop *loop)
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "not vectorized: multiple nested loops.\n");
-	  return NULL;
-	}
-
-      /* Analyze the inner-loop.  */
-      inner_loop_vinfo = vect_analyze_loop_1 (loop->inner);
-      if (!inner_loop_vinfo)
-	{
-	  if (dump_enabled_p ())
-            dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: Bad inner loop.\n");
-	  return NULL;
-	}
-
-      if (!expr_invariant_in_loop_p (loop,
-					LOOP_VINFO_NITERS (inner_loop_vinfo)))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: inner-loop count not"
-                             " invariant.\n");
-	  destroy_loop_vec_info (inner_loop_vinfo, true);
-	  return NULL;
+	  return false;
 	}
 
       if (loop->num_nodes != 5)
@@ -1292,24 +1202,38 @@ vect_analyze_loop_form (struct loop *loop)
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "not vectorized: control flow in loop.\n");
-	  destroy_loop_vec_info (inner_loop_vinfo, true);
-	  return NULL;
+	  return false;
         }
 
-      gcc_assert (EDGE_COUNT (innerloop->header->preds) == 2);
-      entryedge = EDGE_PRED (innerloop->header, 0);
-      if (EDGE_PRED (innerloop->header, 0)->src == innerloop->latch)
-	entryedge = EDGE_PRED (innerloop->header, 1);
-
+      entryedge = loop_preheader_edge (innerloop);
       if (entryedge->src != loop->header
 	  || !single_exit (innerloop)
-	  || single_exit (innerloop)->dest !=  EDGE_PRED (loop->latch, 0)->src)
+	  || single_exit (innerloop)->dest != EDGE_PRED (loop->latch, 0)->src)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "not vectorized: unsupported outerloop form.\n");
-	  destroy_loop_vec_info (inner_loop_vinfo, true);
-	  return NULL;
+	  return false;
+	}
+
+      /* Analyze the inner-loop.  */
+      tree inner_niterm1, inner_niter;
+      if (! vect_analyze_loop_form_1 (loop->inner, inner_loop_cond,
+				      &inner_niterm1, &inner_niter, NULL))
+	{
+	  if (dump_enabled_p ())
+            dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "not vectorized: Bad inner loop.\n");
+	  return false;
+	}
+
+      if (!expr_invariant_in_loop_p (loop, inner_niter))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "not vectorized: inner-loop count not"
+                             " invariant.\n");
+	  return false;
 	}
 
       if (dump_enabled_p ())
@@ -1329,9 +1253,7 @@ vect_analyze_loop_form (struct loop *loop)
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "not vectorized: too many incoming edges.\n");
         }
-      if (inner_loop_vinfo)
-	destroy_loop_vec_info (inner_loop_vinfo, true);
-      return NULL;
+      return false;
     }
 
   /* We assume that the loop exit condition is at the end of the loop. i.e,
@@ -1344,9 +1266,7 @@ vect_analyze_loop_form (struct loop *loop)
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: latch block not empty.\n");
-      if (inner_loop_vinfo)
-	destroy_loop_vec_info (inner_loop_vinfo, true);
-      return NULL;
+      return false;
     }
 
   /* Make sure there exists a single-predecessor exit bb:  */
@@ -1364,47 +1284,54 @@ vect_analyze_loop_form (struct loop *loop)
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "not vectorized: abnormal loop exit edge.\n");
-	  if (inner_loop_vinfo)
-	    destroy_loop_vec_info (inner_loop_vinfo, true);
-	  return NULL;
+	  return false;
 	}
     }
 
-  loop_cond = vect_get_loop_niters (loop, &number_of_iterations,
-				    &number_of_iterationsm1);
-  if (!loop_cond)
+  *loop_cond = vect_get_loop_niters (loop, number_of_iterations,
+				     number_of_iterationsm1);
+  if (!*loop_cond)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: complicated exit condition.\n");
-      if (inner_loop_vinfo)
-	destroy_loop_vec_info (inner_loop_vinfo, true);
-      return NULL;
+      return false;
     }
 
-  if (!number_of_iterations
-      || chrec_contains_undetermined (number_of_iterations))
+  if (!*number_of_iterations
+      || chrec_contains_undetermined (*number_of_iterations))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: number of iterations cannot be "
 			 "computed.\n");
-      if (inner_loop_vinfo)
-	destroy_loop_vec_info (inner_loop_vinfo, true);
-      return NULL;
+      return false;
     }
 
-  if (integer_zerop (number_of_iterations))
+  if (integer_zerop (*number_of_iterations))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: number of iterations = 0.\n");
-      if (inner_loop_vinfo)
-        destroy_loop_vec_info (inner_loop_vinfo, true);
-      return NULL;
+      return false;
     }
 
-  loop_vinfo = new_loop_vec_info (loop);
+  return true;
+}
+
+/* Analyze LOOP form and return a loop_vec_info if it is of suitable form.  */
+
+loop_vec_info
+vect_analyze_loop_form (struct loop *loop)
+{
+  tree number_of_iterations, number_of_iterationsm1;
+  gcond *loop_cond, *inner_loop_cond = NULL;
+
+  if (! vect_analyze_loop_form_1 (loop, &loop_cond, &number_of_iterationsm1,
+				  &number_of_iterations, &inner_loop_cond))
+    return NULL;
+
+  loop_vec_info loop_vinfo = new_loop_vec_info (loop);
   LOOP_VINFO_NITERSM1 (loop_vinfo) = number_of_iterationsm1;
   LOOP_VINFO_NITERS (loop_vinfo) = number_of_iterations;
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = number_of_iterations;
@@ -1421,15 +1348,16 @@ vect_analyze_loop_form (struct loop *loop)
     }
 
   STMT_VINFO_TYPE (vinfo_for_stmt (loop_cond)) = loop_exit_ctrl_vec_info_type;
-
-  /* CHECKME: May want to keep it around it in the future.  */
-  if (inner_loop_vinfo)
-    destroy_loop_vec_info (inner_loop_vinfo, false);
+  if (inner_loop_cond)
+    STMT_VINFO_TYPE (vinfo_for_stmt (inner_loop_cond))
+      = loop_exit_ctrl_vec_info_type;
 
   gcc_assert (!loop->aux);
   loop->aux = loop_vinfo;
   return loop_vinfo;
 }
+
+
 
 /* Scan the loop stmts and dependent on whether there are any (non-)SLP
    statements update the vectorization factor.  */
