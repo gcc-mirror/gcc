@@ -300,6 +300,17 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
       else
 	ei_next (&ei);
     }
+
+  /* If the remaining edge is a loop exit, there must have
+     a removed edge that was not a loop exit.
+
+     In that case BB and possibly other blocks were previously
+     in the loop, but are now outside the loop.  Thus, we need
+     to update the loop structures.  */
+  if (single_succ_p (bb)
+      && loop_outer (bb->loop_father)
+      && loop_exit_edge_p (bb->loop_father, single_succ_edge (bb)))
+    loops_state_set (LOOPS_NEED_FIXUP);
 }
 
 /* Create a duplicate of BB.  Record the duplicate block in an array
