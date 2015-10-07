@@ -961,7 +961,7 @@ accessible_p (tree type, tree decl, bool consider_local_p)
       && (!processing_template_parmlist || processing_template_decl > 1))
     return 1;
 
-  tree otype;
+  tree otype = NULL_TREE;
   if (!TYPE_P (type))
     {
       /* When accessing a non-static member, the most derived type in the
