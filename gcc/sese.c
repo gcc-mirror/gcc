@@ -263,7 +263,6 @@ new_sese_info (edge entry, edge exit)
   region->region.exit = exit;
   SESE_LOOPS (region) = BITMAP_ALLOC (NULL);
   SESE_LOOP_NEST (region).create (3);
-  SESE_ADD_PARAMS (region) = true;
   SESE_PARAMS (region).create (3);
   region->parameter_rename_map = new parameter_rename_map_t;
 

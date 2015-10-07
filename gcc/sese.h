@@ -75,20 +75,14 @@ typedef struct sese_info_t
   /* Parameters to be renamed.  */
   parameter_rename_map_t *parameter_rename_map;
 
-  /* Loops completely contained in the SCOP.  */
+  /* Loops completely contained in this SESE.  */
   bitmap loops;
   vec<loop_p> loop_nest;
-
-  /* Are we allowed to add more params?  This is for debugging purpose.  We
-     can only add new params before generating the bb domains, otherwise they
-     become invalid.  */
-  bool add_params;
 } *sese_info_p;
 
 #define SESE_PARAMS(S) (S->params)
 #define SESE_LOOPS(S) (S->loops)
 #define SESE_LOOP_NEST(S) (S->loop_nest)
-#define SESE_ADD_PARAMS(S) (S->add_params)
 
 extern sese_info_p new_sese_info (edge, edge);
 extern void free_sese_info (sese_info_p);
