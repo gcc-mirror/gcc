@@ -279,7 +279,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       string(const _Allocator& __a = _Allocator()) const;
 
     std::string    string() const;
+#if _GLIBCXX_USE_WCHAR_T
     std::wstring   wstring() const;
+#endif
     std::string    u8string() const;
     std::u16string u16string() const;
     std::u32string u32string() const;
@@ -291,7 +293,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       generic_string(const _Allocator& __a = _Allocator()) const;
 
     std::string    generic_string() const;
+#if _GLIBCXX_USE_WCHAR_T
     std::wstring   generic_wstring() const;
+#endif
     std::string    generic_u8string() const;
     std::u16string generic_u16string() const;
     std::u32string generic_u32string() const;
@@ -828,8 +832,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline std::string
   path::string() const { return string<char>(); }
 
+#if _GLIBCXX_USE_WCHAR_T
   inline std::wstring
   path::wstring() const { return string<wchar_t>(); }
+#endif
 
   inline std::string
   path::u8string() const
@@ -865,8 +871,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline std::string
   path::generic_string() const { return string(); }
 
+#if _GLIBCXX_USE_WCHAR_T
   inline std::wstring
   path::generic_wstring() const { return wstring(); }
+#endif
 
   inline std::string
   path::generic_u8string() const { return u8string(); }

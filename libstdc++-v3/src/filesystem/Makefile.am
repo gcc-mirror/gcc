@@ -26,10 +26,20 @@ toolexeclib_LTLIBRARIES = libstdc++fs.la
 
 headers =
 
+if ENABLE_DUAL_ABI
+cxx11_abi_sources = \
+	cow-dir.cc \
+	cow-ops.cc \
+	cow-path.cc
+else
+cxx11_abi_sources =
+endif
+
 sources = \
 	dir.cc \
 	ops.cc \
-	path.cc
+	path.cc \
+	${cxx11_abi_sources}
 
 # vpath % $(top_srcdir)/src/filesystem
 

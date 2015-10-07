@@ -30,33 +30,37 @@ test01()
   bool test __attribute__((unused)) = false;
 
   std::error_code ec;
-  fs::file_status st1 = fs::status(".", ec);
-  VERIFY( !ec );
-  VERIFY( st1.type() == fs::file_type::directory );
-
-  fs::file_status st2 = fs::status(".");
-  VERIFY( st2.type() == fs::file_type::directory );
-}
-
-void
-test02()
-{
-  bool test __attribute__((unused)) = false;
-
-  fs::path p = __gnu_test::nonexistent_path();
-
-  std::error_code ec;
-  fs::file_status st1 = fs::status(p, ec);
+  auto p = __gnu_test::nonexistent_path();
+  canonical( p, ec );
   VERIFY( ec );
-  VERIFY( st1.type() == fs::file_type::not_found );
 
-  fs::file_status st2 = fs::status(p);
-  VERIFY( st2.type() == fs::file_type::not_found );
+  p = fs::current_path();
+  canonical( p, ec );
+  VERIFY( !ec );
+
+  p = "/";
+  p = canonical( p, ec );
+  VERIFY( p == "/" );
+  VERIFY( !ec );
+
+  p = "/.";
+  p = canonical( p, ec );
+  VERIFY( p == "/" );
+  VERIFY( !ec );
+
+  p = "/..";
+  p = canonical( p, ec );
+  VERIFY( p == "/" );
+  VERIFY( !ec );
+
+  p = "/../.././.";
+  p = canonical( p, ec );
+  VERIFY( p == "/" );
+  VERIFY( !ec );
 }
 
 int
 main()
 {
   test01();
-  test02();
 }

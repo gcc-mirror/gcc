@@ -78993,7 +78993,7 @@ fi
 
   if test $glibcxx_cv_dirent_d_type = yes; then
 
-$as_echo "#define _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE 1" >>confdefs.h
+$as_echo "#define HAVE_STRUCT_DIRENT_D_TYPE 1" >>confdefs.h
 
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_dirent_d_type" >&5
@@ -79006,11 +79006,22 @@ else
       if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdlib.h>
+
+       #include <stdlib.h>
+       #include <unistd.h>
+
 int
 main ()
 {
-char *tmp = realpath((const char*)NULL, (char*)NULL);
+
+       #if _XOPEN_VERSION < 500
+       #error
+       #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
+       char *tmp = realpath((const char*)NULL, (char*)NULL);
+       #else
+       #error
+       #endif
+
   ;
   return 0;
 }
@@ -79027,11 +79038,22 @@ else
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdlib.h>
+
+       #include <stdlib.h>
+       #include <unistd.h>
+
 int
 main ()
 {
-char *tmp = realpath((const char*)NULL, (char*)NULL);
+
+       #if _XOPEN_VERSION < 500
+       #error
+       #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
+       char *tmp = realpath((const char*)NULL, (char*)NULL);
+       #else
+       #error
+       #endif
+
   ;
   return 0;
 }

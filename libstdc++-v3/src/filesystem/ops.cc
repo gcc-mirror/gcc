@@ -22,12 +22,17 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#ifndef _GLIBCXX_USE_CXX11_ABI
+# define _GLIBCXX_USE_CXX11_ABI 1
+#endif
+
 #include <experimental/filesystem>
 #include <functional>
 #include <stack>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <limits.h>  // PATH_MAX
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 # if defined(_GLIBCXX_HAVE_SYS_STAT_H) && defined(_GLIBCXX_HAVE_SYS_TYPES_H)
@@ -84,6 +89,24 @@ fs::absolute(const path& p, const path& base)
 
 namespace
 {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  inline bool is_dot(wchar_t c) { return c == L'.'; }
+#else
+  inline bool is_dot(char c) { return c == '.'; }
+#endif
+
+  inline bool is_dot(const fs::path& path)
+  {
+    const auto& filename = path.native();
+    return filename.size() == 1 && is_dot(filename[0]);
+  }
+
+  inline bool is_dotdot(const fs::path& path)
+  {
+    const auto& filename = path.native();
+    return filename.size() == 2 && is_dot(filename[0]) && is_dot(filename[1]);
+  }
+
   struct free_as_in_malloc
   {
     void operator()(void* p) const { ::free(p); }
@@ -95,19 +118,92 @@ namespace
 fs::path
 fs::canonical(const path& p, const path& base, error_code& ec)
 {
-  path can;
+  const path pa = absolute(p, base);
+  path result;
+
 #ifdef _GLIBCXX_USE_REALPATH
-  if (char_ptr rp = char_ptr{::realpath(absolute(p, base).c_str(), nullptr)})
+  char_ptr buf{ nullptr };
+# if _XOPEN_VERSION < 700
+  // Not safe to call realpath(path, NULL)
+  buf.reset( (char*)::malloc(PATH_MAX) );
+# endif
+  if (char* rp = ::realpath(pa.c_str(), buf.get()))
     {
-      can.assign(rp.get());
+      if (buf == nullptr)
+	buf.reset(rp);
+      result.assign(rp);
       ec.clear();
+      return result;
     }
-  else
-    ec.assign(errno, std::generic_category());
-#else
-  ec = std::make_error_code(std::errc::not_supported);
+  if (errno != ENAMETOOLONG)
+    {
+      ec.assign(errno, std::generic_category());
+      return result;
+    }
 #endif
-  return can;
+
+  if (!exists(pa, ec))
+    return result;
+  // else: we know there are (currently) no unresolvable symlink loops
+
+  result = pa.root_path();
+
+  deque<path> cmpts;
+  for (auto& f : pa.relative_path())
+    cmpts.push_back(f);
+
+  int max_allowed_symlinks = 40;
+
+  while (!cmpts.empty() && !ec)
+    {
+      path f = std::move(cmpts.front());
+      cmpts.pop_front();
+
+      if (is_dot(f))
+	{
+	  if (!is_directory(result, ec) && !ec)
+	    ec.assign(ENOTDIR, std::generic_category());
+	}
+      else if (is_dotdot(f))
+	{
+	  auto parent = result.parent_path();
+	  if (parent.empty())
+	    result = pa.root_path();
+	  else
+	    result.swap(parent);
+	}
+      else
+	{
+	  result /= f;
+
+	  if (is_symlink(result, ec))
+	    {
+	      path link = read_symlink(result, ec);
+	      if (!ec)
+		{
+		  if (--max_allowed_symlinks == 0)
+		    ec.assign(ELOOP, std::generic_category());
+		  else
+		    {
+		      if (link.is_absolute())
+			{
+			  result = link.root_path();
+			  link = link.relative_path();
+			}
+		      else
+			result.remove_filename();
+
+		      cmpts.insert(cmpts.begin(), link.begin(), link.end());
+		    }
+		}
+	    }
+	}
+    }
+
+  if (ec || !exists(result, ec))
+    result.clear();
+
+  return result;
 }
 
 fs::path
@@ -496,19 +592,36 @@ fs::create_directories(const path& p)
 bool
 fs::create_directories(const path& p, error_code& ec) noexcept
 {
+  if (p.empty())
+    {
+      ec = std::make_error_code(errc::invalid_argument);
+      return false;
+    }
   std::stack<path> missing;
   path pp = p;
-  ec.clear();
-  while (!p.empty() && !exists(pp, ec) && !ec.value())
+
+  while (!pp.empty() && status(pp, ec).type() == file_type::not_found)
     {
-      missing.push(pp);
-      pp = pp.parent_path();
+      ec.clear();
+      const auto& filename = pp.filename();
+      if (!is_dot(filename) && !is_dotdot(filename))
+	missing.push(pp);
+      pp.remove_filename();
     }
-  while (!missing.empty() && !ec.value())
+
+  if (ec || missing.empty())
+    return false;
+
+  do
     {
-      create_directory(missing.top(), ec);
+      const path& top = missing.top();
+      create_directory(top, ec);
+      if (ec && is_directory(top))
+	ec.clear();
       missing.pop();
     }
+  while (!missing.empty() && !ec);
+
   return missing.empty();
 }
 

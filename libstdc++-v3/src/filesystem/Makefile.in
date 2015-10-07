@@ -112,8 +112,10 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libstdc__fs_la_LIBADD =
-am__objects_1 = dir.lo ops.lo path.lo
-am_libstdc__fs_la_OBJECTS = $(am__objects_1)
+@ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-dir.lo cow-ops.lo \
+@ENABLE_DUAL_ABI_TRUE@	cow-path.lo
+am__objects_2 = dir.lo ops.lo path.lo $(am__objects_1)
+am_libstdc__fs_la_OBJECTS = $(am__objects_2)
 libstdc__fs_la_OBJECTS = $(am_libstdc__fs_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
@@ -350,13 +352,20 @@ WARN_CXXFLAGS = \
 
 
 # -I/-D flags to pass when compiling.
-AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
+AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 toolexeclib_LTLIBRARIES = libstdc++fs.la
 headers = 
+@ENABLE_DUAL_ABI_FALSE@cxx11_abi_sources = 
+@ENABLE_DUAL_ABI_TRUE@cxx11_abi_sources = \
+@ENABLE_DUAL_ABI_TRUE@	cow-dir.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-ops.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-path.cc
+
 sources = \
 	dir.cc \
 	ops.cc \
-	path.cc
+	path.cc \
+	${cxx11_abi_sources}
 
 
 # vpath % $(top_srcdir)/src/filesystem

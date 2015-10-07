@@ -28,35 +28,48 @@ void
 test01()
 {
   bool test __attribute__((unused)) = false;
-
   std::error_code ec;
-  fs::file_status st1 = fs::status(".", ec);
-  VERIFY( !ec );
-  VERIFY( st1.type() == fs::file_type::directory );
 
-  fs::file_status st2 = fs::status(".");
-  VERIFY( st2.type() == fs::file_type::directory );
-}
-
-void
-test02()
-{
-  bool test __attribute__((unused)) = false;
-
-  fs::path p = __gnu_test::nonexistent_path();
-
-  std::error_code ec;
-  fs::file_status st1 = fs::status(p, ec);
+  // Test empty path.
+  bool b = fs::create_directories( "", ec );
   VERIFY( ec );
-  VERIFY( st1.type() == fs::file_type::not_found );
+  VERIFY( !b );
 
-  fs::file_status st2 = fs::status(p);
-  VERIFY( st2.type() == fs::file_type::not_found );
+  // Test existing path.
+  b = fs::create_directories( fs::current_path(), ec );
+  VERIFY( !ec );
+  VERIFY( !b );
+
+  // Test non-existent path.
+  const auto p = __gnu_test::nonexistent_path();
+  b = fs::create_directories( p, ec );
+  VERIFY( !ec );
+  VERIFY( b );
+  VERIFY( is_directory(p) );
+
+  b = fs::create_directories( p/".", ec );
+  VERIFY( !ec );
+  VERIFY( !b );
+
+  b = fs::create_directories( p/"..", ec );
+  VERIFY( !ec );
+  VERIFY( !b );
+
+  b = fs::create_directories( p/"d1/d2/d3", ec );
+  VERIFY( !ec );
+  VERIFY( b );
+  VERIFY( is_directory(p/"d1/d2/d3") );
+
+  b = fs::create_directories( p/"./d4/../d5", ec );
+  VERIFY( !ec );
+  VERIFY( b );
+  VERIFY( is_directory(p/"./d4/../d5") );
+
+  remove_all(p, ec);
 }
 
 int
 main()
 {
   test01();
-  test02();
 }

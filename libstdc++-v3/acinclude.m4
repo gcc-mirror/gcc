@@ -3962,20 +3962,31 @@ dnl
       [glibcxx_cv_dirent_d_type=no])
   ])
   if test $glibcxx_cv_dirent_d_type = yes; then
-    AC_DEFINE(_GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE, 1, [Define to 1 if `d_type' is a member of `struct dirent'.])
+    AC_DEFINE(HAVE_STRUCT_DIRENT_D_TYPE, 1, [Define to 1 if `d_type' is a member of `struct dirent'.])
   fi
   AC_MSG_RESULT($glibcxx_cv_dirent_d_type)
 dnl
   AC_MSG_CHECKING([for realpath])
   AC_CACHE_VAL(glibcxx_cv_realpath, [dnl
     GCC_TRY_COMPILE_OR_LINK(
-      [#include <stdlib.h>],
-      [char *tmp = realpath((const char*)NULL, (char*)NULL);],
+      [
+       #include <stdlib.h>
+       #include <unistd.h>
+      ],
+      [
+       #if _XOPEN_VERSION < 500
+       #error
+       #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
+       char *tmp = realpath((const char*)NULL, (char*)NULL);
+       #else
+       #error
+       #endif
+      ],
       [glibcxx_cv_realpath=yes],
       [glibcxx_cv_realpath=no])
   ])
   if test $glibcxx_cv_realpath = yes; then
-    AC_DEFINE(_GLIBCXX_USE_REALPATH, 1, [Define if realpath is available in <stdlib.h>.])
+    AC_DEFINE(_GLIBCXX_USE_REALPATH, 1, [Define if usable realpath is available in <stdlib.h>.])
   fi
   AC_MSG_RESULT($glibcxx_cv_realpath)
 dnl
