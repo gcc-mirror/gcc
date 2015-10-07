@@ -1848,12 +1848,6 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	      FOR_EACH_EDGE (e, ei, bb->succs)
 		remove_jump_threads_including (e);
 
-	      /* If BB is in a loop, then removing an outgoing edge from BB
-		 may cause BB to move outside the loop, changes in the
-		 loop exit edges, etc.  So note that loops need fixing.  */
-	      if (bb_loop_depth (bb) > 0)
-		loops_state_set (LOOPS_NEED_FIXUP);
-
 	      /* Now clean up the control statement at the end of
 		 BB and remove unexecutable edges.  */
 	      remove_ctrl_stmt_and_useless_edges (bb, taken_edge->dest);
