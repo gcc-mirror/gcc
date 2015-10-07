@@ -118,7 +118,7 @@ remove_simple_copy_phi (gphi_iterator *psi)
    loop ENTRY edge the assignment RES = INIT.  */
 
 static void
-remove_invariant_phi (sese region, gphi_iterator *psi)
+remove_invariant_phi (sese_l &region, gphi_iterator *psi)
 {
   gphi *phi = psi->phi ();
   loop_p loop = loop_containing_stmt (phi);
@@ -161,7 +161,7 @@ simple_copy_phi_p (gphi *phi)
    be considered.  */
 
 static bool
-reduction_phi_p (sese region, gphi_iterator *psi)
+reduction_phi_p (sese_l &region, gphi_iterator *psi)
 {
   loop_p loop;
   gphi *phi = psi->phi ();
@@ -335,7 +335,7 @@ build_scop_scattering (scop_p scop)
       int prefix = 0;
 
       if (previous_gbb)
-	prefix = nb_common_loops (SCOP_REGION (scop), previous_gbb, gbb);
+	prefix = nb_common_loops (scop->region->region, previous_gbb, gbb);
 
       previous_gbb = gbb;
 
@@ -357,7 +357,7 @@ extract_affine_chrec (scop_p s, tree e, __isl_take isl_space *space)
   isl_pw_aff *lhs = extract_affine (s, CHREC_LEFT (e), isl_space_copy (space));
   isl_pw_aff *rhs = extract_affine (s, CHREC_RIGHT (e), isl_space_copy (space));
   isl_local_space *ls = isl_local_space_from_space (space);
-  unsigned pos = sese_loop_depth (SCOP_REGION (s), get_chrec_loop (e)) - 1;
+  unsigned pos = sese_loop_depth (s->region->region, get_chrec_loop (e)) - 1;
   isl_aff *loop = isl_aff_set_coefficient_si
     (isl_aff_zero_on_domain (ls), isl_dim_in, pos, 1);
   isl_pw_aff *l = isl_pw_aff_from_aff (loop);
@@ -482,7 +482,7 @@ wrap (isl_pw_aff *pwaff, unsigned width)
    Otherwise returns -1.  */
 
 static inline int
-parameter_index_in_region_1 (tree name, sese region)
+parameter_index_in_region_1 (tree name, sese_info_p region)
 {
   int i;
   tree p;
@@ -540,7 +540,7 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
 
     case SSA_NAME:
       gcc_assert (-1 != parameter_index_in_region_1 (e, s->region)
-		  || !invariant_in_sese_p_rec (e, s->region));
+		  || !invariant_in_sese_p_rec (e, s->region->region));
       res = extract_affine_name (s, e, space);
       break;
 
@@ -571,7 +571,7 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
 static void
 set_scop_parameter_dim (scop_p scop)
 {
-  sese region = SCOP_REGION (scop);
+  sese_info_p region = scop->region;
   unsigned nbp = sese_nb_params (region);
   isl_space *space = isl_space_set_alloc (scop->isl_context, nbp, 0);
 
@@ -594,7 +594,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 {
 
   tree nb_iters = number_of_latch_executions (loop);
-  sese region = SCOP_REGION (scop);
+  sese_l region = scop->region->region;
   gcc_assert (loop_in_sese_p (loop, region));
 
   isl_set *inner = isl_set_copy (outer);
@@ -704,7 +704,7 @@ create_pw_aff_from_tree (poly_bb_p pbb, tree t)
 {
   scop_p scop = PBB_SCOP (pbb);
 
-  t = scalar_evolution_in_region (SCOP_REGION (scop), pbb_loop (pbb), t);
+  t = scalar_evolution_in_region (scop->region->region, pbb_loop (pbb), t);
   gcc_assert (!automatically_generated_chrec_p (t));
 
   return extract_affine (scop, t, isl_set_get_space (pbb->domain));
@@ -818,7 +818,7 @@ add_conditions_to_constraints (scop_p scop)
 static void
 add_param_constraints (scop_p scop, graphite_dim_t p)
 {
-  tree parameter = SESE_PARAMS (SCOP_REGION (scop))[p];
+  tree parameter = SESE_PARAMS (scop->region)[p];
   tree type = TREE_TYPE (parameter);
   tree lb = NULL_TREE;
   tree ub = NULL_TREE;
@@ -892,14 +892,14 @@ build_scop_context (scop_p scop)
 static void
 build_scop_iteration_domain (scop_p scop)
 {
-  sese region = SCOP_REGION (scop);
+  sese_info_p region = scop->region;
   int nb_loops = number_of_loops (cfun);
   isl_set **doms = XCNEWVEC (isl_set *, nb_loops);
 
   int i;
   struct loop *loop;
   FOR_EACH_VEC_ELT (SESE_LOOP_NEST (region), i, loop)
-    if (!loop_in_sese_p (loop_outer (loop), region))
+    if (!loop_in_sese_p (loop_outer (loop), region->region))
       build_loop_iteration_domains (scop, loop, 0,
 				    isl_set_copy (scop->param_context), doms);
 
@@ -1166,7 +1166,7 @@ build_scop_drs (scop_p scop)
 static void
 analyze_drs_in_stmts (scop_p scop, basic_block bb, vec<gimple *> stmts)
 {
-  sese region = SCOP_REGION (scop);
+  sese_l region = scop->region->region;
   if (!bb_in_sese_p (bb, region))
     return;
 
@@ -1284,7 +1284,7 @@ insert_out_of_ssa_copy_on_edge (scop_p scop, edge e, tree res, tree expr)
   gsi_commit_edge_inserts ();
   basic_block bb = gimple_bb (stmt);
 
-  if (!bb_in_sese_p (bb, SCOP_REGION (scop)))
+  if (!bb_in_sese_p (bb, scop->region->region))
     return;
 
   if (!gbb_from_bb (bb))
@@ -1326,7 +1326,7 @@ scalar_close_phi_node_p (gimple *phi)
    all the uses of DEF outside REGION.  */
 
 static void
-propagate_expr_outside_region (tree def, tree expr, sese region)
+propagate_expr_outside_region (tree def, tree expr, sese_l &region)
 {
   gimple_seq stmts;
   bool replaced_once = false;
@@ -1355,7 +1355,7 @@ propagate_expr_outside_region (tree def, tree expr, sese region)
 
   if (replaced_once)
     {
-      gsi_insert_seq_on_edge (SESE_ENTRY (region), stmts);
+      gsi_insert_seq_on_edge (region.entry, stmts);
       gsi_commit_edge_inserts ();
     }
 }
@@ -1366,7 +1366,7 @@ propagate_expr_outside_region (tree def, tree expr, sese region)
 static void
 rewrite_close_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
 {
-  sese region = SCOP_REGION (scop);
+  sese_l region = scop->region->region;
   gimple *phi = gsi_stmt (*psi);
   tree res = gimple_phi_result (phi);
   basic_block bb = gimple_bb (phi);
@@ -1499,7 +1499,7 @@ static void
 rewrite_reductions_out_of_ssa (scop_p scop)
 {
   basic_block bb;
-  sese region = SCOP_REGION (scop);
+  sese_l region = scop->region->region;
 
   FOR_EACH_BB_FN (bb, cfun)
     if (bb_in_sese_p (bb, region))
@@ -1564,7 +1564,7 @@ handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple *stmt)
   tree var = create_tmp_reg (TREE_TYPE (def));
   tree new_name = make_ssa_name (var, stmt);
   bool needs_copy = false;
-  sese region = SCOP_REGION (scop);
+  sese_l region = scop->region->region;
 
   imm_use_iterator imm_iter;
   gimple *use_stmt;
@@ -1588,7 +1588,7 @@ handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple *stmt)
   if (needs_copy)
     {
       gimple *assign = gimple_build_assign (new_name, def);
-      gimple_stmt_iterator psi = gsi_after_labels (SESE_EXIT (region)->dest);
+      gimple_stmt_iterator psi = gsi_after_labels (region.exit->dest);
 
       update_stmt (assign);
       gsi_insert_before (&psi, assign, GSI_SAME_STMT);
@@ -1602,7 +1602,7 @@ handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple *stmt)
 static bool
 rewrite_cross_bb_scalar_deps (scop_p scop, gimple_stmt_iterator *gsi)
 {
-  sese region = SCOP_REGION (scop);
+  sese_l region = scop->region->region;
   gimple *stmt = gsi_stmt (*gsi);
   imm_use_iterator imm_iter;
   tree def;
@@ -1687,11 +1687,11 @@ rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
 {
   basic_block bb;
   gimple_stmt_iterator psi;
-  sese region = SCOP_REGION (scop);
+  sese_l region = scop->region->region;
   bool changed = false;
 
   /* Create an extra empty BB after the scop.  */
-  split_edge (SESE_EXIT (region));
+  split_edge (region.exit);
 
   FOR_EACH_BB_FN (bb, cfun)
     if (bb_in_sese_p (bb, region))

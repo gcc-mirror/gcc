@@ -1,3 +1,64 @@
+2015-10-07  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-isl-ast-to-gimple.c (translate_isl_ast_to_gimple): Use
+	an sese_info_p.
+	(copy_def): Same.
+	(copy_internal_parameters): Same.
+	(translate_isl_ast_to_gimple): Use an sese_l.
+	(build_iv_mapping): Same.
+	* graphite-poly.c (new_sese): Rename new_sese_info.
+	(free_sese): Rename free_sese_info.
+	* graphite-poly.h (struct scop): Use an sese_info_p.
+	(scop_set_region): Same.
+	* graphite-scop-detection.c (struct sese_l): Moved...
+	(get_entry_bb): Moved...
+	(get_exit_bb): Moved...
+	(parameter_index_in_region_1): Use an sese_info_p.
+	(parameter_index_in_region): Same.
+	(scan_tree_for_params): Same.
+	(find_params_in_bb): Same.
+	(sese_dom_walker): Use an sese_l.
+	* graphite-sese-to-poly.c (remove_invariant_phi): Same.
+	(reduction_phi_p): Same.
+	(parameter_index_in_region_1): Use an sese_info_p.
+	(propagate_expr_outside_region): Use an sese_l.
+	* graphite.c: Replace uses of SCOP_REGION.
+	* sese.c (sese_record_loop): Use an sese_info_p.
+	(build_sese_loop_nests): Same.
+	(sese_build_liveouts_use): Same.
+	(sese_build_liveouts_bb): Same.
+	(sese_build_liveouts_bb): Same.
+	(sese_bad_liveouts_use): Same.
+	(sese_reset_debug_liveouts_bb): Same.
+	(sese_build_liveouts): Same.
+	(new_sese): Renamed new_sese_info.
+	(free_sese): Renamed free_sese_info.
+	(set_rename): Use an sese_info_p.
+	(graphite_copy_stmts_from_block): Same.
+	(copy_bb_and_scalar_dependences): Same.
+	(outermost_loop_in_sese_1): Use an sese_l.
+	(outermost_loop_in_sese): Same.
+	(if_region_set_false_region): Use an sese_info_p.
+	(move_sese_in_condition): Same.
+	(scalar_evolution_in_region): Use an sese_l.
+	* sese.h (struct sese_l): ... here.
+	(SESE_ENTRY): Remove.
+	(SESE_ENTRY_BB): Remove.
+	(SESE_EXIT): Remove.
+	(SESE_EXIT_BB): Remove.
+	(sese_contains_loop): Use an sese_info_p.
+	(sese_nb_params): Same.
+	(bb_in_sese_p): Use an sese_l.
+	(stmt_in_sese_p): Same.
+	(defined_in_sese_p): Same.
+	(loop_in_sese_p): Same.
+	(sese_loop_depth): Same.
+	(struct ifsese_s): Use an sese_info_p.
+	(gbb_loop_at_index): Use an sese_l.
+	(nb_common_loops): Same.
+	(scev_analyzable_p): Same.
+
 2015-10-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_conditional_register_usage): Use

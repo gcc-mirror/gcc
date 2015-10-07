@@ -303,7 +303,7 @@ remove_gbbs_in_scop (scop_p scop)
 scop_p
 new_scop (edge entry, edge exit)
 {
-  sese region = new_sese (entry, exit);
+  sese_info_p region = new_sese_info (entry, exit);
   scop_p scop = XNEW (struct scop);
 
   scop->param_context = NULL;
@@ -336,7 +336,7 @@ free_scop (scop_p scop)
   poly_bb_p pbb;
 
   remove_gbbs_in_scop (scop);
-  free_sese (SCOP_REGION (scop));
+  free_sese_info (SCOP_REGION (scop));
 
   FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     free_poly_bb (pbb);

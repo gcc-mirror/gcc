@@ -132,7 +132,7 @@ void ivs_params_clear (ivs_params &ip)
 class translate_isl_ast_to_gimple
 {
  public:
-  translate_isl_ast_to_gimple (sese r)
+  translate_isl_ast_to_gimple (sese_info_p r)
     : region (r)
   { }
 
@@ -261,9 +261,9 @@ class translate_isl_ast_to_gimple
      corresponding tree expressions.  */
   void build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
 			 __isl_keep isl_ast_expr *user_expr, ivs_params &ip,
-			 sese region);
+			 sese_l &region);
 private:
-  sese region;
+  sese_info_p region;
 };
 
 /* Return the tree variable that corresponds to the given isl ast identifier
@@ -741,7 +741,7 @@ void
 translate_isl_ast_to_gimple::
 build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
 		  __isl_keep isl_ast_expr *user_expr, ivs_params &ip,
-		  sese region)
+		  sese_l &region)
 {
   gcc_assert (isl_ast_expr_get_type (user_expr) == isl_ast_expr_op &&
 	      isl_ast_expr_get_op_type (user_expr) == isl_ast_op_call);
@@ -756,7 +756,6 @@ build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
       loop_p old_loop = gbb_loop_at_index (gbb, region, i - 1);
       iv_map[old_loop->num] = t;
     }
-
 }
 
 /* Translates an isl_ast_node_user to Gimple.
@@ -787,10 +786,10 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
   iv_map.create (nb_loops);
   iv_map.safe_grow_cleared (nb_loops);
 
-  build_iv_mapping (iv_map, gbb, user_expr, ip, SCOP_REGION (pbb->scop));
+  build_iv_mapping (iv_map, gbb, user_expr, ip, pbb->scop->region->region);
   isl_ast_expr_free (user_expr);
   next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb),
-					   SCOP_REGION (pbb->scop), next_e,
+					   pbb->scop->region, next_e,
 					   iv_map,
 					   &graphite_regenerate_error);
   iv_map.release ();
@@ -910,7 +909,7 @@ print_isl_ast_node (FILE *file, __isl_keep isl_ast_node *node,
 static void
 add_parameters_to_ivs_params (scop_p scop, ivs_params &ip)
 {
-  sese region = SCOP_REGION (scop);
+  sese_info_p region = scop->region;
   unsigned nb_parameters = isl_set_dim (scop->param_context, isl_dim_param);
   gcc_assert (nb_parameters == SESE_PARAMS (region).length ());
   unsigned i;
@@ -1075,13 +1074,14 @@ scop_to_isl_ast (scop_p scop, ivs_params &ip)
    DEF_STMT. GSI points to entry basic block of the TO_REGION.  */
 
 static void
-copy_def(tree tr, gimple *def_stmt, sese region, sese to_region, gimple_stmt_iterator *gsi)
+copy_def (tree tr, gimple *def_stmt, sese_info_p region, sese_info_p to_region,
+	  gimple_stmt_iterator *gsi)
 {
-  if (!defined_in_sese_p (tr, region))
+  if (!defined_in_sese_p (tr, region->region))
     return;
+
   ssa_op_iter iter;
   use_operand_p use_p;
-
   FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_USE)
     {
       tree use_tr = USE_FROM_PTR (use_p);
@@ -1116,14 +1116,14 @@ copy_def(tree tr, gimple *def_stmt, sese region, sese to_region, gimple_stmt_ite
 }
 
 static void
-copy_internal_parameters(sese region, sese to_region)
+copy_internal_parameters (sese_info_p region, sese_info_p to_region)
 {
   /* For all the parameters which definitino is in the if_region->false_region,
      insert code on true_region (if_region->true_region->entry). */
 
   int i;
   tree tr;
-  gimple_stmt_iterator gsi = gsi_start_bb(to_region->entry->dest);
+  gimple_stmt_iterator gsi = gsi_start_bb(to_region->region.entry->dest);
 
   FOR_EACH_VEC_ELT (region->params, i, tr)
     {
@@ -1144,7 +1144,7 @@ bool
 graphite_regenerate_ast_isl (scop_p scop)
 {
   loop_p context_loop;
-  sese region = SCOP_REGION (scop);
+  sese_info_p region = scop->region;
   ifsese if_region = NULL;
   isl_ast_node *root_node;
   ivs_params ip;
@@ -1165,19 +1165,19 @@ graphite_regenerate_ast_isl (scop_p scop)
 
   if_region = move_sese_in_condition (region);
   sese_insert_phis_for_liveouts (region,
-				 if_region->region->exit->src,
-				 if_region->false_region->exit,
-				 if_region->true_region->exit);
+				 if_region->region->region.exit->src,
+				 if_region->false_region->region.exit,
+				 if_region->true_region->region.exit);
   recompute_all_dominators ();
   graphite_verify ();
 
-  context_loop = SESE_ENTRY (region)->src->loop_father;
+  context_loop = region->region.entry->src->loop_father;
 
   /* Copy all the parameters which are defined in the region.  */
   copy_internal_parameters(if_region->false_region, if_region->true_region);
 
   translate_isl_ast_to_gimple t(region);
-  edge e = single_succ_edge (if_region->true_region->entry->dest);
+  edge e = single_succ_edge (if_region->true_region->region.entry->dest);
   split_edge (e);
   t.translate_isl_ast (context_loop, root_node, e, ip);
 
