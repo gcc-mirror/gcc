@@ -1,3 +1,17 @@
+2015-10-06  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/67816
+	* tree-ssa-threadupdate.h (remove_jump_threads_including): Renamed
+	from remove_jump_threads_starting_at.  Accept an edge rather than
+	a basic block.
+	* tree-ssa-threadupdate.c (removed_edges): New hash table.
+	(remove_jump_threads_including): Note edges that get removed from
+	the CFG for later pruning of jump threading paths including them.
+	(thread_through_all_blocks): Remove paths which include edges that
+	have been removed.
+	* tree-ssa-dom.c (optimize_stmt): Call remove_jump_threads_including
+	on each outgoing edges when optimizing away a control statement.
+
 2015-10-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* reorg.c (emit_delay_sequence): Store list of delay slot insns
