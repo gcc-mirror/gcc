@@ -1,3 +1,9 @@
+2015-10-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/65889
+	* trans-intrinsic.c (gfc_conv_intrinsic_sizeof): Handle pointer to and
+	on stack class objects as sizeof parameter.
+
 2015-10-06  Louis Krupp <louis.krupp@zoho.com>
 	PR fortran/65766
 	* resolve.c (gfc_resolve_substring_charlen): For derived type,

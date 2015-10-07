@@ -5937,11 +5937,16 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
     }
   else if (arg->ts.type == BT_CLASS)
     {
-      /* For deferred length arrays, conv_expr_descriptor returns an
-	 indirect_ref to the component.  */
+      /* Conv_expr_descriptor returns a component_ref to _data component of the
+	 class object.  The class object may be a non-pointer object, e.g.
+	 located on the stack, or a memory location pointed to, e.g. a
+	 parameter, i.e., an indirect_ref.  */
       if (arg->rank < 0
 	  || (arg->rank > 0 && !VAR_P (argse.expr)
-	      && GFC_DECL_CLASS (TREE_OPERAND (argse.expr, 0))))
+	      && ((INDIRECT_REF_P (TREE_OPERAND (argse.expr, 0))
+		   && GFC_DECL_CLASS (TREE_OPERAND (
+					TREE_OPERAND (argse.expr, 0), 0)))
+		  || GFC_DECL_CLASS (TREE_OPERAND (argse.expr, 0)))))
 	byte_size = gfc_class_vtab_size_get (TREE_OPERAND (argse.expr, 0));
       else if (arg->rank > 0)
 	/* The scalarizer added an additional temp.  To get the class' vptr
