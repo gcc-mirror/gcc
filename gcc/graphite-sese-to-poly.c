@@ -329,7 +329,7 @@ build_scop_scattering (scop_p scop)
 
   int i;
   poly_bb_p pbb;
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     {
       gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
       int prefix = 0;
@@ -808,7 +808,7 @@ add_conditions_to_constraints (scop_p scop)
   int i;
   poly_bb_p pbb;
 
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     add_conditions_to_domain (pbb);
 }
 
@@ -904,7 +904,7 @@ build_scop_iteration_domain (scop_p scop)
 				    isl_set_copy (scop->param_context), doms);
 
   poly_bb_p pbb;
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     {
       loop = pbb_loop (pbb);
 
@@ -1138,17 +1138,17 @@ build_scop_drs (scop_p scop)
 
   /* Remove all the PBBs that do not have data references: these basic
      blocks are not handled in the polyhedral representation.  */
-  for (i = 0; SCOP_BBS (scop).iterate (i, &pbb); i++)
+  for (i = 0; scop->pbbs.iterate (i, &pbb); i++)
     if (GBB_DATA_REFS (PBB_BLACK_BOX (pbb)).is_empty ())
       {
 	free_gimple_poly_bb (PBB_BLACK_BOX (pbb));
 	free_poly_bb (pbb);
-	SCOP_BBS (scop).ordered_remove (i);
+	scop->pbbs.ordered_remove (i);
 	i--;
       }
 
   data_reference_p dr;
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     if (pbb)
       FOR_EACH_VEC_ELT (GBB_DATA_REFS (PBB_BLACK_BOX (pbb)), j, dr)
 	scop->drs.safe_push (dr_info (dr, -1, pbb));
@@ -1248,11 +1248,10 @@ new_pbb_from_pbb (scop_p scop, poly_bb_p pbb, basic_block bb)
   gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
   gimple_poly_bb_p gbb1 = new_gimple_poly_bb (bb, drs);
   poly_bb_p pbb1 = new_poly_bb (scop, gbb1);
-  int index, n = SCOP_BBS (scop).length ();
+  int index, n = scop->pbbs.length ();
 
-  /* The INDEX of PBB in SCOP_BBS.  */
   for (index = 0; index < n; index++)
-    if (SCOP_BBS (scop)[index] == pbb)
+    if (scop->pbbs[index] == pbb)
       break;
 
   pbb1->domain = isl_set_copy (pbb->domain);
@@ -1262,7 +1261,7 @@ new_pbb_from_pbb (scop_p scop, poly_bb_p pbb, basic_block bb)
   GBB_PBB (gbb1) = pbb1;
   GBB_CONDITIONS (gbb1) = GBB_CONDITIONS (gbb).copy ();
   GBB_CONDITION_CASES (gbb1) = GBB_CONDITION_CASES (gbb).copy ();
-  SCOP_BBS (scop).safe_insert (index + 1, pbb1);
+  scop->pbbs.safe_insert (index + 1, pbb1);
 }
 
 /* Insert on edge E the assignment "RES := EXPR".  */

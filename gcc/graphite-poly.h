@@ -415,7 +415,7 @@ struct scop
   /* All the basic blocks in this scop that contain memory references
      and that will be represented as statements in the polyhedral
      representation.  */
-  vec<poly_bb_p> bbs;
+  vec<poly_bb_p> pbbs;
 
   /* All the data references in this scop.  */
   vec<dr_info> drs;
@@ -451,7 +451,6 @@ struct scop
   bool poly_scop_p;
 };
 
-#define SCOP_BBS(S) (S->bbs)
 #define SCOP_REGION(S) (S->region)
 #define SCOP_CONTEXT(S) (NULL)
 #define POLY_SCOP_P(S) (S->poly_scop_p)

@@ -78,6 +78,9 @@ typedef struct sese_info_t
   /* Loops completely contained in this SESE.  */
   bitmap loops;
   vec<loop_p> loop_nest;
+
+  /* Basic blocks contained in this SESE.  */
+  vec<basic_block> bbs;
 } *sese_info_p;
 
 #define SESE_PARAMS(S) (S->params)

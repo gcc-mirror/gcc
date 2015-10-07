@@ -113,34 +113,6 @@ same_close_phi_node (gphi *p1, gphi *p2)
 			  gimple_phi_arg_def (p2, 0), 0);
 }
 
-/* Compare the depth of two basic_block's P1 and P2.  */
-
-static int
-compare_bb_depths (const void *p1, const void *p2)
-{
-  const_basic_block const bb1 = *(const_basic_block const *)p1;
-  const_basic_block const bb2 = *(const_basic_block const *)p2;
-  int d1 = loop_depth (bb1->loop_father);
-  int d2 = loop_depth (bb2->loop_father);
-
-  if (d1 < d2)
-    return 1;
-
-  if (d1 > d2)
-    return -1;
-
-  return 0;
-}
-
-/* Sort the basic blocks from DOM such that the first are the ones at
-   a deepest loop level.  */
-
-static void
-graphite_sort_dominated_info (vec<basic_block> dom)
-{
-  dom.qsort (compare_bb_depths);
-}
-
 static void make_close_phi_nodes_unique (basic_block bb);
 
 /* Remove the close phi node at GSI and replace its rhs with the rhs
@@ -508,25 +480,6 @@ public:
      Graphite.  */
 
   static bool can_represent_loop (loop_p loop, sese_l scop);
-
-  /* Generates a polyhedral black box only if the bb contains interesting
-     information.  */
-
-  static gimple_poly_bb_p try_generate_gimple_bb (scop_p scop, basic_block bb);
-
-  /* Returns true if all predecessors of BB, that are not dominated by BB, are
-     marked in MAP.  The predecessors dominated by BB are loop latches and will
-     be handled after BB.  */
-
-  static bool all_non_dominated_preds_marked_p (basic_block bb, sbitmap map);
-
-  /* Recursive helper function for build_scops_bbs.  */
-
-  static void build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb);
-
-  /* Gather the basic blocks belonging to the SCOP.  */
-
-  static void build_scop_bbs (scop_p scop);
 
   /* Returns the number of pbbs that are in loops contained in SCOP.  */
 
@@ -1519,102 +1472,6 @@ scop_detection::loop_body_is_valid_scop (loop_p loop, sese_l scop) const
   return true;
 }
 
-/* Generates a polyhedral black box only if the bb contains interesting
-   information.  */
-
-gimple_poly_bb_p
-scop_detection::try_generate_gimple_bb (scop_p scop, basic_block bb)
-{
-  vec<data_reference_p> drs;
-  drs.create (5);
-  sese_l region = scop->region->region;
-  loop_p nest = outermost_loop_in_sese (region, bb);
-
-  loop_p loop = bb->loop_father;
-  if (!loop_in_sese_p (loop, region))
-    loop = nest;
-
-  gimple_stmt_iterator gsi;
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      gimple *stmt = gsi_stmt (gsi);
-      if (is_gimple_debug (stmt))
-	continue;
-
-      graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
-    }
-
-  return new_gimple_poly_bb (bb, drs);
-}
-
-/* Returns true if all predecessors of BB, that are not dominated by BB, are
-   marked in MAP.  The predecessors dominated by BB are loop latches and will
-   be handled after BB.  */
-
-bool
-scop_detection::all_non_dominated_preds_marked_p (basic_block bb, sbitmap map)
-{
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (!bitmap_bit_p (map, e->src->index)
-	&& !dominated_by_p (CDI_DOMINATORS, e->src, bb))
-      return false;
-
-  return true;
-}
-
-/* Recursive helper function for build_scops_bbs.  */
-
-void
-scop_detection::build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb)
-{
-  if (bitmap_bit_p (visited, bb->index)
-      || !bb_in_sese_p (bb, scop->region->region))
-    return;
-
-  poly_bb_p pbb = new_poly_bb (scop, try_generate_gimple_bb (scop, bb));
-  SCOP_BBS (scop).safe_push (pbb);
-  bitmap_set_bit (visited, bb->index);
-
-  vec<basic_block> dom = get_dominated_by (CDI_DOMINATORS, bb);
-
-  if (!dom.exists ())
-    return;
-
-  graphite_sort_dominated_info (dom);
-
-  while (!dom.is_empty ())
-    {
-      int i;
-      basic_block dom_bb;
-
-      FOR_EACH_VEC_ELT (dom, i, dom_bb)
-	if (all_non_dominated_preds_marked_p (dom_bb, visited))
-	  {
-	    build_scop_bbs_1 (scop, visited, dom_bb);
-	    dom.unordered_remove (i);
-	    break;
-	  }
-    }
-
-  dom.release ();
-}
-
-/* Gather the basic blocks belonging to the SCOP.  */
-
-void
-scop_detection::build_scop_bbs (scop_p scop)
-{
-  sbitmap visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
-  sese_l region = scop->region->region;
-
-  bitmap_clear (visited);
-  build_scop_bbs_1 (scop, visited, region.entry->dest);
-  sbitmap_free (visited);
-}
-
 /* Returns the number of pbbs that are in loops contained in SCOP.  */
 
 int
@@ -1624,7 +1481,7 @@ scop_detection::nb_pbbs_in_loops (scop_p scop)
   poly_bb_p pbb;
   int res = 0;
 
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     if (loop_in_sese_p (gbb_loop (PBB_BLACK_BOX (pbb)), scop->region->region))
       res++;
 
@@ -1783,28 +1640,57 @@ find_scop_parameters (scop_p scop)
 
   /* Find the parameters used in data accesses.  */
   poly_bb_p pbb;
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     find_params_in_bb (region, PBB_BLACK_BOX (pbb));
 
   int nbp = sese_nb_params (region);
   scop_set_nb_params (scop, nbp);
 }
 
-class sese_dom_walker : public dom_walker
+/* Generates a polyhedral black box only if the bb contains interesting
+   information.  */
+
+static gimple_poly_bb_p
+try_generate_gimple_bb (scop_p scop, basic_block bb)
+{
+  vec<data_reference_p> drs;
+  drs.create (5);
+  sese_l region = scop->region->region;
+  loop_p nest = outermost_loop_in_sese (region, bb);
+
+  loop_p loop = bb->loop_father;
+  if (!loop_in_sese_p (loop, region))
+    loop = nest;
+
+  gimple_stmt_iterator gsi;
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	continue;
+
+      graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
+    }
+
+  return new_gimple_poly_bb (bb, drs);
+}
+
+/* Gather BBs and conditions for a SCOP.  */
+class gather_bbs : public dom_walker
 {
 public:
-  sese_dom_walker (cdi_direction, sese_l);
+  gather_bbs (cdi_direction, scop_p);
 
   virtual void before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
 private:
-  auto_vec<gimple *, 3> m_conditions, m_cases;
-  sese_l m_region;
+  auto_vec<gimple *, 3> conditions, cases;
+  scop_p scop;
 };
 }
-sese_dom_walker::sese_dom_walker (cdi_direction direction, sese_l region)
-  : dom_walker (direction), m_region (region)
+gather_bbs::gather_bbs (cdi_direction direction, scop_p scop)
+  : dom_walker (direction), scop (scop)
 {
 }
 
@@ -1812,50 +1698,48 @@ sese_dom_walker::sese_dom_walker (cdi_direction direction, sese_l region)
    blocks.  */
 
 void
-sese_dom_walker::before_dom_children (basic_block bb)
+gather_bbs::before_dom_children (basic_block bb)
 {
-  gimple_poly_bb_p gbb;
-  gcond *stmt;
-
-  if (!bb_in_sese_p (bb, m_region))
+  if (!bb_in_sese_p (bb, scop->region->region))
     return;
 
-  stmt = single_pred_cond_non_loop_exit (bb);
+  gcond *stmt = single_pred_cond_non_loop_exit (bb);
 
   if (stmt)
     {
       edge e = single_pred_edge (bb);
 
-      m_conditions.safe_push (stmt);
+      conditions.safe_push (stmt);
 
       if (e->flags & EDGE_TRUE_VALUE)
-	m_cases.safe_push (stmt);
+	cases.safe_push (stmt);
       else
-	m_cases.safe_push (NULL);
+	cases.safe_push (NULL);
     }
 
-  gbb = gbb_from_bb (bb);
+  scop->region->bbs.safe_push (bb);
 
-  if (gbb)
-    {
-      GBB_CONDITIONS (gbb) = m_conditions.copy ();
-      GBB_CONDITION_CASES (gbb) = m_cases.copy ();
-    }
+  gimple_poly_bb_p gbb = try_generate_gimple_bb (scop, bb);
+  GBB_CONDITIONS (gbb) = conditions.copy ();
+  GBB_CONDITION_CASES (gbb) = cases.copy ();
+
+  poly_bb_p pbb = new_poly_bb (scop, gbb);
+  scop->pbbs.safe_push (pbb);
 }
 
 /* Call-back for dom_walk executed after visiting the dominated
    blocks.  */
 
 void
-sese_dom_walker::after_dom_children (basic_block bb)
+gather_bbs::after_dom_children (basic_block bb)
 {
-  if (!bb_in_sese_p (bb, m_region))
+  if (!bb_in_sese_p (bb, scop->region->region))
     return;
 
   if (single_pred_cond_non_loop_exit (bb))
     {
-      m_conditions.pop ();
-      m_cases.pop ();
+      conditions.pop ();
+      cases.pop ();
     }
 }
 
@@ -1881,7 +1765,9 @@ build_scops (vec<scop_p> *scops)
     {
       scop_p scop = new_scop (s.entry, s.exit);
 
-      sb.build_scop_bbs (scop);
+      /* Record all basic blocks and their conditions in REGION.  */
+      gather_bbs (CDI_DOMINATORS, scop).walk (cfun->cfg->x_entry_block_ptr);
+
       /* Do not optimize a scop containing only PBBs that do not belong
 	 to any loops.  */
       if (sb.nb_pbbs_in_loops (scop) == 0)
@@ -1892,9 +1778,6 @@ build_scops (vec<scop_p> *scops)
 	}
 
       build_sese_loop_nests (scop->region);
-      /* Record all conditions in REGION.  */
-      sese_dom_walker (CDI_DOMINATORS, scop->region->region).walk
-	(cfun->cfg->x_entry_block_ptr);
 
       find_scop_parameters (scop);
       graphite_dim_t max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);

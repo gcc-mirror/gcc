@@ -940,7 +940,7 @@ int get_max_schedule_dimensions (scop_p scop)
   poly_bb_p pbb;
   int schedule_dims = 0;
 
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     {
       int pbb_schedule_dims = isl_map_dim (pbb->transformed, isl_dim_out);
       if (pbb_schedule_dims > schedule_dims)
@@ -987,7 +987,7 @@ generate_isl_schedule (scop_p scop)
   isl_union_map *schedule_isl =
     isl_union_map_empty (isl_set_get_space (scop->param_context));
 
-  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     {
       /* Dead code elimination: when the domain of a PBB is empty,
 	 don't generate code for the PBB.  */
