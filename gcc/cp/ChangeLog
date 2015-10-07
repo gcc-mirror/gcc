@@ -1,3 +1,16 @@
+2015-10-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67810
+	* parser.c (cp_parser_fold_expr_p): Remove.
+	(is_binary_op): New.
+	(cp_parser_fold_expression): Take LHS as parameter.
+	(cp_parser_primary_expression): Call it after parsing an expression.
+	(cp_parser_binary_expression, cp_parser_assignment_operator_opt)
+	(cp_parser_expression): Ignore an operator followed by '...'.
+	(is_binary_op): New.
+	* pt.c (tsubst_unary_left_fold, tsubst_binary_left_fold)
+	(tsubst_unary_right_fold, tsubst_binary_right_fold): Handle errors.
+
 2015-10-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/67863

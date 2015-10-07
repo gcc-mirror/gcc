@@ -10632,6 +10632,8 @@ tsubst_unary_left_fold (tree t, tree args, tsubst_flags_t complain,
                         tree in_decl)
 {
   tree pack = tsubst_fold_expr_pack (t, args, complain, in_decl);
+  if (pack == error_mark_node)
+    return error_mark_node;
   if (TREE_VEC_LENGTH (pack) == 0)
     return expand_empty_fold (t, complain);
   else
@@ -10648,7 +10650,11 @@ tsubst_binary_left_fold (tree t, tree args, tsubst_flags_t complain,
                          tree in_decl)
 {
   tree pack = tsubst_fold_expr_pack (t, args, complain, in_decl);
+  if (pack == error_mark_node)
+    return error_mark_node;
   tree init = tsubst_fold_expr_init (t, args, complain, in_decl);
+  if (init == error_mark_node)
+    return error_mark_node;
 
   tree vec = make_tree_vec (TREE_VEC_LENGTH (pack) + 1);
   TREE_VEC_ELT (vec, 0) = init;
@@ -10689,6 +10695,8 @@ tsubst_unary_right_fold (tree t, tree args, tsubst_flags_t complain,
                          tree in_decl)
 {
   tree pack = tsubst_fold_expr_pack (t, args, complain, in_decl);
+  if (pack == error_mark_node)
+    return error_mark_node;
   if (TREE_VEC_LENGTH (pack) == 0)
     return expand_empty_fold (t, complain);
   else
@@ -10705,7 +10713,11 @@ tsubst_binary_right_fold (tree t, tree args, tsubst_flags_t complain,
                          tree in_decl)
 {
   tree pack = tsubst_fold_expr_pack (t, args, complain, in_decl);
+  if (pack == error_mark_node)
+    return error_mark_node;
   tree init = tsubst_fold_expr_init (t, args, complain, in_decl);
+  if (init == error_mark_node)
+    return error_mark_node;
 
   int n = TREE_VEC_LENGTH (pack);
   tree vec = make_tree_vec (n + 1);

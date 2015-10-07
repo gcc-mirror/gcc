@@ -54,8 +54,8 @@ MAKE_FNS (eq, ==);
 MAKE_FNS (ne, !=);
 MAKE_FNS (lt, <);
 MAKE_FNS (gt, >);
-MAKE_FNS (le, <);
-MAKE_FNS (ge, >);
+MAKE_FNS (le, <=);
+MAKE_FNS (ge, >=);
 
 MAKE_FNS (land, &&);
 MAKE_FNS (lor, ||);

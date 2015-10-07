@@ -4339,6 +4339,50 @@ cp_parser_fold_operator (cp_token *token)
     }
 }
 
+/* Returns true if CODE indicates a binary expression, which is not allowed in
+   the LHS of a fold-expression.  More codes will need to be added to use this
+   function in other contexts.  */
+
+static bool
+is_binary_op (tree_code code)
+{
+  switch (code)
+    {
+    case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case TRUNC_DIV_EXPR:
+    case TRUNC_MOD_EXPR:
+    case BIT_XOR_EXPR:
+    case BIT_AND_EXPR:
+    case BIT_IOR_EXPR:
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+
+    case MODOP_EXPR:
+
+    case EQ_EXPR:
+    case NE_EXPR:
+    case LE_EXPR:
+    case GE_EXPR:
+    case LT_EXPR:
+    case GT_EXPR:
+
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_ORIF_EXPR:
+
+    case COMPOUND_EXPR:
+
+    case DOTSTAR_EXPR:
+    case MEMBER_REF:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* If the next token is a suitable fold operator, consume it and return as
    the function above.  */
 
@@ -4352,41 +4396,6 @@ cp_parser_fold_operator (cp_parser *parser)
   return code;
 }
 
-/* Returns true iff we're at the beginning of an N4191 fold-expression, after
-   the left parenthesis.  Rather than do tentative parsing, we scan the tokens
-   up to the matching right paren for an ellipsis next to a binary
-   operator.  */
-
-static bool
-cp_parser_fold_expr_p (cp_parser *parser)
-{
-  /* An ellipsis right after the left paren always indicates a
-     fold-expression.  */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
-    {
-      /* But if there isn't a fold operator after the ellipsis,
-         give a different error.  */
-      cp_token *token = cp_lexer_peek_nth_token (parser->lexer, 2);
-      return (cp_parser_fold_operator (token) != ERROR_MARK);
-    }
-
-  /* Otherwise, look for an ellipsis.  */
-  cp_lexer_save_tokens (parser->lexer);
-  int ret = cp_parser_skip_to_closing_parenthesis_1 (parser, false,
-						     CPP_ELLIPSIS, false);
-  bool found = (ret == -1);
-  if (found)
-    {
-      /* We found an ellipsis, is the previous token an operator?  */
-      cp_token *token = cp_lexer_peek_token (parser->lexer);
-      --token;
-      if (cp_parser_fold_operator (token) == ERROR_MARK)
-	found = false;
-    }
-  cp_lexer_rollback_tokens (parser->lexer);
-  return found;
-}
-
 /* Parse a fold-expression.
 
      fold-expression:
@@ -4397,13 +4406,9 @@ cp_parser_fold_expr_p (cp_parser *parser)
    Note that the '(' and ')' are matched in primary expression. */
 
 static tree
-cp_parser_fold_expression (cp_parser *parser)
+cp_parser_fold_expression (cp_parser *parser, tree expr1)
 {
   cp_id_kind pidk;
-
-  if (cxx_dialect < cxx1z && !in_system_header_at (input_location))
-    pedwarn (input_location, 0, "fold-expressions only available with "
-	     "-std=c++1z or -std=gnu++1z");
 
   // Left fold.
   if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -4423,10 +4428,6 @@ cp_parser_fold_expression (cp_parser *parser)
       return finish_left_unary_fold_expr (expr, op);
     }
 
-  tree expr1 = cp_parser_cast_expression (parser, false, false, false, &pidk);
-  if (expr1 == error_mark_node)
-    return error_mark_node;
-
   const cp_token* token = cp_lexer_peek_token (parser->lexer);
   int op = cp_parser_fold_operator (parser);
   if (op == ERROR_MARK)
@@ -4441,6 +4442,16 @@ cp_parser_fold_expression (cp_parser *parser)
       return error_mark_node;
     }
   cp_lexer_consume_token (parser->lexer);
+
+  /* The operands of a fold-expression are cast-expressions, so binary or
+     conditional expressions are not allowed.  We check this here to avoid
+     tentative parsing.  */
+  if (is_binary_op (TREE_CODE (expr1)))
+    error_at (location_of (expr1),
+	      "binary expression in operand of fold-expression");
+  else if (TREE_CODE (expr1) == COND_EXPR)
+    error_at (location_of (expr1),
+	      "conditional expression in operand of fold-expression");
 
   // Right fold.
   if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
@@ -4668,22 +4679,31 @@ cp_parser_primary_expression (cp_parser *parser,
 	  = parser->greater_than_is_operator_p;
 	parser->greater_than_is_operator_p = true;
 
-	// Handle a fold-expression.
-	if (cp_parser_fold_expr_p (parser))
-	  {
-	    tree fold = cp_parser_fold_expression (parser);
-	    cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
-	    return fold;
-	  }
+	if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+	  /* Left fold expression. */
+	  expr = NULL_TREE;
+	else
+	  /* Parse the parenthesized expression.  */
+	  expr = cp_parser_expression (parser, idk, cast_p, decltype_p);
 
-	/* Parse the parenthesized expression.  */
-	expr = cp_parser_expression (parser, idk, cast_p, decltype_p);
-	/* Let the front end know that this expression was
-	   enclosed in parentheses. This matters in case, for
-	   example, the expression is of the form `A::B', since
-	   `&A::B' might be a pointer-to-member, but `&(A::B)' is
-	   not.  */
-	expr = finish_parenthesized_expr (expr);
+	token = cp_lexer_peek_token (parser->lexer);
+	if (token->type == CPP_ELLIPSIS || cp_parser_fold_operator (token))
+	  {
+	    expr = cp_parser_fold_expression (parser, expr);
+	    if (expr != error_mark_node
+		&& cxx_dialect < cxx1z
+		&& !in_system_header_at (input_location))
+	      pedwarn (input_location, 0, "fold-expressions only available "
+		       "with -std=c++1z or -std=gnu++1z");
+	  }
+	else
+	  /* Let the front end know that this expression was
+	     enclosed in parentheses. This matters in case, for
+	     example, the expression is of the form `A::B', since
+	     `&A::B' might be a pointer-to-member, but `&(A::B)' is
+	     not.  */
+	  expr = finish_parenthesized_expr (expr);
+
 	/* DR 705: Wrapping an unqualified name in parentheses
 	   suppresses arg-dependent lookup.  We want to pass back
 	   CP_ID_KIND_QUALIFIED for suppressing vtable lookup
@@ -8468,6 +8488,10 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
         }
 
       new_prec = TOKEN_PRECEDENCE (token);
+      if (new_prec != PREC_NOT_OPERATOR
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_ELLIPSIS))
+	/* This is a fold-expression; handle it later.  */
+	new_prec = PREC_NOT_OPERATOR;
 
       /* Popping an entry off the stack means we completed a subexpression:
 	 - either we found a token which is not an operator (`>' where it is not
@@ -8509,6 +8533,9 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	 cases such as 3 + 4 + 5 or 3 * 4 + 5.  */
       token = cp_lexer_peek_token (parser->lexer);
       lookahead_prec = TOKEN_PRECEDENCE (token);
+      if (lookahead_prec != PREC_NOT_OPERATOR
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_ELLIPSIS))
+	lookahead_prec = PREC_NOT_OPERATOR;
       if (lookahead_prec > new_prec)
 	{
 	  /* ... and prepare to parse the RHS of the new, higher priority
@@ -8824,6 +8851,11 @@ cp_parser_assignment_operator_opt (cp_parser* parser)
       op = ERROR_MARK;
     }
 
+  /* An operator followed by ... is a fold-expression, handled elsewhere.  */
+  if (op != ERROR_MARK
+      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_ELLIPSIS))
+    op = ERROR_MARK;
+
   /* If it was an assignment operator, consume it.  */
   if (op != ERROR_MARK)
     cp_lexer_consume_token (parser->lexer);
@@ -8877,9 +8909,10 @@ cp_parser_expression (cp_parser* parser, cp_id_kind * pidk,
 	expression = build_x_compound_expr (loc, expression,
 					    assignment_expression,
 					    complain_flags (decltype_p));
-      /* If the next token is not a comma, then we are done with the
-	 expression.  */
-      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
+      /* If the next token is not a comma, or we're in a fold-expression, then
+	 we are done with the expression.  */
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA)
+	  || cp_lexer_nth_token_is (parser->lexer, 2, CPP_ELLIPSIS))
 	break;
       /* Consume the `,'.  */
       loc = cp_lexer_peek_token (parser->lexer)->location;
