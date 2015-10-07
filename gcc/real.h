@@ -409,15 +409,21 @@ extern REAL_VALUE_TYPE dconst2;
 extern REAL_VALUE_TYPE dconstm1;
 extern REAL_VALUE_TYPE dconsthalf;
 
-#define dconst_e()  (*dconst_e_ptr ())
-#define dconst_third()  (*dconst_third_ptr ())
-#define dconst_sqrt2()  (*dconst_sqrt2_ptr ())
+#define dconst_e() (*dconst_e_ptr ())
+#define dconst_third() (*dconst_third_ptr ())
+#define dconst_quarter() (*dconst_quarter_ptr ())
+#define dconst_sixth() (*dconst_sixth_ptr ())
+#define dconst_ninth() (*dconst_ninth_ptr ())
+#define dconst_sqrt2() (*dconst_sqrt2_ptr ())
 
 /* Function to return the real value special constant 'e'.  */
 extern const REAL_VALUE_TYPE * dconst_e_ptr (void);
 
-/* Returns the special REAL_VALUE_TYPE corresponding to 1/3.  */
-extern const REAL_VALUE_TYPE * dconst_third_ptr (void);
+/* Returns a cached REAL_VALUE_TYPE corresponding to 1/n, for various n.  */
+extern const REAL_VALUE_TYPE *dconst_third_ptr (void);
+extern const REAL_VALUE_TYPE *dconst_quarter_ptr (void);
+extern const REAL_VALUE_TYPE *dconst_sixth_ptr (void);
+extern const REAL_VALUE_TYPE *dconst_ninth_ptr (void);
 
 /* Returns the special REAL_VALUE_TYPE corresponding to sqrt(2).  */
 extern const REAL_VALUE_TYPE * dconst_sqrt2_ptr (void);

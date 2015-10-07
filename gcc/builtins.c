@@ -7742,20 +7742,10 @@ fold_builtin_sqrt (location_t loc, tree arg, tree type)
       if (powfn)
 	{
 	  tree arg0 = CALL_EXPR_ARG (arg, 0);
-	  tree tree_root;
-	  /* The inner root was either sqrt or cbrt.  */
-	  /* This was a conditional expression but it triggered a bug
-	     in Sun C 5.5.  */
-	  REAL_VALUE_TYPE dconstroot;
-	  if (BUILTIN_SQRT_P (fcode))
-	    dconstroot = dconsthalf;
-	  else
-	    dconstroot = dconst_third ();
-
-	  /* Adjust for the outer root.  */
-	  SET_REAL_EXP (&dconstroot, REAL_EXP (&dconstroot) - 1);
-	  tree_root = build_real_truncate (type, dconstroot);
-	  return build_call_expr_loc (loc, powfn, 2, arg0, tree_root);
+	  tree arg1 = (BUILTIN_SQRT_P (fcode)
+		       ? build_real (type, dconst_quarter ())
+		       : build_real_truncate (type, dconst_sixth ()));
+	  return build_call_expr_loc (loc, powfn, 2, arg0, arg1);
 	}
     }
 
@@ -7815,11 +7805,7 @@ fold_builtin_cbrt (location_t loc, tree arg, tree type)
 	  if (powfn)
 	    {
 	      tree arg0 = CALL_EXPR_ARG (arg, 0);
-	      tree tree_root;
-	      REAL_VALUE_TYPE dconstroot = dconst_third ();
-
-	      SET_REAL_EXP (&dconstroot, REAL_EXP (&dconstroot) - 1);
-	      tree_root = build_real_truncate (type, dconstroot);
+	      tree tree_root = build_real_truncate (type, dconst_sixth ());
 	      return build_call_expr_loc (loc, powfn, 2, arg0, tree_root);
 	    }
 	}
@@ -7834,12 +7820,7 @@ fold_builtin_cbrt (location_t loc, tree arg, tree type)
 
 	      if (powfn)
 		{
-		  tree tree_root;
-		  REAL_VALUE_TYPE dconstroot;
-
-		  real_arithmetic (&dconstroot, MULT_EXPR,
-                                   dconst_third_ptr (), dconst_third_ptr ());
-		  tree_root = build_real_truncate (type, dconstroot);
+		  tree tree_root = build_real_truncate (type, dconst_ninth ());
 		  return build_call_expr_loc (loc, powfn, 2, arg0, tree_root);
 		}
 	    }
