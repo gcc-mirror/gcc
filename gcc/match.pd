@@ -2309,3 +2309,44 @@ along with GCC; see the file COPYING3.  If not see
     (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
      (convert (bit_and (op (convert:utype @0) (convert:utype @1))
 	       (convert:utype @4))))))))
+
+(if (flag_unsafe_math_optimizations)
+ (for sqrts (SQRT)
+      cbrts (CBRT)
+      exps (EXP EXP2 EXP10 POW10)
+  /* sqrt(expN(x)) -> expN(x*0.5).  */
+  (simplify
+   (sqrts (exps @0))
+   (exps (mult @0 { build_real (type, dconsthalf); })))
+  /* cbrt(expN(x)) -> expN(x/3).  */
+  (simplify
+   (cbrts (exps @0))
+   (exps (mult @0 { build_real_truncate (type, dconst_third ()); }))))
+
+ (for sqrts (SQRT)
+      cbrts (CBRT)
+      pows (POW)
+  /* sqrt(sqrt(x)) -> pow(x,1/4).  */
+  (simplify
+   (sqrts (sqrts @0))
+   (pows @0 { build_real (type, dconst_quarter ()); }))
+  /* sqrt(cbrt(x)) -> pow(x,1/6).  */
+  (simplify
+   (sqrts (cbrts @0))
+   (pows @0 { build_real_truncate (type, dconst_sixth ()); }))
+  /* cbrt(sqrt(x)) -> pow(x,1/6).  */
+  (simplify
+   (cbrts (sqrts @0))
+   (pows @0 { build_real_truncate (type, dconst_sixth ()); }))
+  /* cbrt(cbrt(x)) -> pow(x,1/9), iff x is nonnegative.  */
+  (simplify
+   (cbrts (cbrts tree_expr_nonnegative_p@0))
+   (pows @0 { build_real_truncate (type, dconst_ninth ()); }))
+  /* sqrt(pow(x,y)) -> pow(|x|,y*0.5).  */
+  (simplify
+   (sqrts (pows @0 @1))
+   (pows (abs @0) (mult @1 { build_real (type, dconsthalf); })))
+  /* cbrt(pow(x,y)) -> pow(x,y/3), iff x is nonnegative.  */
+  (simplify
+   (cbrts (pows tree_expr_nonnegative_p@0 @1))
+   (pows @0 (mult @1 { build_real_truncate (type, dconst_third ()); })))))
