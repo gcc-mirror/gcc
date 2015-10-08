@@ -1,3 +1,8 @@
+2015-10-08  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-phiopt.c (factor_out_conversion): Add missing calls to
+	release_ssa_name.  Fix typo in comment.
+
 2015-10-08  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.h (struct machine_function): Add comment.
