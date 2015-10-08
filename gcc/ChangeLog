@@ -1,5 +1,8 @@
 2015-10-08  Jeff Law  <law@redhat.com>
 
+	* tree-stdarg.c (expand_ifn_va_arg_1): Add missing call to
+	unlink_stmt_vdef and release_ssa_name_fn.
+
 	* tree-ssa-dse.c (dse_optimize_stmt): Add missing call to
 	release_defs.
 

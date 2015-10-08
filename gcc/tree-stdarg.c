@@ -1080,6 +1080,8 @@ expand_ifn_va_arg_1 (function *fun)
 
 	/* Remove the IFN_VA_ARG gimple_call.  It's the last stmt in the
 	   bb.  */
+	unlink_stmt_vdef (stmt);
+	release_ssa_name_fn (fun, gimple_vdef (stmt));
 	gsi_remove (&i, true);
 	gcc_assert (gsi_end_p (i));
 
