@@ -521,8 +521,8 @@ sem_item::compare_symbol_references (
   n1 = n1->ultimate_alias_target (&avail1);
   n2 = n2->ultimate_alias_target (&avail2);
 
-  if (avail1 >= AVAIL_INTERPOSABLE && ignored_nodes.get (n1)
-      && avail2 >= AVAIL_INTERPOSABLE && ignored_nodes.get (n2))
+  if (avail1 > AVAIL_INTERPOSABLE && ignored_nodes.get (n1)
+      && avail2 > AVAIL_INTERPOSABLE && ignored_nodes.get (n2))
     return true;
 
   return return_false_with_msg ("different references");

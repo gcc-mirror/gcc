@@ -1,3 +1,8 @@
+2015-10-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_item::compare_symbol_references): Fix use
+	of availability.
+
 2015-10-08  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-loop-im.c (rewrite_bittest): Add missing call to
