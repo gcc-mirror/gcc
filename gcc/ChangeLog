@@ -1,3 +1,9 @@
+2015-10-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_compute_frame_layout): Round up the
+	SSE register save area to 16 bytes only if the incoming stack
+	boundary is no less than 16 bytes.
+
 2015-10-08  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-phiopt.c (factor_out_conversion): Add missing calls to
