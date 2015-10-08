@@ -5693,8 +5693,20 @@ fold_builtin_atomic_always_lock_free (tree arg0, tree arg1)
   mode = mode_for_size (size, MODE_INT, 0);
   mode_align = GET_MODE_ALIGNMENT (mode);
 
-  if (TREE_CODE (arg1) == INTEGER_CST && INTVAL (expand_normal (arg1)) == 0)
-    type_align = mode_align;
+  if (TREE_CODE (arg1) == INTEGER_CST)
+    {
+      unsigned HOST_WIDE_INT val = UINTVAL (expand_normal (arg1));
+
+      /* Either this argument is null, or it's a fake pointer encoding
+         the alignment of the object.  */
+      val = val & -val;
+      val *= BITS_PER_UNIT;
+
+      if (val == 0 || mode_align < val)
+        type_align = mode_align;
+      else
+        type_align = val;
+    }
   else
     {
       tree ttype = TREE_TYPE (arg1);

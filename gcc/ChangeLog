@@ -1,3 +1,12 @@
+2015-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2015-09-17  Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/65913
+	* builtins.c (fold_builtin_atomic_always_lock_free): Handle fake
+	pointers that encode the alignment of the object.
+
 2015-10-06  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

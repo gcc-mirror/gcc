@@ -1,3 +1,15 @@
+2015-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2015-09-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65913
+	* include/bits/atomic_base.h (__atomic_base<_TTp>::is_lock_free(),
+	__atomic_base<_PTp*>::is_lock_free()): Call the built-in with the
+	immediate pointer value, not a variable.
+	* include/std/atomic (atomic<T>::is_lock_free()): Likewise.
+	* testsuite/29_atomics/atomic/65913.cc: New.
+
 2015-10-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport Filesystem TS fixes from mainline.
