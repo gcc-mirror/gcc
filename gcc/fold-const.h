@@ -132,11 +132,13 @@ extern bool tree_unary_nonzero_warnv_p (enum tree_code, tree, tree, bool *);
 extern bool tree_binary_nonzero_warnv_p (enum tree_code, tree, tree, tree op1,
                                          bool *);
 extern bool tree_single_nonzero_warnv_p (tree, bool *);
-extern bool tree_unary_nonnegative_warnv_p (enum tree_code, tree, tree, bool *);
+extern bool tree_unary_nonnegative_warnv_p (enum tree_code, tree, tree,
+					    bool *, int);
 extern bool tree_binary_nonnegative_warnv_p (enum tree_code, tree, tree, tree,
-                                             bool *);
-extern bool tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p);
-extern bool tree_call_nonnegative_warnv_p (tree, tree, tree, tree, bool *);
+					     bool *, int);
+extern bool tree_single_nonnegative_warnv_p (tree, bool *, int);
+extern bool tree_call_nonnegative_warnv_p (tree, tree, tree, tree, bool *,
+					   int);
 
 extern bool fold_real_zero_addition_p (const_tree, const_tree, int);
 extern tree combine_comparisons (location_t, enum tree_code, enum tree_code,
@@ -160,7 +162,7 @@ extern tree size_diffop_loc (location_t, tree, tree);
 extern tree non_lvalue_loc (location_t, tree);
 
 extern bool tree_expr_nonnegative_p (tree);
-extern bool tree_expr_nonnegative_warnv_p (tree, bool *);
+extern bool tree_expr_nonnegative_warnv_p (tree, bool *, int = 0);
 extern tree make_range (tree, int *, tree *, tree *, bool *);
 extern tree make_range_step (location_t, enum tree_code, tree, tree, tree,
 			     tree *, tree *, int *, bool *);

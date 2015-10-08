@@ -48,7 +48,6 @@ extern tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree,
 extern tree gimple_get_virt_method_for_vtable (HOST_WIDE_INT, tree,
 					       unsigned HOST_WIDE_INT,
 					       bool *can_refer = NULL);
-extern bool gimple_val_nonnegative_real_p (tree);
 extern tree gimple_fold_indirect_ref (tree);
 extern bool arith_code_with_undefined_signed_overflow (tree_code);
 extern gimple_seq rewrite_to_defined_overflow (gimple *);
@@ -112,6 +111,8 @@ gimple_convert (gimple_seq *seq, tree type, tree op)
 {
   return gimple_convert (seq, UNKNOWN_LOCATION, type, op);
 }
+
+extern bool gimple_stmt_nonnegative_warnv_p (gimple *, bool *, int = 0);
 
 /* In gimple-match.c.  */
 extern tree gimple_simplify (enum tree_code, tree, tree,
