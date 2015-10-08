@@ -2505,7 +2505,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 			(TREE_TYPE (field), type)))
 		  {
 		    return fold_build3 (COMPONENT_REF, type, op00,
-				     field, NULL_TREE);
+					field, NULL_TREE);
 		    break;
 		  }
 	    }
