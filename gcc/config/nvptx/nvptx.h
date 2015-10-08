@@ -228,7 +228,7 @@ struct GTY(()) machine_function
   bool has_call_with_varargs;
   bool has_call_with_sc;
   HOST_WIDE_INT outgoing_stdarg_size;
-  int ret_reg_mode;
+  int ret_reg_mode; /* machine_mode not defined yet. */
   int punning_buffer_size;
 };
 #endif
