@@ -4490,6 +4490,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define TARGET_EXPR_DIRECT_INIT_P(NODE) \
   TREE_LANG_FLAG_2 (TARGET_EXPR_CHECK (NODE))
 
+/* True if NODE is a TARGET_EXPR that just expresses a copy of its INITIAL; if
+   the initializer has void type, it's doing something more complicated.  */
+#define SIMPLE_TARGET_EXPR_P(NODE)				\
+  (TREE_CODE (NODE) == TARGET_EXPR				\
+   && !VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (NODE))))
+
 /* True if EXPR expresses direct-initialization of a TYPE.  */
 #define DIRECT_INIT_EXPR_P(TYPE,EXPR)					\
   (TREE_CODE (EXPR) == TARGET_EXPR && TREE_LANG_FLAG_2 (EXPR)		\
