@@ -13678,7 +13678,7 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   tree sfpc = s390_builtin_decls[S390_BUILTIN_s390_sfpc];
   tree efpc = s390_builtin_decls[S390_BUILTIN_s390_efpc];
   tree call_efpc = build_call_expr (efpc, 0);
-  tree fenv_var = create_tmp_var (unsigned_type_node);
+  tree fenv_var = create_tmp_var_raw (unsigned_type_node);
 
 #define FPC_EXCEPTION_MASK	 HOST_WIDE_INT_UC (0xf8000000)
 #define FPC_FLAGS_MASK		 HOST_WIDE_INT_UC (0x00f80000)
@@ -13714,7 +13714,7 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   __builtin_s390_sfpc (fenv_var);
   __atomic_feraiseexcept ((old_fpc & FPC_FLAGS_MASK) >> FPC_FLAGS_SHIFT);  */
 
-  old_fpc = create_tmp_var (unsigned_type_node);
+  old_fpc = create_tmp_var_raw (unsigned_type_node);
   tree store_old_fpc = build2 (MODIFY_EXPR, void_type_node,
 			       old_fpc, call_efpc);
 
