@@ -1,3 +1,21 @@
+2015-10-08  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* tree-ssa-loop-unswitch.c: Include "gimple-iterator.h" and
+	"cfghooks.h", add prototypes for introduced new functions.
+	(tree_ssa_unswitch_loops): Use from innermost loop iterator, move all
+	checks on ability of loop unswitching to tree_unswitch_single_loop;
+	invoke tree_unswitch_single_loop or tree_unswitch_outer_loop depending
+	on innermost loop check.
+	(tree_unswitch_single_loop): Add all required checks on ability of
+	loop unswitching under zero recursive level guard.
+	(tree_unswitch_outer_loop): New function.
+	(find_loop_guard): Likewise.
+	(empty_bb_without_guard_p): Likewise.
+	(used_outside_loop_p): Likewise.
+	(get_vop_from_header): Likewise.
+	(hoist_guard): Likewise.
+	(check_exit_phi): Likewise.
+
 2015-10-08  Marek Polacek  <polacek@redhat.com>
 
 	* tree-ssa-reassoc.c (dump_ops_vector): Print newline after each
