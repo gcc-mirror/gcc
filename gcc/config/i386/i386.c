@@ -11383,9 +11383,14 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   if (frame->nsseregs)
     {
       /* The only ABI that has saved SSE registers (Win64) also has a
-         16-byte aligned default stack, and thus we don't need to be
-	 within the re-aligned local stack frame to save them.  */
-      offset = ROUND_UP (offset, 16);
+	 16-byte aligned default stack, and thus we don't need to be
+	 within the re-aligned local stack frame to save them.  In case
+	 incoming stack boundary is aligned to less than 16 bytes,
+	 unaligned move of SSE register will be emitted, so there is
+	 no point to round up the SSE register save area outside the
+	 re-aligned local stack frame to 16 bytes.  */
+      if (ix86_incoming_stack_boundary >= 128)
+	offset = ROUND_UP (offset, 16);
       offset += frame->nsseregs * 16;
     }
   frame->sse_reg_save_offset = offset;
