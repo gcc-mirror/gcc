@@ -362,7 +362,8 @@ SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 	case CMD_PIPELINE_CREATE:
 	  {
 	    /* Receive data from host.  */
-	    uint32_t *pipeline_num = (uint32_t *) malloc (sizeof (uint32_t));
+	    uint32_t *pipeline_num;
+	    MALLOC (uint32_t *, pipeline_num, sizeof (uint32_t));
 	    READ (pipe_host2tgt, pipeline_num, sizeof (*pipeline_num));
 
 	    /* Create a new thread for the pipeline.  */
