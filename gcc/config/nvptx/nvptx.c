@@ -531,13 +531,8 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   nvptx_write_function_decl (s, name, decl);
   fprintf (file, "%s", s.str().c_str());
 
-  bool return_in_mem = false;
-  if (TYPE_MODE (result_type) != VOIDmode)
-    {
-      machine_mode mode = TYPE_MODE (result_type);
-      if (!RETURN_IN_REG_P (mode))
-	return_in_mem = true;
-    }
+  bool return_in_mem = (TYPE_MODE (result_type) != VOIDmode
+			&& !RETURN_IN_REG_P (TYPE_MODE (result_type)));
 
   fprintf (file, "\n{\n");
 
@@ -547,9 +542,13 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 		       false, return_in_mem);
   if (return_in_mem)
     fprintf (file, "\t.reg.u%d %%ar1;\n", GET_MODE_BITSIZE (Pmode));
-  else if (TYPE_MODE (result_type) != VOIDmode)
+
+  /* C++11 ABI causes us to return a reference to the passed in
+     pointer for return_in_mem.  */
+  if (cfun->machine->ret_reg_mode != VOIDmode)
     {
-      machine_mode mode = arg_promotion (TYPE_MODE (result_type));
+      machine_mode mode = arg_promotion
+	((machine_mode)cfun->machine->ret_reg_mode);
       fprintf (file, "\t.reg%s %%retval;\n",
 	       nvptx_ptx_type_from_mode (mode, false));
     }
@@ -635,17 +634,13 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 const char *
 nvptx_output_return (void)
 {
-  tree fntype = TREE_TYPE (current_function_decl);
-  tree result_type = TREE_TYPE (fntype);
-  if (TYPE_MODE (result_type) != VOIDmode)
+  machine_mode mode = (machine_mode)cfun->machine->ret_reg_mode;
+
+  if (mode != VOIDmode)
     {
-      machine_mode mode = TYPE_MODE (result_type);
-      if (RETURN_IN_REG_P (mode))
-	{
-	  mode = arg_promotion (mode);
-	  fprintf (asm_out_file, "\tst.param%s\t[%%out_retval], %%retval;\n",
-		   nvptx_ptx_type_from_mode (mode, false));
-	}
+      mode = arg_promotion (mode);
+      fprintf (asm_out_file, "\tst.param%s\t[%%out_retval], %%retval;\n",
+	       nvptx_ptx_type_from_mode (mode, false));
     }
 
   return "ret;";
