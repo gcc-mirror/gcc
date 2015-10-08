@@ -1463,6 +1463,8 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
               dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
               dump_printf (MSG_NOTE, "\n");
             }
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    continue;
 
           /* Inner-loop loop-closed exit phi in outer-loop vectorization
              (i.e., a phi in the tail of the outer-loop).  */

@@ -1,3 +1,8 @@
+2015-10-08  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* tree-vect-loop.c (vect_analyze_loop_operations): Skip virtual phi
+	in the tail of outer-loop.
+
 2015-10-08  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_xcoff_debug_unwind_info): Always
