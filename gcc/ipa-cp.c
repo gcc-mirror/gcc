@@ -852,8 +852,8 @@ ipcp_alignment_lattice::meet_with_1 (unsigned new_align, unsigned new_misalign)
     }
   if (misalign != (new_misalign % align))
     {
-      int diff = abs (misalign - (new_misalign % align));
-      align = MIN (align, (unsigned) diff & -diff);
+      int diff = abs ((int) misalign - (int) (new_misalign % align));
+      align = (unsigned) diff & -diff;
       if (align)
 	misalign = misalign % align;
       else
