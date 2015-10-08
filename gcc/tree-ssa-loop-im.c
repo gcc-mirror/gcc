@@ -983,7 +983,9 @@ rewrite_bittest (gimple_stmt_iterator *bsi)
       rsi = *bsi;
       gsi_insert_before (bsi, stmt1, GSI_NEW_STMT);
       gsi_insert_before (&rsi, stmt2, GSI_SAME_STMT);
+      gimple *to_release = gsi_stmt (rsi);
       gsi_remove (&rsi, true);
+      release_defs (to_release);
 
       return stmt1;
     }
