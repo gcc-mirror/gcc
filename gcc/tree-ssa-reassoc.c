@@ -4930,6 +4930,7 @@ dump_ops_vector (FILE *file, vec<operand_entry *> ops)
     {
       fprintf (file, "Op %d -> rank: %d, tree: ", i, oe->rank);
       print_generic_expr (file, oe->op, 0);
+      fprintf (file, "\n");
     }
 }
 
