@@ -1,5 +1,9 @@
 2015-10-08  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
+	* gcc.dg/vect/vect-outer-simd-3.c: New test.
+
+2015-10-08  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
 	* gcc.dg/loop-unswitch-2.c: New test.
 	* gcc.dg/loop-unswitch-3.c: Likewise.
 	* gcc.dg/loop-unswitch-4.c: Likewise.
