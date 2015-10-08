@@ -1,3 +1,8 @@
+2015-10-08  Marek Polacek  <polacek@redhat.com>
+
+	* tree-ssa-reassoc.c (dump_ops_vector): Print newline after each
+	ops element.
+
 2015-10-08  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR c/65345
