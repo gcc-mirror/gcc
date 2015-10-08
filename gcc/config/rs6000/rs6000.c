@@ -30709,10 +30709,7 @@ rs6000_elf_file_end (void)
 static enum unwind_info_type
 rs6000_xcoff_debug_unwind_info (void)
 {
-  if (HAVE_XCOFF_DWARF_EXTRAS)
-    return UI_DWARF2;
-  else
-    return UI_NONE;
+  return UI_NONE;
 }
 
 static void
