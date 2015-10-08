@@ -1,3 +1,10 @@
+2015-10-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67557
+	* call.c (is_base_field_ref): New.
+	(unsafe_copy_elision_p): New.
+	(build_over_call): Use it.
+
 2015-10-07  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/67867
