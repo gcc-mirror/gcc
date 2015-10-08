@@ -1208,8 +1208,7 @@ massage_init_elt (tree type, tree init, tsubst_flags_t complain)
 {
   init = digest_init_r (type, init, true, LOOKUP_IMPLICIT, complain);
   /* Strip a simple TARGET_EXPR when we know this is an initializer.  */
-  if (TREE_CODE (init) == TARGET_EXPR
-      && !VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (init))))
+  if (SIMPLE_TARGET_EXPR_P (init))
     init = TARGET_EXPR_INITIAL (init);
   /* When we defer constant folding within a statement, we may want to
      defer this folding as well.  */

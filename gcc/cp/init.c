@@ -588,8 +588,7 @@ get_nsdmi (tree member, bool in_ctor)
 	}
       /* Strip redundant TARGET_EXPR so we don't need to remap it, and
 	 so the aggregate init code below will see a CONSTRUCTOR.  */
-      if (init && TREE_CODE (init) == TARGET_EXPR
-	  && !VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (init))))
+      if (init && SIMPLE_TARGET_EXPR_P (init))
 	init = TARGET_EXPR_INITIAL (init);
       init = break_out_target_exprs (init);
     }
