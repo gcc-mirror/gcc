@@ -173,8 +173,9 @@ void Engine::init_process(void)
             // use putenv instead of setenv as Windows has no setenv.
             // Note: putenv requires its argument can't be freed or modified.
             // So no free after call to putenv or elsewhere.
-            char * env_var = (char*) malloc(sizeof("COI_DMA_CHANNEL_COUNT=2"));
-            sprintf(env_var, "COI_DMA_CHANNEL_COUNT=2");
+            char * env_var = strdup("COI_DMA_CHANNEL_COUNT=2");
+	    if (env_var == NULL)
+	      LIBOFFLOAD_ERROR(c_malloc);
             putenv(env_var);  
         }
     }

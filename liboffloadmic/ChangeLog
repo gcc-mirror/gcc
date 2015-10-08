@@ -1,3 +1,14 @@
+2015-10-08  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* runtime/offload_engine.cpp (Engine::init_process): Use strdup instead
+	of sizeof+malloc+sprintf, check for return value.
+	* runtime/offload_env.cpp (MicEnvVar::get_env_var_kind): Check for
+	strdup return value.
+	* runtime/offload_host.cpp (__offload_init_library_once): Check for
+	strdup return value.  Fix size calculation of COI_HOST_THREAD_AFFINITY.
+	* runtime/emulator/coi_device.cpp (COIProcessWaitForShutdown): Check for
+	malloc return value.
+
 2015-09-29  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (OFFLOAD_ACTIVE_WAIT_ENV): New

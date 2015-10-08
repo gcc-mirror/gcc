@@ -212,10 +212,14 @@ MicEnvVarKind MicEnvVar::get_env_var_kind(
             *env_var_name_length = 3;
             *env_var_name = *env_var_def = c;
             *env_var_def = strdup(*env_var_def);
+	    if (*env_var_def == NULL)
+	      LIBOFFLOAD_ERROR(c_malloc);
             return  c_mic_var;
         }
         *env_var_def = c + strlen("ENV=");
         *env_var_def = strdup(*env_var_def);
+	if (*env_var_def == NULL)
+	  LIBOFFLOAD_ERROR(c_malloc);
         return c_mic_card_env;
     }
     if (isalpha(*c)) {
@@ -229,6 +233,8 @@ MicEnvVarKind MicEnvVar::get_env_var_kind(
         return c_no_mic;
     }
     *env_var_def = strdup(*env_var_def);
+    if (*env_var_def == NULL)
+      LIBOFFLOAD_ERROR(c_malloc);
     return card_is_set? c_mic_card_var : c_mic_var;
 }
 
