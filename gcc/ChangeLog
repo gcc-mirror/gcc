@@ -1,3 +1,32 @@
+2015-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* params.def (PARAM_MAX_SSA_NAME_QUERY_DEPTH): New param.
+	* doc/invoke.texi (--param max-ssa-name-query-depth): Document.
+	* fold-const.h (tree_unary_nonnegative_warnv_p)
+	(tree_single_nonnegative_warnv_p, tree_call_nonnegative_warnv_p)
+	(tree_expr_nonnegative_warnv_p): Add depth parameters.
+	* fold-const.c: Include gimple-fold.h and params.h.
+	(tree_ssa_name_nonnegative_warnv_p): New function.
+	(tree_unary_nonnegative_warnv_p, tree_binary_nonnegative_warnv_p)
+	(tree_single_nonnegative_warnv_p, tree_call_nonnegative_warnv_p)
+	(tree_invalid_nonnegative_warnv_p, tree_expr_nonnegative_warnv_p):
+	Add a depth parameter and increment it for recursive calls to
+	tree_expr_nonnegative_warnv_p.  Use tree_ssa_name_nonnegative_warnv_p
+	to handle SSA names.
+	* gimple-fold.h (gimple_val_nonnegative_real_p): Delete.
+	(gimple_stmt_nonnegative_warnv_p): Declare.
+	* tree-vrp.c (remove_range_assertions): Remove assert that condition
+	cannot be proven false.
+	(gimple_assign_nonnegative_warnv_p, gimple_call_nonnegative_warnv_p)
+	(gimple_stmt_nonnegative_warnv_p): Move to...
+	* gimple-fold.c: ...here.  Add depth parameters and pass them
+	down to the tree routines.  Accept statements that aren't
+	assignments or calls but just return false for them.
+	(gimple_val_nonnegative_real_p): Delete.
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): Use
+	tree_expr_nonnegative_p instead of gimple_val_nonnegative_real_p.
+	Check HONOR_NANs first.
+
 2015-10-08  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (meet_with_1): Make the argument of abs signed.  Remove

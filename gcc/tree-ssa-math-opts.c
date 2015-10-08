@@ -1526,7 +1526,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
 
   if (flag_unsafe_math_optimizations
       && cbrtfn
-      && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
+      && (!HONOR_NANS (mode) || tree_expr_nonnegative_p (arg0))
       && real_equal (&c, &dconst1_3))
     return build_and_insert_call (gsi, loc, cbrtfn, arg0);
   
@@ -1538,7 +1538,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   if (flag_unsafe_math_optimizations
       && sqrtfn
       && cbrtfn
-      && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
+      && (!HONOR_NANS (mode) || tree_expr_nonnegative_p (arg0))
       && speed_p
       && hw_sqrt_exists
       && real_equal (&c, &dconst1_6))
@@ -1594,7 +1594,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
 
   if (flag_unsafe_math_optimizations
       && cbrtfn
-      && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
+      && (!HONOR_NANS (mode) || tree_expr_nonnegative_p (arg0))
       && real_identical (&c2, &c)
       && !c2_is_int
       && optimize_function_for_speed_p (cfun)

@@ -1007,80 +1007,6 @@ usable_range_p (value_range *vr, bool *strict_overflow_p)
   return true;
 }
 
-
-/* Return true if the result of assignment STMT is know to be non-negative.
-   If the return value is based on the assumption that signed overflow is
-   undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
-   *STRICT_OVERFLOW_P.*/
-
-static bool
-gimple_assign_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p)
-{
-  enum tree_code code = gimple_assign_rhs_code (stmt);
-  switch (get_gimple_rhs_class (code))
-    {
-    case GIMPLE_UNARY_RHS:
-      return tree_unary_nonnegative_warnv_p (gimple_assign_rhs_code (stmt),
-					     gimple_expr_type (stmt),
-					     gimple_assign_rhs1 (stmt),
-					     strict_overflow_p);
-    case GIMPLE_BINARY_RHS:
-      return tree_binary_nonnegative_warnv_p (gimple_assign_rhs_code (stmt),
-					      gimple_expr_type (stmt),
-					      gimple_assign_rhs1 (stmt),
-					      gimple_assign_rhs2 (stmt),
-					      strict_overflow_p);
-    case GIMPLE_TERNARY_RHS:
-      return false;
-    case GIMPLE_SINGLE_RHS:
-      return tree_single_nonnegative_warnv_p (gimple_assign_rhs1 (stmt),
-					      strict_overflow_p);
-    case GIMPLE_INVALID_RHS:
-      gcc_unreachable ();
-    default:
-      gcc_unreachable ();
-    }
-}
-
-/* Return true if return value of call STMT is know to be non-negative.
-   If the return value is based on the assumption that signed overflow is
-   undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
-   *STRICT_OVERFLOW_P.*/
-
-static bool
-gimple_call_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p)
-{
-  tree arg0 = gimple_call_num_args (stmt) > 0 ?
-    gimple_call_arg (stmt, 0) : NULL_TREE;
-  tree arg1 = gimple_call_num_args (stmt) > 1 ?
-    gimple_call_arg (stmt, 1) : NULL_TREE;
-
-  return tree_call_nonnegative_warnv_p (gimple_expr_type (stmt),
-					gimple_call_fndecl (stmt),
-					arg0,
-					arg1,
-					strict_overflow_p);
-}
-
-/* Return true if STMT is know to compute a non-negative value.
-   If the return value is based on the assumption that signed overflow is
-   undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
-   *STRICT_OVERFLOW_P.*/
-
-static bool
-gimple_stmt_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p)
-{
-  switch (gimple_code (stmt))
-    {
-    case GIMPLE_ASSIGN:
-      return gimple_assign_nonnegative_warnv_p (stmt, strict_overflow_p);
-    case GIMPLE_CALL:
-      return gimple_call_nonnegative_warnv_p (stmt, strict_overflow_p);
-    default:
-      gcc_unreachable ();
-    }
-}
-
 /* Return true if the result of assignment STMT is know to be non-zero.
    If the return value is based on the assumption that signed overflow is
    undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
@@ -6858,11 +6784,8 @@ remove_range_assertions (void)
 	    tree lhs = gimple_assign_lhs (stmt);
 	    tree rhs = gimple_assign_rhs1 (stmt);
 	    tree var;
-	    tree cond = fold (ASSERT_EXPR_COND (rhs));
 	    use_operand_p use_p;
 	    imm_use_iterator iter;
-
-	    gcc_assert (cond != boolean_false_node);
 
 	    var = ASSERT_EXPR_VAR (rhs);
 	    gcc_assert (TREE_CODE (var) == SSA_NAME);

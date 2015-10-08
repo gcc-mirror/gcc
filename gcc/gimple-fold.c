@@ -5773,137 +5773,6 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo,
   return gimple_get_virt_method_for_vtable (token, v, offset, can_refer);
 }
 
-/* Return true iff VAL is a gimple expression that is known to be
-   non-negative.  Restricted to floating-point inputs.  */
-
-bool
-gimple_val_nonnegative_real_p (tree val)
-{
-  gimple *def_stmt;
-
-  gcc_assert (val && SCALAR_FLOAT_TYPE_P (TREE_TYPE (val)));
-
-  /* Use existing logic for non-gimple trees.  */
-  if (tree_expr_nonnegative_p (val))
-    return true;
-
-  if (TREE_CODE (val) != SSA_NAME)
-    return false;
-
-  /* Currently we look only at the immediately defining statement
-     to make this determination, since recursion on defining 
-     statements of operands can lead to quadratic behavior in the
-     worst case.  This is expected to catch almost all occurrences
-     in practice.  It would be possible to implement limited-depth
-     recursion if important cases are lost.  Alternatively, passes
-     that need this information (such as the pow/powi lowering code
-     in the cse_sincos pass) could be revised to provide it through
-     dataflow propagation.  */
-
-  def_stmt = SSA_NAME_DEF_STMT (val);
-
-  if (is_gimple_assign (def_stmt))
-    {
-      tree op0, op1;
-
-      /* See fold-const.c:tree_expr_nonnegative_p for additional
-	 cases that could be handled with recursion.  */
-
-      switch (gimple_assign_rhs_code (def_stmt))
-	{
-	case ABS_EXPR:
-	  /* Always true for floating-point operands.  */
-	  return true;
-
-	case MULT_EXPR:
-	  /* True if the two operands are identical (since we are
-	     restricted to floating-point inputs).  */
-	  op0 = gimple_assign_rhs1 (def_stmt);
-	  op1 = gimple_assign_rhs2 (def_stmt);
-
-	  if (op0 == op1
-	      || operand_equal_p (op0, op1, 0))
-	    return true;
-
-	default:
-	  return false;
-	}
-    }
-  else if (is_gimple_call (def_stmt))
-    {
-      tree fndecl = gimple_call_fndecl (def_stmt);
-      if (fndecl
-	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
-	{
-	  tree arg1;
-
-	  switch (DECL_FUNCTION_CODE (fndecl))
-	    {
-	    CASE_FLT_FN (BUILT_IN_ACOS):
-	    CASE_FLT_FN (BUILT_IN_ACOSH):
-	    CASE_FLT_FN (BUILT_IN_CABS):
-	    CASE_FLT_FN (BUILT_IN_COSH):
-	    CASE_FLT_FN (BUILT_IN_ERFC):
-	    CASE_FLT_FN (BUILT_IN_EXP):
-	    CASE_FLT_FN (BUILT_IN_EXP10):
-	    CASE_FLT_FN (BUILT_IN_EXP2):
-	    CASE_FLT_FN (BUILT_IN_FABS):
-	    CASE_FLT_FN (BUILT_IN_FDIM):
-	    CASE_FLT_FN (BUILT_IN_HYPOT):
-	    CASE_FLT_FN (BUILT_IN_POW10):
-	      return true;
-
-	    CASE_FLT_FN (BUILT_IN_SQRT):
-	      /* sqrt(-0.0) is -0.0, and sqrt is not defined over other
-		 nonnegative inputs.  */
-	      if (!HONOR_SIGNED_ZEROS (val))
-		return true;
-
-	      break;
-
-	    CASE_FLT_FN (BUILT_IN_POWI):
-	      /* True if the second argument is an even integer.  */
-	      arg1 = gimple_call_arg (def_stmt, 1);
-
-	      if (TREE_CODE (arg1) == INTEGER_CST
-		  && (TREE_INT_CST_LOW (arg1) & 1) == 0)
-		return true;
-
-	      break;
-	      
-	    CASE_FLT_FN (BUILT_IN_POW):
-	      /* True if the second argument is an even integer-valued
-		 real.  */
-	      arg1 = gimple_call_arg (def_stmt, 1);
-
-	      if (TREE_CODE (arg1) == REAL_CST)
-		{
-		  REAL_VALUE_TYPE c;
-		  HOST_WIDE_INT n;
-
-		  c = TREE_REAL_CST (arg1);
-		  n = real_to_integer (&c);
-
-		  if ((n & 1) == 0)
-		    {
-		      REAL_VALUE_TYPE cint;
-		      real_from_integer (&cint, VOIDmode, n, SIGNED);
-		      if (real_identical (&c, &cint))
-			return true;
-		    }
-		}
-
-	      break;
-
-	    default:
-	      return false;
-	    }
-	}
-    }
-
-  return false;
-}
-
 /* Given a pointer value OP0, return a simplified version of an
    indirection through OP0, or NULL_TREE if no simplification is
    possible.  Note that the resulting type may be different from
@@ -6279,4 +6148,81 @@ gimple_convert (gimple_seq *seq, location_t loc, tree type, tree op)
   if (useless_type_conversion_p (type, TREE_TYPE (op)))
     return op;
   return gimple_build (seq, loc, NOP_EXPR, type, op);
+}
+
+/* Return true if the result of assignment STMT is known to be non-negative.
+   If the return value is based on the assumption that signed overflow is
+   undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
+   *STRICT_OVERFLOW_P.  DEPTH is the current nesting depth of the query.  */
+
+static bool
+gimple_assign_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
+				   int depth)
+{
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  switch (get_gimple_rhs_class (code))
+    {
+    case GIMPLE_UNARY_RHS:
+      return tree_unary_nonnegative_warnv_p (gimple_assign_rhs_code (stmt),
+					     gimple_expr_type (stmt),
+					     gimple_assign_rhs1 (stmt),
+					     strict_overflow_p, depth);
+    case GIMPLE_BINARY_RHS:
+      return tree_binary_nonnegative_warnv_p (gimple_assign_rhs_code (stmt),
+					      gimple_expr_type (stmt),
+					      gimple_assign_rhs1 (stmt),
+					      gimple_assign_rhs2 (stmt),
+					      strict_overflow_p, depth);
+    case GIMPLE_TERNARY_RHS:
+      return false;
+    case GIMPLE_SINGLE_RHS:
+      return tree_single_nonnegative_warnv_p (gimple_assign_rhs1 (stmt),
+					      strict_overflow_p, depth);
+    case GIMPLE_INVALID_RHS:
+      break;
+    }
+  gcc_unreachable ();
+}
+
+/* Return true if return value of call STMT is known to be non-negative.
+   If the return value is based on the assumption that signed overflow is
+   undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
+   *STRICT_OVERFLOW_P.  DEPTH is the current nesting depth of the query.  */
+
+static bool
+gimple_call_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
+				 int depth)
+{
+  tree arg0 = gimple_call_num_args (stmt) > 0 ?
+    gimple_call_arg (stmt, 0) : NULL_TREE;
+  tree arg1 = gimple_call_num_args (stmt) > 1 ?
+    gimple_call_arg (stmt, 1) : NULL_TREE;
+
+  return tree_call_nonnegative_warnv_p (gimple_expr_type (stmt),
+					gimple_call_fndecl (stmt),
+					arg0,
+					arg1,
+					strict_overflow_p, depth);
+}
+
+/* Return true if STMT is known to compute a non-negative value.
+   If the return value is based on the assumption that signed overflow is
+   undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
+   *STRICT_OVERFLOW_P.  DEPTH is the current nesting depth of the query.  */
+
+bool
+gimple_stmt_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
+				 int depth)
+{
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_ASSIGN:
+      return gimple_assign_nonnegative_warnv_p (stmt, strict_overflow_p,
+						depth);
+    case GIMPLE_CALL:
+      return gimple_call_nonnegative_warnv_p (stmt, strict_overflow_p,
+					      depth);
+    default:
+      return false;
+    }
 }

@@ -1152,6 +1152,12 @@ DEFPARAM (PARAM_PARLOOPS_CHUNK_SIZE,
 	  "parloops-chunk-size",
 	  "Chunk size of omp schedule for loops parallelized by parloops",
 	  0, 0, 0)
+
+DEFPARAM (PARAM_MAX_SSA_NAME_QUERY_DEPTH,
+	  "max-ssa-name-query-depth",
+	  "Maximum recursion depth allowed when querying a property of an"
+	  " SSA name",
+	  2, 1, 0)
 /*
 
 Local variables:
