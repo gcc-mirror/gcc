@@ -1,5 +1,12 @@
 2015-10-08  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_sqrt, fold_builtin_cbrt): Delete.
+	(fold_builtin_1): Update accordingly.  Handle constant arguments here.
+	* match.pd: Add rules previously handled by fold_builtin_sqrt
+	and fold_builtin_cbrt.
+
+2015-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* params.def (PARAM_MAX_SSA_NAME_QUERY_DEPTH): New param.
 	* doc/invoke.texi (--param max-ssa-name-query-depth): Document.
 	* fold-const.h (tree_unary_nonnegative_warnv_p)
