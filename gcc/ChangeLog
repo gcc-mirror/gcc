@@ -1,3 +1,22 @@
+2015-10-09  Steve Ellcey  <sellcey@imgtec.com>
+
+	* config.gcc (mips*-*-*): Add frame-header-opt.o to extra_objs.
+	* frame-header-opt.c: New file.
+	* config/mips/mips-proto.h (mips_register_frame_header_opt):
+	Add prototype.
+	* config/mips/mips.c (mips_compute_frame_info): Check
+	optimize_call_stack flag.
+	(mips_option_override): Register new frame_header_opt pass.
+ 	(mips_frame_info, mips_int_mask, mips_shadow_set,
+	machine_function): Move these types to...
+	* config/mips/mips.h: here.
+	(machine_function): Add does_not_use_frame_header and
+	optimize_call_stack fields.
+	* config/mips/t-mips (frame-header-opt.o): Add new make rule.
+	* doc/invoke.texi (-mframe-header-opt, -mno-frame-header-opt):
+	Document new flags.
+	* config/mips/mips.opt (mframe-header-opt): Add new option.
+
 2015-10-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c

@@ -371,4 +371,6 @@ typedef rtx (*mulsidi3_gen_fn) (rtx, rtx, rtx);
 extern mulsidi3_gen_fn mips_mulsidi3_gen_fn (enum rtx_code);
 #endif
 
+extern void mips_register_frame_header_opt (void);
+
 #endif /* ! GCC_MIPS_PROTOS_H */
