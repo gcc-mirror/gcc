@@ -6262,6 +6262,15 @@ proc check_vect_support_and_set_flags { } {
 # Return 1 if the target does *not* require strict alignment.
 
 proc check_effective_target_non_strict_align {} {
+
+    # On ARM, the default is to use STRICT_ALIGNMENT, but there
+    # are interfaces defined for misaligned access and thus
+    # depending on the architecture levels unaligned access is
+    # available.
+    if [istarget "arm*-*-*"] {
+	return [check_effective_target_arm_unaligned]
+    }
+
     return [check_no_compiler_messages non_strict_align assembly {
 	char *y;
 	typedef char __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) c;

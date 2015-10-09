@@ -1,3 +1,10 @@
+2015-10-09  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/67366
+	* lib/target-supports.exp (check_effective_target_non_strict_align):
+	Adjust for arm*-*-*.
+	* gcc.target/arm/pr67366.c: New test.
+
 2015-10-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67891
