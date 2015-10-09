@@ -1,4 +1,4 @@
-// <experimental/erase_if.h> -*- C++ -*-
+// <experimental/bits/erase_if.h> -*- C++ -*-
 
 // Copyright (C) 2015 Free Software Foundation, Inc.
 //
@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file experimental/erase_if.h
+/** @file experimental/bits/erase_if.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly.
  */
