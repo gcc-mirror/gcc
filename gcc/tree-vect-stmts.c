@@ -8075,7 +8075,7 @@ free_stmt_vec_info (gimple *stmt)
 		{
 		  gimple *seq_stmt = gsi_stmt (si);
 		  gimple_set_bb (seq_stmt, NULL);
-		  lhs = gimple_get_lhs (patt_stmt);
+		  lhs = gimple_get_lhs (seq_stmt);
 		  if (TREE_CODE (lhs) == SSA_NAME)
 		    release_ssa_name (lhs);
 		  free_stmt_vec_info (seq_stmt);
