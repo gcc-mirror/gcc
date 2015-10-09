@@ -1025,7 +1025,7 @@ ada_generated_files = ada/sinfo.h ada/einfo.h ada/nmake.adb ada/nmake.ads \
 
 # When building from scratch we don't have dependency files, the only thing
 # we need to ensure is that the generated files are created first.
-$(GNAT1_ADA_OBJS) $(GNATBIND_OBJS): | $(ada_generated_files)
+$(GNAT1_OBJS) $(GNATBIND_OBJS): | $(ada_generated_files)
 
 # Manually include the auto-generated dependencies for the Ada host objects.
 ADA_DEPFILES = $(foreach obj,$(GNAT1_ADA_OBJS) $(GNATBIND_OBJS),\
