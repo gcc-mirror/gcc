@@ -1,3 +1,8 @@
+2015-10-09  Jeff Law  <law@redhat.com>
+
+	* tree-ssanames.c (flush_ssaname_freelist): Use splice and truncate
+	rather than moving each name to the freelist individually.
+
 2015-10-09  Steve Ellcey  <sellcey@imgtec.com>
 
 	* config.gcc (mips*-*-*): Add frame-header-opt.o to extra_objs.
