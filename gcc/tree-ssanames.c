@@ -127,11 +127,8 @@ ssanames_print_statistics (void)
 void
 flush_ssaname_freelist (void)
 {
-  while (!vec_safe_is_empty (FREE_SSANAMES_QUEUE (cfun)))
-    {
-      tree t = FREE_SSANAMES_QUEUE (cfun)->pop ();
-      vec_safe_push (FREE_SSANAMES (cfun), t);
-    }
+  vec_safe_splice (FREE_SSANAMES (cfun), FREE_SSANAMES_QUEUE (cfun));
+  vec_safe_truncate (FREE_SSANAMES_QUEUE (cfun), 0);
 }
 
 /* Return an SSA_NAME node for variable VAR defined in statement STMT
