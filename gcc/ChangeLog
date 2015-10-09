@@ -1,3 +1,11 @@
+2015-10-09  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* match.pd: ((X inner_op C0) outer_op C1) New pattern.
+	((X & C2) << C1): Expand to...
+	(X {&,^,|} C2 << C1): ...This.
+	((X & C2) >> C1): Expand to...
+	(X {&,^,|} C2 >> C1): ...This.
+
 2015-10-09  Alexander Fomin  <alexander.fomin@intel.com>
 
 	PR target/67895

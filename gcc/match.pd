@@ -710,6 +710,51 @@ along with GCC; see the file COPYING3.  If not see
       && tree_nop_conversion_p (type, TREE_TYPE (@1)))
   (convert (bit_and (bit_not @1) @0))))
 
+
+
+/* ((X inner_op C0) outer_op C1)
+   With X being a tree where value_range has reasoned certain bits to always be
+   zero throughout its computed value range,
+   inner_op = {|,^}, outer_op = {|,^} and inner_op != outer_op
+   where zero_mask has 1's for all bits that are sure to be 0 in
+   and 0's otherwise.
+   if (inner_op == '^') C0 &= ~C1;
+   if ((C0 & ~zero_mask) == 0) then emit (X outer_op (C0 outer_op C1)
+   if ((C1 & ~zero_mask) == 0) then emit (X inner_op (C0 outer_op C1)
+*/
+(for inner_op (bit_ior bit_xor)
+     outer_op (bit_xor bit_ior)
+(simplify
+ (outer_op
+  (inner_op:s @2 INTEGER_CST@0) INTEGER_CST@1)
+ (with
+  {
+    bool fail = false;
+    wide_int zero_mask_not;
+    wide_int C0;
+    wide_int cst_emit;
+
+    if (TREE_CODE (@2) == SSA_NAME)
+      zero_mask_not = get_nonzero_bits (@2);
+    else
+      fail = true;
+
+    if (inner_op == BIT_XOR_EXPR)
+      {
+	C0 = wi::bit_and_not (@0, @1);
+	cst_emit = wi::bit_or (C0, @1);
+      }
+    else
+      {
+	C0 = @0;
+	cst_emit = wi::bit_xor (@0, @1);
+      }
+  }
+  (if (!fail && wi::bit_and (C0, zero_mask_not) == 0)
+   (outer_op @2 { wide_int_to_tree (type, cst_emit); })
+   (if (!fail && wi::bit_and (@1, zero_mask_not) == 0)
+    (inner_op @2 { wide_int_to_tree (type, cst_emit); }))))))
+
 /* Associate (p +p off1) +p off2 as (p +p (off1 + off2)).  */
 (simplify
   (pointer_plus (pointer_plus:s @0 @1) @3)
@@ -1103,14 +1148,15 @@ along with GCC; see the file COPYING3.  If not see
 	     (bit_and (convert (shift:shift_type (convert @3) @1)) { newmaskt; })
 	     (bit_and @4 { newmaskt; })))))))))))))
 
-/* Fold (X & C2) << C1 into (X << C1) & (C2 << C1)
-   (X & C2) >> C1 into (X >> C1) & (C2 >> C1).  */
+/* Fold (X {&,^,|} C2) << C1 into (X << C1) {&,^,|} (C2 << C1)
+   (X {&,^,|} C2) >> C1 into (X >> C1) & (C2 >> C1).  */
 (for shift (lshift rshift)
- (simplify
-  (shift (convert?:s (bit_and:s @0 INTEGER_CST@2)) INTEGER_CST@1)
-  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
-   (with { tree mask = int_const_binop (shift, fold_convert (type, @2), @1); }
-    (bit_and (shift (convert @0) @1) { mask; })))))
+ (for bit_op (bit_and bit_xor bit_ior)
+  (simplify
+   (shift (convert?:s (bit_op:s @0 INTEGER_CST@2)) INTEGER_CST@1)
+   (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+    (with { tree mask = int_const_binop (shift, fold_convert (type, @2), @1); }
+     (bit_op (shift (convert @0) @1) { mask; }))))))
 
 
 /* Simplifications of conversions.  */
