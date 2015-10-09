@@ -1,5 +1,9 @@
 2015-10-09  Alexandre Oliva <aoliva@redhat.com>
 
+	PR middle-end/67766
+	* function.c (expand_function_end): Move return value
+	promotion past the handling of PARALLELs and CONCATs.
+
 	PR rtl-optimization/67828
 	* tree-ssa-loop-unswitch.c: Include tree-ssa.h.
 	(tree_may_unswitch_on): Don't unswitch on expressions
