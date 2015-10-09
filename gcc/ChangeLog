@@ -1,3 +1,9 @@
+2015-10-09  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        PR target/67366
+        * config/arm/arm.md (movmisalign<mode>): New.
+        * config/arm/iterators.md (HSI): New.
+
 2015-10-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67891

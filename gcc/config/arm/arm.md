@@ -11504,6 +11504,41 @@
   }"
 )
 
+;; movmisalign patterns for HImode and SImode.
+(define_expand "movmisalign<mode>"
+  [(match_operand:HSI 0 "general_operand")
+   (match_operand:HSI 1 "general_operand")]
+  "unaligned_access"
+{
+  /* This pattern is not permitted to fail during expansion: if both arguments
+     are non-registers (e.g. memory := constant), force operand 1 into a
+     register.  */
+  rtx (* gen_unaligned_load)(rtx, rtx);
+  rtx tmp_dest = operands[0];
+  if (!s_register_operand (operands[0], <MODE>mode)
+      && !s_register_operand (operands[1], <MODE>mode))
+    operands[1] = force_reg (<MODE>mode, operands[1]);
+
+  if (<MODE>mode == HImode)
+   {
+    gen_unaligned_load = gen_unaligned_loadhiu;
+    tmp_dest = gen_reg_rtx (SImode);
+   }
+  else
+    gen_unaligned_load = gen_unaligned_loadsi;
+
+  if (MEM_P (operands[1]))
+   {
+    emit_insn (gen_unaligned_load (tmp_dest, operands[1]));
+    if (<MODE>mode == HImode)
+      emit_move_insn (operands[0], gen_lowpart (HImode, tmp_dest));
+   }
+  else
+    emit_insn (gen_unaligned_store<mode> (operands[0], operands[1]));
+
+  DONE;
+})
+
 ;; Vector bits common to IWMMXT and Neon
 (include "vec-common.md")
 ;; Load the Intel Wireless Multimedia Extension patterns

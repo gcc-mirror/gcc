@@ -33,6 +33,9 @@
 ;; A list of integer modes that are up to one word long
 (define_mode_iterator QHSI [QI HI SI])
 
+;; A list of integer modes that are half and one word long
+(define_mode_iterator HSI [HI SI])
+
 ;; A list of integer modes that are less than a word
 (define_mode_iterator NARROW [QI HI])
 
