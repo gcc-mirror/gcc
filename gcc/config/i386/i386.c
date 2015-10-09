@@ -25564,7 +25564,8 @@ expand_set_or_movmem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx src
 				    saveddest, *count, 1, OPTAB_DIRECT);
       /* We copied at most size + prolog_size.  */
       if (*min_size > (unsigned HOST_WIDE_INT)(size + prolog_size))
-	*min_size = (*min_size - size) & ~(unsigned HOST_WIDE_INT)(size - 1);
+	*min_size
+	  = ROUND_DOWN (*min_size - size, (unsigned HOST_WIDE_INT)size);
       else
 	*min_size = 0;
 
@@ -25582,9 +25583,10 @@ expand_set_or_movmem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx src
 	*count = expand_simple_binop (GET_MODE (*count), PLUS, *count,
 				      constm1_rtx, *count, 1, OPTAB_DIRECT);
       else
-	*count = GEN_INT ((UINTVAL (*count) - 1) & ~(unsigned HOST_WIDE_INT)(size - 1));
+	*count = GEN_INT (ROUND_DOWN (UINTVAL (*count) - 1,
+				      (unsigned HOST_WIDE_INT)size));
       if (*min_size)
-	*min_size = (*min_size - 1) & ~(unsigned HOST_WIDE_INT)(size - 1);
+	*min_size = ROUND_DOWN (*min_size - 1, (unsigned HOST_WIDE_INT)size);
     }
 }
 

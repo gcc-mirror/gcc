@@ -1,3 +1,9 @@
+2015-10-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c
+	(expand_set_or_movmem_prologue_epilogue_by_misaligned_moves): Use
+	ROUND_DOWN where applicable.
+
 2015-10-09  Jeff Law  <law@redhat.com>
 
 	* tree-vect-stmts.c (free_stmt_vec_info): Free the LHS of the
@@ -224,7 +230,7 @@
 
 	* tree-ssa-dom.c (optimize_stmt): Don't set LOOPS_NEED_FIXUP here.
 	* tree-ssa-threadupdate.c (remove_ctrl_stmt_and_useless_edges): Do it
-	here instead.  Tighten test to avoid setting LOOPS_NEED_FIXUP 
+	here instead.  Tighten test to avoid setting LOOPS_NEED_FIXUP
 	unnecessarily.
 
 2015-10-07  Aditya Kumar  <aditya.k7@samsung.com>
