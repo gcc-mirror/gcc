@@ -1,3 +1,8 @@
+2015-10-09  Jeff Law  <law@redhat.com>
+
+	* tree-vect-stmts.c (free_stmt_vec_info): Free the LHS of the
+	correct statement.
+
 2015-10-09  Renlin Li  <renlin.li@arm.com>
 
 	* config/arm/neon.md (neon_vuzp<mode>_insn): Add & modifier for
