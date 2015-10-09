@@ -4074,11 +4074,11 @@ if (BYTES_BIG_ENDIAN)
 
 ;; Note: Different operand numbering to handle tied registers correctly.
 (define_insn "*neon_vtrn<mode>_insn"
-  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
+  [(set (match_operand:VDQW 0 "s_register_operand" "=&w")
         (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
                       (match_operand:VDQW 3 "s_register_operand" "2")]
                      UNSPEC_VTRN1))
-   (set (match_operand:VDQW 2 "s_register_operand" "=w")
+   (set (match_operand:VDQW 2 "s_register_operand" "=&w")
          (unspec:VDQW [(match_dup 1) (match_dup 3)]
                      UNSPEC_VTRN2))]
   "TARGET_NEON"
@@ -4100,11 +4100,11 @@ if (BYTES_BIG_ENDIAN)
 
 ;; Note: Different operand numbering to handle tied registers correctly.
 (define_insn "*neon_vzip<mode>_insn"
-  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
+  [(set (match_operand:VDQW 0 "s_register_operand" "=&w")
         (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
                       (match_operand:VDQW 3 "s_register_operand" "2")]
                      UNSPEC_VZIP1))
-   (set (match_operand:VDQW 2 "s_register_operand" "=w")
+   (set (match_operand:VDQW 2 "s_register_operand" "=&w")
         (unspec:VDQW [(match_dup 1) (match_dup 3)]
                      UNSPEC_VZIP2))]
   "TARGET_NEON"
@@ -4126,11 +4126,11 @@ if (BYTES_BIG_ENDIAN)
 
 ;; Note: Different operand numbering to handle tied registers correctly.
 (define_insn "*neon_vuzp<mode>_insn"
-  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
+  [(set (match_operand:VDQW 0 "s_register_operand" "=&w")
         (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
                       (match_operand:VDQW 3 "s_register_operand" "2")]
                      UNSPEC_VUZP1))
-   (set (match_operand:VDQW 2 "s_register_operand" "=w")
+   (set (match_operand:VDQW 2 "s_register_operand" "=&w")
         (unspec:VDQW [(match_dup 1) (match_dup 3)]
                      UNSPEC_VUZP2))]
   "TARGET_NEON"
