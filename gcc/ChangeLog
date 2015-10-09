@@ -1,3 +1,19 @@
+2015-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67891
+	* gimple-match.h (gimple_simplified_result_is_gimple_val):
+	New helper.
+	(gimple_resimplify1): Declare.
+	(gimple_resimplify2): Likewise.
+	(gimple_resimplify3): Likewise.
+	* gimple-match-head.c (gimple_resimplify1): Export.
+	(gimple_resimplify2): Likewise.
+	(gimple_resimplify3): Likewise.
+	(maybe_push_res_to_seq): Use gimple_simplified_result_is_gimple_val.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Likewise.
+	* tree-ssa-sccvn.c (visit_reference_op_load): Use gimple_resimplify1
+	to avoid creating stmts without VN info.
+
 2015-10-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c (sem_item::compare_symbol_references): Fix use

@@ -1,3 +1,8 @@
+2015-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67891
+	* gcc.dg/tree-ssa/pr67891.c: New testcase.
+
 2015-10-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/builtins-47.c: Test the optimized dump instead.
