@@ -1,3 +1,8 @@
+2015-10-09  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Hale Wang  <hale.wang@arm.com>
+
+	* gcc.dg/tree-ssa/forwprop-33.c: New.
+
 2015-10-09  Alexander Fomin  <alexander.fomin@intel.com>
 
 	PR target/67895
