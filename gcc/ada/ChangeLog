@@ -1,3 +1,8 @@
+2015-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in: Make sure that GNAT1_OBJS and not just
+	GNAT1_ADA_OBJS are compiled only after generated files are created.
+
 2015-06-26  Release Manager
 
 	* GCC 4.9.3 released.
