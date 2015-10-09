@@ -1,3 +1,11 @@
+2015-10-09  Steve Ellcey  <sellcey@imgtec.com>
+
+	* gcc.target/mips/mips.exp (mips_option_groups): Add -mframe-header-opt
+	and -mno-frame-header-opt options.
+	* gcc.target/mips/frame-header-1.c: New file.
+	* gcc.target/mips/frame-header-2.c: New file.
+	* gcc.target/mips/frame-header-3.c: New file.
+
 2015-10-09  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Hale Wang  <hale.wang@arm.com>
 
