@@ -1,3 +1,10 @@
+2015-10-09  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (print_operand): Fix formatting.
+	(dt_node::append_simplify): Warn for multiple simplifiers
+	that match the same pattern.
+	* match.pd (log (exp @0)): Remove duplicates.
+
 2015-10-09  Richard Biener  <rguenth@suse.de>
 
 	PR target/67366
