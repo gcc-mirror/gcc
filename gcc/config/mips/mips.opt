@@ -412,6 +412,10 @@ modd-spreg
 Target Report Mask(ODD_SPREG)
 Enable use of odd-numbered single-precision registers
 
+mframe-header-opt
+Target Report Var(flag_frame_header_optimization) Optimization
+Optimize frame header
+
 noasmopt
 Driver
 
