@@ -1,3 +1,10 @@
+2015-10-09  Renlin Li  <renlin.li@arm.com>
+
+	* config/arm/neon.md (neon_vuzp<mode>_insn): Add & modifier for
+	operands[0] and operands[2].
+	(neon_vtrn<mode>_insn): Likewise.
+	(neon_vzip<mode>_insn): Likewise.
+
 2015-10-09  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* match.pd: ((X inner_op C0) outer_op C1) New pattern.
