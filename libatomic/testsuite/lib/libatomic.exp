@@ -37,6 +37,7 @@ load_gcc_lib scandump.exp
 load_gcc_lib scanrtl.exp
 load_gcc_lib scantree.exp
 load_gcc_lib scanipa.exp
+load_gcc_lib multiline.exp
 load_gcc_lib prune.exp
 load_gcc_lib target-libpath.exp
 load_gcc_lib wrapper.exp

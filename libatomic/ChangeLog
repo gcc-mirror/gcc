@@ -1,3 +1,8 @@
+2015-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libatomic.exp: Load multiline.exp before
+	prune.exp, using load_gcc_lib.
+
 2015-07-14  John Marino  <gnugcc@marino.st>
 
 	* configure.tgt: Add *-*-dragonfly to supported targets.

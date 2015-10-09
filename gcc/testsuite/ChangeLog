@@ -1,3 +1,12 @@
+2015-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/multiline.exp: New file.
+	* lib/prune.exp: Load multiline.exp.
+	(prune_gcc_output): Call into multiline.exp to handle any
+	multiline output directives.
+	* lib/libgo.exp: Load multiline.exp before prune.exp, using
+	load_gcc_lib.
+
 2015-10-09  Martin Jambor  <mjambor@suse.cz>
 
 	tree-optimization/67794
