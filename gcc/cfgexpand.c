@@ -1243,9 +1243,6 @@ set_parm_rtl (tree parm, rtx x)
       record_alignment_for_reg_var (align);
     }
 
-  if (!is_gimple_reg (parm))
-    return set_rtl (parm, x);
-
   tree ssa = ssa_default_def (cfun, parm);
   if (!ssa)
     return set_rtl (parm, x);
