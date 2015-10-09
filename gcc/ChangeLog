@@ -1,3 +1,12 @@
+2015-10-09  Martin Jambor  <mjambor@suse.cz>
+
+	tree-optimization/67794
+	* tree-sra.c (replace_removed_params_ssa_names): Do not distinguish
+	between types of state,ents but accept original definitions as a
+	parameter.
+	(ipa_sra_modify_function_body): Use FOR_EACH_SSA_DEF_OPERAND to
+	iterate over definitions.
+
 2015-10-09  James Norris  <jnorris@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_offload_options): New.

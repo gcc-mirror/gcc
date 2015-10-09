@@ -1,3 +1,9 @@
+2015-10-09  Martin Jambor  <mjambor@suse.cz>
+
+	tree-optimization/67794
+        * gcc.dg/ipa/ipa-sra-10.c: Nw test.
+        * gcc.dg/torture/pr67794.c: Likewise.
+
 2015-10-09  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/67828
