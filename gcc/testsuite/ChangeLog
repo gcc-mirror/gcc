@@ -1,3 +1,8 @@
+2015-10-09  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/67828
+	* gcc.dg/torture/pr67828.c: New.
+
 2015-10-09  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/67366

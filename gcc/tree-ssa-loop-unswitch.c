@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "gimplify.h"
 #include "tree-cfg.h"
+#include "tree-ssa.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
@@ -139,6 +140,10 @@ tree_may_unswitch_on (basic_block bb, struct loop *loop)
   /* Condition must be invariant.  */
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
+      /* Unswitching on undefined values would introduce undefined
+	 behavior that the original program might never exercise.  */
+      if (ssa_undefined_value_p (use, true))
+	return NULL_TREE;
       def = SSA_NAME_DEF_STMT (use);
       def_bb = gimple_bb (def);
       if (def_bb

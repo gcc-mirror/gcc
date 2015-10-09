@@ -1,3 +1,10 @@
+2015-10-09  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/67828
+	* tree-ssa-loop-unswitch.c: Include tree-ssa.h.
+	(tree_may_unswitch_on): Don't unswitch on expressions
+	involving undefined values.
+
 2015-10-09  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (print_operand): Fix formatting.
