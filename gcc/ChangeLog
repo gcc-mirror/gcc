@@ -1,3 +1,8 @@
+2015-10-09  James Norris  <jnorris@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_offload_options): New.
+	(TARGET_OFFLOAD_OPTIONS): New.
+
 2015-10-09  Alexandre Oliva <aoliva@redhat.com>
 
 	PR middle-end/67891
