@@ -1,3 +1,17 @@
+2015-10-09  Alexander Fomin  <alexander.fomin@intel.com>
+
+	PR target/67895
+	* gcc.target/i386/avx512dq-vrangepd-1.c: Adjust assembly regexp.
+	* gcc.target/i386/avx512dq-vrangeps-1.c: Likewise.
+	* gcc.target/i386/avx512dq-vrangesd-1.c: Likewise.
+	* gcc.target/i386/avx512dq-vrangess-1.c: Likewise.
+	* gcc.target/i386/avx512f-vcvtsi2sd64-1.c: Likewise.
+	* gcc.target/i386/avx512f-vcvtsi2ss-1.c: Likewise.
+	* gcc.target/i386/avx512f-vcvtsi2ss64-1.c: Likewise.
+	* gcc.target/i386/avx512f-vcvtusi2sd64-1.c: Likewise.
+	* gcc.target/i386/avx512f-vcvtusi2ss-1.c: Likewise.
+	* gcc.target/i386/avx512f-vcvtusi2ss64-1.c: Likewise.
+
 2015-10-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* lib/multiline.exp: New file.
