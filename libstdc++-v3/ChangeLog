@@ -1,3 +1,26 @@
+2015-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/erase_if.h: Move to ...
+	* include/experimental/bits/erase_if.h: New.
+	* include/experimental/fs_dir.h: Move to ...
+	* include/experimental/bits/fs_dir.h: New.
+	* include/experimental/fs_fwd.h: Move to ...
+	* include/experimental/bits/fs_fwd.h: New.
+	* include/experimental/fs_ops.h: Move to ...
+	* include/experimental/bits/fs_ops.h: New.
+	* include/experimental/fs_path.h: Move to ...
+	* include/experimental/bits/fs_path.h: New.
+	* include/experimental/string_view.tcc: Move to ...
+	* include/experimental/bits/string_view.tcc: New.
+	* include/Makefile.am: Add include/experimental/bits sub-directory.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/filesystem: Adjust includes.
+	* include/experimental/map: Likewise.
+	* include/experimental/set: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/experimental/unordered_map: Likewise.
+	* include/experimental/unordered_set: Likewise.
+
 2015-10-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR 67844.
