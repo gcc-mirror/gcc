@@ -4926,10 +4926,7 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
   if (gimple_simplify (stmt, &rcode, ops, NULL, gvalueize, valueize))
     {
       tree res = NULL_TREE;
-      if (rcode.is_tree_code ()
-	  && (TREE_CODE_LENGTH ((tree_code) rcode) == 0
-	      || ((tree_code) rcode) == ADDR_EXPR)
-	  && is_gimple_val (ops[0]))
+      if (gimple_simplified_result_is_gimple_val (rcode, ops))
 	res = ops[0];
       else if (mprts_hook)
 	res = mprts_hook (rcode, gimple_expr_type (stmt), ops);

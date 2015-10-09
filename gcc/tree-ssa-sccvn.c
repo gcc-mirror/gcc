@@ -3043,38 +3043,41 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
 	 of VIEW_CONVERT_EXPR <TREE_TYPE (result)> (result).
 	 So first simplify and lookup this expression to see if it
 	 is already available.  */
-      gimple_seq stmts = NULL;
       mprts_hook = vn_lookup_simplify_result;
-      tree val = gimple_simplify (VIEW_CONVERT_EXPR, TREE_TYPE (op),
-				  result, &stmts, vn_valueize);
+      code_helper rcode = VIEW_CONVERT_EXPR;
+      tree ops[3] = { result };
+      bool res = gimple_resimplify1 (NULL, &rcode, TREE_TYPE (op), ops,
+				     vn_valueize);
       mprts_hook = NULL;
-      if (!val)
-	{
-	  val = vn_nary_op_lookup_pieces (1, VIEW_CONVERT_EXPR,
-					  TREE_TYPE (op), &result, NULL);
-	  if (!val)
-	    {
-	      val = make_ssa_name (TREE_TYPE (op));
-	      gimple *new_stmt = gimple_build_assign (val, VIEW_CONVERT_EXPR,
-						      build1 (VIEW_CONVERT_EXPR,
-							      TREE_TYPE (op),
-							      result));
-	      gimple_seq_add_stmt_without_update (&stmts, new_stmt);
-	    }
-	}
-      if (gimple_seq_empty_p (stmts))
+      gimple *new_stmt = NULL;
+      if (res
+	  && gimple_simplified_result_is_gimple_val (rcode, ops))
 	/* The expression is already available.  */
-	result = val;
+	result = ops[0];
       else
 	{
-	  gcc_assert (gimple_seq_singleton_p (stmts));
+	  tree val = vn_lookup_simplify_result (rcode, TREE_TYPE (op), ops);
+	  if (!val)
+	    {
+	      gimple_seq stmts = NULL;
+	      result = maybe_push_res_to_seq (rcode, TREE_TYPE (op), ops,
+					      &stmts);
+	      gcc_assert (result && gimple_seq_singleton_p (stmts));
+	      new_stmt = gimple_seq_first_stmt (stmts);
+	    }
+	  else
+	    /* The expression is already available.  */
+	    result = val;
+	}
+      if (new_stmt)
+	{
 	  /* The expression is not yet available, value-number lhs to
 	     the new SSA_NAME we created.  */
-	  result = val;
 	  /* Initialize value-number information properly.  */
 	  VN_INFO_GET (result)->valnum = result;
 	  VN_INFO (result)->value_id = get_next_value_id ();
-	  VN_INFO (result)->expr = stmts;
+	  gimple_seq_add_stmt_without_update (&VN_INFO (result)->expr,
+					      new_stmt);
 	  VN_INFO (result)->needs_insertion = true;
 	  /* As all "inserted" statements are singleton SCCs, insert
 	     to the valid table.  This is strictly needed to
@@ -3086,18 +3089,17 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
 	  if (current_info == optimistic_info)
 	    {
 	      current_info = valid_info;
-	      vn_nary_op_insert_stmt (gimple_seq_first_stmt (stmts), result);
+	      vn_nary_op_insert_stmt (new_stmt, result);
 	      current_info = optimistic_info;
 	    }
 	  else
-	    vn_nary_op_insert_stmt (gimple_seq_first_stmt (stmts), result);
+	    vn_nary_op_insert_stmt (new_stmt, result);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Inserting name ");
 	      print_generic_expr (dump_file, result, 0);
 	      fprintf (dump_file, " for expression ");
-	      print_gimple_expr (dump_file, gimple_seq_first_stmt (stmts),
-				 0, TDF_SLIM);
+	      print_gimple_expr (dump_file, new_stmt, 0, TDF_SLIM);
 	      fprintf (dump_file, "\n");
 	    }
 	}
