@@ -28,6 +28,7 @@ load_lib dg.exp
 # loaded until ${tool}_target_compile is defined since it uses that
 # to determine default LTO options.
 
+load_gcc_lib multiline.exp
 load_gcc_lib prune.exp
 load_gcc_lib target-libpath.exp
 load_gcc_lib wrapper.exp

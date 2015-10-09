@@ -31,6 +31,7 @@ load_gcc_lib target-utils.exp
 # For ${tool}_exit.
 load_gcc_lib gcc-defs.exp
 # For prune_gcc_output.
+load_gcc_lib multiline.exp
 load_gcc_lib prune.exp
 
 set dg-do-what-default run

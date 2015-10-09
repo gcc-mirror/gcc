@@ -1,3 +1,8 @@
+2015-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/boehm-gc.exp: Load multiline.exp before
+	prune.exp, using load_gcc_lib.
+
 2015-08-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* os_dep.c [GC_SOLARIS_THREADS] (GC_dirty_init): Use
