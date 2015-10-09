@@ -1,3 +1,10 @@
+2015-10-09  Richard Biener  <rguenth@suse.de>
+
+	PR target/67366
+	* gimple-fold.c (optabs-query.h): Include
+	(gimple_fold_builtin_memory_op): Allow unaligned stores
+	when movmisalign_optabs are available.
+
 2015-10-09  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         PR target/67366

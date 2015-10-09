@@ -63,6 +63,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "gimple-match.h"
 #include "gomp-constants.h"
+#include "optabs-query.h"
+
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -709,7 +711,9 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 		  /* If the destination pointer is not aligned we must be able
 		     to emit an unaligned store.  */
 		  && (dest_align >= GET_MODE_ALIGNMENT (TYPE_MODE (type))
-		      || !SLOW_UNALIGNED_ACCESS (TYPE_MODE (type), dest_align)))
+		      || !SLOW_UNALIGNED_ACCESS (TYPE_MODE (type), dest_align)
+		      || (optab_handler (movmisalign_optab, TYPE_MODE (type))
+			  != CODE_FOR_nothing)))
 		{
 		  tree srctype = type;
 		  tree desttype = type;
@@ -721,7 +725,10 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 		    srcmem = tem;
 		  else if (src_align < GET_MODE_ALIGNMENT (TYPE_MODE (type))
 			   && SLOW_UNALIGNED_ACCESS (TYPE_MODE (type),
-						     src_align))
+						     src_align)
+			   && (optab_handler (movmisalign_optab,
+					      TYPE_MODE (type))
+			       == CODE_FOR_nothing))
 		    srcmem = NULL_TREE;
 		  if (srcmem)
 		    {
