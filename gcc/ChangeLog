@@ -5,6 +5,10 @@
 
 2015-10-08  Jeff Law  <law@redhat.com>
 
+	* value-prof.c (gimple_ic): Add missing calls to unlink_stmt_vdef
+	and release_ssa_name in two places.
+	(gimple_stringop_fixed_value): Similarly.
+
 	* tree-ssa-loop-im.c (rewrite_bittest): Add missing call to
 	release_defs.
 

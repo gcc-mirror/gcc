@@ -1384,6 +1384,11 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   cond_stmt = gimple_build_cond (EQ_EXPR, tmp1, tmp0, NULL_TREE, NULL_TREE);
   gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
 
+  if (TREE_CODE (gimple_vdef (icall_stmt)) == SSA_NAME)
+    {
+      unlink_stmt_vdef (icall_stmt);
+      release_ssa_name (gimple_vdef (icall_stmt));
+    }
   gimple_set_vdef (icall_stmt, NULL_TREE);
   gimple_set_vuse (icall_stmt, NULL_TREE);
   update_stmt (icall_stmt);
@@ -1472,6 +1477,11 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
 	    {
 	      gimple *copy;
 
+	      if (TREE_CODE (gimple_vdef (iretbnd_stmt)) == SSA_NAME)
+		{
+	          unlink_stmt_vdef (iretbnd_stmt);
+	          release_ssa_name (gimple_vdef (iretbnd_stmt));
+		}
 	      gimple_set_vdef (iretbnd_stmt, NULL_TREE);
 	      gimple_set_vuse (iretbnd_stmt, NULL_TREE);
 	      update_stmt (iretbnd_stmt);
@@ -1698,6 +1708,11 @@ gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, int prob,
   cond_stmt = gimple_build_cond (EQ_EXPR, tmp1, tmp0, NULL_TREE, NULL_TREE);
   gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
 
+  if (TREE_CODE (gimple_vdef (vcall_stmt)) == SSA_NAME)
+    {
+      unlink_stmt_vdef (vcall_stmt);
+      release_ssa_name (gimple_vdef (vcall_stmt));
+    }
   gimple_set_vdef (vcall_stmt, NULL);
   gimple_set_vuse (vcall_stmt, NULL);
   update_stmt (vcall_stmt);
