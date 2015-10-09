@@ -710,13 +710,9 @@ print_operand (operand *o, FILE *f = stderr, bool flattened = false)
 {
   if (capture *c = dyn_cast<capture *> (o))
     {
-      fprintf (f, "@%u", c->where);
       if (c->what && flattened == false)
-	{
-	  putc (':', f);
-	  print_operand (c->what, f, flattened);
-	  putc (' ', f);
-	}
+	print_operand (c->what, f, flattened);
+      fprintf (f, "@%u", c->where);
     }
 
   else if (predicate *p = dyn_cast<predicate *> (o))
@@ -727,18 +723,22 @@ print_operand (operand *o, FILE *f = stderr, bool flattened = false)
 
   else if (expr *e = dyn_cast<expr *> (o))
     {
-      fprintf (f, "(%s", e->operation->id);
-
-      if (flattened == false)
+      if (e->ops.length () == 0)
+	fprintf (f, "%s", e->operation->id);
+      else
 	{
-	  putc (' ', f);
-	  for (unsigned i = 0; i < e->ops.length (); ++i)
+	  fprintf (f, "(%s", e->operation->id);
+
+	  if (flattened == false)
 	    {
-	      print_operand (e->ops[i], f, flattened);
-	      putc (' ', f);
+	      for (unsigned i = 0; i < e->ops.length (); ++i)
+		{
+		  putc (' ', f);
+		  print_operand (e->ops[i], f, flattened);
+		}
 	    }
+	  putc (')', f);
 	}
-      putc (')', f);
     }
 
   else
@@ -1563,6 +1563,14 @@ dt_node::append_simplify (simplify *s, unsigned pattern_no,
 			  dt_operand **indexes)
 {
   dt_simplify *n = new dt_simplify (s, pattern_no, indexes);
+  for (unsigned i = 0; i < kids.length (); ++i)
+    if (dt_simplify *s2 = dyn_cast <dt_simplify *> (kids[i]))
+      {
+	warning_at (s->match->location, "duplicate pattern");
+	warning_at (s2->s->match->location, "previous pattern defined here");
+	print_operand (s->match, stderr);
+	fprintf (stderr, "\n");
+      }
   return append_node (n);
 }
 

@@ -2169,18 +2169,16 @@ along with GCC; see the file COPYING3.  If not see
    (mult @0 (POW @1 (negate @2))))
 
  /* Special case, optimize logN(expN(x)) = x.  */
- (for logs (LOG LOG2 LOG10)
-      exps (EXP EXP2 EXP10)
+ (for logs (LOG LOG2 LOG10 LOG10)
+      exps (EXP EXP2 EXP10 POW10)
   (simplify
    (logs (exps @0))
     @0))
  /* Optimize logN(func()) for various exponential functions.  We
     want to determine the value "x" and the power "exponent" in
     order to transform logN(x**exponent) into exponent*logN(x).  */
- (for logs (LOG LOG LOG LOG
-            LOG2 LOG2 LOG2 LOG2
-	    LOG10 LOG10 LOG10 LOG10)
-      exps (EXP EXP2 EXP10 POW10)
+ (for logs (LOG  LOG   LOG   LOG2 LOG2  LOG2  LOG10 LOG10)
+      exps (EXP2 EXP10 POW10 EXP  EXP10 POW10 EXP   EXP2)
   (simplify
    (logs (exps @0))
    (with {
