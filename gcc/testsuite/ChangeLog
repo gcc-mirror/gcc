@@ -1,3 +1,14 @@
+2015-10-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gfortran.dg/lto/bind_c-2_0.f90: New testcase.
+	* gfortran.dg/lto/bind_c-2_1.c: New testcase.
+	* gfortran.dg/lto/bind_c-3_0.f90: New testcase.
+	* gfortran.dg/lto/bind_c-3_1.c: New testcase.
+	* gfortran.dg/lto/bind_c-4_0.f90: New testcase.
+	* gfortran.dg/lto/bind_c-4_1.c: New testcase.
+	* gfortran.dg/lto/bind_c-5_0.f90: New testcase.
+	* gfortran.dg/lto/bind_c-5_1.c: New testcase.
+
 2015-10-09  Steve Ellcey  <sellcey@imgtec.com>
 
 	* gcc.target/mips/mips.exp (mips_option_groups): Add -mframe-header-opt

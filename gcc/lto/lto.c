@@ -288,6 +288,7 @@ static hashval_t
 hash_canonical_type (tree type)
 {
   inchash::hash hstate;
+  enum tree_code code;
 
   /* We compute alias sets only for types that needs them.
      Be sure we do not recurse to something else as we can not hash incomplete
@@ -299,7 +300,8 @@ hash_canonical_type (tree type)
      smaller sets; when searching for existing matching types to merge,
      only existing types having the same features as the new type will be
      checked.  */
-  hstate.add_int (tree_code_for_canonical_type_merging (TREE_CODE (type)));
+  code = tree_code_for_canonical_type_merging (TREE_CODE (type));
+  hstate.add_int (code);
   hstate.add_int (TYPE_MODE (type));
 
   /* Incorporate common features of numerical types.  */
@@ -309,8 +311,9 @@ hash_canonical_type (tree type)
       || TREE_CODE (type) == OFFSET_TYPE
       || POINTER_TYPE_P (type))
     {
-      hstate.add_int (TYPE_UNSIGNED (type));
       hstate.add_int (TYPE_PRECISION (type));
+      if (!type_with_interoperable_signedness (type))
+        hstate.add_int (TYPE_UNSIGNED (type));
     }
 
   if (VECTOR_TYPE_P (type))
