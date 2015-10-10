@@ -4347,6 +4347,60 @@ add_local_variables (struct function *callee, struct function *caller,
       }
 }
 
+/* Add to BINDINGS a debug stmt resetting SRCVAR if inlining might
+   have brought in or introduced any debug stmts for SRCVAR.  */
+
+static inline void
+reset_debug_binding (copy_body_data *id, tree srcvar, gimple_seq *bindings)
+{
+  tree *remappedvarp = id->decl_map->get (srcvar);
+
+  if (!remappedvarp)
+    return;
+
+  if (TREE_CODE (*remappedvarp) != VAR_DECL)
+    return;
+
+  if (*remappedvarp == id->retvar || *remappedvarp == id->retbnd)
+    return;
+
+  tree tvar = target_for_debug_bind (*remappedvarp);
+  if (!tvar)
+    return;
+
+  gdebug *stmt = gimple_build_debug_bind (tvar, NULL_TREE,
+					  id->call_stmt);
+  gimple_seq_add_stmt (bindings, stmt);
+}
+
+/* For each inlined variable for which we may have debug bind stmts,
+   add before GSI a final debug stmt resetting it, marking the end of
+   its life, so that var-tracking knows it doesn't have to compute
+   further locations for it.  */
+
+static inline void
+reset_debug_bindings (copy_body_data *id, gimple_stmt_iterator gsi)
+{
+  tree var;
+  unsigned ix;
+  gimple_seq bindings = NULL;
+
+  if (!gimple_in_ssa_p (id->src_cfun))
+    return;
+
+  if (!opt_for_fn (id->dst_fn, flag_var_tracking_assignments))
+    return;
+
+  for (var = DECL_ARGUMENTS (id->src_fn);
+       var; var = DECL_CHAIN (var))
+    reset_debug_binding (id, var, &bindings);
+
+  FOR_EACH_LOCAL_DECL (id->src_cfun, ix, var)
+    reset_debug_binding (id, var, &bindings);
+
+  gsi_insert_seq_before_without_update (&gsi, bindings, GSI_SAME_STMT);
+}
+
 /* If STMT is a GIMPLE_CALL, replace it with its inline expansion.  */
 
 static bool
@@ -4651,6 +4705,8 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   copy_body (id, cg_edge->callee->count,
   	     GCOV_COMPUTE_SCALE (cg_edge->frequency, CGRAPH_FREQ_BASE),
 	     bb, return_block, NULL);
+
+  reset_debug_bindings (id, stmt_gsi);
 
   /* Reset the escaped solution.  */
   if (cfun->gimple_df)

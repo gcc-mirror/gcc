@@ -1,3 +1,10 @@
+2015-10-10  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/58315
+	* tree-inline.c (reset_debug_binding): New.
+	(reset_debug_bindings): Likewise.
+	(expand_call_inline): Call it.
+
 2015-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
