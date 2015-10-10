@@ -332,7 +332,7 @@ graphite_transform_loops (void)
 	build_poly_scop (scop);
 
 	if (dump_file && dump_flags)
-	  print_scop (dump_file, scop, 3);
+	  print_scop (dump_file, scop);
 
 	if (POLY_SCOP_P (scop)
 	    && apply_poly_transforms (scop)

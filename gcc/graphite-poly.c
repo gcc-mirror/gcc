@@ -69,44 +69,40 @@ debug_gmp_value (mpz_t val)
   gmp_fprintf (stderr, "%Zd", val);
 }
 
-/* Prints to FILE the iteration domain of PBB, at some VERBOSITY
-   level.  */
+/* Prints to FILE the iteration domain of PBB.  */
 
 void
-print_iteration_domain (FILE *file, poly_bb_p pbb, int verbosity)
+print_iteration_domain (FILE *file, poly_bb_p pbb)
 {
-  print_pbb_domain (file, pbb, verbosity);
+  print_pbb_domain (file, pbb);
 }
 
-/* Prints to FILE the iteration domains of every PBB of SCOP, at some
-   VERBOSITY level.  */
+/* Prints to FILE the iteration domains of every PBB of SCOP.  */
 
 void
-print_iteration_domains (FILE *file, scop_p scop, int verbosity)
+print_iteration_domains (FILE *file, scop_p scop)
 {
   int i;
   poly_bb_p pbb;
 
   FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    print_iteration_domain (file, pbb, verbosity);
+    print_iteration_domain (file, pbb);
 }
 
-/* Prints to STDERR the iteration domain of PBB, at some VERBOSITY
-   level.  */
+/* Prints to STDERR the iteration domain of PBB.  */
 
 DEBUG_FUNCTION void
-debug_iteration_domain (poly_bb_p pbb, int verbosity)
+debug_iteration_domain (poly_bb_p pbb)
 {
-  print_iteration_domain (stderr, pbb, verbosity);
+  print_iteration_domain (stderr, pbb);
 }
 
-/* Prints to STDERR the iteration domains of every PBB of SCOP, at
-   some VERBOSITY level.  */
+/* Prints to STDERR the iteration domains of every PBB of SCOP.  */
 
 DEBUG_FUNCTION void
-debug_iteration_domains (scop_p scop, int verbosity)
+debug_iteration_domains (scop_p scop)
 {
-  print_iteration_domains (stderr, scop, verbosity);
+  print_iteration_domains (stderr, scop);
 }
 
 /* Apply graphite transformations to all the basic blocks of SCOP.  */
@@ -205,55 +201,44 @@ free_poly_bb (poly_bb_p pbb)
   XDELETE (pbb);
 }
 
-/* Prints to FILE the polyhedral data reference PDR, at some VERBOSITY
-   level.  */
+/* Prints to FILE the polyhedral data reference PDR.  */
 
 void
-print_pdr (FILE *file, poly_dr_p pdr, int verbosity)
+print_pdr (FILE *file, poly_dr_p pdr)
 {
-  if (verbosity > 1)
+  fprintf (file, "pdr_%d (", PDR_ID (pdr));
+
+  switch (PDR_TYPE (pdr))
     {
-      fprintf (file, "# pdr_%d (", PDR_ID (pdr));
+    case PDR_READ:
+      fprintf (file, "read \n");
+      break;
 
-      switch (PDR_TYPE (pdr))
-	{
-	case PDR_READ:
-	  fprintf (file, "read \n");
-	  break;
+    case PDR_WRITE:
+      fprintf (file, "write \n");
+      break;
 
-	case PDR_WRITE:
-	  fprintf (file, "write \n");
-	  break;
+    case PDR_MAY_WRITE:
+      fprintf (file, "may_write \n");
+      break;
 
-	case PDR_MAY_WRITE:
-	  fprintf (file, "may_write \n");
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-
-      dump_data_reference (file, (data_reference_p) PDR_CDR (pdr));
+    default:
+      gcc_unreachable ();
     }
 
-  if (verbosity > 0)
-    {
-      fprintf (file, "# data accesses (\n");
-      print_isl_map (file, pdr->accesses);
-      print_isl_set (file, pdr->subscript_sizes);
-      fprintf (file, "#)\n");
-    }
-  if (verbosity > 1)
-    fprintf (file, "#)\n");
+  fprintf (file, "data accesses: ");
+  print_isl_map (file, pdr->accesses);
+  fprintf (file, "subscript sizes: ");
+  print_isl_set (file, pdr->subscript_sizes);
+  fprintf (file, ")\n");
 }
 
-/* Prints to STDERR the polyhedral data reference PDR, at some
-   VERBOSITY level.  */
+/* Prints to STDERR the polyhedral data reference PDR.  */
 
 DEBUG_FUNCTION void
-debug_pdr (poly_dr_p pdr, int verbosity)
+debug_pdr (poly_dr_p pdr)
 {
-  print_pdr (stderr, pdr, verbosity);
+  print_pdr (stderr, pdr);
 }
 
 /* Store the GRAPHITE representation of BB.  */
@@ -359,10 +344,10 @@ free_scop (scop_p scop)
   XDELETE (scop);
 }
 
-/* Print to FILE the domain of PBB, at some VERBOSITY level.  */
+/* Print to FILE the domain of PBB.  */
 
 void
-print_pbb_domain (FILE *file, poly_bb_p pbb, int verbosity ATTRIBUTE_UNUSED)
+print_pbb_domain (FILE *file, poly_bb_p pbb)
 {
   print_isl_set (file, pbb->domain);
 }
@@ -383,15 +368,12 @@ dump_gbb_cases (FILE *file, gimple_poly_bb_p gbb)
   if (cases.is_empty ())
     return;
 
-  fprintf (file, "# cases bb_%d (\n", GBB_BB (gbb)->index);
+  fprintf (file, "cases bb_%d (\n", GBB_BB (gbb)->index);
 
   FOR_EACH_VEC_ELT (cases, i, stmt)
-    {
-      fprintf (file, "# ");
-      print_gimple_stmt (file, stmt, 0, 0);
-    }
+    print_gimple_stmt (file, stmt, 0, 0);
 
-  fprintf (file, "#)\n");
+  fprintf (file, ")\n");
 }
 
 /* Dump conditions of a graphite basic block GBB on FILE.  */
@@ -410,42 +392,28 @@ dump_gbb_conditions (FILE *file, gimple_poly_bb_p gbb)
   if (conditions.is_empty ())
     return;
 
-  fprintf (file, "# conditions bb_%d (\n", GBB_BB (gbb)->index);
+  fprintf (file, "conditions bb_%d (\n", GBB_BB (gbb)->index);
 
   FOR_EACH_VEC_ELT (conditions, i, stmt)
-    {
-      fprintf (file, "# ");
-      print_gimple_stmt (file, stmt, 0, 0);
-    }
+    print_gimple_stmt (file, stmt, 0, 0);
 
-  fprintf (file, "#)\n");
+  fprintf (file, ")\n");
 }
 
-/* Print to FILE all the data references of PBB, at some VERBOSITY
-   level.  */
+/* Print to FILE all the data references of PBB.  */
 
 void
-print_pdrs (FILE *file, poly_bb_p pbb, int verbosity)
+print_pdrs (FILE *file, poly_bb_p pbb)
 {
   int i;
   poly_dr_p pdr;
   int nb_reads = 0;
   int nb_writes = 0;
 
-  if (PBB_DRS (pbb).length () == 0)
-    {
-      if (verbosity > 0)
-	fprintf (file, "# Access informations are not provided\n");\
-      fprintf (file, "0\n");
-      return;
-    }
+  if (PBB_DRS (pbb).is_empty ())
+    return;
 
-  if (verbosity > 1)
-    fprintf (file, "# Data references (\n");
-
-  if (verbosity > 0)
-    fprintf (file, "# Access informations are provided\n");
-  fprintf (file, "1\n");
+  fprintf (file, "Data references (\n");
 
   FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
     if (PDR_TYPE (pdr) == PDR_READ)
@@ -453,226 +421,146 @@ print_pdrs (FILE *file, poly_bb_p pbb, int verbosity)
     else
       nb_writes++;
 
-  if (verbosity > 1)
-    fprintf (file, "# Read data references (\n");
-
-  if (verbosity > 0)
-    fprintf (file, "# Read access informations\n");
-  fprintf (file, "%d\n", nb_reads);
+  fprintf (file, "Read data references (\n");
 
   FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
     if (PDR_TYPE (pdr) == PDR_READ)
-      print_pdr (file, pdr, verbosity);
+      print_pdr (file, pdr);
 
-  if (verbosity > 1)
-    fprintf (file, "#)\n");
-
-  if (verbosity > 1)
-    fprintf (file, "# Write data references (\n");
-
-  if (verbosity > 0)
-    fprintf (file, "# Write access informations\n");
-  fprintf (file, "%d\n", nb_writes);
-
+  fprintf (file, ")\n");
+  fprintf (file, "Write data references (\n");
   FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
     if (PDR_TYPE (pdr) != PDR_READ)
-      print_pdr (file, pdr, verbosity);
-
-  if (verbosity > 1)
-    fprintf (file, "#)\n");
-
-  if (verbosity > 1)
-    fprintf (file, "#)\n");
+      print_pdr (file, pdr);
+  fprintf (file, ")\n");
+  fprintf (file, ")\n");
 }
 
 /* Print to STDERR all the data references of PBB.  */
 
 DEBUG_FUNCTION void
-debug_pdrs (poly_bb_p pbb, int verbosity)
+debug_pdrs (poly_bb_p pbb)
 {
-  print_pdrs (stderr, pbb, verbosity);
+  print_pdrs (stderr, pbb);
 }
 
-/* Print to FILE the body of PBB, at some VERBOSITY level.
-   If statement_body_provided is false statement body is not printed.  */
+/* Print to FILE the body of PBB.  */
 
 static void
-print_pbb_body (FILE *file, poly_bb_p pbb, int verbosity,
-		bool statement_body_provided)
+print_pbb_body (FILE *file, poly_bb_p pbb)
 {
-  if (verbosity > 1)
-    fprintf (file, "# Body (\n");
-
-  if (!statement_body_provided)
-    {
-      if (verbosity > 0)
-	fprintf (file, "# Statement body is not provided\n");
-
-      fprintf (file, "0\n");
-
-      if (verbosity > 1)
-	fprintf (file, "#)\n");
-      return;
-    }
-
-  if (verbosity > 0)
-    fprintf (file, "# Statement body is provided\n");
-  fprintf (file, "1\n");
-
-  if (verbosity > 0)
-    fprintf (file, "# Original iterator names\n# Iterator names are not provided yet.\n");
-
-  if (verbosity > 0)
-    fprintf (file, "# Statement body\n");
-
-  fprintf (file, "{\n");
+  fprintf (file, "Body (\n");
   dump_bb (file, pbb_bb (pbb), 0, 0);
-  fprintf (file, "}\n");
-
-  if (verbosity > 1)
-    fprintf (file, "#)\n");
+  fprintf (file, ")\n");
 }
 
-/* Print to FILE the domain and scattering function of PBB, at some
-   VERBOSITY level.  */
+/* Print to FILE the domain and scattering function of PBB.  */
 
 void
-print_pbb (FILE *file, poly_bb_p pbb, int verbosity)
+print_pbb (FILE *file, poly_bb_p pbb)
 {
-  if (verbosity > 1)
-    {
-      fprintf (file, "# pbb_%d (\n", pbb_index (pbb));
-      dump_gbb_conditions (file, PBB_BLACK_BOX (pbb));
-      dump_gbb_cases (file, PBB_BLACK_BOX (pbb));
-    }
+  fprintf (file, "pbb_%d (\n", pbb_index (pbb));
+  dump_gbb_conditions (file, PBB_BLACK_BOX (pbb));
+  dump_gbb_cases (file, PBB_BLACK_BOX (pbb));
 
-  print_pbb_domain (file, pbb, verbosity);
-  print_pdrs (file, pbb, verbosity);
-  print_pbb_body (file, pbb, verbosity, false);
+  print_pbb_domain (file, pbb);
+  print_pdrs (file, pbb);
+  print_pbb_body (file, pbb);
 
-  if (verbosity > 1)
-    fprintf (file, "#)\n");
+  fprintf (file, ")\n");
 }
 
-/* Print to FILE the parameters of SCOP, at some VERBOSITY level.  */
+/* Print to FILE the parameters of SCOP.  */
 
 void
-print_scop_params (FILE *file, scop_p scop, int verbosity)
+print_scop_params (FILE *file, scop_p scop)
 {
+  if (SESE_PARAMS (SCOP_REGION (scop)).is_empty ())
+    return;
+
   int i;
   tree t;
-
-  if (verbosity > 1)
-    fprintf (file, "# parameters (\n");
-
-  if (SESE_PARAMS (SCOP_REGION (scop)).length ())
-    {
-      if (verbosity > 0)
-	fprintf (file, "# Parameter names are provided\n");
-
-      fprintf (file, "1\n");
-
-      if (verbosity > 0)
-	fprintf (file, "# Parameter names\n");
-    }
-  else
-    {
-      if (verbosity > 0)
-	fprintf (file, "# Parameter names are not provided\n");
-      fprintf (file, "0\n");
-    }
-
+  fprintf (file, "parameters (");
   FOR_EACH_VEC_ELT (SESE_PARAMS (SCOP_REGION (scop)), i, t)
     {
       print_generic_expr (file, t, 0);
-      fprintf (file, " ");
+      fprintf (file, ", ");
     }
-
-  fprintf (file, "\n");
-
-  if (verbosity > 1)
-    fprintf (file, "#)\n");
+  fprintf (file, ")\n");
 }
 
-/* Print to FILE the context of SCoP, at some VERBOSITY level.  */
+/* Print to FILE the context of SCoP.  */
 
 void
-print_scop_context (FILE *file, scop_p scop, int verbosity)
+print_scop_context (FILE *file, scop_p scop)
 {
-  if (verbosity > 0)
-    fprintf (file, "# Context (\n");
+  if (!scop->param_context)
+    return;
 
-  if (scop->param_context)
-    print_isl_set (file, scop->param_context);
-
-  if (verbosity > 0)
-    fprintf (file, "# )\n");
+  fprintf (file, "Context (\n");
+  print_isl_set (file, scop->param_context);
+  fprintf (file, ")\n");
 }
 
-/* Print to FILE the SCOP, at some VERBOSITY level.  */
+/* Print to FILE the SCOP.  */
 
 void
-print_scop (FILE *file, scop_p scop, int verbosity)
+print_scop (FILE *file, scop_p scop)
 {
   int i;
   poly_bb_p pbb;
 
-  fprintf (file, "SCoP 1\n#(\n");
-  fprintf (file, "# Language\nGimple\n");
-  print_scop_context (file, scop, verbosity);
-  print_scop_params (file, scop, verbosity);
+  fprintf (file, "SCoP (\n");
+  print_scop_context (file, scop);
+  print_scop_params (file, scop);
 
-  if (verbosity > 0)
-    fprintf (file, "# Number of statements\n");
-
+  fprintf (file, "Number of statements: ");
   fprintf (file, "%d\n", scop->pbbs.length ());
 
   FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    print_pbb (file, pbb, verbosity);
+    print_pbb (file, pbb);
 
-  fprintf (file, "#)\n");
+  fprintf (file, ")\n");
 }
 
-/* Print to STDERR the domain of PBB, at some VERBOSITY level.  */
+/* Print to STDERR the domain of PBB.  */
 
 DEBUG_FUNCTION void
-debug_pbb_domain (poly_bb_p pbb, int verbosity)
+debug_pbb_domain (poly_bb_p pbb)
 {
-  print_pbb_domain (stderr, pbb, verbosity);
+  print_pbb_domain (stderr, pbb);
 }
 
-/* Print to FILE the domain and scattering function of PBB, at some
-   VERBOSITY level.  */
+/* Print to FILE the domain and scattering function of PBB.  */
 
 DEBUG_FUNCTION void
-debug_pbb (poly_bb_p pbb, int verbosity)
+debug_pbb (poly_bb_p pbb)
 {
-  print_pbb (stderr, pbb, verbosity);
+  print_pbb (stderr, pbb);
 }
 
-/* Print to STDERR the context of SCOP, at some VERBOSITY level.  */
+/* Print to STDERR the context of SCOP.  */
 
 DEBUG_FUNCTION void
-debug_scop_context (scop_p scop, int verbosity)
+debug_scop_context (scop_p scop)
 {
-  print_scop_context (stderr, scop, verbosity);
+  print_scop_context (stderr, scop);
 }
 
-/* Print to STDERR the SCOP, at some VERBOSITY level.  */
+/* Print to STDERR the SCOP.  */
 
 DEBUG_FUNCTION void
-debug_scop (scop_p scop, int verbosity)
+debug_scop (scop_p scop)
 {
-  print_scop (stderr, scop, verbosity);
+  print_scop (stderr, scop);
 }
 
-/* Print to STDERR the parameters of SCOP, at some VERBOSITY
-   level.  */
+/* Print to STDERR the parameters of SCOP.  */
 
 DEBUG_FUNCTION void
-debug_scop_params (scop_p scop, int verbosity)
+debug_scop_params (scop_p scop)
 {
-  print_scop_params (stderr, scop, verbosity);
+  print_scop_params (stderr, scop);
 }
 
 extern isl_ctx *the_isl_ctx;
