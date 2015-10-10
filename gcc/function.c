@@ -4986,7 +4986,7 @@ stack_protect_epilogue (void)
 {
   tree guard_decl = targetm.stack_protect_guard ();
   rtx_code_label *label = gen_label_rtx ();
-  rtx x, y, tmp;
+  rtx x, y;
   rtx_insn *seq;
 
   x = expand_normal (crtl->stack_protect_guard);
@@ -5005,9 +5005,9 @@ stack_protect_epilogue (void)
      things moved out of line.  Since this is the only extant case of adding
      a noreturn function at the rtl level, it doesn't seem worth doing ought
      except adding the prediction by hand.  */
-  tmp = get_last_insn ();
+  rtx_insn *tmp = get_last_insn ();
   if (JUMP_P (tmp))
-    predict_insn_def (as_a <rtx_insn *> (tmp), PRED_NORETURN, TAKEN);
+    predict_insn_def (tmp, PRED_NORETURN, TAKEN);
 
   expand_call (targetm.stack_protect_fail (), NULL_RTX, /*ignore=*/true);
   free_temp_slots ();
