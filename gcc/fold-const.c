@@ -2693,7 +2693,12 @@ combine_comparisons (location_t loc,
 
    If OEP_PURE_SAME is set, then pure functions with identical arguments
    are considered the same.  It is used when the caller has other ways
-   to ensure that global memory is unchanged in between.  */
+   to ensure that global memory is unchanged in between.
+
+   If OEP_ADDRESS_OF is set, we are actually comparing addresses of objects,
+   not values of expressions.  OEP_CONSTANT_ADDRESS_OF in addition to
+   OEP_ADDRESS_OF is used for ADDR_EXPR with TREE_CONSTANT flag set and we
+   further ignore any side effects on SAVE_EXPRs then.  */
 
 int
 operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
@@ -2712,31 +2717,52 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
   /* Check equality of integer constants before bailing out due to
      precision differences.  */
   if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
-    return tree_int_cst_equal (arg0, arg1);
+    {
+      /* Address of INTEGER_CST is not defined; check that we did not forget
+	 to drop the OEP_ADDRESS_OF/OEP_CONSTANT_ADDRESS_OF flags.  */
+      gcc_checking_assert (!(flags
+			     & (OEP_ADDRESS_OF | OEP_CONSTANT_ADDRESS_OF)));
+      return tree_int_cst_equal (arg0, arg1);
+    }
 
-  /* If both types don't have the same signedness, then we can't consider
-     them equal.  We must check this before the STRIP_NOPS calls
-     because they may change the signedness of the arguments.  As pointers
-     strictly don't have a signedness, require either two pointers or
-     two non-pointers as well.  */
-  if (TYPE_UNSIGNED (TREE_TYPE (arg0)) != TYPE_UNSIGNED (TREE_TYPE (arg1))
-      || POINTER_TYPE_P (TREE_TYPE (arg0)) != POINTER_TYPE_P (TREE_TYPE (arg1)))
-    return 0;
+  if (!(flags & OEP_ADDRESS_OF))
+    {
+      /* If both types don't have the same signedness, then we can't consider
+	 them equal.  We must check this before the STRIP_NOPS calls
+	 because they may change the signedness of the arguments.  As pointers
+	 strictly don't have a signedness, require either two pointers or
+	 two non-pointers as well.  */
+      if (TYPE_UNSIGNED (TREE_TYPE (arg0)) != TYPE_UNSIGNED (TREE_TYPE (arg1))
+	  || POINTER_TYPE_P (TREE_TYPE (arg0))
+			     != POINTER_TYPE_P (TREE_TYPE (arg1)))
+	return 0;
 
-  /* We cannot consider pointers to different address space equal.  */
-  if (POINTER_TYPE_P (TREE_TYPE (arg0)) && POINTER_TYPE_P (TREE_TYPE (arg1))
-      && (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg0)))
-	  != TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg1)))))
-    return 0;
+      /* We cannot consider pointers to different address space equal.  */
+      if (POINTER_TYPE_P (TREE_TYPE (arg0))
+			  && POINTER_TYPE_P (TREE_TYPE (arg1))
+	  && (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg0)))
+	      != TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg1)))))
+	return 0;
 
-  /* If both types don't have the same precision, then it is not safe
-     to strip NOPs.  */
-  if (element_precision (TREE_TYPE (arg0))
-      != element_precision (TREE_TYPE (arg1)))
-    return 0;
+      /* If both types don't have the same precision, then it is not safe
+	 to strip NOPs.  */
+      if (element_precision (TREE_TYPE (arg0))
+	  != element_precision (TREE_TYPE (arg1)))
+	return 0;
 
-  STRIP_NOPS (arg0);
-  STRIP_NOPS (arg1);
+      STRIP_NOPS (arg0);
+      STRIP_NOPS (arg1);
+    }
+#if 0
+  /* FIXME: Fortran FE currently produce ADDR_EXPR of NOP_EXPR. Enable the
+     sanity check once the issue is solved.  */
+  else
+    /* Addresses of conversions and SSA_NAMEs (and many other things)
+       are not defined.  Check that we did not forget to drop the
+       OEP_ADDRESS_OF/OEP_CONSTANT_ADDRESS_OF flags.  */
+    gcc_checking_assert (!CONVERT_EXPR_P (arg0) && !CONVERT_EXPR_P (arg1)
+			 && TREE_CODE (arg0) != SSA_NAME);
+#endif
 
   /* In case both args are comparisons but with different comparison
      code, try to swap the comparison operands of one arg to produce
@@ -2859,9 +2885,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 			      TREE_STRING_LENGTH (arg0)));
 
       case ADDR_EXPR:
+	gcc_checking_assert (!(flags
+			       & (OEP_ADDRESS_OF | OEP_CONSTANT_ADDRESS_OF)));
 	return operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 0),
-				TREE_CONSTANT (arg0) && TREE_CONSTANT (arg1)
-				? OEP_CONSTANT_ADDRESS_OF | OEP_ADDRESS_OF : 0);
+				flags | OEP_ADDRESS_OF
+				| OEP_CONSTANT_ADDRESS_OF);
       default:
 	break;
       }
@@ -2923,7 +2951,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       switch (TREE_CODE (arg0))
 	{
 	case INDIRECT_REF:
-	  if (!(flags & OEP_ADDRESS_OF)
+	  if (!(flags & (OEP_ADDRESS_OF | OEP_CONSTANT_ADDRESS_OF))
 	      && (TYPE_ALIGN (TREE_TYPE (arg0))
 		  != TYPE_ALIGN (TREE_TYPE (arg1))))
 	    return 0;
@@ -2936,27 +2964,34 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
 	case TARGET_MEM_REF:
 	case MEM_REF:
-	  /* Require equal access sizes, and similar pointer types.
-	     We can have incomplete types for array references of
-	     variable-sized arrays from the Fortran frontend
-	     though.  Also verify the types are compatible.  */
-	  if (!((TYPE_SIZE (TREE_TYPE (arg0)) == TYPE_SIZE (TREE_TYPE (arg1))
-		   || (TYPE_SIZE (TREE_TYPE (arg0))
-		       && TYPE_SIZE (TREE_TYPE (arg1))
-		       && operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
-					   TYPE_SIZE (TREE_TYPE (arg1)), flags)))
-		  && types_compatible_p (TREE_TYPE (arg0), TREE_TYPE (arg1))
-		  && ((flags & OEP_ADDRESS_OF)
-		      || (alias_ptr_types_compatible_p
-			    (TREE_TYPE (TREE_OPERAND (arg0, 1)),
-			     TREE_TYPE (TREE_OPERAND (arg1, 1)))
-			  && (MR_DEPENDENCE_CLIQUE (arg0)
-			      == MR_DEPENDENCE_CLIQUE (arg1))
-			  && (MR_DEPENDENCE_BASE (arg0)
-			      == MR_DEPENDENCE_BASE (arg1))
-			  && (TYPE_ALIGN (TREE_TYPE (arg0))
-			    == TYPE_ALIGN (TREE_TYPE (arg1)))))))
-	    return 0;
+	  if (!(flags & (OEP_ADDRESS_OF | OEP_CONSTANT_ADDRESS_OF)))
+	    {
+	      /* Require equal access sizes */
+	      if (TYPE_SIZE (TREE_TYPE (arg0)) != TYPE_SIZE (TREE_TYPE (arg1))
+		  && (!TYPE_SIZE (TREE_TYPE (arg0))
+		      || !TYPE_SIZE (TREE_TYPE (arg1))
+		      || !operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
+					   TYPE_SIZE (TREE_TYPE (arg1)),
+					   flags)))
+		return 0;
+	      /* Verify that access happens in similar types.  */
+	      if (!types_compatible_p (TREE_TYPE (arg0), TREE_TYPE (arg1)))
+		return 0;
+	      /* Verify that accesses are TBAA compatible.  */
+	      if (flag_strict_aliasing
+		  && (!alias_ptr_types_compatible_p
+		        (TREE_TYPE (TREE_OPERAND (arg0, 1)),
+		         TREE_TYPE (TREE_OPERAND (arg1, 1)))
+		      || (MR_DEPENDENCE_CLIQUE (arg0)
+			  != MR_DEPENDENCE_CLIQUE (arg1))
+		      || (MR_DEPENDENCE_BASE (arg0)
+			  != MR_DEPENDENCE_BASE (arg1))))
+		return 0;
+	     /* Verify that alignment is compatible.  */
+	     if (TYPE_ALIGN (TREE_TYPE (arg0))
+		 != TYPE_ALIGN (TREE_TYPE (arg1)))
+		return 0;
+	    }
 	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
 	  return (OP_SAME (0) && OP_SAME (1)
 		  /* TARGET_MEM_REF require equal extra operands.  */
@@ -3002,6 +3037,10 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       switch (TREE_CODE (arg0))
 	{
 	case ADDR_EXPR:
+	  /* Be sure we pass right ADDRESS_OF flag.  */
+	  gcc_checking_assert (!(flags
+				 & (OEP_ADDRESS_OF
+				    | OEP_CONSTANT_ADDRESS_OF)));
 	  return operand_equal_p (TREE_OPERAND (arg0, 0),
 				  TREE_OPERAND (arg1, 0),
 				  flags | OEP_ADDRESS_OF);

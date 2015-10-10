@@ -1,3 +1,9 @@
+2015-10-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* fold-const.c (operand_equal_p): Document OEP_ADDRESS_OF
+	and OEP_CONSTANT_ADDRESS_OF; skip type compatibility checks
+	when OEP_ADDRESS_OF is se.
+
 2015-10-10  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
