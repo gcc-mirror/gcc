@@ -355,6 +355,13 @@ scop_get_dependences (scop_p scop)
   dependences = isl_union_map_union (dependences,
 				     isl_union_map_copy (scop->may_waw));
 
+  if (dump_file)
+    {
+      fprintf (dump_file, "data dependences (\n");
+      print_isl_union_map (dump_file, dependences);
+      fprintf (dump_file, ")\n");
+    }
+
   return dependences;
 }
 

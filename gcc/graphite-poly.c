@@ -595,6 +595,22 @@ debug_isl_map (isl_map *map)
 }
 
 void
+print_isl_union_map (FILE *f, isl_union_map *map)
+{
+  isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
+  p = isl_printer_print_union_map (p, map);
+  p = isl_printer_print_str (p, "\n");
+  isl_printer_free (p);
+}
+
+DEBUG_FUNCTION void
+debug_isl_union_map (isl_union_map *map)
+{
+  print_isl_union_map (stderr, map);
+}
+
+
+void
 print_isl_aff (FILE *f, isl_aff *aff)
 {
   isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
