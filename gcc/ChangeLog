@@ -1,3 +1,30 @@
+2015-10-10  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-poly.c (print_iteration_domain): Remove verbosity.
+	Remove OpenScop formatting.
+	(print_iteration_domains): Same.
+	(debug_iteration_domain): Same.
+	(debug_iteration_domains): Same.
+	(print_pdr): Same.
+	(debug_pdr): Same.
+	(dump_gbb_cases): Same.
+	(dump_gbb_conditions): Same.
+	(print_pdrs): Same.
+	(debug_pdrs): Same.
+	(print_pbb_body): Same.
+	(print_pbb): Same.
+	(print_scop_params): Same.
+	(print_scop_context): Same.
+	(print_scop): Same.
+	(debug_pbb_domain): Same.
+	(debug_pbb): Same.
+	(debug_scop_context): Same.
+	(debug_scop): Same.
+	(debug_scop_params): Same.
+	* graphite-poly.h: Same.
+	* graphite.c (graphite_transform_loops): Same.
+
 2015-10-10  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* function.c (stack_protect_epilogue): Remove as_a<rtx_insn *> ()

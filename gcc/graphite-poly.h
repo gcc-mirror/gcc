@@ -197,8 +197,8 @@ struct poly_dr
 void new_poly_dr (poly_bb_p, enum poly_dr_type, data_reference_p,
 		  graphite_dim_t, isl_map *, isl_set *);
 void free_poly_dr (poly_dr_p);
-void debug_pdr (poly_dr_p, int);
-void print_pdr (FILE *, poly_dr_p, int);
+void debug_pdr (poly_dr_p);
+void print_pdr (FILE *, poly_dr_p);
 
 static inline bool
 pdr_read_p (poly_dr_p pdr)
@@ -280,22 +280,22 @@ struct poly_bb
 extern poly_bb_p new_poly_bb (scop_p, gimple_poly_bb_p);
 extern void free_poly_bb (poly_bb_p);
 extern void debug_loop_vec (poly_bb_p);
-extern void print_pbb_domain (FILE *, poly_bb_p, int);
-extern void print_pbb (FILE *, poly_bb_p, int);
-extern void print_scop_context (FILE *, scop_p, int);
-extern void print_scop (FILE *, scop_p, int);
-extern void debug_pbb_domain (poly_bb_p, int);
-extern void debug_pbb (poly_bb_p, int);
-extern void print_pdrs (FILE *, poly_bb_p, int);
-extern void debug_pdrs (poly_bb_p, int);
-extern void debug_scop_context (scop_p, int);
-extern void debug_scop (scop_p, int);
-extern void print_scop_params (FILE *, scop_p, int);
-extern void debug_scop_params (scop_p, int);
-extern void print_iteration_domain (FILE *, poly_bb_p, int);
-extern void print_iteration_domains (FILE *, scop_p, int);
-extern void debug_iteration_domain (poly_bb_p, int);
-extern void debug_iteration_domains (scop_p, int);
+extern void print_pbb_domain (FILE *, poly_bb_p);
+extern void print_pbb (FILE *, poly_bb_p);
+extern void print_scop_context (FILE *, scop_p);
+extern void print_scop (FILE *, scop_p);
+extern void debug_pbb_domain (poly_bb_p);
+extern void debug_pbb (poly_bb_p);
+extern void print_pdrs (FILE *, poly_bb_p);
+extern void debug_pdrs (poly_bb_p);
+extern void debug_scop_context (scop_p);
+extern void debug_scop (scop_p);
+extern void print_scop_params (FILE *, scop_p);
+extern void debug_scop_params (scop_p);
+extern void print_iteration_domain (FILE *, poly_bb_p);
+extern void print_iteration_domains (FILE *, scop_p);
+extern void debug_iteration_domain (poly_bb_p);
+extern void debug_iteration_domains (scop_p);
 extern void print_isl_set (FILE *, isl_set *);
 extern void print_isl_map (FILE *, isl_map *);
 extern void print_isl_aff (FILE *, isl_aff *);
