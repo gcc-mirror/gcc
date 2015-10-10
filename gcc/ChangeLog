@@ -1,3 +1,8 @@
+2015-10-10  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* function.c (stack_protect_epilogue): Remove as_a<rtx_insn *> ()
+	call that isn't needed.
+
 2015-10-09  Jeff Law  <law@redhat.com>
 
 	* tree-ssanames.c (flush_ssaname_freelist): Use splice and truncate
