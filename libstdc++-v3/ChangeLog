@@ -1,3 +1,10 @@
+2015-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* crossconfig.m4 (GLIBCXX_CROSSCONFIG) <*-linux* | *-uclinux* |
+	*-gnu* | *-kfreebsd*-gnu | *-knetbsd*-gnu | *-cygwin*>: Check for
+	__cxa_thread_atexit_impl.
+	* configure: Regenerate.
+
 2015-10-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/erase_if.h: Move to ...
