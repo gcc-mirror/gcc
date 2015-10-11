@@ -1,5 +1,10 @@
 2015-10-10  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (FRAME_ADDR_RTX): New default definition.
+	* builtins.c (expand_builtin_return_addr): Adjust.
+
+2015-10-10  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* defaults.h (DYNAMIC_CHAIN_ADDRESS): New default definition.
 	* builtins.c (expand_builtin_return_addr): Adjust.
 
