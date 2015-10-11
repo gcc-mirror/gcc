@@ -2318,16 +2318,24 @@ reorder_basic_blocks_simple (void)
 
       if (any_condjump_p (end))
 	{
-	  edges[n++] = EDGE_SUCC (bb, 0);
-	  edges[n++] = EDGE_SUCC (bb, 1);
+	  edge e0 = EDGE_SUCC (bb, 0);
+	  edge e1 = EDGE_SUCC (bb, 1);
+	  /* When optimizing for size it is best to keep the original
+	     fallthrough edges.  */
+	  if (e1->flags & EDGE_FALLTHRU)
+	    std::swap (e0, e1);
+	  edges[n++] = e0;
+	  edges[n++] = e1;
 	}
       else if (single_succ_p (bb))
 	edges[n++] = EDGE_SUCC (bb, 0);
     }
 
-  /* Sort the edges, the most desirable first.  */
+  /* Sort the edges, the most desirable first.  When optimizing for size
+     all edges are equally desirable.  */
 
-  std::stable_sort (edges, edges + n, edge_order);
+  if (optimize_function_for_speed_p (cfun))
+    std::stable_sort (edges, edges + n, edge_order);
 
   /* Now decide which of those edges to make fallthrough edges.  We set
      BB_VISITED if a block already has a fallthrough successor assigned
