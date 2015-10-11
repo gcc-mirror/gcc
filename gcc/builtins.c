@@ -761,31 +761,28 @@ static rtx
 expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
 {
   int i;
-
-#ifdef INITIAL_FRAME_ADDRESS_RTX
   rtx tem = INITIAL_FRAME_ADDRESS_RTX;
-#else
-  rtx tem;
-
-  /* For a zero count with __builtin_return_address, we don't care what
-     frame address we return, because target-specific definitions will
-     override us.  Therefore frame pointer elimination is OK, and using
-     the soft frame pointer is OK.
-
-     For a nonzero count, or a zero count with __builtin_frame_address,
-     we require a stable offset from the current frame pointer to the
-     previous one, so we must use the hard frame pointer, and
-     we must disable frame pointer elimination.  */
-  if (count == 0 && fndecl_code == BUILT_IN_RETURN_ADDRESS)
-    tem = frame_pointer_rtx;
-  else
+  if (tem == NULL_RTX)
     {
-      tem = hard_frame_pointer_rtx;
+      /* For a zero count with __builtin_return_address, we don't care what
+	 frame address we return, because target-specific definitions will
+	 override us.  Therefore frame pointer elimination is OK, and using
+	 the soft frame pointer is OK.
 
-      /* Tell reload not to eliminate the frame pointer.  */
-      crtl->accesses_prior_frames = 1;
+	 For a nonzero count, or a zero count with __builtin_frame_address,
+	 we require a stable offset from the current frame pointer to the
+	 previous one, so we must use the hard frame pointer, and
+	 we must disable frame pointer elimination.  */
+      if (count == 0 && fndecl_code == BUILT_IN_RETURN_ADDRESS)
+	tem = frame_pointer_rtx;
+      else
+	{
+	  tem = hard_frame_pointer_rtx;
+
+	  /* Tell reload not to eliminate the frame pointer.  */
+	  crtl->accesses_prior_frames = 1;
+	}
     }
-#endif
 
   /* Some machines need special handling before we can access
      arbitrary frames.  For example, on the SPARC, we must first flush
