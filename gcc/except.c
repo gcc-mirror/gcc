@@ -2120,9 +2120,7 @@ expand_builtin_unwind_init (void)
      able to copy the saved values for any registers from frames we unwind.  */
   crtl->saves_all_registers = 1;
 
-#ifdef SETUP_FRAME_ADDRESSES
   SETUP_FRAME_ADDRESSES ();
-#endif
 }
 
 /* Map a non-negative number to an eh return data register number; expands
