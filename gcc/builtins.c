@@ -799,9 +799,7 @@ expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
     {
       /* Assume the dynamic chain pointer is in the word that the
 	 frame address points to, unless otherwise specified.  */
-#ifdef DYNAMIC_CHAIN_ADDRESS
       tem = DYNAMIC_CHAIN_ADDRESS (tem);
-#endif
       tem = memory_address (Pmode, tem);
       tem = gen_frame_mem (Pmode, tem);
       tem = copy_to_reg (tem);
