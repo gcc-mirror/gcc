@@ -1,3 +1,7 @@
+2015-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.h (ALPHA_ROUND): Implement using ROUND_UP macro.
+
 2015-10-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/67864
@@ -106,7 +110,7 @@
 	* config/mips/mips.c (mips_compute_frame_info): Check
 	optimize_call_stack flag.
 	(mips_option_override): Register new frame_header_opt pass.
- 	(mips_frame_info, mips_int_mask, mips_shadow_set,
+	(mips_frame_info, mips_int_mask, mips_shadow_set,
 	machine_function): Move these types to...
 	* config/mips/mips.h: here.
 	(machine_function): Add does_not_use_frame_header and
@@ -199,9 +203,9 @@
 
 2015-10-09  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        PR target/67366
-        * config/arm/arm.md (movmisalign<mode>): New.
-        * config/arm/iterators.md (HSI): New.
+	PR target/67366
+	* config/arm/arm.md (movmisalign<mode>): New.
+	* config/arm/iterators.md (HSI): New.
 
 2015-10-09  Richard Biener  <rguenther@suse.de>
 

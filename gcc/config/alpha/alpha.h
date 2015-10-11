@@ -615,7 +615,7 @@ extern int alpha_memory_latency;
  { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
 
 /* Round up to a multiple of 16 bytes.  */
-#define ALPHA_ROUND(X) (((X) + 15) & ~ 15)
+#define ALPHA_ROUND(X) ROUND_UP ((X), 16)
 
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
