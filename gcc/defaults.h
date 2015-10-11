@@ -1289,6 +1289,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DYNAMIC_CHAIN_ADDRESS(x) (x)
 #endif
 
+#ifndef FRAME_ADDR_RTX
+#define FRAME_ADDR_RTX(x) (x)
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 
