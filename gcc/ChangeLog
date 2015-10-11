@@ -1,3 +1,10 @@
+2015-10-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/67864
+	* gcc/bb-reorder (reorder_basic_blocks_simple): Prefer existing
+	fallthrough edges for conditional jumps.  Don't sort candidate
+	edges if not optimizing for speed.
+
 2015-10-10  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* defaults.h (REVERSE_CONDITION): New default definition.
