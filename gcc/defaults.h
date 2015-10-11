@@ -1281,6 +1281,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define INITIAL_FRAME_ADDRESS_RTX NULL
 #endif
 
+#ifndef SETUP_FRAME_ADDRESSES
+#define SETUP_FRAME_ADDRESSES() do { } while (0)
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 

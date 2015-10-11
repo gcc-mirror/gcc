@@ -1,5 +1,13 @@
 2015-10-10  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (SETUP_FRAME_ADDRESSES): New default definition.
+	* builtins.c (expand_builtin_return_addr): Adjust.
+	* doc/tm.texi: Likewise.
+	* doc/tm.texi.in: Likewise.
+	* except.c (expand_builtin_unwind_init): Likewise.
+
+2015-10-10  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* builtins.c (expand_builtin_return_addr): Adjust.
 	* defaults.h (INITIAL_FRAME_ADDRESS_RTX): New default definition.
 
