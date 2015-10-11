@@ -1293,6 +1293,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define FRAME_ADDR_RTX(x) (x)
 #endif
 
+#ifndef REVERSE_CONDITION
+#define REVERSE_CONDITION(code, mode) reverse_condition (code)
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 

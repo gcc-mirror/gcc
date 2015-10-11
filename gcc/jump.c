@@ -389,13 +389,7 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
      machine description to do tricks.  */
   if (GET_MODE_CLASS (mode) == MODE_CC
       && REVERSIBLE_CC_MODE (mode))
-    {
-#ifdef REVERSE_CONDITION
-      return REVERSE_CONDITION (code, mode);
-#else
-      return reverse_condition (code);
-#endif
-    }
+    return REVERSE_CONDITION (code, mode);
 
   /* Try a few special cases based on the comparison code.  */
   switch (code)

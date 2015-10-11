@@ -1,5 +1,10 @@
 2015-10-10  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (REVERSE_CONDITION): New default definition.
+	* jump.c (reversed_comparison_code_parts): Adjust.
+
+2015-10-10  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* builtins.c (expand_builtin_setjmp_receiver): Don't use #if to
 	check HARD_FRAME_POINTER_IS_ARG_POINTER.
 
