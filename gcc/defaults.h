@@ -1277,6 +1277,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define CONSTANT_ALIGNMENT(EXP, ALIGN) ALIGN
 #endif
 
+#ifndef INITIAL_FRAME_ADDRESS_RTX
+#define INITIAL_FRAME_ADDRESS_RTX NULL
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 

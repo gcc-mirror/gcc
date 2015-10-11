@@ -1,3 +1,8 @@
+2015-10-10  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* builtins.c (expand_builtin_return_addr): Adjust.
+	* defaults.h (INITIAL_FRAME_ADDRESS_RTX): New default definition.
+
 2015-10-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (type_with_interoperable_signedness): New.
