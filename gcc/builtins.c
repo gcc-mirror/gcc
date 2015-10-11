@@ -915,8 +915,7 @@ expand_builtin_setjmp_receiver (rtx receiver_label)
       emit_clobber (hard_frame_pointer_rtx);
     }
 
-#if !HARD_FRAME_POINTER_IS_ARG_POINTER
-  if (fixed_regs[ARG_POINTER_REGNUM])
+  if (!HARD_FRAME_POINTER_IS_ARG_POINTER && fixed_regs[ARG_POINTER_REGNUM])
     {
 #ifdef ELIMINABLE_REGS
       /* If the argument pointer can be eliminated in favor of the
@@ -941,7 +940,6 @@ expand_builtin_setjmp_receiver (rtx receiver_label)
 			  copy_to_reg (get_arg_pointer_save_area ()));
 	}
     }
-#endif
 
   if (receiver_label != NULL && targetm.have_builtin_setjmp_receiver ())
     emit_insn (targetm.gen_builtin_setjmp_receiver (receiver_label));
