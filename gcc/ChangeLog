@@ -1,5 +1,11 @@
 2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-profile.c (tree_profiling): Do not clear
+	pure/const when not instrumenting.
+	(pass tree_profile): Add dump of symtab.
+
+2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
 	* fold-const.c (fold_comparsion): Pass OEP_ADDRESS_OF when comparing
 	addresses.
 	(fold_addr_of_array_ref_difference): Likewise.
