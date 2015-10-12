@@ -513,12 +513,6 @@ extern enum aarch64_processor aarch64_tune;
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-#define AARCH64_ROUND_UP(X, ALIGNMENT) \
-  (((X) + ((ALIGNMENT) - 1)) & ~((ALIGNMENT) - 1))
-
-#define AARCH64_ROUND_DOWN(X, ALIGNMENT) \
-  ((X) & ~((ALIGNMENT) - 1))
-
 #ifdef HOST_WIDE_INT
 struct GTY (()) aarch64_frame
 {

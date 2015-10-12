@@ -1860,8 +1860,8 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
 
   /* Size in bytes, rounded to the nearest multiple of 8 bytes.  */
   size
-    = AARCH64_ROUND_UP (type ? int_size_in_bytes (type) : GET_MODE_SIZE (mode),
-			UNITS_PER_WORD);
+    = ROUND_UP (type ? int_size_in_bytes (type) : GET_MODE_SIZE (mode),
+		UNITS_PER_WORD);
 
   allocate_ncrn = (type) ? !(FLOAT_TYPE_P (type)) : !FLOAT_MODE_P (mode);
   allocate_nvrn = aarch64_vfp_is_call_candidate (pcum_v,
@@ -1969,8 +1969,8 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
 on_stack:
   pcum->aapcs_stack_words = size / UNITS_PER_WORD;
   if (aarch64_function_arg_alignment (mode, type) == 16 * BITS_PER_UNIT)
-    pcum->aapcs_stack_size = AARCH64_ROUND_UP (pcum->aapcs_stack_size,
-					       16 / UNITS_PER_WORD);
+    pcum->aapcs_stack_size = ROUND_UP (pcum->aapcs_stack_size,
+				       16 / UNITS_PER_WORD);
   return;
 }
 
@@ -2237,21 +2237,21 @@ aarch64_layout_frame (void)
       }
 
   cfun->machine->frame.padding0 =
-    (AARCH64_ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT) - offset);
-  offset = AARCH64_ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT);
+    (ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT) - offset);
+  offset = ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT);
 
   cfun->machine->frame.saved_regs_size = offset;
 
   cfun->machine->frame.hard_fp_offset
-    = AARCH64_ROUND_UP (cfun->machine->frame.saved_varargs_size
-			+ get_frame_size ()
-			+ cfun->machine->frame.saved_regs_size,
-			STACK_BOUNDARY / BITS_PER_UNIT);
+    = ROUND_UP (cfun->machine->frame.saved_varargs_size
+		+ get_frame_size ()
+		+ cfun->machine->frame.saved_regs_size,
+		STACK_BOUNDARY / BITS_PER_UNIT);
 
   cfun->machine->frame.frame_size
-    = AARCH64_ROUND_UP (cfun->machine->frame.hard_fp_offset
-			+ crtl->outgoing_args_size,
-			STACK_BOUNDARY / BITS_PER_UNIT);
+    = ROUND_UP (cfun->machine->frame.hard_fp_offset
+		+ crtl->outgoing_args_size,
+		STACK_BOUNDARY / BITS_PER_UNIT);
 
   cfun->machine->frame.laid_out = true;
 }
@@ -9024,8 +9024,8 @@ aarch64_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
      This address is gr_save_area_bytes below GRTOP, rounded
      down to the next 16-byte boundary.  */
   t = make_tree (TREE_TYPE (vrtop), virtual_incoming_args_rtx);
-  vr_offset = AARCH64_ROUND_UP (gr_save_area_size,
-			     STACK_BOUNDARY / BITS_PER_UNIT);
+  vr_offset = ROUND_UP (gr_save_area_size,
+			STACK_BOUNDARY / BITS_PER_UNIT);
 
   if (vr_offset)
     t = fold_build_pointer_plus_hwi (t, -vr_offset);
@@ -9118,7 +9118,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 		      unshare_expr (valist), f_grtop, NULL_TREE);
       f_off = build3 (COMPONENT_REF, TREE_TYPE (f_groff),
 		      unshare_expr (valist), f_groff, NULL_TREE);
-      rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+      rsize = ROUND_UP (size, UNITS_PER_WORD);
       nregs = rsize / UNITS_PER_WORD;
 
       if (align > 8)
@@ -9357,8 +9357,8 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
 	  /* Set OFF to the offset from virtual_incoming_args_rtx of
 	     the first vector register.  The VR save area lies below
 	     the GR one, and is aligned to 16 bytes.  */
-	  off = -AARCH64_ROUND_UP (gr_saved * UNITS_PER_WORD,
-				   STACK_BOUNDARY / BITS_PER_UNIT);
+	  off = -ROUND_UP (gr_saved * UNITS_PER_WORD,
+			   STACK_BOUNDARY / BITS_PER_UNIT);
 	  off -= vr_saved * UNITS_PER_VREG;
 
 	  for (i = local_cum.aapcs_nvrn; i < NUM_FP_ARG_REGS; ++i)
@@ -9377,8 +9377,8 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
   /* We don't save the size into *PRETEND_SIZE because we want to avoid
      any complication of having crtl->args.pretend_args_size changed.  */
   cfun->machine->frame.saved_varargs_size
-    = (AARCH64_ROUND_UP (gr_saved * UNITS_PER_WORD,
-		      STACK_BOUNDARY / BITS_PER_UNIT)
+    = (ROUND_UP (gr_saved * UNITS_PER_WORD,
+		 STACK_BOUNDARY / BITS_PER_UNIT)
        + vr_saved * UNITS_PER_VREG);
 }
 
