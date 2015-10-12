@@ -273,6 +273,7 @@
     UNSPEC_USHLL	; Used in aarch64-simd.md.
     UNSPEC_ADDP		; Used in aarch64-simd.md.
     UNSPEC_TBL		; Used in vector permute patterns.
+    UNSPEC_TBX		; Used in vector permute patterns.
     UNSPEC_CONCAT	; Used in vector permute patterns.
     UNSPEC_ZIP1		; Used in vector permute patterns.
     UNSPEC_ZIP2		; Used in vector permute patterns.
