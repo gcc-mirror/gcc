@@ -70,7 +70,7 @@ fsm_find_thread_path (basic_block start_bb, basic_block end_bb,
   return false;
 }
 
-/* We trace the value of the variable EXPR back through any phi nodes looking
+/* We trace the value of the SSA_NAME EXPR back through any phi nodes looking
    for places where it gets a constant value and save the path.  Stop after
    having recorded MAX_PATHS jump threading paths.  */
 
@@ -80,11 +80,10 @@ fsm_find_control_statement_thread_paths (tree expr,
 					 vec<basic_block, va_gc> *&path,
 					 bool seen_loop_phi)
 {
-  tree var = SSA_NAME_VAR (expr);
   gimple *def_stmt = SSA_NAME_DEF_STMT (expr);
   basic_block var_bb = gimple_bb (def_stmt);
 
-  if (var == NULL || var_bb == NULL)
+  if (var_bb == NULL)
     return;
 
   /* For the moment we assume that an SSA chain only contains phi nodes, and

@@ -1,3 +1,8 @@
+2015-10-12  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadbackward.c (fsm_find_thread_path): Remove
+	restriction that traced SSA_NAME is a user variable.
+
 2015-10-12  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/67476
