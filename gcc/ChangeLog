@@ -1,3 +1,14 @@
+2015-10-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/aarch64-simd-builtins.def: Update builtins
+	tables: add tbl3 and tbx4.
+	* config/aarch64/aarch64-simd.md (aarch64_tbl3v8qi): New.
+	(aarch64_tbx4v8qi): New.
+	* config/aarch64/arm_neon.h (vtbl3_s8, vtbl3_u8, vtbl3_p8)
+	(vtbl4_s8, vtbl4_u8, vtbl4_p8, vtbx4_s8, vtbx4_u8, vtbx4_p8):
+	Rewrite using builtin functions.
+	* config/aarch64/iterators.md (UNSPEC_TBX): New.
+
 2015-10-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/rs6000/rs6000.h (RS6000_ALIGN): Implement using
