@@ -1,3 +1,16 @@
+2015-10-11  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (fsm_find_thread_path): Moved from here into
+	tree-ssa-threadbackward.c.
+	(fsm_find_control_statement_thread_paths): Likewise.
+	(thread_through_normal_block): Break out FSM bits and move them
+	into a new function in tree-ssa-threadbackward.c.  Call new function
+	instead.
+	Minimize header file usage.
+	* tree-ssa-threadbackward.h: New file.
+	* tree-ssa-threadbackward.c: Likewise.
+	* Makefile.in (OBJS): Add tree-ssa-threadbackward.o
+
 2015-10-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.h (ALPHA_ROUND): Implement using ROUND_UP macro.
