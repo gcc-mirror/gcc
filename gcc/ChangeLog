@@ -1,3 +1,10 @@
+2015-10-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/67940
+	* config/i386/i386.c (ix86_compute_frame_layout): Correct
+	stack alignment adjustment.
+	(ix86_expand_prologue): Likewise.
+
 2015-10-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
