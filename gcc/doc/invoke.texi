@@ -18392,8 +18392,9 @@ for the original 16-bit-only multiply supported by early MCUs.
 A value of @samp{auto} can also be given.  This tells GCC to deduce
 the hardware multiply support based upon the MCU name provided by the
 @option{-mmcu} option.  If no @option{-mmcu} option is specified then
-@samp{32bit} hardware multiply support is assumed.  @samp{auto} is the
-default setting.
+@samp{32bit} hardware multiply support is assumed.  If the MCU name is
+not recognised then no hardware multiply support is assumed.
+@code{auto} is the default setting.
 
 Hardware multiplies are normally performed by calling a library
 routine.  This saves space in the generated code.  When compiling at
