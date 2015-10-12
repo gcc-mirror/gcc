@@ -1,5 +1,10 @@
 2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraphbuild.c (compute_call_stmt_bb_frequency): Use
+	counts when these are more informative.
+
+2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-profile.c (tree_profiling): Do not clear
 	pure/const when not instrumenting.
 	(pass tree_profile): Add dump of symtab.
