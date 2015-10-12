@@ -238,6 +238,7 @@ static vec<omp_context *> taskreg_contexts;
 
 static void scan_omp (gimple_seq *, omp_context *);
 static tree scan_omp_1_op (tree *, int *, void *);
+static gphi *find_phi_with_arg_on_edge (tree, edge);
 
 #define WALK_SUBSTMTS  \
     case GIMPLE_BIND: \
@@ -6468,6 +6469,43 @@ expand_omp_for_generic (struct omp_region *region,
 	  e->flags = EDGE_FALLTHRU;
 	}
       make_edge (l2_bb, l0_bb, EDGE_TRUE_VALUE);
+
+      if (gimple_in_ssa_p (cfun))
+	{
+	  /* Add phis to the outer loop that connect to the phis in the inner,
+	     original loop, and move the loop entry value of the inner phi to
+	     the loop entry value of the outer phi.  */
+	  gphi_iterator psi;
+	  for (psi = gsi_start_phis (l3_bb); !gsi_end_p (psi); gsi_next (&psi))
+	    {
+	      source_location locus;
+	      gphi *nphi;
+	      gphi *exit_phi = psi.phi ();
+
+	      edge l2_to_l3 = find_edge (l2_bb, l3_bb);
+	      tree exit_res = PHI_ARG_DEF_FROM_EDGE (exit_phi, l2_to_l3);
+
+	      basic_block latch = BRANCH_EDGE (cont_bb)->dest;
+	      edge latch_to_l1 = find_edge (latch, l1_bb);
+	      gphi *inner_phi
+		= find_phi_with_arg_on_edge (exit_res, latch_to_l1);
+
+	      tree t = gimple_phi_result (exit_phi);
+	      tree new_res = copy_ssa_name (t, NULL);
+	      nphi = create_phi_node (new_res, l0_bb);
+
+	      edge l0_to_l1 = find_edge (l0_bb, l1_bb);
+	      t = PHI_ARG_DEF_FROM_EDGE (inner_phi, l0_to_l1);
+	      locus = gimple_phi_arg_location_from_edge (inner_phi, l0_to_l1);
+	      edge entry_to_l0 = find_edge (entry_bb, l0_bb);
+	      add_phi_arg (nphi, t, entry_to_l0, locus);
+
+	      edge l2_to_l0 = find_edge (l2_bb, l0_bb);
+	      add_phi_arg (nphi, exit_res, l2_to_l0, UNKNOWN_LOCATION);
+
+	      add_phi_arg (inner_phi, new_res, l0_to_l1, UNKNOWN_LOCATION);
+	    };
+	}
 
       set_immediate_dominator (CDI_DOMINATORS, l2_bb,
 			       recompute_dominator (CDI_DOMINATORS, l2_bb));
