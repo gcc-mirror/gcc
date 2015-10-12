@@ -1,3 +1,9 @@
+2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* fold-const.c (fold_comparsion): Pass OEP_ADDRESS_OF when comparing
+	addresses.
+	(fold_addr_of_array_ref_difference): Likewise.
+
 2015-10-11  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (fsm_find_thread_path): Moved from here into

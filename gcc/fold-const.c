@@ -8426,7 +8426,8 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 
       /* If we have equivalent bases we might be able to simplify.  */
       if (indirect_base0 == indirect_base1
-	  && operand_equal_p (base0, base1, 0))
+	  && operand_equal_p (base0, base1,
+			      indirect_base0 ? OEP_ADDRESS_OF : 0))
 	{
 	  /* We can fold this expression to a constant if the non-constant
 	     offset parts are equal.  */
@@ -8846,7 +8847,7 @@ fold_addr_of_array_ref_difference (location_t loc, tree type,
 	  && (base_offset = fold_binary_loc (loc, MINUS_EXPR, type,
 					     TREE_OPERAND (base0, 0),
 					     TREE_OPERAND (base1, 0))))
-      || operand_equal_p (base0, base1, 0))
+      || operand_equal_p (base0, base1, OEP_ADDRESS_OF))
     {
       tree op0 = fold_convert_loc (loc, type, TREE_OPERAND (aref0, 1));
       tree op1 = fold_convert_loc (loc, type, TREE_OPERAND (aref1, 1));
