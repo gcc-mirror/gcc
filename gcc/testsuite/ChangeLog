@@ -1,3 +1,11 @@
+2015-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Backport from mainline
+	2015-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51048
+	* g++.dg/cpp0x/local-type1.C: New.
+
 2015-10-12  Alexander Fomin  <alexander.fomin@intel.com>
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 

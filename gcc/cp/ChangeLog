@@ -1,3 +1,12 @@
+2015-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Backport from mainline
+	2015-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51048
+	* decl2.c (no_linkage_error): Do not issue a permerror if the DECL
+	using a local type is pure virtual.
+
 2015-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/67522
