@@ -175,7 +175,7 @@ lambda_return_type (tree expr)
       || BRACE_ENCLOSED_INITIALIZER_P (expr))
     {
       cxx_incomplete_type_error (expr, TREE_TYPE (expr));
-      return void_type_node;
+      return error_mark_node;
     }
   gcc_checking_assert (!type_dependent_expression_p (expr));
   return cv_unqualified (type_decays_to (unlowered_expr_type (expr)));
