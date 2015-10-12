@@ -1,3 +1,9 @@
+2015-10-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/58566
+	* lambda.c (lambda_return_type): Return error_mark_node
+	instead of void_type_node for the error cases.
+
 2015-10-08  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (SIMPLE_TARGET_EXPR_P): New.
