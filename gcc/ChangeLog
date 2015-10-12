@@ -1,3 +1,13 @@
+2015-10-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2015-10-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/67850
+	* config/i386/i386.c (ix86_maybe_switch_abi): Merged with ...
+	(ix86_set_current_function): This.
+	(TARGET_EXPAND_TO_RTL_HOOK): Removed.
+
 2015-10-12  Alexander Fomin  <alexander.fomin@intel.com>
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 

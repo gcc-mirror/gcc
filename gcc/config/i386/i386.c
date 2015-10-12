@@ -5201,6 +5201,14 @@ ix86_set_current_function (tree fndecl)
 	TREE_TARGET_GLOBALS (new_tree) = save_target_globals_default_opts ();
     }
   ix86_previous_fndecl = fndecl;
+
+  /* 64-bit MS and SYSV ABI have different set of call used registers.
+     Avoid expensive re-initialization of init_regs each time we switch
+     function context.  */
+  if (TARGET_64BIT
+      && (call_used_regs[SI_REG]
+	  == (cfun->machine->call_abi == MS_ABI)))
+    reinit_regs ();
 }
 
 
@@ -6342,17 +6350,6 @@ ix86_call_abi_override (const_tree fndecl)
     cfun->machine->call_abi = ix86_abi;
   else
     cfun->machine->call_abi = ix86_function_type_abi (TREE_TYPE (fndecl));
-}
-
-/* 64-bit MS and SYSV ABI have different set of call used registers.  Avoid
-   expensive re-initialization of init_regs each time we switch function context
-   since this is needed only during RTL expansion.  */
-static void
-ix86_maybe_switch_abi (void)
-{
-  if (TARGET_64BIT &&
-      call_used_regs[SI_REG] == (cfun->machine->call_abi == MS_ABI))
-    reinit_regs ();
 }
 
 /* Return 1 if pseudo register should be created and used to hold
@@ -52379,9 +52376,6 @@ ix86_binds_local_p (const_tree exp)
 
 #undef TARGET_CAN_INLINE_P
 #define TARGET_CAN_INLINE_P ix86_can_inline_p
-
-#undef TARGET_EXPAND_TO_RTL_HOOK
-#define TARGET_EXPAND_TO_RTL_HOOK ix86_maybe_switch_abi
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P ix86_legitimate_address_p
