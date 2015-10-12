@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ia32 } */
 /* { dg-options "-std=gnu99 -mpreferred-stack-boundary=4" } */
 int
 outer_function (int x, int y)
