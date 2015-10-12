@@ -36,6 +36,22 @@ along with GCC; see the file COPYING3.  If not see
 
 static int max_threaded_paths;
 
+/* Simple helper to get the last statement from BB, which is assumed
+   to be a control statement.  */
+static gimple *
+get_gimple_control_stmt (basic_block bb)
+{
+  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+
+  if (gsi_end_p (gsi))
+    return NULL;
+
+  gimple *stmt = gsi_stmt (gsi);
+  enum gimple_code code = gimple_code (stmt);
+  gcc_assert (code == GIMPLE_COND || code == GIMPLE_SWITCH || code == GIMPLE_GOTO);
+  return stmt;
+}
+
 /* Return true if the CFG contains at least one path from START_BB to END_BB.
    When a path is found, record in PATH the blocks from END_BB to START_BB.
    VISITED_BBS is used to make sure we don't fall into an infinite loop.  Bound
@@ -70,17 +86,17 @@ fsm_find_thread_path (basic_block start_bb, basic_block end_bb,
   return false;
 }
 
-/* We trace the value of the SSA_NAME EXPR back through any phi nodes looking
+/* We trace the value of the SSA_NAME NAME back through any phi nodes looking
    for places where it gets a constant value and save the path.  Stop after
    having recorded MAX_PATHS jump threading paths.  */
 
 static void
-fsm_find_control_statement_thread_paths (tree expr,
+fsm_find_control_statement_thread_paths (tree name,
 					 hash_set<basic_block> *visited_bbs,
 					 vec<basic_block, va_gc> *&path,
 					 bool seen_loop_phi)
 {
-  gimple *def_stmt = SSA_NAME_DEF_STMT (expr);
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
   basic_block var_bb = gimple_bb (def_stmt);
 
   if (var_bb == NULL)
@@ -282,6 +298,20 @@ fsm_find_control_statement_thread_paths (tree expr,
 	  gcc_assert (e);
 	  jump_thread_edge *x = new jump_thread_edge (e, EDGE_FSM_THREAD);
 	  jump_thread_path->safe_push (x);
+	}
+
+      gimple *stmt = get_gimple_control_stmt ((*path)[0]);
+      gcc_assert (stmt);
+      /* We have found a constant value for ARG.  For GIMPLE_SWITCH
+	 and GIMPLE_GOTO, we use it as-is.  However, for a GIMPLE_COND
+	 we need to substitute, fold and simplify.  */
+      if (gimple_code (stmt) == GIMPLE_COND)
+	{
+	  enum tree_code cond_code = gimple_cond_code (stmt);
+
+	  /* We know the underyling format of the condition.  */
+	  arg = fold_binary (cond_code, boolean_type_node,
+			     arg, gimple_cond_rhs (stmt));
 	}
 
       /* Add the edge taken when the control variable has value ARG.  */

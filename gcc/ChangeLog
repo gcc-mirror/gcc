@@ -7,6 +7,15 @@
 
 2015-10-12  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-threadbackward.c (get_gimple_control_stmt): New function.
+	(fsm_find_control_stmt_paths): Change name of first argument to
+	more accurately relfect what it really is.  Handle simplification
+	of GIMPLE_COND after finding a thread path for NAME. 
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Allow
+	nontrivial conditions to be handled by FSM threader.
+	(thread_through_normal_block): Extract the name to looup via
+	FSM threader from COND_EXPR.
+
 	* tree-ssa-threadbackward.c (fsm_find_thread_path): Remove
 	restriction that traced SSA_NAME is a user variable.
 

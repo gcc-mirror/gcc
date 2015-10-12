@@ -1,5 +1,10 @@
 2015-10-12  Jeff Law  <law@redhat.com>
 
+	* gcc.dg/tree-ssa/ssa-thread-12.c: New test.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Update expected output.
+	* gcc.dg/tree-ssa/ssa-thread-11.c: Renamed from
+	ssa-dom-thread-11.c.
+
 	* gcc.dg/tree-ssa/ssa-dom-thread-11.c: New test.
 
 2015-10-12  Ville Voutilainen  <ville.voutilainen@gmail.com>

@@ -551,11 +551,13 @@ simplify_control_stmt_condition (edge e,
           || !is_gimple_min_invariant (cached_lhs))
         cached_lhs = (*simplify) (dummy_cond, stmt, avail_exprs_stack);
 
-      /* If we were just testing that an integral type was != 0, and that
-	 failed, just return the first operand.  This gives the FSM code a
-	 chance to optimize the path.  */
-      if (cached_lhs == NULL
-	  && cond_code == NE_EXPR)
+      /* If we were testing an integer/pointer against a constant, then
+	 we can use the FSM code to trace the value of the SSA_NAME.  If
+	 a value is found, then the condition will collapse to a constant.
+
+	 Return the SSA_NAME we want to trace back rather than the full
+	 expression and give the FSM threader a chance to find its value.  */
+      if (cached_lhs == NULL)
 	{
 	  /* Recover the original operands.  They may have been simplified
 	     using context sensitive equivalences.  Those context sensitive
@@ -563,9 +565,10 @@ simplify_control_stmt_condition (edge e,
 	  tree op0 = gimple_cond_lhs (stmt);
 	  tree op1 = gimple_cond_rhs (stmt);
 
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (op0))
+	  if ((INTEGRAL_TYPE_P (TREE_TYPE (op0))
+	       || POINTER_TYPE_P (TREE_TYPE (op0)))
 	      && TREE_CODE (op0) == SSA_NAME
-	      && integer_zerop (op1))
+	      && TREE_CODE (op1) == INTEGER_CST)
 	    return op0;
 	}
 
@@ -1046,10 +1049,18 @@ thread_through_normal_block (edge e,
 
       if (!flag_expensive_optimizations
 	  || optimize_function_for_size_p (cfun)
-	  || TREE_CODE (cond) != SSA_NAME
+	  || !(TREE_CODE (cond) == SSA_NAME
+	       || (TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison
+		   && TREE_CODE (TREE_OPERAND (cond, 0)) == SSA_NAME
+		   && TREE_CODE (TREE_OPERAND (cond, 1)) == INTEGER_CST))
 	  || e->dest->loop_father != e->src->loop_father
 	  || loop_depth (e->dest->loop_father) == 0)
 	return 0;
+
+      /* Extract the SSA_NAME we want to trace backwards if COND is not
+	 already a bare SSA_NAME.  */
+      if (TREE_CODE (cond) != SSA_NAME)
+	cond = TREE_OPERAND (cond, 0);
 
       /* When COND cannot be simplified, try to find paths from a control
 	 statement back through the PHI nodes which would affect that control
