@@ -1,3 +1,8 @@
+2015-10-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/67476
+	* omp-low.c (expand_omp_for_generic): Handle simple latch.
+
 2015-10-12  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/aarch64/aarch64-simd-builtins.def: Update builtins
