@@ -1,3 +1,18 @@
+2015-10-12  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (msp430_mcu_names): Rename to
+	msp430_mcu_data, add fields for ISA and hardware multiply
+	support.  Import latest data from the devices.csv file.
+	(msp430_override_option): Use the data from the new array.
+	(msp430_use_f5_series_hwmult): Likewise.
+	(use_32bit_hwmult): Likewise.
+	(msp430_no_hwmult): Likewise.
+	* config/msp430/t-msp430 (MULTILIB_MATCHES): Add matches for new
+	MCU names.
+	* doc/invoke.texi (MSP430 Options): Note that if the MCU name is
+	not recognised then no hardware multiply support is assumed and
+	that only the MSP430 ISA is allowed.
+
 2015-10-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_analyze_loop_operations): Move cost
