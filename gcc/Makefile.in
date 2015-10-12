@@ -1478,6 +1478,7 @@ OBJS = \
 	tree-ssa-structalias.o \
 	tree-ssa-tail-merge.o \
 	tree-ssa-ter.o \
+	tree-ssa-threadbackward.o \
 	tree-ssa-threadedge.o \
 	tree-ssa-threadupdate.o \
 	tree-ssa-uncprop.o \
