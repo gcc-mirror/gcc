@@ -1,3 +1,10 @@
+2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	revert:
+	2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
+	* cgraphbuild.c (compute_call_stmt_bb_frequency): Use
+	counts when these are more informative.
+
 2015-10-12  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadbackward.c (fsm_find_thread_path): Remove
