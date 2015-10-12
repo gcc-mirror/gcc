@@ -1,3 +1,10 @@
+2015-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/67783
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Re-add
+	code that analyzes IVs on each stmt but in a cheaper way avoiding
+	quadratic behavior.
+
 2015-10-12  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.c (msp430_mcu_names): Rename to

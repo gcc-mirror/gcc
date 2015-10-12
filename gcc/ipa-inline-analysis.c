@@ -2786,37 +2786,60 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 				  &will_be_nonconstant);
 	    }
 	  exits.release ();
+	}
 
-	  for (gphi_iterator gsi = gsi_start_phis (loop->header);
-	       !gsi_end_p (gsi); gsi_next (&gsi))
+      /* To avoid quadratic behavior we analyze stride predicates only
+         with respect to the containing loop.  Thus we simply iterate
+	 over all defs in the outermost loop body.  */
+      for (loop = loops_for_fn (cfun)->tree_root->inner;
+	   loop != NULL; loop = loop->next)
+	{
+	  basic_block *body = get_loop_body (loop);
+	  for (unsigned i = 0; i < loop->num_nodes; i++)
 	    {
-	      gphi *phi = gsi.phi ();
-	      tree use = gimple_phi_result (phi);
-	      affine_iv iv;
-	      predicate will_be_nonconstant;
-	      if (virtual_operand_p (use)
-		  || !simple_iv (loop, loop, use, &iv, true)
-		  || is_gimple_min_invariant (iv.step))
-		continue;
-	      will_be_nonconstant
-		= will_be_nonconstant_expr_predicate (fbi.info, info,
-						      iv.step,
-						      nonconstant_names);
-	      if (!true_predicate_p (&will_be_nonconstant))
-		will_be_nonconstant = and_predicates (info->conds,
-						      &bb_predicate,
-						      &will_be_nonconstant);
-	      if (!true_predicate_p (&will_be_nonconstant)
-		  && !false_predicate_p (&will_be_nonconstant))
-		/* This is slightly inprecise.  We may want to represent
-		   each loop with independent predicate.  */
-		loop_stride = and_predicates (info->conds, &loop_stride,
-					      &will_be_nonconstant);
+	      gimple_stmt_iterator gsi;
+	      bb_predicate = *(struct predicate *) body[i]->aux;
+	      for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi);
+		   gsi_next (&gsi))
+		{
+		  gimple *stmt = gsi_stmt (gsi);
+
+		  if (!is_gimple_assign (stmt))
+		    continue;
+
+		  tree def = gimple_assign_lhs (stmt);
+		  if (TREE_CODE (def) != SSA_NAME)
+		    continue;
+
+		  affine_iv iv;
+		  if (!simple_iv (loop_containing_stmt (stmt),
+				  loop_containing_stmt (stmt),
+				  def, &iv, true)
+		      || is_gimple_min_invariant (iv.step))
+		    continue;
+
+		  predicate will_be_nonconstant
+		    = will_be_nonconstant_expr_predicate (fbi.info, info,
+							  iv.step,
+							  nonconstant_names);
+		  if (!true_predicate_p (&will_be_nonconstant))
+		    will_be_nonconstant
+		      = and_predicates (info->conds, &bb_predicate,
+					&will_be_nonconstant);
+		  if (!true_predicate_p (&will_be_nonconstant)
+		      && !false_predicate_p (&will_be_nonconstant))
+		    /* This is slightly inprecise.  We may want to represent
+		       each loop with independent predicate.  */
+		    loop_stride = and_predicates (info->conds, &loop_stride,
+						  &will_be_nonconstant);
+		}
 	    }
+	  free (body);
 	}
       set_hint_predicate (&inline_summaries->get (node)->loop_iterations,
 			  loop_iterations);
-      set_hint_predicate (&inline_summaries->get (node)->loop_stride, loop_stride);
+      set_hint_predicate (&inline_summaries->get (node)->loop_stride,
+			  loop_stride);
       scev_finalize ();
     }
   FOR_ALL_BB_FN (bb, my_function)
