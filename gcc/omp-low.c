@@ -6162,7 +6162,9 @@ expand_omp_for_generic (struct omp_region *region,
   if (!broken_loop)
     {
       l2_bb = create_empty_bb (cont_bb);
-      gcc_assert (BRANCH_EDGE (cont_bb)->dest == l1_bb);
+      gcc_assert (BRANCH_EDGE (cont_bb)->dest == l1_bb
+		  || (single_succ_edge (BRANCH_EDGE (cont_bb)->dest)->dest
+		      == l1_bb));
       gcc_assert (EDGE_COUNT (cont_bb->succs) == 2);
     }
   else
@@ -6438,6 +6440,11 @@ expand_omp_for_generic (struct omp_region *region,
       make_edge (cont_bb, l2_bb, EDGE_FALSE_VALUE);
       add_bb_to_loop (l2_bb, cont_bb->loop_father);
       e = find_edge (cont_bb, l1_bb);
+      if (e == NULL)
+	{
+	  e = BRANCH_EDGE (cont_bb);
+	  gcc_assert (single_succ (e->dest) == l1_bb);
+	}
       if (gimple_omp_for_combined_p (fd->for_stmt))
 	{
 	  remove_edge (e);
