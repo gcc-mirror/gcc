@@ -6616,7 +6616,11 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	 operations.  */
       || (bitsize >= 0
 	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST
-	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)), bitsize) != 0)
+	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)), bitsize) != 0
+	  /* Except for initialization of full bytes from a CONSTRUCTOR, which
+	     we will handle specially below.  */
+	  && !(TREE_CODE (exp) == CONSTRUCTOR
+	       && bitsize % BITS_PER_UNIT == 0))
       /* If we are expanding a MEM_REF of a non-BLKmode non-addressable
          decl we must use bitfield operations.  */
       || (bitsize >= 0
@@ -6628,6 +6632,9 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
     {
       rtx temp;
       gimple *nop_def;
+
+      /* Using bitwise copy is not safe for TREE_ADDRESSABLE types.  */
+      gcc_assert (!TREE_ADDRESSABLE (TREE_TYPE (exp)));
 
       /* If EXP is a NOP_EXPR of precision less than its mode, then that
 	 implies a mask operation.  If the precision is the same size as
@@ -6742,6 +6749,15 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 
       if (!MEM_KEEP_ALIAS_SET_P (to_rtx) && MEM_ALIAS_SET (to_rtx) != 0)
 	set_mem_alias_set (to_rtx, alias_set);
+
+      /* Above we avoided using bitfield operations for storing a CONSTRUCTOR
+	 into a target smaller than its type; handle that case now.  */
+      if (TREE_CODE (exp) == CONSTRUCTOR && bitsize >= 0)
+	{
+	  gcc_assert (bitsize % BITS_PER_UNIT == 0);
+	  store_constructor (exp, to_rtx, 0, bitsize/BITS_PER_UNIT);
+	  return to_rtx;
+	}
 
       return store_expr (exp, to_rtx, 0, nontemporal);
     }
