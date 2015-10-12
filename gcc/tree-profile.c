@@ -564,20 +564,21 @@ tree_profiling (void)
     }
 
   /* Drop pure/const flags from instrumented functions.  */
-  FOR_EACH_DEFINED_FUNCTION (node)
-    {
-      if (!gimple_has_body_p (node->decl)
-	  || !(!node->clone_of
-	  || node->decl != node->clone_of->decl))
-	continue;
+  if (profile_arc_flag || flag_test_coverage)
+    FOR_EACH_DEFINED_FUNCTION (node)
+      {
+	if (!gimple_has_body_p (node->decl)
+	    || !(!node->clone_of
+	    || node->decl != node->clone_of->decl))
+	  continue;
 
-      /* Don't profile functions produced for builtin stuff.  */
-      if (DECL_SOURCE_LOCATION (node->decl) == BUILTINS_LOCATION)
-	continue;
+	/* Don't profile functions produced for builtin stuff.  */
+	if (DECL_SOURCE_LOCATION (node->decl) == BUILTINS_LOCATION)
+	  continue;
 
-      node->set_const_flag (false, false);
-      node->set_pure_flag (false, false);
-    }
+	node->set_const_flag (false, false);
+	node->set_pure_flag (false, false);
+      }
 
   /* Update call statements and rebuild the cgraph.  */
   FOR_EACH_DEFINED_FUNCTION (node)
@@ -633,7 +634,7 @@ const pass_data pass_data_ipa_tree_profile =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  0, /* todo_flags_finish */
+  TODO_dump_symtab, /* todo_flags_finish */
 };
 
 class pass_ipa_tree_profile : public simple_ipa_opt_pass
