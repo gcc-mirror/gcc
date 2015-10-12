@@ -1,3 +1,20 @@
+2015-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/rs6000/rs6000.h (RS6000_ALIGN): Implement using
+	ROUND_UP macro.
+	* config/rs6000/rs6000.c (rs6000_darwin64_record_arg_advance_flush):
+	Use ROUND_UP and ROUND_DOWN macros where applicable.
+	(rs6000_darwin64_record_arg_flush): Ditto.
+	(rs6000_function_arg): Use ROUND_UP to calculate align_words.
+	(rs6000_emit_probe_stack_range): Use ROUND_DOWN to calculate
+	rounded_size.
+
+2015-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/aarch/aarch64.h (AARCH64_ROUND_UP): Remove.
+	(AARCH64_ROUND_DOWN): Ditto.
+	* config/aarch64/aarch64.c: Use ROUND_UP instead of AARCH64_ROUND_UP.
+
 2015-10-12  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/67783
