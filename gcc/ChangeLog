@@ -1,3 +1,13 @@
+2015-10-12  Alexander Fomin  <alexander.fomin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/67849
+	* config/i386/sse.md (define_split vec_select/V8FI): Restrict
+	split for upper-bank registers when target does not support
+	AVX512VL.
+	(define_insn "vec_extract_lo_<mode><mask_name>"): Restrict
+	split when target does not support AVX512VL.
+
 2015-10-12  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
