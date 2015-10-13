@@ -1,9 +1,20 @@
+2015-10-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (classify_argument): Use CEIL where applicable.
+	(ix86_function_arg_advance): Ditto.
+	(ix86_function_arg): Ditto.
+	(ix86_gimplify_va_arg): Ditto.
+	(ix86_class_max_nregs): Ditto.
+	(inline_memory_move_cost): Ditto.
+	(ix86_set_reg_reg_cost): Ditto.
+	* config/i386/i386.h (HARD_REGNO_NREGS): Ditto.
+
 2015-10-13  Alexandre Oliva <aoliva@redhat.com>
 
 	PR middle-end/67912
 	* expmed.c (store_bit_field_1): Adjust mode of BLKmode inputs.
 
-2015-10-12  Uros Bizjak  <ubizjak@gmail.com>
+2015-10-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/sparc/sparc.h (SPARC_STACK_ALIGN): Implement using
 	ROUND_UP macro and UNITS_PER_WORD * 2.
