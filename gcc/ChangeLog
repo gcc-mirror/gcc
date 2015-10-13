@@ -1,3 +1,10 @@
+2015-10-14  Tom de Vries  <tom@codesourcery.com>
+
+	* cfganal.c (verify_no_unreachable_blocks): New function.
+	(inverted_post_order_compute) [ENABLE_CHECKING]: Call
+	verify_no_unreachable_blocks.
+	cfganal.h (verify_no_unreachable_blocks): Declare.
+
 2015-10-13  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* common.opt: Add flag_checking.

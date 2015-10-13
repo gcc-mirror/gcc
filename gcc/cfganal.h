@@ -49,6 +49,7 @@ private:
 
 extern bool mark_dfs_back_edges (void);
 extern void find_unreachable_blocks (void);
+extern void verify_no_unreachable_blocks (void);
 struct edge_list * create_edge_list (void);
 void free_edge_list (struct edge_list *);
 void print_edge_list (FILE *, struct edge_list *);
