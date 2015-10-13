@@ -40,7 +40,7 @@
 #include <array>
 #include <ext/cmath>
 #ifdef __SSE2__
-# include <x86intrin.h>
+# include <emmintrin.h>
 #endif
 
 #if defined(_GLIBCXX_USE_C99_STDINT_TR1) && defined(UINT32_C)

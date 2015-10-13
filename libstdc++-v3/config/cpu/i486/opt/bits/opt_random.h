@@ -30,7 +30,9 @@
 #ifndef _BITS_OPT_RANDOM_H
 #define _BITS_OPT_RANDOM_H 1
 
-#include <x86intrin.h>
+#ifdef __SSE3__
+#include <pmmintrin.h>
+#endif
 
 
 #pragma GCC system_header
