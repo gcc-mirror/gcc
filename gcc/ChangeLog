@@ -12,6 +12,10 @@
 	(sparc_emit_probe_stack_range): Use ROUND_DOWN to calculate
 	rounded_size.
 
+2015-10-13  Nikolai Bozhenov  <n.bozhenov@samsung.com>
+
+	* gcc/rtl.h (print_insn): Fix prototype.
+
 2015-10-13  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (reduction_phi): Handle cases that gimple_uid is 0 or
