@@ -1,3 +1,8 @@
+2014-10-13  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/67909, 67947
+	* gcc.dg/torture/pr67947.c: New test.
+
 2015-10-13  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-thread-13.c: New test.

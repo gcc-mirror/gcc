@@ -471,7 +471,6 @@ find_loop_guard (struct loop *loop)
 {
   basic_block header = loop->header;
   edge guard_edge, te, fe;
-  /* bitmap processed, known_invariants;*/
   basic_block *body = NULL;
   unsigned i;
   tree use;
@@ -528,6 +527,16 @@ find_loop_guard (struct loop *loop)
     guard_edge = fe;
   else
     return NULL;
+
+  /* Guard edge must skip inner loop.  */
+  if (!dominated_by_p (CDI_DOMINATORS, loop->inner->header,
+      guard_edge == fe ? te->dest : fe->dest))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Guard edge %d --> %d is not around the loop!\n",
+		 guard_edge->src->index, guard_edge->dest->index);
+      return NULL;
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,
