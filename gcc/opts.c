@@ -2128,14 +2128,21 @@ handle_param (struct gcc_options *opts, struct gcc_options *opts_set,
 	      arg);
   else
     {
-      value = integral_argument (equal + 1);
-      if (value == -1)
-	error_at (loc, "invalid --param value %qs", equal + 1);
+      *equal = '\0';
+
+      enum compiler_param index;
+      if (!find_param (arg, &index))
+	error_at (loc, "invalid --param name %qs", arg);
       else
 	{
-	  *equal = '\0';
-	  set_param_value (arg, value,
-			   opts->x_param_values, opts_set->x_param_values);
+	  if (!param_string_value_p (index, equal + 1, &value))
+	    value = integral_argument (equal + 1);
+
+	  if (value == -1)
+	    error_at (loc, "invalid --param value %qs", equal + 1);
+	  else
+	    set_param_value (arg, value,
+			     opts->x_param_values, opts_set->x_param_values);
 	}
     }
 
