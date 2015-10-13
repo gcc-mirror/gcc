@@ -17,7 +17,7 @@ f1 (void)
 void
 f2 (void)
 {
-  int i;
+  int i, j = 0;
   #pragma omp parallel
   {
     #pragma omp cancel parallel
@@ -132,7 +132,7 @@ f2 (void)
 	#pragma omp cancellation point taskgroup/* { dg-error "not closely nested inside" } */
       }
     }
-    #pragma omp target data
+    #pragma omp target data map(j)
     {
       #pragma omp cancel parallel		/* { dg-error "not closely nested inside" } */
       #pragma omp cancel for			/* { dg-error "not closely nested inside" } */
@@ -155,7 +155,7 @@ f2 (void)
       #pragma omp cancellation point taskgroup	/* { dg-error "not closely nested inside" } */
     }
   }
-  #pragma omp target data
+  #pragma omp target data map(j)
   {
     #pragma omp cancel parallel			/* { dg-error "not closely nested inside" } */
     #pragma omp cancel for			/* { dg-error "not closely nested inside" } */
@@ -214,7 +214,7 @@ f2 (void)
     }
   #pragma omp for
   for (i = 0; i < 10; i++)
-    #pragma omp target data
+    #pragma omp target data map(j)
     {
       #pragma omp cancel parallel		/* { dg-error "not closely nested inside" } */
       #pragma omp cancel for			/* { dg-error "not closely nested inside" } */
@@ -241,7 +241,7 @@ f2 (void)
   #pragma omp for ordered
   for (i = 0; i < 10; i++)
     #pragma omp ordered
-      #pragma omp target data
+      #pragma omp target data map(j)
       {
 	#pragma omp cancel parallel		/* { dg-error "not closely nested inside" } */
 	#pragma omp cancel for			/* { dg-error "not closely nested inside" } */
@@ -292,7 +292,7 @@ f2 (void)
   }
   #pragma omp sections
   {
-    #pragma omp target data
+    #pragma omp target data map(j)
     {
       #pragma omp cancel parallel		/* { dg-error "not closely nested inside" } */
       #pragma omp cancel for			/* { dg-error "not closely nested inside" } */
@@ -304,7 +304,7 @@ f2 (void)
       #pragma omp cancellation point taskgroup	/* { dg-error "not closely nested inside" } */
     }
     #pragma omp section
-    #pragma omp target data
+    #pragma omp target data map(j)
     {
       #pragma omp cancel parallel		/* { dg-error "not closely nested inside" } */
       #pragma omp cancel for			/* { dg-error "not closely nested inside" } */

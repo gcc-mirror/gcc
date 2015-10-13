@@ -10,11 +10,11 @@ int main ()
   int b = 0;
   int c, d;
 
-  #pragma omp target if(a > 200 && a < 400)
+  #pragma omp target if(a > 200 && a < 400) map(from: c)
     c = omp_is_initial_device ();
 
   #pragma omp target data map(to: b) if(a > 200 && a < 400)
-    #pragma omp target
+    #pragma omp target map(from: b, d)
       {
 	b = 100;
 	d = omp_is_initial_device ();
@@ -26,11 +26,11 @@ int main ()
   a += 200;
   b = 0;
 
-  #pragma omp target if(a > 200 && a < 400)
+  #pragma omp target if(a > 200 && a < 400) map(from: c)
     c = omp_is_initial_device ();
 
   #pragma omp target data map(to: b) if(a > 200 && a < 400)
-    #pragma omp target
+    #pragma omp target map(from: b, d)
       {
 	b = 100;
 	d = omp_is_initial_device ();
@@ -42,11 +42,11 @@ int main ()
   a += 200;
   b = 0;
 
-  #pragma omp target if(a > 200 && a < 400)
+  #pragma omp target if(a > 200 && a < 400) map(from: c)
     c = omp_is_initial_device ();
 
   #pragma omp target data map(to: b) if(a > 200 && a < 400)
-    #pragma omp target
+    #pragma omp target map(from: b, d)
       {
 	b = 100;
 	d = omp_is_initial_device ();

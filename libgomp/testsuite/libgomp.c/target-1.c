@@ -34,7 +34,7 @@ fn2 (int x, int y, int z)
   fn1 (b, c, x);
   #pragma omp target data map(to: b)
   {
-    #pragma omp target map(tofrom: c)
+    #pragma omp target map(tofrom: c, s)
       #pragma omp teams num_teams(y) thread_limit(z) reduction(+:s) firstprivate(x)
 	#pragma omp distribute dist_schedule(static, 4) collapse(1)
 	  for (j=0; j < x; j += y)
@@ -52,7 +52,7 @@ fn3 (int x)
   double b[1024], c[1024], s = 0;
   int i;
   fn1 (b, c, x);
-  #pragma omp target map(to: b, c)
+  #pragma omp target map(to: b, c) map(tofrom:s)
     #pragma omp parallel for reduction(+:s)
       for (i = 0; i < x; i++)
 	tgt (), s += b[i] * c[i];
@@ -66,7 +66,8 @@ fn4 (int x, double *p)
   int i;
   fn1 (b, c, x);
   fn1 (d + x, p + x, x);
-  #pragma omp target map(to: b, c[0:x], d[x:x]) map(to:p[x:64 + (x & 31)])
+  #pragma omp target map(to: b, c[0:x], d[x:x]) map(to:p[x:64 + (x & 31)]) \
+		     map(tofrom: s)
     #pragma omp parallel for reduction(+:s)
       for (i = 0; i < x; i++)
 	s += b[i] * c[i] + d[x + i] + p[x + i];

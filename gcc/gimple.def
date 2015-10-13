@@ -283,10 +283,6 @@ DEFGSCODE(GIMPLE_OMP_MASTER, "gimple_omp_master", GSS_OMP)
    BODY is the sequence of statements to execute in the taskgroup section.  */
 DEFGSCODE(GIMPLE_OMP_TASKGROUP, "gimple_omp_taskgroup", GSS_OMP)
 
-/* GIMPLE_OMP_ORDERED <BODY> represents #pragma omp ordered.
-   BODY is the sequence of statements to execute in the ordered section.  */
-DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", GSS_OMP)
-
 /* GIMPLE_OMP_PARALLEL <BODY, CLAUSES, CHILD_FN, DATA_ARG> represents
 
    #pragma omp parallel [CLAUSES]
@@ -374,6 +370,11 @@ DEFGSCODE(GIMPLE_OMP_TARGET, "gimple_omp_target", GSS_OMP_PARALLEL_LAYOUT)
    BODY is the sequence of statements inside the single section.
    CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
 DEFGSCODE(GIMPLE_OMP_TEAMS, "gimple_omp_teams", GSS_OMP_SINGLE_LAYOUT)
+
+/* GIMPLE_OMP_ORDERED <BODY, CLAUSES> represents #pragma omp ordered.
+   BODY is the sequence of statements to execute in the ordered section.
+   CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
+DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", GSS_OMP_SINGLE_LAYOUT)
 
 /* GIMPLE_PREDICT <PREDICT, OUTCOME> specifies a hint for branch prediction.
 

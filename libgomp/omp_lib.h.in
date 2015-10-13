@@ -46,9 +46,23 @@
       parameter (omp_proc_bind_master = 2)
       parameter (omp_proc_bind_close = 3)
       parameter (omp_proc_bind_spread = 4)
+      integer omp_lock_hint_kind
+      parameter (omp_lock_hint_kind = 4)
+      integer (omp_lock_hint_kind) omp_lock_hint_none
+      integer (omp_lock_hint_kind) omp_lock_hint_uncontended
+      integer (omp_lock_hint_kind) omp_lock_hint_contended
+      integer (omp_lock_hint_kind) omp_lock_hint_nonspeculative
+      integer (omp_lock_hint_kind) omp_lock_hint_speculative
+      parameter (omp_lock_hint_none = 0)
+      parameter (omp_lock_hint_uncontended = 1)
+      parameter (omp_lock_hint_contended = 2)
+      parameter (omp_lock_hint_nonspeculative = 4)
+      parameter (omp_lock_hint_speculative = 8)
       parameter (openmp_version = 201307)
 
       external omp_init_lock, omp_init_nest_lock
+      external omp_init_lock_with_hint
+      external omp_init_nest_lock_with_hint
       external omp_destroy_lock, omp_destroy_nest_lock
       external omp_set_lock, omp_set_nest_lock
       external omp_unset_lock, omp_unset_nest_lock
@@ -88,6 +102,17 @@
       external omp_get_proc_bind
       integer(omp_proc_bind_kind) omp_get_proc_bind
 
+      integer(4) omp_get_num_places
+      external omp_get_num_places
+      integer(4) omp_get_place_num_procs
+      external omp_get_place_num_procs
+      external omp_get_place_proc_ids
+      integer(4) omp_get_place_num
+      external omp_get_place_num
+      integer(4) omp_get_partition_num_places
+      external omp_get_partition_num_places
+      external omp_get_partition_place_nums
+
       external omp_set_default_device, omp_get_default_device
       external omp_get_num_devices, omp_get_num_teams
       external omp_get_team_num
@@ -96,3 +121,8 @@
 
       external omp_is_initial_device
       logical(4) omp_is_initial_device
+      external omp_get_initial_device
+      integer(4) omp_get_initial_device
+
+      external omp_get_max_task_priority
+      integer(4) omp_get_max_task_priority

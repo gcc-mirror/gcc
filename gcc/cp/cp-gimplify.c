@@ -713,6 +713,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     case OMP_FOR:
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
+    case OMP_TASKLOOP:
       ret = cp_gimplify_omp_for (expr_p, pre_p);
       break;
 
@@ -1294,7 +1295,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     genericize_break_stmt (stmt_p);
   else if (TREE_CODE (stmt) == OMP_FOR
 	   || TREE_CODE (stmt) == OMP_SIMD
-	   || TREE_CODE (stmt) == OMP_DISTRIBUTE)
+	   || TREE_CODE (stmt) == OMP_DISTRIBUTE
+	   || TREE_CODE (stmt) == OMP_TASKLOOP)
     genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
   else if (TREE_CODE (stmt) == SIZEOF_EXPR)
     {
@@ -1752,16 +1754,7 @@ cxx_omp_finish_clause (tree c, gimple_seq *)
   if (decl == error_mark_node)
     make_shared = true;
   else if (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE)
-    {
-      if (is_invisiref_parm (decl))
-	inner_type = TREE_TYPE (inner_type);
-      else
-	{
-	  error ("%qE implicitly determined as %<firstprivate%> has reference type",
-		 decl);
-	  make_shared = true;
-	}
-    }
+    inner_type = TREE_TYPE (inner_type);
 
   /* We're interested in the base element, not arrays.  */
   while (TREE_CODE (inner_type) == ARRAY_TYPE)
@@ -1777,4 +1770,20 @@ cxx_omp_finish_clause (tree c, gimple_seq *)
 
   if (make_shared)
     OMP_CLAUSE_CODE (c) = OMP_CLAUSE_SHARED;
+}
+
+/* Return true if DECL's DECL_VALUE_EXPR (if any) should be
+   disregarded in OpenMP construct, because it is going to be
+   remapped during OpenMP lowering.  SHARED is true if DECL
+   is going to be shared, false if it is going to be privatized.  */
+
+bool
+cxx_omp_disregard_value_expr (tree decl, bool shared)
+{
+  return !shared
+	 && VAR_P (decl)
+	 && DECL_HAS_VALUE_EXPR_P (decl)
+	 && DECL_ARTIFICIAL (decl)
+	 && DECL_LANG_SPECIFIC (decl)
+	 && DECL_OMP_PRIVATIZED_MEMBER (decl);
 }

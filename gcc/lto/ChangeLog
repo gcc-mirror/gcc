@@ -1,3 +1,8 @@
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-lang.c (DEF_FUNCTION_TYPE_9, DEF_FUNCTION_TYPE_10,
+	DEF_FUNCTION_TYPE_11): Define.
+
 2015-10-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (hash_canonical_type): Honor

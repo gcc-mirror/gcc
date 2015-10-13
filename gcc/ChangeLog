@@ -1,3 +1,378 @@
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* builtin-types.def (BT_FN_BOOL_UINT_LONGPTR_LONGPTR_LONGPTR,
+	BT_FN_BOOL_UINT_ULLPTR_ULLPTR_ULLPTR,
+	BT_FN_BOOL_UINT_LONGPTR_LONG_LONGPTR_LONGPTR,
+	BT_FN_BOOL_UINT_ULLPTR_ULL_ULLPTR_ULLPTR,
+	BT_FN_VOID_INT_SIZE_PTR_PTR_PTR_UINT_PTR,
+	BT_FN_VOID_INT_OMPFN_SIZE_PTR_PTR_PTR_UINT_PTR,
+	BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR_INT,
+	BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_UINT_LONG_INT_LONG_LONG_LONG,
+	BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_UINT_LONG_INT_ULL_ULL_ULL,
+	BT_FN_VOID_LONG_VAR, BT_FN_VOID_ULL_VAR): New.
+	(BT_FN_VOID_INT_PTR_SIZE_PTR_PTR_PTR,
+	BT_FN_VOID_INT_OMPFN_PTR_SIZE_PTR_PTR_PTR,
+	BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR): Remove.
+	* cgraph.h (enum cgraph_simd_clone_arg_type): Add
+	SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP,
+	SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_CONSTANT_STEP and
+	SIMD_CLONE_ARG_TYPE_LINEAR_VAL_CONSTANT_STEP.
+	(struct cgraph_simd_clone_arg): Adjust comment.
+	* coretypes.h (struct gomp_ordered): New forward decl.
+	* gimple.c (gimple_build_omp_critical): Add CLAUSES argument,
+	set critical clauses to it.
+	(gimple_build_omp_ordered): Return gomp_ordered * instead of
+	gimple *.  Add CLAUSES argument, set ordered clauses to it.
+	(gimple_copy): Unshare clauses on GIMPLE_OMP_CRITICAL and
+	GIMPLE_OMP_ORDERED.
+	* gimple.def (GIMPLE_OMP_ORDERED): Change from GSS_OMP to
+	GSS_OMP_SINGLE_LAYOUT, move it after GIMPLE_OMP_TEAMS.
+	* gimple.h (enum gf_mask): Add GF_OMP_TASK_TASKLOOP.  Add another bit
+	to GF_OMP_FOR_KIND_MASK mask. Add GF_OMP_FOR_KIND_TASKLOOP, renumber
+	GF_OMP_FOR_KIND_CILKFOR and GF_OMP_FOR_KIND_OACC_LOOP.  Adjust
+	GF_OMP_FOR_SIMD, GF_OMP_FOR_COMBINED and GF_OMP_FOR_COMBINED_INTO.
+	Add another bit to GF_OMP_TARGET_KIND_MASK mask.  Add
+	GF_OMP_TARGET_KIND_ENTER_DATA and GF_OMP_TARGET_KIND_EXIT_DATA,
+	renumber
+	GF_OMP_TARGET_KIND_OACC_{PARALLEL,KERNELS,DATA,UPDATE,ENTER_EXIT_DATA}.
+	(gomp_critical): Add clauses field.
+	(gomp_ordered): New struct.
+	(is_a_helper <gomp_ordered *>::test): New inline.
+	(gimple_build_omp_critical): Add CLAUSES argument.
+	(gimple_build_omp_ordered): Likewise.  Return gomp_ordered *
+	instead of gimple *.
+	(gimple_omp_critical_clauses, gimple_omp_critical_clauses_ptr,
+	gimple_omp_critical_set_clauses, gimple_omp_ordered_clauses,
+	gimple_omp_ordered_clauses_ptr, gimple_omp_ordered_set_clauses,
+	gimple_omp_task_taskloop_p, gimple_omp_task_set_taskloop_p): New
+	inline functions.
+	* gimple-pretty-print.c (dump_gimple_omp_for): Handle taskloop.
+	(dump_gimple_omp_target): Handle enter data and exit data.
+	(dump_gimple_omp_block): Don't handle GIMPLE_OMP_ORDERED here.
+	(dump_gimple_omp_critical): Print clauses.
+	(dump_gimple_omp_ordered): New function.
+	(dump_gimple_omp_task): Handle taskloop.
+	(pp_gimple_stmt_1): Use dump_gimple_omp_ordered for
+	GIMPLE_OMP_ORDERED.
+	* gimple-walk.c (walk_gimple_op): Walk clauses on
+	GIMPLE_OMP_CRITICAL and GIMPLE_OMP_ORDERED.
+	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_MAP_0LEN_ARRAY.
+	(enum omp_region_type): Add ORT_COMBINED_TARGET and ORT_NONE.
+	(struct gimplify_omp_ctx): Add loop_iter_var,
+	target_map_scalars_firstprivate, target_map_pointers_as_0len_arrays
+	and target_firstprivatize_array_bases fields.
+	(delete_omp_context): Release loop_iter_var.
+	(gimplify_bind_expr): Handle ORT_NONE.
+	(maybe_fold_stmt): Adjust check for ORT_TARGET for the addition of
+	ORT_COMBINED_TARGET.
+	(is_gimple_stmt): Return true for OMP_TASKLOOP, OMP_TEAMS and
+	OMP_TARGET{,_DATA,_UPDATE,_ENTER_DATA,_EXIT_DATA}.
+	(omp_firstprivatize_variable): Handle ORT_NONE.  Adjust check for
+	ORT_TARGET for the addition of ORT_COMBINED_TARGET.  Handle
+	ctx->target_map_scalars_firstprivate.
+	(omp_add_variable): Handle ORT_NONE.  Allow map clause together with
+	data sharing clauses.  For data sharing clause with VLA decl
+	on omp target/target data don't add firstprivate for the pointer.
+	Call omp_notice_variable on TYPE_SIZE_UNIT only if it is a DECL_P.
+	(omp_notice_threadprivate_variable): Adjust check for ORT_TARGET for
+	the addition of ORT_COMBINED_TARGET.
+	(omp_notice_variable): Handle ORT_NONE.  Adjust check for ORT_TARGET
+	for the addition of ORT_COMBINED_TARGET.  Handle implicit mapping of
+	pointers as zero length array sections and
+	ctx->target_map_scalars_firstprivate mapping of scalars as firstprivate
+	data sharing.
+	(omp_check_private): Handle omp_member_access_dummy_var vars.
+	(find_decl_expr): New function.
+	(gimplify_scan_omp_clauses): Add CODE argument.  For OMP_CLAUSE_IF
+	complain if OMP_CLAUSE_IF_MODIFIER is present and does not match code.
+	Handle OMP_CLAUSE_GANG separately.  Handle
+	OMP_CLAUSE_{PRIORITY,GRAINSIZE,NUM_TASKS,NOGROUP,THREADS,SIMD,SIMDLEN}
+	clauses.  Diagnose linear clause on combined
+	distribute {, parallel for} simd construct, unless it is the loop
+	iterator.  Handle struct element GOMP_MAP_FIRSTPRIVATE_POINTER.
+	Handle map clauses with COMPONENT_REF.  Initialize
+	ctx->target_map_scalars_firstprivate,
+	ctx->target_firstprivatize_array_bases and
+	ctx->target_map_pointers_as_0len_arrays.  Add firstprivate for
+	linear clause even to target region if combined.  Remove
+	map clauses with GOMP_MAP_FIRSTPRIVATE_POINTER kind from
+	OMP_TARGET_{,ENTER_,EXIT_}DATA.  For GOMP_MAP_FIRSTPRIVATE_POINTER
+	map kind with non-INTEGER_CST OMP_CLAUSE_SIZE firstprivatize the bias.
+	Handle OMP_CLAUSE_DEPEND_{SINK,SOURCE}.  Handle
+	OMP_CLAUSE_{{USE,IS}_DEVICE_PTR,DEFAULTMAP,HINT}.
+	For linear clause on worksharing loop combined with parallel add
+	shared clause on the parallel.  Handle OMP_CLAUSE_REDUCTION
+	with MEM_REF OMP_CLAUSE_DECL.  Set DECL_NAME on
+	omp_member_access_dummy_var vars.  Add lastprivate clause to outer
+	taskloop if needed.
+	(gimplify_adjust_omp_clauses_1): Handle GOVD_MAP_0LEN_ARRAY.
+	If gimplify_omp_ctxp->target_firstprivatize_array_bases, use
+	GOMP_MAP_FIRSTPRIVATE_POINTER map kind instead of
+	GOMP_MAP_POINTER.
+	(gimplify_adjust_omp_clauses): Add CODE argument.  Handle removal
+	of GOMP_MAP_FIRSTPRIVATE_POINTER struct elements for struct not seen
+	in target body.  Handle removal of struct mapping if struct is not
+	seen in target body.  Remove GOMP_MAP_STRUCT map clause on
+	OMP_TARGET_EXIT_DATA.  Adjust check for ORT_TARGET for the
+	addition of ORT_COMBINED_TARGET.  Use GOMP_MAP_FIRSTPRIVATE_POINTER
+	instead of GOMP_MAP_POINTER if ctx->target_firstprivatize_array_bases
+	for VLAs.  Set OMP_CLAUSE_MAP_PRIVATE if both data sharing and map
+	clause appear together.  Handle
+	OMP_CLAUSE_{{USE,IS}_DEVICE_PTR,DEFAULTMAP,HINT}.  Don't remove map
+	clause if it has map-type-modifier always.  Handle
+	OMP_CLAUSE_{PRIORITY,GRAINSIZE,NUM_TASKS,NOGROUP,THREADS,SIMD,SIMDLEN}
+	clauses.
+	(gimplify_oacc_cache, gimplify_omp_parallel, gimplify_omp_task):
+	Adjust gimplify_scan_omp_clauses and gimplify_adjust_omp_clauses
+	callers.
+	(gimplify_omp_for): Likewise.  Handle OMP_TASKLOOP.  Initialize
+	loop_iter_var.  Use OMP_FOR_ORIG_DECLS.  Fix handling of lastprivate
+	iterators in doacross loops.
+	(gimplify_omp_workshare): Adjust gimplify_scan_omp_clauses and
+	gimplify_adjust_omp_clauses callers.  Use ORT_COMBINED_TARGET
+	for OMP_TARGET_COMBINED.  Adjust check for ORT_TARGET
+	for the addition of ORT_COMBINED_TARGET.
+	(gimplify_omp_target_update): Adjust gimplify_scan_omp_clauses and
+	gimplify_adjust_omp_clauses callers.  Handle OMP_TARGET_ENTER_DATA
+	and OMP_TARGET_EXIT_DATA.
+	(gimplify_omp_ordered): New function.
+	(gimplify_expr): Handle OMP_TASKLOOP, OMP_TARGET_ENTER_DATA and
+	OMP_TARGET_EXIT_DATA.  Use gimplify_omp_ordered for OMP_ORDERED.
+	Gimplify clauses on OMP_CRITICAL.
+	* internal-fn.c (expand_GOMP_SIMD_ORDERED_START,
+	expand_GOMP_SIMD_ORDERED_END): New functions.
+	* internal-fn.def (GOMP_SIMD_ORDERED_START,
+	GOMP_SIMD_ORDERED_END): New internal functions.
+	* omp-builtins.def (BUILT_IN_GOMP_LOOP_DOACROSS_STATIC_START,
+	BUILT_IN_GOMP_LOOP_DOACROSS_DYNAMIC_START,
+	BUILT_IN_GOMP_LOOP_DOACROSS_GUIDED_START,
+	BUILT_IN_GOMP_LOOP_DOACROSS_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_ULL_DOACROSS_STATIC_START,
+	BUILT_IN_GOMP_LOOP_ULL_DOACROSS_DYNAMIC_START,
+	BUILT_IN_GOMP_LOOP_ULL_DOACROSS_GUIDED_START,
+	BUILT_IN_GOMP_LOOP_ULL_DOACROSS_RUNTIME_START,
+	BUILT_IN_GOMP_DOACROSS_POST, BUILT_IN_GOMP_DOACROSS_WAIT,
+	BUILT_IN_GOMP_DOACROSS_ULL_POST, BUILT_IN_GOMP_DOACROSS_ULL_WAIT,
+	BUILT_IN_GOMP_TARGET_ENTER_EXIT_DATA, BUILT_IN_GOMP_TASKLOOP,
+	BUILT_IN_GOMP_TASKLOOP_ULL): New built-ins.
+	(BUILT_IN_GOMP_TASK): Add INT argument to the end.
+	(BUILT_IN_GOMP_TARGET): Rename from GOMP_target to GOMP_target_41,
+	adjust type.
+	(BUILT_IN_GOMP_TARGET_DATA): Rename from GOMP_target_data to
+	GOMP_target_data_41, adjust type.
+	(BUILT_IN_GOMP_TARGET_UPDATE): Rename from GOMP_target_update to
+	GOMP_target_update_41, adjust type.
+	* omp-low.c (struct omp_region): Adjust comments, add ord_stmt
+	field.
+	(struct omp_for_data): Add ordered and simd_schedule fields.
+	(omp_member_access_dummy_var, unshare_and_remap_1,
+	unshare_and_remap, is_taskloop_ctx): New functions.
+	(is_taskreg_ctx): Use is_parallel_ctx and is_task_ctx.
+	(extract_omp_for_data): Handle taskloops and doacross loops
+	and simd schedule modifier.
+	(omp_adjust_chunk_size): New function.
+	(get_ws_args_for): Use it.
+	(lookup_sfield): Change first argument to splay_tree_key,
+	add overload with first argument tree.
+	(maybe_lookup_field): Likewise.
+	(use_pointer_for_field): Handle omp_member_access_dummy_var.
+	(omp_copy_decl_2): If var is TREE_ADDRESSABLE listed in
+	task_shared_vars, clear TREE_ADDRESSABLE on the copy.
+	(build_outer_var_ref): Add LASTPRIVATE argument, handle
+	taskloops and omp_member_access_dummy_var vars.
+	(build_sender_ref): Change first argument to splay_tree_key,
+	add overload with first argument tree.
+	(install_var_field): For mask & 8 use &DECL_UID as key instead
+	of the tree itself.
+	(fixup_child_record_type): Const qualify *.omp_data_i.
+	(scan_sharing_clauses): Handle OMP_CLAUSE_SHARED_FIRSTPRIVATE,
+	C/C++ array reductions, OMP_CLAUSE_{IS,USE}_DEVICE_PTR clauses,
+	OMP_CLAUSE_{PRIORITY,GRAINSIZE,NUM_TASKS,SIMDLEN,THREADS,SIMD} and
+	OMP_CLAUSE_{NOGROUP,DEFAULTMAP} clauses, OMP_CLAUSE__LOOPTEMP_ clause
+	on taskloop, GOMP_MAP_FIRSTPRIVATE_POINTER, OMP_CLAUSE_MAP_PRIVATE.
+	(create_omp_child_function): Set TREE_READONLY on .omp_data_i.
+	(find_combined_for): Allow searching for different GIMPLE_OMP_FOR
+	kinds.
+	(add_taskreg_looptemp_clauses): New function.
+	(scan_omp_parallel): Use it.
+	(scan_omp_task): Likewise.
+	(finish_taskreg_scan): Handle OMP_CLAUSE_SHARED_FIRSTPRIVATE.
+	For taskloop, move fields for the first two _LOOPTEMP_ clauses first.
+	(check_omp_nesting_restrictions): Handle GF_OMP_TARGET_KIND_ENTER_DATA
+	and GF_OMP_TARGET_KIND_EXIT_DATA.  Formatting fixes.  Allow the
+	sandwiched taskloop constructs.  Type check
+	OMP_CLAUSE_DEPEND_{KIND,SOURCE}.  Allow ordered simd inside of simd
+	region.  Diagnose depend(source) or depend(sink:...) on
+	target constructs or task/taskloop.
+	(handle_simd_reference): Use get_name.
+	(lower_rec_input_clauses): Likewise.  Ignore all
+	OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE clauses on taskloop construct.
+	Allow _LOOPTEMP_ clause on GOMP_TASK.  Unshare new_var
+	before passing it to omp_clause_{default,copy}_ctor.  Handle
+	OMP_CLAUSE_REDUCTION with MEM_REF OMP_CLAUSE_DECL.  Set
+	lastprivate_firstprivate flag for linear that needs copyin and
+	copyout.  Use BUILT_IN_ALLOCA_WITH_ALIGN instead of BUILT_IN_ALLOCA.
+	(lower_lastprivate_clauses): For OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE
+	on taskloop lookup decl in outer context.  Pass true to
+	build_outer_var_ref lastprivate argument.  Handle
+	OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV lastprivate if the decl is global
+	outside of outer taskloop for.
+	(lower_reduction_clauses): Handle OMP_CLAUSE_REDUCTION with MEM_REF
+	OMP_CLAUSE_DECL.
+	(lower_send_clauses): Ignore first two _LOOPTEMP_ clauses in taskloop
+	GOMP_TASK.  Handle OMP_CLAUSE_SHARED_FIRSTPRIVATE.  Handle
+	omp_member_access_dummy_var vars.  Handle OMP_CLAUSE_REDUCTION
+	with MEM_REF OMP_CLAUSE_DECL.  Use new lookup_sfield overload.
+	(lower_send_shared_vars): Ignore fields with NULL or FIELD_DECL
+	abstract origin.  Handle omp_member_access_dummy_var vars.
+	(expand_parallel_call): Use expand_omp_build_assign.
+	(expand_task_call): Handle taskloop construct expansion.  Add
+	REGION argument.  Use GOMP_TASK_* defines instead of hardcoded
+	integers.  Add priority argument to GOMP_task* calls.  Or in
+	GOMP_TASK_FLAG_PRIORITY into flags if priority is present for
+	GOMP_task call.
+	(expand_omp_build_assign): Add prototype.  Add AFTER
+	argument, if true emit statements after *GSI_P and continue linking.
+	(expand_omp_taskreg): Adjust expand_task_call caller.
+	(expand_omp_for_init_counts): Rename zero_iter_bb argument to
+	zero_iter1_bb and first_zero_iter to first_zero_iter1, add
+	zero_iter2_bb and first_zero_iter2 arguments, handle computation
+	of counts even for ordered loops.
+	(expand_omp_for_init_vars): Handle GOMP_TASK inner_stmt.
+	(expand_omp_ordered_source, expand_omp_ordered_sink,
+	expand_omp_ordered_source_sink, expand_omp_for_ordered_loops): New
+	functions.
+	(expand_omp_for_generic): Use omp_adjust_chunk_size.  Handle linear
+	clauses on worksharing loop.  Handle DOACROSS loop expansion.
+	(expand_omp_for_static_nochunk): Handle linear clauses on
+	worksharing loop.  Adjust expand_omp_for_init_counts
+	callers.
+	(expand_omp_for_static_chunk): Likewise.  Use omp_adjust_chunk_size.
+	(expand_omp_simd): Handle addressable fd->loop.v.  Adjust
+	expand_omp_for_init_counts callers.
+	(expand_omp_taskloop_for_outer, expand_omp_taskloop_for_inner): New
+	functions.
+	(expand_omp_for): Call expand_omp_taskloop_for_* for taskloop.
+	Handle doacross loops.
+	(expand_omp_target): Handle GF_OMP_TARGET_KIND_ENTER_DATA and
+	GF_OMP_TARGET_KIND_EXIT_DATA.  Pass flags and depend arguments to
+	GOMP_target_{41,update_41,enter_exit_data} libcalls.
+	(expand_omp): Don't expand ordered depend constructs here, record
+	ord_stmt instead for later expand_omp_for_generic.
+	(build_omp_regions_1): Handle GF_OMP_TARGET_KIND_ENTER_DATA and
+	GF_OMP_TARGET_KIND_EXIT_DATA.  Treat GIMPLE_OMP_ORDERED with depend
+	clause as stand-alone directive.
+	(lower_omp_ordered_clauses): New function.
+	(lower_omp_ordered): Handle OMP_CLAUSE_SIMD, for OMP_CLAUSE_DEPEND
+	don't lower anything.
+	(lower_omp_for_lastprivate): Use last _looptemp_ clause
+	on taskloop for comparison.
+	(lower_omp_for): Handle taskloop constructs.  Adjust OMP_CLAUSE_DECL
+	and OMP_CLAUSE_LINEAR_STEP so that expand_omp_for_* can use it during
+	expansion for linear adjustments.
+	(create_task_copyfn): Handle OMP_CLAUSE_SHARED_FIRSTPRIVATE.
+	(lower_depend_clauses): Assert not seeing sink/source depend kinds.
+	Set TREE_ADDRESSABLE on array.  Change first argument from gimple *
+	to tree * pointing to the stmt's clauses.
+	(lower_omp_taskreg): Adjust lower_depend_clauses caller.
+	(lower_omp_target): Handle GF_OMP_TARGET_KIND_ENTER_DATA
+	and GF_OMP_TARGET_KIND_EXIT_DATA, depend clauses,
+	GOMP_MAP_{RELEASE,ALWAYS_{TO,FROM,TOFROM},FIRSTPRIVATE_POINTER,STRUCT}
+	map kinds, OMP_CLAUSE_{FIRSTPRIVATE,PRIVATE,{IS,USE}_DEVICE_PTR
+	clauses.  Always use short kind and 8-bit align shift.
+	(lower_omp_regimplify_p): Use IS_TYPE_OR_DECL_P macro.
+	(struct lower_omp_regimplify_operands_data): New type.
+	(lower_omp_regimplify_operands_p, lower_omp_regimplify_operands):
+	New functions.
+	(lower_omp_1): Use lower_omp_regimplify_operands instead of
+	gimple_regimplify_operands.
+	(make_gimple_omp_edges): Handle GF_OMP_TARGET_KIND_ENTER_DATA and
+	GF_OMP_TARGET_KIND_EXIT_DATA.  Treat GIMPLE_OMP_ORDERED with depend
+	clause as stand-alone directive.
+	(simd_clone_clauses_extract): Honor OMP_CLAUSE_LINEAR_KIND.
+	(simd_clone_mangle): Mangle the various linear kinds
+	per the new ABI.
+	(simd_clone_adjust_argument_types): Handle
+	SIMD_CLONE_ARG_TYPE_LINEAR_*_CONSTANT_STEP.
+	(simd_clone_init_simd_arrays): Don't do anything for uval.
+	(simd_clone_adjust): Handle
+	SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP like
+	SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP.
+	Handle SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_CONSTANT_STEP.
+	* omp-low.h (omp_member_access_dummy_var): New prototype.
+	* passes.def (pass_simduid_cleanup): Schedule another copy of the
+	pass after all optimizations.
+	* tree.c (omp_clause_code_name): Add entries for
+	OMP_CLAUSE_{TO_DECLARE,LINK,{USE,IS}_DEVICE_PTR,DEFAULTMAP,HINT}
+	and OMP_CLAUSE_{PRIORITY,GRAINSIZE,NUM_TASKS,NOGROUP,THREADS,SIMD}.
+	(omp_clause_num_ops): Likewise.  Bump number of OMP_CLAUSE_REDUCTION
+	arguments to 5 and for OMP_CLAUSE_ORDERED to 1.
+	(walk_tree_1): Adjust for OMP_CLAUSE_ORDERED having 1 argument and
+	OMP_CLAUSE_REDUCTION 5 arguments.  Handle
+	OMP_CLAUSE_{TO_DECLARE,LINK,{USE,IS}_DEVICE_PTR,DEFAULTMAP,HINT}
+	and OMP_CLAUSE_{PRIORITY,GRAINSIZE,NUM_TASKS,NOGROUP,THREADS,SIMD}
+	clauses.
+	* tree-core.h (enum omp_clause_linear_kind): New.
+	(struct tree_omp_clause): Change type of map_kind
+	from unsigned char to unsigned int.  Add subcode.if_modifier
+	and subcode.linear_kind fields.
+	(enum omp_clause_code): Add
+	OMP_CLAUSE_{TO_DECLARE,LINK,{USE,IS}_DEVICE_PTR,DEFAULTMAP,HINT}
+	and OMP_CLAUSE_{PRIORITY,GRAINSIZE,NUM_TASKS,NOGROUP,THREADS,SIMD}.
+	(OMP_CLAUSE_REDUCTION): Document
+	OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER.
+	(enum omp_clause_depend_kind): Add OMP_CLAUSE_DEPEND_{SOURCE,SINK}.
+	* tree.def (OMP_FOR): Add OMP_FOR_ORIG_DECLS operand.
+	(OMP_CRITICAL): Move before OMP_SINGLE.  Add OMP_CRITICAL_CLAUSES
+	operand.
+	(OMP_ORDERED): Move before OMP_SINGLE.  Add OMP_ORDERED_CLAUSES
+	operand.
+	(OMP_TASKLOOP, OMP_TARGET_ENTER_DATA, OMP_TARGET_EXIT_DATA): New tree
+	codes.
+	* tree.h (OMP_BODY): Replace OMP_CRITICAL with OMP_TASKGROUP.
+	(OMP_CLAUSE_SET_MAP_KIND): Cast to unsigned int rather than unsigned
+	char.
+	(OMP_CRITICAL_NAME): Adjust to be 3rd operand instead of 2nd.
+	(OMP_CLAUSE_NUM_TASKS_EXPR): Formatting fix.
+	(OMP_STANDALONE_CLAUSES): Adjust to cover OMP_TARGET_{ENTER,EXIT}_DATA.
+	(OMP_CLAUSE_DEPEND_SINK_NEGATIVE, OMP_TARGET_COMBINED,
+	OMP_CLAUSE_MAP_PRIVATE, OMP_FOR_ORIG_DECLS, OMP_CLAUSE_IF_MODIFIER,
+	OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION, OMP_CRITICAL_CLAUSES,
+	OMP_CLAUSE_PRIVATE_TASKLOOP_IV, OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV,
+	OMP_CLAUSE_HINT_EXPR, OMP_CLAUSE_SCHEDULE_SIMD,
+	OMP_CLAUSE_LINEAR_KIND, OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER,
+	OMP_CLAUSE_SHARED_FIRSTPRIVATE, OMP_ORDERED_CLAUSES,
+	OMP_TARGET_ENTER_DATA_CLAUSES, OMP_TARGET_EXIT_DATA_CLAUSES,
+	OMP_CLAUSE_NUM_TASKS_EXPR, OMP_CLAUSE_GRAINSIZE_EXPR,
+	OMP_CLAUSE_PRIORITY_EXPR, OMP_CLAUSE_ORDERED_EXPR): Define.
+	* tree-inline.c (remap_gimple_stmt): Handle clauses on
+	GIMPLE_OMP_ORDERED and GIMPLE_OMP_CRITICAL.  For
+	IFN_GOMP_SIMD_ORDERED_{START,END} set has_simduid_loops.
+	* tree-nested.c (convert_nonlocal_omp_clauses): Handle
+	OMP_CLAUSE_{TO_DECLARE,LINK,{USE,IS}_DEVICE_PTR,SIMDLEN,PRIORITY,SIMD}
+	and OMP_CLAUSE_{GRAINSIZE,NUM_TASKS,HINT,NOGROUP,THREADS,DEFAULTMAP}
+	clauses.  Handle OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER.
+	(convert_local_omp_clauses): Likewise.
+	* tree-pretty-print.c (dump_omp_clause): Handle
+	OMP_CLAUSE_{TO_DECLARE,LINK,{USE,IS}_DEVICE_PTR,SIMDLEN,PRIORITY,SIMD}
+	and OMP_CLAUSE_{GRAINSIZE,NUM_TASKS,HINT,NOGROUP,THREADS,DEFAULTMAP}
+	clauses.  Handle OMP_CLAUSE_IF_MODIFIER, OMP_CLAUSE_ORDERED_EXPR,
+	OMP_CLAUSE_SCHEDULE_SIMD, OMP_CLAUSE_LINEAR_KIND,
+	OMP_CLAUSE_DEPEND_{SOURCE,SINK}.  Use "delete" for
+	GOMP_MAP_FORCE_DEALLOC.  Handle
+	GOMP_MAP_{ALWAYS_{TO,FROM,TOFROM},RELEASE,FIRSTPRIVATE_POINTER,STRUCT}.
+	(dump_generic_node): Handle OMP_TASKLOOP, OMP_TARGET_{ENTER,EXIT}_DATA
+	and clauses on OMP_ORDERED and OMP_CRITICAL.
+	* tree-vectorizer.c (adjust_simduid_builtins): Adjust comment.
+	Remove IFN_GOMP_SIMD_ORDERED_{START,END}.
+	(vectorize_loops): Adjust comments.
+	(pass_simduid_cleanup::execute): Likewise.
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Handle
+	SIMD_CLONE_ARG_TYPE_LINEAR_{REF,VAL,UVAL}_CONSTANT_STEP.
+	* wide-int.h (wi::gcd): New.
+
 2015-10-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (classify_argument): Use CEIL where applicable.

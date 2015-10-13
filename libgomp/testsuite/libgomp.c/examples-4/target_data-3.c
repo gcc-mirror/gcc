@@ -47,7 +47,7 @@ void gramSchmidt (int Q[][COLS], const int rows, const int cols)
       {
 	int tmp = 0;
 
-	#pragma omp target
+	#pragma omp target map(tofrom:tmp)
 	  #pragma omp parallel for reduction(+:tmp)
 	    for (i = 0; i < rows; i++)
 	      tmp += (Q[i][k] * Q[i][k]);

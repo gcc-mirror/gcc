@@ -41,7 +41,7 @@ float accum (int k)
   int i;
   float tmp = 0.0;
 
-  #pragma omp target
+  #pragma omp target map(tofrom:tmp)
     #pragma omp parallel for reduction(+:tmp)
       for (i = 0; i < N; i++)
 	tmp += Pfun (i, k);

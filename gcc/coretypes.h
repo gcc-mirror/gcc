@@ -112,6 +112,7 @@ struct gomp_atomic_load;
 struct gomp_atomic_store;
 struct gomp_continue;
 struct gomp_critical;
+struct gomp_ordered;
 struct gomp_for;
 struct gomp_parallel;
 struct gomp_task;

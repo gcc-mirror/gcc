@@ -1,3 +1,150 @@
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* class.c (finish_struct_1): Call finish_omp_declare_simd_methods.
+	* cp-gimplify.c (cp_gimplify_expr): Handle OMP_TASKLOOP.
+	(cp_genericize_r): Likewise.
+	(cxx_omp_finish_clause): Don't diagnose references.
+	(cxx_omp_disregard_value_expr): New function.
+	* cp-objcp-common.h (LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR): Redefine.
+	* cp-tree.h (OMP_FOR_GIMPLIFYING_P): Document for OMP_TASKLOOP.
+	(DECL_OMP_PRIVATIZED_MEMBER): Define.
+	(finish_omp_declare_simd_methods, push_omp_privatization_clauses,
+	pop_omp_privatization_clauses, save_omp_privatization_clauses,
+	restore_omp_privatization_clauses, omp_privatize_field,
+	cxx_omp_disregard_value_expr): New prototypes.
+	(finish_omp_clauses): Add two new arguments.
+	(finish_omp_for): Add ORIG_DECLV argument.
+	* parser.c (cp_parser_lambda_body): Call
+	save_omp_privatization_clauses and restore_omp_privatization_clauses.
+	(cp_parser_omp_clause_name): Handle OpenMP 4.5 clauses.
+	(cp_parser_omp_var_list_no_open): Handle structure elements for
+	map, to and from clauses.  Handle array sections in reduction
+	clause.  Parse this keyword.  Formatting fixes.
+	(cp_parser_omp_clause_if): Add IS_OMP argument, handle parsing of
+	if clause modifiers.
+	(cp_parser_omp_clause_num_tasks, cp_parser_omp_clause_grainsize,
+	cp_parser_omp_clause_priority, cp_parser_omp_clause_hint,
+	cp_parser_omp_clause_defaultmap): New functions.
+	(cp_parser_omp_clause_ordered): Parse optional parameter.
+	(cp_parser_omp_clause_reduction): Handle array reductions.
+	(cp_parser_omp_clause_schedule): Parse optional simd modifier.
+	(cp_parser_omp_clause_nogroup, cp_parser_omp_clause_orderedkind):
+	New functions.
+	(cp_parser_omp_clause_linear): Parse linear clause modifiers.
+	(cp_parser_omp_clause_depend_sink): New function.
+	(cp_parser_omp_clause_depend): Parse source/sink depend kinds.
+	(cp_parser_omp_clause_map): Parse release/delete map kinds and
+	optional always modifier.
+	(cp_parser_oacc_all_clauses): Adjust cp_parser_omp_clause_if
+	and finish_omp_clauses callers.
+	(cp_parser_omp_all_clauses): Likewise.  Parse OpenMP 4.5 clauses.
+	Parse "to" as OMP_CLAUSE_TO_DECLARE if on declare target directive.
+	(OMP_CRITICAL_CLAUSE_MASK): Define.
+	(cp_parser_omp_critical): Parse critical clauses.
+	(cp_parser_omp_for_incr): Use cp_tree_equal if
+	processing_template_decl.
+	(cp_parser_omp_for_loop_init): Return tree instead of bool.  Handle
+	non-static data member iterators.
+	(cp_parser_omp_for_loop): Handle doacross loops, adjust
+	finish_omp_for and finish_omp_clauses callers.
+	(cp_omp_split_clauses): Adjust finish_omp_clauses caller.
+	(OMP_SIMD_CLAUSE_MASK): Add simdlen clause.
+	(cp_parser_omp_simd): Allow ordered clause if it has no parameter.
+	(OMP_FOR_CLAUSE_MASK): Add linear clause.
+	(cp_parser_omp_for): Disallow ordered clause when combined with
+	distribute.  Disallow linear clause when combined with distribute
+	and not combined with simd.
+	(OMP_ORDERED_CLAUSE_MASK, OMP_ORDERED_DEPEND_CLAUSE_MASK): Define.
+	(cp_parser_omp_ordered): Add CONTEXT argument, return bool instead
+	of tree, parse clauses and if depend clause is found, don't parse
+	a body.
+	(cp_parser_omp_parallel): Disallow copyin clause on target parallel.
+	Allow target parallel without for after it.
+	(OMP_TASK_CLAUSE_MASK): Add priority clause.
+	(OMP_TARGET_DATA_CLAUSE_MASK): Add use_device_ptr clause.
+	(cp_parser_omp_target_data): Diagnose no map clauses or clauses with
+	invalid kinds.
+	(OMP_TARGET_UPDATE_CLAUSE_MASK): Add depend and nowait clauses.
+	(OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
+	OMP_TARGET_EXIT_DATA_CLAUSE_MASK): Define.
+	(cp_parser_omp_target_enter_data, cp_parser_omp_target_exit_data): New
+	functions.
+	(OMP_TARGET_CLAUSE_MASK): Add depend, nowait, private, firstprivate,
+	defaultmap and is_device_ptr clauses.
+	(cp_parser_omp_target): Parse target parallel and target simd.  Set
+	OMP_TARGET_COMBINED on combined constructs.  Parse target enter data
+	and target exit data.  Diagnose invalid map kinds.
+	(cp_parser_oacc_cache): Adjust finish_omp_clauses caller.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Define.
+	(cp_parser_omp_declare_target): Parse OpenMP 4.5 forms of this
+	construct.
+	(OMP_TASKLOOP_CLAUSE_MASK): Define.
+	(cp_parser_omp_taskloop): New function.
+	(cp_parser_omp_construct): Don't handle PRAGMA_OMP_ORDERED here,
+	handle PRAGMA_OMP_TASKLOOP.
+	(cp_parser_pragma): Handle PRAGMA_OMP_ORDERED here directly,
+	handle PRAGMA_OMP_TASKLOOP, call push_omp_privatization_clauses
+	and pop_omp_privatization_clauses around parsing calls.
+	(cp_parser_cilk_for): Adjust finish_omp_clauses caller.
+	* pt.c (apply_late_template_attributes): Adjust tsubst_omp_clauses
+	and finish_omp_clauses callers.
+	(tsubst_omp_clause_decl): Return NULL if decl is NULL.
+	For TREE_LIST, copy over OMP_CLAUSE_DEPEND_SINK_NEGATIVE bit.
+	Use tsubst_expr instead of tsubst_copy, undo convert_from_reference
+	effects.
+	(tsubst_omp_clauses): Add ALLOW_FIELDS argument.  Handle new
+	OpenMP 4.5 clauses.  Use tsubst_omp_clause_decl for more clauses.
+	If ALLOW_FIELDS, handle non-static data members in the clauses.
+	Clear OMP_CLAUSE_LINEAR_STEP if it has been cleared before.
+	(omp_parallel_combined_clauses): New variable.
+	(tsubst_omp_for_iterator): Add ORIG_DECLV argument, recur on
+	OMP_FOR_ORIG_DECLS, handle non-static data member iterators.
+	Improve handling of clauses on combined constructs.
+	(tsubst_expr): Call push_omp_privatization_clauses and
+	pop_omp_privatization_clauses around instantiation of certain
+	OpenMP constructs, improve handling of clauses on combined
+	constructs, handle OMP_TASKLOOP, adjust tsubst_omp_for_iterator,
+	tsubst_omp_clauses and finish_omp_for callers, handle clauses on
+	critical and ordered, handle OMP_TARGET_{ENTER,EXIT}_DATA.
+	(instantiate_decl): Call save_omp_privatization_clauses and
+	restore_omp_privatization_clauses around instantiation.
+	(dependent_omp_for_p): Fix up comment typo.  Handle SCOPE_REF.
+	* semantics.c (omp_private_member_map, omp_private_member_vec,
+	omp_private_member_ignore_next): New variables.
+	(finish_non_static_data_member): Return dummy decl for privatized
+	non-static data members.
+	(omp_clause_decl_field, omp_clause_printable_decl,
+	omp_note_field_privatization, omp_privatize_field): New functions.
+	(handle_omp_array_sections_1): Fix comment typo.
+	Add IS_OMP argument, handle structure element bases, diagnose
+	bitfields, pass IS_OMP recursively, diagnose known zero length
+	array sections in depend clauses, handle array sections in reduction
+	clause, diagnose negative length even for pointers.
+	(handle_omp_array_sections): Add IS_OMP argument, use auto_vec for
+	types, pass IS_OMP down to handle_omp_array_sections_1, handle
+	array sections in reduction clause, set
+	OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION if map could be zero
+	length array section, use GOMP_MAP_FIRSTPRIVATE_POINTER for IS_OMP.
+	(finish_omp_reduction_clause): Handle array sections and arrays.
+	Use omp_clause_printable_decl.
+	(finish_omp_declare_simd_methods, cp_finish_omp_clause_depend_sink):
+	New functions.
+	(finish_omp_clauses): Add ALLOW_FIELDS and DECLARE_SIMD arguments.
+	Handle new OpenMP 4.5 clauses and new restrictions for the old
+	ones, handle non-static data members, reject this keyword when not
+	allowed.
+	(push_omp_privatization_clauses, pop_omp_privatization_clauses,
+	save_omp_privatization_clauses, restore_omp_privatization_clauses):
+	New functions.
+	(handle_omp_for_class_iterator): Handle OMP_TASKLOOP class iterators.
+	Add collapse and ordered arguments.  Fix handling of lastprivate
+	iterators in doacross loops.
+	(finish_omp_for): Add ORIG_DECLV argument, handle doacross loops,
+	adjust c_finish_omp_for, handle_omp_for_class_iterator and
+	finish_omp_clauses callers.  Fill in OMP_CLAUSE_LINEAR_STEP on simd
+	loops with non-static data member iterators.
+
 2015-10-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/58566

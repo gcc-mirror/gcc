@@ -17,6 +17,10 @@ foo (void)
 
   #pragma omp task depend (inout: S[0:10])	// { dg-error "is not a variable in" }
   ;
+
+  #pragma omp for reduction (+:S[0:10])		// { dg-error "is not a variable in" }
+  for (int i = 0; i < 16; i++)
+    ;
 }
 
 void

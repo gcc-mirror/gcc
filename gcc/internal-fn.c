@@ -175,6 +175,22 @@ expand_GOMP_SIMD_LAST_LANE (gcall *)
   gcc_unreachable ();
 }
 
+/* This should get expanded in adjust_simduid_builtins.  */
+
+static void
+expand_GOMP_SIMD_ORDERED_START (gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* This should get expanded in adjust_simduid_builtins.  */
+
+static void
+expand_GOMP_SIMD_ORDERED_END (gcall *)
+{
+  gcc_unreachable ();
+}
+
 /* This should get expanded in the sanopt pass.  */
 
 static void

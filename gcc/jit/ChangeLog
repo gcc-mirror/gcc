@@ -1,3 +1,10 @@
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-builtins.c (DEF_FUNCTION_TYPE_9, DEF_FUNCTION_TYPE_10,
+	DEF_FUNCTION_TYPE_11): Define.
+	* jit-builtins.h (DEF_FUNCTION_TYPE_9, DEF_FUNCTION_TYPE_10,
+	DEF_FUNCTION_TYPE_11): Define.
+
 2015-09-30  Thomas Schwinge  <thomas@codesourcery.com>
 	    Ulrich Drepper  <drepper@gmail.com>
 

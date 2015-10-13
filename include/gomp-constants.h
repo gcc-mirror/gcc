@@ -41,6 +41,8 @@
 #define GOMP_MAP_FLAG_SPECIAL_1		(1 << 3)
 #define GOMP_MAP_FLAG_SPECIAL		(GOMP_MAP_FLAG_SPECIAL_1 \
 					 | GOMP_MAP_FLAG_SPECIAL_0)
+/* OpenMP always flag.  */
+#define GOMP_MAP_FLAG_ALWAYS		(1 << 6)
 /* Flag to force a specific behavior (or else, trigger a run-time error).  */
 #define GOMP_MAP_FLAG_FORCE		(1 << 7)
 
@@ -70,6 +72,19 @@ enum gomp_map_kind
     /* Is a device pointer.  OMP_CLAUSE_SIZE for these is unused; is implicitly
        POINTER_SIZE_UNITS.  */
     GOMP_MAP_FORCE_DEVICEPTR =		(GOMP_MAP_FLAG_SPECIAL_1 | 0),
+    /* Do not map, copy bits for firstprivate instead.  */
+    GOMP_MAP_FIRSTPRIVATE =		(GOMP_MAP_FLAG_SPECIAL | 0),
+    /* Similarly, but store the value in the pointer rather than
+       pointed by the pointer.  */
+    GOMP_MAP_FIRSTPRIVATE_INT =		(GOMP_MAP_FLAG_SPECIAL | 1),
+    /* Pointer translate host address into device address and copy that
+       back to host.  */
+    GOMP_MAP_USE_DEVICE_PTR =		(GOMP_MAP_FLAG_SPECIAL | 2),
+    /* Allocate a zero length array section.  Prefer next non-zero length
+       mapping over previous non-zero length mapping over zero length mapping
+       at the address.  If not already mapped, do nothing (and pointer translate
+       to NULL).  */
+    GOMP_MAP_ZERO_LEN_ARRAY_SECTION = 	(GOMP_MAP_FLAG_SPECIAL | 3),
     /* Allocate.  */
     GOMP_MAP_FORCE_ALLOC =		(GOMP_MAP_FLAG_FORCE | GOMP_MAP_ALLOC),
     /* ..., and copy to device.  */
@@ -77,7 +92,37 @@ enum gomp_map_kind
     /* ..., and copy from device.  */
     GOMP_MAP_FORCE_FROM =		(GOMP_MAP_FLAG_FORCE | GOMP_MAP_FROM),
     /* ..., and copy to and from device.  */
-    GOMP_MAP_FORCE_TOFROM =		(GOMP_MAP_FLAG_FORCE | GOMP_MAP_TOFROM)
+    GOMP_MAP_FORCE_TOFROM =		(GOMP_MAP_FLAG_FORCE | GOMP_MAP_TOFROM),
+    /* If not already present, allocate.  And unconditionally copy to
+       device.  */
+    GOMP_MAP_ALWAYS_TO =		(GOMP_MAP_FLAG_ALWAYS | GOMP_MAP_TO),
+    /* If not already present, allocate.  And unconditionally copy from
+       device.  */
+    GOMP_MAP_ALWAYS_FROM =		(GOMP_MAP_FLAG_ALWAYS | GOMP_MAP_FROM),
+    /* If not already present, allocate.  And unconditionally copy to and from
+       device.  */
+    GOMP_MAP_ALWAYS_TOFROM =		(GOMP_MAP_FLAG_ALWAYS | GOMP_MAP_TOFROM),
+    /* Map a sparse struct; the address is the base of the structure, alignment
+       it's required alignment, and size is the number of adjacent entries
+       that belong to the struct.  The adjacent entries should be sorted by
+       increasing address, so it is easy to determine lowest needed address
+       (address of the first adjacent entry) and highest needed address
+       (address of the last adjacent entry plus its size).  */
+    GOMP_MAP_STRUCT =			(GOMP_MAP_FLAG_ALWAYS
+					 | GOMP_MAP_FLAG_SPECIAL | 0),
+    /* Forced deallocation of zero length array section.  */
+    GOMP_MAP_DELETE_ZERO_LEN_ARRAY_SECTION
+      =					(GOMP_MAP_FLAG_ALWAYS
+					 | GOMP_MAP_FLAG_SPECIAL | 3),
+    /* OpenMP 4.1 alias for forced deallocation.  */
+    GOMP_MAP_DELETE =			GOMP_MAP_FORCE_DEALLOC,
+    /* Decrement usage count and deallocate if zero.  */
+    GOMP_MAP_RELEASE =			(GOMP_MAP_FLAG_ALWAYS
+					 | GOMP_MAP_FORCE_DEALLOC),
+
+    /* Internal to GCC, not used in libgomp.  */
+    /* Do not map, but pointer assign a pointer instead.  */
+    GOMP_MAP_FIRSTPRIVATE_POINTER =	(GOMP_MAP_LAST | 1)
   };
 
 #define GOMP_MAP_COPY_TO_P(X) \
@@ -90,6 +135,12 @@ enum gomp_map_kind
 
 #define GOMP_MAP_POINTER_P(X) \
   ((X) == GOMP_MAP_POINTER)
+
+#define GOMP_MAP_ALWAYS_TO_P(X) \
+  (((X) == GOMP_MAP_ALWAYS_TO) || ((X) == GOMP_MAP_ALWAYS_TOFROM))
+
+#define GOMP_MAP_ALWAYS_FROM_P(X) \
+  (((X) == GOMP_MAP_ALWAYS_FROM) || ((X) == GOMP_MAP_ALWAYS_TOFROM))
 
 
 /* Asynchronous behavior.  Keep in sync with
@@ -112,6 +163,23 @@ enum gomp_map_kind
 
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
+
+/* GOMP_task/GOMP_taskloop* flags argument.  */
+#define GOMP_TASK_FLAG_UNTIED		(1 << 0)
+#define GOMP_TASK_FLAG_FINAL		(1 << 1)
+#define GOMP_TASK_FLAG_MERGEABLE	(1 << 2)
+#define GOMP_TASK_FLAG_DEPEND		(1 << 3)
+#define GOMP_TASK_FLAG_PRIORITY		(1 << 4)
+#define GOMP_TASK_FLAG_UP		(1 << 8)
+#define GOMP_TASK_FLAG_GRAINSIZE	(1 << 9)
+#define GOMP_TASK_FLAG_IF		(1 << 10)
+#define GOMP_TASK_FLAG_NOGROUP		(1 << 11)
+
+/* GOMP_target{_41,update_41,enter_exit_data} flags argument.  */
+#define GOMP_TARGET_FLAG_NOWAIT		(1 << 0)
+#define GOMP_TARGET_FLAG_EXIT_DATA	(1 << 1)
+/* Internal to libgomp.  */
+#define GOMP_TARGET_FLAG_UPDATE		(1U << 31)
 
 /* Versions of libgomp and device-specific plugins.  */
 #define GOMP_VERSION	0

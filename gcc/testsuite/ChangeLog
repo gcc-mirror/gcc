@@ -1,3 +1,78 @@
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-c++-common/gomp/cancel-1.c (f2): Add map clause to target data.
+	* c-c++-common/gomp/clauses-1.c: New test.
+	* c-c++-common/gomp/clauses-2.c: New test.
+	* c-c++-common/gomp/clauses-3.c: New test.
+	* c-c++-common/gomp/clauses-4.c: New test.
+	* c-c++-common/gomp/declare-target-1.c: New test.
+	* c-c++-common/gomp/declare-target-2.c: New test.
+	* c-c++-common/gomp/depend-3.c: New test.
+	* c-c++-common/gomp/depend-4.c: New test.
+	* c-c++-common/gomp/doacross-1.c: New test.
+	* c-c++-common/gomp/if-1.c: New test.
+	* c-c++-common/gomp/if-2.c: New test.
+	* c-c++-common/gomp/linear-1.c: New test.
+	* c-c++-common/gomp/map-2.c: New test.
+	* c-c++-common/gomp/map-3.c: New test.
+	* c-c++-common/gomp/nesting-1.c (f_omp_parallel,
+	f_omp_target_data): Add map clause to target data.
+	* c-c++-common/gomp/nesting-warn-1.c (f_omp_target): Likewise.
+	* c-c++-common/gomp/ordered-1.c: New test.
+	* c-c++-common/gomp/ordered-2.c: New test.
+	* c-c++-common/gomp/ordered-3.c: New test.
+	* c-c++-common/gomp/pr61486-1.c (foo): Remove linear clause
+	on non-iterator.
+	* c-c++-common/gomp/pr61486-2.c (test, test2): Remove ordered
+	clause and ordered construct where no longer allowed.
+	* c-c++-common/gomp/priority-1.c: New test.
+	* c-c++-common/gomp/reduction-1.c: New test.
+	* c-c++-common/gomp/schedule-simd-1.c: New test.
+	* c-c++-common/gomp/sink-1.c: New test.
+	* c-c++-common/gomp/sink-2.c: New test.
+	* c-c++-common/gomp/sink-3.c: New test.
+	* c-c++-common/gomp/sink-4.c: New test.
+	* c-c++-common/gomp/udr-1.c: New test.
+	* c-c++-common/taskloop-1.c: New test.
+	* c-c++-common/cpp/openmp-define-3.c: Adjust for the new
+	value of _OPENMP macro.
+	* c-c++-common/cilk-plus/PS/body.c (foo): Adjust expected diagnostics.
+	* c-c++-common/goacc-gomp/nesting-fail-1.c (f_acc_parallel,
+	f_acc_kernels, f_acc_data, f_acc_loop): Add map clause to target data.
+	* gcc.dg/gomp/clause-1.c:
+	* gcc.dg/gomp/reduction-1.c: New test.
+	* gcc.dg/gomp/sink-fold-1.c: New test.
+	* gcc.dg/gomp/sink-fold-2.c: New test.
+	* gcc.dg/gomp/sink-fold-3.c: New test.
+	* gcc.dg/vect/vect-simd-clone-15.c: New test.
+	* g++.dg/gomp/clause-1.C (T::test): Remove dg-error on privatization
+	of non-static data members.
+	* g++.dg/gomp/clause-3.C (foo): Remove one dg-error directive.
+	Add some linear clause tests.
+	* g++.dg/gomp/declare-simd-3.C: New test.
+	* g++.dg/gomp/linear-1.C: New test.
+	* g++.dg/gomp/member-1.C: New test.
+	* g++.dg/gomp/member-2.C: New test.
+	* g++.dg/gomp/pr66571-2.C: New test.
+	* g++.dg/gomp/pr67504.C (foo): Add test for ordered clause with
+	dependent argument.
+	* g++.dg/gomp/pr67522.C (foo): Add test for invalid array section
+	in reduction clause.
+	* g++.dg/gomp/reference-1.C: New test.
+	* g++.dg/gomp/sink-1.C: New test.
+	* g++.dg/gomp/sink-2.C: New test.
+	* g++.dg/gomp/sink-3.C: New test.
+	* g++.dg/gomp/task-1.C: Remove both dg-error directives.
+	* g++.dg/gomp/this-1.C: New test.
+	* g++.dg/gomp/this-2.C: New test.
+	* g++.dg/vect/simd-clone-2.cc: New test.
+	* g++.dg/vect/simd-clone-2.h: New test.
+	* g++.dg/vect/simd-clone-3.cc: New test.
+	* g++.dg/vect/simd-clone-4.cc: New test.
+	* g++.dg/vect/simd-clone-4.h: New test.
+	* g++.dg/vect/simd-clone-5.cc: New test.
+
 2015-10-13  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc/testsuite/gcc.target/aarch64/table-intrinsics.c: Fix regexp
