@@ -194,41 +194,6 @@ struct dr_with_seg_len_pair_t
 };
 
 
-typedef struct _vect_peel_info
-{
-  int npeel;
-  struct data_reference *dr;
-  unsigned int count;
-} *vect_peel_info;
-
-typedef struct _vect_peel_extended_info
-{
-  struct _vect_peel_info peel_info;
-  unsigned int inside_cost;
-  unsigned int outside_cost;
-  stmt_vector_for_cost body_cost_vec;
-} *vect_peel_extended_info;
-
-
-/* Peeling hashtable helpers.  */
-
-struct peel_info_hasher : free_ptr_hash <_vect_peel_info>
-{
-  static inline hashval_t hash (const _vect_peel_info *);
-  static inline bool equal (const _vect_peel_info *, const _vect_peel_info *);
-};
-
-inline hashval_t
-peel_info_hasher::hash (const _vect_peel_info *peel_info)
-{
-  return (hashval_t) peel_info->npeel;
-}
-
-inline bool
-peel_info_hasher::equal (const _vect_peel_info *a, const _vect_peel_info *b)
-{
-  return (a->npeel == b->npeel);
-}
 
 /* Vectorizer state common between loop and basic-block vectorization.  */
 struct vec_info {
@@ -289,13 +254,6 @@ typedef struct _loop_vec_info : public vec_info {
   /* Number of iterations of the original loop.  */
   tree num_iters_unchanged;
 
-  /* Minimum number of iterations below which vectorization is expected to
-     not be profitable (as estimated by the cost model).
-     -1 indicates that vectorization will not be profitable.
-     FORNOW: This field is an int. Will be a tree in the future, to represent
-	     values unknown at compile time.  */
-  int min_profitable_iters;
-
   /* Threshold of number of iterations below which vectorzation will not be
      performed. It is calculated from MIN_PROFITABLE_ITERS and
      PARAM_MIN_VECT_LOOP_BOUND.  */
@@ -348,9 +306,6 @@ typedef struct _loop_vec_info : public vec_info {
   /* All reduction chains in the loop, represented by the first
      stmt in the chain.  */
   vec<gimple *> reduction_chains;
-
-  /* Hash table used to choose the best peeling option.  */
-  hash_table<peel_info_hasher> *peeling_htab;
 
   /* Cost vector for a single scalar iteration.  */
   vec<stmt_info_for_cost> scalar_cost_vec;
@@ -407,7 +362,6 @@ typedef struct _loop_vec_info : public vec_info {
    prologue peeling retain total unchanged scalar loop iterations for
    cost model.  */
 #define LOOP_VINFO_NITERS_UNCHANGED(L)     (L)->num_iters_unchanged
-#define LOOP_VINFO_COST_MODEL_MIN_ITERS(L) (L)->min_profitable_iters
 #define LOOP_VINFO_COST_MODEL_THRESHOLD(L) (L)->th
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
@@ -426,7 +380,6 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor
 #define LOOP_VINFO_REDUCTIONS(L)           (L)->reductions
 #define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
-#define LOOP_VINFO_PEELING_HTAB(L)         (L)->peeling_htab
 #define LOOP_VINFO_TARGET_COST_DATA(L)     (L)->target_cost_data
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
 #define LOOP_VINFO_OPERANDS_SWAPPED(L)     (L)->operands_swapped
