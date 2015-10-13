@@ -193,6 +193,19 @@ find_unreachable_blocks (void)
 
   free (worklist);
 }
+
+/* Verify that there are no unreachable blocks in the current function.  */
+
+void
+verify_no_unreachable_blocks (void)
+{
+  find_unreachable_blocks ();
+
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, cfun)
+    gcc_assert ((bb->flags & BB_REACHABLE) != 0);
+}
+
 
 /* Functions to access an edge list with a vector representation.
    Enough data is kept such that given an index number, the
@@ -771,6 +784,10 @@ inverted_post_order_compute (int *post_order)
   int sp;
   int post_order_num = 0;
   sbitmap visited;
+
+#if ENABLE_CHECKING
+  verify_no_unreachable_blocks ();
+#endif
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
