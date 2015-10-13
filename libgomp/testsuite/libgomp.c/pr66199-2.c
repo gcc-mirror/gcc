@@ -18,12 +18,11 @@ __attribute__((noinline, noclone)) void
 f2 (long a, long b, long c)
 {
   long d, e;
-  #pragma omp target teams distribute parallel for simd default(none) firstprivate (a, b) shared(u, v, w) linear(d) linear(c:5) lastprivate(e)
+  #pragma omp target teams distribute parallel for simd default(none) firstprivate (a, b, c) shared(u, v, w) linear(d) lastprivate(e)
   for (d = a; d < b; d++)
     {
       u[d] = v[d] + w[d];
-      c += 5;
-      e = c;
+      e = c + d * 5;
     }
 }
 

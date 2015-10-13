@@ -306,6 +306,20 @@ builtins_manager::make_type (enum jit_builtin_type type_id)
 			    ARG6, ARG7, ARG8)				\
       case ENUM: return make_fn_type (ENUM, RETURN, 0, 8, ARG1, ARG2, ARG3, \
 				      ARG4, ARG5, ARG6, ARG7, ARG8);
+#define DEF_FUNCTION_TYPE_9(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			    ARG6, ARG7, ARG8, ARG9)			\
+      case ENUM: return make_fn_type (ENUM, RETURN, 0, 9, ARG1, ARG2, ARG3, \
+				      ARG4, ARG5, ARG6, ARG7, ARG8, ARG9);
+#define DEF_FUNCTION_TYPE_10(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			     ARG6, ARG7, ARG8, ARG9, ARG10)		 \
+      case ENUM: return make_fn_type (ENUM, RETURN, 0, 10, ARG1, ARG2, ARG3, \
+				      ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, \
+				      ARG10);
+#define DEF_FUNCTION_TYPE_11(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			     ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)	 \
+      case ENUM: return make_fn_type (ENUM, RETURN, 0, 11, ARG1, ARG2, ARG3, \
+				      ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, \
+				      ARG10, ARG11);
 #define DEF_FUNCTION_TYPE_VAR_0(ENUM, RETURN) \
       case ENUM: return make_fn_type (ENUM, RETURN, 1, 0);
 #define DEF_FUNCTION_TYPE_VAR_1(ENUM, RETURN, ARG1) \
@@ -343,6 +357,9 @@ builtins_manager::make_type (enum jit_builtin_type type_id)
 #undef DEF_FUNCTION_TYPE_6
 #undef DEF_FUNCTION_TYPE_7
 #undef DEF_FUNCTION_TYPE_8
+#undef DEF_FUNCTION_TYPE_9
+#undef DEF_FUNCTION_TYPE_10
+#undef DEF_FUNCTION_TYPE_11
 #undef DEF_FUNCTION_TYPE_VAR_0
 #undef DEF_FUNCTION_TYPE_VAR_1
 #undef DEF_FUNCTION_TYPE_VAR_2

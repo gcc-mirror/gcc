@@ -320,6 +320,20 @@ walk_gimple_op (gimple *stmt, walk_tree_fn callback_op,
 			 callback_op, wi, pset);
 	if (ret)
 	  return ret;
+	ret = walk_tree (gimple_omp_critical_clauses_ptr (omp_stmt),
+			 callback_op, wi, pset);
+	if (ret)
+	  return ret;
+      }
+      break;
+
+    case GIMPLE_OMP_ORDERED:
+      {
+	gomp_ordered *omp_stmt = as_a <gomp_ordered *> (stmt);
+	ret = walk_tree (gimple_omp_ordered_clauses_ptr (omp_stmt),
+			 callback_op, wi, pset);
+	if (ret)
+	  return ret;
       }
       break;
 

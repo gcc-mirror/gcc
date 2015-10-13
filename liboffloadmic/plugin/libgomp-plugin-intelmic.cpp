@@ -477,6 +477,29 @@ GOMP_OFFLOAD_dev2host (int device, void *host_ptr, const void *tgt_ptr,
   return host_ptr;
 }
 
+extern "C" void *
+GOMP_OFFLOAD_dev2dev (int device, void *dst_ptr, const void *src_ptr,
+		      size_t size)
+{
+  TRACE ("(dst_ptr = %p, src_ptr = %p, size = %d)", dst_ptr, src_ptr, size);
+  if (!size)
+    return dst_ptr;
+
+  VarDesc vd1[3] = { vd_host2tgt, vd_host2tgt, vd_host2tgt };
+  vd1[0].ptr = &dst_ptr;
+  vd1[0].size = sizeof (void *);
+  vd1[1].ptr = &src_ptr;
+  vd1[1].size = sizeof (void *);
+  vd1[2].ptr = &size;
+  vd1[2].size = sizeof (size);
+  VarDesc2 vd1g[3] = { { "dst_ptr", 0 }, { "src_ptr", 0 }, { "size", 0 } };
+
+  offload (__FILE__, __LINE__, device, "__offload_target_tgt2tgt", 3, vd1,
+	   vd1g);
+
+  return dst_ptr;
+}
+
 extern "C" void
 GOMP_OFFLOAD_run (int device, void *tgt_fn, void *tgt_vars)
 {

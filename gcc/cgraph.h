@@ -643,8 +643,14 @@ enum cgraph_simd_clone_arg_type
 {
   SIMD_CLONE_ARG_TYPE_VECTOR,
   SIMD_CLONE_ARG_TYPE_UNIFORM,
+  /* These are only for integer/pointer arguments passed by value.  */
   SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP,
   SIMD_CLONE_ARG_TYPE_LINEAR_VARIABLE_STEP,
+  /* These 3 are only for reference type arguments or arguments passed
+     by reference.  */
+  SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP,
+  SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_CONSTANT_STEP,
+  SIMD_CLONE_ARG_TYPE_LINEAR_VAL_CONSTANT_STEP,
   SIMD_CLONE_ARG_TYPE_MASK
 };
 
@@ -684,7 +690,7 @@ struct GTY(()) cgraph_simd_clone_arg {
      variable), uniform, or vector.  */
   enum cgraph_simd_clone_arg_type arg_type;
 
-  /* For arg_type SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP this is
+  /* For arg_type SIMD_CLONE_ARG_TYPE_LINEAR_*CONSTANT_STEP this is
      the constant linear step, if arg_type is
      SIMD_CLONE_ARG_TYPE_LINEAR_VARIABLE_STEP, this is index of
      the uniform argument holding the step, otherwise 0.  */

@@ -27,7 +27,7 @@ void foo()
 #pragma simd
   for (int i=0; i < 1000; ++i)
     {
-#pragma omp for /* { dg-error "OpenMP constructs may not" } */
+#pragma omp for /* { dg-error "OpenMP constructs other than" } */
       for (j=0; j < 1000; ++j)
 	a[i] = b[i];
     }

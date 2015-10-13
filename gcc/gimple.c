@@ -838,14 +838,16 @@ gimple_build_debug_source_bind_stat (tree var, tree value,
 /* Build a GIMPLE_OMP_CRITICAL statement.
 
    BODY is the sequence of statements for which only one thread can execute.
-   NAME is optional identifier for this critical block.  */
+   NAME is optional identifier for this critical block.
+   CLAUSES are clauses for this critical block.  */
 
 gomp_critical *
-gimple_build_omp_critical (gimple_seq body, tree name)
+gimple_build_omp_critical (gimple_seq body, tree name, tree clauses)
 {
   gomp_critical *p
     = as_a <gomp_critical *> (gimple_alloc (GIMPLE_OMP_CRITICAL, 0));
   gimple_omp_critical_set_name (p, name);
+  gimple_omp_critical_set_clauses (p, clauses);
   if (body)
     gimple_omp_set_body (p, body);
 
@@ -994,12 +996,15 @@ gimple_build_omp_continue (tree control_def, tree control_use)
 /* Build a GIMPLE_OMP_ORDERED statement.
 
    BODY is the sequence of statements inside a loop that will executed in
-   sequence.  */
+   sequence.
+   CLAUSES are clauses for this statement.  */
 
-gimple *
-gimple_build_omp_ordered (gimple_seq body)
+gomp_ordered *
+gimple_build_omp_ordered (gimple_seq body, tree clauses)
 {
-  gimple *p = gimple_alloc (GIMPLE_OMP_ORDERED, 0);
+  gomp_ordered *p
+    = as_a <gomp_ordered *> (gimple_alloc (GIMPLE_OMP_ORDERED, 0));
+  gimple_omp_ordered_set_clauses (p, clauses);
   if (body)
     gimple_omp_set_body (p, body);
 
@@ -1779,9 +1784,18 @@ gimple_copy (gimple *stmt)
 	  goto copy_omp_body;
 
 	case GIMPLE_OMP_CRITICAL:
-	  t = unshare_expr (gimple_omp_critical_name (
-			      as_a <gomp_critical *> (stmt)));
+	  t = unshare_expr (gimple_omp_critical_name
+				(as_a <gomp_critical *> (stmt)));
 	  gimple_omp_critical_set_name (as_a <gomp_critical *> (copy), t);
+	  t = unshare_expr (gimple_omp_critical_clauses
+				(as_a <gomp_critical *> (stmt)));
+	  gimple_omp_critical_set_clauses (as_a <gomp_critical *> (copy), t);
+	  goto copy_omp_body;
+
+	case GIMPLE_OMP_ORDERED:
+	  t = unshare_expr (gimple_omp_ordered_clauses
+				(as_a <gomp_ordered *> (stmt)));
+	  gimple_omp_ordered_set_clauses (as_a <gomp_ordered *> (copy), t);
 	  goto copy_omp_body;
 
 	case GIMPLE_OMP_SECTIONS:
@@ -1797,7 +1811,6 @@ gimple_copy (gimple *stmt)
 	case GIMPLE_OMP_SECTION:
 	case GIMPLE_OMP_MASTER:
 	case GIMPLE_OMP_TASKGROUP:
-	case GIMPLE_OMP_ORDERED:
 	copy_omp_body:
 	  new_seq = gimple_seq_copy (gimple_omp_body (stmt));
 	  gimple_omp_set_body (copy, new_seq);

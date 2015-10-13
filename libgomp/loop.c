@@ -169,13 +169,16 @@ GOMP_loop_runtime_start (long start, long end, long incr,
   switch (icv->run_sched_var)
     {
     case GFS_STATIC:
-      return gomp_loop_static_start (start, end, incr, icv->run_sched_modifier,
+      return gomp_loop_static_start (start, end, incr,
+				     icv->run_sched_chunk_size,
 				     istart, iend);
     case GFS_DYNAMIC:
-      return gomp_loop_dynamic_start (start, end, incr, icv->run_sched_modifier,
+      return gomp_loop_dynamic_start (start, end, incr,
+				      icv->run_sched_chunk_size,
 				      istart, iend);
     case GFS_GUIDED:
-      return gomp_loop_guided_start (start, end, incr, icv->run_sched_modifier,
+      return gomp_loop_guided_start (start, end, incr,
+				     icv->run_sched_chunk_size,
 				     istart, iend);
     case GFS_AUTO:
       /* For now map to schedule(static), later on we could play with feedback
@@ -266,21 +269,126 @@ GOMP_loop_ordered_runtime_start (long start, long end, long incr,
     {
     case GFS_STATIC:
       return gomp_loop_ordered_static_start (start, end, incr,
-					     icv->run_sched_modifier,
+					     icv->run_sched_chunk_size,
 					     istart, iend);
     case GFS_DYNAMIC:
       return gomp_loop_ordered_dynamic_start (start, end, incr,
-					      icv->run_sched_modifier,
+					      icv->run_sched_chunk_size,
 					      istart, iend);
     case GFS_GUIDED:
       return gomp_loop_ordered_guided_start (start, end, incr,
-					     icv->run_sched_modifier,
+					     icv->run_sched_chunk_size,
 					     istart, iend);
     case GFS_AUTO:
       /* For now map to schedule(static), later on we could play with feedback
 	 driven choice.  */
       return gomp_loop_ordered_static_start (start, end, incr,
 					     0, istart, iend);
+    default:
+      abort ();
+    }
+}
+
+/* The *_doacross_*_start routines are similar.  The only difference is that
+   this work-share construct is initialized to expect an ORDERED(N) - DOACROSS
+   section, and the worksharing loop iterates always from 0 to COUNTS[0] - 1
+   and other COUNTS array elements tell the library number of iterations
+   in the ordered inner loops.  */
+
+static bool
+gomp_loop_doacross_static_start (unsigned ncounts, long *counts,
+				 long chunk_size, long *istart, long *iend)
+{
+  struct gomp_thread *thr = gomp_thread ();
+
+  thr->ts.static_trip = 0;
+  if (gomp_work_share_start (false))
+    {
+      gomp_loop_init (thr->ts.work_share, 0, counts[0], 1,
+		      GFS_STATIC, chunk_size);
+      gomp_doacross_init (ncounts, counts, chunk_size);
+      gomp_work_share_init_done ();
+    }
+
+  return !gomp_iter_static_next (istart, iend);
+}
+
+static bool
+gomp_loop_doacross_dynamic_start (unsigned ncounts, long *counts,
+				  long chunk_size, long *istart, long *iend)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  bool ret;
+
+  if (gomp_work_share_start (false))
+    {
+      gomp_loop_init (thr->ts.work_share, 0, counts[0], 1,
+		      GFS_DYNAMIC, chunk_size);
+      gomp_doacross_init (ncounts, counts, chunk_size);
+      gomp_work_share_init_done ();
+    }
+
+#ifdef HAVE_SYNC_BUILTINS
+  ret = gomp_iter_dynamic_next (istart, iend);
+#else
+  gomp_mutex_lock (&thr->ts.work_share->lock);
+  ret = gomp_iter_dynamic_next_locked (istart, iend);
+  gomp_mutex_unlock (&thr->ts.work_share->lock);
+#endif
+
+  return ret;
+}
+
+static bool
+gomp_loop_doacross_guided_start (unsigned ncounts, long *counts,
+				 long chunk_size, long *istart, long *iend)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  bool ret;
+
+  if (gomp_work_share_start (false))
+    {
+      gomp_loop_init (thr->ts.work_share, 0, counts[0], 1,
+		      GFS_GUIDED, chunk_size);
+      gomp_doacross_init (ncounts, counts, chunk_size);
+      gomp_work_share_init_done ();
+    }
+
+#ifdef HAVE_SYNC_BUILTINS
+  ret = gomp_iter_guided_next (istart, iend);
+#else
+  gomp_mutex_lock (&thr->ts.work_share->lock);
+  ret = gomp_iter_guided_next_locked (istart, iend);
+  gomp_mutex_unlock (&thr->ts.work_share->lock);
+#endif
+
+  return ret;
+}
+
+bool
+GOMP_loop_doacross_runtime_start (unsigned ncounts, long *counts,
+				  long *istart, long *iend)
+{
+  struct gomp_task_icv *icv = gomp_icv (false);
+  switch (icv->run_sched_var)
+    {
+    case GFS_STATIC:
+      return gomp_loop_doacross_static_start (ncounts, counts,
+					      icv->run_sched_chunk_size,
+					      istart, iend);
+    case GFS_DYNAMIC:
+      return gomp_loop_doacross_dynamic_start (ncounts, counts,
+					       icv->run_sched_chunk_size,
+					       istart, iend);
+    case GFS_GUIDED:
+      return gomp_loop_doacross_guided_start (ncounts, counts,
+					      icv->run_sched_chunk_size,
+					      istart, iend);
+    case GFS_AUTO:
+      /* For now map to schedule(static), later on we could play with feedback
+	 driven choice.  */
+      return gomp_loop_doacross_static_start (ncounts, counts,
+					      0, istart, iend);
     default:
       abort ();
     }
@@ -484,7 +592,7 @@ GOMP_parallel_loop_runtime_start (void (*fn) (void *), void *data,
 {
   struct gomp_task_icv *icv = gomp_icv (false);
   gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
-			    icv->run_sched_var, icv->run_sched_modifier, 0);
+			    icv->run_sched_var, icv->run_sched_chunk_size, 0);
 }
 
 ialias_redirect (GOMP_parallel_end)
@@ -529,7 +637,7 @@ GOMP_parallel_loop_runtime (void (*fn) (void *), void *data,
 {
   struct gomp_task_icv *icv = gomp_icv (false);
   gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
-			    icv->run_sched_var, icv->run_sched_modifier,
+			    icv->run_sched_var, icv->run_sched_chunk_size,
 			    flags);
   fn (data);
   GOMP_parallel_end ();
@@ -577,6 +685,13 @@ extern __typeof(gomp_loop_ordered_dynamic_start) GOMP_loop_ordered_dynamic_start
 	__attribute__((alias ("gomp_loop_ordered_dynamic_start")));
 extern __typeof(gomp_loop_ordered_guided_start) GOMP_loop_ordered_guided_start
 	__attribute__((alias ("gomp_loop_ordered_guided_start")));
+
+extern __typeof(gomp_loop_doacross_static_start) GOMP_loop_doacross_static_start
+	__attribute__((alias ("gomp_loop_doacross_static_start")));
+extern __typeof(gomp_loop_doacross_dynamic_start) GOMP_loop_doacross_dynamic_start
+	__attribute__((alias ("gomp_loop_doacross_dynamic_start")));
+extern __typeof(gomp_loop_doacross_guided_start) GOMP_loop_doacross_guided_start
+	__attribute__((alias ("gomp_loop_doacross_guided_start")));
 
 extern __typeof(gomp_loop_static_next) GOMP_loop_static_next
 	__attribute__((alias ("gomp_loop_static_next")));
@@ -635,6 +750,30 @@ GOMP_loop_ordered_guided_start (long start, long end, long incr,
 {
   return gomp_loop_ordered_guided_start (start, end, incr, chunk_size,
 					 istart, iend);
+}
+
+bool
+GOMP_loop_doacross_static_start (unsigned ncounts, long *counts,
+				 long chunk_size, long *istart, long *iend)
+{
+  return gomp_loop_doacross_static_start (ncounts, counts, chunk_size,
+					  istart, iend);
+}
+
+bool
+GOMP_loop_doacross_dynamic_start (unsigned ncounts, long *counts,
+				  long chunk_size, long *istart, long *iend)
+{
+  return gomp_loop_doacross_dynamic_start (ncounts, counts, chunk_size,
+					   istart, iend);
+}
+
+bool
+GOMP_loop_doacross_guided_start (unsigned ncounts, long *counts,
+				 long chunk_size, long *istart, long *iend)
+{
+  return gomp_loop_doacross_guided_start (ncounts, counts, chunk_size,
+					  istart, iend);
 }
 
 bool

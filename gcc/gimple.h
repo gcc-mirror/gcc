@@ -146,26 +146,30 @@ enum gf_mask {
     GF_CALL_CTRL_ALTERING       = 1 << 7,
     GF_CALL_WITH_BOUNDS 	= 1 << 8,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
-    GF_OMP_FOR_KIND_MASK	= (1 << 3) - 1,
+    GF_OMP_TASK_TASKLOOP	= 1 << 0,
+    GF_OMP_FOR_KIND_MASK	= (1 << 4) - 1,
     GF_OMP_FOR_KIND_FOR		= 0,
     GF_OMP_FOR_KIND_DISTRIBUTE	= 1,
-    GF_OMP_FOR_KIND_CILKFOR     = 2,
-    GF_OMP_FOR_KIND_OACC_LOOP	= 3,
+    GF_OMP_FOR_KIND_TASKLOOP	= 2,
+    GF_OMP_FOR_KIND_CILKFOR     = 3,
+    GF_OMP_FOR_KIND_OACC_LOOP	= 4,
     /* Flag for SIMD variants of OMP_FOR kinds.  */
-    GF_OMP_FOR_SIMD		= 1 << 2,
+    GF_OMP_FOR_SIMD		= 1 << 3,
     GF_OMP_FOR_KIND_SIMD	= GF_OMP_FOR_SIMD | 0,
     GF_OMP_FOR_KIND_CILKSIMD	= GF_OMP_FOR_SIMD | 1,
-    GF_OMP_FOR_COMBINED		= 1 << 3,
-    GF_OMP_FOR_COMBINED_INTO	= 1 << 4,
-    GF_OMP_TARGET_KIND_MASK	= (1 << 3) - 1,
+    GF_OMP_FOR_COMBINED		= 1 << 4,
+    GF_OMP_FOR_COMBINED_INTO	= 1 << 5,
+    GF_OMP_TARGET_KIND_MASK	= (1 << 4) - 1,
     GF_OMP_TARGET_KIND_REGION	= 0,
     GF_OMP_TARGET_KIND_DATA	= 1,
     GF_OMP_TARGET_KIND_UPDATE	= 2,
-    GF_OMP_TARGET_KIND_OACC_PARALLEL = 3,
-    GF_OMP_TARGET_KIND_OACC_KERNELS = 4,
-    GF_OMP_TARGET_KIND_OACC_DATA = 5,
-    GF_OMP_TARGET_KIND_OACC_UPDATE = 6,
-    GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA = 7,
+    GF_OMP_TARGET_KIND_ENTER_DATA = 3,
+    GF_OMP_TARGET_KIND_EXIT_DATA = 4,
+    GF_OMP_TARGET_KIND_OACC_PARALLEL = 5,
+    GF_OMP_TARGET_KIND_OACC_KERNELS = 6,
+    GF_OMP_TARGET_KIND_OACC_DATA = 7,
+    GF_OMP_TARGET_KIND_OACC_UPDATE = 8,
+    GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA = 9,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
        a thread synchronization via some sort of barrier.  The exact barrier
@@ -571,7 +575,10 @@ struct GTY((tag("GSS_OMP_CRITICAL")))
 {
   /* [ WORD 1-7 ] : base class */
 
-  /* [ WORD 8 ]
+  /* [ WORD 8 ]  */
+  tree clauses;
+
+  /* [ WORD 9 ]
      Critical section name.  */
   tree name;
 };
@@ -717,7 +724,7 @@ struct GTY((tag("GSS_OMP_CONTINUE")))
   tree control_use;
 };
 
-/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_TEAMS */
+/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_TEAMS, GIMPLE_OMP_ORDERED */
 
 struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
   gimple_statement_omp_single_layout : public gimple_statement_omp
@@ -740,6 +747,13 @@ struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
 {
     /* No extra fields; adds invariant:
          stmt->code == GIMPLE_OMP_TEAMS.  */
+};
+
+struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
+  gomp_ordered : public gimple_statement_omp_single_layout
+{
+    /* No extra fields; adds invariant:
+	 stmt->code == GIMPLE_OMP_ORDERED.  */
 };
 
 
@@ -1074,6 +1088,14 @@ is_a_helper <gomp_critical *>::test (gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <gomp_ordered *>::test (gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_ORDERED;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <gomp_for *>::test (gimple *gs)
 {
   return gs->code == GIMPLE_OMP_FOR;
@@ -1282,6 +1304,14 @@ is_a_helper <const gomp_critical *>::test (const gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <const gomp_ordered *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_ORDERED;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <const gomp_for *>::test (const gimple *gs)
 {
   return gs->code == GIMPLE_OMP_FOR;
@@ -1413,7 +1443,7 @@ gdebug *gimple_build_debug_bind_stat (tree, tree, gimple * MEM_STAT_DECL);
 gdebug *gimple_build_debug_source_bind_stat (tree, tree, gimple * MEM_STAT_DECL);
 #define gimple_build_debug_source_bind(var,val,stmt)			\
   gimple_build_debug_source_bind_stat ((var), (val), (stmt) MEM_STAT_INFO)
-gomp_critical *gimple_build_omp_critical (gimple_seq, tree);
+gomp_critical *gimple_build_omp_critical (gimple_seq, tree, tree);
 gomp_for *gimple_build_omp_for (gimple_seq, int, tree, size_t, gimple_seq);
 gomp_parallel *gimple_build_omp_parallel (gimple_seq, tree, tree, tree);
 gomp_task *gimple_build_omp_task (gimple_seq, tree, tree, tree, tree,
@@ -1422,7 +1452,7 @@ gimple *gimple_build_omp_section (gimple_seq);
 gimple *gimple_build_omp_master (gimple_seq);
 gimple *gimple_build_omp_taskgroup (gimple_seq);
 gomp_continue *gimple_build_omp_continue (tree, tree);
-gimple *gimple_build_omp_ordered (gimple_seq);
+gomp_ordered *gimple_build_omp_ordered (gimple_seq, tree);
 gimple *gimple_build_omp_return (bool);
 gomp_sections *gimple_build_omp_sections (gimple_seq, tree);
 gimple *gimple_build_omp_sections_switch (void);
@@ -4658,7 +4688,8 @@ gimple_omp_critical_name (const gomp_critical *crit_stmt)
 }
 
 
-/* Return a pointer to the name associated with OMP critical statement GS.  */
+/* Return a pointer to the name associated with OMP critical statement
+   CRIT_STMT.  */
 
 static inline tree *
 gimple_omp_critical_name_ptr (gomp_critical *crit_stmt)
@@ -4667,12 +4698,71 @@ gimple_omp_critical_name_ptr (gomp_critical *crit_stmt)
 }
 
 
-/* Set NAME to be the name associated with OMP critical statement GS.  */
+/* Set NAME to be the name associated with OMP critical statement
+   CRIT_STMT.  */
 
 static inline void
 gimple_omp_critical_set_name (gomp_critical *crit_stmt, tree name)
 {
   crit_stmt->name = name;
+}
+
+
+/* Return the clauses associated with OMP_CRITICAL statement CRIT_STMT.  */
+
+static inline tree
+gimple_omp_critical_clauses (const gomp_critical *crit_stmt)
+{
+  return crit_stmt->clauses;
+}
+
+
+/* Return a pointer to the clauses associated with OMP critical statement
+   CRIT_STMT.  */
+
+static inline tree *
+gimple_omp_critical_clauses_ptr (gomp_critical *crit_stmt)
+{
+  return &crit_stmt->clauses;
+}
+
+
+/* Set CLAUSES to be the clauses associated with OMP critical statement
+   CRIT_STMT.  */
+
+static inline void
+gimple_omp_critical_set_clauses (gomp_critical *crit_stmt, tree clauses)
+{
+  crit_stmt->clauses = clauses;
+}
+
+
+/* Return the clauses associated with OMP_ORDERED statement ORD_STMT.  */
+
+static inline tree
+gimple_omp_ordered_clauses (const gomp_ordered *ord_stmt)
+{
+  return ord_stmt->clauses;
+}
+
+
+/* Return a pointer to the clauses associated with OMP ordered statement
+   ORD_STMT.  */
+
+static inline tree *
+gimple_omp_ordered_clauses_ptr (gomp_ordered *ord_stmt)
+{
+  return &ord_stmt->clauses;
+}
+
+
+/* Set CLAUSES to be the clauses associated with OMP ordered statement
+   ORD_STMT.  */
+
+static inline void
+gimple_omp_ordered_set_clauses (gomp_ordered *ord_stmt, tree clauses)
+{
+  ord_stmt->clauses = clauses;
 }
 
 
@@ -5087,6 +5177,31 @@ gimple_omp_task_set_clauses (gimple *gs, tree clauses)
 {
   gomp_task *omp_task_stmt = as_a <gomp_task *> (gs);
   omp_task_stmt->clauses = clauses;
+}
+
+
+/* Return true if OMP task statement G has the
+   GF_OMP_TASK_TASKLOOP flag set.  */
+
+static inline bool
+gimple_omp_task_taskloop_p (const gimple *g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_TASK);
+  return (gimple_omp_subcode (g) & GF_OMP_TASK_TASKLOOP) != 0;
+}
+
+
+/* Set the GF_OMP_TASK_TASKLOOP field in G depending on the boolean
+   value of TASKLOOP_P.  */
+
+static inline void
+gimple_omp_task_set_taskloop_p (gimple *g, bool taskloop_p)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_TASK);
+  if (taskloop_p)
+    g->subcode |= GF_OMP_TASK_TASKLOOP;
+  else
+    g->subcode &= ~GF_OMP_TASK_TASKLOOP;
 }
 
 

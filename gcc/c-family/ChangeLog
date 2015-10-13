@@ -1,3 +1,31 @@
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-common.c (enum c_builtin_type): Define DEF_FUNCTION_TYPE_9,
+	DEF_FUNCTION_TYPE_10 and DEF_FUNCTION_TYPE_11.
+	(c_define_builtins): Likewise.
+	* c-common.h (enum c_omp_clause_split): Add
+	C_OMP_CLAUSE_SPLIT_TASKLOOP.
+	(c_finish_omp_critical, c_finish_omp_ordered): Add CLAUSES argument.
+	(c_finish_omp_for): Add ORIG_DECLV argument.
+	* c-cppbuiltin.c (c_cpp_builtins): Predefine _OPENMP as
+	201511 instead of 201307.
+	* c-omp.c (c_finish_omp_critical): Add CLAUSES argument, set
+	OMP_CRITICAL_CLAUSES to it.
+	(c_finish_omp_ordered): Add CLAUSES argument, set
+	OMP_ORDERED_CLAUSES to it.
+	(c_finish_omp_for): Add ORIG_DECLV argument, set OMP_FOR_ORIG_DECLS
+	to it if OMP_FOR.  Clear DECL_INITIAL on the IVs.
+	(c_omp_split_clauses): Handle OpenMP 4.5 combined/composite
+	constructs and new OpenMP 4.5 clauses.  Clear
+	OMP_CLAUSE_SCHEDULE_SIMD if not combined with OMP_SIMD.  Add
+	verification code.
+	* c-pragma.c (omp_pragmas_simd): Add taskloop.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_TASKLOOP.
+	(enum pragma_omp_clause): Add
+	PRAGMA_OMP_CLAUSE_{DEFAULTMAP,GRAINSIZE,HINT,{IS,USE}_DEVICE_PTR}
+	and PRAGMA_OMP_CLAUSE_{LINK,NOGROUP,NUM_TASKS,PRIORITY,SIMD,THREADS}.
+
 2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-lex.c (interpret_float): Use real_equal instead of

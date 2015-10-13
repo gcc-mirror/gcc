@@ -507,6 +507,7 @@ namespace wi
   BINARY_FUNCTION div_round (const T1 &, const T2 &, signop, bool * = 0);
   BINARY_FUNCTION divmod_trunc (const T1 &, const T2 &, signop,
 				WI_BINARY_RESULT (T1, T2) *);
+  BINARY_FUNCTION gcd (const T1 &, const T2 &, signop = UNSIGNED);
   BINARY_FUNCTION mod_trunc (const T1 &, const T2 &, signop, bool * = 0);
   BINARY_FUNCTION smod_trunc (const T1 &, const T2 &);
   BINARY_FUNCTION umod_trunc (const T1 &, const T2 &);
@@ -2641,6 +2642,27 @@ wi::divmod_trunc (const T1 &x, const T2 &y, signop sgn,
 
   *remainder_ptr = remainder;
   return quotient;
+}
+
+/* Compute the greatest common divisor of two numbers A and B using
+   Euclid's algorithm.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::gcd (const T1 &a, const T2 &b, signop sgn)
+{
+  T1 x, y, z;
+
+  x = wi::abs (a);
+  y = wi::abs (b);
+
+  while (gt_p (x, 0, sgn))
+    {
+      z = mod_trunc (y, x, sgn);
+      y = x;
+      x = z;
+    }
+
+  return y;
 }
 
 /* Compute X / Y, rouding towards 0, and return the remainder.

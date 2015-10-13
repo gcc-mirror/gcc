@@ -36,6 +36,11 @@
 #ifndef LIBGOMP_H 
 #define LIBGOMP_H 1
 
+#ifndef _LIBGOMP_CHECKING_
+/* Define to 1 to perform internal sanity checks.  */
+#define _LIBGOMP_CHECKING_ 0
+#endif
+
 #include "config.h"
 #include "gstdint.h"
 #include "libgomp-plugin.h"
@@ -78,6 +83,44 @@ enum gomp_schedule_type
   GFS_AUTO
 };
 
+struct gomp_doacross_work_share
+{
+  union {
+    /* chunk_size copy, as ws->chunk_size is multiplied by incr for
+       GFS_DYNAMIC.  */
+    long chunk_size;
+    /* Likewise, but for ull implementation.  */
+    unsigned long long chunk_size_ull;
+    /* For schedule(static,0) this is the number
+       of iterations assigned to the last thread, i.e. number of
+       iterations / number of threads.  */
+    long q;
+    /* Likewise, but for ull implementation.  */
+    unsigned long long q_ull;
+  };
+  /* Size of each array entry (padded to cache line size).  */
+  unsigned long elt_sz;
+  /* Number of dimensions in sink vectors.  */
+  unsigned int ncounts;
+  /* True if the iterations can be flattened.  */
+  bool flattened;
+  /* Actual array (of elt_sz sized units), aligned to cache line size.
+     This is indexed by team_id for GFS_STATIC and outermost iteration
+     / chunk_size for other schedules.  */
+  unsigned char *array;
+  /* These two are only used for schedule(static,0).  */
+  /* This one is number of iterations % number of threads.  */
+  long t;
+  union {
+    /* And this one is cached t * (q + 1).  */
+    long boundary;
+    /* Likewise, but for the ull implementation.  */
+    unsigned long long boundary_ull;
+  };
+  /* Array of shift counts for each dimension if they can be flattened.  */
+  unsigned int shift_counts[];
+};
+
 struct gomp_work_share
 {
   /* This member records the SCHEDULE clause to be used for this construct.
@@ -109,13 +152,18 @@ struct gomp_work_share
     };
   };
 
-  /* This is a circular queue that details which threads will be allowed
-     into the ordered region and in which order.  When a thread allocates
-     iterations on which it is going to work, it also registers itself at
-     the end of the array.  When a thread reaches the ordered region, it
-     checks to see if it is the one at the head of the queue.  If not, it
-     blocks on its RELEASE semaphore.  */
-  unsigned *ordered_team_ids;
+  union {
+    /* This is a circular queue that details which threads will be allowed
+       into the ordered region and in which order.  When a thread allocates
+       iterations on which it is going to work, it also registers itself at
+       the end of the array.  When a thread reaches the ordered region, it
+       checks to see if it is the one at the head of the queue.  If not, it
+       blocks on its RELEASE semaphore.  */
+    unsigned *ordered_team_ids;
+
+    /* This is a pointer to DOACROSS work share data.  */
+    struct gomp_doacross_work_share *doacross;
+  };
 
   /* This is the number of threads that have registered themselves in
      the circular queue ordered_team_ids.  */
@@ -234,7 +282,7 @@ struct gomp_task_icv
 {
   unsigned long nthreads_var;
   enum gomp_schedule_type run_sched_var;
-  int run_sched_modifier;
+  int run_sched_chunk_size;
   int default_device_var;
   unsigned int thread_limit_var;
   bool dyn_var;
@@ -263,9 +311,13 @@ extern char *goacc_device_type;
 
 enum gomp_task_kind
 {
+  /* Implicit task.  */
   GOMP_TASK_IMPLICIT,
-  GOMP_TASK_IFFALSE,
+  /* Undeferred task.  */
+  GOMP_TASK_UNDEFERRED,
+  /* Task created by GOMP_task and waiting to be run.  */
   GOMP_TASK_WAITING,
+  /* Task currently executing or scheduled and about to execute.  */
   GOMP_TASK_TIED
 };
 
@@ -275,10 +327,13 @@ struct htab;
 
 struct gomp_task_depend_entry
 {
+  /* Address of dependency.  */
   void *addr;
   struct gomp_task_depend_entry *next;
   struct gomp_task_depend_entry *prev;
+  /* Task that provides the dependency in ADDR.  */
   struct gomp_task *task;
+  /* Depend entry is of type "IN".  */
   bool is_in;
   bool redundant;
   bool redundant_out;
@@ -306,19 +361,35 @@ struct gomp_taskwait
 
 struct gomp_task
 {
+  /* Parent circular list.  See children description below.  */
   struct gomp_task *parent;
+  /* Circular list representing the children of this task.
+
+     In this list we first have parent_depends_on ready to run tasks,
+     then !parent_depends_on ready to run tasks, and finally already
+     running tasks.  */
   struct gomp_task *children;
   struct gomp_task *next_child;
   struct gomp_task *prev_child;
+  /* Circular task_queue in `struct gomp_team'.
+
+     GOMP_TASK_WAITING tasks come before GOMP_TASK_TIED tasks.  */
   struct gomp_task *next_queue;
   struct gomp_task *prev_queue;
+  /* Circular queue in gomp_taskgroup->children.
+
+     GOMP_TASK_WAITING tasks come before GOMP_TASK_TIED tasks.  */
   struct gomp_task *next_taskgroup;
   struct gomp_task *prev_taskgroup;
+  /* Taskgroup this task belongs in.  */
   struct gomp_taskgroup *taskgroup;
+  /* Tasks that depend on this task.  */
   struct gomp_dependers_vec *dependers;
   struct htab *depend_hash;
   struct gomp_taskwait *taskwait;
+  /* Number of items in DEPEND.  */
   size_t depend_count;
+  /* Number of tasks in the DEPENDERS field above.  */
   size_t num_dependees;
   struct gomp_task_icv icv;
   void (*fn) (void *);
@@ -327,18 +398,39 @@ struct gomp_task
   bool in_tied_task;
   bool final_task;
   bool copy_ctors_done;
+  /* Set for undeferred tasks with unsatisfied dependencies which
+     block further execution of their parent until the dependencies
+     are satisfied.  */
   bool parent_depends_on;
+  /* Dependencies provided and/or needed for this task.  DEPEND_COUNT
+     is the number of items available.  */
   struct gomp_task_depend_entry depend[];
 };
 
 struct gomp_taskgroup
 {
   struct gomp_taskgroup *prev;
+  /* Circular list of tasks that belong in this taskgroup.
+
+     Tasks are chained by next/prev_taskgroup within gomp_task, and
+     are sorted by GOMP_TASK_WAITING tasks, and then GOMP_TASK_TIED
+     tasks.  */
   struct gomp_task *children;
   bool in_taskgroup_wait;
   bool cancelled;
   gomp_sem_t taskgroup_sem;
   size_t num_children;
+};
+
+struct gomp_target_task
+{
+  struct gomp_device_descr *devicep;
+  void (*fn) (void *);
+  size_t mapnum;
+  size_t *sizes;
+  unsigned short *kinds;
+  unsigned int flags;
+  void *hostaddrs[];
 };
 
 /* This structure describes a "team" of threads.  These are the threads
@@ -403,6 +495,8 @@ struct gomp_team
   struct gomp_work_share work_shares[8];
 
   gomp_mutex_t task_lock;
+  /* Scheduled tasks.  Chain fields are next/prev_queue within a
+     gomp_task.  */
   struct gomp_task *task_queue;
   /* Number of all GOMP_TASK_{WAITING,TIED} tasks in the team.  */
   unsigned int task_count;
@@ -531,6 +625,7 @@ extern bool gomp_affinity_same_place (void *, void *);
 extern bool gomp_affinity_finalize_place_list (bool);
 extern bool gomp_affinity_init_level (int, unsigned long, bool);
 extern void gomp_affinity_print_place (void *);
+extern void gomp_get_place_proc_ids_8 (int, int64_t *);
 
 /* alloc.c */
 
@@ -600,6 +695,9 @@ extern void gomp_ordered_next (void);
 extern void gomp_ordered_static_init (void);
 extern void gomp_ordered_static_next (void);
 extern void gomp_ordered_sync (void);
+extern void gomp_doacross_init (unsigned, long *, long);
+extern void gomp_doacross_ull_init (unsigned, unsigned long long *,
+				    unsigned long long);
 
 /* parallel.c */
 
@@ -616,6 +714,11 @@ extern void gomp_init_task (struct gomp_task *, struct gomp_task *,
 			    struct gomp_task_icv *);
 extern void gomp_end_task (void);
 extern void gomp_barrier_handle_tasks (gomp_barrier_state_t);
+extern void gomp_task_maybe_wait_for_dependencies (void **);
+extern void gomp_create_target_task (struct gomp_device_descr *,
+				     void (*) (void *), size_t, void **,
+				     size_t *, unsigned short *, unsigned int,
+				     void **);
 
 static void inline
 gomp_finish_task (struct gomp_task *task)
@@ -636,10 +739,24 @@ extern void gomp_free_thread (void *);
 
 extern void gomp_init_targets_once (void);
 extern int gomp_get_num_devices (void);
+extern void gomp_target_task_fn (void *);
 
 typedef struct splay_tree_node_s *splay_tree_node;
 typedef struct splay_tree_s *splay_tree;
 typedef struct splay_tree_key_s *splay_tree_key;
+
+struct target_var_desc {
+  /* Splay key.  */
+  splay_tree_key key;
+  /* True if data should be copied from device to host at the end.  */
+  bool copy_from;
+  /* True if data always should be copied from device to host at the end.  */
+  bool always_copy_from;
+  /* Relative offset against key host_start.  */
+  uintptr_t offset;
+  /* Actual length.  */
+  uintptr_t length;
+};
 
 struct target_mem_desc {
   /* Reference count.  */
@@ -660,10 +777,13 @@ struct target_mem_desc {
   /* Corresponding target device descriptor.  */
   struct gomp_device_descr *device_descr;
 
-  /* List of splay keys to remove (or decrease refcount)
+  /* List of target items to remove (or decrease refcount)
      at the end of region.  */
-  splay_tree_key list[];
+  struct target_var_desc list[];
 };
+
+/* Special value for refcount - infinity.  */
+#define REFCOUNT_INFINITY (~(uintptr_t) 0)
 
 struct splay_tree_key_s {
   /* Address of the host object.  */
@@ -678,8 +798,6 @@ struct splay_tree_key_s {
   uintptr_t refcount;
   /* Asynchronous reference count.  */
   uintptr_t async_refcount;
-  /* True if data should be copied from device to host at the end.  */
-  bool copy_from;
 };
 
 #include "splay-tree.h"
@@ -757,6 +875,7 @@ struct gomp_device_descr
   void (*free_func) (int, void *);
   void *(*dev2host_func) (int, void *, const void *, size_t);
   void *(*host2dev_func) (int, void *, const void *, size_t);
+  void *(*dev2dev_func) (int, void *, const void *, size_t);
   void (*run_func) (int, void *, void *);
 
   /* Splay tree containing information about mapped memory regions.  */
@@ -774,12 +893,22 @@ struct gomp_device_descr
   acc_dispatch_t openacc;
 };
 
+/* Kind of the pragma, for which gomp_map_vars () is called.  */
+enum gomp_map_vars_kind
+{
+  GOMP_MAP_VARS_OPENACC,
+  GOMP_MAP_VARS_TARGET,
+  GOMP_MAP_VARS_DATA,
+  GOMP_MAP_VARS_ENTER_DATA
+};
+
 extern void gomp_acc_insert_pointer (size_t, void **, size_t *, void *);
 extern void gomp_acc_remove_pointer (void *, bool, int, int);
 
 extern struct target_mem_desc *gomp_map_vars (struct gomp_device_descr *,
 					      size_t, void **, void **,
-					      size_t *, void *, bool, bool);
+					      size_t *, void *, bool,
+					      enum gomp_map_vars_kind);
 extern void gomp_copy_from_async (struct target_mem_desc *);
 extern void gomp_unmap_vars (struct target_mem_desc *, bool);
 extern void gomp_init_device (struct gomp_device_descr *);

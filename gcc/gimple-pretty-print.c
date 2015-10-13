@@ -1134,6 +1134,9 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc, int flags)
 	case GF_OMP_FOR_KIND_DISTRIBUTE:
 	  kind = " distribute";
 	  break;
+	case GF_OMP_FOR_KIND_TASKLOOP:
+	  kind = " taskloop";
+	  break;
 	case GF_OMP_FOR_KIND_CILKFOR:
 	  kind = " _Cilk_for";
 	  break;
@@ -1173,6 +1176,9 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc, int flags)
 	  break;
 	case GF_OMP_FOR_KIND_DISTRIBUTE:
 	  pp_string (buffer, "#pragma omp distribute");
+	  break;
+	case GF_OMP_FOR_KIND_TASKLOOP:
+	  pp_string (buffer, "#pragma omp taskloop");
 	  break;
 	case GF_OMP_FOR_KIND_CILKFOR:
 	  break;
@@ -1330,6 +1336,12 @@ dump_gimple_omp_target (pretty_printer *buffer, gomp_target *gs,
     case GF_OMP_TARGET_KIND_UPDATE:
       kind = " update";
       break;
+    case GF_OMP_TARGET_KIND_ENTER_DATA:
+      kind = " enter data";
+      break;
+    case GF_OMP_TARGET_KIND_EXIT_DATA:
+      kind = " exit data";
+      break;
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
       kind = " oacc_kernels";
       break;
@@ -1477,9 +1489,6 @@ dump_gimple_omp_block (pretty_printer *buffer, gimple *gs, int spc, int flags)
 	case GIMPLE_OMP_TASKGROUP:
 	  pp_string (buffer, "#pragma omp taskgroup");
 	  break;
-	case GIMPLE_OMP_ORDERED:
-	  pp_string (buffer, "#pragma omp ordered");
-	  break;
 	case GIMPLE_OMP_SECTION:
 	  pp_string (buffer, "#pragma omp section");
 	  break;
@@ -1517,6 +1526,32 @@ dump_gimple_omp_critical (pretty_printer *buffer, gomp_critical *gs,
 			     flags, false);
 	  pp_right_paren (buffer);
 	}
+      dump_omp_clauses (buffer, gimple_omp_critical_clauses (gs), spc, flags);
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_left_brace (buffer);
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_right_brace (buffer);
+	}
+    }
+}
+
+/* Dump a GIMPLE_OMP_ORDERED tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_ordered (pretty_printer *buffer, gomp_ordered *gs,
+			 int spc, int flags)
+{
+  if (flags & TDF_RAW)
+    dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S> >", gs,
+		     gimple_omp_body (gs));
+  else
+    {
+      pp_string (buffer, "#pragma omp ordered");
+      dump_omp_clauses (buffer, gimple_omp_ordered_clauses (gs), spc, flags);
       if (!gimple_seq_empty_p (gimple_omp_body (gs)))
 	{
 	  newline_and_indent (buffer, spc + 2);
@@ -1969,7 +2004,10 @@ dump_gimple_omp_task (pretty_printer *buffer, gomp_task *gs, int spc,
   else
     {
       gimple_seq body;
-      pp_string (buffer, "#pragma omp task");
+      if (gimple_omp_task_taskloop_p (gs))
+	pp_string (buffer, "#pragma omp taskloop");
+      else
+	pp_string (buffer, "#pragma omp task");
       dump_omp_clauses (buffer, gimple_omp_task_clauses (gs), spc, flags);
       if (gimple_omp_task_child_fn (gs))
 	{
@@ -2235,9 +2273,13 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple *gs, int spc, int flags)
 
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_TASKGROUP:
-    case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SECTION:
       dump_gimple_omp_block (buffer, gs, spc, flags);
+      break;
+
+    case GIMPLE_OMP_ORDERED:
+      dump_gimple_omp_ordered (buffer, as_a <gomp_ordered *> (gs), spc,
+			       flags);
       break;
 
     case GIMPLE_OMP_CRITICAL:

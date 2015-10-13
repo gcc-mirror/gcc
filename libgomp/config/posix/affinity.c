@@ -114,3 +114,27 @@ gomp_affinity_print_place (void *p)
 {
   (void) p;
 }
+
+int
+omp_get_place_num_procs (int place_num)
+{
+  (void) place_num;
+  return 0;
+}
+
+void
+omp_get_place_proc_ids (int place_num, int *ids)
+{
+  (void) place_num;
+  (void) ids;
+}
+
+void
+gomp_get_place_proc_ids_8 (int place_num, int64_t *ids)
+{
+  (void) place_num;
+  (void) ids;
+}
+
+ialias(omp_get_place_num_procs)
+ialias(omp_get_place_proc_ids)

@@ -1,3 +1,85 @@
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-parser.c (c_parser_pragma): Handle PRAGMA_OMP_ORDERED here.
+	(c_parser_omp_clause_name): Handle OpenMP 4.5 clauses.
+	(c_parser_omp_variable_list): Handle structure elements for
+	map, to and from clauses.  Handle array sections in reduction
+	clause.  Formatting fixes.
+	(c_parser_omp_clause_if): Add IS_OMP argument, handle parsing of
+	if clause modifiers.
+	(c_parser_omp_clause_num_tasks, c_parser_omp_clause_grainsize,
+	c_parser_omp_clause_priority, c_parser_omp_clause_hint,
+	c_parser_omp_clause_defaultmap, c_parser_omp_clause_use_device_ptr,
+	c_parser_omp_clause_is_device_ptr): New functions.
+	(c_parser_omp_clause_ordered): Parse optional parameter.
+	(c_parser_omp_clause_reduction): Handle array reductions.
+	(c_parser_omp_clause_schedule): Parse optional simd modifier.
+	(c_parser_omp_clause_nogroup, c_parser_omp_clause_orderedkind): New
+	functions.
+	(c_parser_omp_clause_linear): Parse linear clause modifiers.
+	(c_parser_omp_clause_depend_sink): New function.
+	(c_parser_omp_clause_depend): Parse source/sink depend kinds.
+	(c_parser_omp_clause_map): Parse release/delete map kinds and
+	optional always modifier.
+	(c_parser_oacc_all_clauses): Adjust c_parser_omp_clause_if
+	and c_finish_omp_clauses callers.
+	(c_parser_omp_all_clauses): Likewise.  Parse OpenMP 4.5 clauses.
+	Parse "to" as OMP_CLAUSE_TO_DECLARE if on declare target directive.
+	(c_parser_oacc_cache): Adjust c_finish_omp_clauses caller.
+	(OMP_CRITICAL_CLAUSE_MASK): Define.
+	(c_parser_omp_critical): Parse critical clauses.
+	(c_parser_omp_for_loop): Handle doacross loops, adjust
+	c_finish_omp_for and c_finish_omp_clauses callers.
+	(OMP_SIMD_CLAUSE_MASK): Add simdlen clause.
+	(c_parser_omp_simd): Allow ordered clause if it has no parameter.
+	(OMP_FOR_CLAUSE_MASK): Add linear clause.
+	(c_parser_omp_for): Disallow ordered clause when combined with
+	distribute.  Disallow linear clause when combined with distribute
+	and not combined with simd.
+	(OMP_ORDERED_CLAUSE_MASK, OMP_ORDERED_DEPEND_CLAUSE_MASK): Define.
+	(c_parser_omp_ordered): Add CONTEXT argument, remove LOC argument,
+	parse clauses and if depend clause is found, don't parse a body.
+	(c_parser_omp_parallel): Disallow copyin clause on target parallel.
+	Allow target parallel without for after it.
+	(OMP_TASK_CLAUSE_MASK): Add priority clause.
+	(OMP_TARGET_DATA_CLAUSE_MASK): Add use_device_ptr clause.
+	(c_parser_omp_target_data): Diagnose no map clauses or clauses with
+	invalid kinds.
+	(OMP_TARGET_UPDATE_CLAUSE_MASK): Add depend and nowait clauses.
+	(OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
+	OMP_TARGET_EXIT_DATA_CLAUSE_MASK): Define.
+	(c_parser_omp_target_enter_data, c_parser_omp_target_exit_data): New
+	functions.
+	(OMP_TARGET_CLAUSE_MASK): Add depend, nowait, private, firstprivate,
+	defaultmap and is_device_ptr clauses.
+	(c_parser_omp_target): Parse target parallel and target simd.  Set
+	OMP_TARGET_COMBINED on combined constructs.  Parse target enter data
+	and target exit data.  Diagnose invalid map kinds.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Define.
+	(c_parser_omp_declare_target): Parse OpenMP 4.5 forms of this
+	construct.
+	(c_parser_omp_declare_reduction): Use STRIP_NOPS when checking for
+	&omp_priv.
+	(OMP_TASKLOOP_CLAUSE_MASK): Define.
+	(c_parser_omp_taskloop): New function.
+	(c_parser_omp_construct): Don't handle PRAGMA_OMP_ORDERED here,
+	handle PRAGMA_OMP_TASKLOOP.
+	(c_parser_cilk_for): Adjust c_finish_omp_clauses callers.
+	* c-tree.h (c_finish_omp_clauses): Add two new arguments.
+	* c-typeck.c (handle_omp_array_sections_1): Fix comment typo.
+	Add IS_OMP argument, handle structure element bases, diagnose
+	bitfields, pass IS_OMP recursively, diagnose known zero length
+	array sections in depend clauses, handle array sections in reduction
+	clause, diagnose negative length even for pointers.
+	(handle_omp_array_sections): Add IS_OMP argument, use auto_vec for
+	types, pass IS_OMP down to handle_omp_array_sections_1, handle
+	array sections in reduction clause, set
+	OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION if map could be zero
+	length array section, use GOMP_MAP_FIRSTPRIVATE_POINTER for IS_OMP.
+	(c_finish_omp_clauses): Add IS_OMP and DECLARE_SIMD arguments.
+	Handle new OpenMP 4.5 clauses and new restrictions for the old ones.
+
 2015-10-06  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c (c_parser_statement_after_labels): Use

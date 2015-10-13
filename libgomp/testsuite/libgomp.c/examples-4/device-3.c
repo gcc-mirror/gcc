@@ -9,7 +9,7 @@ int main ()
   int res;
   int default_device = omp_get_default_device ();
 
-  #pragma omp target
+  #pragma omp target map(from: res)
     res = omp_is_initial_device ();
 
   if (res)
@@ -17,7 +17,7 @@ int main ()
 
   omp_set_default_device (omp_get_num_devices ());
 
-  #pragma omp target
+  #pragma omp target map(from: res)
     res = omp_is_initial_device ();
 
   if (!res)
