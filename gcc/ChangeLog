@@ -1,3 +1,17 @@
+2015-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/sparc/sparc.h (SPARC_STACK_ALIGN): Implement using
+	ROUND_UP macro and UNITS_PER_WORD * 2.
+	* config/sparc/sparc.c (sparc_compute_frame_size):
+	Use ROUND_UP and ROUND_DOWN macros where applicable.
+	(function_arg_record_value, function_arg_record_value_1)
+	(function_arg_record_value_1): Ditto.
+	(emit_save_or_restore_regs): Use ROUND_DOWN to preserve offset
+	alignment to double-word.
+	(sparc_gimplify_va_arg): Use ROUND_UP to calculate rsize.
+	(sparc_emit_probe_stack_range): Use ROUND_DOWN to calculate
+	rounded_size.
+
 2015-10-13  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (reduction_phi): Handle cases that gimple_uid is 0 or
@@ -84,7 +98,7 @@
 	* tree-ssa-threadbackward.c (get_gimple_control_stmt): New function.
 	(fsm_find_control_stmt_paths): Change name of first argument to
 	more accurately relfect what it really is.  Handle simplification
-	of GIMPLE_COND after finding a thread path for NAME. 
+	of GIMPLE_COND after finding a thread path for NAME.
 	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Allow
 	nontrivial conditions to be handled by FSM threader.
 	(thread_through_normal_block): Extract the name to looup via
