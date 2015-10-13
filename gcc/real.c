@@ -4997,6 +4997,24 @@ real_isinteger (const REAL_VALUE_TYPE *c, machine_mode mode)
   return real_identical (c, &cint);
 }
 
+/* Check whether C is an integer that fits in a HOST_WIDE_INT,
+   storing it in *INT_OUT if so.  */
+
+bool
+real_isinteger (const REAL_VALUE_TYPE *c, HOST_WIDE_INT *int_out)
+{
+  REAL_VALUE_TYPE cint;
+
+  HOST_WIDE_INT n = real_to_integer (c);
+  real_from_integer (&cint, VOIDmode, n, SIGNED);
+  if (real_identical (c, &cint))
+    {
+      *int_out = n;
+      return true;
+    }
+  return false;
+}
+
 /* Write into BUF the maximum representable finite floating-point
    number, (1 - b**-p) * b**emax for a given FP format FMT as a hex
    float string.  LEN is the size of BUF, and the buffer must be large

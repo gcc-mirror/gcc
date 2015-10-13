@@ -467,7 +467,8 @@ extern void real_round (REAL_VALUE_TYPE *, machine_mode,
 extern void real_copysign (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 
 /* Check whether the real constant value given is an integer.  */
-extern bool real_isinteger (const REAL_VALUE_TYPE *c, machine_mode mode);
+extern bool real_isinteger (const REAL_VALUE_TYPE *, machine_mode);
+extern bool real_isinteger (const REAL_VALUE_TYPE *, HOST_WIDE_INT *);
 
 /* Write into BUF the maximum representable finite floating-point
    number, (1 - b**-p) * b**emax for a given FP format FMT as a hex
