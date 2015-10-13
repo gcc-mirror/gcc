@@ -510,8 +510,7 @@ extern enum cmodel sparc_cmodel;
 #define SPARC_STACK_BOUNDARY_HACK (TARGET_ARCH64 && TARGET_STACK_BIAS)
 
 /* ALIGN FRAMES on double word boundaries */
-#define SPARC_STACK_ALIGN(LOC) \
-  (TARGET_ARCH64 ? (((LOC)+15) & ~15) : (((LOC)+7) & ~7))
+#define SPARC_STACK_ALIGN(LOC) ROUND_UP ((LOC), UNITS_PER_WORD * 2)
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
