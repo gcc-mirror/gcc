@@ -391,6 +391,15 @@ extern void abort (void);
 #define __builtin_expect(a, b) (a)
 #endif
 
+#ifdef ENABLE_CHECKING
+#define gcc_checking_assert(EXPR) gcc_assert (EXPR)
+#define CHECKING_P 1
+#else
+/* N.B.: in release build EXPR is not evaluated.  */
+#define gcc_checking_assert(EXPR) ((void)(0 && (EXPR)))
+#define CHECKING_P 1
+#endif
+
 /* Provide a fake boolean type.  We make no attempt to use the
    C99 _Bool, as it may not be available in the bootstrap compiler,
    and even if it is, it is liable to be buggy.  

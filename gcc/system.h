@@ -716,8 +716,11 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 
 #ifdef ENABLE_CHECKING
 #define gcc_checking_assert(EXPR) gcc_assert (EXPR)
+#define CHECKING_P 1
 #else
+/* N.B.: in release build EXPR is not evaluated.  */
 #define gcc_checking_assert(EXPR) ((void)(0 && (EXPR)))
+#define CHECKING_P 1
 #endif
 
 /* Use gcc_unreachable() to mark unreachable locations (like an

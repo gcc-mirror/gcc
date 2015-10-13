@@ -1,3 +1,8 @@
+2015-10-13  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* common.opt: Add flag_checking.
+	* system.h (CHECKING_P): Define.
+
 2015-10-13  Jakub Jelinek  <jakub@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
