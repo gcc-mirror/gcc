@@ -435,5 +435,5 @@ qtbxq_testp8_4 (poly8x16_t r, poly8x16x4_t tab, uint8x16_t idx)
   return vqtbx4q_p8 (r, tab, idx);
 }
 
-/* { dg-final { scan-assembler-times "tbl v" 42} }  */
-/* { dg-final { scan-assembler-times "tbx v" 30} }  */
+/* { dg-final { scan-assembler-times "tbl\[ |\t\]*v" 42} }  */
+/* { dg-final { scan-assembler-times "tbx\[ |\t\]*v" 30} }  */
