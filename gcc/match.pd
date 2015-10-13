@@ -309,12 +309,19 @@ along with GCC; see the file COPYING3.  If not see
        && TYPE_OVERFLOW_UNDEFINED (type))
    @0)))
 
-/* Simplify cos (-x) -> cos (x).  */
 (for op (negate abs)
-(for coss (COS COSH)
- (simplify
-  (coss (op @0))
-   (coss @0))))
+ /* Simplify cos(-x) and cos(|x|) -> cos(x).  Similarly for cosh.  */
+ (for coss (COS COSH)
+  (simplify
+   (coss (op @0))
+    (coss @0)))
+ /* Simplify pow(-x, y) and pow(|x|,y) -> pow(x,y) if y is an even integer.  */
+ (for pows (POW)
+  (simplify
+   (pows (op @0) REAL_CST@1)
+   (with { HOST_WIDE_INT n; }
+    (if (real_isinteger (&TREE_REAL_CST (@1), &n) && (n & 1) == 0)
+     (pows @0 @1))))))
 
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)
