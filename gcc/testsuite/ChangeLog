@@ -1,3 +1,7 @@
+2015-10-13  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-thread-13.c: New test.
+
 2015-10-12  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-thread-12.c: New test.

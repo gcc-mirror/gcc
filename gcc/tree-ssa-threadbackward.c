@@ -211,10 +211,6 @@ fsm_find_control_statement_thread_paths (tree name,
 	continue;
 
       int path_length = path->length ();
-      /* A path with less than 2 basic blocks should not be jump-threaded.  */
-      if (path_length < 2)
-	continue;
-
       if (path_length > PARAM_VALUE (PARAM_MAX_FSM_THREAD_LENGTH))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
