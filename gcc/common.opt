@@ -46,6 +46,11 @@ int optimize_fast
 Variable
 bool in_lto_p = false
 
+; Enable additional checks of internal state consistency, which may slow
+; the compiler down.
+Variable
+bool flag_checking = CHECKING_P
+
 ; 0 means straightforward implementation of complex divide acceptable.
 ; 1 means wide ranges of inputs must work for complex divide.
 ; 2 means C99-like requirements for complex multiply and divide.
