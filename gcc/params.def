@@ -35,6 +35,11 @@ along with GCC; see the file COPYING3.  If not see
      - The maximum acceptable value for the parameter (if greater than
      the minimum).
 
+   The DEFPARAMENUM<N> macro is similar, but instead of the minumum and maximum
+   arguments, it contains a list of <N> allowed strings, corresponding to
+   integer values 0..<N>-1.  Note that the default argument needs to be
+   specified as one of the allowed strings, rather than an integer value.
+
    Be sure to add an entry to invoke.texi summarizing the parameter.  */
 
 /* When branch is predicted to be taken with probability lower than this
@@ -1152,6 +1157,13 @@ DEFPARAM (PARAM_PARLOOPS_CHUNK_SIZE,
 	  "parloops-chunk-size",
 	  "Chunk size of omp schedule for loops parallelized by parloops",
 	  0, 0, 0)
+
+DEFPARAMENUM5 (PARAM_PARLOOPS_SCHEDULE,
+	       "parloops-schedule",
+	       "Schedule type of omp schedule for loops parallelized by "
+	       "parloops (static, dynamic, guided, auto, runtime)",
+	       static,
+	       static, dynamic, guided, auto, runtime)
 
 DEFPARAM (PARAM_MAX_SSA_NAME_QUERY_DEPTH,
 	  "max-ssa-name-query-depth",

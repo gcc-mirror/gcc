@@ -1,3 +1,13 @@
+2015-10-13  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/67476
+	* testsuite/libgomp.c/autopar-3.c: New test.
+	* testsuite/libgomp.c/autopar-4.c: New test.
+	* testsuite/libgomp.c/autopar-5.c: New test.
+	* testsuite/libgomp.c/autopar-6.c: New test.
+	* testsuite/libgomp.c/autopar-7.c: New test.
+	* testsuite/libgomp.c/autopar-8.c: New test.
+
 2015-10-12  James Norris  <jnorris@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/vector-loop.c: Fix loop
