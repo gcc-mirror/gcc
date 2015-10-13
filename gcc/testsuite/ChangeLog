@@ -1,4 +1,9 @@
-2014-10-13  Yuri Rumyantsev  <ysrumyan@gmail.com>
+2015-10-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc/testsuite/gcc.target/aarch64/table-intrinsics.c: Fix regexp
+	after r228716 (Fix vtbl[34] and vtbx4).
+
+2015-10-13  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/67909, 67947
 	* gcc.dg/torture/pr67947.c: New test.
