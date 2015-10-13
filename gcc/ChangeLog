@@ -1,3 +1,12 @@
+2015-10-13  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-parloops.c (reduction_phi): Handle cases that gimple_uid is 0 or
+	-1.  Add assert that returned entry matches phi argument.
+	(parallelize_loops): Move calls to init_stmt_vec_info_vec and
+	free_stmt_vec_info_vec ...
+	(gather_scalar_reductions): ... here.  Initialize gimple_uids of phis
+	with -1.
+
 2014-10-13  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/67909, 67947
