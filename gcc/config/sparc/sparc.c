@@ -4981,11 +4981,11 @@ sparc_compute_frame_size (HOST_WIDE_INT size, int leaf_function)
   else
     {
       /* We subtract STARTING_FRAME_OFFSET, remember it's negative.  */
-      apparent_frame_size = (size - STARTING_FRAME_OFFSET + 7) & -8;
+      apparent_frame_size = ROUND_UP (size - STARTING_FRAME_OFFSET, 8);
       apparent_frame_size += n_global_fp_regs * 4;
 
       /* We need to add the size of the outgoing argument area.  */
-      frame_size = apparent_frame_size + ((args_size + 7) & -8);
+      frame_size = apparent_frame_size + ROUND_UP (args_size, 8);
 
       /* And that of the register window save area.  */
       frame_size += FIRST_PARM_OFFSET (cfun->decl);
@@ -5116,7 +5116,7 @@ sparc_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 
       /* Step 1: round SIZE to the previous multiple of the interval.  */
 
-      rounded_size = size & -PROBE_INTERVAL;
+      rounded_size = ROUND_DOWN (size, PROBE_INTERVAL);
       emit_move_insn (g4, GEN_INT (rounded_size));
 
 
@@ -5316,8 +5316,9 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 	  else  /* action_true == SORR_RESTORE */
 	    emit_move_insn (gen_rtx_REG (mode, regno), mem);
 
-	  /* Always preserve double-word alignment.  */
-	  offset = (offset + 8) & -8;
+	  /* Bump and round down to double word
+	     in case we already bumped by 4.  */
+	  offset = ROUND_DOWN (offset + 8, 8);
 	}
     }
 
@@ -6439,8 +6440,8 @@ function_arg_record_value_1 (const_tree type, HOST_WIDE_INT startbitpos,
 		  unsigned int startbit, endbit;
 		  int intslots, this_slotno;
 
-		  startbit = parms->intoffset & -BITS_PER_WORD;
-		  endbit   = (bitpos + BITS_PER_WORD - 1) & -BITS_PER_WORD;
+		  startbit = ROUND_DOWN (parms->intoffset, BITS_PER_WORD);
+		  endbit   = ROUND_UP (bitpos, BITS_PER_WORD);
 
 		  intslots = (endbit - startbit) / BITS_PER_WORD;
 		  this_slotno = parms->slotno + parms->intoffset
@@ -6495,8 +6496,8 @@ function_arg_record_value_3 (HOST_WIDE_INT bitpos,
   intoffset = parms->intoffset;
   parms->intoffset = -1;
 
-  startbit = intoffset & -BITS_PER_WORD;
-  endbit = (bitpos + BITS_PER_WORD - 1) & -BITS_PER_WORD;
+  startbit = ROUND_DOWN (intoffset, BITS_PER_WORD);
+  endbit = ROUND_UP (bitpos, BITS_PER_WORD);
   intslots = (endbit - startbit) / BITS_PER_WORD;
   this_slotno = parms->slotno + intoffset / BITS_PER_WORD;
 
@@ -6669,8 +6670,8 @@ function_arg_record_value (const_tree type, machine_mode mode,
       unsigned int startbit, endbit;
       int intslots, this_slotno;
 
-      startbit = parms.intoffset & -BITS_PER_WORD;
-      endbit = (typesize*BITS_PER_UNIT + BITS_PER_WORD - 1) & -BITS_PER_WORD;
+      startbit = ROUND_DOWN (parms.intoffset, BITS_PER_WORD);
+      endbit = ROUND_UP (typesize*BITS_PER_UNIT, BITS_PER_WORD);
       intslots = (endbit - startbit) / BITS_PER_WORD;
       this_slotno = slotno + parms.intoffset / BITS_PER_WORD;
 
@@ -7451,7 +7452,7 @@ sparc_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
     {
       indirect = false;
       size = int_size_in_bytes (type);
-      rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+      rsize = ROUND_UP (size, UNITS_PER_WORD);
       align = 0;
 
       if (TARGET_ARCH64)
