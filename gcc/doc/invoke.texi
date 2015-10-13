@@ -11133,6 +11133,10 @@ automaton.  The default is 50.
 Chunk size of omp schedule for loops parallelized by parloops.  The default
 is 0.
 
+@item parloops-schedule
+Schedule type of omp schedule for loops parallelized by parloops (static,
+dynamic, guided, auto, runtime).  The default is static.
+
 @item max-ssa-name-query-depth
 Maximum depth of recursion when querying properties of SSA names in things
 like fold routines.  One level of recursion corresponds to following a

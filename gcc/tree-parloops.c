@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-ssa.h"
 #include "params.h"
+#include "params-enum.h"
 
 /* This pass tries to distribute iterations of loops into several threads.
    The implementation is straightforward -- for each loop we test whether its
@@ -2086,8 +2087,31 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   gimple_cond_set_lhs (cond_stmt, cvar_base);
   type = TREE_TYPE (cvar);
   t = build_omp_clause (loc, OMP_CLAUSE_SCHEDULE);
-  OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_STATIC;
   int chunk_size = PARAM_VALUE (PARAM_PARLOOPS_CHUNK_SIZE);
+  enum PARAM_PARLOOPS_SCHEDULE_KIND schedule_type \
+    = (enum PARAM_PARLOOPS_SCHEDULE_KIND) PARAM_VALUE (PARAM_PARLOOPS_SCHEDULE);
+  switch (schedule_type)
+    {
+    case PARAM_PARLOOPS_SCHEDULE_KIND_static:
+      OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_STATIC;
+      break;
+    case PARAM_PARLOOPS_SCHEDULE_KIND_dynamic:
+      OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_DYNAMIC;
+      break;
+    case PARAM_PARLOOPS_SCHEDULE_KIND_guided:
+      OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_GUIDED;
+      break;
+    case PARAM_PARLOOPS_SCHEDULE_KIND_auto:
+      OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_AUTO;
+      chunk_size = 0;
+      break;
+    case PARAM_PARLOOPS_SCHEDULE_KIND_runtime:
+      OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_RUNTIME;
+      chunk_size = 0;
+      break;
+    default:
+      gcc_unreachable ();
+    }
   if (chunk_size != 0)
     OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (t)
       = build_int_cst (integer_type_node, chunk_size);

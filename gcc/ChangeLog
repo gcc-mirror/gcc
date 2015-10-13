@@ -1,5 +1,13 @@
 2015-10-13  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/67476
+	* doc/invoke.texi (@item parloops-schedule): New item.
+	* params.def (PARAM_PARLOOPS_SCHEDULE): New DEFPARAMENUM5.
+	* tree-parloops.c: Include params-enum.h.
+	(create_parallel_loop): Handle PARAM_PARLOOPS_SCHEDULE.
+
+2015-10-13  Tom de Vries  <tom@codesourcery.com>
+
 	* Makefile.in (PARAMS_H, PLUGIN_HEADERS): Add params-enum.h.
 	* params-enum.h: New file.
 	* opts.c (handle_param): Handle case that param arg is a string.
