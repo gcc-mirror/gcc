@@ -1569,6 +1569,10 @@ vect_analyze_slp_cost (slp_instance instance, void *data)
   stmt_info_for_cost *si;
   unsigned i;
 
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "=== vect_analyze_slp_cost ===\n");
+
   /* Calculate the number of vector stmts to create based on the unrolling
      factor (number of vectors is 1 if NUNITS >= GROUP_SIZE, and is
      GROUP_SIZE / NUNITS otherwise.  */
