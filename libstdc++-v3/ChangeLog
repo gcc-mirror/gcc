@@ -1,3 +1,9 @@
+2015-10-13  Nathan Froyd  <froydnj@gcc.gnu.org>
+
+	* config/cpu/i486/opt/bits/opt_random.h: Include pmmintrin.h instead
+	of x86intrin.h, and only do so when __SSE3__
+	* include/ext/random: Include emmintrin.h instead of x86intrin.h
+
 2015-10-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* crossconfig.m4 (GLIBCXX_CROSSCONFIG) <*-linux* | *-uclinux* |
