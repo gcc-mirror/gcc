@@ -1,3 +1,8 @@
+2015-10-13  Alexandre Oliva <aoliva@redhat.com>
+
+	PR middle-end/67912
+	* expmed.c (store_bit_field_1): Adjust mode of BLKmode inputs.
+
 2015-10-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/sparc/sparc.h (SPARC_STACK_ALIGN): Implement using
