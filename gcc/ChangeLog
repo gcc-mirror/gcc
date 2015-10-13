@@ -1,3 +1,8 @@
+2015-10-13  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/67476
+	* omp-low.c (expand_omp_for_generic): Handle original loop tree.
+
 2015-10-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_analyze_data_ref_dependences): Allocate

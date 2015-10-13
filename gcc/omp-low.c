@@ -6439,7 +6439,6 @@ expand_omp_for_generic (struct omp_region *region,
       remove_edge (e);
 
       make_edge (cont_bb, l2_bb, EDGE_FALSE_VALUE);
-      add_bb_to_loop (l2_bb, cont_bb->loop_father);
       e = find_edge (cont_bb, l1_bb);
       if (e == NULL)
 	{
@@ -6516,17 +6515,30 @@ expand_omp_for_generic (struct omp_region *region,
       set_immediate_dominator (CDI_DOMINATORS, l1_bb,
 			       recompute_dominator (CDI_DOMINATORS, l1_bb));
 
-      struct loop *outer_loop = alloc_loop ();
-      outer_loop->header = l0_bb;
-      outer_loop->latch = l2_bb;
-      add_loop (outer_loop, l0_bb->loop_father);
+      /* We enter expand_omp_for_generic with a loop.  This original loop may
+	 have its own loop struct, or it may be part of an outer loop struct
+	 (which may be the fake loop).  */
+      struct loop *outer_loop = entry_bb->loop_father;
+      bool orig_loop_has_loop_struct = l1_bb->loop_father != outer_loop;
 
-      if (!gimple_omp_for_combined_p (fd->for_stmt))
+      add_bb_to_loop (l2_bb, outer_loop);
+
+      /* We've added a new loop around the original loop.  Allocate the
+	 corresponding loop struct.  */
+      struct loop *new_loop = alloc_loop ();
+      new_loop->header = l0_bb;
+      new_loop->latch = l2_bb;
+      add_loop (new_loop, outer_loop);
+
+      /* Allocate a loop structure for the original loop unless we already
+	 had one.  */
+      if (!orig_loop_has_loop_struct
+	  && !gimple_omp_for_combined_p (fd->for_stmt))
 	{
-	  struct loop *loop = alloc_loop ();
-	  loop->header = l1_bb;
+	  struct loop *orig_loop = alloc_loop ();
+	  orig_loop->header = l1_bb;
 	  /* The loop may have multiple latches.  */
-	  add_loop (loop, outer_loop);
+	  add_loop (orig_loop, new_loop);
 	}
     }
 }
