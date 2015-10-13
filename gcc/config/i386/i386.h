@@ -840,7 +840,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #endif
 #else
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-   x86_field_alignment (FIELD, COMPUTED)
+  x86_field_alignment ((FIELD), (COMPUTED))
 #endif
 
 /* If defined, a C expression to compute the alignment given to a
@@ -928,7 +928,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    If this macro is not defined, then (ALIGN) will be used.  */
 
 #define MINIMUM_ALIGNMENT(EXP, MODE, ALIGN) \
-  ix86_minimum_alignment (EXP, MODE, ALIGN)
+  ix86_minimum_alignment ((EXP), (MODE), (ALIGN))
 
 
 /* Set this nonzero if move instructions will actually fail to work
@@ -1084,9 +1084,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
    : ((MODE) == XFmode							\
       ? (TARGET_64BIT ? 2 : 3)						\
-      : (MODE) == XCmode						\
-      ? (TARGET_64BIT ? 4 : 6)						\
-      : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
+      : ((MODE) == XCmode						\
+	 ? (TARGET_64BIT ? 4 : 6)					\
+	 : CEIL (GET_MODE_SIZE (MODE), UNITS_PER_WORD))))
 
 #define HARD_REGNO_NREGS_HAS_PADDING(REGNO, MODE)			\
   ((TARGET_128BIT_LONG_DOUBLE && !TARGET_64BIT)				\
@@ -1188,7 +1188,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 
-#define MODES_TIEABLE_P(MODE1, MODE2)  ix86_modes_tieable_p (MODE1, MODE2)
+#define MODES_TIEABLE_P(MODE1, MODE2) \
+  ix86_modes_tieable_p ((MODE1), (MODE2))
 
 /* It is possible to write patterns to move flags; but until someone
    does it,  */
@@ -1462,7 +1463,7 @@ enum reg_class
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) (regclass_map[REGNO])
+#define REGNO_REG_CLASS(REGNO) (regclass_map[(REGNO)])
 
 /* When this hook returns true for MODE, the compiler allows
    registers explicitly used in the rtl to be used as spill registers
@@ -1602,7 +1603,7 @@ enum reg_class
    and -8 for 64bit targets, we need to make sure all stack pointer adjustments
    are in multiple of 4 for 32bit targets and 8 for 64bit targets.  */
 
-#define PUSH_ROUNDING(BYTES) ROUND_UP (BYTES, UNITS_PER_WORD)
+#define PUSH_ROUNDING(BYTES) ROUND_UP ((BYTES), UNITS_PER_WORD)
 
 /* If defined, the maximum amount of space required for outgoing arguments
    will be computed and placed into the variable `crtl->outgoing_args_size'.
@@ -1717,7 +1718,8 @@ typedef struct ix86_args {
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
-#define FUNCTION_PROFILER(FILE, LABELNO) x86_function_profiler (FILE, LABELNO)
+#define FUNCTION_PROFILER(FILE, LABELNO) \
+  x86_function_profiler ((FILE), (LABELNO))
 
 #define MCOUNT_NAME "_mcount"
 
@@ -2142,11 +2144,11 @@ extern int const x86_64_ms_sysv_extra_clobbered_registers[12];
   gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
 
 /* After the prologue, RA is at -4(AP) in the current frame.  */
-#define RETURN_ADDR_RTX(COUNT, FRAME)					   \
-  ((COUNT) == 0								   \
-   ? gen_rtx_MEM (Pmode, plus_constant (Pmode, arg_pointer_rtx,	   \
-					-UNITS_PER_WORD))		   \
-   : gen_rtx_MEM (Pmode, plus_constant (Pmode, FRAME, UNITS_PER_WORD)))
+#define RETURN_ADDR_RTX(COUNT, FRAME)					\
+  ((COUNT) == 0								\
+   ? gen_rtx_MEM (Pmode, plus_constant (Pmode, arg_pointer_rtx,		\
+					-UNITS_PER_WORD))		\
+   : gen_rtx_MEM (Pmode, plus_constant (Pmode, (FRAME), UNITS_PER_WORD)))
 
 /* PC is dbx register 8; let's use that column for RA.  */
 #define DWARF_FRAME_RETURN_COLUMN 	(TARGET_64BIT ? 16 : 8)
@@ -2242,7 +2244,7 @@ do {									\
 
 #undef ASM_OUTPUT_FUNCTION_LABEL
 #define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL) \
-  ix86_asm_output_function_label (FILE, NAME, DECL)
+  ix86_asm_output_function_label ((FILE), (NAME), (DECL))
 
 /* Under some conditions we need jump tables in the text section,
    because the assembler cannot handle label differences between
@@ -2402,9 +2404,9 @@ enum avx_u128_state
 
    Don't rename evex to non-evex sse registers.  */
 
-#define HARD_REGNO_RENAME_OK(SRC, TARGET) (!STACK_REGNO_P (SRC) &&	 \
-					   (EXT_REX_SSE_REGNO_P (SRC) == \
-					    EXT_REX_SSE_REGNO_P (TARGET)))
+#define HARD_REGNO_RENAME_OK(SRC, TARGET)				\
+  (!STACK_REGNO_P (SRC)							\
+   && EXT_REX_SSE_REGNO_P (SRC) == EXT_REX_SSE_REGNO_P (TARGET))
 
 
 #define FASTCALL_PREFIX '@'
