@@ -1,3 +1,9 @@
+2015-10-14  Ilya Verbin  <ilya.verbin@intel.com>
+	    Aleksander Ivanushenko  <aleksander.ivanushenko@intel.com>
+
+	* target.c (gomp_map_vars): Initialize tgt->tgt_start and tgt->tgt_end
+	to 0 when mapnum is 0.
+
 2015-10-14  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* fortran.c (omp_get_place_proc_ids_, omp_get_partition_place_nums_):
