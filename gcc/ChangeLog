@@ -1,3 +1,7 @@
+2015-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_addr_expr) <MEM_REF>: New case.
+
 2015-10-14  Peter Bergner  <bergner@vnet.ibm.com>
 	    Torvald Riegel  <triegel@redhat.com>
 
