@@ -1,3 +1,8 @@
+2015-10-14  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Bump
+	num_threaded_edges for successful FSM threads too.
+
 2015-10-14  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vect_is_simple_use): Remove unused parameters.
