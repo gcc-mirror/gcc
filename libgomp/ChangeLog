@@ -1,3 +1,8 @@
+2015-10-14  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* fortran.c (omp_get_place_proc_ids_, omp_get_partition_place_nums_):
+	Cast to int from int32_t.
+
 2015-10-13  Jakub Jelinek  <jakub@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
