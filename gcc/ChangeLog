@@ -1,3 +1,13 @@
+2015-10-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/mips/mips.h (MIPS_STACK_ALIGN): Implement using
+	ROUND_UP macro.
+	* config/mips/mips.c (mips_setup_incoming_varargs): Use
+	ROUND_DOWN to calculate off.
+	(mips_gimplify_va_arg_expr): Use ROUND_UP to calculate rsize.
+	(mips_emit_probe_stack_range): Use ROUND_DOWN to calculate
+	rounded_size.
+
 2015-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_addr_expr) <MEM_REF>: New case.
