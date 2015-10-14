@@ -1,3 +1,10 @@
+2015-10-14  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/67815
+	* gcc.dg/tree-ssa/reassoc-39.c: New test.
+	* gcc.dg/tree-ssa/reassoc-40.c: New test.
+	* gcc.dg/tree-ssa/reassoc-41.c: New test.
+
 2015-10-14  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.dg/pragma-pop_options-1.c: New test.
