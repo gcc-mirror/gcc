@@ -1,5 +1,37 @@
 2015-10-14  Richard Biener  <rguenther@suse.de>
 
+	* tree-vectorizer.h (vect_is_simple_use): Remove unused parameters.
+	(vect_is_simple_use_1): Likewise.  Make overload of vect_is_simple_use.
+	(vect_get_vec_def_for_operand): Remove unused parameter.
+	* tree-vect-loop.c (get_initial_def_for_induction): Adjust.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vectorizable_reduction): Likewise.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-patterns.c (type_conversion_p): Likewise.
+	(vect_recog_vector_vector_shift_pattern): Likewise.
+	(check_bool_pattern): Likewise.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Likewise.
+	(vect_analyze_slp_cost_1): Likewise.
+	* tree-vect-stmts.c (process_use): Likewise.
+	(vect_get_vec_def_for_operand): Do not handle reductions.
+	(vect_get_vec_defs): Adjust.
+	(vectorizable_mask_load_store): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vect_get_loop_based_defs): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vect_is_simple_cond): Likewise.
+	(vectorizable_condition): Likewise.
+	(vect_is_simple_use): Remove unused parameters.
+	(vect_is_simple_use_1): Adjust and rename.
+
+2015-10-14  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/67915
 	* match.pd: Handle comparisons of addresses of STRING_CSTs.
 	* gimplify.c (gimplify_cond_expr): Fold the GIMPLE conds we build.

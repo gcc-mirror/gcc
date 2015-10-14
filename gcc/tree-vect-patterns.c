@@ -169,17 +169,14 @@ static bool
 type_conversion_p (tree name, gimple *use_stmt, bool check_sign,
 		   tree *orig_type, gimple **def_stmt, bool *promotion)
 {
-  tree dummy;
   gimple *dummy_gimple;
   stmt_vec_info stmt_vinfo;
   tree type = TREE_TYPE (name);
   tree oprnd0;
   enum vect_def_type dt;
-  tree def;
 
   stmt_vinfo = vinfo_for_stmt (use_stmt);
-  if (!vect_is_simple_use (name, use_stmt, stmt_vinfo->vinfo, def_stmt,
-			   &def, &dt))
+  if (!vect_is_simple_use (name, stmt_vinfo->vinfo, def_stmt, &dt))
     return false;
 
   if (dt != vect_internal_def
@@ -207,8 +204,7 @@ type_conversion_p (tree name, gimple *use_stmt, bool check_sign,
   else
     *promotion = false;
 
-  if (!vect_is_simple_use (oprnd0, *def_stmt, stmt_vinfo->vinfo,
-			   &dummy_gimple, &dummy, &dt))
+  if (!vect_is_simple_use (oprnd0, stmt_vinfo->vinfo, &dummy_gimple, &dt))
     return false;
 
   return true;
@@ -1830,7 +1826,7 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_in, tree *type_out)
       || !TYPE_UNSIGNED (type))
     return NULL;
 
-  if (!vect_is_simple_use (oprnd1, last_stmt, vinfo, &def_stmt, &def, &dt))
+  if (!vect_is_simple_use (oprnd1, vinfo, &def_stmt, &dt))
     return NULL;
 
   if (dt != vect_internal_def
@@ -2058,7 +2054,6 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
   vec_info *vinfo = stmt_vinfo->vinfo;
   enum vect_def_type dt;
-  tree def;
 
   if (!is_gimple_assign (last_stmt))
     return NULL;
@@ -2090,8 +2085,7 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
 	 != TYPE_PRECISION (TREE_TYPE (oprnd0)))
     return NULL;
 
-  if (!vect_is_simple_use (oprnd1, last_stmt, vinfo, &def_stmt,
-			   &def, &dt))
+  if (!vect_is_simple_use (oprnd1, vinfo, &def_stmt, &dt))
     return NULL;
 
   if (dt != vect_internal_def)
@@ -2102,7 +2096,7 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
   if (*type_in == NULL_TREE)
     return NULL;
 
-  def = NULL_TREE;
+  tree def = NULL_TREE;
   if (gimple_assign_cast_p (def_stmt))
     {
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
@@ -2892,11 +2886,10 @@ check_bool_pattern (tree var, vec_info *vinfo)
 {
   gimple *def_stmt;
   enum vect_def_type dt;
-  tree def, rhs1;
+  tree rhs1;
   enum tree_code rhs_code;
 
-  if (!vect_is_simple_use (var, NULL, vinfo, &def_stmt, &def,
-			   &dt))
+  if (!vect_is_simple_use (var, vinfo, &def_stmt, &dt))
     return false;
 
   if (dt != vect_internal_def)
@@ -2905,7 +2898,7 @@ check_bool_pattern (tree var, vec_info *vinfo)
   if (!is_gimple_assign (def_stmt))
     return false;
 
-  if (!has_single_use (def))
+  if (!has_single_use (var))
     return false;
 
   rhs1 = gimple_assign_rhs1 (def_stmt);
