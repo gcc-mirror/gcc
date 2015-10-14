@@ -324,7 +324,11 @@ gomp_map_vars (struct gomp_device_descr *devicep, size_t mapnum,
   tgt->device_descr = devicep;
 
   if (mapnum == 0)
-    return tgt;
+    {
+      tgt->tgt_start = 0;
+      tgt->tgt_end = 0;
+      return tgt;
+    }
 
   tgt_align = sizeof (void *);
   tgt_size = 0;
