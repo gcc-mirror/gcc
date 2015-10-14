@@ -296,7 +296,7 @@ decode_statement (void)
   gfc_namespace *ns;
   gfc_statement st;
   locus old_locus;
-  match m;
+  match m = MATCH_NO;
   char c;
 
   gfc_enforce_clean_symbol_state ();
