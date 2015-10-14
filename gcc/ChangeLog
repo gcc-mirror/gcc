@@ -1,3 +1,8 @@
+2015-10-14  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* targhooks.c (default_target_option_pragma_parse): Do not warn if
+	called on behalf of "#pragma GCC pop_options".
+
 2015-10-14  Tom de Vries  <tom@codesourcery.com>
 
 	* cfganal.c (verify_no_unreachable_blocks): New function.
