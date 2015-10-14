@@ -2672,6 +2672,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 	  free_dominance_info (CDI_DOMINATORS);
 	  bitmap_set_bit (threaded_blocks, entry->src->index);
 	  retval = true;
+	  thread_stats.num_threaded_edges++;
 	}
 
       delete_jump_thread_path (path);
