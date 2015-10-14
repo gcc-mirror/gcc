@@ -1,5 +1,16 @@
 2015-10-14  Jeff Law  <law@redhat.com>
 
+	* gcc.dg/tree-ssa/ssa-dom-thread-2.c: Deleted.  The six functions
+	contained within have their own file/test now.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2a.c: New test extracted from
+	ssa-dom-thread-2.c.  Tighten expected output slightly and comment
+	expectations a bit more.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2b.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2c.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2d.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2e.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2f.c: Likewise.
+
         PR testsuite/67959
 	* gcc.dg/tree-ssa/ssa-thread-13.c: Avoid bitfield assumptions.
 
