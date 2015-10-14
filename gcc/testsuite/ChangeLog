@@ -1,3 +1,15 @@
+2015-10-14  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/tree-ssa/reassoc-39.c: Use -g.  Adjust dg-final.
+	(f6): New.
+	(f7): New.
+	(f8): New.
+	(f9): New.
+	(f10): New.
+	(f11): New.
+	(f12): New.
+	(f13): New.
+
 2015-10-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67915
