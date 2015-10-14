@@ -1998,8 +1998,12 @@ along with GCC; see the file COPYING3.  If not see
 	   && decl_in_symtab_p (base1))
          equal = symtab_node::get_create (base0)
 	           ->equal_address_to (symtab_node::get_create (base1));
-       else if ((DECL_P (base0) || TREE_CODE (base0) == SSA_NAME)
-		&& (DECL_P (base1) || TREE_CODE (base1) == SSA_NAME))
+       else if ((DECL_P (base0)
+		 || TREE_CODE (base0) == SSA_NAME
+		 || TREE_CODE (base0) == STRING_CST)
+		&& (DECL_P (base1)
+		    || TREE_CODE (base1) == SSA_NAME
+		    || TREE_CODE (base1) == STRING_CST))
          equal = (base0 == base1);
      }
      (if (equal == 1
@@ -2007,9 +2011,9 @@ along with GCC; see the file COPYING3.  If not see
 	      /* If the offsets are equal we can ignore overflow.  */
 	      || off0 == off1
 	      || POINTER_TYPE_OVERFLOW_UNDEFINED
-	      /* Or if we compare using pointers to decls.  */
+	      /* Or if we compare using pointers to decls or strings.  */
 	      || (POINTER_TYPE_P (TREE_TYPE (@2))
-		  && DECL_P (base0))))
+		  && (DECL_P (base0) || TREE_CODE (base0) == STRING_CST))))
       (switch
        (if (cmp == EQ_EXPR)
 	{ constant_boolean_node (off0 == off1, type); })
