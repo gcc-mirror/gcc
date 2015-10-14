@@ -1,3 +1,16 @@
+2015-10-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Reset info at start.
+	(vect_analyze_group_access_1): Add debug print.
+	* tree-vect-loop.c (vect_get_single_scalar_iteration_cost): Rename ...
+	(vect_compute_single_scalar_iteration_cost): ... to this.
+	(vect_analyze_loop_2): Adjust.
+	* tree-vect-slp.c (struct _slp_oprnd_info): Move from ...
+	* tree-vectorizer.h: ... here.
+	(add_stmt_info_to_vec): Remove.
+	* tree-vect-stmts.c (record_stmt_cost): Inline add_stmt_info_to_vec.
+
 2015-10-14  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* targhooks.c (default_target_option_pragma_parse): Do not warn if
