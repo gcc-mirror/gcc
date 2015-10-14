@@ -481,7 +481,7 @@ omp_get_place_num_procs_8_ (const int64_t *place_num)
 void
 omp_get_place_proc_ids_ (const int32_t *place_num, int32_t *ids)
 {
-  omp_get_place_proc_ids (*place_num, ids);
+  omp_get_place_proc_ids (*place_num, (int *) ids);
 }
 
 void
@@ -505,7 +505,7 @@ omp_get_partition_num_places_ (void)
 void
 omp_get_partition_place_nums_ (int32_t *place_nums)
 {
-  omp_get_partition_place_nums (place_nums);
+  omp_get_partition_place_nums ((int *) place_nums);
 }
 
 void
