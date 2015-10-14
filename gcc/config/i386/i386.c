@@ -11612,6 +11612,7 @@ ix86_emit_save_reg_using_mov (machine_mode mode, unsigned int regno,
 {
   struct machine_function *m = cfun->machine;
   rtx reg = gen_rtx_REG (mode, regno);
+  rtx unspec = NULL_RTX;
   rtx mem, addr, base, insn;
   unsigned int align;
 
@@ -11626,13 +11627,9 @@ ix86_emit_save_reg_using_mov (machine_mode mode, unsigned int regno,
      In case INCOMING_STACK_BOUNDARY is misaligned, we have
      to emit unaligned store.  */
   if (mode == V4SFmode && align < 128)
-    {
-      rtx unspec = gen_rtx_UNSPEC (mode, gen_rtvec (1, reg), UNSPEC_STOREU);
-      insn = emit_insn (gen_rtx_SET (mem, unspec));
-    }
-  else
-    insn = emit_insn (gen_rtx_SET (mem, reg));
+    unspec = gen_rtx_UNSPEC (mode, gen_rtvec (1, reg), UNSPEC_STOREU);
 
+  insn = emit_insn (gen_rtx_SET (mem, unspec ? unspec : reg));
   RTX_FRAME_RELATED_P (insn) = 1;
 
   base = addr;
@@ -11679,7 +11676,7 @@ ix86_emit_save_reg_using_mov (machine_mode mode, unsigned int regno,
       mem = gen_rtx_MEM (mode, addr);
       add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (mem, reg));
     }
-  else
+  else if (unspec)
     add_reg_note (insn, REG_CFA_EXPRESSION, gen_rtx_SET (mem, reg));
 }
 
