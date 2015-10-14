@@ -4985,6 +4985,12 @@ gimplify_addr_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       ret = GS_OK;
       break;
 
+    case MEM_REF:
+      if (integer_zerop (TREE_OPERAND (op0, 1)))
+	goto do_indirect_ref;
+
+      /* ... fall through ... */
+
     default:
       /* If we see a call to a declared builtin or see its address
 	 being taken (we can unify those cases here) then we can mark
