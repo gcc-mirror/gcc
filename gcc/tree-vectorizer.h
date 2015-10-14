@@ -73,20 +73,7 @@ struct stmt_info_for_cost {
   int misalign;
 };
 
-
 typedef vec<stmt_info_for_cost> stmt_vector_for_cost;
-
-static inline void
-add_stmt_info_to_vec (stmt_vector_for_cost *stmt_cost_vec, int count,
-		      enum vect_cost_for_stmt kind, gimple *stmt, int misalign)
-{
-  stmt_info_for_cost si;
-  si.count = count;
-  si.kind = kind;
-  si.stmt = stmt;
-  si.misalign = misalign;
-  stmt_cost_vec->safe_push (si);
-}
 
 /************************************************************************
   SLP
@@ -144,22 +131,6 @@ typedef struct _slp_instance {
 #define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
 #define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
 #define SLP_TREE_TWO_OPERATORS(S)		 (S)->two_operators
-
-/* This structure is used in creation of an SLP tree.  Each instance
-   corresponds to the same operand in a group of scalar stmts in an SLP
-   node.  */
-typedef struct _slp_oprnd_info
-{
-  /* Def-stmts for the operands.  */
-  vec<gimple *> def_stmts;
-  /* Information about the first statement, its vector def-type, type, the
-     operand itself in case it's constant, and an indication if it's a pattern
-     stmt.  */
-  enum vect_def_type first_dt;
-  tree first_op_type;
-  bool first_pattern;
-  bool second_pattern;
-} *slp_oprnd_info;
 
 
 

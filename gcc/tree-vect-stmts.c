@@ -94,12 +94,12 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
   if (body_cost_vec)
     {
       tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
-      add_stmt_info_to_vec (body_cost_vec, count, kind,
-			    stmt_info ? STMT_VINFO_STMT (stmt_info) : NULL,
-			    misalign);
+      stmt_info_for_cost si = { count, kind,
+			        stmt_info ? STMT_VINFO_STMT (stmt_info) : NULL,
+				misalign };
+      body_cost_vec->safe_push (si);
       return (unsigned)
 	(builtin_vectorization_cost (kind, vectype, misalign) * count);
-	 
     }
   else
     return add_stmt_cost (stmt_info->vinfo->target_cost_data,

@@ -1043,7 +1043,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
 
 /* Calculate the cost of one scalar iteration of the loop.  */
 static void
-vect_get_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
+vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
@@ -1739,7 +1739,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
     }
 
   /* Compute the scalar iteration cost.  */
-  vect_get_single_scalar_iteration_cost (loop_vinfo);
+  vect_compute_single_scalar_iteration_cost (loop_vinfo);
 
   /* This pass will decide on using loop versioning and/or loop peeling in
      order to enhance the alignment of data references in the loop.  */

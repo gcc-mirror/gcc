@@ -135,6 +135,23 @@ vect_create_new_slp_node (vec<gimple *> scalar_stmts)
 }
 
 
+/* This structure is used in creation of an SLP tree.  Each instance
+   corresponds to the same operand in a group of scalar stmts in an SLP
+   node.  */
+typedef struct _slp_oprnd_info
+{
+  /* Def-stmts for the operands.  */
+  vec<gimple *> def_stmts;
+  /* Information about the first statement, its vector def-type, type, the
+     operand itself in case it's constant, and an indication if it's a pattern
+     stmt.  */
+  enum vect_def_type first_dt;
+  tree first_op_type;
+  bool first_pattern;
+  bool second_pattern;
+} *slp_oprnd_info;
+
+
 /* Allocate operands info for NOPS operands, and GROUP_SIZE def-stmts for each
    operand.  */
 static vec<slp_oprnd_info> 
