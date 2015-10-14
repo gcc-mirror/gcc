@@ -1,3 +1,9 @@
+2015-10-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/67967
+	* config/i386/i386.c (ix86_emit_save_reg_using_mov): Do not add
+	REG_CFA_EXPRESSION to aligned SSE stores.
+
 2015-10-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/67940
