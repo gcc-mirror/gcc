@@ -234,7 +234,6 @@ vect_get_and_check_slp_defs (vec_info *vinfo,
 {
   tree oprnd;
   unsigned int i, number_of_oprnds;
-  tree def;
   gimple *def_stmt;
   enum vect_def_type dt = vect_uninitialized_def;
   struct loop *loop = NULL;
@@ -287,8 +286,7 @@ again:
 
       oprnd_info = (*oprnds_info)[i];
 
-      if (!vect_is_simple_use (oprnd, NULL, vinfo, &def_stmt,
-			       &def, &dt))
+      if (!vect_is_simple_use (oprnd, vinfo, &def_stmt, &dt))
 	{
 	  if (dump_enabled_p ())
 	    {
@@ -355,19 +353,15 @@ again:
 
           switch (gimple_code (def_stmt))
             {
-              case GIMPLE_PHI:
-                def = gimple_phi_result (def_stmt);
-                break;
+            case GIMPLE_PHI:
+            case GIMPLE_ASSIGN:
+	      break;
 
-              case GIMPLE_ASSIGN:
-                def = gimple_assign_lhs (def_stmt);
-                break;
-
-              default:
-                if (dump_enabled_p ())
-                  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "unsupported defining stmt:\n");
-                return -1;
+	    default:
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "unsupported defining stmt:\n");
+	      return -1;
             }
         }
 
@@ -432,7 +426,7 @@ again:
 	    {
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			       "Build SLP failed: illegal type of def ");
-	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, def);
+	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, oprnd);
               dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 	    }
 
@@ -1555,12 +1549,12 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
   lhs = gimple_get_lhs (stmt);
   for (i = 0; i < gimple_num_ops (stmt); ++i)
     {
-      tree def, op = gimple_op (stmt, i);
+      tree op = gimple_op (stmt, i);
       gimple *def_stmt;
       enum vect_def_type dt;
       if (!op || op == lhs)
 	continue;
-      if (vect_is_simple_use (op, NULL, stmt_info->vinfo, &def_stmt, &def, &dt))
+      if (vect_is_simple_use (op, stmt_info->vinfo, &def_stmt, &dt))
 	{
 	  /* Without looking at the actual initializer a vector of
 	     constants can be implemented as load from the constant pool.
