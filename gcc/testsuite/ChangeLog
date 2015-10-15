@@ -1,5 +1,9 @@
 2015-10-15  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.dg/tree-ssa/reassoc-42.c: New test.
+
+2015-10-15  Marek Polacek  <polacek@redhat.com>
+
 	PR tree-optimization/67953
 	* gcc.dg/fold-minus-6.c (fn4): Change the type of A to
 	unsigned.

@@ -4643,7 +4643,7 @@ attempt_builtin_copysign (vec<operand_entry *> *ops)
 	  && has_single_use (oe->op))
 	{
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (oe->op);
-	  if (is_gimple_call (def_stmt))
+	  if (gimple_call_builtin_p (def_stmt, BUILT_IN_NORMAL))
 	    {
 	      tree fndecl = gimple_call_fndecl (def_stmt);
 	      tree arg0, arg1;
