@@ -59,6 +59,7 @@
 2015-10-14  Peter Bergner  <bergner@vnet.ibm.com>
 	    Torvald Riegel  <triegel@redhat.com>
 
+	PR target/67281
 	* config/rs6000/htm.md (UNSPEC_HTM_FENCE): New.
 	(tabort, tabort<wd>c, tabort<wd>ci, tbegin, tcheck, tend,
 	trechkpt, treclaim, tsr, ttest): Rename define_insns from this...
