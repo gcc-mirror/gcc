@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
 #include "target.h"
+#include "gimple-fold.h"
 
 /* Loop Vectorization Pass.
 
@@ -3341,9 +3342,8 @@ get_initial_def_for_induction (gimple *iv_phi)
   struct loop *iv_loop;
   basic_block new_bb;
   tree new_vec, vec_init, vec_step, t;
-  tree new_var;
   tree new_name;
-  gimple *init_stmt, *new_stmt;
+  gimple *new_stmt;
   gphi *induction_phi;
   tree induc_def, vec_def, vec_dest;
   tree init_expr, step_expr;
@@ -3353,7 +3353,7 @@ get_initial_def_for_induction (gimple *iv_phi)
   tree expr;
   stmt_vec_info phi_info = vinfo_for_stmt (iv_phi);
   bool nested_in_vect_loop = false;
-  gimple_seq stmts = NULL;
+  gimple_seq stmts;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
   gimple *exit_phi;
@@ -3394,9 +3394,8 @@ get_initial_def_for_induction (gimple *iv_phi)
   gcc_assert (ncopies >= 1);
 
   /* Convert the step to the desired type.  */
-  step_expr = force_gimple_operand (fold_convert (TREE_TYPE (vectype),
-						  step_expr),
-				    &stmts, true, NULL_TREE);
+  stmts = NULL;
+  step_expr = gimple_convert (&stmts, TREE_TYPE (vectype), step_expr);
   if (stmts)
     {
       new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
@@ -3417,14 +3416,13 @@ get_initial_def_for_induction (gimple *iv_phi)
       if (!useless_type_conversion_p (vectype, TREE_TYPE (vec_init)))
 	{
 	  new_stmt
-	    = gimple_build_assign (vect_get_new_vect_var (vectype,
+	    = gimple_build_assign (vect_get_new_ssa_name (vectype,
 							  vect_simple_var,
 							  "vec_iv_"),
 				   VIEW_CONVERT_EXPR,
 				   build1 (VIEW_CONVERT_EXPR, vectype,
 					   vec_init));
-	  vec_init = make_ssa_name (gimple_assign_lhs (new_stmt), new_stmt);
-	  gimple_assign_set_lhs (new_stmt, vec_init);
+	  vec_init = gimple_assign_lhs (new_stmt);
 	  new_bb = gsi_insert_on_edge_immediate (loop_preheader_edge (iv_loop),
 						 new_stmt);
 	  gcc_assert (!new_bb);
@@ -3438,16 +3436,8 @@ get_initial_def_for_induction (gimple *iv_phi)
 
       /* iv_loop is the loop to be vectorized. Create:
 	 vec_init = [X, X+S, X+2*S, X+3*S] (S = step_expr, X = init_expr)  */
-      new_var = vect_get_new_vect_var (TREE_TYPE (vectype),
-				       vect_scalar_var, "var_");
-      new_name = force_gimple_operand (fold_convert (TREE_TYPE (vectype),
-						     init_expr),
-				       &stmts, false, new_var);
-      if (stmts)
-	{
-	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-	  gcc_assert (!new_bb);
-	}
+      stmts = NULL;
+      new_name = gimple_convert (&stmts, TREE_TYPE (vectype), init_expr);
 
       vec_alloc (v, nunits);
       bool constant_p = is_gimple_min_invariant (new_name);
@@ -3455,26 +3445,18 @@ get_initial_def_for_induction (gimple *iv_phi)
       for (i = 1; i < nunits; i++)
 	{
 	  /* Create: new_name_i = new_name + step_expr  */
-	  new_name = fold_build2 (PLUS_EXPR, TREE_TYPE (new_name),
-				  new_name, step_expr);
+	  new_name = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (new_name),
+				   new_name, step_expr);
 	  if (!is_gimple_min_invariant (new_name))
-	    {
-	      init_stmt = gimple_build_assign (new_var, new_name);
-	      new_name = make_ssa_name (new_var, init_stmt);
-	      gimple_assign_set_lhs (init_stmt, new_name);
-	      new_bb = gsi_insert_on_edge_immediate (pe, init_stmt);
-	      gcc_assert (!new_bb);
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_NOTE, vect_location,
-				   "created new init_stmt: ");
-		  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, init_stmt, 0);
-                  dump_printf (MSG_NOTE, "\n");
-		}
-	      constant_p = false;
-	    }
+	    constant_p = false;
 	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, new_name);
 	}
+      if (stmts)
+	{
+	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+	  gcc_assert (!new_bb);
+	}
+
       /* Create a vector from [new_name_0, new_name_1, ..., new_name_nunits-1]  */
       if (constant_p)
 	new_vec = build_vector_from_ctor (vectype, v);

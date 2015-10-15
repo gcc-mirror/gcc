@@ -1319,13 +1319,10 @@ vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
       val = build_vector_from_val (type, val);
     }
 
-  new_var = vect_get_new_vect_var (type, vect_simple_var, "cst_");
-  init_stmt = gimple_build_assign  (new_var, val);
-  new_temp = make_ssa_name (new_var, init_stmt);
-  gimple_assign_set_lhs (init_stmt, new_temp);
+  new_temp = vect_get_new_ssa_name (type, vect_simple_var, "cst_");
+  init_stmt = gimple_build_assign  (new_temp, val);
   vect_init_vector_1 (stmt, init_stmt, gsi);
-  vec_oprnd = gimple_assign_lhs (init_stmt);
-  return vec_oprnd;
+  return new_temp;
 }
 
 
@@ -1509,7 +1506,6 @@ vect_get_vec_def_for_stmt_copy (enum vect_def_type dt, tree vec_oprnd)
   gcc_assert (def_stmt_info);
   vec_stmt_for_operand = STMT_VINFO_RELATED_STMT (def_stmt_info);
   gcc_assert (vec_stmt_for_operand);
-  vec_oprnd = gimple_get_lhs (vec_stmt_for_operand);
   if (gimple_code (vec_stmt_for_operand) == GIMPLE_PHI)
     vec_oprnd = PHI_RESULT (vec_stmt_for_operand);
   else
@@ -1888,8 +1884,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 	    {
 	      gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (op))
 			  == TYPE_VECTOR_SUBPARTS (idxtype));
-	      var = vect_get_new_vect_var (idxtype, vect_simple_var, NULL);
-	      var = make_ssa_name (var);
+	      var = vect_get_new_ssa_name (idxtype, vect_simple_var);
 	      op = build1 (VIEW_CONVERT_EXPR, idxtype, op);
 	      new_stmt
 		= gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
@@ -1915,9 +1910,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 		{
 		  gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask_op))
 			      == TYPE_VECTOR_SUBPARTS (masktype));
-		  var = vect_get_new_vect_var (masktype, vect_simple_var,
-					       NULL);
-		  var = make_ssa_name (var);
+		  var = vect_get_new_ssa_name (masktype, vect_simple_var);
 		  mask_op = build1 (VIEW_CONVERT_EXPR, masktype, mask_op);
 		  new_stmt
 		    = gimple_build_assign (var, VIEW_CONVERT_EXPR, mask_op);
@@ -1934,8 +1927,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 	    {
 	      gcc_assert (TYPE_VECTOR_SUBPARTS (vectype)
 			  == TYPE_VECTOR_SUBPARTS (rettype));
-	      var = vect_get_new_vect_var (rettype, vect_simple_var, NULL);
-	      op = make_ssa_name (var, new_stmt);
+	      op = vect_get_new_ssa_name (rettype, vect_simple_var);
 	      gimple_call_set_lhs (new_stmt, op);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	      var = make_ssa_name (vec_dest);
@@ -2379,14 +2371,11 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		v[k] = build_int_cst (unsigned_type_node, j * nunits_out + k);
 	      tree cst = build_vector (vectype_out, v);
 	      tree new_var
-		= vect_get_new_vect_var (vectype_out, vect_simple_var, "cst_");
+		= vect_get_new_ssa_name (vectype_out, vect_simple_var, "cst_");
 	      gimple *init_stmt = gimple_build_assign (new_var, cst);
-	      new_temp = make_ssa_name (new_var, init_stmt);
-	      gimple_assign_set_lhs (init_stmt, new_temp);
 	      vect_init_vector_1 (stmt, init_stmt, NULL);
 	      new_temp = make_ssa_name (vec_dest);
-	      new_stmt = gimple_build_assign (new_temp,
-					      gimple_assign_lhs (init_stmt));
+	      new_stmt = gimple_build_assign (new_temp, new_var);
 	    }
 	  else
 	    {
@@ -5350,8 +5339,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    {
 	      gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (src))
 			  == TYPE_VECTOR_SUBPARTS (srctype));
-	      var = vect_get_new_vect_var (srctype, vect_simple_var, NULL);
-	      var = make_ssa_name (var);
+	      var = vect_get_new_ssa_name (srctype, vect_simple_var);
 	      src = build1 (VIEW_CONVERT_EXPR, srctype, src);
 	      new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR, src);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
@@ -5362,8 +5350,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    {
 	      gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (op))
 			  == TYPE_VECTOR_SUBPARTS (idxtype));
-	      var = vect_get_new_vect_var (idxtype, vect_simple_var, NULL);
-	      var = make_ssa_name (var);
+	      var = vect_get_new_ssa_name (idxtype, vect_simple_var);
 	      op = build1 (VIEW_CONVERT_EXPR, idxtype, op);
 	      new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
@@ -6408,8 +6395,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    {
 	      gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (op))
 			  == TYPE_VECTOR_SUBPARTS (idxtype));
-	      var = vect_get_new_vect_var (idxtype, vect_simple_var, NULL);
-	      var = make_ssa_name (var);
+	      var = vect_get_new_ssa_name (idxtype, vect_simple_var);
 	      op = build1 (VIEW_CONVERT_EXPR, idxtype, op);
 	      new_stmt
 		= gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
@@ -6424,8 +6410,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    {
 	      gcc_assert (TYPE_VECTOR_SUBPARTS (vectype)
 			  == TYPE_VECTOR_SUBPARTS (rettype));
-	      var = vect_get_new_vect_var (rettype, vect_simple_var, NULL);
-	      op = make_ssa_name (var, new_stmt);
+	      op = vect_get_new_ssa_name (rettype, vect_simple_var);
 	      gimple_call_set_lhs (new_stmt, op);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	      var = make_ssa_name (vec_dest);

@@ -1,3 +1,17 @@
+2015-10-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_get_new_ssa_name): Declare.
+	* tree-vect-data-refs.c (vect_get_new_ssa_name): New helper.
+	* tree-vect-loop.c (get_initial_def_for_induction): Drop
+	use of force_gimple_operand in favor of gimple_build.
+	Use vect_get_new_ssa_name.
+	* tree-vect-stmts.c (vect_init_vector): Use vect_get_new_ssa_name.
+	(vectorizable_mask_load_store): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vect_get_vec_def_for_stmt_copy): Remove redundant stmt.
+
 2015-10-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/67945
