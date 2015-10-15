@@ -2431,3 +2431,13 @@ along with GCC; see the file COPYING3.  If not see
     (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
      (convert (bit_and (op (convert:utype @0) (convert:utype @1))
 	       (convert:utype @4))))))))
+
+/* Transform (@0 < @1 and @0 < @2) to use min, 
+   (@0 > @1 and @0 > @2) to use max */
+(for op (lt le gt ge)
+     ext (min min max max)
+ (simplify
+  (bit_and (op:s @0 @1) (op:s @0 @2))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))
+   (op @0 (ext @1 @2)))))
+

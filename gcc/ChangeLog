@@ -1,3 +1,9 @@
+2015-10-16  Michael Collison  <michael.collison@linaro.org>
+	    Andrew Pinski <andrew.pinski@caviumnetworks.com>
+
+	* match.pd ((x < y) && (x < z) -> x < min (y,z),
+	(x > y) and (x > z) -> x > max (y,z))
+
 2015-10-15  Gregor Richards  <gregor.richards@uwaterloo.ca>
 	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
