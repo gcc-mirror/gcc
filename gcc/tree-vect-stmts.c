@@ -1296,9 +1296,7 @@ vect_init_vector_1 (gimple *stmt, gimple *new_stmt, gimple_stmt_iterator *gsi)
 tree
 vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 {
-  tree new_var;
   gimple *init_stmt;
-  tree vec_oprnd;
   tree new_temp;
 
   if (TREE_CODE (type) == VECTOR_TYPE
