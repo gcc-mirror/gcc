@@ -1,3 +1,8 @@
+2015-10-15  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++-dg-test): Check for
+	unsupported compiler output.
+
 2015-10-13  Nathan Froyd  <froydnj@gcc.gnu.org>
 
 	* config/cpu/i486/opt/bits/opt_random.h: Include pmmintrin.h instead
