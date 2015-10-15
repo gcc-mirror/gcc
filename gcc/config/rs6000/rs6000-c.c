@@ -381,7 +381,11 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
   if ((flags & OPTION_MASK_VSX) != 0)
     rs6000_define_or_undefine_macro (define_p, "__VSX__");
   if ((flags & OPTION_MASK_HTM) != 0)
-    rs6000_define_or_undefine_macro (define_p, "__HTM__");
+    {
+      rs6000_define_or_undefine_macro (define_p, "__HTM__");
+      /* Tell the user that our HTM insn patterns act as memory barriers.  */
+      rs6000_define_or_undefine_macro (define_p, "__TM_FENCE__");
+    }
   if ((flags & OPTION_MASK_P8_VECTOR) != 0)
     rs6000_define_or_undefine_macro (define_p, "__POWER8_VECTOR__");
   if ((flags & OPTION_MASK_QUAD_MEMORY) != 0)

@@ -1,3 +1,21 @@
+2015-10-15  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2015-10-14  Peter Bergner  <bergner@vnet.ibm.com>
+		    Torvald Riegel  <triegel@redhat.com>
+
+	PR target/67281
+	* config/rs6000/htm.md (UNSPEC_HTM_FENCE): New.
+	(tabort, tabort<wd>c, tabort<wd>ci, tbegin, tcheck, tend,
+	trechkpt, treclaim, tsr, ttest): Rename define_insns from this...
+	(*tabort, *tabort<wd>c, *tabort<wd>ci, *tbegin, *tcheck, *tend,
+	*trechkpt, *treclaim, *tsr, *ttest): ...to this.  Add memory barrier.
+	(tabort, tabort<wd>c, tabort<wd>ci, tbegin, tcheck, tend,
+	trechkpt, treclaim, tsr, ttest): New define_expands.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	__TM_FENCE__ for htm.
+	* doc/extend.texi: Update documentation for htm builtins.
+
 2015-10-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/67967

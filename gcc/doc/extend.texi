@@ -15153,6 +15153,28 @@ unsigned int __builtin_tresume (void)
 unsigned int __builtin_tsuspend (void)
 @end smallexample
 
+Note that the semantics of the above HTM builtins are required to mimic
+the locking semantics used for critical sections.  Builtins that are used
+to create a new transaction or restart a suspended transaction must have
+lock acquisition like semantics while those builtins that end or suspend a
+transaction must have lock release like semantics.  Specifically, this must
+mimic lock semantics as specified by C++11, for example: Lock acquisition is
+as-if an execution of __atomic_exchange_n(&globallock,1,__ATOMIC_ACQUIRE)
+that returns 0, and lock release is as-if an execution of
+__atomic_store(&globallock,0,__ATOMIC_RELEASE), with globallock being an
+implicit implementation-defined lock used for all transactions.  The HTM
+instructions associated with with the builtins inherently provide the
+correct acquisition and release hardware barriers required.  However,
+the compiler must also be prohibited from moving loads and stores across
+the builtins in a way that would violate their semantics.  This has been
+accomplished by adding memory barriers to the associated HTM instructions
+(which is a conservative approach to provide acquire and release semantics).
+Earlier versions of the compiler did not treat the HTM instructions as
+memory barriers.  A @code{__TM_FENCE__} macro has been added, which can
+be used to determine whether the current compiler treats HTM instructions
+as memory barriers or not.  This allows the user to explicitly add memory
+barriers to their code when using an older version of the compiler.
+
 The following set of built-in functions are available to gain access
 to the HTM specific special purpose registers.
 

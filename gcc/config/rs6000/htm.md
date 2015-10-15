@@ -27,6 +27,14 @@
   ])
 
 ;;
+;; UNSPEC usage
+;;
+
+(define_c_enum "unspec"
+  [UNSPEC_HTM_FENCE
+  ])
+
+;;
 ;; UNSPEC_VOLATILE usage
 ;;
 
@@ -45,96 +53,223 @@
    UNSPECV_HTM_MTSPR
   ])
 
+(define_expand "tabort"
+  [(parallel
+     [(set (match_operand:CC 1 "cc_reg_operand" "=x")
+	   (unspec_volatile:CC [(match_operand:SI 0 "base_reg_operand" "b")]
+			       UNSPECV_HTM_TABORT))
+      (set (match_dup 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))])]
+  "TARGET_HTM"
+{
+  operands[2] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[2]) = 1;
+})
 
-(define_insn "tabort"
+(define_insn "*tabort"
   [(set (match_operand:CC 1 "cc_reg_operand" "=x")
 	(unspec_volatile:CC [(match_operand:SI 0 "base_reg_operand" "b")]
-			    UNSPECV_HTM_TABORT))]
+			    UNSPECV_HTM_TABORT))
+   (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabort. %0"
   [(set_attr "type" "htm")
    (set_attr "length" "4")])
 
-(define_insn "tabort<wd>c"
+(define_expand "tabort<wd>c"
+  [(parallel
+     [(set (match_operand:CC 3 "cc_reg_operand" "=x")
+	   (unspec_volatile:CC [(match_operand 0 "u5bit_cint_operand" "n")
+				(match_operand:GPR 1 "gpc_reg_operand" "r")
+				(match_operand:GPR 2 "gpc_reg_operand" "r")]
+			       UNSPECV_HTM_TABORTXC))
+      (set (match_dup 4) (unspec:BLK [(match_dup 4)] UNSPEC_HTM_FENCE))])]
+  "TARGET_HTM"
+{
+  operands[4] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[4]) = 1;
+})
+
+(define_insn "*tabort<wd>c"
   [(set (match_operand:CC 3 "cc_reg_operand" "=x")
 	(unspec_volatile:CC [(match_operand 0 "u5bit_cint_operand" "n")
 			     (match_operand:GPR 1 "gpc_reg_operand" "r")
 			     (match_operand:GPR 2 "gpc_reg_operand" "r")]
-			    UNSPECV_HTM_TABORTXC))]
+			    UNSPECV_HTM_TABORTXC))
+   (set (match_operand:BLK 4) (unspec:BLK [(match_dup 4)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabort<wd>c. %0,%1,%2"
   [(set_attr "type" "htm")
    (set_attr "length" "4")])
 
-(define_insn "tabort<wd>ci"
+(define_expand "tabort<wd>ci"
+  [(parallel
+     [(set (match_operand:CC 3 "cc_reg_operand" "=x")
+	   (unspec_volatile:CC [(match_operand 0 "u5bit_cint_operand" "n")
+				(match_operand:GPR 1 "gpc_reg_operand" "r")
+				(match_operand 2 "s5bit_cint_operand" "n")]
+			       UNSPECV_HTM_TABORTXCI))
+      (set (match_dup 4) (unspec:BLK [(match_dup 4)] UNSPEC_HTM_FENCE))])]
+  "TARGET_HTM"
+{
+  operands[4] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[4]) = 1;
+})
+
+(define_insn "*tabort<wd>ci"
   [(set (match_operand:CC 3 "cc_reg_operand" "=x")
 	(unspec_volatile:CC [(match_operand 0 "u5bit_cint_operand" "n")
 			     (match_operand:GPR 1 "gpc_reg_operand" "r")
 			     (match_operand 2 "s5bit_cint_operand" "n")]
-			    UNSPECV_HTM_TABORTXCI))]
+			    UNSPECV_HTM_TABORTXCI))
+   (set (match_operand:BLK 4) (unspec:BLK [(match_dup 4)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabort<wd>ci. %0,%1,%2"
   [(set_attr "type" "htm")
    (set_attr "length" "4")])
 
-(define_insn "tbegin"
+(define_expand "tbegin"
+  [(parallel
+     [(set (match_operand:CC 1 "cc_reg_operand" "=x")
+	   (unspec_volatile:CC [(match_operand 0 "const_0_to_1_operand" "n")]
+			       UNSPECV_HTM_TBEGIN))
+      (set (match_dup 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))])]
+  "TARGET_HTM"
+{
+  operands[2] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[2]) = 1;
+})
+
+(define_insn "*tbegin"
   [(set (match_operand:CC 1 "cc_reg_operand" "=x")
 	(unspec_volatile:CC [(match_operand 0 "const_0_to_1_operand" "n")]
-			    UNSPECV_HTM_TBEGIN))]
+			    UNSPECV_HTM_TBEGIN))
+   (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tbegin. %0"
   [(set_attr "type" "htm")
    (set_attr "length" "4")])
 
-(define_insn "tcheck"
+(define_expand "tcheck"
+  [(parallel
+     [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+	   (unspec_volatile:CC [(const_int 0)] UNSPECV_HTM_TCHECK))
+      (set (match_dup 1) (unspec:BLK [(match_dup 1)] UNSPEC_HTM_FENCE))])]
+  "TARGET_HTM"
+{
+  operands[1] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[1]) = 1;
+})
+
+(define_insn "*tcheck"
   [(set (match_operand:CC 0 "cc_reg_operand" "=y")
-	(unspec_volatile:CC [(const_int 0)]
-			    UNSPECV_HTM_TCHECK))]
+	(unspec_volatile:CC [(const_int 0)] UNSPECV_HTM_TCHECK))
+   (set (match_operand:BLK 1) (unspec:BLK [(match_dup 1)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tcheck %0"
   [(set_attr "type" "htm")
    (set_attr "length" "4")])
 
-(define_insn "tend"
+(define_expand "tend"
+  [(parallel
+     [(set (match_operand:CC 1 "cc_reg_operand" "=x")
+	   (unspec_volatile:CC [(match_operand 0 "const_0_to_1_operand" "n")]
+			       UNSPECV_HTM_TEND))
+      (set (match_dup 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))])]
+  "TARGET_HTM"
+{
+  operands[2] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[2]) = 1;
+})
+
+(define_insn "*tend"
   [(set (match_operand:CC 1 "cc_reg_operand" "=x")
 	(unspec_volatile:CC [(match_operand 0 "const_0_to_1_operand" "n")]
-			    UNSPECV_HTM_TEND))]
+			    UNSPECV_HTM_TEND))
+   (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tend. %0"
   [(set_attr "type" "htm")
    (set_attr "length" "4")])
 
-(define_insn "trechkpt"
+(define_expand "trechkpt"
+  [(parallel
+     [(set (match_operand:CC 0 "cc_reg_operand" "=x")
+	   (unspec_volatile:CC [(const_int 0)] UNSPECV_HTM_TRECHKPT))
+      (set (match_dup 1) (unspec:BLK [(match_dup 1)] UNSPEC_HTM_FENCE))])]
+  "TARGET_HTM"
+{
+  operands[1] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[1]) = 1;
+})
+
+(define_insn "*trechkpt"
   [(set (match_operand:CC 0 "cc_reg_operand" "=x")
-	(unspec_volatile:CC [(const_int 0)]
-			    UNSPECV_HTM_TRECHKPT))]
+	(unspec_volatile:CC [(const_int 0)] UNSPECV_HTM_TRECHKPT))
+   (set (match_operand:BLK 1) (unspec:BLK [(match_dup 1)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "trechkpt."
   [(set_attr "type" "htm")
    (set_attr "length" "4")])
 
-(define_insn "treclaim"
+(define_expand "treclaim"
+  [(parallel
+     [(set (match_operand:CC 1 "cc_reg_operand" "=x")
+	   (unspec_volatile:CC [(match_operand:SI 0 "gpc_reg_operand" "r")]
+			       UNSPECV_HTM_TRECLAIM))
+      (set (match_dup 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))])]
+  "TARGET_HTM"
+{
+  operands[2] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[2]) = 1;
+})
+
+(define_insn "*treclaim"
   [(set (match_operand:CC 1 "cc_reg_operand" "=x")
 	(unspec_volatile:CC [(match_operand:SI 0 "gpc_reg_operand" "r")]
-			    UNSPECV_HTM_TRECLAIM))]
+			    UNSPECV_HTM_TRECLAIM))
+   (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "treclaim. %0"
   [(set_attr "type" "htm")
    (set_attr "length" "4")])
 
-(define_insn "tsr"
+(define_expand "tsr"
+  [(parallel
+     [(set (match_operand:CC 1 "cc_reg_operand" "=x")
+	   (unspec_volatile:CC [(match_operand 0 "const_0_to_1_operand" "n")]
+			       UNSPECV_HTM_TSR))
+      (set (match_dup 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))])]
+  "TARGET_HTM"
+{
+  operands[2] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[2]) = 1;
+})
+
+(define_insn "*tsr"
   [(set (match_operand:CC 1 "cc_reg_operand" "=x")
 	(unspec_volatile:CC [(match_operand 0 "const_0_to_1_operand" "n")]
-			    UNSPECV_HTM_TSR))]
+			    UNSPECV_HTM_TSR))
+   (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tsr. %0"
   [(set_attr "type" "htm")
    (set_attr "length" "4")])
 
-(define_insn "ttest"
+(define_expand "ttest"
+  [(parallel
+     [(set (match_operand:CC 0 "cc_reg_operand" "=x")
+	   (unspec_volatile:CC [(const_int 0)] UNSPECV_HTM_TTEST))
+      (set (match_dup 1) (unspec:BLK [(match_dup 1)] UNSPEC_HTM_FENCE))])]
+  "TARGET_HTM"
+{
+  operands[1] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[1]) = 1;
+})
+
+(define_insn "*ttest"
   [(set (match_operand:CC 0 "cc_reg_operand" "=x")
-	(unspec_volatile:CC [(const_int 0)]
-			    UNSPECV_HTM_TTEST))]
+	(unspec_volatile:CC [(const_int 0)] UNSPECV_HTM_TTEST))
+   (set (match_operand:BLK 1) (unspec:BLK [(match_dup 1)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabortwci. 0,1,0"
   [(set_attr "type" "htm")
