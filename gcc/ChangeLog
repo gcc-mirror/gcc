@@ -1,3 +1,8 @@
+2015-10-15  Marek Polacek  <polacek@redhat.com>
+
+	* tree-ssa-reassoc.c (attempt_builtin_copysign): Call
+	gimple_call_builtin instead of is_gimple_call.
+
 2015-10-15  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vect_init_vector): Remove unused vars.
