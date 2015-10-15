@@ -1,5 +1,9 @@
 2015-10-15  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-stmts.c (vect_init_vector): Remove unused vars.
+
+2015-10-15  Richard Biener  <rguenther@suse.de>
+
 	* tree-vectorizer.h (vect_get_new_ssa_name): Declare.
 	* tree-vect-data-refs.c (vect_get_new_ssa_name): New helper.
 	* tree-vect-loop.c (get_initial_def_for_induction): Drop
