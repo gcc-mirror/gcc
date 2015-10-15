@@ -409,6 +409,11 @@ proc libstdc++-dg-test { prog do_what extra_tool_flags } {
     # and-target file), but the defaults are lacking in goodness.
     set comp_output [$select_compile "$prog" "$output_file" "$compile_type" $options];
 
+    set unsupported_message [libstdc++_check_unsupported_p $comp_output]
+    if { $unsupported_message != "" } {
+	set comp_output "::unsupported::$unsupported_message"
+    }
+
     return [list $comp_output $output_file]
 }
 
