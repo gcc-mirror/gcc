@@ -1,3 +1,8 @@
+2015-10-15  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/67953
+	* match.pd (X - (X / Y) * Y): Don't change signedness of @0.
+
 2015-10-15  Jiong Wang  <jiong.wang@arm.com>
 
 	* config.gcc: Recognize "." in architecture base name for AArch64.

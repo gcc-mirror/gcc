@@ -267,7 +267,8 @@ along with GCC; see the file COPYING3.  If not see
 /* X - (X / Y) * Y is the same as X % Y.  */
 (simplify
  (minus (convert1? @0) (convert2? (mult (trunc_div @0 @1) @1)))
- (if (INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
+ (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
+      && TYPE_UNSIGNED (TREE_TYPE (@0)) == TYPE_UNSIGNED (type))
   (trunc_mod (convert @0) (convert @1))))
 
 /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
