@@ -1,3 +1,10 @@
+2015-10-15  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/67953
+	* gcc.dg/fold-minus-6.c (fn4): Change the type of A to
+	unsigned.
+	* gcc.dg/torture/pr67953.c: New test.
+
 2015-10-14  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-2.c: Deleted.  The six functions
