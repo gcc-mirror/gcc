@@ -1,3 +1,11 @@
+2015-10-15  Gregor Richards  <gregor.richards@uwaterloo.ca>
+	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/microblaze/linux.h (MUSL_DYNAMIC_LINKER): Define.
+	(DYNAMIC_LINKER): Renamed to ...
+	(GLIBC_DYNAMIC_LINKER): This.
+	(SUBTARGET_EXTRA_SPECS): Use GNU_USER_DYNAMIC_LINKER.
+
 2015-10-15  Marek Polacek  <polacek@redhat.com>
 
 	* tree-ssa-reassoc.c (attempt_builtin_copysign): Call
