@@ -1689,7 +1689,7 @@ const pass_data pass_data_cse_sincos =
   OPTGROUP_NONE, /* optinfo_flags */
   TV_NONE, /* tv_id */
   PROP_ssa, /* properties_required */
-  0, /* properties_provided */
+  PROP_gimple_opt_math, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
   TODO_update_ssa, /* todo_flags_finish */

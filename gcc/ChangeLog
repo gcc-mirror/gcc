@@ -1,3 +1,15 @@
+2015-10-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/67945
+	* tree-pass.h (PROP_gimple_opt_math): New property flag.
+	* generic-match-head.c (canonicalize_math_p): New function.
+	* gimple-match-head.c: Include tree-pass.h.
+	(canonicalize_math_p): New function.
+	* match.pd: Group math built-in rules into simplifications
+	and canonicalizations.  Guard the latter with canonicalize_math_p.
+	* tree-ssa-math-opts.c (pass_data_cse_sincos): Provide the
+	PROP_gimple_opt_math property.
+
 2015-10-15  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/67953

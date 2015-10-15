@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cgraph.h"
 #include "gimple-match.h"
+#include "tree-pass.h"
 
 
 /* Forward declarations of the private auto-generated matchers.
@@ -824,4 +825,13 @@ static inline bool
 single_use (tree t)
 {
   return TREE_CODE (t) != SSA_NAME || has_zero_uses (t) || has_single_use (t);
+}
+
+/* Return true if math operations should be canonicalized,
+   e.g. sqrt(sqrt(x)) -> pow(x, 0.25).  */
+
+static inline bool
+canonicalize_math_p ()
+{
+  return !cfun || (cfun->curr_properties & PROP_gimple_opt_math) == 0;
 }
