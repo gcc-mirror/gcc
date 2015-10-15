@@ -222,6 +222,10 @@ protected:
 #define PROP_gimple_lvec	(1 << 12)       /* lowered vector */
 #define PROP_gimple_eomp	(1 << 13)       /* no OpenMP directives */
 #define PROP_gimple_lva		(1 << 14)       /* No va_arg internal function.  */
+#define PROP_gimple_opt_math	(1 << 15)	/* Disable canonicalization
+						   of math functions; the
+						   current choices have
+						   been optimized.  */
 
 #define PROP_trees \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)

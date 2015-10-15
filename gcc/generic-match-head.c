@@ -73,3 +73,12 @@ single_use (tree t ATTRIBUTE_UNUSED)
 {
   return true;
 }
+
+/* Return true if math operations should be canonicalized,
+   e.g. sqrt(sqrt(x)) -> pow(x, 0.25).  */
+
+static inline bool
+canonicalize_math_p ()
+{
+  return true;
+}

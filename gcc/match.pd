@@ -2135,11 +2135,25 @@ along with GCC; see the file COPYING3.  If not see
    clearly less optimal and which we'll transform again in forwprop.  */
 
 
-/* Simplification of math builtins.  */
+/* Simplification of math builtins.  These rules must all be optimizations
+   as well as IL simplifications.  If there is a possibility that the new
+   form could be a pessimization, the rule should go in the canonicalization
+   section that follows this one.
 
-/* fold_builtin_logarithm */
+   Rules can generally go in this section if they satisfy one of
+   the following:
+
+   - the rule describes an identity
+
+   - the rule replaces calls with something as simple as addition or
+     multiplication
+
+   - the rule contains unary calls only and simplifies the surrounding
+     arithmetic.  (The idea here is to exclude non-unary calls in which
+     one operand is constant and in which the call is known to be cheap
+     when the operand has that value.)  */
+
 (if (flag_unsafe_math_optimizations)
-
  /* Simplify sqrt(x) * sqrt(x) -> x.  */
  (simplify
   (mult (SQRT@1 @0) @1)
@@ -2152,22 +2166,117 @@ along with GCC; see the file COPYING3.  If not see
    (mult (root:s @0) (root:s @1))
     (root (mult @0 @1))))
 
- /* Simplify pow(x,y) * pow(x,z) -> pow(x,y+z). */
- (simplify
-  (mult (POW:s @0 @1) (POW:s @0 @2))
-   (POW @0 (plus @1 @2)))
-
- /* Simplify pow(x,y) * pow(z,y) -> pow(x*z,y). */
- (simplify
-  (mult (POW:s @0 @1) (POW:s @2 @1))
-   (POW (mult @0 @2) @1))
-
  /* Simplify expN(x) * expN(y) -> expN(x+y). */
  (for exps (EXP EXP2 EXP10 POW10)
   (simplify
    (mult (exps:s @0) (exps:s @1))
     (exps (plus @0 @1))))
 
+ /* Simplify a/root(b/c) into a*root(c/b).  */
+ (for root (SQRT CBRT)
+  (simplify
+   (rdiv @0 (root:s (rdiv:s @1 @2)))
+    (mult @0 (root (rdiv @2 @1)))))
+
+ /* Simplify x/expN(y) into x*expN(-y).  */
+ (for exps (EXP EXP2 EXP10 POW10)
+  (simplify
+   (rdiv @0 (exps:s @1))
+    (mult @0 (exps (negate @1)))))
+
+ /* Special case, optimize logN(expN(x)) = x.  */
+ (for logs (LOG LOG2 LOG10 LOG10)
+      exps (EXP EXP2 EXP10 POW10)
+  (simplify
+   (logs (exps @0))
+    @0))
+
+ /* Optimize logN(func()) for various exponential functions.  We
+    want to determine the value "x" and the power "exponent" in
+    order to transform logN(x**exponent) into exponent*logN(x).  */
+ (for logs (LOG  LOG   LOG   LOG2 LOG2  LOG2  LOG10 LOG10)
+      exps (EXP2 EXP10 POW10 EXP  EXP10 POW10 EXP   EXP2)
+  (simplify
+   (logs (exps @0))
+   (with {
+     tree x;
+     switch (exps)
+       {
+       CASE_FLT_FN (BUILT_IN_EXP):
+         /* Prepare to do logN(exp(exponent)) -> exponent*logN(e).  */
+	 x = build_real_truncate (type, dconst_e ());
+         break;
+       CASE_FLT_FN (BUILT_IN_EXP2):
+         /* Prepare to do logN(exp2(exponent)) -> exponent*logN(2).  */
+         x = build_real (type, dconst2);
+         break;
+       CASE_FLT_FN (BUILT_IN_EXP10):
+       CASE_FLT_FN (BUILT_IN_POW10):
+	 /* Prepare to do logN(exp10(exponent)) -> exponent*logN(10).  */
+	 {
+	   REAL_VALUE_TYPE dconst10;
+	   real_from_integer (&dconst10, VOIDmode, 10, SIGNED);
+	   x = build_real (type, dconst10);
+	 }
+         break;
+       default:
+	 gcc_unreachable ();
+       }
+     }
+    (mult (logs { x; }) @0))))
+
+ (for logs (LOG LOG
+            LOG2 LOG2
+	    LOG10 LOG10)
+      exps (SQRT CBRT)
+  (simplify
+   (logs (exps @0))
+   (with {
+     tree x;
+     switch (exps)
+       {
+       CASE_FLT_FN (BUILT_IN_SQRT):
+	 /* Prepare to do logN(sqrt(x)) -> 0.5*logN(x).  */
+	 x = build_real (type, dconsthalf);
+         break;
+       CASE_FLT_FN (BUILT_IN_CBRT):
+	 /* Prepare to do logN(cbrt(x)) -> (1/3)*logN(x).  */
+         x = build_real_truncate (type, dconst_third ());
+         break;
+       default:
+	 gcc_unreachable ();
+       }
+     }
+    (mult { x; } (logs @0)))))
+
+ /* logN(pow(x,exponent)) -> exponent*logN(x).  */
+ (for logs (LOG LOG2 LOG10)
+      pows (POW)
+  (simplify
+   (logs (pows @0 @1))
+   (mult @1 (logs @0))))
+
+ (for sqrts (SQRT)
+      cbrts (CBRT)
+      exps (EXP EXP2 EXP10 POW10)
+  /* sqrt(expN(x)) -> expN(x*0.5).  */
+  (simplify
+   (sqrts (exps @0))
+   (exps (mult @0 { build_real (type, dconsthalf); })))
+  /* cbrt(expN(x)) -> expN(x/3).  */
+  (simplify
+   (cbrts (exps @0))
+   (exps (mult @0 { build_real_truncate (type, dconst_third ()); })))))
+
+/* Canonicalization of sequences of math builtins.  These rules represent
+   IL simplifications but are not necessarily optimizations.
+
+   The sincos pass is responsible for picking "optimal" implementations
+   of math builtins, which may be more complicated and can sometimes go
+   the other way, e.g. converting pow into a sequence of sqrts.
+   We only want to do these canonicalizations before the pass has run.  */
+
+(if (flag_unsafe_math_optimizations && canonicalize_math_p ())
  /* Simplify tan(x) * cos(x) -> sin(x). */
  (simplify
   (mult:c (TAN:s @0) (COS:s @0))
@@ -2203,97 +2312,54 @@ along with GCC; see the file COPYING3.  If not see
        && ! HONOR_INFINITIES (@0))
    (rdiv { build_one_cst (type); } (COS @0))))
 
+ /* Simplify pow(x,y) * pow(x,z) -> pow(x,y+z). */
+ (simplify
+  (mult (POW:s @0 @1) (POW:s @0 @2))
+   (POW @0 (plus @1 @2)))
+
+ /* Simplify pow(x,y) * pow(z,y) -> pow(x*z,y). */
+ (simplify
+  (mult (POW:s @0 @1) (POW:s @2 @1))
+   (POW (mult @0 @2) @1))
+
  /* Simplify pow(x,c) / x -> pow(x,c-1). */
  (simplify
   (rdiv (POW:s @0 REAL_CST@1) @0)
   (if (!TREE_OVERFLOW (@1))
    (POW @0 (minus @1 { build_one_cst (type); }))))
 
- /* Simplify a/root(b/c) into a*root(c/b).  */
- (for root (SQRT CBRT)
-  (simplify
-   (rdiv @0 (root:s (rdiv:s @1 @2)))
-    (mult @0 (root (rdiv @2 @1)))))
-
- /* Simplify x/expN(y) into x*expN(-y).  */
- (for exps (EXP EXP2 EXP10 POW10)
-  (simplify
-   (rdiv @0 (exps:s @1))
-    (mult @0 (exps (negate @1)))))
-
  /* Simplify x / pow (y,z) -> x * pow(y,-z). */
  (simplify
   (rdiv @0 (POW:s @1 @2))
    (mult @0 (POW @1 (negate @2))))
 
- /* Special case, optimize logN(expN(x)) = x.  */
- (for logs (LOG LOG2 LOG10 LOG10)
-      exps (EXP EXP2 EXP10 POW10)
-  (simplify
-   (logs (exps @0))
-    @0))
- /* Optimize logN(func()) for various exponential functions.  We
-    want to determine the value "x" and the power "exponent" in
-    order to transform logN(x**exponent) into exponent*logN(x).  */
- (for logs (LOG  LOG   LOG   LOG2 LOG2  LOG2  LOG10 LOG10)
-      exps (EXP2 EXP10 POW10 EXP  EXP10 POW10 EXP   EXP2)
-  (simplify
-   (logs (exps @0))
-   (with {
-     tree x;
-     switch (exps)
-       {
-       CASE_FLT_FN (BUILT_IN_EXP):
-         /* Prepare to do logN(exp(exponent) -> exponent*logN(e).  */
-	 x = build_real_truncate (type, dconst_e ());
-         break;
-       CASE_FLT_FN (BUILT_IN_EXP2):
-         /* Prepare to do logN(exp2(exponent) -> exponent*logN(2).  */
-         x = build_real (type, dconst2);
-         break;
-       CASE_FLT_FN (BUILT_IN_EXP10):
-       CASE_FLT_FN (BUILT_IN_POW10):
-	 /* Prepare to do logN(exp10(exponent) -> exponent*logN(10).  */
-	 {
-	   REAL_VALUE_TYPE dconst10;
-	   real_from_integer (&dconst10, VOIDmode, 10, SIGNED);
-	   x = build_real (type, dconst10);
-	 }
-         break;
-       default:
-	 gcc_unreachable ();
-       }
-     }
-    (mult (logs { x; }) @0))))
- (for logs (LOG LOG
-            LOG2 LOG2
-	    LOG10 LOG10)
-      exps (SQRT CBRT)
-  (simplify
-   (logs (exps @0))
-   (with {
-     tree x;
-     switch (exps)
-       {
-       CASE_FLT_FN (BUILT_IN_SQRT):
-	 /* Prepare to do logN(sqrt(x) -> 0.5*logN(x).  */
-	 x = build_real (type, dconsthalf);
-         break;
-       CASE_FLT_FN (BUILT_IN_CBRT):
-	 /* Prepare to do logN(cbrt(x) -> (1/3)*logN(x).  */
-         x = build_real_truncate (type, dconst_third ());
-         break;
-       default:
-	 gcc_unreachable ();
-       }
-     }
-    (mult { x; } (logs @0)))))
- /* logN(pow(x,exponent) -> exponent*logN(x).  */
- (for logs (LOG LOG2 LOG10)
+ (for sqrts (SQRT)
+      cbrts (CBRT)
       pows (POW)
+  /* sqrt(sqrt(x)) -> pow(x,1/4).  */
   (simplify
-   (logs (pows @0 @1))
-   (mult @1 (logs @0)))))
+   (sqrts (sqrts @0))
+   (pows @0 { build_real (type, dconst_quarter ()); }))
+  /* sqrt(cbrt(x)) -> pow(x,1/6).  */
+  (simplify
+   (sqrts (cbrts @0))
+   (pows @0 { build_real_truncate (type, dconst_sixth ()); }))
+  /* cbrt(sqrt(x)) -> pow(x,1/6).  */
+  (simplify
+   (cbrts (sqrts @0))
+   (pows @0 { build_real_truncate (type, dconst_sixth ()); }))
+  /* cbrt(cbrt(x)) -> pow(x,1/9), iff x is nonnegative.  */
+  (simplify
+   (cbrts (cbrts tree_expr_nonnegative_p@0))
+   (pows @0 { build_real_truncate (type, dconst_ninth ()); }))
+  /* sqrt(pow(x,y)) -> pow(|x|,y*0.5).  */
+  (simplify
+   (sqrts (pows @0 @1))
+   (pows (abs @0) (mult @1 { build_real (type, dconsthalf); })))
+  /* cbrt(pow(x,y)) -> pow(x,y/3), iff x is nonnegative.  */
+  (simplify
+   (cbrts (pows tree_expr_nonnegative_p@0 @1))
+   (pows @0 (mult @1 { build_real_truncate (type, dconst_third ()); })))))
 
 /* Narrowing of arithmetic and logical operations. 
 
@@ -2365,44 +2431,3 @@ along with GCC; see the file COPYING3.  If not see
     (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
      (convert (bit_and (op (convert:utype @0) (convert:utype @1))
 	       (convert:utype @4))))))))
-
-(if (flag_unsafe_math_optimizations)
- (for sqrts (SQRT)
-      cbrts (CBRT)
-      exps (EXP EXP2 EXP10 POW10)
-  /* sqrt(expN(x)) -> expN(x*0.5).  */
-  (simplify
-   (sqrts (exps @0))
-   (exps (mult @0 { build_real (type, dconsthalf); })))
-  /* cbrt(expN(x)) -> expN(x/3).  */
-  (simplify
-   (cbrts (exps @0))
-   (exps (mult @0 { build_real_truncate (type, dconst_third ()); }))))
-
- (for sqrts (SQRT)
-      cbrts (CBRT)
-      pows (POW)
-  /* sqrt(sqrt(x)) -> pow(x,1/4).  */
-  (simplify
-   (sqrts (sqrts @0))
-   (pows @0 { build_real (type, dconst_quarter ()); }))
-  /* sqrt(cbrt(x)) -> pow(x,1/6).  */
-  (simplify
-   (sqrts (cbrts @0))
-   (pows @0 { build_real_truncate (type, dconst_sixth ()); }))
-  /* cbrt(sqrt(x)) -> pow(x,1/6).  */
-  (simplify
-   (cbrts (sqrts @0))
-   (pows @0 { build_real_truncate (type, dconst_sixth ()); }))
-  /* cbrt(cbrt(x)) -> pow(x,1/9), iff x is nonnegative.  */
-  (simplify
-   (cbrts (cbrts tree_expr_nonnegative_p@0))
-   (pows @0 { build_real_truncate (type, dconst_ninth ()); }))
-  /* sqrt(pow(x,y)) -> pow(|x|,y*0.5).  */
-  (simplify
-   (sqrts (pows @0 @1))
-   (pows (abs @0) (mult @1 { build_real (type, dconsthalf); })))
-  /* cbrt(pow(x,y)) -> pow(x,y/3), iff x is nonnegative.  */
-  (simplify
-   (cbrts (pows tree_expr_nonnegative_p@0 @1))
-   (pows @0 (mult @1 { build_real_truncate (type, dconst_third ()); })))))
