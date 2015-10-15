@@ -1,3 +1,7 @@
+2015-10-15  Jiong Wang  <jiong.wang@arm.com>
+
+	* config.gcc: Recognize "." in architecture base name for AArch64.
+
 2015-10-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/mips/mips.h (MIPS_STACK_ALIGN): Implement using
