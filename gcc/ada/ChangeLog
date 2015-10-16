@@ -1,3 +1,9 @@
+2015-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Gather_Components): When gathering components
+	of a nested variant, the record type used in legality checks is
+	the enclosing record type.
+
 2015-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_9, DEF_FUNCTION_TYPE_10,

@@ -7292,10 +7292,11 @@ package body Sem_Util is
       end  if;
 
       --  If we have found the corresponding choice, recursively add its
-      --  components to the Into list.
+      --  components to the Into list. The nested components are part of
+      --  the same record type.
 
       Gather_Components
-        (Empty, Component_List (Variant), Governed_By, Into, Report_Errors);
+        (Typ, Component_List (Variant), Governed_By, Into, Report_Errors);
    end Gather_Components;
 
    ------------------------
@@ -16998,7 +16999,7 @@ package body Sem_Util is
    begin
       --  This is a private type which is not completed yet. This can only
       --  happen in a default expression (of a formal parameter or of a
-      --  record component). Do not expand transient scope in this case
+      --  record component). Do not expand transient scope in this case.
 
       if No (Typ) then
          return False;
@@ -17104,9 +17105,9 @@ package body Sem_Util is
       --  nondiscriminants). That is, the recursive calls are too conservative.
 
       function Has_Discrim_Dep_Array (Typ : Entity_Id) return Boolean;
-      --  True if we find certain discriminant-dependent array
-      --  subcomponents. This shouldn't be necessary, but without this check,
-      --  we crash in gimplify. ???
+      --  True if we find certain discriminant-dependent array subcomponents.
+      --  This shouldn't be necessary, but without this check, we crash in
+      --  gimplify. ???
 
       function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean is
          pragma Assert (Typ = Underlying_Type (Typ));
