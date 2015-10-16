@@ -454,7 +454,11 @@ __generic_himod:
 	movw	ax, den
 	cmpw	ax, #0
 	bnz	$den_not_zero\which
+	.if \need_result
+	movw    quot, #0
+	.else
 	movw	num, #0
+	.endif
 	ret
 
 den_not_zero\which:
