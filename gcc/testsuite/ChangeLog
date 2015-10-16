@@ -1,7 +1,12 @@
+2015-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67926
+	* g++.dg/cpp1z/fold-ice1.C: New.
+
 2015-10-16  Michael Collison  <michael.collison@linaro.org>
 	    Andrew Pinski <andrew.pinski@caviumnetworks.com>
 
-	* testsuite/gcc.dg/tree-ssa/minmax-loopend.c: New test.
+	* gcc.dg/tree-ssa/minmax-loopend.c: New test.
 
 2015-10-15  Marek Polacek  <polacek@redhat.com>
 
