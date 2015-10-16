@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2012-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -61,8 +61,7 @@ package Ada.Numerics.Generic_Elementary_Functions is
 
        and then (if X >= Float_Type'Succ (0.0) then Sqrt'Result > 0.0);
 
-   function Log (X : Float_Type'Base) return Float_Type'Base
-   with
+   function Log (X : Float_Type'Base) return Float_Type'Base with
      Post => (if X = 1.0 then Log'Result = 0.0);
 
    function Log (X, Base : Float_Type'Base) return Float_Type'Base with

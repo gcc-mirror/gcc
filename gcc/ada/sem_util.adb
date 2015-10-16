@@ -14214,41 +14214,55 @@ package body Sem_Util is
    --  Start of processing Mark_Coextensions
 
    begin
-      case Nkind (Context_Nod) is
+      --  An allocator that appears on the right hand side of an assignment is
+      --  treated as a potentially dynamic coextension when the right hand side
+      --  is an allocator or a qualified expression.
 
-         --  Comment here ???
+      --    Obj := new ...'(new Coextension ...);
 
-         when N_Assignment_Statement    =>
-            Is_Dynamic := Nkind (Expression (Context_Nod)) = N_Allocator;
+      if Nkind (Context_Nod) = N_Assignment_Statement then
+         Is_Dynamic :=
+           Nkind_In (Expression (Context_Nod), N_Allocator,
+                                               N_Qualified_Expression);
 
-         --  An allocator that is a component of a returned aggregate
-         --  must be dynamic.
+      --  An allocator that appears within the expression of a simple return
+      --  statement is treated as a potentially dynamic coextension when the
+      --  expression is either aggregate, allocator or qualified expression.
 
-         when N_Simple_Return_Statement =>
-            declare
-               Expr : constant Node_Id := Expression (Context_Nod);
-            begin
-               Is_Dynamic :=
-                 Nkind (Expr) = N_Allocator
-                   or else
-                     (Nkind (Expr) = N_Qualified_Expression
-                       and then Nkind (Expression (Expr)) = N_Aggregate);
-            end;
+      --    return (new Coextension ...);
+      --    return new ...'(new Coextension ...);
 
-         --  An alloctor within an object declaration in an extended return
-         --  statement is of necessity dynamic.
+      elsif Nkind (Context_Nod) = N_Simple_Return_Statement then
+         Is_Dynamic :=
+           Nkind_In (Expression (Context_Nod), N_Aggregate,
+                                               N_Allocator,
+                                               N_Qualified_Expression);
 
-         when N_Object_Declaration =>
-            Is_Dynamic := Nkind (Root_Nod) = N_Allocator
-              or else
-                Nkind (Parent (Context_Nod)) = N_Extended_Return_Statement;
+      --  An alloctor that appears within the initialization expression of an
+      --  object declaration is considered a potentially dynamic coextension
+      --  when the initialization expression is an allocator or a qualified
+      --  expression.
 
-         --  This routine should not be called for constructs which may not
-         --  contain coextensions.
+      --    Obj : ... := new ...'(new Coextension ...);
 
-         when others =>
-            raise Program_Error;
-      end case;
+      --  A similar case arises when the object declaration is part of an
+      --  extended return statement.
+
+      --    return Obj : ... := new ...'(new Coextension ...);
+      --    return Obj : ... := (new Coextension ...);
+
+      elsif Nkind (Context_Nod) = N_Object_Declaration then
+         Is_Dynamic :=
+           Nkind_In (Root_Nod, N_Allocator, N_Qualified_Expression)
+             or else
+               Nkind (Parent (Context_Nod)) = N_Extended_Return_Statement;
+
+      --  This routine should not be called with constructs which may not
+      --  contain coextensions.
+
+      else
+         raise Program_Error;
+      end if;
 
       Mark_Allocators (Root_Nod);
    end Mark_Coextensions;

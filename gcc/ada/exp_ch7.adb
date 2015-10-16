@@ -763,6 +763,7 @@ package body Exp_Ch7 is
    procedure Build_Finalization_Master
      (Typ            : Entity_Id;
       For_Anonymous  : Boolean   := False;
+      For_Lib_Level  : Boolean   := False;
       For_Private    : Boolean   := False;
       Context_Scope  : Entity_Id := Empty;
       Insertion_Node : Node_Id   := Empty)
@@ -1038,6 +1039,15 @@ package body Exp_Ch7 is
             end if;
 
             Pop_Scope;
+
+         --  The finalization master belongs to an access result type related
+         --  to a build-in-place function call used to initialize a library
+         --  level object. The master must be inserted in front of the access
+         --  result type declaration denoted by Insertion_Node.
+
+         elsif For_Lib_Level then
+            pragma Assert (Present (Insertion_Node));
+            Insert_Actions (Insertion_Node, Actions);
 
          --  Otherwise the finalization master and its initialization become a
          --  part of the freeze node.
