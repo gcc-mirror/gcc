@@ -3231,7 +3231,7 @@ package body Checks is
                Rewrite (R_Cno, Make_Null_Statement (Loc));
             end if;
 
-         --  The range check raises Constrant_Error explicitly
+         --  The range check raises Constraint_Error explicitly
 
          else
             Install_Static_Check (R_Cno, Loc);

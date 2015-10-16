@@ -1,3 +1,16 @@
+2015-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* checks.adb: Fix typo.
+	* s-osinte-linux.ads: Add header.
+	* projects.texi: Removed, no longer used.
+	* s-multip.adb: Minor: fix header.
+	* sem_ch3.adb, exp_ch7.adb, g-dirope.ads, sinfo.ads, types.ads,
+	a-textio.adb, s-exctra.adb, ali.adb, back_end.ads, exp_intr.adb,
+	a-tigeli.adb, exp_ch3.adb, s-os_lib.ads: Remove further references to
+	.NET.
+	* gnatlink.adb, opt.ads, exp_aggr.adb, s-solita.adb: Minor comment
+	updates.
+
 2015-10-16  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch9.adb (Build_Simple_Entry_Call): Set_Is_Internal on

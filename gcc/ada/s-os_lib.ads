@@ -48,9 +48,6 @@
 --  be used by other predefined packages. User access to this package is via
 --  a renaming of this package in GNAT.OS_Lib (file g-os_lib.ads).
 
---  Note: a distinct body for this spec is included in the .NET runtime library
---  and must be kept in sync with changes made in this file.
-
 pragma Compiler_Unit_Warning;
 
 with System;

@@ -1861,10 +1861,6 @@ begin
 
    --  Now, actually link the program
 
-   --  Skip this step for now on JVM since the Java interpreter will do
-   --  the actual link at run time. We might consider packing all class files
-   --  in a .zip file during this step.
-
    Link_Step : declare
       Num_Args : Natural :=
         (Linker_Options.Last - Linker_Options.First + 1) +

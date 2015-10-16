@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2014, AdaCore                     --
+--                     Copyright (C) 2000-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,8 +69,6 @@ package body System.Exception_Traces is
      (Traceback : System.Address;
       Len       : Natural) return String
    is
-      --  Note: do not use an address clause, which is not supported under .NET
-
       subtype Trace_Array is Traceback_Entries.Tracebacks_Array (1 .. Len);
       type Trace_Array_Access is access all Trace_Array;
 

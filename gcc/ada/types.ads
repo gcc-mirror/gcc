@@ -844,10 +844,7 @@ package Types is
    --  Note on ordering of references. For the tables in Ada.Exceptions units,
    --  usually the ordering does not matter, and we use the same ordering as
    --  is used here (note the requirement in the ordering here that CE/PE/SE
-   --  codes be kept together, so the subtype declarations work OK). However,
-   --  there is an important exception, which is in a-except-2005.adb, where
-   --  ordering of the Rcheck routines must correspond to the ordering of the
-   --  Rmsg_xx messages. This is required by the .NET scripts.
+   --  codes be kept together, so the subtype declarations work OK).
 
    type RT_Exception_Code is
      (CE_Access_Check_Failed,            -- 00

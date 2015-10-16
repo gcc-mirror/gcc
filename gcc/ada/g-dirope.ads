@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2014, AdaCore                     --
+--                     Copyright (C) 1998-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -248,12 +248,6 @@ private
 
    type Dir_Type_Value is new System.Address;
    --  Low-level address directory structure as returned by opendir in C
-   --
-   --  Note that we used to define this type in the body of this package,
-   --  but this was causing troubles in the context of .NET code generation
-   --  (because Taft amendment types are not fully implemented and cause
-   --  undefined references to the class), so we moved the type declaration
-   --  to the spec's private part, which is no problem in any case here.
 
    type Dir_Type is access Dir_Type_Value;
 
