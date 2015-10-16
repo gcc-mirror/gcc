@@ -1,3 +1,11 @@
+2015-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch12.adb: Minor punctuation fix in comment
+	* s-rident.ads: Minor consistency fix in comment
+	* exp_attr.adb, g-spipat.ads: punctuation fixes in comments.
+	* restrict.ads: Style fix in comments.
+	* sem_prag.adb: Minor grammar fix in comment
+
 2015-10-16  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch12.adb: Minor reformatting/rewording.

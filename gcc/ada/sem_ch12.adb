@@ -9431,7 +9431,7 @@ package body Sem_Ch12 is
       --  no one-to-one correspondence between the two lists (for example,
       --  the actual may include subtypes, itypes, and inherited primitive
       --  operations, interspersed among the renaming declarations for the
-      --  actuals) . We retrieve the corresponding actual by name because each
+      --  actuals). We retrieve the corresponding actual by name because each
       --  actual has the same name as the formal, and they do appear in the
       --  same order.
 

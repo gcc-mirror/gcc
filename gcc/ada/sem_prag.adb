@@ -9460,7 +9460,7 @@ package body Sem_Prag is
                Profile => Ravenscar);
          end if;
 
-         --  Set the following restrictions which was added to Ada 2012 (see
+         --  Set the following restriction which was added to Ada 2012 (see
          --  AI-0171):
          --    No_Dependence => System.Multiprocessors.Dispatching_Domains
 
