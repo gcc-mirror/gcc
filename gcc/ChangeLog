@@ -1,3 +1,8 @@
+2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf-gimple.c (func_checker::compare_operand): Compare only
+	empty constructors.
+
 2015-10-16  Michael Collison  <michael.collison@linaro.org>
 	    Andrew Pinski <andrew.pinski@caviumnetworks.com>
 
