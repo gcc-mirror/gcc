@@ -599,7 +599,7 @@ package body Prj is
          --  This set is needed to ensure that we do not handle the same
          --  project twice in the context of aggregate libraries.
          --  Since duplicate project names are possible in the context of
-         --  aggregated projects, we need to check the full paths
+         --  aggregated projects, we need to check the full paths.
 
          procedure Recursive_Check
            (Project               : Project_Id;

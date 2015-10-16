@@ -224,6 +224,10 @@ package System.OS_Interface is
    subtype timeval   is System.Linux.timeval;
    subtype clockid_t is System.Linux.clockid_t;
 
+   function clock_gettime
+     (clock_id : clockid_t; tp : access timespec) return int;
+   pragma Import (C, clock_gettime, "clock_gettime");
+
    function clock_getres
      (clock_id : clockid_t;
       res      : access timespec) return int;
