@@ -5154,7 +5154,7 @@ package body Exp_Ch3 is
 
          --  Provide a default value if the object needs simple initialization
          --  and does not already have an initial value. A generated temporary
-         --  do not require initialization because it will be assigned later.
+         --  does not require initialization because it will be assigned later.
 
          elsif Needs_Simple_Initialization
                  (Typ, Initialize_Scalars
