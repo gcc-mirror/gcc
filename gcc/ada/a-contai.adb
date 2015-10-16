@@ -34,7 +34,9 @@ package body Ada.Containers is
       ------------
 
       procedure Adjust (Control : in out Reference_Control_Type) is
+         pragma Warnings (Off);
          pragma Assert (T_Check); -- not called if check suppressed
+         pragma Warnings (On);
       begin
          if Control.T_Counts /= null then
             Lock (Control.T_Counts.all);
