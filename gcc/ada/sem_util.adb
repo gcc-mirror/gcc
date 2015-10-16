@@ -7800,6 +7800,7 @@ package body Sem_Util is
 
    function Get_Reference_Discriminant (Typ : Entity_Id) return Entity_Id is
       D : Entity_Id;
+
    begin
       D := First_Discriminant (Typ);
       while Present (D) loop

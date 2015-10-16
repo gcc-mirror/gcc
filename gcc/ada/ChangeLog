@@ -1,3 +1,20 @@
+2015-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* a-tags.ads (Parent_Size): Remove obsolete pragma Export.
+	* s-finmas.ads (Header_Offset): Delete.
+	* s-finmas.adb (Header_Offset): Likewise.
+	(Finalize): Call Header_Size instead of Header_Offset.
+	* s-stposu.adb (Allocate_Any_Controlled): Likewise.
+	(Deallocate_Any_Controlled): Likewise.
+
+2015-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-exetim.ads, a-exetim-mingw.ads, a-exetim-default.ads: Whitespace
+	cleanup.
+	* s-osprim-mingw.adb, einfo.ads, sem_util.adb, sem_util.ads,
+	sem_ch4.adb, sem_ch13.adb, s-trasym.adb, s-trasym.ads,
+	s-taprop-posix.adb: Minor reformatting.
+
 2015-10-16  Bob Duff  <duff@adacore.com>
 
 	* adadecode.h, adadecode.c (ada_demangle): Remove

@@ -8174,7 +8174,7 @@ package body Sem_Ch4 is
            or else Is_Incomplete_Type (Obj_Type)
          then
 
-            --  Restore previous type if current one is not legal candidate.
+            --  Restore previous type if current one is not legal candidate
 
             Obj_Type := Prev_Obj_Type;
             return;

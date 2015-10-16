@@ -281,7 +281,7 @@ package body System.Storage_Pools.Subpools is
          --     +- Header_And_Padding --+
 
          N_Ptr := Address_To_FM_Node_Ptr
-                    (N_Addr + Header_And_Padding - Header_Offset);
+                    (N_Addr + Header_And_Padding - Header_Size);
 
          --  Prepend the allocated object to the finalization master
 
@@ -414,7 +414,7 @@ package body System.Storage_Pools.Subpools is
 
          --  Convert the bits preceding the object into a list header
 
-         N_Ptr := Address_To_FM_Node_Ptr (Addr - Header_Offset);
+         N_Ptr := Address_To_FM_Node_Ptr (Addr - Header_Size);
 
          --  Detach the object from the related finalization master. This
          --  action does not need to know the prior context used during

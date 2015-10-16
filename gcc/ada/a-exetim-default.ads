@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2007-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -46,8 +46,8 @@ package Ada.Execution_Time is
    CPU_Tick       : constant Ada.Real_Time.Time_Span;
 
    function Clock
-     (T : Ada.Task_Identification.Task_Id
-          := Ada.Task_Identification.Current_Task)
+     (T : Ada.Task_Identification.Task_Id :=
+        Ada.Task_Identification.Current_Task)
       return CPU_Time;
 
    function "+"
