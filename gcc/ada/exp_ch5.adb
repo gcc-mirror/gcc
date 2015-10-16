@@ -2956,6 +2956,10 @@ package body Exp_Ch5 is
 
          Prepend (Elmt_Ref, Stats);
 
+         --  The element is assignable in the expanded code.
+
+         Set_Assignment_OK (Name (Elmt_Ref));
+
          --  The loop is rewritten as a block, to hold the element declaration
 
          New_Loop :=
@@ -2981,7 +2985,6 @@ package body Exp_Ch5 is
 
       Analyze (Elmt_Decl);
       Set_Ekind (Defining_Identifier (Elmt_Decl), E_Loop_Parameter);
-      Set_Assignment_OK (Name (Elmt_Ref));
 
       Analyze (N);
    end Expand_Formal_Container_Element_Loop;
