@@ -63,7 +63,9 @@ package body Ada.Containers is
       --------------
 
       procedure Finalize (Control : in out Reference_Control_Type) is
+         pragma Warnings (Off);
          pragma Assert (T_Check); -- not called if check suppressed
+         pragma Warnings (On);
       begin
          if Control.T_Counts /= null then
             Unlock (Control.T_Counts.all);
@@ -75,13 +77,17 @@ package body Ada.Containers is
       --  are limited.
 
       procedure Finalize (Busy : in out With_Busy) is
+         pragma Warnings (Off);
          pragma Assert (T_Check); -- not called if check suppressed
+         pragma Warnings (On);
       begin
          Unbusy (Busy.T_Counts.all);
       end Finalize;
 
       procedure Finalize (Lock : in out With_Lock) is
+         pragma Warnings (Off);
          pragma Assert (T_Check); -- not called if check suppressed
+         pragma Warnings (On);
       begin
          Unlock (Lock.T_Counts.all);
       end Finalize;
@@ -91,13 +97,17 @@ package body Ada.Containers is
       ----------------
 
       procedure Initialize (Busy : in out With_Busy) is
+         pragma Warnings (Off);
          pragma Assert (T_Check); -- not called if check suppressed
+         pragma Warnings (On);
       begin
          Generic_Implementation.Busy (Busy.T_Counts.all);
       end Initialize;
 
       procedure Initialize (Lock : in out With_Lock) is
+         pragma Warnings (Off);
          pragma Assert (T_Check); -- not called if check suppressed
+         pragma Warnings (On);
       begin
          Generic_Implementation.Lock (Lock.T_Counts.all);
       end Initialize;
