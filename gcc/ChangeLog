@@ -1,3 +1,8 @@
+2015-10-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* i386/x86-tune.def (X86_TUNE_ALWAYS_FANCY_MATH_387): Disable
+	for Lakemont.
+
 2015-10-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* config/tilepro/gen-mul-tables.cc: Adjust include files.
