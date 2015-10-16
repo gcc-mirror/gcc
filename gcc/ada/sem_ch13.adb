@@ -8706,12 +8706,12 @@ package body Sem_Ch13 is
             --  Static predicate functions are always side-effect free, and
             --  in most cases dynamic predicate functions are as well. Mark
             --  them as such whenever possible, so redundant predicate checks
-            --  can be optimized.
-
-            --  Shouldn't Variable_Ref be True for Side_Effect_Free call ???
+            --  can be optimized. If there is a variable reference within the
+            --  expression, the function is not pure.
 
             if Expander_Active then
-               Set_Is_Pure (SId, Side_Effect_Free (Expr));
+               Set_Is_Pure (SId,
+                 Side_Effect_Free (Expr, Variable_Ref => True));
                Set_Is_Inlined (SId);
             end if;
          end;
