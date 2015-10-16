@@ -1983,6 +1983,7 @@ package body Bindgen is
       --  of the Ada 2005 or Ada 2012 constructs are needed by the binder file.
 
       WBI ("pragma Ada_95;");
+      WBI ("pragma Warnings (Off);");
 
       --  If we are operating in Restrictions (No_Exception_Handlers) mode,
       --  then we need to make sure that the binder program is compiled with
@@ -2031,7 +2032,6 @@ package body Bindgen is
       end if;
 
       WBI ("package " & Ada_Main & " is");
-      WBI ("   pragma Warnings (Off);");
 
       --  Main program case
 
@@ -2182,6 +2182,7 @@ package body Bindgen is
       --  of the Ada 2005/2012 constructs are needed by the binder file.
 
       WBI ("pragma Ada_95;");
+      WBI ("pragma Warnings (Off);");
 
       --  Output Source_File_Name pragmas which look like
 
@@ -2243,7 +2244,6 @@ package body Bindgen is
 
       WBI ("");
       WBI ("package body " & Ada_Main & " is");
-      WBI ("   pragma Warnings (Off);");
       WBI ("");
 
       --  Generate externals for elaboration entities

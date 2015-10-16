@@ -462,10 +462,15 @@ package Einfo is
 --       copying trees, to determine whether or not to copy an Itype, and
 --       also for accessibility checks on anonymous access types. This
 --       node is typically an object declaration, component declaration,
---       type or subtype declaration. For an access discriminant in a type
---       declaration, the associated_node_for_itype is the discriminant
---       specification. For an access parameter it is the enclosing subprogram
---       declaration.
+--       type or subtype declaration.
+
+--       For an access discriminant in a type declaration, the associated_
+--       node_for_itype is the corresponding discriminant specification.
+
+--       For an access parameter it is the enclosing subprogram declaration.
+
+--       For an access_to_protected_subprogram parameter it is the declaration
+--       of the corresponding formal parameter.
 --
 --       Itypes have no explicit declaration, and therefore are not attached to
 --       the tree: their Parent field is always empty. The Associated_Node_For_
