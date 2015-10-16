@@ -1045,16 +1045,20 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
     }
 
 done:
+  gimple_seq stmts = NULL;
   if (endp == 0 || endp == 3)
     len = NULL_TREE;
   else if (endp == 2)
-    len = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (len), len,
-			   ssize_int (1));
+    len = gimple_build (&stmts, loc, MINUS_EXPR, TREE_TYPE (len), len,
+			ssize_int (1));
   if (endp == 2 || endp == 1)
-    dest = fold_build_pointer_plus_loc (loc, dest, len);
+    {
+      len = gimple_convert_to_ptrofftype (&stmts, loc, len);
+      dest = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+			   TREE_TYPE (dest), dest, len);
+    }
 
-  dest = force_gimple_operand_gsi (gsi, dest, false, NULL_TREE, true,
-				   GSI_SAME_STMT);
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
   gimple *repl = gimple_build_assign (lhs, dest);
   gsi_replace (gsi, repl, false);
   return true;
@@ -1708,10 +1712,10 @@ gimple_fold_builtin_memory_chk (gimple_stmt_iterator *gsi,
 	}
       else
 	{
-	  tree temp = fold_build_pointer_plus_loc (loc, dest, len);
-	  temp = force_gimple_operand_gsi (gsi, temp,
-					   false, NULL_TREE, true,
-					   GSI_SAME_STMT);
+	  gimple_seq stmts = NULL;
+	  len = gimple_convert_to_ptrofftype (&stmts, loc, len);
+	  tree temp = gimple_build (&stmts, loc, POINTER_PLUS_EXPR, dest, len);
+	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
 	  replace_call_with_value (gsi, temp);
 	  return true;
 	}
@@ -1844,11 +1848,11 @@ gimple_fold_builtin_stxcpy_chk (gimple_stmt_iterator *gsi,
 	      if (!fn)
 		return false;
 
-	      len = fold_convert_loc (loc, size_type_node, len);
-	      len = size_binop_loc (loc, PLUS_EXPR, len,
-				    build_int_cst (size_type_node, 1));
-	      len = force_gimple_operand_gsi (gsi, len, true, NULL_TREE,
-					      true, GSI_SAME_STMT);
+	      gimple_seq stmts = NULL;
+	      len = gimple_convert (&stmts, loc, size_type_node, len);
+	      len = gimple_build (&stmts, loc, PLUS_EXPR, size_type_node, len,
+				  build_int_cst (size_type_node, 1));
+	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
 	      gimple *repl = gimple_build_call (fn, 4, dest, src, len, size);
 	      replace_call_with_call_and_fold (gsi, repl);
 	      return true;
@@ -5940,12 +5944,9 @@ rewrite_to_defined_overflow (gimple *stmt)
   gimple_seq stmts = NULL;
   for (unsigned i = 1; i < gimple_num_ops (stmt); ++i)
     {
-      gimple_seq stmts2 = NULL;
-      gimple_set_op (stmt, i,
-		     force_gimple_operand (fold_convert (type,
-							 gimple_op (stmt, i)),
-					   &stmts2, true, NULL_TREE));
-      gimple_seq_add_seq (&stmts, stmts2);
+      tree op = gimple_op (stmt, i);
+      op = gimple_convert (&stmts, type, op);
+      gimple_set_op (stmt, i, op);
     }
   gimple_assign_set_lhs (stmt, make_ssa_name (type, stmt));
   if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
@@ -6152,6 +6153,20 @@ gimple_convert (gimple_seq *seq, location_t loc, tree type, tree op)
   if (useless_type_conversion_p (type, TREE_TYPE (op)))
     return op;
   return gimple_build (seq, loc, NOP_EXPR, type, op);
+}
+
+/* Build the conversion (ptrofftype) OP with a result of a type
+   compatible with ptrofftype with location LOC if such conversion
+   is neccesary in GIMPLE, simplifying it first.
+   Returns the built expression value and appends
+   statements possibly defining it to SEQ.  */
+
+tree
+gimple_convert_to_ptrofftype (gimple_seq *seq, location_t loc, tree op)
+{
+  if (ptrofftype_p (TREE_TYPE (op)))
+    return op;
+  return gimple_convert (seq, loc, sizetype, op);
 }
 
 /* Return true if the result of assignment STMT is known to be non-negative.

@@ -1,5 +1,16 @@
 2015-10-16  Richard Biener  <rguenther@suse.de>
 
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Use gimple_build
+	and get rid of force_gimple_operand_gsi.
+	(gimple_fold_builtin_memory_chk): Likewise.
+	(gimple_fold_builtin_stxcpy_chk): Likewise.
+	(rewrite_to_defined_overflow): Likewise.
+	(gimple_convert_to_ptrofftype): New function.
+	* gimple-fold.h (gimple_convert_to_ptrofftype): New overload,
+	declare.
+
+2015-10-16  Richard Biener  <rguenther@suse.de>
+
 	* tree-nested.h (build_addr): Adjust prototype.
 	* tree-nested.c (build_addr): Remove context argument and use
 	mark_addressable.
