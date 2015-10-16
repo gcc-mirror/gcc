@@ -536,8 +536,6 @@ package body Exp_Aggr is
 
    --   10. No controlled actions need to be generated for components
 
-   --   11. For a VM back end, the array should have no aliased components
-
    function Backend_Processing_Possible (N : Node_Id) return Boolean is
       Typ : constant Entity_Id := Etype (N);
       --  Typ is the correct constrained array subtype of the aggregate
@@ -3656,12 +3654,6 @@ package body Exp_Aggr is
          --  If the low bound is not known at compile time and others is not
          --  present we can proceed since the bounds can be obtained from the
          --  aggregate.
-
-         --  Note: This case is required in VM platforms since their backends
-         --  normalize array indexes in the range 0 .. N-1. Hence, if we do
-         --  not flat an array whose bounds cannot be obtained from the type
-         --  of the index the backend has no way to properly generate the code.
-         --  See ACATS c460010 for an example.
 
          if Hiv < Lov
            or else (not Compile_Time_Known_Value (Blo) and then Others_Present)

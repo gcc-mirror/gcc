@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---             Copyright (C) 2013-2014, Free Software Foundation, Inc.      --
+--             Copyright (C) 2013-2015, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,12 +87,6 @@ package body System.OS_Primitives is
       timeval_to_duration (TV'Access, sec'Access, usec'Access);
       return Duration (sec) + Duration (usec) / Micro;
    end Clock;
-
-   ---------------------
-   -- Monotonic_Clock --
-   ---------------------
-
-   function Monotonic_Clock return Duration renames Clock;
 
    -----------------
    -- To_Timespec --
