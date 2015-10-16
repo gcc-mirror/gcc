@@ -142,117 +142,125 @@ package body Stream_Attributes is
    begin
       if S = "" then
          return Null_Occurrence;
+      end if;
 
-      else
-         To := S'First - 2;
-         Next_String;
+      To := S'First - 2;
+      Next_String;
 
-         if S (From .. From + 15) /= "Exception name: " then
+      if S (From .. From + 6) /= "raised " then
+         Bad_EO;
+      end if;
+
+      declare
+         Name_Start : constant Positive := From + 7;
+      begin
+         From := Name_Start + 1;
+
+         while From < To and then S (From) /= ' ' loop
+            From := From + 1;
+         end loop;
+
+         X.Id :=
+           Exception_Id (Internal_Exception (S (Name_Start .. From - 1)));
+      end;
+
+      if From <= To then
+         if S (From .. From + 2) /= " : " then
             Bad_EO;
          end if;
 
-         X.Id := Exception_Id (Internal_Exception (S (From + 16 .. To)));
+         X.Msg_Length := To - From - 2;
+         X.Msg (1 .. X.Msg_Length) := S (From + 3 .. To);
+
+      else
+         X.Msg_Length := 0;
+      end if;
+
+      Next_String;
+      X.Pid := 0;
+
+      if From <= To and then S (From) = 'P' then
+         if S (From .. From + 3) /= "PID:" then
+            Bad_EO;
+         end if;
+
+         From := From + 5; -- skip past PID: space
+
+         while From <= To loop
+            X.Pid := X.Pid * 10 +
+                       (Character'Pos (S (From)) - Character'Pos ('0'));
+            From := From + 1;
+         end loop;
 
          Next_String;
-
-         if From <= To and then S (From) = 'M' then
-            if S (From .. From + 8) /= "Message: " then
-               Bad_EO;
-            end if;
-
-            X.Msg_Length := To - From - 8;
-            X.Msg (1 .. X.Msg_Length) := S (From + 9 .. To);
-            Next_String;
-
-         else
-            X.Msg_Length := 0;
-         end if;
-
-         X.Pid := 0;
-
-         if From <= To and then S (From) = 'P' then
-            if S (From .. From + 3) /= "PID:" then
-               Bad_EO;
-            end if;
-
-            From := From + 5; -- skip past PID: space
-
-            while From <= To loop
-               X.Pid := X.Pid * 10 +
-                          (Character'Pos (S (From)) - Character'Pos ('0'));
-               From := From + 1;
-            end loop;
-
-            Next_String;
-         end if;
-
-         X.Num_Tracebacks := 0;
-
-         if From <= To then
-            if S (From .. To) /= "Call stack traceback locations:" then
-               Bad_EO;
-            end if;
-
-            Next_String;
-            loop
-               exit when From > To;
-
-               declare
-                  Ch : Character;
-                  C  : Integer_Address;
-                  N  : Integer_Address;
-
-               begin
-                  if S (From) /= '0'
-                    or else S (From + 1) /= 'x'
-                  then
-                     Bad_EO;
-                  else
-                     From := From + 2;
-                  end if;
-
-                  C := 0;
-                  while From <= To loop
-                     Ch := S (From);
-
-                     if Ch in '0' .. '9' then
-                        N :=
-                          Character'Pos (S (From)) - Character'Pos ('0');
-
-                     elsif Ch in 'a' .. 'f' then
-                        N :=
-                          Character'Pos (S (From)) - Character'Pos ('a') + 10;
-
-                     elsif Ch = ' ' then
-                        From := From + 1;
-                        exit;
-
-                     else
-                        Bad_EO;
-                     end if;
-
-                     C := C * 16 + N;
-
-                     From := From + 1;
-                  end loop;
-
-                  if X.Num_Tracebacks = Max_Tracebacks then
-                     Bad_EO;
-                  end if;
-
-                  X.Num_Tracebacks := X.Num_Tracebacks + 1;
-                  X.Tracebacks (X.Num_Tracebacks) :=
-                    TBE.TB_Entry_For (To_Address (C));
-               end;
-            end loop;
-         end if;
-
-         --  If an exception was converted to a string, it must have
-         --  already been raised, so flag it accordingly and we are done.
-
-         X.Exception_Raised := True;
-         return X;
       end if;
+
+      X.Num_Tracebacks := 0;
+
+      if From <= To then
+         if S (From .. To) /= "Call stack traceback locations:" then
+            Bad_EO;
+         end if;
+
+         Next_String;
+         loop
+            exit when From > To;
+
+            declare
+               Ch : Character;
+               C  : Integer_Address;
+               N  : Integer_Address;
+
+            begin
+               if S (From) /= '0'
+                 or else S (From + 1) /= 'x'
+               then
+                  Bad_EO;
+               else
+                  From := From + 2;
+               end if;
+
+               C := 0;
+               while From <= To loop
+                  Ch := S (From);
+
+                  if Ch in '0' .. '9' then
+                     N :=
+                       Character'Pos (S (From)) - Character'Pos ('0');
+
+                  elsif Ch in 'a' .. 'f' then
+                     N :=
+                       Character'Pos (S (From)) - Character'Pos ('a') + 10;
+
+                  elsif Ch = ' ' then
+                     From := From + 1;
+                     exit;
+
+                  else
+                     Bad_EO;
+                  end if;
+
+                  C := C * 16 + N;
+
+                  From := From + 1;
+               end loop;
+
+               if X.Num_Tracebacks = Max_Tracebacks then
+                  Bad_EO;
+               end if;
+
+               X.Num_Tracebacks := X.Num_Tracebacks + 1;
+               X.Tracebacks (X.Num_Tracebacks) :=
+                 TBE.TB_Entry_For (To_Address (C));
+            end;
+         end loop;
+      end if;
+
+      --  If an exception was converted to a string, it must have
+      --  already been raised, so flag it accordingly and we are done.
+
+      X.Exception_Raised := True;
+      return X;
    end String_To_EO;
 
 end Stream_Attributes;

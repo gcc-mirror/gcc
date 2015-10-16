@@ -117,8 +117,8 @@ package body Ada.Exceptions is
       --
       --  The format of the string is as follows:
       --
-      --    Exception_Name: <exception name> (as in Exception_Name)
-      --    Message: <message> (only if Exception_Message is empty)
+      --    raised <exception name> : <message>
+      --    (" : <message>" is present only if Exception_Message is not empty)
       --    PID=nnnn (only if nonzero)
       --    Call stack traceback locations:  (only if at least one location)
       --    <0xyyyyyyyy 0xyyyyyyyy ...>      (is recorded)

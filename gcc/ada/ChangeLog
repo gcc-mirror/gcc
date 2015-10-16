@@ -1,3 +1,27 @@
+2015-10-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation):
+	Treat a missing SPARK_Mode annotation as having mode "Off".
+	(Analyze_Subprogram_Instantiation): Treat a missing SPARK_Mode
+	annotation as having mode "Off".
+	(Instantiate_Package_Body): Code
+	reformatting. Treat a missing SPARK_Mode annotation as having mode
+	"Off".
+	(Instantiate_Subprogram_Body): Code reformatting. Treat
+	a missing SPARK_Mode annotation as having mode "Off".
+
+2015-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb: Code clean up.
+	* sem_ch13.adb: Minor fix in comment.
+
+2015-10-16  Bob Duff  <duff@adacore.com>
+
+	* a-exexda.adb: Change format of Exception_Information to be
+	more like what we print for unhandled exceptions.
+	* a-exstat.adb: Parse new format.
+	* a-except-2005.adb, a-except.adb: Document new format.
+
 2015-10-16  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch5.adb (Analyze_Iterator_Specification): Associate a

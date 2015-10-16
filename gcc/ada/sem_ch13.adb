@@ -122,7 +122,7 @@ package body Sem_Ch13 is
    --  to generate appropriate semantic checks that are delayed until this
    --  point (they had to be delayed this long for cases of delayed aspects,
    --  e.g. analysis of statically predicated subtypes in choices, for which
-   --  we have to be sure the subtypes in question are frozen before checking.
+   --  we have to be sure the subtypes in question are frozen before checking).
 
    function Get_Alignment_Value (Expr : Node_Id) return Uint;
    --  Given the expression for an alignment value, returns the corresponding
