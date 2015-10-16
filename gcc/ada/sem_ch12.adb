@@ -2824,7 +2824,7 @@ package body Sem_Ch12 is
          Set_Is_Dispatching_Operation (Nam);
 
          --  A formal abstract procedure cannot have a null default
-         --  (RM 12.6(4 1.2)).
+         --  (RM 12.6(4.1/2)).
 
          if Nkind (Spec) = N_Procedure_Specification
            and then Null_Present (Spec)
