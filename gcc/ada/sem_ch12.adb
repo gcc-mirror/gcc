@@ -1075,7 +1075,7 @@ package body Sem_Ch12 is
       --  package. As usual an other association must be last in the list.
 
       procedure Check_Overloaded_Formal_Subprogram (Formal : Entity_Id);
-      --  Apply RM 12.3 (9): if a formal subprogram is overloaded, the instance
+      --  Apply RM 12.3(9): if a formal subprogram is overloaded, the instance
       --  cannot have a named association for it. AI05-0025 extends this rule
       --  to formals of formal packages by AI05-0025, and it also applies to
       --  box-initialized formals.
@@ -2820,7 +2820,18 @@ package body Sem_Ch12 is
 
       if Nkind (N) = N_Formal_Abstract_Subprogram_Declaration then
          Set_Is_Abstract_Subprogram (Nam);
+
          Set_Is_Dispatching_Operation (Nam);
+
+         --  A formal abstract procedure cannot have a null default
+         --  (RM 12.6(4 1.2)).
+
+         if Nkind (Spec) = N_Procedure_Specification
+           and then Null_Present (Spec)
+         then
+            Error_Msg_N
+              ("a formal abstract subprogram cannot default to null", Spec);
+         end if;
 
          declare
             Ctrl_Type : constant Entity_Id := Find_Dispatching_Type (Nam);
@@ -10737,7 +10748,7 @@ package body Sem_Ch12 is
       --  Re-establish the state of information on which checks are suppressed.
       --  This information was set in Body_Info at the point of instantiation,
       --  and now we restore it so that the instance is compiled using the
-      --  check status at the instantiation (RM 11.5 (7.2/2), AI95-00224-01).
+      --  check status at the instantiation (RM 11.5(7.2/2), AI95-00224-01).
 
       Local_Suppress_Stack_Top := Body_Info.Local_Suppress_Stack_Top;
       Scope_Suppress           := Body_Info.Scope_Suppress;
@@ -11052,7 +11063,7 @@ package body Sem_Ch12 is
       --  Re-establish the state of information on which checks are suppressed.
       --  This information was set in Body_Info at the point of instantiation,
       --  and now we restore it so that the instance is compiled using the
-      --  check status at the instantiation (RM 11.5 (7.2/2), AI95-00224-01).
+      --  check status at the instantiation (RM 11.5(7.2/2), AI95-00224-01).
 
       Local_Suppress_Stack_Top := Body_Info.Local_Suppress_Stack_Top;
       Scope_Suppress           := Body_Info.Scope_Suppress;
@@ -11970,7 +11981,7 @@ package body Sem_Ch12 is
          --  If the formal and actual types are abstract, check that there
          --  are no abstract primitives of the actual type that correspond to
          --  nonabstract primitives of the formal type (second sentence of
-         --  RM95-3.9.3(9)).
+         --  RM95 3.9.3(9)).
 
          if Is_Abstract_Type (A_Gen_T) and then Is_Abstract_Type (Act_T) then
             Check_Abstract_Primitives : declare
