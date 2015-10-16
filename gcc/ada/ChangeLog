@@ -1,3 +1,21 @@
+2015-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): The expression for
+	the predicate is side-effect free if it does not contain any
+	variable references.
+
+2015-10-16  Bob Duff  <duff@adacore.com>
+
+	* a-convec.adb ("="): Previous version depended
+	on "=" composing, but that doesn't quite work -- we want the "="
+	operator passed in to the generic. So we need a loop after all.
+
+2015-10-16  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Is_Object_Reference): Attribute 'Loop_Entry produces
+	an object.
+	* sem_ch6.adb: Minor fix in comment.
+
 2015-10-16  Bob Duff  <duff@adacore.com>
 
 	* a-contai.ads: Add two check names: Container_Checks and

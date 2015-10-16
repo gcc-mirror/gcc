@@ -2341,13 +2341,12 @@ package body Sem_Ch6 is
          Item  : Node_Id;
 
       begin
-         --  Check for unanalyzed aspects in the body that will generate a
-         --  contract.
+         --  Check for aspects that may generate a contract
 
          if Present (Aspect_Specifications (N)) then
             Item := First (Aspect_Specifications (N));
             while Present (Item) loop
-               if Is_Contract_Annotation (Item) then
+               if Is_Subprogram_Contract_Annotation (Item) then
                   return True;
                end if;
 
@@ -2361,7 +2360,7 @@ package body Sem_Ch6 is
             Item := First (Decls);
             while Present (Item) loop
                if Nkind (Item) = N_Pragma
-                 and then Is_Contract_Annotation (Item)
+                 and then Is_Subprogram_Contract_Annotation (Item)
                then
                   return True;
                end if;
