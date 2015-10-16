@@ -8135,6 +8135,12 @@ package body Sem_Ch4 is
       -----------------------------------
 
       procedure Try_One_Prefix_Interpretation (T : Entity_Id) is
+
+         --  If the interpretation does not have a valid candidate type,
+         --  preserve current value of Obj_Type for subsequent errors.
+
+         Prev_Obj_Type : constant Entity_Id := Obj_Type;
+
       begin
          Obj_Type := T;
 
@@ -8167,6 +8173,10 @@ package body Sem_Ch4 is
          if not Is_Tagged_Type (Obj_Type)
            or else Is_Incomplete_Type (Obj_Type)
          then
+
+            --  Restore previous type if current one is not legal candidate.
+
+            Obj_Type := Prev_Obj_Type;
             return;
          end if;
 

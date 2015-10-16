@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,12 +89,6 @@ package body System.OS_Primitives is
       Result := gettimeofday (TV'Access, null);
       return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
    end Clock;
-
-   ---------------------
-   -- Monotonic_Clock --
-   ---------------------
-
-   function Monotonic_Clock return Duration renames Clock;
 
    -----------------
    -- To_Timespec --

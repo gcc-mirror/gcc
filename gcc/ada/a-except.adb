@@ -727,15 +727,6 @@ package body Ada.Exceptions is
    --  The actual polling routine is separate, so that it can easily be
    --  replaced with a target dependent version.
 
-   ------------------------------
-   -- Current_Target_Exception --
-   ------------------------------
-
-   function Current_Target_Exception return Exception_Occurrence is
-   begin
-      return Null_Occurrence;
-   end Current_Target_Exception;
-
    -------------------
    -- EId_To_String --
    -------------------

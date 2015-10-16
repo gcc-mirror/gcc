@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,7 +66,7 @@ begin
    if SOSC.CLOCK_RT_Ada /= SOSC.CLOCK_REALTIME then
       pragma Warnings (On);
 
-      RT_T := RT_T - OS_Primitives.Monotonic_Clock + STPO.Monotonic_Clock;
+      RT_T := RT_T - OS_Primitives.Clock + STPO.Monotonic_Clock;
    end if;
 
    System.Tasking.Initialization.Defer_Abort

@@ -694,15 +694,6 @@ package body Ada.Exceptions is
    --  The actual Call_Chain routine is separate, so that it can easily
    --  be dummied out when no exception traceback information is needed.
 
-   ------------------------------
-   -- Current_Target_Exception --
-   ------------------------------
-
-   function Current_Target_Exception return Exception_Occurrence is
-   begin
-      return Null_Occurrence;
-   end Current_Target_Exception;
-
    -------------------
    -- EId_To_String --
    -------------------

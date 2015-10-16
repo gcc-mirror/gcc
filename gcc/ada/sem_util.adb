@@ -17020,11 +17020,6 @@ package body Sem_Util is
       --  could be nested inside some other record that is constrained by
       --  nondiscriminants). That is, the recursive calls are too conservative.
 
-      function Has_Discrim_Dep_Array (Typ : Entity_Id) return Boolean;
-      --  True if we find certain discriminant-dependent array subcomponents.
-      --  This shouldn't be necessary, but without this check, we crash in
-      --  gimplify. ???
-
       ------------------------------
       -- Caller_Known_Size_Record --
       ------------------------------
@@ -17077,52 +17072,6 @@ package body Sem_Util is
          return True;
       end Caller_Known_Size_Record;
 
-      ---------------------------
-      -- Has_Discrim_Dep_Array --
-      ---------------------------
-
-      function Has_Discrim_Dep_Array (Typ : Entity_Id) return Boolean is
-         pragma Assert (Typ = Underlying_Type (Typ));
-
-      begin
-         if Is_Array_Type (Typ) then
-            return Size_Depends_On_Discriminant (Typ);
-         end if;
-
-         if Is_Record_Type (Typ)
-              or else
-            Is_Protected_Type (Typ)
-         then
-            declare
-               Comp : Entity_Id;
-
-            begin
-               Comp := First_Entity (Typ);
-               while Present (Comp) loop
-
-                  --  Only look at E_Component entities. No need to look at
-                  --  E_Discriminant entities, and we must ignore internal
-                  --  subtypes generated for constrained components.
-
-                  if Ekind (Comp) = E_Component then
-                     declare
-                        Comp_Type : constant Entity_Id :=
-                                      Underlying_Type (Etype (Comp));
-                     begin
-                        if Has_Discrim_Dep_Array (Comp_Type) then
-                           return True;
-                        end if;
-                     end;
-                  end if;
-
-                  Next_Entity (Comp);
-               end loop;
-            end;
-         end if;
-
-         return False;
-      end Has_Discrim_Dep_Array;
-
       --  Local declarations
 
       Typ : constant Entity_Id := Underlying_Type (Id);
@@ -17170,14 +17119,6 @@ package body Sem_Util is
       --  discriminants.
 
       elsif Is_Definite_Subtype (Typ) or else Is_Task_Type (Typ) then
-         if Is_Record_Type (Typ) or else Is_Protected_Type (Typ) then
-            if not Has_Discriminants (Typ) then
-               if Has_Discrim_Dep_Array (Typ) then
-                  return True; -- ???Shouldn't be necessary
-               end if;
-            end if;
-         end if;
-
          return False;
 
       --  Indefinite (discriminated) untagged record or protected type

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,12 +62,6 @@ package System.OS_Primitives is
    --  Returns "absolute" time, represented as an offset relative to "the
    --  Epoch", which is Jan 1, 1970 00:00:00 UTC on UNIX systems. This
    --  implementation is affected by system's clock changes.
-
-   function Monotonic_Clock return Duration;
-   pragma Inline (Monotonic_Clock);
-   --  Returns "absolute" time, represented as an offset relative to "the Unix
-   --  Epoch", which is Jan 1, 1970 00:00:00 UTC. This clock implementation is
-   --  immune to the system's clock changes.
 
    Relative          : constant := 0;
    Absolute_Calendar : constant := 1;

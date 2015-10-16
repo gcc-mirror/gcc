@@ -5039,11 +5039,48 @@ package body Exp_Ch4 is
    --------------------------------------
 
    procedure Expand_N_Expression_With_Actions (N : Node_Id) is
+      Acts : constant List_Id := Actions (N);
+
+      procedure Force_Boolean_Evaluation (Expr : Node_Id);
+      --  Force the evaluation of Boolean expression Expr
+
       function Process_Action (Act : Node_Id) return Traverse_Result;
       --  Inspect and process a single action of an expression_with_actions for
       --  transient controlled objects. If such objects are found, the routine
       --  generates code to clean them up when the context of the expression is
       --  evaluated or elaborated.
+
+      ------------------------------
+      -- Force_Boolean_Evaluation --
+      ------------------------------
+
+      procedure Force_Boolean_Evaluation (Expr : Node_Id) is
+         Loc       : constant Source_Ptr := Sloc (N);
+         Flag_Decl : Node_Id;
+         Flag_Id   : Entity_Id;
+
+      begin
+         --  Relocate the expression to the actions list by capturing its value
+         --  in a Boolean flag. Generate:
+         --    Flag : constant Boolean := Expr;
+
+         Flag_Id := Make_Temporary (Loc, 'F');
+
+         Flag_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Flag_Id,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => Relocate_Node (Expr));
+
+         Append (Flag_Decl, Acts);
+         Analyze (Flag_Decl);
+
+         --  Replace the expression with a reference to the flag
+
+         Rewrite (Expression (N), New_Occurrence_Of (Flag_Id, Loc));
+         Analyze (Expression (N));
+      end Force_Boolean_Evaluation;
 
       --------------------
       -- Process_Action --
@@ -5077,9 +5114,7 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      Acts : constant List_Id := Actions (N);
-      Expr : constant Node_Id := Expression (N);
-      Act  : Node_Id;
+      Act : Node_Id;
 
    --  Start of processing for Expand_N_Expression_With_Actions
 
@@ -5087,7 +5122,7 @@ package body Exp_Ch4 is
       --  Do not evaluate the expression when it denotes an entity because the
       --  expression_with_actions node will be replaced by the reference.
 
-      if Is_Entity_Name (Expr) then
+      if Is_Entity_Name (Expression (N)) then
          null;
 
       --  Do not evaluate the expression when there are no actions because the
@@ -5117,11 +5152,23 @@ package body Exp_Ch4 is
       --       <finalize Trans_Id>
       --    in Val end;
 
-      --  It is now safe to finalize the transient controlled object at the end
-      --  of the actions list.
+      --  Once this transformation is performed, it is safe to finalize the
+      --  transient controlled object at the end of the actions list.
+
+      --  Note that Force_Evaluation does not remove side effects in operators
+      --  because it assumes that all operands are evaluated and side effect
+      --  free. This is not the case when an operand depends implicitly on the
+      --  transient controlled object through the use of access types.
+
+      elsif Is_Boolean_Type (Etype (Expression (N))) then
+         Force_Boolean_Evaluation (Expression (N));
+
+      --  The expression of an expression_with_actions node may not necessarely
+      --  be Boolean when the node appears in an if expression. In this case do
+      --  the usual forced evaluation to encapsulate potential aliasing.
 
       else
-         Force_Evaluation (Expr);
+         Force_Evaluation (Expression (N));
       end if;
 
       --  Process all transient controlled objects found within the actions of
