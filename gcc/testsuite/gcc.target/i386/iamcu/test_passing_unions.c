@@ -123,7 +123,7 @@ main (void)
   struct long_struct ls;
 #endif /* CHECK_LARGER_UNION_PASSING */
   union un4 u4[8];
-  union un5 u5 = { { 48.394, 39.3, -397.9, 3484.9 } };
+  union un5 u5 = { 48.394 };
   int i;
   union un6 u6;
 
