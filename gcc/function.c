@@ -4840,6 +4840,9 @@ allocate_struct_function (tree fndecl, bool abstract_p)
 	  for (tree parm = DECL_ARGUMENTS (fndecl); parm;
 	       parm = DECL_CHAIN (parm))
 	    relayout_decl (parm);
+
+	  /* Similarly relayout the function decl.  */
+	  targetm.target_option.relayout_function (fndecl);
 	}
 
       if (!abstract_p && aggregate_value_p (result, fndecl))
