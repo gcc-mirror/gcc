@@ -1,3 +1,33 @@
+2015-10-16  Bob Duff  <duff@adacore.com>
+
+	* a-contai.ads: Add two check names: Container_Checks and
+	Tampering_Check.  Move the tampering check machinery from
+	Ada.Containers.Vectors to Ada.Containers. Later we can share it
+	with other containers.
+	Disable the tampering machinery in the presence of
+	Suppress(Tampering_Check).
+	Simplify the implementation of tampering checks. E.g. use RAII
+	to make incrementing/decrementing of the counts more concise.
+	* a-contai.adb: New package body, implementing the above.
+	* a-convec.ads, a-convec.adb: Use tampering check machinery
+	in Ada.Containers.
+	Disable all checking code when checks are suppressed.
+	Simplify many of the operations. Implement "&" in terms of Append,
+	rather than "by hand".
+	Remove: function "=" (L, R : Elements_Array) return Boolean is
+	abstract; so we can call the predefined "=" on Elements_Array.
+	For "=" on Vectors: Previously, we returned True immediately if
+	Left'Address = Right'Address.  That seems like a non-optimization
+	("if X = X" is unusual), so removed that.  Simplify by using
+	slice comparison ("=" on Element_Array will automatically call
+	"=" on the components, even if user defined).
+
+2015-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Chek_Record_Representation_Clause): When
+	iterating over components, skip anonymous subtypes created for
+	constrained array components.
+
 2015-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* a-tags.ads (Parent_Size): Remove obsolete pragma Export.
