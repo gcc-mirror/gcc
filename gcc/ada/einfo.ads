@@ -1525,7 +1525,7 @@ package Einfo is
 --       node will be present on the rep item chain for the entity. For a
 --       derived type that inherits a default from its ancestor, the default
 --       value is set, but it may be overridden by an aspect declaration on
---       type type derivation.
+--       type derivation.
 
 --    Has_Default_Init_Cond (Flag3) [base type only]
 --       Defined in all type entities. Set if pragma Default_Initial_Condition

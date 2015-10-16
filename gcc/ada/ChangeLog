@@ -1,3 +1,12 @@
+2015-10-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch12.adb: Minor reformatting/rewording.
+
+2015-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.ads: Minor fix of duplicate words
+	* rident.ads: Minor style fix in comment
+
 2015-10-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Full_Type_Declaration): Do not capture,
