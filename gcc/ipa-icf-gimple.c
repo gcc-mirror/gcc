@@ -415,9 +415,20 @@ func_checker::compare_operand (tree t1, tree t2)
   switch (TREE_CODE (t1))
     {
     case CONSTRUCTOR:
-      gcc_assert (!vec_safe_length (CONSTRUCTOR_ELTS (t1))
-		  && !vec_safe_length (CONSTRUCTOR_ELTS (t2)));
-      return true;
+      {
+	unsigned length1 = vec_safe_length (CONSTRUCTOR_ELTS (t1));
+	unsigned length2 = vec_safe_length (CONSTRUCTOR_ELTS (t2));
+
+	if (length1 != length2)
+	  return return_false ();
+
+	for (unsigned i = 0; i < length1; i++)
+	  if (!compare_operand (CONSTRUCTOR_ELT (t1, i)->value,
+				CONSTRUCTOR_ELT (t2, i)->value))
+	    return return_false();
+
+	return true;
+      }
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
       /* First argument is the array, second is the index.  */
