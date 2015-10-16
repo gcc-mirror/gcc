@@ -73,7 +73,7 @@ package body Debug is
    --  dG   Generate all warnings including those normally suppressed
    --  dH   Hold (kill) call to gigi
    --  dI   Inhibit internal name numbering in gnatG listing
-   --  dJ   Output debugging trace info for JGNAT (Java VM version of GNAT)
+   --  dJ
    --  dK   Kill all error messages
    --  dL   Output trace information on elaboration checking
    --  dM   Assume all variables are modified (no current values)
@@ -398,11 +398,6 @@ package body Debug is
    --       a name is replaced by <uppercase-letter>...<lowercase-letter>. This
    --       is used in the fixed bugs run to minimize system and version
    --       dependency in filed -gnatD or -gnatG output.
-
-   --  dJ   Generate debugging trace output for the JGNAT back end. This
-   --       consists of symbolic Java Byte Code sequences for all generated
-   --       classes plus additional information to indicate local variables
-   --       and methods.
 
    --  dK   Kill all error messages. This debug flag suppresses the output
    --       of all error messages. It is used in regression tests where the

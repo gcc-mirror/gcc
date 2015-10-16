@@ -177,18 +177,6 @@ private
    -- Private Subprograms --
    -------------------------
 
-   function Current_Target_Exception return Exception_Occurrence;
-   pragma Export
-     (Ada, Current_Target_Exception,
-      "__gnat_current_target_exception");
-   --  This routine should return the current raised exception on targets which
-   --  have built-in exception handling such as the Java Virtual Machine. For
-   --  other targets this routine is simply ignored. Currently, only JGNAT
-   --  uses this. See 4jexcept.ads for details. The pragma Export allows this
-   --  routine to be accessed elsewhere in the run-time, even though it is in
-   --  the private part of this package (it is not allowed to be in the visible
-   --  part, since this is set by the reference manual).
-
    function Exception_Name_Simple (X : Exception_Occurrence) return String;
    --  Like Exception_Name, but returns the simple non-qualified name of the
    --  exception. This is used to implement the Exception_Name function in

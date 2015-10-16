@@ -1,5 +1,44 @@
 2015-10-16  Arnaud Charlet  <charlet@adacore.com>
 
+	* usage.adb, debug.adb, a-except.adb, a-except.ads, a-except-2005.adb,
+	a-except-2005.ads, s-imgrea.adb: Minor code clean ups related to
+	jgnat/dotnet removal.
+
+2015-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osprim-vxworks.adb, s-osprim-darwin.adb, s-tadeca.adb,
+	s-osprim-unix.adb, s-osprim-solaris.adb, s-osprim-posix.adb,
+	s-osprim.ads (Monotonic_Clock): Removed, unused.
+
+2015-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Object_Operation, Try_One_Interpretation):
+	Do not reset the Obj_Type of the prefix if an interpretation
+	involves an untagged type, to prevent a crash when analyzing an
+	illegal program in All_Errors mode.
+
+2015-10-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Expression_With_Actions):
+	Force the evaluation of the expression when its type is Boolean.
+	(Force_Boolean_Evaluation): New routine.
+
+2015-10-16  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Has_Discrim_Dep_Array): Remove
+	this function, and the call. No longer needed now that the back
+	end can handle such things. Should result in further speedups
+	in some cases.
+
+2015-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): If expression for
+	predicate is side-effect free, indicate that the predicate
+	function is pure, to allow for optimization of redundant
+	predicate checks.
+
+2015-10-16  Arnaud Charlet  <charlet@adacore.com>
+
 	* checks.adb: Fix typo.
 	* s-osinte-linux.ads: Add header.
 	* projects.texi: Removed, no longer used.

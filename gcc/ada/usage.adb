@@ -104,7 +104,7 @@ begin
       Write_Line ("Preserve control flow for coverage analysis");
    end if;
 
-   --  Common switches available to both GCC and JGNAT
+   --  Common switches available everywhere
 
    Write_Switch_Char ("g            ", "");
    Write_Line ("Generate debugging information");

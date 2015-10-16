@@ -8702,6 +8702,16 @@ package body Sem_Ch13 is
 
             Insert_Before_And_Analyze (N, FDecl);
             Insert_After_And_Analyze  (N, FBody);
+
+            --  Static predicate functions are always side-effect free, and
+            --  in most cases dynamic predicate functions are as well. Mark
+            --  them as such whenever possible, so redundant predicate checks
+            --  can be optimized.
+
+            if Expander_Active then
+               Set_Is_Pure (SId, Side_Effect_Free (Expr));
+               Set_Is_Inlined (SId);
+            end if;
          end;
 
          --  Test for raise expressions present and if so build M version
