@@ -12,7 +12,8 @@
 
 	* s-taprop-linux.adb (Monotonic_Clock): Call clock_gettime
 	instead of gettimeofday.
-	* s-osinte-linux.ads (clock_gettime): New imported subprogram.
+	* s-osinte-android.ads, s-osinte-android.adb, s-osinte-linux.ads
+	(clock_gettime): New imported subprogram.
 
 2015-10-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
