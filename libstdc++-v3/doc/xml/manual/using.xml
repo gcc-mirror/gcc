@@ -96,6 +96,14 @@
     </row>
 
     <row>
+      <entry><literal>-lstdc++fs</literal></entry>
+      <entry>Linking to <filename class="libraryfile">libstdc++fs</filename>
+        is required for use of the Filesystem library extensions in
+        <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>.
+      </entry>
+    </row>
+
+    <row>
       <entry><literal>-fopenmp</literal></entry>
       <entry>For <link linkend="manual.ext.parallel_mode">parallel</link> mode.</entry>
     </row>
@@ -1361,8 +1369,31 @@ A quick read of the relevant part of the GCC
       you.
     </para>
     </section>
-  </section>
 
+    <section xml:id="manual.intro.using.linkage.experimental" xreflabel="Library Extensions"><info><title>Experimental Library Extensions</title></info>
+
+    <para>
+      GCC 5.3 includes an implementation of the Filesystem library defined
+      by the technical specification ISO/IEC TS 18822:2015. Because this is
+      an experimental library extension, not part of the C++ standard, it
+      is implemented in a separate library,
+      <filename class="libraryfile">libstdc++fs.a</filename>, and there is
+      no shared library for it. To use the library you should include
+      <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>
+      and link with <option>-lstdc++fs</option>. The library implementation
+      is incomplete on non-POSIX platforms, specifically Windows support is
+      rudimentary.
+    </para>
+
+    <para>
+      Due to the experimental nature of the Filesystem library the usual
+      guarantees about ABI stability and backwards compatibility do not apply
+      to it. There is no guarantee that the components in any
+      <filename class="headerfile">&lt;experimental/xxx&gt;</filename>
+      header will remain compatible between different GCC releases.
+    </para>
+    </section>
+  </section>
 
   <section xml:id="manual.intro.using.concurrency" xreflabel="Concurrency"><info><title>Concurrency</title></info>
     <?dbhtml filename="using_concurrency.html"?>
