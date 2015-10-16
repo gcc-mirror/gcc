@@ -1296,7 +1296,7 @@ package body Sem_Ch6 is
          Set_Actual_Subtypes (N, Current_Scope);
 
          Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
-         Set_SPARK_Pragma_Inherited (Body_Id, True);
+         Set_SPARK_Pragma_Inherited (Body_Id);
 
          --  Analyze any aspect specifications that appear on the generic
          --  subprogram body.
@@ -3453,7 +3453,7 @@ package body Sem_Ch6 is
       --  Set SPARK_Mode from context
 
       Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
-      Set_SPARK_Pragma_Inherited (Body_Id, True);
+      Set_SPARK_Pragma_Inherited (Body_Id);
 
       --  If the return type is an anonymous access type whose designated type
       --  is the limited view of a class-wide type and the non-limited view is

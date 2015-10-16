@@ -23,6 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Treepr; -- ???For debugging code below
+
 with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Casing;   use Casing;
@@ -16856,6 +16858,24 @@ package body Sem_Util is
    --  efficiency. Note: when this temporary code is removed, the documentation
    --  of dQ in debug.adb should be removed.
 
+   procedure Results_Differ (Id : Entity_Id);
+   --  ???Debugging code. Called when the Old_ and New_ results differ. Will be
+   --  removed when New_Requires_Transient_Scope becomes
+   --  Requires_Transient_Scope and Old_Requires_Transient_Scope is eliminated.
+
+   procedure Results_Differ (Id : Entity_Id) is
+   begin
+      if False then -- False to disable; True for debugging
+         Treepr.Print_Tree_Node (Id);
+
+         if Old_Requires_Transient_Scope (Id) =
+           New_Requires_Transient_Scope (Id)
+         then
+            raise Program_Error;
+         end if;
+      end if;
+   end Results_Differ;
+
    function Requires_Transient_Scope (Id : Entity_Id) return Boolean is
       Old_Result : constant Boolean := Old_Requires_Transient_Scope (Id);
 
@@ -16875,6 +16895,10 @@ package body Sem_Util is
          if not Old_Result then
             pragma Assert (not New_Result);
             null;
+         end if;
+
+         if New_Result /= Old_Result then
+            Results_Differ (Id);
          end if;
 
          return New_Result;
@@ -17108,7 +17132,7 @@ package body Sem_Util is
    begin
       --  This is a private type which is not completed yet. This can only
       --  happen in a default expression (of a formal parameter or of a
-      --  record component). Do not expand transient scope in this case
+      --  record component). Do not expand transient scope in this case.
 
       if No (Typ) then
          return False;
@@ -17120,6 +17144,14 @@ package body Sem_Util is
         or else Ekind (Typ) = E_String_Literal_Subtype
       then
          return False;
+
+      --  If Typ is a generic formal incomplete type, then we want to look at
+      --  the actual type.
+
+      elsif Ekind (Typ) = E_Record_Subtype
+        and then Present (Cloned_Subtype (Typ))
+      then
+         return New_Requires_Transient_Scope (Cloned_Subtype (Typ));
 
       --  Functions returning tagged types may dispatch on result so their
       --  returned value is allocated on the secondary stack, even in the

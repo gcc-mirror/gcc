@@ -818,7 +818,7 @@ package Sem_Util is
    --  returned. Otherwise the Etype of the node is returned.
 
    function Get_Body_From_Stub (N : Node_Id) return Node_Id;
-   --  Return the body node for a stub.
+   --  Return the body node for a stub
 
    function Get_Cursor_Type
      (Aspect : Node_Id;
