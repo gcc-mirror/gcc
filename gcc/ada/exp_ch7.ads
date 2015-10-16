@@ -169,18 +169,6 @@ package Exp_Ch7 is
    --  adjusted. Typ is the expected type of Obj_Ref. When Skip_Self is set,
    --  only the components (if any) are adjusted.
 
-   function Make_Attach_Call
-     (Obj_Ref : Node_Id;
-      Ptr_Typ : Entity_Id) return Node_Id;
-   --  Create a call to prepend an object to a finalization collection. Obj_Ref
-   --  is the object, Ptr_Typ is the access type that owns the collection. This
-   --  is used only for .NET/JVM, that is, when VM_Target /= No_VM.
-   --  Generate the following:
-   --
-   --    Ada.Finalization.Heap_Management.Attach
-   --      (<Ptr_Typ>FC,
-   --       System.Finalization_Root.Root_Controlled_Ptr (Obj_Ref));
-
    function Make_Detach_Call (Obj_Ref : Node_Id) return Node_Id;
    --  Create a call to unhook an object from an arbitrary list. Obj_Ref is the
    --  object. Generate the following:

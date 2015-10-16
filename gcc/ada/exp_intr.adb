@@ -55,7 +55,6 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
@@ -394,7 +393,8 @@ package body Exp_Intr is
       Analyze_And_Resolve (N, Etype (Act_Constr));
 
       --  Do not generate a run-time check on the built object if tag
-      --  checks are suppressed for the result type or VM_Target /= No_VM
+      --  checks are suppressed for the result type or tagged type expansion
+      --  is disabled.
 
       if Tag_Checks_Suppressed (Etype (Result_Typ))
         or else not Tagged_Type_Expansion
@@ -1071,14 +1071,6 @@ package body Exp_Intr is
                    Make_Final_Call (Obj_Ref => Deref, Typ => Desig_T)),
                  Exception_Handlers => New_List (
                    Build_Exception_Handler (Finalizer_Data)))));
-
-         --  For .NET/JVM, detach the object from the containing finalization
-         --  collection before finalizing it.
-
-         if VM_Target /= No_VM and then Is_Controlled (Desig_T) then
-            Prepend_To (Final_Code,
-              Make_Detach_Call (New_Copy_Tree (Arg)));
-         end if;
 
          --  If aborts are allowed, then the finalization code must be
          --  protected by an abort defer/undefer pair.

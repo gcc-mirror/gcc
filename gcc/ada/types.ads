@@ -827,9 +827,8 @@ package Types is
    --  To add a new code, you need to do the following:
 
    --    1. Assign a new number to the reason. Do not renumber existing codes,
-   --       since this causes compatibility/bootstrap issues, and problems in
-   --       the CIL/JVM backends. So always add the new code at the end of the
-   --       list.
+   --       since this causes compatibility/bootstrap issues, so always add the
+   --       new code at the end of the list.
 
    --    2. Update the contents of the array Kind
 

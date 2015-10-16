@@ -605,12 +605,6 @@ package body Exp_Util is
 
          elsif No_Pool_Assigned (Ptr_Typ) then
             return;
-
-         --  Access-to-controlled types are not supported on .NET/JVM since
-         --  these targets cannot support pools and address arithmetic.
-
-         elsif VM_Target /= No_VM then
-            return;
          end if;
 
          --  The allocation / deallocation of a controlled object must be
@@ -1314,7 +1308,7 @@ package body Exp_Util is
          Expr := Make_Function_Call (Loc,
            Name => New_Occurrence_Of (Defining_Entity (Fun), Loc));
 
-         if not In_Init_Proc and then VM_Target = No_VM then
+         if not In_Init_Proc then
             Set_Uses_Sec_Stack (Defining_Entity (Fun));
          end if;
       end if;
@@ -5309,12 +5303,6 @@ package body Exp_Util is
       T  : constant Entity_Id := Etype (N);
 
    begin
-      --  Objects are never unaligned on VMs
-
-      if VM_Target /= No_VM then
-         return False;
-      end if;
-
       --  If renamed object, apply test to underlying object
 
       if Is_Entity_Name (N)
@@ -5832,21 +5820,6 @@ package body Exp_Util is
          return False;
       end if;
    end Is_Volatile_Reference;
-
-   --------------------------
-   -- Is_VM_By_Copy_Actual --
-   --------------------------
-
-   function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean is
-   begin
-      return VM_Target /= No_VM
-        and then (Nkind (N) = N_Slice
-                    or else
-                      (Nkind (N) = N_Identifier
-                        and then Present (Renamed_Object (Entity (N)))
-                        and then Nkind (Renamed_Object (Entity (N))) =
-                                                                 N_Slice));
-   end Is_VM_By_Copy_Actual;
 
    --------------------
    -- Kill_Dead_Code --
@@ -6652,7 +6625,7 @@ package body Exp_Util is
             EQ_Typ     : Entity_Id := Empty;
 
          begin
-            --  A class-wide equivalent type is not needed when VM_Target
+            --  A class-wide equivalent type is not needed on VM targets
             --  because the VM back-ends handle the class-wide object
             --  initialization itself (and doesn't need or want the
             --  additional intermediate type to handle the assignment).
@@ -6853,13 +6826,10 @@ package body Exp_Util is
       if Restriction_Active (No_Finalization) then
          return False;
 
-      --  C++, CIL and Java types are not considered controlled. It is assumed
-      --  that the non-Ada side will handle their clean up.
+      --  C++ types are not considered controlled. It is assumed that the
+      --  non-Ada side will handle their clean up.
 
-      elsif Convention (T) = Convention_CIL
-        or else Convention (T) = Convention_CPP
-        or else Convention (T) = Convention_Java
-      then
+      elsif Convention (T) = Convention_CPP then
          return False;
 
       --  Never needs finalization if Disable_Controlled set
@@ -8927,7 +8897,7 @@ package body Exp_Util is
       --  locate here if this node corresponds to a previous invocation of
       --  Remove_Side_Effects to avoid a never ending loop in the frontend.
 
-      elsif VM_Target /= No_VM
+      elsif not Tagged_Type_Expansion
          and then not Comes_From_Source (N)
          and then Nkind (Parent (N)) = N_Object_Renaming_Declaration
          and then Is_Class_Wide_Type (Typ)

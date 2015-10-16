@@ -8098,10 +8098,10 @@ package Sinfo is
       --  For the case of the standard gigi backend, this means that all
       --  checks are done in the front end.
 
-      --  However, in the case of specialized back-ends, notably the JVM
-      --  backend for JGNAT, additional requirements and restrictions apply
-      --  to unchecked conversion, and these are most conveniently performed
-      --  in the specialized back-end.
+      --  However, in the case of specialized back-ends, in particular the JVM
+      --  backend in the past, additional requirements and restrictions may
+      --  apply to unchecked conversion, and these are most conveniently
+      --  performed in the specialized back-end.
 
       --  To accommodate this requirement, for such back ends, the following
       --  special node is generated recording an unchecked conversion that

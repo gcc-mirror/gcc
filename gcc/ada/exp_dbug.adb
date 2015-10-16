@@ -38,7 +38,6 @@ with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Table;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Urealp;   use Urealp;
 
@@ -370,14 +369,6 @@ package body Exp_Dbug is
       if not Comes_From_Source (N)
         and then not Needs_Debug_Info (Ent)
       then
-         return Empty;
-      end if;
-
-      --  Do not output those local variables in VM case, as this does not
-      --  help debugging (they are just unused), and might lead to duplicated
-      --  local variable names.
-
-      if VM_Target /= No_VM then
          return Empty;
       end if;
 

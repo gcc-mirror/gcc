@@ -599,10 +599,9 @@ procedure Gnat1drv is
       if Debug_Flag_Dot_LL then
          Back_End_Handles_Limited_Types := True;
 
-      --  If no debug flag, usage off for AAMP, VM, SCIL cases
+      --  If no debug flag, usage off for AAMP, SCIL cases
 
       elsif AAMP_On_Target
-        or else VM_Target /= No_VM
         or else Generate_SCIL
       then
          Back_End_Handles_Limited_Types := False;
@@ -633,20 +632,16 @@ procedure Gnat1drv is
          --  back end some day, it would not be true for this test, but it
          --  would be non-GCC, so this is a bit troublesome ???
 
-         Front_End_Inlining := VM_Target /= No_VM or else AAMP_On_Target;
+         Front_End_Inlining := AAMP_On_Target;
       end if;
 
       --  Set back end inlining indication
 
       Back_End_Inlining :=
 
-        --  No back end inlining available for VM targets
-
-        VM_Target = No_VM
-
         --  No back end inlining available on AAMP
 
-        and then not AAMP_On_Target
+        not AAMP_On_Target
 
         --  No back end inlining in GNATprove mode, since it just confuses
         --  the formal verification process.
@@ -868,7 +863,7 @@ procedure Gnat1drv is
       --  back end for component layout where possible) but only for non-GCC
       --  back ends, as this is done a priori for GCC back ends.
 
-      if VM_Target /= No_VM or else AAMP_On_Target then
+      if AAMP_On_Target then
          Sem_Ch13.Validate_Independence;
       end if;
 
@@ -1273,15 +1268,11 @@ begin
       --  Annotation is suppressed for targets where front-end layout is
       --  enabled, because the front end determines representations.
 
-      --  Annotation is also suppressed in the case of compiling for a VM,
-      --  since representations are largely symbolic there.
-
       if Back_End_Mode = Declarations_Only
         and then
           (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
             or else Main_Kind = N_Subunit
-            or else Frontend_Layout_On_Target
-            or else VM_Target /= No_VM)
+            or else Frontend_Layout_On_Target)
       then
          Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);

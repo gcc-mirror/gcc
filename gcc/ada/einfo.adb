@@ -516,7 +516,6 @@ package body Einfo is
    --    Has_Pragma_Unreferenced_Objects Flag212
    --    Requires_Overriding             Flag213
    --    Has_RACW                        Flag214
-   --    Has_Uplevel_Reference           Flag215
    --    Universal_Aliasing              Flag216
    --    Suppress_Value_Tracking_On_Call Flag217
    --    Is_Primitive                    Flag218
@@ -1846,11 +1845,6 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag72 (Id);
    end Has_Unknown_Discriminants;
-
-   function Has_Uplevel_Reference (Id : E) return B is
-   begin
-      return Flag215 (Id);
-   end Has_Uplevel_Reference;
 
    function Has_Visible_Refinement (Id : E) return B is
    begin
@@ -4755,11 +4749,6 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       Set_Flag72 (Id, V);
    end Set_Has_Unknown_Discriminants;
-
-   procedure Set_Has_Uplevel_Reference (Id : E; V : B := True) is
-   begin
-      Set_Flag215 (Id, V);
-   end Set_Has_Uplevel_Reference;
 
    procedure Set_Has_Visible_Refinement (Id : E; V : B := True) is
    begin
@@ -8770,7 +8759,6 @@ package body Einfo is
       W ("Has_Thunks",                      Flag228 (Id));
       W ("Has_Unchecked_Union",             Flag123 (Id));
       W ("Has_Unknown_Discriminants",       Flag72  (Id));
-      W ("Has_Uplevel_Reference",           Flag215 (Id));
       W ("Has_Visible_Refinement",          Flag263 (Id));
       W ("Has_Volatile_Components",         Flag87  (Id));
       W ("Has_Xref_Entry",                  Flag182 (Id));

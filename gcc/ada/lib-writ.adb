@@ -454,16 +454,7 @@ package body Lib.Writ is
                      not Has_No_Elaboration_Code
                            (Parent (Declaration_Node (Body_Entity (Uent))))))
          then
-            if Convention (Uent) = Convention_CIL then
-
-               --  Special case for generic CIL packages which never have
-               --  elaboration code
-
-               Write_Info_Str (" NE");
-
-            else
-               Write_Info_Str (" EE");
-            end if;
+            Write_Info_Str (" EE");
          end if;
 
          if Has_No_Elaboration_Code (Unode) then

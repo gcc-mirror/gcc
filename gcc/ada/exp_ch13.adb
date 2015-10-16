@@ -47,7 +47,6 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Validsw;  use Validsw;
@@ -290,12 +289,6 @@ package body Exp_Ch13 is
       --  for controlled types.
 
       if Restriction_Active (No_Finalization) then
-         return;
-
-      --  Do not create a specialized Deallocate since .NET/JVM compilers do
-      --  not support pools and address arithmetic.
-
-      elsif VM_Target /= No_VM then
          return;
       end if;
 

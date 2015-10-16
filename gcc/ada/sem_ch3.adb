@@ -3002,10 +3002,9 @@ package body Sem_Ch3 is
 
       --  Check runtime support for synchronized interfaces
 
-      if VM_Target = No_VM
-        and then (Is_Task_Interface (T)
-                   or else Is_Protected_Interface (T)
-                   or else Is_Synchronized_Interface (T))
+      if (Is_Task_Interface (T)
+           or else Is_Protected_Interface (T)
+           or else Is_Synchronized_Interface (T))
         and then not RTE_Available (RE_Select_Specific_Data)
       then
          Error_Msg_CRT ("synchronized interfaces", T);
@@ -10061,7 +10060,6 @@ package body Sem_Ch3 is
            and then not Is_TSS (Subp, TSS_Stream_Input)
            and then not Is_TSS (Subp, TSS_Stream_Output)
            and then not Is_Abstract_Type (T)
-           and then Convention (T) /= Convention_CIL
            and then not Is_Predefined_Interface_Primitive (Subp)
 
             --  Ada 2005 (AI-251): Do not consider hidden entities associated

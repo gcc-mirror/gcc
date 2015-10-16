@@ -1,5 +1,20 @@
 2015-10-16  Arnaud Charlet  <charlet@adacore.com>
 
+	* exp_ch5.adb, sem_ch3.adb, frontend.adb, exp_ch7.adb, exp_ch7.ads,
+	sem_ch5.adb, sem_type.adb, exp_util.adb, exp_util.ads, comperr.adb,
+	exp_attr.adb, sinfo.ads, exp_ch9.adb, make.adb, usage.adb,
+	lib-writ.adb, sem_ch9.adb, bindgen.adb, debug.adb, einfo.adb,
+	einfo.ads, types.ads, checks.adb, sem_prag.adb, s-tasini.adb,
+	rtsfind.ads, freeze.adb, sem_util.adb, sem_util.ads, exp_dbug.adb,
+	gnatlink.adb, gnat1drv.adb, targparm.adb, targparm.ads, exp_ch4.adb,
+	exp_ch11.adb, repinfo.adb, s-soflin.adb, s-soflin.ads, exp_ch6.adb,
+	exp_ch13.adb, sem_mech.adb, sem_ch6.adb, par-prag.adb, exp_disp.adb,
+	sem_ch8.adb, exp_disp.ads, snames.adb-tmpl, exp_aggr.adb, sem_eval.adb,
+	exp_intr.adb, sem_ch13.adb, snames.ads-tmpl, sem_disp.adb, exp_ch3.adb:
+	Code clean up: remove special handling for .NET and JVM.
+
+2015-10-16  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_ch12.adb: Minor punctuation fix in comment
 	* s-rident.ads: Minor consistency fix in comment
 	* exp_attr.adb, g-spipat.ads: punctuation fixes in comments.

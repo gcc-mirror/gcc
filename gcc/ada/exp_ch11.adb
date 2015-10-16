@@ -1094,33 +1094,14 @@ package body Exp_Ch11 is
                   end;
                end if;
 
-               --  The processing at this point is rather different for the JVM
-               --  case, so we completely separate the processing.
+               --  For the normal case, we have to worry about the state of
+               --  abort deferral. Generally, we defer abort during runtime
+               --  handling of exceptions. When control is passed to the
+               --  handler, then in the normal case we undefer aborts. In
+               --  any case this entire handling is relevant only if aborts
+               --  are allowed.
 
-               --  For the VM case, we unconditionally call Update_Exception,
-               --  passing a call to the intrinsic Current_Target_Exception
-               --  (see JVM/.NET versions of Ada.Exceptions for details).
-
-               if VM_Target /= No_VM then
-                  declare
-                     Arg : constant Node_Id :=
-                             Make_Function_Call (Loc,
-                               Name =>
-                                 New_Occurrence_Of
-                                   (RTE (RE_Current_Target_Exception), Loc));
-                  begin
-                     Prepend_Call_To_Handler
-                       (RE_Update_Exception, New_List (Arg));
-                  end;
-
-                  --  For the normal case, we have to worry about the state of
-                  --  abort deferral. Generally, we defer abort during runtime
-                  --  handling of exceptions. When control is passed to the
-                  --  handler, then in the normal case we undefer aborts. In
-                  --  any case this entire handling is relevant only if aborts
-                  --  are allowed.
-
-               elsif Abort_Allowed
+               if Abort_Allowed
                  and then Exception_Mechanism /= Back_End_Exceptions
                then
                   --  There are some special cases in which we do not do the
@@ -1269,14 +1250,6 @@ package body Exp_Ch11 is
    --  Start of processing for Expand_N_Exception_Declaration
 
    begin
-      --  There is no expansion needed when compiling for the JVM since the
-      --  JVM has a built-in exception mechanism. See cil/gnatlib/a-except.ads
-      --  for details.
-
-      if VM_Target /= No_VM then
-         return;
-      end if;
-
       --  Definition of the external name: nam : constant String := "A.B.NAME";
 
       Ex_Id :=
@@ -1726,13 +1699,12 @@ package body Exp_Ch11 is
 
       else
          --  Bypass expansion to a run-time call when back-end exception
-         --  handling is active, unless the target is a VM, CodePeer or
-         --  GNATprove. In CodePeer, raising an exception is treated as an
-         --  error, while in GNATprove all code with exceptions falls outside
-         --  the subset of code which can be formally analyzed.
+         --  handling is active, unless the target is CodePeer or GNATprove.
+         --  In CodePeer, raising an exception is treated as an error, while in
+         --  GNATprove all code with exceptions falls outside the subset of
+         --  code which can be formally analyzed.
 
-         if VM_Target = No_VM
-           and then not CodePeer_Mode
+         if not CodePeer_Mode
            and then Exception_Mechanism = Back_End_Exceptions
          then
             return;

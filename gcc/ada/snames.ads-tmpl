@@ -464,7 +464,6 @@ package Snames is
    Name_Atomic_Components              : constant Name_Id := N + $;
    Name_Attach_Handler                 : constant Name_Id := N + $;
    Name_Check                          : constant Name_Id := N + $; -- GNAT
-   Name_CIL_Constructor                : constant Name_Id := N + $; -- GNAT
    Name_Comment                        : constant Name_Id := N + $; -- GNAT
    Name_Common_Object                  : constant Name_Id := N + $; -- GNAT
    Name_Complete_Representation        : constant Name_Id := N + $; -- GNAT
@@ -533,8 +532,6 @@ package Snames is
    --  Is_Pragma_Id correctly recognize and process Interrupt_Priority.
 
    Name_Invariant                      : constant Name_Id := N + $; -- GNAT
-   Name_Java_Constructor               : constant Name_Id := N + $; -- GNAT
-   Name_Java_Interface                 : constant Name_Id := N + $; -- GNAT
    Name_Keep_Names                     : constant Name_Id := N + $; -- GNAT
    Name_Link_With                      : constant Name_Id := N + $; -- GNAT
    Name_Linker_Alias                   : constant Name_Id := N + $; -- GNAT
@@ -651,12 +648,10 @@ package Snames is
    Name_Ada_Pass_By_Copy               : constant Name_Id := N + $;
    Name_Ada_Pass_By_Reference          : constant Name_Id := N + $;
    Name_Assembler                      : constant Name_Id := N + $;
-   Name_CIL                            : constant Name_Id := N + $;
    Name_COBOL                          : constant Name_Id := N + $;
    Name_CPP                            : constant Name_Id := N + $;
    Name_Fortran                        : constant Name_Id := N + $;
    Name_Intrinsic                      : constant Name_Id := N + $;
-   Name_Java                           : constant Name_Id := N + $;
    Name_Stdcall                        : constant Name_Id := N + $;
    Name_Stubbed                        : constant Name_Id := N + $;
    Last_Convention_Name                : constant Name_Id := N + $;
@@ -1682,11 +1677,9 @@ package Snames is
 
       Convention_Assembler,  --  also Asm, Assembly
       Convention_C,          --  also Default, External
-      Convention_CIL,
       Convention_COBOL,
       Convention_CPP,
       Convention_Fortran,
-      Convention_Java,
       Convention_Stdcall);   --  also DLL, Win32
 
       --  Note: Convention C_Pass_By_Copy is allowed only for record types
@@ -1816,7 +1809,6 @@ package Snames is
       Pragma_Atomic_Components,
       Pragma_Attach_Handler,
       Pragma_Check,
-      Pragma_CIL_Constructor,
       Pragma_Comment,
       Pragma_Common_Object,
       Pragma_Complete_Representation,
@@ -1866,8 +1858,6 @@ package Snames is
       Pragma_Interface_Name,
       Pragma_Interrupt_Handler,
       Pragma_Invariant,
-      Pragma_Java_Constructor,
-      Pragma_Java_Interface,
       Pragma_Keep_Names,
       Pragma_Link_With,
       Pragma_Linker_Alias,
