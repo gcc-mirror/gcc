@@ -819,7 +819,7 @@ package Opt is
    --  be inlined in GNATprove mode.
 
    Init_Or_Norm_Scalars : Boolean := False;
-   --  GNAT, GANTBIND
+   --  GNAT, GNATBIND
    --  Set True if a pragma Initialize_Scalars applies to the current unit.
    --  Also set True if a pragma Restriction (Normalize_Scalars) applies.
 

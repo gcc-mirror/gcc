@@ -17109,6 +17109,10 @@ package body Sem_Util is
       --  This shouldn't be necessary, but without this check, we crash in
       --  gimplify. ???
 
+      ------------------------------
+      -- Caller_Known_Size_Record --
+      ------------------------------
+
       function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean is
          pragma Assert (Typ = Underlying_Type (Typ));
 
@@ -17118,9 +17122,10 @@ package body Sem_Util is
          end if;
 
          declare
-            Comp : Entity_Id := First_Entity (Typ);
+            Comp : Entity_Id;
 
          begin
+            Comp := First_Entity (Typ);
             while Present (Comp) loop
 
                --  Only look at E_Component entities. No need to look at
@@ -17156,6 +17161,10 @@ package body Sem_Util is
          return True;
       end Caller_Known_Size_Record;
 
+      ---------------------------
+      -- Has_Discrim_Dep_Array --
+      ---------------------------
+
       function Has_Discrim_Dep_Array (Typ : Entity_Id) return Boolean is
          pragma Assert (Typ = Underlying_Type (Typ));
 
@@ -17165,13 +17174,14 @@ package body Sem_Util is
          end if;
 
          if Is_Record_Type (Typ)
-           or else
-           Is_Protected_Type (Typ)
+              or else
+            Is_Protected_Type (Typ)
          then
             declare
-               Comp : Entity_Id := First_Entity (Typ);
+               Comp : Entity_Id;
 
             begin
+               Comp := First_Entity (Typ);
                while Present (Comp) loop
 
                   --  Only look at E_Component entities. No need to look at
@@ -17182,7 +17192,6 @@ package body Sem_Util is
                      declare
                         Comp_Type : constant Entity_Id :=
                                       Underlying_Type (Etype (Comp));
-
                      begin
                         if Has_Discrim_Dep_Array (Comp_Type) then
                            return True;
