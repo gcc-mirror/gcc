@@ -8898,9 +8898,9 @@ package body Exp_Util is
       --  Remove_Side_Effects to avoid a never ending loop in the frontend.
 
       elsif not Tagged_Type_Expansion
-         and then not Comes_From_Source (N)
-         and then Nkind (Parent (N)) = N_Object_Renaming_Declaration
-         and then Is_Class_Wide_Type (Typ)
+        and then not Comes_From_Source (N)
+        and then Nkind (Parent (N)) = N_Object_Renaming_Declaration
+        and then Is_Class_Wide_Type (Typ)
       then
          return True;
       end if;

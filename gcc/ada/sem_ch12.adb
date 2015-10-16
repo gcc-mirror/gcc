@@ -2645,6 +2645,14 @@ package body Sem_Ch12 is
       Set_Inner_Instances (Formal, New_Elmt_List);
       Push_Scope  (Formal);
 
+      --  Manually set the SPARK_Mode from the context because the package
+      --  declaration is never analyzed.
+
+      Set_SPARK_Pragma               (Formal, SPARK_Mode_Pragma);
+      Set_SPARK_Aux_Pragma           (Formal, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited     (Formal);
+      Set_SPARK_Aux_Pragma_Inherited (Formal);
+
       if Is_Child_Unit (Gen_Unit) and then Parent_Installed then
 
          --  Similarly, we have to make the name of the formal visible in the

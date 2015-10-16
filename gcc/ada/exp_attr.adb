@@ -5783,7 +5783,7 @@ package body Exp_Attr is
          --  c) If the prefix is a task type, the size is obtained from the
          --  size variable created for each task type
 
-         --  d) If no storage_size was specified for the type, there is no
+         --  d) If no Storage_Size was specified for the type, there is no
          --  size variable, and the value is a system-specific default.
 
          else
@@ -5824,7 +5824,7 @@ package body Exp_Attr is
 
             elsif Present (Storage_Size_Variable (Ptyp)) then
 
-               --  Static storage size pragma given for type: retrieve value
+               --  Static Storage_Size pragma given for type: retrieve value
                --  from its allocated storage variable.
 
                Rewrite (N,

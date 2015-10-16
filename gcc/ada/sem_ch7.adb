@@ -734,12 +734,12 @@ package body Sem_Ch7 is
          --  Set SPARK_Mode from context
 
          Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
-         Set_SPARK_Pragma_Inherited (Body_Id, True);
+         Set_SPARK_Pragma_Inherited (Body_Id);
 
          --  Set elaboration code SPARK mode the same for now
 
          Set_SPARK_Aux_Pragma (Body_Id, SPARK_Pragma (Body_Id));
-         Set_SPARK_Aux_Pragma_Inherited (Body_Id, True);
+         Set_SPARK_Aux_Pragma_Inherited (Body_Id);
       end if;
 
       --  Inherit the "ghostness" of the subprogram spec. Note that this
@@ -1048,8 +1048,8 @@ package body Sem_Ch7 is
       if Ekind (Id) = E_Package then
          Set_SPARK_Pragma               (Id, SPARK_Mode_Pragma);
          Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
-         Set_SPARK_Pragma_Inherited     (Id, True);
-         Set_SPARK_Aux_Pragma_Inherited (Id, True);
+         Set_SPARK_Pragma_Inherited     (Id);
+         Set_SPARK_Aux_Pragma_Inherited (Id);
       end if;
 
       --  A package declared within a Ghost refion is automatically Ghost

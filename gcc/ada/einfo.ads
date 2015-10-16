@@ -4819,14 +4819,14 @@ package Einfo is
       --  A procedure, created by a procedure declaration or a procedure
       --  body that acts as its own declaration.
 
-      E_Entry,
-      --  An entry, created by an entry declaration in a task or protected
-      --  object.
-
       E_Abstract_State,
       --  A state abstraction. Used to designate entities introduced by aspect
       --  or pragma Abstract_State. The entity carries the various properties
       --  of the state.
+
+      E_Entry,
+      --  An entry, created by an entry declaration in a task or protected
+      --  object.
 
       --------------------
       -- Other Entities --
@@ -5147,8 +5147,8 @@ package Einfo is
    --  E_Function
    --  E_Operator
    --  E_Procedure
-   --  E_Entry
-       E_Abstract_State;
+   --  E_Abstract_State
+       E_Entry;
 
    subtype Private_Kind                is Entity_Kind range
        E_Record_Type_With_Private ..

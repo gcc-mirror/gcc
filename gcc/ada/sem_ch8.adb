@@ -2776,7 +2776,7 @@ package body Sem_Ch8 is
       --  Set SPARK mode from current context
 
       Set_SPARK_Pragma (New_S, SPARK_Mode_Pragma);
-      Set_SPARK_Pragma_Inherited (New_S, True);
+      Set_SPARK_Pragma_Inherited (New_S);
 
       Rename_Spec := Find_Corresponding_Spec (N);
 
