@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -525,9 +525,6 @@ private
    --  address is 'obj' by calling indirectly the ancestor _size function. The
    --  ancestor is the parent of the type represented by tag T. This function
    --  assumes that _size is always in slot one of the dispatch table.
-
-   pragma Export (Ada, Parent_Size, "ada__tags__parent_size");
-   --  This procedure is used in s-finimp and is thus exported manually
 
    procedure Register_Interface_Offset
      (This         : System.Address;

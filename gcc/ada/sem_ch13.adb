@@ -8708,6 +8708,8 @@ package body Sem_Ch13 is
             --  them as such whenever possible, so redundant predicate checks
             --  can be optimized.
 
+            --  Shouldn't Variable_Ref be True for Side_Effect_Free call ???
+
             if Expander_Active then
                Set_Is_Pure (SId, Side_Effect_Free (Expr));
                Set_Is_Inlined (SId);

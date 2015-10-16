@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -30,6 +30,7 @@
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
+--                                                                          --
 ------------------------------------------------------------------------------
 
 --  This is the Windows native version of this package
@@ -48,7 +49,8 @@ package Ada.Execution_Time is
 
    function Clock
      (T : Ada.Task_Identification.Task_Id :=
-            Ada.Task_Identification.Current_Task) return CPU_Time;
+        Ada.Task_Identification.Current_Task)
+      return CPU_Time;
 
    function "+"
      (Left  : CPU_Time;
@@ -77,9 +79,9 @@ package Ada.Execution_Time is
       TS : out Ada.Real_Time.Time_Span);
 
    function Time_Of
-      (SC : Ada.Real_Time.Seconds_Count;
-       TS : Ada.Real_Time.Time_Span := Ada.Real_Time.Time_Span_Zero)
-       return CPU_Time;
+     (SC : Ada.Real_Time.Seconds_Count;
+      TS : Ada.Real_Time.Time_Span := Ada.Real_Time.Time_Span_Zero)
+      return CPU_Time;
 
    Interrupt_Clocks_Supported          : constant Boolean := False;
    Separate_Interrupt_Clocks_Supported : constant Boolean := False;

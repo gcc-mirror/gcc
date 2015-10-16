@@ -278,7 +278,7 @@ package body System.Task_Primitives.Operations is
       --  Absolute deadline specified using the tasking clock (CLOCK_RT_Ada)
 
       elsif Mode = Absolute_RT
-              or else OSC.CLOCK_RT_Ada = OSC.CLOCK_REALTIME
+        or else OSC.CLOCK_RT_Ada = OSC.CLOCK_REALTIME
       then
          pragma Warnings (On);
          Abs_Time := Duration'Min (Check_Time + Max_Sensible_Delay, Time);
@@ -295,7 +295,7 @@ package body System.Task_Primitives.Operations is
          declare
             Cal_Check_Time : constant Duration := OS_Primitives.Clock;
             RT_Time        : constant Duration :=
-              Time + Check_Time - Cal_Check_Time;
+                               Time + Check_Time - Cal_Check_Time;
 
          begin
             Abs_Time :=

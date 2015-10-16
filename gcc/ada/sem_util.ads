@@ -910,8 +910,8 @@ package Sem_Util is
    --  any other form.
 
    function Get_Reference_Discriminant (Typ : Entity_Id) return Entity_Id;
-   --  If Typ has Implicit_Dereference, return discriminant specified in
-   --  the corresponding aspect.
+   --  If Typ has Implicit_Dereference, return discriminant specified in the
+   --  corresponding aspect.
 
    function Get_Referenced_Object (N : Node_Id) return Node_Id;
    --  Given a node, return the renamed object if the node represents a renamed

@@ -35,7 +35,7 @@
 
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we can get
---  elaboration circularities when polling is turned on
+--  elaboration circularities when polling is turned on.
 
 with Ada.Exceptions.Traceback; use Ada.Exceptions.Traceback;
 with System.Address_Image;

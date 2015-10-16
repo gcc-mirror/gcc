@@ -2626,8 +2626,8 @@ package Einfo is
 --       to intrinsic, which causes intrinsic code to be generated.
 
 --    Is_Invariant_Procedure (Flag257)
---       Defined in functions an procedures. Set for a generated invariant
---       procedure to identify it easily in the.
+--       Defined in functions and procedures. Set for a generated invariant
+--       procedure to identify it easily.
 
 --    Is_Itype (Flag91)
 --       Defined in all entities. Set to indicate that a type is an Itype,
@@ -3064,7 +3064,7 @@ package Einfo is
 --       vtable (i.e. the one to be extended by derivation).
 
 --    Is_Tagged_Type (Flag55)
---       Defined in all entities. Set for an entity that is a tagged type.
+--       Defined in all entities, set for an entity that is a tagged type
 
 --    Is_Task_Interface (synthesized)
 --       Defined in types that are interfaces. True if interface is declared as
@@ -4657,8 +4657,8 @@ package Einfo is
       --  type (whether or not it is a general access type).
 
       E_Access_Attribute_Type,
-      --  An access type created for an access attribute (such as 'Access,
-      --  'Unrestricted_Access and Unchecked_Access).
+      --  An access type created for an access attribute (one of 'Access,
+      --  'Unrestricted_Access, or Unchecked_Access).
 
       E_Allocator_Type,
       --  A special internal type used to label allocators and references to

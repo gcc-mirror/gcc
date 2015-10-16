@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--             Copyright (C) 2015, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -212,7 +212,7 @@ package body System.Finalization_Masters is
          --  Skip the list header in order to offer proper object layout for
          --  finalization.
 
-         Obj_Addr := Curr_Ptr.all'Address + Header_Offset;
+         Obj_Addr := Curr_Ptr.all'Address + Header_Size;
 
          --  Retrieve TSS primitive Finalize_Address depending on the master's
          --  mode of operation.
@@ -326,15 +326,6 @@ package body System.Finalization_Masters is
    begin
       return FM_Node'Size / Storage_Unit;
    end Header_Size;
-
-   -------------------
-   -- Header_Offset --
-   -------------------
-
-   function Header_Offset return System.Storage_Elements.Storage_Offset is
-   begin
-      return FM_Node'Size / Storage_Unit;
-   end Header_Offset;
 
    ----------------
    -- Initialize --
