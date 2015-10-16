@@ -34,8 +34,8 @@ using __gnu_test::rvalstruct;
 
 typedef test_container<rvalstruct, random_access_iterator_wrapper> Container;
 
-const int N = 200000;
-int A[N];
+const unsigned int N = 10000;
+int A[N]; // This is made global because we don't want it on the stack
 
 void fill_ascending()
 {
@@ -70,7 +70,6 @@ test02()
 {
   bool test __attribute__((unused)) = true;
 
-  fill_ascending();
   rvalstruct rv[10] = {1,2,3,4,5,6,7,8,9,10};
   int result[10] = {10,1,2,3,4,5,6,7,8,9};
   Container con(rv, rv + 10);
