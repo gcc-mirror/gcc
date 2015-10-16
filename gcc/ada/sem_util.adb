@@ -424,6 +424,7 @@ package body Sem_Util is
       --  Contract items related to variables. Applicable pragmas are:
       --    Async_Readers
       --    Async_Writers
+      --    Constant_After_Elaboration
       --    Effective_Reads
       --    Effective_Writes
       --    Part_Of
@@ -431,6 +432,7 @@ package body Sem_Util is
       elsif Ekind (Id) = E_Variable then
          if Nam_In (Prag_Nam, Name_Async_Readers,
                               Name_Async_Writers,
+                              Name_Constant_After_Elaboration,
                               Name_Effective_Reads,
                               Name_Effective_Writes,
                               Name_Part_Of)

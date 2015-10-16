@@ -45,6 +45,7 @@ package Sem_Prag is
       Pragma_Atomic                       => True,
       Pragma_Atomic_Components            => True,
       Pragma_Attach_Handler               => True,
+      Pragma_Constant_After_Elaboration   => True,
       Pragma_Contract_Cases               => True,
       Pragma_Convention                   => True,
       Pragma_CPU                          => True,
@@ -171,7 +172,7 @@ package Sem_Prag is
    --  Analyze procedure for pragma reference node N
 
    procedure Analyze_Contract_Cases_In_Decl_Part (N : Node_Id);
-   --  Perform full analysis and expansion of delayed pragma Contract_Cases
+   --  Perform full analysis of delayed pragma Contract_Cases
 
    procedure Analyze_Depends_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Depends. This routine is also

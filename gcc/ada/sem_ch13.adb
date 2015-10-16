@@ -2263,6 +2263,22 @@ package body Sem_Ch13 is
                   goto Continue;
                end Abstract_State;
 
+               --  Aspect Constant_After_Elaboration is never delayed because
+               --  it is equivalent to a source pragma which appears after the
+               --  related object declaration.
+
+               when Aspect_Constant_After_Elaboration =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  =>
+                       Name_Constant_After_Elaboration);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
                --  Aspect Default_Internal_Condition is never delayed because
                --  it is equivalent to a source pragma which appears after the
                --  related private type. To deal with forward references, the
@@ -9246,32 +9262,33 @@ package body Sem_Ch13 is
 
          --  Here is the list of aspects that don't require delay analysis
 
-         when Aspect_Abstract_State            |
-              Aspect_Annotate                  |
-              Aspect_Contract_Cases            |
-              Aspect_Default_Initial_Condition |
-              Aspect_Depends                   |
-              Aspect_Dimension                 |
-              Aspect_Dimension_System          |
-              Aspect_Extensions_Visible        |
-              Aspect_Ghost                     |
-              Aspect_Global                    |
-              Aspect_Implicit_Dereference      |
-              Aspect_Initial_Condition         |
-              Aspect_Initializes               |
-              Aspect_Obsolescent               |
-              Aspect_Part_Of                   |
-              Aspect_Post                      |
-              Aspect_Postcondition             |
-              Aspect_Pre                       |
-              Aspect_Precondition              |
-              Aspect_Refined_Depends           |
-              Aspect_Refined_Global            |
-              Aspect_Refined_Post              |
-              Aspect_Refined_State             |
-              Aspect_SPARK_Mode                |
-              Aspect_Test_Case                 |
-              Aspect_Unimplemented             =>
+         when Aspect_Abstract_State             |
+              Aspect_Annotate                   |
+              Aspect_Constant_After_Elaboration |
+              Aspect_Contract_Cases             |
+              Aspect_Default_Initial_Condition  |
+              Aspect_Depends                    |
+              Aspect_Dimension                  |
+              Aspect_Dimension_System           |
+              Aspect_Extensions_Visible         |
+              Aspect_Ghost                      |
+              Aspect_Global                     |
+              Aspect_Implicit_Dereference       |
+              Aspect_Initial_Condition          |
+              Aspect_Initializes                |
+              Aspect_Obsolescent                |
+              Aspect_Part_Of                    |
+              Aspect_Post                       |
+              Aspect_Postcondition              |
+              Aspect_Pre                        |
+              Aspect_Precondition               |
+              Aspect_Refined_Depends            |
+              Aspect_Refined_Global             |
+              Aspect_Refined_Post               |
+              Aspect_Refined_State              |
+              Aspect_SPARK_Mode                 |
+              Aspect_Test_Case                  |
+              Aspect_Unimplemented              =>
             raise Program_Error;
 
       end case;

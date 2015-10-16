@@ -1304,6 +1304,7 @@ begin
            Pragma_Check_Policy                   |
            Pragma_Compile_Time_Error             |
            Pragma_Compile_Time_Warning           |
+           Pragma_Constant_After_Elaboration     |
            Pragma_Contract_Cases                 |
            Pragma_Convention_Identifier          |
            Pragma_CPP_Class                      |

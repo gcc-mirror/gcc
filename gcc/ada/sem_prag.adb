@@ -200,9 +200,17 @@ package body Sem_Prag is
    --  context denoted by Context. If this is the case, emit an error.
 
    procedure Duplication_Error (Prag : Node_Id; Prev : Node_Id);
-   --  Subsidiary to routines Find_Related_Package_Or_Body and
-   --  Find_Related_Subprogram_Or_Body. Emit an error on pragma Prag that
-   --  duplicates previous pragma Prev.
+   --  Subsidiary to all Find_Related_xxx routines. Emit an error on pragma
+   --  Prag that duplicates previous pragma Prev.
+
+   function Find_Related_Context
+     (Prag      : Node_Id;
+      Do_Checks : Boolean := False) return Node_Id;
+   --  Subsidiaty to the analysis of pragmas Constant_After_Elaboration and
+   --  Part_Of. Find the first source declaration or statement found while
+   --  traversing the previous node chain starting from pragma Prag. If flag
+   --  Do_Checks is set, the routine reports duplicate pragmas. The routine
+   --  returns Empty when reaching the start of the node chain.
 
    function Get_Base_Subprogram (Def_Id : Entity_Id) return Entity_Id;
    --  If Def_Id refers to a renamed subprogram, then the base subprogram (the
@@ -12134,6 +12142,88 @@ package body Sem_Prag is
             end if;
          end Component_AlignmentP;
 
+         --------------------------------
+         -- Constant_After_Elaboration --
+         --------------------------------
+
+         --  pragma Constant_After_Elaboration [ (boolean_EXPRESSION) ];
+
+         when Pragma_Constant_After_Elaboration => Constant_After_Elaboration :
+         declare
+            Expr     : Node_Id;
+            Obj_Decl : Node_Id;
+            Obj_Id   : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_At_Most_N_Arguments (1);
+
+            Obj_Decl := Find_Related_Context (N, Do_Checks => True);
+
+            --  Object declaration
+
+            if Nkind (Obj_Decl) = N_Object_Declaration then
+               null;
+
+            --  Otherwise the pragma is associated with an illegal construct
+
+            else
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Obj_Id := Defining_Entity (Obj_Decl);
+
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Pragma_As_Ghost (N, Obj_Id);
+
+            --  The object declaration must be a library-level variable with
+            --  an initialization expression. The expression must depend on
+            --  a variable, parameter, or another constant_after_elaboration,
+            --  but the compiler cannot detect this property, as this requires
+            --  full flow analysis (SPARK RM 3.3.1).
+
+            if Ekind (Obj_Id) = E_Variable then
+               if not Is_Library_Level_Entity (Obj_Id) then
+                  Error_Pragma
+                    ("pragma % must apply to a library level variable");
+                  return;
+
+               elsif not Has_Init_Expression (Obj_Decl) then
+                  Error_Pragma
+                    ("pragma % must apply to a variable with initialization "
+                     & "expression");
+               end if;
+
+            --  Otherwise the pragma applies to a constant, which is illegal
+
+            else
+               Error_Pragma ("pragma % must apply to a variable declaration");
+               return;
+            end if;
+
+            --  Analyze the Boolean expression (if any)
+
+            if Present (Arg1) then
+               Expr := Get_Pragma_Arg (Arg1);
+
+               Analyze_And_Resolve (Expr, Standard_Boolean);
+
+               if not Is_OK_Static_Expression (Expr) then
+                  Error_Pragma_Arg
+                    ("expression of pragma % must be static", Expr);
+                  return;
+               end if;
+            end if;
+
+            --  Chain the pragma on the contract for completeness
+
+            Add_Contract_Item (N, Obj_Id);
+         end Constant_After_Elaboration;
+
          --------------------
          -- Contract_Cases --
          --------------------
@@ -17394,45 +17484,24 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_Arg_Count (1);
 
-            --  Ensure the proper placement of the pragma. Part_Of must appear
-            --  on an object declaration or a package instantiation.
+            Stmt := Find_Related_Context (N, Do_Checks => True);
 
-            Stmt := Prev (N);
-            while Present (Stmt) loop
+            --  Object declaration
 
-               --  Skip prior pragmas, but check for duplicates
+            if Nkind (Stmt) = N_Object_Declaration then
+               null;
 
-               if Nkind (Stmt) = N_Pragma then
-                  if Pragma_Name (Stmt) = Pname then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_Sloc   := Sloc (Stmt);
-                     Error_Msg_N ("pragma% duplicates pragma declared#", N);
-                  end if;
+            --  Package instantiation
 
-               --  Skip internally generated code
+            elsif Nkind (Stmt) = N_Package_Instantiation then
+               null;
 
-               elsif not Comes_From_Source (Stmt) then
-                  null;
+            --  Otherwise the pragma is associated with an illegal construct
 
-               --  The pragma applies to an object declaration (possibly a
-               --  variable) or a package instantiation. Stop the traversal
-               --  and continue the analysis.
-
-               elsif Nkind_In (Stmt, N_Object_Declaration,
-                                     N_Package_Instantiation)
-               then
-                  exit;
-
-               --  The pragma does not apply to a legal construct, issue an
-               --  error and stop the analysis.
-
-               else
-                  Pragma_Misplaced;
-                  return;
-               end if;
-
-               Stmt := Prev (Stmt);
-            end loop;
+            else
+               Pragma_Misplaced;
+               return;
+            end if;
 
             --  Extract the entity of the related object declaration or package
             --  instantiation. In the case of the instantiation, use the entity
@@ -25680,6 +25749,46 @@ package body Sem_Prag is
       end if;
    end Duplication_Error;
 
+   --------------------------
+   -- Find_Related_Context --
+   --------------------------
+
+   function Find_Related_Context
+     (Prag      : Node_Id;
+      Do_Checks : Boolean := False) return Node_Id
+   is
+      Stmt : Node_Id;
+
+   begin
+      Stmt := Prev (Prag);
+      while Present (Stmt) loop
+
+         --  Skip prior pragmas, but check for duplicates
+
+         if Nkind (Stmt) = N_Pragma then
+            if Do_Checks and then Pragma_Name (Stmt) = Pragma_Name (Prag) then
+               Duplication_Error
+                 (Prag => Prag,
+                  Prev => Stmt);
+            end if;
+
+         --  Skip internally generated code
+
+         elsif not Comes_From_Source (Stmt) then
+            null;
+
+         --  Return the current source construct
+
+         else
+            return Stmt;
+         end if;
+
+         Prev (Stmt);
+      end loop;
+
+      return Empty;
+   end Find_Related_Context;
+
    ----------------------------------
    -- Find_Related_Package_Or_Body --
    ----------------------------------
@@ -26223,6 +26332,7 @@ package body Sem_Prag is
       Pragma_Complete_Representation        =>  0,
       Pragma_Complex_Representation         =>  0,
       Pragma_Component_Alignment            =>  0,
+      Pragma_Constant_After_Elaboration     =>  0,
       Pragma_Contract_Cases                 => -1,
       Pragma_Controlled                     =>  0,
       Pragma_Convention                     =>  0,

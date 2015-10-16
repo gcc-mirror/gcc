@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -522,7 +522,13 @@ package body Prj.PP is
                   if Project_Of_Renamed_Package_Of (Node, In_Tree) /=
                        Empty_Node
                   then
-                     Write_String (" renames ", Indent);
+                     if First_Declarative_Item_Of (Node, In_Tree) = Empty_Node
+                     then
+                        Write_String (" renames ", Indent);
+                     else
+                        Write_String (" extends ", Indent);
+                     end if;
+
                      Output_Name
                        (Name_Of
                           (Project_Of_Renamed_Package_Of (Node, In_Tree),
@@ -530,6 +536,13 @@ package body Prj.PP is
                         Indent);
                      Write_String (".", Indent);
                      Output_Name (Name_Of (Node, In_Tree), Indent);
+                  end if;
+
+                  if Project_Of_Renamed_Package_Of (Node, In_Tree) /=
+                      Empty_Node
+                    and then
+                     First_Declarative_Item_Of (Node, In_Tree) = Empty_Node
+                  then
                      Write_String (";", Indent);
                      Write_End_Of_Line_Comment (Node);
                      Print (First_Comment_After_End (Node, In_Tree), Indent);
