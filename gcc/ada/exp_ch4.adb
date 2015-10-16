@@ -5806,9 +5806,7 @@ package body Exp_Ch4 is
             if Is_Tagged_Type (Typ) then
 
                --  No expansion will be performed for VM targets, as the VM
-               --  back-ends will handle the membership tests directly (tags
-               --  are not explicitly represented in VM objects, so the
-               --  normal tagged membership expansion is not what we want).
+               --  back-ends will handle the membership tests directly.
 
                if Tagged_Type_Expansion then
                   Tagged_Membership (N, SCIL_Node, New_N);
@@ -6067,9 +6065,7 @@ package body Exp_Ch4 is
 
                         --  No expansion will be performed for VM targets, as
                         --  the VM back-ends will handle the membership tests
-                        --  directly (tags are not explicitly represented in
-                        --  objects, so the normal tagged membership
-                        --  expansion is not what we want).
+                        --  directly.
 
                         if Tagged_Type_Expansion then
 

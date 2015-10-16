@@ -693,9 +693,7 @@ package body Ada.Text_IO is
       Item : out String;
       Last : out Natural) is separate;
    --  The implementation of Ada.Text_IO.Get_Line is split into a subunit so
-   --  that different implementations can be used on different systems. In
-   --  particular the standard implementation uses low level stuff that is
-   --  not appropriate for the VMs.
+   --  that different implementations can be used on different systems.
 
    procedure Get_Line
      (Item : out String;

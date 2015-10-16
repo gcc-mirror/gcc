@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1068,8 +1068,12 @@ package body System.Task_Primitives.Operations is
    -- Monotonic_Clock --
    ---------------------
 
-   function Monotonic_Clock return Duration
-     renames System.OS_Primitives.Monotonic_Clock;
+   function Monotonic_Clock return Duration is
+      function Internal_Clock return Duration;
+      pragma Import (Ada, Internal_Clock, "__gnat_monotonic_clock");
+   begin
+      return Internal_Clock;
+   end Monotonic_Clock;
 
    -------------------
    -- RT_Resolution --

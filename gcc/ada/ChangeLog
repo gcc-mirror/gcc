@@ -1,3 +1,17 @@
+2015-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osprim-mingw.adb, s-osprim-x32.adb, s-taprop-mingw.adb,
+	s-taprop-posix.adb (Monotonic_Clock): Removed, not used.
+	Remove remaining references to OS_Primitives.Monotonic_Clock.
+	Keep it only on windows which is a special case.
+
+2015-10-16  Javier Miranda  <miranda@adacore.com>
+
+	* a-textio.adb (Get_Line): Fix documentation.
+	* einfo.ads (Interface_Name): Fix documentation.
+	* exp_aggr.adb (Backend_Processing_Possible): Fix documentation.
+	* exp_ch4.adb (Expand_N_In): Fix documentation.
+
 2015-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* inline.adb (Subp_Info): Remove Listed component.
