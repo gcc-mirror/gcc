@@ -5913,7 +5913,13 @@ package body Sem_Ch3 is
 
       Mark_Rewrite_Insertion (Comp);
 
-      if Nkind_In (N, N_Object_Declaration, N_Access_Function_Definition) then
+      if Nkind_In (N, N_Object_Declaration, N_Access_Function_Definition)
+        or else (Nkind (Parent (N)) = N_Full_Type_Declaration
+                  and then not Is_Type (Current_Scope))
+      then
+
+         --  Declaration can be analyzed in the current scope.
+
          Analyze (Decl);
 
       else

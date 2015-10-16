@@ -2346,9 +2346,9 @@ package body Sem_Util is
          return Id;
       end Get_Function_Id;
 
-      ---------------------------
-      -- Preanalyze_Expression --
-      ---------------------------
+      -------------------------------
+      -- Preanalyze_Without_Errors --
+      -------------------------------
 
       procedure Preanalyze_Without_Errors (N : Node_Id) is
          Status : constant Boolean := Get_Ignore_Errors;
