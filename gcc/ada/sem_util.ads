@@ -56,6 +56,7 @@ package Sem_Util is
    --    Abstract_State
    --    Async_Readers
    --    Async_Writers
+   --    Constant_After_Elaboration
    --    Contract_Cases
    --    Depends
    --    Effective_Reads

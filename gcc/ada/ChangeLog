@@ -1,5 +1,39 @@
 2015-10-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* aspects.adb Add an entry for Constant_After_Elaboration in
+	table Canonical_Aspect.
+	* aspects.ads Add entries for Constant_After_Elaboration in
+	tables Aspect_Argument, Aspect_Delay, Aspect_Id, Aspect_Names
+	and Implementation_Defined_Aspect.
+	* par-prag.adb Pragma Constant_After_Elaboration does not require
+	special processing by the parser.
+	* sem_ch13.adb Add an entry for Constant_After_Elaboration
+	in table Sig_Flags.
+	(Analyze_Aspect_Specifications):
+	Add processing for aspect Constant_After_Elaboration.
+	(Check_Aspect_At_Freeze_Point): Aspect Constant_After_Elaboration
+	does not require special processing at freeze time.
+	* sem_prag.adb (Analyze_Pragma): Add processing for pragma
+	Constant_After_Elaboration. Use routine Find_Related_Context to
+	retrieve the context of pragma Part_Of.
+	(Duplication_Error): Update comment on usage.
+	(Find_Related_Context): New routine.
+	* sem_prag.ads Add an entry for Constant_After_Elaboration
+	in table Aspect_Specifying_Pragma.
+	(Analyze_Contract_Cases_In_Decl_Part): Update the comment on usage.
+	* sem_util.adb (Add_Contract_Item): Add processing for pragma
+	Constant_After_Elaboration.
+	* sem_util.ads (Add_Contract_Item): Update the comment on usage.
+	* snames.ads-tmpl Add new predefined name and aspect id for
+	Constant_After_Elaboration.
+
+2015-10-16  Vincent Celier  <celier@adacore.com>
+
+	* prj-pp.adb (Pretty_Print.Print): Correctly display extending
+	packages, instead of making them renamed packages.
+
+2015-10-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch12.adb (Analyze_Package_Instantiation):
 	Treat a missing SPARK_Mode annotation as having mode "Off".
 	(Analyze_Subprogram_Instantiation): Treat a missing SPARK_Mode
