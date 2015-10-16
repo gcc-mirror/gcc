@@ -435,7 +435,7 @@ DEF_TUNE (X86_TUNE_DOUBLE_WITH_ADD, "double_with_add", ~m_386)
    such as fsqrt, fprem, fsin, fcos, fsincos etc.
    Should be enabled for all targets that always has coprocesor.  */
 DEF_TUNE (X86_TUNE_ALWAYS_FANCY_MATH_387, "always_fancy_math_387",
-          ~(m_386 | m_486))
+          ~(m_386 | m_486 | m_LAKEMONT))
 
 /* X86_TUNE_UNROLL_STRLEN: Produce (quite lame) unrolled sequence for
    inline strlen.  This affects only -minline-all-stringops mode. By
