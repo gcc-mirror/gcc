@@ -411,6 +411,15 @@
      </para>
  </listitem></varlistentry>
 
+ <varlistentry><term><code>--enable-libstdcxx-filesystem-ts</code>[default]</term>
+ <listitem>
+    <para>Build <filename class="libraryfile">libstdc++fs.a</filename> as well
+      as the usual libstdc++ and libsupc++ libraries. This is enabled by
+      default on select POSIX targets where it is known to work and disabled
+      otherwise.
+    </para>
+ </listitem></varlistentry>
+
 </variablelist>
 
 </section>

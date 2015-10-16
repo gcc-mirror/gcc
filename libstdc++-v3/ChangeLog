@@ -1,3 +1,11 @@
+2015-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/configure.xml: Document
+	--enable-libstdcxx-filesystem-ts option.
+	* doc/xml/manual/status_cxx2014.xml: Document libstdc++fs.a.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 2015-10-16  Aurelio Remonda  <aurelio.remonda@tallertechnologies.com>
 
 	* testsuite/25_algorithms/random_shuffle/moveable.cc: Change variable
