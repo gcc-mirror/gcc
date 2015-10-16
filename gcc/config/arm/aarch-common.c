@@ -25,11 +25,6 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "tm_p.h"
-#include "rtl.h"
-#include "alias.h"
-#include "tree.h"
-#include "c-family/c-common.h"
 #include "rtl.h"
 #include "rtl-iter.h"
 

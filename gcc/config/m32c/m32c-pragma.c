@@ -22,12 +22,8 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
-#include "tree.h"
-#include "c-family/c-pragma.h"
 #include "c-family/c-common.h"
-#include "diagnostic-core.h"
-#include "cpplib.h"
+#include "c-family/c-pragma.h"
 #include "m32c-protos.h"
 
 /* Implements the "GCC memregs" pragma.  This pragma takes only an

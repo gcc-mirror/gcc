@@ -22,14 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
-#include "tree.h"
-#include "stringpool.h"
-#include "cpplib.h"
 #include "c-family/c-common.h"
+#include "stringpool.h"
 #include "c-family/c-pragma.h"
-#include "diagnostic-core.h"
-#include "tm_p.h"
 
 static void ia64_hpux_add_pragma_builtin (tree func);
 

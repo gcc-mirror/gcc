@@ -22,13 +22,8 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "cpplib.h"
-#include "alias.h"
-#include "tree.h"
-#include "c-family/c-common.h"
-#include "tm_p.h"
 #include "target.h"
+#include "c-family/c-common.h"
 
 #define builtin_define(TXT) cpp_define (pfile, TXT)
 #define builtin_assert(TXT) cpp_assert (pfile, TXT)

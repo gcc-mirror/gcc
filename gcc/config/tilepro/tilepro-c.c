@@ -22,10 +22,6 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "tm_p.h"
-#include "cpplib.h"
-#include "alias.h"
-#include "tree.h"
 #include "c-family/c-common.h"
 
 /* copy defines in c-cppbuiltin.c */

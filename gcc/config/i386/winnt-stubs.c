@@ -21,15 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "rtl.h"
-#include "regs.h"
-#include "output.h"
-#include "alias.h"
-#include "tree.h"
-#include "flags.h"
-#include "tm_p.h"
-#include "diagnostic-core.h"
 
 bool
 i386_pe_type_dllimport_p (tree)

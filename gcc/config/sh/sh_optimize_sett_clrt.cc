@@ -21,17 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "target.h"
 #include "rtl.h"
 #include "df.h"
 #include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "insn-config.h"
 #include "tree-pass.h"
-#include "target.h"
 
 #include <vector>
 #include <algorithm>

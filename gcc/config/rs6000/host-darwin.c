@@ -20,10 +20,10 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "diagnostic.h"
 #include <sys/ucontext.h>
 #include "hosthooks.h"
 #include "hosthooks-def.h"
-#include "diagnostic.h"
 #include "config/host-darwin.h"
 
 static void segv_crash_handler (int);

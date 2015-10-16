@@ -22,14 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "cpplib.h"
-#include "alias.h"
 #include "tree.h"
 #include "stringpool.h"
+#include "diagnostic-core.h"
 #include "attribs.h"
 #include "c-family/c-pragma.h"
-#include "diagnostic-core.h"
-#include "tm_p.h"
 
 #ifndef streq
 #define streq(a,b) (strcmp (a, b) == 0)
