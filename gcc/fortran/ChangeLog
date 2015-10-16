@@ -1,3 +1,15 @@
+2015-10-16  Richard Biener  <rguenther@suse.de>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_lib_function): Adjust
+	calls to build_addr.
+	(gfc_conv_intrinsic_mod): Likewise.
+	(gfc_conv_intrinsic_ctime): Likewise.
+	(gfc_conv_intrinsic_fdate): Likewise.
+	(gfc_conv_intrinsic_ttynam): Likewise.
+	(gfc_conv_intrinsic_minmax_char): Likewise.
+	(gfc_conv_intrinsic_index_scan_verify): Likewise.
+	(gfc_conv_intrinsic_trim): Likewise.
+
 2015-10-14  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* parse.c (decode_statement): Initialize M to MATCH_NO.

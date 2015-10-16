@@ -1,3 +1,19 @@
+2015-10-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-nested.h (build_addr): Adjust prototype.
+	* tree-nested.c (build_addr): Remove context argument and use
+	mark_addressable.
+	(get_static_chain): Adjust calls to build_addr.
+	(convert_nl_goto_reference): Likewise.
+	(convert_tramp_reference_op): Likewise.
+	(finalize_nesting_tree_1): Likewise.
+	* value-prof.c (gimple_ic): Likewise.
+	* gimple-low.c (lower_builtin_setjmp): Likewise.
+	* tree-parloops.c (take_address_of): Likewise.
+	(create_call_for_reduction_1): Likewise.
+	* tree-profile.c (gimple_gen_interval_profiler): Likewise.
+	(gimple_gen_ic_func_profiler): Likewise.
+
 2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf-gimple.c (func_checker::compare_operand): Compare only

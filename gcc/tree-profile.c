@@ -296,7 +296,7 @@ gimple_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base
 				   value->hdata.intvl.steps);
 
   ref_ptr = force_gimple_operand_gsi (&gsi,
-				      build_addr (ref, current_function_decl),
+				      build_addr (ref),
 				      true, NULL_TREE, true, GSI_SAME_STMT);
   val = prepare_instrumented_value (&gsi, value);
   call = gimple_build_call (tree_interval_profiler_fn, 4,
@@ -415,8 +415,7 @@ gimple_gen_ic_func_profiler (void)
 					 (ENTRY_BLOCK_PTR_FOR_FN (cfun))));
 
   cur_func = force_gimple_operand_gsi (&gsi,
-				       build_addr (current_function_decl,
-						   current_function_decl),
+				       build_addr (current_function_decl),
 				       true, NULL_TREE,
 				       true, GSI_SAME_STMT);
   tree_uid = build_int_cst
