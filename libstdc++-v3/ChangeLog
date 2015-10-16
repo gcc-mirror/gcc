@@ -1,3 +1,9 @@
+2015-10-16  Aurelio Remonda  <aurelio.remonda@tallertechnologies.com>
+
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Change variable
+	N from const int N = 200000 to const unsigned int N = 10000.
+	Delete useless fill_ascending function call.
+
 2015-10-15  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++-dg-test): Check for
