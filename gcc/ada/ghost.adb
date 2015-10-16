@@ -67,6 +67,12 @@ package body Ghost is
    --  Subsidiary to Check_Ghost_Context and Set_Ghost_Mode. Find the entity of
    --  a reference to a Ghost entity. Return Empty if there is no such entity.
 
+   function Is_Subject_To_Ghost (N : Node_Id) return Boolean;
+   --  Subsidiary to routines Is_OK_xxx and Set_Ghost_Mode. Determine whether
+   --  declaration or body N is subject to aspect or pragma Ghost. Use this
+   --  routine in cases where [source] pragma Ghost has not been analyzed yet,
+   --  but the context needs to establish the "ghostness" of N.
+
    procedure Propagate_Ignored_Ghost_Code (N : Node_Id);
    --  Subsidiary to routines Mark_xxx_As_Ghost and Set_Ghost_Mode_From_xxx.
    --  Signal all enclosing scopes that they now contain ignored Ghost code.
@@ -407,15 +413,27 @@ package body Ghost is
 
             --  Special cases
 
-            --  An if statement is a suitable context for a Ghost entity if it
-            --  is the byproduct of assertion expression expansion.
+            elsif Nkind (Stmt) = N_If_Statement then
 
-            elsif Nkind (Stmt) = N_If_Statement
-              and then Nkind (Original_Node (Stmt)) = N_Pragma
-              and then Assertion_Expression_Pragma
-                         (Get_Pragma_Id (Original_Node (Stmt)))
-            then
-               return True;
+               --  An if statement is a suitable context for a Ghost entity if
+               --  it is the byproduct of assertion expression expansion. Note
+               --  that the assertion expression may not be related to a Ghost
+               --  entity, but it may still contain references to Ghost
+               --  entities.
+
+               if Nkind (Original_Node (Stmt)) = N_Pragma
+                 and then Assertion_Expression_Pragma
+                            (Get_Pragma_Id (Original_Node (Stmt)))
+               then
+                  return True;
+
+               --  The expansion of pragma Contract_Cases produces various if
+               --  statements to evaluate all case guards. This is a suitable
+               --  context as Contract_Cases is an assertion expression.
+
+               elsif In_Assertion_Expr > 0 then
+                  return True;
+               end if;
             end if;
 
             return False;
@@ -517,12 +535,10 @@ package body Ghost is
          Check_Ghost_Policy (Ghost_Id, Ghost_Ref);
 
       --  Otherwise the Ghost entity appears in a non-Ghost context and affects
-      --  its behavior or value.
+      --  its behavior or value (SPARK RM 6.9(11,12)).
 
       else
-         Error_Msg_N
-           ("ghost entity cannot appear in this context (SPARK RM 6.9(11))",
-            Ghost_Ref);
+         Error_Msg_N ("ghost entity cannot appear in this context", Ghost_Ref);
       end if;
    end Check_Ghost_Context;
 
@@ -701,8 +717,8 @@ package body Ghost is
             Expr := Get_Pragma_Arg (Expr);
          end if;
 
-         --  Determine whether the expression of the aspect is static and
-         --  denotes True.
+         --  Determine whether the expression of the aspect or pragma is static
+         --  and denotes True.
 
          if Present (Expr) then
             Preanalyze_And_Resolve (Expr);

@@ -4917,20 +4917,17 @@ package body Exp_Ch6 is
    ---------------------------------------
 
    procedure Expand_N_Procedure_Call_Statement (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    begin
-      --  The procedure call may be Ghost if the name is Ghost. Set the mode
-      --  now to ensure that any nodes generated during expansion are properly
-      --  flagged as ignored Ghost.
+      --  The procedure call is Ghost when the name is Ghost. Set the mode now
+      --  to ensure that any nodes generated during expansion are properly set
+      --  as Ghost.
 
       Set_Ghost_Mode (N);
+
       Expand_Call (N);
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Procedure_Call_Statement;
 
    --------------------------------------
@@ -5005,10 +5002,9 @@ package body Exp_Ch6 is
    --  Wrap thread body
 
    procedure Expand_N_Subprogram_Body (N : Node_Id) is
-      GM       : constant Ghost_Mode_Type := Ghost_Mode;
-      Loc      : constant Source_Ptr      := Sloc (N);
-      HSS      : constant Node_Id         := Handled_Statement_Sequence (N);
-      Body_Id  : Entity_Id;
+      Body_Id  : constant Entity_Id  := Defining_Entity (N);
+      HSS      : constant Node_Id    := Handled_Statement_Sequence (N);
+      Loc      : constant Source_Ptr := Sloc (N);
       Except_H : Node_Id;
       L        : List_Id;
       Spec_Id  : Entity_Id;
@@ -5018,9 +5014,6 @@ package body Exp_Ch6 is
       --  statement is not already a return or a goto statement. Note that
       --  the latter test is not critical, it does not matter if we add a few
       --  extra returns, since they get eliminated anyway later on.
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
 
       ----------------
       -- Add_Return --
@@ -5094,23 +5087,25 @@ package body Exp_Ch6 is
          end if;
       end Add_Return;
 
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
+      --  Local varaibles
 
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    --  Start of processing for Expand_N_Subprogram_Body
 
    begin
-      --  The subprogram body may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  expansion are flagged as ignored Ghost.
+      if Present (Corresponding_Spec (N)) then
+         Spec_Id := Corresponding_Spec (N);
+      else
+         Spec_Id := Body_Id;
+      end if;
 
-      Set_Ghost_Mode (N);
+      --  The subprogram body is Ghost when it is stand alone and subject to
+      --  pragma Ghost or the corresponding spec is Ghost. To accomodate both
+      --  cases, set the mode now to ensure that any nodes generated during
+      --  expansion are marked as Ghost.
+
+      Set_Ghost_Mode (N, Spec_Id);
 
       --  Set L to either the list of declarations if present, or to the list
       --  of statements if no declarations are present. This is used to insert
@@ -5162,16 +5157,6 @@ package body Exp_Ch6 is
               Make_Pop_Program_Error_Label     (LL),
               Make_Pop_Storage_Error_Label     (LL)));
          end;
-      end if;
-
-      --  Find entity for subprogram
-
-      Body_Id := Defining_Entity (N);
-
-      if Present (Corresponding_Spec (N)) then
-         Spec_Id := Corresponding_Spec (N);
-      else
-         Spec_Id := Body_Id;
       end if;
 
       --  Need poll on entry to subprogram if polling enabled. We only do this
@@ -5288,7 +5273,7 @@ package body Exp_Ch6 is
               Make_Handled_Sequence_Of_Statements (Loc,
                 Statements => New_List (Make_Null_Statement (Loc))));
 
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
          end if;
       end if;
@@ -5424,7 +5409,7 @@ package body Exp_Ch6 is
          Unest_Bodies.Append ((Spec_Id, N));
       end if;
 
-      Restore_Globals;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Subprogram_Body;
 
    -----------------------------------
@@ -5451,21 +5436,14 @@ package body Exp_Ch6 is
    --  If the declaration is for a null procedure, emit null body
 
    procedure Expand_N_Subprogram_Declaration (N : Node_Id) is
-      Loc       : constant Source_Ptr      := Sloc (N);
-      GM        : constant Ghost_Mode_Type := Ghost_Mode;
-      Subp      : constant Entity_Id       := Defining_Entity (N);
-      Scop      : constant Entity_Id       := Scope (Subp);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Subp      : constant Entity_Id  := Defining_Entity (N);
+      Scop      : constant Entity_Id  := Scope (Subp);
       Prot_Bod  : Node_Id;
       Prot_Decl : Node_Id;
       Prot_Id   : Entity_Id;
 
    begin
-      --  The subprogram declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  expansion are flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       --  In SPARK, subprogram declarations are only allowed in package
       --  specifications.
 
@@ -5566,11 +5544,6 @@ package body Exp_Ch6 is
             Set_Is_Inlined (Subp, False);
          end;
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Expand_N_Subprogram_Declaration;
 
    --------------------------------

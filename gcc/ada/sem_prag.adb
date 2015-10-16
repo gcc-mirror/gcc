@@ -390,11 +390,11 @@ package body Sem_Prag is
 
       --  Local variables
 
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
       Subp_Decl : constant Node_Id   := Find_Related_Subprogram_Or_Body (N);
       Spec_Id   : constant Entity_Id := Corresponding_Spec_Of (Subp_Decl);
       CCases    : constant Node_Id   := Expression (Get_Argument (N, Spec_Id));
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
       CCase         : Node_Id;
       Restore_Scope : Boolean := False;
@@ -454,10 +454,7 @@ package body Sem_Prag is
          Error_Msg_N ("wrong syntax for constract cases", N);
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Contract_Cases_In_Decl_Part;
 
    ----------------------------------
@@ -1715,10 +1712,11 @@ package body Sem_Prag is
      (N        : Node_Id;
       Expr_Val : out Boolean)
    is
-      GM     : constant Ghost_Mode_Type := Ghost_Mode;
       Arg1   : constant Node_Id   := First (Pragma_Argument_Associations (N));
-      Obj_Id : constant Entity_Id := Entity (Get_Pragma_Arg (Arg1));
       Expr   : constant Node_Id   := Get_Pragma_Arg (Next (Arg1));
+      Obj_Id : constant Entity_Id := Entity (Get_Pragma_Arg (Arg1));
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    begin
       --  Set the Ghost mode in effect from the pragma. Due to the delayed
@@ -1758,10 +1756,7 @@ package body Sem_Prag is
          end if;
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_External_Property_In_Decl_Part;
 
    ---------------------------------
@@ -2264,10 +2259,11 @@ package body Sem_Prag is
    --------------------------------------------
 
    procedure Analyze_Initial_Condition_In_Decl_Part (N : Node_Id) is
-      GM        : constant Ghost_Mode_Type := Ghost_Mode;
       Pack_Decl : constant Node_Id   := Find_Related_Package_Or_Body (N);
       Pack_Id   : constant Entity_Id := Defining_Entity (Pack_Decl);
       Expr      : constant Node_Id   := Expression (Get_Argument (N, Pack_Id));
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    begin
       --  Set the Ghost mode in effect from the pragma. Due to the delayed
@@ -2283,11 +2279,7 @@ package body Sem_Prag is
       --  is not desired at this point.
 
       Preanalyze_Assert_Expression (Expr, Standard_Boolean);
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Initial_Condition_In_Decl_Part;
 
    --------------------------------------
@@ -10808,18 +10800,12 @@ package body Sem_Prag is
 
             --  Local variables
 
-            GM       : constant Ghost_Mode_Type := Ghost_Mode;
             Expr     : Node_Id;
             New_Args : List_Id;
 
          --  Start of processing for Assert
 
          begin
-            --  Ensure that analysis and expansion produce Ghost nodes if the
-            --  pragma itself is Ghost.
-
-            Set_Ghost_Mode (N);
-
             --  Assert is an Ada 2005 RM-defined pragma
 
             if Prag_Id = Pragma_Assert then
@@ -10892,11 +10878,6 @@ package body Sem_Prag is
                 Pragma_Argument_Associations => New_Args));
 
             Analyze (N);
-
-            --  Restore the original Ghost mode once analysis and expansion
-            --  have taken place.
-
-            Ghost_Mode := GM;
          end Assert;
 
          ----------------------
@@ -11551,15 +11532,17 @@ package body Sem_Prag is
          --  allowed, since they have special meaning for Check_Policy.
 
          when Pragma_Check => Check : declare
-            GM    : constant Ghost_Mode_Type := Ghost_Mode;
             Cname : Name_Id;
             Eloc  : Source_Ptr;
             Expr  : Node_Id;
             Str   : Node_Id;
 
+            Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
          begin
-            --  Ensure that analysis and expansion produce Ghost nodes if the
-            --  pragma itself is Ghost.
+            --  Pragma Check is Ghost when it applies to a Ghost entity. Set
+            --  the mode now to ensure that any nodes generated during analysis
+            --  and expansion are marked as Ghost.
 
             Set_Ghost_Mode (N);
 
@@ -11758,10 +11741,7 @@ package body Sem_Prag is
                In_Assertion_Expr := In_Assertion_Expr - 1;
             end if;
 
-            --  Restore the original Ghost mode once analysis and expansion
-            --  have taken place.
-
-            Ghost_Mode := GM;
+            Ghost_Mode := Save_Ghost_Mode;
          end Check;
 
          --------------------------
@@ -15699,7 +15679,6 @@ package body Sem_Prag is
          --     [,[Message =>] String_Expression]);
 
          when Pragma_Invariant => Invariant : declare
-            GM      : constant Ghost_Mode_Type := Ghost_Mode;
             Discard : Boolean;
             Typ     : Entity_Id;
             Type_Id : Node_Id;
@@ -15793,11 +15772,6 @@ package body Sem_Prag is
             if Class_Present (N) then
                Set_Has_Inheritable_Invariants (Typ);
             end if;
-
-            --  Restore the original Ghost mode once analysis and expansion
-            --  have taken place.
-
-            Ghost_Mode := GM;
          end Invariant;
 
          ----------------------
@@ -22450,10 +22424,11 @@ package body Sem_Prag is
 
       --  Local variables
 
-      GM        : constant Ghost_Mode_Type := Ghost_Mode;
       Subp_Decl : constant Node_Id   := Find_Related_Subprogram_Or_Body (N);
       Spec_Id   : constant Entity_Id := Corresponding_Spec_Of (Subp_Decl);
       Expr      : constant Node_Id   := Expression (Get_Argument (N, Spec_Id));
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
       Restore_Scope : Boolean := False;
 
@@ -22500,11 +22475,7 @@ package body Sem_Prag is
       --  subprogram subject to pragma Inline_Always.
 
       Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Pre_Post_Condition_In_Decl_Part;
 
    ------------------------------------------

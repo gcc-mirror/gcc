@@ -7763,11 +7763,12 @@ package body Sem_Ch13 is
    function Build_Invariant_Procedure_Declaration
      (Typ : Entity_Id) return Node_Id
    is
-      Loc    : constant Source_Ptr      := Sloc (Typ);
-      GM     : constant Ghost_Mode_Type := Ghost_Mode;
+      Loc    : constant Source_Ptr := Sloc (Typ);
       Decl   : Node_Id;
       Obj_Id : Entity_Id;
       SId    : Entity_Id;
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    begin
       --  Check for duplicate definitions
@@ -7776,9 +7777,8 @@ package body Sem_Ch13 is
          return Empty;
       end if;
 
-      --  The related type may be subject to pragma Ghost with policy Ignore.
-      --  Set the mode now to ensure that the predicate functions are properly
-      --  flagged as ignored Ghost.
+      --  The related type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the predicate functions are properly marked as Ghost.
 
       Set_Ghost_Mode_From_Entity (Typ);
 
@@ -7810,10 +7810,7 @@ package body Sem_Ch13 is
                 Defining_Identifier => Obj_Id,
                 Parameter_Type      => New_Occurrence_Of (Typ, Loc)))));
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
 
       return Decl;
    end Build_Invariant_Procedure_Declaration;
@@ -8563,7 +8560,7 @@ package body Sem_Ch13 is
 
       --  Local variables
 
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    --  Start of processing for Build_Predicate_Functions
 
@@ -8576,9 +8573,8 @@ package body Sem_Ch13 is
          return;
       end if;
 
-      --  The related type may be subject to pragma Ghost with policy Ignore.
-      --  Set the mode now to ensure that the predicate functions are properly
-      --  flagged as ignored Ghost.
+      --  The related type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the predicate functions are properly marked as Ghost.
 
       Set_Ghost_Mode_From_Entity (Typ);
 
@@ -8927,10 +8923,7 @@ package body Sem_Ch13 is
          end;
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Build_Predicate_Functions;
 
    -----------------------------------------

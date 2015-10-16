@@ -209,18 +209,11 @@ package body Sem_Ch6 is
    ---------------------------------------------
 
    procedure Analyze_Abstract_Subprogram_Declaration (N : Node_Id) is
-      GM      : constant Ghost_Mode_Type := Ghost_Mode;
-      Scop    : constant Entity_Id       := Current_Scope;
-      Subp_Id : constant Entity_Id       :=
+      Scop    : constant Entity_Id := Current_Scope;
+      Subp_Id : constant Entity_Id :=
                   Analyze_Subprogram_Specification (Specification (N));
 
    begin
-      --  The abstract subprogram declaration may be subject to pragma Ghost
-      --  with policy Ignore. Set the mode now to ensure that any nodes
-      --  generated during analysis and expansion are properly flagged as
-      --  ignored Ghost.
-
-      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("abstract subprogram is not allowed", N);
 
       Generate_Definition (Subp_Id);
@@ -261,11 +254,6 @@ package body Sem_Ch6 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Subp_Id);
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Abstract_Subprogram_Declaration;
 
    ---------------------------------
@@ -1547,14 +1535,9 @@ package body Sem_Ch6 is
    ----------------------------
 
    procedure Analyze_Procedure_Call (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
       procedure Analyze_Call_And_Resolve;
       --  Do Analyze and Resolve calls for procedure call
       --  At end, check illegal order dependence.
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
 
       ------------------------------
       -- Analyze_Call_And_Resolve --
@@ -1570,15 +1553,6 @@ package body Sem_Ch6 is
          end if;
       end Analyze_Call_And_Resolve;
 
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
       --  Local variables
 
       Actuals : constant List_Id    := Parameter_Associations (N);
@@ -1586,6 +1560,8 @@ package body Sem_Ch6 is
       P       : constant Node_Id    := Name (N);
       Actual  : Node_Id;
       New_N   : Node_Id;
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    --  Start of processing for Analyze_Procedure_Call
 
@@ -1618,10 +1594,9 @@ package body Sem_Ch6 is
          return;
       end if;
 
-      --  The name of the procedure call may reference an entity subject to
-      --  pragma Ghost with policy Ignore. Set the mode now to ensure that any
-      --  nodes generated during analysis and expansion are properly flagged as
-      --  ignored Ghost.
+      --  A procedure call is Ghost when its name denotes a Ghost procedure.
+      --  Set the mode now to ensure that any nodes generated during analysis
+      --  and expansion are properly marked as Ghost.
 
       Set_Ghost_Mode (N);
 
@@ -1657,7 +1632,7 @@ package body Sem_Ch6 is
         and then Is_Record_Type (Etype (Entity (P)))
         and then Remote_AST_I_Dereference (P)
       then
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       elsif Is_Entity_Name (P)
@@ -1794,7 +1769,7 @@ package body Sem_Ch6 is
          Error_Msg_N ("invalid procedure or entry call", N);
       end if;
 
-      Restore_Globals;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Procedure_Call;
 
    ------------------------------
@@ -2275,7 +2250,6 @@ package body Sem_Ch6 is
    --  the subprogram, or to perform conformance checks.
 
    procedure Analyze_Subprogram_Body_Helper (N : Node_Id) is
-      GM           : constant Ghost_Mode_Type := Ghost_Mode;
       Loc          : constant Source_Ptr := Sloc (N);
       Body_Spec    : Node_Id             := Specification (N);
       Body_Id      : Entity_Id           := Defining_Entity (Body_Spec);
@@ -2350,9 +2324,6 @@ package body Sem_Ch6 is
         (Subp_Id : Entity_Id) return Boolean;
       --  Determine whether subprogram Subp_Id is a primitive of a concurrent
       --  type that implements an interface and has a private view.
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
 
       procedure Set_Trivial_Subprogram (N : Node_Id);
       --  Sets the Is_Trivial_Subprogram flag in both spec and body of the
@@ -2930,15 +2901,6 @@ package body Sem_Ch6 is
          return False;
       end Is_Private_Concurrent_Primitive;
 
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
       ----------------------------
       -- Set_Trivial_Subprogram --
       ----------------------------
@@ -3046,6 +3008,10 @@ package body Sem_Ch6 is
          end if;
       end Verify_Overriding_Indicator;
 
+      --  Local variables
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
    --  Start of processing for Analyze_Subprogram_Body_Helper
 
    begin
@@ -3065,10 +3031,10 @@ package body Sem_Ch6 is
          if Is_Generic_Subprogram (Prev_Id) then
             Spec_Id := Prev_Id;
 
-            --  The corresponding spec may be subject to pragma Ghost with
-            --  policy Ignore. Set the mode now to ensure that any nodes
-            --  generated during analysis and expansion are properly flagged
-            --  as ignored Ghost.
+            --  A subprogram body is Ghost when it is stand alone and subject
+            --  to pragma Ghost or when the corresponding spec is Ghost. Set
+            --  the mode now to ensure that any nodes generated during analysis
+            --  and expansion are properly marked as Ghost.
 
             Set_Ghost_Mode          (N, Spec_Id);
             Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
@@ -3081,7 +3047,7 @@ package body Sem_Ch6 is
                Check_Missing_Return;
             end if;
 
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
 
          else
@@ -3089,7 +3055,7 @@ package body Sem_Ch6 is
             --  enter name will post error.
 
             Enter_Name (Body_Id);
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
          end if;
 
@@ -3100,7 +3066,7 @@ package body Sem_Ch6 is
       --  analysis.
 
       elsif Prev_Id = Body_Id and then Has_Completion (Body_Id) then
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       else
@@ -3112,20 +3078,20 @@ package body Sem_Ch6 is
             if Is_Private_Concurrent_Primitive (Body_Id) then
                Spec_Id := Disambiguate_Spec;
 
-               --  The corresponding spec may be subject to pragma Ghost with
-               --  policy Ignore. Set the mode now to ensure that any nodes
-               --  generated during analysis and expansion are properly flagged
-               --  as ignored Ghost.
+               --  A subprogram body is Ghost when it is stand alone and
+               --  subject to pragma Ghost or when the corresponding spec is
+               --  Ghost. Set the mode now to ensure that any nodes generated
+               --  during analysis and expansion are properly marked as Ghost.
 
                Set_Ghost_Mode (N, Spec_Id);
 
             else
                Spec_Id := Find_Corresponding_Spec (N);
 
-               --  The corresponding spec may be subject to pragma Ghost with
-               --  policy Ignore. Set the mode now to ensure that any nodes
-               --  generated during analysis and expansion are properly flagged
-               --  as ignored Ghost.
+               --  A subprogram body is Ghost when it is stand alone and
+               --  subject to pragma Ghost or when the corresponding spec is
+               --  Ghost. Set the mode now to ensure that any nodes generated
+               --  during analysis and expansion are properly marked as Ghost.
 
                Set_Ghost_Mode (N, Spec_Id);
 
@@ -3179,7 +3145,7 @@ package body Sem_Ch6 is
             --  If this is a duplicate body, no point in analyzing it
 
             if Error_Posted (N) then
-               Restore_Globals;
+               Ghost_Mode := Save_Ghost_Mode;
                return;
             end if;
 
@@ -3212,10 +3178,10 @@ package body Sem_Ch6 is
          else
             Spec_Id := Corresponding_Spec (N);
 
-            --  The corresponding spec may be subject to pragma Ghost with
-            --  policy Ignore. Set the mode now to ensure that any nodes
-            --  generated during analysis and expansion are properly flagged
-            --  as ignored Ghost.
+            --  A subprogram body is Ghost when it is stand alone and subject
+            --  to pragma Ghost or when the corresponding spec is Ghost. Set
+            --  the mode now to ensure that any nodes generated during analysis
+            --  and expansion are properly marked as Ghost.
 
             Set_Ghost_Mode (N, Spec_Id);
          end if;
@@ -3292,7 +3258,7 @@ package body Sem_Ch6 is
 
          if Is_Abstract_Subprogram (Spec_Id) then
             Error_Msg_N ("an abstract subprogram cannot have a body", N);
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
 
          else
@@ -3362,7 +3328,7 @@ package body Sem_Ch6 is
             if not Conformant
               and then not Mode_Conformant (Body_Id, Spec_Id)
             then
-               Restore_Globals;
+               Ghost_Mode := Save_Ghost_Mode;
                return;
             end if;
          end if;
@@ -3569,7 +3535,7 @@ package body Sem_Ch6 is
             Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
          end if;
 
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -4034,7 +4000,7 @@ package body Sem_Ch6 is
          end if;
       end;
 
-      Restore_Globals;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Subprogram_Body_Helper;
 
    ---------------------------------
@@ -4139,37 +4105,13 @@ package body Sem_Ch6 is
    ------------------------------------
 
    procedure Analyze_Subprogram_Declaration (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
-
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
-      --  Local variables
-
       Scop       : constant Entity_Id := Current_Scope;
       Designator : Entity_Id;
 
       Is_Completion : Boolean;
       --  Indicates whether a null procedure declaration is a completion
 
-   --  Start of processing for Analyze_Subprogram_Declaration
-
    begin
-      --  The subprogram declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       --  Null procedures are not allowed in SPARK
 
       if Nkind (Specification (N)) = N_Procedure_Specification
@@ -4191,7 +4133,6 @@ package body Sem_Ch6 is
          --  The null procedure acts as a body, nothing further is needed
 
          if Is_Completion then
-            Restore_Globals;
             return;
          end if;
       end if;
@@ -4372,8 +4313,6 @@ package body Sem_Ch6 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Designator);
       end if;
-
-      Restore_Globals;
    end Analyze_Subprogram_Declaration;
 
    --------------------------------------

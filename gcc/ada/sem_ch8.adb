@@ -550,17 +550,10 @@ package body Sem_Ch8 is
    --  there is more than one element in the list.
 
    procedure Analyze_Exception_Renaming (N : Node_Id) is
-      GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Id  : constant Entity_Id       := Defining_Entity (N);
-      Nam : constant Node_Id         := Name (N);
+      Id  : constant Entity_Id := Defining_Entity (N);
+      Nam : constant Node_Id   := Name (N);
 
    begin
-      --  The exception renaming declaration may be subject to pragma Ghost
-      --  with policy Ignore. Set the mode now to ensure that any nodes
-      --  generated during analysis and expansion are properly flagged as
-      --  ignored Ghost.
-
-      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("exception renaming is not allowed", N);
 
       Enter_Name (Id);
@@ -595,11 +588,6 @@ package body Sem_Ch8 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Exception_Renaming;
 
    ---------------------------
@@ -669,8 +657,7 @@ package body Sem_Ch8 is
      (N : Node_Id;
       K : Entity_Kind)
    is
-      GM    : constant Ghost_Mode_Type := Ghost_Mode;
-      New_P : constant Entity_Id       := Defining_Entity (N);
+      New_P : constant Entity_Id := Defining_Entity (N);
       Old_P : Entity_Id;
 
       Inst  : Boolean := False;
@@ -681,11 +668,6 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  The generic renaming declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("generic renaming is not allowed", N);
 
       Generate_Definition (New_P);
@@ -756,11 +738,6 @@ package body Sem_Ch8 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, New_P);
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Generic_Renaming;
 
    -----------------------------
@@ -867,10 +844,6 @@ package body Sem_Ch8 is
          return False;
       end In_Generic_Scope;
 
-      --  Local variables
-
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
    --  Start of processing for Analyze_Object_Renaming
 
    begin
@@ -878,11 +851,6 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  The object renaming declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("object renaming is not allowed", N);
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
@@ -1394,11 +1362,6 @@ package body Sem_Ch8 is
       --  Deal with dimensions
 
       Analyze_Dimension (N);
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Object_Renaming;
 
    ------------------------------
@@ -1406,38 +1369,14 @@ package body Sem_Ch8 is
    ------------------------------
 
    procedure Analyze_Package_Renaming (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
-
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
-      --  Local variables
-
       New_P : constant Entity_Id := Defining_Entity (N);
       Old_P : Entity_Id;
       Spec  : Node_Id;
-
-   --  Start of processing for Analyze_Package_Renaming
 
    begin
       if Name (N) = Error then
          return;
       end if;
-
-      --  The package renaming declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
 
       --  Check for Text_IO special unit (we may be renaming a Text_IO child)
 
@@ -1538,7 +1477,6 @@ package body Sem_Ch8 is
          --  subtypes again, so they are compatible with types in their class.
 
          if not Is_Generic_Instance (Old_P) then
-            Restore_Globals;
             return;
          else
             Spec := Specification (Unit_Declaration_Node (Old_P));
@@ -1580,8 +1518,6 @@ package body Sem_Ch8 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, New_P);
       end if;
-
-      Restore_Globals;
    end Analyze_Package_Renaming;
 
    -------------------------------
@@ -2628,20 +2564,12 @@ package body Sem_Ch8 is
       --  defaulted formal subprogram when the actual for a related formal
       --  type is class-wide.
 
-      GM        : constant Ghost_Mode_Type := Ghost_Mode;
-      Inst_Node : Node_Id                  := Empty;
+      Inst_Node : Node_Id := Empty;
       New_S     : Entity_Id;
 
    --  Start of processing for Analyze_Subprogram_Renaming
 
    begin
-      --  The subprogram renaming declaration may be subject to pragma Ghost
-      --  with policy Ignore. Set the mode now to ensure that any nodes
-      --  generated during analysis and expansion are properly flagged as
-      --  ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       --  We must test for the attribute renaming case before the Analyze
       --  call because otherwise Sem_Attr will complain that the attribute
       --  is missing an argument when it is analyzed.
@@ -3559,11 +3487,6 @@ package body Sem_Ch8 is
             Analyze (N);
          end if;
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Subprogram_Renaming;
 
    -------------------------

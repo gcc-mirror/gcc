@@ -1,3 +1,139 @@
+2015-10-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Full_Type_Declaration): Do not capture,
+	set and restore the Ghost mode.
+	(Expand_N_Object_Declaration): Do not capture, set and restore the
+	Ghost mode.
+	(Freeze_Type): Redo the capture and restore of the Ghost mode.
+	(Restore_Globals): Removed.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Redo the capture
+	and restore of the Ghost mode.
+	(Restore_Globals): Removed.
+	* exp_ch6.adb (Expand_N_Procedure_Call_Statement):
+	Redo the capture and restore of the Ghost mode.
+	(Expand_N_Subprogram_Body): Redo the capture, set and restore
+	of the Ghost mode.
+	(Expand_N_Subprogram_Declaration): Do not
+	capture, set and restore the Ghost mode.
+	(Restore_Globals): Removed.
+	* exp_ch7.adb (Expand_N_Package_Body): Redo the capture, set
+	and restore of the Ghost mode.
+	(Expand_N_Package_Declaration): Do not capture, set and restore the
+	Ghost mode.
+	* exp_ch8.adb (Expand_N_Exception_Renaming_Declaration):
+	Redo the capture and restore of the Ghost mode.
+	(Expand_N_Object_Renaming_Declaration): Redo
+	the capture and restore of the Ghost mode.
+	(Expand_N_Package_Renaming_Declaration):
+	Redo the capture and restore of the Ghost mode.
+	(Expand_N_Subprogram_Renaming_Declaration): Redo the capture
+	and restore of the Ghost mode.
+	* exp_ch11.adb Remove with and use clauses for Ghost.
+	(Expand_N_Exception_Declaration): Do not capture, set and restore
+	the Ghost mode.
+	* exp_disp.adb (Make_DT): Redo the capture and restore of the
+	Ghost mode.
+	(Restore_Globals): Removed.
+	* exp_prag.adb (Expand_Pragma_Check): Do not capture, set
+	and restore the Ghost mode.
+	(Expand_Pragma_Contract_Cases):
+	Redo the capture and restore of the Ghost mode.  Preserve the
+	original context of contract cases by setting / resetting the
+	In_Assertion_Expr counter.
+	(Expand_Pragma_Initial_Condition):
+	Redo the capture and restore of the Ghost mode.
+	(Expand_Pragma_Loop_Variant): Redo the capture and restore of
+	the Ghost mode.
+	(Restore_Globals): Removed.
+	* exp_util.adb (Make_Predicate_Call): Redo the capture and
+	restore of the Ghost mode.
+	(Restore_Globals): Removed.
+	* freeze.adb (Freeze_Entity): Redo the capture and restore of
+	the Ghost mode.
+	(Restore_Globals): Removed.
+	* ghost.adb (Check_Ghost_Context): Remove the RM reference from
+	the error message.
+	(Is_OK_Statement): Account for statements
+	that appear in assertion expressions.
+	(Is_Subject_To_Ghost):
+	Moved from spec.
+	* ghost.ads (Is_Subject_To_Ghost): Moved to body.
+	* rtsfind.ads (Load_RTU): Redo the capture and restore of the
+	Ghost mode.
+	* sem.adb Add with and use clauses for Ghost.
+	(Analyze): Redo
+	the capture and restore of the Ghost mode. Set the Ghost mode
+	when analyzing a declaration.
+	(Do_Analyze): Redo the capture
+	and restore of the Ghost mode.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Do not capture, set
+	and restore the Ghost mode.
+	(Analyze_Incomplete_Type_Decl):
+	Do not capture, set and restore the Ghost mode.
+	(Analyze_Number_Declaration): Do not capture, set and restore the
+	Ghost mode.
+	(Analyze_Object_Declaration): Do not capture, set and
+	restore the Ghost mode.
+	(Analyze_Private_Extension_Declaration):
+	Do not capture, set and restore the Ghost mode.
+	(Analyze_Subtype_Declaration): Do not capture, set and restore
+	the Ghost mode.
+	(Restore_Globals): Removed.
+	* sem_ch5.adb (Analyze_Assignment): Redo the capture and restore
+	of the Ghost mode.
+	(Restore_Globals): Removed.
+	* sem_ch6.adb (Analyze_Abstract_Subprogram_Declaration):
+	Do not capture, set and restore the Ghost mode.
+	(Analyze_Procedure_Call): Redo the capture and restore of the
+	Ghost mode.
+	(Analyze_Subprogram_Body_Helper): Redo the capture
+	and restore of the Ghost mode.	(Analyze_Subprogram_Declaration):
+	Do not capture, set and restore the Ghost mode.
+	(Restore_Globals): Removed.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Redo the capture and
+	restore of the Ghost mode.
+	(Analyze_Package_Declaration):
+	Do not capture, set and restore the Ghost mode.
+	(Analyze_Private_Type_Declaration): Do not capture, set and
+	restore the Ghost mode.
+	(Restore_Globals): Removed.
+	* sem_ch8.adb (Analyze_Exception_Renaming): Do not capture,
+	set and restore the Ghost mode.
+	(Analyze_Generic_Renaming): Do not capture, set and restore the Ghost
+	mode.
+	(Analyze_Object_Renaming): Do not capture, set and restore the
+	Ghost mode.
+	(Analyze_Package_Renaming): Do not capture, set and restore the Ghost
+	mode.
+	(Analyze_Subprogram_Renaming): Do not capture, set and restore the
+	Ghost mode.
+	(Restore_Globals): Removed.
+	* sem_ch11.adb (Analyze_Exception_Declaration): Do not capture,
+	set and restore the Ghost mode.
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration):
+	Do not capture, set and restore the Ghost mode.
+	(Analyze_Generic_Subprogram_Declaration): Do not capture, set
+	and restore the Ghost mode.
+	* sem_ch13.adb (Build_Invariant_Procedure_Declaration): Redo
+	the capture and restore of the Ghost mode.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part):
+	Redo the capture and restore of the Ghost mode.
+	(Analyze_External_Property_In_Decl_Part):
+	Redo the capture and restore of the Ghost mode.
+	(Analyze_Initial_Condition_In_Decl_Part): Redo the
+	capture and restore of the Ghost mode.	(Analyze_Pragma):
+	Do not capture, set and restore the Ghost mode for Assert.
+	Redo the capture and restore of the Ghost mode for Check. Do
+	not capture and restore the Ghost mode for Invariant.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Redo the capture and
+	restore of the Ghost mode.
+	* sem_res.adb (Resolve): Capture, set and restore the Ghost mode
+	when resolving a declaration.
+	* sem_util.adb (Build_Default_Init_Cond_Procedure_Body):
+	Redo the capture and restore of the Ghost mode.
+	(Build_Default_Init_Cond_Procedure_Declaration): Redo the capture
+	and restore of the Ghost mode.
+
 2015-10-16  Bob Duff  <duff@adacore.com>
 
 	* debug.adb: Document -gnatdQ switch.

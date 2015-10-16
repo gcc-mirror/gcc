@@ -1314,7 +1314,6 @@ package body Sem_Util is
 
          --  Local variables
 
-         GM        : constant Ghost_Mode_Type := Ghost_Mode;
          Loc       : constant Source_Ptr := Sloc (Typ);
          Prag      : constant Node_Id    :=
                        Get_Pragma (Typ, Pragma_Default_Initial_Condition);
@@ -1323,6 +1322,8 @@ package body Sem_Util is
          Body_Decl : Node_Id;
          Expr      : Node_Id;
          Stmt      : Node_Id;
+
+         Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
       --  Start of processing for Build_Default_Init_Cond_Procedure_Body
 
@@ -1341,8 +1342,8 @@ package body Sem_Util is
             return;
          end if;
 
-         --  Ensure that the analysis and expansion produce Ghost nodes if the
-         --  type itself is Ghost.
+         --  The related type may be subject to pragma Ghost. Set the mode now
+         --  to ensure that the analysis and expansion produce Ghost nodes.
 
          Set_Ghost_Mode_From_Entity (Typ);
 
@@ -1412,11 +1413,7 @@ package body Sem_Util is
          Set_Corresponding_Spec (Body_Decl, Proc_Id);
 
          Insert_After_And_Analyze (Declaration_Node (Typ), Body_Decl);
-
-         --  Restore the original Ghost mode once analysis and expansion have
-         --  taken place.
-
-         Ghost_Mode := GM;
+         Ghost_Mode := Save_Ghost_Mode;
       end Build_Default_Init_Cond_Procedure_Body;
 
       --  Local variables
@@ -1465,10 +1462,12 @@ package body Sem_Util is
    ---------------------------------------------------
 
    procedure Build_Default_Init_Cond_Procedure_Declaration (Typ : Entity_Id) is
-      GM      : constant Ghost_Mode_Type := Ghost_Mode;
-      Loc     : constant Source_Ptr := Sloc (Typ);
-      Prag    : constant Node_Id    :=
+      Loc  : constant Source_Ptr := Sloc (Typ);
+      Prag : constant Node_Id    :=
                   Get_Pragma (Typ, Pragma_Default_Initial_Condition);
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
       Proc_Id : Entity_Id;
 
    begin
@@ -1485,8 +1484,8 @@ package body Sem_Util is
          return;
       end if;
 
-      --  Ensure that the analysis and expansion produce Ghost nodes if the
-      --  type itself is Ghost.
+      --  The related type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the analysis and expansion produce Ghost nodes.
 
       Set_Ghost_Mode_From_Entity (Typ);
 
@@ -1520,10 +1519,7 @@ package body Sem_Util is
                   Defining_Identifier => Make_Temporary (Loc, 'I'),
                   Parameter_Type      => New_Occurrence_Of (Typ, Loc))))));
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Build_Default_Init_Cond_Procedure_Declaration;
 
    ---------------------------
