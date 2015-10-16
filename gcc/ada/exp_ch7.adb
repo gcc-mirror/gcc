@@ -1109,7 +1109,7 @@ package body Exp_Ch7 is
       Finalizer_Decls : List_Id := No_List;
       --  Local variable declarations. This list holds the label declarations
       --  of all jump block alternatives as well as the declaration of the
-      --  local exception occurence and the raised flag:
+      --  local exception occurrence and the raised flag:
       --     E : Exception_Occurrence;
       --     Raised : Boolean := False;
       --     L<counter value> : label;
@@ -5283,7 +5283,7 @@ package body Exp_Ch7 is
       --                      Abort  : constant Boolean := Triggered_By_Abort;
       --                        <or>
       --                      Abort  : constant Boolean := False; --  no abort
-      --                      E      : Exception_Occurence;
+      --                      E      : Exception_Occurrence;
       --                      Raised : Boolean := False;
 
       --                   begin
@@ -6047,7 +6047,7 @@ package body Exp_Ch7 is
       --             when others =>
       --                if not Raised then
       --                   Raised := True;
-      --                   Save_Occurence (E, Get_Current_Excep.all.all);
+      --                   Save_Occurrence (E, Get_Current_Excep.all.all);
       --                end if;
       --          end;
       --       end if;
@@ -6065,7 +6065,7 @@ package body Exp_Ch7 is
       --       Abort  : constant Boolean := Triggered_By_Abort;
       --         <or>
       --       Abort  : constant Boolean := False;  --  no abort
-      --       E      : Exception_Occurence;
+      --       E      : Exception_Occurrence;
       --       Raised : Boolean := False;
       --
       --    begin
@@ -6076,7 +6076,7 @@ package body Exp_Ch7 is
       --             when others =>
       --                if not Raised then
       --                   Raised := True;
-      --                   Save_Occurence (E, Get_Current_Excep.all.all);
+      --                   Save_Occurrence (E, Get_Current_Excep.all.all);
       --                end if;
       --          end;
       --       end if;
@@ -6100,7 +6100,7 @@ package body Exp_Ch7 is
       --                when others =>
       --                   if not Raised then
       --                      Raised := True;
-      --                      Save_Occurence (E, Get_Current_Excep.all.all);
+      --                      Save_Occurrence (E, Get_Current_Excep.all.all);
       --                   end if;
       --             end;
       --             .  .  .
@@ -6111,7 +6111,7 @@ package body Exp_Ch7 is
       --                when others =>
       --                   if not Raised then
       --                      Raised := True;
-      --                      Save_Occurence (E, Get_Current_Excep.all.all);
+      --                      Save_Occurrence (E, Get_Current_Excep.all.all);
       --                   end if;
       --             end;
       --             <<L0>>
@@ -6533,7 +6533,7 @@ package body Exp_Ch7 is
          --         <or>
          --       Abort  : constant Boolean := False;  --  no abort
 
-         --       E      : Exception_Occurence;
+         --       E      : Exception_Occurrence;
          --       Raised : Boolean := False;
 
          --    begin
@@ -7105,7 +7105,7 @@ package body Exp_Ch7 is
          --         <or>
          --       Abort  : constant Boolean := False;  --  no abort
 
-         --       E      : Exception_Occurence;
+         --       E      : Exception_Occurrence;
          --       Raised : Boolean := False;
 
          --    begin

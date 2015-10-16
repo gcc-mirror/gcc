@@ -1,3 +1,22 @@
+2015-10-16  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Associate a
+	transient scope with the renaming object declararation.
+	* exp_util.adb (Insert_Actions): if the enclosing interator
+	loop is marked as requiring the secondary stack then attach the
+	actions to the transient scope.
+
+2015-10-16  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb: Minor spelling fixes.
+
+2015-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Replace_Anonymous_Access_To_Protected_Subprogram):
+	If anonymous type is component type of array type declaration,
+	analyze its declaration in the current scope, not the enclosing
+	one.
+
 2015-10-16  Gary Dismukes  <dismukes@adacore.com>
 
 	* prj.adb, sem_util.adb, exp_ch6.adb: Minor reformatting.
