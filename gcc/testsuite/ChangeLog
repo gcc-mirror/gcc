@@ -1,3 +1,11 @@
+2015-10-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/67745
+        * gcc.target/arm/no-align.c: New test.
+        * gcc.target/arm/attr-align1.c: New test.
+        * gcc.target/arm/attr-align2.c: New test.
+        * gcc.target/arm/attr-align3.c: New test.
+
 2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.c-torture/compile/icfmatch.c: Add testcase
