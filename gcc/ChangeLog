@@ -1,3 +1,9 @@
+2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	Revert:
+	* ipa-icf-gimple.c (func_checker::compare_operand): Compare only
+	empty constructors.
+
 2015-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (recompute_tree_invariant_for_addr_expr): Assert that the
