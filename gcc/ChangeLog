@@ -1,3 +1,8 @@
+2015-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (recompute_tree_invariant_for_addr_expr): Assert that the
+	argument is an ADDR_EXPR.
+
 2015-10-16  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.c (gimple_fold_builtin_memory_op): Use gimple_build

@@ -4248,6 +4248,8 @@ recompute_tree_invariant_for_addr_expr (tree t)
   tree node;
   bool tc = true, se = false;
 
+  gcc_assert (TREE_CODE (t) == ADDR_EXPR);
+
   /* We started out assuming this address is both invariant and constant, but
      does not have side effects.  Now go down any handled components and see if
      any of them involve offsets that are either non-constant or non-invariant.
