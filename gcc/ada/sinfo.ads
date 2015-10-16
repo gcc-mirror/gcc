@@ -1905,7 +1905,7 @@ package Sinfo is
    --    body, and no entities of the with'ed unit are referenced by the spec
    --    (an entity may still be referenced in the body, so this flag is used
    --    to generate the proper message (see Sem_Util.Check_Unused_Withs for
-   --    full details)
+   --    full details).
 
    --  No_Initialization (Flag13-Sem)
    --    Present in N_Object_Declaration and N_Allocator to indicate that the
@@ -3634,7 +3634,7 @@ package Sinfo is
       --  INDEXED_COMPONENT ::= PREFIX (EXPRESSION {, EXPRESSION})
 
       --  Note: the parser may generate this node in some situations where it
-      --  should be a function call. The semantic  pass must correct this
+      --  should be a function call. The semantic pass must correct this
       --  misidentification (which is inevitable at the parser level).
 
       --  N_Indexed_Component
@@ -4571,7 +4571,7 @@ package Sinfo is
       --    {LABEL} SIMPLE_STATEMENT | {LABEL} COMPOUND_STATEMENT
 
       --  There is no explicit node in the tree for a statement. Instead, the
-      --  individual statement appears directly. Labels are treated  as a
+      --  individual statement appears directly. Labels are treated as a
       --  kind of statement, i.e. they are linked into a statement list at
       --  the point they appear, so the labeled statement appears following
       --  the label or labels in the statement list.

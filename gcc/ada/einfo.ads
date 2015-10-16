@@ -120,7 +120,7 @@ package Einfo is
 
 --  For functions that are not inlined, there is no restriction on the body,
 --  and XEINFO generates a direct reference in the C header file which allows
---  the C code in the  backend to directly call the corresponding Ada body.
+--  the C code in the backend to directly call the corresponding Ada body.
 
 ----------------------------------
 -- Handling of Type'Size Values --
@@ -1613,7 +1613,7 @@ package Einfo is
 --       generic entities before the corresponding generic body has been seen.
 --       If a package has a forward instantiation, we cannot inline subprograms
 --       appearing in the same package because the placement requirements of
---       the instance will conflict with the  linear elaboration of front-end
+--       the instance will conflict with the linear elaboration of front-end
 --       inlining.
 
 --    Has_Fully_Qualified_Name (Flag173)
@@ -2436,7 +2436,7 @@ package Einfo is
 
 --    Is_Fixed_Point_Type (synthesized)
 --       Applies to all entities, true for decimal and ordinary fixed
---       point types and subtypes
+--       point types and subtypes.
 
 --    Is_Floating_Point_Type (synthesized)
 --       Applies to all entities, true for float types and subtypes
@@ -2633,7 +2633,7 @@ package Einfo is
 
 --    Is_Invariant_Procedure (Flag257)
 --       Defined in functions an procedures. Set for a generated invariant
---       procedure to identify it easily in the
+--       procedure to identify it easily in the.
 
 --    Is_Itype (Flag91)
 --       Defined in all entities. Set to indicate that a type is an Itype,
@@ -2913,7 +2913,7 @@ package Einfo is
 
 --    Is_Private_Type (synthesized)
 --       Applies to all entities, true for private types and subtypes,
---       as well as for record with private types as subtypes
+--       as well as for record with private types as subtypes.
 
 --    Is_Processed_Transient (Flag252)
 --       Defined in variables, loop parameters, and constants, including the
@@ -2972,7 +2972,7 @@ package Einfo is
 
 --    Is_Record_Type (synthesized)
 --       Applies to all entities, true for record types and subtypes,
---       includes class-wide types and subtypes (which are also records)
+--       includes class-wide types and subtypes (which are also records).
 
 --    Is_Remote_Call_Interface (Flag62)
 --       Defined in all entities. Set in E_Package and E_Generic_Package
@@ -3070,7 +3070,7 @@ package Einfo is
 --       vtable (i.e. the one to be extended by derivation).
 
 --    Is_Tagged_Type (Flag55)
---       Defined in all entities. Set for an entity that is a tagged type.
+--       Defined in all entities. Set for an entity that is a tagged type
 
 --    Is_Task_Interface (synthesized)
 --       Defined in types that are interfaces. True if interface is declared as
@@ -3501,7 +3501,7 @@ package Einfo is
 --       access type, or if an explicit pragma No_Strict_Aliasing applies.
 
 --    No_Tagged_Streams_Pragma (Node32)
---       Present in  all subtype and type entities. Set for tagged types and
+--       Present in all subtype and type entities. Set for tagged types and
 --       subtypes (i.e. entities with Is_Tagged_Type set True) if a valid
 --       pragma/aspect applies to the type.
 
@@ -3659,7 +3659,7 @@ package Einfo is
 --    Parameter_Mode (synthesized)
 --       Applies to formal parameter entities. This is a synonym for Ekind,
 --       used when obtaining the formal kind of a formal parameter (the result
---       is one of E_[In/Out/In_Out]_Parameter)
+--       is one of E_[In/Out/In_Out]_Parameter).
 
 --    Parent_Subtype (Node19) [base type only]
 --       Defined in E_Record_Type. Set only for derived tagged types, in which
@@ -3981,7 +3981,7 @@ package Einfo is
 --       Indicates the number of scopes that statically enclose the declaration
 --       of the unit or type. Library units have a depth of zero. Note that
 --       record types can act as scopes but do NOT have this field set (see
---       Scope_Depth above)
+--       Scope_Depth above).
 
 --    Scope_Depth_Set (synthesized)
 --       Applies to a special predicate function that returns a Boolean value
@@ -4501,7 +4501,7 @@ package Einfo is
 --  The classification of program entities which follows is a refinement of
 --  the list given in RM 3.1(1). E.g., separate entities denote subtypes of
 --  different type classes. Ada 95 entities include class wide types,
---  protected types, subprogram types, generalized access types,  generic
+--  protected types, subprogram types, generalized access types, generic
 --  formal derived types and generic formal packages.
 
 --  The order chosen for these kinds allows us to classify related entities
@@ -4664,7 +4664,7 @@ package Einfo is
 
       E_Access_Attribute_Type,
       --  An access type created for an access attribute (such as 'Access,
-      --  'Unrestricted_Access and Unchecked_Access)
+      --  'Unrestricted_Access and Unchecked_Access).
 
       E_Allocator_Type,
       --  A special internal type used to label allocators and references to
@@ -4893,7 +4893,7 @@ package Einfo is
 
       E_Protected_Body,
       --  A protected body. This entity serves almost no function, since all
-      --  semantic analysis uses the protected entity (E_Protected_Type)
+      --  semantic analysis uses the protected entity (E_Protected_Type).
 
       E_Task_Body,
       --  A task body. This entity serves almost no function, since all
@@ -6445,7 +6445,7 @@ package Einfo is
    --  types, and a field in the type entities contains a value of the
    --  following type indicating which alignment choice applies. For full
    --  details of the meaning of these alignment types, see description
-   --  of the Component_Alignment pragma
+   --  of the Component_Alignment pragma.
 
    type Component_Alignment_Kind is (
       Calign_Default,          -- default alignment
@@ -6469,9 +6469,9 @@ package Einfo is
    --  attributes are procedural, and require some small amount of
    --  computation. Of course, from the point of view of a user of this
    --  package, the distinction is not visible (even the field information
-   --  provided below should be disregarded, as it is subject to  change
-   --  without notice). A number of  attributes appear as lists: lists of
-   --  formals,  lists of actuals, of discriminants, etc. For these, pairs
+   --  provided below should be disregarded, as it is subject to change
+   --  without notice). A number of attributes appear as lists: lists of
+   --  formals, lists of actuals, of discriminants, etc. For these, pairs
    --  of functions are defined, which take the form:
 
    --      function First_Thing (E : Enclosing_Construct) return Thing;
@@ -7116,7 +7116,8 @@ package Einfo is
    --  whether an Ekind value belongs to a specified kind, for example the
    --  function Is_Elementary_Type tests if its argument is in Elementary_Kind.
    --  In some cases, the test is of an entity attribute (e.g. in the case of
-   --  Is_Generic_Type where the Ekind does not provide the needed information)
+   --  Is_Generic_Type where the Ekind does not provide the needed
+   --  information).
 
    function Is_Access_Type                      (Id : E) return B;
    function Is_Access_Protected_Subprogram_Type (Id : E) return B;
@@ -8035,7 +8036,7 @@ package Einfo is
 
    procedure Write_Entity_Flags (Id : Entity_Id; Prefix : String);
    --  Writes a series of entries giving a line for each flag that is
-   --  set to True. Each line is prefixed by the given string
+   --  set to True. Each line is prefixed by the given string.
 
    procedure Write_Entity_Info (Id : Entity_Id; Prefix : String);
    --  A debugging procedure to write out information about an entity
