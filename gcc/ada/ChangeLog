@@ -1,5 +1,21 @@
 2015-10-16  Bob Duff  <duff@adacore.com>
 
+	* adadecode.h, adadecode.c (ada_demangle): Remove
+	ada_demangle, no longer used.
+	* a-except-2005.adb: Bring System.Traceback.Symbolic into the
+	closure.
+
+2015-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb, sem_util.ads (Get_Reference_Discriminant): Utility to
+	locate the access discriminant that supports implicit dereference on a
+	record type.
+	(Is_OK_Variable_For_Out_Parameter): Reject other illegal uses
+	of Implicit_Dereference on an access_to_constant when actual
+	parameter is a rewritten variable or function call.
+
+2015-10-16  Bob Duff  <duff@adacore.com>
+
 	* a-tags.adb, s-trasym.adb, s-trasym.ads: Make sure we don't get
 	elaboration circularities when polling is turned on.
 

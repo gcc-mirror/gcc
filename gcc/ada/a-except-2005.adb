@@ -44,6 +44,16 @@ with System.Soft_Links;       use System.Soft_Links;
 with System.WCh_Con;          use System.WCh_Con;
 with System.WCh_StW;          use System.WCh_StW;
 
+pragma Warnings (Off);
+--  Suppress complaints about Symbolic not being referenced, and about it not
+--  having pragma Preelaborate.
+with System.Traceback.Symbolic;
+--  Bring Symbolic into the closure. If it is the s-trasym-dwarf.adb version,
+--  it will install symbolic tracebacks as the default decorator. Otherwise,
+--  symbolic tracebacks are not supported, and we fall back to hexadecimal
+--  addresses.
+pragma Warnings (On);
+
 package body Ada.Exceptions is
 
    pragma Suppress (All_Checks);
