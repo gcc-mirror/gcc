@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -639,9 +639,9 @@ package body Bcheck is
    -- Check_Consistent_Normalize_Scalars --
    ----------------------------------------
 
-   --  The rule is that if any unit is compiled with Normalized_Scalars,
+   --  The rule is that if any unit is compiled with Normalize_Scalars,
    --  then all other units in the partition must also be compiled with
-   --  Normalized_Scalars in effect.
+   --  Normalize_Scalars in effect.
 
    --  There is some issue as to whether this consistency check is desirable,
    --  it is certainly required at the moment by the RM. We should keep a watch

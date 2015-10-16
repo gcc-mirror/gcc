@@ -823,7 +823,7 @@ package Sem_Util is
    --  returned. Otherwise the Etype of the node is returned.
 
    function Get_Body_From_Stub (N : Node_Id) return Node_Id;
-   --  Return the body node for a stub
+   --  Return the body node for a stub.
 
    function Get_Cursor_Type
      (Aspect : Node_Id;
@@ -1325,7 +1325,7 @@ package Sem_Util is
    function Is_Fully_Initialized_Type (Typ : Entity_Id) return Boolean;
    --  Typ is a type entity. This function returns true if this type is fully
    --  initialized, meaning that an object of the type is fully initialized.
-   --  Note that initialization resulting from use of pragma Normalized_Scalars
+   --  Note that initialization resulting from use of pragma Normalize_Scalars
    --  does not count. Note that this is only used for the purpose of issuing
    --  warnings for objects that are potentially referenced uninitialized. This
    --  means that the result returned is not crucial, but should err on the
@@ -1400,7 +1400,7 @@ package Sem_Util is
    --  initialized, meaning that an object of the type is at least partly
    --  initialized (in particular in the record case, that at least one
    --  component has an initialization expression). Note that initialization
-   --  resulting from the use of pragma Normalized_Scalars does not count.
+   --  resulting from the use of pragma Normalize_Scalars does not count.
    --  Include_Implicit controls whether implicit initialization of access
    --  values to null, and of discriminant values, is counted as making the
    --  type be partially initialized. For the default setting of True, these
