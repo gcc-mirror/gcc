@@ -55,17 +55,10 @@ package body Sem_Ch11 is
    -----------------------------------
 
    procedure Analyze_Exception_Declaration (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-      Id : constant Entity_Id       := Defining_Identifier (N);
-      PF : constant Boolean         := Is_Pure (Current_Scope);
+      Id : constant Entity_Id := Defining_Identifier (N);
+      PF : constant Boolean   := Is_Pure (Current_Scope);
 
    begin
-      --  The exception declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       Generate_Definition         (Id);
       Enter_Name                  (Id);
       Set_Ekind                   (Id, E_Exception);
@@ -83,11 +76,6 @@ package body Sem_Ch11 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Exception_Declaration;
 
    --------------------------------

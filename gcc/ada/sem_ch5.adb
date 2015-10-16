@@ -90,9 +90,8 @@ package body Sem_Ch5 is
    ------------------------
 
    procedure Analyze_Assignment (N : Node_Id) is
-      GM   : constant Ghost_Mode_Type := Ghost_Mode;
-      Lhs  : constant Node_Id         := Name (N);
-      Rhs  : constant Node_Id         := Expression (N);
+      Lhs  : constant Node_Id := Name (N);
+      Rhs  : constant Node_Id := Expression (N);
       T1   : Entity_Id;
       T2   : Entity_Id;
       Decl : Node_Id;
@@ -106,9 +105,6 @@ package body Sem_Ch5 is
       --  on the left hand side. We call it if we find any error in analyzing
       --  the assignment, and at the end of processing before setting any new
       --  current values in place.
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
 
       procedure Set_Assignment_Type
         (Opnd      : Node_Id;
@@ -215,15 +211,6 @@ package body Sem_Ch5 is
          end if;
       end Kill_Lhs;
 
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
       -------------------------
       -- Set_Assignment_Type --
       -------------------------
@@ -282,6 +269,10 @@ package body Sem_Ch5 is
          end if;
       end Set_Assignment_Type;
 
+      --  Local variables
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
    --  Start of processing for Analyze_Assignment
 
    begin
@@ -293,10 +284,9 @@ package body Sem_Ch5 is
 
       Analyze (Lhs);
 
-      --  The left hand side of an assignment may reference an entity subject
-      --  to pragma Ghost with policy Ignore. Set the mode now to ensure that
-      --  any nodes generated during analysis and expansion are properly
-      --  flagged as ignored Ghost.
+      --  An assignment statement is Ghost when the left hand side denotes a
+      --  Ghost entity. Set the mode now to ensure that any nodes generated
+      --  during analysis and expansion are properly marked as Ghost.
 
       Set_Ghost_Mode (N);
       Analyze (Rhs);
@@ -391,7 +381,7 @@ package body Sem_Ch5 is
             Error_Msg_N
               ("no valid types for left-hand side for assignment", Lhs);
             Kill_Lhs;
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
          end if;
       end if;
@@ -467,14 +457,14 @@ package body Sem_Ch5 is
                                   "specified??", Lhs);
                   end if;
 
-                  Restore_Globals;
+                  Ghost_Mode := Save_Ghost_Mode;
                   return;
                end if;
             end if;
          end;
 
          Diagnose_Non_Variable_Lhs (Lhs);
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Error of assigning to limited type. We do however allow this in
@@ -495,7 +485,7 @@ package body Sem_Ch5 is
             Explain_Limited_Type (T1, Lhs);
          end if;
 
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Enforce RM 3.9.3 (8): the target of an assignment operation cannot be
@@ -534,7 +524,7 @@ package body Sem_Ch5 is
       then
          Error_Msg_N ("invalid use of incomplete type", Lhs);
          Kill_Lhs;
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -552,7 +542,7 @@ package body Sem_Ch5 is
 
       if Rhs = Error then
          Kill_Lhs;
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -561,7 +551,7 @@ package body Sem_Ch5 is
       if not Covers (T1, T2) then
          Wrong_Type (Rhs, Etype (Lhs));
          Kill_Lhs;
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -589,7 +579,7 @@ package body Sem_Ch5 is
 
       if T1 = Any_Type or else T2 = Any_Type then
          Kill_Lhs;
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -682,7 +672,7 @@ package body Sem_Ch5 is
             --  to reset Is_True_Constant, and desirable for xref purposes.
 
             Note_Possible_Modification (Lhs, Sure => True);
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
 
          --  If we know the right hand side is non-null, then we convert to the
@@ -889,7 +879,7 @@ package body Sem_Ch5 is
       end;
 
       Analyze_Dimension (N);
-      Restore_Globals;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Assignment;
 
    -----------------------------

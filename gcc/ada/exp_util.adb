@@ -6424,34 +6424,17 @@ package body Exp_Util is
       Expr : Node_Id;
       Mem  : Boolean := False) return Node_Id
    is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
-
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
-      --  Local variables
-
       Loc  : constant Source_Ptr := Sloc (Expr);
       Call : Node_Id;
       PFM  : Entity_Id;
 
-   --  Start of processing for Make_Predicate_Call
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    begin
       pragma Assert (Present (Predicate_Function (Typ)));
 
-      --  The related type may be subject to pragma Ghost with policy Ignore.
-      --  Set the mode now to ensure that the call is properly flagged as
-      --  ignored Ghost.
+      --  The related type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the call is properly marked as Ghost.
 
       Set_Ghost_Mode_From_Entity (Typ);
 
@@ -6466,7 +6449,7 @@ package body Exp_Util is
                 Name                   => New_Occurrence_Of (PFM, Loc),
                 Parameter_Associations => New_List (Relocate_Node (Expr)));
 
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return Call;
          end if;
       end if;
@@ -6479,7 +6462,7 @@ package body Exp_Util is
             New_Occurrence_Of (Predicate_Function (Typ), Loc),
           Parameter_Associations => New_List (Relocate_Node (Expr)));
 
-      Restore_Globals;
+      Ghost_Mode := Save_Ghost_Mode;
       return Call;
    end Make_Predicate_Call;
 

@@ -571,7 +571,7 @@ package body Sem_Ch7 is
 
       --  Local variables
 
-      GM               : constant Ghost_Mode_Type := Ghost_Mode;
+      Save_Ghost_Mode  : constant Ghost_Mode_Type := Ghost_Mode;
       Body_Id          : Entity_Id;
       HSS              : Node_Id;
       Last_Spec_Entity : Entity_Id;
@@ -637,10 +637,9 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      --  The corresponding spec of the package body may be subject to pragma
-      --  Ghost with policy Ignore. Set the mode now to ensure that any nodes
-      --  generated during analysis and expansion are properly flagged as
-      --  ignored Ghost.
+      --  A package body is Ghost when the corresponding spec is Ghost. Set
+      --  the mode now to ensure that any nodes generated during analysis and
+      --  expansion are properly flagged as ignored Ghost.
 
       Set_Ghost_Mode (N, Spec_Id);
 
@@ -942,10 +941,7 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Package_Body_Helper;
 
    ------------------------------
@@ -1021,22 +1017,6 @@ package body Sem_Ch7 is
    ---------------------------------
 
    procedure Analyze_Package_Declaration (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
-
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
-      --  Local variables
-
       Id : constant Node_Id := Defining_Entity (N);
 
       Body_Required : Boolean;
@@ -1048,8 +1028,6 @@ package body Sem_Ch7 is
       PF : Boolean;
       --  True when in the context of a declared pure library unit
 
-   --  Start of processing for Analyze_Package_Declaration
-
    begin
       if Debug_Flag_C then
          Write_Str ("==> package spec ");
@@ -1059,12 +1037,6 @@ package body Sem_Ch7 is
          Write_Eol;
          Indent;
       end if;
-
-      --  The package declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
 
       Generate_Definition (Id);
       Enter_Name (Id);
@@ -1102,7 +1074,6 @@ package body Sem_Ch7 is
       --     package Pkg is ...
 
       if From_Limited_With (Id) then
-         Restore_Globals;
          return;
       end if;
 
@@ -1163,8 +1134,6 @@ package body Sem_Ch7 is
          Write_Location (Sloc (N));
          Write_Eol;
       end if;
-
-      Restore_Globals;
    end Analyze_Package_Declaration;
 
    -----------------------------------
@@ -1851,17 +1820,10 @@ package body Sem_Ch7 is
    --------------------------------------
 
    procedure Analyze_Private_Type_Declaration (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
       Id : constant Entity_Id := Defining_Identifier (N);
       PF : constant Boolean   := Is_Pure (Enclosing_Lib_Unit_Entity);
 
    begin
-      --  The private type declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       Generate_Definition (Id);
       Set_Is_Pure         (Id, PF);
       Init_Size_Align     (Id);
@@ -1885,11 +1847,6 @@ package body Sem_Ch7 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Private_Type_Declaration;
 
    ----------------------------------

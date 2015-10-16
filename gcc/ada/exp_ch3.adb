@@ -4786,21 +4786,14 @@ package body Exp_Ch3 is
 
       --  Local declarations
 
-      Def_Id : constant Entity_Id       := Defining_Identifier (N);
-      B_Id   : constant Entity_Id       := Base_Type (Def_Id);
-      GM     : constant Ghost_Mode_Type := Ghost_Mode;
+      Def_Id : constant Entity_Id := Defining_Identifier (N);
+      B_Id   : constant Entity_Id := Base_Type (Def_Id);
       FN     : Node_Id;
       Par_Id : Entity_Id;
 
    --  Start of processing for Expand_N_Full_Type_Declaration
 
    begin
-      --  The type declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       if Is_Access_Type (Def_Id) then
          Build_Master (Def_Id);
 
@@ -4924,11 +4917,6 @@ package body Exp_Ch3 is
             end if;
          end;
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Expand_N_Full_Type_Declaration;
 
    ---------------------------------
@@ -4936,13 +4924,12 @@ package body Exp_Ch3 is
    ---------------------------------
 
    procedure Expand_N_Object_Declaration (N : Node_Id) is
-      Loc      : constant Source_Ptr      := Sloc (N);
-      Def_Id   : constant Entity_Id       := Defining_Identifier (N);
-      Expr     : constant Node_Id         := Expression (N);
-      GM       : constant Ghost_Mode_Type := Ghost_Mode;
-      Obj_Def  : constant Node_Id         := Object_Definition (N);
-      Typ      : constant Entity_Id       := Etype (Def_Id);
-      Base_Typ : constant Entity_Id       := Base_Type (Typ);
+      Loc      : constant Source_Ptr := Sloc (N);
+      Def_Id   : constant Entity_Id  := Defining_Identifier (N);
+      Expr     : constant Node_Id    := Expression (N);
+      Obj_Def  : constant Node_Id    := Object_Definition (N);
+      Typ      : constant Entity_Id  := Etype (Def_Id);
+      Base_Typ : constant Entity_Id  := Base_Type (Typ);
       Expr_Q   : Node_Id;
 
       function Build_Equivalent_Aggregate return Boolean;
@@ -4953,9 +4940,6 @@ package body Exp_Ch3 is
       procedure Default_Initialize_Object (After : Node_Id);
       --  Generate all default initialization actions for object Def_Id. Any
       --  new code is inserted after node After.
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
 
       function Rewrite_As_Renaming return Boolean;
       --  Indicate whether to rewrite a declaration with initialization into an
@@ -5387,15 +5371,6 @@ package body Exp_Ch3 is
          end if;
       end Default_Initialize_Object;
 
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
       -------------------------
       -- Rewrite_As_Renaming --
       -------------------------
@@ -5438,12 +5413,6 @@ package body Exp_Ch3 is
       if Is_Abstract_Type (Typ) then
          return;
       end if;
-
-      --  The object declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
 
       --  First we do special processing for objects of a tagged type where
       --  this is the point at which the type is frozen. The creation of the
@@ -5613,7 +5582,6 @@ package body Exp_Ch3 is
            and then Is_Build_In_Place_Function_Call (Expr_Q)
          then
             Make_Build_In_Place_Call_In_Object_Declaration (N, Expr_Q);
-            Restore_Globals;
 
             --  The previous call expands the expression initializing the
             --  built-in-place object into further code that will be analyzed
@@ -5858,7 +5826,6 @@ package body Exp_Ch3 is
                end;
             end if;
 
-            Restore_Globals;
             return;
 
          --  Common case of explicit object initialization
@@ -5974,7 +5941,6 @@ package body Exp_Ch3 is
                --  to avoid its management in the backend
 
                Set_Expression (N, Empty);
-               Restore_Globals;
                return;
 
             --  Handle initialization of limited tagged types
@@ -6196,13 +6162,10 @@ package body Exp_Ch3 is
          end;
       end if;
 
-      Restore_Globals;
-
    --  Exception on library entity not available
 
    exception
       when RE_Not_Available =>
-         Restore_Globals;
          return;
    end Expand_N_Object_Declaration;
 
@@ -7523,10 +7486,6 @@ package body Exp_Ch3 is
    --  node using Append_Freeze_Actions.
 
    function Freeze_Type (N : Node_Id) return Boolean is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the current Ghost mode in effect in case the type being frozen
-      --  sets a different mode.
-
       procedure Process_RACW_Types (Typ : Entity_Id);
       --  Validate and generate stubs for all RACW types associated with type
       --  Typ.
@@ -7534,9 +7493,6 @@ package body Exp_Ch3 is
       procedure Process_Pending_Access_Types (Typ : Entity_Id);
       --  Associate type Typ's Finalize_Address primitive with the finalization
       --  masters of pending access-to-Typ types.
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
 
       ------------------------
       -- Process_RACW_Types --
@@ -7618,26 +7574,19 @@ package body Exp_Ch3 is
          end if;
       end Process_Pending_Access_Types;
 
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
       --  Local variables
 
       Def_Id : constant Entity_Id := Entity (N);
       Result : Boolean := False;
 
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
    --  Start of processing for Freeze_Type
 
    begin
-      --  The type being frozen may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  freezing are properly flagged as ignored Ghost.
+      --  The type being frozen may be subject to pragma Ghost. Set the mode
+      --  now to ensure that any nodes generated during freezing are properly
+      --  marked as Ghost.
 
       Set_Ghost_Mode (N, Def_Id);
 
@@ -7954,12 +7903,12 @@ package body Exp_Ch3 is
       Process_Pending_Access_Types (Def_Id);
       Freeze_Stream_Operations (N, Def_Id);
 
-      Restore_Globals;
+      Ghost_Mode := Save_Ghost_Mode;
       return Result;
 
    exception
       when RE_Not_Available =>
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return False;
    end Freeze_Type;
 

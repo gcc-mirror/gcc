@@ -4177,26 +4177,27 @@ package body Exp_Ch7 is
    --  Encode entity names in package body
 
    procedure Expand_N_Package_Body (N : Node_Id) is
-      GM       : constant Ghost_Mode_Type := Ghost_Mode;
-      Spec_Ent : constant Entity_Id := Corresponding_Spec (N);
-      Fin_Id   : Entity_Id;
+      Spec_Id : constant Entity_Id := Corresponding_Spec (N);
+      Fin_Id  : Entity_Id;
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    begin
-      --  The package body may be subject to pragma Ghost with policy Ignore.
-      --  Set the mode now to ensure that any nodes generated during expansion
-      --  are properly flagged as ignored Ghost.
+      --  The package body is Ghost when the corresponding spec is Ghost. Set
+      --  the mode now to ensure that any nodes generated during expansion are
+      --  properly marked as Ghost.
 
-      Set_Ghost_Mode (N);
+      Set_Ghost_Mode (N, Spec_Id);
 
       --  This is done only for non-generic packages
 
-      if Ekind (Spec_Ent) = E_Package then
+      if Ekind (Spec_Id) = E_Package then
          Push_Scope (Corresponding_Spec (N));
 
          --  Build dispatch tables of library level tagged types
 
          if Tagged_Type_Expansion
-           and then Is_Library_Level_Entity (Spec_Ent)
+           and then Is_Library_Level_Entity (Spec_Id)
          then
             Build_Static_Dispatch_Tables (N);
          end if;
@@ -4207,7 +4208,7 @@ package body Exp_Ch7 is
          --  assertion expression must be verified at the end of the body
          --  statements.
 
-         if Present (Get_Pragma (Spec_Ent, Pragma_Initial_Condition)) then
+         if Present (Get_Pragma (Spec_Id, Pragma_Initial_Condition)) then
             Expand_Pragma_Initial_Condition (N);
          end if;
 
@@ -4215,13 +4216,13 @@ package body Exp_Ch7 is
       end if;
 
       Set_Elaboration_Flag (N, Corresponding_Spec (N));
-      Set_In_Package_Body (Spec_Ent, False);
+      Set_In_Package_Body (Spec_Id, False);
 
       --  Set to encode entity names in package body before gigi is called
 
       Qualify_Entity_Names (N);
 
-      if Ekind (Spec_Ent) /= E_Generic_Package then
+      if Ekind (Spec_Id) /= E_Generic_Package then
          Build_Finalizer
            (N           => N,
             Clean_Stmts => No_List,
@@ -4244,10 +4245,7 @@ package body Exp_Ch7 is
          end if;
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Package_Body;
 
    ----------------------------------
@@ -4260,7 +4258,6 @@ package body Exp_Ch7 is
    --  appear.
 
    procedure Expand_N_Package_Declaration (N : Node_Id) is
-      GM     : constant Ghost_Mode_Type := Ghost_Mode;
       Id     : constant Entity_Id := Defining_Entity (N);
       Spec   : constant Node_Id   := Specification (N);
       Decls  : List_Id;
@@ -4303,12 +4300,6 @@ package body Exp_Ch7 is
       then
          return;
       end if;
-
-      --  The package declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
 
       --  For a package declaration that implies no associated body, generate
       --  task activation call and RACW supporting bodies now (since we won't
@@ -4383,11 +4374,6 @@ package body Exp_Ch7 is
 
          Set_Finalizer (Id, Fin_Id);
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Expand_N_Package_Declaration;
 
    -----------------------------

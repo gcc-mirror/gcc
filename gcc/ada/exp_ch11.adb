@@ -31,7 +31,6 @@ with Errout;   use Errout;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Intr; use Exp_Intr;
 with Exp_Util; use Exp_Util;
-with Ghost;    use Ghost;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -1190,9 +1189,8 @@ package body Exp_Ch11 is
    --     end if;
 
    procedure Expand_N_Exception_Declaration (N : Node_Id) is
-      GM      : constant Ghost_Mode_Type := Ghost_Mode;
-      Id      : constant Entity_Id       := Defining_Identifier (N);
-      Loc     : constant Source_Ptr      := Sloc (N);
+      Id      : constant Entity_Id  := Defining_Identifier (N);
+      Loc     : constant Source_Ptr := Sloc (N);
       Ex_Id   : Entity_Id;
       Flag_Id : Entity_Id;
       L       : List_Id;
@@ -1278,12 +1276,6 @@ package body Exp_Ch11 is
       if VM_Target /= No_VM then
          return;
       end if;
-
-      --  The exception declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
 
       --  Definition of the external name: nam : constant String := "A.B.NAME";
 
@@ -1391,11 +1383,6 @@ package body Exp_Ch11 is
             Insert_List_After_And_Analyze (N, L);
          end if;
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Expand_N_Exception_Declaration;
 
    ---------------------------------------------
