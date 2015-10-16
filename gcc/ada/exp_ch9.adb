@@ -4729,7 +4729,7 @@ package body Exp_Ch9 is
             Formal := First_Formal (Ent);
             while Present (Actual) loop
 
-               --  If it is a by_copy_type, copy it to a new variable. The
+               --  If it is a by-copy type, copy it to a new variable. The
                --  packaged record has a field that points to this variable.
 
                if Is_By_Copy_Type (Etype (Actual)) then
@@ -4746,23 +4746,37 @@ package body Exp_Ch9 is
 
                   Set_No_Initialization (N_Node);
 
-                  --  We must make an assignment statement separate for the
-                  --  case of limited type. We cannot assign it unless the
+                  --  We must make a separate assignment statement for the
+                  --  case of limited types. We cannot assign it unless the
                   --  Assignment_OK flag is set first. An out formal of an
-                  --  access type must also be initialized from the actual,
-                  --  as stated in RM 6.4.1 (13), but no constraint is applied
-                  --  before the call.
+                  --  access type or whose type has a Default_Value must also
+                  --  be initialized from the actual (see RM 6.4.1 (13-13.1)),
+                  --  but no constraint, predicate, or null-exclusion check is
+                  --  applied before the call.
 
                   if Ekind (Formal) /= E_Out_Parameter
                     or else Is_Access_Type (Etype (Formal))
+                    or else
+                      (Is_Scalar_Type (Etype (Formal))
+                        and then
+                         Present (Default_Aspect_Value (Etype (Formal))))
                   then
                      N_Var :=
                        New_Occurrence_Of (Defining_Identifier (N_Node), Loc);
                      Set_Assignment_OK (N_Var);
                      Append_To (Stats,
                        Make_Assignment_Statement (Loc,
-                         Name => N_Var,
+                         Name       => N_Var,
                          Expression => Relocate_Node (Actual)));
+
+                     --  Mark the object as internal, so we don't later reset
+                     --  No_Initialization flag in Default_Initialize_Object,
+                     --  which would lead to needless default initialization.
+                     --  We don't set this outside the if statement, because
+                     --  out scalar parameters without Default_Value do require
+                     --  default initialization if Initialize_Scalars applies.
+
+                     Set_Is_Internal (Defining_Identifier (N_Node));
 
                      --  If actual is an out parameter of a null-excluding
                      --  access type, there is access check on entry, so set
@@ -4777,8 +4791,9 @@ package body Exp_Ch9 is
                   Append_To (Plist,
                     Make_Attribute_Reference (Loc,
                       Attribute_Name => Name_Unchecked_Access,
-                    Prefix =>
-                      New_Occurrence_Of (Defining_Identifier (N_Node), Loc)));
+                      Prefix         =>
+                        New_Occurrence_Of
+                          (Defining_Identifier (N_Node), Loc)));
 
                else
                   --  Interface class-wide formal
@@ -4800,7 +4815,7 @@ package body Exp_Ch9 is
                        Make_Reference (Loc,
                          Unchecked_Convert_To (Iface_Typ,
                            Make_Selected_Component (Loc,
-                             Prefix =>
+                             Prefix        =>
                                Relocate_Node (Actual),
                              Selector_Name =>
                                New_Occurrence_Of (Iface_Tag, Loc)))));
@@ -4832,7 +4847,7 @@ package body Exp_Ch9 is
 
             Parm3 :=
               Make_Attribute_Reference (Loc,
-                Prefix => New_Occurrence_Of (P, Loc),
+                Prefix         => New_Occurrence_Of (P, Loc),
                 Attribute_Name => Name_Address);
 
             Append (Pdecl, Decls);
@@ -4896,8 +4911,9 @@ package body Exp_Ch9 is
 
                   Call :=
                     Make_Procedure_Call_Statement (Loc,
-                      Name => New_Occurrence_Of (
-                        RTE (RE_Protected_Single_Entry_Call), Loc),
+                      Name                   =>
+                        New_Occurrence_Of
+                          (RTE (RE_Protected_Single_Entry_Call), Loc),
 
                       Parameter_Associations => New_List (
                         Make_Attribute_Reference (Loc,
@@ -4914,7 +4930,8 @@ package body Exp_Ch9 is
          else
             Call :=
               Make_Procedure_Call_Statement (Loc,
-                Name => New_Occurrence_Of (RTE (RE_Call_Simple), Loc),
+                Name                   =>
+                  New_Occurrence_Of (RTE (RE_Call_Simple), Loc),
                 Parameter_Associations => New_List (Parm1, Parm2, Parm3));
 
          end if;
@@ -4935,11 +4952,11 @@ package body Exp_Ch9 is
                then
                   N_Node :=
                     Make_Assignment_Statement (Loc,
-                      Name => New_Copy (Actual),
+                      Name       => New_Copy (Actual),
                       Expression =>
                         Make_Explicit_Dereference (Loc,
                           Make_Selected_Component (Loc,
-                            Prefix => New_Occurrence_Of (P, Loc),
+                            Prefix        => New_Occurrence_Of (P, Loc),
                             Selector_Name =>
                               Make_Identifier (Loc, Chars (Formal)))));
 
@@ -5037,7 +5054,7 @@ package body Exp_Ch9 is
 
          Call :=
            Make_Procedure_Call_Statement (Loc,
-             Name => Name,
+             Name                   => Name,
              Parameter_Associations =>
                New_List (Make_Attribute_Reference (Loc,
                  Prefix         => New_Occurrence_Of (Chain, Loc),
@@ -5320,7 +5337,7 @@ package body Exp_Ch9 is
             declare
                Bas : Entity_Id :=
                        Base_Type
-                        (Etype (Discrete_Subtype_Definition (Parent (Efam))));
+                         (Etype (Discrete_Subtype_Definition (Parent (Efam))));
 
                Bas_Decl : Node_Id := Empty;
                Lo, Hi   : Node_Id;
@@ -5590,10 +5607,8 @@ package body Exp_Ch9 is
       else
          if Is_Protected_Type (Ntyp) then
             Sel := Name_uObject;
-
          elsif Is_Task_Type (Ntyp) then
             Sel := Name_uTask_Id;
-
          else
             raise Program_Error;
          end if;
@@ -5764,7 +5779,6 @@ package body Exp_Ch9 is
       --  Now add lengths of preceding entries and entry families
 
       Prev := First_Entity (Ttyp);
-
       while Chars (Prev) /= Chars (Ent)
         or else (Ekind (Prev) /= Ekind (Ent))
         or else not Sem_Ch6.Type_Conformant (Ent, Prev)

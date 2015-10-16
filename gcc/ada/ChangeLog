@@ -1,3 +1,13 @@
+2015-10-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch9.adb (Build_Simple_Entry_Call): Set_Is_Internal on
+	the temporary object used for a by-copy entry parameter, to
+	ensure that the object doesn't get its No_Initialization flag
+	reset later in Default_Initialize_Object. Also, generate the
+	assignment of the actual to the temporary in the additional case
+	of a scalar out parameter whose type has a Default_Value aspect.
+	* exp_ch3.adb: Fix minor typo in comment.
+
 2015-10-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb, sem_util.ads, sem_ch6.adb, sem_ch7.adb, sem_ch8.adb:
