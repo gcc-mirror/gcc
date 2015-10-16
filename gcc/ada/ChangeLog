@@ -42,6 +42,7 @@
 	* checks.adb: Fix typo.
 	* s-osinte-linux.ads: Add header.
 	* projects.texi: Removed, no longer used.
+	* gcc-interface/Make-lang.in: Update dependencies
 	* s-multip.adb: Minor: fix header.
 	* sem_ch3.adb, exp_ch7.adb, g-dirope.ads, sinfo.ads, types.ads,
 	a-textio.adb, s-exctra.adb, ali.adb, back_end.ads, exp_intr.adb,

@@ -659,7 +659,7 @@ ada.tags: force
 
 # Generate documentation.
 
-doc/gnat_ugn.info: ada/gnat_ugn.texi ada/projects.texi \
+doc/gnat_ugn.info: ada/gnat_ugn.texi \
    $(gcc_docdir)/include/fdl.texi $(gcc_docdir)/include/gcc-common.texi	\
    gcc-vers.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
@@ -717,7 +717,7 @@ ada.html:
 
 ada.install-html:
 
-doc/gnat_ugn.dvi: ada/gnat_ugn.texi ada/projects.texi \
+doc/gnat_ugn.dvi: ada/gnat_ugn.texi \
 	$(gcc_docdir)/include/fdl.texi	\
 	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
@@ -729,7 +729,7 @@ doc/gnat_rm.dvi: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
 doc/gnat-style.dvi: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
-doc/gnat_ugn.pdf: ada/gnat_ugn.texi ada/projects.texi \
+doc/gnat_ugn.pdf: ada/gnat_ugn.texi \
 	$(gcc_docdir)/include/fdl.texi	\
 	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
