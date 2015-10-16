@@ -650,7 +650,8 @@ package body Exp_Aggr is
       --  component associations that actually need tag adjustment, similar
       --  to the test in Component_Not_OK_For_Backend for record aggregates
       --  with tagged components, but not clear whether it's worthwhile ???;
-      --  in the case of the JVM, object tags are handled implicitly)
+      --  in the case of virtual machines (no Tagged_Type_Expansion), object
+      --  tags are handled implicitly).
 
       if Is_Tagged_Type (Component_Type (Typ))
         and then Tagged_Type_Expansion

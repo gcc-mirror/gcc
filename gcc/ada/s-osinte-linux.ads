@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -525,6 +525,10 @@ package System.OS_Interface is
      (key        : access pthread_key_t;
       destructor : destructor_pointer) return int;
    pragma Import (C, pthread_key_create, "pthread_key_create");
+
+   ----------------
+   -- Extensions --
+   ----------------
 
    CPU_SETSIZE : constant := 1_024;
    --  Size of the cpu_set_t mask on most linux systems (SUSE 11 uses 4_096).

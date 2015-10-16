@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 --  The implementation of Ada.Text_IO.Get_Line is split into a subunit so that
 --  different implementations can be used on different systems. This is the
 --  standard implementation (it uses low level features not suitable for use
---  in the JVM or .NET implementations).
+--  on virtual machines).
 
 with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;

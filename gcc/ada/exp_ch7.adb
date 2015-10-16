@@ -3318,7 +3318,7 @@ package body Exp_Ch7 is
       Expr : Node_Id;
 
    begin
-      --  Standard run-time and .NET/JVM targets use the specialized routine
+      --  Standard run-time use the specialized routine
       --  Raise_From_Controlled_Operation.
 
       if Exception_Extra_Info
@@ -7656,8 +7656,8 @@ package body Exp_Ch7 is
       --  Procedure call or raise statement
 
    begin
-      --  Standard run-time, .NET/JVM targets: add choice parameter E and pass
-      --  it to Raise_From_Controlled_Operation so that the original exception
+      --  Standard run-time: add choice parameter E and pass it to
+      --  Raise_From_Controlled_Operation so that the original exception
       --  name and message can be recorded in the exception message for
       --  Program_Error.
 
@@ -8083,11 +8083,10 @@ package body Exp_Ch7 is
       Curr_S := Current_Scope;
       Encl_S := Scope (Curr_S);
 
-      --  Insert all actions inluding cleanup generated while analyzing or
+      --  Insert all actions including cleanup generated while analyzing or
       --  expanding the transient context back into the tree. Manage the
       --  secondary stack when the object declaration appears in a library
-      --  level package [body]. This is not needed for .NET/JVM as those do
-      --  not support the secondary stack.
+      --  level package [body].
 
       Insert_Actions_In_Scope_Around
         (N         => N,

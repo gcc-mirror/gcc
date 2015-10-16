@@ -6539,7 +6539,7 @@ package Sinfo is
       --  For some back ends, such as gcc with ZCX, "at end" is implemented
       --  entirely in the back end. In this case, a handled sequence of
       --  statements with an "at end" cannot also have exception handlers.
-      --  For other back ends, such as gcc with SJLJ and .NET, the
+      --  For other back ends, such as gcc with front-end SJLJ, the
       --  implementation is split between the front end and back end; the front
       --  end implements 3, and the back end implements 1 and 2. In this case,
       --  if there is an "at end", the front end inserts the appropriate

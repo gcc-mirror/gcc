@@ -10420,10 +10420,7 @@ package body Exp_Ch3 is
       --  we don't want an abstract version created because types derived from
       --  the abstract type may not even have Input available (for example if
       --  derived from a private view of the abstract type that doesn't have
-      --  a visible Input), but a VM such as .NET or the Java VM can treat the
-      --  operation as inherited anyway, and we don't want an abstract function
-      --  to be (implicitly) inherited in that case because it can lead to a VM
-      --  exception.
+      --  a visible Input).
 
       --  Do not generate stream routines for type Finalization_Master because
       --  a master may never appear in types and therefore cannot be read or

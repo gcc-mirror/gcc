@@ -10024,9 +10024,6 @@ package body Sem_Ch3 is
          --  operations used in dispatching selects since we always provide
          --  automatic overridings for these subprograms.
 
-         --  Also ignore this rule for convention CIL since .NET libraries
-         --  do bizarre things with interfaces???
-
          --  The partial view of T may have been a private extension, for
          --  which inherited functions dispatching on result are abstract.
          --  If the full view is a null extension, there is no need for
