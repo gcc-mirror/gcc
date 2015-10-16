@@ -226,7 +226,7 @@ package body Ada.Exceptions is
       ---------------------------------------
 
       function Allocate_Occurrence return EOA;
-      --  Allocate an exception occurence (as well as the machine occurence)
+      --  Allocate an exception occurrence (as well as the machine occurrence)
 
       procedure Propagate_Exception (Excep : EOA);
       pragma No_Return (Propagate_Exception);
