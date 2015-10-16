@@ -7794,6 +7794,26 @@ package body Sem_Util is
       end if;
    end Get_Reason_String;
 
+   --------------------------------
+   -- Get_Reference_Discriminant --
+   --------------------------------
+
+   function Get_Reference_Discriminant (Typ : Entity_Id) return Entity_Id is
+      D : Entity_Id;
+   begin
+      D := First_Discriminant (Typ);
+      while Present (D) loop
+         if Has_Implicit_Dereference (D) then
+            return D;
+         end if;
+         Next_Discriminant (D);
+      end loop;
+
+      --  Type must have a proper access discriminant.
+
+      pragma Assert (False);
+   end Get_Reference_Discriminant;
+
    ---------------------------
    -- Get_Referenced_Object --
    ---------------------------
@@ -12233,7 +12253,15 @@ package body Sem_Util is
            and then
              Has_Implicit_Dereference (Etype (Name (Original_Node (AV))))
          then
-            return True;
+
+            --  Check that this is not a constant reference.
+
+            return not Is_Access_Constant (Etype (Prefix (AV)));
+
+         elsif Has_Implicit_Dereference (Etype (Original_Node (AV))) then
+            return
+              not Is_Access_Constant (Etype
+                (Get_Reference_Discriminant (Etype (Original_Node (AV)))));
 
          else
             return Is_OK_Variable_For_Out_Formal (Original_Node (AV));

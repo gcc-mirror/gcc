@@ -368,17 +368,6 @@ __gnat_decode (const char *coded_name, char *ada_name, int verbose)
 extern "C" {
 #endif
 
-#ifdef IN_RTS
-char *
-ada_demangle (const char *coded_name)
-{
-  char ada_name[2048];
-
-  __gnat_decode (coded_name, ada_name, 0);
-  return xstrdup (ada_name);
-}
-#endif
-
 void
 get_encoding (const char *coded_name, char *encoding)
 {

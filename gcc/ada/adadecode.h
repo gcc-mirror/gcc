@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *           Copyright (C) 2001-2011, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2001-2015, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -50,11 +50,6 @@ extern void __gnat_decode (const char *, char *, int);
 /* This function will return the GNAT encodings, in a colon-separated list,
    from the encoded form. The Ada encodings are described in exp_dbug.ads.  */
 extern void get_encoding (const char *, char *);
-
-/* ada_demangle is added for COMPATIBILITY ONLY. It has the name of the
-   function used in the binutils and GDB. Always consider using __gnat_decode
-   instead of ada_demangle. Caller must free the pointer returned.  */
-extern char *ada_demangle (const char *);
 
 #ifdef __cplusplus
 }
