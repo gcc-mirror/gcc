@@ -180,30 +180,10 @@ create_tmp_var_for (struct nesting_info *info, tree type, const char *prefix)
    Mark it for addressability as necessary.  */
 
 tree
-build_addr (tree exp, tree context)
+build_addr (tree exp)
 {
-  tree base = exp;
-  tree save_context;
-  tree retval;
-
-  while (handled_component_p (base))
-    base = TREE_OPERAND (base, 0);
-
-  if (DECL_P (base))
-    TREE_ADDRESSABLE (base) = 1;
-
-  /* Building the ADDR_EXPR will compute a set of properties for
-     that ADDR_EXPR.  Those properties are unfortunately context
-     specific, i.e., they are dependent on CURRENT_FUNCTION_DECL.
-
-     Temporarily set CURRENT_FUNCTION_DECL to the desired context,
-     build the ADDR_EXPR, then restore CURRENT_FUNCTION_DECL.  That
-     way the properties are for the ADDR_EXPR are computed properly.  */
-  save_context = current_function_decl;
-  current_function_decl = context;
-  retval = build_fold_addr_expr (exp);
-  current_function_decl = save_context;
-  return retval;
+  mark_addressable (exp);
+  return build_fold_addr_expr (exp);
 }
 
 /* Insert FIELD into TYPE, sorted by alignment requirements.  */
@@ -766,7 +746,7 @@ get_static_chain (struct nesting_info *info, tree target_context,
 
   if (info->context == target_context)
     {
-      x = build_addr (info->frame_decl, target_context);
+      x = build_addr (info->frame_decl);
       info->static_chain_added |= 1;
     }
   else
@@ -2162,10 +2142,10 @@ convert_nl_goto_reference (gimple_stmt_iterator *gsi, bool *handled_ops_p,
   /* Build: __builtin_nl_goto(new_label, &chain->nl_goto_field).  */
   field = get_nl_goto_field (i);
   x = get_frame_field (info, target_context, field, gsi);
-  x = build_addr (x, target_context);
+  x = build_addr (x);
   x = gsi_gimplify_val (info, x, gsi);
   call = gimple_build_call (builtin_decl_implicit (BUILT_IN_NONLOCAL_GOTO),
-			    2, build_addr (new_label, target_context), x);
+			    2, build_addr (new_label), x);
   gsi_replace (gsi, call, false);
 
   /* We have handled all of STMT's operands, no need to keep going.  */
@@ -2271,7 +2251,7 @@ convert_tramp_reference_op (tree *tp, int *walk_subtrees, void *data)
 
       /* Compute the address of the field holding the trampoline.  */
       x = get_frame_field (info, target_context, x, &wi->gsi);
-      x = build_addr (x, target_context);
+      x = build_addr (x);
       x = gsi_gimplify_val (info, x, &wi->gsi);
 
       /* Do machine-specific ugliness.  Normally this will involve
@@ -2809,7 +2789,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	    continue;
 
 	  if (use_pointer_in_frame (p))
-	    x = build_addr (p, context);
+	    x = build_addr (p);
 	  else
 	    x = p;
 
@@ -2852,13 +2832,13 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	    continue;
 
 	  gcc_assert (DECL_STATIC_CHAIN (i->context));
-	  arg3 = build_addr (root->frame_decl, context);
+	  arg3 = build_addr (root->frame_decl);
 
-	  arg2 = build_addr (i->context, context);
+	  arg2 = build_addr (i->context);
 
 	  x = build3 (COMPONENT_REF, TREE_TYPE (field),
 		      root->frame_decl, field, NULL_TREE);
-	  arg1 = build_addr (x, context);
+	  arg1 = build_addr (x);
 
 	  x = builtin_decl_implicit (BUILT_IN_INIT_TRAMPOLINE);
 	  stmt = gimple_build_call (x, 3, arg1, arg2, arg3);

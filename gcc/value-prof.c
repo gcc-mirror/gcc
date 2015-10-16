@@ -1376,8 +1376,7 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   load_stmt = gimple_build_assign (tmp0, tmp);
   gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 
-  tmp = fold_convert (optype, build_addr (direct_call->decl,
-					  current_function_decl));
+  tmp = fold_convert (optype, build_addr (direct_call->decl));
   load_stmt = gimple_build_assign (tmp1, tmp);
   gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 
