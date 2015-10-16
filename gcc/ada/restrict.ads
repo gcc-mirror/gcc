@@ -282,7 +282,7 @@ package Restrict is
 
    procedure Check_Restriction_No_Specification_Of_Aspect (N : Node_Id);
    --  N is the node id for an N_Aspect_Specification. An error message
-   --  (warning) will be issued if a restriction (warning) was previous set
+   --  (warning) will be issued if a restriction (warning) was previously set
    --  for this aspect using Set_No_Specification_Of_Aspect.
 
    procedure Check_Restriction_No_Use_Of_Attribute (N : Node_Id);
@@ -292,7 +292,7 @@ package Restrict is
 
    procedure Check_Restriction_No_Use_Of_Entity (N : Node_Id);
    --  N is the node id for an entity reference. An error message (warning)
-   --  will be issued if a restriction (warning) was previous set for this
+   --  will be issued if a restriction (warning) was previously set for this
    --  entity name using Set_No_Use_Of_Entity.
 
    procedure Check_Restriction_No_Use_Of_Pragma (N : Node_Id);

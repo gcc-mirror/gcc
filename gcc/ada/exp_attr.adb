@@ -5809,7 +5809,7 @@ package body Exp_Attr is
          --  c) If the prefix is a task type, the size is obtained from the
          --  size variable created for each task type
 
-         --  d) If no storage_size was specified for the type , there is no
+         --  d) If no storage_size was specified for the type, there is no
          --  size variable, and the value is a system-specific default.
 
          else
