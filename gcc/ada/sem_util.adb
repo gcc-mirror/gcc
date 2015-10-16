@@ -11504,7 +11504,7 @@ package body Sem_Util is
       then
          return Is_EVF_Expression (Expression (N));
 
-      --  Attributes 'Loop_Entry, 'Old and 'Update are an EVF expression when
+      --  Attributes 'Loop_Entry, 'Old, and 'Update are EVF expressions when
       --  their prefix denotes an EVF expression.
 
       elsif Nkind (N) = N_Attribute_Reference
@@ -14214,8 +14214,8 @@ package body Sem_Util is
    --  Start of processing Mark_Coextensions
 
    begin
-      --  An allocator that appears on the right hand side of an assignment is
-      --  treated as a potentially dynamic coextension when the right hand side
+      --  An allocator that appears on the right-hand side of an assignment is
+      --  treated as a potentially dynamic coextension when the right-hand side
       --  is an allocator or a qualified expression.
 
       --    Obj := new ...'(new Coextension ...);
@@ -14227,7 +14227,7 @@ package body Sem_Util is
 
       --  An allocator that appears within the expression of a simple return
       --  statement is treated as a potentially dynamic coextension when the
-      --  expression is either aggregate, allocator or qualified expression.
+      --  expression is either aggregate, allocator, or qualified expression.
 
       --    return (new Coextension ...);
       --    return new ...'(new Coextension ...);
@@ -14257,8 +14257,8 @@ package body Sem_Util is
              or else
                Nkind (Parent (Context_Nod)) = N_Extended_Return_Statement;
 
-      --  This routine should not be called with constructs which may not
-      --  contain coextensions.
+      --  This routine should not be called with constructs that cannot contain
+      --  coextensions.
 
       else
          raise Program_Error;

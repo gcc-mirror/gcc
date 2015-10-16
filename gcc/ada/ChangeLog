@@ -1,3 +1,19 @@
+2015-10-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* prj.adb, sem_util.adb, exp_ch6.adb: Minor reformatting.
+
+2015-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Formal_Container_Element_Loop): Modify
+	expansion to allow element iteration over formal containers
+	whose elements are indefinite types.
+
+2015-10-16  Doug Rupp  <rupp@adacore.com>
+
+	* s-taprop-linux.adb (Monotonic_Clock): Call clock_gettime
+	instead of gettimeofday.
+	* s-osinte-linux.ads (clock_gettime): New imported subprogram.
+
 2015-10-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration):

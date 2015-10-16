@@ -8979,8 +8979,8 @@ package body Exp_Ch6 is
          Add_Unconstrained_Actuals_To_Build_In_Place_Call
            (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
 
-      --  The allocation for indefinite library level objects occurs on the
-      --  heap as opposed to the secondary stack. This accomodates DLLs where
+      --  The allocation for indefinite library-level objects occurs on the
+      --  heap as opposed to the secondary stack. This accommodates DLLs where
       --  the secondary stack is destroyed after each library unload. This is
       --  a hybrid mechanism where a stack-allocated object lives on the heap.
 
@@ -8993,7 +8993,7 @@ package body Exp_Ch6 is
 
          --  Create a finalization master for the access result type to ensure
          --  that the heap allocation can properly chain the object and later
-         --  finalize it when the library unit does out of scope.
+         --  finalize it when the library unit goes out of scope.
 
          if Needs_Finalization (Etype (Func_Call)) then
             Build_Finalization_Master

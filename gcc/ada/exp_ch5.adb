@@ -2899,8 +2899,23 @@ package body Exp_Ch5 is
       --       Cursor := Next (Container, Cursor);
       --    end loop;
 
+      --   However this expansion is not legal if the element is indefinite.
+      --   In that case we create a block to hold a variable declaration
+      --   initialized with a call to Element, and generate:
+
+      --    Cursor : Cursor_type := First (Container);
+      --    while Has_Element (Cursor, Container) loop
+      --       declare
+      --          Elmt : Element-Type := Element (Container, Cursor);
+      --       begin
+      --          <original loop statements>
+      --          Cursor := Next (Container, Cursor);
+      --       end;
+      --    end loop;
+
       Build_Formal_Container_Iteration
         (N, Container, Cursor, Init, Advance, New_Loop);
+      Append_To (Stats, Advance);
 
       Set_Ekind (Cursor, E_Variable);
       Insert_Action (N, Init);
@@ -2912,33 +2927,50 @@ package body Exp_Ch5 is
           Defining_Identifier => Element,
           Object_Definition   => New_Occurrence_Of (Etype (Element_Op), Loc));
 
+      if not Is_Constrained (Etype (Element_Op)) then
+         Set_Expression (Elmt_Decl,
+           Make_Function_Call (Loc,
+             Name                   => New_Occurrence_Of (Element_Op, Loc),
+             Parameter_Associations => New_List (
+               New_Occurrence_Of (Container, Loc),
+               New_Occurrence_Of (Cursor, Loc))));
+
+         Set_Statements (New_Loop,
+           New_List
+             (Make_Block_Statement (Loc,
+                Declarations => New_List (Elmt_Decl),
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements =>  Stats))));
+
+      else
+         Elmt_Ref :=
+           Make_Assignment_Statement (Loc,
+             Name       => New_Occurrence_Of (Element, Loc),
+             Expression =>
+               Make_Function_Call (Loc,
+                 Name                   => New_Occurrence_Of (Element_Op, Loc),
+                 Parameter_Associations => New_List (
+                   New_Occurrence_Of (Container, Loc),
+                   New_Occurrence_Of (Cursor, Loc))));
+
+         Prepend (Elmt_Ref, Stats);
+
+         --  The loop is rewritten as a block, to hold the element declaration
+
+         New_Loop :=
+           Make_Block_Statement (Loc,
+             Declarations               => New_List (Elmt_Decl),
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements =>  New_List (New_Loop)));
+      end if;
+
       --  The element is only modified in expanded code, so it appears as
       --  unassigned to the warning machinery. We must suppress this spurious
       --  warning explicitly.
 
       Set_Warnings_Off (Element);
-
-      Elmt_Ref :=
-        Make_Assignment_Statement (Loc,
-          Name       => New_Occurrence_Of (Element, Loc),
-          Expression =>
-            Make_Function_Call (Loc,
-              Name                   => New_Occurrence_Of (Element_Op, Loc),
-              Parameter_Associations => New_List (
-                New_Occurrence_Of (Container, Loc),
-                New_Occurrence_Of (Cursor, Loc))));
-
-      Prepend (Elmt_Ref, Stats);
-      Append_To (Stats, Advance);
-
-      --  The loop is rewritten as a block, to hold the element declaration
-
-      New_Loop :=
-        Make_Block_Statement (Loc,
-          Declarations               => New_List (Elmt_Decl),
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements =>  New_List (New_Loop)));
 
       Rewrite (N, New_Loop);
 
