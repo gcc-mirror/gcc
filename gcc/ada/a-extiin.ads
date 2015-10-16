@@ -19,8 +19,8 @@ package Ada.Execution_Time.Interrupts is
 
    pragma Unimplemented_Unit;
 
-   function Clock (Interrupt : Ada.Interrupts.Interrupt_Id) return CPU_Time;
+   function Clock (Interrupt : Ada.Interrupts.Interrupt_ID) return CPU_Time;
 
-   function Supported (Interrupt : Ada.Interrupts.Interrupt_Id) return Boolean;
+   function Supported (Interrupt : Ada.Interrupts.Interrupt_ID) return Boolean;
 
 end Ada.Execution_Time.Interrupts;

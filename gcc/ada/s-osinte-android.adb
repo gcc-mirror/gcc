@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---                     Copyright (C) 1995-2014, AdaCore                     --
+--                     Copyright (C) 1995-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,6 @@ pragma Polling (Off);
 --  that are needed by children of System.
 
 with Interfaces.C;            use Interfaces.C;
-with Interfaces.C.Extensions; use Interfaces.C.Extensions;
 
 package body System.OS_Interface is
 
@@ -75,49 +74,5 @@ package body System.OS_Interface is
       return timespec'(tv_sec => S,
                        tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
-
-   -------------------
-   -- clock_gettime --
-   -------------------
-
-   function clock_gettime
-     (clock_id : clockid_t;
-      tp       : access timespec) return int
-   is
-      pragma Unreferenced (clock_id);
-
-      --  Android/Linux don't have clock_gettime, so use gettimeofday
-
-      use Interfaces;
-
-      type timeval is array (1 .. 3) of C.long;
-      --  The timeval array is sized to contain long_long sec and long usec.
-      --  If long_long'Size = long'Size then it will be overly large but that
-      --  won't effect the implementation since it's not accessed directly.
-
-      procedure timeval_to_duration
-        (T    : not null access timeval;
-         sec  : not null access C.Extensions.long_long;
-         usec : not null access C.long);
-      pragma Import (C, timeval_to_duration, "__gnat_timeval_to_duration");
-
-      Micro  : constant := 10**6;
-      sec    : aliased C.Extensions.long_long;
-      usec   : aliased C.long;
-      TV     : aliased timeval;
-      Result : int;
-
-      function gettimeofday
-        (Tv : access timeval;
-         Tz : System.Address := System.Null_Address) return int;
-      pragma Import (C, gettimeofday, "gettimeofday");
-
-   begin
-      Result := gettimeofday (TV'Access, System.Null_Address);
-      pragma Assert (Result = 0);
-      timeval_to_duration (TV'Access, sec'Access, usec'Access);
-      tp.all := To_Timespec (Duration (sec) + Duration (usec) / Micro);
-      return Result;
-   end clock_gettime;
 
 end System.OS_Interface;
