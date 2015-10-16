@@ -1,3 +1,23 @@
+2015-10-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration):
+	Indefinite or limited library level objects are now returned on
+	the heap.
+	* exp_ch7.adb (Build_Finalization_Master): Add formal
+	parameter For_Lib_Level. Add context specific insertion for a
+	finalization master created for an access result type related
+	to a build-in-place function call used to initialize a library
+	level object.
+	* exp_ch7.ads (Build_Finalization_Master): Add formal parameter
+	For_Lib_Level. Update the comment on usage.
+	* sem_util.adb (Mark_Coextensions): Code cleanup.
+
+2015-10-16  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.adb (For_Every_Project_Imported_Context): Fix handling
+	of aggregated projects with duplicate names.
+	* a-ngelfu.ads: Minor whitespace fix.
+
 2015-10-16  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Build_Predicate_Functions): The expression for
