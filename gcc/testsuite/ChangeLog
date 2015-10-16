@@ -1,5 +1,10 @@
 2015-10-16  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.target/i386/iamcu/test_basic_returning.c
+	(def_test_returning_type): Use union to check float return bits.
+
+2015-10-16  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* gcc.target/i386/iamcu/test_basic_64bit_returning.c (main):
 	Replace printf with __builtin_printf.
 
