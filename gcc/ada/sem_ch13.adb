@@ -471,10 +471,10 @@ package body Sem_Ch13 is
                              ("machine scalar rules not followed for&",
                               First_Bit (CC), Comp);
 
-                           Error_Msg_Uint_1 := Lbit;
+                           Error_Msg_Uint_1 := Lbit + 1;
                            Error_Msg_Uint_2 := Max_Machine_Scalar_Size;
                            Error_Msg_F
-                             ("\last bit (^) exceeds maximum machine "
+                             ("\last bit + 1 (^) exceeds maximum machine "
                               & "scalar size (^)",
                               First_Bit (CC));
 
@@ -482,7 +482,7 @@ package body Sem_Ch13 is
                               Error_Msg_Uint_1 := SSU;
                               Error_Msg_F
                                 ("\and is not a multiple of Storage_Unit (^) "
-                                 & "(RM 13.4.1(10))",
+                                 & "(RM 13.5.1(10))",
                                  First_Bit (CC));
 
                            else

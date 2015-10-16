@@ -405,6 +405,11 @@ package body Inline is
             Pack : constant Entity_Id := Get_Code_Unit_Entity (E);
 
          begin
+            --  Ensure that Analyze_Inlined_Bodies will be invoked after
+            --  completing the analysis of the current unit.
+
+            Inline_Processing_Required := True;
+
             if Pack = E then
 
                --  Library-level inlined function. Add function itself to

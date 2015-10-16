@@ -1,3 +1,28 @@
+2015-10-16  Javier Miranda  <miranda@adacore.com>
+
+	* inline.adb (Add_Inlined_Body): Ensure that
+	Analyze_Inlined_Bodies will be invoked after completing the
+	analysis of the current unit.
+
+2015-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Adjust_Record_For_Reverse_Bit_Order): Fix error
+	message for bad last bit position.
+	* sem_ch3.adb, sem_util.adb, sem_util.ads: Minor reformatting.
+
+2015-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Case_Statement): If expression is
+	compile-time known but does not obey a static predicate on
+	its type, replace the case statement with a raise statement,
+	as with other statically detected constraint violations.
+
+2015-10-16  Bob Duff  <duff@adacore.com>
+
+	* s-traceb.adb, s-traceb.ads, s-traceb-hpux.adb, s-traceb-mastop.adb:
+	Reinstate code.
+	* opt.ads: Minor typo.
+
 2015-10-16  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Gather_Components): When gathering components

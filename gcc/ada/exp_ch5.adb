@@ -2590,9 +2590,20 @@ package body Exp_Ch5 is
 
       --  If the value is static but its subtype is predicated and the value
       --  does not obey the predicate, the value is marked non-static, and
-      --  there can be no corresponding static alternative.
+      --  there can be no corresponding static alternative. In that case we
+      --  replace the case statement with an exception, regardless of whether
+      --  assertions are enabled or not.
 
       if Compile_Time_Known_Value (Expr)
+        and then Has_Predicates (Etype (Expr))
+        and then not Is_OK_Static_Expression (Expr)
+      then
+         Rewrite (N,
+           Make_Raise_Constraint_Error (Loc, Reason => CE_Invalid_Data));
+         Analyze (N);
+         return;
+
+      elsif Compile_Time_Known_Value (Expr)
         and then (not Has_Predicates (Etype (Expr))
                    or else Is_Static_Expression (Expr))
       then

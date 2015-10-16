@@ -17945,9 +17945,9 @@ package body Sem_Ch3 is
      (C : Entity_Id;
       N : Node_Id := Empty) return Boolean
    is
-      Original_Comp  : Entity_Id := Empty;
+      Original_Comp : Entity_Id := Empty;
       Original_Type : Entity_Id;
-      Type_Scope     : Entity_Id;
+      Type_Scope    : Entity_Id;
 
       function Is_Local_Type (Typ : Entity_Id) return Boolean;
       --  Check whether parent type of inherited component is declared locally,
@@ -18088,9 +18088,9 @@ package body Sem_Ch3 is
                if Ancestor = Original_Type then
                   return True;
 
-               --  The ancestor may have a partial view of the original
-               --  type, but if the full view is in scope, as in a child
-               --  body, the component is visible.
+               --  The ancestor may have a partial view of the original type,
+               --  but if the full view is in scope, as in a child body, the
+               --  component is visible.
 
                elsif In_Private_Part (Scope (Original_Type))
                  and then Full_View (Ancestor) = Original_Type
@@ -18099,7 +18099,7 @@ package body Sem_Ch3 is
 
                elsif Ancestor = Etype (Ancestor) then
 
-                  --  No further ancestors to examine.
+                  --  No further ancestors to examine
 
                   return False;
                end if;
