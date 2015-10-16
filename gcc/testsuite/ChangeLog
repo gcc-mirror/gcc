@@ -1,3 +1,8 @@
+2015-10-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/iamcu/test_passing_unions.c (main): Properly
+	initialize u5.
+
 2015-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/67966
