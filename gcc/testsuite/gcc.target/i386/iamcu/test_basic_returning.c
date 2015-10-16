@@ -39,7 +39,10 @@ fun_test_returning_float (void)
 
 #define def_test_returning_type(fun, type, ret, reg) \
   { type var = WRAP_RET (fun) (); \
-  assert (ret == (type) reg && ret == var); }
+    union { type r; unsigned long reg; } u; \
+    u.reg = reg; \
+  assert (ret == u.r && ret == var); }
+
 int
 main (void)
 {
