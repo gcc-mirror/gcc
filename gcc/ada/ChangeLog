@@ -1,3 +1,18 @@
+2015-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Subp_Info): Remove Listed component.
+	(Add_Inlined_Subprogram): Take an entity instead of an index.
+	Do not set Listed component to True.
+	(New_Entry): Do not initialize Listed component to False.
+	(Analyze_Inlined_Bodies): Do not test Listed component
+	(Must_Inline): Add calls not in the main unit only
+	if they are in a subprogram that can be inlined outside its unit.
+	(Add_Inlined_Body): Move test around and add comment.
+
+2015-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sinfo.ads, einfo.ads: monir clean ups.
+
 2015-10-16  Arnaud Charlet  <charlet@adacore.com>
 
 	* usage.adb, debug.adb, a-except.adb, a-except.ads, a-except-2005.adb,
