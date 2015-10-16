@@ -618,7 +618,9 @@ package body Ada.Containers.Vectors is
    end Finalize;
 
    procedure Finalize (Object : in out Iterator) is
+      pragma Warnings (Off);
       pragma Assert (T_Check); -- not called if check suppressed
+      pragma Warnings (On);
    begin
       Unbusy (Object.Container.TC);
    end Finalize;
