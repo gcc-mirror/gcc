@@ -1,3 +1,21 @@
+2015-10-16  Bob Duff  <duff@adacore.com>
+
+	* a-tags.adb, s-trasym.adb, s-trasym.ads: Make sure we don't get
+	elaboration circularities when polling is turned on.
+
+2015-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Replace_Anonymous_Access_To_Protected_Subprogram):
+	When creating a full declaration for a formal parameter, the
+	entity is labelled as an Itype, so set Associated_Node_For_Itype
+	accordingly.
+	* einfo.ads: Clarify use of Associated_Node_For_Itype.
+
+2015-10-16  Bob Duff  <duff@adacore.com>
+
+	* bindgen: Move pragmas Warnings earlier, otherwise
+	we can get warnings on with_clauses.
+
 2015-10-16  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-osprim-mingw.adb, s-osprim-x32.adb, s-taprop-mingw.adb,

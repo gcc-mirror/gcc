@@ -5919,10 +5919,12 @@ package body Sem_Ch3 is
       else
          --  Temporarily remove the current scope (record or subprogram) from
          --  the stack to add the new declarations to the enclosing scope.
+         --  The anonymous entity is an Itype with the proper attributes.
 
          Scope_Stack.Decrement_Last;
          Analyze (Decl);
          Set_Is_Itype (Anon);
+         Set_Associated_Node_For_Itype (Anon, N);
          Scope_Stack.Append (Curr_Scope);
       end if;
 
