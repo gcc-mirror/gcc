@@ -473,7 +473,6 @@ package body Sem_Ch5 is
       elsif Is_Limited_Type (T1)
         and then not Assignment_OK (Lhs)
         and then not Assignment_OK (Original_Node (Lhs))
-        and then not Is_Value_Type (T1)
       then
          --  CPP constructors can only be called in declarations
 

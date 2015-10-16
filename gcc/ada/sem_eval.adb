@@ -52,7 +52,6 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 
 package body Sem_Eval is
@@ -6238,12 +6237,6 @@ package body Sem_Eval is
         and then Is_Known_Valid (Typ)
         and then Esize (Etype (N)) <= Esize (Typ)
         and then not Has_Biased_Representation (Etype (N))
-
-        --  This check cannot be disabled under VM targets because in some
-        --  unusual cases the backend of the native compiler raises a run-time
-        --  exception but the virtual machines do not raise any exception.
-
-        and then VM_Target = No_VM
       then
          return In_Range;
 

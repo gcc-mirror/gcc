@@ -50,7 +50,6 @@ with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
 with Sinfo;    use Sinfo;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -1148,7 +1147,7 @@ package body Sem_Disp is
                            --  No code required to register primitives in VM
                            --  targets
 
-                           elsif VM_Target /= No_VM then
+                           elsif not Tagged_Type_Expansion then
                               null;
 
                            else
@@ -1309,7 +1308,7 @@ package body Sem_Disp is
                        and then Present (Interface_Alias (Prim))
                        and then Alias (Prim) = Subp
                        and then not Building_Static_DT (Tagged_Type)
-                       and then VM_Target = No_VM
+                       and then Tagged_Type_Expansion
                      then
                         Insert_Actions_After (Subp_Body,
                           Register_Primitive (Sloc (Subp_Body), Prim => Prim));
@@ -2546,7 +2545,7 @@ package body Sem_Disp is
          Next_Actual (Arg);
       end loop;
 
-      --  Expansion of dispatching calls is suppressed when VM_Target, because
+      --  Expansion of dispatching calls is suppressed on VM targets, because
       --  the VM back-ends directly handle the generation of dispatching calls
       --  and would have to undo any expansion to an indirect call.
 

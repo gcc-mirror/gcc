@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1601,12 +1601,6 @@ begin
    Osint.Add_Default_Search_Dirs;
    Targparm.Get_Target_Parameters;
 
-   case VM_Target is
-      when JVM_Target => Gcc := new String'("jvm-gnatcompile");
-      when CLI_Target => Gcc := new String'("dotnet-gnatcompile");
-      when No_VM      => null;
-   end case;
-
    --  Compile the bind file with the following switches:
 
    --    -gnatA   stops reading gnat.adc, since we don't know what
@@ -1651,15 +1645,7 @@ begin
    end if;
 
    if Linker_Path = null then
-      if VM_Target = CLI_Target then
-         Linker_Path := System.OS_Lib.Locate_Exec_On_Path ("dotnet-ld");
-
-         if Linker_Path = null then
-            Exit_With_Error ("Couldn't locate dotnet-ld");
-         end if;
-      else
-         Linker_Path := Gcc_Path;
-      end if;
+      Linker_Path := Gcc_Path;
    end if;
 
    Write_Header;
@@ -1986,7 +1972,7 @@ begin
             J := J + 1;
          end loop;
 
-         if Linker_Path = Gcc_Path and then VM_Target = No_VM then
+         if Linker_Path = Gcc_Path then
 
             --  For systems where the default is to link statically with
             --  libgcc, if gcc is not called with -shared-libgcc, call it
@@ -2091,10 +2077,7 @@ begin
       Delete (Binder_Ali_File.all & ASCII.NUL);
       Delete (Binder_Spec_Src_File.all & ASCII.NUL);
       Delete (Binder_Body_Src_File.all & ASCII.NUL);
-
-      if VM_Target = No_VM then
-         Delete (Binder_Obj_File.all & ASCII.NUL);
-      end if;
+      Delete (Binder_Obj_File.all & ASCII.NUL);
    end if;
 
    Exit_Program (E_Success);

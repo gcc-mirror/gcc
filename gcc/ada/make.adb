@@ -671,12 +671,7 @@ package body Make is
    -- Compiler, Binder & Linker Data and Subprograms --
    ----------------------------------------------------
 
-   Gcc          : String_Access := Program_Name ("gcc", "gnatmake");
-   Original_Gcc : constant String_Access := Gcc;
-   --  Original_Gcc is used to check if Gcc has been modified by a switch
-   --  --GCC=, so that for VM platforms, it is not modified again, as it can
-   --  result in incorrect error messages if the compiler cannot be found.
-
+   Gcc      : String_Access := Program_Name ("gcc", "gnatmake");
    Gnatbind : String_Access := Program_Name ("gnatbind", "gnatmake");
    Gnatlink : String_Access := Program_Name ("gnatlink", "gnatmake");
    --  Default compiler, binder, linker programs
@@ -4861,12 +4856,10 @@ package body Make is
       end if;
 
       --  If the objects were up-to-date check if the executable file is also
-      --  up-to-date. For now always bind and link on the JVM since there is
-      --  currently no simple way to check whether objects are up to date wrt
-      --  the executable. Same in CodePeer mode where there is no executable.
+      --  up-to-date. For now always bind and link in CodePeer mode where there
+      --  is no executable.
 
-      if Targparm.VM_Target /= JVM_Target
-        and then not CodePeer_Mode
+      if not CodePeer_Mode
         and then First_Compiled_File = No_File
       then
          Executable_Stamp := File_Stamp (Executable);
@@ -5812,8 +5805,8 @@ package body Make is
             Finish_Program (Project_Tree, E_Success);
 
          else
-            --  Call Get_Target_Parameters to ensure that VM_Target and
-            --  AAMP_On_Target get set before calling Usage.
+            --  Call Get_Target_Parameters to ensure that AAMP_On_Target gets
+            --  set before calling Usage.
 
             Targparm.Get_Target_Parameters;
 
@@ -6026,39 +6019,6 @@ package body Make is
                when Unrecoverable_Error =>
                   Make_Failed ("*** make failed.");
             end;
-
-            --  Special processing for VM targets
-
-            if Targparm.VM_Target /= No_VM then
-
-               --  Set proper processing commands
-
-               case Targparm.VM_Target is
-                  when Targparm.JVM_Target =>
-
-                     --  Do not check for an object file (".o") when compiling
-                     --  to JVM machine since ".class" files are generated
-                     --  instead.
-
-                     Check_Object_Consistency := False;
-
-                     --  Do not modify Gcc is --GCC= was specified
-
-                     if Gcc = Original_Gcc then
-                        Gcc := new String'("jvm-gnatcompile");
-                     end if;
-
-                  when Targparm.CLI_Target =>
-                     --  Do not modify Gcc is --GCC= was specified
-
-                     if Gcc = Original_Gcc then
-                        Gcc := new String'("dotnet-gnatcompile");
-                     end if;
-
-                  when Targparm.No_VM =>
-                     raise Program_Error;
-               end case;
-            end if;
 
             Gcc_Path       := GNAT.OS_Lib.Locate_Exec_On_Path (Gcc.all);
             Gnatbind_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatbind.all);

@@ -83,7 +83,6 @@ with Snames;   use Snames;
 with Stringt;  use Stringt;
 with Style;
 with Stylesw;  use Stylesw;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
@@ -2036,11 +2035,6 @@ package body Sem_Ch6 is
             end if;
 
             if Ekind (Typ) = E_Incomplete_Type
-              and then Is_Value_Type (Typ)
-            then
-               null;
-
-            elsif Ekind (Typ) = E_Incomplete_Type
               or else (Is_Class_Wide_Type (Typ)
                         and then Ekind (Root_Type (Typ)) = E_Incomplete_Type)
             then
@@ -6931,11 +6925,9 @@ package body Sem_Ch6 is
 
                --  Add BIP_Storage_Pool, in case BIP_Alloc_Form indicates to
                --  use a user-defined pool. This formal is not added on
-               --  .NET/JVM/ZFP as those targets do not support pools.
+               --  ZFP as those targets do not support pools.
 
-               if VM_Target = No_VM
-                 and then RTE_Available (RE_Root_Storage_Pool_Ptr)
-               then
+               if RTE_Available (RE_Root_Storage_Pool_Ptr) then
                   Discard :=
                     Add_Extra_Formal
                       (E, RTE (RE_Root_Storage_Pool_Ptr),
@@ -10076,11 +10068,6 @@ package body Sem_Ch6 is
                         end if;
                      end if;
                   end if;
-
-               --  Special handling of Value_Type for CIL case
-
-               elsif Is_Value_Type (Formal_Type) then
-                  null;
 
                elsif not Nkind_In (Parent (T), N_Access_Function_Definition,
                                                N_Access_Procedure_Definition)

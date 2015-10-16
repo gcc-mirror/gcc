@@ -2223,14 +2223,7 @@ package body Exp_Attr is
                 Prefix         => Pref,
                 Attribute_Name => Name_Tag);
 
-            if VM_Target = No_VM then
-               New_Node := Build_Get_Alignment (Loc, New_Node);
-            else
-               New_Node :=
-                 Make_Function_Call (Loc,
-                   Name => New_Occurrence_Of (RTE (RE_Get_Alignment), Loc),
-                   Parameter_Associations => New_List (New_Node));
-            end if;
+            New_Node := Build_Get_Alignment (Loc, New_Node);
 
             --  Case where the context is a specific integer type with which
             --  the original attribute was compatible. The function has a
@@ -2901,17 +2894,8 @@ package body Exp_Attr is
             begin
                if Nkind (Nod) = N_Selected_Component then
                   Make_Elab_String (Prefix (Nod));
-
-                  case VM_Target is
-                     when JVM_Target =>
-                        Store_String_Char ('$');
-                     when CLI_Target =>
-                        Store_String_Char ('.');
-                     when No_VM =>
-                        Store_String_Char ('_');
-                        Store_String_Char ('_');
-                  end case;
-
+                  Store_String_Char ('_');
+                  Store_String_Char ('_');
                   Get_Name_String (Chars (Selector_Name (Nod)));
 
                else
@@ -2930,14 +2914,8 @@ package body Exp_Attr is
 
             Start_String;
             Make_Elab_String (Pref);
-
-            if VM_Target = No_VM then
-               Store_String_Chars ("___elab");
-               Lang := Make_Identifier (Loc, Name_C);
-            else
-               Store_String_Chars ("._elab");
-               Lang := Make_Identifier (Loc, Name_Ada);
-            end if;
+            Store_String_Chars ("___elab");
+            Lang := Make_Identifier (Loc, Name_C);
 
             if Id = Attribute_Elab_Body then
                Store_String_Char ('b');
@@ -4189,11 +4167,7 @@ package body Exp_Attr is
          --  are not part of the actual type. Transform the attribute reference
          --  into a runtime expression to add the size of the hidden header.
 
-         --  Do not perform this expansion on .NET/JVM targets because the
-         --  two pointers are already present in the type.
-
-         if VM_Target = No_VM
-           and then Needs_Finalization (Ptyp)
+         if Needs_Finalization (Ptyp)
            and then not Header_Size_Added (Attr)
          then
             Set_Header_Size_Added (Attr);
@@ -7554,9 +7528,6 @@ package body Exp_Attr is
       --  that appear in GNAT's library, but will generate calls via rtsfind
       --  to library routines for user code.
 
-      --  ??? For now, disable this code for JVM, since this generates a
-      --  VerifyError exception at run time on e.g. c330001.
-
       --  This is disabled for AAMP, to avoid creating dependences on files not
       --  supported in the AAMP library (such as s-fileio.adb).
 
@@ -7567,8 +7538,7 @@ package body Exp_Attr is
       --  instead. That is why we include the test Is_Available when dealing
       --  with these cases.
 
-      if VM_Target /= JVM_Target
-        and then not AAMP_On_Target
+      if not AAMP_On_Target
         and then
           not Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
       then
@@ -8044,8 +8014,7 @@ package body Exp_Attr is
 
       function Is_GCC_Target return Boolean is
       begin
-         return VM_Target = No_VM and then not CodePeer_Mode
-           and then not AAMP_On_Target;
+         return not CodePeer_Mode and then not AAMP_On_Target;
       end Is_GCC_Target;
 
    --  Start of processing for Exp_Attr

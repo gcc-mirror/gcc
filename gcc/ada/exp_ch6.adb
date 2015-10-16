@@ -369,11 +369,9 @@ package body Exp_Ch6 is
         (Function_Call, Alloc_Form_Formal, Alloc_Form_Actual);
 
       --  Pass the Storage_Pool parameter. This parameter is omitted on
-      --  .NET/JVM/ZFP as those targets do not support pools.
+      --  ZFP as those targets do not support pools.
 
-      if VM_Target = No_VM
-        and then RTE_Available (RE_Root_Storage_Pool_Ptr)
-      then
+      if RTE_Available (RE_Root_Storage_Pool_Ptr) then
          Pool_Formal := Build_In_Place_Formal (Function_Id, BIP_Storage_Pool);
          Analyze_And_Resolve (Pool_Actual, Etype (Pool_Formal));
          Add_Extra_Actual_To_Call
@@ -2357,7 +2355,6 @@ package body Exp_Ch6 is
 
       --  Local variables
 
-      Curr_S        : constant Entity_Id := Current_Scope;
       Remote        : constant Boolean   := Is_Remote_Call (Call_Node);
       Actual        : Node_Id;
       Formal        : Entity_Id;
@@ -2456,52 +2453,6 @@ package body Exp_Ch6 is
          if Ekind (Subp) = E_Entry then
             Parent_Subp := Empty;
          end if;
-      end if;
-
-      --  Detect the following code in System.Finalization_Masters only on
-      --  .NET/JVM targets:
-
-      --    procedure Finalize (Master : in out Finalization_Master) is
-      --    begin
-      --       . . .
-      --       begin
-      --          Finalize (Curr_Ptr.all);
-
-      --  Since .NET/JVM compilers lack address arithmetic and Deep_Finalize
-      --  cannot be named in library or user code, the compiler has to deal
-      --  with this by transforming the call to Finalize into Deep_Finalize.
-
-      if VM_Target /= No_VM
-        and then Chars (Subp) = Name_Finalize
-        and then Ekind (Curr_S) = E_Block
-        and then Ekind (Scope (Curr_S)) = E_Procedure
-        and then Chars (Scope (Curr_S)) = Name_Finalize
-        and then Etype (First_Formal (Scope (Curr_S))) =
-                   RTE (RE_Finalization_Master)
-      then
-         declare
-            Deep_Fin : constant Entity_Id :=
-                         Find_Prim_Op (RTE (RE_Root_Controlled),
-                                       TSS_Deep_Finalize);
-         begin
-            --  Since Root_Controlled is a tagged type, the compiler should
-            --  always generate Deep_Finalize for it.
-
-            pragma Assert (Present (Deep_Fin));
-
-            --  Generate:
-            --    Deep_Finalize (Curr_Ptr.all);
-
-            Rewrite (N,
-              Make_Procedure_Call_Statement (Loc,
-                Name =>
-                  New_Occurrence_Of (Deep_Fin, Loc),
-                Parameter_Associations =>
-                  New_Copy_List_Tree (Parameter_Associations (N))));
-
-            Analyze (N);
-            return;
-         end;
       end if;
 
       --  Ada 2005 (AI-345): We have a procedure call as a triggering
@@ -2952,15 +2903,6 @@ package body Exp_Ch6 is
             elsif Nkind_In (Prev, N_Allocator, N_Attribute_Reference) then
                null;
 
-            --  Suppress null checks when passing to access parameters of Java
-            --  and CIL subprograms. (Should this be done for other foreign
-            --  conventions as well ???)
-
-            elsif Convention (Subp) = Convention_Java
-              or else Convention (Subp) = Convention_CIL
-            then
-               null;
-
             else
                Install_Null_Excluding_Check (Prev);
             end if;
@@ -3291,7 +3233,7 @@ package body Exp_Ch6 is
       --  extra actuals since this will be done on the re-analysis of the
       --  dispatching call. Note that we do not try to shorten the actual list
       --  for a dispatching call, it would not make sense to do so. Expansion
-      --  of dispatching calls is suppressed when VM_Target, because the VM
+      --  of dispatching calls is suppressed for VM targets, because the VM
       --  back-ends directly handle the generation of dispatching calls and
       --  would have to undo any expansion to an indirect call.
 
@@ -4068,12 +4010,9 @@ package body Exp_Ch6 is
       begin
          pragma Assert (Is_Build_In_Place_Function (Func_Id));
 
-         --  Processing for build-in-place object allocation. This is disabled
-         --  on .NET/JVM because the targets do not support pools.
+         --  Processing for build-in-place object allocation.
 
-         if VM_Target = No_VM
-           and then Needs_Finalization (Ret_Typ)
-         then
+         if Needs_Finalization (Ret_Typ) then
             declare
                Decls      : constant List_Id := New_List;
                Fin_Mas_Id : constant Entity_Id :=
@@ -4667,12 +4606,10 @@ package body Exp_Ch6 is
                      Pool_Allocator := New_Copy_Tree (Heap_Allocator);
 
                      --  Do not generate the renaming of the build-in-place
-                     --  pool parameter on .NET/JVM/ZFP because the parameter
-                     --  is not created in the first place.
+                     --  pool parameter on ZFP because the parameter is not
+                     --  created in the first place.
 
-                     if VM_Target = No_VM
-                       and then RTE_Available (RE_Root_Storage_Pool_Ptr)
-                     then
+                     if RTE_Available (RE_Root_Storage_Pool_Ptr) then
                         Pool_Decl :=
                           Make_Object_Renaming_Declaration (Loc,
                             Defining_Identifier => Pool_Id,
@@ -4721,29 +4658,26 @@ package body Exp_Ch6 is
                         Set_Comes_From_Source (Pool_Allocator, True);
                      end if;
 
-                     --  The allocator is returned on the secondary stack. We
-                     --  don't do this on VM targets, since the SS is not used.
+                     --  The allocator is returned on the secondary stack.
 
-                     if VM_Target = No_VM then
-                        Set_Storage_Pool (SS_Allocator, RTE (RE_SS_Pool));
-                        Set_Procedure_To_Call
-                          (SS_Allocator, RTE (RE_SS_Allocate));
+                     Set_Storage_Pool (SS_Allocator, RTE (RE_SS_Pool));
+                     Set_Procedure_To_Call
+                       (SS_Allocator, RTE (RE_SS_Allocate));
 
-                        --  The allocator is returned on the secondary stack,
-                        --  so indicate that the function return, as well as
-                        --  the block that encloses the allocator, must not
-                        --  release it. The flags must be set now because
-                        --  the decision to use the secondary stack is done
-                        --  very late in the course of expanding the return
-                        --  statement, past the point where these flags are
-                        --  normally set.
+                     --  The allocator is returned on the secondary stack,
+                     --  so indicate that the function return, as well as
+                     --  the block that encloses the allocator, must not
+                     --  release it. The flags must be set now because
+                     --  the decision to use the secondary stack is done
+                     --  very late in the course of expanding the return
+                     --  statement, past the point where these flags are
+                     --  normally set.
 
-                        Set_Sec_Stack_Needed_For_Return (Par_Func);
-                        Set_Sec_Stack_Needed_For_Return
-                          (Return_Statement_Entity (N));
-                        Set_Uses_Sec_Stack (Par_Func);
-                        Set_Uses_Sec_Stack (Return_Statement_Entity (N));
-                     end if;
+                     Set_Sec_Stack_Needed_For_Return (Par_Func);
+                     Set_Sec_Stack_Needed_For_Return
+                       (Return_Statement_Entity (N));
+                     Set_Uses_Sec_Stack (Par_Func);
+                     Set_Uses_Sec_Stack (Return_Statement_Entity (N));
 
                      --  Create an if statement to test the BIP_Alloc_Form
                      --  formal and initialize the access object to either the
@@ -6174,13 +6108,7 @@ package body Exp_Ch6 is
          else
             Check_Restriction (No_Secondary_Stack, N);
             Set_Storage_Pool (N, RTE (RE_SS_Pool));
-
-            --  If we are generating code for the VM do not use
-            --  SS_Allocate since everything is heap-allocated anyway.
-
-            if VM_Target = No_VM then
-               Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
-            end if;
+            Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
          end if;
       end if;
 
@@ -8178,8 +8106,8 @@ package body Exp_Ch6 is
 
    begin
       --  We suppress the initialization of the dispatch table entry when
-      --  VM_Target because the dispatching mechanism is handled internally
-      --  by the VM.
+      --  not Tagged_Type_Expansion because the dispatching mechanism is
+      --  handled internally by the target.
 
       if Is_Dispatching_Operation (Subp)
         and then not Is_Abstract_Subprogram (Subp)
@@ -8454,9 +8382,7 @@ package body Exp_Ch6 is
          --  pool, and pass the pool. Use 'Unrestricted_Access because the
          --  pool may not be aliased.
 
-         if VM_Target = No_VM
-           and then Present (Associated_Storage_Pool (Acc_Type))
-         then
+         if Present (Associated_Storage_Pool (Acc_Type)) then
             Alloc_Form := User_Storage_Pool;
             Pool :=
               Make_Attribute_Reference (Loc,
@@ -8983,14 +8909,12 @@ package body Exp_Ch6 is
          --  has an unconstrained or tagged result type).
 
          if Needs_BIP_Alloc_Form (Enclosing_Func) then
-            if VM_Target = No_VM and then
-              RTE_Available (RE_Root_Storage_Pool_Ptr)
-            then
+            if RTE_Available (RE_Root_Storage_Pool_Ptr) then
                Pool_Actual :=
                  New_Occurrence_Of (Build_In_Place_Formal
                    (Enclosing_Func, BIP_Storage_Pool), Loc);
 
-            --  The build-in-place pool formal is not built on .NET/JVM
+            --  The build-in-place pool formal is not built on e.g. ZFP
 
             else
                Pool_Actual := Empty;

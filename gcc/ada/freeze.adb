@@ -2923,7 +2923,6 @@ package body Freeze is
            and then
              ((Has_Non_Null_Base_Init_Proc (Etype (E))
                 and then not No_Initialization (Declaration_Node (E))
-                and then not Is_Value_Type (Etype (E))
                 and then not Initialization_Suppressed (Etype (E)))
               or else
                 (Needs_Simple_Initialization (Etype (E))
@@ -3126,7 +3125,6 @@ package body Freeze is
                  and then Convention (F_Type) = Convention_Ada
                  and then not Has_Warnings_Off (F_Type)
                  and then not Has_Size_Clause (F_Type)
-                 and then VM_Target = No_VM
                then
                   Error_Msg_N
                     ("& is an 8-bit Ada Boolean?x?", Formal);
@@ -3173,11 +3171,6 @@ package body Freeze is
               and then Is_Array_Type (F_Type)
               and then not Is_Constrained (F_Type)
               and then Warn_On_Export_Import
-
-              --  Exclude VM case, since both .NET and JVM can handle
-              --  unconstrained arrays without a problem.
-
-              and then VM_Target = No_VM
             then
                Error_Msg_Qual_Level := 1;
 
@@ -3295,7 +3288,6 @@ package body Freeze is
 
                elsif Root_Type (R_Type) = Standard_Boolean
                  and then Convention (R_Type) = Convention_Ada
-                 and then VM_Target = No_VM
                  and then not Has_Warnings_Off (E)
                  and then not Has_Warnings_Off (R_Type)
                  and then not Has_Size_Clause (R_Type)
@@ -3355,11 +3347,6 @@ package body Freeze is
               --  the import, but rather on the routine definition.
 
               and then not Is_Imported (E)
-
-              --  Exclude VM case, since both .NET and JVM can handle return
-              --  of unconstrained arrays without a problem.
-
-              and then VM_Target = No_VM
 
               --  Check that general warning is enabled, and that it is not
               --  suppressed for this particular case.
@@ -5604,7 +5591,6 @@ package body Freeze is
             while Present (Formal) loop
                if Ekind (Etype (Formal)) = E_Incomplete_Type
                  and then No (Full_View (Etype (Formal)))
-                 and then not Is_Value_Type (Etype (Formal))
                then
                   if Is_Tagged_Type (Etype (Formal)) then
                      null;
@@ -7677,11 +7663,6 @@ package body Freeze is
                --  Warnings (Off) on specific entities here, probably so???)
 
               and then Warn_On_Export_Import
-
-              --  Exclude the VM case, since return of unconstrained arrays
-              --  is properly handled in both the JVM and .NET cases.
-
-              and then VM_Target = No_VM
             then
                Error_Msg_N
                 ("?x?foreign convention function& should not return " &

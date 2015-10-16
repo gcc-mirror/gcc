@@ -544,37 +544,30 @@ package body Exp_Ch4 is
 
          --  Step 2: Initialization actions
 
-         --  Do not set the base pool and mode of operation on .NET/JVM since
-         --  those targets do not support pools and all VM masters defaulted to
-         --  heterogeneous.
+         --  Generate:
+         --    Set_Base_Pool
+         --      (<FM_Id>, Global_Pool_Object'Unrestricted_Access);
 
-         if VM_Target = No_VM then
+         Insert_And_Analyze (Decls,
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Occurrence_Of (RTE (RE_Set_Base_Pool), Loc),
+             Parameter_Associations => New_List (
+               New_Occurrence_Of (FM_Id, Loc),
+               Make_Attribute_Reference (Loc,
+                 Prefix         =>
+                   New_Occurrence_Of (RTE (RE_Global_Pool_Object), Loc),
+                 Attribute_Name => Name_Unrestricted_Access))));
 
-            --  Generate:
-            --    Set_Base_Pool
-            --      (<FM_Id>, Global_Pool_Object'Unrestricted_Access);
+         --  Generate:
+         --    Set_Is_Heterogeneous (<FM_Id>);
 
-            Insert_And_Analyze (Decls,
-              Make_Procedure_Call_Statement (Loc,
-                Name                   =>
-                  New_Occurrence_Of (RTE (RE_Set_Base_Pool), Loc),
-                Parameter_Associations => New_List (
-                  New_Occurrence_Of (FM_Id, Loc),
-                  Make_Attribute_Reference (Loc,
-                    Prefix         =>
-                      New_Occurrence_Of (RTE (RE_Global_Pool_Object), Loc),
-                    Attribute_Name => Name_Unrestricted_Access))));
-
-            --  Generate:
-            --    Set_Is_Heterogeneous (<FM_Id>);
-
-            Insert_And_Analyze (Decls,
-              Make_Procedure_Call_Statement (Loc,
-                Name                   =>
-                  New_Occurrence_Of (RTE (RE_Set_Is_Heterogeneous), Loc),
-                Parameter_Associations => New_List (
-                  New_Occurrence_Of (FM_Id, Loc))));
-         end if;
+         Insert_And_Analyze (Decls,
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Occurrence_Of (RTE (RE_Set_Is_Heterogeneous), Loc),
+             Parameter_Associations => New_List (
+               New_Occurrence_Of (FM_Id, Loc))));
 
          Pop_Scope;
          return FM_Id;
@@ -762,7 +755,7 @@ package body Exp_Ch4 is
       begin
          if Ada_Version >= Ada_2005
            and then Is_Class_Wide_Type (DesigT)
-           and then (Tagged_Type_Expansion or else VM_Target /= No_VM)
+           and then Tagged_Type_Expansion
            and then not Scope_Suppress.Suppress (Accessibility_Check)
            and then
              (Type_Access_Level (Etype (Exp)) > Type_Access_Level (PtrT)
@@ -1079,21 +1072,6 @@ package body Exp_Ch4 is
                Build_Allocate_Deallocate_Proc (Temp_Decl, True);
                Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
 
-               --  Attach the object to the associated finalization master.
-               --  This is done manually on .NET/JVM since those compilers do
-               --  no support pools and can't benefit from internally generated
-               --  Allocate / Deallocate procedures.
-
-               if VM_Target /= No_VM
-                 and then Is_Controlled (DesigT)
-                 and then Present (Finalization_Master (PtrT))
-               then
-                  Insert_Action (N,
-                    Make_Attach_Call
-                      (Obj_Ref => New_Occurrence_Of (Temp, Loc),
-                       Ptr_Typ => PtrT));
-               end if;
-
             else
                Node := Relocate_Node (N);
                Set_Analyzed (Node);
@@ -1107,21 +1085,6 @@ package body Exp_Ch4 is
 
                Insert_Action (N, Temp_Decl);
                Build_Allocate_Deallocate_Proc (Temp_Decl, True);
-
-               --  Attach the object to the associated finalization master.
-               --  This is done manually on .NET/JVM since those compilers do
-               --  no support pools and can't benefit from internally generated
-               --  Allocate / Deallocate procedures.
-
-               if VM_Target /= No_VM
-                 and then Is_Controlled (DesigT)
-                 and then Present (Finalization_Master (PtrT))
-               then
-                  Insert_Action (N,
-                    Make_Attach_Call
-                      (Obj_Ref => New_Occurrence_Of (Temp, Loc),
-                       Ptr_Typ => PtrT));
-               end if;
             end if;
 
          --  Ada 2005 (AI-251): Handle allocators whose designated type is an
@@ -1223,7 +1186,7 @@ package body Exp_Ch4 is
 
          --  Generate the tag assignment
 
-         --  Suppress the tag assignment when VM_Target because VM tags are
+         --  Suppress the tag assignment for VM targets because VM tags are
          --  represented implicitly in objects.
 
          if not Tagged_Type_Expansion then
@@ -1341,21 +1304,6 @@ package body Exp_Ch4 is
 
          Build_Allocate_Deallocate_Proc (Temp_Decl, True);
          Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
-
-         --  Attach the object to the associated finalization master. Thisis
-         --  done manually on .NET/JVM since those compilers do no support
-         --  pools and cannot benefit from internally generated Allocate and
-         --  Deallocate procedures.
-
-         if VM_Target /= No_VM
-           and then Is_Controlled (DesigT)
-           and then Present (Finalization_Master (PtrT))
-         then
-            Insert_Action (N,
-              Make_Attach_Call
-                (Obj_Ref => New_Occurrence_Of (Temp, Loc),
-                 Ptr_Typ => PtrT));
-         end if;
 
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
@@ -1529,12 +1477,10 @@ package body Exp_Ch4 is
    begin
       --  Deal first with unpacked case, where we can call a runtime routine
       --  except that we avoid this for targets for which are not addressable
-      --  by bytes, and for the JVM/CIL, since they do not support direct
-      --  addressing of array components.
+      --  by bytes.
 
       if not Is_Bit_Packed_Array (Typ1)
         and then Byte_Addressable
-        and then VM_Target = No_VM
       then
          --  The call we generate is:
 
@@ -4322,10 +4268,9 @@ package body Exp_Ch4 is
          end if;
 
          --  Anonymous access-to-controlled types allocate on the global pool.
-         --  Do not set this attribute on .NET/JVM since those targets do not
-         --  support pools. Note that this is a "root type only" attribute.
+         --  Note that this is a "root type only" attribute.
 
-         if No (Associated_Storage_Pool (PtrT)) and then VM_Target = No_VM then
+         if No (Associated_Storage_Pool (PtrT)) then
             if Present (Rel_Typ) then
                Set_Associated_Storage_Pool
                  (Root_Type (PtrT), Associated_Storage_Pool (Rel_Typ));
@@ -4361,9 +4306,7 @@ package body Exp_Ch4 is
             Set_Storage_Pool (N, Pool);
 
             if Is_RTE (Pool, RE_SS_Pool) then
-               if VM_Target = No_VM then
-                  Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
-               end if;
+               Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
 
             --  In the case of an allocator for a simple storage pool, locate
             --  and save a reference to the pool type's Allocate routine.
@@ -4563,12 +4506,9 @@ package body Exp_Ch4 is
          if No_Initialization (N) then
 
             --  Even though this might be a simple allocation, create a custom
-            --  Allocate if the context requires it. Since .NET/JVM compilers
-            --  do not support pools, this step is skipped.
+            --  Allocate if the context requires it.
 
-            if VM_Target = No_VM
-              and then Present (Finalization_Master (PtrT))
-            then
+            if Present (Finalization_Master (PtrT)) then
                Build_Allocate_Deallocate_Proc
                  (N           => N,
                   Is_Allocate => True);
@@ -4870,24 +4810,6 @@ package body Exp_Ch4 is
                     Make_Init_Call
                       (Obj_Ref => New_Copy_Tree (Init_Arg1),
                        Typ     => T));
-
-                  --  Special processing for .NET/JVM, the allocated object is
-                  --  attached to the finalization master. Generate:
-
-                  --    Attach (<PtrT>FM, Root_Controlled_Ptr (Init_Arg1));
-
-                  --  Types derived from [Limited_]Controlled are the only ones
-                  --  considered since they have fields Prev and Next.
-
-                  if VM_Target /= No_VM
-                    and then Is_Controlled (T)
-                    and then Present (Finalization_Master (PtrT))
-                  then
-                     Insert_Action (N,
-                       Make_Attach_Call
-                         (Obj_Ref => New_Copy_Tree (Init_Arg1),
-                          Ptr_Typ => PtrT));
-                  end if;
                end if;
 
                Rewrite (N, New_Occurrence_Of (Temp, Loc));
@@ -5604,11 +5526,6 @@ package body Exp_Ch4 is
         and then Nkind (Rop) in N_Has_Entity
         and then Ltyp = Entity (Rop)
 
-        --  Skip in VM mode, where we have no sense of invalid values. The
-        --  warning still seems relevant, but not important enough to worry.
-
-        and then VM_Target = No_VM
-
         --  Skip this for predicated types, where such expressions are a
         --  reasonable way of testing if something meets the predicate.
 
@@ -5684,10 +5601,6 @@ package body Exp_Ch4 is
               --  Relevant only for source cases
 
               and then Comes_From_Source (N)
-
-              --  Omit for VM cases, where we don't have invalid values
-
-              and then VM_Target = No_VM
             then
                Substitute_Valid_Check;
                goto Leave;
@@ -5845,9 +5758,9 @@ package body Exp_Ch4 is
 
             if Is_Tagged_Type (Typ) then
 
-               --  No expansion will be performed when VM_Target, as the VM
+               --  No expansion will be performed for VM targets, as the VM
                --  back-ends will handle the membership tests directly (tags
-               --  are not explicitly represented in Java objects, so the
+               --  are not explicitly represented in VM objects, so the
                --  normal tagged membership expansion is not what we want).
 
                if Tagged_Type_Expansion then
@@ -6105,10 +6018,10 @@ package body Exp_Ch4 is
                                 Left_Opnd  => Obj,
                                 Right_Opnd => Make_Null (Loc))));
 
-                        --  No expansion will be performed when VM_Target, as
+                        --  No expansion will be performed for VM targets, as
                         --  the VM back-ends will handle the membership tests
                         --  directly (tags are not explicitly represented in
-                        --  Java objects, so the normal tagged membership
+                        --  objects, so the normal tagged membership
                         --  expansion is not what we want).
 
                         if Tagged_Type_Expansion then
@@ -11449,15 +11362,6 @@ package body Exp_Ch4 is
 
               or else Chars (Comp) = Name_uTag
 
-              --  The .NET/JVM version of type Root_Controlled contains two
-              --  fields which should not be considered part of the object. To
-              --  achieve proper equiality between two controlled objects on
-              --  .NET/JVM, skip _Parent whenever it has type Root_Controlled.
-
-              or else (Chars (Comp) = Name_uParent
-                        and then VM_Target /= No_VM
-                        and then Etype (Comp) = RTE (RE_Root_Controlled))
-
               --  Skip interface elements (secondary tags???)
 
               or else Is_Interface (Etype (Comp)));
@@ -13253,11 +13157,6 @@ package body Exp_Ch4 is
       --  storage unit (since at least for NOT this would cause problems).
 
       if Component_Size (Etype (Lhs)) /= System_Storage_Unit then
-         return False;
-
-      --  Cannot do in place stuff on VM_Target since cannot pass addresses
-
-      elsif VM_Target /= No_VM then
          return False;
 
       --  Cannot do in place stuff if non-standard Boolean representation

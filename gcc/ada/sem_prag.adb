@@ -7738,21 +7738,6 @@ package body Sem_Prag is
                end if;
             end loop;
 
-         --  When the convention is Java or CIL, we also allow Import to
-         --  be given for packages, generic packages, exceptions, record
-         --  components, and access to subprograms.
-
-         elsif (C = Convention_Java or else C = Convention_CIL)
-           and then
-             (Is_Package_Or_Generic_Package (Def_Id)
-               or else Ekind (Def_Id) = E_Exception
-               or else Ekind (Def_Id) = E_Access_Subprogram_Type
-               or else Nkind (Parent (Def_Id)) = N_Component_Declaration)
-         then
-            Set_Imported (Def_Id);
-            Set_Is_Public (Def_Id);
-            Process_Interface_Name (Def_Id, Arg3, Arg4);
-
          --  Import a CPP class
 
          elsif C = Convention_CPP
@@ -8254,23 +8239,17 @@ package body Sem_Prag is
          Link_Nam   : Node_Id;
          String_Val : String_Id;
 
-         procedure Check_Form_Of_Interface_Name
-           (SN            : Node_Id;
-            Ext_Name_Case : Boolean);
+         procedure Check_Form_Of_Interface_Name (SN : Node_Id);
          --  SN is a string literal node for an interface name. This routine
          --  performs some minimal checks that the name is reasonable. In
          --  particular that no spaces or other obviously incorrect characters
          --  appear. This is only a warning, since any characters are allowed.
-         --  Ext_Name_Case is True for an External_Name, False for a Link_Name.
 
          ----------------------------------
          -- Check_Form_Of_Interface_Name --
          ----------------------------------
 
-         procedure Check_Form_Of_Interface_Name
-           (SN            : Node_Id;
-            Ext_Name_Case : Boolean)
-         is
+         procedure Check_Form_Of_Interface_Name (SN : Node_Id) is
             S  : constant String_Id := Strval (Expr_Value_S (SN));
             SL : constant Nat       := String_Length (S);
             C  : Char_Code;
@@ -8288,21 +8267,12 @@ package body Sem_Prag is
 
                if not In_Character_Range (C)
 
-                  --  For all cases except CLI target,
-                  --  commas, spaces and slashes are dubious (in CLI, we use
-                  --  commas and backslashes in external names to specify
-                  --  assembly version and public key, while slashes and spaces
-                  --  can be used in names to mark nested classes and
-                  --  valuetypes).
+                 --  Commas, spaces and (back)slashes are dubious
 
-                  or else ((not Ext_Name_Case or else VM_Target /= CLI_Target)
-                             and then (Get_Character (C) = ','
-                                         or else
-                                       Get_Character (C) = '\'))
-                 or else (VM_Target /= CLI_Target
-                            and then (Get_Character (C) = ' '
-                                        or else
-                                      Get_Character (C) = '/'))
+                 or else Get_Character (C) = ','
+                 or else Get_Character (C) = '\'
+                 or else Get_Character (C) = ' '
+                 or else Get_Character (C) = '/'
                then
                   Error_Msg
                     ("??interface name contains illegal character",
@@ -8316,18 +8286,6 @@ package body Sem_Prag is
       begin
          if No (Link_Arg) then
             if No (Ext_Arg) then
-               if VM_Target = CLI_Target
-                 and then Ekind (Subprogram_Def) = E_Package
-                 and then Nkind (Parent (Subprogram_Def)) =
-                                                 N_Package_Specification
-                 and then Present (Generic_Parent (Parent (Subprogram_Def)))
-               then
-                  Set_Interface_Name
-                     (Subprogram_Def,
-                      Interface_Name
-                        (Generic_Parent (Parent (Subprogram_Def))));
-               end if;
-
                return;
 
             elsif Chars (Ext_Arg) = Name_Link_Name then
@@ -8351,7 +8309,7 @@ package body Sem_Prag is
 
          if Present (Ext_Nam) then
             Check_Arg_Is_OK_Static_Expression (Ext_Nam, Standard_String);
-            Check_Form_Of_Interface_Name (Ext_Nam, Ext_Name_Case => True);
+            Check_Form_Of_Interface_Name (Ext_Nam);
 
             --  Verify that external name is not the name of a local entity,
             --  which would hide the imported one and could lead to run-time
@@ -8396,7 +8354,7 @@ package body Sem_Prag is
 
          if Present (Link_Nam) then
             Check_Arg_Is_OK_Static_Expression (Link_Nam, Standard_String);
-            Check_Form_Of_Interface_Name (Link_Nam, Ext_Name_Case => False);
+            Check_Form_Of_Interface_Name (Link_Nam);
          end if;
 
          --  If there is no link name, just set the external name
@@ -8412,11 +8370,7 @@ package body Sem_Prag is
 
          else
             Start_String;
-
-            if VM_Target = No_VM then
-               Store_String_Char (Get_Char_Code ('*'));
-            end if;
-
+            Store_String_Char (Get_Char_Code ('*'));
             String_Val := Strval (Expr_Value_S (Link_Nam));
             Store_String_Chars (String_Val);
             Link_Nam :=
@@ -8435,16 +8389,7 @@ package body Sem_Prag is
               (Get_Base_Subprogram (Subprogram_Def), Link_Nam);
          end if;
 
-         --  We allow duplicated export names in CIL/Java, as they are always
-         --  enclosed in a namespace that differentiates them, and overloaded
-         --  entities are supported by the VM.
-
-         if Convention (Subprogram_Def) /= Convention_CIL
-              and then
-            Convention (Subprogram_Def) /= Convention_Java
-         then
-            Check_Duplicated_Export_Name (Link_Nam);
-         end if;
+         Check_Duplicated_Export_Name (Link_Nam);
       end Process_Interface_Name;
 
       -----------------------------------------
@@ -9012,7 +8957,7 @@ package body Sem_Prag is
       begin
          --  For GCC back ends the validation is done a priori
 
-         if VM_Target = No_VM and then not AAMP_On_Target then
+         if not AAMP_On_Target then
             return;
          end if;
 
@@ -11935,14 +11880,6 @@ package body Sem_Prag is
                end;
             end if;
          end Check_Policy;
-
-         ---------------------
-         -- CIL_Constructor --
-         ---------------------
-
-         --  pragma CIL_Constructor ([Entity =>] LOCAL_NAME);
-
-         --  Processing for this pragma is shared with Java_Constructor
 
          -------------
          -- Comment --
@@ -15774,328 +15711,6 @@ package body Sem_Prag is
             end if;
          end Invariant;
 
-         ----------------------
-         -- Java_Constructor --
-         ----------------------
-
-         --  pragma Java_Constructor ([Entity =>] LOCAL_NAME);
-
-         --  Also handles pragma CIL_Constructor
-
-         when Pragma_CIL_Constructor | Pragma_Java_Constructor =>
-         Java_Constructor : declare
-            Convention  : Convention_Id;
-            Def_Id      : Entity_Id;
-            Hom_Id      : Entity_Id;
-            Id          : Entity_Id;
-            This_Formal : Entity_Id;
-
-         begin
-            GNAT_Pragma;
-            Check_Arg_Count (1);
-            Check_Optional_Identifier (Arg1, Name_Entity);
-            Check_Arg_Is_Local_Name (Arg1);
-
-            Id := Get_Pragma_Arg (Arg1);
-            Find_Program_Unit_Name (Id);
-
-            --  If we did not find the name, we are done
-
-            if Etype (Id) = Any_Type then
-               return;
-            end if;
-
-            --  Check wrong use of pragma in wrong VM target
-
-            if VM_Target = No_VM then
-               return;
-
-            elsif VM_Target = CLI_Target
-              and then Prag_Id = Pragma_Java_Constructor
-            then
-               Error_Pragma ("must use pragma 'C'I'L_'Constructor");
-
-            elsif VM_Target = JVM_Target
-              and then Prag_Id = Pragma_CIL_Constructor
-            then
-               Error_Pragma ("must use pragma 'Java_'Constructor");
-            end if;
-
-            case Prag_Id is
-               when Pragma_CIL_Constructor  => Convention := Convention_CIL;
-               when Pragma_Java_Constructor => Convention := Convention_Java;
-               when others                  => null;
-            end case;
-
-            Hom_Id := Entity (Id);
-
-            --  Loop through homonyms
-
-            loop
-               Def_Id := Get_Base_Subprogram (Hom_Id);
-
-               --  The constructor is required to be a function
-
-               if Ekind (Def_Id) /= E_Function then
-                  if VM_Target = JVM_Target then
-                     Error_Pragma_Arg
-                       ("pragma% requires function returning a 'Java access "
-                        & "type", Def_Id);
-                  else
-                     Error_Pragma_Arg
-                       ("pragma% requires function returning a 'C'I'L access "
-                        & "type", Def_Id);
-                  end if;
-               end if;
-
-               --  Check arguments: For tagged type the first formal must be
-               --  named "this" and its type must be a named access type
-               --  designating a class-wide tagged type that has convention
-               --  CIL/Java. The first formal must also have a null default
-               --  value. For example:
-
-               --      type Typ is tagged ...
-               --      type Ref is access all Typ;
-               --      pragma Convention (CIL, Typ);
-
-               --      function New_Typ (This : Ref) return Ref;
-               --      function New_Typ (This : Ref; I : Integer) return Ref;
-               --      pragma Cil_Constructor (New_Typ);
-
-               --  Reason: The first formal must NOT be a primitive of the
-               --  tagged type.
-
-               --  This rule also applies to constructors of delegates used
-               --  to interface with standard target libraries. For example:
-
-               --      type Delegate is access procedure ...
-               --      pragma Import (CIL, Delegate, ...);
-
-               --      function new_Delegate
-               --        (This : Delegate := null; ... ) return Delegate;
-
-               --  For value-types this rule does not apply.
-
-               if not Is_Value_Type (Etype (Def_Id)) then
-                  if No (First_Formal (Def_Id)) then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_N ("% function must have parameters", Def_Id);
-                     return;
-                  end if;
-
-                  --  In the JRE library we have several occurrences in which
-                  --  the "this" parameter is not the first formal.
-
-                  This_Formal := First_Formal (Def_Id);
-
-                  --  In the JRE library we have several occurrences in which
-                  --  the "this" parameter is not the first formal. Search for
-                  --  it.
-
-                  if VM_Target = JVM_Target then
-                     while Present (This_Formal)
-                       and then Get_Name_String (Chars (This_Formal)) /= "this"
-                     loop
-                        Next_Formal (This_Formal);
-                     end loop;
-
-                     if No (This_Formal) then
-                        This_Formal := First_Formal (Def_Id);
-                     end if;
-                  end if;
-
-                  --  Warning: The first parameter should be named "this".
-                  --  We temporarily allow it because we have the following
-                  --  case in the Java runtime (file s-osinte.ads) ???
-
-                  --    function new_Thread
-                  --      (Self_Id : System.Address) return Thread_Id;
-                  --    pragma Java_Constructor (new_Thread);
-
-                  if VM_Target = JVM_Target
-                    and then Get_Name_String (Chars (First_Formal (Def_Id)))
-                               = "self_id"
-                    and then Etype (First_Formal (Def_Id)) = RTE (RE_Address)
-                  then
-                     null;
-
-                  elsif Get_Name_String (Chars (This_Formal)) /= "this" then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_N
-                       ("first formal of % function must be named `this`",
-                        Parent (This_Formal));
-
-                  elsif not Is_Access_Type (Etype (This_Formal)) then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_N
-                       ("first formal of % function must be an access type",
-                        Parameter_Type (Parent (This_Formal)));
-
-                  --  For delegates the type of the first formal must be a
-                  --  named access-to-subprogram type (see previous example)
-
-                  elsif Ekind (Etype (Def_Id)) = E_Access_Subprogram_Type
-                    and then Ekind (Etype (This_Formal))
-                               /= E_Access_Subprogram_Type
-                  then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_N
-                       ("first formal of % function must be a named access "
-                        & "to subprogram type",
-                        Parameter_Type (Parent (This_Formal)));
-
-                  --  Warning: We should reject anonymous access types because
-                  --  the constructor must not be handled as a primitive of the
-                  --  tagged type. We temporarily allow it because this profile
-                  --  is currently generated by cil2ada???
-
-                  elsif Ekind (Etype (Def_Id)) /= E_Access_Subprogram_Type
-                    and then not Ekind_In (Etype (This_Formal),
-                                             E_Access_Type,
-                                             E_General_Access_Type,
-                                             E_Anonymous_Access_Type)
-                  then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_N
-                       ("first formal of % function must be a named access "
-                        & "type", Parameter_Type (Parent (This_Formal)));
-
-                  elsif Atree.Convention
-                         (Designated_Type (Etype (This_Formal))) /= Convention
-                  then
-                     Error_Msg_Name_1 := Pname;
-
-                     if Convention = Convention_Java then
-                        Error_Msg_N
-                          ("pragma% requires convention 'Cil in designated "
-                           & "type", Parameter_Type (Parent (This_Formal)));
-                     else
-                        Error_Msg_N
-                          ("pragma% requires convention 'Java in designated "
-                           & "type", Parameter_Type (Parent (This_Formal)));
-                     end if;
-
-                  elsif No (Expression (Parent (This_Formal)))
-                    or else Nkind (Expression (Parent (This_Formal))) /= N_Null
-                  then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_N
-                       ("pragma% requires first formal with default `null`",
-                        Parameter_Type (Parent (This_Formal)));
-                  end if;
-               end if;
-
-               --  Check result type: the constructor must be a function
-               --  returning:
-               --   * a value type (only allowed in the CIL compiler)
-               --   * an access-to-subprogram type with convention Java/CIL
-               --   * an access-type designating a type that has convention
-               --     Java/CIL.
-
-               if Is_Value_Type (Etype (Def_Id)) then
-                  null;
-
-               --  Access-to-subprogram type with convention Java/CIL
-
-               elsif Ekind (Etype (Def_Id)) = E_Access_Subprogram_Type then
-                  if Atree.Convention (Etype (Def_Id)) /= Convention then
-                     if Convention = Convention_Java then
-                        Error_Pragma_Arg
-                          ("pragma% requires function returning a 'Java "
-                           & "access type", Arg1);
-                     else
-                        pragma Assert (Convention = Convention_CIL);
-                        Error_Pragma_Arg
-                          ("pragma% requires function returning a 'C'I'L "
-                           & "access type", Arg1);
-                     end if;
-                  end if;
-
-               elsif Is_Access_Type (Etype (Def_Id)) then
-                  if not Ekind_In (Etype (Def_Id), E_Access_Type,
-                                                   E_General_Access_Type)
-                    or else
-                      Atree.Convention
-                        (Designated_Type (Etype (Def_Id))) /= Convention
-                  then
-                     Error_Msg_Name_1 := Pname;
-
-                     if Convention = Convention_Java then
-                        Error_Pragma_Arg
-                          ("pragma% requires function returning a named "
-                           & "'Java access type", Arg1);
-                     else
-                        Error_Pragma_Arg
-                          ("pragma% requires function returning a named "
-                           & "'C'I'L access type", Arg1);
-                     end if;
-                  end if;
-               end if;
-
-               Set_Is_Constructor (Def_Id);
-               Set_Convention     (Def_Id, Convention);
-               Set_Is_Imported    (Def_Id);
-
-               exit when From_Aspect_Specification (N);
-               Hom_Id := Homonym (Hom_Id);
-
-               exit when No (Hom_Id) or else Scope (Hom_Id) /= Current_Scope;
-            end loop;
-         end Java_Constructor;
-
-         ----------------------
-         -- Java_Interface --
-         ----------------------
-
-         --  pragma Java_Interface ([Entity =>] LOCAL_NAME);
-
-         when Pragma_Java_Interface => Java_Interface : declare
-            Arg : Node_Id;
-            Typ : Entity_Id;
-
-         begin
-            GNAT_Pragma;
-            Check_Arg_Count (1);
-            Check_Optional_Identifier (Arg1, Name_Entity);
-            Check_Arg_Is_Local_Name (Arg1);
-
-            Arg := Get_Pragma_Arg (Arg1);
-            Analyze (Arg);
-
-            if Etype (Arg) = Any_Type then
-               return;
-            end if;
-
-            if not Is_Entity_Name (Arg)
-              or else not Is_Type (Entity (Arg))
-            then
-               Error_Pragma_Arg ("pragma% requires a type mark", Arg1);
-            end if;
-
-            Typ := Underlying_Type (Entity (Arg));
-
-            --  For now simply check some of the semantic constraints on the
-            --  type. This currently leaves out some restrictions on interface
-            --  types, namely that the parent type must be java.lang.Object.Typ
-            --  and that all primitives of the type should be declared
-            --  abstract. ???
-
-            if not Is_Tagged_Type (Typ) or else not Is_Abstract_Type (Typ) then
-               Error_Pragma_Arg
-                 ("pragma% requires an abstract tagged type", Arg1);
-
-            elsif not Has_Discriminants (Typ)
-              or else Ekind (Etype (First_Discriminant (Typ)))
-                        /= E_Anonymous_Access_Type
-              or else
-                not Is_Class_Wide_Type
-                      (Designated_Type (Etype (First_Discriminant (Typ))))
-            then
-               Error_Pragma_Arg
-                 ("type must have a class-wide access discriminant", Arg1);
-            end if;
-         end Java_Interface;
-
          ----------------
          -- Keep_Names --
          ----------------
@@ -17634,18 +17249,6 @@ package body Sem_Prag is
                   if CodePeer_Mode then
                      null;
 
-                  --  Don't attempt any packing for VM targets. We possibly
-                  --  could deal with some cases of array bit-packing, but we
-                  --  don't bother, since this is not a typical kind of
-                  --  representation in the VM context anyway (and would not
-                  --  for example work nicely with the debugger).
-
-                  elsif VM_Target /= No_VM then
-                     if not GNAT_Mode then
-                        Error_Pragma
-                          ("??pragma% ignored in this configuration");
-                     end if;
-
                   --  Normal case where we do the pack action
 
                   else
@@ -17662,23 +17265,9 @@ package body Sem_Prag is
 
             else pragma Assert (Is_Record_Type (Typ));
                if not Rep_Item_Too_Late (Typ, N) then
-
-                  --  Ignore pack request with warning in VM mode (skip warning
-                  --  if we are compiling GNAT run time library).
-
-                  if VM_Target /= No_VM then
-                     if not GNAT_Mode then
-                        Error_Pragma
-                          ("??pragma% ignored in this configuration");
-                     end if;
-
-                  --  Normal case of pack request active
-
-                  else
-                     Set_Is_Packed            (Base_Type (Typ));
-                     Set_Has_Pragma_Pack      (Base_Type (Typ));
-                     Set_Has_Non_Standard_Rep (Base_Type (Typ));
-                  end if;
+                  Set_Is_Packed            (Base_Type (Typ));
+                  Set_Has_Pragma_Pack      (Base_Type (Typ));
+                  Set_Has_Non_Standard_Rep (Base_Type (Typ));
                end if;
             end if;
          end Pack;
@@ -26619,7 +26208,6 @@ package body Sem_Prag is
       Pragma_Check_Float_Overflow           =>  0,
       Pragma_Check_Name                     =>  0,
       Pragma_Check_Policy                   =>  0,
-      Pragma_CIL_Constructor                =>  0,
       Pragma_CPP_Class                      =>  0,
       Pragma_CPP_Constructor                =>  0,
       Pragma_CPP_Virtual                    =>  0,
@@ -26698,8 +26286,6 @@ package body Sem_Prag is
       Pragma_Interrupt_Priority             => -1,
       Pragma_Interrupt_State                => -1,
       Pragma_Invariant                      => -1,
-      Pragma_Java_Constructor               => -1,
-      Pragma_Java_Interface                 => -1,
       Pragma_Keep_Names                     =>  0,
       Pragma_License                        =>  0,
       Pragma_Link_With                      => -1,
@@ -27380,12 +26966,11 @@ package body Sem_Prag is
    begin
       --  If first character is asterisk, this is a link name, and we leave it
       --  completely unmodified. We also ignore null strings (the latter case
-      --  happens only in error cases) and no encoding should occur for Java or
-      --  AAMP interface names.
+      --  happens only in error cases) and no encoding should occur for AAMP
+      --  interface names.
 
       if Len = 0
         or else Get_String_Char (Str, 1) = Get_Char_Code ('*')
-        or else VM_Target /= No_VM
         or else AAMP_On_Target
       then
          Set_Interface_Name (E, S);

@@ -346,10 +346,6 @@ package Exp_Disp is
    --  tagged types this routine imports the forward declaration of the tag
    --  entity, that will be declared and exported by Make_DT.
 
-   function Make_VM_TSD (Typ : Entity_Id) return List_Id;
-   --  Build the Type Specific Data record associated with tagged type Typ.
-   --  Invoked only when generating code for VM targets.
-
    function Register_Primitive
      (Loc     : Source_Ptr;
       Prim    : Entity_Id) return List_Id;

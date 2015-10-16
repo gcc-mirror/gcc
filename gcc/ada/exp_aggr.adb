@@ -664,16 +664,6 @@ package body Exp_Aggr is
          return False;
       end if;
 
-      --  Checks 11: Array aggregates with aliased components are currently
-      --  not well supported by the VM backend; disable temporarily this
-      --  backend processing until it is definitely supported.
-
-      if VM_Target /= No_VM
-        and then Has_Aliased_Components (Base_Type (Typ))
-      then
-         return False;
-      end if;
-
       --  Backend processing is possible
 
       Set_Size_Known_At_Compile_Time (Etype (N), True);
@@ -2534,8 +2524,8 @@ package body Exp_Aggr is
                Set_No_Ctrl_Actions (First (Assign));
 
                --  Assign the tag now to make sure that the dispatching call in
-               --  the subsequent deep_adjust works properly (unless VM_Target,
-               --  where tags are implicit).
+               --  the subsequent deep_adjust works properly (unless
+               --  Tagged_Type_Expansion where tags are implicit).
 
                if Tagged_Type_Expansion then
                   Instr :=
@@ -5475,7 +5465,6 @@ package body Exp_Aggr is
          --  then we could go into an infinite recursion.
 
          if (In_Place_Assign_OK_For_Declaration or else Maybe_In_Place_OK)
-           and then VM_Target = No_VM
            and then not AAMP_On_Target
            and then not Generate_SCIL
            and then not Possible_Bit_Aligned_Component (Target)
@@ -5851,7 +5840,8 @@ package body Exp_Aggr is
             --  These are cases where the source expression may have a tag that
             --  could differ from the component tag (e.g., can occur for type
             --  conversions and formal parameters). (Tag adjustment not needed
-            --  if VM_Target because object tags are implicit in the machine.)
+            --  if Tagged_Type_Expansion because object tags are implicit in
+            --  the machine.)
 
             if Is_Tagged_Type (Etype (Expr_Q))
               and then (Nkind (Expr_Q) = N_Type_Conversion

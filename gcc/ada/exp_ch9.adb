@@ -4780,26 +4780,6 @@ package body Exp_Ch9 is
                     Prefix =>
                       New_Occurrence_Of (Defining_Identifier (N_Node), Loc)));
 
-               --  If it is a VM_By_Copy_Actual, copy it to a new variable
-
-               elsif Is_VM_By_Copy_Actual (Actual) then
-                  N_Node :=
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Make_Temporary (Loc, 'J'),
-                      Aliased_Present     => True,
-                      Object_Definition   =>
-                        New_Occurrence_Of (Etype (Formal), Loc),
-                      Expression => New_Copy_Tree (Actual));
-                  Set_Assignment_OK (N_Node);
-
-                  Append (N_Node, Decls);
-
-                  Append_To (Plist,
-                    Make_Attribute_Reference (Loc,
-                      Attribute_Name => Name_Unchecked_Access,
-                    Prefix           =>
-                      New_Occurrence_Of (Defining_Identifier (N_Node), Loc)));
-
                else
                   --  Interface class-wide formal
 
@@ -4950,8 +4930,7 @@ package body Exp_Ch9 is
 
             Set_Assignment_OK (Actual);
             while Present (Actual) loop
-               if (Is_By_Copy_Type (Etype (Actual))
-                    or else Is_VM_By_Copy_Actual (Actual))
+               if Is_By_Copy_Type (Etype (Actual))
                  and then Ekind (Formal) /= E_In_Parameter
                then
                   N_Node :=
@@ -7584,29 +7563,17 @@ package body Exp_Ch9 is
              Has_Created_Identifier => True,
              Is_Asynchronous_Call_Block => True);
 
-         --  For the VM call Update_Exception instead of Abort_Undefer.
-         --  See 4jexcept.ads for an explanation.
+         if Exception_Mechanism = Back_End_Exceptions then
 
-         if VM_Target = No_VM then
-            if Exception_Mechanism = Back_End_Exceptions then
+            --  Aborts are not deferred at beginning of exception handlers
+            --  in ZCX.
 
-               --  Aborts are not deferred at beginning of exception handlers
-               --  in ZCX.
+            Handler_Stmt := Make_Null_Statement (Loc);
 
-               Handler_Stmt := Make_Null_Statement (Loc);
-
-            else
-               Handler_Stmt := Make_Procedure_Call_Statement (Loc,
-                 Name => New_Occurrence_Of (RTE (RE_Abort_Undefer), Loc),
-                 Parameter_Associations => No_List);
-            end if;
          else
             Handler_Stmt := Make_Procedure_Call_Statement (Loc,
-              Name => New_Occurrence_Of (RTE (RE_Update_Exception), Loc),
-              Parameter_Associations => New_List (
-                Make_Function_Call (Loc,
-                  Name => New_Occurrence_Of
-                            (RTE (RE_Current_Target_Exception), Loc))));
+              Name => New_Occurrence_Of (RTE (RE_Abort_Undefer), Loc),
+              Parameter_Associations => No_List);
          end if;
 
          Stmts := New_List (
@@ -14218,31 +14185,17 @@ package body Exp_Ch9 is
          --  it's actually inside the init procedure for the record type that
          --  corresponds to the task type.
 
-         --  This processing is causing a crash in the .NET/JVM back ends that
-         --  is not yet understood, so skip it in these cases ???
+         Set_Itype (Ref, Subp_Ptr_Typ);
+         Append_Freeze_Action (Task_Rec, Ref);
 
-         if VM_Target = No_VM then
-            Set_Itype (Ref, Subp_Ptr_Typ);
-            Append_Freeze_Action (Task_Rec, Ref);
-
-            Append_To (Args,
-              Unchecked_Convert_To (RTE (RE_Task_Procedure_Access),
-                Make_Qualified_Expression (Loc,
-                  Subtype_Mark => New_Occurrence_Of (Subp_Ptr_Typ, Loc),
-                  Expression   =>
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => New_Occurrence_Of (Body_Proc, Loc),
-                      Attribute_Name => Name_Unrestricted_Access))));
-
-         --  For the .NET/JVM cases revert to the original code below ???
-
-         else
-            Append_To (Args,
-              Unchecked_Convert_To (RTE (RE_Task_Procedure_Access),
-                Make_Attribute_Reference (Loc,
-                  Prefix         => New_Occurrence_Of (Body_Proc, Loc),
-                  Attribute_Name => Name_Address)));
-         end if;
+         Append_To (Args,
+           Unchecked_Convert_To (RTE (RE_Task_Procedure_Access),
+             Make_Qualified_Expression (Loc,
+               Subtype_Mark => New_Occurrence_Of (Subp_Ptr_Typ, Loc),
+               Expression   =>
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Body_Proc, Loc),
+                   Attribute_Name => Name_Unrestricted_Access))));
       end;
 
       --  Discriminants parameter. This is just the address of the task

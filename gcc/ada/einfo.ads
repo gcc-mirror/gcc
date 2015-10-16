@@ -2029,15 +2029,6 @@ package Einfo is
 --       on the partial view, to insure that discriminants are properly
 --       inherited in certain contexts.
 
---    Has_Uplevel_Reference (Flag215)
---       Defined in all entities. Indicates that the entity is locally defined
---       within a subprogram P, and there is a reference to the entity within
---       a subprogram nested within P (at any depth). Set only for the VM case
---       (where it is set for variables, constants, and loop parameters). Note
---       that this is similar in usage to Is_Uplevel_Referenced_Entity (which
---       is used when we are unnesting subprograms), but the usages are a bit
---       different and it is cleaner to leave the old VM usage unchanged.
-
 --    Has_Visible_Refinement (Flag263)
 --       Defined in E_Abstract_State entities. Set when a state has at least
 --       one refinement constituent and analysis is in the region between
@@ -2425,7 +2416,7 @@ package Einfo is
 --       Defined in all entities. Set if the entity is exported. For now we
 --       only allow the export of constants, exceptions, functions, procedures
 --       and variables, but that may well change later on. Exceptions can only
---       be exported in the Java VM implementation of GNAT.
+--       be exported in the Java VM implementation of GNAT, which is retired.
 
 --    Is_External_State (synthesized)
 --       Applies to all entities, true for abstract states that are subject to
@@ -2549,7 +2540,7 @@ package Einfo is
 --       Defined in all entities. Set if the entity is imported. For now we
 --       only allow the import of exceptions, functions, procedures, packages.
 --       and variables. Exceptions, packages and types can only be imported in
---       the Java VM implementation.
+--       the Java VM implementation, which is retired.
 
 --    Is_Incomplete_Or_Private_Type (synthesized)
 --       Applies to all entities, true for private and incomplete types
@@ -3035,9 +3026,7 @@ package Einfo is
 --       static bounds, a record all of whose component types are static types,
 --       or an array, all of whose bounds are of a static type, and also have
 --       a component type that is a static type). See Set_Uplevel_Type for more
---       information on how this flag is used. Note that if Is_Static_Type is
---       True, then it is never the case that the Has_Uplevel_Reference flag is
---       set for the same type.
+--       information on how this flag is used.
 
 --    Is_Statically_Allocated (Flag28)
 --       Defined in all entities. This can only be set for exception,
@@ -3162,10 +3151,6 @@ package Einfo is
 --       the cases where the reference is implicit (e.g. the type of an array
 --       used for computing the location of an element in an array. This is
 --       used internally in Exp_Unst, see this package for further details.
---       Note that this is similar to the Has_Uplevel_Reference flag which
---       is used in the VM case but we prefer to keep the two cases entirely
---       separated, so that the VM usage is not disturbed by work on the
---       Unnesting_Subprograms mode.
 
 --    Is_Valued_Procedure (Flag127)
 --       Defined in procedure entities. Set if an Import_Valued_Procedure
@@ -5311,7 +5296,6 @@ package Einfo is
    --    Has_Qualified_Name                  (Flag161)
    --    Has_Stream_Size_Clause              (Flag184)
    --    Has_Unknown_Discriminants           (Flag72)
-   --    Has_Uplevel_Reference               (Flag215)
    --    Has_Xref_Entry                      (Flag182)
    --    In_Private_Part                     (Flag45)
    --    Is_Ada_2005_Only                    (Flag185)
@@ -6868,7 +6852,6 @@ package Einfo is
    function Has_Thunks                          (Id : E) return B;
    function Has_Unchecked_Union                 (Id : E) return B;
    function Has_Unknown_Discriminants           (Id : E) return B;
-   function Has_Uplevel_Reference               (Id : E) return B;
    function Has_Visible_Refinement              (Id : E) return B;
    function Has_Volatile_Components             (Id : E) return B;
    function Has_Xref_Entry                      (Id : E) return B;
@@ -7524,7 +7507,6 @@ package Einfo is
    procedure Set_Has_Thunks                      (Id : E; V : B := True);
    procedure Set_Has_Unchecked_Union             (Id : E; V : B := True);
    procedure Set_Has_Unknown_Discriminants       (Id : E; V : B := True);
-   procedure Set_Has_Uplevel_Reference           (Id : E; V : B := True);
    procedure Set_Has_Visible_Refinement          (Id : E; V : B := True);
    procedure Set_Has_Volatile_Components         (Id : E; V : B := True);
    procedure Set_Has_Xref_Entry                  (Id : E; V : B := True);
@@ -8299,7 +8281,6 @@ package Einfo is
    pragma Inline (Has_Thunks);
    pragma Inline (Has_Unchecked_Union);
    pragma Inline (Has_Unknown_Discriminants);
-   pragma Inline (Has_Uplevel_Reference);
    pragma Inline (Has_Visible_Refinement);
    pragma Inline (Has_Volatile_Components);
    pragma Inline (Has_Xref_Entry);

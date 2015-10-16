@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,14 +302,5 @@ package body System.Soft_Links is
    begin
       null;
    end Task_Unlock_NT;
-
-   -------------------------
-   -- Update_Exception_NT --
-   -------------------------
-
-   procedure Update_Exception_NT (X : EO := Current_Target_Exception) is
-   begin
-      Ada.Exceptions.Save_Occurrence (NT_TSD.Current_Excep, X);
-   end Update_Exception_NT;
 
 end System.Soft_Links;

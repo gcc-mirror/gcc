@@ -3051,48 +3051,6 @@ package body Sem_Util is
       end loop Outer;
    end Check_Later_Vs_Basic_Declarations;
 
-   -------------------------
-   -- Check_Nested_Access --
-   -------------------------
-
-   procedure Check_Nested_Access (Ent : Entity_Id) is
-      Scop         : constant Entity_Id := Current_Scope;
-      Current_Subp : Entity_Id;
-      Enclosing    : Entity_Id;
-
-   begin
-      --  Currently only enabled for VM back-ends for efficiency
-
-      if VM_Target /= No_VM
-        and then Ekind_In (Ent, E_Variable, E_Constant, E_Loop_Parameter)
-        and then Scope (Ent) /= Empty
-        and then not Is_Library_Level_Entity (Ent)
-
-        --  Comment the exclusion of imported entities ???
-
-        and then not Is_Imported (Ent)
-      then
-         --  Get current subprogram that is relevant
-
-         if Is_Subprogram (Scop)
-           or else Is_Generic_Subprogram (Scop)
-           or else Is_Entry (Scop)
-         then
-            Current_Subp := Scop;
-         else
-            Current_Subp := Current_Subprogram;
-         end if;
-
-         Enclosing := Enclosing_Subprogram (Ent);
-
-         --  Set flag if uplevel reference
-
-         if Enclosing /= Empty and then Enclosing /= Current_Subp then
-            Set_Has_Uplevel_Reference (Ent, True);
-         end if;
-      end if;
-   end Check_Nested_Access;
-
    ---------------------------
    -- Check_No_Hidden_State --
    ---------------------------
@@ -11108,54 +11066,6 @@ package body Sem_Util is
       end case;
    end Is_Declaration;
 
-   -----------------
-   -- Is_Delegate --
-   -----------------
-
-   function Is_Delegate (T : Entity_Id) return Boolean is
-      Desig_Type : Entity_Id;
-
-   begin
-      if VM_Target /= CLI_Target then
-         return False;
-      end if;
-
-      --  Access-to-subprograms are delegates in CIL
-
-      if Ekind (T) = E_Access_Subprogram_Type then
-         return True;
-      end if;
-
-      if not Is_Access_Type (T) then
-
-         --  A delegate is a managed pointer. If no designated type is defined
-         --  it means that it's not a delegate.
-
-         return False;
-      end if;
-
-      Desig_Type := Etype (Directly_Designated_Type (T));
-
-      if not Is_Tagged_Type (Desig_Type) then
-         return False;
-      end if;
-
-      --  Test if the type is inherited from [mscorlib]System.Delegate
-
-      while Etype (Desig_Type) /= Desig_Type loop
-         if Chars (Scope (Desig_Type)) /= No_Name
-           and then Is_Imported (Scope (Desig_Type))
-           and then Get_Name_String (Chars (Scope (Desig_Type))) = "delegate"
-         then
-            return True;
-         end if;
-
-         Desig_Type := Etype (Desig_Type);
-      end loop;
-
-      return False;
-   end Is_Delegate;
-
    ----------------------------------------------
    -- Is_Dependent_Component_Of_Mutable_Object --
    ----------------------------------------------
@@ -13251,18 +13161,6 @@ package body Sem_Util is
    begin
       return T = Universal_Integer or else T = Universal_Real;
    end Is_Universal_Numeric_Type;
-
-   -------------------
-   -- Is_Value_Type --
-   -------------------
-
-   function Is_Value_Type (T : Entity_Id) return Boolean is
-   begin
-      return VM_Target = CLI_Target
-        and then Nkind (T) in N_Has_Chars
-        and then Chars (T) /= No_Name
-        and then Get_Name_String (Chars (T)) = "valuetype";
-   end Is_Value_Type;
 
    ----------------------------
    -- Is_Variable_Size_Array --
@@ -15856,8 +15754,6 @@ package body Sem_Util is
                      end;
                   end if;
                end if;
-
-               Check_Nested_Access (Ent);
             end if;
 
             Kill_Checks (Ent);
@@ -17023,7 +16919,7 @@ package body Sem_Util is
       --  type temporaries need finalization.
 
       elsif Is_Tagged_Type (Typ) or else Has_Controlled_Component (Typ) then
-         return not Is_Value_Type (Typ);
+         return True;
 
       --  Record type
 
@@ -17235,7 +17131,7 @@ package body Sem_Util is
       --  since they can't be called via dispatching.
 
       elsif Is_Tagged_Type (Typ) or else Has_Controlled_Component (Typ) then
-         return not Is_Value_Type (Typ);
+         return True;
 
       --  Untagged definite subtypes are known size. This includes all
       --  elementary [sub]types. Tasks are known size even if they have

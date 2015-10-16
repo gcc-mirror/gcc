@@ -387,14 +387,6 @@ package body Exp_Ch5 is
         and then
            (not Is_Constrained (Etype (Lhs))
              or else not Is_First_Subtype (Etype (Lhs)))
-
-         --  In the case of compiling for the Java or .NET Virtual Machine,
-         --  slices are always passed by making a copy, so we don't have to
-         --  worry about overlap. We also want to prevent generation of "<"
-         --  comparisons for array addresses, since that's a meaningless
-         --  operation on the VM.
-
-        and then VM_Target = No_VM
       then
          Set_Forwards_OK  (N, False);
          Set_Backwards_OK (N, False);
@@ -764,7 +756,7 @@ package body Exp_Ch5 is
             --  The GCC back end can deal with all cases of overlap by falling
             --  back to memmove if it cannot use a more efficient approach.
 
-            if VM_Target = No_VM and not AAMP_On_Target then
+            if not AAMP_On_Target then
                return;
 
             --  Assume other back ends can handle it if Forwards_OK is set
@@ -937,9 +929,9 @@ package body Exp_Ch5 is
             --  We normally compare addresses to find out which way round to
             --  do the loop, since this is reliable, and handles the cases of
             --  parameters, conversions etc. But we can't do that in the bit
-            --  packed case or the VM case, because addresses don't work there.
+            --  packed case, because addresses don't work there.
 
-            if not Is_Bit_Packed_Array (L_Type) and then VM_Target = No_VM then
+            if not Is_Bit_Packed_Array (L_Type) then
                Condition :=
                  Make_Op_Le (Loc,
                    Left_Opnd =>
@@ -2165,14 +2157,6 @@ package body Exp_Ch5 is
       then
          Make_Build_In_Place_Call_In_Assignment (N, Rhs);
 
-      elsif Is_Tagged_Type (Typ) and then Is_Value_Type (Etype (Lhs)) then
-
-         --  Nothing to do for valuetypes
-         --  ??? Set_Scope_Is_Transient (False);
-
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
-
       elsif Is_Tagged_Type (Typ)
         or else (Needs_Finalization (Typ) and then not Is_Array_Type (Typ))
       then
@@ -2208,7 +2192,6 @@ package body Exp_Ch5 is
                --  generated.
 
                or else (Is_Tagged_Type (Typ)
-                         and then not Is_Value_Type (Etype (Lhs))
                          and then Chars (Current_Scope) /= Name_uAssign
                          and then Expand_Ctrl_Actions
                          and then
@@ -4577,11 +4560,6 @@ package body Exp_Ch5 is
                                        and then not Comp_Asn
                                        and then not No_Ctrl_Actions (N)
                                        and then Tagged_Type_Expansion;
-      --  Tags are not saved and restored when VM_Target because VM tags are
-      --  represented implicitly in objects.
-
-      Next_Id : Entity_Id;
-      Prev_Id : Entity_Id;
       Tag_Id  : Entity_Id;
 
    begin
@@ -4642,48 +4620,6 @@ package body Exp_Ch5 is
          Tag_Id := Empty;
       end if;
 
-      --  Save the Prev and Next fields on .NET/JVM. This is not needed on non
-      --  VM targets since the fields are not part of the object.
-
-      if VM_Target /= No_VM
-        and then Is_Controlled (T)
-      then
-         Prev_Id := Make_Temporary (Loc, 'P');
-         Next_Id := Make_Temporary (Loc, 'N');
-
-         --  Generate:
-         --    Pnn : Root_Controlled_Ptr := Root_Controlled (L).Prev;
-
-         Append_To (Res,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Prev_Id,
-             Object_Definition   =>
-               New_Occurrence_Of (RTE (RE_Root_Controlled_Ptr), Loc),
-             Expression          =>
-               Make_Selected_Component (Loc,
-                 Prefix        =>
-                   Unchecked_Convert_To
-                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Name_Prev))));
-
-         --  Generate:
-         --    Nnn : Root_Controlled_Ptr := Root_Controlled (L).Next;
-
-         Append_To (Res,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Next_Id,
-             Object_Definition   =>
-               New_Occurrence_Of (RTE (RE_Root_Controlled_Ptr), Loc),
-             Expression          =>
-               Make_Selected_Component (Loc,
-                 Prefix        =>
-                   Unchecked_Convert_To
-                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Name_Next))));
-      end if;
-
       --  If the tagged type has a full rep clause, expand the assignment into
       --  component-wise assignments. Mark the node as unanalyzed in order to
       --  generate the proper code and propagate this scenario by setting a
@@ -4707,39 +4643,6 @@ package body Exp_Ch5 is
                  Selector_Name =>
                    New_Occurrence_Of (First_Tag_Component (T), Loc)),
              Expression => New_Occurrence_Of (Tag_Id, Loc)));
-      end if;
-
-      --  Restore the Prev and Next fields on .NET/JVM
-
-      if VM_Target /= No_VM
-        and then Is_Controlled (T)
-      then
-         --  Generate:
-         --    Root_Controlled (L).Prev := Prev_Id;
-
-         Append_To (Res,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               Make_Selected_Component (Loc,
-                 Prefix        =>
-                   Unchecked_Convert_To
-                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Name_Prev)),
-             Expression => New_Occurrence_Of (Prev_Id, Loc)));
-
-         --  Generate:
-         --    Root_Controlled (L).Next := Next_Id;
-
-         Append_To (Res,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               Make_Selected_Component (Loc,
-                 Prefix        =>
-                   Unchecked_Convert_To
-                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
-                 Selector_Name => Make_Identifier (Loc, Name_Next)),
-             Expression => New_Occurrence_Of (Next_Id, Loc)));
       end if;
 
       --  Adjust the target after the assignment when controlled (not in the

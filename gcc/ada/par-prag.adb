@@ -1302,7 +1302,6 @@ begin
            Pragma_Check_Float_Overflow           |
            Pragma_Check_Name                     |
            Pragma_Check_Policy                   |
-           Pragma_CIL_Constructor                |
            Pragma_Compile_Time_Error             |
            Pragma_Compile_Time_Warning           |
            Pragma_Contract_Cases                 |
@@ -1376,8 +1375,6 @@ begin
            Pragma_Interrupt_State                |
            Pragma_Interrupt_Priority             |
            Pragma_Invariant                      |
-           Pragma_Java_Constructor               |
-           Pragma_Java_Interface                 |
            Pragma_Keep_Names                     |
            Pragma_License                        |
            Pragma_Link_With                      |

@@ -308,11 +308,6 @@ package Sem_Util is
    --  remains in the Examiner (JB01-005). Note that the Examiner does not
    --  count package declarations in later declarative items.
 
-   procedure Check_Nested_Access (Ent : Entity_Id);
-   --  Check whether Ent denotes an entity declared in an uplevel scope, which
-   --  is accessed inside a nested procedure, and set Has_Uplevel_Reference
-   --  flag accordingly. This is currently only enabled for if on a VM target.
-
    procedure Check_No_Hidden_State (Id : Entity_Id);
    --  Determine whether object or state Id introduces a hidden state. If this
    --  is the case, emit an error.
@@ -1256,11 +1251,6 @@ package Sem_Util is
    function Is_Declaration (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a declaration
 
-   function Is_Delegate (T : Entity_Id) return Boolean;
-   --  Returns true if type T represents a delegate. A Delegate is the CIL
-   --  object used to represent access-to-subprogram types. This is only
-   --  relevant to CIL, will always return false for other targets.
-
    function Is_Dependent_Component_Of_Mutable_Object
      (Object : Node_Id) return Boolean;
    --  Returns True if Object is the name of a subcomponent that depends on
@@ -1527,12 +1517,6 @@ package Sem_Util is
    function Is_Universal_Numeric_Type (T : Entity_Id) return Boolean;
    pragma Inline (Is_Universal_Numeric_Type);
    --  True if T is Universal_Integer or Universal_Real
-
-   function Is_Value_Type (T : Entity_Id) return Boolean;
-   --  Returns true if type T represents a value type. This is only relevant to
-   --  CIL, will always return false for other targets. A value type is a CIL
-   --  object that is accessed directly, as opposed to the other CIL objects
-   --  that are accessed through managed pointers.
 
    function Is_Variable_Size_Array (E : Entity_Id) return Boolean;
    --  Returns true if E has variable size components
