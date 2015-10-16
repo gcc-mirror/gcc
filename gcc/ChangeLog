@@ -1,3 +1,13 @@
+2015-10-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/67745
+	* config/arm/arm.h (FUNCTION_BOUNDARY): Move optimize_size condition to:
+	* config/arm/arm.c (arm_option_override_internal): Call
+	arm_override_options_after_change_1.
+	(arm_override_options_after_change): New function.
+	(arm_override_options_after_change_1): Likewise.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): Define hook.
+
 2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	Revert:
