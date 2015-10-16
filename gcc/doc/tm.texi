@@ -9985,6 +9985,10 @@ default, inlining is not allowed if the callee function has function
 specific target options and the caller does not use the same options.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_RELAYOUT_FUNCTION (tree @var{fndecl})
+This target hook fixes function @var{fndecl} after attributes are processed. Default does nothing. On ARM, the default function's alignment is updated with the attribute target.
+@end deftypefn
+
 @node Emulated TLS
 @section Emulating TLS
 @cindex Emulated TLS

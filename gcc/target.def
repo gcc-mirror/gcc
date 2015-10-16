@@ -5620,6 +5620,12 @@ specific target options and the caller does not use the same options.",
  bool, (tree caller, tree callee),
  default_target_can_inline_p)
 
+DEFHOOK
+(relayout_function,
+"This target hook fixes function @var{fndecl} after attributes are processed. Default does nothing. On ARM, the default function's alignment is updated with the attribute target.",
+ void, (tree fndecl),
+ hook_void_tree)
+
 HOOK_VECTOR_END (target_option)
 
 /* For targets that need to mark extra registers as live on entry to

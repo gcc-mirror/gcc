@@ -250,6 +250,7 @@ static void arm_override_options_after_change (void);
 static void arm_option_print (FILE *, int, struct cl_target_option *);
 static void arm_set_current_function (tree);
 static bool arm_can_inline_p (tree, tree);
+static void arm_relayout_function (tree);
 static bool arm_valid_target_attribute_p (tree, tree, tree, int);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (machine_mode);
 static bool arm_macro_fusion_p (void);
@@ -404,6 +405,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_CAN_INLINE_P
 #define TARGET_CAN_INLINE_P arm_can_inline_p
+
+#undef TARGET_RELAYOUT_FUNCTION
+#define TARGET_RELAYOUT_FUNCTION arm_relayout_function
 
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE arm_option_override
@@ -29823,6 +29827,23 @@ arm_can_inline_p (tree caller ATTRIBUTE_UNUSED, tree callee ATTRIBUTE_UNUSED)
      Function with mode specific instructions, e.g using asm, must be explicitely 
      protected with noinline.  */
   return true;
+}
+
+/* Hook to fix function's alignment affected by target attribute.  */
+
+static void
+arm_relayout_function (tree fndecl)
+{
+  if (DECL_USER_ALIGN (fndecl))
+    return;
+
+  tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+
+  if (!callee_tree)
+    callee_tree = target_option_default_node;
+
+  DECL_ALIGN (fndecl) =
+    FUNCTION_BOUNDARY_P (TREE_TARGET_OPTION (callee_tree)->x_target_flags);
 }
 
 /* Inner function to process the attribute((target(...))), take an argument and

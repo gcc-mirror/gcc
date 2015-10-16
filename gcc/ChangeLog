@@ -1,5 +1,18 @@
 2015-10-16  Christian Bruel  <christian.bruel@st.com>
 
+ 	PR target/67745
+ 	* config/arm/arm.h (FUNCTION_BOUNDARY): Use FUNCTION_BOUNDARY_P.
+ 	(FUNCTION_BOUNDARY_P): New macro:
+ 	* config/arm/arm.c (TARGET_RELAYOUT_FUNCTION, arm_relayout_function): 
+ 	New hook.
+ 	* doc/tm.texi.in (TARGET_RELAYOUT_FUNCTION): Document.
+ 	* doc/tm.texi (TARGET_RELAYOUT_FUNCTION): New hook.
+ 	* gcc/target.def (TARGET_RELAYOUT_FUNCTION): Likewise.
+ 	* gcc/function.c (allocate_struct_function): Call relayout_function hook.
+ 	* gcc/passes.c (rest_of_decl_compilation): Likewise.
+
+2015-10-16  Christian Bruel  <christian.bruel@st.com>
+
 	PR target/67745
 	* config/arm/arm.h (FUNCTION_BOUNDARY): Move optimize_size condition to:
 	* config/arm/arm.c (arm_option_override_internal): Call
