@@ -21,20 +21,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
-#include "tree.h"
-#include "options.h"
+#include "tm.h"
+#include "c-family/c-common.h"
 #include "stringpool.h"
 #include "attribs.h"
-#include "tm.h"
-#include "tm_p.h"
 
 #include "c-family/c-format.h"
 #include "intl.h"
 
-#include "cpplib.h"
 #include "c-family/c-pragma.h"
-#include "c-family/c-common.h"
 
 /* cmn_err only accepts "l" and "ll".  */
 static const format_length_info cmn_err_length_specs[] =

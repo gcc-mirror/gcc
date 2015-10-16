@@ -21,17 +21,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
-#include "options.h"
+#include "tm_p.h"
 #include "stringpool.h"
+#include "diagnostic-core.h"
 #include "varasm.h"
 #include "output.h"
-#include "tm.h"
-#include "rtl.h"
-#include "target.h"
-#include "tm_p.h"
-#include "diagnostic-core.h"
 
 tree solaris_pending_aligns, solaris_pending_inits, solaris_pending_finis;
 

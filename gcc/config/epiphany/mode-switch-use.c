@@ -23,20 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
 #include "rtl.h"
 #include "df.h"
+#include "tm_p.h"
 #include "emit-rtl.h"
 #include "tree-pass.h"
 #include "insn-attr.h"
-#include "insn-config.h"
-#include "recog.h"
-#include "tm_p.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
 
 #ifndef TARGET_INSERT_MODE_SWITCH_USE
 #define TARGET_INSERT_MODE_SWITCH_USE NULL

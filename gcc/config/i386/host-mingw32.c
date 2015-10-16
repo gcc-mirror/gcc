@@ -20,9 +20,9 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "diagnostic.h"
 #include "hosthooks.h"
 #include "hosthooks-def.h"
-#include "diagnostic.h"
 
 
 #define WIN32_LEAN_AND_MEAN  /* Not so important if we have windows.h.gch.  */

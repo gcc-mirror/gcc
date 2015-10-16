@@ -30,10 +30,10 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "intl.h"
-#include <libgen.h>
 #include "obstack.h"
 #include "diagnostic.h"
+#include "intl.h"
+#include <libgen.h>
 #include "collect-utils.h"
 #include "gomp-constants.h"
 

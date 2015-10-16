@@ -22,14 +22,12 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h"
-#include "alias.h"
-#include "tree.h"
-#include "print-tree.h"
-#include "output.h"
 #include "function.h"
-#include "tm_p.h"
+#include "rtl.h"
+#include "tree.h"
 #include "tree-pass.h"	/* for current_pass */
+#include "tm_p.h"
+#include "print-tree.h"
 
 /* This file supplies some functions for AVR back-end developers
    with a printf-like interface.  The functions are called through

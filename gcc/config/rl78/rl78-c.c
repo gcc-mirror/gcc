@@ -22,10 +22,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
-#include "tree.h"
 #include "c-family/c-common.h"
-#include "rl78-protos.h"
 
 /* Implements REGISTER_TARGET_PRAGMAS.  */
 void

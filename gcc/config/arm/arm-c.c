@@ -19,13 +19,9 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "tm_p.h"
-#include "alias.h"
-#include "tree.h"
-#include "tm_p.h"
-#include "c-family/c-common.h"
 #include "target.h"
+#include "c-family/c-common.h"
+#include "tm_p.h"
 #include "c-family/c-pragma.h"
 
 /* Output C specific EABI object attributes.  These can not be done in

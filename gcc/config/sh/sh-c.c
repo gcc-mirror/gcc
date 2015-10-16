@@ -21,15 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
-#include "tree.h"
+#include "target.h"
+#include "c-family/c-common.h"
+#include "tm_p.h"
 #include "stringpool.h"
 #include "attribs.h"
-#include "tm_p.h"
-#include "cpplib.h"
-#include "c-family/c-common.h"
-#include "target.h"
 
 /* Handle machine specific pragmas to be semi-compatible with Renesas
    compiler.  */
