@@ -4562,8 +4562,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
     {
       if (e->ts.u.cl->length)
 	gfc_free_expr (e->ts.u.cl->length);
-      else if (e->expr_type == EXPR_VARIABLE
-		 && e->symtree->n.sym->attr.dummy)
+      else if (e->expr_type == EXPR_VARIABLE && e->symtree->n.sym->attr.dummy)
 	return;
     }
 
@@ -4596,11 +4595,18 @@ gfc_resolve_substring_charlen (gfc_expr *e)
       return;
     }
 
-  /* Length = (end - start +1).  */
+  /* Length = (end - start + 1).  */
   e->ts.u.cl->length = gfc_subtract (end, start);
   e->ts.u.cl->length = gfc_add (e->ts.u.cl->length,
 				gfc_get_int_expr (gfc_default_integer_kind,
 						  NULL, 1));
+
+  /* F2008, 6.4.1:  Both the starting point and the ending point shall
+     be within the range 1, 2, ..., n unless the starting point exceeds
+     the ending point, in which case the substring has length zero.  */
+
+  if (mpz_cmp_si (e->ts.u.cl->length->value.integer, 0) < 0)
+    mpz_set_si (e->ts.u.cl->length->value.integer, 0);
 
   e->ts.u.cl->length->ts.type = BT_INTEGER;
   e->ts.u.cl->length->ts.kind = gfc_charlen_int_kind;
@@ -10882,18 +10888,11 @@ resolve_charlen (gfc_charlen *cl)
 	}
     }
 
-  /* "If the character length parameter value evaluates to a negative
-     value, the length of character entities declared is zero."  */
+  /* F2008, 4.4.3.2:  If the character length parameter value evaluates to
+     a negative value, the length of character entities declared is zero.  */
   if (cl->length && !gfc_extract_int (cl->length, &i) && i < 0)
-    {
-      if (warn_surprising)
-	gfc_warning_now (OPT_Wsurprising,
-			 "CHARACTER variable at %L has negative length %d,"
-			 " the length has been set to zero",
-			 &cl->length->where, i);
-      gfc_replace_expr (cl->length,
-			gfc_get_int_expr (gfc_default_integer_kind, NULL, 0));
-    }
+    gfc_replace_expr (cl->length,
+		      gfc_get_int_expr (gfc_default_integer_kind, NULL, 0));
 
   /* Check that the character length is not too large.  */
   k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
