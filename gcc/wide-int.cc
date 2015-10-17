@@ -258,13 +258,15 @@ wi::from_mpz (const_tree type, mpz_t x, bool wrap)
     }
 
   /* Determine the number of unsigned HOST_WIDE_INTs that are required
-     for representing the value.  The code to calculate count is
+     for representing the absolute value.  The code to calculate count is
      extracted from the GMP manual, section "Integer Import and Export":
      http://gmplib.org/manual/Integer-Import-and-Export.html  */
   numb = CHAR_BIT * sizeof (HOST_WIDE_INT);
   count = (mpz_sizeinbase (x, 2) + numb - 1) / numb;
   HOST_WIDE_INT *val = res.write_val ();
-  /* Write directly to the wide_int storage if possible, otherwise leave
+  /* Read the absolute value.
+
+     Write directly to the wide_int storage if possible, otherwise leave
      GMP to allocate the memory for us.  It might be slightly more efficient
      to use mpz_tdiv_r_2exp for the latter case, but the situation is
      pathological and it seems safer to operate on the original mpz value
@@ -282,7 +284,12 @@ wi::from_mpz (const_tree type, mpz_t x, bool wrap)
       memcpy (val, valres, count * sizeof (HOST_WIDE_INT));
       free (valres);
     }
-  res.set_len (canonize (val, count, prec));
+  /* Zero-extend the absolute value to PREC bits.  */
+  if (count < BLOCKS_NEEDED (prec) && val[count - 1] < 0)
+    val[count++] = 0;
+  else
+    count = canonize (val, count, prec);
+  res.set_len (count);
 
   if (mpz_sgn (x) < 0)
     res = -res;
