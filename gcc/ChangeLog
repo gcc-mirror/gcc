@@ -1,3 +1,8 @@
+2015-10-16  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* lra-constraints.c (add_next_usage_insn): Change argument type
+	from rtx to rtx_insn *.
+
 2015-10-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* i386/x86-tune.def (X86_TUNE_ALWAYS_FANCY_MATH_387): Disable
