@@ -1,3 +1,11 @@
+2015-10-19  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
+
+	Backport from mainline
+	2015-10-09  Venkataramanan kumar  <venkataramanan.kumar@amd.com>
+
+	 * config/i386/cpuinfo.c (get_amd_cpu): Detect bdver4.
+	(__cpu_indicator_init): Fix model selection for AMD CPUs.
+
 2015-09-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/linux-atomic.c (__kernel_cmpxchg2): Reorder error checks.
