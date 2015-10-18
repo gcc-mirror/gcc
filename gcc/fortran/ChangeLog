@@ -1,3 +1,10 @@
+2015-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/66385
+	* frontend-passes.c (combine_array_constructor): Return early if
+	inside a FORALL loop.
+
 2015-08-07  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66929
