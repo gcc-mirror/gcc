@@ -1,3 +1,8 @@
+2015-10-18  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR other/65800
+	* gengtype.c (dump_type): Handle TYPE_UNDEFINED correctly.
+
 2015-10-18  Iain Sandoe  <iain@codesourcery.com>
 
 	* config/darwin.h (TARGET_SYSTEM_ROOT): Remove this from here,
