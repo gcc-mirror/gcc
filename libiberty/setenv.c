@@ -1,5 +1,5 @@
-/* Copyright (C) 1992, 1995, 1996, 1997, 2002, 2011 Free Software Foundation,
-   Inc.
+/* Copyright (C) 1992, 1995, 1996, 1997, 2002, 2011, 2015
+   Free Software Foundation, Inc.
    This file based on setenv.c in the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -62,11 +62,7 @@ extern int errno;
 #endif
 
 #define __environ	environ
-#ifndef HAVE_ENVIRON_DECL
-#ifndef environ
-extern char **environ;
-#endif
-#endif
+#include "environ.h"
 
 #undef setenv
 #undef unsetenv

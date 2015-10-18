@@ -1,3 +1,12 @@
+2015-10-18  Roland McGrath  <roland@gnu.org>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR other/63758
+	* pex-unix.c: Obtain the environment interface from settings in
+	environ.h rather than in-line code.  Update copyright date.
+	* setenv.c: Likewise.
+	* xmalloc.c: Likewise.
+
 2015-09-30  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_cv_qualifiers): Dx means transaction_safe.

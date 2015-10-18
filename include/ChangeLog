@@ -1,3 +1,8 @@
+2015-10-18  Roland McGrath  <roland@gnu.org>
+
+	PR other/63758
+	* environ.h: New file.
+
 2015-10-13  Jakub Jelinek  <jakub@redhat.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
 
