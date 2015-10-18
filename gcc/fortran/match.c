@@ -4365,16 +4365,6 @@ gfc_match_common (void)
 		goto cleanup;
 	    }
 
-	  sym->common_block = t;
-	  sym->common_block->refs++;
-
-	  if (tail != NULL)
-	    tail->common_next = sym;
-	  else
-	    *head = sym;
-
-	  tail = sym;
-
 	  /* Deal with an optional array specification after the
 	     symbol name.  */
 	  m = gfc_match_array_spec (&as, true, true);
@@ -4408,6 +4398,16 @@ gfc_match_common (void)
 	  /* Add the in_common attribute, but ignore the reported errors
 	     if any, and continue matching.  */
 	  gfc_add_in_common (&sym->attr, sym->name, NULL);
+
+	  sym->common_block = t;
+	  sym->common_block->refs++;
+
+	  if (tail != NULL)
+	    tail->common_next = sym;
+	  else
+	    *head = sym;
+
+	  tail = sym;
 
 	  sym->common_head = t;
 
