@@ -5210,6 +5210,17 @@ gfc_trans_allocate (gfc_code * code)
 		 here, fix it for future use.  */
 	      if (se.string_length)
 		expr3_len = gfc_evaluate_now (se.string_length, &block);
+
+	      /* Deallocate any allocatable components after all the allocations
+		 and assignments of expr3 have been completed.  */
+	      if (expr3 && code->expr3->ts.type == BT_DERIVED
+		  && code->expr3->rank == 0
+		  && code->expr3->ts.u.derived->attr.alloc_comp)
+		{
+		  tmp = gfc_deallocate_alloc_comp (code->expr3->ts.u.derived,
+						   expr3, 0);
+		  gfc_add_expr_to_block (&post, tmp);
+		}
 	    }
 	}
 

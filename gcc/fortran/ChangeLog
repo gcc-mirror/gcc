@@ -1,3 +1,15 @@
+2015-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/66079
+	Backport from mainline r224383:
+
+	* trans-expr.c (gfc_conv_procedure_call): Allocatable scalar
+	function results must be freed and nullified after use. Create
+	a temporary to hold the result to prevent duplicate calls.
+	* trans-stmt.c (gfc_trans_allocate): Rename temporary variable
+	as 'source'. Deallocate allocatable components of non-variable
+	'source's.
+
 2015-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/67721
@@ -60,7 +72,7 @@
 2015-09-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67615
-	* resolve.c (gfc_resolve_code): Check for scalar expression in 
+	* resolve.c (gfc_resolve_code): Check for scalar expression in
 	arithmetic-if.
 
 2015-09-10  Steven G. Kargl  <kargl@gcc.gnu.org>
