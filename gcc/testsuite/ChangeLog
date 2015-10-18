@@ -1,3 +1,12 @@
+2015-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67177
+	* gfortran.dg/move_alloc_15.f90: New test
+	* gfortran.dg/move_alloc_16.f90: New test
+
+	PR fortran/67977
+	* gfortran.dg/deferred_character_assignment_1.f90: New test
+
 2015-10-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67987
