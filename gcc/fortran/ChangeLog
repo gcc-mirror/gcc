@@ -1,3 +1,17 @@
+2015-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/67758
+	* gfortran.h (gfc_symbol): Expand comment.
+	* match.c (gfc_match_common): Delay adding the symbol to
+	the common_block after the gfc_add_in_common call.
+	* symbol.c (gfc_free_symbol): Move common block memory handling...
+	(gfc_set_symbol_common_block): ... here as a new function.
+	(restore_old_symbol): Restore common block fields.
+	(gfc_restore_last_undo_checkpoint):
+	Check the common_block pointer instead of the in_common attribute.
+	When a symbol has been removed from the common block linked list,
+	clear its common_next pointer.
+
 2015-10-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/67177

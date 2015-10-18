@@ -2585,6 +2585,25 @@ gfc_find_uop (const char *name, gfc_namespace *ns)
 }
 
 
+/* Update a symbol's common_block field, and take care of the associated
+   memory management.  */
+
+static void
+set_symbol_common_block (gfc_symbol *sym, gfc_common_head *common_block)
+{
+  if (sym->common_block == common_block)
+    return;
+
+  if (sym->common_block && sym->common_block->name[0] != '\0')
+    {
+      sym->common_block->refs--;
+      if (sym->common_block->refs == 0)
+	free (sym->common_block);
+    }
+  sym->common_block = common_block;
+}
+
+
 /* Remove a gfc_symbol structure and everything it points to.  */
 
 void
@@ -2612,12 +2631,7 @@ gfc_free_symbol (gfc_symbol *sym)
 
   gfc_free_namespace (sym->f2k_derived);
 
-  if (sym->common_block && sym->common_block->name[0] != '\0')
-    { 
-      sym->common_block->refs--; 
-      if (sym->common_block->refs == 0)
-	free (sym->common_block);
-    }
+  set_symbol_common_block (sym, NULL);
 
   free (sym);
 }
@@ -3090,6 +3104,9 @@ restore_old_symbol (gfc_symbol *p)
       p->formal = old->formal;
     }
 
+  set_symbol_common_block (p, old->common_block);
+  p->common_head = old->common_head;
+
   p->old_symbol = old->old_symbol;
   free (old);
 }
@@ -3178,15 +3195,13 @@ gfc_restore_last_undo_checkpoint (void)
 
   FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, p)
     {
-      /* Symbol was new. Or was old and just put in common */
-      if ((p->gfc_new
-	   || (p->attr.in_common && !p->old_symbol->attr.in_common ))
-	  && p->attr.in_common && p->common_block && p->common_block->head)
+      /* Symbol in a common block was new. Or was old and just put in common */
+      if (p->common_block
+	  && (p->gfc_new || !p->old_symbol->common_block))
 	{
 	  /* If the symbol was added to any common block, it
 	     needs to be removed to stop the resolver looking
 	     for a (possibly) dead symbol.  */
-
 	  if (p->common_block->head == p && !p->common_next)
 	    {
 	      gfc_symtree st, *st0;
@@ -3218,6 +3233,7 @@ gfc_restore_last_undo_checkpoint (void)
 	      gcc_assert(cparent->common_next == p);
 	      cparent->common_next = csym->common_next;
 	    }
+	  p->common_next = NULL;
 	}
       if (p->gfc_new)
 	{
