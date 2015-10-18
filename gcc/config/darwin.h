@@ -207,12 +207,21 @@ extern GTY(()) int darwin_ms_struct;
 #undef  LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC "%G %L"
 
-#ifdef TARGET_SYSTEM_ROOT
-#define LINK_SYSROOT_SPEC \
-  "%{isysroot*:-syslibroot %*;:-syslibroot " TARGET_SYSTEM_ROOT "}"
-#else
+/* ld64 supports a sysroot, it just has a different name and there's no easy
+   way to check for it at config time.  */
+#undef HAVE_LD_SYSROOT
+#define HAVE_LD_SYSROOT 1
+/* It seems the only (working) way to get a space after %R is to append a
+   dangling '/'.  */
+#define SYSROOT_SPEC "%{!isysroot*:-syslibroot %R/ }"
+
+/* Do the same as clang, for now, and insert the sysroot for ld when an
+   isysroot is specified.  */
 #define LINK_SYSROOT_SPEC "%{isysroot*:-syslibroot %*}"
-#endif
+
+/* Suppress the addition of extra prefix paths when a sysroot is in use.  */
+#define STANDARD_STARTFILE_PREFIX_1 ""
+#define STANDARD_STARTFILE_PREFIX_2 ""
 
 #define DARWIN_PIE_SPEC "%{fpie|pie|fPIE:}"
 

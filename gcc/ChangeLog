@@ -1,5 +1,13 @@
 2015-10-18  Iain Sandoe  <iain@codesourcery.com>
 
+	* config/darwin.h (TARGET_SYSTEM_ROOT): Remove this from here,
+	(HAVE_LD_SYSROOT): New.  (SYSROOT_SPEC): New. 
+	(LINK_SYSROOT_SPEC): Revise to remove the default for target sysroot.
+	(STANDARD_STARTFILE_PREFIX_1): New.
+	(STANDARD_STARTFILE_PREFIX_2): New.
+
+2015-10-18  Iain Sandoe  <iain@codesourcery.com>
+
 	* config/darwin-driver.c (darwin_default_min_version): Refactor code.
 	(darwin_driver_init): Note a version-min when provided on the c/l.
 	* config/darwin.h (%darwin_minversion): Remove.
