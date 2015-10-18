@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#include "libiberty.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -96,73 +97,36 @@ darwin_find_version_from_kernel (void)
    included in tm.h).  This may be overidden by setting the flag explicitly
    (or by the MACOSX_DEPLOYMENT_TARGET environment).  */
 
-static void
-darwin_default_min_version (unsigned int *decoded_options_count,
-			    struct cl_decoded_option **decoded_options)
+static const char *
+darwin_default_min_version (void)
 {
-  const unsigned int argc = *decoded_options_count;
-  struct cl_decoded_option *const argv = *decoded_options;
-  unsigned int i;
-  const char *new_flag;
+  /* Try to retrieve the deployment target from the environment.  */
+  const char *new_flag = getenv ("MACOSX_DEPLOYMENT_TARGET");
 
-  /* If the command-line is empty, just return.  */
-  if (argc <= 1)
-    return;
-  
-  /* Don't do this if the user specified -mmacosx-version-min= or
-     -mno-macosx-version-min.  */
-  for (i = 1; i < argc; i++)
-    if (argv[i].opt_index == OPT_mmacosx_version_min_)
-      return;
-
-  /* Retrieve the deployment target from the environment and insert
-     it as a flag.  */
-  {
-    const char * macosx_deployment_target;
-    macosx_deployment_target = getenv ("MACOSX_DEPLOYMENT_TARGET");
-    if (macosx_deployment_target
-	/* Apparently, an empty string for MACOSX_DEPLOYMENT_TARGET means
-	   "use the default".  Or, possibly "use 10.1".  We choose
-	   to ignore the environment variable, as if it was never set.  */
-	&& macosx_deployment_target[0])
-      {
-	++*decoded_options_count;
-	*decoded_options = XNEWVEC (struct cl_decoded_option,
-				    *decoded_options_count);
-	(*decoded_options)[0] = argv[0];
-	generate_option (OPT_mmacosx_version_min_, macosx_deployment_target,
-			 1, CL_DRIVER, &(*decoded_options)[1]);
-	memcpy (*decoded_options + 2, argv + 1,
-		(argc - 1) * sizeof (struct cl_decoded_option));
-	return;
-      }
-  }
-
+  /* Apparently, an empty string for MACOSX_DEPLOYMENT_TARGET means
+     "use the default".  Or, possibly "use 10.1".  We choose
+     to ignore the environment variable, as if it was never set.  */
+  if (new_flag == NULL || new_flag[0] == 0)
 #ifndef CROSS_DIRECTORY_STRUCTURE
-
-  /* Try to find the version from the kernel, if we fail - we print a message 
-     and give up.  */
-  new_flag = darwin_find_version_from_kernel ();
-  if (!new_flag)
-    return;
-
+    /* Try to find the version from the kernel, if we fail - we print a
+       message and give up.  */
+    new_flag = darwin_find_version_from_kernel ();
 #else
-
-  /* For cross-compilers, default to the target OS version. */
-  new_flag = DEF_MIN_OSX_VERSION;
-
+    /* For cross-compilers, default to a minimum version determined by
+       the configuration. */
+    new_flag = DEF_MIN_OSX_VERSION;
 #endif /* CROSS_DIRECTORY_STRUCTURE */
 
-  /* Add the new flag.  */
-  ++*decoded_options_count;
-  *decoded_options = XNEWVEC (struct cl_decoded_option,
-			      *decoded_options_count);
-  (*decoded_options)[0] = argv[0];
-  generate_option (OPT_mmacosx_version_min_, new_flag,
-		   1, CL_DRIVER, &(*decoded_options)[1]);
-  memcpy (*decoded_options + 2, argv + 1,
-	  (argc - 1) * sizeof (struct cl_decoded_option));
-  return;
+  if (new_flag != NULL)
+    {
+      size_t len = strlen (new_flag);
+      if (len > 128) { /* Arbitrary limit, number should be like xx.yy.zz */
+	warning (0, "couldn%'t understand version %s\n", new_flag);
+	return NULL;
+      }
+      new_flag = xstrndup (new_flag, len);
+    }
+  return new_flag;
 }
 
 /* Translate -filelist and -framework options in *DECODED_OPTIONS
@@ -187,6 +151,8 @@ darwin_driver_init (unsigned int *decoded_options_count,
   bool seenM64 = false;
   bool appendM32 = false;
   bool appendM64 = false;
+  const char *vers_string = NULL;
+  bool seen_version_min = false;
 
   for (i = 1; i < *decoded_options_count; i++)
     {
@@ -246,12 +212,15 @@ darwin_driver_init (unsigned int *decoded_options_count,
 			   CL_DRIVER, &(*decoded_options)[i]);
 	  break;
 
+	case OPT_mmacosx_version_min_:
+	  seen_version_min = true;
+	  vers_string = xstrndup ((*decoded_options)[i].arg, 32);
+
 	default:
 	  break;
 	}
     }
 
-  darwin_default_min_version (decoded_options_count, decoded_options);
   /* Turn -arch xxxx into the appropriate -m32/-m64 flag.
      If the User tried to specify multiple arch flags (which is possible with
      some Darwin compilers) warn that this mode is not supported by this
@@ -308,4 +277,21 @@ darwin_driver_init (unsigned int *decoded_options_count,
 		       &(*decoded_options)[*decoded_options_count - 1]);
     }
 
+  /* We will need to know the OS X version we're trying to build for here
+     so that we can figure out the mechanism and source for the sysroot to
+     be used.  */
+  if (! seen_version_min && *decoded_options_count > 1)
+    {
+      /* Not set by the User, try to figure it out.  */
+      vers_string = darwin_default_min_version ();
+      if (vers_string != NULL)
+	{
+	  ++*decoded_options_count;
+	  *decoded_options = XRESIZEVEC (struct cl_decoded_option,
+					 *decoded_options,
+					 *decoded_options_count);
+	  generate_option (OPT_mmacosx_version_min_, vers_string, 1, CL_DRIVER,
+			  &(*decoded_options)[*decoded_options_count - 1]);
+	}
+    }
 }

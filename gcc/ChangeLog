@@ -1,5 +1,15 @@
 2015-10-18  Iain Sandoe  <iain@codesourcery.com>
 
+	* config/darwin-driver.c (darwin_default_min_version): Refactor code.
+	(darwin_driver_init): Note a version-min when provided on the c/l.
+	* config/darwin.h (%darwin_minversion): Remove.
+	* config/i386/darwin.h: Likewise.
+	* config/rs6000/darwin.h: Likewise.
+	* config/darwin.opt (mmacosx-version-min=): Use the configured default,
+	rather than an arbitrary constant.
+
+2015-10-18  Iain Sandoe  <iain@codesourcery.com>
+
 	* config/darwin-driver.c (darwin_driver_init): Handle '-arch' for
 	PPC, detect conflicts between -arch and multilib settings.  Detect
 	and warn about conflicts between multiple -arch definitions.

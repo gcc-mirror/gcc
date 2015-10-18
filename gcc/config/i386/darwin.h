@@ -108,7 +108,6 @@ extern int darwin_emit_branch_islands;
 #undef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) \
   %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
-  %{!mmacosx-version-min=*:-mmacosx-version-min=%(darwin_minversion)} \
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }} " \
   DARWIN_CC1_SPEC
 
@@ -118,15 +117,6 @@ extern int darwin_emit_branch_islands;
 
 #define DARWIN_ARCH_SPEC "%{m64:x86_64;:i386}"
 #define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC
-
-/* Determine a minimum version based on compiler options.  */
-#define DARWIN_MINVERSION_SPEC				\
- "%{!m64|fgnu-runtime:10.4;				\
-    ,objective-c|,objc-cpp-output:10.5;			\
-    ,objective-c-header:10.5;				\
-    ,objective-c++|,objective-c++-cpp-output:10.5;	\
-    ,objective-c++-header|,objc++-cpp-output:10.5;	\
-    :10.4}"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
