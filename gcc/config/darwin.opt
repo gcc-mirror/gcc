@@ -226,10 +226,9 @@ Generate code suitable for fast turn around debugging
 ; The Init here is for the convenience of GCC developers, so that cc1
 ; and cc1plus don't crash if no -mmacosx-version-min is passed.  The
 ; driver will always pass a -mmacosx-version-min, so in normal use the
-; Init is never used.  Useful for setting the OS on which people
-; usually debug.
+; Init is never used.
 mmacosx-version-min=
-Target Joined Report Var(darwin_macosx_version_min) Init("10.6")
+Target Joined Report Var(darwin_macosx_version_min) Init(DEF_MIN_OSX_VERSION)
 The earliest MacOS X version on which this program will run
 
 mone-byte-bool
