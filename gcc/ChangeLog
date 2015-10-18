@@ -1,6 +1,12 @@
 2015-10-18  Iain Sandoe  <iain@codesourcery.com>
 
-	* config/darwin-driver.h: Adjust includes to add diagnostic-core.
+	* config/darwin-driver.c (darwin_driver_init): Handle '-arch' for
+	PPC, detect conflicts between -arch and multilib settings.  Detect
+	and warn about conflicts between multiple -arch definitions.
+
+2015-10-18  Iain Sandoe  <iain@codesourcery.com>
+
+	* config/darwin-driver.c: Adjust includes to add diagnostic-core.
 
 2015-10-16  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 

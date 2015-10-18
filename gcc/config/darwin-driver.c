@@ -179,21 +179,55 @@ darwin_driver_init (unsigned int *decoded_options_count,
 		    struct cl_decoded_option **decoded_options)
 {
   unsigned int i;
+  bool seenX86 = false;
+  bool seenX86_64 = false;
+  bool seenPPC = false;
+  bool seenPPC64 = false;
+  bool seenM32 = false;
+  bool seenM64 = false;
+  bool appendM32 = false;
+  bool appendM64 = false;
 
   for (i = 1; i < *decoded_options_count; i++)
     {
       if ((*decoded_options)[i].errors & CL_ERR_MISSING_ARG)
 	continue;
+
       switch ((*decoded_options)[i].opt_index)
 	{
-#if DARWIN_X86
 	case OPT_arch:
+	  /* Support provision of a single -arch xxxx flag as a means of
+	     specifying the sub-target/multi-lib.  Translate this into -m32/64
+	     as appropriate.  */  
 	  if (!strcmp ((*decoded_options)[i].arg, "i386"))
-	    generate_option (OPT_m32, NULL, 1, CL_DRIVER, &(*decoded_options)[i]);
+	    seenX86 = true;
 	  else if (!strcmp ((*decoded_options)[i].arg, "x86_64"))
-	    generate_option (OPT_m64, NULL, 1, CL_DRIVER, &(*decoded_options)[i]);
+	    seenX86_64 = true;
+	  else if (!strcmp ((*decoded_options)[i].arg, "ppc"))
+	    seenPPC = true;
+	  else if (!strcmp ((*decoded_options)[i].arg, "ppc64"))
+	    seenPPC64 = true;
+	  else
+	    error ("this compiler does not support %s",
+		   (*decoded_options)[i].arg);
+	  /* Now we've examined it, drop the -arch arg.  */
+	  if (*decoded_options_count > i) {
+	    memmove (*decoded_options + i,
+		     *decoded_options + i + 1,
+		     ((*decoded_options_count - i)
+		      * sizeof (struct cl_decoded_option)));
+	  }
+	  --i;
+	  --*decoded_options_count; 
 	  break;
-#endif
+
+	case OPT_m32:
+	  seenM32 = true;
+	  break;
+
+	case OPT_m64:
+	  seenM64 = true;
+	  break;
 
 	case OPT_filelist:
 	case OPT_framework:
@@ -218,4 +252,60 @@ darwin_driver_init (unsigned int *decoded_options_count,
     }
 
   darwin_default_min_version (decoded_options_count, decoded_options);
+  /* Turn -arch xxxx into the appropriate -m32/-m64 flag.
+     If the User tried to specify multiple arch flags (which is possible with
+     some Darwin compilers) warn that this mode is not supported by this
+     compiler (and ignore the arch flags, which means that the default multi-
+     lib will be generated).  */
+  /* TODO: determine if these warnings would better be errors.  */
+#if DARWIN_X86
+  if (seenPPC || seenPPC64)
+    warning (0, "this compiler does not support PowerPC (arch flags ignored)");
+  if (seenX86)
+    {
+      if (seenX86_64 || seenM64)
+	warning (0, "%s conflicts with i386 (arch flags ignored)",
+	        (seenX86_64? "x86_64": "m64"));
+      else if (! seenM32) /* Add -m32 if the User didn't. */
+	appendM32 = true;
+    }
+  else if (seenX86_64)
+    {
+      if (seenX86 || seenM32)
+	warning (0, "%s conflicts with x86_64 (arch flags ignored)",
+		 (seenX86? "i386": "m32"));
+      else if (! seenM64) /* Add -m64 if the User didn't. */
+	appendM64 = true;
+    }  
+#elif DARWIN_PPC
+  if (seenX86 || seenX86_64)
+    warning (0, "this compiler does not support X86 (arch flags ignored)");
+  if (seenPPC)
+    {
+      if (seenPPC64 || seenM64)
+	warning (0, "%s conflicts with ppc (arch flags ignored)",
+		 (seenPPC64? "ppc64": "m64"));
+      else if (! seenM32) /* Add -m32 if the User didn't. */
+	appendM32 = true;
+    }
+  else if (seenPPC64)
+    {
+      if (seenPPC || seenM32)
+	warning (0, "%s conflicts with ppc64 (arch flags ignored)",
+		 (seenPPC? "ppc": "m32"));
+      else if (! seenM64) /* Add -m64 if the User didn't. */
+	appendM64 = true;
+    }
+#endif
+
+  if (appendM32 || appendM64)
+    {
+      ++*decoded_options_count;
+      *decoded_options = XRESIZEVEC (struct cl_decoded_option,
+				     *decoded_options,
+				     *decoded_options_count);
+      generate_option (appendM32 ? OPT_m32 : OPT_m64, NULL, 1, CL_DRIVER,
+		       &(*decoded_options)[*decoded_options_count - 1]);
+    }
+
 }
