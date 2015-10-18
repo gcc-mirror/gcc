@@ -1,3 +1,9 @@
+2015-10-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68006
+	* decl.c (implicit_default_ctor_p): New.
+	(start_preparsed_function): Don't clobber on entry to one.
+
 2015-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67926
