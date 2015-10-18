@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "opts.h"
+#include "diagnostic-core.h"
 
 #ifndef CROSS_DIRECTORY_STRUCTURE
 #include <sys/sysctl.h>
