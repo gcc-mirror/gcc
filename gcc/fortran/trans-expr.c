@@ -6563,13 +6563,13 @@ gfc_trans_alloc_subarray_assign (tree dest, gfc_component * cm,
 	{
 	  tmp = TREE_TYPE (dest);
 	  tmp = gfc_duplicate_allocatable (dest, se.expr,
-					   tmp, expr->rank);
+					   tmp, expr->rank, NULL_TREE);
 	}
     }
   else
     tmp = gfc_duplicate_allocatable (dest, se.expr,
 				     TREE_TYPE(cm->backend_decl),
-				     cm->as->rank);
+				     cm->as->rank, NULL_TREE);
 
   gfc_add_expr_to_block (&block, tmp);
   gfc_add_block_to_block (&block, &se.post);

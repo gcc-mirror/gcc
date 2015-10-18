@@ -1,3 +1,27 @@
+2015-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/67721
+	PR fortran/67818
+	Backport from mainline r222477:
+
+	2015-04-27  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/59678
+	PR fortran/65841
+	* trans-array.c (duplicate_allocatable): Fixed deep copy of
+	allocatable components, which are liable for copy only, when
+	they are allocated.
+	(gfc_duplicate_allocatable): Add deep-copy code into if
+	component allocated block. Needed interface change for that.
+	(gfc_copy_allocatable_data): Supplying NULL_TREE for code to
+	add into if-block for checking whether a component was
+	allocated.
+	(gfc_duplicate_allocatable_nocopy): Likewise.
+	(structure_alloc_comps): Likewise.
+	* trans-array.h: Likewise.
+	* trans-expr.c (gfc_trans_alloc_subarray_assign): Likewise.
+	* trans-openmp.c (gfc_walk_alloc_comps): Likewise.
+
 2015-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67802

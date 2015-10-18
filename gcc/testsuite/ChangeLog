@@ -1,3 +1,16 @@
+2015-10-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/67721
+	PR fortran/67818
+	Backport from mainline r222477:
+
+	2015-04-27  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/59678
+	PR fortran/65841
+	* gfortran.dg/alloc_comp_deep_copy_1.f03: New test.
+	* gfortran.dg/alloc_comp_deep_copy_2.f03: New test.
+
 2015-10-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR middle-end/66311
