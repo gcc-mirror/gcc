@@ -1,3 +1,7 @@
+2015-10-18  Iain Sandoe  <iain@codesourcery.com>
+
+	* config/darwin-driver.h: Adjust includes to add diagnostic-core.
+
 2015-10-16  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* lra-constraints.c (add_next_usage_insn): Change argument type
