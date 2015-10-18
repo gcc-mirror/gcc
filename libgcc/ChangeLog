@@ -1,3 +1,11 @@
+2015-10-19  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
+
+	Backport from mainline
+	2015-10-09  Venkataramanan kumar  <venkataramanan.kumar@amd.com>
+
+	 * config/i386/cpuinfo.c (get_amd_cpu): Detect bdver4.
+	(__cpu_indicator_init): Fix model selection for AMD CPUs.
+
 2015-10-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline

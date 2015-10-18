@@ -156,6 +156,9 @@ get_amd_cpu (unsigned int family, unsigned int model)
       /* Bulldozer version 3 "Steamroller"  */
       if (model >= 0x30 && model <= 0x4f)
 	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER3;
+      /* Bulldozer version 4 "Excavator"   */
+      if (model >= 0x60 && model <= 0x7f)
+	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER4;
       break;
     /* AMD Family 16h "btver2" */
     case 0x16:
@@ -406,7 +409,7 @@ __cpu_indicator_init (void)
       if (family == 0x0f)
 	{
 	  family += extended_family;
-	  model += (extended_model << 4);
+	  model += extended_model;
 	}
 
       /* Get CPU type.  */
