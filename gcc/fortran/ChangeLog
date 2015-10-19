@@ -1,3 +1,9 @@
+2015-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68019
+	* decl.c (add_init_expr_to_sym): Remove an assert() to allow an error
+	message to be issued.
+
 2015-10-18  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/67758
