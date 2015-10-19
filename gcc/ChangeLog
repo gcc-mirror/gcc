@@ -1,3 +1,9 @@
+2015-10-19  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (valid_jump_thread_path): Reject paths
+	that create irreducible loops unless the path elimiantes a multiway
+	branch.
+
 2015-10-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67975
