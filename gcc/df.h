@@ -51,8 +51,9 @@ union df_ref_d;
 #define DF_WORD_LR 5      /* Subreg tracking lr.  */
 #define DF_NOTE    6      /* REG_DEAD and REG_UNUSED notes.  */
 #define DF_MD      7      /* Multiple Definitions. */
+#define DF_MIR     8      /* Must-initialized Registers.  */
 
-#define DF_LAST_PROBLEM_PLUS1 (DF_MD + 1)
+#define DF_LAST_PROBLEM_PLUS1 (DF_MIR + 1)
 
 /* Dataflow direction.  */
 enum df_flow_dir
@@ -612,11 +613,15 @@ struct df_d
 #define DF_LIVE_BB_INFO(BB) (df_live_get_bb_info ((BB)->index))
 #define DF_WORD_LR_BB_INFO(BB) (df_word_lr_get_bb_info ((BB)->index))
 #define DF_MD_BB_INFO(BB) (df_md_get_bb_info ((BB)->index))
+#define DF_MIR_BB_INFO(BB) (df_mir_get_bb_info ((BB)->index))
 
 /* Most transformations that wish to use live register analysis will
    use these macros.  This info is the and of the lr and live sets.  */
 #define DF_LIVE_IN(BB) (&DF_LIVE_BB_INFO (BB)->in)
 #define DF_LIVE_OUT(BB) (&DF_LIVE_BB_INFO (BB)->out)
+
+#define DF_MIR_IN(BB) (&DF_MIR_BB_INFO (BB)->in)
+#define DF_MIR_OUT(BB) (&DF_MIR_BB_INFO (BB)->out)
 
 /* These macros are used by passes that are not tolerant of
    uninitialized variables.  This intolerance should eventually
@@ -896,6 +901,21 @@ struct df_word_lr_bb_info
   bitmap_head out;   /* At the bottom of the block.  */
 };
 
+/* Must-initialized registers.  All bitmaps are referenced by the
+   register number.  */
+struct df_mir_bb_info
+{
+  /* Local sets to describe the basic blocks.  */
+  bitmap_head kill;  /* The set of registers unset in this block.  Calls,
+		        for instance, unset registers.  */
+  bitmap_head gen;   /* The set of registers set in this block, excluding the
+			ones killed later on in this block.  */
+
+  /* The results of the dataflow problem.  */
+  bitmap_head in;    /* At the top of the block.  */
+  bitmap_head out;   /* At the bottom of the block.  */
+};
+
 
 /* This is used for debugging and for the dumpers to find the latest
    instance so that the df info can be added to the dumps.  This
@@ -909,6 +929,7 @@ extern struct df_d *df;
 #define df_word_lr (df->problems_by_index[DF_WORD_LR])
 #define df_note    (df->problems_by_index[DF_NOTE])
 #define df_md      (df->problems_by_index[DF_MD])
+#define df_mir     (df->problems_by_index[DF_MIR])
 
 /* This symbol turns on checking that each modification of the cfg has
   been identified to the appropriate df routines.  It is not part of
@@ -1005,6 +1026,8 @@ extern void df_note_add_problem (void);
 extern void df_md_add_problem (void);
 extern void df_md_simulate_artificial_defs_at_top (basic_block, bitmap);
 extern void df_md_simulate_one_insn (basic_block, rtx_insn *, bitmap);
+extern void df_mir_add_problem (void);
+extern void df_mir_simulate_one_insn (basic_block, rtx_insn *, bitmap, bitmap);
 extern void df_simulate_find_noclobber_defs (rtx_insn *, bitmap);
 extern void df_simulate_find_defs (rtx_insn *, bitmap);
 extern void df_simulate_defs (rtx_insn *, bitmap);
@@ -1107,6 +1130,15 @@ df_word_lr_get_bb_info (unsigned int index)
 {
   if (index < df_word_lr->block_info_size)
     return &((struct df_word_lr_bb_info *) df_word_lr->block_info)[index];
+  else
+    return NULL;
+}
+
+static inline struct df_mir_bb_info *
+df_mir_get_bb_info (unsigned int index)
+{
+  if (index < df_mir->block_info_size)
+    return &((struct df_mir_bb_info *) df_mir->block_info)[index];
   else
     return NULL;
 }

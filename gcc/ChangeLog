@@ -1,3 +1,33 @@
+2015-10-19  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	PR rtl-optimization/66790
+	* df.h (DF_MIR): New macro.
+	(DF_LAST_PROBLEM_PLUS1): Update to be past DF_MIR
+	(DF_MIR_INFO_BB): New macro.
+	(DF_MIR_IN, DF_MIR_OUT): New macros.
+	(struct df_mir_bb_info): New.
+	(df_mir): New macro.
+	(df_mir_add_problem, df_mir_simulate_one_insn): New forward
+	declarations.
+	(df_mir_get_bb_info): New.
+	* df-problems.c (struct df_mir_problem_data): New.
+	(df_mir_free_bb_info, df_mir_alloc, df_mir_reset,
+	df_mir_bb_local_compute, df_mir_local_compute, df_mir_init,
+	df_mir_confluence_0, df_mir_confluence_n,
+	df_mir_transfer_function, df_mir_free, df_mir_top_dump,
+	df_mir_bottom_dump, df_mir_verify_solution_start,
+	df_mir_verify_solution_end): New.
+	(problem_MIR): New.
+	(df_mir_add_problem, df_mir_simulate_one_insn): New.
+	* timevar.def (TV_DF_MIR): New.
+	* ree.c: Include bitmap.h
+	(add_removable_extension): Add an INIT_REGS parameter.  Use it
+	to skip zero-extensions that may get an uninitialized register.
+	(find_removable_extensions): Compute must-initialized registers
+	using the MIR dataflow problem. Update the call to
+	add_removable_extension.
+	(find_and_remove_re): Call df_mir_add_problem.
+
 2015-10-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* common/config/mn10300/mn10300-common.c
