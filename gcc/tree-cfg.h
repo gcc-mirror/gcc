@@ -105,5 +105,7 @@ extern unsigned int execute_fixup_cfg (void);
 extern unsigned int split_critical_edges (void);
 extern basic_block insert_cond_bb (basic_block, gimple *, gimple *);
 extern bool gimple_find_sub_bbs (gimple_seq, gimple_stmt_iterator *);
+extern bool extract_true_false_controlled_edges (basic_block, basic_block,
+						 edge *, edge *);
 
 #endif /* _TREE_CFG_H  */
