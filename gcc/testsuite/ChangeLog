@@ -1,3 +1,9 @@
+2015-10-19  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gnat.dg/opt50.adb: New test.
+	* gnat.dg/opt50_pkg.adb: New helper.
+	* gnat.dg/opt50_pkg.ads: New helper.
+
 2015-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68019
