@@ -1,5 +1,11 @@
 2015-10-19  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_expand_vector_move): Use
+	GET_MODE_BITSIZE for IA MCU psABI to get vector natural
+	alignment.
+
+2015-10-19  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* doc/invoke.texi: Replace @optindex with @opindex.
 
 2015-10-19  H.J. Lu  <hongjiu.lu@intel.com>
