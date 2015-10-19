@@ -2553,11 +2553,31 @@ static bool
 valid_jump_thread_path (vec<jump_thread_edge *> *path)
 {
   unsigned len = path->length ();
+  bool multiway_branch = false;
 
-  /* Check that the path is connected.  */
+  /* Check that the path is connected and see if there's a multi-way
+     branch on the path.  */
   for (unsigned int j = 0; j < len - 1; j++)
-    if ((*path)[j]->e->dest != (*path)[j+1]->e->src)
-      return false;
+    {
+      if ((*path)[j]->e->dest != (*path)[j+1]->e->src)
+        return false;
+      gimple *last = last_stmt ((*path)[j]->e->dest);
+      multiway_branch |= (last && gimple_code (last) == GIMPLE_SWITCH);
+    }
+
+  /* If we are trying to thread the loop latch to a block that does
+     not dominate the loop latch, then that will create an irreducible
+     loop.  We avoid that unless the jump thread has a multi-way
+     branch, in which case we have deemed it worth losing other
+     loop optimizations later if we can eliminate the multi-way branch.  */
+  edge e = (*path)[0]->e;
+  struct loop *loop = e->dest->loop_father;
+  if (!multiway_branch
+      && loop->latch
+      && loop_latch_edge (loop) == e
+      && (determine_bb_domination_status (loop, path->last ()->e->dest)
+	  == DOMST_NONDOMINATING))
+    return false;
 
   return true;
 }
@@ -2650,7 +2670,9 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       if (bitmap_bit_p (threaded_blocks, entry->src->index)
 	  /* Verify that the jump thread path is still valid: a
 	     previous jump-thread may have changed the CFG, and
-	     invalidated the current path.  */
+	     invalidated the current path or the requested jump
+	     thread might create irreducible loops which should
+	     generally be avoided.  */
 	  || !valid_jump_thread_path (path))
 	{
 	  /* Remove invalid FSM jump-thread paths.  */
