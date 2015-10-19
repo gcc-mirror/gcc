@@ -1,4 +1,4 @@
-2015-10-17  Joost VandeVondele  <vondele@gnu.gcc.org>
+2015-10-19  Joost VandeVondele  <vondele@gnu.gcc.org>
 
 	PR middle-end/68002
 	* gcc.dg/PR68002.c: New test.
