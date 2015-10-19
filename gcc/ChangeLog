@@ -1,3 +1,10 @@
+2015-10-19  David Wohlferd  <dw@LimeGreenSocks.com>
+
+	* doc/extend.texi (Explicit Register Variables): Simplify and
+	avoid unnecessary and confusion abbreviations.  Update cross
+	references.
+	doc/implement-c.tex: Update cross reference.
+
 2015-10-19  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (valid_jump_thread_path): Reject paths
