@@ -1,5 +1,11 @@
 2015-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/68019
+	* decl.c (add_init_expr_to_sym): Remove an assert() to allow an error
+	message to be issued.
+
+2015-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/67987
 	* decl.c (char_len_param_value): Unwrap unlong line.  If LEN < 0,
 	force it to zero per the Fortran 90, 95, 2003, and 2008 Standards. 

@@ -1,5 +1,10 @@
 2015-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/68019
+	* gfortran.dg/pr68019.f90: new test.
+
+2015-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/67987
 	* gfortran.df/pr67987.f90: New test.
 	* gfortran.dg/char_length_2.f90: Update testcase.
