@@ -1,3 +1,10 @@
+2015-10-19  Joost VandeVondele  <vondele@gnu.gcc.org>
+
+	PR middle-end/68002
+	* common.opt (fkeep-static-functions): New option.
+	* doc/invoke.texi: Document it.
+	* cgraphunit.c (cgraph_node::finalize_function): Use it.
+
 2015-10-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* sched-int.h (struct autopref_multipass_data_): Remove offset
