@@ -1,5 +1,17 @@
 2015-10-19  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/67975
+	* tree-cfg.h (extract_true_false_controlled_edges): Declare.
+	* tree-cfg.c (extract_true_false_controlled_edges): Split out
+	core worker from ...
+	* tree-ssa-loop-im.c (extract_true_false_args_from_phi): ... here.
+	* tree-ssa-sccvn.c (vn_phi_compute_hash): Hash number of args
+	instead of block number for PHIs with two or one args.
+	(vn_phi_eq): Compare edge predicates of PHIs that are in different
+	blocks.
+
+2015-10-19  Richard Biener  <rguenther@suse.de>
+
 	* gimple-fold.c (gimple_phi_nonnegative_warnv_p): New function.
 	(gimple_stmt_nonnegative_warnv_p): Use it.
 	* match.pd (CPROJ): New operator list.

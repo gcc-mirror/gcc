@@ -619,56 +619,15 @@ static bool
 extract_true_false_args_from_phi (basic_block dom, gphi *phi,
 				  tree *true_arg_p, tree *false_arg_p)
 {
-  basic_block bb = gimple_bb (phi);
-  edge true_edge, false_edge, tem;
-  tree arg0 = NULL_TREE, arg1 = NULL_TREE;
-
-  /* We have to verify that one edge into the PHI node is dominated
-     by the true edge of the predicate block and the other edge
-     dominated by the false edge.  This ensures that the PHI argument
-     we are going to take is completely determined by the path we
-     take from the predicate block.
-     We can only use BB dominance checks below if the destination of
-     the true/false edges are dominated by their edge, thus only
-     have a single predecessor.  */
-  extract_true_false_edges_from_block (dom, &true_edge, &false_edge);
-  tem = EDGE_PRED (bb, 0);
-  if (tem == true_edge
-      || (single_pred_p (true_edge->dest)
-	  && (tem->src == true_edge->dest
-	      || dominated_by_p (CDI_DOMINATORS,
-				 tem->src, true_edge->dest))))
-    arg0 = PHI_ARG_DEF (phi, tem->dest_idx);
-  else if (tem == false_edge
-	   || (single_pred_p (false_edge->dest)
-	       && (tem->src == false_edge->dest
-		   || dominated_by_p (CDI_DOMINATORS,
-				      tem->src, false_edge->dest))))
-    arg1 = PHI_ARG_DEF (phi, tem->dest_idx);
-  else
-    return false;
-  tem = EDGE_PRED (bb, 1);
-  if (tem == true_edge
-      || (single_pred_p (true_edge->dest)
-	  && (tem->src == true_edge->dest
-	      || dominated_by_p (CDI_DOMINATORS,
-				 tem->src, true_edge->dest))))
-    arg0 = PHI_ARG_DEF (phi, tem->dest_idx);
-  else if (tem == false_edge
-	   || (single_pred_p (false_edge->dest)
-	       && (tem->src == false_edge->dest
-		   || dominated_by_p (CDI_DOMINATORS,
-				      tem->src, false_edge->dest))))
-    arg1 = PHI_ARG_DEF (phi, tem->dest_idx);
-  else
-    return false;
-  if (!arg0 || !arg1)
+  edge te, fe;
+  if (! extract_true_false_controlled_edges (dom, gimple_bb (phi),
+					     &te, &fe))
     return false;
 
   if (true_arg_p)
-    *true_arg_p = arg0;
+    *true_arg_p = PHI_ARG_DEF (phi, te->dest_idx);
   if (false_arg_p)
-    *false_arg_p = arg1;
+    *false_arg_p = PHI_ARG_DEF (phi, fe->dest_idx);
 
   return true;
 }

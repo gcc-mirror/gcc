@@ -2658,7 +2658,8 @@ vn_nary_op_insert_stmt (gimple *stmt, tree result)
 static inline hashval_t
 vn_phi_compute_hash (vn_phi_t vp1)
 {
-  inchash::hash hstate (vp1->block->index);
+  inchash::hash hstate (vp1->phiargs.length () > 2
+			? vp1->block->index : vp1->phiargs.length ());
   tree phi1op;
   tree type;
   edge e;
@@ -2685,6 +2686,7 @@ vn_phi_compute_hash (vn_phi_t vp1)
   return hstate.end ();
 }
 
+
 /* Compare two phi entries for equality, ignoring VN_TOP arguments.  */
 
 static int
@@ -2693,29 +2695,97 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
   if (vp1->hashcode != vp2->hashcode)
     return false;
 
-  if (vp1->block == vp2->block)
+  if (vp1->block != vp2->block)
     {
-      int i;
-      tree phi1op;
-
-      /* If the PHI nodes do not have compatible types
-	 they are not the same.  */
-      if (!types_compatible_p (vp1->type, vp2->type))
+      if (vp1->phiargs.length () != vp2->phiargs.length ())
 	return false;
 
-      /* Any phi in the same block will have it's arguments in the
-	 same edge order, because of how we store phi nodes.  */
-      FOR_EACH_VEC_ELT (vp1->phiargs, i, phi1op)
+      switch (vp1->phiargs.length ())
 	{
-	  tree phi2op = vp2->phiargs[i];
-	  if (phi1op == VN_TOP || phi2op == VN_TOP)
-	    continue;
-	  if (!expressions_equal_p (phi1op, phi2op))
-	    return false;
+	case 1:
+	  /* Single-arg PHIs are just copies.  */
+	  break;
+
+	case 2:
+	  {
+	    /* Rule out backedges into the PHI.  */
+	    if (vp1->block->loop_father->header == vp1->block
+		|| vp2->block->loop_father->header == vp2->block)
+	      return false;
+
+	    /* If the PHI nodes do not have compatible types
+	       they are not the same.  */
+	    if (!types_compatible_p (vp1->type, vp2->type))
+	      return false;
+
+	    basic_block idom1
+	      = get_immediate_dominator (CDI_DOMINATORS, vp1->block);
+	    basic_block idom2
+	      = get_immediate_dominator (CDI_DOMINATORS, vp2->block);
+	    /* If the immediate dominator end in switch stmts multiple
+	       values may end up in the same PHI arg via intermediate
+	       CFG merges.  */
+	    if (EDGE_COUNT (idom1->succs) != 2
+		|| EDGE_COUNT (idom2->succs) != 2)
+	      return false;
+
+	    /* Verify the controlling stmt is the same.  */
+	    gimple *last1 = last_stmt (idom1);
+	    gimple *last2 = last_stmt (idom2);
+	    if (gimple_code (last1) != GIMPLE_COND
+		|| gimple_code (last2) != GIMPLE_COND)
+	      return false;
+	    gcond *cond1 = as_a <gcond *> (last1);
+	    gcond *cond2 = as_a <gcond *> (last2);
+	    if (gimple_cond_code (cond1) != gimple_cond_code (cond2)
+		|| ! expressions_equal_p (gimple_cond_lhs (cond1),
+				       gimple_cond_lhs (cond2))
+		|| ! expressions_equal_p (gimple_cond_rhs (cond1),
+					  gimple_cond_rhs (cond2)))
+	      return false;
+
+	    /* Get at true/false controlled edges into the PHI.  */
+	    edge te1, te2, fe1, fe2;
+	    if (! extract_true_false_controlled_edges (idom1, vp1->block,
+						       &te1, &fe1)
+		|| ! extract_true_false_controlled_edges (idom2, vp2->block,
+							  &te2, &fe2))
+	      return false;
+
+	    /* ???  Handle VN_TOP specially.  */
+	    if (! expressions_equal_p (vp1->phiargs[te1->dest_idx],
+				       vp2->phiargs[te2->dest_idx])
+		|| ! expressions_equal_p (vp1->phiargs[fe1->dest_idx],
+					  vp2->phiargs[fe2->dest_idx]))
+	      return false;
+
+	    return true;
+	  }
+
+	default:
+	  return false;
 	}
-      return true;
     }
-  return false;
+
+  /* If the PHI nodes do not have compatible types
+     they are not the same.  */
+  if (!types_compatible_p (vp1->type, vp2->type))
+    return false;
+
+  /* Any phi in the same block will have it's arguments in the
+     same edge order, because of how we store phi nodes.  */
+  int i;
+  tree phi1op;
+  FOR_EACH_VEC_ELT (vp1->phiargs, i, phi1op)
+    {
+      tree phi2op = vp2->phiargs[i];
+      if (phi1op == VN_TOP || phi2op == VN_TOP)
+	continue;
+      if (!expressions_equal_p (phi1op, phi2op))
+	return false;
+    }
+
+  return true;
 }
 
 static vec<tree> shared_lookup_phiargs;

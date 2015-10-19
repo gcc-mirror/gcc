@@ -8532,6 +8532,75 @@ extract_true_false_edges_from_block (basic_block b,
     }
 }
 
+
+/* From a controlling predicate in the immediate dominator DOM of
+   PHIBLOCK determine the edges into PHIBLOCK that are chosen if the
+   predicate evaluates to true and false and store them to
+   *TRUE_CONTROLLED_EDGE and *FALSE_CONTROLLED_EDGE if
+   they are non-NULL.  Returns true if the edges can be determined,
+   else return false.  */
+
+bool
+extract_true_false_controlled_edges (basic_block dom, basic_block phiblock,
+				     edge *true_controlled_edge,
+				     edge *false_controlled_edge)
+{
+  basic_block bb = phiblock;
+  edge true_edge, false_edge, tem;
+  edge e0 = NULL, e1 = NULL;
+
+  /* We have to verify that one edge into the PHI node is dominated
+     by the true edge of the predicate block and the other edge
+     dominated by the false edge.  This ensures that the PHI argument
+     we are going to take is completely determined by the path we
+     take from the predicate block.
+     We can only use BB dominance checks below if the destination of
+     the true/false edges are dominated by their edge, thus only
+     have a single predecessor.  */
+  extract_true_false_edges_from_block (dom, &true_edge, &false_edge);
+  tem = EDGE_PRED (bb, 0);
+  if (tem == true_edge
+      || (single_pred_p (true_edge->dest)
+	  && (tem->src == true_edge->dest
+	      || dominated_by_p (CDI_DOMINATORS,
+				 tem->src, true_edge->dest))))
+    e0 = tem;
+  else if (tem == false_edge
+	   || (single_pred_p (false_edge->dest)
+	       && (tem->src == false_edge->dest
+		   || dominated_by_p (CDI_DOMINATORS,
+				      tem->src, false_edge->dest))))
+    e1 = tem;
+  else
+    return false;
+  tem = EDGE_PRED (bb, 1);
+  if (tem == true_edge
+      || (single_pred_p (true_edge->dest)
+	  && (tem->src == true_edge->dest
+	      || dominated_by_p (CDI_DOMINATORS,
+				 tem->src, true_edge->dest))))
+    e0 = tem;
+  else if (tem == false_edge
+	   || (single_pred_p (false_edge->dest)
+	       && (tem->src == false_edge->dest
+		   || dominated_by_p (CDI_DOMINATORS,
+				      tem->src, false_edge->dest))))
+    e1 = tem;
+  else
+    return false;
+  if (!e0 || !e1)
+    return false;
+
+  if (true_controlled_edge)
+    *true_controlled_edge = e0;
+  if (false_controlled_edge)
+    *false_controlled_edge = e1;
+
+  return true;
+}
+
+
+
 /* Emit return warnings.  */
 
 namespace {
