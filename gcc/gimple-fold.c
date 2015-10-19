@@ -6224,6 +6224,24 @@ gimple_call_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
 					strict_overflow_p, depth);
 }
 
+/* Return true if return value of call STMT is known to be non-negative.
+   If the return value is based on the assumption that signed overflow is
+   undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
+   *STRICT_OVERFLOW_P.  DEPTH is the current nesting depth of the query.  */
+
+static bool
+gimple_phi_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
+				int depth)
+{
+  for (unsigned i = 0; i < gimple_phi_num_args (stmt); ++i)
+    {
+      tree arg = gimple_phi_arg_def (stmt, i);
+      if (!tree_single_nonnegative_warnv_p (arg, strict_overflow_p, depth + 1))
+	return false;
+    }
+  return true;
+}
+
 /* Return true if STMT is known to compute a non-negative value.
    If the return value is based on the assumption that signed overflow is
    undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
@@ -6241,6 +6259,9 @@ gimple_stmt_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
     case GIMPLE_CALL:
       return gimple_call_nonnegative_warnv_p (stmt, strict_overflow_p,
 					      depth);
+    case GIMPLE_PHI:
+      return gimple_phi_nonnegative_warnv_p (stmt, strict_overflow_p,
+					     depth);
     default:
       return false;
     }

@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 (define_operator_list TAN BUILT_IN_TANF BUILT_IN_TAN BUILT_IN_TANL)
 (define_operator_list COSH BUILT_IN_COSHF BUILT_IN_COSH BUILT_IN_COSHL)
 (define_operator_list CEXPI BUILT_IN_CEXPIF BUILT_IN_CEXPI BUILT_IN_CEXPIL)
+(define_operator_list CPROJ BUILT_IN_CPROJF BUILT_IN_CPROJ BUILT_IN_CPROJL)
 
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
@@ -2360,6 +2361,32 @@ along with GCC; see the file COPYING3.  If not see
   (simplify
    (cbrts (pows tree_expr_nonnegative_p@0 @1))
    (pows @0 (mult @1 { build_real_truncate (type, dconst_third ()); })))))
+
+/* If the real part is inf and the imag part is known to be
+   nonnegative, return (inf + 0i).  */
+(simplify
+ (CPROJ (complex REAL_CST@0 tree_expr_nonnegative_p@1))
+ (if (real_isinf (TREE_REAL_CST_PTR (@0)))
+  (with
+    {
+      REAL_VALUE_TYPE rinf;
+      real_inf (&rinf);
+    }
+   { build_complex (type, build_real (TREE_TYPE (type), rinf),
+		    build_zero_cst (TREE_TYPE (type))); })))
+/* If the imag part is inf, return (inf+I*copysign(0,imag)).  */
+(simplify
+ (CPROJ (complex @0 REAL_CST@1))
+ (if (real_isinf (TREE_REAL_CST_PTR (@1)))
+  (with
+    {
+      REAL_VALUE_TYPE rinf, rzero = dconst0;
+      real_inf (&rinf);
+      rzero.sign = TREE_REAL_CST_PTR (@1)->sign;
+    }
+   { build_complex (type, build_real (TREE_TYPE (type), rinf),
+		    build_real (TREE_TYPE (type), rzero)); })))
+
 
 /* Narrowing of arithmetic and logical operations. 
 

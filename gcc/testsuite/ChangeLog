@@ -1,3 +1,7 @@
+2015-10-19  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/builtin-cproj-1.c: Skip for -O0.
+
 2015-10-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/67995

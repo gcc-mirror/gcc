@@ -7657,33 +7657,6 @@ fold_builtin_cproj (location_t loc, tree arg, tree type)
       else
 	return arg;
     }
-  else if (TREE_CODE (arg) == COMPLEX_EXPR)
-    {
-      tree real = TREE_OPERAND (arg, 0);
-      tree imag = TREE_OPERAND (arg, 1);
-
-      STRIP_NOPS (real);
-      STRIP_NOPS (imag);
-      
-      /* If the real part is inf and the imag part is known to be
-	 nonnegative, return (inf + 0i).  Remember side-effects are
-	 possible in the imag part.  */
-      if (TREE_CODE (real) == REAL_CST
-	  && real_isinf (TREE_REAL_CST_PTR (real))
-	  && tree_expr_nonnegative_p (imag))
-	return omit_one_operand_loc (loc, type,
-				     build_complex_cproj (type, false),
-				     arg);
-      
-      /* If the imag part is inf, return (inf+I*copysign(0,imag)).
-	 Remember side-effects are possible in the real part.  */
-      if (TREE_CODE (imag) == REAL_CST
-	  && real_isinf (TREE_REAL_CST_PTR (imag)))
-	return
-	  omit_one_operand_loc (loc, type,
-				build_complex_cproj (type, TREE_REAL_CST_PTR
-						     (imag)->sign), arg);
-    }
 
   return NULL_TREE;
 }

@@ -1,3 +1,11 @@
+2015-10-19  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (gimple_phi_nonnegative_warnv_p): New function.
+	(gimple_stmt_nonnegative_warnv_p): Use it.
+	* match.pd (CPROJ): New operator list.
+	(cproj (complex ...)): Move simplifications from ...
+	* builtins.c (fold_builtin_cproj): ... here.
+
 2015-10-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_vector_move): Use
