@@ -18645,7 +18645,11 @@ void
 ix86_expand_vector_move (machine_mode mode, rtx operands[])
 {
   rtx op0 = operands[0], op1 = operands[1];
-  unsigned int align = GET_MODE_ALIGNMENT (mode);
+  /* Use GET_MODE_BITSIZE instead of GET_MODE_ALIGNMENT for IA MCU
+     psABI since the biggest alignment is 4 byte for IA MCU psABI.  */
+  unsigned int align = (TARGET_IAMCU
+			? GET_MODE_BITSIZE (mode)
+			: GET_MODE_ALIGNMENT (mode));
 
   if (push_operand (op0, VOIDmode))
     op0 = emit_move_resolve_push (mode, op0);
