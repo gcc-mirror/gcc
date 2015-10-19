@@ -1486,7 +1486,6 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 			 " with scalar", &sym->declared_at);
 	      return false;
 	    }
-	  gcc_assert (sym->as->rank == init->rank);
 
 	  /* Shape should be present, we get an initialization expression.  */
 	  gcc_assert (init->shape);
