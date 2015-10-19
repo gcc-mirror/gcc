@@ -1,14 +1,13 @@
-! { dg-do link }
-! { dg-options "-Wsurprising" }
-! Tests the fix for PR 31250
-! CHARACTER lengths weren't reduced early enough for all checks of
-! them to be meaningful.  Furthermore negative string lengths weren't
-! dealt with correctly.
+! { dg-do compile }
+! Tests the fix for PR 31250.
+! The fix for PR fortran/67987 supercedes PR 31250, which removes
+! the -Wsurprising option.
+!
 CHARACTER(len=0) :: c1   ! This is OK.
-CHARACTER(len=-1) :: c2  ! { dg-warning "has negative length" }
+CHARACTER(len=-1) :: c2
 PARAMETER(I=-100)
-CHARACTER(len=I) :: c3   ! { dg-warning "has negative length" }
-CHARACTER(len=min(I,500)) :: c4  ! { dg-warning "has negative length" }
+CHARACTER(len=I) :: c3
+CHARACTER(len=min(I,500)) :: c4
 CHARACTER(len=max(I,500)) :: d1  ! no warning
 CHARACTER(len=5) :: d2   ! no warning
 

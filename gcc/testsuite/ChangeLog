@@ -1,3 +1,9 @@
+2015-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/67987
+	* gfortran.df/pr67987.f90: New test.
+	* gfortran.dg/char_length_2.f90: Update testcase.
+
 2015-10-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/66079

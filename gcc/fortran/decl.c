@@ -705,8 +705,7 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
 
   if (gfc_match_char (':') == MATCH_YES)
     {
-      if (!gfc_notify_std (GFC_STD_F2003, "deferred type "
-			   "parameter at %C"))
+      if (!gfc_notify_std (GFC_STD_F2003, "deferred type parameter at %C"))
 	return MATCH_ERROR;
 
       *deferred = true;
@@ -716,11 +715,13 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
 
   m = gfc_match_expr (expr);
 
-  if (m == MATCH_YES
-      && !gfc_expr_check_typed (*expr, gfc_current_ns, false))
+  if (m == MATCH_NO || m == MATCH_ERROR)
+    return m;
+
+  if (!gfc_expr_check_typed (*expr, gfc_current_ns, false))
     return MATCH_ERROR;
 
-  if (m == MATCH_YES && (*expr)->expr_type == EXPR_FUNCTION)
+  if ((*expr)->expr_type == EXPR_FUNCTION)
     {
       if ((*expr)->value.function.actual
 	  && (*expr)->value.function.actual->expr->symtree)
@@ -739,6 +740,15 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
 	    }
 	}
     }
+
+  /* F2008, 4.4.3.1:  The length is a type parameter; its kind is processor
+     dependent and its value is greater than or equal to zero.
+     F2008, 4.4.3.2:  If the character length parameter value evaluates to
+     a negative value, the length of character entities declared is zero.  */
+  if ((*expr)->expr_type == EXPR_CONSTANT
+      && mpz_cmp_si ((*expr)->value.integer, 0) < 0)
+    mpz_set_si ((*expr)->value.integer, 0);
+
   return m;
 
 syntax:
