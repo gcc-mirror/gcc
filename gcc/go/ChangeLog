@@ -1,3 +1,11 @@
+2015-10-20  Alan Modra  <amodra@gmail.com>
+
+	PR go/66870
+	* gospec.c (saw_opt_m32): Rename to..
+	(is_m64): ..this, initialised by TARGET_CAN_SPLIT_STACK_64BIT.
+	Update uses.
+	(lang_specific_driver): Set is_m64 if OPT_m64, clear if OPT_m32.
+
 2015-10-01  Ian Lance Taylor  <iant@google.com>
 
 	PR go/66870
