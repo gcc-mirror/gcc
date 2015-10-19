@@ -2133,7 +2133,7 @@ check_substring:
 symbol_attribute
 gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 {
-  int dimension, codimension, pointer, allocatable, target;
+  int dimension, codimension, pointer, allocatable, target, n;
   symbol_attribute attr;
   gfc_ref *ref;
   gfc_symbol *sym;
@@ -2190,7 +2190,25 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	    break;
 
 	  case AR_UNKNOWN:
-	    gfc_internal_error ("gfc_variable_attr(): Bad array reference");
+	    /* If any of start, end or stride is not integer, there will
+	       already have been an error issued.  */
+	    for (n = 0; n < ref->u.ar.as->rank; n++)
+	      {
+		int errors;
+		gfc_get_errors (NULL, &errors);
+		if (((ref->u.ar.start[n]
+		      && ref->u.ar.start[n]->ts.type == BT_UNKNOWN)
+		     ||
+		     (ref->u.ar.end[n]
+		      && ref->u.ar.end[n]->ts.type == BT_UNKNOWN)
+		     ||
+		     (ref->u.ar.stride[n]
+		      && ref->u.ar.stride[n]->ts.type == BT_UNKNOWN))
+		    && errors > 0)
+		  break;
+	      }
+	    if (n == ref->u.ar.as->rank)
+	      gfc_internal_error ("gfc_variable_attr(): Bad array reference");
 	  }
 
 	break;
@@ -3138,7 +3156,8 @@ gfc_match_rvalue (gfc_expr **result)
       break;
 
     default:
-      gfc_error ("Symbol at %C is not appropriate for an expression");
+      gfc_error ("Symbol '%s' at %C is not appropriate for an expression",
+		 sym->name);
       return MATCH_ERROR;
     }
 

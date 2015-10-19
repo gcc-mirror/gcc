@@ -1,3 +1,10 @@
+2013-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/56852
+	* primary.c (gfc_variable_attr): Avoid ICE on AR_UNKNOWN if any
+	of the index variables are untyped and errors are present.
+
 2015-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
