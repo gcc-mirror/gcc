@@ -245,6 +245,21 @@ extern int dot_symbols;
 #define MULTILIB_DEFAULTS { "m32" }
 #endif
 
+/* Split stack is only supported for 64 bit, and requires glibc >= 2.18.  */
+#if TARGET_GLIBC_MAJOR * 1000 + TARGET_GLIBC_MINOR >= 2018
+# ifndef RS6000_BI_ARCH
+#  define TARGET_CAN_SPLIT_STACK
+# else
+#  if DEFAULT_ARCH64_P
+/* Supported, and the default is -m64  */
+#   define TARGET_CAN_SPLIT_STACK_64BIT 1
+#  else
+/* Supported, and the default is -m32  */
+#   define TARGET_CAN_SPLIT_STACK_64BIT 0
+#  endif
+# endif
+#endif
+
 #ifndef RS6000_BI_ARCH
 
 /* 64-bit PowerPC Linux always has a TOC.  */

@@ -120,8 +120,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* Whether the -S option was used.  */
   bool saw_opt_S = false;
 
-  /* Whether the -m32 option was used. */
-  bool saw_opt_m32 ATTRIBUTE_UNUSED = false;
+#ifdef TARGET_CAN_SPLIT_STACK_64BIT
+  /* Whether the -m64 option is in force. */
+  bool is_m64 = TARGET_CAN_SPLIT_STACK_64BIT;
+#endif
 
   /* The first input file with an extension of .go.  */
   const char *first_go_file = NULL;  
@@ -160,7 +162,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
 #ifdef TARGET_CAN_SPLIT_STACK_64BIT
 	case OPT_m32:
-	  saw_opt_m32 = true;
+	  is_m64 = false;
+	  break;
+
+	case OPT_m64:
+	  is_m64 = true;
 	  break;
 #endif
 
@@ -253,7 +259,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #endif
 
 #ifdef TARGET_CAN_SPLIT_STACK_64BIT
-  if (!saw_opt_m32)
+  if (is_m64)
     supports_split_stack = 1;
 #endif
 

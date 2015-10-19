@@ -1,3 +1,10 @@
+2015-10-20  Alan Modra  <amodra@gmail.com>
+
+	PR go/66870
+	* config/rs6000/sysv4.h (TARGET_CAN_SPLIT_STACK_64BIT): Don't define.
+	* config/rs6000/linux64.h (TARGET_CAN_SPLIT_STACK): Define.
+	(TARGET_CAN_SPLIT_STACK_64BIT): Define.
+
 2015-10-19  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	PR rtl-optimization/66790
