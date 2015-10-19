@@ -427,7 +427,7 @@ The @code{register} specifier affects code generation only in these ways:
 @itemize @bullet
 @item
 When used as part of the register variable extension, see
-@ref{Explicit Reg Vars}.
+@ref{Explicit Register Variables}.
 
 @item
 When @option{-O0} is in use, the compiler allocates distinct stack

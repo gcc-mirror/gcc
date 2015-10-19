@@ -7254,7 +7254,8 @@ for a C symbol, or to place a C variable in a specific register.
 * Extended Asm::       Inline assembler with operands.
 * Constraints::        Constraints for @code{asm} operands
 * Asm Labels::         Specifying the assembler name to use for a C symbol.
-* Explicit Reg Vars::  Defining variables residing in specified registers.
+* Explicit Register Variables::  Defining variables residing in specified 
+                       registers.
 * Size of an asm::     How GCC calculates the size of an @code{asm} block.
 @end menu
 
@@ -7774,7 +7775,8 @@ If you list as many alternates as the @code{asm} statement allows, you permit
 the optimizers to produce the best possible code. 
 If you must use a specific register, but your Machine Constraints do not
 provide sufficient control to select the specific register you want, 
-local register variables may provide a solution (@pxref{Local Reg Vars}).
+local register variables may provide a solution (@pxref{Local Register 
+Variables}).
 
 @item cvariablename
 Specifies a C lvalue expression to hold the output, typically a variable name.
@@ -8004,7 +8006,8 @@ When you list more than one possible location (for example, @samp{"irm"}),
 the compiler chooses the most efficient one based on the current context.
 If you must use a specific register, but your Machine Constraints do not
 provide sufficient control to select the specific register you want, 
-local register variables may provide a solution (@pxref{Local Reg Vars}).
+local register variables may provide a solution (@pxref{Local Register 
+Variables}).
 
 Input constraints can also be digits (for example, @code{"0"}). This indicates 
 that the specified input must be in the same place as the output constraint 
@@ -8086,7 +8089,8 @@ enclosed in double quotes and separated by commas.
 Clobber descriptions may not in any way overlap with an input or output 
 operand. For example, you may not have an operand describing a register class 
 with one member when listing that register in the clobber list. Variables 
-declared to live in specific registers (@pxref{Explicit Reg Vars}) and used 
+declared to live in specific registers (@pxref{Explicit Register 
+Variables}) and used 
 as @code{asm} input or output operands must have no part mentioned in the 
 clobber description. In particular, there is no way to specify that input 
 operands get modified without also specifying them as output operands.
@@ -8442,7 +8446,7 @@ linker that do not start with an underscore.
 GCC does not support using this feature with a non-static local variable 
 since such variables do not have assembler names.  If you are
 trying to put the variable in a particular register, see 
-@ref{Explicit Reg Vars}.
+@ref{Explicit Register Variables}.
 
 @subsubheading Assembler names for functions:
 
@@ -8461,50 +8465,34 @@ int func (int x, int y)
 This specifies that the name to be used for the function @code{func} in
 the assembler code should be @code{MYFUNC}.
 
-@node Explicit Reg Vars
+@node Explicit Register Variables
 @subsection Variables in Specified Registers
+@anchor{Explicit Reg Vars}
 @cindex explicit register variables
 @cindex variables in specified registers
 @cindex specified registers
-@cindex registers, global allocation
 
-GNU C allows you to put a few global variables into specified hardware
-registers.  You can also specify the register in which an ordinary
-register variable should be allocated.
+GNU C allows you to associate specific hardware registers with C 
+variables.  In almost all cases, allowing the compiler to assign
+registers produces the best code.  However under certain unusual
+circumstances,  more precise control over the variable storage is 
+required.
 
-@itemize @bullet
-@item
-Global register variables reserve registers throughout the program.
-This may be useful in programs such as programming language
-interpreters that have a couple of global variables that are accessed
-very often.
-
-@item
-Local register variables in specific registers do not reserve the
-registers, except at the point where they are used as input or output
-operands in an @code{asm} statement and the @code{asm} statement itself is
-not deleted.  The compiler's data flow analysis is capable of determining
-where the specified registers contain live values, and where they are
-available for other uses.  Stores into local register variables may be deleted
-when they appear to be dead according to dataflow analysis.  References
-to local register variables may be deleted or moved or simplified.
-
-These local variables are sometimes convenient for use with the extended
-@code{asm} feature (@pxref{Extended Asm}), if you want to write one
-output of the assembler instruction directly into a particular register.
-(This works provided the register you specify fits the constraints
-specified for that operand in the @code{asm}.)
-@end itemize
+Both global and local variables can be associated with a register.  The
+consequences of performing this association are very different between
+the two, as explained in the sections below.
 
 @menu
-* Global Reg Vars::
-* Local Reg Vars::
+* Global Register Variables::   Variables declared at global scope.
+* Local Register Variables::    Variables declared within a function.
 @end menu
 
-@node Global Reg Vars
+@node Global Register Variables
 @subsubsection Defining Global Register Variables
+@anchor{Global Reg Vars}
 @cindex global register variables
 @cindex registers, global variables in
+@cindex registers, global allocation
 
 You can define a global register variable in GNU C like this:
 
@@ -8598,8 +8586,9 @@ g2 are local temporaries.
 On the 68000, a2 @dots{} a5 should be suitable, as should d2 @dots{} d7.
 Of course, it does not do to use more than a few of those.
 
-@node Local Reg Vars
+@node Local Register Variables
 @subsubsection Specifying Registers for Local Variables
+@anchor{Local Reg Vars}
 @cindex local variables, specifying registers
 @cindex specifying registers for local variables
 @cindex registers for local variables
