@@ -410,8 +410,8 @@ Objective-C and Objective-C++ Dialects}.
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute @gol
--fivopts -fkeep-inline-functions -fkeep-static-consts @gol
--flive-range-shrinkage @gol
+-fivopts -fkeep-inline-functions -fkeep-static-functions @gol
+-fkeep-static-consts -flive-range-shrinkage @gol
 -floop-block -floop-interchange -floop-strip-mine @gol
 -floop-unroll-and-jam -floop-nest-optimize @gol
 -floop-parallelize-all -flra-remat -flto -flto-compression-level @gol
@@ -8012,6 +8012,11 @@ into the object file, even if the function has been inlined into all
 of its callers.  This switch does not affect functions using the
 @code{extern inline} extension in GNU C90@.  In C++, emit any and all
 inline functions into the object file.
+
+@item -fkeep-static-functions
+@optindex fkeep-static-functions
+Emit @code{static} functions into the object file, even if the function
+is never used.
 
 @item -fkeep-static-consts
 @opindex fkeep-static-consts

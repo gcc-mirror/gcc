@@ -1589,6 +1589,10 @@ fkeep-inline-functions
 Common Report Var(flag_keep_inline_functions)
 Generate code for functions even if they are fully inlined
 
+fkeep-static-functions
+Common Report Var(flag_keep_static_functions)
+Generate code for static functions even if they are never called 
+
 fkeep-static-consts
 Common Report Var(flag_keep_static_consts) Init(1)
 Emit static const variables even if they are not used
