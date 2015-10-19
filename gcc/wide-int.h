@@ -365,21 +365,18 @@ namespace wi
      inputs.  Note that CONST_PRECISION and VAR_PRECISION cannot be
      mixed, in order to give stronger type checking.  When both inputs
      are CONST_PRECISION, they must have the same precision.  */
-  template <>
   template <typename T1, typename T2>
   struct binary_traits <T1, T2, FLEXIBLE_PRECISION, FLEXIBLE_PRECISION>
   {
     typedef widest_int result_type;
   };
 
-  template <>
   template <typename T1, typename T2>
   struct binary_traits <T1, T2, FLEXIBLE_PRECISION, VAR_PRECISION>
   {
     typedef wide_int result_type;
   };
 
-  template <>
   template <typename T1, typename T2>
   struct binary_traits <T1, T2, FLEXIBLE_PRECISION, CONST_PRECISION>
   {
@@ -389,14 +386,12 @@ namespace wi
 			       <int_traits <T2>::precision> > result_type;
   };
 
-  template <>
   template <typename T1, typename T2>
   struct binary_traits <T1, T2, VAR_PRECISION, FLEXIBLE_PRECISION>
   {
     typedef wide_int result_type;
   };
 
-  template <>
   template <typename T1, typename T2>
   struct binary_traits <T1, T2, CONST_PRECISION, FLEXIBLE_PRECISION>
   {
@@ -406,7 +401,6 @@ namespace wi
 			       <int_traits <T1>::precision> > result_type;
   };
 
-  template <>
   template <typename T1, typename T2>
   struct binary_traits <T1, T2, CONST_PRECISION, CONST_PRECISION>
   {
@@ -417,7 +411,6 @@ namespace wi
 			       <int_traits <T1>::precision> > result_type;
   };
 
-  template <>
   template <typename T1, typename T2>
   struct binary_traits <T1, T2, VAR_PRECISION, VAR_PRECISION>
   {
@@ -881,7 +874,6 @@ generic_wide_int <storage>::dump () const
 
 namespace wi
 {
-  template <>
   template <typename storage>
   struct int_traits < generic_wide_int <storage> >
     : public wi::int_traits <storage>
@@ -960,7 +952,6 @@ inline wide_int_ref_storage <SE>::wide_int_ref_storage (const T &x,
 
 namespace wi
 {
-  template <>
   template <bool SE>
   struct int_traits <wide_int_ref_storage <SE> >
   {
@@ -1147,7 +1138,6 @@ public:
 
 namespace wi
 {
-  template <>
   template <int N>
   struct int_traits < fixed_wide_int_storage <N> >
   {
