@@ -5533,6 +5533,35 @@ insn_finishes_cycle_p (rtx_insn *insn)
   return false;
 }
 
+/* Helper for autopref_multipass_init.  Given a SET in PAT and whether
+   we're expecting a memory WRITE or not, check that the insn is relevant to
+   the autoprefetcher modelling code.  Return true iff that is the case.
+   If it is relevant, record the base register of the memory op in BASE and
+   the offset in OFFSET.  */
+
+static bool
+analyze_set_insn_for_autopref (rtx pat, bool write, rtx *base, int *offset)
+{
+  if (GET_CODE (pat) != SET)
+    return false;
+
+  rtx mem = write ? SET_DEST (pat) : SET_SRC (pat);
+  if (!MEM_P (mem))
+    return false;
+
+  struct address_info info;
+  decompose_mem_address (&info, mem);
+
+  /* TODO: Currently only (base+const) addressing is supported.  */
+  if (info.base == NULL || !REG_P (*info.base)
+      || (info.disp != NULL && !CONST_INT_P (*info.disp)))
+    return false;
+
+  *base = *info.base;
+  *offset = info.disp ? INTVAL (*info.disp) : 0;
+  return true;
+}
+
 /* Functions to model cache auto-prefetcher.
 
    Some of the CPUs have cache auto-prefetcher, which /seems/ to initiate
@@ -5557,30 +5586,139 @@ autopref_multipass_init (const rtx_insn *insn, int write)
 
   gcc_assert (data->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED);
   data->base = NULL_RTX;
-  data->offset = 0;
+  data->min_offset = 0;
+  data->max_offset = 0;
+  data->multi_mem_insn_p = false;
   /* Set insn entry initialized, but not relevant for auto-prefetcher.  */
   data->status = AUTOPREF_MULTIPASS_DATA_IRRELEVANT;
 
+  rtx pat = PATTERN (insn);
+
+  /* We have a multi-set insn like a load-multiple or store-multiple.
+     We care about these as long as all the memory ops inside the PARALLEL
+     have the same base register.  We care about the minimum and maximum
+     offsets from that base but don't check for the order of those offsets
+     within the PARALLEL insn itself.  */
+  if (GET_CODE (pat) == PARALLEL)
+    {
+      int n_elems = XVECLEN (pat, 0);
+
+      int i = 0;
+      rtx prev_base = NULL_RTX;
+      int min_offset;
+      int max_offset;
+
+      for (i = 0; i < n_elems; i++)
+	{
+	  rtx set = XVECEXP (pat, 0, i);
+	  if (GET_CODE (set) != SET)
+	    return;
+
+	  rtx base = NULL_RTX;
+	  int offset = 0;
+	  if (!analyze_set_insn_for_autopref (set, write, &base, &offset))
+	    return;
+
+	  if (i == 0)
+	    {
+	      prev_base = base;
+	      min_offset = offset;
+	      max_offset = offset;
+	    }
+	  /* Ensure that all memory operations in the PARALLEL use the same
+	     base register.  */
+	  else if (REGNO (base) != REGNO (prev_base))
+	    return;
+	  else
+	    {
+	      min_offset = MIN (min_offset, offset);
+	      max_offset = MAX (max_offset, offset);
+	    }
+	}
+
+      /* If we reached here then we have a valid PARALLEL of multiple memory
+	 ops with prev_base as the base and min_offset and max_offset
+	 containing the offsets range.  */
+      gcc_assert (prev_base);
+      data->base = prev_base;
+      data->min_offset = min_offset;
+      data->max_offset = max_offset;
+      data->multi_mem_insn_p = true;
+      data->status = AUTOPREF_MULTIPASS_DATA_NORMAL;
+
+      return;
+    }
+
+  /* Otherwise this is a single set memory operation.  */
   rtx set = single_set (insn);
   if (set == NULL_RTX)
     return;
 
-  rtx mem = write ? SET_DEST (set) : SET_SRC (set);
-  if (!MEM_P (mem))
+  if (!analyze_set_insn_for_autopref (set, write, &data->base,
+				       &data->min_offset))
     return;
 
-  struct address_info info;
-  decompose_mem_address (&info, mem);
-
-  /* TODO: Currently only (base+const) addressing is supported.  */
-  if (info.base == NULL || !REG_P (*info.base)
-      || (info.disp != NULL && !CONST_INT_P (*info.disp)))
-    return;
-
-  /* This insn is relevant for auto-prefetcher.  */
-  data->base = *info.base;
-  data->offset = info.disp ? INTVAL (*info.disp) : 0;
+  /* This insn is relevant for the auto-prefetcher.
+     The base and offset fields will have been filled in the
+     analyze_set_insn_for_autopref call above.  */
   data->status = AUTOPREF_MULTIPASS_DATA_NORMAL;
+}
+
+
+/* Helper for autopref_rank_for_schedule.  Given the data of two
+   insns relevant to the auto-prefetcher modelling code DATA1 and DATA2
+   return their comparison result.  Return 0 if there is no sensible
+   ranking order for the two insns.  */
+
+static int
+autopref_rank_data (autopref_multipass_data_t data1,
+		     autopref_multipass_data_t data2)
+{
+  /* Simple case when both insns are simple single memory ops.  */
+  if (!data1->multi_mem_insn_p && !data2->multi_mem_insn_p)
+    return data1->min_offset - data2->min_offset;
+
+  /* Two load/store multiple insns.  Return 0 if the offset ranges
+     overlap and the difference between the minimum offsets otherwise.  */
+  else if (data1->multi_mem_insn_p && data2->multi_mem_insn_p)
+    {
+      int min1 = data1->min_offset;
+      int max1 = data1->max_offset;
+      int min2 = data2->min_offset;
+      int max2 = data2->max_offset;
+
+      if (max1 < min2 || min1 > max2)
+	return min1 - min2;
+      else
+	return 0;
+    }
+
+  /* The other two cases is a pair of a load/store multiple and
+     a simple memory op.  Return 0 if the single op's offset is within the
+     range of the multi-op insn and the difference between the single offset
+     and the minimum offset of the multi-set insn otherwise.  */
+  else if (data1->multi_mem_insn_p && !data2->multi_mem_insn_p)
+    {
+      int max1 = data1->max_offset;
+      int min1 = data1->min_offset;
+
+      if (data2->min_offset >= min1
+	  && data2->min_offset <= max1)
+	return 0;
+      else
+	return min1 - data2->min_offset;
+    }
+  else
+    {
+      int max2 = data2->max_offset;
+      int min2 = data2->min_offset;
+
+      if (data1->min_offset >= min2
+	  && data1->min_offset <= max2)
+	return 0;
+      else
+	return data1->min_offset - min2;
+    }
 }
 
 /* Helper function for rank_for_schedule sorting.  */
@@ -5607,7 +5745,7 @@ autopref_rank_for_schedule (const rtx_insn *insn1, const rtx_insn *insn2)
       if (!rtx_equal_p (data1->base, data2->base))
 	continue;
 
-      return data1->offset - data2->offset;
+      return autopref_rank_data (data1, data2);
     }
 
   return 0;
@@ -5633,7 +5771,7 @@ autopref_multipass_dfa_lookahead_guard_1 (const rtx_insn *insn1,
     return 0;
 
   if (rtx_equal_p (data1->base, data2->base)
-      && data1->offset > data2->offset)
+      && autopref_rank_data (data1, data2) > 0)
     {
       if (sched_verbose >= 2)
 	{
