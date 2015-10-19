@@ -1,5 +1,9 @@
 2015-10-19  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* doc/invoke.texi: Replace @optindex with @opindex.
+
+2015-10-19  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/67995
 	* config/i386/i386.c (ix86_valid_target_attribute_tree): If
 	arch= is set,  clear all bits in x_ix86_isa_flags, except for
