@@ -1,3 +1,13 @@
+2015-10-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* sched-int.h (struct autopref_multipass_data_): Remove offset
+	field.  Add min_offset, max_offset, multi_mem_insn_p fields.
+	* haifa-sched.c (analyze_set_insn_for_autopref): New function.
+	(autopref_multipass_init): Use it.  Handle PARALLEL sets.
+	(autopref_rank_data): New function.
+	(autopref_rank_for_schedule): Use it.
+	(autopref_multipass_dfa_lookahead_guard_1): Likewise. 
+
 2015-10-18  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR other/65800
