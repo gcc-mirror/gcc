@@ -1,3 +1,10 @@
+2015-10-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/67995
+	* config/i386/i386.c (ix86_valid_target_attribute_tree): If
+	arch= is set,  clear all bits in x_ix86_isa_flags, except for
+	ISA_64BIT, ABI_64, ABI_X32, and CODE16.
+
 2015-10-19  Joost VandeVondele  <vondele@gnu.gcc.org>
 
 	PR middle-end/68002
