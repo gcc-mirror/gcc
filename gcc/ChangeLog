@@ -1,3 +1,13 @@
+2015-10-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_mode_valid_for_sched_fusion_p):
+	New function.
+	(fusion_load_store): Use it.
+	* config/aarch64/aarch64-ldpstp.md: Add new peephole2s for
+	ldp and stp in VD modes.
+	* config/aarch64/aarch64-simd.md (load_pair<mode>, VD): New pattern.
+	(store_pair<mode>, VD): Likewise.
+
 2015-10-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/67609

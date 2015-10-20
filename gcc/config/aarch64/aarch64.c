@@ -3468,6 +3468,18 @@ offset_12bit_unsigned_scaled_p (machine_mode mode, HOST_WIDE_INT offset)
 	  && offset % GET_MODE_SIZE (mode) == 0);
 }
 
+/* Return true if MODE is one of the modes for which we
+   support LDP/STP operations.  */
+
+static bool
+aarch64_mode_valid_for_sched_fusion_p (machine_mode mode)
+{
+  return mode == SImode || mode == DImode
+	 || mode == SFmode || mode == DFmode
+	 || (aarch64_vector_mode_supported_p (mode)
+	     && GET_MODE_SIZE (mode) == 8);
+}
+
 /* Return true if X is a valid address for machine mode MODE.  If it is,
    fill in INFO appropriately.  STRICT_P is true if REG_OK_STRICT is in
    effect.  OUTER_CODE is PARALLEL for a load/store pair.  */
@@ -12813,8 +12825,9 @@ fusion_load_store (rtx_insn *insn, rtx *base, rtx *offset)
   src = SET_SRC (x);
   dest = SET_DEST (x);
 
-  if (GET_MODE (dest) != SImode && GET_MODE (dest) != DImode
-      && GET_MODE (dest) != SFmode && GET_MODE (dest) != DFmode)
+  machine_mode dest_mode = GET_MODE (dest);
+
+  if (!aarch64_mode_valid_for_sched_fusion_p (dest_mode))
     return SCHED_FUSION_NONE;
 
   if (GET_CODE (src) == SIGN_EXTEND)
