@@ -3273,7 +3273,8 @@ package body Sem_Ch13 is
                      --  to disable controlled types, because typical usage is
                      --  "Disable_Controlled => not <some_check>'Enabled", and
                      --  the value of Enabled is not known until we see a
-                     --  particular instance.
+                     --  particular instance. In such a context, we just need
+                     --  to preanalyze the expression for legality.
 
                      if Expander_Active then
                         Analyze_And_Resolve (Expr, Standard_Boolean);
@@ -3283,6 +3284,9 @@ package body Sem_Ch13 is
                         then
                            Set_Disable_Controlled (E);
                         end if;
+
+                     elsif Serious_Errors_Detected = 0 then
+                        Preanalyze_And_Resolve (Expr, Standard_Boolean);
                      end if;
 
                      goto Continue;
