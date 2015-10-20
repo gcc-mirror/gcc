@@ -3965,7 +3965,9 @@ c_parser_attributes (c_parser *parser)
       /* ??? Follow the C++ parser rather than using the
 	 lex_untranslated_string kludge.  */
       parser->lex_untranslated_string = true;
+      /* Consume the `__attribute__' keyword.  */
       c_parser_consume_token (parser);
+      /* Look for the two `(' tokens.  */
       if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 	{
 	  parser->lex_untranslated_string = false;
@@ -3993,17 +3995,24 @@ c_parser_attributes (c_parser *parser)
 	  attr_name = c_parser_attribute_any_word (parser);
 	  if (attr_name == NULL)
 	    break;
-	  if (is_cilkplus_vector_p (attr_name))		  
+	  if (is_cilkplus_vector_p (attr_name))
 	    {
 	      c_token *v_token = c_parser_peek_token (parser);
 	      c_parser_cilk_simd_fn_vector_attrs (parser, *v_token);
+	      /* If the next token isn't a comma, we're done.  */
+	      if (!c_parser_next_token_is (parser, CPP_COMMA))
+		break;
 	      continue;
 	    }
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
 	    {
 	      attr = build_tree_list (attr_name, NULL_TREE);
+	      /* Add this attribute to the list.  */
 	      attrs = chainon (attrs, attr);
+	      /* If the next token isn't a comma, we're done.  */
+	      if (!c_parser_next_token_is (parser, CPP_COMMA))
+		break;
 	      continue;
 	    }
 	  c_parser_consume_token (parser);
@@ -4062,8 +4071,13 @@ c_parser_attributes (c_parser *parser)
 					 "expected %<)%>");
 	      return attrs;
 	    }
+	  /* Add this attribute to the list.  */
 	  attrs = chainon (attrs, attr);
+	  /* If the next token isn't a comma, we're done.  */
+	  if (!c_parser_next_token_is (parser, CPP_COMMA))
+	    break;
 	}
+      /* Look for the two `)' tokens.  */
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	c_parser_consume_token (parser);
       else
