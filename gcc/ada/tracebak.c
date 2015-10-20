@@ -274,6 +274,8 @@ __gnat_backtrace (void **array,
 #define PC_ADJUST -4
 #elif defined (__arm__)
 #define PC_ADJUST -2
+#elif defined (__arm64__)
+#define PC_ADJUST -4
 #else
 #error Unhandled darwin architecture.
 #endif

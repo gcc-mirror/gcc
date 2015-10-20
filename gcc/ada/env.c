@@ -50,7 +50,7 @@
 #include <stdlib.h>
 #endif
 
-#if defined (__APPLE__) && !defined (__arm__)
+#if defined (__APPLE__) && !(defined (__arm__) || defined (__arm64__))
 /* On Darwin, _NSGetEnviron must be used for shared libraries; but it is not
    available on iOS.  */
 #include <crt_externs.h>
@@ -211,7 +211,7 @@ __gnat_environ (void)
 #elif defined (__sun__)
   extern char **_environ;
   return _environ;
-#elif defined (__APPLE__) && !defined (__arm__)
+#elif defined (__APPLE__) && !(defined (__arm__) || defined (__arm64__))
   return *_NSGetEnviron ();
 #elif ! (defined (__vxworks))
   extern char **environ;

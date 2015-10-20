@@ -37,6 +37,7 @@ package body Ada.Containers is
 
       procedure Adjust (Control : in out Reference_Control_Type) is
          pragma Warnings (Off);
+         --  GNAT warns here if checks are turned off, but assertions on
          pragma Assert (T_Check); -- not called if check suppressed
          pragma Warnings (On);
       begin

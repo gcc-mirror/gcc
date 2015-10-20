@@ -30,8 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  This is the default implementation for platforms where the full capability
---  is not supported. It returns tracebacks as lists of LF separated strings of
---  the form "0x..." corresponding to the addresses.
+--  is not supported. It returns tracebacks as lists of hexadecimal addresses
+--  of the form "0x...".
 
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we can get
@@ -67,9 +67,10 @@ package body System.Traceback.Symbolic is
                Last := Last + 2;
                Result (Last + 1 .. Last + Img'Length) := Img;
                Last := Last + Img'Length + 1;
-               Result (Last) := ASCII.LF;
+               Result (Last) := ' ';
             end loop;
 
+            Result (Last) := ASCII.LF;
             return Result (1 .. Last);
          end;
       end if;
