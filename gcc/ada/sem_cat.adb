@@ -185,9 +185,10 @@ package body Sem_Cat is
 
    begin
       --  Intrinsic subprograms are preelaborated, so do not impose any
-      --  categorization dependencies.
+      --  categorization dependencies. Also, ignore categorization
+      --  dependencies when compilation switch -gnatdu is used.
 
-      if Is_Intrinsic_Subprogram (Depended_Entity) then
+      if Is_Intrinsic_Subprogram (Depended_Entity) or else Debug_Flag_U then
          return;
       end if;
 
