@@ -23225,17 +23225,6 @@ cp_parser_gnu_attributes_opt (cp_parser* parser)
   return attributes;
 }
 
-/* Returns true of NAME is an IDENTIFIER_NODE with identiifer "vector,"
-   "__vector" or "__vector__."  */
-
-static inline bool
-is_cilkplus_vector_p (tree name)
-{ 
-  if (flag_cilkplus && is_attribute_p ("vector", name)) 
-    return true;
-  return false;
-}
-
 /* Parse a GNU attribute-list.
 
    attribute-list:

@@ -1,5 +1,9 @@
 2015-10-20  Marek Polacek  <polacek@redhat.com>
 
+	* c-parser.c (is_cilkplus_vector_p): Don't define here.
+
+2015-10-20  Marek Polacek  <polacek@redhat.com>
+
 	PR c/67964
 	* c-parser.c (c_parser_attributes): Break out of the loop if the
 	token after an attribute isn't a comma.
