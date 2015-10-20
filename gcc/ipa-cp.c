@@ -514,7 +514,8 @@ print_all_lattices (FILE * f, bool dump_sources, bool dump_benefits)
    with NODE.  */
 
 static void
-determine_versionability (struct cgraph_node *node)
+determine_versionability (struct cgraph_node *node,
+			  struct ipa_node_params *info)
 {
   const char *reason = NULL;
 
@@ -546,7 +547,7 @@ determine_versionability (struct cgraph_node *node)
     fprintf (dump_file, "Function %s/%i is not versionable, reason: %s.\n",
 	     node->name (), node->order, reason);
 
-  node->local.versionable = (reason == NULL);
+  info->versionable = (reason == NULL);
 }
 
 /* Return true if it is at all technically possible to create clones of a
@@ -555,7 +556,7 @@ determine_versionability (struct cgraph_node *node)
 static bool
 ipcp_versionable_function_p (struct cgraph_node *node)
 {
-  return node->local.versionable;
+  return IPA_NODE_REF (node)->versionable;
 }
 
 /* Structure holding accumulated information about callers of a node.  */
@@ -2896,7 +2897,7 @@ ipcp_propagate_stage (struct ipa_topo_info *topo)
   {
     struct ipa_node_params *info = IPA_NODE_REF (node);
 
-    determine_versionability (node);
+    determine_versionability (node, info);
     if (node->has_gimple_body_p ())
       {
 	info->lattices = XCNEWVEC (struct ipcp_param_lattices,
@@ -4609,11 +4610,7 @@ ipcp_generate_summary (void)
   ipa_register_cgraph_hooks ();
 
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-      {
-	node->local.versionable
-	  = tree_versionable_function_p (node->decl);
-	ipa_analyze_node (node);
-      }
+    ipa_analyze_node (node);
 }
 
 /* Write ipcp summary for nodes in SET.  */

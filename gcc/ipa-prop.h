@@ -334,6 +334,8 @@ struct ipa_node_params
   unsigned node_within_scc : 1;
   /* Node is calling a private function called only once.  */
   unsigned node_calling_single_call : 1;
+  /* False when there is something makes versioning impossible.  */
+  unsigned versionable : 1;
 };
 
 /* Intermediate information that we get from alias analysis about a particular

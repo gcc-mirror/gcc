@@ -1,3 +1,20 @@
+2015-10-20  Martin Liska  <mliska@suse.cz>
+
+	* cgraphclones.c (cgraph_node::create_virtual_clone):
+	Verify cgraph_node.local.versionable instead of calling
+	tree_versionable_function_p.
+	* ipa-cp.c (determine_versionability): Save the information
+	to ipa_node_params summary.
+	(ipcp_versionable_function_p): Use it.
+	(ipcp_propagate_stage): Pass IPA_NODE_REF to a called function.
+	(ipcp_generate_summary): Do not compute cgraph_node
+	versionability.
+	* ipa-inline-analysis.c (inline_generate_summary): Compute
+	versionability for all cgraph nodes.
+	* ipa-prop.c (ipa_node_params_t::duplicate): Duplicate
+	ipa_node_params::versionability.
+	* ipa-prop.h (struct ipa_node_params): Declare it.
+
 2015-10-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR other/67868
