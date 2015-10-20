@@ -17899,7 +17899,7 @@ package body Sem_Ch3 is
 
       else
          Original_Type := Scope (Original_Comp);
-         Type_Scope     := Scope (Base_Type (Scope (C)));
+         Type_Scope    := Scope (Base_Type (Scope (C)));
       end if;
 
       --  This test only concerns tagged types

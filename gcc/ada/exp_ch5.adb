@@ -2956,7 +2956,7 @@ package body Exp_Ch5 is
 
          Prepend (Elmt_Ref, Stats);
 
-         --  The element is assignable in the expanded code.
+         --  The element is assignable in the expanded code
 
          Set_Assignment_OK (Name (Elmt_Ref));
 
