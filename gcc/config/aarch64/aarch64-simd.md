@@ -1654,6 +1654,26 @@
   [(set_attr "type" "neon_fp_to_int_<Vetype><q>")]
 )
 
+(define_insn "*aarch64_fcvt<su_optab><VDQF:mode><fcvt_target>2_mult"
+  [(set (match_operand:<FCVT_TARGET> 0 "register_operand" "=w")
+	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>
+			       [(mult:VDQF
+	 (match_operand:VDQF 1 "register_operand" "w")
+	 (match_operand:VDQF 2 "aarch64_fp_vec_pow2" ""))]
+			       UNSPEC_FRINTZ)))]
+  "TARGET_SIMD
+   && IN_RANGE (aarch64_vec_fpconst_pow_of_2 (operands[2]), 1,
+		GET_MODE_BITSIZE (GET_MODE_INNER (<VDQF:MODE>mode)))"
+  {
+    int fbits = aarch64_vec_fpconst_pow_of_2 (operands[2]);
+    char buf[64];
+    snprintf (buf, 64, "fcvtz<su>\\t%%0.<Vtype>, %%1.<Vtype>, #%d", fbits);
+    output_asm_insn (buf, operands);
+    return "";
+  }
+  [(set_attr "type" "neon_fp_to_int_<Vetype><q>")]
+)
+
 (define_expand "<optab><VDQF:mode><fcvt_target>2"
   [(set (match_operand:<FCVT_TARGET> 0 "register_operand")
 	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>

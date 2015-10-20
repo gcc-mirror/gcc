@@ -87,6 +87,13 @@
        (and (match_code "const_double")
 	    (match_test "aarch64_float_const_zero_rtx_p (op)"))))
 
+(define_predicate "aarch64_fp_pow2"
+  (and (match_code "const_double")
+	(match_test "aarch64_fpconst_pow_of_2 (op) > 0")))
+
+(define_predicate "aarch64_fp_vec_pow2"
+  (match_test "aarch64_vec_fpconst_pow_of_2 (op) > 0"))
+
 (define_predicate "aarch64_plus_immediate"
   (and (match_code "const_int")
        (ior (match_test "aarch64_uimm12_shift (INTVAL (op))")
