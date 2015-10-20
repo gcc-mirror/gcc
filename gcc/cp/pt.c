@@ -6233,6 +6233,17 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	   CONSTRUCTOR.  */;
       else if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
 	expr = maybe_constant_value (expr);
+      else if (cxx_dialect >= cxx1z)
+	{
+	  if (TREE_CODE (type) != REFERENCE_TYPE)
+	    expr = maybe_constant_value (expr);
+	  else if (REFERENCE_REF_P (expr))
+	    {
+	      expr = TREE_OPERAND (expr, 0);
+	      expr = maybe_constant_value (expr);
+	      expr = convert_from_reference (expr);
+	    }
+	}
       else if (TYPE_PTR_OR_PTRMEM_P (type))
 	{
 	  tree folded = maybe_constant_value (expr);

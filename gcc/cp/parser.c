@@ -14977,8 +14977,12 @@ cp_parser_template_argument (cp_parser* parser)
 	warn_deprecated_use (argument, NULL_TREE);
       return argument;
     }
-  /* It must be a non-type argument.  There permitted cases are given
-     in [temp.arg.nontype]:
+  /* It must be a non-type argument.  In C++17 any constant-expression is
+     allowed.  */
+  if (cxx_dialect > cxx14)
+    goto general_expr;
+
+  /* Otherwise, the permitted cases are given in [temp.arg.nontype]:
 
      -- an integral constant-expression of integral or enumeration
 	type; or
@@ -15090,6 +15094,7 @@ cp_parser_template_argument (cp_parser* parser)
       return error_mark_node;
     }
 
+ general_expr:
   /* If the argument wasn't successfully parsed as a type-id followed
      by '>>', the argument can only be a constant expression now.
      Otherwise, we try parsing the constant-expression tentatively,

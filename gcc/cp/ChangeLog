@@ -1,5 +1,11 @@
 2015-10-19  Jason Merrill  <jason@redhat.com>
 
+	Implement N4268, Do constant evaluation of all non-type template args.
+	* parser.c (cp_parser_template_argument): For C++1z just parse a
+	constant-expression.
+	* pt.c (convert_nontype_argument): For C++1z always call
+	maybe_constant_value.
+
 	* constexpr.c (cxx_eval_constant_expression): Expand PTRMEM_CST
 	only when necessary.
 	(cxx_eval_component_reference): Like here.
