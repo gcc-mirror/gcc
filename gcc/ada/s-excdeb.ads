@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,8 @@ package System.Exceptions_Debug is
    --  To let some of the hooks below have formal parameters typed in
    --  accordance with what GDB expects.
 
-   procedure Debug_Raise_Exception (E : SSL.Exception_Data_Ptr);
+   procedure Debug_Raise_Exception
+     (E : SSL.Exception_Data_Ptr; Message : String);
    pragma Export
      (Ada, Debug_Raise_Exception, "__gnat_debug_raise_exception");
    --  Hook called at a "raise" point for an exception E, when it is

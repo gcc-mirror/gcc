@@ -4904,9 +4904,9 @@ package body Sem_Ch12 is
          Set_Debug_Info_Needed   (Anon_Id);
          Act_Decl_Id := New_Copy (Anon_Id);
 
-         Set_Parent            (Act_Decl_Id, Parent (Anon_Id));
-         Set_Chars             (Act_Decl_Id, Chars (Defining_Entity (N)));
-         Set_Sloc              (Act_Decl_Id, Sloc (Defining_Entity (N)));
+         Set_Parent (Act_Decl_Id, Parent (Anon_Id));
+         Set_Chars  (Act_Decl_Id, Chars (Defining_Entity (N)));
+         Set_Sloc   (Act_Decl_Id, Sloc (Defining_Entity (N)));
 
          --  Subprogram instance comes from source only if generic does
 

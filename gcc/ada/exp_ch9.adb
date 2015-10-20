@@ -14295,9 +14295,14 @@ package body Exp_Ch9 is
       Next_Op : Node_Id;
 
    begin
+      --  Check whether there is a subsequent body for a protected operation
+      --  in the current protected body. In Ada2012 that includes expression
+      --  functions that are completions.
+
       Next_Op := Next (N);
       while Present (Next_Op)
-        and then not Nkind_In (Next_Op, N_Subprogram_Body, N_Entry_Body)
+        and then not Nkind_In (Next_Op,
+           N_Subprogram_Body, N_Entry_Body, N_Expression_Function)
       loop
          Next (Next_Op);
       end loop;

@@ -922,7 +922,9 @@ package body Ada.Exceptions is
       Call_Chain (X);
 
       --  Notify the debugger
-      Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (X.Id));
+      Debug_Raise_Exception
+        (E       => SSL.Exception_Data_Ptr (X.Id),
+         Message => X.Msg (1 .. X.Msg_Length));
    end Complete_Occurrence;
 
    ---------------------------------------
