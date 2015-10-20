@@ -2234,7 +2234,7 @@ char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
    Tell the kernel to re-use alt stack when delivering a signal.  */
 #define	UC_RESET_ALT_STACK	0x80000000
 
-#ifndef __arm__
+#if !(defined (__arm__) || defined (__arm64__))
 #include <mach/mach_vm.h>
 #include <mach/mach_init.h>
 #include <mach/vm_statistics.h>
@@ -2244,7 +2244,7 @@ char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
 static int
 __gnat_is_stack_guard (mach_vm_address_t addr)
 {
-#ifndef __arm__
+#if !(defined (__arm__) || defined (__arm64__))
   kern_return_t kret;
   vm_region_submap_info_data_64_t info;
   mach_vm_address_t start;
