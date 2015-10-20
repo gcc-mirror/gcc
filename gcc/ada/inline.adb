@@ -1534,6 +1534,12 @@ package body Inline is
       elsif In_Package_Visible_Spec (Id) then
          return False;
 
+      --  Do not inline subprograms marked No_Return, possibly used for
+      --  signaling errors, which GNATprove handles specially.
+
+      elsif No_Return (Id) then
+         return False;
+
       --  Do not inline subprograms that have a contract on the spec or the
       --  body. Use the contract(s) instead in GNATprove.
 

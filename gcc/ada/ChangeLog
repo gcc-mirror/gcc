@@ -1,3 +1,22 @@
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* output.adb (Write_Int): Work with negative numbers in order to avoid
+	negating Int'First and thereby causing overflow.
+	* sem_util.adb: Minor comment fix.
+
+2015-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* make.adb (Check): Skip multilib switches reinstated by the
+	compiler when doing the comparison with switches passed to
+	gnatmake.
+
+2015-10-20  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Return
+	False for procedures marked No_Return.
+	* sem_util.ads (Enclosing_Declaration): Improve comment.
+	* einfo.adb (Is_Completely_Hidden): Remove spurious assertion.
+
 2015-10-20  Thomas Quinot  <quinot@adacore.com>
 
 	* types.ads: Minor reformatting.

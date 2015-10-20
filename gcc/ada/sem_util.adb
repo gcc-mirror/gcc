@@ -17148,14 +17148,16 @@ package body Sem_Util is
       then
          return New_Requires_Transient_Scope (Cloned_Subtype (Typ));
 
-      --  Functions returning tagged types may dispatch on result so their
-      --  returned value is allocated on the secondary stack, even in the
-      --  definite case. Is_Tagged_Type includes controlled types and
-      --  class-wide types. Controlled type temporaries need finalization.
+      --  Functions returning specific tagged types may dispatch on result, so
+      --  their returned value is allocated on the secondary stack, even in the
+      --  definite case. We must treat nondispatching functions the same way,
+      --  because access-to-function types can point at both, so the calling
+      --  conventions must be compatible. Is_Tagged_Type includes controlled
+      --  types and class-wide types. Controlled type temporaries need
+      --  finalization.
+
       --  ???It's not clear why we need to return noncontrolled types with
-      --  controlled components on the secondary stack. Also, it's not clear
-      --  why nonprimitive tagged type functions need the secondary stack,
-      --  since they can't be called via dispatching.
+      --  controlled components on the secondary stack.
 
       elsif Is_Tagged_Type (Typ) or else Has_Controlled_Component (Typ) then
          return True;
