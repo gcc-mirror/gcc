@@ -381,7 +381,8 @@ pass_build_cgraph_edges::execute (function *fun)
   FOR_EACH_LOCAL_DECL (fun, ix, decl)
     if (TREE_CODE (decl) == VAR_DECL
 	&& (TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
-	&& !DECL_HAS_VALUE_EXPR_P (decl))
+	&& !DECL_HAS_VALUE_EXPR_P (decl)
+	&& TREE_TYPE (decl) != error_mark_node)
       varpool_node::finalize_decl (decl);
   record_eh_tables (node, fun);
 
