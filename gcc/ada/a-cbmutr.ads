@@ -32,8 +32,9 @@
 ------------------------------------------------------------------------------
 
 with Ada.Iterator_Interfaces;
+
+private with Ada.Containers.Helpers;
 private with Ada.Streams;
-private with Ada.Finalization;
 
 generic
    type Element_Type is private;
@@ -270,8 +271,12 @@ package Ada.Containers.Bounded_Multiway_Trees is
       Process : not null access procedure (Position : Cursor));
 
 private
+
+   use Ada.Containers.Helpers;
+   package Implementation is new Generic_Implementation;
+   use Implementation;
+
    use Ada.Streams;
-   use Ada.Finalization;
 
    No_Node : constant Count_Type'Base := -1;
    --  Need to document all global declarations such as this ???
@@ -297,8 +302,7 @@ private
       Nodes    : Tree_Node_Array (0 .. Capacity) := (others => <>);
       Elements : Element_Array (1 .. Capacity) := (others => <>);
       Free     : Count_Type'Base := No_Node;
-      Busy     : Integer := 0;
-      Lock     : Integer := 0;
+      TC       : aliased Tamper_Counts;
       Count    : Count_Type := 0;
    end record;
 
@@ -332,16 +336,8 @@ private
       Position : Cursor);
    for Cursor'Write use Write;
 
-   type Reference_Control_Type is
-      new Controlled with record
-         Container : Tree_Access;
-      end record;
-
-   overriding procedure Adjust (Control : in out Reference_Control_Type);
-   pragma Inline (Adjust);
-
-   overriding procedure Finalize (Control : in out Reference_Control_Type);
-   pragma Inline (Finalize);
+   subtype Reference_Control_Type is Implementation.Reference_Control_Type;
+   --  It is necessary to rename this here, so that the compiler can find it
 
    type Constant_Reference_Type
      (Element : not null access constant Element_Type) is
@@ -382,6 +378,25 @@ private
      (Stream : not null access Root_Stream_Type'Class;
       Item   : out Reference_Type);
    for Reference_Type'Read use Read;
+
+   --  Three operations are used to optimize in the expansion of "for ... of"
+   --  loops: the Next(Cursor) procedure in the visible part, and the following
+   --  Pseudo_Reference and Get_Element_Access functions. See Exp_Ch5 for
+   --  details.
+
+   function Pseudo_Reference
+     (Container : aliased Tree'Class) return Reference_Control_Type;
+   pragma Inline (Pseudo_Reference);
+   --  Creates an object of type Reference_Control_Type pointing to the
+   --  container, and increments the Lock. Finalization of this object will
+   --  decrement the Lock.
+
+   type Element_Access is access all Element_Type with
+     Storage_Size => 0;
+
+   function Get_Element_Access
+     (Position : Cursor) return not null Element_Access;
+   --  Returns a pointer to the element designated by Position.
 
    Empty_Tree : constant Tree := (Capacity => 0, others => <>);
 

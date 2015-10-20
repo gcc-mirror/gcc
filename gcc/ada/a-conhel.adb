@@ -29,7 +29,7 @@ package body Ada.Containers.Helpers is
 
    package body Generic_Implementation is
 
-      use SAC;
+      use type SAC.Atomic_Unsigned;
 
       ------------
       -- Adjust --
@@ -53,7 +53,7 @@ package body Ada.Containers.Helpers is
       procedure Busy (T_Counts : in out Tamper_Counts) is
       begin
          if T_Check then
-            Increment (T_Counts.Busy);
+            SAC.Increment (T_Counts.Busy);
          end if;
       end Busy;
 
@@ -118,8 +118,8 @@ package body Ada.Containers.Helpers is
       procedure Lock (T_Counts : in out Tamper_Counts) is
       begin
          if T_Check then
-            Increment (T_Counts.Lock);
-            Increment (T_Counts.Busy);
+            SAC.Increment (T_Counts.Lock);
+            SAC.Increment (T_Counts.Busy);
          end if;
       end Lock;
 
@@ -133,6 +133,13 @@ package body Ada.Containers.Helpers is
             raise Program_Error with
               "attempt to tamper with cursors";
          end if;
+
+         --  The lock status (which monitors "element tampering") always
+         --  implies that the busy status (which monitors "cursor tampering")
+         --  is set too; this is a representation invariant. Thus if the busy
+         --  bit is not set, then the lock bit must not be set either.
+
+         pragma Assert (T_Counts.Lock = 0);
       end TC_Check;
 
       --------------
@@ -154,7 +161,7 @@ package body Ada.Containers.Helpers is
       procedure Unbusy (T_Counts : in out Tamper_Counts) is
       begin
          if T_Check then
-            Decrement (T_Counts.Busy);
+            SAC.Decrement (T_Counts.Busy);
          end if;
       end Unbusy;
 
@@ -165,8 +172,8 @@ package body Ada.Containers.Helpers is
       procedure Unlock (T_Counts : in out Tamper_Counts) is
       begin
          if T_Check then
-            Decrement (T_Counts.Lock);
-            Decrement (T_Counts.Busy);
+            SAC.Decrement (T_Counts.Lock);
+            SAC.Decrement (T_Counts.Busy);
          end if;
       end Unlock;
 

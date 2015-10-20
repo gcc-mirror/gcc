@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,8 @@
 --  This package declares the hash-table type used to implement hashed
 --  containers.
 
+with Ada.Containers.Helpers;
+
 package Ada.Containers.Hash_Tables is
    pragma Pure;
    --  Declare Pure so this can be imported by Remote_Types packages
@@ -40,6 +42,7 @@ package Ada.Containers.Hash_Tables is
       type Node_Access is access Node_Type;
 
    package Generic_Hash_Table_Types is
+
       type Buckets_Type is array (Hash_Type range <>) of Node_Access;
 
       type Buckets_Access is access all Buckets_Type;
@@ -47,16 +50,18 @@ package Ada.Containers.Hash_Tables is
       --  Storage_Size of zero so this package can be Pure
 
       type Hash_Table_Type is tagged record
-         Buckets : Buckets_Access;
+         Buckets : Buckets_Access := null;
          Length  : Count_Type := 0;
-         Busy    : Natural    := 0;
-         Lock    : Natural    := 0;
+         TC      : aliased Helpers.Tamper_Counts;
       end record;
+
+      package Implementation is new Helpers.Generic_Implementation;
    end Generic_Hash_Table_Types;
 
    generic
       type Node_Type is private;
    package Generic_Bounded_Hash_Table_Types is
+
       type Nodes_Type is array (Count_Type range <>) of Node_Type;
       type Buckets_Type is array (Hash_Type range <>) of Count_Type;
 
@@ -65,12 +70,13 @@ package Ada.Containers.Hash_Tables is
          Modulus  : Hash_Type) is
       tagged record
          Length  : Count_Type                  := 0;
-         Busy    : Natural                     := 0;
-         Lock    : Natural                     := 0;
+         TC      : aliased Helpers.Tamper_Counts;
          Free    : Count_Type'Base             := -1;
          Nodes   : Nodes_Type (1 .. Capacity)  := (others => <>);
          Buckets : Buckets_Type (1 .. Modulus) := (others => 0);
       end record;
+
+      package Implementation is new Helpers.Generic_Implementation;
    end Generic_Bounded_Hash_Table_Types;
 
 end Ada.Containers.Hash_Tables;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,10 @@
 
 package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
+   pragma Warnings (Off, "variable ""Busy*"" is not referenced");
+   pragma Warnings (Off, "variable ""Lock*"" is not referenced");
+   --  See comment in Ada.Containers.Helpers
+
    package Ops renames Tree_Operations;
 
    -------------
@@ -38,8 +42,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
    --  AKA Lower_Bound
 
    function Ceiling (Tree : Tree_Type; Key : Key_Type) return Node_Access is
-      B : Natural renames Tree'Unrestricted_Access.Busy;
-      L : Natural renames Tree'Unrestricted_Access.Lock;
+      --  Per AI05-0022, the container implementation is required to detect
+      --  element tampering by a generic actual subprogram.
+
+      Lock : With_Lock (Tree.TC'Unrestricted_Access);
 
       Y : Node_Access;
       X : Node_Access;
@@ -52,12 +58,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          return null;
       end if;
 
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      B := B + 1;
-      L := L + 1;
-
       X := Tree.Root;
       while X /= null loop
          if Is_Greater_Key_Node (Key, X) then
@@ -68,17 +68,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          end if;
       end loop;
 
-      B := B - 1;
-      L := L - 1;
-
       return Y;
-
-   exception
-      when others =>
-         B := B - 1;
-         L := L - 1;
-
-         raise;
    end Ceiling;
 
    ----------
@@ -86,13 +76,13 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
    ----------
 
    function Find (Tree : Tree_Type; Key : Key_Type) return Node_Access is
-      B : Natural renames Tree'Unrestricted_Access.Busy;
-      L : Natural renames Tree'Unrestricted_Access.Lock;
+      --  Per AI05-0022, the container implementation is required to detect
+      --  element tampering by a generic actual subprogram.
+
+      Lock : With_Lock (Tree.TC'Unrestricted_Access);
 
       Y : Node_Access;
       X : Node_Access;
-
-      Result : Node_Access;
 
    begin
       --  If the container is empty, return a result immediately, so that we do
@@ -101,12 +91,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       if Tree.Root = null then
          return null;
       end if;
-
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      B := B + 1;
-      L := L + 1;
 
       X := Tree.Root;
       while X /= null loop
@@ -118,27 +102,11 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          end if;
       end loop;
 
-      if Y = null then
-         Result := null;
-
-      elsif Is_Less_Key_Node (Key, Y) then
-         Result := null;
-
+      if Y = null or else Is_Less_Key_Node (Key, Y) then
+         return null;
       else
-         Result := Y;
+         return Y;
       end if;
-
-      B := B - 1;
-      L := L - 1;
-
-      return Result;
-
-   exception
-      when others =>
-         B := B - 1;
-         L := L - 1;
-
-         raise;
    end Find;
 
    -----------
@@ -146,8 +114,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
    -----------
 
    function Floor (Tree : Tree_Type; Key : Key_Type) return Node_Access is
-      B : Natural renames Tree'Unrestricted_Access.Busy;
-      L : Natural renames Tree'Unrestricted_Access.Lock;
+      --  Per AI05-0022, the container implementation is required to detect
+      --  element tampering by a generic actual subprogram.
+
+      Lock : With_Lock (Tree.TC'Unrestricted_Access);
 
       Y : Node_Access;
       X : Node_Access;
@@ -159,12 +129,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       if Tree.Root = null then
          return null;
       end if;
-
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      B := B + 1;
-      L := L + 1;
 
       X := Tree.Root;
       while X /= null loop
@@ -176,17 +140,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          end if;
       end loop;
 
-      B := B - 1;
-      L := L - 1;
-
       return Y;
-
-   exception
-      when others =>
-         B := B - 1;
-         L := L - 1;
-
-         raise;
    end Floor;
 
    --------------------------------
@@ -201,12 +155,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
    is
       X : Node_Access;
       Y : Node_Access;
-
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      B : Natural renames Tree.Busy;
-      L : Natural renames Tree.Lock;
 
       Compare : Boolean;
 
@@ -235,10 +183,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       --  either the smallest node greater than Key (Inserted is True), or the
       --  largest node less or equivalent to Key (Inserted is False).
 
+      declare
+         Lock : With_Lock (Tree.TC'Unrestricted_Access);
       begin
-         B := B + 1;
-         L := L + 1;
-
          X := Tree.Root;
          Y := null;
          Inserted := True;
@@ -247,16 +194,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
             Inserted := Is_Less_Key_Node (Key, X);
             X := (if Inserted then Ops.Left (X) else Ops.Right (X));
          end loop;
-
-         L := L - 1;
-         B := B - 1;
-
-      exception
-         when others =>
-            L := L - 1;
-            B := B - 1;
-
-            raise;
       end;
 
       if Inserted then
@@ -288,21 +225,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       --  Key is equivalent to or greater than Node. We must resolve which is
       --  the case, to determine whether the conditional insertion succeeds.
 
+      declare
+         Lock : With_Lock (Tree.TC'Unrestricted_Access);
       begin
-         B := B + 1;
-         L := L + 1;
-
          Compare := Is_Greater_Key_Node (Key, Node);
-
-         L := L - 1;
-         B := B - 1;
-
-      exception
-         when others =>
-            L := L - 1;
-            B := B - 1;
-
-            raise;
       end;
 
       if Compare then
@@ -334,12 +260,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       Node      : out Node_Access;
       Inserted  : out Boolean)
    is
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      B : Natural renames Tree.Busy;
-      L : Natural renames Tree.Lock;
-
       Test    : Node_Access;
       Compare : Boolean;
 
@@ -366,21 +286,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       --  we must search.
 
       if Position = null then  -- largest
+         declare
+            Lock : With_Lock (Tree.TC'Unrestricted_Access);
          begin
-            B := B + 1;
-            L := L + 1;
-
             Compare := Is_Greater_Key_Node (Key, Tree.Last);
-
-            L := L - 1;
-            B := B - 1;
-
-         exception
-            when others =>
-               L := L - 1;
-               B := B - 1;
-
-               raise;
          end;
 
          if Compare then
@@ -412,21 +321,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       --  then its neighbor must be anterior and so we insert before the
       --  hint.
 
+      declare
+         Lock : With_Lock (Tree.TC'Unrestricted_Access);
       begin
-         B := B + 1;
-         L := L + 1;
-
          Compare := Is_Less_Key_Node (Key, Position);
-
-         L := L - 1;
-         B := B - 1;
-
-      exception
-         when others =>
-            L := L - 1;
-            B := B - 1;
-
-            raise;
       end;
 
       if Compare then
@@ -439,21 +337,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
             return;
          end if;
 
+         declare
+            Lock : With_Lock (Tree.TC'Unrestricted_Access);
          begin
-            B := B + 1;
-            L := L + 1;
-
             Compare := Is_Greater_Key_Node (Key, Test);
-
-            L := L - 1;
-            B := B - 1;
-
-         exception
-            when others =>
-               L := L - 1;
-               B := B - 1;
-
-               raise;
          end;
 
          if Compare then
@@ -478,21 +365,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       --  less than the hint's next neighbor, then we're done; otherwise we
       --  must search.
 
+      declare
+         Lock : With_Lock (Tree.TC'Unrestricted_Access);
       begin
-         B := B + 1;
-         L := L + 1;
-
          Compare := Is_Greater_Key_Node (Key, Position);
-
-         L := L - 1;
-         B := B - 1;
-
-      exception
-         when others =>
-            L := L - 1;
-            B := B - 1;
-
-            raise;
       end;
 
       if Compare then
@@ -505,21 +381,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
             return;
          end if;
 
+         declare
+            Lock : With_Lock (Tree.TC'Unrestricted_Access);
          begin
-            B := B + 1;
-            L := L + 1;
-
             Compare := Is_Less_Key_Node (Key, Test);
-
-            L := L - 1;
-            B := B - 1;
-
-         exception
-            when others =>
-               L := L - 1;
-               B := B - 1;
-
-               raise;
          end;
 
          if Compare then
@@ -557,14 +422,11 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       Z      : out Node_Access)
    is
    begin
-      if Tree.Length = Count_Type'Last then
+      if Checks and then Tree.Length = Count_Type'Last then
          raise Constraint_Error with "too many elements";
       end if;
 
-      if Tree.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (Tree.TC);
 
       Z := New_Node;
       pragma Assert (Z /= null);
