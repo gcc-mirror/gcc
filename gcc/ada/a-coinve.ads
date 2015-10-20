@@ -33,6 +33,7 @@
 
 with Ada.Iterator_Interfaces;
 
+private with Ada.Containers.Helpers;
 private with Ada.Finalization;
 private with Ada.Streams;
 
@@ -357,6 +358,7 @@ private
    pragma Inline (Next);
    pragma Inline (Previous);
 
+   use Ada.Containers.Helpers;
    package Implementation is new Generic_Implementation;
    use Implementation;
 
