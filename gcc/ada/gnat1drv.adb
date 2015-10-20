@@ -1421,6 +1421,12 @@ begin
          --  say Storage_Error, giving a strong hint.
 
          Comperr.Compiler_Abort ("Storage_Error");
+
+      when Unrecoverable_Error =>
+         raise;
+
+      when others =>
+         Comperr.Compiler_Abort ("exception");
    end;
 
    <<End_Of_Program>>
