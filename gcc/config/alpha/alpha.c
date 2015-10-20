@@ -5613,7 +5613,7 @@ alpha_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   bool onstack = targetm.calls.must_pass_in_stack (mode, type);
-  int increment = onstack ? 6 : ALPHA_ARG_SIZE (mode, type, named);
+  int increment = onstack ? 6 : ALPHA_ARG_SIZE (mode, type);
 
 #if TARGET_ABI_OSF
   *cum += increment;
@@ -5635,10 +5635,10 @@ alpha_arg_partial_bytes (cumulative_args_t cum_v,
 
 #if TARGET_ABI_OPEN_VMS
   if (cum->num_args < 6
-      && 6 < cum->num_args + ALPHA_ARG_SIZE (mode, type, named))
+      && 6 < cum->num_args + ALPHA_ARG_SIZE (mode, type))
     words = 6 - cum->num_args;
 #elif TARGET_ABI_OSF
-  if (*cum < 6 && 6 < *cum + ALPHA_ARG_SIZE (mode, type, named))
+  if (*cum < 6 && 6 < *cum + ALPHA_ARG_SIZE (mode, type))
     words = 6 - *cum;
 #else
 #error Unhandled ABI
