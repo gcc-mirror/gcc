@@ -157,7 +157,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
         and then Color (X) = Black
       loop
          if X = Left (Parent (X)) then
-            W :=  Right (Parent (X));
+            W := Right (Parent (X));
 
             if Color (W) = Red then
                Set_Color (W, Black);
@@ -201,7 +201,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
          else
             pragma Assert (X = Right (Parent (X)));
 
-            W :=  Left (Parent (X));
+            W := Left (Parent (X));
 
             if Color (W) = Red then
                Set_Color (W, Black);

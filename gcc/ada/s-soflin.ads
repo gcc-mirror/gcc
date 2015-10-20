@@ -254,9 +254,9 @@ package System.Soft_Links is
    procedure Enter_Master_NT;
    procedure Complete_Master_NT;
 
-   Current_Master  : Get_Integer_Call :=  Current_Master_NT'Access;
-   Enter_Master    : No_Param_Proc    :=  Enter_Master_NT'Access;
-   Complete_Master : No_Param_Proc    :=  Complete_Master_NT'Access;
+   Current_Master  : Get_Integer_Call := Current_Master_NT'Access;
+   Enter_Master    : No_Param_Proc    := Enter_Master_NT'Access;
+   Complete_Master : No_Param_Proc    := Complete_Master_NT'Access;
 
    ----------------------
    -- Delay Soft-Links --

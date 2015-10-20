@@ -781,7 +781,7 @@ package body Sem_Ch9 is
       for J in reverse 0 .. Scope_Stack.Last loop
          Task_Nam := Scope_Stack.Table (J).Entity;
          exit when Ekind (Etype (Task_Nam)) = E_Task_Type;
-         Kind :=  Ekind (Task_Nam);
+         Kind := Ekind (Task_Nam);
 
          if Kind /= E_Block and then Kind /= E_Loop
            and then not Is_Entry (Task_Nam)

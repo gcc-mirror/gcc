@@ -1,5 +1,15 @@
 2015-10-20  Arnaud Charlet  <charlet@adacore.com>
 
+	* s-valllu.adb, sem_ch3.adb, layout.adb, a-crbtgo.adb, exp_ch9.adb,
+	make.adb, g-diopit.adb, s-valuns.adb, sem_ch9.adb, sem_ch10.adb,
+	sem_ch12.adb, a-tifiio.adb, g-dynhta.adb, uintp.adb,
+	sem_util.adb, sem_res.adb, s-htable.adb, exp_tss.adb, s-soflin.ads,
+	exp_ch6.adb, sem_ch6.adb, a-rbtgbo.adb, par-ch12.adb, sem_ch8.adb,
+	sem_eval.adb, mdll.adb, par-ch5.adb, s-poosiz.adb, sem_ch4.adb,
+	a-ngelfu.adb, s-taspri-solaris.ads, a-cforse.adb: Fix typos.
+
+2015-10-20  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_aggr.adb, mlib-prj.adb, prep.adb, eval_fat.adb, rtsfind.adb,
 	freeze.adb, sem_util.adb, sem_res.adb, sem_attr.adb, gnatlink.adb,
 	par-ch6.adb, exp_tss.adb, exp_ch4.adb, s-shasto.adb, exp_fixd.adb,

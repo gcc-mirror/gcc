@@ -584,7 +584,7 @@ is
    -------------------
 
    function First_Element (Container : Set) return Element_Type is
-      Fst : constant Count_Type :=  First (Container).Node;
+      Fst : constant Count_Type := First (Container).Node;
    begin
       if Fst = 0 then
          raise Constraint_Error with "set is empty";

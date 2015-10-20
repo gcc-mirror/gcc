@@ -152,7 +152,7 @@ package body Exp_Tss is
    begin
       loop
          Btyp := Base_Type (Btyp);
-         Proc :=  TSS (Btyp, Nam);
+         Proc := TSS (Btyp, Nam);
 
          exit when Present (Proc)
            or else not Is_Derived_Type (Btyp);

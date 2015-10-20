@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,7 +94,7 @@ private
    type Lock is record
       L              : aliased Base_Lock;
       Ceiling        : System.Any_Priority := System.Any_Priority'First;
-      Saved_Priority : System.Any_Priority :=  System.Any_Priority'First;
+      Saved_Priority : System.Any_Priority := System.Any_Priority'First;
       Owner          : Owner_ID;
       Next           : Lock_Ptr;
       Level          : Private_Task_Serial_Number := 0;
