@@ -694,8 +694,8 @@ package body Debug is
 
    --  d.X  A previous version of GNAT allowed indexing aspects to be redefined
    --       on derived container types, while the default iterator was
-   --       inherited from the aprent type. This non-standard extension is
-   --       preserved temporarily for use by the modelling project under debug
+   --       inherited from the parent type. This nonstandard extension is
+   --       preserved temporarily for use by the modeling project under debug
    --       flag d.X.
 
    --  d.Z  Normally we always enable expansion in configurable run-time mode

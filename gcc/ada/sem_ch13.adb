@@ -11420,7 +11420,7 @@ package body Sem_Ch13 is
             Id : constant Attribute_Id := Get_Attribute_Id (Chars (N));
          begin
 
-            --  List of operational items is given in RM 13.1(8.mm/1).
+            --  List of operational items is given in AARM 13.1(8.mm/1).
             --  It is clearly incomplete, as it does not include iterator
             --  aspects, among others.
 
