@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -330,13 +330,13 @@ package Stand is
    --  situations. They have names that are suitable for use in such
    --  error messages (see body for actual names used).
 
-   Standard_Void_Type  : Entity_Id;
+   Standard_Void_Type : Entity_Id;
    --  This is a type used to represent the return type of procedures
 
-   Standard_Exception_Type  : Entity_Id;
+   Standard_Exception_Type : Entity_Id;
    --  This is a type used to represent the Etype of exceptions
 
-   Standard_A_String   : Entity_Id;
+   Standard_A_String : Entity_Id;
    --  An access to String type used for building elements of tables
    --  carrying the enumeration literal names.
 
@@ -446,8 +446,8 @@ package Stand is
    --  this type is always IEEE format.
 
    Universal_Fixed : Entity_Id;
-   --  Entity for universal fixed type. This is a type with  arbitrary
-   --  precision that can only appear in  a context with a specific type.
+   --  Entity for universal fixed type. This is a type with arbitrary
+   --  precision that can only appear in a context with a specific type.
    --  Universal_Fixed labels the result of multiplication or division of
    --  two fixed point numbers, and has no specified bounds (since, unlike
    --  universal integer and universal real, it is never used for runtime

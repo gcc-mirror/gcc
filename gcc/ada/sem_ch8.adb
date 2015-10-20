@@ -3221,7 +3221,13 @@ package body Sem_Ch8 is
                                       Find_Dispatching_Type (Old_S);
 
                begin
-                  if Old_S_Ctrl_Type /= New_S_Ctrl_Type then
+
+                  --  The actual must match the (instance of the) formal,
+                  --  and must be a controlling type.
+
+                  if Old_S_Ctrl_Type /= New_S_Ctrl_Type
+                    or else No (New_S_Ctrl_Type)
+                  then
                      Error_Msg_NE
                        ("actual must be dispatching subprogram for type&",
                         Nam, New_S_Ctrl_Type);
