@@ -1,3 +1,8 @@
+2015-10-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67964
+	* gcc.dg/pr67964.c: New test.
+
 2015-10-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/67609
