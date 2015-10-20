@@ -1,3 +1,9 @@
+2015-10-19  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define
+	__cpp_enumerator_attributes, __cpp_fold_expressions,
+	__cpp_unicode_characters.
+
 2015-10-13  Jakub Jelinek  <jakub@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 
