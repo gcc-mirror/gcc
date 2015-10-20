@@ -450,9 +450,9 @@ package body Ada.Containers.Vectors is
          return;
       end if;
 
-      --  There are some elements aren't being deleted (the requested count was
-      --  less than the available count), so we must slide them down to
-      --  Index. We first calculate the index values of the respective array
+      --  There are some elements that aren't being deleted (the requested
+      --  count was less than the available count), so we must slide them down
+      --  to Index. We first calculate the index values of the respective array
       --  slices, using the wider of Index_Type'Base and Count_Type'Base as the
       --  type for intermediate calculations. For the elements that slide down,
       --  index value New_Last is the last index value of their new home, and
@@ -583,9 +583,9 @@ package body Ada.Containers.Vectors is
    begin
       if Checks and then Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
-      else
-         return Container.Elements.EA (Index);
       end if;
+
+      return Container.Elements.EA (Index);
    end Element;
 
    function Element (Position : Cursor) return Element_Type is
@@ -692,9 +692,9 @@ package body Ada.Containers.Vectors is
    begin
       if Is_Empty (Container) then
          return No_Element;
-      else
-         return (Container'Unrestricted_Access, Index_Type'First);
       end if;
+
+      return (Container'Unrestricted_Access, Index_Type'First);
    end First;
 
    function First (Object : Iterator) return Cursor is
@@ -1030,7 +1030,6 @@ package body Ada.Containers.Vectors is
             --  handled above).
 
             if Index_Type'Last - No_Index >= Count_Type_Last then
-
                --  We have determined that range of Index_Type has at least as
                --  many values as in Count_Type, so Count_Type'Last is the
                --  maximum number of items that are allowed.
@@ -1655,7 +1654,6 @@ package body Ada.Containers.Vectors is
       --  acceptable, then we compute the new last index from that.
 
       if Index_Type'Base'Last >= Count_Type_Last then
-
          --  We have to handle the case when there might be more values in the
          --  range of Index_Type than in the range of Count_Type.
 
@@ -1690,7 +1688,6 @@ package body Ada.Containers.Vectors is
             --  handled above).
 
             if Index_Type'Last - No_Index >= Count_Type_Last then
-
                --  We have determined that range of Index_Type has at least as
                --  many values as in Count_Type, so Count_Type'Last is the
                --  maximum number of items that are allowed.
@@ -1965,7 +1962,7 @@ package body Ada.Containers.Vectors is
          Index := Before.Index;
       end if;
 
-      Insert_Space (Container, Index, Count => Count);
+      Insert_Space (Container, Index, Count);
 
       Position := (Container'Unrestricted_Access, Index);
    end Insert_Space;
@@ -2022,7 +2019,7 @@ package body Ada.Containers.Vectors is
    function Iterate
      (Container : Vector;
       Start     : Cursor)
-      return Vector_Iterator_Interfaces.Reversible_Iterator'class
+      return Vector_Iterator_Interfaces.Reversible_Iterator'Class
    is
       V : constant Vector_Access := Container'Unrestricted_Access;
    begin
@@ -2911,6 +2908,7 @@ package body Ada.Containers.Vectors is
    ---------------------
    -- Reverse_Iterate --
    ---------------------
+
    procedure Reverse_Iterate
      (Container : Vector;
       Process   : not null access procedure (Position : Cursor))
@@ -3119,7 +3117,7 @@ package body Ada.Containers.Vectors is
 
       Elements := new Elements_Type (Last);
 
-      return Vector'(Controlled with Elements, Last, others => <>);
+      return Vector'(Controlled with Elements, Last, TC => <>);
    end To_Vector;
 
    function To_Vector
@@ -3211,7 +3209,7 @@ package body Ada.Containers.Vectors is
 
       Elements := new Elements_Type'(Last, EA => (others => New_Item));
 
-      return Vector'(Controlled with Elements, Last, others => <>);
+      return (Controlled with Elements, Last, TC => <>);
    end To_Vector;
 
    --------------------

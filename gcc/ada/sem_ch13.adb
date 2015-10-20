@@ -2036,8 +2036,8 @@ package body Sem_Ch13 is
                      Analyze_And_Resolve (Expr, Standard_Integer);
 
                      --  Interrupt_Priority aspect not allowed for main
-                     --  subprograms. ARM D.1 does not forbid this explicitly,
-                     --  but ARM J.15.11 (6/3) does not permit pragma
+                     --  subprograms. RM D.1 does not forbid this explicitly,
+                     --  but RM J.15.11(6/3) does not permit pragma
                      --  Interrupt_Priority for subprograms.
 
                      if A_Id = Aspect_Interrupt_Priority then
@@ -2060,7 +2060,7 @@ package body Sem_Ch13 is
                                       (Specification (N)))
                        or else not Is_Compilation_Unit (Defining_Entity (N))
                      then
-                        --  See ARM D.1 (14/3) and D.16 (12/3)
+                        --  See RM D.1(14/3) and D.16(12/3)
 
                         Error_Msg_N
                           ("aspect applied to subprogram other than the "
@@ -11419,9 +11419,20 @@ package body Sem_Ch13 is
          declare
             Id : constant Attribute_Id := Get_Attribute_Id (Chars (N));
          begin
-            return    Id = Attribute_Input
+
+            --  List of operational items is given in RM 13.1(8.mm/1).
+            --  It is clearly incomplete, as it does not include iterator
+            --  aspects, among others.
+
+            return    Id = Attribute_Constant_Indexing
+              or else Id = Attribute_Default_Iterator
+              or else Id = Attribute_Implicit_Dereference
+              or else Id = Attribute_Input
+              or else Id = Attribute_Iterator_Element
+              or else Id = Attribute_Iterable
               or else Id = Attribute_Output
               or else Id = Attribute_Read
+              or else Id = Attribute_Variable_Indexing
               or else Id = Attribute_Write
               or else Id = Attribute_External_Tag;
          end;

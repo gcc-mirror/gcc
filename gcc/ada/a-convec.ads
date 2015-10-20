@@ -487,7 +487,7 @@ private
      (Position : Cursor) return not null Element_Access;
    --  Returns a pointer to the element designated by Position.
 
-   No_Element   : constant Cursor := Cursor'(null, Index_Type'First);
+   No_Element : constant Cursor := Cursor'(null, Index_Type'First);
 
    Empty_Vector : constant Vector := (Controlled with others => <>);
 
