@@ -2284,6 +2284,36 @@ package body Sem_Ch13 is
                   goto Continue;
                end Abstract_State;
 
+               --  Aspect Async_Readers is never delayed because it is
+               --  equivalent to a source pragma which appears after the
+               --  related object declaration.
+
+               when Aspect_Async_Readers =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Async_Readers);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Aspect Async_Writers is never delayed because it is
+               --  equivalent to a source pragma which appears after the
+               --  related object declaration.
+
+               when Aspect_Async_Writers =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Async_Writers);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
                --  Aspect Constant_After_Elaboration is never delayed because
                --  it is equivalent to a source pragma which appears after the
                --  related object declaration.
@@ -2349,6 +2379,36 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Depends);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Aspect Effecitve_Reads is never delayed because it is
+               --  equivalent to a source pragma which appears after the
+               --  related object declaration.
+
+               when Aspect_Effective_Reads =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Effective_Reads);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Aspect Effective_Writes is never delayed because it is
+               --  equivalent to a source pragma which appears after the
+               --  related object declaration.
+
+               when Aspect_Effective_Writes =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Effective_Writes);
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -2778,6 +2838,21 @@ package body Sem_Ch13 is
                         goto Continue;
                      end;
                   end if;
+
+               --  Aspect Volatile_Function is never delayed because it is
+               --  equivalent to a source pragma which appears after the
+               --  related subprogram.
+
+               when Aspect_Volatile_Function =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Volatile_Function);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
 
                --  Case 2e: Annotate aspect
 
@@ -3234,47 +3309,10 @@ package body Sem_Ch13 is
                      goto Continue;
                   end if;
 
-                  --  External property aspects are Boolean by nature, but
-                  --  their pragmas must contain two arguments, the second
-                  --  being the optional Boolean expression.
-
-                  if A_Id = Aspect_Async_Readers   or else
-                     A_Id = Aspect_Async_Writers   or else
-                     A_Id = Aspect_Effective_Reads or else
-                     A_Id = Aspect_Effective_Writes
-                  then
-                     declare
-                        Args : List_Id;
-
-                     begin
-                        --  The first argument of the external property pragma
-                        --  is the related object.
-
-                        Args :=
-                          New_List (
-                            Make_Pragma_Argument_Association (Sloc (Ent),
-                              Expression => Ent));
-
-                        --  The second argument is the optional Boolean
-                        --  expression which must be propagated even if it
-                        --  evaluates to False as this has special semantic
-                        --  meaning.
-
-                        if Present (Expr) then
-                           Append_To (Args,
-                             Make_Pragma_Argument_Association (Loc,
-                               Expression => Relocate_Node (Expr)));
-                        end if;
-
-                        Make_Aitem_Pragma
-                          (Pragma_Argument_Associations => Args,
-                           Pragma_Name                  => Nam);
-                     end;
-
                   --  Cases where we do not delay, includes all cases where the
                   --  expression is missing other than the above cases.
 
-                  elsif not Delay_Required or else No (Expr) then
+                  if not Delay_Required or else No (Expr) then
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Sloc (Ent),
@@ -9285,12 +9323,16 @@ package body Sem_Ch13 is
 
          when Aspect_Abstract_State             |
               Aspect_Annotate                   |
+              Aspect_Async_Readers              |
+              Aspect_Async_Writers              |
               Aspect_Constant_After_Elaboration |
               Aspect_Contract_Cases             |
               Aspect_Default_Initial_Condition  |
               Aspect_Depends                    |
               Aspect_Dimension                  |
               Aspect_Dimension_System           |
+              Aspect_Effective_Reads            |
+              Aspect_Effective_Writes           |
               Aspect_Extensions_Visible         |
               Aspect_Ghost                      |
               Aspect_Global                     |
@@ -9309,7 +9351,8 @@ package body Sem_Ch13 is
               Aspect_Refined_State              |
               Aspect_SPARK_Mode                 |
               Aspect_Test_Case                  |
-              Aspect_Unimplemented              =>
+              Aspect_Unimplemented              |
+              Aspect_Volatile_Function          =>
             raise Program_Error;
 
       end case;

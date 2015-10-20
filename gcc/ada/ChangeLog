@@ -1,3 +1,81 @@
+2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb Add aspect Volatile_Function to table
+	Canonical_Aspect.
+	* aspect.ads Add aspect Volatile_Function to tables
+	Aspect_Argument, Aspect_Delay, Aspect_Id, Aspect_Names
+	and Implementation_Defined_Aspect.  Aspects Async_Readers,
+	Async_Writers, Effective_Reads and Effective_Writes are no
+	longer Boolean.
+	* einfo.adb (Get_Pragma): Add an entry for pragma
+	Volatile_Function.
+	* par-prag.adb (Prag): Pragma Volatile_Function does not need
+	special processing by the parser.
+	* rtsfind.ads Add an entry for Ada.Synchronous_Task_Control in
+	table RTU_Id. Add an entry for Suspension_Object in table RE_Id.
+	* sem_ch3.adb Fix SPARK RM references.
+	(Analyze_Object_Contract): Update the error guard.
+	* sem_ch5.adb Fix SPARK RM references.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Contract): Ensure
+	that a non-volatile function does not contain an effectively
+	volatile parameter.
+	(Analyze_Subprogram_Contract): Ensure
+	that a non-volatile function does not contain an effectively
+	volatile parameter.
+	* sem_ch12.adb (Instantiate_Object): Remove the reference to
+	the SPARK RM from the error message.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add
+	processing for aspects Async_Readers, Async_Writers,
+	Effective_Reads, Effective_Writes and Volatile_Function.
+	(Check_Aspect_At_Freeze_Point): Aspects Async_Readers,
+	Async_Writers, Effective_Reads, Effective_Writes and
+	Volatile_Function do not need special processing at the freeze
+	point.
+	* sem_prag.adb Add an entry for pragma Volatile_Function in
+	table Sig_Flags.
+	(Analyze_External_Property_In_Decl_Part):
+	Reimplemented as Async_Readers, Async_Writers, Effective_Reads
+	and Effective_Writes are no longer Boolean pragmas.
+	(Analyze_Global_Item): An external state or effectively
+	volatile object cannot appear as an item in pragma
+	[Refined_]Global.
+	(Analyze_Pragma): Change the implementation
+	of Async_Readers, Async_Writers, Effective_Reads and
+	Effective_Writes as these are no longer Boolean pragmas.
+	Use routine Check_Static_Boolean_Expression to verify the
+	optional Boolean expression of Async_Readers, Async_Writers,
+	Constant_After_Elaboration, Effective_Reads, Effective_Writes,
+	Extensions_Visible and Volatile_Function.  Add processing for
+	pragma Volatile_Function.
+	(Check_Static_Boolean_Expression): New routine.
+	(Find_Related_Context): Update the comment on usage.
+	(Is_Enabled_Pragma): New routine.
+	* sem_prag.ads (Is_Enabled_Pragma): New routine.
+	* sem_res.adb Fix SPARK RM references.
+	(Is_OK_Volatile_Context): Add detection for return statements.
+	(Resolve_Actuals): Remove the check concerning an effectively volatile
+	OUT actual parameter as this is now done by the SPARK flow analyzer.
+	(Resolve_Entity_Name): Remove the check concerning an effectively
+	volatile OUT formal parameter as this is now done by the SPARK
+	flow analyzer.	(Within_Volatile_Function): New routine.
+	* sem_util.adb (Add_Contract_Item): Add processing for pragma
+	Volatile_Function.
+	(Check_Nonvolatile_Function_Profile): New routine.
+	(Is_Descendant_Of_Suspension_Object): New routine.
+	(Is_Effectively_Volatile): Protected types and descendants of
+	Suspension_Object are now treated as effectively volatile.
+	(Is_Enabled): The optional Boolean expression of pragmas
+	Async_Readers, Async_Writers, Effective_Reads and Effective_Writes
+	now appears as the first argument.
+	(Is_Volatile_Function): New routine.
+	* sem_util.ads Add SPARK RM references.
+	(Add_Contract_Item): Update the comment on usage.
+	(Check_Nonvolatile_Function_Profile): New routine.
+	(Is_Effectively_Volatile): Update the comment on usage.
+	(Is_Volatile_Function): New routine.
+	* snames.ads-tmpl Add a predefined name and pragma id for
+	Volatile_Function.
+
 2015-10-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat_ugn.texi, gnat_rm.texi: Regenerate.

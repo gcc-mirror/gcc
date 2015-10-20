@@ -375,6 +375,7 @@ package body Sem_Util is
       --    Postcondition
       --    Precondition
       --    Test_Case
+      --    Volatile_Function
 
       elsif Ekind_In (Id, E_Entry, E_Entry_Family)
         or else Is_Generic_Subprogram (Id)
@@ -389,6 +390,11 @@ package body Sem_Util is
          elsif Nam_In (Prag_Nam, Name_Depends,
                                  Name_Extensions_Visible,
                                  Name_Global)
+         then
+            Add_Classification;
+
+         elsif Prag_Nam = Name_Volatile_Function
+           and then Ekind_In (Id, E_Function, E_Generic_Function)
          then
             Add_Classification;
 
@@ -3145,6 +3151,36 @@ package body Sem_Util is
          Error_Msg_NE ("\package & has null abstract state", Id, Context);
       end if;
    end Check_No_Hidden_State;
+
+   ----------------------------------------
+   -- Check_Nonvolatile_Function_Profile --
+   ----------------------------------------
+
+   procedure Check_Nonvolatile_Function_Profile (Func_Id : Entity_Id) is
+      Formal : Entity_Id;
+
+   begin
+      --  Inspect all formal parameters
+
+      Formal := First_Formal (Func_Id);
+      while Present (Formal) loop
+         if Is_Effectively_Volatile (Etype (Formal)) then
+            Error_Msg_NE
+              ("nonvolatile function & cannot have a volatile parameter",
+               Formal, Func_Id);
+         end if;
+
+         Next_Formal (Formal);
+      end loop;
+
+      --  Inspect the return type
+
+      if Is_Effectively_Volatile (Etype (Func_Id)) then
+         Error_Msg_N
+           ("nonvolatile function & cannot have a volatile return type",
+            Func_Id);
+      end if;
+   end Check_Nonvolatile_Function_Profile;
 
    ------------------------------------------
    -- Check_Potentially_Blocking_Operation --
@@ -8577,18 +8613,18 @@ package body Sem_Util is
          ----------------
 
          function Is_Enabled (Prag : Node_Id) return Boolean is
-            Arg2 : Node_Id;
+            Arg1 : Node_Id;
 
          begin
             if Present (Prag) then
-               Arg2 := Next (First (Pragma_Argument_Associations (Prag)));
+               Arg1 := First (Pragma_Argument_Associations (Prag));
 
                --  The pragma has an optional Boolean expression, the related
                --  property is enabled only when the expression evaluates to
                --  True.
 
-               if Present (Arg2) then
-                  return Is_True (Expr_Value (Get_Pragma_Arg (Arg2)));
+               if Present (Arg1) then
+                  return Is_True (Expr_Value (Get_Pragma_Arg (Arg1)));
 
                --  Otherwise the lack of expression enables the property by
                --  default.
@@ -11358,6 +11394,66 @@ package body Sem_Util is
    -----------------------------
 
    function Is_Effectively_Volatile (Id : Entity_Id) return Boolean is
+      function Is_Descendant_Of_Suspension_Object
+        (Typ : Entity_Id) return Boolean;
+      --  Determine whether type Typ is a descendant of type Suspension_Object
+      --  defined in Ada.Synchronous_Task_Control. This routine is similar to
+      --  Sem_Util.Is_Descendent_Of, however this version does not load unit
+      --  Ada.Synchronous_Task_Control.
+
+      ----------------------------------------
+      -- Is_Descendant_Of_Suspension_Object --
+      ----------------------------------------
+
+      function Is_Descendant_Of_Suspension_Object
+        (Typ : Entity_Id) return Boolean
+      is
+         Cur_Typ : Entity_Id;
+         Par_Typ : Entity_Id;
+
+      begin
+         --  Do not attempt to load Ada.Synchronous_Task_Control in No_Run_Time
+         --  mode. The unit contains tagged types and those are not allowed in
+         --  this mode.
+
+         if No_Run_Time_Mode then
+            return False;
+
+         --  Unit Ada.Synchronous_Task_Control is not available, the type
+         --  cannot possibly be a descendant of Suspension_Object.
+
+         elsif not RTE_Available (RE_Suspension_Object) then
+            return False;
+         end if;
+
+         --  Climb the type derivation chain checking each parent type against
+         --  Suspension_Object.
+
+         Cur_Typ := Base_Type (Typ);
+         while Present (Cur_Typ) loop
+            Par_Typ := Etype (Cur_Typ);
+
+            --  The current type is a match
+
+            if Is_RTE (Cur_Typ, RE_Suspension_Object) then
+               return True;
+
+            --  Stop the traversal once the root of the derivation chain has
+            --  been reached. In that case the current type is its own base
+            --  type.
+
+            elsif Cur_Typ = Par_Typ then
+               exit;
+            end if;
+
+            Cur_Typ := Base_Type (Par_Typ);
+         end loop;
+
+         return False;
+      end Is_Descendant_Of_Suspension_Object;
+
+   --  Start of processing for Is_Effectively_Volatile
+
    begin
       if Is_Type (Id) then
 
@@ -11376,6 +11472,19 @@ package body Sem_Util is
               Has_Volatile_Components (Id)
                 or else
               Is_Effectively_Volatile (Component_Type (Base_Type (Id)));
+
+         --  A protected type is always volatile
+
+         elsif Is_Protected_Type (Id) then
+            return True;
+
+         --  A descendant of Ada.Synchronous_Task_Control.Suspension_Object is
+         --  automatically volatile.
+
+         elsif Is_Descendant_Of_Suspension_Object (Id) then
+            return True;
+
+         --  Otherwise the type is not effectively volatile
 
          else
             return False;
@@ -13509,6 +13618,33 @@ package body Sem_Util is
         and then Chars (Scope (Scope (Root))) = Name_Ada
         and then Scope (Scope (Scope (Root))) = Standard_Standard;
    end Is_Visibly_Controlled;
+
+   --------------------------
+   -- Is_Volatile_Function --
+   --------------------------
+
+   function Is_Volatile_Function (Func_Id : Entity_Id) return Boolean is
+   begin
+      --  The caller must ensure that Func_Id denotes a function
+
+      pragma Assert (Ekind_In (Func_Id, E_Function, E_Generic_Function));
+
+      --  A protected function is automatically volatile
+
+      if Is_Primitive (Func_Id)
+        and then Present (First_Formal (Func_Id))
+        and then Is_Protected_Type (Etype (First_Formal (Func_Id)))
+      then
+         return True;
+
+      --  Otherwise the function is treated as volatile if it is subject to
+      --  enabled pragma Volatile_Function.
+
+      else
+         return
+           Is_Enabled_Pragma (Get_Pragma (Func_Id, Pragma_Volatile_Function));
+      end if;
+   end Is_Volatile_Function;
 
    ------------------------
    -- Is_Volatile_Object --

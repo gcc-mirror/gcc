@@ -610,6 +610,7 @@ package body Aspects is
     Aspect_Volatile                     => Aspect_Volatile,
     Aspect_Volatile_Components          => Aspect_Volatile_Components,
     Aspect_Volatile_Full_Access         => Aspect_Volatile_Full_Access,
+    Aspect_Volatile_Function            => Aspect_Volatile_Function,
     Aspect_Warnings                     => Aspect_Warnings,
     Aspect_Write                        => Aspect_Write);
 

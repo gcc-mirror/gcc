@@ -23,14 +23,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Types; use Types;
-
-package Rtsfind is
-
 --  This package contains the routine that is used to obtain runtime library
 --  entities, loading in the required runtime library packages on demand. It
 --  is also used for such purposes as finding System.Address when System has
 --  not been explicitly With'ed.
+
+with Types; use Types;
+
+package Rtsfind is
 
    ------------------------
    -- Runtime Unit Table --
@@ -131,6 +131,7 @@ package Rtsfind is
       Ada_Real_Time,
       Ada_Streams,
       Ada_Strings,
+      Ada_Synchronous_Task_Control,
       Ada_Tags,
       Ada_Task_Identification,
       Ada_Task_Termination,
@@ -605,6 +606,8 @@ package Rtsfind is
      RO_WW_Super_String,                 -- Ada.Strings.Wide_Wide_Superbounded
 
      RE_Unbounded_String,                -- Ada.Strings.Unbounded
+
+     RE_Suspension_Object,               -- Ada.Synchronous_Task_Control
 
      RE_Access_Level,                    -- Ada.Tags
      RE_Alignment,                       -- Ada.Tags
@@ -1836,6 +1839,8 @@ package Rtsfind is
      RO_WW_Super_String                  => Ada_Strings_Wide_Wide_Superbounded,
 
      RE_Unbounded_String                 => Ada_Strings_Unbounded,
+
+     RE_Suspension_Object                => Ada_Synchronous_Task_Control,
 
      RE_Access_Level                     => Ada_Tags,
      RE_Alignment                        => Ada_Tags,

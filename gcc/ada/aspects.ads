@@ -78,6 +78,8 @@ package Aspects is
       Aspect_Address,
       Aspect_Alignment,
       Aspect_Annotate,                      -- GNAT
+      Aspect_Async_Readers,                 -- GNAT
+      Aspect_Async_Writers,                 -- GNAT
       Aspect_Attach_Handler,
       Aspect_Bit_Order,
       Aspect_Component_Size,
@@ -96,6 +98,8 @@ package Aspects is
       Aspect_Dimension_System,              -- GNAT
       Aspect_Dispatching_Domain,
       Aspect_Dynamic_Predicate,
+      Aspect_Effective_Reads,               -- GNAT
+      Aspect_Effective_Writes,              -- GNAT
       Aspect_Extensions_Visible,            -- GNAT
       Aspect_External_Name,
       Aspect_External_Tag,
@@ -145,6 +149,7 @@ package Aspects is
       Aspect_Unsuppress,
       Aspect_Value_Size,                    -- GNAT
       Aspect_Variable_Indexing,
+      Aspect_Volatile_Function,             -- GNAT
       Aspect_Warnings,                      -- GNAT
       Aspect_Write,
 
@@ -167,15 +172,11 @@ package Aspects is
       --  the aspect value is inherited from the parent, in which case, we do
       --  not allow False if we inherit a True value from the parent.
 
-      Aspect_Async_Readers,                 -- GNAT
-      Aspect_Async_Writers,                 -- GNAT
       Aspect_Asynchronous,
       Aspect_Atomic,
       Aspect_Atomic_Components,
       Aspect_Disable_Controlled,            -- GNAT
       Aspect_Discard_Names,
-      Aspect_Effective_Reads,               -- GNAT
-      Aspect_Effective_Writes,              -- GNAT
       Aspect_Export,
       Aspect_Favor_Top_Level,               -- GNAT
       Aspect_Independent,
@@ -264,6 +265,7 @@ package Aspects is
       Aspect_Unreferenced               => True,
       Aspect_Unreferenced_Objects       => True,
       Aspect_Value_Size                 => True,
+      Aspect_Volatile_Function          => True,
       Aspect_Warnings                   => True,
       others                            => False);
 
@@ -291,7 +293,7 @@ package Aspects is
    --  aspect is enabled. If it is False, the aspect is disabled.
 
    subtype Boolean_Aspects is
-     Aspect_Id range Aspect_Async_Readers .. Aspect_Id'Last;
+     Aspect_Id range Aspect_Asynchronous .. Aspect_Id'Last;
 
    subtype Pre_Post_Aspects is
      Aspect_Id range Aspect_Post .. Aspect_Precondition;
@@ -312,6 +314,8 @@ package Aspects is
       Aspect_Address                    => Expression,
       Aspect_Alignment                  => Expression,
       Aspect_Annotate                   => Expression,
+      Aspect_Async_Readers              => Optional_Expression,
+      Aspect_Async_Writers              => Optional_Expression,
       Aspect_Attach_Handler             => Expression,
       Aspect_Bit_Order                  => Expression,
       Aspect_Component_Size             => Expression,
@@ -330,6 +334,8 @@ package Aspects is
       Aspect_Dimension_System           => Expression,
       Aspect_Dispatching_Domain         => Expression,
       Aspect_Dynamic_Predicate          => Expression,
+      Aspect_Effective_Reads            => Optional_Expression,
+      Aspect_Effective_Writes           => Optional_Expression,
       Aspect_Extensions_Visible         => Optional_Expression,
       Aspect_External_Name              => Expression,
       Aspect_External_Tag               => Expression,
@@ -379,6 +385,7 @@ package Aspects is
       Aspect_Unsuppress                 => Name,
       Aspect_Value_Size                 => Expression,
       Aspect_Variable_Indexing          => Name,
+      Aspect_Volatile_Function          => Optional_Expression,
       Aspect_Warnings                   => Name,
       Aspect_Write                      => Name,
 
@@ -511,6 +518,7 @@ package Aspects is
       Aspect_Volatile                     => Name_Volatile,
       Aspect_Volatile_Components          => Name_Volatile_Components,
       Aspect_Volatile_Full_Access         => Name_Volatile_Full_Access,
+      Aspect_Volatile_Function            => Name_Volatile_Function,
       Aspect_Warnings                     => Name_Warnings,
       Aspect_Write                        => Name_Write);
 
@@ -731,6 +739,7 @@ package Aspects is
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
       Aspect_Unimplemented                => Never_Delay,
+      Aspect_Volatile_Function            => Never_Delay,
       Aspect_Warnings                     => Never_Delay,
 
       Aspect_Alignment                    => Rep_Aspect,
