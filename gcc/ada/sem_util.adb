@@ -6557,23 +6557,27 @@ package body Sem_Util is
       Formal   : out Entity_Id;
       Call     : out Node_Id)
    is
-      Parnt  : constant Node_Id := Parent (N);
-      Actual : Node_Id;
+      Context  : constant Node_Id := Parent (N);
+      Actual   : Node_Id;
+      Call_Nam : Node_Id;
 
    begin
-      if Nkind_In (Parnt, N_Indexed_Component, N_Selected_Component)
-        and then N = Prefix (Parnt)
+      if Nkind_In (Context, N_Indexed_Component, N_Selected_Component)
+        and then N = Prefix (Context)
       then
-         Find_Actual (Parnt, Formal, Call);
+         Find_Actual (Context, Formal, Call);
          return;
 
-      elsif Nkind (Parnt) = N_Parameter_Association
-        and then N = Explicit_Actual_Parameter (Parnt)
+      elsif Nkind (Context) = N_Parameter_Association
+        and then N = Explicit_Actual_Parameter (Context)
       then
-         Call := Parent (Parnt);
+         Call := Parent (Context);
 
-      elsif Nkind (Parnt) in N_Subprogram_Call then
-         Call := Parnt;
+      elsif Nkind_In (Context, N_Entry_Call_Statement,
+                               N_Function_Call,
+                               N_Procedure_Call_Statement)
+      then
+         Call := Context;
 
       else
          Formal := Empty;
@@ -6585,44 +6589,57 @@ package body Sem_Util is
       --  we exclude overloaded calls, since we don't know enough to be sure
       --  of giving the right answer in this case.
 
-      if Nkind_In (Call, N_Function_Call, N_Procedure_Call_Statement)
-        and then Is_Entity_Name (Name (Call))
-        and then Present (Entity (Name (Call)))
-        and then Is_Overloadable (Entity (Name (Call)))
-        and then not Is_Overloaded (Name (Call))
+      if Nkind_In (Call, N_Entry_Call_Statement,
+                         N_Function_Call,
+                         N_Procedure_Call_Statement)
       then
-         --  If node is name in call it is not an actual
+         Call_Nam := Name (Call);
 
-         if N = Name (Call) then
-            Call := Empty;
-            Formal := Empty;
-            return;
+         --  A call to a protected or task entry appears as a selected
+         --  component rather than an expanded name.
+
+         if Nkind (Call_Nam) = N_Selected_Component then
+            Call_Nam := Selector_Name (Call_Nam);
          end if;
 
-         --  Fall here if we are definitely a parameter
+         if Is_Entity_Name (Call_Nam)
+           and then Present (Entity (Call_Nam))
+           and then Is_Overloadable (Entity (Call_Nam))
+           and then not Is_Overloaded (Call_Nam)
+         then
+            --  If node is name in call it is not an actual
 
-         Actual := First_Actual (Call);
-         Formal := First_Formal (Entity (Name (Call)));
-         while Present (Formal) and then Present (Actual) loop
-            if Actual = N then
+            if N = Call_Nam then
+               Formal := Empty;
+               Call   := Empty;
                return;
-
-            --  An actual that is the prefix in a prefixed call may have
-            --  been rewritten in the call, after the deferred reference
-            --  was collected. Check if sloc and kinds and names match.
-
-            elsif Sloc (Actual) = Sloc (N)
-              and then Nkind (Actual) = N_Identifier
-              and then Nkind (Actual) = Nkind (N)
-              and then Chars (Actual) = Chars (N)
-            then
-               return;
-
-            else
-               Actual := Next_Actual (Actual);
-               Formal := Next_Formal (Formal);
             end if;
-         end loop;
+
+            --  Fall here if we are definitely a parameter
+
+            Actual := First_Actual (Call);
+            Formal := First_Formal (Entity (Call_Nam));
+            while Present (Formal) and then Present (Actual) loop
+               if Actual = N then
+                  return;
+
+               --  An actual that is the prefix in a prefixed call may have
+               --  been rewritten in the call, after the deferred reference
+               --  was collected. Check if sloc and kinds and names match.
+
+               elsif Sloc (Actual) = Sloc (N)
+                 and then Nkind (Actual) = N_Identifier
+                 and then Nkind (Actual) = Nkind (N)
+                 and then Chars (Actual) = Chars (N)
+               then
+                  return;
+
+               else
+                  Actual := Next_Actual (Actual);
+                  Formal := Next_Formal (Formal);
+               end if;
+            end loop;
+         end if;
       end if;
 
       --  Fall through here if we did not find matching actual
