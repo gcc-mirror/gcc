@@ -1,3 +1,14 @@
+2015-10-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/67963
+	PR target/67985
+	* gcc.target/i386/pr67963-1.c: New test.
+	* gcc.target/i386/pr67963-2.c: Likewise.
+	* gcc.target/i386/pr67963-3.c: Likewise.
+	* gcc.target/i386/pr67985-1.c: Likewise.
+	* gcc.target/i386/pr67985-2.c: Likewise.
+	* gcc.target/i386/pr67985-3.c: Likewise.
+
 2015-10-20  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/vdiv_f.c: Use __builtin_nan.

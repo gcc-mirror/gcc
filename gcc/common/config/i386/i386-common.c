@@ -223,7 +223,7 @@ along with GCC; see the file COPYING3.  If not see
 
 bool
 ix86_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set,
+		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		    const struct cl_decoded_option *decoded,
 		    location_t loc)
 {
@@ -232,20 +232,6 @@ ix86_handle_option (struct gcc_options *opts,
 
   switch (code)
     {
-    case OPT_miamcu:
-      if (value)
-	{
-	  /* Turn off x87/MMX/SSE/AVX codegen for -miamcu.  */
-	  opts->x_target_flags &= ~MASK_80387;
-	  opts_set->x_target_flags |= MASK_80387;
-	  opts->x_ix86_isa_flags &= ~(OPTION_MASK_ISA_MMX_UNSET
-				      | OPTION_MASK_ISA_SSE_UNSET);
-	  opts->x_ix86_isa_flags_explicit |= (OPTION_MASK_ISA_MMX_UNSET
-					      | OPTION_MASK_ISA_SSE_UNSET);
-
-	}
-      return true;
-
     case OPT_mmmx:
       if (value)
 	{

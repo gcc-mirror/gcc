@@ -295,8 +295,12 @@ extern const struct processor_costs ix86_size_cost;
   (TARGET_64BIT_P(x) && TARGET_SSE_P(x) ? FPMATH_SSE : FPMATH_387)
 #endif
 
-#define TARGET_FLOAT_RETURNS_IN_80387 TARGET_FLOAT_RETURNS
-#define TARGET_FLOAT_RETURNS_IN_80387_P(x) TARGET_FLOAT_RETURNS_P(x)
+/* If the i387 is disabled or -miamcu is used , then do not return
+   values in it. */
+#define TARGET_FLOAT_RETURNS_IN_80387 \
+  (TARGET_FLOAT_RETURNS && TARGET_80387 && !TARGET_IAMCU)
+#define TARGET_FLOAT_RETURNS_IN_80387_P(x) \
+  (TARGET_FLOAT_RETURNS_P(x) && TARGET_80387_P(x) && !TARGET_IAMCU_P(x))
 
 /* 64bit Sledgehammer mode.  For libgcc2 we make sure this is a
    compile-time constant.  */
