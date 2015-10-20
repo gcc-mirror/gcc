@@ -4909,14 +4909,7 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 	    Numeric_constant nc;
 	    if (!Binary_expression::eval_constant(op, &left_nc, &right_nc,
 						  location, &nc))
-              {
-                if (nc.is_invalid())
-                  {
-                    go_assert(saw_errors());
-                    return Expression::make_error(location);
-                  }
                 return this;
-              }
 	    return nc.expression(location);
 	  }
       }
