@@ -4484,6 +4484,22 @@ maybe_warn_sized_delete ()
   maybe_warn_sized_delete (VEC_DELETE_EXPR);
 }
 
+/* Earlier we left PTRMEM_CST in variable initializers alone so that we could
+   look them up when evaluating non-type template parameters.  Now we need to
+   lower them to something the back end can understand.  */
+
+static void
+lower_var_init ()
+{
+  varpool_node *node;
+  FOR_EACH_VARIABLE (node)
+    {
+      tree d = node->decl;
+      if (tree init = DECL_INITIAL (d))
+	DECL_INITIAL (d) = cplus_expand_constant (init);
+    }
+}
+
 /* This routine is called at the end of compilation.
    Its job is to create all the code needed to initialize and
    destroy the global aggregates.  We do the destruction
@@ -4792,6 +4808,8 @@ c_parse_final_cleanups (void)
       retries++;
     }
   while (reconsider);
+
+  lower_var_init ();
 
   generate_mangling_aliases ();
 

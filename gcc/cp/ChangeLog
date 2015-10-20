@@ -1,3 +1,14 @@
+2015-10-19  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_constant_expression): Expand PTRMEM_CST
+	only when necessary.
+	(cxx_eval_component_reference): Like here.
+	* decl2.c (lower_var_init): And here.
+	(c_parse_final_cleanups): Call it.
+	* typeck2.c (digest_init_r): Not here.
+	* decl.c (complete_vars): Or here.
+	(cp_finish_decl): Add local statics to symbol table.
+
 2015-10-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68006
