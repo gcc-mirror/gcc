@@ -22210,6 +22210,10 @@ package body Sem_Prag is
          end if;
       end if;
 
+      if Class_Present (N) then
+         Build_Generic_Class_Condition (Spec_Id, N);
+      end if;
+
       Preanalyze_Assert_Expression (Expr, Standard_Boolean);
 
       --  For a class-wide condition, a reference to a controlling formal must
@@ -25062,6 +25066,236 @@ package body Sem_Prag is
 
       return False;
    end Appears_In;
+
+   -----------------------------------
+   -- Build_Generic_Class_Condition --
+   -----------------------------------
+
+   procedure Build_Generic_Class_Condition
+     (Subp : Entity_Id;
+      Prag : Node_Id)
+   is
+      Expr     : constant Node_Id :=
+                   Get_Pragma_Arg
+                     (First (Pragma_Argument_Associations (Prag)));
+      Loc      : constant Source_Ptr := Sloc (Prag);
+      Map      : constant Elist_Id   := New_Elmt_List;
+      New_Expr : constant Node_Id    := New_Copy_Tree (Expr);
+      New_Pred : constant Entity_Id  :=
+                   Make_Defining_Identifier (Loc,
+                     New_External_Name (Chars (Subp), "Pre", -1));
+      Typ      : constant Entity_Id  := Find_Dispatching_Type (Subp);
+
+      function Replace_Formal (N : Node_Id) return Traverse_Result;
+      --  Replace an occurence of a formal parameter of the original expression
+      --  in the precondition, with the formal of the generic function created
+      --  for it.
+
+      --------------------
+      -- Replace_Formal --
+      --------------------
+
+      function Replace_Formal (N : Node_Id) return Traverse_Result is
+         Loc   : constant Source_Ptr := Sloc (N);
+         El    : Elmt_Id;
+         F     : Entity_Id;
+         New_F : Entity_Id;
+
+      begin
+         if Nkind (N) = N_Identifier
+           and then (Nkind (Parent (N)) /= N_Parameter_Association
+             or else N /= Selector_Name (Parent (N)))
+           and then Present (Entity (N))
+           and then Is_Formal (Entity (N))
+         then
+            El := First_Elmt (Map);
+            while Present (El) loop
+               F := Node (El);
+               if Chars (F) = Chars (N) then
+                  New_F := Node (Next_Elmt (El));
+
+                  --  If this is a controlling formal, in the generic it
+                  --  becomes a conversion to the controlling formal of the
+                  --  operation with the classwide precondition. If the formal
+                  --  is an access parameter, a reference to F becomes
+                  --  Root (New_F.all)'access.
+
+                  if Is_Controlling_Formal (F) then
+                     if Is_Access_Type (Etype (F)) then
+                        Rewrite (N,
+                          Make_Attribute_Reference (Loc,
+                            Prefix         =>
+                              Unchecked_Convert_To (
+                                Designated_Type (Etype (F)),
+                                  Make_Explicit_Dereference (Loc,
+                                    Prefix => New_Occurrence_Of (New_F, Loc))),
+                            Attribute_Name => Name_Access));
+
+                     else
+                        Rewrite (N,
+                          Unchecked_Convert_To
+                            (Etype (F), New_Occurrence_Of (New_F, Sloc (N))));
+                     end if;
+
+                  --  Non-controlling formals retain their original type
+
+                  else
+                     Rewrite (N, New_Occurrence_Of (New_F, Sloc (N)));
+                  end if;
+
+                  return OK;
+               end if;
+
+               Next_Elmt (El);
+               Next_Elmt (El);
+            end loop;
+
+         elsif Nkind (N) = N_Parameter_Association then
+            Set_Next_Named_Actual (N, Empty);
+
+         elsif Nkind (N) = N_Function_Call then
+            Set_First_Named_Actual (N, Empty);
+         end if;
+
+         return OK;
+      end Replace_Formal;
+
+      procedure Map_Formals is new Traverse_Proc (Replace_Formal);
+
+      --  Local variables
+
+      Bod      : Node_Id;
+      Decl     : Node_Id;
+      F        : Entity_Id;
+      New_F    : Entity_Id;
+      New_Form : List_Id;
+      New_Typ  : Entity_Id;
+      Par_Typ  : Entity_Id;
+      Spec     : Node_Id;
+
+   --  Start of processing for Build_Generic_Class_Pre
+
+   begin
+      --  Nothing to do if previous error or expansion disabled.
+
+      if not Expander_Active then
+         return;
+      end if;
+
+      if Chars (Pragma_Identifier (Prag)) = Name_Postcondition then
+         return;
+      end if;
+
+      --  Build list of controlling formals and their renamings in the new
+      --  generic operation.
+
+      New_Form := New_List;
+      New_Typ  := Empty;
+
+      F := First_Formal (Subp);
+      while Present (F) loop
+         New_F :=
+           Make_Defining_Identifier (Loc, New_External_Name (Chars (F), "GF"));
+         Set_Ekind (New_F, Ekind (F));
+         Append_Elmt (F, Map);
+         Append_Elmt (New_F, Map);
+
+         if Is_Controlling_Formal (F) then
+            if Is_Access_Type (Etype (F)) then
+               New_Typ :=
+                 Make_Defining_Identifier (Loc,
+                   Chars =>
+                     New_External_Name
+                       (Chars (Designated_Type (Etype (F))), "GT"));
+               Par_Typ :=
+                 Make_Access_Definition (Loc,
+                   Subtype_Mark => New_Occurrence_Of (New_Typ, Loc));
+            else
+               New_Typ :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (Etype (F)), "GT"));
+               Par_Typ := New_Occurrence_Of (New_Typ, Loc);
+            end if;
+
+            Append_To (New_Form,
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => New_F,
+                Parameter_Type      => Par_Typ));
+         else
+            --  If formal has a class-wide type, build same attribute for new
+            --  formal.
+
+            if Is_Class_Wide_Type (Etype (F)) then
+               Append_To (New_Form,
+                 Make_Parameter_Specification (Loc,
+                   Defining_Identifier => New_F,
+                   Parameter_Type      =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         =>
+                         New_Occurrence_Of (Etype (Etype (F)), Loc),
+                       Attribute_Name => Name_Class)));
+            else
+               Append_To (New_Form,
+                 Make_Parameter_Specification (Loc,
+                   Defining_Identifier => New_F,
+                   Parameter_Type      => New_Occurrence_Of (Etype (F), Loc)));
+            end if;
+         end if;
+
+         Next_Formal (F);
+      end loop;
+
+      --  If no controlling formal found, pre/postcondition is incorrect.
+
+      if No (New_Typ) then
+         return;
+      end if;
+
+      Spec :=
+        Make_Function_Specification (Loc,
+          Defining_Unit_Name       => New_Pred,
+          Parameter_Specifications => New_Form,
+          Result_Definition        =>
+            New_Occurrence_Of (Standard_Boolean, Loc));
+
+      Decl :=
+        Make_Generic_Subprogram_Declaration (Loc,
+          Specification               => Spec,
+          Generic_Formal_Declarations => New_List (
+            Make_Formal_Type_Declaration (Loc,
+              Defining_Identifier    => New_Typ,
+              Formal_Type_Definition =>
+                Make_Formal_Private_Type_Definition (Loc))));
+
+      Preanalyze (New_Expr);
+      Map_Formals (New_Expr);
+
+      Bod :=
+        Make_Subprogram_Body (Loc,
+          Specification              => New_Copy_Tree (Spec),
+          Declarations               => New_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (
+                Make_Simple_Return_Statement (Loc,
+                  Expression => New_Expr))));
+
+      --  Generic function must be analyzed after type is frozen, and will be
+      --  instantiated when subprogram contract for operation or any of its
+      --  overridings is expanded.
+
+      Append_Freeze_Actions (Typ, New_List (Decl, Bod));
+
+      --  We need to convey the existence of the generic to the point at which
+      --  we expand the contract. We replace the expression in the pragma with
+      --  name of the generic function, to be instantiated when expanding the
+      --  contract for the subprogram or some overriding of it. See
+      --  Exp_ch6.Expand_Subprogram_Contract.Build_Pragma_Check_Equivalent.
+      --  (TBD)
+
+      Set_Ekind (New_Pred, E_Generic_Function);
+      Set_Scope (New_Pred, Current_Scope);
+   end Build_Generic_Class_Condition;
 
    -----------------------------
    -- Check_Applicable_Policy --

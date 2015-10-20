@@ -938,7 +938,6 @@ package Snames is
    Name_To_Address                     : constant Name_Id := N + $; -- GNAT
    Name_Type_Class                     : constant Name_Id := N + $; -- GNAT
    Name_Type_Key                       : constant Name_Id := N + $; -- GNAT
-   Name_UET_Address                    : constant Name_Id := N + $; -- GNAT
    Name_Unbiased_Rounding              : constant Name_Id := N + $;
    Name_Unchecked_Access               : constant Name_Id := N + $;
    Name_Unconstrained_Array            : constant Name_Id := N + $; -- GNAT
@@ -1575,7 +1574,6 @@ package Snames is
       Attribute_To_Address,
       Attribute_Type_Class,
       Attribute_Type_Key,
-      Attribute_UET_Address,
       Attribute_Unbiased_Rounding,
       Attribute_Unchecked_Access,
       Attribute_Unconstrained_Array,

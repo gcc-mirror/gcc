@@ -269,21 +269,28 @@ package body Ada.Containers.Bounded_Vectors is
    ---------
 
    overriding function "=" (Left, Right : Vector) return Boolean is
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
-      Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
    begin
       if Left.Last /= Right.Last then
          return False;
       end if;
 
-      for J in Count_Type range 1 .. Left.Length loop
-         if Left.Elements (J) /= Right.Elements (J) then
-            return False;
-         end if;
-      end loop;
+      if Left.Length = 0 then
+         return True;
+      end if;
+
+      declare
+         --  Per AI05-0022, the container implementation is required to detect
+         --  element tampering by a generic actual subprogram.
+
+         Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+         Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
+      begin
+         for J in Count_Type range 1 .. Left.Length loop
+            if Left.Elements (J) /= Right.Elements (J) then
+               return False;
+            end if;
+         end loop;
+      end;
 
       return True;
    end "=";

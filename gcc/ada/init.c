@@ -1715,7 +1715,7 @@ __gnat_install_handler (void)
 #include <iv.h>
 #endif
 
-#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6)
+#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) && !defined(__RTP__)
 #include <vmLib.h>
 #endif
 
@@ -1862,7 +1862,7 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
      page if there's a match.  Additionally we're are assured this is a
      genuine stack overflow condition and and set the message and exception
      to that effect.  */
-#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6)
+#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) && !defined(__RTP__)
 
   /* We re-arm the guard page by marking it invalid */
 
@@ -1896,7 +1896,7 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
 	  }
        }
     }
-#endif /* defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) */
+#endif /* defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) && !defined(__RTP__) */
 
   __gnat_clear_exception_count ();
   Raise_From_Signal_Handler (exception, msg);

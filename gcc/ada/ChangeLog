@@ -1,3 +1,40 @@
+2015-10-20  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_util.adb (Is_Protected_Self_Reference): Remove reference to
+	UET_Address in comment.
+	* sem_attr.adb (Check_Unit_Name): Adjust comment.
+	(Analyze_Attribute): Remove handling of UET_Address.
+	* sem_attr.ads (Attribute_Impl_Def): Remove Attribute_UET_Address.
+	* snames.ads-tmpl Remove Name_UET_Address, Attribute_UET_Address.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Remove
+	Attribute_UET_Address.
+
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* a-cbdlli.adb, a-cdlili.adb, a-chtgop.adb, a-cidlli.adb,
+	* a-cobove.adb, a-coinve.adb, a-convec.adb, a-crbtgo.adb ("="): Avoid
+	modifying the tampering counts unnecessarily.
+	(Adjust): Zero tampering counts unconditionally.
+
+2015-10-20  Jerome Lambourg  <lambourg@adacore.com>
+
+	* init.c: Fix build issue on arm-vx6 when building the RTP
+	run-time.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): If the expression
+	is an aggregate and compilation is in -gnatI mode (ignore rep
+	clauses) do not delay resolution of aggregate, to prevent freeze
+	actions out of order in the backend.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.ads, sem_prag.adb (Build_Generic_Class_Condition):
+	New procedure to construct a generic function for a class-wide
+	precondition, to implement AI12-0113  concerning the new semantics
+	of class-wide preconditions for overriding uperations.
+
 2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_util.adb (Find_Actual): The routine is

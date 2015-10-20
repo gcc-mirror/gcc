@@ -84,32 +84,37 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
    ---------
 
    function "=" (Left, Right : List) return Boolean is
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
-      Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
-
-      LN : Node_Array renames Left.Nodes;
-      RN : Node_Array renames Right.Nodes;
-
-      LI : Count_Type;
-      RI : Count_Type;
    begin
       if Left.Length /= Right.Length then
          return False;
       end if;
 
-      LI := Left.First;
-      RI := Right.First;
-      for J in 1 .. Left.Length loop
-         if LN (LI).Element /= RN (RI).Element then
-            return False;
-         end if;
+      if Left.Length = 0 then
+         return True;
+      end if;
 
-         LI := LN (LI).Next;
-         RI := RN (RI).Next;
-      end loop;
+      declare
+         --  Per AI05-0022, the container implementation is required to detect
+         --  element tampering by a generic actual subprogram.
+
+         Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+         Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
+
+         LN : Node_Array renames Left.Nodes;
+         RN : Node_Array renames Right.Nodes;
+
+         LI : Count_Type := Left.First;
+         RI : Count_Type := Right.First;
+      begin
+         for J in 1 .. Left.Length loop
+            if LN (LI).Element /= RN (RI).Element then
+               return False;
+            end if;
+
+            LI := LN (LI).Next;
+            RI := RN (RI).Next;
+         end loop;
+      end;
 
       return True;
    end "=";
