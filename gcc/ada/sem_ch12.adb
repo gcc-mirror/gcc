@@ -5004,7 +5004,7 @@ package body Sem_Ch12 is
          end loop;
 
          if No (Renaming_Decl) then
-            Append  (Unit_Renaming, Renaming_List);
+            Append (Unit_Renaming, Renaming_List);
          end if;
       end Build_Subprogram_Renaming;
 

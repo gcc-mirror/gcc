@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2013, AdaCore                     --
+--                     Copyright (C) 2000-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,7 +58,7 @@ generic
 package GNAT.Dynamic_Tables is
 
    --  Table_Component_Type and Table_Index_Type specify the type of the
-   --  array, Table_Low_Bound is the lower bound. Index_type must be an
+   --  array, Table_Low_Bound is the lower bound. Table_Index_Type must be an
    --  integer type. The effect is roughly to declare:
 
    --    Table : array (Table_Low_Bound .. <>) of Table_Component_Type;

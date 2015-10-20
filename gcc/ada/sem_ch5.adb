@@ -3215,12 +3215,15 @@ package body Sem_Ch5 is
             end if;
          end if;
 
-      --  Case of no identifier present
+      --  Case of no identifier present. Create one and attach it to the
+      --  loop statement for use as a scope and as a reference for later
+      --  expansions. Indicate that the label does not come from source.
 
       else
          Ent := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
          Set_Etype  (Ent, Standard_Void_Type);
-         Set_Parent (Ent, N);
+         Set_Identifier (N, New_Occurrence_Of (Ent, Loc));
+         Set_Has_Created_Identifier (N);
       end if;
 
       --  Iteration over a container in Ada 2012 involves the creation of a

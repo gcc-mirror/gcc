@@ -306,7 +306,7 @@ package Makeutl is
    --  least equal to Minimum_Verbosity, then print Prefix to standard output
    --  followed by N1 and S1. If N2 /= No_Name then N2 is printed after S1. S2
    --  is printed last. Both N1 and N2 are printed in quotation marks. The two
-   --  forms differ only in taking Name_Id or File_name_Type arguments.
+   --  forms differ only in taking Name_Id or File_Name_Type arguments.
 
    -------------------------
    -- Program termination --

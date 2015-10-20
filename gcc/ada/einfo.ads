@@ -2031,7 +2031,7 @@ package Einfo is
 --       their subtypes have unknown discriminants and can have declared ones
 --       as well. Private types declared with unknown discriminants may have a
 --       full view that has explicit discriminants, and both flag will be set
---       on the partial view, to insure that discriminants are properly
+--       on the partial view, to ensure that discriminants are properly
 --       inherited in certain contexts.
 
 --    Has_Visible_Refinement (Flag263)
@@ -3460,7 +3460,7 @@ package Einfo is
 --    Next_Inlined_Subprogram (Node12)
 --       Defined in subprograms. Used to chain inlined subprograms used in
 --       the current compilation, in the order in which they must be compiled
---       by the backend to insure that all inlinings are performed.
+--       by the backend to ensure that all inlinings are performed.
 
 --    Next_Literal (synthesized)
 --       Applies to enumeration literals, returns the next literal, or

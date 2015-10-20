@@ -1012,13 +1012,15 @@ package body Exp_Attr is
          Loop_Stmt := Label_Construct (Parent (Loop_Id));
 
       --  Climb the parent chain to find the nearest enclosing loop. Skip all
-      --  internally generated loops for quantified expressions.
+      --  internally generated loops for quantified expressions and for
+      --  element iterators over multidimensional arrays: pragma applies to
+      --  source loop.
 
       else
          Loop_Stmt := N;
          while Present (Loop_Stmt) loop
             if Nkind (Loop_Stmt) = N_Loop_Statement
-              and then Present (Identifier (Loop_Stmt))
+              and then Comes_From_Source (Loop_Stmt)
             then
                exit;
             end if;

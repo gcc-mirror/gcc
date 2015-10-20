@@ -6184,7 +6184,7 @@ package body Exp_Ch9 is
                     Condition (Entry_Body_Formal_Part (N));
       Prot      : constant Entity_Id := Scope (Ent);
       Spec_Decl : constant Node_Id   := Parent (Prot);
-      Func      : Entity_Id;
+      Func      : Entity_Id          := Empty;
       B_F       : Node_Id;
       Body_Decl : Node_Id;
 
@@ -6206,6 +6206,11 @@ package body Exp_Ch9 is
             S := Scope  (E);
 
             if Ekind (E) = E_Variable then
+
+               --  If the variable is local to the barrier function generated
+               --  during expansion, it is ok. If expansion is not performed,
+               --  then Func is Empty so this test cannot succeed.
+
                if Scope (E) = Func then
                   null;
 

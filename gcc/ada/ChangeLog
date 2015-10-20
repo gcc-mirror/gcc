@@ -1,3 +1,30 @@
+2015-10-20  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch9.adb (Expand_Entry_Barrier): Default initialize local variable
+	Func.
+
+2015-10-20  Jerome Lambourg  <lambourg@adacore.com>
+
+	* init.c (__gnat_error_handler for vxworks): Force
+	SPE bit in the MSR when handling signals
+
+2015-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.ads, sem_ch12.adb, sem_ch6.adb, table.ads, s-stposu.ads,
+	g-table.ads, g-dyntab.ads, makeutl.ads, a-crdlli.ads: Fix typos.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Statement): Element iterators
+	over multidimensional arrays create additional loops during
+	expansion. For such loops we create a label as a scope
+	name. Attach this label  properly to tree, for use in GNATProve
+	over such element iterators.
+	* sem_attr.adb (Analyze_Attribute, case Loop_Entry): The loop to
+	which the attribute applies comes from source, not from expansion
+	of an element iterator or a quantified expression.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Ditto.
+
 2015-10-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Expand_Call): Check for a call to a function

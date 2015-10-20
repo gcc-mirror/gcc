@@ -4284,10 +4284,13 @@ package body Sem_Attr is
 
             --  Locate the enclosing loop (if any). Note that Ada 2012 array
             --  iteration may be expanded into several nested loops, we are
-            --  interested in the outermost one which has the loop identifier.
+            --  interested in the outermost one which has the loop identifier,
+            --  and comes from source.
 
             elsif Nkind (Stmt) = N_Loop_Statement
               and then Present (Identifier (Stmt))
+              and then Comes_From_Source (Original_Node (Stmt))
+              and then Nkind (Original_Node (Stmt)) = N_Loop_Statement
             then
                Enclosing_Loop := Stmt;
 
