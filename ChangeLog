@@ -1,3 +1,13 @@
+2015-10-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Sync with binutils-gdb:
+	2015-10-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR gas/19109
+	* configure.ac: Add
+	--enable-compressed-debug-sections={all,gas,gold,ld}.
+	* configure: Regenerated.
+
 2015-10-16  Arnaud Charlet  <charlet@adacore.com>
 
 	* MAINTAINERS: Update list of Ada maintainers and email addresses.
