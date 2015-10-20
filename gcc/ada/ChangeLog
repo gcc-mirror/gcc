@@ -1,3 +1,7 @@
+2015-10-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
 2015-10-20  Tristan Gingold  <gingold@adacore.com>
 
 	* sem_util.adb (Is_Protected_Self_Reference): Remove reference to
