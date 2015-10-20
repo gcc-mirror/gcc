@@ -279,7 +279,7 @@ is
 
       with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
-   package Generic_Keys is
+   package Generic_Keys with SPARK_Mode is
 
       function Key (Container : Set; Position : Cursor) return Key_Type with
         Global => null;

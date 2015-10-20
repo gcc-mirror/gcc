@@ -337,6 +337,15 @@ package Restrict is
    --  Equivalent to Check_Restriction (No_Implicit_Heap_Allocations, N).
    --  Provided for easy use by back end, which has to check this restriction.
 
+   procedure Check_No_Implicit_Task_Alloc (N : Node_Id);
+   --  Equivalent to Check_Restriction (No_Implicit_Task_Allocations, N).
+   --  Provided for easy use by back end, which has to check this restriction.
+
+   procedure Check_No_Implicit_Protected_Alloc (N : Node_Id);
+   --  Equivalent to:
+   --    Check_Restriction (No_Implicit_Protected_Object_Allocations, N)
+   --  Provided for easy use by back end, which has to check this restriction.
+
    procedure Check_Obsolescent_2005_Entity (E : Entity_Id; N : Node_Id);
    --  This routine checks if the entity E is one of the obsolescent entries
    --  in Ada.Characters.Handling in Ada 2005 and No_Obsolescent_Features

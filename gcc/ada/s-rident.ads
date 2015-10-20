@@ -119,6 +119,8 @@ package System.Rident is
       No_Implicit_Conditionals,                  -- GNAT
       No_Implicit_Dynamic_Code,                  -- GNAT
       No_Implicit_Heap_Allocations,              -- (RM D.8(8), H.4(3))
+      No_Implicit_Task_Allocations,              -- GNAT
+      No_Implicit_Protected_Object_Allocations,  -- GNAT
       No_Implicit_Loops,                         -- GNAT
       No_Initialize_Scalars,                     -- GNAT
       No_Local_Allocators,                       -- (RM H.4(8))

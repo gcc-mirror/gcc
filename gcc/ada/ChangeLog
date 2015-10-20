@@ -1,3 +1,45 @@
+2015-10-20  Jerome Lambourg  <lambourg@adacore.com>
+
+	* init.c (__gnat_vxsim_error_handler): Completely disable on
+	VxWorks-7 as the VSBs used to build gcc do not support vxsim
+	architecture.
+
+2015-10-20  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.ads, a-cfinve.ads, a-cofove.ads (Generic_Sorting): Explicit
+	SPARK_Mode.
+	* a-cfhase.ads, a-cforse.ads (Generic_Keys): Explicit SPARK_Mode.
+
+2015-10-20  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration):
+	Check for No_Implicit_Protected_Object_Allocations.
+	* fe.h (Check_No_Implicit_Task_Alloc,
+	Check_No_Implicit_Protected_Alloc): Define and declare.
+	* restrict.ads, restrict.adb (Check_No_Implicit_Task_Alloc,
+	Check_No_Implicit_Protected_Alloc): New procedures to check the
+	restrictions.
+	* s-rident.ads (No_Implicit_Task_Allocations)
+	(No_Implicit_Protected_Object_Allocations): Declare new
+	restrictions.
+
+2015-10-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Selected_Component): Only set flag
+	when component is defined in a variant part.
+	* sem_util.adb,
+	* sem_util.ads (Is_Declared_Within_Variant): Promote local query
+	as publicy visible one for use in Resolve_Selected_Component.
+
+2015-10-20  Philippe Gil  <gil@adacore.com>
+
+	* g-debpoo.adb: allow instrumented System.Memory to use Debug_Pool
+	from foreign threads.
+	* g-debpoo.adb (Print_Traceback): NEW print traceback if available
+	added to support Stack_Trace_Depth = 0.
+	(Print_Address): NEW print System.Address without no secondary
+	stack use (Address_Image uses secondary stack)
+
 2015-10-20  Yannick Moy  <moy@adacore.com>
 
 	* exp_ch9.adb (Expand_Entry_Barrier): Default initialize local variable

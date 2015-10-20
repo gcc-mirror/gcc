@@ -9140,6 +9140,8 @@ package body Exp_Ch9 is
                      --  is OK to miss this check in -gnatc mode.
 
                      Check_Restriction (No_Implicit_Heap_Allocations, Priv);
+                     Check_Restriction
+                       (No_Implicit_Protected_Object_Allocations, Priv);
 
                   elsif Restriction_Active (No_Implicit_Heap_Allocations) then
                      if not Discriminated_Size (Defining_Identifier (Priv))
@@ -9160,6 +9162,34 @@ package body Exp_Ch9 is
                           ("creation of protected object of type& with "
                            &  "non-static discriminants  will violate"
                            & " restriction No_Implicit_Heap_Allocations??",
+                           Priv, Prot_Typ);
+                     end if;
+
+                  --  Likewise for No_Implicit_Protected_Object_Allocations
+
+                  elsif Restriction_Active
+                    (No_Implicit_Protected_Object_Allocations)
+                  then
+                     if not Discriminated_Size (Defining_Identifier (Priv))
+                     then
+
+                        --  Any object of the type will be  non-static.
+
+                        Error_Msg_N ("component has non-static size??", Priv);
+                        Error_Msg_NE
+                          ("\creation of protected object of type& will"
+                           & " violate restriction "
+                           & "No_Implicit_Protected_Object_Allocations??",
+                           Priv, Prot_Typ);
+                     else
+
+                        --  Object will be non-static if discriminants are.
+
+                        Error_Msg_NE
+                          ("creation of protected object of type& with "
+                           &  "non-static discriminants  will violate "
+                           & " restriction"
+                           & " No_Implicit_Protected_Object_Allocations??",
                            Priv, Prot_Typ);
                      end if;
                   end if;

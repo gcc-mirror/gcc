@@ -11125,6 +11125,17 @@ package body Sem_Util is
       end case;
    end Is_Declaration;
 
+   --------------------------------
+   -- Is_Declared_Within_Variant --
+   --------------------------------
+
+   function Is_Declared_Within_Variant (Comp : Entity_Id) return Boolean is
+      Comp_Decl : constant Node_Id := Parent (Comp);
+      Comp_List : constant Node_Id := Parent (Comp_Decl);
+   begin
+      return Nkind (Parent (Comp_List)) = N_Variant;
+   end Is_Declared_Within_Variant;
+
    ----------------------------------------------
    -- Is_Dependent_Component_Of_Mutable_Object --
    ----------------------------------------------
@@ -11132,20 +11143,6 @@ package body Sem_Util is
    function Is_Dependent_Component_Of_Mutable_Object
      (Object : Node_Id) return Boolean
    is
-      function Is_Declared_Within_Variant (Comp : Entity_Id) return Boolean;
-      --  Returns True if and only if Comp is declared within a variant part
-
-      --------------------------------
-      -- Is_Declared_Within_Variant --
-      --------------------------------
-
-      function Is_Declared_Within_Variant (Comp : Entity_Id) return Boolean is
-         Comp_Decl : constant Node_Id   := Parent (Comp);
-         Comp_List : constant Node_Id   := Parent (Comp_Decl);
-      begin
-         return Nkind (Parent (Comp_List)) = N_Variant;
-      end Is_Declared_Within_Variant;
-
       P           : Node_Id;
       Prefix_Type : Entity_Id;
       P_Aliased   : Boolean := False;

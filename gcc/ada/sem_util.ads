@@ -1262,6 +1262,9 @@ package Sem_Util is
    function Is_Declaration (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a declaration
 
+   function Is_Declared_Within_Variant (Comp : Entity_Id) return Boolean;
+   --  Returns True iff component Comp is declared within a variant part
+
    function Is_Dependent_Component_Of_Mutable_Object
      (Object : Node_Id) return Boolean;
    --  Returns True if Object is the name of a subcomponent that depends on
