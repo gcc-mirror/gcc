@@ -1,3 +1,7 @@
+2015-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Update targets.
+
 2015-10-20  Bob Duff  <duff@adacore.com>
 
 	* sem_ch13.adb (Analyze_One_Aspect): Avoid
