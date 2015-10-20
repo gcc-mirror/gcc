@@ -1,3 +1,9 @@
+2015-10-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Set sane
+	vector_length.
+	* testsuite/libgomp.oacc-fortran/reduction-6.f90: Likewise.
+
 2015-10-14  Ilya Verbin  <ilya.verbin@intel.com>
 	    Aleksander Ivanushenko  <aleksander.ivanushenko@intel.com>
 
