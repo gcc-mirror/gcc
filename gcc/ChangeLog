@@ -1,3 +1,8 @@
+2015-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68017
+	* tree-tailcall.c (eliminate_tail_call): Remove stmts backwards.
+
 2015-10-20  Martin Liska  <mliska@suse.cz>
 
 	* cgraphclones.c (cgraph_node::create_virtual_clone):
