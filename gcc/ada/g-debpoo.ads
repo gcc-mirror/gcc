@@ -276,7 +276,7 @@ package GNAT.Debug_Pools is
       Report : Report_Type := All_Reports);
    --  Dump information about memory usage.
    --  Size is the number of the biggest memory users we want to show. Report
-   --  indicates which sorting order is used in the report
+   --  indicates which sorting order is used in the report.
 
    procedure Dump_Stdout
      (Pool   : Debug_Pool;
@@ -294,29 +294,29 @@ package GNAT.Debug_Pools is
      (Storage_Address          : Address;
       Size_In_Storage_Elements : out Storage_Count;
       Valid                    : out Boolean);
-   --  set Valid if Storage_Address is the address of a chunk of memory
+   --  Set Valid if Storage_Address is the address of a chunk of memory
    --  currently allocated by any pool.
    --  If Valid is True, Size_In_Storage_Elements is set to the size of this
    --  chunk of memory.
 
    type Byte_Count is mod System.Max_Binary_Modulus;
-   --  Type used for maintaining byte counts, needs to be large enough
+   --  Type used for maintaining byte counts, needs to be large enough to
    --  to accommodate counts allowing for repeated use of the same memory.
 
    function High_Water_Mark
      (Pool : Debug_Pool) return Byte_Count;
-   --  return the highest size of the memory allocated by the pool.
-   --  memory used internally by the pool is not taken into account.
+   --  Return the highest size of the memory allocated by the pool.
+   --  Memory used internally by the pool is not taken into account.
 
    function Current_Water_Mark
      (Pool : Debug_Pool) return Byte_Count;
-   --  return the size of the memory currently allocated by the pool.
-   --  memory used internally by the pool is not taken into account.
+   --  Return the size of the memory currently allocated by the pool.
+   --  Memory used internally by the pool is not taken into account.
 
    procedure System_Memory_Debug_Pool
      (Has_Unhandled_Memory : Boolean := True);
-   --  let the package know the System.Memory is using it.
-   --  If Has_Unhandled_Memory is true, some deallocate can be done for
+   --  Let the package know the System.Memory is using it.
+   --  If Has_Unhandled_Memory is true, some deallocation can be done for
    --  memory not allocated with Allocate.
 
 private

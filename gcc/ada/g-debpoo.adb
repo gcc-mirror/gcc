@@ -91,14 +91,14 @@ package body GNAT.Debug_Pools is
 
    Disable : Boolean := False;
    --  This variable is used to avoid infinite loops, where this package would
-   --  itself allocate memory and then calls itself recursively, forever.
-   --  Useful when System_Memory_Debug_Pool_Enabled is True.
+   --  itself allocate memory and then call itself recursively, forever. Useful
+   --  when System_Memory_Debug_Pool_Enabled is True.
 
    System_Memory_Debug_Pool_Enabled : Boolean := False;
-   --  If True System.Memory allocation are using Debug_Pool
+   --  If True, System.Memory allocation uses Debug_Pool
 
    Allow_Unhandled_Memory : Boolean := False;
-   --  If True protects Deallocate against releasing memory allocated before
+   --  If True, protects Deallocate against releasing memory allocated before
    --  System_Memory_Debug_Pool_Enabled was set.
 
    ---------------------------
@@ -131,19 +131,18 @@ package body GNAT.Debug_Pools is
       Traceback   : Tracebacks_Array_Access;
       Kind        : Traceback_Kind;
       Count       : Natural;
-      --  size of the memory allocated/freed at Traceback since last Reset
-      --  call.
+      --  Size of the memory allocated/freed at Traceback since last Reset call
 
       Total       : Byte_Count;
-      --  number of chunk of memory allocated/freed at Traceback since last
+      --  Number of chunk of memory allocated/freed at Traceback since last
       --  Reset call.
 
       Frees       : Natural;
-      --  number of chunk of memory allocated at Traceback, currently freed
+      --  Number of chunk of memory allocated at Traceback, currently freed
       --  since last Reset call. (only for Alloc & Indirect_Alloc elements)
 
       Total_Frees : Byte_Count;
-      --  size of the memory allocated at Traceback, currently freed since last
+      --  Size of the memory allocated at Traceback, currently freed since last
       --  Reset call. (only for Alloc & Indirect_Alloc elements)
 
       Next        : Traceback_Htable_Elem_Ptr;
@@ -296,19 +295,19 @@ package body GNAT.Debug_Pools is
    --    Ignored_Frame_Start .. Ignored_Frame_End
 
    procedure Stdout_Put      (S : String);
-   --  Wrapper for Put that ensure we always write to stdout
-   --  instead of the current output file defined in GNAT.IO.
+   --  Wrapper for Put that ensures we always write to stdout instead of the
+   --  current output file defined in GNAT.IO.
 
    procedure Stdout_Put_Line (S : String);
-   --  Wrapper for Put_Line that ensure we always write to stdout
-   --  instead of the current output file defined in GNAT.IO.
+   --  Wrapper for Put_Line that ensures we always write to stdout instead of
+   --  the current output file defined in GNAT.IO.
 
    package Validity is
       function Is_Handled (Storage : System.Address) return Boolean;
       pragma Inline (Is_Handled);
       --  Return True if Storage is the address of a block that the debug pool
-      --  had already under its control.
-      --  Used to allow System.Memory to use Debug_Pools
+      --  already had under its control. Used to allow System.Memory to use
+      --  Debug_Pools
 
       function Is_Valid (Storage : System.Address) return Boolean;
       pragma Inline (Is_Valid);
@@ -635,13 +634,13 @@ package body GNAT.Debug_Pools is
 
       type Validity_Bits is record
          Valid : Validity_Bits_Part_Ref := No_Validity_Bits_Part;
-         --  True if chunk of memory at this address currently allocated.
+         --  True if chunk of memory at this address is currently allocated
 
          Handled : Validity_Bits_Part_Ref := No_Validity_Bits_Part;
          --  True if chunk of memory at this address was allocated once after
-         --  Allow_Unhandled_Memory was set to True.
-         --  Used to know on Deallocate if chunk of memory should be handled
-         --  as a block allocated by this package.
+         --  Allow_Unhandled_Memory was set to True. Used to know on Deallocate
+         --  if chunk of memory should be handled a block allocated by this
+         --  package.
 
       end record;
 
@@ -658,7 +657,7 @@ package body GNAT.Debug_Pools is
         (Storage : System.Address;
          Valid   : Boolean) return Boolean;
       pragma Inline (Is_Valid_Or_Handled);
-      --  internal implementation of Is_Valid and Is_Handled.
+      --  Internal implementation of Is_Valid and Is_Handled.
       --  Valid is used to select Valid or Handled arrays.
 
       package Validy_Htable is new GNAT.HTable.Simple_HTable
@@ -669,7 +668,7 @@ package body GNAT.Debug_Pools is
          Hash       => Hash,
          Equal      => "=");
       --  Table to keep the validity and handled bit blocks for the allocated
-      --  data
+      --  data.
 
       function To_Pointer is new Ada.Unchecked_Conversion
         (System.Address, Validity_Bits_Part_Ref);
@@ -1850,7 +1849,7 @@ package body GNAT.Debug_Pools is
             --  Handle only alloc elememts
             if Elem.Kind = Alloc then
                --  Ignore small blocks (depending on the sorting criteria) to
-               --  gain speed
+               --  gain speed.
 
                if (Sort = Memory_Usage
                    and then Elem.Total - Elem.Total_Frees >= 1_000)
