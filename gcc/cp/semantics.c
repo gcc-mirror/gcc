@@ -1660,6 +1660,8 @@ force_paren_expr (tree expr)
     REF_PARENTHESIZED_P (expr) = true;
   else if (type_dependent_expression_p (expr))
     expr = build1 (PAREN_EXPR, TREE_TYPE (expr), expr);
+  else if (VAR_P (expr) && DECL_HARD_REGISTER (expr))
+    /* We can't bind a hard register variable to a reference.  */;
   else
     {
       cp_lvalue_kind kind = lvalue_kind (expr);
