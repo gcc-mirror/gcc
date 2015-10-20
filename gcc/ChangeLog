@@ -1,3 +1,13 @@
+2015-10-21  Gregor Richards  <gregor.richards@uwaterloo.ca>
+	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
+	    Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/secureplt.h (LINK_SECURE_PLT_DEFAULT_SPEC): Define.
+	* config/rs6000/sysv4.h (LINK_SECURE_PLT_SPEC): Define.
+	(LINK_SPEC): Add %(link_secure_plt).
+	(SUBTARGET_EXTRA_SPECS): Add "link_secure_plt".
+	* config/rs6000/linux64.h (LINK_SECURE_PLT_SPEC): Redefine.
+
 2015-10-20  Gregor Richards  <gregor.richards@uwaterloo.ca>
 	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
