@@ -15566,6 +15566,12 @@ package body Sem_Prag is
 
                Check_Duplicate_Pragma (Ent);
                Record_Rep_Item (Ent, N);
+
+               --  Check the No_Task_At_Interrupt_Priority restriction
+
+               if Nkind (P) = N_Task_Definition then
+                  Check_Restriction (No_Task_At_Interrupt_Priority, N);
+               end if;
             end if;
          end Interrupt_Priority;
 
