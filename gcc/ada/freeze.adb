@@ -581,7 +581,7 @@ package body Freeze is
       --  the body is analyzed when the renamed entity is frozen, it may
       --  be necessary to restore the proper scope (see package Exp_Ch13).
 
-      if Nkind (N) =  N_Subprogram_Renaming_Declaration
+      if Nkind (N) = N_Subprogram_Renaming_Declaration
         and then Present (Corresponding_Spec (N))
       then
          Set_Corresponding_Spec (Body_Node, Corresponding_Spec (N));

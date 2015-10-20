@@ -6275,7 +6275,7 @@ package body Exp_Ch4 is
                                    N_Procedure_Call_Statement)
               or else (Nkind (Parnt) = N_Parameter_Association
                         and then
-                          Nkind (Parent (Parnt)) =  N_Procedure_Call_Statement)
+                          Nkind (Parent (Parnt)) = N_Procedure_Call_Statement)
             then
                return;
 

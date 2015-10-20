@@ -1107,7 +1107,7 @@ package body Rtsfind is
       begin
          Clause := U.First_Implicit_With;
          while Present (Clause) loop
-            if Parent (Clause) =  Cunit (Current_Sem_Unit) then
+            if Parent (Clause) = Cunit (Current_Sem_Unit) then
                return;
             end if;
 

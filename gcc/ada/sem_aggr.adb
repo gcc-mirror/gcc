@@ -4416,7 +4416,7 @@ package body Sem_Aggr is
                            --  have already been inserted into the component
                            --  list of the current aggregate.
 
-                           if Nkind (Def_Node) =  N_Record_Definition
+                           if Nkind (Def_Node) = N_Record_Definition
                              and then Present (Component_List (Def_Node))
                              and then
                                Present

@@ -3865,7 +3865,7 @@ package body Sem_Attr is
          Check_E0;
          Analyze (P);
 
-         if Etype (P) =  Standard_Exception_Type then
+         if Etype (P) = Standard_Exception_Type then
             Set_Etype (N, RTE (RE_Exception_Id));
 
          --  Ada 2005 (AI-345): Attribute 'Identity may be applied to task

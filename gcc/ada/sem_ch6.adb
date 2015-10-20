@@ -10009,7 +10009,7 @@ package body Sem_Ch6 is
       function Is_Class_Wide_Default (D : Node_Id) return Boolean is
       begin
          return Is_Class_Wide_Type (Designated_Type (Etype (D)))
-           or else (Nkind (D) =  N_Attribute_Reference
+           or else (Nkind (D) = N_Attribute_Reference
                      and then Attribute_Name (D) = Name_Access
                      and then Is_Class_Wide_Type (Etype (Prefix (D))));
       end Is_Class_Wide_Default;
