@@ -1059,22 +1059,11 @@ digest_init_r (tree type, tree init, bool nested, int flags,
        || BRACE_ENCLOSED_INITIALIZER_P (init))
       && (SCALAR_TYPE_P (type) || code == REFERENCE_TYPE))
     {
-      tree *exp;
-
       if (nested)
 	flags |= LOOKUP_NO_NARROWING;
       init = convert_for_initialization (0, type, init, flags,
 					 ICR_INIT, NULL_TREE, 0,
 					 complain);
-      exp = &init;
-
-      /* Skip any conversions since we'll be outputting the underlying
-	 constant.  */
-      while (CONVERT_EXPR_P (*exp)
-	     || TREE_CODE (*exp) == NON_LVALUE_EXPR)
-	exp = &TREE_OPERAND (*exp, 0);
-
-      *exp = cplus_expand_constant (*exp);
 
       return init;
     }
