@@ -137,12 +137,19 @@ No_Anonymous_Allocators
 [RM H.4] This restriction ensures at compile time that there are no
 occurrences of an allocator of anonymous access type.
 
+No_Asynchronous_Control
+-----------------------
+.. index:: No_Asynchronous_Control
+
+[RM J.13] This restriction ensures at compile time that there are no semantic
+dependences on the predefined package Asynchronous_Task_Control.
+
 No_Calendar
 -----------
 .. index:: No_Calendar
 
-[GNAT] This restriction ensures at compile time that there is no implicit or
-explicit dependence on the package `Ada.Calendar`.
+[GNAT] This restriction ensures at compile time that there are no semantic
+dependences on package Calendar.
 
 No_Coextensions
 ---------------
@@ -170,14 +177,14 @@ No_Delay
 .. index:: No_Delay
 
 [RM H.4] This restriction ensures at compile time that there are no
-delay statements and no dependences on package Calendar.
+delay statements and no semantic dependences on package Calendar.
 
 No_Dependence
 -------------
 .. index:: No_Dependence
 
-[RM 13.12.1] This restriction checks at compile time that there are no
-dependence on a library unit.
+[RM 13.12.1] This restriction ensures at compile time that there are no
+dependences on a library unit.
 
 No_Direct_Boolean_Operators
 ---------------------------
@@ -708,6 +715,20 @@ No_Unchecked_Access
 
 [RM H.4] This restriction ensures at compile time that there are no
 occurrences of the Unchecked_Access attribute.
+
+No_Unchecked_Conversion
+-----------------------
+.. index:: No_Unchecked_Conversion
+
+[RM J.13] This restriction ensures at compile time that there are no semantic
+dependences on the predefined generic function Unchecked_Conversion.
+
+No_Unchecked_Deallocation
+-------------------------
+.. index:: No_Unchecked_Deallocation
+
+[RM J.13] This restriction ensures at compile time that there are no semantic
+dependences on the predefined generic procedure Unchecked_Deallocation.
 
 No_Use_Of_Entity
 ----------------

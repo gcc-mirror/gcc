@@ -1,5 +1,16 @@
 2015-10-20  Arnaud Charlet  <charlet@adacore.com>
 
+	* gnat_ugn.texi, gnat_rm.texi: Regenerate.
+	* doc/gnat_ugn/gnat_project_manager.rst,
+	doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_ugn/the_gnat_compilation_model.rst,
+	doc/gnat_rm/standard_and_implementation_defined_restrictions.rst,
+	doc/gnat_rm/implementation_defined_pragmas.rst,
+	doc/gnat_rm/the_gnat_library.rst,
+	doc/gnat_rm/implementation_defined_characteristics.rst: Update doc.
+
+2015-10-20  Arnaud Charlet  <charlet@adacore.com>
+
 	* gcc-interface/Makefile.in: Update targets.
 
 2015-10-20  Bob Duff  <duff@adacore.com>

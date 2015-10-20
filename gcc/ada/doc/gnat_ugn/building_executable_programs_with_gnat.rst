@@ -4911,13 +4911,12 @@ following *gcc* switches refine this default behavior.
   the condition being checked is true, which can result in erroneous
   execution if that assumption is wrong.
 
-  The checks subject to suppression include all the checks defined by
-  the Ada standard, the additional implementation defined checks
-  `Alignment_Check`,
-  `Duplicated_Tag_Check`, `Predicate_Check`, and
-  `Validity_Check`, as well as any checks introduced using
-  `pragma Check_Name`. Note that `Atomic_Synchronization`
-  is not automatically suppressed by use of this option.
+  The checks subject to suppression include all the checks defined by the Ada
+  standard, the additional implementation defined checks `Alignment_Check`,
+  `Duplicated_Tag_Check`, `Predicate_Check`, Container_Checks, Tampering_Check,
+  and `Validity_Check`, as well as any checks introduced using `pragma
+  Check_Name`. Note that `Atomic_Synchronization` is not automatically
+  suppressed by use of this option.
 
   If the code depends on certain checks being active, you can use
   pragma `Unsuppress` either as a configuration pragma or as
@@ -6324,6 +6323,14 @@ be presented in subsequent sections.
 :samp:`-v`
   Verbose mode. Write error messages, header, summary output to
   :file:`stdout`.
+
+
+  .. index:: -V  (gnatbind)
+
+:samp:`-V{key}={value}`
+  Store the given association of `key` to `value` in the bind environment.
+  Values stored this way can be retrieved at run time using
+  `GNAT.Bind_Environment`.
 
 
   .. index:: -w  (gnatbind)

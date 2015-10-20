@@ -641,6 +641,19 @@ Provides AWK-like parsing functions, with an easy interface for parsing one
 or more files containing formatted data.  The file is viewed as a database
 where each record is a line and a field is a data element in this line.
 
+.. _`GNAT.Bind_Environment_(g-binenv.ads)`:
+
+`GNAT.Bind_Environment` (:file:`g-binenv.ads`)
+==============================================
+
+.. index:: GNAT.Bind_Environment (g-binenv.ads)
+
+.. index:: Bind environment
+
+Provides access to key=value associations captured at bind time.
+These associations can be specified using the `-V` binder command
+line switch.
+
 .. _`GNAT.Bounded_Buffers_(g-boubuf.ads)`:
 
 `GNAT.Bounded_Buffers` (:file:`g-boubuf.ads`)

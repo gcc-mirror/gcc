@@ -803,24 +803,6 @@ compatibility with the standard `Assertion_Policy` pragma. The check
 policy setting `DISABLE` causes the second argument of a corresponding
 `Check` pragma to be completely ignored and not analyzed.
 
-Pragma CIL_Constructor
-======================
-
-Syntax:
-
-
-::
-
-  pragma CIL_Constructor ([Entity =>] function_LOCAL_NAME);
-
-
-This pragma is used to assert that the specified Ada function should be
-mapped to the .NET constructor for some Ada tagged record type.
-
-See section 4.1 of the
-`GNAT User's Guide: Supplement for the .NET Platform.`
-for related information.
-
 Pragma Comment
 ==============
 
@@ -2863,42 +2845,6 @@ invariant pragma for the same entity.
 
 For further details on the use of this pragma, see the Ada 2012 documentation
 of the Type_Invariant aspect.
-
-Pragma Java_Constructor
-=======================
-
-Syntax:
-
-
-::
-
-  pragma Java_Constructor ([Entity =>] function_LOCAL_NAME);
-
-
-This pragma is used to assert that the specified Ada function should be
-mapped to the Java constructor for some Ada tagged record type.
-
-See section 7.3.2 of the
-`GNAT User's Guide: Supplement for the JVM Platform.`
-for related information.
-
-Pragma Java_Interface
-=====================
-
-Syntax:
-
-
-::
-
-  pragma Java_Interface ([Entity =>] abstract_tagged_type_LOCAL_NAME);
-
-
-This pragma is used to assert that the specified Ada abstract tagged type
-is to be mapped to a Java interface name.
-
-See sections 7.1 and 7.2 of the
-`GNAT User's Guide: Supplement for the JVM Platform.`
-for related information.
 
 Pragma Keep_Names
 =================
@@ -5770,6 +5716,13 @@ names that are implementation defined (as permitted by the RM):
   for a duplicated tag value when a tagged type is declared.
 
 *
+  `Container_Checks` Can be used to suppress all checks within Ada.Containers
+  and instances of its children, including Tampering_Check.
+
+*
+  `Tampering_Check` Can be used to suppress tampering check in the containers.
+
+*
   `Predicate_Check` can be used to control whether predicate checks are
   active. It is applicable only to predicates for which the policy is
   `Check`. Unlike `Assertion_Policy`, which determines if a given
@@ -6479,8 +6432,8 @@ configuration pragma will ensure this test is not suppressed:
 This pragma is standard in Ada 2005. It is available in all earlier versions
 of Ada as an implementation-defined pragma.
 
-Note that in addition to the checks defined in the Ada RM, GNAT recogizes
-a number of implementation-defined check names. See description of pragma
+Note that in addition to the checks defined in the Ada RM, GNAT recogizes a
+number of implementation-defined check names. See the description of pragma
 `Suppress` for full details.
 
 Pragma Use_VADS_Size
