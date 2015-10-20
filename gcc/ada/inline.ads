@@ -165,7 +165,7 @@ package Inline is
    --  subsequently used for inline expansions at call sites. If subprogram can
    --  be inlined (depending on size and nature of local declarations) the
    --  template body is created. Otherwise subprogram body is treated normally
-   --  and calls are not inlined in the frontend.  If proper warnings are
+   --  and calls are not inlined in the frontend. If proper warnings are
    --  enabled and the subprogram contains a construct that cannot be inlined,
    --  the problematic construct is flagged accordingly.
 

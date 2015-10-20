@@ -1631,11 +1631,10 @@ package body Ada.Exceptions is
    ---------------
 
    procedure To_Stderr (C : Character) is
-      type int is new Integer;
-      procedure put_char_stderr (C : int);
-      pragma Import (C, put_char_stderr, "put_char_stderr");
+      procedure Put_Char_Stderr (C : Character);
+      pragma Import (C, Put_Char_Stderr, "put_char_stderr");
    begin
-      put_char_stderr (Character'Pos (C));
+      Put_Char_Stderr (C);
    end To_Stderr;
 
    procedure To_Stderr (S : String) is
