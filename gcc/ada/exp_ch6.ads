@@ -178,7 +178,7 @@ package Exp_Ch6 is
    --  call.
 
    procedure Make_Build_In_Place_Call_In_Object_Declaration
-     (Object_Decl   : Node_Id;
+     (Obj_Decl      : Node_Id;
       Function_Call : Node_Id);
    --  Ada 2005 (AI-318-02): Handle a call to a build-in-place function that
    --  occurs as the expression initializing an object declaration by

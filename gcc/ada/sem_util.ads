@@ -1781,12 +1781,6 @@ package Sem_Util is
    --  convenience, qualified expressions applied to object names are also
    --  allowed as actuals for this function.
 
-   function Original_Corresponding_Operation (S : Entity_Id) return Entity_Id;
-   --  [Ada 2012: AI05-0125-1]: If S is an inherited dispatching primitive S2,
-   --  or overrides an inherited dispatching primitive S2, the original
-   --  corresponding operation of S is the original corresponding operation of
-   --  S2. Otherwise, it is S itself.
-
    function Original_Aspect_Pragma_Name (N : Node_Id) return Name_Id;
    --  Retrieve the name of aspect or pragma N taking into account a possible
    --  rewrite and whether the pragma is generated from an aspect as the names
@@ -1798,6 +1792,12 @@ package Sem_Util is
    --    Pre'Class            -> Name_uPre
    --    Type_Invariant       -> Name_uType_Invariant
    --    Type_Invariant'Class -> Name_uType_Invariant
+
+   function Original_Corresponding_Operation (S : Entity_Id) return Entity_Id;
+   --  [Ada 2012: AI05-0125-1]: If S is an inherited dispatching primitive S2,
+   --  or overrides an inherited dispatching primitive S2, the original
+   --  corresponding operation of S is the original corresponding operation of
+   --  S2. Otherwise, it is S itself.
 
    function Policy_In_Effect (Policy : Name_Id) return Name_Id;
    --  Given a policy, return the policy identifier associated with it. If no
@@ -1844,6 +1844,12 @@ package Sem_Util is
 
    procedure Remove_Homonym (E : Entity_Id);
    --  Removes E from the homonym chain
+
+   procedure Remove_Overloaded_Entity (Id : Entity_Id);
+   --  Remove arbitrary entity Id from the homonym chain, the scope chain and
+   --  the primitive operations list of the associated controlling type. NOTE:
+   --  the removal performed by this routine does not affect the visibility of
+   --  existing homonyms.
 
    function Rep_To_Pos_Flag (E : Entity_Id; Loc : Source_Ptr) return Node_Id;
    --  This is used to construct the second argument in a call to Rep_To_Pos

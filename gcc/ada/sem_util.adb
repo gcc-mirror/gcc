@@ -16961,6 +16961,106 @@ package body Sem_Util is
       end if;
    end Remove_Homonym;
 
+   ------------------------------
+   -- Remove_Overloaded_Entity --
+   ------------------------------
+
+   procedure Remove_Overloaded_Entity (Id : Entity_Id) is
+      procedure Remove_Primitive_Of (Typ : Entity_Id);
+      --  Remove primitive subprogram Id from the list of primitives that
+      --  belong to type Typ.
+
+      -------------------------
+      -- Remove_Primitive_Of --
+      -------------------------
+
+      procedure Remove_Primitive_Of (Typ : Entity_Id) is
+         Prims : Elist_Id;
+
+      begin
+         if Is_Tagged_Type (Typ) then
+            Prims := Direct_Primitive_Operations (Typ);
+
+            if Present (Prims) then
+               Remove (Prims, Id);
+            end if;
+         end if;
+      end Remove_Primitive_Of;
+
+      --  Local variables
+
+      Scop    : constant Entity_Id := Scope (Id);
+      Formal  : Entity_Id;
+      Prev_Id : Entity_Id;
+
+   --  Start of processing for Remove_Overloaded_Entity
+
+   begin
+      --  Remove the entity from the homonym chain. When the entity is the
+      --  head of the chain, associate the entry in the name table with its
+      --  homonym effectively making it the new head of the chain.
+
+      if Current_Entity (Id) = Id then
+         Set_Name_Entity_Id (Chars (Id), Homonym (Id));
+
+      --  Otherwise link the previous and next homonyms
+
+      else
+         Prev_Id := Current_Entity (Id);
+         while Present (Prev_Id) and then Homonym (Prev_Id) /= Id loop
+            Prev_Id := Homonym (Prev_Id);
+         end loop;
+
+         Set_Homonym (Prev_Id, Homonym (Id));
+      end if;
+
+      --  Remove the entity from the scope entity chain. When the entity is
+      --  the head of the chain, set the next entity as the new head of the
+      --  chain.
+
+      if First_Entity (Scop) = Id then
+         Prev_Id := Empty;
+         Set_First_Entity (Scop, Next_Entity (Id));
+
+      --  Otherwise the entity is either in the middle of the chain or it acts
+      --  as its tail. Traverse and link the previous and next entities.
+
+      else
+         Prev_Id := First_Entity (Scop);
+         while Present (Prev_Id) and then Next_Entity (Prev_Id) /= Id loop
+            Next_Entity (Prev_Id);
+         end loop;
+
+         Set_Next_Entity (Prev_Id, Next_Entity (Id));
+      end if;
+
+      --  Handle the case where the entity acts as the tail of the scope entity
+      --  chain.
+
+      if Last_Entity (Scop) = Id then
+         Set_Last_Entity (Scop, Prev_Id);
+      end if;
+
+      --  The entity denotes a primitive subprogram. Remove it from the list of
+      --  primitives of the associated controlling type.
+
+      if Ekind_In (Id, E_Function, E_Procedure) and then Is_Primitive (Id) then
+         Formal := First_Formal (Id);
+         while Present (Formal) loop
+            if Is_Controlling_Formal (Formal) then
+               Remove_Primitive_Of (Etype (Formal));
+               exit;
+            end if;
+
+            Next_Formal (Formal);
+         end loop;
+
+         if Ekind (Id) = E_Function and then Has_Controlling_Result (Id) then
+            Remove_Primitive_Of (Etype (Id));
+         end if;
+      end if;
+   end Remove_Overloaded_Entity;
+
    ---------------------
    -- Rep_To_Pos_Flag --
    ---------------------
