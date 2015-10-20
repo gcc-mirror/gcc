@@ -9264,7 +9264,7 @@ package body Sem_Prag is
       --------------------------
 
       --  The Rational profile includes Implicit_Packing, Use_Vads_Size, and
-      --  and extension to the semantics of renaming declarations.
+      --  extension to the semantics of renaming declarations.
 
       procedure Set_Rational_Profile is
       begin

@@ -1,5 +1,27 @@
 2015-10-20  Bob Duff  <duff@adacore.com>
 
+	* a-contai.adb, a-coinve.ads, a-contai.ads, a-conhel.adb, a-conhel.ads,
+	Makefile.rtl, a-convec.ads: Move helper code from Ada.Containers to a
+	new package Ada.Containers.Helpers, because otherwise it's not
+	visible everywhere it needs to be (e.g. in the package
+	Ada.Containers.Red_Black_Trees, Generic_Tree_Types wants to have
+	a component of type Tamper_Counts).
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Intersect_Types): Specialize error message when
+	one operand is a limited view which is a priori incompatible
+	with all other named types.
+	* sem_prag.adb: minor fix in comment
+	* sem_ch13.adb: Code clean up.
+
+2015-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Need_Subprogram_Instance_Body): Also return true
+	for a subprogram nested in an inlined subprogram.
+
+2015-10-20  Bob Duff  <duff@adacore.com>
+
 	* a-coinve.adb, a-contai.adb: Update comments.
 	* pprint.ads: Minor reformatting.
 

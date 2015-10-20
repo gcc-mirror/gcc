@@ -12458,7 +12458,7 @@ package body Sem_Ch13 is
             end case;
          end if;
 
-         Next (ASN);
+         ASN := Next_Rep_Item (ASN);
       end loop;
    end Resolve_Aspect_Expressions;
 

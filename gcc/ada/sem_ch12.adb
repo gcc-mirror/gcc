@@ -4676,12 +4676,41 @@ package body Sem_Ch12 is
      (N    : Node_Id;
       Subp : Entity_Id) return Boolean
    is
-   begin
-      --  Must be inlined (or inlined renaming)
 
-      if (Is_In_Main_Unit (N)
-           or else Is_Inlined (Subp)
-           or else Is_Inlined (Alias (Subp)))
+      function Is_Inlined_Or_Child_Of_Inlined (E : Entity_Id) return Boolean;
+      --  Return True if E is an inlined subprogram, an inlined renaming or a
+      --  subprogram nested in an inlined subprogram. The inlining machinery
+      --  totally disregards nested subprograms since it considers that they
+      --  will always be compiled if the parent is (see Inline.Is_Nested).
+
+      ------------------------------------
+      -- Is_Inlined_Or_Child_Of_Inlined --
+      ------------------------------------
+
+      function Is_Inlined_Or_Child_Of_Inlined (E : Entity_Id) return Boolean is
+         Scop : Entity_Id;
+
+      begin
+         if Is_Inlined (E) or else Is_Inlined (Alias (E)) then
+            return True;
+         end if;
+
+         Scop := Scope (E);
+         while Scop /= Standard_Standard loop
+            if Ekind (Scop) in Subprogram_Kind and then Is_Inlined (Scop) then
+               return True;
+            end if;
+
+            Scop := Scope (Scop);
+         end loop;
+
+         return False;
+      end Is_Inlined_Or_Child_Of_Inlined;
+
+   begin
+      --  Must be in the main unit or inlined (or child of inlined)
+
+      if (Is_In_Main_Unit (N) or else Is_Inlined_Or_Child_Of_Inlined (Subp))
 
         --  Must be generating code or analyzing code in ASIS/GNATprove mode
 

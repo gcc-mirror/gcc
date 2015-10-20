@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                       A D A . C O N T A I N E R S                        --
+--               A D A . C O N T A I N E R S . H E L P E R S                --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2015, Free Software Foundation, Inc.            --
+--             Copyright (C) 2015, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,7 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
-package body Ada.Containers is
+package body Ada.Containers.Helpers is
 
    package body Generic_Implementation is
 
@@ -183,4 +183,4 @@ package body Ada.Containers is
 
    end Generic_Implementation;
 
-end Ada.Containers;
+end Ada.Containers.Helpers;
