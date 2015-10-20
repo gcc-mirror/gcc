@@ -1,3 +1,9 @@
+2015-10-20  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/66912
+	* gcc.target/aarch64/pr66912.c: New.
+	* gcc.target/arm/pr66912.c: New.
+
 2015-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/pr67900.f90: New tests.
