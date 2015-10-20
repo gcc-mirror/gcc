@@ -1,3 +1,8 @@
+2015-10-20  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (std=gnu++11): Do not describe as experimental.
+	(std=gnu++14): Likewise.
+
 2015-10-19  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Define
