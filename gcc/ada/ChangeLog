@@ -1,3 +1,12 @@
+2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Find_Actual): The routine is
+	now capable of operating on entry calls.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb: Remove redundant check.
+
 2015-10-20  Jerome Lambourg  <lambourg@adacore.com>
 
 	* init.c (__gnat_vxsim_error_handler): Completely disable on

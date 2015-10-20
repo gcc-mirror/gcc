@@ -9877,10 +9877,11 @@ package body Sem_Res is
          T := Etype (P);
       end if;
 
-      --  Set flag for expander if discriminant check required
+      --  Set flag for expander if discriminant check required on a component
+      --  appearing within a variant.
 
       if Has_Discriminants (T)
-        and then Ekind_In (Entity (S), E_Component, E_Discriminant)
+        and then Ekind (Entity (S)) =  E_Component
         and then Present (Original_Record_Component (Entity (S)))
         and then Ekind (Original_Record_Component (Entity (S))) = E_Component
         and then
