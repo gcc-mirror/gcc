@@ -2658,11 +2658,12 @@ package body Sem_Dim is
    -- Expand_Put_Call_With_Symbol --
    ---------------------------------
 
-   --  For procedure Put (resp. Put_Dim_Of) defined in System.Dim.Float_IO
-   --  (System.Dim.Integer_IO), the default string parameter must be rewritten
-   --  to include the unit symbols (resp. dimension symbols) in the output
-   --  of a dimensioned object. Note that if a value is already supplied for
-   --  parameter Symbol, this routine doesn't do anything.
+   --  For procedure Put (resp. Put_Dim_Of) and function Image, defined in
+   --  System.Dim.Float_IO or System.Dim.Integer_IO, the default string
+   --  parameter is rewritten to include the unit symbol (or the dimension
+   --  symbols if not a defined quantity) in the output of a dimensioned
+   --  object.  If a value is already supplied by the user for the parameter
+   --  Symbol, it is used as is.
 
    --  Case 1. Item is dimensionless
 
@@ -2707,6 +2708,9 @@ package body Sem_Dim is
    --      The corresponding outputs are:
    --      $5.0 m**3.cd**(-1)
    --      $[l**3.J**(-1)]
+
+   --      The function Image returns the string identical to that produced by
+   --      a call to Put whose first parameter is a string.
 
    procedure Expand_Put_Call_With_Symbol (N : Node_Id) is
       Actuals        : constant List_Id := Parameter_Associations (N);
@@ -2773,22 +2777,12 @@ package body Sem_Dim is
             if Present (Actual_Str) then
 
                --  Return True if the actual comes from source or if the string
-               --  of symbols doesn't have the default value (i.e. it is "").
+               --  of symbols doesn't have the default value (i.e. it is ""),
+               --  in which case it is used as suffix of the generated string.
 
                if Comes_From_Source (Actual)
                  or else String_Length (Strval (Actual_Str)) /= 0
                then
-                  --  Complain only if the actual comes from source or if it
-                  --  hasn't been fully analyzed yet.
-
-                  if Comes_From_Source (Actual)
-                    or else not Analyzed (Actual)
-                  then
-                     Error_Msg_N ("Symbol parameter should not be provided",
-                                  Actual);
-                     Error_Msg_N ("\reserved for compiler use only", Actual);
-                  end if;
-
                   return True;
 
                else
@@ -2841,7 +2835,9 @@ package body Sem_Dim is
                   Is_Put_Dim_Of := True;
                   return True;
 
-               elsif Chars (Ent) = Name_Put then
+               elsif Chars (Ent) = Name_Put
+                 or else Chars (Ent) = Name_Image
+               then
                   return True;
                end if;
             end if;
@@ -2976,12 +2972,20 @@ package body Sem_Dim is
 
             --  Rewrite and analyze the procedure call
 
-            Rewrite (N,
-              Make_Procedure_Call_Statement (Loc,
-                Name =>                   New_Copy (Name_Call),
-                Parameter_Associations => New_Actuals));
+            if Chars (Name_Call) = Name_Image then
+               Rewrite (N,
+                 Make_Function_Call (Loc,
+                   Name =>                   New_Copy (Name_Call),
+                   Parameter_Associations => New_Actuals));
+               Analyze_And_Resolve (N);
+            else
+               Rewrite (N,
+                 Make_Procedure_Call_Statement (Loc,
+                   Name =>                   New_Copy (Name_Call),
+                   Parameter_Associations => New_Actuals));
+               Analyze (N);
+            end if;
 
-            Analyze (N);
          end if;
       end if;
    end Expand_Put_Call_With_Symbol;

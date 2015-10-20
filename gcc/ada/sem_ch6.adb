@@ -4388,7 +4388,7 @@ package body Sem_Ch6 is
 
       --  Flag Is_Inlined_Always is True by default, and reversed to False for
       --  those subprograms which could be inlined in GNATprove mode (because
-      --  Body_To_Inline is non-Empty) but cannot be inlined.
+      --  Body_To_Inline is non-Empty) but should not be inlined.
 
       if GNATprove_Mode then
          Set_Is_Inlined_Always (Designator);
