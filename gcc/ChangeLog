@@ -1,5 +1,11 @@
 2015-10-20  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/66810
+	* cgraphbuild.c (pass_build_cgraph_edges::execute): Skip local
+	error_mark_node decls.
+
+2015-10-20  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/67963
 	PR target/67985
 	* common/config/i386/i386-common.c (ix86_handle_option): Remove
