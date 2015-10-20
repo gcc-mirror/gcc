@@ -206,7 +206,7 @@ package body Exp_Util is
       end case;
 
       --  Nothing to do for the identifier in an object renaming declaration,
-      --  the renaming itself does not need atomic syncrhonization.
+      --  the renaming itself does not need atomic synchronization.
 
       if Nkind (Parent (N)) = N_Object_Renaming_Declaration then
          return;

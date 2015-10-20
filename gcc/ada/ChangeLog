@@ -1,3 +1,27 @@
+2015-10-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch13.adb: Minor reference change (RM => AARM).
+
+2015-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* make.adb (Check): Skip multilib switches reinstated by the
+	compiler only when counting the number of switches, since it is
+	what really matters in the regular operating mode.
+
+2015-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.adb: Add extra assertion for small clause.
+	* cstand.adb: Minor style fix in comment.
+	* debug.adb: Minor reformatting.
+	* exp_util.adb: Fix minor typo.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Same_Instantiated_Function): New predicate in
+	Check_Formal_Package_Instance, used to verify that the formal
+	and the actual of an actual package match when both are functions
+	given as attribute references.
+
 2015-10-20  Bob Duff  <duff@adacore.com>
 
 	* a-coinve.ads, a-coinve.adb: Do the same efficiency

@@ -5759,6 +5759,11 @@ package body Sem_Ch12 is
       --  same entity we may have to traverse several definitions to recover
       --  the ultimate entity that they refer to.
 
+      function Same_Instantiated_Function (E1, E2 : Entity_Id) return Boolean;
+      --  The formal and the actual must be identical, but if both are
+      --  given by attributes they end up renaming different generated bodies,
+      --  and we must verify that the attributes themselves match.
+
       function Same_Instantiated_Variable (E1, E2 : Entity_Id) return Boolean;
       --  Similarly, if the formal comes from a nested formal package, the
       --  actual may designate the formal through multiple renamings, which
@@ -5832,6 +5837,35 @@ package body Sem_Ch12 is
 
          return False;
       end Same_Instantiated_Constant;
+
+      --------------------------------
+      -- Same_Instantiated_Function --
+      --------------------------------
+
+      function Same_Instantiated_Function
+        (E1, E2 : Entity_Id) return Boolean
+      is
+         U1, U2 : Node_Id;
+      begin
+         if Alias (E1) = Alias (E2) then
+            return True;
+
+         elsif Present (Alias (E2)) then
+            U1 := Original_Node (Unit_Declaration_Node (E1));
+            U2 := Original_Node (Unit_Declaration_Node (Alias (E2)));
+
+            return Nkind (U1) = N_Subprogram_Renaming_Declaration
+              and then Nkind (Name (U1)) = N_Attribute_Reference
+
+              and then Nkind (U2) = N_Subprogram_Renaming_Declaration
+              and then Nkind (Name (U2)) = N_Attribute_Reference
+
+              and then
+                Attribute_Name (Name (U1)) = Attribute_Name (Name (U2));
+         else
+            return False;
+         end if;
+      end Same_Instantiated_Function;
 
       --------------------------------
       -- Same_Instantiated_Variable --
@@ -6050,7 +6084,8 @@ package body Sem_Ch12 is
 
             else
                Check_Mismatch
-                 (Ekind (E2) /= Ekind (E1) or else (Alias (E1)) /= Alias (E2));
+                 (Ekind (E2) /= Ekind (E1)
+                    or else not Same_Instantiated_Function (E1, E2));
             end if;
 
          else
