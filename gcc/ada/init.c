@@ -93,7 +93,9 @@ extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 #endif
 
-/* Global values computed by the binder.  */
+/* Global values computed by the binder.  Note that these variables are
+   declared here, not in the binder file, to avoid having unresolved
+   references in the shared libgnat.  */
 int   __gl_main_priority                 = -1;
 int   __gl_main_cpu                      = -1;
 int   __gl_time_slice_val                = -1;
@@ -111,6 +113,7 @@ int   __gl_detect_blocking               = 0;
 int   __gl_default_stack_size            = -1;
 int   __gl_leap_seconds_support          = 0;
 int   __gl_canonical_streams             = 0;
+char *__gl_bind_env_addr                 = NULL;
 
 /* This value is not used anymore, but kept for bootstrapping purpose.  */
 int   __gl_zero_cost_exceptions          = 0;

@@ -18580,9 +18580,12 @@ package body Sem_Prag is
             --  purposes of legality checks and removal of ignored Ghost code.
 
             Mark_Pragma_As_Ghost (N, Ent);
-            Set_Is_Pure (Ent);
-            Set_Has_Pragma_Pure (Ent);
-            Set_Suppress_Elaboration_Warnings (Ent);
+
+            if not Debug_Flag_U then
+               Set_Is_Pure (Ent);
+               Set_Has_Pragma_Pure (Ent);
+               Set_Suppress_Elaboration_Warnings (Ent);
+            end if;
          end Pure;
 
          -------------------

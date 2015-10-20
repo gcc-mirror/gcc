@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Bindgen;
 with Debug;  use Debug;
 with Osint;  use Osint;
 with Opt;    use Opt;
@@ -416,6 +417,26 @@ package body Switch.B is
          when 'v' =>
             Ptr := Ptr + 1;
             Verbose_Mode := True;
+
+         --  Processing for V switch
+
+         when 'V' =>
+            declare
+               Eq : Integer;
+            begin
+               Ptr := Ptr + 1;
+               Eq := Ptr;
+               while Eq <= Max and then Switch_Chars (Eq) /= '=' loop
+                  Eq := Eq + 1;
+               end loop;
+               if Eq = Ptr or else Eq = Max then
+                  Bad_Switch (Switch_Chars);
+               end if;
+               Bindgen.Set_Bind_Env
+                 (Key   => Switch_Chars (Ptr .. Eq - 1),
+                  Value => Switch_Chars (Eq + 1 .. Max));
+               Ptr := Max + 1;
+            end;
 
          --  Processing for w switch
 

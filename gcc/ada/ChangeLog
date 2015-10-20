@@ -1,3 +1,24 @@
+2015-10-20  Thomas Quinot  <quinot@adacore.com>
+
+	* Makefile.rtl: add the following...
+	* g-binenv.ads, g-binenv.adb: New unit providing runtime access
+	to bind time captured values ("bind environment")
+	* init.c: declare new global variable __gl_bind_env_addr.
+	* bindgen.ads, bindgen.adb (Set_Bind_Env): record a bind
+	environment key=value pair.
+	(Gen_Bind_Env_String): helper to produce the bind environment data
+	called  in the binder generated file.
+	(Gen_Output_File_Ada): Call the above (Gen_Adainit): Set
+	__gl_bind_env_addr accordingly.
+	* switch-b.adb: Support for command line switch -V (user interface
+	to set a build environment key=value pair)
+	* bindusg.adb: Document the above
+
+2015-10-20  Vincent Celier  <celier@adacore.com>
+
+	* sem_prag.adb (Analyse_Pragma: Pragma Pure): Do not set the
+	entity as Pure if Debug_Flag_U is set.
+
 2015-10-20  Bob Duff  <duff@adacore.com>
 
 	* output.adb (Write_Int): Work with negative numbers in order to avoid
