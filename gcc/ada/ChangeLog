@@ -1,3 +1,16 @@
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_smem.adb (Check_Shared_Var): Clean up code that handles
+	type declarations with discriminants, remove obsolete check.
+
+2015-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* par_sco.adb: Minor style fixes.
+
+2015-10-20  Vincent Celier  <celier@adacore.com>
+
+	* debug.adb: Update documentation of -gnatdu.
+
 2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* aspects.adb Add aspect Volatile_Function to table

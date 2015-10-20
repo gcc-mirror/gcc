@@ -851,11 +851,12 @@ package body Par_SCO is
       --  Now we have the definitive set of SCO entries, register them in the
       --  corresponding hash table.
 
-      for I in 1 .. Hash_Entries.Last loop
+      for J in 1 .. Hash_Entries.Last loop
          SCO_Raw_Hash_Table.Set
-           (Hash_Entries.Table (I).Sloc,
-            Hash_Entries.Table (I).SCO_Index);
+           (Hash_Entries.Table (J).Sloc,
+            Hash_Entries.Table (J).SCO_Index);
       end loop;
+
       Hash_Entries.Free;
    end Process_Decisions;
 
