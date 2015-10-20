@@ -7,7 +7,7 @@
 #define FLT_INFINITY (__builtin_inff ())
 #define DBL_INFINITY (__builtin_inf ())
 
-#define NAN (0.0 / 0.0)
+#define NAN (__builtin_nan (""))
 
 #define PI 3.141592653589793
 #define PI_4 0.7853981633974483
@@ -228,9 +228,7 @@ test_vdiv_f64 ()
   return 0;
 }
 
-/* The following assembly should match 2 more times,
-   in 64bit NAN generation.  */
-/* { dg-final { scan-assembler-times "fdiv\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "fdiv\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 1 } } */
 
 #undef TESTA8
 #undef ANSW8
