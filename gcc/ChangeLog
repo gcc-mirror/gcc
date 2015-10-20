@@ -1,3 +1,8 @@
+2015-10-20  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/66912
+	* varasm.c (default_binds_local_p_2): Turn on extern_protected_data.
+
 2015-10-20  Arkadiusz Drabczyk  <arkadiusz@drabczyk.org>
 
 	* doc/extend.texi: Update documentation WRT inline functions.
