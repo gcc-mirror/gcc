@@ -18,3 +18,4 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #define CC1_SECURE_PLT_DEFAULT_SPEC "-msecure-plt"
+#define LINK_SECURE_PLT_DEFAULT_SPEC "--secure-plt"
