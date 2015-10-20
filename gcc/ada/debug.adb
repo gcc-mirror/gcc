@@ -316,14 +316,15 @@ package body Debug is
    --  dt   Print full tree. The generated tree is output (see also df,dy)
 
    --  du   Uncheck categorization pragmas. This debug switch causes the
-   --       categorization pragmas (Pure, Preelaborate etc) to be ignored
-   --       so that normal checks are not made (this is particularly useful
-   --       for adding temporary debugging code to units that have pragmas
-   --       that are inconsistent with the debugging code added.
+   --       elaboration control pragmas (Pure, Preelaborate, etc.) and the
+   --       categorization pragmas (Shared_Passive, Remote_Types, etc.) to be
+   --       ignored, so that normal checks are not made (this is particularly
+   --       useful for adding temporary debugging code to units that have
+   --       pragmas that are inconsistent with the debugging code added).
 
    --  dv   Output trace of overload resolution. Outputs messages for
    --       overload attempts that involve cascaded errors, or where
-   --       an interepretation is incompatible with the context.
+   --       an interpretation is incompatible with the context.
 
    --  dw   Write semantic scope stack messages. Each time a scope is created
    --       or removed, a message is output (see the Sem_Ch8.Push_Scope and
