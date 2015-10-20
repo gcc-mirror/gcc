@@ -127,6 +127,7 @@ static void asm_output_aligned_bss (FILE *, tree, const char *,
 #endif /* BSS_SECTION_ASM_OP */
 static void mark_weak (tree);
 static void output_constant_pool (const char *, tree);
+static void handle_vtv_comdat_section (section *, const_tree);
 
 /* Well-known sections, each one associated with some sort of *_ASM_OP.  */
 section *text_section;
@@ -2230,56 +2231,10 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
     assemble_noswitch_variable (decl, name, sect, align);
   else
     {
-      /* The following bit of code ensures that vtable_map 
-         variables are not only in the comdat section, but that
-         each variable has its own unique comdat name.  If this
-         code is removed, the variables end up in the same section
-         with a single comdat name.
-
-         FIXME:  resolve_unique_section needs to deal better with
-         decls with both DECL_SECTION_NAME and DECL_ONE_ONLY.  Once
-         that is fixed, this if-else statement can be replaced with
-         a single call to "switch_to_section (sect)".  */
+      /* Special-case handling of vtv comdat sections.  */
       if (sect->named.name
 	  && (strcmp (sect->named.name, ".vtable_map_vars") == 0))
-	{
-#if defined (OBJECT_FORMAT_ELF)
-          targetm.asm_out.named_section (sect->named.name,
-					 sect->named.common.flags
-				         | SECTION_LINKONCE,
-			    	         DECL_NAME (decl));
-          in_section = sect;
-#elif defined (TARGET_PECOFF)
-          /* Neither OBJECT_FORMAT_PE, nor OBJECT_FORMAT_COFF is set here.
-             Therefore the following check is used.
-             In case a the target is PE or COFF a comdat group section
-             is created, e.g. .vtable_map_vars$foo. The linker places
-             everything in .vtable_map_vars at the end.
-
-             A fix could be made in
-             gcc/config/i386/winnt.c: i386_pe_unique_section. */
-          if (TARGET_PECOFF)
-          {
-            char *name;
-            
-            if (TREE_CODE (DECL_NAME (decl)) == IDENTIFIER_NODE)
-              name = ACONCAT ((sect->named.name, "$",
-                               IDENTIFIER_POINTER (DECL_NAME (decl)), NULL));
-            else
-              name = ACONCAT ((sect->named.name, "$",
-                    IDENTIFIER_POINTER (DECL_COMDAT_GROUP (DECL_NAME (decl))),
-                    NULL));
-
-            targetm.asm_out.named_section (name,
-                                           sect->named.common.flags
-                                           | SECTION_LINKONCE,
-                                           DECL_NAME (decl));
-            in_section = sect;
-        }
-#else
-          switch_to_section (sect);
-#endif
-        }
+	handle_vtv_comdat_section (sect, decl);
       else
 	switch_to_section (sect);
       if (align > BITS_PER_UNIT)
@@ -7330,7 +7285,14 @@ output_object_block (struct object_block *block)
 
   /* Switch to the section and make sure that the first byte is
      suitably aligned.  */
-  switch_to_section (block->sect);
+  /* Special case VTV comdat sections similar to assemble_variable.  */
+  if (SECTION_STYLE (block->sect) == SECTION_NAMED
+      && block->sect->named.name
+      && (strcmp (block->sect->named.name, ".vtable_map_vars") == 0))
+    handle_vtv_comdat_section (block->sect, block->sect->named.decl);
+  else
+    switch_to_section (block->sect);
+
   assemble_align (block->alignment);
 
   /* Define the values of all anchors relative to the current section
@@ -7771,6 +7733,58 @@ default_asm_output_ident_directive (const char *ident_str)
     }
   else
     fprintf (asm_out_file, "%s\"%s\"\n", ident_asm_op, ident_str);
+}
+
+
+/* This function ensures that vtable_map variables are not only
+   in the comdat section, but that each variable has its own unique
+   comdat name.  Without this the variables end up in the same section
+   with a single comdat name.
+
+   FIXME:  resolve_unique_section needs to deal better with
+   decls with both DECL_SECTION_NAME and DECL_ONE_ONLY.  Once
+   that is fixed, this if-else statement can be replaced with
+   a single call to "switch_to_section (sect)".  */
+
+static void
+handle_vtv_comdat_section (section *sect, const_tree decl)
+{
+#if defined (OBJECT_FORMAT_ELF)
+  targetm.asm_out.named_section (sect->named.name,
+				 sect->named.common.flags
+				 | SECTION_LINKONCE,
+				 DECL_NAME (decl));
+  in_section = sect;
+#elif defined (TARGET_PECOFF)
+  /* Neither OBJECT_FORMAT_PE, nor OBJECT_FORMAT_COFF is set here.
+     Therefore the following check is used.
+     In case a the target is PE or COFF a comdat group section
+     is created, e.g. .vtable_map_vars$foo. The linker places
+     everything in .vtable_map_vars at the end.
+
+     A fix could be made in
+     gcc/config/i386/winnt.c: i386_pe_unique_section.  */
+  if (TARGET_PECOFF)
+    {
+      char *name;
+
+      if (TREE_CODE (DECL_NAME (decl)) == IDENTIFIER_NODE)
+	name = ACONCAT ((sect->named.name, "$",
+			 IDENTIFIER_POINTER (DECL_NAME (decl)), NULL));
+      else
+	name = ACONCAT ((sect->named.name, "$",
+			 IDENTIFIER_POINTER (DECL_COMDAT_GROUP (DECL_NAME (decl))),
+			 NULL));
+
+      targetm.asm_out.named_section (name,
+				     sect->named.common.flags
+				     | SECTION_LINKONCE,
+				     DECL_NAME (decl));
+      in_section = sect;
+    }
+#else
+  switch_to_section (sect);
+#endif
 }
 
 #include "gt-varasm.h"
