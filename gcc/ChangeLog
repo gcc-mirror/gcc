@@ -1,3 +1,10 @@
+2015-10-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR other/67868
+	* varasm.c (assemble_variable): Move special vtv handling to..
+	(handle_vtv_comdat_sections): .. here. New function.
+	(output_object_block): Handle vtv sections.
+
 2015-10-20  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/66912
