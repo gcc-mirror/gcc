@@ -2376,11 +2376,13 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_Call
 
    begin
-      --  Expand the procedure call if the first actual has a dimension and if
-      --  the procedure is Put (Ada 2012).
+      --  Expand the function or procedure call if the first actual has a
+      --  declared dimension aspect, and the subprogram is declared in one
+      --  of the dimension I/O packages.
 
       if Ada_Version >= Ada_2012
-        and then Nkind (Call_Node) = N_Procedure_Call_Statement
+        and then
+           Nkind_In (Call_Node, N_Procedure_Call_Statement, N_Function_Call)
         and then Present (Parameter_Associations (Call_Node))
       then
          Expand_Put_Call_With_Symbol (Call_Node);

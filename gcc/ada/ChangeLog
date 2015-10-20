@@ -1,3 +1,54 @@
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Check for a call to a function
+	declared in a Dimension I/O package, to handle the new Image
+	function.
+
+2015-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.ads: Minor comment fixes.
+
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* a-comutr.ads (Tree_Node_Access): Add No_Strict_Aliasing, because
+	we're doing unchecked conversions with this pointer.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Next_Protected_Operation): An expression function
+	used as a completion can be the next protected operation in a
+	protected body.
+
+2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Is_OK_Volatile_Context): Add a guard when checking a
+	possible call to an instance of Ada.Unchecked_Conversion to avoid
+	testing protected function calls. Allow references to protected objects
+	in prefixed protected calls.
+	(Is_Protected_Operation_Call): New routine.
+
+2015-10-20  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch5.adb, exp_ch5.ads (Expand_Iterator_Loop_Over_Array): Make
+	query public. Remove code handling with iterator loop over array
+	of the 'in' form, which is not allowed in Ada.	* exp_spark.adb
+	(Expand_SPARK): Expand loop statements that take the form of an
+	iterator over an array.
+	* sem_ch5.adb (Analyze_Loop_Statement): Do not analyze loop statements
+	that take the form of an iterator over an array, so that the rewritten
+	form gets analyzed instead.
+	* sem_util.adb, sem_util.ads (Is_Iterator_Over_Array): New query
+	to recognize iterators over arrays.
+
+2015-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-excdeb.ads, s-excdeb.adb (Debug_Raise_Exception): Add
+	parameter Message.
+	* a-except.adb (Raise_Current_Excep): Update call to
+	Debug_Raise_Exception.
+	* a-except-2005.adb (Complete_Occurrence): Ditto.
+	* sem_ch12.adb: Whitespace fix.
+
 2015-10-20  Yannick Moy  <moy@adacore.com>
 
 	* sem_warn.adb (Is_OK_Fully_Initialized): Consider types with DIC as

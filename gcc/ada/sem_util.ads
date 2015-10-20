@@ -1354,6 +1354,11 @@ package Sem_Util is
    --  AI05-0139-2: Check whether Typ is one of the predefined interfaces in
    --  Ada.Iterator_Interfaces, or it is derived from one.
 
+   function Is_Iterator_Over_Array (N : Node_Id) return Boolean;
+   --  N is an iterator specification. Returns True iff N is an iterator over
+   --  an array, either inside a loop of the form 'for X of A' or a quantified
+   --  expression of the form 'for all/some X of A' where A is of array type.
+
    type Is_LHS_Result is (Yes, No, Unknown);
    function Is_LHS (N : Node_Id) return Is_LHS_Result;
    --  Returns Yes if N is definitely used as Name in an assignment statement.

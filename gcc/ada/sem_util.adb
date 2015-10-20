@@ -12064,6 +12064,17 @@ package body Sem_Util is
       end if;
    end Is_Iterator;
 
+   ----------------------------
+   -- Is_Iterator_Over_Array --
+   ----------------------------
+
+   function Is_Iterator_Over_Array (N : Node_Id) return Boolean is
+      Container     : constant Node_Id   := Name (N);
+      Container_Typ : constant Entity_Id := Base_Type (Etype (Container));
+   begin
+      return Is_Array_Type (Container_Typ);
+   end Is_Iterator_Over_Array;
+
    ------------
    -- Is_LHS --
    ------------

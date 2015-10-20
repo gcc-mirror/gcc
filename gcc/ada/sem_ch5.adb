@@ -3336,16 +3336,33 @@ package body Sem_Ch5 is
       --  types the actual subtype of the components will only be determined
       --  when the cursor declaration is analyzed.
 
-      --  If the expander is not active, or in SPARK mode, then we want to
-      --  analyze the loop body now even in the Ada 2012 iterator case, since
-      --  the rewriting will not be done. Insert the loop variable in the
-      --  current scope, if not done when analysing the iteration scheme.
-      --  Set its kind properly to detect improper uses in the loop body.
+      --  If the expander is not active then we want to analyze the loop body
+      --  now even in the Ada 2012 iterator case, since the rewriting will not
+      --  be done. Insert the loop variable in the current scope, if not done
+      --  when analysing the iteration scheme.  Set its kind properly to detect
+      --  improper uses in the loop body.
+
+      --  In GNATprove mode, we do one of the above depending on the kind of
+      --  loop. If it is an iterator over an array, then we do not analyze the
+      --  loop now. We will analyze it after it has been rewritten by the
+      --  special SPARK expansion which is activated in GNATprove mode. We need
+      --  to do this so that other expansions that should occur in GNATprove
+      --  mode take into account the specificities of the rewritten loop, in
+      --  particular the introduction of a renaming (which needs to be
+      --  expanded).
+
+      --  In other cases in GNATprove mode then we want to analyze the loop
+      --  body now, since no rewriting will occur.
 
       if Present (Iter)
         and then Present (Iterator_Specification (Iter))
       then
-         if not Expander_Active then
+         if GNATprove_Mode
+           and then Is_Iterator_Over_Array (Iterator_Specification (Iter))
+         then
+            null;
+
+         elsif not Expander_Active then
             declare
                I_Spec : constant Node_Id   := Iterator_Specification (Iter);
                Id     : constant Entity_Id := Defining_Identifier (I_Spec);

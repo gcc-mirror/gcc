@@ -949,7 +949,7 @@ package body Ada.Exceptions is
       --  pragma Volatile is peculiar.
 
    begin
-      Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
+      Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E), Message => "");
       Process_Raise_Exception (E);
    end Raise_Current_Excep;
 

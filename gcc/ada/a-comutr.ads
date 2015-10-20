@@ -342,6 +342,9 @@ private
    type Tree_Node_Type;
    type Tree_Node_Access is access all Tree_Node_Type;
    pragma Convention (C, Tree_Node_Access);
+   pragma No_Strict_Aliasing (Tree_Node_Access);
+   --  The above-mentioned Unchecked_Conversion is a violation of the normal
+   --  aliasing rules.
 
    type Children_Type is record
       First : Tree_Node_Access;

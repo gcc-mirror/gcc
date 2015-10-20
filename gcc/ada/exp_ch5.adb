@@ -130,9 +130,6 @@ package body Exp_Ch5 is
    --  Expand loop over arrays and containers that uses the form "for X of C"
    --  with an optional subtype mark, or "for Y in C".
 
-   procedure Expand_Iterator_Loop_Over_Array (N : Node_Id);
-   --  Expand loop over arrays that uses the form "for X of C"
-
    procedure Expand_Iterator_Loop_Over_Container
      (N             : Node_Id;
       Isc           : Node_Id;
@@ -3350,44 +3347,36 @@ package body Exp_Ch5 is
    begin
       --  for Element of Array loop
 
-      --  This case requires an internally generated cursor to iterate over
-      --  the array.
+      --  It requires an internally generated cursor to iterate over the array
 
-      if Of_Present (I_Spec) then
-         Iterator := Make_Temporary (Loc, 'C');
+      pragma Assert (Of_Present (I_Spec));
 
-         --  Generate:
-         --    Element : Component_Type renames Array (Iterator);
-         --    Iterator is the index value, or a list of index values
-         --    in the case of a multidimensional array.
+      Iterator := Make_Temporary (Loc, 'C');
 
-         Ind_Comp :=
-           Make_Indexed_Component (Loc,
-             Prefix      => Relocate_Node (Array_Node),
-             Expressions => New_List (New_Occurrence_Of (Iterator, Loc)));
+      --  Generate:
+      --    Element : Component_Type renames Array (Iterator);
+      --    Iterator is the index value, or a list of index values
+      --    in the case of a multidimensional array.
 
-         Prepend_To (Stats,
-           Make_Object_Renaming_Declaration (Loc,
-             Defining_Identifier => Id,
-             Subtype_Mark        =>
-               New_Occurrence_Of (Component_Type (Array_Typ), Loc),
-             Name                => Ind_Comp));
+      Ind_Comp :=
+        Make_Indexed_Component (Loc,
+          Prefix      => Relocate_Node (Array_Node),
+          Expressions => New_List (New_Occurrence_Of (Iterator, Loc)));
 
-         --  Mark the loop variable as needing debug info, so that expansion
-         --  of the renaming will result in Materialize_Entity getting set via
-         --  Debug_Renaming_Declaration. (This setting is needed here because
-         --  the setting in Freeze_Entity comes after the expansion, which is
-         --  too late. ???)
+      Prepend_To (Stats,
+        Make_Object_Renaming_Declaration (Loc,
+          Defining_Identifier => Id,
+          Subtype_Mark        =>
+            New_Occurrence_Of (Component_Type (Array_Typ), Loc),
+          Name                => Ind_Comp));
 
-         Set_Debug_Info_Needed (Id);
+      --  Mark the loop variable as needing debug info, so that expansion
+      --  of the renaming will result in Materialize_Entity getting set via
+      --  Debug_Renaming_Declaration. (This setting is needed here because
+      --  the setting in Freeze_Entity comes after the expansion, which is
+      --  too late. ???)
 
-      --  for Index in Array loop
-
-      --  This case utilizes the already given iterator name
-
-      else
-         Iterator := Id;
-      end if;
+      Set_Debug_Info_Needed (Id);
 
       --  Generate:
 

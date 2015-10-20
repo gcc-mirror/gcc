@@ -6834,6 +6834,11 @@ package body Sem_Res is
         (Context : Node_Id;
          Obj_Ref : Node_Id) return Boolean
       is
+         function Is_Protected_Operation_Call (Nod : Node_Id) return Boolean;
+         --  Determine whether an arbitrary node denotes a call to a protected
+         --  entry, function or procedure in prefixed form where the prefix is
+         --  Obj_Ref.
+
          function Within_Check (Nod : Node_Id) return Boolean;
          --  Determine whether an arbitrary node appears in a check node
 
@@ -6843,6 +6848,36 @@ package body Sem_Res is
          function Within_Volatile_Function (Id : Entity_Id) return Boolean;
          --  Determine whether an arbitrary entity appears in a volatile
          --  function.
+
+         ---------------------------------
+         -- Is_Protected_Operation_Call --
+         ---------------------------------
+
+         function Is_Protected_Operation_Call (Nod : Node_Id) return Boolean is
+            Pref : Node_Id;
+            Subp : Node_Id;
+
+         begin
+            --  A call to a protected operations retains its selected component
+            --  form as opposed to other prefixed calls that are transformed in
+            --  expanded names.
+
+            if Nkind (Nod) = N_Selected_Component then
+               Pref := Prefix (Nod);
+               Subp := Selector_Name (Nod);
+
+               return
+                 Pref = Obj_Ref
+                   and then Is_Protected_Type (Etype (Pref))
+                   and then Is_Entity_Name (Subp)
+                   and then Ekind_In (Entity (Subp), E_Entry,
+                                                     E_Entry_Family,
+                                                     E_Function,
+                                                     E_Procedure);
+            else
+               return False;
+            end if;
+         end Is_Protected_Operation_Call;
 
          ------------------
          -- Within_Check --
@@ -6958,9 +6993,16 @@ package body Sem_Res is
          --  instance of Unchecked_Conversion whose result is renamed.
 
          elsif Nkind (Context) = N_Function_Call
+           and then Is_Entity_Name (Name (Context))
            and then Is_Unchecked_Conversion_Instance (Entity (Name (Context)))
            and then Nkind (Parent (Context)) = N_Object_Renaming_Declaration
          then
+            return True;
+
+         --  The volatile object is actually the prefix in a protected entry,
+         --  function, or procedure call.
+
+         elsif Is_Protected_Operation_Call (Context) then
             return True;
 
          --  The volatile object appears as the expression of a simple return

@@ -30,17 +30,15 @@
 
 --  b) Compilation of unit bodies that contain the bodies of inlined sub-
 --  programs. This is done only if inlining is enabled (-gnatn). Full inlining
---  requires that a) an b) be mutually recursive, because each step may
---  generate another generic expansion and further inlined calls. For now each
---  of them uses a workpile algorithm, but they are called independently from
---  Frontend, and thus are not mutually recursive.
+--  requires that a) and b) be mutually recursive, because each step may
+--  generate another generic expansion and further inlined calls.
 
 --  c) Front-end inlining for Inline_Always subprograms. This is primarily an
 --  expansion activity that is performed for performance reasons, and when the
---  target does not use the gcc backend.
+--  target does not use the GCC back end.
 
 --  d) Front-end inlining for GNATprove, to perform source transformations
---  to simplify formal verification. The machinery used is the same than for
+--  to simplify formal verification. The machinery used is the same as for
 --  Inline_Always subprograms, but there are fewer restrictions on the source
 --  of subprograms.
 
