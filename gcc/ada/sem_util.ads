@@ -73,6 +73,7 @@ package Sem_Util is
    --    Refined_Post
    --    Refined_States
    --    Test_Case
+   --    Volatile_Function
 
    procedure Add_Global_Declaration (N : Node_Id);
    --  These procedures adds a declaration N at the library level, to be
@@ -313,6 +314,10 @@ package Sem_Util is
    --  Determine whether object or state Id introduces a hidden state. If this
    --  is the case, emit an error.
 
+   procedure Check_Nonvolatile_Function_Profile (Func_Id : Entity_Id);
+   --  Verify that the profile of nonvolatile function Func_Id does not contain
+   --  effectively volatile parameters or return type.
+
    procedure Check_Potentially_Blocking_Operation (N : Node_Id);
    --  N is one of the statement forms that is a potentially blocking
    --  operation. If it appears within a protected action, emit warning.
@@ -533,7 +538,7 @@ package Sem_Util is
 
    function Enclosing_Declaration (N : Node_Id) return Node_Id;
    --  Returns the declaration node enclosing N (including possibly N itself),
-   --  if any, or Empty otherwise
+   --  if any, or Empty otherwise.
 
    function Enclosing_Generic_Body
      (N : Node_Id) return Node_Id;
@@ -1285,13 +1290,17 @@ package Sem_Util is
    --  . machine_emin = 3 - machine_emax
 
    function Is_Effectively_Volatile (Id : Entity_Id) return Boolean;
-   --  The SPARK property "effectively volatile" applies to both types and
-   --  objects. To qualify as such, an entity must be either volatile or be
-   --  (of) an array type subject to aspect Volatile_Components.
+   --  Determine whether a type or object denoted by entity Id is effectively
+   --  volatile (SPARK RM 7.1.2). To qualify as such, the entity must be either
+   --    * Volatile
+   --    * An array type subject to aspect Volatile_Components
+   --    * An array type whose component type is effectively volatile
+   --    * A protected type
+   --    * Descendant of type Ada.Synchronous_Task_Control.Suspension_Object
 
    function Is_Effectively_Volatile_Object (N : Node_Id) return Boolean;
    --  Determine whether an arbitrary node denotes an effectively volatile
-   --  object.
+   --  object (SPARK RM 7.1.2).
 
    function Is_Expression_Function (Subp : Entity_Id) return Boolean;
    --  Predicate to determine whether a scope entity comes from a rewritten
@@ -1301,8 +1310,8 @@ package Sem_Util is
    function Is_EVF_Expression (N : Node_Id) return Boolean;
    --  Determine whether node N denotes a reference to a formal parameter of
    --  a specific tagged type whose related subprogram is subject to pragma
-   --  Extensions_Visible with value "False". Several other constructs fall
-   --  under this category:
+   --  Extensions_Visible with value "False" (SPARK RM 6.1.7). Several other
+   --  constructs fall under this category:
    --    1) A qualified expression whose operand is EVF
    --    2) A type conversion whose operand is EVF
    --    3) An if expression with at least one EVF dependent_expression
@@ -1549,6 +1558,11 @@ package Sem_Util is
    --  instead from a private type whose full view is controlled, an explicit
    --  Initialize/Adjust/Finalize subprogram does not override the inherited
    --  one.
+
+   function Is_Volatile_Function (Func_Id : Entity_Id) return Boolean;
+   --  Determine whether [generic] function Func_Id is subject to enabled
+   --  pragma Volatile_Function. Protected functions are treated as volatile
+   --  (SPARK RM 7.1.2).
 
    function Is_Volatile_Object (N : Node_Id) return Boolean;
    --  Determines if the given node denotes an volatile object in the sense of

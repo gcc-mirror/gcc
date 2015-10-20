@@ -2279,9 +2279,9 @@ package body Sem_Ch5 is
          end if;
       end if;
 
-      --  A loop parameter cannot be effectively volatile. This check is
-      --  peformed only when SPARK_Mode is on as it is not a standard Ada
-      --  legality check (SPARK RM 7.1.3(6)).
+      --  A loop parameter cannot be effectively volatile (SPARK RM 7.1.3(4)).
+      --  This check is relevant only when SPARK_Mode is on as it is not a
+      --  standard Ada legality check.
 
       --  Not clear whether this applies to element iterators, where the
       --  cursor is not an explicit entity ???
@@ -3037,9 +3037,9 @@ package body Sem_Ch5 is
          end;
       end if;
 
-      --  A loop parameter cannot be effectively volatile. This check is
-      --  peformed only when SPARK_Mode is on as it is not a standard Ada
-      --  legality check (SPARK RM 7.1.3(6)).
+      --  A loop parameter cannot be effectively volatile (SPARK RM 7.1.3(4)).
+      --  This check is relevant only when SPARK_Mode is on as it is not a
+      --  standard Ada legality check.
 
       if SPARK_Mode = On and then Is_Effectively_Volatile (Id) then
          Error_Msg_N ("loop parameter cannot be volatile", Id);

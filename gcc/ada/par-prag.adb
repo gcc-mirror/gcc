@@ -1486,6 +1486,7 @@ begin
            Pragma_Volatile                       |
            Pragma_Volatile_Components            |
            Pragma_Volatile_Full_Access           |
+           Pragma_Volatile_Function              |
            Pragma_Warning_As_Error               |
            Pragma_Weak_External                  |
            Pragma_Validity_Checks                =>

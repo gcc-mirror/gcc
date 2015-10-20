@@ -2228,6 +2228,19 @@ package body Sem_Ch6 is
 
       Check_Result_And_Post_State (Body_Id);
 
+      --  A stand alone non-volatile function body cannot have an effectively
+      --  volatile formal parameter or return type (SPARK RM 7.1.3(9)). This
+      --  check is relevant only when SPARK_Mode is on as it is not a standard
+      --  legality rule. The check is performed here because Volatile_Function
+      --  is processed after the analysis of the related subprogram body.
+
+      if SPARK_Mode = On
+        and then Ekind_In (Body_Id, E_Function, E_Generic_Function)
+        and then not Is_Volatile_Function (Body_Id)
+      then
+         Check_Nonvolatile_Function_Profile (Body_Id);
+      end if;
+
       --  Restore the SPARK_Mode of the enclosing context after all delayed
       --  pragmas have been analyzed.
 
@@ -4086,6 +4099,19 @@ package body Sem_Ch6 is
          Check_Result_And_Post_State (Subp_Id);
       end if;
 
+      --  A non-volatile function cannot have an effectively volatile formal
+      --  parameter or return type (SPARK RM 7.1.3(9)). This check is relevant
+      --  only when SPARK_Mode is on as it is not a standard legality rule. The
+      --  check is performed here because pragma Volatile_Function is processed
+      --  after the analysis of the related subprogram declaration.
+
+      if SPARK_Mode = On
+        and then Ekind_In (Subp_Id, E_Function, E_Generic_Function)
+        and then not Is_Volatile_Function (Subp_Id)
+      then
+         Check_Nonvolatile_Function_Profile (Subp_Id);
+      end if;
+
       --  Restore the SPARK_Mode of the enclosing context after all delayed
       --  pragmas have been analyzed.
 
@@ -4451,9 +4477,9 @@ package body Sem_Ch6 is
          --  the check is applied later (see Analyze_Subprogram_Declaration).
 
          if not Nkind_In (Original_Node (Parent (N)),
-                          N_Subprogram_Renaming_Declaration,
                           N_Abstract_Subprogram_Declaration,
-                          N_Formal_Abstract_Subprogram_Declaration)
+                          N_Formal_Abstract_Subprogram_Declaration,
+                          N_Subprogram_Renaming_Declaration)
          then
             if Is_Abstract_Type (Etype (Designator))
               and then not Is_Interface (Etype (Designator))
@@ -4464,14 +4490,15 @@ package body Sem_Ch6 is
             --  Ada 2012 (AI-0073): Extend this test to subprograms with an
             --  access result whose designated type is abstract.
 
-            elsif Nkind (Result_Definition (N)) = N_Access_Definition
+            elsif Ada_Version >= Ada_2012
+              and then Nkind (Result_Definition (N)) = N_Access_Definition
               and then
                 not Is_Class_Wide_Type (Designated_Type (Etype (Designator)))
               and then Is_Abstract_Type (Designated_Type (Etype (Designator)))
-              and then Ada_Version >= Ada_2012
             then
-               Error_Msg_N ("function whose access result designates "
-                            & "abstract type must be abstract", N);
+               Error_Msg_N
+                 ("function whose access result designates abstract type "
+                  & "must be abstract", N);
             end if;
          end if;
       end if;
@@ -9933,17 +9960,6 @@ package body Sem_Ch6 is
      (T           : List_Id;
       Related_Nod : Node_Id)
    is
-      Context     : constant Node_Id := Parent (Parent (T));
-      Param_Spec  : Node_Id;
-      Formal      : Entity_Id;
-      Formal_Type : Entity_Id;
-      Default     : Node_Id;
-      Ptype       : Entity_Id;
-
-      Num_Out_Params  : Nat       := 0;
-      First_Out_Param : Entity_Id := Empty;
-      --  Used for setting Is_Only_Out_Parameter
-
       function Designates_From_Limited_With (Typ : Entity_Id) return Boolean;
       --  Determine whether an access type designates a type coming from a
       --  limited view.
@@ -9985,6 +10001,19 @@ package body Sem_Ch6 is
                      and then Attribute_Name (D) = Name_Access
                      and then Is_Class_Wide_Type (Etype (Prefix (D))));
       end Is_Class_Wide_Default;
+
+      --  Local variables
+
+      Context     : constant Node_Id := Parent (Parent (T));
+      Default     : Node_Id;
+      Formal      : Entity_Id;
+      Formal_Type : Entity_Id;
+      Param_Spec  : Node_Id;
+      Ptype       : Entity_Id;
+
+      Num_Out_Params  : Nat       := 0;
+      First_Out_Param : Entity_Id := Empty;
+      --  Used for setting Is_Only_Out_Parameter
 
    --  Start of processing for Process_Formals
 
@@ -10269,8 +10298,8 @@ package body Sem_Ch6 is
             Null_Exclusion_Static_Checks (Param_Spec);
          end if;
 
-         --  The following checks are relevant when SPARK_Mode is on as these
-         --  are not standard Ada legality rules.
+         --  The following checks are relevant only when SPARK_Mode is on as
+         --  these are not standard Ada legality rules.
 
          if SPARK_Mode = On then
             if Ekind_In (Scope (Formal), E_Function, E_Generic_Function) then
@@ -10282,14 +10311,6 @@ package body Sem_Ch6 is
                   Error_Msg_N
                     ("function cannot have parameter of mode `OUT` or "
                      & "`IN OUT`", Formal);
-
-               --  A function cannot have an effectively volatile formal
-               --  parameter (SPARK RM 7.1.3(10)).
-
-               elsif Is_Effectively_Volatile (Formal) then
-                  Error_Msg_N
-                    ("function cannot have a volatile formal parameter",
-                     Formal);
                end if;
 
             --  A procedure cannot have an effectively volatile formal

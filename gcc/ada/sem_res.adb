@@ -4105,22 +4105,11 @@ package body Sem_Res is
                --  actual to a nested call, since this constitutes a reading of
                --  the parameter, which is not allowed.
 
-               if Is_Entity_Name (A)
+               if Ada_Version = Ada_83
+                 and then Is_Entity_Name (A)
                  and then Ekind (Entity (A)) = E_Out_Parameter
                then
-                  if Ada_Version = Ada_83 then
-                     Error_Msg_N
-                       ("(Ada 83) illegal reading of out parameter", A);
-
-                  --  An effectively volatile OUT parameter cannot act as IN or
-                  --  IN OUT actual in a call (SPARK RM 7.1.3(11)).
-
-                  elsif SPARK_Mode = On
-                    and then Is_Effectively_Volatile (Entity (A))
-                  then
-                     Error_Msg_N
-                       ("illegal reading of volatile OUT parameter", A);
-                  end if;
+                  Error_Msg_N ("(Ada 83) illegal reading of out parameter", A);
                end if;
             end if;
 
@@ -4472,8 +4461,8 @@ package body Sem_Res is
             --  temporaries are ignored.
 
             if SPARK_Mode = On
-              and then Is_Effectively_Volatile_Object (A)
               and then Comes_From_Source (A)
+              and then Is_Effectively_Volatile_Object (A)
             then
                --  An effectively volatile object may act as an actual
                --  parameter when the corresponding formal is of a non-scalar
@@ -6792,7 +6781,7 @@ package body Sem_Res is
         (Context : Node_Id;
          Obj_Ref : Node_Id) return Boolean;
       --  Determine whether node Context denotes a "non-interfering context"
-      --  (as defined in SPARK RM 7.1.3(13)) where volatile reference Obj_Ref
+      --  (as defined in SPARK RM 7.1.3(12)) where volatile reference Obj_Ref
       --  can safely reside.
 
       ----------------------------------------
@@ -6851,6 +6840,10 @@ package body Sem_Res is
          function Within_Procedure_Call (Nod : Node_Id) return Boolean;
          --  Determine whether an arbitrary node appears in a procedure call
 
+         function Within_Volatile_Function (Id : Entity_Id) return Boolean;
+         --  Determine whether an arbitrary entity appears in a volatile
+         --  function.
+
          ------------------
          -- Within_Check --
          ------------------
@@ -6905,6 +6898,32 @@ package body Sem_Res is
             return False;
          end Within_Procedure_Call;
 
+         ------------------------------
+         -- Within_Volatile_Function --
+         ------------------------------
+
+         function Within_Volatile_Function (Id : Entity_Id) return Boolean is
+            Func_Id : Entity_Id;
+
+         begin
+            --  Traverse the scope stack looking for a [generic] function
+
+            Func_Id := Id;
+            while Present (Func_Id) and then Func_Id /= Standard_Standard loop
+               if Ekind_In (Func_Id, E_Function, E_Generic_Function) then
+                  return Is_Volatile_Function (Func_Id);
+               end if;
+
+               Func_Id := Scope (Func_Id);
+            end loop;
+
+            return False;
+         end Within_Volatile_Function;
+
+         --  Local variables
+
+         Obj_Id : Entity_Id;
+
       --  Start of processing for Is_OK_Volatile_Context
 
       begin
@@ -6914,14 +6933,26 @@ package body Sem_Res is
             return True;
 
          --  The volatile object is part of the initialization expression of
-         --  another object. Ensure that the climb of the parent chain came
-         --  from the expression side and not from the name side.
+         --  another object.
 
          elsif Nkind (Context) = N_Object_Declaration
            and then Present (Expression (Context))
            and then Expression (Context) = Obj_Ref
          then
-            return True;
+            Obj_Id := Defining_Entity (Context);
+
+            --  The volatile object acts as the initialization expression of an
+            --  extended return statement. This is valid context as long as the
+            --  function is volatile.
+
+            if Is_Return_Object (Obj_Id) then
+               return Within_Volatile_Function (Obj_Id);
+
+            --  Otherwise this is a normal object initialization
+
+            else
+               return True;
+            end if;
 
          --  The volatile object appears as an actual parameter in a call to an
          --  instance of Unchecked_Conversion whose result is renamed.
@@ -6931,6 +6962,15 @@ package body Sem_Res is
            and then Nkind (Parent (Context)) = N_Object_Renaming_Declaration
          then
             return True;
+
+         --  The volatile object appears as the expression of a simple return
+         --  statement that applies to a volatile function.
+
+         elsif Nkind (Context) = N_Simple_Return_Statement
+           and then Expression (Context) = Obj_Ref
+         then
+            return
+              Within_Volatile_Function (Return_Statement_Entity (Context));
 
          --  The volatile object appears as the prefix of a name occurring
          --  in a non-interfering context.
@@ -7057,14 +7097,6 @@ package body Sem_Res is
       then
          if Ada_Version = Ada_83 then
             Error_Msg_N ("(Ada 83) illegal reading of out parameter", N);
-
-         --  An effectively volatile OUT parameter cannot be read
-         --  (SPARK RM 7.1.3(11)).
-
-         elsif SPARK_Mode = On
-           and then Is_Effectively_Volatile (E)
-         then
-            Error_Msg_N ("illegal reading of volatile OUT parameter", N);
          end if;
 
       --  In all other cases, just do the possible static evaluation
@@ -7117,7 +7149,7 @@ package body Sem_Res is
         and then Comes_From_Source (N)
       then
          --  The effectively volatile objects appears in a "non-interfering
-         --  context" as defined in SPARK RM 7.1.3(13).
+         --  context" as defined in SPARK RM 7.1.3(12).
 
          if Is_OK_Volatile_Context (Par, N) then
             null;
@@ -7128,7 +7160,7 @@ package body Sem_Res is
          else
             SPARK_Msg_N
               ("volatile object cannot appear in this context "
-               & "(SPARK RM 7.1.3(13))", N);
+               & "(SPARK RM 7.1.3(12))", N);
          end if;
       end if;
 

@@ -364,6 +364,23 @@ package Sem_Prag is
    --  Determine whether pragma SPARK_Mode appears in the statement part of a
    --  package body.
 
+   function Is_Enabled_Pragma (Prag : Node_Id) return Boolean;
+   --  Determine whether a Boolean-like SPARK pragma Prag is enabled. To be
+   --  considered enabled, the pragma must either:
+   --    * Appear without its Boolean expression
+   --    * The Boolean expression evaluates to "True"
+   --
+   --  Boolean-like SPARK pragmas differ from pure Boolean Ada pragmas in that
+   --  their optional Boolean expression must be static and cannot benefit from
+   --  forward references. The following are Boolean-like SPARK pragmas:
+   --    Async_Readers
+   --    Async_Writers
+   --    Constant_After_Elaboration
+   --    Effective_Reads
+   --    Effective_Writes
+   --    Extensions_Visible
+   --    Volatile_Function
+
    function Is_Non_Significant_Pragma_Reference (N : Node_Id) return Boolean;
    --  The node N is a node for an entity and the issue is whether the
    --  occurrence is a reference for the purposes of giving warnings about

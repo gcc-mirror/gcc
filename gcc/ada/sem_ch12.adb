@@ -5318,28 +5318,24 @@ package body Sem_Ch12 is
             if Need_Subprogram_Instance_Body (N, Act_Decl_Id) then
                Check_Forward_Instantiation (Gen_Decl);
 
-               --  The wrapper package is always delayed, because it does not
-               --  constitute a freeze point, but to insure that the freeze
-               --  node is placed properly, it is created directly when
-               --  instantiating the body (otherwise the freeze node might
-               --  appear to early for nested instantiations).
+            --  The wrapper package is always delayed, because it does not
+            --  constitute a freeze point, but to insure that the freeze node
+            --  is placed properly, it is created directly when instantiating
+            --  the body (otherwise the freeze node might appear to early for
+            --  nested instantiations). For ASIS purposes, indicate that the
+            --  wrapper package has replaced the instantiation node.
 
             elsif Nkind (Parent (N)) = N_Compilation_Unit then
-
-               --  For ASIS purposes, indicate that the wrapper package has
-               --  replaced the instantiation node.
-
                Rewrite (N, Unit (Parent (N)));
                Set_Unit (Parent (N), N);
             end if;
 
+         --  Replace instance node for library-level instantiations of
+         --  intrinsic subprograms, for ASIS use.
+
          elsif Nkind (Parent (N)) = N_Compilation_Unit then
-
-               --  Replace instance node for library-level instantiations of
-               --  intrinsic subprograms, for ASIS use.
-
-               Rewrite (N, Unit (Parent (N)));
-               Set_Unit (Parent (N), N);
+            Rewrite (N, Unit (Parent (N)));
+            Set_Unit (Parent (N), N);
          end if;
 
          if Parent_Installed then
@@ -5359,7 +5355,6 @@ package body Sem_Ch12 is
          if SPARK_Mode = On then
             Dynamic_Elaboration_Checks := False;
          end if;
-
       end if;
 
    <<Leave>>
@@ -10663,17 +10658,18 @@ package body Sem_Ch12 is
            ("actual must exclude null to match generic formal#", Actual);
       end if;
 
-      --  An effectively volatile object cannot be used as an actual in
-      --  a generic instance. The following check is only relevant when
-      --  SPARK_Mode is on as it is not a standard Ada legality rule.
+      --  An effectively volatile object cannot be used as an actual in a
+      --  generic instantiation (SPARK RM 7.1.3(7)). The following check is
+      --  relevant only when SPARK_Mode is on as it is not a standard Ada
+      --  legality rule.
 
       if SPARK_Mode = On
         and then Present (Actual)
         and then Is_Effectively_Volatile_Object (Actual)
       then
          Error_Msg_N
-           ("volatile object cannot act as actual in generic instantiation "
-            & "(SPARK RM 7.1.3(8))", Actual);
+           ("volatile object cannot act as actual in generic instantiation",
+            Actual);
       end if;
 
       return List;

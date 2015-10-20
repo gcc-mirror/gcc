@@ -206,7 +206,8 @@ package body Sem_Prag is
    function Find_Related_Context
      (Prag      : Node_Id;
       Do_Checks : Boolean := False) return Node_Id;
-   --  Subsidiaty to the analysis of pragmas Constant_After_Elaboration and
+   --  Subsidiaty to the analysis of pragmas Async_Readers, Async_Writers,
+   --  Constant_After_Elaboration, Effective_Reads, Effective_Writers and
    --  Part_Of. Find the first source declaration or statement found while
    --  traversing the previous node chain starting from pragma Prag. If flag
    --  Do_Checks is set, the routine reports duplicate pragmas. The routine
@@ -1720,19 +1721,12 @@ package body Sem_Prag is
      (N        : Node_Id;
       Expr_Val : out Boolean)
    is
-      Arg1   : constant Node_Id   := First (Pragma_Argument_Associations (N));
-      Expr   : constant Node_Id   := Get_Pragma_Arg (Next (Arg1));
-      Obj_Id : constant Entity_Id := Entity (Get_Pragma_Arg (Arg1));
-
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Arg1     : constant Node_Id := First (Pragma_Argument_Associations (N));
+      Obj_Decl : constant Node_Id := Find_Related_Context (N);
+      Obj_Id   : constant Entity_Id := Defining_Entity (Obj_Decl);
+      Expr     : Node_Id;
 
    begin
-      --  Set the Ghost mode in effect from the pragma. Due to the delayed
-      --  analysis of the pragma, the Ghost mode at point of declaration and
-      --  point of analysis may not necessarely be the same. Use the mode in
-      --  effect at the point of declaration.
-
-      Set_Ghost_Mode (N);
       Error_Msg_Name_1 := Pragma_Name (N);
 
       --  An external property pragma must apply to an effectively volatile
@@ -1754,17 +1748,13 @@ package body Sem_Prag is
 
       Expr_Val := True;
 
-      if Present (Expr) then
-         Analyze_And_Resolve (Expr, Standard_Boolean);
+      if Present (Arg1) then
+         Expr := Get_Pragma_Arg (Arg1);
 
          if Is_OK_Static_Expression (Expr) then
             Expr_Val := Is_True (Expr_Value (Expr));
-         else
-            SPARK_Msg_N ("expression of % must be static", Expr);
          end if;
       end if;
-
-      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_External_Property_In_Decl_Part;
 
    ---------------------------------
@@ -1924,6 +1914,18 @@ package body Sem_Prag is
                      SPARK_Msg_N ("\use its constituents instead", Item);
                      return;
 
+                  --  An external state cannot appear as a global item of a
+                  --  nonvolatile function (SPARK RM 7.1.3(8)).
+
+                  elsif Is_External_State (Item_Id)
+                    and then Ekind_In (Spec_Id, E_Function, E_Generic_Function)
+                    and then not Is_Volatile_Function (Spec_Id)
+                  then
+                     SPARK_Msg_NE
+                       ("external state & cannot act as global item of "
+                        & "nonvolatile function", Item, Item_Id);
+                     return;
+
                   --  If the reference to the abstract state appears in an
                   --  enclosing package body that will eventually refine the
                   --  state, record the reference for future checks.
@@ -1956,9 +1958,11 @@ package body Sem_Prag is
                  and then Is_Effectively_Volatile (Item_Id)
                then
                   --  An effectively volatile object cannot appear as a global
-                  --  item of a function (SPARK RM 7.1.3(9)).
+                  --  item of a nonvolatile function (SPARK RM 7.1.3(8)).
 
-                  if Ekind_In (Spec_Id, E_Function, E_Generic_Function) then
+                  if Ekind_In (Spec_Id, E_Function, E_Generic_Function)
+                    and then not Is_Volatile_Function (Spec_Id)
+                  then
                      Error_Msg_NE
                        ("volatile object & cannot act as global item of a "
                         & "function", Item, Item_Id);
@@ -2935,6 +2939,13 @@ package body Sem_Prag is
       --  identifier, then an error message is given and Pragma_Exit is raised.
       --  In this version of the procedure, the identifier name is given as
       --  a string with lower case letters.
+
+      procedure Check_Static_Boolean_Expression (Expr : Node_Id);
+      --  Subsidiary to the analysis of pragmas Async_Readers, Async_Writers,
+      --  Constant_After_Elaboration, Effective_Reads, Effective_Writes,
+      --  Extensions_Visible and Volatile_Function. Ensure that expression Expr
+      --  is an OK static boolean expression. Emit an error if this is not the
+      --  case.
 
       procedure Check_Static_Constraint (Constr : Node_Id);
       --  Constr is a constraint from an N_Subtype_Indication node from a
@@ -5069,6 +5080,22 @@ package body Sem_Prag is
          Name_Len := Id'Length;
          Check_Optional_Identifier (Arg, Name_Find);
       end Check_Optional_Identifier;
+
+      -------------------------------------
+      -- Check_Static_Boolean_Expression --
+      -------------------------------------
+
+      procedure Check_Static_Boolean_Expression (Expr : Node_Id) is
+      begin
+         if Present (Expr) then
+            Analyze_And_Resolve (Expr, Standard_Boolean);
+
+            if not Is_OK_Static_Expression (Expr) then
+               Error_Pragma_Arg
+                 ("expression of pragma % must be static", Expr);
+            end if;
+         end if;
+      end Check_Static_Boolean_Expression;
 
       -----------------------------
       -- Check_Static_Constraint --
@@ -11079,43 +11106,45 @@ package body Sem_Prag is
          -- Async_Readers/Async_Writers/Effective_Reads/Effective_Writes --
          ------------------------------------------------------------------
 
-         --  pragma Asynch_Readers   ( object_LOCAL_NAME [, FLAG] );
-         --  pragma Asynch_Writers   ( object_LOCAL_NAME [, FLAG] );
-         --  pragma Effective_Reads  ( object_LOCAL_NAME [, FLAG] );
-         --  pragma Effective_Writes ( object_LOCAL_NAME [, FLAG] );
-
-         --  FLAG ::= boolean_EXPRESSION
+         --  pragma Asynch_Readers   [ (boolean_EXPRESSION) ];
+         --  pragma Asynch_Writers   [ (boolean_EXPRESSION) ];
+         --  pragma Effective_Reads  [ (boolean_EXPRESSION) ];
+         --  pragma Effective_Writes [ (boolean_EXPRESSION) ];
 
          when Pragma_Async_Readers    |
               Pragma_Async_Writers    |
               Pragma_Effective_Reads  |
               Pragma_Effective_Writes =>
          Async_Effective : declare
-            Duplic : Node_Id;
-            Expr   : Node_Id;
-            Obj    : Node_Id;
-            Obj_Id : Entity_Id;
+            Obj_Decl : Node_Id;
+            Obj_Id   : Entity_Id;
 
          begin
             GNAT_Pragma;
             Check_No_Identifiers;
-            Check_At_Least_N_Arguments (1);
-            Check_At_Most_N_Arguments  (2);
-            Check_Arg_Is_Local_Name (Arg1);
-            Error_Msg_Name_1 := Pname;
+            Check_At_Most_N_Arguments  (1);
 
-            Obj  := Get_Pragma_Arg (Arg1);
-            Expr := Get_Pragma_Arg (Arg2);
+            Obj_Decl := Find_Related_Context (N, Do_Checks => True);
+
+            --  Object declaration
+
+            if Nkind (Obj_Decl) = N_Object_Declaration then
+               null;
+
+            --  Otherwise the pragma is associated with an illegal construact
+
+            else
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Obj_Id := Defining_Entity (Obj_Decl);
 
             --  Perform minimal verification to ensure that the argument is at
             --  least a variable. Subsequent finer grained checks will be done
             --  at the end of the declarative region the contains the pragma.
 
-            if Is_Entity_Name (Obj)
-              and then Present (Entity (Obj))
-              and then Ekind (Entity (Obj)) = E_Variable
-            then
-               Obj_Id := Entity (Obj);
+            if Ekind (Obj_Id) = E_Variable then
 
                --  A pragma that applies to a Ghost entity becomes Ghost for
                --  the purposes of legality checks and removal of ignored Ghost
@@ -11123,30 +11152,19 @@ package body Sem_Prag is
 
                Mark_Pragma_As_Ghost (N, Obj_Id);
 
-               --  Detect a duplicate pragma. Note that it is not efficient to
-               --  examine preceding statements as Boolean aspects may appear
-               --  anywhere between the related object declaration and its
-               --  freeze point. As an alternative, inspect the contents of the
-               --  variable contract.
+               --  Analyze the Boolean expression (if any)
 
-               Duplic := Get_Pragma (Obj_Id, Prag_Id);
-
-               if Present (Duplic) then
-                  Error_Msg_Sloc := Sloc (Duplic);
-                  Error_Msg_N ("pragma % duplicates pragma declared #", N);
-
-               --  No duplicate detected
-
-               else
-                  if Present (Expr) then
-                     Preanalyze_And_Resolve (Expr, Standard_Boolean);
-                  end if;
-
-                  --  Chain the pragma on the contract for further processing
-                  --  by Analyze_External_Property_In_Decl_Part.
-
-                  Add_Contract_Item (N, Obj_Id);
+               if Present (Arg1) then
+                  Check_Static_Boolean_Expression (Get_Pragma_Arg (Arg1));
                end if;
+
+               --  Chain the pragma on the contract for further processing by
+               --  Analyze_External_Property_In_Decl_Part.
+
+               Add_Contract_Item (N, Obj_Id);
+
+            --  Otherwise the external property applies to a constant
+
             else
                Error_Pragma ("pragma % must apply to a volatile object");
             end if;
@@ -12150,7 +12168,6 @@ package body Sem_Prag is
 
          when Pragma_Constant_After_Elaboration => Constant_After_Elaboration :
          declare
-            Expr     : Node_Id;
             Obj_Decl : Node_Id;
             Obj_Id   : Entity_Id;
 
@@ -12208,15 +12225,7 @@ package body Sem_Prag is
             --  Analyze the Boolean expression (if any)
 
             if Present (Arg1) then
-               Expr := Get_Pragma_Arg (Arg1);
-
-               Analyze_And_Resolve (Expr, Standard_Boolean);
-
-               if not Is_OK_Static_Expression (Expr) then
-                  Error_Pragma_Arg
-                    ("expression of pragma % must be static", Expr);
-                  return;
-               end if;
+               Check_Static_Boolean_Expression (Get_Pragma_Arg (Arg1));
             end if;
 
             --  Chain the pragma on the contract for completeness
@@ -13950,7 +13959,6 @@ package body Sem_Prag is
          --    the annotation must instantiate itself.
 
          when Pragma_Extensions_Visible => Extensions_Visible : declare
-            Expr          : Node_Id;
             Formal        : Entity_Id;
             Has_OK_Formal : Boolean := False;
             Spec_Id       : Entity_Id;
@@ -14043,15 +14051,8 @@ package body Sem_Prag is
             --  Analyze the Boolean expression (if any)
 
             if Present (Arg1) then
-               Expr := Expression (Get_Argument (N, Spec_Id));
-
-               Analyze_And_Resolve (Expr, Standard_Boolean);
-
-               if not Is_OK_Static_Expression (Expr) then
-                  Error_Pragma_Arg
-                    ("expression of pragma % must be static", Expr);
-                  return;
-               end if;
+               Check_Static_Boolean_Expression
+                 (Expression (Get_Argument (N, Spec_Id)));
             end if;
 
             --  Chain the pragma on the contract for completeness
@@ -21486,6 +21487,14 @@ package body Sem_Prag is
          when Pragma_Volatile =>
             Process_Atomic_Independent_Shared_Volatile;
 
+         -------------------------
+         -- Volatile_Components --
+         -------------------------
+
+         --  pragma Volatile_Components (array_LOCAL_NAME);
+
+         --  Volatile is handled by the same circuit as Atomic_Components
+
          --------------------------
          -- Volatile_Full_Access --
          --------------------------
@@ -21496,13 +21505,97 @@ package body Sem_Prag is
             GNAT_Pragma;
             Process_Atomic_Independent_Shared_Volatile;
 
-         -------------------------
-         -- Volatile_Components --
-         -------------------------
+         -----------------------
+         -- Volatile_Function --
+         -----------------------
 
-         --  pragma Volatile_Components (array_LOCAL_NAME);
+         --  pragma Volatile_Function [ (boolean_EXPRESSION) ];
 
-         --  Volatile is handled by the same circuit as Atomic_Components
+         when Pragma_Volatile_Function => Volatile_Function : declare
+            Over_Id   : Entity_Id;
+            Spec_Id   : Entity_Id;
+            Subp_Decl : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_At_Most_N_Arguments (1);
+
+            Subp_Decl :=
+              Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
+
+            --  Function instantiation
+
+            if Nkind (Subp_Decl) = N_Function_Instantiation then
+               null;
+
+            --  Generic subprogram
+
+            elsif Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
+               null;
+
+            --  Body acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Subp_Decl))
+            then
+               null;
+
+            --  Body stub acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+              and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
+            then
+               null;
+
+            --  Subprogram
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Declaration then
+               null;
+
+            else
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Spec_Id := Corresponding_Spec_Of (Subp_Decl);
+            Over_Id := Overridden_Operation (Spec_Id);
+
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Pragma_As_Ghost (N, Spec_Id);
+
+            --  A volatile function cannot override a non-volatile function
+            --  (SPARK RM 7.1.2(15)). Overriding checks are usually performed
+            --  in New_Overloaded_Entity, however at that point the pragma has
+            --  not been processed yet.
+
+            if Present (Over_Id)
+              and then not Is_Volatile_Function (Over_Id)
+            then
+               Error_Msg_N
+                 ("incompatible volatile function values in effect", Spec_Id);
+
+               Error_Msg_Sloc := Sloc (Over_Id);
+               Error_Msg_N
+                 ("\& declared # with Volatile_Function value `False`",
+                  Spec_Id);
+
+               Error_Msg_Sloc := Sloc (Spec_Id);
+               Error_Msg_N
+                 ("\overridden # with Volatile_Function value `True`",
+                  Spec_Id);
+            end if;
+
+            --  Analyze the Boolean expression (if any)
+
+            if Present (Arg1) then
+               Check_Static_Boolean_Expression (Get_Pragma_Arg (Arg1));
+            end if;
+
+            Add_Contract_Item (N, Spec_Id);
+         end Volatile_Function;
 
          ----------------------
          -- Warning_As_Error --
@@ -26278,6 +26371,33 @@ package body Sem_Prag is
            and then Nkind (Parent (Parent (N))) = N_Package_Body;
    end Is_Elaboration_SPARK_Mode;
 
+   -----------------------
+   -- Is_Enabled_Pragma --
+   -----------------------
+
+   function Is_Enabled_Pragma (Prag : Node_Id) return Boolean is
+      Arg : Node_Id;
+
+   begin
+      if Present (Prag) then
+         Arg := First (Pragma_Argument_Associations (Prag));
+
+         if Present (Arg) then
+            return Is_True (Expr_Value (Get_Pragma_Arg (Arg)));
+
+         --  The lack of a Boolean argument automatically enables the pragma
+
+         else
+            return True;
+         end if;
+
+      --  The pragma is missing, therefore it is not enabled
+
+      else
+         return False;
+      end if;
+   end Is_Enabled_Pragma;
+
    -----------------------------------------
    -- Is_Non_Significant_Pragma_Reference --
    -----------------------------------------
@@ -26519,6 +26639,7 @@ package body Sem_Prag is
       Pragma_Volatile                       =>  0,
       Pragma_Volatile_Components            =>  0,
       Pragma_Volatile_Full_Access           =>  0,
+      Pragma_Volatile_Function              =>  0,
       Pragma_Warning_As_Error               =>  0,
       Pragma_Warnings                       =>  0,
       Pragma_Weak_External                  =>  0,

@@ -7000,7 +7000,8 @@ package body Einfo is
                  Id = Pragma_Part_Of                    or else
                  Id = Pragma_Refined_Depends            or else
                  Id = Pragma_Refined_Global             or else
-                 Id = Pragma_Refined_State;
+                 Id = Pragma_Refined_State              or else
+                 Id = Pragma_Volatile_Function;
 
       --  Contract / test case pragmas
 
