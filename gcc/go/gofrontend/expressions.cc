@@ -5601,7 +5601,9 @@ Binary_expression::do_check_types(Gogo*)
       if (left_type->integer_type() == NULL)
 	this->report_error(_("shift of non-integer operand"));
 
-      if (!right_type->is_abstract()
+      if (right_type->is_string_type())
+        this->report_error(_("shift count not unsigned integer"));
+      else if (!right_type->is_abstract()
 	  && (right_type->integer_type() == NULL
 	      || !right_type->integer_type()->is_unsigned()))
 	this->report_error(_("shift count not unsigned integer"));
