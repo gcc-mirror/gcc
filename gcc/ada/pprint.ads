@@ -46,6 +46,10 @@ package Pprint is
       --  nodes
       --  ??? Expand_Type argument should be removed
 
+      Hide_Parameter_Blocks : Boolean := False;
+      --  If true, then "Parameter_Block.Field_Name.all" is
+      --  instead displayed as "Field_Name".
+
    function Expression_Image
      (Expr    : Node_Id;
       Default : String) return String;

@@ -1,5 +1,18 @@
 2015-10-20  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch5.adb (Analyze_Loop_Statement): Attach generated loop
+	identifier to the tree, because it may be the root of a tree
+	traversal in Pop_Scope when freeze actions are pending.
+
+2015-10-20  Steve Baird  <baird@adacore.com>
+
+	* pprint.ads (Expression_Image) Add new generic formal flag
+	Hide_Parameter_Blocks.
+	* pprint.adb (Expression_Image) If new flag is set, then display
+	dereferences of parameter block components accordingly.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_prag.adb: Code clean up.
 
 2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
