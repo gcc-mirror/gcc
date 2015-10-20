@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,9 +69,11 @@ package body System.Dim.Float_IO is
       Exp    : Field  := Default_Exp;
       Symbol : String := "")
    is
+      Ptr : constant Natural := Symbol'Length;
+
    begin
-      Num_Dim_Float_IO.Put (To, Item, Aft, Exp);
-      To := To & Symbol;
+      Num_Dim_Float_IO.Put (To (To'First .. To'Last - Ptr), Item, Aft, Exp);
+      To (To'Last - Ptr + 1 .. To'Last) := Symbol;
    end Put;
 
    ----------------
@@ -104,6 +106,27 @@ package body System.Dim.Float_IO is
       Symbol : String := "")
    is
    begin
-      To := Symbol;
+      To (1 .. Symbol'Length) := Symbol;
    end Put_Dim_Of;
+
+   -----------
+   -- Image --
+   -----------
+
+   function Image
+     (Item : Num_Dim_Float;
+      Aft    : Field  := Default_Aft;
+      Exp    : Field  := Default_Exp;
+      Symbol : String := "") return String
+   is
+      Buffer : String (1 .. 50);
+
+   begin
+      Put (Buffer, Item, Aft, Exp);
+      for I in Buffer'Range loop
+         if Buffer (I) /= ' ' then
+            return Buffer (I .. Buffer'Last) & Symbol;
+         end if;
+      end loop;
+   end Image;
 end System.Dim.Float_IO;

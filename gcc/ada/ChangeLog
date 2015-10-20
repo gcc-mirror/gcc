@@ -1,3 +1,20 @@
+2015-10-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_warn.adb (Is_OK_Fully_Initialized): Consider types with DIC as
+	fully default initialized.
+	* sem_ch6.adb: minor style fix in comment
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* s-diflio.ads, s-diflio.adb (Image): New function for dimensioned
+	quantities, to produce a string that includes the dimension
+	synbol for the quantity, or the vector of dimensions in standard
+	notation.
+	* sem_dim.adb (Expand_Put_Call_With_Symbol): Process new function
+	Image, to include dimension information in the generated string,
+	identical to the string produced by the Put procedure on a string
+	for a dimensioned quantity.
+
 2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Process_Declarations): A loop

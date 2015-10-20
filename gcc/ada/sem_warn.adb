@@ -1697,6 +1697,18 @@ package body Sem_Warn is
       begin
          if Is_Access_Type (Typ) and then Is_Dereferenced (N) then
             return False;
+
+         --  If a type has Default_Initial_Condition set, or it inherits it,
+         --  DIC might be specified with a boolean value, meaning that the type
+         --  is considered to be fully default initialized (SPARK RM 3.1 and
+         --  SPARK RM 7.3.3). To avoid generating spurious warnings in this
+         --  case, consider all types with DIC as fully initialized.
+
+         elsif Has_Default_Init_Cond (Typ)
+           or else Has_Inherited_Default_Init_Cond (Typ)
+         then
+            return True;
+
          else
             return Is_Fully_Initialized_Type (Typ);
          end if;

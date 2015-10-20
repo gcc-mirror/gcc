@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,5 +174,11 @@ package System.Dim.Float_IO is
 
    pragma Inline (Put);
    pragma Inline (Put_Dim_Of);
+
+   function Image
+     (Item : Num_Dim_Float;
+      Aft    : Field  := Default_Aft;
+      Exp    : Field  := Default_Exp;
+      Symbol : String := "") return String;
 
 end System.Dim.Float_IO;
