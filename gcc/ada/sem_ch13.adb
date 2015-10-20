@@ -4711,20 +4711,22 @@ package body Sem_Ch13 is
 
                   Find_Overlaid_Entity (N, O_Ent, Off);
 
-                  --  Overlaying controlled objects is erroneous
+                  --  Overlaying controlled objects is erroneous.
+                  --  Emit warning but continue analysis because program is
+                  --  itself legal, and back-end must see address clause.
 
                   if Present (O_Ent)
                     and then (Has_Controlled_Component (Etype (O_Ent))
                                or else Is_Controlled (Etype (O_Ent)))
+                    and then not Inside_A_Generic
                   then
                      Error_Msg_N
-                       ("??cannot overlay with controlled object", Expr);
+                       ("??cannot use overlays with controlled objects", Expr);
                      Error_Msg_N
                        ("\??Program_Error will be raised at run time", Expr);
                      Insert_Action (Declaration_Node (U_Ent),
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Overlaid_Controlled_Object));
-                     return;
 
                   elsif Present (O_Ent)
                     and then Ekind (U_Ent) = E_Constant

@@ -1536,7 +1536,7 @@ package body Exp_Ch4 is
          if RTE_Available (Comp) then
 
             --  Expand to a call only if the runtime function is available,
-            --  otherwise fallback to inline code.
+            --  otherwise fall back to inline code.
 
             Remove_Side_Effects (Op1, Name_Req => True);
             Remove_Side_Effects (Op2, Name_Req => True);

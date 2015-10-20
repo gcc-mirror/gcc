@@ -1,3 +1,22 @@
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch11.adb (Analyze_Handled_Statements): If the scope is a
+	postcondition subprogram, do not check for useless assignments
+	because there are no source references in such a body, and the
+	call will lose deferred references from the enclosing subprogram.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: nalyze_Attribute_Definition_Clause, case
+	'Address):  If either object is controlled the overlay is
+	erroneous, but analysis must be completed so that back-end sees
+	address clause and completes code generation.  Improve text
+	of warning.
+
+2015-10-20  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
 2015-10-20  Bob Duff  <duff@adacore.com>
 
 	* s-mudido-affinity.adb (Create): Correct subranges of slices of CPU
