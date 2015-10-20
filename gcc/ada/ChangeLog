@@ -1,3 +1,18 @@
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Check_Nonoverridable_Aspects): New procedure within
+	Analyze_Full_Type_ Declaration, used to apply legality rules in
+	13,1,1 (18.3.3) concerning aspects that cannot be overridden in
+	a type extension.
+	(Check_Duplicate_Aspects): It is not legal to specify the
+	Implicit_Dereference aspect on a full view if partial view has
+	known discriminants.
+	* sem_ch13.adb (Analyze_Aspect_Implicit_Dereference): Verify that
+	the specification of the aspect on a derived type confirms the
+	value of the inherited one.
+	* sem_util.adb (Reference_Discriminant): Return empty if none
+	specified.
+
 2015-10-20  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch5.adb, sem_ch3.adb: Minor reformatting.

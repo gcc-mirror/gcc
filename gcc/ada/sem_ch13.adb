@@ -1444,35 +1444,56 @@ package body Sem_Ch13 is
             -----------------------------------------
 
             procedure Analyze_Aspect_Implicit_Dereference is
+               Disc        : Entity_Id;
+               Parent_Disc : Entity_Id;
+
+               --  For a type extension, check whether parent has a
+               --  reference discriminant, to verify that use is proper.
+
             begin
                if not Is_Type (E) or else not Has_Discriminants (E) then
                   Error_Msg_N
-                    ("aspect must apply to a type with discriminants", N);
+                    ("aspect must apply to a type with discriminants", Expr);
+
+               elsif not Is_Entity_Name (Expr) then
+                  Error_Msg_N
+                    ("aspect must name a discriminant of current type", Expr);
 
                else
-                  declare
-                     Disc : Entity_Id;
+                  Disc := First_Discriminant (E);
+                  while Present (Disc) loop
+                     if Chars (Expr) = Chars (Disc)
+                       and then Ekind (Etype (Disc)) =
+                                  E_Anonymous_Access_Type
+                     then
+                        Set_Has_Implicit_Dereference (E);
+                        Set_Has_Implicit_Dereference (Disc);
+                        exit;
+                     end if;
 
-                  begin
-                     Disc := First_Discriminant (E);
-                     while Present (Disc) loop
-                        if Chars (Expr) = Chars (Disc)
-                          and then Ekind (Etype (Disc)) =
-                                     E_Anonymous_Access_Type
-                        then
-                           Set_Has_Implicit_Dereference (E);
-                           Set_Has_Implicit_Dereference (Disc);
-                           return;
-                        end if;
+                     Next_Discriminant (Disc);
+                  end loop;
 
-                        Next_Discriminant (Disc);
-                     end loop;
+                  --  Error if no proper access discriminant.
 
-                     --  Error if no proper access discriminant.
-
+                  if No (Disc) then
                      Error_Msg_NE
                       ("not an access discriminant of&", Expr, E);
-                  end;
+                     return;
+                  end if;
+               end if;
+
+               if Is_Derived_Type (E)
+                 and then Has_Discriminants (Etype (E))
+               then
+                  Parent_Disc := Get_Reference_Discriminant (Etype (E));
+
+                  if Present (Parent_Disc)
+                    and then Corresponding_Discriminant (Disc) /= Parent_Disc
+                  then
+                     Error_Msg_N ("reference discriminant does not match " &
+                       "discriminant of parent type", Expr);
+                  end if;
                end if;
             end Analyze_Aspect_Implicit_Dereference;
 
