@@ -46,6 +46,7 @@ with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
+with Snames;   use Snames;
 with Stand;    use Stand;
 
 package body Sem_Ch11 is
@@ -417,9 +418,13 @@ package body Sem_Ch11 is
 
       --  If the current scope is a subprogram, then this is the right place to
       --  check for hanging useless assignments from the statement sequence of
-      --  the subprogram body.
+      --  the subprogram body. Skip this in the body of a postcondition,
+      --  since in that case there are no source references, and we need to
+      --  preserve deferred references from the enclosing scope.
 
-      if Is_Subprogram (Current_Scope) then
+      if Is_Subprogram (Current_Scope)
+         and then Chars (Current_Scope) /= Name_uPostconditions
+      then
          Warn_On_Useless_Assignments (Current_Scope);
       end if;
 
