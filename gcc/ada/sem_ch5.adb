@@ -3217,12 +3217,15 @@ package body Sem_Ch5 is
 
       --  Case of no identifier present. Create one and attach it to the
       --  loop statement for use as a scope and as a reference for later
-      --  expansions. Indicate that the label does not come from source.
+      --  expansions. Indicate that the label does not come from source,
+      --  and attach it to the loop statement so it is part of the tree,
+      --  even without a full declaration.
 
       else
          Ent := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
          Set_Etype  (Ent, Standard_Void_Type);
          Set_Identifier (N, New_Occurrence_Of (Ent, Loc));
+         Set_Parent (Ent, N);
          Set_Has_Created_Identifier (N);
       end if;
 
