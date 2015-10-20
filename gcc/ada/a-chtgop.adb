@@ -357,22 +357,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    function Generic_Equal
      (L, R : Hash_Table_Type) return Boolean
    is
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      Lock_L : With_Lock (L.TC'Unrestricted_Access);
-      Lock_R : With_Lock (R.TC'Unrestricted_Access);
-
-      L_Index : Hash_Type;
-      L_Node  : Node_Access;
-
-      N : Count_Type;
-
    begin
-      if L'Address = R'Address then
-         return True;
-      end if;
-
       if L.Length /= R.Length then
          return False;
       end if;
@@ -381,44 +366,57 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
          return True;
       end if;
 
-      --  Find the first node of hash table L
+      declare
+         --  Per AI05-0022, the container implementation is required to detect
+         --  element tampering by a generic actual subprogram.
 
-      L_Index := 0;
-      loop
-         L_Node := L.Buckets (L_Index);
-         exit when L_Node /= null;
-         L_Index := L_Index + 1;
-      end loop;
+         Lock_L : With_Lock (L.TC'Unrestricted_Access);
+         Lock_R : With_Lock (R.TC'Unrestricted_Access);
 
-      --  For each node of hash table L, search for an equivalent node in hash
-      --  table R.
+         L_Index : Hash_Type;
+         L_Node  : Node_Access;
 
-      N := L.Length;
-      loop
-         if not Find (HT => R, Key => L_Node) then
-            return False;
-         end if;
+         N : Count_Type;
+      begin
+         --  Find the first node of hash table L
 
-         N := N - 1;
+         L_Index := 0;
+         loop
+            L_Node := L.Buckets (L_Index);
+            exit when L_Node /= null;
+            L_Index := L_Index + 1;
+         end loop;
 
-         L_Node := Next (L_Node);
+         --  For each node of hash table L, search for an equivalent node in
+         --  hash table R.
 
-         if L_Node = null then
-            --  We have exhausted the nodes in this bucket
-
-            if N = 0 then
-               return True;
+         N := L.Length;
+         loop
+            if not Find (HT => R, Key => L_Node) then
+               return False;
             end if;
 
-            --  Find the next bucket
+            N := N - 1;
 
-            loop
-               L_Index := L_Index + 1;
-               L_Node := L.Buckets (L_Index);
-               exit when L_Node /= null;
-            end loop;
-         end if;
-      end loop;
+            L_Node := Next (L_Node);
+
+            if L_Node = null then
+               --  We have exhausted the nodes in this bucket
+
+               if N = 0 then
+                  return True;
+               end if;
+
+               --  Find the next bucket
+
+               loop
+                  L_Index := L_Index + 1;
+                  L_Node := L.Buckets (L_Index);
+                  exit when L_Node /= null;
+               end loop;
+            end if;
+         end loop;
+      end;
    end Generic_Equal;
 
    -----------------------

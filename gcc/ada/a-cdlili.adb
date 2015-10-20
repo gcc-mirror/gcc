@@ -73,30 +73,34 @@ package body Ada.Containers.Doubly_Linked_Lists is
    ---------
 
    function "=" (Left, Right : List) return Boolean is
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
-      Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
-
-      L      : Node_Access;
-      R      : Node_Access;
-
    begin
       if Left.Length /= Right.Length then
          return False;
       end if;
 
-      L := Left.First;
-      R := Right.First;
-      for J in 1 .. Left.Length loop
-         if L.Element /= R.Element then
-            return False;
-         end if;
+      if Left.Length = 0 then
+         return True;
+      end if;
 
-         L := L.Next;
-         R := R.Next;
-      end loop;
+      declare
+         --  Per AI05-0022, the container implementation is required to detect
+         --  element tampering by a generic actual subprogram.
+
+         Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+         Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
+
+         L : Node_Access := Left.First;
+         R : Node_Access := Right.First;
+      begin
+         for J in 1 .. Left.Length loop
+            if L.Element /= R.Element then
+               return False;
+            end if;
+
+            L := L.Next;
+            R := R.Next;
+         end loop;
+      end;
 
       return True;
    end "=";
@@ -109,10 +113,15 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Src : Node_Access := Container.First;
 
    begin
+      --  If the counts are nonzero, execution is technically erroneous, but
+      --  it seems friendly to allow things like concurrent "=" on shared
+      --  constants.
+
+      Zero_Counts (Container.TC);
+
       if Src = null then
          pragma Assert (Container.Last = null);
          pragma Assert (Container.Length = 0);
-         pragma Assert (Container.TC = (Busy => 0, Lock => 0));
          return;
       end if;
 

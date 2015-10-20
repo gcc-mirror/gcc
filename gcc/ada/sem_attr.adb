@@ -388,8 +388,8 @@ package body Sem_Attr is
       --  itself of the form of a library unit name. Note that this is
       --  quite different from Check_Program_Unit, since it only checks
       --  the syntactic form of the name, not the semantic identity. This
-      --  is because it is used with attributes (Elab_Body, Elab_Spec,
-      --  UET_Address and Elaborated) which can refer to non-visible unit.
+      --  is because it is used with attributes (Elab_Body, Elab_Spec and
+      --  Elaborated) which can refer to non-visible unit.
 
       procedure Error_Attr (Msg : String; Error_Node : Node_Id);
       pragma No_Return (Error_Attr);
@@ -2675,7 +2675,6 @@ package body Sem_Attr is
       if Aname /= Name_Elab_Body       and then
          Aname /= Name_Elab_Spec       and then
          Aname /= Name_Elab_Subp_Body  and then
-         Aname /= Name_UET_Address     and then
          Aname /= Name_Enabled         and then
          Aname /= Name_Old
       then
@@ -6025,15 +6024,6 @@ package body Sem_Attr is
          end;
 
          Analyze_And_Resolve (N, Standard_String);
-
-      -----------------
-      -- UET_Address --
-      -----------------
-
-      when Attribute_UET_Address =>
-         Check_E0;
-         Check_Unit_Name (P);
-         Set_Etype (N, RTE (RE_Address));
 
       -----------------------
       -- Unbiased_Rounding --
@@ -9710,7 +9700,6 @@ package body Sem_Attr is
            Attribute_Terminated                   |
            Attribute_To_Address                   |
            Attribute_Type_Key                     |
-           Attribute_UET_Address                  |
            Attribute_Unchecked_Access             |
            Attribute_Universal_Literal_String     |
            Attribute_Unrestricted_Access          |
@@ -11059,16 +11048,6 @@ package body Sem_Attr is
 
          when Attribute_Result =>
             null;
-
-         -----------------
-         -- UET_Address --
-         -----------------
-
-         --  Prefix must not be resolved in this case, since it is not a
-         --  real entity reference. No action of any kind is require.
-
-         when Attribute_UET_Address =>
-            return;
 
          ----------------------
          -- Unchecked_Access --

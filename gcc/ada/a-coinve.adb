@@ -103,29 +103,36 @@ package body Ada.Containers.Indefinite_Vectors is
    ---------
 
    overriding function "=" (Left, Right : Vector) return Boolean is
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
-      Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
    begin
       if Left.Last /= Right.Last then
          return False;
       end if;
 
-      for J in Index_Type range Index_Type'First .. Left.Last loop
-         if Left.Elements.EA (J) = null then
-            if Right.Elements.EA (J) /= null then
+      if Left.Length = 0 then
+         return True;
+      end if;
+
+      declare
+         --  Per AI05-0022, the container implementation is required to detect
+         --  element tampering by a generic actual subprogram.
+
+         Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+         Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
+      begin
+         for J in Index_Type range Index_Type'First .. Left.Last loop
+            if Left.Elements.EA (J) = null then
+               if Right.Elements.EA (J) /= null then
+                  return False;
+               end if;
+
+            elsif Right.Elements.EA (J) = null then
+               return False;
+
+            elsif Left.Elements.EA (J).all /= Right.Elements.EA (J).all then
                return False;
             end if;
-
-         elsif Right.Elements.EA (J) = null then
-            return False;
-
-         elsif Left.Elements.EA (J).all /= Right.Elements.EA (J).all then
-            return False;
-         end if;
-      end loop;
+         end loop;
+      end;
 
       return True;
    end "=";
@@ -136,6 +143,12 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Adjust (Container : in out Vector) is
    begin
+      --  If the counts are nonzero, execution is technically erroneous, but
+      --  it seems friendly to allow things like concurrent "=" on shared
+      --  constants.
+
+      Zero_Counts (Container.TC);
+
       if Container.Last = No_Index then
          Container.Elements := null;
          return;
@@ -149,7 +162,6 @@ package body Ada.Containers.Indefinite_Vectors is
       begin
          Container.Elements := null;
          Container.Last := No_Index;
-         Zero_Counts (Container.TC);
 
          Container.Elements := new Elements_Type (L);
 

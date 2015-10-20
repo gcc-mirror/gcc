@@ -215,6 +215,17 @@ package Sem_Prag is
    procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id);
    --  Perform preanalysis of pragma Test_Case
 
+   procedure Build_Generic_Class_Condition
+     (Subp : Entity_Id;
+      Prag : Node_Id);
+   --  AI12-113 modifies the semantics of classwide pre- and postconditions,
+   --  as well as type invariants, so that the expression used in an inherited
+   --  operation uses the actual type and is statically bound, rather than
+   --  using T'Class and dispatching. This new semantics is implemented by
+   --  building a generic function for the corresponding condition and
+   --  instantiating it for each descendant type. Checking the condition is
+   --  implemented as a call to that instantiation.
+
    procedure Check_Applicable_Policy (N : Node_Id);
    --  N is either an N_Aspect or an N_Pragma node. There are two cases. If
    --  the name of the aspect or pragma is not one of those recognized as

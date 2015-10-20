@@ -508,16 +508,6 @@ package Sem_Attr is
       --  Aux_DEC into System, then the type Type_Class can be referenced
       --  as an entity within System, as can its enumeration literals.
 
-      -----------------
-      -- UET_Address --
-      -----------------
-
-      Attribute_UET_Address => True,
-      --  Unit'UET_Address, where Unit is a program unit, yields the address
-      --  of the unit exception table for the specified unit. This is only
-      --  used in the internal implementation of exception handling. See the
-      --  implementation of unit Ada.Exceptions for details on its use.
-
       ------------------------------
       -- Universal_Literal_String --
       ------------------------------

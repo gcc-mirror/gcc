@@ -514,9 +514,14 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
       Root : constant Node_Access := Tree.Root;
       use type Helpers.Tamper_Counts;
    begin
+      --  If the counts are nonzero, execution is technically erroneous, but
+      --  it seems friendly to allow things like concurrent "=" on shared
+      --  constants.
+
+      Zero_Counts (Tree.TC);
+
       if N = 0 then
          pragma Assert (Root = null);
-         pragma Assert (Tree.TC = (Busy => 0, Lock => 0));
          return;
       end if;
 
@@ -623,16 +628,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
    -------------------
 
    function Generic_Equal (Left, Right : Tree_Type) return Boolean is
-      Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
-      Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
-
-      L_Node : Node_Access;
-      R_Node : Node_Access;
    begin
-      if Left'Address = Right'Address then
-         return True;
-      end if;
-
       if Left.Length /= Right.Length then
          return False;
       end if;
@@ -644,16 +640,22 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
          return True;
       end if;
 
-      L_Node := Left.First;
-      R_Node := Right.First;
-      while L_Node /= null loop
-         if not Is_Equal (L_Node, R_Node) then
-            return False;
-         end if;
+      declare
+         Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+         Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
 
-         L_Node := Next (L_Node);
-         R_Node := Next (R_Node);
-      end loop;
+         L_Node : Node_Access := Left.First;
+         R_Node : Node_Access := Right.First;
+      begin
+         while L_Node /= null loop
+            if not Is_Equal (L_Node, R_Node) then
+               return False;
+            end if;
+
+            L_Node := Next (L_Node);
+            R_Node := Next (R_Node);
+         end loop;
+      end;
 
       return True;
    end Generic_Equal;

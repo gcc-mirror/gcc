@@ -3883,11 +3883,18 @@ package body Sem_Ch3 is
          --  the possible presence of an address clause, and defer resolution
          --  and expansion of the aggregate to the freeze point of the entity.
 
+         --  This is not always legal because the aggregate may contain other
+         --  references that need freezing, e.g. references to other entities
+         --  with address clauses. In any case, when compiling with -gnatI the
+         --  presence of the address clause must be ignored.
+
          if Comes_From_Source (N)
            and then Expander_Active
            and then Nkind (E) = N_Aggregate
-           and then (Present (Following_Address_Clause (N))
-                      or else Delayed_Aspect_Present)
+           and then
+             ((Present (Following_Address_Clause (N))
+                            and then not Ignore_Rep_Clauses)
+              or else Delayed_Aspect_Present)
          then
             Set_Etype (E, T);
 
