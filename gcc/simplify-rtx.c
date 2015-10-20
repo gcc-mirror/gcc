@@ -2001,7 +2001,17 @@ simplify_binary_operation (enum rtx_code code, machine_mode mode,
   tem = simplify_const_binary_operation (code, mode, trueop0, trueop1);
   if (tem)
     return tem;
-  return simplify_binary_operation_1 (code, mode, op0, op1, trueop0, trueop1);
+  tem = simplify_binary_operation_1 (code, mode, op0, op1, trueop0, trueop1);
+
+  if (tem)
+    return tem;
+
+  /* If the above steps did not result in a simplification and op0 or op1
+     were constant pool references, use the referenced constants directly.  */
+  if (trueop0 != op0 || trueop1 != op1)
+    return simplify_gen_binary (code, mode, trueop0, trueop1);
+
+  return NULL_RTX;
 }
 
 /* Subroutine of simplify_binary_operation.  Simplify a binary operation
