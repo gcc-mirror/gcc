@@ -380,6 +380,7 @@ GNATRTL_NONTASKING_OBJS= \
   directio$(objext) \
   g-arrspl$(objext) \
   g-awk$(objext) \
+  g-binenv$(objext) \
   g-bubsor$(objext) \
   g-busora$(objext) \
   g-busorg$(objext) \

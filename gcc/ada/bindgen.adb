@@ -35,6 +35,7 @@ with Osint;    use Osint;
 with Osint.B;  use Osint.B;
 with Output;   use Output;
 with Rident;   use Rident;
+with Stringt;  use Stringt;
 with Table;    use Table;
 with Targparm; use Targparm;
 with Types;    use Types;
@@ -43,6 +44,7 @@ with System.OS_Lib;  use System.OS_Lib;
 with System.WCh_Con; use System.WCh_Con;
 
 with GNAT.Heap_Sort_A; use GNAT.Heap_Sort_A;
+with GNAT.HTable;
 
 package body Bindgen is
 
@@ -89,6 +91,9 @@ package body Bindgen is
    Lib_Final_Built : Boolean := False;
    --  Flag indicating whether the finalize_library rountine has been built
 
+   Bind_Env_String_Built : Boolean := False;
+   --  Flag indicating whether a bind environment string has been built
+
    CodePeer_Wrapper_Name : constant String := "call_main_subprogram";
    --  For CodePeer, introduce a wrapper subprogram which calls the
    --  user-defined main subprogram.
@@ -123,6 +128,22 @@ package body Bindgen is
      Table_Initial        => 100,
      Table_Increment      => 200,
      Table_Name           => "PSD_Pragma_Settings");
+
+   ----------------------------
+   -- Bind_Environment Table --
+   ----------------------------
+
+   subtype Header_Num is Int range 0 .. 36;
+
+   function Hash (Nam : Name_Id) return Header_Num;
+
+   package Bind_Environment is new GNAT.HTable.Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Name_Id,
+      No_Element => No_Name,
+      Key        => Name_Id,
+      Hash       => Hash,
+      Equal      => "=");
 
    ----------------------
    -- Run-Time Globals --
@@ -246,6 +267,9 @@ package body Bindgen is
    procedure Gen_Adafinal;
    --  Generate the Adafinal procedure
 
+   procedure Gen_Bind_Env_String;
+   --  Generate the bind environment buffer
+
    procedure Gen_CodePeer_Wrapper;
    --  For CodePeer, generate wrapper which calls user-defined main subprogram
 
@@ -368,6 +392,10 @@ package body Bindgen is
    procedure Write_Statement_Buffer (S : String);
    --  First writes its argument (using Set_String (S)), then writes out the
    --  contents of statement buffer up to Last, and reset Last to 0
+
+   procedure Write_Bind_Line (S : String);
+   --  Write S (an LF-terminated string) to the binder file (for use with
+   --  Set_Special_Output).
 
    ------------------
    -- Gen_Adafinal --
@@ -594,6 +622,9 @@ package body Bindgen is
          WBI ("      Leap_Seconds_Support : Integer;");
          WBI ("      pragma Import (C, Leap_Seconds_Support, " &
               """__gl_leap_seconds_support"");");
+         WBI ("      Bind_Env_Addr : System.Address;");
+         WBI ("      pragma Import (C, Bind_Env_Addr, " &
+              """__gl_bind_env_addr"");");
 
          --  Import entry point for elaboration time signal handler
          --  installation, and indication of if it's been called previously.
@@ -662,6 +693,8 @@ package body Bindgen is
             WBI ("        (Ada, Freeze_Dispatching_Domains, "
                  & """__gnat_freeze_dispatching_domains"");");
          end if;
+
+         --  Start of processing for Adainit
 
          WBI ("   begin");
          WBI ("      if Is_Elaborated then");
@@ -793,6 +826,10 @@ package body Bindgen is
          Set_String (";");
          Write_Statement_Buffer;
 
+         if Bind_Env_String_Built then
+            WBI ("      Bind_Env_Addr := Bind_Env'Address;");
+         end if;
+
          --  Generate call to Install_Handler
 
          WBI ("");
@@ -896,6 +933,62 @@ package body Bindgen is
       WBI ("   end " & Ada_Init_Name.all & ";");
       WBI ("");
    end Gen_Adainit;
+
+   -------------------------
+   -- Gen_Bind_Env_String --
+   -------------------------
+
+   procedure Gen_Bind_Env_String is
+      KN, VN : Name_Id := No_Name;
+      Amp    : Character;
+
+      procedure Write_Name_With_Len (Nam : Name_Id);
+      --  Write Nam as a string literal, prefixed with one
+      --  character encoding Nam's length.
+
+      -------------------------
+      -- Write_Name_With_Len --
+      -------------------------
+
+      procedure Write_Name_With_Len (Nam : Name_Id) is
+      begin
+         Get_Name_String (Nam);
+
+         Start_String;
+         Store_String_Char (Character'Val (Name_Len));
+         Store_String_Chars (Name_Buffer (1 .. Name_Len));
+
+         Write_String_Table_Entry (End_String);
+      end Write_Name_With_Len;
+
+   --  Start of processing for Gen_Bind_Env_String
+
+   begin
+      Bind_Environment.Get_First (KN, VN);
+      if VN = No_Name then
+         return;
+      end if;
+
+      Set_Special_Output (Write_Bind_Line'Access);
+
+      WBI ("   Bind_Env : aliased constant String :=");
+      Amp := ' ';
+      while VN /= No_Name loop
+         Write_Str ("     " & Amp & ' ');
+         Write_Name_With_Len (KN);
+         Write_Str (" & ");
+         Write_Name_With_Len (VN);
+         Write_Eol;
+
+         Bind_Environment.Get_Next (KN, VN);
+         Amp := '&';
+      end loop;
+      WBI ("     & ASCII.NUL;");
+
+      Set_Special_Output (null);
+
+      Bind_Env_String_Built := True;
+   end Gen_Bind_Env_String;
 
    --------------------------
    -- Gen_CodePeer_Wrapper --
@@ -2279,13 +2372,18 @@ package body Bindgen is
             WBI ("");
          end if;
 
-         --  The B.1 (39) implementation advice says that the adainit/adafinal
-         --  routines should be idempotent. Generate a flag to ensure that.
-         --  This is not needed if we are suppressing the standard library
-         --  since it would never be referenced.
-
          if not Suppress_Standard_Library_On_Target then
+
+            --  The B.1(39) implementation advice says that the adainit
+            --  and adafinal routines should be idempotent. Generate a flag to
+            --  ensure that. This is not needed if we are suppressing the
+            --  standard library since it would never be referenced.
+
             WBI ("   Is_Elaborated : Boolean := False;");
+
+            --  Generate bind environment string
+
+            Gen_Bind_Env_String;
          end if;
 
          WBI ("");
@@ -2656,6 +2754,15 @@ package body Bindgen is
       return False;
    end Has_Finalizer;
 
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (Nam : Name_Id) return Header_Num is
+   begin
+      return Int (Nam - Names_Low_Bound) rem Header_Num'Last;
+   end Hash;
+
    ----------------------
    -- Lt_Linker_Option --
    ----------------------
@@ -2753,6 +2860,25 @@ package body Bindgen is
          Check_Package (System_Restrictions_Used, "system.restrictions%s");
       end loop;
    end Resolve_Binder_Options;
+
+   ------------------
+   -- Set_Bind_Env --
+   ------------------
+
+   procedure Set_Bind_Env (Key, Value : String) is
+   begin
+      --  The lengths of Key and Value are stored as single bytes
+
+      if Key'Length > 255 then
+         Osint.Fail ("bind environment key """ & Key & """ too long");
+      end if;
+
+      if Value'Length > 255 then
+         Osint.Fail ("bind environment value """ & Value & """ too long");
+      end if;
+
+      Bind_Environment.Set (Name_Find_Str (Key), Name_Find_Str (Value));
+   end Set_Bind_Env;
 
    -----------------
    -- Set_Boolean --
@@ -2944,6 +3070,17 @@ package body Bindgen is
 
       Set_Int (Unum);
    end Set_Unit_Number;
+
+   ---------------------
+   -- Write_Bind_Line --
+   ---------------------
+
+   procedure Write_Bind_Line (S : String) is
+   begin
+      --  Need to strip trailing LF from S
+
+      WBI (S (S'First .. S'Last - 1));
+   end Write_Bind_Line;
 
    ----------------------------
    -- Write_Statement_Buffer --

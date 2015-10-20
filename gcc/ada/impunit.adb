@@ -238,6 +238,7 @@ package body Impunit is
     ("g-alvevi", F),  -- GNAT.Altivec.Vector_Views
     ("g-arrspl", F),  -- GNAT.Array_Split
     ("g-awk   ", F),  -- GNAT.AWK
+    ("g-binenv", F),  -- GNAT.Bind_Environment
     ("g-boubuf", F),  -- GNAT.Bounded_Buffers
     ("g-boumai", F),  -- GNAT.Bounded_Mailboxes
     ("g-bubsor", F),  -- GNAT.Bubble_Sort

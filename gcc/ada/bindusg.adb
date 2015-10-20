@@ -4,9 +4,9 @@
 --                                                                          --
 --                             B I N D U S G                                --
 --                                                                          --
---                                B o d y                                   --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,6 +228,10 @@ package body Bindusg is
       Write_Line ("  -v        Verbose mode. Error messages, " &
                   "header, summary output to stdout");
 
+      --  Line for -V switch
+
+      Write_Line ("  -Vkey=val Record bind-time variable key " &
+                  "with value val");
       --  Line for -w switch
 
       Write_Line ("  -wx       Warning mode. (x=s/e for " &
