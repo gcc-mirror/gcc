@@ -302,6 +302,20 @@ package body GNAT.Debug_Pools is
    --  Wrapper for Put_Line that ensures we always write to stdout instead of
    --  the current output file defined in GNAT.IO.
 
+   procedure Print_Traceback
+     (Output_File : File_Type;
+      Prefix      : String;
+      Traceback   : Traceback_Htable_Elem_Ptr);
+   --  Output Prefix & Traceback & EOL.
+   --  Print nothing if Traceback is null.
+
+   procedure Print_Address (File : File_Type; Addr : Address);
+   --  Output System.Address without using secondary stack.
+   --  When System.Memory uses Debug_Pool, secondary stack cannot be used
+   --  during Allocate calls, as some Allocate calls are done to
+   --  register/initialize a secondary stack for a foreign thread.
+   --  During these calls, the secondary stack is not available yet.
+
    package Validity is
       function Is_Handled (Storage : System.Address) return Boolean;
       pragma Inline (Is_Handled);
@@ -460,6 +474,18 @@ package body GNAT.Debug_Pools is
       end if;
    end Output_File;
 
+   -------------------
+   -- Print_Address --
+   -------------------
+
+   procedure Print_Address (File : File_Type; Addr : Address) is
+      type My_Address is mod Memory_Size;
+      function To_My_Address is new Ada.Unchecked_Conversion
+        (System.Address, My_Address);
+   begin
+      Put (File, My_Address'Image (To_My_Address (Addr)));
+   end Print_Address;
+
    --------------
    -- Put_Line --
    --------------
@@ -481,7 +507,8 @@ package body GNAT.Debug_Pools is
       procedure Print (Tr : Tracebacks_Array) is
       begin
          for J in Tr'Range loop
-            Put (File, "0x" & Address_Image (PC_For (Tr (J))) & ' ');
+            Print_Address (File, PC_For (Tr (J)));
+            Put (File, ' ');
          end loop;
          Put (File, ASCII.LF);
       end Print;
@@ -964,12 +991,16 @@ package body GNAT.Debug_Pools is
       if Pool.Low_Level_Traces then
          Put (Output_File (Pool),
               "info: Allocated"
-                & Storage_Count'Image (Size_In_Storage_Elements)
-                & " bytes at 0x" & Address_Image (Storage_Address)
-                & " (physically:"
-                & Storage_Count'Image (Local_Storage_Array'Length)
-                & " bytes at 0x" & Address_Image (P.all'Address)
-                & "), at ");
+              & Storage_Count'Image (Size_In_Storage_Elements)
+              & " bytes at ");
+         Print_Address (Output_File (Pool), Storage_Address);
+         Put (Output_File (Pool),
+              " (physically:"
+              & Storage_Count'Image (Local_Storage_Array'Length)
+              & " bytes at ");
+         Print_Address (Output_File (Pool), P.all'Address);
+         Put (Output_File (Pool),
+              "), at ");
          Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
                    Allocate_Label'Address,
                    Code_Address_For_Deallocate_End);
@@ -1151,13 +1182,15 @@ package body GNAT.Debug_Pools is
                Next := Header.Next;
 
                if Pool.Low_Level_Traces then
-                  Put_Line
+                  Put
                     (Output_File (Pool),
                      "info: Freeing physical memory "
-                       & Storage_Count'Image
+                     & Storage_Count'Image
                        ((abs Header.Block_Size) + Extra_Allocation)
-                       & " bytes at 0x"
-                       & Address_Image (Header.Allocation_Address));
+                     & " bytes at ");
+                  Print_Address (Output_File (Pool),
+                                 Header.Allocation_Address);
+                  Put_Line (Output_File (Pool), "");
                end if;
 
                if System_Memory_Debug_Pool_Enabled then
@@ -1343,6 +1376,21 @@ package body GNAT.Debug_Pools is
 
    end Get_Size;
 
+   ---------------------
+   -- Print_Traceback --
+   ---------------------
+
+   procedure Print_Traceback
+     (Output_File : File_Type;
+      Prefix      : String;
+      Traceback   : Traceback_Htable_Elem_Ptr) is
+   begin
+      if Traceback /= null then
+         Put (Output_File, Prefix);
+         Put_Line (Output_File, 0, Traceback.Traceback);
+      end if;
+   end Print_Traceback;
+
    ----------------
    -- Deallocate --
    ----------------
@@ -1411,12 +1459,11 @@ package body GNAT.Debug_Pools is
             Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
                       Deallocate_Label'Address,
                       Code_Address_For_Deallocate_End);
-            Put (Output_File (Pool), "   Memory already deallocated at ");
-            Put_Line
-               (Output_File (Pool), 0,
-                To_Traceback (Header.Dealloc_Traceback).Traceback);
-            Put (Output_File (Pool), "   Memory was allocated at ");
-            Put_Line (Output_File (Pool), 0, Header.Alloc_Traceback.Traceback);
+            Print_Traceback (Output_File (Pool),
+                             "   Memory already deallocated at ",
+                            To_Traceback (Header.Dealloc_Traceback));
+            Print_Traceback (Output_File (Pool), "   Memory was allocated at ",
+                             Header.Alloc_Traceback);
          end if;
 
       else
@@ -1439,16 +1486,20 @@ package body GNAT.Debug_Pools is
             Put (Output_File (Pool),
                  "info: Deallocated"
                  & Storage_Count'Image (Header.Block_Size)
-                 & " bytes at 0x" & Address_Image (Storage_Address)
-                 & " (physically"
+                 & " bytes at ");
+            Print_Address (Output_File (Pool), Storage_Address);
+            Put (Output_File (Pool),
+                 " (physically"
                  & Storage_Count'Image (Header.Block_Size + Extra_Allocation)
-                 & " bytes at 0x" & Address_Image (Header.Allocation_Address)
-                 & "), at ");
+                 & " bytes at ");
+            Print_Address (Output_File (Pool), Header.Allocation_Address);
+            Put (Output_File (Pool), "), at ");
+
             Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
                       Deallocate_Label'Address,
                       Code_Address_For_Deallocate_End);
-            Put (Output_File (Pool), "   Memory was allocated at ");
-            Put_Line (Output_File (Pool), 0, Header.Alloc_Traceback.Traceback);
+            Print_Traceback (Output_File (Pool), "   Memory was allocated at ",
+                             Header.Alloc_Traceback);
          end if;
 
          --  Remove this block from the list of used blocks
@@ -1594,14 +1645,10 @@ package body GNAT.Debug_Pools is
                  (Output_File (Pool), Pool.Stack_Trace_Depth, null,
                   Dereference_Label'Address,
                   Code_Address_For_Dereference_End);
-               Put (Output_File (Pool), "  First deallocation at ");
-               Put_Line
-                 (Output_File (Pool),
-                  0, To_Traceback (Header.Dealloc_Traceback).Traceback);
-               Put (Output_File (Pool), "  Initial allocation at ");
-               Put_Line
-                 (Output_File (Pool),
-                  0, Header.Alloc_Traceback.Traceback);
+               Print_Traceback (Output_File (Pool), "  First deallocation at ",
+                                To_Traceback (Header.Dealloc_Traceback));
+               Print_Traceback (Output_File (Pool), "  Initial allocation at ",
+                                Header.Alloc_Traceback);
             end if;
          end if;
       end if;
@@ -1787,10 +1834,12 @@ package body GNAT.Debug_Pools is
 
             Put ("Size: " & Storage_Count'Image (Header.Block_Size) & " at: ");
 
-            for T in Header.Alloc_Traceback.Traceback'Range loop
-               Put ("0x" & Address_Image
-                      (PC_For (Header.Alloc_Traceback.Traceback (T))) & ' ');
-            end loop;
+            if Header.Alloc_Traceback /= null then
+               for T in Header.Alloc_Traceback.Traceback'Range loop
+                  Put ("0x" & Address_Image
+                       (PC_For (Header.Alloc_Traceback.Traceback (T))) & ' ');
+               end loop;
+            end if;
 
             Put_Line ("");
             Current := Header.Next;
@@ -2090,16 +2139,16 @@ package body GNAT.Debug_Pools is
 
       else
          Header := Header_Of (Storage);
-         Put_Line (Standard_Output, "0x" & Address_Image (A)
-                     & " allocated at:");
-         Put_Line (Standard_Output, 0, Header.Alloc_Traceback.Traceback);
+         Print_Address (Standard_Output, A);
+         Put_Line (Standard_Output, " allocated at:");
+         Print_Traceback (Standard_Output, "", Header.Alloc_Traceback);
 
          if To_Traceback (Header.Dealloc_Traceback) /= null then
-            Put_Line (Standard_Output, "0x" & Address_Image (A)
-                      & " logically freed memory, deallocated at:");
-            Put_Line
-               (Standard_Output, 0,
-                To_Traceback (Header.Dealloc_Traceback).Traceback);
+            Print_Address (Standard_Output, A);
+            Put_Line (Standard_Output,
+                      " logically freed memory, deallocated at:");
+            Print_Traceback (Standard_Output, "",
+                             To_Traceback (Header.Dealloc_Traceback));
          end if;
       end if;
    end Print_Pool;
@@ -2180,30 +2229,34 @@ package body GNAT.Debug_Pools is
 
          Actual_Size := size_t (Header.Block_Size);
          Tracebk := Header.Alloc_Traceback.Traceback;
-         Num_Calls := Tracebk'Length;
 
-         --  (Code taken from memtrack.adb in GNAT's sources)
+         if Header.Alloc_Traceback /= null then
+            Num_Calls := Tracebk'Length;
 
-         --  Logs allocation call using the format:
+            --  (Code taken from memtrack.adb in GNAT's sources)
 
-         --   'A' <mem addr> <size chunk> <len backtrace> <addr1> ... <addrn>
+            --  Logs allocation call using the format:
 
-         fputc (Character'Pos ('A'), File);
-         fwrite (Current'Address, Address_Size, 1, File);
-         fwrite (Actual_Size'Address, size_t'Max_Size_In_Storage_Elements, 1,
-                 File);
-         fwrite (Dummy_Time'Address, Duration'Max_Size_In_Storage_Elements, 1,
-                 File);
-         fwrite (Num_Calls'Address, Integer'Max_Size_In_Storage_Elements, 1,
-                 File);
+            --  'A' <mem addr> <size chunk> <len backtrace> <addr1> ... <addrn>
 
-         for J in Tracebk'First .. Tracebk'First + Num_Calls - 1 loop
-            declare
-               Ptr : System.Address := PC_For (Tracebk (J));
-            begin
-               fwrite (Ptr'Address, Address_Size, 1, File);
-            end;
-         end loop;
+            fputc (Character'Pos ('A'), File);
+            fwrite (Current'Address, Address_Size, 1, File);
+            fwrite (Actual_Size'Address, size_t'Max_Size_In_Storage_Elements,
+                    1, File);
+            fwrite (Dummy_Time'Address, Duration'Max_Size_In_Storage_Elements,
+                    1, File);
+            fwrite (Num_Calls'Address, Integer'Max_Size_In_Storage_Elements, 1,
+                    File);
+
+            for J in Tracebk'First .. Tracebk'First + Num_Calls - 1 loop
+               declare
+                  Ptr : System.Address := PC_For (Tracebk (J));
+               begin
+                  fwrite (Ptr'Address, Address_Size, 1, File);
+               end;
+            end loop;
+
+         end if;
 
          Current := Header.Next;
       end loop;

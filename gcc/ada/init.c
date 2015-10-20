@@ -1902,7 +1902,8 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
   Raise_From_Signal_Handler (exception, msg);
 }
 
-#if defined (__i386__) && !defined (VTHREADS)
+#if defined (__i386__) && !defined (VTHREADS) && _WRS_VXWORKS_MAJOR < 7
+
 extern void
 __gnat_vxsim_error_handler (int sig, siginfo_t *si, void *sc);
 
@@ -1939,7 +1940,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-#if defined (__ARMEL__) || defined (__PPC__) || defined (__i386__)
+#if defined (__ARMEL__) || defined (__PPC__) || (defined (__i386__) && _WRS_VXWORKS_MAJOR < 7)
   /* On certain targets, kernel mode, we process signals through a Call Frame
      Info trampoline, voiding the need for myriads of fallback_frame_state
      variants in the ZCX runtime.  We have no simple way to distinguish ZCX
@@ -2039,7 +2040,7 @@ __gnat_install_handler (void)
   trap_0_entry->inst_fourth = 0xa1480000;
 #endif
 
-#if defined (__i386__) && !defined (VTHREADS)
+#if defined (__i386__) && !defined (VTHREADS) && _WRS_VXWORKS_MAJOR != 7
   /*  By experiment, found that sysModel () returns the following string
       prefix for vxsim when running on Linux and Windows.  */
   model = sysModel ();

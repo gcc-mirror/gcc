@@ -194,11 +194,15 @@ extern Boolean No_Strict_Aliasing_CP;
 
 #define No_Exception_Handlers_Set      restrict__no_exception_handlers_set
 #define Check_No_Implicit_Heap_Alloc   restrict__check_no_implicit_heap_alloc
+#define Check_No_Implicit_Task_Alloc   restrict__check_no_implicit_task_alloc
+#define Check_No_Implicit_Protected_Alloc restrict__check_no_implicit_protected_alloc
 #define Check_Elaboration_Code_Allowed restrict__check_elaboration_code_allowed
 #define Check_Implicit_Dynamic_Code_Allowed restrict__check_implicit_dynamic_code_allowed
 
 extern Boolean No_Exception_Handlers_Set   (void);
 extern void Check_No_Implicit_Heap_Alloc   (Node_Id);
+extern void Check_No_Implicit_Task_Alloc   (Node_Id);
+extern void Check_No_Implicit_Protected_Alloc (Node_Id);
 extern void Check_Elaboration_Code_Allowed (Node_Id);
 extern void Check_Implicit_Dynamic_Code_Allowed (Node_Id);
 

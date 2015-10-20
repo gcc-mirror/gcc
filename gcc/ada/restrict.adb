@@ -285,6 +285,24 @@ package body Restrict is
       Check_Restriction (No_Implicit_Heap_Allocations, N);
    end Check_No_Implicit_Heap_Alloc;
 
+   ----------------------------------
+   -- Check_No_Implicit_Task_Alloc --
+   ----------------------------------
+
+   procedure Check_No_Implicit_Task_Alloc (N : Node_Id) is
+   begin
+      Check_Restriction (No_Implicit_Task_Allocations, N);
+   end Check_No_Implicit_Task_Alloc;
+
+   ---------------------------------------
+   -- Check_No_Implicit_Protected_Alloc --
+   ---------------------------------------
+
+   procedure Check_No_Implicit_Protected_Alloc (N : Node_Id) is
+   begin
+      Check_Restriction (No_Implicit_Protected_Object_Allocations, N);
+   end Check_No_Implicit_Protected_Alloc;
+
    -----------------------------------
    -- Check_Obsolescent_2005_Entity --
    -----------------------------------
