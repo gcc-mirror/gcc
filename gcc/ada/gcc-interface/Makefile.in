@@ -885,7 +885,12 @@ ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendo
      SVX=system-vxworks7
   else
      SVX=system-vxworks
+     EH_MECHANISM=-gcc
   endif
+
+  EXTRA_LIBGNAT_OBJS+=sigtramp-vxworks.o sigtramp-vxworks-vxsim.o
+  EXTRA_LIBGNAT_OBJS+=init-vxsim.o
+  EXTRA_LIBGNAT_SRCS+=sigtramp.h sigtramp-vxworks-target.inc
 
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
@@ -923,13 +928,49 @@ ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendo
     s-tfsetr.adb<s-tfsetr-vxworks.adb
   endif
 
+  # The CPU setting for VxSim varies with the
+  # host (Windows or Linux)
+  # target (VxWorks6 or VxWorks7)
+  # runtime (rtp or kernel)
+  # -------------------------------------------------------------
+  #					vx6		vx7
+  # Windows (host_os = mingw32)
+  #	kernel				SIMNT		SIMNT
+  #	rtp				SIMPENTIUM	SIMNT
+  # Linux (host_os = linux-gnu)
+  #	kernel				SIMLINUX	SIMLINUX
+  #	rtp				SIMPENTIUM	SIMLINUX
+  # -------------------------------------------------------------
+  # It is overridden by VXSIM_CPU only in files init-vxsim.c and
+  # sigtramp-vxworks-vxsim.c which contain functions determined at
+  # runtime to be called if a program is running on VxSim vs real hardware
+  # (due to differences in signal context for unwinding).
+
+  VXSIM_CPU =
+
+  ifeq ($(strip $(filter-out vxworks rtp rtp-smp,$(target_os) $(THREAD_KIND))),)
+      VXSIM_CPU = SIMPENTIUM
+  else
+    ifeq ($(strip $(filter-out kernel kernel-smp rtp rtp-smp,$(THREAD_KIND))),)
+      ifeq ($(strip $(filter-out linux%,$(host_os))),)
+        # Linux
+        VXSIM_CPU = SIMLINUX
+      else
+        # Windows
+        VXSIM_CPU = SIMNT
+      endif
+    endif
+  endif
+
+  GNATLIBCFLAGS_FOR_C := $(GNATLIBCFLAGS_FOR_C) -D__VXSIM_CPU__=$(VXSIM_CPU)
+
   ifeq ($(strip $(filter-out rtp,$(THREAD_KIND))),)
+    # Runtime N/A for VxWorks7 (non-existent system file)
     LIBGNAT_TARGET_PAIRS += \
     s-vxwext.ads<s-vxwext-rtp.ads \
     s-vxwext.adb<s-vxwext-rtp.adb \
     s-tpopsp.adb<s-tpopsp-vxworks-rtp.adb \
-    system.ads<system-vxworks-x86-rtp.ads
-
+    system.ads<$(SVX)-x86-rtp.ads
   else
     ifeq ($(strip $(filter-out rtp-smp, $(THREAD_KIND))),)
       LIBGNAT_TARGET_PAIRS += \
@@ -949,6 +990,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendo
         s-vxwext.ads<s-vxwext-kernel.ads \
         s-vxwext.adb<s-vxwext-kernel-smp.adb \
         system.ads<$(SVX)-x86-kernel.ads
+
         EXTRA_LIBGNAT_OBJS+=affinity.o
       else
         LIBGNAT_TARGET_PAIRS += \
@@ -956,10 +998,11 @@ ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendo
         s-tpopsp.adb<s-tpopsp-vxworks.adb
 
         ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
+          # Runtime N/A for VxWorks7 (non-existent system file)
           LIBGNAT_TARGET_PAIRS += \
           s-vxwext.ads<s-vxwext-kernel.ads \
           s-vxwext.adb<s-vxwext-kernel.adb \
-          system.ads<system-vxworks-x86-kernel.ads
+          system.ads<$(SVX)-x86-kernel.ads
         else
           LIBGNAT_TARGET_PAIRS += \
           system.ads<system-vxworks-x86.ads
@@ -974,6 +1017,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendo
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 
   ifneq ($(strip $(filter-out vxworks7%, $(target_os))),)
+    GCC_SPEC_FILES+=vxworks-crtbe-link.spec
     GCC_SPEC_FILES+=vxworks-x86-link.spec
     GCC_SPEC_FILES+=vxworks-cert-x86-link.spec
     GCC_SPEC_FILES+=vxworks-smp-x86-link.spec
@@ -2381,6 +2425,17 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
       system.ads<system-darwin-arm.ads
   endif
 
+  ifeq ($(strip $(filter-out arm64 aarch64,$(target_cpu))),)
+    LIBGNAT_TARGET_PAIRS += \
+      s-intman.adb<s-intman-susv3.adb \
+      s-osprim.adb<s-osprim-darwin.adb \
+      $(ATOMICS_TARGET_PAIRS) \
+      $(ATOMICS_BUILTINS_TARGET_PAIRS)
+
+    LIBGNAT_TARGET_PAIRS += \
+      system.ads<system-darwin-arm64.ads
+  endif
+
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-darwin.adb \
     indepsw.adb<indepsw-darwin.adb
@@ -2411,6 +2466,14 @@ ifeq ($(filter a-except%,$(LIBGNAT_TARGET_PAIRS)),)
   LIBGNAT_TARGET_PAIRS += \
     a-except.ads<a-except-2005.ads \
     a-except.adb<a-except-2005.adb
+endif
+
+# Configuration of host tools
+
+# Under linux, host tools need to be linked with -ldl
+
+ifeq ($(strip $(filter-out linux%,$(host_os))),)
+   TOOLS1_LIBS=-ldl
 endif
 
 # LIBGNAT_SRCS is the list of all C files (including headers) of the runtime
@@ -2618,10 +2681,10 @@ gnatlink-re: ../stamp-tools gnatmake-re
 
 # Likewise for the tools
 ../../gnatmake$(exeext): $(P) b_gnatm.o $(GNATMAKE_OBJS)
-	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) $(TOOLS_LIBS)
+	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) $(TOOLS_LIBS) $(TOOLS1_LIBS)
 
 ../../gnatlink$(exeext): $(P) b_gnatl.o $(GNATLINK_OBJS)
-	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) $(TOOLS_LIBS)
+	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) $(TOOLS_LIBS) $(TOOLS1_LIBS)
 
 ../stamp-gnatlib-$(RTSDIR):
 	@if [ ! -f stamp-gnatlib-$(RTSDIR) ] ; \
@@ -3071,8 +3134,9 @@ mkdir.o   : mkdir.c
 socket.o  : socket.c gsocket.h
 sysdep.o  : sysdep.c
 raise.o   : raise.c raise.h
-sigtramp-armdroid.o : sigtramp-armdroid.c sigtramp.h
-sigtramp-vxworks.o : sigtramp-vxworks.c sigtramp.h
+sigtramp-armdroid.o      : sigtramp-armdroid.c sigtramp.h
+sigtramp-vxworks.o       : sigtramp-vxworks.c sigtramp.h sigtramp-vxworks-target.inc
+sigtramp-vxworks-vxsim.o : sigtramp-vxworks-vxsim.c sigtramp.h sigtramp-vxworks-target.inc
 terminals.o : terminals.c
 vx_stack_info.o : vx_stack_info.c
 
@@ -3086,6 +3150,10 @@ cio.o     : cio.c
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 init.o    : init.c adaint.h raise.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+
+init-vxsim.o : init-vxsim.c
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
