@@ -34,6 +34,10 @@ package Ada.Containers is
 
 private
 
+   Count_Type_Last : constant := Count_Type'Last;
+   --  Count_Type'Last as a universal_integer, so we can compare Index_Type
+   --  values against this without type conversions that might overflow.
+
    type Tamper_Counts is record
       Busy : Natural := 0;
       Lock : Natural := 0;

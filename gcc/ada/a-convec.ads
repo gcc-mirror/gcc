@@ -370,6 +370,7 @@ private
    use Implementation;
 
    type Elements_Array is array (Index_Type range <>) of aliased Element_Type;
+   function "=" (L, R : Elements_Array) return Boolean is abstract;
 
    type Elements_Type (Last : Extended_Index) is limited record
       EA : Elements_Array (Index_Type'First .. Last);
@@ -489,10 +490,6 @@ private
    No_Element   : constant Cursor := Cursor'(null, Index_Type'First);
 
    Empty_Vector : constant Vector := (Controlled with others => <>);
-
-   Count_Type_Last : constant := Count_Type'Last;
-   --  Count_Type'Last as a universal_integer, so we can compare Index_Type
-   --  values against this without type conversions that might overflow.
 
    type Iterator is new Limited_Controlled and
      Vector_Iterator_Interfaces.Reversible_Iterator with

@@ -1,3 +1,22 @@
+2015-10-20  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: Add package Codepeer and its attributes.
+
+2015-10-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb, sem_ch13.adb: Minor reformatting.
+
+2015-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatlink.adb (Gnatlink): Do not translate --RTS switch
+	for the linker and instead pass the switches that were
+	reinstated by the compiler.
+
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* a-contai.ads, a-convec.ads: Move Count_Type_Last from
+	a-convec.ads to a-contai.ads, so other containers can refer to it.
+
 2015-10-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Check_Nonoverridable_Aspects): New procedure within
