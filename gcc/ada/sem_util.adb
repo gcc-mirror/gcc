@@ -11397,9 +11397,7 @@ package body Sem_Util is
       function Is_Descendant_Of_Suspension_Object
         (Typ : Entity_Id) return Boolean;
       --  Determine whether type Typ is a descendant of type Suspension_Object
-      --  defined in Ada.Synchronous_Task_Control. This routine is similar to
-      --  Sem_Util.Is_Descendent_Of, however this version does not load unit
-      --  Ada.Synchronous_Task_Control.
+      --  defined in Ada.Synchronous_Task_Control.
 
       ----------------------------------------
       -- Is_Descendant_Of_Suspension_Object --
@@ -11408,24 +11406,39 @@ package body Sem_Util is
       function Is_Descendant_Of_Suspension_Object
         (Typ : Entity_Id) return Boolean
       is
+         function Is_Suspension_Object (Id : Entity_Id) return Boolean;
+         --  Determine whether arbitrary entity Id denotes Suspension_Object
+         --  defined in Ada.Synchronous_Task_Control.
+
+         --------------------------
+         -- Is_Suspension_Object --
+         --------------------------
+
+         function Is_Suspension_Object (Id : Entity_Id) return Boolean is
+         begin
+            --  This approach does an exact name match rather than to rely on
+            --  RTSfind. Routine Is_Effectively_Volatile is used by clients of
+            --  the front end at point where all auxiliary tables are locked
+            --  and any modifications to them are treated as violations. Do not
+            --  tamper with the tables, instead examine the Chars fields of all
+            --  the scopes of Id.
+
+            return
+              Chars (Id) = Name_Suspension_Object
+                and then Present (Scope (Id))
+                and then Chars (Scope (Id)) = Name_Synchronous_Task_Control
+                and then Present (Scope (Scope (Id)))
+                and then Chars (Scope (Scope (Id))) = Name_Ada;
+         end Is_Suspension_Object;
+
+         --  Local variables
+
          Cur_Typ : Entity_Id;
          Par_Typ : Entity_Id;
 
+      --  Start of processing for Is_Descendant_Of_Suspension_Object
+
       begin
-         --  Do not attempt to load Ada.Synchronous_Task_Control in No_Run_Time
-         --  mode. The unit contains tagged types and those are not allowed in
-         --  this mode.
-
-         if No_Run_Time_Mode then
-            return False;
-
-         --  Unit Ada.Synchronous_Task_Control is not available, the type
-         --  cannot possibly be a descendant of Suspension_Object.
-
-         elsif not RTE_Available (RE_Suspension_Object) then
-            return False;
-         end if;
-
          --  Climb the type derivation chain checking each parent type against
          --  Suspension_Object.
 
@@ -11435,7 +11448,7 @@ package body Sem_Util is
 
             --  The current type is a match
 
-            if Is_RTE (Cur_Typ, RE_Suspension_Object) then
+            if Is_Suspension_Object (Cur_Typ) then
                return True;
 
             --  Stop the traversal once the root of the derivation chain has
