@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,48 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body Ada.Finalization is
+--  This package does not require a body. We provide a dummy file containing a
+--  No_Body pragma so that previous versions of the body (which did exist) will
+--  not interfere.
 
-   ------------
-   -- Adjust --
-   ------------
-
-   procedure Adjust (Object : in out Controlled) is
-      pragma Warnings (Off, Object);
-   begin
-      null;
-   end Adjust;
-
-   --------------
-   -- Finalize --
-   --------------
-
-   procedure Finalize (Object : in out Controlled) is
-      pragma Warnings (Off, Object);
-   begin
-      null;
-   end Finalize;
-
-   procedure Finalize (Object : in out Limited_Controlled) is
-      pragma Warnings (Off, Object);
-   begin
-      null;
-   end Finalize;
-
-   ----------------
-   -- Initialize --
-   ----------------
-
-   procedure Initialize (Object : in out Controlled) is
-      pragma Warnings (Off, Object);
-   begin
-      null;
-   end Initialize;
-
-   procedure Initialize (Object : in out Limited_Controlled) is
-      pragma Warnings (Off, Object);
-   begin
-      null;
-   end Initialize;
-
-end Ada.Finalization;
+pragma No_Body;

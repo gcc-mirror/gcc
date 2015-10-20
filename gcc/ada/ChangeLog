@@ -1,3 +1,24 @@
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* a-coinve.ads, a-coinve.adb: Do the same efficiency
+	improvements that were already done in the definite case
+	(Ada.Containers.Vectors, i.e. a-convec). This includes the
+	ability to suppress checks, the fast path for Append, inlining
+	as appropriate, and special-casing of "for ... of" loops. Reuse
+	the tampering machinery that is now in Ada.Containers. Simplify
+	many operations.
+	* a-convec.ads, a-convec.adb: Change the code to be more similar
+	to a-coinve.
+	* a-finali.ads, a-finali.adb: Expose the "null"-ness of the
+	operations. This may enable optimizations in the future, and
+	seems cleaner anyway.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Is_Operational_Item): Attributes related to
+	Ada 2012 iterators are operational items, and can be specified
+	on partial views.
+
 2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Check_Usage): Update the calls to Usage_Error.

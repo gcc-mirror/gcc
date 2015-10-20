@@ -343,6 +343,7 @@ package Ada.Containers.Indefinite_Vectors is
 
 private
 
+   pragma Inline (Append);
    pragma Inline (First_Index);
    pragma Inline (Last_Index);
    pragma Inline (Element);
@@ -351,34 +352,36 @@ private
    pragma Inline (Query_Element);
    pragma Inline (Update_Element);
    pragma Inline (Replace_Element);
+   pragma Inline (Is_Empty);
    pragma Inline (Contains);
    pragma Inline (Next);
    pragma Inline (Previous);
+
+   package Implementation is new Generic_Implementation;
+   use Implementation;
 
    type Element_Access is access Element_Type;
 
    type Elements_Array is array (Index_Type range <>) of Element_Access;
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
-   type Elements_Type (Last : Index_Type) is limited record
+   type Elements_Type (Last : Extended_Index) is limited record
       EA : Elements_Array (Index_Type'First .. Last);
    end record;
 
-   type Elements_Access is access Elements_Type;
+   type Elements_Access is access all Elements_Type;
 
-   type Vector is new Ada.Finalization.Controlled with record
-      Elements : Elements_Access;
+   use Finalization;
+   use Streams;
+
+   type Vector is new Controlled with record
+      Elements : Elements_Access := null;
       Last     : Extended_Index := No_Index;
-      Busy     : Natural := 0;
-      Lock     : Natural := 0;
+      TC       : aliased Tamper_Counts;
    end record;
 
    overriding procedure Adjust (Container : in out Vector);
-
    overriding procedure Finalize (Container : in out Vector);
-
-   use Ada.Finalization;
-   use Ada.Streams;
 
    procedure Write
      (Stream    : not null access Root_Stream_Type'Class;
@@ -412,16 +415,8 @@ private
 
    for Cursor'Write use Write;
 
-   type Reference_Control_Type is
-      new Controlled with record
-         Container : Vector_Access;
-      end record;
-
-   overriding procedure Adjust (Control : in out Reference_Control_Type);
-   pragma Inline (Adjust);
-
-   overriding procedure Finalize (Control : in out Reference_Control_Type);
-   pragma Inline (Finalize);
+   subtype Reference_Control_Type is Implementation.Reference_Control_Type;
+   --  It is necessary to rename this here, so that the compiler can find it
 
    type Constant_Reference_Type
      (Element : not null access constant Element_Type) is
@@ -467,16 +462,33 @@ private
 
    for Reference_Type'Read use Read;
 
-   Empty_Vector : constant Vector := (Controlled with null, No_Index, 0, 0);
+   --  Three operations are used to optimize in the expansion of "for ... of"
+   --  loops: the Next(Cursor) procedure in the visible part, and the following
+   --  Pseudo_Reference and Get_Element_Access functions. See Exp_Ch5 for
+   --  details.
+
+   function Pseudo_Reference
+     (Container : aliased Vector'Class) return Reference_Control_Type;
+   pragma Inline (Pseudo_Reference);
+   --  Creates an object of type Reference_Control_Type pointing to the
+   --  container, and increments the Lock. Finalization of this object will
+   --  decrement the Lock.
+
+   function Get_Element_Access
+     (Position : Cursor) return not null Element_Access;
+   --  Returns a pointer to the element designated by Position.
 
    No_Element : constant Cursor := Cursor'(null, Index_Type'First);
+
+   Empty_Vector : constant Vector := (Controlled with others => <>);
 
    type Iterator is new Limited_Controlled and
      Vector_Iterator_Interfaces.Reversible_Iterator with
    record
       Container : Vector_Access;
       Index     : Index_Type'Base;
-   end record;
+   end record
+     with Disable_Controlled => not T_Check;
 
    overriding procedure Finalize (Object : in out Iterator);
 
