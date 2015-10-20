@@ -1,3 +1,7 @@
+2015-10-20  Arkadiusz Drabczyk  <arkadiusz@drabczyk.org>
+
+	* doc/extend.texi: Update documentation WRT inline functions.
+
 2015-10-20  Alan Modra  <amodra@gmail.com>
 
 	PR go/66870

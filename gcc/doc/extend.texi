@@ -7088,21 +7088,19 @@ function are integrated into the caller, and the function's address is
 never used, then the function's own assembler code is never referenced.
 In this case, GCC does not actually output assembler code for the
 function, unless you specify the option @option{-fkeep-inline-functions}.
-Some calls cannot be integrated for various reasons (in particular,
-calls that precede the function's definition cannot be integrated, and
-neither can recursive calls within the definition).  If there is a
-nonintegrated call, then the function is compiled to assembler code as
-usual.  The function must also be compiled as usual if the program
-refers to its address, because that can't be inlined.
+If there is a nonintegrated call, then the function is compiled to
+assembler code as usual.  The function must also be compiled as usual if
+the program refers to its address, because that can't be inlined.
 
 @opindex Winline
 Note that certain usages in a function definition can make it unsuitable
-for inline substitution.  Among these usages are: variadic functions, use of
-@code{alloca}, use of variable-length data types (@pxref{Variable Length}),
-use of computed goto (@pxref{Labels as Values}), use of nonlocal goto,
-and nested functions (@pxref{Nested Functions}).  Using @option{-Winline}
-warns when a function marked @code{inline} could not be substituted,
-and gives the reason for the failure.
+for inline substitution.  Among these usages are: variadic functions,
+use of @code{alloca}, use of computed goto (@pxref{Labels as Values}),
+use of nonlocal goto, use of nested functions, use of @code{setjmp}, use
+of @code{__builtin_longjmp} and use of @code{__builtin_return} or
+@code{__builtin_apply_args}.  Using @option{-Winline} warns when a
+function marked @code{inline} could not be substituted, and gives the
+reason for the failure.
 
 @cindex automatic @code{inline} for C++ member fns
 @cindex @code{inline} automatic for C++ member fns
