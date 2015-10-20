@@ -1694,7 +1694,7 @@ corrigendum with GNU extensions
 
 std=gnu++11
 C++ ObjC++
-Conform to the ISO 2011 C++ standard with GNU extensions (experimental and incomplete support)
+Conform to the ISO 2011 C++ standard with GNU extensions
 
 std=gnu++0x
 C++ ObjC++ Alias(std=gnu++11) Undocumented
@@ -1706,7 +1706,7 @@ Deprecated in favor of -std=gnu++14
 
 std=gnu++14
 C++ ObjC++
-Conform to the ISO 2014 C++ standard with GNU extensions (experimental and incomplete support)
+Conform to the ISO 2014 C++ standard with GNU extensions
 
 std=gnu++1z
 C++ ObjC++
