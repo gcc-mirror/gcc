@@ -532,7 +532,8 @@ package Sem_Util is
    --  Returns the closest ancestor of Typ that is a CPP type.
 
    function Enclosing_Declaration (N : Node_Id) return Node_Id;
-   --  Returns the declaration node enclosing N, if any, or Empty otherwise
+   --  Returns the declaration node enclosing N (including possibly N itself),
+   --  if any, or Empty otherwise
 
    function Enclosing_Generic_Body
      (N : Node_Id) return Node_Id;

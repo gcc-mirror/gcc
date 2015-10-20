@@ -1720,12 +1720,17 @@ package body Make is
 
             for J in 1 .. Last_Argument loop
 
-               --  Skip non switches -c, -I and -o switches
+               --  Skip -c, -I and -o switches, as well as multilib switches
+               --  reinstated by the compiler according to lang-specs.h.
 
                if Arguments (J) (1) = '-'
                  and then Arguments (J) (2) /= 'c'
                  and then Arguments (J) (2) /= 'o'
                  and then Arguments (J) (2) /= 'I'
+                 and then not (Arguments (J)'Length = 5
+                                 and then Arguments (J) (2 .. 5) = "mrtp")
+                 and then not (Arguments (J)'Length = 6
+                                 and then Arguments (J) (2 .. 6) = "fsjlj")
                then
                   Normalize_Compiler_Switches
                     (Arguments (J).all,
