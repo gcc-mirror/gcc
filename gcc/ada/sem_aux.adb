@@ -291,7 +291,7 @@ package body Sem_Aux is
             if Is_Itype (Ent) then
                null;
 
-            elsif  Ekind (Ent) = E_Discriminant
+            elsif Ekind (Ent) = E_Discriminant
               and then Is_Completely_Hidden (Ent)
             then
                return True;

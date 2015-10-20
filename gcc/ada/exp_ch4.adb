@@ -1533,37 +1533,43 @@ package body Exp_Ch4 is
             end if;
          end if;
 
-         Remove_Side_Effects (Op1, Name_Req => True);
-         Remove_Side_Effects (Op2, Name_Req => True);
+         if RTE_Available (Comp) then
 
-         Rewrite (Op1,
-           Make_Function_Call (Sloc (Op1),
-             Name => New_Occurrence_Of (RTE (Comp), Loc),
+            --  Expand to a call only if the runtime function is available,
+            --  otherwise fallback to inline code.
 
-             Parameter_Associations => New_List (
-               Make_Attribute_Reference (Loc,
-                 Prefix         => Relocate_Node (Op1),
-                 Attribute_Name => Name_Address),
+            Remove_Side_Effects (Op1, Name_Req => True);
+            Remove_Side_Effects (Op2, Name_Req => True);
 
-               Make_Attribute_Reference (Loc,
-                 Prefix         => Relocate_Node (Op2),
-                 Attribute_Name => Name_Address),
+            Rewrite (Op1,
+              Make_Function_Call (Sloc (Op1),
+                Name => New_Occurrence_Of (RTE (Comp), Loc),
 
-               Make_Attribute_Reference (Loc,
-                 Prefix         => Relocate_Node (Op1),
-                 Attribute_Name => Name_Length),
+                Parameter_Associations => New_List (
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => Relocate_Node (Op1),
+                    Attribute_Name => Name_Address),
 
-               Make_Attribute_Reference (Loc,
-                 Prefix         => Relocate_Node (Op2),
-                 Attribute_Name => Name_Length))));
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => Relocate_Node (Op2),
+                    Attribute_Name => Name_Address),
 
-         Rewrite (Op2,
-           Make_Integer_Literal (Sloc (Op2),
-             Intval => Uint_0));
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => Relocate_Node (Op1),
+                    Attribute_Name => Name_Length),
 
-         Analyze_And_Resolve (Op1, Standard_Integer);
-         Analyze_And_Resolve (Op2, Standard_Integer);
-         return;
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => Relocate_Node (Op2),
+                    Attribute_Name => Name_Length))));
+
+            Rewrite (Op2,
+              Make_Integer_Literal (Sloc (Op2),
+                Intval => Uint_0));
+
+            Analyze_And_Resolve (Op1, Standard_Integer);
+            Analyze_And_Resolve (Op2, Standard_Integer);
+            return;
+         end if;
       end if;
 
       --  Cases where we cannot make runtime call
@@ -1620,10 +1626,6 @@ package body Exp_Ch4 is
       Insert_Action (N, Func_Body);
       Rewrite (N, Expr);
       Analyze_And_Resolve (N, Standard_Boolean);
-
-   exception
-      when RE_Not_Available =>
-         return;
    end Expand_Array_Comparison;
 
    ---------------------------

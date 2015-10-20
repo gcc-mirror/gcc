@@ -9172,7 +9172,7 @@ package body Checks is
                                 (Compile_Time_Constraint_Error
                                   (Wnode, "too few elements for}??", T_Typ));
 
-                           elsif  L_Length < R_Length then
+                           elsif L_Length < R_Length then
                               Add_Check
                                 (Compile_Time_Constraint_Error
                                   (Wnode, "too many elements for}??", T_Typ));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2011, AdaCore                     --
+--                     Copyright (C) 2002-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2586,7 +2586,7 @@ package body GNAT.Perfect_Hash_Generators is
          when Function_Table_1 =>
             return Get_Table (T1, J, K);
 
-         when  Function_Table_2 =>
+         when Function_Table_2 =>
             return Get_Table (T2, J, K);
 
          when Graph_Table =>

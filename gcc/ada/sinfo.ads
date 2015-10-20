@@ -8021,8 +8021,8 @@ package Sinfo is
       --  SCIL_Controlling_Tag (Node5-Sem)
       --
       --  An N_Scil_Dispatching call node may be associated (via Get_SCIL_Node)
-      --  with the N_Procedure_Call or N_Function_Call node (or a rewriting
-      --  thereof) corresponding to a dispatching call.
+      --  with the N_Procedure_Call_Statement or N_Function_Call node (or a
+      --  rewriting thereof) corresponding to a dispatching call.
 
       --  N_SCIL_Membership_Test
       --  Sloc references the node of a membership test

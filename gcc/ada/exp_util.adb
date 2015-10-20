@@ -4184,7 +4184,7 @@ package body Exp_Util is
             when
                N_Raise_xxx_Error =>
                   if Etype (P) = Standard_Void_Type then
-                     if  P = Wrapped_Node then
+                     if P = Wrapped_Node then
                         Store_Before_Actions_In_Scope (Ins_Actions);
                      else
                         Insert_List_Before_And_Analyze (P, Ins_Actions);

@@ -2491,7 +2491,7 @@ package body Lib.Xref is
                      --  Write out information about generic parent, if entity
                      --  is an instance.
 
-                     if  Is_Generic_Instance (XE.Key.Ent) then
+                     if Is_Generic_Instance (XE.Key.Ent) then
                         declare
                            Gen_Par : constant Entity_Id :=
                                        Generic_Parent

@@ -1038,7 +1038,7 @@ package body Sem_Ch6 is
          --  inside of the subprogram (except if it is the subtype indication
          --  of an extended return statement).
 
-         elsif  Ekind (R_Type) = E_Anonymous_Access_Subprogram_Type then
+         elsif Ekind (R_Type) = E_Anonymous_Access_Subprogram_Type then
             if not Comes_From_Source (Current_Scope)
               or else Ekind (Current_Scope) = E_Return_Statement
             then

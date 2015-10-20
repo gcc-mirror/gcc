@@ -5842,7 +5842,7 @@ package body Sem_Ch12 is
                return False;
 
             elsif Is_Entity_Name (Constant_Value (Ent)) then
-               if  Entity (Constant_Value (Ent)) = E1 then
+               if Entity (Constant_Value (Ent)) = E1 then
                   return True;
                else
                   Ent := Entity (Constant_Value (Ent));

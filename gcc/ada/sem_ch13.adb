@@ -3846,7 +3846,7 @@ package body Sem_Ch13 is
             --  the type of the formal match, or one is the class-wide of the
             --  other, in the case of a class-wide stream operation.
 
-            if  Base_Type (Typ) = Base_Type (Ent)
+            if Base_Type (Typ) = Base_Type (Ent)
               or else (Is_Class_Wide_Type (Typ)
                         and then Typ = Class_Wide_Type (Base_Type (Ent)))
               or else (Is_Class_Wide_Type (Ent)

@@ -2385,7 +2385,7 @@ package body Sem_Res is
                         --  operators, which are not declared with the type
                         --  of the operand, but appear forever in Standard.
 
-                        if  It.Typ = Universal_Fixed
+                        if It.Typ = Universal_Fixed
                           and then Scope (It.Nam) = Standard_Standard
                         then
                            Error_Msg_N
@@ -7564,7 +7564,7 @@ package body Sem_Res is
          begin
             New_Actuals := New_List (Obj);
 
-            if  Nkind (Entry_Name) = N_Indexed_Component then
+            if Nkind (Entry_Name) = N_Indexed_Component then
                Append_To (New_Actuals,
                  New_Copy_Tree (First (Expressions (Entry_Name))));
             end if;

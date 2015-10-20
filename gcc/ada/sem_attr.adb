@@ -1531,7 +1531,7 @@ package body Sem_Attr is
                  ("expression for dimension must be static!", E1);
                Error_Attr;
 
-            elsif  UI_To_Int (Expr_Value (E1)) > D
+            elsif UI_To_Int (Expr_Value (E1)) > D
               or else UI_To_Int (Expr_Value (E1)) < 1
             then
                Error_Attr ("invalid dimension number for array type", E1);
