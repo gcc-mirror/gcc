@@ -5266,6 +5266,12 @@ package body Sem_Ch13 is
                     (Expr, RTE (RE_Interrupt_Priority));
 
                   Uninstall_Discriminants_And_Pop_Scope (U_Ent);
+
+                  --  Check the No_Task_At_Interrupt_Priority restriction
+
+                  if Is_Task_Type (U_Ent) then
+                     Check_Restriction (No_Task_At_Interrupt_Priority, N);
+                  end if;
                end if;
 
             else

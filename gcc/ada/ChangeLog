@@ -1,3 +1,10 @@
+2015-10-20  Tristan Gingold  <gingold@adacore.com>
+
+	* s-rident.ads: No_Task_At_Interrupt_Priority: New restriction.
+	* sem_prag.adb (Analyze_Pragma): Check the restriction.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause):
+	Check the restriction (for aspects).
+
 2015-10-20  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_prag.adb: Minor reformatting.

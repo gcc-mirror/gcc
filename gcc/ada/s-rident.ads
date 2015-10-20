@@ -144,6 +144,7 @@ package System.Rident is
       No_Streams,                                -- GNAT
       No_Task_Allocators,                        -- (RM D.7(7))
       No_Task_Attributes_Package,                -- GNAT
+      No_Task_At_Interrupt_Priority,             -- GNAT
       No_Task_Hierarchy,                         -- (RM D.7(3), H.4(3))
       No_Task_Termination,                       -- GNAT (Ravenscar)
       No_Tasking,                                -- GNAT
