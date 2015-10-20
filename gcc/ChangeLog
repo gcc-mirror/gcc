@@ -1,5 +1,10 @@
 2015-10-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* simplify-rtx.c (simplify_binary_operation): If either operand was
+	a constant pool reference use them if all other simplifications failed.
+
+2015-10-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.md
 	(*aarch64_fcvt<su_optab><GPF:mode><GPI:mode>2_mult): New pattern.
 	* config/aarch64/aarch64-simd.md

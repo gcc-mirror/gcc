@@ -83,6 +83,16 @@ FUNC_DEFD (16)
 /* { dg-final { scan-assembler-times "fcvtzu\tx\[0-9\], d\[0-9\]*.*#4" 1 } } */
 /* { dg-final { scan-assembler-times "fcvtzu\tw\[0-9\], d\[0-9\]*.*#4" 1 } } */
 
+FUNC_DEFS (32)
+FUNC_DEFD (32)
+/* { dg-final { scan-assembler-times "fcvtzs\tw\[0-9\], s\[0-9\]*.*#5" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtzs\tx\[0-9\], s\[0-9\]*.*#5" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtzs\tx\[0-9\], d\[0-9\]*.*#5" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtzs\tw\[0-9\], d\[0-9\]*.*#5" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtzu\tw\[0-9\], s\[0-9\]*.*#5" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtzu\tx\[0-9\], s\[0-9\]*.*#5" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtzu\tx\[0-9\], d\[0-9\]*.*#5" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtzu\tw\[0-9\], d\[0-9\]*.*#5" 1 } } */
 
 #define FUNC_TESTS(__a, __b)					\
 do								\
@@ -120,10 +130,12 @@ main (void)
       FUNC_TESTS (4, i);
       FUNC_TESTS (8, i);
       FUNC_TESTS (16, i);
+      FUNC_TESTS (32, i);
 
       FUNC_TESTD (4, i);
       FUNC_TESTD (8, i);
       FUNC_TESTD (16, i);
+      FUNC_TESTD (32, i);
     }
   return 0;
 }
