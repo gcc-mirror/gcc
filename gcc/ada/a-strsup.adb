@@ -1744,7 +1744,6 @@ package body Ada.Strings.Superbounded is
          end loop;
       end if;
 
-      Source.Data := (others => ASCII.NUL);
       Source.Current_Length := Last - First + 1;
       Source.Data (1 .. Source.Current_Length) := Temp (First .. Last);
    end Super_Trim;
@@ -1791,13 +1790,6 @@ package body Ada.Strings.Superbounded is
                      Source.Current_Length := Last - First + 1;
                      Source.Data (1 .. Source.Current_Length) :=
                        Source.Data (First .. Last);
-
-                     for J in Source.Current_Length + 1 ..
-                                Source.Max_Length
-                     loop
-                        Source.Data (J) := ASCII.NUL;
-                     end loop;
-
                      return;
                   end if;
                end if;
