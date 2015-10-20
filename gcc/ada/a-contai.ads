@@ -13,15 +13,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Check_Name (Container_Checks);
-pragma Check_Name (Tampering_Check);
---  The above checks are not in the Ada RM. They are added in order to allow
---  suppression of checks within containers packages. Suppressing
---  Tampering_Check suppresses the tampering checks and associated machinery,
---  which is very expensive. Suppressing Container_Checks suppresses
---  Tampering_Check as well as all the other (not-so-expensive) containers
---  checks.
-
 package Ada.Containers is
    pragma Pure;
 
