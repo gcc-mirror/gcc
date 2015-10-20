@@ -25087,7 +25087,7 @@ package body Sem_Prag is
       Typ      : constant Entity_Id  := Find_Dispatching_Type (Subp);
 
       function Replace_Formal (N : Node_Id) return Traverse_Result;
-      --  Replace an occurence of a formal parameter of the original expression
+      --  Replace occurrence of a formal parameter of the original expression
       --  in the precondition, with the formal of the generic function created
       --  for it.
 
@@ -25116,7 +25116,7 @@ package body Sem_Prag is
 
                   --  If this is a controlling formal, in the generic it
                   --  becomes a conversion to the controlling formal of the
-                  --  operation with the classwide precondition. If the formal
+                  --  operation with the class-wide precondition. If the formal
                   --  is an access parameter, a reference to F becomes
                   --  Root (New_F.all)'access.
 
@@ -25137,7 +25137,7 @@ package body Sem_Prag is
                             (Etype (F), New_Occurrence_Of (New_F, Sloc (N))));
                      end if;
 
-                  --  Non-controlling formals retain their original type
+                  --  Noncontrolling formals retain their original type
 
                   else
                      Rewrite (N, New_Occurrence_Of (New_F, Sloc (N)));
