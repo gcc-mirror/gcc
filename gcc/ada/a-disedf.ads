@@ -45,6 +45,10 @@ package Ada.Dispatching.EDF is
    function Get_Deadline
       (T : Ada.Task_Identification.Task_Id :=
              Ada.Task_Identification.Current_Task)
-       return Deadline;
+       return Deadline
+   with
+     SPARK_Mode,
+     Volatile_Function,
+     Global => Ada.Task_Identification.Tasking_State;
 
 end Ada.Dispatching.EDF;

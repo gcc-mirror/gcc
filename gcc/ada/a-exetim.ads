@@ -24,7 +24,9 @@
 with Ada.Task_Identification;
 with Ada.Real_Time;
 
-package Ada.Execution_Time is
+package Ada.Execution_Time with
+  SPARK_Mode
+is
    pragma Preelaborate;
 
    pragma Unimplemented_Unit;
@@ -39,7 +41,10 @@ package Ada.Execution_Time is
    function Clock
      (T : Ada.Task_Identification.Task_Id :=
         Ada.Task_Identification.Current_Task)
-      return CPU_Time;
+      return CPU_Time
+   with
+     Volatile_Function,
+     Global => Ada.Real_Time.Clock_Time;
 
    function "+"
      (Left  : CPU_Time;
@@ -75,9 +80,12 @@ package Ada.Execution_Time is
    Interrupt_Clocks_Supported          : constant Boolean := False;
    Separate_Interrupt_Clocks_Supported : constant Boolean := False;
 
-   function Clock_For_Interrupts return CPU_Time;
+   function Clock_For_Interrupts return CPU_Time with
+     Volatile_Function,
+     Global => Ada.Real_Time.Clock_Time;
 
 private
+   pragma SPARK_Mode (Off);
 
    type CPU_Time is new Ada.Real_Time.Time;
 

@@ -34,7 +34,9 @@ with Ada.Exceptions;
 with System.Tasking;
 with System.Task_Primitives.Operations;
 
-package body Ada.Synchronous_Task_Control is
+package body Ada.Synchronous_Task_Control with
+  SPARK_Mode => Off
+is
 
    ----------------
    -- Initialize --

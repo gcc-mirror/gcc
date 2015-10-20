@@ -1,3 +1,90 @@
+2015-10-20  Yannick Moy  <moy@adacore.com>
+
+	* a-sytaco.ads (Ada.Synchronous_Task_Control): Package
+	now withs System.Task_Identification. The visible part
+	of the spec has SPARK_Mode. The private part has pragma
+	SPARK_Mode (Off).
+	(Set_True): Added Global and Depends aspects
+	(Set_False): Added Global and Depends aspects (Current_State):
+	Added Volatile_Function aspect and added external state
+	Ada.Task_Identification.Tasking_State as a Global input.
+	(Suspend_Until_True): Added Global and Depends aspects
+	* a-sytaco.adb (Ada.Synchronous_Task_Control):
+	Package body has SPARK_Mode => Off
+	* a-extiin.ads (Ada.Execution_Time.Interrupts):
+	Package now withs Ada.Real_Time and has SPARK_Mode.
+	(Clock): Added Volatile_Function aspect and added external state
+	Ada.Real_Time.Clock_Time as a Global input.
+	* a-reatim.ads (Ada.Real_Time): The visible part of the spec has
+	SPARK_Mode. The private part has pragma SPARK_Mode (Off). The package
+	declares external state Clock_Time with properties Async_Readers and
+	Async_Writers.
+	(Clock): Added Volatile_Function aspect and
+	added external state Clock_Time as a Global input.
+	* a-reatim.adb (Ada.Real_Time): Package body has SPARK_Mode => Off
+	* a-exetim-default.ads, a-exetim-mingw.ads (Ada.Execution_Time):
+	The visible part of the spec has SPARK_Mode. The private part
+	has pragma SPARK_Mode (Off).
+	(Clock): Added Volatile_Function
+	aspect and added external state Clock_Time as a Global input.
+	(Clock_For_Interrupts): Added Volatile_Function aspect and added
+	external state Ada.Real_Time.Clock_Time as a Global input.
+	* a-exetim-mingw.adb (Ada.Execution_Time): Package body has
+	SPARK_Mode => Off
+	* a-interr.ads (Ada.Interrupts): Package now
+	withs Ada.Task_Identification (Is_Reserved): Added
+	SPARK_Mode, Volatile_Function and external state
+	Ada.Task_Identification.Tasking_State as a Global input.
+	(Is_Attached): Added SPARK_Mode, Volatile_Function and external
+	state Ada.Task_Identification.Tasking_State as a Global input.
+	(Attach_Handler): Added SPARK_Mode => Off (Exchange_Handler):
+	Added SPARK_Mode => Off (Detach_Handler): Added SPARK_Mode
+	and external state Ada.Task_Identification.Tasking_State as a
+	Global In_Out.	(Reference): Added SPARK_Mode => Off
+	* a-disedf.ads (Get_Deadline): Added SPARK_Mode, Volatile_Function
+	and external state Ada.Task_Identification.Tasking_State as a
+	Global input.
+	* a-taside.ads (Ada.Task_Identification): The visible part of
+	the spec has SPARK_Mode.  The private part has pragma SPARK_Mode
+	(Off). The package declares external state Tasking_State with
+	properties Async_Readers and Async_Writers.
+	(Current_Task): Added
+	Volatile_Function aspect and added external state Tasking_State
+	as a Global input.
+	(Environment_Task): Added SPARK_Mode => Off
+	(Is_Terminated): Added Volatile_Function aspect and added external
+	state Tasking_State as a Global input.	(Is_Callable): Added
+	Volatile_Function aspect and added external state Tasking_State as
+	a Global input.
+	(Activation_Is_Complete): Added Volatile_Function
+	aspect and added external state Tasking_State as a Global input.
+	* a-taside.adb (Ada.Task_Identification): Package body has
+	SPARK_Mode => Off.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* atree.ads, atree.adb: Enable List38 and List39 on entities.
+	* einfo.ads, einfo.adb (Class_Wide_Preconds) new attribute defined
+	on subprograms. Holds the list of class-wide precondition
+	functions inherited from ancestors. Each such function is an
+	instantiation of the generic function generated from an explicit
+	aspect specification for a class-wide precondition. A type is
+	an ancestor of itself, and therefore a root type has such an
+	instance on its own list.
+	(Class_Wide_Postconds): ditto for postconditions.
+
+2015-10-20  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: Add packages Prove and GnatTest.
+
+2015-10-20  Steve Baird  <baird@adacore.com>
+
+	* a-conhel.adb: Add an Annotate pragma to help suppress CodePeer's
+	analysis of internals of container generic instances. This pragma
+	has no other effect.
+	* a-conhel.adb (Generic_Implementation) Add "pragma Annotate
+	(CodePeer, Skip_Analysis);".
+
 2015-10-20  Steve Baird  <baird@adacore.com>
 
 	* pprint.adb: Code clean up.

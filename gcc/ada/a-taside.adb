@@ -45,7 +45,9 @@ with System.Tasking.Utilities;
 
 pragma Warnings (On);
 
-package body Ada.Task_Identification is
+package body Ada.Task_Identification with
+  SPARK_Mode => Off
+is
 
    use System.Parameters;
 

@@ -607,6 +607,17 @@ package Einfo is
 --       tables must be consulted to determine if there actually is an active
 --       Suppress or Unsuppress pragma that applies to the entity.
 
+--    Class_Wide_Preconds (List38)
+--       Defined on subprograms. Holds the list of class-wide precondition
+--       functions inherited from ancestors. Each such function is an
+--       instantiation of the generic function generated from an explicit
+--       aspect specification for a class-wide precondition. A type is an
+--       ancestor of itself, and therefore a root type has such an instance
+--       on its own list.
+
+--    Class_Wide_Postconds (List39)
+--       Ditto for class-wide postconditions.
+
 --    Class_Wide_Type (Node9)
 --       Defined in all type entities. For a tagged type or subtype, returns
 --       the corresponding implicitly declared class-wide type. For a
@@ -5844,6 +5855,8 @@ package Einfo is
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)   (non-generic case only)
    --    Anonymous_Master                    (Node36)   (non-generic case only)
+   --    Class_Wide_Preconds                 (List38)
+   --    Class_Wide_Postconds                (List39)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Default_Expressions_Processed       (Flag108)
@@ -6151,6 +6164,8 @@ package Einfo is
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)   (non-generic case only)
    --    Anonymous_Master                    (Node36)   (non-generic case only)
+   --    Class_Wide_Preconds                 (List38)
+   --    Class_Wide_Postconds                (List39)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Cleanups                      (Flag114)
@@ -6675,6 +6690,8 @@ package Einfo is
    function Can_Never_Be_Null                   (Id : E) return B;
    function Can_Use_Internal_Rep                (Id : E) return B;
    function Checks_May_Be_Suppressed            (Id : E) return B;
+   function Class_Wide_Postconds                (Id : E) return S;
+   function Class_Wide_Preconds                 (Id : E) return S;
    function Class_Wide_Type                     (Id : E) return E;
    function Cloned_Subtype                      (Id : E) return E;
    function Component_Alignment                 (Id : E) return C;
@@ -7334,6 +7351,8 @@ package Einfo is
    procedure Set_Can_Never_Be_Null               (Id : E; V : B := True);
    procedure Set_Can_Use_Internal_Rep            (Id : E; V : B := True);
    procedure Set_Checks_May_Be_Suppressed        (Id : E; V : B := True);
+   procedure Set_Class_Wide_Postconds            (Id : E; V : S);
+   procedure Set_Class_Wide_Preconds             (Id : E; V : S);
    procedure Set_Class_Wide_Type                 (Id : E; V : E);
    procedure Set_Cloned_Subtype                  (Id : E; V : E);
    procedure Set_Component_Alignment             (Id : E; V : C);
@@ -8111,6 +8130,8 @@ package Einfo is
    pragma Inline (Can_Never_Be_Null);
    pragma Inline (Can_Use_Internal_Rep);
    pragma Inline (Checks_May_Be_Suppressed);
+   pragma Inline (Class_Wide_Preconds);
+   pragma Inline (Class_Wide_Postconds);
    pragma Inline (Class_Wide_Type);
    pragma Inline (Cloned_Subtype);
    pragma Inline (Component_Bit_Offset);
@@ -8615,6 +8636,8 @@ package Einfo is
    pragma Inline (Set_Can_Never_Be_Null);
    pragma Inline (Set_Can_Use_Internal_Rep);
    pragma Inline (Set_Checks_May_Be_Suppressed);
+   pragma Inline (Set_Class_Wide_Postconds);
+   pragma Inline (Set_Class_Wide_Preconds);
    pragma Inline (Set_Class_Wide_Type);
    pragma Inline (Set_Cloned_Subtype);
    pragma Inline (Set_Component_Bit_Offset);

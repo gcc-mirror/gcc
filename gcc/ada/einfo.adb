@@ -267,8 +267,10 @@ package body Einfo is
 
    --    Anonymous_Master                Node36
 
-   --    (unused)                        Node38
-   --    (unused)                        Node39
+   --    (Class_Wide_Preconds)           List38
+
+   --    (Class_Wide_Postconds)          List39
+
    --    (unused)                        Node40
    --    (unused)                        Node41
 
@@ -841,6 +843,18 @@ package body Einfo is
    begin
       return Flag31 (Id);
    end Checks_May_Be_Suppressed;
+
+   function Class_Wide_Postconds (Id : E) return S is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      return List39 (Id);
+   end Class_Wide_Postconds;
+
+   function Class_Wide_Preconds (Id : E) return S is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      return List38 (Id);
+   end Class_Wide_Preconds;
 
    function Class_Wide_Type (Id : E) return E is
    begin
@@ -3731,6 +3745,18 @@ package body Einfo is
    begin
       Set_Flag31 (Id, V);
    end Set_Checks_May_Be_Suppressed;
+
+   procedure Set_Class_Wide_Preconds (Id : E; V : S) is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      Set_List38 (Id, V);
+   end Set_Class_Wide_Preconds;
+
+   procedure Set_Class_Wide_Postconds (Id : E; V : S) is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      Set_List39 (Id, V);
+   end Set_Class_Wide_Postconds;
 
    procedure Set_Class_Wide_Type (Id : E; V : E) is
    begin
