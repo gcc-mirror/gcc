@@ -383,7 +383,7 @@ extern enum alpha_fp_trap_mode alpha_fptm;
    but can be less for certain modes in special long registers.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+  CEIL (GET_MODE_SIZE (MODE), UNITS_PER_WORD)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On Alpha, the integer registers can hold any mode.  The floating-point
@@ -674,13 +674,15 @@ extern int alpha_memory_latency;
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   (CUM) = 0
 
-/* Define intermediate macro to compute the size (in registers) of an argument
-   for the Alpha.  */
+/* Define intermediate macro to compute
+   the size (in registers) of an argument.  */
 
-#define ALPHA_ARG_SIZE(MODE, TYPE, NAMED)				\
+#define ALPHA_ARG_SIZE(MODE, TYPE)					\
   ((MODE) == TFmode || (MODE) == TCmode ? 1				\
-   : (((MODE) == BLKmode ? int_size_in_bytes (TYPE) : GET_MODE_SIZE (MODE)) \
-      + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
+   : CEIL (((MODE) == BLKmode						\
+	    ? int_size_in_bytes (TYPE)					\
+	    : GET_MODE_SIZE (MODE)),					\
+	   UNITS_PER_WORD))
 
 /* Make (or fake) .linkage entry for function call.
    IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */

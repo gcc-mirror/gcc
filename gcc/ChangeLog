@@ -1,3 +1,11 @@
+2015-10-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.h (HARD_REGNO_NREGS): Use CEIL macro.
+	(ALPHA_ARG_SIZE): Ditto.  Remove unused NAMED argument.
+	* config/alpha/alpha.c (alpha_function_arg_advance): Update
+	ALPHA_ARG_SIZE usage.
+	(alpha_arg_partial_bytes): Ditto.
+
 2015-10-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66810
@@ -169,7 +177,7 @@
 	(autopref_multipass_init): Use it.  Handle PARALLEL sets.
 	(autopref_rank_data): New function.
 	(autopref_rank_for_schedule): Use it.
-	(autopref_multipass_dfa_lookahead_guard_1): Likewise. 
+	(autopref_multipass_dfa_lookahead_guard_1): Likewise.
 
 2015-10-18  Mikhail Maltsev  <maltsevm@gmail.com>
 
@@ -179,7 +187,7 @@
 2015-10-18  Iain Sandoe  <iain@codesourcery.com>
 
 	* config/darwin.h (TARGET_SYSTEM_ROOT): Remove this from here,
-	(HAVE_LD_SYSROOT): New.  (SYSROOT_SPEC): New. 
+	(HAVE_LD_SYSROOT): New.  (SYSROOT_SPEC): New.
 	(LINK_SYSROOT_SPEC): Revise to remove the default for target sysroot.
 	(STANDARD_STARTFILE_PREFIX_1): New.
 	(STANDARD_STARTFILE_PREFIX_2): New.
@@ -329,16 +337,17 @@
 
 2015-10-16  Christian Bruel  <christian.bruel@st.com>
 
- 	PR target/67745
- 	* config/arm/arm.h (FUNCTION_BOUNDARY): Use FUNCTION_BOUNDARY_P.
- 	(FUNCTION_BOUNDARY_P): New macro:
- 	* config/arm/arm.c (TARGET_RELAYOUT_FUNCTION, arm_relayout_function): 
- 	New hook.
- 	* doc/tm.texi.in (TARGET_RELAYOUT_FUNCTION): Document.
- 	* doc/tm.texi (TARGET_RELAYOUT_FUNCTION): New hook.
- 	* gcc/target.def (TARGET_RELAYOUT_FUNCTION): Likewise.
- 	* gcc/function.c (allocate_struct_function): Call relayout_function hook.
- 	* gcc/passes.c (rest_of_decl_compilation): Likewise.
+	PR target/67745
+	* config/arm/arm.h (FUNCTION_BOUNDARY): Use FUNCTION_BOUNDARY_P.
+	(FUNCTION_BOUNDARY_P): New macro:
+	* config/arm/arm.c (TARGET_RELAYOUT_FUNCTION, arm_relayout_function):
+	New hook.
+	* doc/tm.texi.in (TARGET_RELAYOUT_FUNCTION): Document.
+	* doc/tm.texi (TARGET_RELAYOUT_FUNCTION): New hook.
+	* gcc/target.def (TARGET_RELAYOUT_FUNCTION): Likewise.
+	* gcc/function.c (allocate_struct_function): Call
+	relayout_function hook.
+	* gcc/passes.c (rest_of_decl_compilation): Likewise.
 
 2015-10-16  Christian Bruel  <christian.bruel@st.com>
 
@@ -369,8 +378,7 @@
 	(gimple_fold_builtin_stxcpy_chk): Likewise.
 	(rewrite_to_defined_overflow): Likewise.
 	(gimple_convert_to_ptrofftype): New function.
-	* gimple-fold.h (gimple_convert_to_ptrofftype): New overload,
-	declare.
+	* gimple-fold.h (gimple_convert_to_ptrofftype): New overload, declare.
 
 2015-10-16  Richard Biener  <rguenther@suse.de>
 
