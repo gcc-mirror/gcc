@@ -5942,17 +5942,21 @@ package body Exp_Ch6 is
 
       elsif not Requires_Transient_Scope (R_Type) then
 
-         --  Mutable records with no variable length components are not
-         --  returned on the sec-stack, so we need to make sure that the
-         --  backend will only copy back the size of the actual value, and not
-         --  the maximum size. We create an actual subtype for this purpose.
+         --  Mutable records with variable-length components are not returned
+         --  on the sec-stack, so we need to make sure that the back end will
+         --  only copy back the size of the actual value, and not the maximum
+         --  size. We create an actual subtype for this purpose. However we
+         --  need not do it if the expression is a function call since this
+         --  will be done in the called function and doing it here too would
+         --  cause a temporary with maximum size to be created.
 
          declare
             Ubt  : constant Entity_Id := Underlying_Type (Base_Type (Exptyp));
             Decl : Node_Id;
             Ent  : Entity_Id;
          begin
-            if Has_Discriminants (Ubt)
+            if Nkind (Exp) /= N_Function_Call
+              and then Has_Discriminants (Ubt)
               and then not Is_Constrained (Ubt)
               and then not Has_Unchecked_Union (Ubt)
             then

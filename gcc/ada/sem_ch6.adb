@@ -265,15 +265,16 @@ package body Sem_Ch6 is
       LocX : constant Source_Ptr := Sloc (Expr);
       Spec : constant Node_Id    := Specification (N);
 
-      Def_Id :  Entity_Id;
+      Def_Id : Entity_Id;
 
-      Prev :  Entity_Id;
+      Prev : Entity_Id;
       --  If the expression is a completion, Prev is the entity whose
       --  declaration is completed. Def_Id is needed to analyze the spec.
 
       New_Body : Node_Id;
       New_Spec : Node_Id;
       Ret      : Node_Id;
+      Asp      : Node_Id;
 
    begin
       --  This is one of the occasions on which we transform the tree during
@@ -448,6 +449,17 @@ package body Sem_Ch6 is
          end if;
 
          Analyze (N);
+
+         --  If aspect SPARK_Mode was specified on the body, it needs to be
+         --  repeated both on the generated spec and the body.
+
+         Asp := Find_Aspect (Defining_Unit_Name (Spec), Aspect_SPARK_Mode);
+
+         if Present (Asp) then
+            Asp := New_Copy_Tree (Asp);
+            Set_Analyzed (Asp, False);
+            Set_Aspect_Specifications (New_Body, New_List (Asp));
+         end if;
 
          --  Within a generic pre-analyze the original expression for name
          --  capture. The body is also generated but plays no role in
@@ -3632,8 +3644,8 @@ package body Sem_Ch6 is
       --  declaration for now, as inlining of subprogram bodies acting as
       --  declarations, or subprogram stubs, are not supported by frontend
       --  inlining. This inlining should occur after analysis of the body, so
-      --  that it is known whether the value of SPARK_Mode applicable to the
-      --  body, which can be defined by a pragma inside the body.
+      --  that it is known whether the value of SPARK_Mode, which can be
+      --  defined by a pragma inside the body, is applicable to the body.
 
       elsif GNATprove_Mode
         and then Full_Analysis

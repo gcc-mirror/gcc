@@ -29,8 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package implements Atomic_Counter operatiobns for platforms where
---  GCC supports __sync_add_and_fetch_4 and __sync_sub_and_fetch_4 builtins.
+--  This package implements Atomic_Counter and Atomic_Unsigned operations
+--  for platforms where GCC supports __sync_add_and_fetch_4 and
+--  __sync_sub_and_fetch_4 builtins.
 
 package body System.Atomic_Counters is
 

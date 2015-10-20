@@ -3347,9 +3347,11 @@ package body Sem_Ch3 is
                      Obj_Id);
 
                --  An object of a discriminated type cannot be effectively
-               --  volatile (SPARK RM C.6(4)).
+               --  volatile except for protected objects (SPARK RM 7.1.3(5)).
 
-               elsif Has_Discriminants (Obj_Typ) then
+               elsif Has_Discriminants (Obj_Typ)
+                 and then not Is_Protected_Type (Obj_Typ)
+               then
                   Error_Msg_N
                     ("discriminated object & cannot be volatile", Obj_Id);
 

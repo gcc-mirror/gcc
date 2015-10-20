@@ -194,6 +194,7 @@ package body Sem_Dim is
    OK_For_Dimension : constant array (Node_Kind) of Boolean :=
      (N_Attribute_Reference       => True,
       N_Expanded_Name             => True,
+      N_Explicit_Dereference      => True,
       N_Defining_Identifier       => True,
       N_Function_Call             => True,
       N_Identifier                => True,
@@ -1135,6 +1136,7 @@ package body Sem_Dim is
 
          when N_Attribute_Reference       |
               N_Expanded_Name             |
+              N_Explicit_Dereference      |
               N_Function_Call             |
               N_Identifier                |
               N_Indexed_Component         |
@@ -2093,7 +2095,6 @@ package body Sem_Dim is
 
    procedure Analyze_Dimension_Simple_Return_Statement (N : Node_Id) is
       Expr                : constant Node_Id := Expression (N);
-      Dims_Of_Expr        : constant Dimension_Type := Dimensions_Of (Expr);
       Return_Ent          : constant Entity_Id := Return_Statement_Entity (N);
       Return_Etyp         : constant Entity_Id :=
                               Etype (Return_Applies_To (Return_Ent));
@@ -2126,7 +2127,7 @@ package body Sem_Dim is
    --  Start of processing for Analyze_Dimension_Simple_Return_Statement
 
    begin
-      if Dims_Of_Return_Etyp /= Dims_Of_Expr then
+      if Dims_Of_Return_Etyp /= Dimensions_Of (Expr) then
          Error_Dim_Msg_For_Simple_Return_Statement (N, Return_Etyp, Expr);
          Remove_Dimensions (Expr);
       end if;

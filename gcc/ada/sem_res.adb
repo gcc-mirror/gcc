@@ -8067,6 +8067,7 @@ package body Sem_Res is
          Set_Etype (N, Get_Actual_Subtype (N));
       end if;
 
+      Analyze_Dimension (N);
       --  Note: No Eval processing is required for an explicit dereference,
       --  because such a name can never be static.
 

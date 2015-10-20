@@ -1,3 +1,43 @@
+2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Process_Declarations): A loop
+	parameter does not require finalization actions.
+
+2015-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): Do not create an
+	actual subtype for a mutable record return type if the expression
+	is itself a function call.
+
+2015-10-20  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* s-atocou.adb, s-atocou-builtin.adb: Fix implementation description
+	related to new type support.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Explicit_Dererence): Call Analyze_Dimension
+	to propagate dimension information from prefix.
+	* sem_dim.adb (Analyze_Dimension): Handle Explicit_Dereference.
+	* inline.ads: minor whitespace fix in comment
+	* sem_ch6.adb: minor gramar fix in comment
+
+2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Contract):
+	A protected type or a protected object is allowed to have a
+	discriminated part.
+
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Requires_Transient_Scope):
+	Return true for mutable records if the maximum size is very large.
+
+2015-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* a-except-2005.adb (To_Stderr): Import Put_Char_Stderr with
+	the same signature as in System.IO.Put.
+
 2015-10-20  Bob Duff  <duff@adacore.com>
 
 	* a-cobove.adb (Set_Length): Restore previous logic, but with "Checks
