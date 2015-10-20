@@ -569,9 +569,7 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
   ipa_replace_map *map;
   char *name;
 
-  if (!in_lto_p)
-    gcc_checking_assert (tree_versionable_function_p (old_decl));
-
+  gcc_checking_assert (local.versionable);
   gcc_assert (local.can_change_signature || !args_to_skip);
 
   /* Make a new FUNCTION_DECL tree node */

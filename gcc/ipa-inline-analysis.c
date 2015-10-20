@@ -4112,6 +4112,10 @@ inline_generate_summary (void)
 {
   struct cgraph_node *node;
 
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (DECL_STRUCT_FUNCTION (node->decl))
+      node->local.versionable = tree_versionable_function_p (node->decl);
+
   /* When not optimizing, do not bother to analyze.  Inlining is still done
      because edge redirection needs to happen there.  */
   if (!optimize && !flag_generate_lto && !flag_generate_offload && !flag_wpa)

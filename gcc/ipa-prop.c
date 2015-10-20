@@ -3507,6 +3507,7 @@ ipa_node_params_t::duplicate(cgraph_node *src, cgraph_node *dst,
 
   new_info->analysis_done = old_info->analysis_done;
   new_info->node_enqueued = old_info->node_enqueued;
+  new_info->versionable = old_info->versionable;
 
   old_av = ipa_get_agg_replacements_for_node (src);
   if (old_av)
