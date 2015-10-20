@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,18 @@ package body System.Atomic_Counters is
       return False;
    end Decrement;
 
+   function Decrement (Item : aliased in out Atomic_Unsigned) return Boolean is
+   begin
+      --  Could not use Item := Item - 1; because it is disabled in spec.
+      Item := Atomic_Unsigned'Pred (Item);
+      return Item = 0;
+   end Decrement;
+
+   procedure Decrement (Item : aliased in out Atomic_Unsigned) is
+   begin
+      Item := Atomic_Unsigned'Pred (Item);
+   end Decrement;
+
    ---------------
    -- Increment --
    ---------------
@@ -55,6 +67,11 @@ package body System.Atomic_Counters is
    procedure Increment (Item : in out Atomic_Counter) is
    begin
       raise Program_Error;
+   end Increment;
+
+   procedure Increment (Item : aliased in out Atomic_Unsigned) is
+   begin
+      Item := Atomic_Unsigned'Succ (Item);
    end Increment;
 
    ----------------

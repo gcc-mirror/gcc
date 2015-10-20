@@ -23,6 +23,7 @@ pragma Check_Name (Tampering_Check);
 --  checks.
 
 private with Ada.Finalization;
+with System.Atomic_Counters;
 
 package Ada.Containers is
    pragma Pure;
@@ -34,13 +35,15 @@ package Ada.Containers is
 
 private
 
+   package SAC renames System.Atomic_Counters;
+
    Count_Type_Last : constant := Count_Type'Last;
    --  Count_Type'Last as a universal_integer, so we can compare Index_Type
    --  values against this without type conversions that might overflow.
 
    type Tamper_Counts is record
-      Busy : Natural := 0;
-      Lock : Natural := 0;
+      Busy : aliased SAC.Atomic_Unsigned := 0;
+      Lock : aliased SAC.Atomic_Unsigned := 0;
    end record;
 
    --  Busy is positive when tampering with cursors is prohibited. Busy and

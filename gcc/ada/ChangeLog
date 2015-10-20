@@ -1,3 +1,14 @@
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Generate freeze
+	node for subprogram in Compile_Only mode.
+
+2015-10-20  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* s-atocou.adb, s-atocou.ads, a-contai.adb, a-contai.ads,
+	s-atocou-x86.adb, s-atocou-builtin.adb: Task safe over container
+	iterations.
+
 2015-10-20  Philippe Gil  <gil@adacore.com>
 
 	* g-debpoo.ads (Dump): NEW print Debug_Pool statistics & main

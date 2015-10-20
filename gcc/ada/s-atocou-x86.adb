@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ package body System.Atomic_Counters is
    -- Decrement --
    ---------------
 
-   function Decrement (Item : in out Atomic_Counter) return Boolean is
+   function Decrement (Item : aliased in out Atomic_Unsigned) return Boolean is
       Aux : Boolean;
 
    begin
@@ -53,25 +53,42 @@ package body System.Atomic_Counters is
            "lock%; decl" & ASCII.HT & "%0" & ASCII.LF & ASCII.HT
              & "sete %1",
          Outputs  =>
-           (Unsigned_32'Asm_Output ("=m", Item.Value),
+           (Atomic_Unsigned'Asm_Output ("=m", Item),
             Boolean'Asm_Output ("=qm", Aux)),
-         Inputs   => Unsigned_32'Asm_Input ("m", Item.Value),
+         Inputs   => Atomic_Unsigned'Asm_Input ("m", Item),
          Volatile => True);
 
       return Aux;
+   end Decrement;
+
+   procedure Decrement (Item : aliased in out Atomic_Unsigned) is
+   begin
+      if Decrement (Item) then
+         null;
+      end if;
+   end Decrement;
+
+   function Decrement (Item : in out Atomic_Counter) return Boolean is
+   begin
+      return Decrement (Item.Value);
    end Decrement;
 
    ---------------
    -- Increment --
    ---------------
 
-   procedure Increment (Item : in out Atomic_Counter) is
+   procedure Increment (Item : aliased in out Atomic_Unsigned) is
    begin
       System.Machine_Code.Asm
         (Template => "lock%; incl" & ASCII.HT & "%0",
-         Outputs  => Unsigned_32'Asm_Output ("=m", Item.Value),
-         Inputs   => Unsigned_32'Asm_Input ("m", Item.Value),
+         Outputs  => Atomic_Unsigned'Asm_Output ("=m", Item),
+         Inputs   => Atomic_Unsigned'Asm_Input ("m", Item),
          Volatile => True);
+   end Increment;
+
+   procedure Increment (Item : in out Atomic_Counter) is
+   begin
+      Increment (Item.Value);
    end Increment;
 
    ----------------
