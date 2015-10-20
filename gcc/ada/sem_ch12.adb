@@ -8126,7 +8126,7 @@ package body Sem_Ch12 is
          return Freeze_Node (Id);
       end Package_Freeze_Node;
 
-   --  Start of processing of Freeze_Subprogram_Body
+   --  Start of processing for Freeze_Subprogram_Body
 
    begin
       --  If the instance and the generic body appear within the same unit, and

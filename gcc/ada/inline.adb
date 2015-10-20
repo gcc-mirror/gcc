@@ -1504,7 +1504,7 @@ package body Inline is
 
       Id : Entity_Id;  --  Procedure or function entity for the subprogram
 
-   --  Start of Can_Be_Inlined_In_GNATprove_Mode
+   --  Start of processing for Can_Be_Inlined_In_GNATprove_Mode
 
    begin
       pragma Assert (Present (Spec_Id) or else Present (Body_Id));

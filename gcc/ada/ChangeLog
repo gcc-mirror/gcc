@@ -1,3 +1,21 @@
+2015-10-20  Yannick Moy  <moy@adacore.com>
+
+	* fmap.adb, a-cihama.adb, sem_ch5.adb, make.adb, inline.adb,
+	a-cfhase.adb, scng.adb, sem_ch12.adb, freeze.adb, tempdir.adb,
+	sem_util.adb, sem_res.adb, s-regexp.adb, a-clrefi.adb: Fix coding
+	style for marking start of processing of subprograms.
+
+2015-10-20  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb (Add_SPARK_File): Start traversal
+	by requesting info from stubs.	(Traverse_All_Compilation_Units):
+	Remove unused procedure.
+	(Traverse_Declarations_Or_Statements): Handle protected and task units.
+	* lib-xref.ads (Traverse_All_Compilation_Units): Remove unused
+	procedure.
+	* restrict.adb (Check_Restriction): Do not ignore
+	restrictions in GNATprove_Mode.
+
 2015-10-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-valllu.adb, sem_ch3.adb, layout.adb, a-crbtgo.adb, exp_ch9.adb,

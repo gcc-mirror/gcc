@@ -788,7 +788,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
       Busy : With_Busy (Container.HT.TC'Unrestricted_Access);
 
-   --  Start of processing Iterate
+   --  Start of processing for Iterate
 
    begin
       Local_Iterate (Container.HT);

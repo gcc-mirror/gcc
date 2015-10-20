@@ -1571,7 +1571,7 @@ package body Sem_Ch5 is
          end if;
       end Analyze_Cond_Then;
 
-   --  Start of Analyze_If_Statement
+   --  Start of processing for Analyze_If_Statement
 
    begin
       --  Initialize exit count for else statements. If there is no else part,
@@ -1788,7 +1788,7 @@ package body Sem_Ch5 is
          return Etype (Ent);
       end Get_Cursor_Type;
 
-   --   Start of processing for  Analyze_iterator_Specification
+   --   Start of processing for Analyze_iterator_Specification
 
    begin
       Enter_Name (Def_Id);

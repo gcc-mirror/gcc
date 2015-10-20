@@ -645,10 +645,6 @@ package Lib.Xref is
       --  Inside_Stubs is True, then the body of stubs is also traversed.
       --  Generic declarations are ignored.
 
-      procedure Traverse_All_Compilation_Units (Process : Node_Processing);
-      --  Call Process on all declarations through all compilation units.
-      --  Generic declarations are ignored.
-
       procedure Collect_SPARK_Xrefs
         (Sdep_Table : Unit_Ref_Table;
          Num_Sdep   : Nat);

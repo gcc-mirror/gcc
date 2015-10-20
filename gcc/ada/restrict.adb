@@ -505,7 +505,7 @@ package body Restrict is
 
       --  Just checking, SPARK does not allow restrictions to be set ???
 
-      if CodePeer_Mode or GNATprove_Mode then
+      if CodePeer_Mode then
          return;
       end if;
 

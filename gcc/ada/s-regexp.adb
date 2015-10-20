@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2013, AdaCore                     --
+--                     Copyright (C) 1999-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1084,7 +1084,7 @@ package body System.Regexp is
             return J;
          end Next_Sub_Expression;
 
-      --  Start of Create_Primary_Table
+      --  Start of processing for Create_Primary_Table
 
       begin
          Table.all := (others => (others => 0));
