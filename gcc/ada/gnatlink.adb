@@ -376,7 +376,7 @@ procedure Gnatlink is
                  new String'(Arg);
 
             elsif Arg'Length /= 0 and then Arg (1) = '-' then
-               if Arg'Length > 4 and then Arg (2 .. 5) =  "gnat" then
+               if Arg'Length > 4 and then Arg (2 .. 5) = "gnat" then
                   Exit_With_Error
                     ("invalid switch: """ & Arg & """ (gnat not needed here)");
                end if;

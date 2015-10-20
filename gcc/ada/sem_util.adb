@@ -12655,7 +12655,7 @@ package body Sem_Util is
       --  occurrence of 'Old in that operand is potentially unevaluated.
       --  See Sem_ch13.adb for details of this transformation.
 
-      if Nkind (Original_Node (Par)) =  N_And_Then then
+      if Nkind (Original_Node (Par)) = N_And_Then then
          return True;
       end if;
 
@@ -14851,7 +14851,7 @@ package body Sem_Util is
                  and then Present (Next_Named_Actual (Old_E))
                then
                   if First_Named_Actual (Old_Node)
-                    =  Explicit_Actual_Parameter (Old_E)
+                    = Explicit_Actual_Parameter (Old_E)
                   then
                      Set_First_Named_Actual
                        (New_Node, Explicit_Actual_Parameter (New_E));

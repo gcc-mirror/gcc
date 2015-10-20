@@ -5434,7 +5434,7 @@ package body Sem_Eval is
       --  Case where call to predicate function appears on its own (this means
       --  that the predicate at this level is just inherited from the parent).
 
-      elsif Nkind (Expr) =  N_Function_Call then
+      elsif Nkind (Expr) = N_Function_Call then
          declare
             Typ : constant Entity_Id :=
                     Etype (First_Formal (Entity (Name (Expr))));

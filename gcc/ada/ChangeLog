@@ -1,3 +1,11 @@
+2015-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_aggr.adb, mlib-prj.adb, prep.adb, eval_fat.adb, rtsfind.adb,
+	freeze.adb, sem_util.adb, sem_res.adb, sem_attr.adb, gnatlink.adb,
+	par-ch6.adb, exp_tss.adb, exp_ch4.adb, s-shasto.adb, exp_fixd.adb,
+	sem_ch6.adb, clean.adb, sem_ch8.adb, sem_eval.adb, sem_ch9.adb: Fix
+	typos.
+
 2015-10-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch11.adb (Analyze_Handled_Statements): If the scope is a
