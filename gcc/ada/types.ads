@@ -629,7 +629,7 @@ package Types is
    --  copying operations during installation. We have particularly noticed
    --  that WinNT seems susceptible to such changes.
    --
-   --  Note : the Empty_Time_Stamp value looks equal to itself, and less than
+   --  Note: the Empty_Time_Stamp value looks equal to itself, and less than
    --  any non-empty time stamp value.
 
    procedure Split_Time_Stamp

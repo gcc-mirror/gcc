@@ -2391,6 +2391,29 @@ package body Sem_Ch3 is
                Adjust_Decl;
                Freeze_All (First_Entity (Current_Scope), Decl);
                Freeze_From := Last_Entity (Current_Scope);
+
+            --  At the end of the visible declarations the expressions in
+            --  aspects of all entities declared so far must be resolved.
+            --  The entities themselves might be frozen later, and the
+            --  generated pragmas and attribute definition clauses analyzed
+            --  in full at that point, but name resolution must take place
+            --  now.
+            --  In addition to being the proper semantics, this is mandatory
+            --  within generic units, because global name capture requires
+            --  those expressions to be analyzed, given that the generated
+            --  pragmas do not appear in the original generic tree.
+
+            elsif Serious_Errors_Detected = 0 then
+               declare
+                  E : Entity_Id;
+
+               begin
+                  E := First_Entity (Current_Scope);
+                  while Present (E) loop
+                     Resolve_Aspect_Expressions (E);
+                     Next_Entity (E);
+                  end loop;
+               end;
             end if;
 
          --  If next node is a body then freeze all types before the body.

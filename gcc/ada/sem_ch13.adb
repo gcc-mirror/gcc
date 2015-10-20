@@ -12382,6 +12382,75 @@ package body Sem_Ch13 is
       Replace_Type_Refs (N);
    end Replace_Type_References_Generic;
 
+   --------------------------------
+   -- Resolve_Aspect_Expressions --
+   --------------------------------
+
+   procedure Resolve_Aspect_Expressions (E : Entity_Id) is
+      ASN  : Node_Id;
+      A_Id : Aspect_Id;
+      Expr : Node_Id;
+
+   begin
+      ASN := First_Rep_Item (E);
+      while Present (ASN) loop
+         if Nkind (ASN) = N_Aspect_Specification and then Entity (ASN) = E then
+            A_Id := Get_Aspect_Id (ASN);
+            Expr := Expression (ASN);
+
+            case A_Id is
+               --  For now we only deal with aspects that do not generate
+               --  subprograms, or that may mention current instances of
+               --  types. These will require special handling (TBD).
+
+               when Aspect_Predicate |
+                    Aspect_Invariant |
+                    Aspect_Static_Predicate |
+                    Aspect_Dynamic_Predicate =>
+                  null;
+
+               when Pre_Post_Aspects =>
+                  null;
+
+               when Aspect_Iterable =>
+                  if Nkind (Expr) = N_Aggregate then
+                     declare
+                        Assoc : Node_Id;
+
+                     begin
+                        Assoc := First (Component_Associations (Expr));
+                        while Present (Assoc) loop
+                           Find_Direct_Name (Expression (Assoc));
+                           Next (Assoc);
+                        end loop;
+                     end;
+                  end if;
+
+               when others =>
+                  if Present (Expr) then
+                     case Aspect_Argument (A_Id) is
+                        when Expression | Optional_Expression  =>
+                           Analyze_And_Resolve (Expression (ASN));
+
+                        when Name | Optional_Name =>
+                           if Nkind (Expr) = N_Identifier then
+                              Find_Direct_Name (Expr);
+
+                           elsif Nkind (Expr) = N_Selected_Component then
+                              Find_Selected_Component (Expr);
+
+                           else
+                              null;
+                           end if;
+                     end case;
+                  end if;
+            end case;
+         end if;
+
+         Next (ASN);
+      end loop;
+   end Resolve_Aspect_Expressions;
+
    -------------------------
    -- Same_Representation --
    -------------------------

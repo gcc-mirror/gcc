@@ -347,6 +347,13 @@ package Sem_Ch13 is
    --  Given an entity Typ that denotes a derived type or a subtype, this
    --  routine performs the inheritance of aspects at the freeze point.
 
+   procedure Resolve_Aspect_Expressions (E : Entity_Id);
+   --  Name resolution of an aspect expression happens at the end of the
+   --  current declarative part or at the freeze point for the entity,
+   --  whichever comes first. For declarations in the visible part of a
+   --  package, name resolution takes place before analysis of the private
+   --  part even though the freeze point of the entity may appear later.
+
    procedure Validate_Iterable_Aspect (Typ : Entity_Id; ASN : Node_Id);
    --  For SPARK 2014 formal containers. The expression has the form of an
    --  aggregate, and each entry must denote a function with the proper syntax

@@ -6980,30 +6980,40 @@ package body Einfo is
    ----------------
 
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id is
-      Is_CDG  : constant Boolean :=
-                  Id = Pragma_Abstract_State     or else
-                  Id = Pragma_Async_Readers      or else
-                  Id = Pragma_Async_Writers      or else
-                  Id = Pragma_Depends            or else
-                  Id = Pragma_Effective_Reads    or else
-                  Id = Pragma_Effective_Writes   or else
-                  Id = Pragma_Extensions_Visible or else
-                  Id = Pragma_Global             or else
-                  Id = Pragma_Initial_Condition  or else
-                  Id = Pragma_Initializes        or else
-                  Id = Pragma_Part_Of            or else
-                  Id = Pragma_Refined_Depends    or else
-                  Id = Pragma_Refined_Global     or else
-                  Id = Pragma_Refined_State;
+
+      --  Classification pragmas
+
+      Is_CLS : constant Boolean :=
+                 Id = Pragma_Abstract_State             or else
+                 Id = Pragma_Async_Readers              or else
+                 Id = Pragma_Async_Writers              or else
+                 Id = Pragma_Constant_After_Elaboration or else
+                 Id = Pragma_Depends                    or else
+                 Id = Pragma_Effective_Reads            or else
+                 Id = Pragma_Effective_Writes           or else
+                 Id = Pragma_Extensions_Visible         or else
+                 Id = Pragma_Global                     or else
+                 Id = Pragma_Initial_Condition          or else
+                 Id = Pragma_Initializes                or else
+                 Id = Pragma_Part_Of                    or else
+                 Id = Pragma_Refined_Depends            or else
+                 Id = Pragma_Refined_Global             or else
+                 Id = Pragma_Refined_State;
+
+      --  Contract / test case pragmas
+
       Is_CTC : constant Boolean :=
-                  Id = Pragma_Contract_Cases     or else
+                  Id = Pragma_Contract_Cases            or else
                   Id = Pragma_Test_Case;
+
+      --  Pre / postcondition pragmas
+
       Is_PPC : constant Boolean :=
-                  Id = Pragma_Precondition       or else
-                  Id = Pragma_Postcondition      or else
+                  Id = Pragma_Precondition              or else
+                  Id = Pragma_Postcondition             or else
                   Id = Pragma_Refined_Post;
 
-      In_Contract : constant Boolean := Is_CDG or Is_CTC or Is_PPC;
+      In_Contract : constant Boolean := Is_CLS or Is_CTC or Is_PPC;
 
       Item  : Node_Id;
       Items : Node_Id;
@@ -7018,7 +7028,7 @@ package body Einfo is
          if No (Items) then
             return Empty;
 
-         elsif Is_CDG then
+         elsif Is_CLS then
             Item := Classifications (Items);
 
          elsif Is_CTC then
