@@ -4119,7 +4119,7 @@ package body Make is
       procedure Globalize_Dirs is new
         Prj.Env.For_All_Object_Dirs (Globalize_Dir);
 
-   --  Start of procedure Globalize
+   --  Start of processing for Globalize
 
    begin
       Success := True;

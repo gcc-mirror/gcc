@@ -516,7 +516,7 @@ is
          end loop;
       end Find_Equivalent_Key;
 
-   --  Start of processing of Equivalent_Sets
+   --  Start of processing for Equivalent_Sets
 
    begin
       return Is_Equivalent (Left, Right);

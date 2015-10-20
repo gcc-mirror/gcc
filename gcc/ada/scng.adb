@@ -641,7 +641,7 @@ package body Scng is
             end loop;
          end Scan_Integer;
 
-      --  Start of Processing for Nlit
+      --  Start of processing for Nlit
 
       begin
          Base := 10;

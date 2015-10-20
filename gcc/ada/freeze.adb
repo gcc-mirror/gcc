@@ -1592,7 +1592,7 @@ package body Freeze is
             end if;
          end Process_Flist;
 
-      --  Start or processing for Freeze_All_Ent
+      --  Start of processing for Freeze_All_Ent
 
       begin
          E := From;

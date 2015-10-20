@@ -3021,7 +3021,7 @@ package body Sem_Util is
          end if;
       end Is_Later_Declarative_Item;
 
-   --  Start of Check_Later_Vs_Basic_Declarations
+   --  Start of processing for Check_Later_Vs_Basic_Declarations
 
    begin
       Decl := First (Decls);
@@ -14385,7 +14385,7 @@ package body Sem_Util is
 
       procedure Mark_Allocators is new Traverse_Proc (Mark_Allocator);
 
-   --  Start of processing Mark_Coextensions
+   --  Start of processing for Mark_Coextensions
 
    begin
       --  An allocator that appears on the right-hand side of an assignment is

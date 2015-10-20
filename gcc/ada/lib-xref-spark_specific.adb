@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,7 +154,7 @@ package body SPARK_Specific is
          Traverse_Compilation_Unit
            (CU           => Cunit (Ubody),
             Process      => Detect_And_Add_SPARK_Scope'Access,
-            Inside_Stubs => False);
+            Inside_Stubs => True);
       end if;
 
       --  When two units are present for the same compilation unit, as it
@@ -166,7 +166,7 @@ package body SPARK_Specific is
             Traverse_Compilation_Unit
               (CU           => Cunit (Uspec),
                Process      => Detect_And_Add_SPARK_Scope'Access,
-               Inside_Stubs => False);
+               Inside_Stubs => True);
          end if;
       end if;
 
@@ -1151,17 +1151,6 @@ package body SPARK_Specific is
       end if;
    end Generate_Dereference;
 
-   ------------------------------------
-   -- Traverse_All_Compilation_Units --
-   ------------------------------------
-
-   procedure Traverse_All_Compilation_Units (Process : Node_Processing) is
-   begin
-      for U in Units.First .. Last_Unit loop
-         Traverse_Compilation_Unit (Cunit (U), Process, Inside_Stubs => False);
-      end loop;
-   end Traverse_All_Compilation_Units;
-
    -------------------------------
    -- Traverse_Compilation_Unit --
    -------------------------------
@@ -1296,6 +1285,59 @@ package body SPARK_Specific is
                      then
                         Traverse_Subprogram_Body
                           (Body_N, Process, Inside_Stubs);
+                     end if;
+                  end;
+               end if;
+
+            --  Protected unit
+
+            when N_Protected_Definition =>
+               Traverse_Declarations_Or_Statements
+                 (Visible_Declarations (N), Process, Inside_Stubs);
+               Traverse_Declarations_Or_Statements
+                 (Private_Declarations (N), Process, Inside_Stubs);
+
+            when N_Protected_Body =>
+               Traverse_Declarations_Or_Statements
+                 (Declarations (N), Process, Inside_Stubs);
+
+            when N_Protected_Body_Stub =>
+               if Present (Library_Unit (N)) then
+                  declare
+                     Body_N : constant Node_Id := Get_Body_From_Stub (N);
+                  begin
+                     if Inside_Stubs then
+                        Traverse_Declarations_Or_Statements
+                          (Declarations (Body_N), Process, Inside_Stubs);
+                     end if;
+                  end;
+               end if;
+
+            --  Task unit
+
+            when N_Task_Definition =>
+               Traverse_Declarations_Or_Statements
+                 (Visible_Declarations (N), Process, Inside_Stubs);
+               Traverse_Declarations_Or_Statements
+                 (Private_Declarations (N), Process, Inside_Stubs);
+
+            when N_Task_Body =>
+               Traverse_Declarations_Or_Statements
+                 (Declarations (N), Process, Inside_Stubs);
+               Traverse_Handled_Statement_Sequence
+                 (Handled_Statement_Sequence (N), Process, Inside_Stubs);
+
+            when N_Task_Body_Stub =>
+               if Present (Library_Unit (N)) then
+                  declare
+                     Body_N : constant Node_Id := Get_Body_From_Stub (N);
+                  begin
+                     if Inside_Stubs then
+                        Traverse_Declarations_Or_Statements
+                          (Declarations (Body_N), Process, Inside_Stubs);
+                        Traverse_Handled_Statement_Sequence
+                          (Handled_Statement_Sequence (Body_N), Process,
+                           Inside_Stubs);
                      end if;
                   end;
                end if;
