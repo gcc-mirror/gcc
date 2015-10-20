@@ -1,3 +1,18 @@
+2015-10-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md
+	(*aarch64_fcvt<su_optab><GPF:mode><GPI:mode>2_mult): New pattern.
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_fcvt<su_optab><VDQF:mode><fcvt_target>2_mult): Likewise.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Handle above patterns.
+	(aarch64_fpconst_pow_of_2): New function.
+	(aarch64_vec_fpconst_pow_of_2): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_fpconst_pow_of_2): Declare
+	prototype.
+	(aarch64_vec_fpconst_pow_of_2): Likewise.
+	* config/aarch64/predicates.md (aarch64_fp_pow2): New predicate.
+	(aarch64_fp_vec_pow2): Likewise.
+
 2015-10-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.h (HARD_REGNO_NREGS): Use CEIL macro.

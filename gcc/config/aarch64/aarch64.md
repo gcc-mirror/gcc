@@ -4185,6 +4185,25 @@
   [(set_attr "type" "f_cvtf2i")]
 )
 
+(define_insn "*aarch64_fcvt<su_optab><GPF:mode><GPI:mode>2_mult"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(FIXUORS:GPI
+	  (mult:GPF
+	    (match_operand:GPF 1 "register_operand" "w")
+	    (match_operand:GPF 2 "aarch64_fp_pow2" "F"))))]
+  "TARGET_FLOAT
+   && IN_RANGE (aarch64_fpconst_pow_of_2 (operands[2]), 1,
+		GET_MODE_BITSIZE (<GPI:MODE>mode))"
+  {
+    int fbits = aarch64_fpconst_pow_of_2 (operands[2]);
+    char buf[64];
+    snprintf (buf, 64, "fcvtz<su>\\t%%<GPI:w>0, %%<GPF:s>1, #%d", fbits);
+    output_asm_insn (buf, operands);
+    return "";
+  }
+  [(set_attr "type" "f_cvtf2i")]
+)
+
 ;; fma - no throw
 
 (define_insn "fma<mode>4"

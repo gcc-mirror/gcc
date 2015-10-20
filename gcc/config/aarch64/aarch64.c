@@ -6786,6 +6786,19 @@ cost_plus:
 	  else
 	    *cost += extra_cost->fp[GET_MODE (x) == DFmode].toint;
 	}
+
+      /* We can combine fmul by a power of 2 followed by a fcvt into a single
+	 fixed-point fcvt.  */
+      if (GET_CODE (x) == MULT
+	  && ((VECTOR_MODE_P (mode)
+	       && aarch64_vec_fpconst_pow_of_2 (XEXP (x, 1)) > 0)
+	      || aarch64_fpconst_pow_of_2 (XEXP (x, 1)) > 0))
+	{
+	  *cost += rtx_cost (XEXP (x, 0), VOIDmode, (rtx_code) code,
+			     0, speed);
+	  return true;
+	}
+
       *cost += rtx_cost (x, VOIDmode, (enum rtx_code) code, 0, speed);
       return true;
 
@@ -13248,6 +13261,52 @@ aarch64_unspec_may_trap_p (const_rtx x, unsigned flags)
     }
 
   return default_unspec_may_trap_p (x, flags);
+}
+
+
+/* If X is a positive CONST_DOUBLE with a value that is a power of 2
+   return the log2 of that value.  Otherwise return -1.  */
+
+int
+aarch64_fpconst_pow_of_2 (rtx x)
+{
+  const REAL_VALUE_TYPE *r;
+
+  if (!CONST_DOUBLE_P (x))
+    return -1;
+
+  r = CONST_DOUBLE_REAL_VALUE (x);
+
+  if (REAL_VALUE_NEGATIVE (*r)
+      || REAL_VALUE_ISNAN (*r)
+      || REAL_VALUE_ISINF (*r)
+      || !real_isinteger (r, DFmode))
+    return -1;
+
+  return exact_log2 (real_to_integer (r));
+}
+
+/* If X is a vector of equal CONST_DOUBLE values and that value is
+   Y, return the aarch64_fpconst_pow_of_2 of Y.  Otherwise return -1.  */
+
+int
+aarch64_vec_fpconst_pow_of_2 (rtx x)
+{
+  if (GET_CODE (x) != CONST_VECTOR)
+    return -1;
+
+  if (GET_MODE_CLASS (GET_MODE (x)) != MODE_VECTOR_FLOAT)
+    return -1;
+
+  int firstval = aarch64_fpconst_pow_of_2 (CONST_VECTOR_ELT (x, 0));
+  if (firstval <= 0)
+    return -1;
+
+  for (int i = 1; i < CONST_VECTOR_NUNITS (x); i++)
+    if (aarch64_fpconst_pow_of_2 (CONST_VECTOR_ELT (x, i)) != firstval)
+      return -1;
+
+  return firstval;
 }
 
 /* Implement TARGET_PROMOTED_TYPE to promote __fp16 to float.  */
