@@ -1809,6 +1809,7 @@ package body Exp_Ch9 is
             --    type Ann is access all <actual-type>
 
             Comp_Nam := Make_Temporary (Loc, 'A');
+            Set_Is_Param_Block_Component_Type (Comp_Nam);
 
             Append_To (Decls,
               Make_Full_Type_Declaration (Loc,
@@ -8326,6 +8327,7 @@ package body Exp_Ch9 is
             --  Declare new access type and then append
 
             Ctype := Make_Temporary (Loc, 'A');
+            Set_Is_Param_Block_Component_Type (Ctype);
 
             Decl :=
               Make_Full_Type_Declaration (Loc,

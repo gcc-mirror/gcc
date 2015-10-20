@@ -1,5 +1,41 @@
 2015-10-20  Bob Duff  <duff@adacore.com>
 
+	* a-cobove.adb (Set_Length): Restore previous logic, but with "Checks
+	and then" on the check.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch3.adb (P_Known_Discriminant_Part_Opt): Handle properly
+	a misplaced "constant" keyword in a discriminant specification.
+
+2015-10-20  Steve Baird  <baird@adacore.com>
+
+	* einfo.ads (Is_Param_Block_Component_Type): New function decl
+	for querying the flag.
+	(Set_Is_Param_Block_Component_Type): New procedure decl for setting
+	the flag.
+	* einfo.adb (Is_Param_Block_Component_Type): New function body.
+	(Set_Is_Param_Block_Component_Type): New procedure body.
+	(Write_Entity_Flags): Display the new flag.
+	* exp_ch9.adb (Build_Parameter_Block): Set flag on parameter
+	block component types.
+	(Expand_N_Entry_Declaration): Set flag on parameter block component
+	types.
+
+2015-10-20  Steve Baird  <baird@adacore.com>
+
+	* sem_elab.adb: Do not pass an N_Attribute_Reference node to
+	Sinfo.Set_No_Elaboration_Check.
+	* sem_elab.adb (Check_Elab_Call) Do not pass a non-call
+	node (specifically, an N_Attribute_Reference node) to
+	Sinfo.Set_No_Elaboration_Check.
+
+2015-10-20  Tristan Gingold  <gingold@adacore.com>
+
+	* adaint.c: File names are case sensitive on aarch64-ios.
+
+2015-10-20  Bob Duff  <duff@adacore.com>
+
 	* a-cbdlli.ads, a-cbhase.ads, a-cbmutr.ads, a-cborse.ads,
 	* a-cdlili.ads, a-cidlli.ads, a-cihase.ads, a-cimutr.ads,
 	* a-ciorse.ads, a-cobove.ads, a-cohase.ads, a-coinve.ads,
