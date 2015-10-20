@@ -29,6 +29,8 @@ package body Ada.Containers is
 
    package body Generic_Implementation is
 
+      use SAC;
+
       ------------
       -- Adjust --
       ------------
@@ -50,11 +52,7 @@ package body Ada.Containers is
       procedure Busy (T_Counts : in out Tamper_Counts) is
       begin
          if T_Check then
-            declare
-               B : Natural renames T_Counts.Busy;
-            begin
-               B := B + 1;
-            end;
+            Increment (T_Counts.Busy);
          end if;
       end Busy;
 
@@ -119,13 +117,8 @@ package body Ada.Containers is
       procedure Lock (T_Counts : in out Tamper_Counts) is
       begin
          if T_Check then
-            declare
-               B : Natural renames T_Counts.Busy;
-               L : Natural renames T_Counts.Lock;
-            begin
-               L := L + 1;
-               B := B + 1;
-            end;
+            Increment (T_Counts.Lock);
+            Increment (T_Counts.Busy);
          end if;
       end Lock;
 
@@ -160,11 +153,7 @@ package body Ada.Containers is
       procedure Unbusy (T_Counts : in out Tamper_Counts) is
       begin
          if T_Check then
-            declare
-               B : Natural renames T_Counts.Busy;
-            begin
-               B := B - 1;
-            end;
+            Decrement (T_Counts.Busy);
          end if;
       end Unbusy;
 
@@ -175,13 +164,8 @@ package body Ada.Containers is
       procedure Unlock (T_Counts : in out Tamper_Counts) is
       begin
          if T_Check then
-            declare
-               B : Natural renames T_Counts.Busy;
-               L : Natural renames T_Counts.Lock;
-            begin
-               L := L - 1;
-               B := B - 1;
-            end;
+            Decrement (T_Counts.Lock);
+            Decrement (T_Counts.Busy);
          end if;
       end Unlock;
 

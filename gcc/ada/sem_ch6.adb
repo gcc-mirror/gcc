@@ -3215,18 +3215,17 @@ package body Sem_Ch6 is
          --  the freeze actions that include the bodies. In particular, extra
          --  formals for accessibility or for return-in-place may need to be
          --  generated. Freeze nodes, if any, are inserted before the current
-         --  body. These freeze actions are also needed in ASIS mode to enable
-         --  the proper back-annotations.
+         --  body. These freeze actions are also needed in ASIS mode and in
+         --  Compile_Only mode to enable the proper back-end type annotations.
+         --  They are necessary in any case to insure order of elaboration
+         --  in gigi.
 
          if not Is_Frozen (Spec_Id)
-           and then (Expander_Active or ASIS_Mode)
+           and then (Expander_Active
+                       or else ASIS_Mode
+                       or else (Operating_Mode = Check_Semantics
+                                  and then Serious_Errors_Detected = 0))
          then
-            --  Force the generation of its freezing node to ensure proper
-            --  management of access types in the backend.
-
-            --  This is definitely needed for some cases, but it is not clear
-            --  why, to be investigated further???
-
             Set_Has_Delayed_Freeze (Spec_Id);
             Freeze_Before (N, Spec_Id);
          end if;
