@@ -2411,13 +2411,11 @@ package body Ada.Containers.Bounded_Vectors is
 
       if Count >= 0 then
          Container.Delete_Last (Count);
-      end if;
-
-      if Checks and then Container.Last >= Index_Type'Last then
+      elsif Checks and then Container.Last >= Index_Type'Last then
          raise Constraint_Error with "vector is already at its maximum length";
+      else
+         Container.Insert_Space (Container.Last + 1, -Count);
       end if;
-
-      Container.Insert_Space (Container.Last + 1, -Count);
    end Set_Length;
 
    ----------

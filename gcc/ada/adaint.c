@@ -552,7 +552,8 @@ __gnat_get_file_names_case_sensitive (void)
 	{
 	  /* By default, we suppose filesystems aren't case sensitive on
 	     Windows and Darwin (but they are on arm-darwin).  */
-#if defined (WINNT) || (defined (__APPLE__) && !defined (__arm__))
+#if defined (WINNT) \
+  || (defined (__APPLE__) && !(defined (__arm__) || defined (__arm64__)))
 	  file_names_case_sensitive_cache = 0;
 #else
 	  file_names_case_sensitive_cache = 1;

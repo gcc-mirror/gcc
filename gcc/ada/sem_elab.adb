@@ -1506,7 +1506,9 @@ package body Sem_Elab is
                           or else Elaboration_Checks_Suppressed (Ent)
                           or else Elaboration_Checks_Suppressed (Scope (Ent))
                         then
-                           Set_No_Elaboration_Check (N);
+                           if Nkind (N) in N_Subprogram_Call then
+                              Set_No_Elaboration_Check (N);
+                           end if;
                         end if;
 
                         return;
