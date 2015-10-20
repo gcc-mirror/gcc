@@ -2615,7 +2615,7 @@ package body Sem_Ch3 is
             return False;
          end Has_Aspect_Spec;
 
-         --  Start of processing for Check_Nonoverridable_Aspects
+      --  Start of processing for Check_Nonoverridable_Aspects
 
       begin
 

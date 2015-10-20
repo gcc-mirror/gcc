@@ -1447,9 +1447,6 @@ package body Sem_Ch13 is
                Disc        : Entity_Id;
                Parent_Disc : Entity_Id;
 
-               --  For a type extension, check whether parent has a
-               --  reference discriminant, to verify that use is proper.
-
             begin
                if not Is_Type (E) or else not Has_Discriminants (E) then
                   Error_Msg_N
@@ -1474,7 +1471,7 @@ package body Sem_Ch13 is
                      Next_Discriminant (Disc);
                   end loop;
 
-                  --  Error if no proper access discriminant.
+                  --  Error if no proper access discriminant
 
                   if No (Disc) then
                      Error_Msg_NE
@@ -1482,6 +1479,9 @@ package body Sem_Ch13 is
                      return;
                   end if;
                end if;
+
+               --  For a type extension, check whether parent has a
+               --  reference discriminant, to verify that use is proper.
 
                if Is_Derived_Type (E)
                  and then Has_Discriminants (Etype (E))
