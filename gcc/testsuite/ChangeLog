@@ -1,3 +1,8 @@
+2015-10-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/67609
+	* gcc.target/i386/pr67609.c: New.
+
 2015-10-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/fmul_fcvt_1.c: Add multiply-by-32 cases.
