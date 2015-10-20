@@ -36,22 +36,37 @@
 with System.Task_Primitives;
 
 with Ada.Finalization;
+with Ada.Task_Identification;
 
-package Ada.Synchronous_Task_Control is
+package Ada.Synchronous_Task_Control with
+  SPARK_Mode
+is
    pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 
    type Suspension_Object is limited private;
 
-   procedure Set_True (S : in out Suspension_Object);
+   procedure Set_True (S : in out Suspension_Object) with
+     Global  => null,
+     Depends => (S    => null,
+                 null => S);
 
-   procedure Set_False (S : in out Suspension_Object);
+   procedure Set_False (S : in out Suspension_Object) with
+     Global  => null,
+     Depends => (S    => null,
+                 null => S);
 
-   function Current_State (S : Suspension_Object) return Boolean;
+   function Current_State (S : Suspension_Object) return Boolean with
+     Volatile_Function,
+     Global => Ada.Task_Identification.Tasking_State;
 
-   procedure Suspend_Until_True (S : in out Suspension_Object);
+   procedure Suspend_Until_True (S : in out Suspension_Object) with
+     Global  => null,
+     Depends => (S    => null,
+                 null => S);
 
 private
+   pragma SPARK_Mode (Off);
 
    procedure Initialize (S : in out Suspension_Object);
    --  Initialization for Suspension_Object

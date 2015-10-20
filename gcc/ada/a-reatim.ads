@@ -36,7 +36,11 @@
 with System.Task_Primitives.Operations;
 pragma Elaborate_All (System.Task_Primitives.Operations);
 
-package Ada.Real_Time is
+package Ada.Real_Time with
+  SPARK_Mode,
+  Abstract_State => (Clock_Time with External => (Async_Readers,
+                                                  Async_Writers))
+is
 
    pragma Compile_Time_Error
      (Duration'Size /= 64,
@@ -54,7 +58,9 @@ package Ada.Real_Time is
    Time_Span_Unit  : constant Time_Span;
 
    Tick : constant Time_Span;
-   function Clock return Time;
+   function Clock return Time with
+     Volatile_Function,
+     Global => Clock_Time;
 
    function "+"  (Left : Time;      Right : Time_Span) return Time;
    function "+"  (Left : Time_Span; Right : Time)      return Time;
@@ -107,6 +113,8 @@ package Ada.Real_Time is
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;
 
 private
+   pragma SPARK_Mode (Off);
+
    --  Time and Time_Span are represented in 64-bit Duration value in
    --  nanoseconds. For example, 1 second and 1 nanosecond is represented
    --  as the stored integer 1_000_000_001. This is for the 64-bit Duration

@@ -389,6 +389,14 @@ package body Prj.Attr is
    "LVswitches#" &
    "LVexcluded_source_files#" &
 
+   --  package Prove
+
+   "Pprove#" &
+
+   --  package GnatTest
+
+   "Pgnattest#" &
+
    "#";
 
    Initialized : Boolean := False;

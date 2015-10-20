@@ -36,7 +36,11 @@
 with System;
 with System.Tasking;
 
-package Ada.Task_Identification is
+package Ada.Task_Identification with
+  SPARK_Mode,
+  Abstract_State => (Tasking_State with External => (Async_Readers,
+                                                     Async_Writers))
+is
    pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 
@@ -50,25 +54,35 @@ package Ada.Task_Identification is
 
    function Image (T : Task_Id) return String;
 
-   function Current_Task return Task_Id;
+   function Current_Task return Task_Id with
+     Volatile_Function,
+     Global => Tasking_State;
    pragma Inline (Current_Task);
 
-   function Environment_Task return Task_Id;
+   function Environment_Task return Task_Id with
+     SPARK_Mode => Off;
    pragma Inline (Environment_Task);
 
    procedure Abort_Task (T : Task_Id);
    pragma Inline (Abort_Task);
    --  Note: parameter is mode IN, not IN OUT, per AI-00101
 
-   function Is_Terminated (T : Task_Id) return Boolean;
+   function Is_Terminated (T : Task_Id) return Boolean with
+     Volatile_Function,
+     Global => Tasking_State;
    pragma Inline (Is_Terminated);
 
-   function Is_Callable (T : Task_Id) return Boolean;
+   function Is_Callable (T : Task_Id) return Boolean with
+     Volatile_Function,
+     Global => Tasking_State;
    pragma Inline (Is_Callable);
 
-   function Activation_Is_Complete (T : Task_Id) return Boolean;
+   function Activation_Is_Complete (T : Task_Id) return Boolean with
+     Volatile_Function,
+     Global => Tasking_State;
 
 private
+   pragma SPARK_Mode (Off);
 
    type Task_Id is new System.Tasking.Task_Id;
 

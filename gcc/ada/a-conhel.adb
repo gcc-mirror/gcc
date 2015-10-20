@@ -29,6 +29,8 @@ package body Ada.Containers.Helpers is
 
    package body Generic_Implementation is
 
+      pragma Annotate (CodePeer, Skip_Analysis);
+
       use type SAC.Atomic_Unsigned;
 
       ------------
