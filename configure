@@ -753,6 +753,7 @@ enable_as_accelerator_for
 enable_offload_targets
 enable_gold
 enable_ld
+enable_compressed_debug_sections
 enable_libquadmath
 enable_libquadmath_support
 enable_libada
@@ -1476,6 +1477,9 @@ Optional Features:
                           offload target compiler during the build
   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
   --enable-ld[=ARG]       build ld [ARG={default,yes,no}]
+  --enable-compressed-debug-sections={all,gas,gold,ld}
+                          Enable compressed debug sections for gas, gold or ld
+                          by default
   --disable-libquadmath   do not build libquadmath directory
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
@@ -3012,6 +3016,21 @@ $as_echo "$as_me: WARNING: neither ld nor gold are enabled" >&2;}
     as_fn_error "invalid --enable-ld argument" "$LINENO" 5
     ;;
 esac
+
+# PR gas/19109
+# Decide the default method for compressing debug sections.
+# Provide a configure time option to override our default.
+# Check whether --enable-compressed_debug_sections was given.
+if test "${enable_compressed_debug_sections+set}" = set; then :
+  enableval=$enable_compressed_debug_sections;
+  if test x"$enable_compressed_debug_sections" = xyes; then
+    as_fn_error "no program with compressed debug sections specified" "$LINENO" 5
+  fi
+
+else
+  enable_compressed_debug_sections=
+fi
+
 
 # Configure extra directories which are host specific
 
