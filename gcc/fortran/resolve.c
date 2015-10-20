@@ -10561,7 +10561,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
       sym->binding_label = NULL;
 
     }
-  else if (sym->attr.flavor == FL_VARIABLE
+  else if (sym->attr.flavor == FL_VARIABLE && module 
 	   && (strcmp (module, gsym->mod_name) != 0
 	       || strcmp (sym->name, gsym->sym_name) != 0))
     {
