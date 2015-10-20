@@ -25211,6 +25211,7 @@ package body Sem_Prag is
             Root_Typ := Etype (F);
 
             if Is_Access_Type (Etype (F)) then
+               Root_Typ := Designated_Type (Root_Typ);
                New_Typ :=
                  Make_Defining_Identifier (Loc,
                    Chars =>

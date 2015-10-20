@@ -1,5 +1,22 @@
 2015-10-20  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_prag.adb: Code clean up.
+
+2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Code cleanup.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Update the
+	parameter profile.  Code cleanup. Request debug info for the
+	object renaming declaration.
+	(Move_Activation_Chain): Add new formal parameter and update the
+	comment on usage.
+	* exp_ch6.ads (Make_Build_In_Place_Call_In_Object_Declaration):
+	Update the parameter profile and comment on usage.
+	* sem_util.ads, sem_util.adb (Remove_Overloaded_Entity): New routine,
+	currently unused.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch13.adb (Analyze_One_Aspect, case
 	Aspect_Disable_Controlled): If expander is not active, pre-analyze
 	expression anyway for ASIS and other tools use.
