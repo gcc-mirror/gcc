@@ -33,6 +33,7 @@
 
 with Ada.Iterator_Interfaces;
 
+private with Ada.Containers.Helpers;
 private with Ada.Finalization;
 private with Ada.Streams;
 
@@ -248,6 +249,10 @@ private
    pragma Inline (Next);
    pragma Inline (Previous);
 
+   use Ada.Containers.Helpers;
+   package Implementation is new Generic_Implementation;
+   use Implementation;
+
    type Node_Type;
    type Node_Access is access Node_Type;
 
@@ -263,11 +268,10 @@ private
 
    type List is
      new Controlled with record
-        First  : Node_Access;
-        Last   : Node_Access;
+        First  : Node_Access := null;
+        Last   : Node_Access := null;
         Length : Count_Type := 0;
-        Busy   : Natural := 0;
-        Lock   : Natural := 0;
+        TC     : aliased Tamper_Counts;
      end record;
 
    overriding procedure Adjust (Container : in out List);
@@ -307,16 +311,8 @@ private
 
    for Cursor'Write use Write;
 
-   type Reference_Control_Type is
-      new Controlled with record
-         Container : List_Access;
-      end record;
-
-   overriding procedure Adjust (Control : in out Reference_Control_Type);
-   pragma Inline (Adjust);
-
-   overriding procedure Finalize (Control : in out Reference_Control_Type);
-   pragma Inline (Finalize);
+   subtype Reference_Control_Type is Implementation.Reference_Control_Type;
+   --  It is necessary to rename this here, so that the compiler can find it
 
    type Constant_Reference_Type
      (Element : not null access constant Element_Type) is
@@ -374,13 +370,14 @@ private
    --  container, and increments the Lock. Finalization of this object will
    --  decrement the Lock.
 
-   type Element_Access is access all Element_Type;
+   type Element_Access is access all Element_Type with
+     Storage_Size => 0;
 
    function Get_Element_Access
      (Position : Cursor) return not null Element_Access;
    --  Returns a pointer to the element designated by Position.
 
-   Empty_List : constant List := (Controlled with null, null, 0, 0, 0);
+   Empty_List : constant List := (Controlled with others => <>);
 
    No_Element : constant Cursor := Cursor'(null, null);
 
@@ -389,7 +386,8 @@ private
    record
       Container : List_Access;
       Node      : Node_Access;
-   end record;
+   end record
+     with Disable_Controlled => not T_Check;
 
    overriding procedure Finalize (Object : in out Iterator);
 

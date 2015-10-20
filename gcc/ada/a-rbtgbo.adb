@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
 
    pragma Annotate (CodePeer, Skip_Analysis);
 
+   pragma Warnings (Off, "variable ""Busy*"" is not referenced");
+   pragma Warnings (Off, "variable ""Lock*"" is not referenced");
+   --  See comment in Ada.Containers.Helpers
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -57,17 +61,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
 
    procedure Clear_Tree (Tree : in out Tree_Type'Class) is
    begin
-      if Tree.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
-
-      --  The lock status (which monitors "element tampering") always implies
-      --  that the busy status (which monitors "cursor tampering") is set too;
-      --  this is a representation invariant. Thus if the busy bit is not set,
-      --  then the lock bit must not be set either.
-
-      pragma Assert (Tree.Lock = 0);
+      TC_Check (Tree.TC);
 
       Tree.First  := 0;
       Tree.Last   := 0;
@@ -201,10 +195,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
       N : Nodes_Type renames Tree.Nodes;
 
    begin
-      if Tree.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (Tree.TC);
 
       --  If node is not present, return (exception will be raised in caller)
 
@@ -612,16 +603,14 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
    -------------------
 
    function Generic_Equal (Left, Right : Tree_Type'Class) return Boolean is
-      BL : Natural renames Left'Unrestricted_Access.Busy;
-      LL : Natural renames Left'Unrestricted_Access.Lock;
+      --  Per AI05-0022, the container implementation is required to detect
+      --  element tampering by a generic actual subprogram.
 
-      BR : Natural renames Right'Unrestricted_Access.Busy;
-      LR : Natural renames Right'Unrestricted_Access.Lock;
+      Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+      Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
 
       L_Node : Count_Type;
       R_Node : Count_Type;
-
-      Result : Boolean;
 
    begin
       if Left'Address = Right'Address then
@@ -639,45 +628,18 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
          return True;
       end if;
 
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      BL := BL + 1;
-      LL := LL + 1;
-
-      BR := BR + 1;
-      LR := LR + 1;
-
       L_Node := Left.First;
       R_Node := Right.First;
-      Result := True;
       while L_Node /= 0 loop
          if not Is_Equal (Left.Nodes (L_Node), Right.Nodes (R_Node)) then
-            Result := False;
-            exit;
+            return False;
          end if;
 
          L_Node := Next (Left, L_Node);
          R_Node := Next (Right, R_Node);
       end loop;
 
-      BL := BL - 1;
-      LL := LL - 1;
-
-      BR := BR - 1;
-      LR := LR - 1;
-
-      return Result;
-
-   exception
-      when others =>
-         BL := BL - 1;
-         LL := LL - 1;
-
-         BR := BR - 1;
-         LR := LR - 1;
-
-         raise;
+      return True;
    end Generic_Equal;
 
    -----------------------
@@ -725,7 +687,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
       Clear_Tree (Tree);
       Count_Type'Base'Read (Stream, Len);
 
-      if Len < 0 then
+      if Checks and then Len < 0 then
          raise Program_Error with "bad container length (corrupt stream)";
       end if;
 
@@ -733,7 +695,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
          return;
       end if;
 
-      if Len > Tree.Capacity then
+      if Checks and then Len > Tree.Capacity then
          raise Constraint_Error with "length exceeds capacity";
       end if;
 

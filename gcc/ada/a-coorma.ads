@@ -261,7 +261,7 @@ private
    overriding procedure Finalize (Container : in out Map) renames Clear;
 
    use Red_Black_Trees;
-   use Tree_Types;
+   use Tree_Types, Tree_Types.Implementation;
    use Ada.Finalization;
    use Ada.Streams;
 
@@ -297,16 +297,8 @@ private
 
    for Cursor'Read use Read;
 
-   type Reference_Control_Type is
-      new Controlled with record
-         Container : Map_Access;
-      end record;
-
-   overriding procedure Adjust (Control : in out Reference_Control_Type);
-   pragma Inline (Adjust);
-
-   overriding procedure Finalize (Control : in out Reference_Control_Type);
-   pragma Inline (Finalize);
+   subtype Reference_Control_Type is Implementation.Reference_Control_Type;
+   --  It is necessary to rename this here, so that the compiler can find it
 
    type Constant_Reference_Type
      (Element : not null access constant Element_Type) is
@@ -364,19 +356,14 @@ private
    --  container, and increments the Lock. Finalization of this object will
    --  decrement the Lock.
 
-   type Element_Access is access all Element_Type;
+   type Element_Access is access all Element_Type with
+     Storage_Size => 0;
 
    function Get_Element_Access
      (Position : Cursor) return not null Element_Access;
    --  Returns a pointer to the element designated by Position.
 
-   Empty_Map : constant Map :=
-                 (Controlled with Tree => (First  => null,
-                                           Last   => null,
-                                           Root   => null,
-                                           Length => 0,
-                                           Busy   => 0,
-                                           Lock   => 0));
+   Empty_Map : constant Map := (Controlled with others => <>);
 
    No_Element : constant Cursor := Cursor'(null, null);
 
@@ -385,7 +372,8 @@ private
    record
       Container : Map_Access;
       Node      : Node_Access;
-   end record;
+   end record
+     with Disable_Controlled => not T_Check;
 
    overriding procedure Finalize (Object : in out Iterator);
 

@@ -1,5 +1,44 @@
 2015-10-20  Bob Duff  <duff@adacore.com>
 
+	* sem_ch13.adb (Analyze_One_Aspect): Avoid
+	analyzing the expression in a 'Disable_Controlled attribute when
+	Expander_Active is False, because otherwise, we get errors about
+	nonstatic expressions in pragma-Preelaborate generic packages.
+	* restrict.ads: minor whitespace cleanup in comment
+
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* a-conhel.adb: Remove "use SAC;", because otherwise the compiler
+	complains about use clauses in run-time units. Use "use type"
+	instead.
+	* a-btgbso.adb, a-btgbso.ads, a-cbdlli.adb, a-cbdlli.ads,
+	* a-cbhama.adb, a-cbhama.ads, a-cbhase.adb, a-cbhase.ads,
+	* a-cbmutr.adb, a-cbmutr.ads, a-cborma.adb, a-cborma.ads,
+	* a-cborse.adb, a-cborse.ads, a-cdlili.adb, a-cdlili.ads,
+	* a-chtgbk.adb, a-chtgbk.ads, a-chtgbo.adb, a-chtgbo.ads,
+	* a-chtgke.adb, a-chtgke.ads, a-chtgop.adb, a-chtgop.ads,
+	* a-cidlli.adb, a-cidlli.ads, a-cihama.adb, a-cihama.ads,
+	* a-cihase.adb, a-cihase.ads, a-cimutr.adb, a-cimutr.ads,
+	* a-ciorma.adb, a-ciorma.ads, a-ciormu.adb, a-ciormu.ads,
+	* a-ciorse.adb, a-ciorse.ads, a-cobove.adb, a-cobove.ads,
+	* a-cohama.adb, a-cohama.ads, a-cohase.adb, a-cohase.ads,
+	* a-cohata.ads, a-coinve.adb, a-comutr.adb, a-comutr.ads,
+	* a-convec.adb, a-coorma.adb, a-coorma.ads, a-coormu.adb,
+	* a-coormu.ads, a-coorse.adb, a-coorse.ads, a-crbltr.ads,
+	* a-crbtgk.adb, a-crbtgk.ads, a-crbtgo.adb, a-crbtgo.ads,
+	* a-rbtgbk.adb, a-rbtgbk.ads, a-rbtgbo.adb, a-rbtgbo.ads,
+	* a-rbtgso.adb, a-rbtgso.ads: Change all the predefined containers
+	to share the tampering machinery in Ada.Containers.Helpers. This
+	reduces the amount of duplicated code, and takes advantage of
+	efficiency improvements in Helpers.
+	Protect all run-time checks and supporting machinery with "if
+	Checks" or "if T_Check", so this code can be suppressed with
+	pragma Suppress or -gnatp.
+	Add Pseudo_Reference and Get_Element_Access to remaining
+	containers, so that the compiler can optimize "for ... of" loops.
+
+2015-10-20  Bob Duff  <duff@adacore.com>
+
 	* a-contai.adb, a-coinve.ads, a-contai.ads, a-conhel.adb, a-conhel.ads,
 	Makefile.rtl, a-convec.ads: Move helper code from Ada.Containers to a
 	new package Ada.Containers.Helpers, because otherwise it's not

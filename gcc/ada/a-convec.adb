@@ -38,7 +38,7 @@ package body Ada.Containers.Vectors is
 
    pragma Warnings (Off, "variable ""Busy*"" is not referenced");
    pragma Warnings (Off, "variable ""Lock*"" is not referenced");
-   --  See comment in Ada.Containers
+   --  See comment in Ada.Containers.Helpers
 
    procedure Free is
      new Ada.Unchecked_Deallocation (Elements_Type, Elements_Access);
@@ -276,23 +276,17 @@ package body Ada.Containers.Vectors is
          end if;
       end if;
 
-      if T_Check then
-         declare
-            TC : constant Tamper_Counts_Access :=
-              Container.TC'Unrestricted_Access;
-         begin
-            return R : constant Constant_Reference_Type :=
-              (Element => Container.Elements.EA (Position.Index)'Access,
-               Control => (Controlled with TC))
-            do
-               Lock (TC.all);
-            end return;
-         end;
-      else
+      declare
+         TC : constant Tamper_Counts_Access :=
+           Container.TC'Unrestricted_Access;
+      begin
          return R : constant Constant_Reference_Type :=
            (Element => Container.Elements.EA (Position.Index)'Access,
-            Control => (Controlled with null));
-      end if;
+            Control => (Controlled with TC))
+         do
+            Lock (TC.all);
+         end return;
+      end;
    end Constant_Reference;
 
    function Constant_Reference
@@ -304,23 +298,17 @@ package body Ada.Containers.Vectors is
          raise Constraint_Error with "Index is out of range";
       end if;
 
-      if T_Check then
-         declare
-            TC : constant Tamper_Counts_Access :=
-              Container.TC'Unrestricted_Access;
-         begin
-            return R : constant Constant_Reference_Type :=
-              (Element => Container.Elements.EA (Index)'Access,
-               Control => (Controlled with TC))
-            do
-               Lock (TC.all);
-            end return;
-         end;
-      else
+      declare
+         TC : constant Tamper_Counts_Access :=
+           Container.TC'Unrestricted_Access;
+      begin
          return R : constant Constant_Reference_Type :=
            (Element => Container.Elements.EA (Index)'Access,
-            Control => (Controlled with null));
-      end if;
+            Control => (Controlled with TC))
+         do
+            Lock (TC.all);
+         end return;
+      end;
    end Constant_Reference;
 
    --------------
@@ -2401,23 +2389,17 @@ package body Ada.Containers.Vectors is
          end if;
       end if;
 
-      if T_Check then
-         declare
-            TC : constant Tamper_Counts_Access :=
-              Container.TC'Unrestricted_Access;
-         begin
-            return R : constant Reference_Type :=
-              (Element => Container.Elements.EA (Position.Index)'Access,
-               Control => (Controlled with TC))
-            do
-               Lock (TC.all);
-            end return;
-         end;
-      else
+      declare
+         TC : constant Tamper_Counts_Access :=
+           Container.TC'Unrestricted_Access;
+      begin
          return R : constant Reference_Type :=
            (Element => Container.Elements.EA (Position.Index)'Access,
-            Control => (Controlled with null));
-      end if;
+            Control => (Controlled with TC))
+         do
+            Lock (TC.all);
+         end return;
+      end;
    end Reference;
 
    function Reference
@@ -2429,23 +2411,17 @@ package body Ada.Containers.Vectors is
          raise Constraint_Error with "Index is out of range";
       end if;
 
-      if T_Check then
-         declare
-            TC : constant Tamper_Counts_Access :=
-              Container.TC'Unrestricted_Access;
-         begin
-            return R : constant Reference_Type :=
-              (Element => Container.Elements.EA (Index)'Access,
-               Control => (Controlled with TC))
-            do
-               Lock (TC.all);
-            end return;
-         end;
-      else
+      declare
+         TC : constant Tamper_Counts_Access :=
+           Container.TC'Unrestricted_Access;
+      begin
          return R : constant Reference_Type :=
            (Element => Container.Elements.EA (Index)'Access,
-            Control => (Controlled with null));
-      end if;
+            Control => (Controlled with TC))
+         do
+            Lock (TC.all);
+         end return;
+      end;
    end Reference;
 
    ---------------------

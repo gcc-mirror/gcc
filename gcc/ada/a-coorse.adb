@@ -29,6 +29,8 @@
 
 with Ada.Unchecked_Deallocation;
 
+with Ada.Containers.Helpers; use Ada.Containers.Helpers;
+
 with Ada.Containers.Red_Black_Trees.Generic_Operations;
 pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Operations);
 
@@ -43,6 +45,10 @@ with System; use type System.Address;
 package body Ada.Containers.Ordered_Sets is
 
    pragma Annotate (CodePeer, Skip_Analysis);
+
+   pragma Warnings (Off, "variable ""Busy*"" is not referenced");
+   pragma Warnings (Off, "variable ""Lock*"" is not referenced");
+   --  See comment in Ada.Containers.Helpers
 
    ------------------------------
    -- Access to Fields of Node --
@@ -157,11 +163,11 @@ package body Ada.Containers.Ordered_Sets is
 
    function "<" (Left, Right : Cursor) return Boolean is
    begin
-      if Left.Node = null then
+      if Checks and then Left.Node = null then
          raise Constraint_Error with "Left cursor equals No_Element";
       end if;
 
-      if Right.Node = null then
+      if Checks and then Right.Node = null then
          raise Constraint_Error with "Right cursor equals No_Element";
       end if;
 
@@ -176,7 +182,7 @@ package body Ada.Containers.Ordered_Sets is
 
    function "<" (Left : Cursor; Right : Element_Type) return Boolean is
    begin
-      if Left.Node = null then
+      if Checks and then Left.Node = null then
          raise Constraint_Error with "Left cursor equals No_Element";
       end if;
 
@@ -188,7 +194,7 @@ package body Ada.Containers.Ordered_Sets is
 
    function "<" (Left : Element_Type; Right : Cursor) return Boolean is
    begin
-      if Right.Node = null then
+      if Checks and then Right.Node = null then
          raise Constraint_Error with "Right cursor equals No_Element";
       end if;
 
@@ -213,11 +219,11 @@ package body Ada.Containers.Ordered_Sets is
 
    function ">" (Left, Right : Cursor) return Boolean is
    begin
-      if Left.Node = null then
+      if Checks and then Left.Node = null then
          raise Constraint_Error with "Left cursor equals No_Element";
       end if;
 
-      if Right.Node = null then
+      if Checks and then Right.Node = null then
          raise Constraint_Error with "Right cursor equals No_Element";
       end if;
 
@@ -234,7 +240,7 @@ package body Ada.Containers.Ordered_Sets is
 
    function ">" (Left : Element_Type; Right : Cursor) return Boolean is
    begin
-      if Right.Node = null then
+      if Checks and then Right.Node = null then
          raise Constraint_Error with "Right cursor equals No_Element";
       end if;
 
@@ -246,7 +252,7 @@ package body Ada.Containers.Ordered_Sets is
 
    function ">" (Left : Cursor; Right : Element_Type) return Boolean is
    begin
-      if Left.Node = null then
+      if Checks and then Left.Node = null then
          raise Constraint_Error with "Left cursor equals No_Element";
       end if;
 
@@ -265,20 +271,6 @@ package body Ada.Containers.Ordered_Sets is
    procedure Adjust (Container : in out Set) is
    begin
       Adjust (Container.Tree);
-   end Adjust;
-
-   procedure Adjust (Control : in out Reference_Control_Type) is
-   begin
-      if Control.Container /= null then
-         declare
-            Tree : Tree_Type renames Control.Container.all.Tree;
-            B : Natural renames Tree.Busy;
-            L : Natural renames Tree.Lock;
-         begin
-            B := B + 1;
-            L := L + 1;
-         end;
-      end if;
    end Adjust;
 
    ------------
@@ -336,11 +328,12 @@ package body Ada.Containers.Ordered_Sets is
       Position  : Cursor) return Constant_Reference_Type
    is
    begin
-      if Position.Container = null then
+      if Checks and then Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      if Position.Container /= Container'Unrestricted_Access then
+      if Checks and then Position.Container /= Container'Unrestricted_Access
+      then
          raise Program_Error with
            "Position cursor designates wrong container";
       end if;
@@ -351,15 +344,14 @@ package body Ada.Containers.Ordered_Sets is
 
       declare
          Tree : Tree_Type renames Position.Container.all.Tree;
-         B : Natural renames Tree.Busy;
-         L : Natural renames Tree.Lock;
+         TC : constant Tamper_Counts_Access :=
+           Tree.TC'Unrestricted_Access;
       begin
          return R : constant Constant_Reference_Type :=
            (Element => Position.Node.Element'Access,
-            Control => (Controlled with Container'Unrestricted_Access))
+            Control => (Controlled with TC))
          do
-            B := B + 1;
-            L := L + 1;
+            Lock (TC.all);
          end return;
       end;
    end Constant_Reference;
@@ -408,11 +400,12 @@ package body Ada.Containers.Ordered_Sets is
 
    procedure Delete (Container : in out Set; Position : in out Cursor) is
    begin
-      if Position.Node = null then
+      if Checks and then Position.Node = null then
          raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
-      if Position.Container /= Container'Unrestricted_Access then
+      if Checks and then Position.Container /= Container'Unrestricted_Access
+      then
          raise Program_Error with "Position cursor designates wrong set";
       end if;
 
@@ -428,7 +421,7 @@ package body Ada.Containers.Ordered_Sets is
       X : Node_Access := Element_Keys.Find (Container.Tree, Item);
 
    begin
-      if X = null then
+      if Checks and then X = null then
          raise Constraint_Error with "attempt to delete element not in set";
       end if;
 
@@ -485,7 +478,7 @@ package body Ada.Containers.Ordered_Sets is
 
    function Element (Position : Cursor) return Element_Type is
    begin
-      if Position.Node = null then
+      if Checks and then Position.Node = null then
          raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
@@ -553,27 +546,7 @@ package body Ada.Containers.Ordered_Sets is
    procedure Finalize (Object : in out Iterator) is
    begin
       if Object.Container /= null then
-         declare
-            B : Natural renames Object.Container.all.Tree.Busy;
-         begin
-            B := B - 1;
-         end;
-      end if;
-   end Finalize;
-
-   procedure Finalize (Control : in out Reference_Control_Type) is
-   begin
-      if Control.Container /= null then
-         declare
-            Tree : Tree_Type renames Control.Container.all.Tree;
-            B : Natural renames Tree.Busy;
-            L : Natural renames Tree.Lock;
-         begin
-            B := B - 1;
-            L := L - 1;
-         end;
-
-         Control.Container := null;
+         Unbusy (Object.Container.Tree.TC);
       end if;
    end Finalize;
 
@@ -627,7 +600,7 @@ package body Ada.Containers.Ordered_Sets is
 
    function First_Element (Container : Set) return Element_Type is
    begin
-      if Container.Tree.First = null then
+      if Checks and then Container.Tree.First = null then
          raise Constraint_Error with "set is empty";
       end if;
 
@@ -692,24 +665,6 @@ package body Ada.Containers.Ordered_Sets is
            Is_Less_Key_Node    => Is_Less_Key_Node,
            Is_Greater_Key_Node => Is_Greater_Key_Node);
 
-      ------------
-      -- Adjust --
-      ------------
-
-      procedure Adjust (Control : in out Reference_Control_Type) is
-      begin
-         if Control.Container /= null then
-            declare
-               Tree : Tree_Type renames Control.Container.Tree;
-               B : Natural renames Tree.Busy;
-               L : Natural renames Tree.Lock;
-            begin
-               B := B + 1;
-               L := L + 1;
-            end;
-         end if;
-      end Adjust;
-
       -------------
       -- Ceiling --
       -------------
@@ -732,21 +687,20 @@ package body Ada.Containers.Ordered_Sets is
          Node : constant Node_Access := Key_Keys.Find (Container.Tree, Key);
 
       begin
-         if Node = null then
+         if Checks and then Node = null then
             raise Constraint_Error with "key not in set";
          end if;
 
          declare
             Tree : Tree_Type renames Container'Unrestricted_Access.all.Tree;
-            B : Natural renames Tree.Busy;
-            L : Natural renames Tree.Lock;
+            TC : constant Tamper_Counts_Access :=
+              Tree.TC'Unrestricted_Access;
          begin
             return R : constant Constant_Reference_Type :=
               (Element => Node.Element'Access,
-               Control => (Controlled with Container'Unrestricted_Access))
+               Control => (Controlled with TC))
             do
-               B := B + 1;
-               L := L + 1;
+               Lock (TC.all);
             end return;
          end;
       end Constant_Reference;
@@ -768,7 +722,7 @@ package body Ada.Containers.Ordered_Sets is
          X : Node_Access := Key_Keys.Find (Container.Tree, Key);
 
       begin
-         if X = null then
+         if Checks and then X = null then
             raise Constraint_Error with "attempt to delete key not in set";
          end if;
 
@@ -784,7 +738,7 @@ package body Ada.Containers.Ordered_Sets is
          Node : constant Node_Access := Key_Keys.Find (Container.Tree, Key);
 
       begin
-         if Node = null then
+         if Checks and then Node = null then
             raise Constraint_Error with "key not in set";
          end if;
 
@@ -820,16 +774,10 @@ package body Ada.Containers.Ordered_Sets is
       procedure Finalize (Control : in out Reference_Control_Type) is
       begin
          if Control.Container /= null then
-            declare
-               Tree : Tree_Type renames Control.Container.Tree;
-               B    : Natural renames Tree.Busy;
-               L    : Natural renames Tree.Lock;
-            begin
-               B := B - 1;
-               L := L - 1;
-            end;
+            Impl.Reference_Control_Type (Control).Finalize;
 
-            if not (Key (Control.Pos) = Control.Old_Key.all) then
+            if Checks and then not (Key (Control.Pos) = Control.Old_Key.all)
+            then
                Delete (Control.Container.all, Key (Control.Pos));
                raise Program_Error;
             end if;
@@ -891,7 +839,7 @@ package body Ada.Containers.Ordered_Sets is
 
       function Key (Position : Cursor) return Key_Type is
       begin
-         if Position.Node = null then
+         if Checks and then Position.Node = null then
             raise Constraint_Error with
               "Position cursor equals No_Element";
          end if;
@@ -923,11 +871,12 @@ package body Ada.Containers.Ordered_Sets is
          Position  : Cursor) return Reference_Type
       is
       begin
-         if Position.Container = null then
+         if Checks and then Position.Container = null then
             raise Constraint_Error with "Position cursor has no element";
          end if;
 
-         if Position.Container /= Container'Unrestricted_Access then
+         if Checks and then Position.Container /= Container'Unrestricted_Access
+         then
             raise Program_Error with
               "Position cursor designates wrong container";
          end if;
@@ -938,20 +887,17 @@ package body Ada.Containers.Ordered_Sets is
 
          declare
             Tree : Tree_Type renames Container.Tree;
-            B : Natural renames Tree.Busy;
-            L : Natural renames Tree.Lock;
-
          begin
             return R : constant Reference_Type :=
               (Element  => Position.Node.Element'Access,
                  Control =>
                    (Controlled with
+                     Tree.TC'Unrestricted_Access,
                      Container => Container'Access,
                      Pos       => Position,
                      Old_Key   => new Key_Type'(Key (Position))))
             do
-               B := B + 1;
-               L := L + 1;
+               Lock (Tree.TC);
             end return;
          end;
       end Reference_Preserving_Key;
@@ -963,26 +909,23 @@ package body Ada.Containers.Ordered_Sets is
          Node : constant Node_Access := Key_Keys.Find (Container.Tree, Key);
 
       begin
-         if Node = null then
-            raise Constraint_Error with "key not in set";
+         if Checks and then Node = null then
+            raise Constraint_Error with "Key not in set";
          end if;
 
          declare
             Tree : Tree_Type renames Container.Tree;
-            B : Natural renames Tree.Busy;
-            L : Natural renames Tree.Lock;
-
          begin
             return R : constant Reference_Type :=
               (Element  => Node.Element'Access,
                  Control =>
                    (Controlled with
+                     Tree.TC'Unrestricted_Access,
                      Container => Container'Access,
                      Pos       => Find (Container, Key),
                      Old_Key   => new Key_Type'(Key)))
             do
-               B := B + 1;
-               L := L + 1;
+               Lock (Tree.TC);
             end return;
          end;
       end Reference_Preserving_Key;
@@ -999,7 +942,7 @@ package body Ada.Containers.Ordered_Sets is
          Node : constant Node_Access := Key_Keys.Find (Container.Tree, Key);
 
       begin
-         if Node = null then
+         if Checks and then Node = null then
             raise Constraint_Error with
               "attempt to replace key not in set";
          end if;
@@ -1019,12 +962,13 @@ package body Ada.Containers.Ordered_Sets is
          Tree : Tree_Type renames Container.Tree;
 
       begin
-         if Position.Node = null then
+         if Checks and then Position.Node = null then
             raise Constraint_Error with
               "Position cursor equals No_Element";
          end if;
 
-         if Position.Container /= Container'Unrestricted_Access then
+         if Checks and then Position.Container /= Container'Unrestricted_Access
+         then
             raise Program_Error with
               "Position cursor designates wrong set";
          end if;
@@ -1035,30 +979,10 @@ package body Ada.Containers.Ordered_Sets is
          declare
             E : Element_Type renames Position.Node.Element;
             K : constant Key_Type := Key (E);
-
-            B : Natural renames Tree.Busy;
-            L : Natural renames Tree.Lock;
-
-            Eq : Boolean;
-
+            Lock : With_Lock (Tree.TC'Unrestricted_Access);
          begin
-            B := B + 1;
-            L := L + 1;
-
-            begin
-               Process (E);
-               Eq := Equivalent_Keys (K, Key (E));
-            exception
-               when others =>
-                  L := L - 1;
-                  B := B - 1;
-                  raise;
-            end;
-
-            L := L - 1;
-            B := B - 1;
-
-            if Eq then
+            Process (E);
+            if Equivalent_Keys (K, Key (E)) then
                return;
             end if;
          end;
@@ -1118,10 +1042,7 @@ package body Ada.Containers.Ordered_Sets is
       Insert (Container, New_Item, Position, Inserted);
 
       if not Inserted then
-         if Container.Tree.Lock > 0 then
-            raise Program_Error with
-              "attempt to tamper with elements (set is locked)";
-         end if;
+         TE_Check (Container.Tree.TC);
 
          Position.Node.Element := New_Item;
       end if;
@@ -1159,7 +1080,7 @@ package body Ada.Containers.Ordered_Sets is
    begin
       Insert (Container, New_Item, Position, Inserted);
 
-      if not Inserted then
+      if Checks and then not Inserted then
          raise Constraint_Error with
            "attempt to insert element already in set";
       end if;
@@ -1362,29 +1283,17 @@ package body Ada.Containers.Ordered_Sets is
       end Process_Node;
 
       T : Tree_Type renames Container'Unrestricted_Access.all.Tree;
-      B : Natural renames T.Busy;
+      Busy : With_Busy (T.TC'Unrestricted_Access);
 
    --  Start of processing for Iterate
 
    begin
-      B := B + 1;
-
-      begin
-         Local_Iterate (T);
-      exception
-         when others =>
-            B := B - 1;
-            raise;
-      end;
-
-      B := B - 1;
+      Local_Iterate (T);
    end Iterate;
 
    function Iterate (Container : Set)
      return Set_Iterator_Interfaces.Reversible_Iterator'Class
    is
-      B : Natural renames Container'Unrestricted_Access.all.Tree.Busy;
-
    begin
       --  The value of the Node component influences the behavior of the First
       --  and Last selector functions of the iterator object. When the Node
@@ -1396,7 +1305,7 @@ package body Ada.Containers.Ordered_Sets is
       --  Note: For a forward iterator, Container.First is the beginning, and
       --  for a reverse iterator, Container.Last is the beginning.
 
-      B := B + 1;
+      Busy (Container.Tree.TC'Unrestricted_Access.all);
 
       return It : constant Iterator :=
         Iterator'(Limited_Controlled with
@@ -1407,8 +1316,6 @@ package body Ada.Containers.Ordered_Sets is
    function Iterate (Container : Set; Start : Cursor)
      return Set_Iterator_Interfaces.Reversible_Iterator'Class
    is
-      B  : Natural renames Container'Unrestricted_Access.all.Tree.Busy;
-
    begin
       --  It was formerly the case that when Start = No_Element, the partial
       --  iterator was defined to behave the same as for a complete iterator,
@@ -1421,12 +1328,12 @@ package body Ada.Containers.Ordered_Sets is
       --  however, that it is not possible to use a partial iterator to specify
       --  an empty sequence of items.
 
-      if Start = No_Element then
+      if Checks and then Start = No_Element then
          raise Constraint_Error with
            "Start position for iterator equals No_Element";
       end if;
 
-      if Start.Container /= Container'Unrestricted_Access then
+      if Checks and then Start.Container /= Container'Unrestricted_Access then
          raise Program_Error with
            "Start cursor of Iterate designates wrong set";
       end if;
@@ -1443,7 +1350,7 @@ package body Ada.Containers.Ordered_Sets is
       --  the start position has the same value irrespective of whether this is
       --  a forward or reverse iteration.
 
-      B := B + 1;
+      Busy (Container.Tree.TC'Unrestricted_Access.all);
 
       return It : constant Iterator :=
         Iterator'(Limited_Controlled with
@@ -1490,11 +1397,11 @@ package body Ada.Containers.Ordered_Sets is
 
    function Last_Element (Container : Set) return Element_Type is
    begin
-      if Container.Tree.Last = null then
+      if Checks and then Container.Tree.Last = null then
          raise Constraint_Error with "set is empty";
-      else
-         return Container.Tree.Last.Element;
       end if;
+
+      return Container.Tree.Last.Element;
    end Last_Element;
 
    ----------
@@ -1559,7 +1466,7 @@ package body Ada.Containers.Ordered_Sets is
          return No_Element;
       end if;
 
-      if Position.Container /= Object.Container then
+      if Checks and then Position.Container /= Object.Container then
          raise Program_Error with
            "Position cursor of Next designates wrong set";
       end if;
@@ -1618,7 +1525,7 @@ package body Ada.Containers.Ordered_Sets is
          return No_Element;
       end if;
 
-      if Position.Container /= Object.Container then
+      if Checks and then Position.Container /= Object.Container then
          raise Program_Error with
            "Position cursor of Previous designates wrong set";
       end if;
@@ -1633,15 +1540,11 @@ package body Ada.Containers.Ordered_Sets is
    function Pseudo_Reference
      (Container : aliased Set'Class) return Reference_Control_Type
    is
-      C : constant Set_Access := Container'Unrestricted_Access;
-      B : Natural renames C.Tree.Busy;
-      L : Natural renames C.Tree.Lock;
+      TC : constant Tamper_Counts_Access :=
+        Container.Tree.TC'Unrestricted_Access;
    begin
-      return R : constant Reference_Control_Type :=
-        (Controlled with C)
-      do
-         B := B + 1;
-         L := L + 1;
+      return R : constant Reference_Control_Type := (Controlled with TC) do
+         Lock (TC.all);
       end return;
    end Pseudo_Reference;
 
@@ -1654,7 +1557,7 @@ package body Ada.Containers.Ordered_Sets is
       Process  : not null access procedure (Element : Element_Type))
    is
    begin
-      if Position.Node = null then
+      if Checks and then Position.Node = null then
          raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
@@ -1663,25 +1566,9 @@ package body Ada.Containers.Ordered_Sets is
 
       declare
          T : Tree_Type renames Position.Container.Tree;
-
-         B : Natural renames T.Busy;
-         L : Natural renames T.Lock;
-
+         Lock : With_Lock (T.TC'Unrestricted_Access);
       begin
-         B := B + 1;
-         L := L + 1;
-
-         begin
-            Process (Position.Node.Element);
-         exception
-            when others =>
-               L := L - 1;
-               B := B - 1;
-               raise;
-         end;
-
-         L := L - 1;
-         B := B - 1;
+         Process (Position.Node.Element);
       end;
    end Query_Element;
 
@@ -1748,15 +1635,12 @@ package body Ada.Containers.Ordered_Sets is
         Element_Keys.Find (Container.Tree, New_Item);
 
    begin
-      if Node = null then
+      if Checks and then Node = null then
          raise Constraint_Error with
            "attempt to replace element not in set";
       end if;
 
-      if Container.Tree.Lock > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (set is locked)";
-      end if;
+      TE_Check (Container.Tree.TC);
 
       Node.Element := New_Item;
    end Replace;
@@ -1805,12 +1689,6 @@ package body Ada.Containers.Ordered_Sets is
       Inserted : Boolean;
       Compare  : Boolean;
 
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      B : Natural renames Tree.Busy;
-      L : Natural renames Tree.Lock;
-
    --  Start of processing for Replace_Element
 
    begin
@@ -1828,33 +1706,19 @@ package body Ada.Containers.Ordered_Sets is
       --  Determine whether Item is equivalent to element on the specified
       --  node.
 
+      declare
+         Lock : With_Lock (Tree.TC'Unrestricted_Access);
       begin
-         B := B + 1;
-         L := L + 1;
-
          Compare := (if Item < Node.Element then False
                      elsif Node.Element < Item then False
                      else True);
-
-         L := L - 1;
-         B := B - 1;
-
-      exception
-         when others =>
-            L := L - 1;
-            B := B - 1;
-
-            raise;
       end;
 
       if Compare then
          --  Item is equivalent to the node's element, so we will not have to
          --  move the node.
 
-         if Tree.Lock > 0 then
-            raise Program_Error with
-              "attempt to tamper with elements (set is locked)";
-         end if;
+         TE_Check (Tree.TC);
 
          Node.Element := Item;
          return;
@@ -1872,26 +1736,15 @@ package body Ada.Containers.Ordered_Sets is
       Hint := Element_Keys.Ceiling (Tree, Item);
 
       if Hint /= null then
+         declare
+            Lock : With_Lock (Tree.TC'Unrestricted_Access);
          begin
-            B := B + 1;
-            L := L + 1;
-
             Compare := Item < Hint.Element;
-
-            L := L - 1;
-            B := B - 1;
-
-         exception
-            when others =>
-               L := L - 1;
-               B := B - 1;
-
-               raise;
          end;
 
          --  Item >= Hint.Element
 
-         if not Compare then
+         if Checks and then not Compare then
 
             --  Ceiling returns an element that is equivalent or greater
             --  than Item. If Item is "not less than" the element, then
@@ -1922,10 +1775,7 @@ package body Ada.Containers.Ordered_Sets is
          --  because it would only be placed in the exact same position.
 
          if Hint = Node then
-            if Tree.Lock > 0 then
-               raise Program_Error with
-                 "attempt to tamper with elements (set is locked)";
-            end if;
+            TE_Check (Tree.TC);
 
             Node.Element := Item;
             return;
@@ -1958,12 +1808,13 @@ package body Ada.Containers.Ordered_Sets is
       New_Item  : Element_Type)
    is
    begin
-      if Position.Node = null then
+      if Checks and then Position.Node = null then
          raise Constraint_Error with
            "Position cursor equals No_Element";
       end if;
 
-      if Position.Container /= Container'Unrestricted_Access then
+      if Checks and then Position.Container /= Container'Unrestricted_Access
+      then
          raise Program_Error with
            "Position cursor designates wrong set";
       end if;
@@ -1998,22 +1849,12 @@ package body Ada.Containers.Ordered_Sets is
       end Process_Node;
 
       T : Tree_Type renames Container.Tree'Unrestricted_Access.all;
-      B : Natural renames T.Busy;
+      Busy : With_Busy (T.TC'Unrestricted_Access);
 
    --  Start of processing for Reverse_Iterate
 
    begin
-      B := B + 1;
-
-      begin
-         Local_Reverse_Iterate (T);
-      exception
-         when others =>
-            B := B - 1;
-            raise;
-      end;
-
-      B := B - 1;
+      Local_Reverse_Iterate (T);
    end Reverse_Iterate;
 
    -----------

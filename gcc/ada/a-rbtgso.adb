@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,10 @@ with System; use type System.Address;
 
 package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
 
+   pragma Warnings (Off, "variable ""Busy*"" is not referenced");
+   pragma Warnings (Off, "variable ""Lock*"" is not referenced");
+   --  See comment in Ada.Containers.Helpers
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -44,8 +48,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
    -----------
 
    procedure Clear (Tree : in out Tree_Type) is
-      pragma Assert (Tree.Busy = 0);
-      pragma Assert (Tree.Lock = 0);
+      use type Helpers.Tamper_Counts;
+      pragma Assert (Tree.TC = (Busy => 0, Lock => 0));
 
       Root : Node_Access := Tree.Root;
       pragma Warnings (Off, Root);
@@ -84,12 +88,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
    ----------------
 
    procedure Difference (Target : in out Tree_Type; Source : Tree_Type) is
-      BT : Natural renames Target.Busy;
-      LT : Natural renames Target.Lock;
-
-      BS : Natural renames Source'Unrestricted_Access.Busy;
-      LS : Natural renames Source'Unrestricted_Access.Lock;
-
       Tgt : Node_Access;
       Src : Node_Access;
 
@@ -97,10 +95,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
 
    begin
       if Target'Address = Source'Address then
-         if Target.Busy > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors (container is busy)";
-         end if;
+         TC_Check (Target.TC);
 
          Clear (Target);
          return;
@@ -110,10 +105,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          return;
       end if;
 
-      if Target.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (Target.TC);
 
       Tgt := Target.First;
       Src := Source.First;
@@ -129,13 +121,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          --  Per AI05-0022, the container implementation is required to detect
          --  element tampering by a generic actual subprogram.
 
+         declare
+            Lock_Target : With_Lock (Target.TC'Unrestricted_Access);
+            Lock_Source : With_Lock (Source.TC'Unrestricted_Access);
          begin
-            BT := BT + 1;
-            LT := LT + 1;
-
-            BS := BS + 1;
-            LS := LS + 1;
-
             if Is_Less (Tgt, Src) then
                Compare := -1;
             elsif Is_Less (Src, Tgt) then
@@ -143,22 +132,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
             else
                Compare := 0;
             end if;
-
-            BT := BT - 1;
-            LT := LT - 1;
-
-            BS := BS - 1;
-            LS := LS - 1;
-
-         exception
-            when others =>
-               BT := BT - 1;
-               LT := LT - 1;
-
-               BS := BS - 1;
-               LS := LS - 1;
-
-               raise;
          end;
 
          if Compare < 0 then
@@ -199,11 +172,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
       --  element tampering by a generic actual subprogram.
 
       declare
-         BL : Natural renames Left'Unrestricted_Access.Busy;
-         LL : Natural renames Left'Unrestricted_Access.Lock;
-
-         BR : Natural renames Right'Unrestricted_Access.Busy;
-         LR : Natural renames Right'Unrestricted_Access.Lock;
+         Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+         Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
 
          Tree : Tree_Type;
 
@@ -214,12 +184,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          pragma Warnings (Off, Dst_Node);
 
       begin
-         BL := BL + 1;
-         LL := LL + 1;
-
-         BR := BR + 1;
-         LR := LR + 1;
-
          L_Node := Left.First;
          R_Node := Right.First;
          loop
@@ -259,22 +223,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
             end if;
          end loop;
 
-         BL := BL - 1;
-         LL := LL - 1;
-
-         BR := BR - 1;
-         LR := LR - 1;
-
          return Tree;
 
       exception
          when others =>
-            BL := BL - 1;
-            LL := LL - 1;
-
-            BR := BR - 1;
-            LR := LR - 1;
-
             Delete_Tree (Tree.Root);
             raise;
       end;
@@ -288,12 +240,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
      (Target : in out Tree_Type;
       Source : Tree_Type)
    is
-      BT : Natural renames Target.Busy;
-      LT : Natural renames Target.Lock;
-
-      BS : Natural renames Source'Unrestricted_Access.Busy;
-      LS : Natural renames Source'Unrestricted_Access.Lock;
-
       Tgt : Node_Access;
       Src : Node_Access;
 
@@ -304,10 +250,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          return;
       end if;
 
-      if Target.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (Target.TC);
 
       if Source.Length = 0 then
          Clear (Target);
@@ -322,13 +265,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          --  Per AI05-0022, the container implementation is required to detect
          --  element tampering by a generic actual subprogram.
 
+         declare
+            Lock_Target : With_Lock (Target.TC'Unrestricted_Access);
+            Lock_Source : With_Lock (Source.TC'Unrestricted_Access);
          begin
-            BT := BT + 1;
-            LT := LT + 1;
-
-            BS := BS + 1;
-            LS := LS + 1;
-
             if Is_Less (Tgt, Src) then
                Compare := -1;
             elsif Is_Less (Src, Tgt) then
@@ -336,22 +276,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
             else
                Compare := 0;
             end if;
-
-            BT := BT - 1;
-            LT := LT - 1;
-
-            BS := BS - 1;
-            LS := LS - 1;
-
-         exception
-            when others =>
-               BT := BT - 1;
-               LT := LT - 1;
-
-               BS := BS - 1;
-               LS := LS - 1;
-
-               raise;
          end;
 
          if Compare < 0 then
@@ -393,11 +317,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
       --  element tampering by a generic actual subprogram.
 
       declare
-         BL : Natural renames Left'Unrestricted_Access.Busy;
-         LL : Natural renames Left'Unrestricted_Access.Lock;
-
-         BR : Natural renames Right'Unrestricted_Access.Busy;
-         LR : Natural renames Right'Unrestricted_Access.Lock;
+         Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+         Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
 
          Tree : Tree_Type;
 
@@ -408,12 +329,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          pragma Warnings (Off, Dst_Node);
 
       begin
-         BL := BL + 1;
-         LL := LL + 1;
-
-         BR := BR + 1;
-         LR := LR + 1;
-
          L_Node := Left.First;
          R_Node := Right.First;
          loop
@@ -443,22 +358,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
             end if;
          end loop;
 
-         BL := BL - 1;
-         LL := LL - 1;
-
-         BR := BR - 1;
-         LR := LR - 1;
-
          return Tree;
 
       exception
          when others =>
-            BL := BL - 1;
-            LL := LL - 1;
-
-            BR := BR - 1;
-            LR := LR - 1;
-
             Delete_Tree (Tree.Root);
             raise;
       end;
@@ -485,40 +388,26 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
       --  element tampering by a generic actual subprogram.
 
       declare
-         BL : Natural renames Subset'Unrestricted_Access.Busy;
-         LL : Natural renames Subset'Unrestricted_Access.Lock;
-
-         BR : Natural renames Of_Set'Unrestricted_Access.Busy;
-         LR : Natural renames Of_Set'Unrestricted_Access.Lock;
+         Lock_Subset : With_Lock (Subset.TC'Unrestricted_Access);
+         Lock_Of_Set : With_Lock (Of_Set.TC'Unrestricted_Access);
 
          Subset_Node : Node_Access;
          Set_Node    : Node_Access;
 
-         Result : Boolean;
-
       begin
-         BL := BL + 1;
-         LL := LL + 1;
-
-         BR := BR + 1;
-         LR := LR + 1;
-
          Subset_Node := Subset.First;
          Set_Node    := Of_Set.First;
          loop
             if Set_Node = null then
-               Result := Subset_Node = null;
-               exit;
+               return Subset_Node = null;
             end if;
 
             if Subset_Node = null then
-               Result := True;
-               exit;
+               return True;
             end if;
 
             if Is_Less (Subset_Node, Set_Node) then
-               Result := False;
-               exit;
+               return False;
             end if;
 
             if Is_Less (Set_Node, Subset_Node) then
@@ -528,24 +417,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
                Subset_Node := Tree_Operations.Next (Subset_Node);
             end if;
          end loop;
-
-         BL := BL - 1;
-         LL := LL - 1;
-
-         BR := BR - 1;
-         LR := LR - 1;
-
-         return Result;
-
-      exception
-         when others =>
-            BL := BL - 1;
-            LL := LL - 1;
-
-            BR := BR - 1;
-            LR := LR - 1;
-
-            raise;
       end;
    end Is_Subset;
 
@@ -563,32 +434,19 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
       --  element tampering by a generic actual subprogram.
 
       declare
-         BL : Natural renames Left'Unrestricted_Access.Busy;
-         LL : Natural renames Left'Unrestricted_Access.Lock;
-
-         BR : Natural renames Right'Unrestricted_Access.Busy;
-         LR : Natural renames Right'Unrestricted_Access.Lock;
+         Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+         Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
 
          L_Node : Node_Access;
          R_Node : Node_Access;
-
-         Result : Boolean;
-
       begin
-         BL := BL + 1;
-         LL := LL + 1;
-
-         BR := BR + 1;
-         LR := LR + 1;
-
          L_Node := Left.First;
          R_Node := Right.First;
          loop
             if L_Node = null
               or else R_Node = null
             then
-               Result := False;
-               exit;
+               return False;
             end if;
 
             if Is_Less (L_Node, R_Node) then
@@ -598,28 +456,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
                R_Node := Tree_Operations.Next (R_Node);
 
             else
-               Result := True;
-               exit;
+               return True;
             end if;
          end loop;
-
-         BL := BL - 1;
-         LL := LL - 1;
-
-         BR := BR - 1;
-         LR := LR - 1;
-
-         return Result;
-
-      exception
-         when others =>
-            BL := BL - 1;
-            LL := LL - 1;
-
-            BR := BR - 1;
-            LR := LR - 1;
-
-            raise;
       end;
    end Overlap;
 
@@ -631,12 +470,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
      (Target : in out Tree_Type;
       Source : Tree_Type)
    is
-      BT : Natural renames Target.Busy;
-      LT : Natural renames Target.Lock;
-
-      BS : Natural renames Source'Unrestricted_Access.Busy;
-      LS : Natural renames Source'Unrestricted_Access.Lock;
-
       Tgt : Node_Access;
       Src : Node_Access;
 
@@ -675,13 +508,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          --  Per AI05-0022, the container implementation is required to detect
          --  element tampering by a generic actual subprogram.
 
+         declare
+            Lock_Target : With_Lock (Target.TC'Unrestricted_Access);
+            Lock_Source : With_Lock (Source.TC'Unrestricted_Access);
          begin
-            BT := BT + 1;
-            LT := LT + 1;
-
-            BS := BS + 1;
-            LS := LS + 1;
-
             if Is_Less (Tgt, Src) then
                Compare := -1;
             elsif Is_Less (Src, Tgt) then
@@ -689,22 +519,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
             else
                Compare := 0;
             end if;
-
-            BT := BT - 1;
-            LT := LT - 1;
-
-            BS := BS - 1;
-            LS := LS - 1;
-
-         exception
-            when others =>
-               BT := BT - 1;
-               LT := LT - 1;
-
-               BS := BS - 1;
-               LS := LS - 1;
-
-               raise;
          end;
 
          if Compare < 0 then
@@ -751,11 +565,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
       --  element tampering by a generic actual subprogram.
 
       declare
-         BL : Natural renames Left'Unrestricted_Access.Busy;
-         LL : Natural renames Left'Unrestricted_Access.Lock;
-
-         BR : Natural renames Right'Unrestricted_Access.Busy;
-         LR : Natural renames Right'Unrestricted_Access.Lock;
+         Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+         Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
 
          Tree : Tree_Type;
 
@@ -766,12 +577,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          pragma Warnings (Off, Dst_Node);
 
       begin
-         BL := BL + 1;
-         LL := LL + 1;
-
-         BR := BR + 1;
-         LR := LR + 1;
-
          L_Node := Left.First;
          R_Node := Right.First;
          loop
@@ -826,22 +631,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
             end if;
          end loop;
 
-         BL := BL - 1;
-         LL := LL - 1;
-
-         BR := BR - 1;
-         LR := LR - 1;
-
          return Tree;
 
       exception
          when others =>
-            BL := BL - 1;
-            LL := LL - 1;
-
-            BR := BR - 1;
-            LR := LR - 1;
-
             Delete_Tree (Tree.Root);
             raise;
       end;
@@ -883,24 +676,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
       --  element tampering by a generic actual subprogram.
 
       declare
-         BS : Natural renames Source'Unrestricted_Access.Busy;
-         LS : Natural renames Source'Unrestricted_Access.Lock;
-
+         Lock_Source : With_Lock (Source.TC'Unrestricted_Access);
       begin
-         BS := BS + 1;
-         LS := LS + 1;
-
          Iterate (Source);
-
-         BS := BS - 1;
-         LS := LS - 1;
-
-      exception
-         when others =>
-            BS := BS - 1;
-            LS := LS - 1;
-
-            raise;
       end;
    end Union;
 
@@ -919,11 +697,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
       end if;
 
       declare
-         BL : Natural renames Left'Unrestricted_Access.Busy;
-         LL : Natural renames Left'Unrestricted_Access.Lock;
-
-         BR : Natural renames Right'Unrestricted_Access.Busy;
-         LR : Natural renames Right'Unrestricted_Access.Lock;
+         Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+         Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
 
          Tree : Tree_Type := Copy (Left);
 
@@ -951,30 +726,11 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
       --  Start of processing for Union
 
       begin
-         BL := BL + 1;
-         LL := LL + 1;
-
-         BR := BR + 1;
-         LR := LR + 1;
-
          Iterate (Right);
-
-         BL := BL - 1;
-         LL := LL - 1;
-
-         BR := BR - 1;
-         LR := LR - 1;
-
          return Tree;
 
       exception
          when others =>
-            BL := BL - 1;
-            LL := LL - 1;
-
-            BR := BR - 1;
-            LR := LR - 1;
-
             Delete_Tree (Tree.Root);
             raise;
       end;

@@ -488,7 +488,7 @@ package Restrict is
    --  and this flag is not set. Profile is set to a non-default value if the
    --  No_Dependence restriction comes from a Profile pragma. This procedure
    --  also takes care of setting the Boolean2 flag of the simple name for
-   --  the entity  (to optimize table searches).
+   --  the entity (to optimize table searches).
 
    procedure Set_Restriction_No_Use_Of_Pragma
      (N       : Node_Id;
