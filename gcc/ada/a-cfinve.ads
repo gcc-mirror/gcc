@@ -41,8 +41,12 @@ generic
    type Element_Type (<>) is private;
    Max_Size_In_Storage_Elements : Natural :=
                                     Element_Type'Max_Size_In_Storage_Elements;
-   --  This has the same meaning as in Ada.Containers.Bounded_Holders, with the
-   --  same restrictions.
+   --  Maximum size of Vector elements in bytes. This has the same meaning as
+   --  in Ada.Containers.Bounded_Holders, with the same restrictions. Note that
+   --  setting this too small can lead to erroneous execution; see comments in
+   --  Ada.Containers.Bounded_Holders. If Element_Type is class-wide, it is the
+   --  responsibility of clients to calculate the maximum size of all types in
+   --  the class.
 
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 

@@ -1,3 +1,20 @@
+2015-10-20  Steve Baird  <baird@adacore.com>
+
+	* pprint.adb: Code clean up.
+
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* a-cfinve.ads, a-coboho.ads: Improve comments.
+	* a-coboho.adb (Size_In_Storage_Elements): Improve error message
+	in case of "Size is too big" exception.
+
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* a-contai.ads: Remove check names (moved to snames.ads-tmpl).
+	* snames.ads-tmpl: Add check names that were previously in
+	a-contai.ads, so they are now visible in configuration files.
+	* types.ads: Add checks corresponding to snames.ads-tmpl.
+
 2015-10-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Analyze_Loop_Statement): Attach generated loop

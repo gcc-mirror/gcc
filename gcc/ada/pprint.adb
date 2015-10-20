@@ -713,11 +713,11 @@ package body Pprint is
       end loop;
 
       declare
+         Scn      : Source_Ptr := Original_Location (Sloc (Left));
          End_Sloc : constant Source_Ptr :=
                       Original_Location (Sloc (Right));
          Src      : constant Source_Buffer_Ptr :=
                       Source_Text (Get_Source_File_Index (Scn));
-         Scn      : Source_Ptr := Original_Location (Sloc (Left));
 
       begin
          if Scn > End_Sloc then
