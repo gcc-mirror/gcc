@@ -25177,6 +25177,7 @@ package body Sem_Prag is
       New_Form : List_Id;
       New_Typ  : Entity_Id;
       Par_Typ  : Entity_Id;
+      Root_Typ : Entity_Id;
       Spec     : Node_Id;
 
    --  Start of processing for Build_Generic_Class_Pre
@@ -25207,6 +25208,8 @@ package body Sem_Prag is
          Append_Elmt (New_F, Map);
 
          if Is_Controlling_Formal (F) then
+            Root_Typ := Etype (F);
+
             if Is_Access_Type (Etype (F)) then
                New_Typ :=
                  Make_Defining_Identifier (Loc,
@@ -25241,10 +25244,19 @@ package body Sem_Prag is
                          New_Occurrence_Of (Etype (Etype (F)), Loc),
                        Attribute_Name => Name_Class)));
             else
+               --  If it is an anonymous access type, create a similar type
+               --  definition.
+
+               if Ekind (Etype (F)) = E_Anonymous_Access_Type then
+                  Par_Typ := New_Copy_Tree (Parameter_Type (Parent (F)));
+               else
+                  Par_Typ := New_Occurrence_Of (Etype (F), Loc);
+               end if;
+
                Append_To (New_Form,
                  Make_Parameter_Specification (Loc,
                    Defining_Identifier => New_F,
-                   Parameter_Type      => New_Occurrence_Of (Etype (F), Loc)));
+                   Parameter_Type      => Par_Typ));
             end if;
          end if;
 
@@ -25271,7 +25283,9 @@ package body Sem_Prag is
             Make_Formal_Type_Declaration (Loc,
               Defining_Identifier    => New_Typ,
               Formal_Type_Definition =>
-                Make_Formal_Private_Type_Definition (Loc))));
+                Make_Formal_Derived_Type_Definition (Loc,
+                  Subtype_Mark    => New_Occurrence_Of (Root_Typ, Loc),
+                  Private_Present => True))));
 
       Preanalyze (New_Expr);
       Map_Formals (New_Expr);

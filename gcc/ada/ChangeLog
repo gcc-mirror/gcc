@@ -1,3 +1,13 @@
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect, case
+	Aspect_Disable_Controlled): If expander is not active, pre-analyze
+	expression anyway for ASIS and other tools use.
+	* sem_prag.adb (Build_Generic_Class_Condition): Handle properly
+	anonymous access types in parameter specifications. Make the
+	formal type a formal derived type of the controlling type of
+	the subprogram.
+
 2015-10-20  Tristan Gingold  <gingold@adacore.com>
 
 	* s-rident.ads: No_Task_At_Interrupt_Priority: New restriction.
