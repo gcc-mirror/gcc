@@ -1,3 +1,9 @@
+2015-10-20  Gregor Richards  <gregor.richards@uwaterloo.ca>
+	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/sh/linux.h (MUSL_DYNAMIC_LINKER): Define.
+	(MUSL_DYNAMIC_LINKER_E, MUSL_DYNAMIC_LINKER_FP): Define.
+
 2015-10-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_mode_valid_for_sched_fusion_p):
