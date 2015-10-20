@@ -1,3 +1,17 @@
+2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Usage): Update the calls to Usage_Error.
+	(Usage_Error): Remove formal parameter Item. Emit a clearer message
+	concerning a missing dependency item and place it on the related pragma.
+
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* debug.adb, expander.adb: Implement -gnatd.B switch, which
+	triggers a bug box when an abort_statement is seen. This is
+	useful for testing Comperr.Compiler_Abort.
+	* gnat1drv.adb: Trigger bug box on all exceptions other than
+	Unrecoverable_Error.
+
 2015-10-20  Thomas Quinot  <quinot@adacore.com>
 
 	* Makefile.rtl: add the following...

@@ -1220,14 +1220,14 @@ package body Sem_Prag is
          Used_Items : Elist_Id;
          Is_Input   : Boolean)
       is
-         procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id);
+         procedure Usage_Error (Item_Id : Entity_Id);
          --  Emit an error concerning the illegal usage of an item
 
          -----------------
          -- Usage_Error --
          -----------------
 
-         procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id) is
+         procedure Usage_Error (Item_Id : Entity_Id) is
             Error_Msg : Name_Id;
 
          begin
@@ -1245,10 +1245,10 @@ package body Sem_Prag is
 
                   Add_Item_To_Name_Buffer (Item_Id);
                   Add_Str_To_Name_Buffer
-                    (" & must appear in at least one input dependence list");
+                    (" & is missing from input dependence list");
 
                   Error_Msg := Name_Find;
-                  SPARK_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+                  SPARK_Msg_NE (Get_Name_String (Error_Msg), N, Item_Id);
                end if;
 
             --  Output case (SPARK RM 6.1.5(10))
@@ -1258,10 +1258,10 @@ package body Sem_Prag is
 
                Add_Item_To_Name_Buffer (Item_Id);
                Add_Str_To_Name_Buffer
-                 (" & must appear in exactly one output dependence list");
+                 (" & is missing from output dependence list");
 
                Error_Msg := Name_Find;
-               SPARK_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+               SPARK_Msg_NE (Get_Name_String (Error_Msg), N, Item_Id);
             end if;
          end Usage_Error;
 
@@ -1297,13 +1297,13 @@ package body Sem_Prag is
               and then not Contains (Used_Items, Item_Id)
             then
                if Is_Formal (Item_Id) then
-                  Usage_Error (Item, Item_Id);
+                  Usage_Error (Item_Id);
 
                --  States and global objects are not used properly only when
                --  the subprogram is subject to pragma Global.
 
                elsif Global_Seen then
-                  Usage_Error (Item, Item_Id);
+                  Usage_Error (Item_Id);
                end if;
             end if;
 

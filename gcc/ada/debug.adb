@@ -119,7 +119,7 @@ package body Debug is
    --  d.z  Restore previous support for frontend handling of Inline_Always
 
    --  d.A  Read/write Aspect_Specifications hash table to tree
-   --  d.B
+   --  d.B  Generate a bug box on abort_statement
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D  Disable errors on use of overriding keyword in Ada 95 mode
    --  d.E  Turn selected errors into warnings
@@ -594,6 +594,13 @@ package body Debug is
    --       for reading and writing the aspect specification hash table, so
    --       for now, this is controlled by the debug flag d.A. The hash table
    --       is only written and read if this flag is set.
+
+   --  d.B  Generate a bug box when we see an abort_statement, even though
+   --       there is no bug. Useful for testing Comperr.Compiler_Abort: write
+   --       some code containing an abort_statement, and compile it with
+   --       -gnatd.B. There is nothing special about abort_statements; it just
+   --       provides a way to control where the bug box is generated. See "when
+   --       N_Abort_Statement" in package body Expander.
 
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
