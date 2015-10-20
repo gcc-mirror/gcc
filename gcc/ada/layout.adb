@@ -3412,7 +3412,7 @@ package body Layout is
          --  type is the partial or full view, so that types will always
          --  match on calls from one size function to another.
 
-         if  Has_Private_Declaration (Vtype) then
+         if Has_Private_Declaration (Vtype) then
             Vtype_Primary_View := Etype (Vtype);
          else
             Vtype_Primary_View := Vtype;

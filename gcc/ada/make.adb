@@ -7584,29 +7584,28 @@ package body Make is
                   elsif Src_Path_Name = null
                     and then Lib_Path_Name = null
                   then
-                     Make_Failed ("RTS path not valid: missing "
-                                  & "adainclude and adalib directories");
+                     Make_Failed
+                       ("RTS path not valid: missing adainclude and adalib "
+                        & "directories");
 
                   elsif Src_Path_Name = null then
-                     Make_Failed ("RTS path not valid: missing adainclude "
-                                  & "directory");
+                     Make_Failed
+                       ("RTS path not valid: missing adainclude directory");
 
-                  elsif  Lib_Path_Name = null then
-                     Make_Failed ("RTS path not valid: missing adalib "
-                                  & "directory");
+                  elsif Lib_Path_Name = null then
+                     Make_Failed
+                       ("RTS path not valid: missing adalib directory");
                   end if;
                end;
             end if;
 
-         elsif Argv'Length > Source_Info_Option'Length and then
-           Argv (1 .. Source_Info_Option'Length) = Source_Info_Option
+         elsif Argv'Length > Source_Info_Option'Length
+           and then Argv (1 .. Source_Info_Option'Length) = Source_Info_Option
          then
             Project_Tree.Source_Info_File_Name :=
               new String'(Argv (Source_Info_Option'Length + 1 .. Argv'Last));
 
-         elsif Argv'Length >= 8 and then
-           Argv (1 .. 8) = "--param="
-         then
+         elsif Argv'Length >= 8 and then Argv (1 .. 8) = "--param=" then
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Linker,   And_Save => And_Save);
 

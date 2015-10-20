@@ -1,3 +1,21 @@
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* s-mudido-affinity.adb (Create): Correct subranges of slices of CPU
+	arrays.
+
+2015-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* sinfo.ads, g-pehage.adb, par-ch12.adb,
+	layout.adb, exp_util.adb, sem_aux.adb, make.adb, checks.adb,
+	sem_ch12.adb, sem_res.adb, sem_attr.adb, a-ngelfu.adb, sem_ch4.adb,
+	switch-b.adb, sem_ch6.adb, prj-dect.adb, gnatxref.adb, sem_ch13.adb,
+	lib-xref.adb: Fix typos.
+
+2015-10-20  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch4.adb (Expand_Array_Comparison): Use
+	generic code if runtime routine is not available.
+
 2015-10-20  Yannick Moy  <moy@adacore.com>
 
 	* a-sytaco.ads (Ada.Synchronous_Task_Control): Package

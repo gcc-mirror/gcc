@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,11 +119,11 @@ package body System.Multiprocessors.Dispatching_Domains is
    end Create;
 
    function Create (Set : CPU_Set) return Dispatching_Domain is
-      ST_DD : aliased constant ST.Dispatching_Domain
-        := ST.Dispatching_Domain (Set);
-      subtype Rng is CPU_Range range
-        Get_First_CPU (ST_DD'Unrestricted_Access) ..
-        Get_Last_CPU (ST_DD'Unrestricted_Access);
+      ST_DD : aliased constant ST.Dispatching_Domain :=
+        ST.Dispatching_Domain (Set);
+      First : constant CPU       := Get_First_CPU (ST_DD'Unrestricted_Access);
+      Last  : constant CPU_Range := Get_Last_CPU (ST_DD'Unrestricted_Access);
+      subtype Rng is CPU_Range range First .. Last;
 
       use type ST.Dispatching_Domain;
       use type ST.Dispatching_Domain_Access;
@@ -134,7 +134,7 @@ package body System.Multiprocessors.Dispatching_Domains is
 
       New_System_Domain : ST.Dispatching_Domain := ST.System_Domain.all;
 
-      New_Domain : Dispatching_Domain;
+      ST_DD_Slice : constant ST.Dispatching_Domain := ST_DD (Rng);
 
    begin
       --  The set of processors for creating a dispatching domain must
@@ -152,16 +152,27 @@ package body System.Multiprocessors.Dispatching_Domains is
       if Rng'Last > Number_Of_CPUs then
          raise Dispatching_Domain_Error with
            "CPU not supported by the target";
+      end if;
 
-      elsif (ST_DD and not ST.System_Domain (Rng)) /= (Rng => False) then
-         raise Dispatching_Domain_Error with
-           "CPU not currently in System_Dispatching_Domain";
+      declare
+         System_Domain_Slice : constant ST.Dispatching_Domain :=
+           ST.System_Domain (Rng);
+         Actual : constant ST.Dispatching_Domain :=
+           ST_DD_Slice and not System_Domain_Slice;
+         Expected : constant ST.Dispatching_Domain := (Rng => False);
+      begin
+         if Actual /= Expected then
+            raise Dispatching_Domain_Error with
+              "CPU not currently in System_Dispatching_Domain";
+         end if;
+      end;
 
-      elsif Self /= Environment_Task then
+      if Self /= Environment_Task then
          raise Dispatching_Domain_Error with
            "only the environment task can create dispatching domains";
+      end if;
 
-      elsif ST.Dispatching_Domains_Frozen then
+      if ST.Dispatching_Domains_Frozen then
          raise Dispatching_Domain_Error with
            "cannot create dispatching domain after call to main procedure";
       end if;
@@ -174,44 +185,44 @@ package body System.Multiprocessors.Dispatching_Domains is
          end if;
       end loop;
 
-      New_System_Domain (Rng) := New_System_Domain (Rng) and not ST_DD;
+      New_System_Domain (Rng) := New_System_Domain (Rng) and not ST_DD_Slice;
 
       if New_System_Domain = (New_System_Domain'Range => False) then
          raise Dispatching_Domain_Error with
            "would leave System_Dispatching_Domain empty";
       end if;
 
-      New_Domain := new ST.Dispatching_Domain'(ST_DD);
+      return Result : constant Dispatching_Domain :=
+        new ST.Dispatching_Domain'(ST_DD_Slice)
+      do
+         --  At this point we need to fix the processors belonging to the
+         --  system domain, and change the affinity of every task that has
+         --  been created and assigned to the system domain.
 
-      --  At this point we need to fix the processors belonging to the system
-      --  domain, and change the affinity of every task that has been created
-      --  and assigned to the system domain.
+         ST.Initialization.Defer_Abort (Self);
 
-      ST.Initialization.Defer_Abort (Self);
+         Lock_RTS;
 
-      Lock_RTS;
+         ST.System_Domain (Rng) := New_System_Domain (Rng);
+         pragma Assert (ST.System_Domain.all = New_System_Domain);
 
-      ST.System_Domain (Rng) := New_System_Domain (Rng);
-      pragma Assert (ST.System_Domain.all = New_System_Domain);
+         --  Iterate the list of tasks belonging to the default system
+         --  dispatching domain and set the appropriate affinity.
 
-      --  Iterate the list of tasks belonging to the default system
-      --  dispatching domain and set the appropriate affinity.
+         T := ST.All_Tasks_List;
 
-      T := ST.All_Tasks_List;
+         while T /= null loop
+            if T.Common.Domain = ST.System_Domain then
+               Set_Task_Affinity (T);
+            end if;
 
-      while T /= null loop
-         if T.Common.Domain = ST.System_Domain then
-            Set_Task_Affinity (T);
-         end if;
+            T := T.Common.All_Tasks_Link;
+         end loop;
 
-         T := T.Common.All_Tasks_Link;
-      end loop;
+         Unlock_RTS;
 
-      Unlock_RTS;
-
-      ST.Initialization.Undefer_Abort (Self);
-
-      return New_Domain;
+         ST.Initialization.Undefer_Abort (Self);
+      end return;
    end Create;
 
    -----------------------------
