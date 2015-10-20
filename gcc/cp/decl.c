@@ -14049,7 +14049,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       && flag_lifetime_dse && DECL_CONSTRUCTOR_P (decl1)
       /* We can't clobber safely for an implicitly-defined default constructor
 	 because part of the initialization might happen before we enter the
-	 consructor, via AGGR_INIT_ZERO_FIRST (c++/68006).  */
+	 constructor, via AGGR_INIT_ZERO_FIRST (c++/68006).  */
       && !implicit_default_ctor_p (decl1))
     {
       /* Insert a clobber to let the back end know that the object storage
