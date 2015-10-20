@@ -1,3 +1,7 @@
+2015-10-20  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect64): Add AArch64.
+
 2015-10-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c/67964
