@@ -1,3 +1,22 @@
+2015-10-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/67963
+	PR target/67985
+	* common/config/i386/i386-common.c (ix86_handle_option): Remove
+	OPT_miamcu handling.
+	* config/i386/i386.c (PTA_NO_80387): New macro.
+	(processor_alias_table): Add PTA_NO_80387 to lakemont.
+	(ix86_option_override_internal): Update MASK_80387 from
+	PTA_NO_80387.  Don't warn x87/MMX/SSE/AVX for -miamcu.  Warn
+	SSE math only if 80387 is supported.  Don't change
+	MASK_FLOAT_RETURNS.
+	(ix86_valid_target_attribute_tree): Enable FPMATH_387 only if
+	80387 is supported.
+	* config/i386/i386.h (TARGET_FLOAT_RETURNS_IN_80387): True only
+	if TARGET_80387 is true and TARGET_IAMCU is false.
+	(TARGET_FLOAT_RETURNS_IN_80387_P): True only if TARGET_80387_P
+	is true and TARGET_IAMCU_P is false.
+
 2015-10-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68017
