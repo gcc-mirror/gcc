@@ -7812,9 +7812,7 @@ package body Sem_Util is
          Next_Discriminant (D);
       end loop;
 
-      --  Type must have a proper access discriminant.
-
-      pragma Assert (False);
+      return Empty;
    end Get_Reference_Discriminant;
 
    ---------------------------

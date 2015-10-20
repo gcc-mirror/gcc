@@ -2567,6 +2567,10 @@ package body Sem_Ch3 is
                       and then not (In_Private_Part (Current_Scope)
                                      or else In_Package_Body (Current_Scope));
 
+      procedure Check_Nonoverridable_Aspects;
+      --  Apply the rule in RM 13.1.1(18.4/4) on iterator aspects that cannot
+      --  be overridden, and can only be confirmed on derivation.
+
       procedure Check_Ops_From_Incomplete_Type;
       --  If there is a tagged incomplete partial view of the type, traverse
       --  the primitives of the incomplete view and change the type of any
@@ -2574,6 +2578,90 @@ package body Sem_Ch3 is
       --  primitives will be added to the full type's primitive operations
       --  list later in Sem_Disp.Check_Operation_From_Incomplete_Type (which
       --  is called from Process_Incomplete_Dependents).
+
+      ----------------------------------
+      -- Check_Nonoverridable_Aspects --
+      ----------------------------------
+
+      procedure Check_Nonoverridable_Aspects is
+         Prev_Aspects   : constant List_Id :=
+                            Aspect_Specifications (Parent (Def_Id));
+         Par_Type       : Entity_Id;
+
+         function Has_Aspect_Spec
+           (Specs : List_Id;
+            Aspect_Name : Name_Id) return Boolean;
+         --  Check whether a list of aspect specifications includes an entry
+         --  for a specific aspect. The list is either that of a partial or
+         --  a full view.
+
+         ---------------------
+         -- Has_Aspect_Spec --
+         ---------------------
+
+         function Has_Aspect_Spec
+           (Specs : List_Id;
+            Aspect_Name : Name_Id) return Boolean
+         is
+            Spec : Node_Id;
+         begin
+            Spec := First (Specs);
+            while Present (Spec) loop
+               if Chars (Identifier (Spec)) = Aspect_Name then
+                  return True;
+               end if;
+               Next (Spec);
+            end loop;
+            return False;
+         end Has_Aspect_Spec;
+
+         --  Start of processing for Check_Nonoverridable_Aspects
+
+      begin
+
+         --  Get parent type of derived type. Note that Prev is the entity
+         --  in the partial declaration, but its contents are now those of
+         --  full view, while Def_Id reflects the partial view.
+
+         if Is_Private_Type (Def_Id) then
+            Par_Type := Etype (Full_View (Def_Id));
+         else
+            Par_Type := Etype (Def_Id);
+         end if;
+
+         --  If there is an inherited Implicit_Dereference, verify that it is
+         --  made explicit in the partial view.
+
+         if Has_Discriminants (Base_Type (Par_Type))
+           and then Nkind (Parent (Prev)) = N_Full_Type_Declaration
+           and then Present (Discriminant_Specifications (Parent (Prev)))
+           and then Present (Get_Reference_Discriminant (Par_Type))
+         then
+            if
+              not Has_Aspect_Spec (Prev_Aspects, Name_Implicit_Dereference)
+            then
+               Error_Msg_N
+                 ("type does not inherit implicit dereference", Prev);
+
+            else
+               --  If one of the views has the aspect specified, verify that it
+               --  is consistent with that of the parent.
+
+               declare
+                  Par_Discr : constant Entity_Id :=
+                                Get_Reference_Discriminant (Par_Type);
+                  Cur_Discr : constant Entity_Id :=
+                                Get_Reference_Discriminant (Prev);
+               begin
+                  if Corresponding_Discriminant (Cur_Discr) /= Par_Discr then
+                     Error_Msg_N ("aspect incosistent with that of parent", N);
+                  end if;
+               end;
+            end if;
+         end if;
+
+         --  TBD : other nonoverridable aspects.
+      end Check_Nonoverridable_Aspects;
 
       ------------------------------------
       -- Check_Ops_From_Incomplete_Type --
@@ -2893,6 +2981,12 @@ package body Sem_Ch3 is
          else
             Analyze_Aspect_Specifications (N, Def_Id);
          end if;
+      end if;
+
+      if Is_Derived_Type (Prev)
+        and then Def_Id /= Prev
+      then
+         Check_Nonoverridable_Aspects;
       end if;
    end Analyze_Full_Type_Declaration;
 
@@ -16366,28 +16460,41 @@ package body Sem_Ch3 is
       -----------------------------
       -- Check_Duplicate_Aspects --
       -----------------------------
+
       procedure Check_Duplicate_Aspects is
          Prev_Aspects   : constant List_Id := Aspect_Specifications (Prev_Par);
          Full_Aspects   : constant List_Id := Aspect_Specifications (N);
          F_Spec, P_Spec : Node_Id;
 
       begin
-         if Present (Prev_Aspects) and then Present (Full_Aspects) then
+         if Present (Full_Aspects) then
             F_Spec := First (Full_Aspects);
             while Present (F_Spec) loop
-               P_Spec := First (Prev_Aspects);
-               while Present (P_Spec) loop
-                  if Chars (Identifier (P_Spec)) = Chars (Identifier (F_Spec))
-                  then
-                     Error_Msg_N
-                       ("aspect already specified in private declaration",
-                         F_Spec);
-                     Remove (F_Spec);
-                     return;
-                  end if;
+               if Present (Prev_Aspects) then
+                  P_Spec := First (Prev_Aspects);
+                  while Present (P_Spec) loop
+                     if Chars (Identifier (P_Spec)) =
+                       Chars (Identifier (F_Spec))
+                     then
+                        Error_Msg_N
+                          ("aspect already specified in private declaration",
+                            F_Spec);
+                        Remove (F_Spec);
+                        return;
+                     end if;
 
-                  Next (P_Spec);
-               end loop;
+                     Next (P_Spec);
+                  end loop;
+               end if;
+
+               if Has_Discriminants (Prev)
+                 and then not Has_Unknown_Discriminants (Prev)
+                 and then Chars (Identifier (F_Spec)) =
+                   Name_Implicit_Dereference
+               then
+                  Error_Msg_N ("cannot specify aspect " &
+                    "if partial view has known discriminants", F_Spec);
+               end if;
 
                Next (F_Spec);
             end loop;
