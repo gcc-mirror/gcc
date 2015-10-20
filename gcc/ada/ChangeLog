@@ -1,3 +1,32 @@
+2015-10-20  Philippe Gil  <gil@adacore.com>
+
+	* g-debpoo.ads (Dump): NEW print Debug_Pool statistics & main
+	contributors.
+	(Dump_Stdout): NEW print to stdout Debug_Pool statistics &
+	main contributors.
+	(Reset): NEW reset counters to 0.
+	(Get_Size): NEW return size allocated at parameter.
+	(High_Water_Mark): NEW.
+	(Current_Water_Mark): NEW.
+	(System_Memory_Debug_Pool): NEW tell Debug_Pools that
+	System.Memory uses it.
+	* g-debpoo.adb (Traceback_Htable_Elem): add Frees, Total_Frees
+	components.
+	(Find_Or_Create_Traceback): don't manage in System.Memory
+	Debug_Pool Deallocate Traceback's.
+	(Validity): add optional Handled table when System.Memory asked
+	for Allow_Unhandled_Memory.
+	(Allocate): handle Allocate reentrancy occuring when System.Memory
+	uses Debug_Pools.
+	(Deallocate): handle when Allow_Unhandled_Memory
+	is set deallocation of unhandled memory. Dont't check
+	Size_In_Storage_Elements if equal to Storage_Count'Last. update
+	Frees, Total_Frees new components.
+
+2015-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h: Minor tweak.
+
 2015-10-20  Vincent Celier  <celier@adacore.com>
 
 	* sem_cat.adb (Check_Categorization_Dependencies): Do nothing

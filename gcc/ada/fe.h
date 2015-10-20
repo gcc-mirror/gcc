@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -38,6 +38,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* atree: */
+
+#define Serious_Errors_Detected atree__serious_errors_detected
 
 /* comperr: */
 
@@ -76,10 +80,6 @@ extern Boolean Is_Entity_Name		(Node_Id);
 
 #define Get_Attribute_Definition_Clause einfo__get_attribute_definition_clause
 extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, char);
-
-/* atree: */
-
-#define Serious_Errors_Detected atree__serious_errors_detected
 
 /* errout: */
 
