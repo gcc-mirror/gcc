@@ -2430,7 +2430,7 @@ package body Layout is
       --  represents them the same way.
 
       if Is_Access_Type (E) then
-         Desig_Type :=  Underlying_Type (Designated_Type (E));
+         Desig_Type := Underlying_Type (Designated_Type (E));
 
          --  If we only have a limited view of the type, see whether the
          --  non-limited view is available.

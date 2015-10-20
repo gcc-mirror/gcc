@@ -7878,7 +7878,7 @@ package body Sem_Ch4 is
          --  Before analysis, a function call appears as an indexed component
          --  if there are no named associations.
 
-         elsif Nkind (Parent_Node) =  N_Indexed_Component
+         elsif Nkind (Parent_Node) = N_Indexed_Component
            and then N = Prefix (Parent_Node)
          then
             Node_To_Replace := Parent_Node;

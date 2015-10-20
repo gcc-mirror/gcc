@@ -726,7 +726,7 @@ package body Ch12 is
 
          when Tok_Not =>
             if P_Null_Exclusion then
-               Typedef_Node :=  P_Access_Type_Definition;
+               Typedef_Node := P_Access_Type_Definition;
                Set_Null_Exclusion_Present (Typedef_Node);
                return Typedef_Node;
 

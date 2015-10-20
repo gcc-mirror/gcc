@@ -1266,7 +1266,7 @@ package body Exp_Ch6 is
                   Reset_Analyzed_Flags (Lhs);
 
                else
-                  Lhs :=  New_Occurrence_Of (Var, Loc);
+                  Lhs := New_Occurrence_Of (Var, Loc);
                end if;
 
                Set_Assignment_OK (Lhs);
@@ -5649,7 +5649,7 @@ package body Exp_Ch6 is
 
          declare
             Decls   : List_Id;
-            Obj_Ptr : constant Entity_Id :=  Make_Temporary (Loc, 'T');
+            Obj_Ptr : constant Entity_Id := Make_Temporary (Loc, 'T');
 
          begin
             Decls := New_List (

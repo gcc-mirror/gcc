@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2010, AdaCore                     --
+--                     Copyright (C) 2001-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -221,8 +221,8 @@ package body GNAT.Directory_Operations.Iteration is
             then
                --  Starting with "<drive>:\"
 
-               DS :=  Strings.Fixed.Index
-                        (SP (SP'First + 3 .. SP'Last), Dir_Seps);
+               DS := Strings.Fixed.Index
+                       (SP (SP'First + 3 .. SP'Last), Dir_Seps);
 
                if DS = 0 then
 

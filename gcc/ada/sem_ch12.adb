@@ -1235,7 +1235,7 @@ package body Sem_Ch12 is
 
          elsif No (Selector_Name (Actual)) then
             Found_Assoc := Actual;
-            Act :=  Explicit_Generic_Actual_Parameter (Actual);
+            Act := Explicit_Generic_Actual_Parameter (Actual);
             Num_Matched := Num_Matched + 1;
             Next (Actual);
 
@@ -1254,7 +1254,7 @@ package body Sem_Ch12 is
                   Set_Etype  (Selector_Name (Actual), Etype (A_F));
                   Generate_Reference (A_F, Selector_Name (Actual));
                   Found_Assoc := Actual;
-                  Act :=  Explicit_Generic_Actual_Parameter (Actual);
+                  Act := Explicit_Generic_Actual_Parameter (Actual);
                   Num_Matched := Num_Matched + 1;
                   exit;
                end if;
@@ -3600,7 +3600,7 @@ package body Sem_Ch12 is
                   New_Copy_Tree (Name (Defining_Unit_Name (N))),
                 Defining_Identifier => Act_Decl_Id);
          else
-            Act_Decl_Name :=  Act_Decl_Id;
+            Act_Decl_Name := Act_Decl_Id;
          end if;
 
       --  Case of instantiation of a formal package
@@ -10882,7 +10882,7 @@ package body Sem_Ch12 is
                 Name => New_Copy_Tree (Name (Defining_Unit_Name (Act_Spec))),
                 Defining_Identifier => Act_Body_Id);
          else
-            Act_Body_Name :=  Act_Body_Id;
+            Act_Body_Name := Act_Body_Id;
          end if;
 
          Set_Defining_Unit_Name (Act_Body, Act_Body_Name);

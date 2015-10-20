@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1586,7 +1586,7 @@ package body Uintp is
             --  Use prior single precision steps to compute this Euclid step
 
             --  For constructs such as:
-            --  sqrt_2: constant :=  1.41421_35623_73095_04880_16887_24209_698;
+            --  sqrt_2: constant := 1.41421_35623_73095_04880_16887_24209_698;
             --  sqrt_eps: constant long_float := long_float( 1.0 / sqrt_2)
             --    ** long_float'machine_mantissa;
             --

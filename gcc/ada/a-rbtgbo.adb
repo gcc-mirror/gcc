@@ -88,7 +88,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
       X := Node;
       while X /= Tree.Root and then Color (N (X)) = Black loop
          if X = Left (N (Parent (N (X)))) then
-            W :=  Right (N (Parent (N (X))));
+            W := Right (N (Parent (N (X))));
 
             if Color (N (W)) = Red then
                Set_Color (N (W), Black);
@@ -132,7 +132,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
          else
             pragma Assert (X = Right (N (Parent (N (X)))));
 
-            W :=  Left (N (Parent (N (X))));
+            W := Left (N (Parent (N (X))));
 
             if Color (N (W)) = Red then
                Set_Color (N (W), Black);

@@ -6953,7 +6953,7 @@ package body Make is
       Get_Name_String (ALI_File);
       Link_Args (1) := new String'(Name_Buffer (1 .. Name_Len));
 
-      Link_Args (2 .. Args'Length + 1) :=  Args;
+      Link_Args (2 .. Args'Length + 1) := Args;
 
       GNAT.OS_Lib.Normalize_Arguments (Link_Args);
 

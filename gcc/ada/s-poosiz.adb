@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,7 @@ package body System.Pool_Size is
    function To_Storage_Count_Access is
      new Ada.Unchecked_Conversion (Address, Storage_Count_Access);
 
-   SC_Size : constant :=  SSE.Storage_Count'Object_Size / System.Storage_Unit;
+   SC_Size : constant := SSE.Storage_Count'Object_Size / System.Storage_Unit;
 
    package Variable_Size_Management is
 

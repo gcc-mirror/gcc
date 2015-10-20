@@ -127,7 +127,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
                then
                   Int_Part := Integer (Float_Type'Base'Truncation (A_Right));
                   Result := Left ** Int_Part;
-                  Rest :=  A_Right - Float_Type'Base (Int_Part);
+                  Rest := A_Right - Float_Type'Base (Int_Part);
 
                   --  Compute with two leading bits of the mantissa using
                   --  square roots. Bound  to be better than logarithms, and
@@ -148,7 +148,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
                      Rest := Rest - 0.25;
                   end if;
 
-                  Result :=  Result *
+                  Result := Result *
                     Float_Type'Base (Aux.Pow (Double (Left), Double (Rest)));
 
                   if Right >= 0.0 then

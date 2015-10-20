@@ -3127,7 +3127,7 @@ package body Sem_Ch10 is
                --  visible, so analyze the declaration for B now, in case it
                --  has not been done yet.
 
-               Ent :=  Entity (Selector_Name (Nam));
+               Ent := Entity (Selector_Name (Nam));
                Analyze
                  (Parent
                    (Unit_Declaration_Node (Entity (Selector_Name (Nam)))));

@@ -5935,7 +5935,7 @@ package body Sem_Ch3 is
 
       if ASIS_Mode then
          declare
-            Typ : constant Entity_Id :=  Make_Temporary (Loc, 'S');
+            Typ : constant Entity_Id := Make_Temporary (Loc, 'S');
 
          begin
             if Nkind (Spec) = N_Access_Function_Definition then
@@ -18369,7 +18369,7 @@ package body Sem_Ch3 is
 
          --  The index is given by a subtype with a range constraint
 
-         T :=  Base_Type (Entity (Subtype_Mark (N)));
+         T := Base_Type (Entity (Subtype_Mark (N)));
 
          if not Is_Discrete_Type (T) then
             Error_Msg_N ("discrete type required for range", N);
@@ -21547,7 +21547,7 @@ package body Sem_Ch3 is
       R      : Node_Id;
       Subt   : Entity_Id)
    is
-      Kind : constant Entity_Kind :=  Ekind (Def_Id);
+      Kind : constant Entity_Kind := Ekind (Def_Id);
 
    begin
       --  Defend against previous error
