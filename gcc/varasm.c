@@ -6908,12 +6908,13 @@ default_binds_local_p (const_tree exp)
   return default_binds_local_p_3 (exp, flag_shlib != 0, true, false, false);
 }
 
-/* Similar to default_binds_local_p, but common symbol may be local.  */
+/* Similar to default_binds_local_p, but common symbol may be local and
+   extern protected data is non-local.  */
 
 bool
 default_binds_local_p_2 (const_tree exp)
 {
-  return default_binds_local_p_3 (exp, flag_shlib != 0, true, false,
+  return default_binds_local_p_3 (exp, flag_shlib != 0, true, true,
 				  !flag_pic);
 }
 

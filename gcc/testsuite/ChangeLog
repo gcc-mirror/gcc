@@ -1,3 +1,12 @@
+2015-10-20  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline r229024
+	2015-10-20  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/66912
+	* gcc.target/aarch64/pr66912.c: New.
+	* gcc.target/arm/pr66912.c: New.
+
 2015-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67900

@@ -1,3 +1,11 @@
+2015-10-20  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline r229024
+	2015-10-20  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/66912
+	* varasm.c (default_binds_local_p_2): Turn on extern_protected_data.
+
 2015-10-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
