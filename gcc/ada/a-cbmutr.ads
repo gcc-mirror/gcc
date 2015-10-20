@@ -33,7 +33,7 @@
 
 with Ada.Iterator_Interfaces;
 
-private with Ada.Containers.Helpers;
+with Ada.Containers.Helpers;
 private with Ada.Streams;
 
 generic

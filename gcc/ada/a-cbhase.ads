@@ -34,7 +34,7 @@
 with Ada.Iterator_Interfaces;
 
 private with Ada.Containers.Hash_Tables;
-private with Ada.Containers.Helpers;
+with Ada.Containers.Helpers;
 private with Ada.Streams;
 private with Ada.Finalization; use Ada.Finalization;
 

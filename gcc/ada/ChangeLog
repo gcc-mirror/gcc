@@ -1,3 +1,32 @@
+2015-10-20  Bob Duff  <duff@adacore.com>
+
+	* a-cbdlli.ads, a-cbhase.ads, a-cbmutr.ads, a-cborse.ads,
+	* a-cdlili.ads, a-cidlli.ads, a-cihase.ads, a-cimutr.ads,
+	* a-ciorse.ads, a-cobove.ads, a-cohase.ads, a-coinve.ads,
+	* a-comutr.ads, a-convec.ads, a-coorse.ads: Use non-private with clause.
+
+2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Requires_Cleanup_Actions): A loop parameter does not
+	require finalization actions.
+
+2015-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch3.adb (P_Declarative_Items): In case of misplaced
+	aspect specifications, ensure that flag Done is properly set to
+	continue parse.
+
+2015-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* rtsfind.ads Remove the entries for Ada.Synchronous_Task_Control
+	and Suspension_Object from tables RE_Id, RE_Unit_Table and RTU_Id.
+	* sem_util.adb (Is_Descendant_Of_Suspension_Object): Update
+	the comment on usage. Use routine Is_Suspension_Object to detect
+	whether a type matches Suspension_Object.
+	(Is_Suspension_Object): New routine.
+	* snames.ads-tmpl: Add predefined names for Suspension_Object
+	and Synchronous_Task_Control.
+
 2015-10-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_smem.adb (Check_Shared_Var): Clean up code that handles
