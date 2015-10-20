@@ -1,5 +1,10 @@
 2015-10-20  Marek Polacek  <polacek@redhat.com>
 
+	* array-notation-common.c (is_cilkplus_vector_p): Define.
+	* c-common.h (is_cilkplus_vector_p): Declare.
+
+2015-10-20  Marek Polacek  <polacek@redhat.com>
+
 	* c.opt (std=gnu++11): Do not describe as experimental.
 	(std=gnu++14): Likewise.
 

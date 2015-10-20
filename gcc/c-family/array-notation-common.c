@@ -676,3 +676,12 @@ fix_sec_implicit_args (location_t loc, vec <tree, va_gc> *list,
       vec_safe_push (array_operand, (*list)[ii]);
   return array_operand;
 }
+
+/* Returns true if NAME is an IDENTIFIER_NODE with identifier "vector",
+   "__vector", or "__vector__".  */
+
+bool
+is_cilkplus_vector_p (tree name)
+{
+  return flag_cilkplus && is_attribute_p ("vector", name);
+}

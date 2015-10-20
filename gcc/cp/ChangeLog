@@ -1,3 +1,7 @@
+2015-10-20  Marek Polacek  <polacek@redhat.com>
+
+	* parser.c (is_cilkplus_vector_p): Don't define here.
+
 2015-10-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67064
