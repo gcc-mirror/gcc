@@ -1,3 +1,10 @@
+2015-10-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67557
+	* call.c (is_base_field_ref): New.
+	(unsafe_copy_elision_p): New.
+	(build_over_call): Use it.
+
 2015-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Backport from mainline
