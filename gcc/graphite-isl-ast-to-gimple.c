@@ -707,7 +707,10 @@ graphite_create_new_loop_guard (edge entry_edge,
       cond_expr = fold_build2 (LT_EXPR, boolean_type_node, *lb, ub_one);
     }
 
-  exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
+  if (integer_onep (cond_expr))
+    exit_edge = entry_edge;
+  else
+    exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
 
   return exit_edge;
 }
@@ -723,10 +726,14 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
   tree type, lb, ub;
   edge last_e = graphite_create_new_loop_guard (next_e, node, &type,
 						&lb, &ub, ip);
-  edge true_e = get_true_edge_from_guard_bb (next_e->dest);
 
-  translate_isl_ast_for_loop (context_loop, node, true_e,
-			      type, lb, ub, ip);
+  if (last_e == next_e)
+    /* There was no guard generated.  */
+    return translate_isl_ast_for_loop (context_loop, node, last_e,
+				       type, lb, ub, ip);
+
+  edge true_e = get_true_edge_from_guard_bb (next_e->dest);
+  translate_isl_ast_for_loop (context_loop, node, true_e, type, lb, ub, ip);
   return last_e;
 }
 
