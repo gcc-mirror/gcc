@@ -1,5 +1,10 @@
 2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/67056
+	* g++.dg/ipa/pr67056.C: New testcase.
+
+2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
 	* gcc.dg/tree-ssa/operand-equal-1.c: Verify that empty constructors
 	are matched.
 

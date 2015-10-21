@@ -99,6 +99,8 @@ bool
 possible_placement_new (tree type, tree expected_type,
 			HOST_WIDE_INT cur_offset)
 {
+  if (cur_offset < 0)
+    return true;
   return ((TREE_CODE (type) != RECORD_TYPE
 	   || !TYPE_BINFO (type)
 	   || cur_offset >= POINTER_SIZE
@@ -1418,7 +1420,21 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 	    && TYPE_SIZE (type)
 	    && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	    && tree_fits_shwi_p (TYPE_SIZE (type))
-	    && tree_to_shwi (TYPE_SIZE (type)) + offset > tci->offset)
+	    && tree_to_shwi (TYPE_SIZE (type)) + offset > tci->offset
+	    /* Some inlined constructors may look as follows:
+		  _3 = operator new (16);
+		  MEM[(struct  &)_3] ={v} {CLOBBER};
+		  MEM[(struct CompositeClass *)_3]._vptr.CompositeClass
+		    = &MEM[(void *)&_ZTV14CompositeClass + 16B];
+		  _7 = &MEM[(struct CompositeClass *)_3].object;
+		  EmptyClass::EmptyClass (_7);
+
+	       When determining dynamic type of _3 and because we stop at first
+	       dynamic type found, we would stop on EmptyClass::EmptyClass (_7).
+	       In this case the emptyclass is not even polymorphic and we miss
+	       it is contained in an outer type that is polymorphic.  */
+
+	    && (tci->offset == offset || contains_polymorphic_type_p (type)))
 	  {
 	    record_known_type (tci, type, tci->offset - offset);
 	    return true;
