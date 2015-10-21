@@ -1472,6 +1472,30 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   *gsi = gsi_for_stmt (stmt);
 }
 
+/* Determine if we can propagate given LOCATION to ubsan_data descriptor to use
+   new style handlers.  Libubsan uses heuristics to destinguish between old and
+   new styles and relies on these properties for filename:
+
+   a) Location's filename must not be NULL.
+   b) Location's filename must not be equal to "".
+   c) Location's filename must not be equal to "\1".
+   d) First two bytes of filename must not contain '\xff' symbol.  */
+
+static bool
+ubsan_use_new_style_p (location_t loc)
+{
+  if (loc == UNKNOWN_LOCATION)
+    return false;
+
+  expanded_location xloc = expand_location (loc);
+  if (xloc.file == NULL || strncmp (xloc.file, "\1", 2) == 0
+      || xloc.file == '\0' || xloc.file[0] == '\xff'
+      || xloc.file[1] == '\xff')
+    return false;
+
+  return true;
+}
+
 /* Instrument float point-to-integer conversion.  TYPE is an integer type of
    destination, EXPR is floating-point expression.  ARG is what to pass
    the libubsan call as value, often EXPR itself.  */
@@ -1484,6 +1508,7 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr, tree arg)
   machine_mode mode = TYPE_MODE (expr_type);
   int prec = TYPE_PRECISION (type);
   bool uns_p = TYPE_UNSIGNED (type);
+  if (!loc) loc = input_location;
 
   /* Float to integer conversion first truncates toward zero, so
      even signed char c = 127.875f; is not problematic.
@@ -1580,9 +1605,19 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr, tree arg)
     fn = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
+      location_t *loc_ptr = NULL;
+      unsigned num_locations = 0;
+      /* Figure out if we can propagate location to ubsan_data and use new
+         style handlers in libubsan.  */
+      if (ubsan_use_new_style_p (loc))
+	{
+	  loc_ptr = &loc;
+	  num_locations = 1;
+	}
       /* Create the __ubsan_handle_float_cast_overflow fn call.  */
-      tree data = ubsan_create_data ("__ubsan_float_cast_overflow_data", 0,
-				     NULL, ubsan_type_descriptor (expr_type),
+      tree data = ubsan_create_data ("__ubsan_float_cast_overflow_data",
+				     num_locations, loc_ptr,
+				     ubsan_type_descriptor (expr_type),
 				     ubsan_type_descriptor (type), NULL_TREE,
 				     NULL_TREE);
       enum built_in_function bcode

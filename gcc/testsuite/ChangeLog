@@ -1,3 +1,10 @@
+2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/ubsan/float-cast-overflow-10.c: Adjust test.
+	* c-c++-common/ubsan/float-cast-overflow-8.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-9.c: Likewise.
+	* g++.dg/asan/default-options-1.C: Likewise.
+
 2015-10-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/stp_vec_64_1.c: New test.

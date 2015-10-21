@@ -1,3 +1,8 @@
+2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* bootstrap-asan.mk: Replace ASAN_OPTIONS=detect_leaks with
+	LSAN_OPTIONS=detect_leaks.
+
 2015-08-24  Yaakov Selkowitz  <yselkowi@redhat.com>
 
 	* iconv.m4 (AM_ICONV_LINK): Use in-tree libiconv when present.

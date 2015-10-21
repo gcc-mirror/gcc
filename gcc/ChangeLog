@@ -1,3 +1,18 @@
+2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* asan.c (asan_emit_stack_protection): Don't pass local stack to
+	asan_stack_malloc_[n] anymore. Check if asan_stack_malloc_[n] returned
+	NULL and use local stack than.
+	(asan_finish_file): Insert __asan_version_mismatch_check_v[n] call
+	in addition to __asan_init.
+	* sanitizer.def (BUILT_IN_ASAN_INIT): Rename to __asan_init.
+	(BUILT_IN_ASAN_VERSION_MISMATCH_CHECK): Add new builtin call.
+	* asan.h (asan_intercepted_p): Handle new string builtins.
+	* ubsan.c (ubsan_use_new_style_p): New function.
+	(ubsan_instrument_float_cast): If location is unknown, assign
+	input_location to loc. Propagate loc to ubsan_create_data if
+	ubsan_use_new_style_p returned true.
+
 2015-10-21  Jeff Law  <law@redhat.com>
 
 	* Makefile.in (OBJS): Remove sched-vis.c
