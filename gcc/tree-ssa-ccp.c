@@ -629,6 +629,11 @@ get_value_for_expr (tree expr, bool for_bits_p)
       val.mask = -1;
       val.value = NULL_TREE;
     }
+
+  if (val.lattice_val == VARYING
+      && TYPE_UNSIGNED (TREE_TYPE (expr)))
+    val.mask = wi::zext (val.mask, TYPE_PRECISION (TREE_TYPE (expr)));
+
   return val;
 }
 

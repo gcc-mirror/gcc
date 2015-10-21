@@ -1,3 +1,9 @@
+2015-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68026
+	* tree-ssa-ccp.c (get_value_for_expr): Zero-extend mask for
+	unsigned VARYING values.
+
 2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* asan.c (asan_emit_stack_protection): Don't pass local stack to
