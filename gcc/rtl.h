@@ -3565,19 +3565,6 @@ extern int print_rtl_single (FILE *, const_rtx);
 extern int print_rtl_single_with_indent (FILE *, const_rtx, int);
 extern void print_inline_rtx (FILE *, const_rtx, int);
 
-/* Functions in sched-vis.c.  FIXME: Ideally these functions would
-   not be in sched-vis.c but in rtl.c, because they are not only used
-   by the scheduler anymore but for all "slim" RTL dumping.  */
-extern void dump_value_slim (FILE *, const_rtx, int);
-extern void dump_insn_slim (FILE *, const rtx_insn *);
-extern void dump_rtl_slim (FILE *, const rtx_insn *, const rtx_insn *,
-			   int, int);
-extern void print_value (pretty_printer *, const_rtx, int);
-extern void print_pattern (pretty_printer *, const_rtx, int);
-extern void print_insn (pretty_printer *, const rtx_insn *, int);
-extern void rtl_dump_bb_for_graph (pretty_printer *, basic_block);
-extern const char *str_pattern_slim (const_rtx);
-
 /* In stmt.c */
 extern void expand_null_return (void);
 extern void expand_naked_return (void);

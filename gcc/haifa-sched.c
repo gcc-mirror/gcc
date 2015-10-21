@@ -148,6 +148,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "dumpfile.h"
+#include "print-rtl.h"
 
 #ifdef INSN_SCHEDULING
 

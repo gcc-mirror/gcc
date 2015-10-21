@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "sel-sched-ir.h"
 #include "sel-sched-dump.h"
+#include "print-rtl.h"
 
 
 /* These variables control high-level pretty printing.  */
