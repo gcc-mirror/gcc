@@ -62,6 +62,12 @@ along with GCC; see the file COPYING3.  If not see
 (define_operator_list COSH BUILT_IN_COSHF BUILT_IN_COSH BUILT_IN_COSHL)
 (define_operator_list CEXPI BUILT_IN_CEXPIF BUILT_IN_CEXPI BUILT_IN_CEXPIL)
 (define_operator_list CPROJ BUILT_IN_CPROJF BUILT_IN_CPROJ BUILT_IN_CPROJL)
+(define_operator_list CCOS BUILT_IN_CCOSF BUILT_IN_CCOS BUILT_IN_CCOSL)
+(define_operator_list CCOSH BUILT_IN_CCOSHF BUILT_IN_CCOSH BUILT_IN_CCOSHL)
+(define_operator_list HYPOT BUILT_IN_HYPOTF BUILT_IN_HYPOT BUILT_IN_HYPOTL)
+(define_operator_list COPYSIGN BUILT_IN_COPYSIGNF
+			       BUILT_IN_COPYSIGN
+			       BUILT_IN_COPYSIGNL)
 
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
@@ -323,7 +329,70 @@ along with GCC; see the file COPYING3.  If not see
    (pows (op @0) REAL_CST@1)
    (with { HOST_WIDE_INT n; }
     (if (real_isinteger (&TREE_REAL_CST (@1), &n) && (n & 1) == 0)
-     (pows @0 @1))))))
+     (pows @0 @1)))))
+ /* Strip negate and abs from both operands of hypot.  */
+ (for hypots (HYPOT)
+  (simplify
+   (hypots (op @0) @1)
+   (hypots @0 @1))
+  (simplify
+   (hypots @0 (op @1))
+   (hypots @0 @1)))
+ /* copysign(-x, y) and copysign(abs(x), y) -> copysign(x, y).  */
+ (for copysigns (COPYSIGN)
+  (simplify
+   (copysigns (op @0) @1)
+   (copysigns @0 @1))))
+
+/* abs(x)*abs(x) -> x*x.  Should be valid for all types.  */
+(simplify
+ (mult (abs@1 @0) @1)
+ (mult @0 @0))
+
+/* cos(copysign(x, y)) -> cos(x).  Similarly for cosh.  */
+(for coss (COS COSH)
+     copysigns (COPYSIGN)
+ (simplify
+  (coss (copysigns @0 @1))
+   (coss @0)))
+
+/* pow(copysign(x, y), z) -> pow(x, z) if z is an even integer.  */
+(for pows (POW)
+     copysigns (COPYSIGN)
+ (simplify
+  (pows (copysigns @0 @1) REAL_CST@1)
+  (with { HOST_WIDE_INT n; }
+   (if (real_isinteger (&TREE_REAL_CST (@1), &n) && (n & 1) == 0)
+    (pows @0 @1)))))
+
+(for hypots (HYPOT)
+     copysigns (COPYSIGN)
+ /* hypot(copysign(x, y), z) -> hypot(x, z).  */
+ (simplify
+  (hypots (copysigns @0 @1) @2)
+  (hypots @0 @2))
+ /* hypot(x, copysign(y, z)) -> hypot(x, y).  */
+ (simplify
+  (hypots @0 (copysigns @1 @2))
+  (hypots @0 @1)))
+
+/* copysign(copysign(x, y), z) -> copysign(x, z).  */
+(for copysigns (COPYSIGN)
+ (simplify
+  (copysigns (copysigns @0 @1) @2)
+  (copysigns @0 @2)))
+
+/* copysign(x,y)*copysign(x,y) -> x*x.  */
+(for copysigns (COPYSIGN)
+ (simplify
+  (mult (copysigns@2 @0 @1) @2)
+  (mult @0 @0)))
+
+/* ccos(-x) -> ccos(x).  Similarly for ccosh.  */
+(for ccoss (CCOS CCOSH)
+ (simplify
+  (ccoss (negate @0))
+   (ccoss @0)))
 
 /* Fold (a * (1 << b)) into (a << b)  */
 (simplify

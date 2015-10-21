@@ -1,3 +1,10 @@
+2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Add rules to simplify ccos, ccosh, hypot, copysign
+	and x*x in cases where the operands are sign ops.  Extend these
+	rules to handle copysign as a sign op (including for cos, cosh
+	and pow, which already treated negate and abs as sign ops).
+
 2015-10-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/68018
