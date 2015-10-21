@@ -1,3 +1,8 @@
+2015-10-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/67939
+	* gfortran.dg/pr67939.f90: New test.
+
 2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
