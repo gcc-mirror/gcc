@@ -483,15 +483,13 @@ public:
 unsigned int
 pass_free_cfg::execute (function *)
 {
-#ifdef DELAY_SLOTS
   /* The resource.c machinery uses DF but the CFG isn't guaranteed to be
      valid at that point so it would be too late to call df_analyze.  */
-  if (optimize > 0 && flag_delayed_branch)
+  if (DELAY_SLOTS && optimize > 0 && flag_delayed_branch)
     {
       df_note_add_problem ();
       df_analyze ();
     }
-#endif
 
   if (crtl->has_bb_partition)
     insert_section_boundary_note ();

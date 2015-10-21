@@ -4449,7 +4449,7 @@ write_eligible_delay (FILE *outf, const char *kind)
 		 "		   rtx_insn *candidate_insn, int flags ATTRIBUTE_UNUSED)\n",
 	   kind);
   fprintf (outf, "{\n");
-  fprintf (outf, "  rtx_insn *insn;\n");
+  fprintf (outf, "  rtx_insn *insn ATTRIBUTE_UNUSED;\n");
   fprintf (outf, "\n");
   fprintf (outf, "  gcc_assert (slot < %d);\n", max_slots);
   fprintf (outf, "\n");
@@ -5240,8 +5240,7 @@ main (int argc, char **argv)
     }
 
   /* Expand DEFINE_DELAY information into new attribute.  */
-  if (num_delays)
-    expand_delays ();
+  expand_delays ();
 
   /* Make `insn_alternatives'.  */
   int num_insn_codes = get_num_insn_codes ();
@@ -5307,14 +5306,9 @@ main (int argc, char **argv)
   /* Write out delay eligibility information, if DEFINE_DELAY present.
      (The function to compute the number of delay slots will be written
      below.)  */
-  if (num_delays)
-    {
-      write_eligible_delay (attr_file, "delay");
-      if (have_annul_true)
-	write_eligible_delay (attr_file, "annul_true");
-      if (have_annul_false)
-	write_eligible_delay (attr_file, "annul_false");
-    }
+  write_eligible_delay (attr_file, "delay");
+  write_eligible_delay (attr_file, "annul_true");
+  write_eligible_delay (attr_file, "annul_false");
 
   /* Write out constant delay slot info.  */
   write_const_num_delay_slots (attr_file);

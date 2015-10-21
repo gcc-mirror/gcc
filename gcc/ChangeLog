@@ -1,3 +1,24 @@
+2015-10-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* cfgrtl.c (pass_free_cfg::execute): Adjust.
+	* final.c (dbr_sequence_length): Always define.
+	(shorten_branches): Adjust.
+	* genattr-common.c (main): Always define DELAY_SLOTS.
+	* genattr.c (main): Unconditionally declare functions and define
+	macros related to delay slots.
+	* genattrtab.c (write_eligible_delay): Adjust.
+	(main): Always write out delay slot functions.
+	* opts.c (default_options_table): Adjust.
+	* reorg.c (redirect_with_delay_slots_safe_p): Likewise.
+	(redirect_with_delay_list_safe_p): Likewise.
+	(fill_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	(make_return_insns): Likewise.
+	(dbr_schedule): Likewise.
+	(rest_of_handle_delay_slots): Likewise.
+	(pass_delay_slots::gate): Likewise.
+	* toplev.c (process_options): Likewise.
+
 2015-10-21  Richard Henderson  <rth@redhat.com>
 
 	* targhooks.c (default_addr_space_pointer_mode): Remove check

@@ -87,11 +87,7 @@ main (int argc, char **argv)
 	break;
 
       case DEFINE_DELAY:
-	if (!have_delay)
-	  {
-	    printf ("#define DELAY_SLOTS\n");
-	    have_delay = true;
-	  }
+	have_delay = true;
 	break;
 
       case DEFINE_INSN_RESERVATION:
@@ -105,6 +101,8 @@ main (int argc, char **argv)
       default:
 	break;
       }
+
+	    printf ("#define DELAY_SLOTS %d\n", have_delay);
   puts ("\n#endif /* GCC_INSN_ATTR_COMMON_H */");
 
   if (ferror (stdout) || fflush (stdout) || fclose (stdout))

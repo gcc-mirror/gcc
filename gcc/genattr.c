@@ -140,9 +140,8 @@ find_tune_attr (rtx exp)
 int
 main (int argc, char **argv)
 {
-  int have_delay = 0;
-  int have_annul_true = 0;
-  int have_annul_false = 0;
+  bool have_annul_true = false;
+  bool have_annul_false = false;
   int num_insn_reservations = 0;
   int i;
 
@@ -172,29 +171,13 @@ main (int argc, char **argv)
 	  break;
 
 	case DEFINE_DELAY:
-	  if (! have_delay)
-	    {
-	      printf ("extern int num_delay_slots (rtx_insn *);\n");
-	      printf ("extern int eligible_for_delay (rtx_insn *, int, rtx_insn *, int);\n\n");
-	      printf ("extern int const_num_delay_slots (rtx_insn *);\n\n");
-	      have_delay = 1;
-	    }
-
 	  for (i = 0; i < XVECLEN (def, 1); i += 3)
 	    {
-	      if (XVECEXP (def, 1, i + 1) && ! have_annul_true)
-		{
-		  printf ("#define ANNUL_IFTRUE_SLOTS\n");
-		  printf ("extern int eligible_for_annul_true (rtx_insn *, int, rtx_insn *, int);\n");
-		  have_annul_true = 1;
-		}
+	      if (XVECEXP (def, 1, i + 1))
+		have_annul_true = true;
 
-	      if (XVECEXP (def, 1, i + 2) && ! have_annul_false)
-		{
-		  printf ("#define ANNUL_IFFALSE_SLOTS\n");
-		  printf ("extern int eligible_for_annul_false (rtx_insn *, int, rtx_insn *, int);\n");
-		  have_annul_false = 1;
-		}
+	      if (XVECEXP (def, 1, i + 2))
+		have_annul_false = true;
 	    }
 	  break;
 
@@ -207,6 +190,14 @@ main (int argc, char **argv)
 	  break;
 	}
     }
+
+  printf ("extern int num_delay_slots (rtx_insn *);\n");
+  printf ("extern int eligible_for_delay (rtx_insn *, int, rtx_insn *, int);\n\n");
+  printf ("extern int const_num_delay_slots (rtx_insn *);\n\n");
+  printf ("#define ANNUL_IFTRUE_SLOTS %d\n", have_annul_true);
+  printf ("extern int eligible_for_annul_true (rtx_insn *, int, rtx_insn *, int);\n");
+  printf ("#define ANNUL_IFFALSE_SLOTS %d\n", have_annul_false);
+  printf ("extern int eligible_for_annul_false (rtx_insn *, int, rtx_insn *, int);\n");
 
   if (num_insn_reservations > 0)
     {

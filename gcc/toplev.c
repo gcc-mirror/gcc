@@ -1317,10 +1317,8 @@ process_options (void)
   if (flag_schedule_insns || flag_schedule_insns_after_reload)
     warning (0, "instruction scheduling not supported on this target machine");
 #endif
-#ifndef DELAY_SLOTS
-  if (flag_delayed_branch)
+  if (!DELAY_SLOTS && flag_delayed_branch)
     warning (0, "this target machine does not have delayed branches");
-#endif
 
   user_label_prefix = USER_LABEL_PREFIX;
   if (flag_leading_underscore != -1)
