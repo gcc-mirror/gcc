@@ -1,5 +1,11 @@
 2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/lto/20110201-1_0.c: Restrict to sqrt_insn targets.
+	Add associated options for arm*-*-*.
+	(sqrt): Remove dummy definition.
+
+2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/torture/builtin-symmetric-1.c: Don't run at -O0.
 
 2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>

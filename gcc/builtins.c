@@ -7538,82 +7538,6 @@ fold_fixed_mathfn (location_t loc, tree fndecl, tree arg)
   return NULL_TREE;
 }
 
-/* Fold call to builtin cabs, cabsf or cabsl with argument ARG.  TYPE is the
-   return type.  Return NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_cabs (location_t loc, tree arg, tree type, tree fndecl)
-{
-  tree res;
-
-  if (!validate_arg (arg, COMPLEX_TYPE)
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) != REAL_TYPE)
-    return NULL_TREE;
-
-  /* Calculate the result when the argument is a constant.  */
-  if (TREE_CODE (arg) == COMPLEX_CST
-      && (res = do_mpfr_arg2 (TREE_REALPART (arg), TREE_IMAGPART (arg),
-			      type, mpfr_hypot)))
-    return res;
-
-  if (TREE_CODE (arg) == COMPLEX_EXPR)
-    {
-      tree real = TREE_OPERAND (arg, 0);
-      tree imag = TREE_OPERAND (arg, 1);
-
-      /* If either part is zero, cabs is fabs of the other.  */
-      if (real_zerop (real))
-	return fold_build1_loc (loc, ABS_EXPR, type, imag);
-      if (real_zerop (imag))
-	return fold_build1_loc (loc, ABS_EXPR, type, real);
-
-      /* cabs(x+xi) -> fabs(x)*sqrt(2).  */
-      if (flag_unsafe_math_optimizations
-	  && operand_equal_p (real, imag, OEP_PURE_SAME))
-        {
-	  STRIP_NOPS (real);
-	  return fold_build2_loc (loc, MULT_EXPR, type,
-				  fold_build1_loc (loc, ABS_EXPR, type, real),
-				  build_real_truncate (type, dconst_sqrt2 ()));
-	}
-    }
-
-  /* Optimize cabs(-z) and cabs(conj(z)) as cabs(z).  */
-  if (TREE_CODE (arg) == NEGATE_EXPR
-      || TREE_CODE (arg) == CONJ_EXPR)
-    return build_call_expr_loc (loc, fndecl, 1, TREE_OPERAND (arg, 0));
-
-  /* Don't do this when optimizing for size.  */
-  if (flag_unsafe_math_optimizations
-      && optimize && optimize_function_for_speed_p (cfun))
-    {
-      tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
-
-      if (sqrtfn != NULL_TREE)
-	{
-	  tree rpart, ipart, result;
-
-	  arg = builtin_save_expr (arg);
-
-	  rpart = fold_build1_loc (loc, REALPART_EXPR, type, arg);
-	  ipart = fold_build1_loc (loc, IMAGPART_EXPR, type, arg);
-
-	  rpart = builtin_save_expr (rpart);
-	  ipart = builtin_save_expr (ipart);
-
-	  result = fold_build2_loc (loc, PLUS_EXPR, type,
-				fold_build2_loc (loc, MULT_EXPR, type,
-					     rpart, rpart),
-				fold_build2_loc (loc, MULT_EXPR, type,
-					     ipart, ipart));
-
-	  return build_call_expr_loc (loc, sqrtfn, 1, result);
-	}
-    }
-
-  return NULL_TREE;
-}
-
 /* Build a complex (inf +- 0i) for the result of cproj.  TYPE is the
    complex tree type of the result.  If NEG is true, the imaginary
    zero is negative.  */
@@ -9655,7 +9579,11 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
     break;
 
     CASE_FLT_FN (BUILT_IN_CABS):
-      return fold_builtin_cabs (loc, arg0, type, fndecl);
+      if (TREE_CODE (arg0) == COMPLEX_CST
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) == REAL_TYPE)
+        return do_mpfr_arg2 (TREE_REALPART (arg0), TREE_IMAGPART (arg0),
+			     type, mpfr_hypot);
+      break;
 
     CASE_FLT_FN (BUILT_IN_CARG):
       return fold_builtin_carg (loc, arg0, type);
