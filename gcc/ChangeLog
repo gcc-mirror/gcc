@@ -1,3 +1,7 @@
+2015-10-21  David Wohlferd  <dw@LimeGreenSocks.com>
+
+	* doc/extend.exp (Local Register Variables): Rewrite.
+
 2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* match.pd: Add rules to simplify ccos, ccosh, hypot, copysign
