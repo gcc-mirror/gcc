@@ -12,4 +12,4 @@ int main() {
   return 0;
 }
 
-// { dg-output "Using the defaults from __asan_default_options:.* foo=bar.*(\n|\r\n|\r)" }
+// { dg-output "WARNING: found 1 unrecognized flag\\(s\\):(\n|\r\n|\r).*foo(\n|\r\n|\r)" }
