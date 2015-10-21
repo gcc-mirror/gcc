@@ -21,4 +21,4 @@
 ; Not used by the compiler
 msim
 Target RejectNegative
-Provide libraries for the simulator
+Provide libraries for the simulator.

@@ -20,8 +20,8 @@
 
 mgnu-ld
 Target RejectNegative Mask(GNU_LD)
-Assume code will be linked by GNU ld
+Assume code will be linked by GNU ld.
 
 mhp-ld
 Target RejectNegative InverseMask(GNU_LD)
-Assume code will be linked by HP ld
+Assume code will be linked by HP ld.

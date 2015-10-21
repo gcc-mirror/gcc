@@ -45,82 +45,82 @@ Mask(SAVE_ALL_TARGET_REGS)
 
 m1
 Target RejectNegative Mask(SH1) Condition(SUPPORT_SH1)
-Generate SH1 code
+Generate SH1 code.
 
 m2
 Target RejectNegative Mask(SH2) Condition(SUPPORT_SH2)
-Generate SH2 code
+Generate SH2 code.
 
 m2a
 Target RejectNegative Condition(SUPPORT_SH2A)
-Generate default double-precision SH2a-FPU code
+Generate default double-precision SH2a-FPU code.
 
 m2a-nofpu
 Target RejectNegative Condition(SUPPORT_SH2A_NOFPU)
-Generate SH2a FPU-less code
+Generate SH2a FPU-less code.
 
 m2a-single
 Target RejectNegative Condition(SUPPORT_SH2A_SINGLE)
-Generate default single-precision SH2a-FPU code
+Generate default single-precision SH2a-FPU code.
 
 m2a-single-only
 Target RejectNegative Condition(SUPPORT_SH2A_SINGLE_ONLY)
-Generate only single-precision SH2a-FPU code
+Generate only single-precision SH2a-FPU code.
 
 m2e
 Target RejectNegative Condition(SUPPORT_SH2E)
-Generate SH2e code
+Generate SH2e code.
 
 m3
 Target RejectNegative Mask(SH3) Condition(SUPPORT_SH3)
-Generate SH3 code
+Generate SH3 code.
 
 m3e
 Target RejectNegative Condition(SUPPORT_SH3E)
-Generate SH3e code
+Generate SH3e code.
 
 m4
 Target RejectNegative Mask(SH4) Condition(SUPPORT_SH4)
-Generate SH4 code
+Generate SH4 code.
 
 m4-100
 Target RejectNegative Condition(SUPPORT_SH4)
-Generate SH4-100 code
+Generate SH4-100 code.
 
 m4-200
 Target RejectNegative Condition(SUPPORT_SH4)
-Generate SH4-200 code
+Generate SH4-200 code.
 
 ;; TARGET_SH4_300 indicates if we have the ST40-300 instruction set and
 ;; pipeline - irrespective of ABI.
 m4-300
 Target RejectNegative Condition(SUPPORT_SH4) Var(TARGET_SH4_300)
-Generate SH4-300 code
+Generate SH4-300 code.
 
 m4-nofpu
 Target RejectNegative Condition(SUPPORT_SH4_NOFPU)
-Generate SH4 FPU-less code
+Generate SH4 FPU-less code.
 
 m4-100-nofpu
 Target RejectNegative Condition(SUPPORT_SH4_NOFPU)
-Generate SH4-100 FPU-less code
+Generate SH4-100 FPU-less code.
 
 m4-200-nofpu
 Target RejectNegative Condition(SUPPORT_SH4_NOFPU)
-Generate SH4-200 FPU-less code
+Generate SH4-200 FPU-less code.
 
 m4-300-nofpu
 Target RejectNegative Condition(SUPPORT_SH4_NOFPU) Var(TARGET_SH4_300)
-Generate SH4-300 FPU-less code
+Generate SH4-300 FPU-less code.
 
 m4-340
 Target RejectNegative Condition(SUPPORT_SH4_NOFPU) Var(TARGET_SH4_300)
-Generate code for SH4 340 series (MMU/FPU-less)
+Generate code for SH4 340 series (MMU/FPU-less).
 ;; passes -isa=sh4-nommu-nofpu to the assembler.
 
 m4-400
 Target RejectNegative Condition(SUPPORT_SH4_NOFPU)
-Generate code for SH4 400 series (MMU/FPU-less)
+Generate code for SH4 400 series (MMU/FPU-less).
 ;; passes -isa=sh4-nommu-nofpu to the assembler.
 
 m4-500
@@ -130,83 +130,83 @@ Generate code for SH4 500 series (FPU-less).
 
 m4-single
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE)
-Generate default single-precision SH4 code
+Generate default single-precision SH4 code.
 
 m4-100-single
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE)
-Generate default single-precision SH4-100 code
+Generate default single-precision SH4-100 code.
 
 m4-200-single
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE)
-Generate default single-precision SH4-200 code
+Generate default single-precision SH4-200 code.
 
 m4-300-single
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE) Var(TARGET_SH4_300)
-Generate default single-precision SH4-300 code
+Generate default single-precision SH4-300 code.
 
 m4-single-only
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE_ONLY)
-Generate only single-precision SH4 code
+Generate only single-precision SH4 code.
 
 m4-100-single-only
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE_ONLY)
-Generate only single-precision SH4-100 code
+Generate only single-precision SH4-100 code.
 
 m4-200-single-only
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE_ONLY)
-Generate only single-precision SH4-200 code
+Generate only single-precision SH4-200 code.
 
 m4-300-single-only
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE_ONLY) Var(TARGET_SH4_300)
-Generate only single-precision SH4-300 code
+Generate only single-precision SH4-300 code.
 
 m4a
 Target RejectNegative Mask(SH4A) Condition(SUPPORT_SH4A)
-Generate SH4a code
+Generate SH4a code.
 
 m4a-nofpu
 Target RejectNegative Condition(SUPPORT_SH4A_NOFPU)
-Generate SH4a FPU-less code
+Generate SH4a FPU-less code.
 
 m4a-single
 Target RejectNegative Condition(SUPPORT_SH4A_SINGLE)
-Generate default single-precision SH4a code
+Generate default single-precision SH4a code.
 
 m4a-single-only
 Target RejectNegative Condition(SUPPORT_SH4A_SINGLE_ONLY)
-Generate only single-precision SH4a code
+Generate only single-precision SH4a code.
 
 m4al
 Target RejectNegative Condition(SUPPORT_SH4AL)
-Generate SH4al-dsp code
+Generate SH4al-dsp code.
 
 m5-32media
 Target RejectNegative Condition(SUPPORT_SH5_32MEDIA)
-Generate 32-bit SHmedia code
+Generate 32-bit SHmedia code.
 
 m5-32media-nofpu
 Target RejectNegative Condition(SUPPORT_SH5_32MEDIA_NOFPU)
-Generate 32-bit FPU-less SHmedia code
+Generate 32-bit FPU-less SHmedia code.
 
 m5-64media
 Target RejectNegative Condition(SUPPORT_SH5_64MEDIA)
-Generate 64-bit SHmedia code
+Generate 64-bit SHmedia code.
 
 m5-64media-nofpu
 Target RejectNegative Condition(SUPPORT_SH5_64MEDIA_NOFPU)
-Generate 64-bit FPU-less SHmedia code
+Generate 64-bit FPU-less SHmedia code.
 
 m5-compact
 Target RejectNegative Condition(SUPPORT_SH5_32MEDIA)
-Generate SHcompact code
+Generate SHcompact code.
 
 m5-compact-nofpu
 Target RejectNegative Condition(SUPPORT_SH5_32MEDIA_NOFPU)
-Generate FPU-less SHcompact code
+Generate FPU-less SHcompact code.
 
 maccumulate-outgoing-args
 Target Report Var(TARGET_ACCUMULATE_OUTGOING_ARGS) Init(1)
-Reserve space for outgoing arguments in the function prologue
+Reserve space for outgoing arguments in the function prologue.
 
 madjust-unroll
 Target Ignore
@@ -214,27 +214,27 @@ Does nothing.  Preserved for backward compatibility.
 
 mb
 Target Report RejectNegative InverseMask(LITTLE_ENDIAN)
-Generate code in big endian mode
+Generate code in big endian mode.
 
 mbigtable
 Target Report RejectNegative Mask(BIGTABLE)
-Generate 32-bit offsets in switch tables
+Generate 32-bit offsets in switch tables.
 
 mbitops
 Target Report RejectNegative Mask(BITOPS)
-Generate bit instructions
+Generate bit instructions.
 
 mbranch-cost=
 Target RejectNegative Joined UInteger Var(sh_branch_cost) Init(-1)
-Cost to assume for a branch insn
+Cost to assume for a branch insn.
 
 mzdcbranch
 Target Report Var(TARGET_ZDCBRANCH)
-Assume that zero displacement conditional branches are fast
+Assume that zero displacement conditional branches are fast.
 
 mcbranchdi
 Target Undocumented Var(TARGET_CBRANCHDI4) Warn(%qs is deprecated and has no effect)
-Enable cbranchdi4 pattern
+Enable cbranchdi4 pattern.
 
 mcmpeqdi
 Target Undocumented Var(TARGET_CMPEQDI_T) Warn(%qs is deprecated and has no effect)
@@ -246,19 +246,19 @@ Force the usage of delay slots for conditional branches.
 
 mcut2-workaround
 Target RejectNegative Var(TARGET_SH5_CUT2_WORKAROUND)
-Enable SH5 cut2 workaround
+Enable SH5 cut2 workaround.
 
 mdalign
 Target Report RejectNegative Mask(ALIGN_DOUBLE)
-Align doubles at 64-bit boundaries
+Align doubles at 64-bit boundaries.
 
 mdiv=
 Target RejectNegative Joined Var(sh_div_str) Init("")
-Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table
+Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table.
 
 mdivsi3_libfunc=
 Target RejectNegative Joined Var(sh_divsi3_libfunc) Init("")
-Specify name for 32 bit signed division function
+Specify name for 32 bit signed division function.
 
 mfmovd
 Target RejectNegative Mask(FMOVD)
@@ -266,53 +266,53 @@ Enable the use of 64-bit floating point registers in fmov instructions.  See -md
 
 mfixed-range=
 Target RejectNegative Joined Var(sh_fixed_range_str)
-Specify range of registers to make fixed
+Specify range of registers to make fixed.
 
 mgettrcost=
 Target RejectNegative Joined UInteger Var(sh_gettrcost) Init(-1)
-Cost to assume for gettr insn
+Cost to assume for gettr insn.
 
 mhitachi
 Target Report RejectNegative Mask(HITACHI)
-Follow Renesas (formerly Hitachi) / SuperH calling conventions
+Follow Renesas (formerly Hitachi) / SuperH calling conventions.
 
 mieee
 Target Var(TARGET_IEEE)
-Increase the IEEE compliance for floating-point comparisons
+Increase the IEEE compliance for floating-point comparisons.
 
 mindexed-addressing
 Target Report Mask(ALLOW_INDEXED_ADDRESS) Condition(SUPPORT_ANY_SH5_32MEDIA)
-Enable the use of the indexed addressing mode for SHmedia32/SHcompact
+Enable the use of the indexed addressing mode for SHmedia32/SHcompact.
 
 minline-ic_invalidate
 Target Report Var(TARGET_INLINE_IC_INVALIDATE)
-inline code to invalidate instruction cache entries after setting up nested function trampolines
+inline code to invalidate instruction cache entries after setting up nested function trampolines.
 
 minvalid-symbols
 Target Report Mask(INVALID_SYMBOLS) Condition(SUPPORT_ANY_SH5)
-Assume symbols might be invalid
+Assume symbols might be invalid.
 
 misize
 Target Report RejectNegative Mask(DUMPISIZE)
-Annotate assembler instructions with estimated addresses
+Annotate assembler instructions with estimated addresses.
 
 ml
 Target Report RejectNegative Mask(LITTLE_ENDIAN)
-Generate code in little endian mode
+Generate code in little endian mode.
 
 mnomacsave
 Target Report RejectNegative Mask(NOMACSAVE)
-Mark MAC register as call-clobbered
+Mark MAC register as call-clobbered.
 
 ;; ??? This option is not useful, but is retained in case there are people
 ;; who are still relying on it.  It may be deleted in the future.
 mpadstruct
 Target Report RejectNegative Mask(PADSTRUCT)
-Make structs a multiple of 4 bytes (warning: ABI altered)
+Make structs a multiple of 4 bytes (warning: ABI altered).
 
 mprefergot
 Target Report RejectNegative Mask(PREFERGOT)
-Emit function-calls using global offset table when generating PIC
+Emit function-calls using global offset table when generating PIC.
 
 mpt-fixed
 Target Report Mask(PT_FIXED) Condition(SUPPORT_ANY_SH5)
@@ -320,31 +320,31 @@ Assume pt* instructions won't trap
 
 mrelax
 Target Report RejectNegative Mask(RELAX)
-Shorten address references during linking
+Shorten address references during linking.
 
 mrenesas
 Target Mask(HITACHI)
-Follow Renesas (formerly Hitachi) / SuperH calling conventions
+Follow Renesas (formerly Hitachi) / SuperH calling conventions.
 
 msoft-atomic
 Target Undocumented Alias(matomic-model=, soft-gusa, none)
-Deprecated.  Use -matomic= instead to select the atomic model
+Deprecated.  Use -matomic= instead to select the atomic model.
 
 matomic-model=
 Target Report RejectNegative Joined Var(sh_atomic_model_str)
-Specify the model for atomic operations
+Specify the model for atomic operations.
 
 mtas
 Target Report RejectNegative Var(TARGET_ENABLE_TAS)
-Use tas.b instruction for __atomic_test_and_set
+Use tas.b instruction for __atomic_test_and_set.
 
 mspace
 Target RejectNegative Alias(Os)
-Deprecated.  Use -Os instead
+Deprecated.  Use -Os instead.
 
 multcost=
 Target RejectNegative Joined UInteger Var(sh_multcost) Init(-1)
-Cost to assume for a multiply insn
+Cost to assume for a multiply insn.
 
 musermode
 Target Var(TARGET_USERMODE)
@@ -358,12 +358,12 @@ Pretend a branch-around-a-move is a conditional move.
 
 mfsca
 Target Var(TARGET_FSCA)
-Enable the use of the fsca instruction
+Enable the use of the fsca instruction.
 
 mfsrra
 Target Var(TARGET_FSRRA)
-Enable the use of the fsrra instruction
+Enable the use of the fsrra instruction.
 
 mlra
 Target Report Var(sh_lra_flag) Init(0) Save
-Use LRA instead of reload (transitional)
+Use LRA instead of reload (transitional).

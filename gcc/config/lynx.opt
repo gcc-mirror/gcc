@@ -20,12 +20,12 @@
 
 mlegacy-threads
 Target RejectNegative
-Support legacy multi-threading
+Support legacy multi-threading.
 
 mshared
 Target RejectNegative
-Use shared libraries
+Use shared libraries.
 
 mthreads
 Target RejectNegative
-Support multi-threading
+Support multi-threading.

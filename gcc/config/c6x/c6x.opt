@@ -27,23 +27,23 @@ config/c6x/c6x-opts.h
 
 mbig-endian
 Target Report RejectNegative Mask(BIG_ENDIAN)
-Use big-endian byte order
+Use big-endian byte order.
 
 mlittle-endian
 Target Report RejectNegative InverseMask(BIG_ENDIAN, LITTLE_ENDIAN)
-Use little-endian byte order
+Use little-endian byte order.
 
 msim
 Target RejectNegative
-Use simulator runtime
+Use simulator runtime.
 
 msdata=
 Target RejectNegative Enum(c6x_sdata) Joined Var(c6x_sdata_mode) Init(C6X_SDATA_DEFAULT)
-Select method for sdata handling
+Select method for sdata handling.
 
 Enum
 Name(c6x_sdata) Type(enum c6x_sdata)
-Valid arguments for the -msdata= option
+Valid arguments for the -msdata= option.
 
 EnumValue
 Enum(c6x_sdata) String(none) Value(C6X_SDATA_NONE)
@@ -56,12 +56,12 @@ Enum(c6x_sdata) String(all) Value(C6X_SDATA_ALL)
 
 mdsbt
 Target Mask(DSBT)
-Compile for the DSBT shared library ABI
+Compile for the DSBT shared library ABI.
 
 mlong-calls
 Target Report Mask(LONG_CALLS)
-Avoid generating pc-relative calls; use indirection
+Avoid generating pc-relative calls; use indirection.
 
 march=
 Target RejectNegative Joined Enum(c6x_isa) Var(c6x_arch_option)
-Specify the name of the target architecture
+Specify the name of the target architecture.

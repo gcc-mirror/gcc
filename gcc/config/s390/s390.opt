@@ -36,15 +36,15 @@ HOST_WIDE_INT s390_warn_framesize = 0
 
 m31
 Target Report RejectNegative Negative(m64) InverseMask(64BIT)
-31 bit ABI
+31 bit ABI.
 
 m64
 Target Report RejectNegative Negative(m31) Mask(64BIT)
-64 bit ABI
+64 bit ABI.
 
 march=
 Target RejectNegative Joined Enum(processor_type) Var(s390_arch) Init(PROCESSOR_max)
-Generate code for given CPU
+Generate code for given CPU.
 
 Enum
 Name(processor_type) Type(enum processor_type)
@@ -84,23 +84,23 @@ Enum(processor_type) String(native) Value(PROCESSOR_NATIVE) DriverOnly
 
 mbackchain
 Target Report Mask(BACKCHAIN)
-Maintain backchain pointer
+Maintain backchain pointer.
 
 mdebug
 Target Report Mask(DEBUG_ARG)
-Additional debug prints
+Additional debug prints.
 
 mesa
 Target Report RejectNegative Negative(mzarch) InverseMask(ZARCH)
-ESA/390 architecture
+ESA/390 architecture.
 
 mhard-dfp
 Target Report Mask(HARD_DFP)
-Enable decimal floating point hardware support
+Enable decimal floating point hardware support.
 
 mhard-float
 Target Report RejectNegative Negative(msoft-float) InverseMask(SOFT_FLOAT, HARD_FLOAT)
-Enable hardware floating point
+Enable hardware floating point.
 
 mhotpatch=
 Target RejectNegative Report Joined Var(s390_deferred_options) Defer
@@ -114,47 +114,47 @@ size.  Using 0 for both values disables hotpatching.
 
 mlong-double-128
 Target Report RejectNegative Negative(mlong-double-64) Mask(LONG_DOUBLE_128)
-Use 128-bit long double
+Use 128-bit long double.
 
 mlong-double-64
 Target Report RejectNegative Negative(mlong-double-128) InverseMask(LONG_DOUBLE_128)
-Use 64-bit long double
+Use 64-bit long double.
 
 mhtm
 Target Report Mask(OPT_HTM)
-Use hardware transactional execution instructions
+Use hardware transactional execution instructions.
 
 mvx
 Target Report Mask(OPT_VX)
-Use hardware vector facility instructions and enable the vector ABI
+Use hardware vector facility instructions and enable the vector ABI.
 
 mpacked-stack
 Target Report Mask(PACKED_STACK)
-Use packed stack layout
+Use packed stack layout.
 
 msmall-exec
 Target Report Mask(SMALL_EXEC)
-Use bras for executable < 64k
+Use bras for executable < 64k.
 
 msoft-float
 Target Report RejectNegative Negative(mhard-float) Mask(SOFT_FLOAT)
-Disable hardware floating point
+Disable hardware floating point.
 
 mstack-guard=
 Target RejectNegative Joined UInteger Var(s390_stack_guard)
-Set the max. number of bytes which has to be left to stack size before a trap instruction is triggered
+Set the max. number of bytes which has to be left to stack size before a trap instruction is triggered.
 
 mstack-size=
 Target RejectNegative Joined UInteger Var(s390_stack_size)
-Emit extra code in the function prologue in order to trap if the stack size exceeds the given limit
+Emit extra code in the function prologue in order to trap if the stack size exceeds the given limit.
 
 mtune=
 Target RejectNegative Joined Enum(processor_type) Var(s390_tune) Init(PROCESSOR_max)
-Schedule code for given CPU
+Schedule code for given CPU.
 
 mmvcle
 Target Report Mask(MVCLE)
-mvcle use
+mvcle use.
 
 mzvector
 Target Report Mask(ZVECTOR)
@@ -163,15 +163,15 @@ vector macro and enable the Altivec-style builtins in vecintrin.h
 
 mwarn-dynamicstack
 Target RejectNegative Var(s390_warn_dynamicstack_p)
-Warn if a function uses alloca or creates an array with dynamic size
+Warn if a function uses alloca or creates an array with dynamic size.
 
 mwarn-framesize=
 Target RejectNegative Joined
-Warn if a single function's framesize exceeds the given framesize
+Warn if a single function's framesize exceeds the given framesize.
 
 mzarch
 Target Report RejectNegative Negative(mesa) Mask(ZARCH)
-z/Architecture
+z/Architecture.
 
 mbranch-cost=
 Target Report Joined RejectNegative UInteger Var(s390_branch_cost) Init(1)
@@ -181,4 +181,4 @@ values are small, non-negative integers.  The default branch cost is
 
 mlra
 Target Report Var(s390_lra_flag) Init(1) Save
-Use LRA instead of reload
+Use LRA instead of reload.

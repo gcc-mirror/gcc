@@ -1,3 +1,92 @@
+2015-10-21  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/68043
+	* opts.c (undocumented_msg, use_diagnosed_msg): New globals.
+	(print_filtered_help): Reference aliased option's name and encourage
+	readers to use it in preference to the alias if the former is not
+	documented.  Mention when using an option is diagnosed.
+	* gcc.c (display_help): End each sentence with a period.
+
+	* ada/gcc-interface/lang.opt: End each sentence that describes
+	an option with a period.
+	* c-family/c.opt: Same.
+	* common.opt: Same.
+	* config/aarch64/aarch64.opt: Same.
+	* config/alpha/alpha.opt: Same.
+	* config/arc/arc.opt: Same.
+	* config/arm/arm.opt: Same.
+	* config/avr/avr.opt: Same.
+	* config/bfin/bfin.opt: Same.
+	* config/c6x/c6x.opt: Same.
+	* config/cr16/cr16.opt: Same.
+	* config/cris/cris.opt: Same.
+	* config/cris/linux.opt: Same.
+	* config/darwin.opt: Same.
+	* config/epiphany/epiphany.opt: Same.
+	* config/fr30/fr30.opt: Same.
+	* config/frv/frv.opt: Same.
+	* config/ft32/ft32.opt: Same.
+	* config/g.opt: Same.
+	* config/h8300/h8300.opt: Same.
+	* config/i386/cygming.opt: Same.
+	* config/i386/djgpp.opt: Same.
+	* config/i386/i386.opt: Same.
+	* config/i386/interix.opt: Same.
+	* config/i386/mingw-w64.opt: Same.
+	* config/i386/mingw.opt: Same.
+	* config/ia64/ia64.opt: Same.
+	* config/ia64/ilp32.opt: Same.
+	* config/iq2000/iq2000.opt: Same.
+	* config/linux.opt: Same.
+	* config/lm32/lm32.opt: Same.
+	* config/lynx.opt: Same.
+	* config/m32c/m32c.opt: Same.
+	* config/m32r/m32r.opt: Same.
+	* config/m68k/ieee.opt: Same.
+	* config/m68k/m68k.opt: Same.
+	* config/mcore/mcore.opt: Same.
+	* config/mep/mep.opt: Same.
+	* config/microblaze/microblaze.opt: Same.
+	* config/mips/mips.opt: Same.
+	* config/mmix/mmix.opt: Same.
+	* config/mn10300/mn10300.opt: Same.
+	* config/moxie/moxie.opt: Same.
+	* config/msp430/msp430.opt: Same.
+	* config/nios2/elf.opt: Same.
+	* config/nios2/nios2.opt: Same.
+	* config/nvptx/nvptx.opt: Same.
+	* config/pa/pa-hpux.opt: Same.
+	* config/pa/pa-hpux1010.opt: Same.
+	* config/pa/pa-hpux1111.opt: Same.
+	* config/pa/pa-hpux1131.opt: Same.
+	* config/pa/pa.opt: Same.
+	* config/pa/pa64-hpux.opt: Same.
+	* config/pdp11/pdp11.opt: Same.
+	* config/rl78/rl78.opt: Same.
+	* config/rs6000/476.opt: Same.
+	* config/rs6000/aix64.opt: Same.
+	* config/rs6000/darwin.opt: Same.
+	* config/rs6000/linux64.opt: Same.
+	* config/rs6000/rs6000.opt: Same.
+	* config/rs6000/sysv4.opt: Same.
+	* config/s390/s390.opt: Same.
+	* config/s390/tpf.opt: Same.
+	* config/sh/sh.opt: Same.
+	* config/sol2.opt: Same.
+	* config/sparc/long-double-switch.opt: Same.
+	* config/sparc/sparc.opt: Same.
+	* config/spu/spu.opt: Same.
+	* config/stormy16/stormy16.opt: Same.
+	* config/tilegx/tilegx.opt: Same.
+	* config/tilepro/tilepro.opt: Same.
+	* config/v850/v850.opt: Same.
+	* config/vax/vax.opt: Same.
+	* config/visium/visium.opt: Same.
+	* config/vms/vms.opt: Same.
+	* config/vxworks.opt: Same.
+	* config/xtensa/xtensa.opt: Same.
+	* fortran/lang.opt: Same.
+
 2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 

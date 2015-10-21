@@ -19,11 +19,11 @@
 
 m32
 Target Report RejectNegative InverseMask(ABI64)
-Generate code for a 32-bit ABI
+Generate code for a 32-bit ABI.
 
 m64
 Target Report RejectNegative Mask(ABI64)
-Generate code for a 64-bit ABI
+Generate code for a 64-bit ABI.
 
 mmainkernel
 Target Report RejectNegative

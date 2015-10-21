@@ -21,4 +21,4 @@
 
 mpreserve-link-stack
 Target Var(rs6000_link_stack) Init(-1) Save
-Preserve the PowerPC 476's link stack by matching up a blr with the bcl/bl insns used for GOT accesses
+Preserve the PowerPC 476's link stack by matching up a blr with the bcl/bl insns used for GOT accesses.

@@ -33,14 +33,14 @@ Driver Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)
 
 mrtp
 Target Report RejectNegative Mask(VXWORKS_RTP) Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)
-Assume the VxWorks RTP environment
+Assume the VxWorks RTP environment.
 
 ; VxWorks AE has two modes: kernel mode and vThreads mode.  In
 ; general, back ends do not actually need to know which mode they're
 ; in, so we do not have to set any flags.
 mvthreads
 Target RejectNegative Condition(VXWORKS_KIND == VXWORKS_KIND_AE)
-Assume the VxWorks vThreads environment
+Assume the VxWorks vThreads environment.
 
 non-static
 Driver Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)

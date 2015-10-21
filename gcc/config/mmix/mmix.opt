@@ -21,48 +21,48 @@
 ; FIXME: Get rid of this one.
 mlibfuncs
 Target Report Mask(LIBFUNC)
-For intrinsics library: pass all parameters in registers
+For intrinsics library: pass all parameters in registers.
 
 mabi=mmixware
 Target Report RejectNegative InverseMask(ABI_GNU)
-Use register stack for parameters and return value
+Use register stack for parameters and return value.
 
 mabi=gnu
 Target Report RejectNegative Mask(ABI_GNU)
-Use call-clobbered registers for parameters and return value
+Use call-clobbered registers for parameters and return value.
 
 ; FIXME: Provide a way to *load* the epsilon register.
 mepsilon
 Target Report Mask(FCMP_EPSILON)
-Use epsilon-respecting floating point compare instructions
+Use epsilon-respecting floating point compare instructions.
 
 mzero-extend
 Target Report Mask(ZERO_EXTEND)
-Use zero-extending memory loads, not sign-extending ones
+Use zero-extending memory loads, not sign-extending ones.
 
 mknuthdiv
 Target Report Mask(KNUTH_DIVISION)
-Generate divide results with reminder having the same sign as the divisor (not the dividend)
+Generate divide results with reminder having the same sign as the divisor (not the dividend).
 
 mtoplevel-symbols
 Target Report Mask(TOPLEVEL_SYMBOLS)
-Prepend global symbols with \":\" (for use with PREFIX)
+Prepend global symbols with \":\" (for use with PREFIX).
 
 mno-set-program-start
 Target Report RejectNegative
-Do not provide a default start-address 0x100 of the program
+Do not provide a default start-address 0x100 of the program.
 
 melf
 Target Report RejectNegative
-Link to emit program in ELF format (rather than mmo)
+Link to emit program in ELF format (rather than mmo).
 
 mbranch-predict
 Target Report RejectNegative Mask(BRANCH_PREDICT)
-Use P-mnemonics for branches statically predicted as taken
+Use P-mnemonics for branches statically predicted as taken.
 
 mno-branch-predict
 Target Report RejectNegative InverseMask(BRANCH_PREDICT)
-Don't use P-mnemonics for branches
+Don't use P-mnemonics for branches.
 
 ; We use the term "base address" since that's what Knuth uses.  The base
 ; address goes in a global register.  When addressing, it's more like
@@ -76,24 +76,24 @@ Don't use P-mnemonics for branches
 ; should have compiled with -mno-base-addresses.
 mbase-addresses
 Target Report RejectNegative Mask(BASE_ADDRESSES)
-Use addresses that allocate global registers
+Use addresses that allocate global registers.
 
 mno-base-addresses
 Target Report RejectNegative InverseMask(BASE_ADDRESSES)
-Do not use addresses that allocate global registers
+Do not use addresses that allocate global registers.
 
 msingle-exit
 Target Report RejectNegative InverseMask(USE_RETURN_INSN)
-Generate a single exit point for each function
+Generate a single exit point for each function.
 
 mno-single-exit
 Target Report RejectNegative Mask(USE_RETURN_INSN)
-Do not generate a single exit point for each function
+Do not generate a single exit point for each function.
 
 mset-program-start=
 Target Report RejectNegative Joined
-Set start-address of the program
+Set start-address of the program.
 
 mset-data-start=
 Target Report RejectNegative Joined
-Set start-address of data
+Set start-address of data.

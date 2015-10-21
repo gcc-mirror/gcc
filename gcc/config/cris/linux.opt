@@ -24,7 +24,7 @@ Target Report RejectNegative Undocumented
 
 mno-gotplt
 Target Report RejectNegative Mask(AVOID_GOTPLT)
-Together with -fpic and -fPIC, do not use GOTPLT references
+Together with -fpic and -fPIC, do not use GOTPLT references.
 
 ; There's a small added setup cost with using GOTPLT references
 ; for the first (resolving) call, but should in total be a win

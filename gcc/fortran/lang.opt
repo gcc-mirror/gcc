@@ -143,7 +143,7 @@ Fortran Joined Separate
 
 J
 Fortran Joined Separate
--J<directory>	Put MODULE files in 'directory'
+-J<directory>	Put MODULE files in 'directory'.
 
 M
 Fortran
@@ -195,23 +195,23 @@ Fortran
 
 Waliasing
 Fortran Warning Var(warn_aliasing) LangEnabledBy(Fortran,Wall)
-Warn about possible aliasing of dummy arguments
+Warn about possible aliasing of dummy arguments.
 
 Walign-commons
 Fortran Warning Var(warn_align_commons) Init(1)
-Warn about alignment of COMMON blocks
+Warn about alignment of COMMON blocks.
 
 Wampersand
 Fortran Warning Var(warn_ampersand) LangEnabledBy(Fortran,Wall || Wpedantic)
-Warn about missing ampersand in continued character constants
+Warn about missing ampersand in continued character constants.
 
 Warray-temporaries
 Fortran Warning Var(warn_array_temporaries)
-Warn about creation of array temporaries
+Warn about creation of array temporaries.
 
 Wc-binding-type
 Fortran Var(warn_c_binding_type) Warning LangEnabledBy(Fortran,Wall)
-Warn if the type of a variable might be not interoperable with C
+Warn if the type of a variable might be not interoperable with C.
 
 Wdate-time
 Fortran
@@ -219,11 +219,11 @@ Fortran
 
 Wcharacter-truncation
 Fortran Var(warn_character_truncation) Warning LangEnabledBy(Fortran,Wall)
-Warn about truncated character expressions
+Warn about truncated character expressions.
 
 Wcompare-reals
 Fortran Warning Var(warn_compare_reals) LangEnabledBy(Fortran,Wextra)
-Warn about equality comparisons involving REAL or COMPLEX expressions
+Warn about equality comparisons involving REAL or COMPLEX expressions.
 
 Wconversion
 Fortran Var(warn_conversion) Warning LangEnabledBy(Fortran,Wall)
@@ -231,7 +231,7 @@ Fortran Var(warn_conversion) Warning LangEnabledBy(Fortran,Wall)
 
 Wconversion-extra
 Fortran Var(warn_conversion_extra) Warning
-Warn about most implicit conversions
+Warn about most implicit conversions.
 
 Wextra
 Fortran Warning
@@ -239,27 +239,27 @@ Fortran Warning
 
 Wfunction-elimination
 Fortran Warning Var(warn_function_elimination)
-Warn about function call elimination
+Warn about function call elimination.
 
 Wimplicit-interface
 Fortran Warning Var(warn_implicit_interface)
-Warn about calls with implicit interface
+Warn about calls with implicit interface.
 
 Wimplicit-procedure
 Fortran Warning Var(warn_implicit_procedure)
-Warn about called procedures not explicitly declared
+Warn about called procedures not explicitly declared.
 
 Winteger-division
 Fortran Warning Var(warn_integer_division) LangEnabledBy(Fortran,Wall)
-Warn about constant integer divisions with truncated results
+Warn about constant integer divisions with truncated results.
 
 Wline-truncation
 Fortran Warning Var(warn_line_truncation) LangEnabledBy(Fortran,Wall) Init(-1)
-Warn about truncated source lines
+Warn about truncated source lines.
 
 Wintrinsics-std
 Fortran Var(warn_intrinsics_std) Warning LangEnabledBy(Fortran,Wall)
-Warn on intrinsics not part of the selected standard
+Warn on intrinsics not part of the selected standard.
 
 Wmaybe-uninitialized
 Fortran LangEnabledBy(Fortran,Wall)
@@ -271,7 +271,7 @@ Fortran
 
 Wuse-without-only
 Fortran Var(warn_use_without_only) Warning
-Warn about USE statements that have no ONLY qualifier
+Warn about USE statements that have no ONLY qualifier.
 
 Wopenmp-simd
 Fortran
@@ -283,19 +283,19 @@ Fortran
 
 Wreal-q-constant
 Fortran Warning Var(warn_real_q_constant) LangEnabledBy(Fortran,Wall)
-Warn about real-literal-constants with 'q' exponent-letter
+Warn about real-literal-constants with 'q' exponent-letter.
 
 Wrealloc-lhs
 Fortran Warning Var(warn_realloc_lhs) LangEnabledBy(Fortran,Wrealloc-lhs-all)
-Warn when a left-hand-side array variable is reallocated
+Warn when a left-hand-side array variable is reallocated.
 
 Wrealloc-lhs-all
 Fortran Warning Var(warn_realloc_lhs_all)
-Warn when a left-hand-side variable is reallocated
+Warn when a left-hand-side variable is reallocated.
 
 Wtarget-lifetime
 Fortran Warning Var(warn_target_lifetime) LangEnabledBy(Fortran,Wall)
-Warn if the pointer in a pointer assignment might outlive its target
+Warn if the pointer in a pointer assignment might outlive its target.
 
 Wreturn-type
 Fortran Warning LangEnabledBy(Fortran,Wall)
@@ -303,15 +303,15 @@ Fortran Warning LangEnabledBy(Fortran,Wall)
 
 Wsurprising
 Fortran Warning Var(warn_surprising) LangEnabledBy(Fortran,Wall)
-Warn about \"suspicious\" constructs
+Warn about \"suspicious\" constructs.
 
 Wtabs
 Fortran Warning Var(warn_tabs) LangEnabledBy(Fortran,Wall || Wpedantic)
-Permit nonconforming uses of the tab character
+Permit nonconforming uses of the tab character.
 
 Wunderflow
 Fortran Warning Var(warn_underflow) Init(1)
-Warn about underflow of numerical constant expressions
+Warn about underflow of numerical constant expressions.
 
 Wuninitialized
 Fortran LangEnabledBy(Fortran,Wall)
@@ -319,7 +319,7 @@ Fortran LangEnabledBy(Fortran,Wall)
 
 Wintrinsic-shadow
 Fortran Warning Var(warn_intrinsic_shadow) LangEnabledBy(Fortran,Wall)
-Warn if a user-procedure has the same name as an intrinsic
+Warn if a user-procedure has the same name as an intrinsic.
 
 Wunused
 LangEnabledBy(Fortran,Wall)
@@ -331,11 +331,11 @@ Warn about unused dummy arguments.
 
 Wzerotrip
 Fortran Warning Var(warn_zerotrip) LangEnabledBy(Fortran,Wall)
-Warn about zero-trip DO loops
+Warn about zero-trip DO loops.
 
 cpp
 Fortran Negative(nocpp)
-Enable preprocessing
+Enable preprocessing.
 
 cpp=
 Fortran Joined Negative(nocpp) Undocumented NoDWARFRecord
@@ -343,7 +343,7 @@ Fortran Joined Negative(nocpp) Undocumented NoDWARFRecord
 
 nocpp
 Fortran Negative(cpp)
-Disable preprocessing
+Disable preprocessing.
 
 d
 Fortran Joined
@@ -351,15 +351,15 @@ Fortran Joined
 
 faggressive-function-elimination
 Fortran Var(flag_aggressive_function_elimination)
-Eliminate multiple function invokations also for impure functions
+Eliminate multiple function invokations also for impure functions.
 
 falign-commons
 Fortran Var(flag_align_commons) Init(1)
-Enable alignment of COMMON blocks
+Enable alignment of COMMON blocks.
 
 fall-intrinsics
 Fortran RejectNegative Var(flag_all_intrinsics)
-All intrinsics procedures are available regardless of selected standard
+All intrinsics procedures are available regardless of selected standard.
 
 fallow-leading-underscore
 Fortran Undocumented Var(flag_allow_leading_underscore)
@@ -367,23 +367,23 @@ Fortran Undocumented Var(flag_allow_leading_underscore)
 
 fautomatic
 Fortran Var(flag_automatic) Init(1)
-Do not treat local variables and COMMON blocks as if they were named in SAVE statements
+Do not treat local variables and COMMON blocks as if they were named in SAVE statements.
 
 fbackslash
 Fortran Var(flag_backslash)
-Specify that backslash in string introduces an escape character
+Specify that backslash in string introduces an escape character.
 
 fbacktrace
 Fortran Var(flag_backtrace) Init(1)
-Produce a backtrace when a runtime error is encountered
+Produce a backtrace when a runtime error is encountered.
 
 fblas-matmul-limit=
 Fortran RejectNegative Joined UInteger Var(flag_blas_matmul_limit) Init(30)
--fblas-matmul-limit=<n>	Size of the smallest matrix for which matmul will use BLAS
+-fblas-matmul-limit=<n>	Size of the smallest matrix for which matmul will use BLAS.
 
 fcheck-array-temporaries
 Fortran
-Produce a warning at runtime if a array temporary has been created for a procedure argument
+Produce a warning at runtime if a array temporary has been created for a procedure argument.
 
 fconvert=
 Fortran RejectNegative Joined Enum(gfc_convert) Var(flag_convert) Init(GFC_FLAG_CONVERT_NATIVE)
@@ -406,31 +406,31 @@ Enum(gfc_convert) String(swap) Value(GFC_FLAG_CONVERT_SWAP)
 
 fcray-pointer
 Fortran Var(flag_cray_pointer)
-Use the Cray Pointer extension
+Use the Cray Pointer extension.
 
 fd-lines-as-code
 Fortran RejectNegative
-Ignore 'D' in column one in fixed form
+Ignore 'D' in column one in fixed form.
 
 fd-lines-as-comments
 Fortran RejectNegative
-Treat lines with 'D' in column one as comments
+Treat lines with 'D' in column one as comments.
 
 fdefault-double-8
 Fortran Var(flag_default_double)
-Set the default double precision kind to an 8 byte wide type
+Set the default double precision kind to an 8 byte wide type.
 
 fdefault-integer-8
 Fortran Var(flag_default_integer)
-Set the default integer kind to an 8 byte wide type
+Set the default integer kind to an 8 byte wide type.
 
 fdefault-real-8
 Fortran Var(flag_default_real)
-Set the default real kind to an 8 byte wide type
+Set the default real kind to an 8 byte wide type.
 
 fdollar-ok
 Fortran Var(flag_dollar_ok)
-Allow dollar signs in entity names
+Allow dollar signs in entity names.
 
 fdump-core
 Fortran Ignore
@@ -438,95 +438,95 @@ Does nothing. Preserved for backward compatibility.
 
 fdump-fortran-original
 Fortran Var(flag_dump_fortran_original)
-Display the code tree after parsing
+Display the code tree after parsing.
 
 fdump-fortran-optimized
 Fortran Var(flag_dump_fortran_optimized)
-Display the code tree after front end optimization
+Display the code tree after front end optimization.
 
 fdump-parse-tree
 Fortran Alias(fdump-fortran-original)
-Display the code tree after parsing; deprecated option
+Display the code tree after parsing; deprecated option.
 
 fexternal-blas
 Fortran Var(flag_external_blas)
-Specify that an external BLAS library should be used for matmul calls on large-size arrays
+Specify that an external BLAS library should be used for matmul calls on large-size arrays.
 
 ff2c
 Fortran Var(flag_f2c)
-Use f2c calling convention
+Use f2c calling convention.
 
 ffixed-form
 Fortran RejectNegative
-Assume that the source file is fixed form
+Assume that the source file is fixed form.
 
 finteger-4-integer-8
 Fortran RejectNegative Var(flag_integer4_kind,8)
-Interpret any INTEGER(4) as an INTEGER(8)
+Interpret any INTEGER(4) as an INTEGER(8).
 
 fintrinsic-modules-path
 Fortran RejectNegative Separate
-Specify where to find the compiled intrinsic modules
+Specify where to find the compiled intrinsic modules.
 
 fintrinsic-modules-path=
 Fortran RejectNegative Joined
-Specify where to find the compiled intrinsic modules
+Specify where to find the compiled intrinsic modules.
 
 ffixed-line-length-none
 Fortran RejectNegative Var(flag_fixed_line_length,0)
-Allow arbitrary character line width in fixed mode
+Allow arbitrary character line width in fixed mode.
 
 ffixed-line-length-
 Fortran RejectNegative Joined UInteger Var(flag_fixed_line_length) Init(72)
--ffixed-line-length-<n>	Use n as character line width in fixed mode
+-ffixed-line-length-<n>	Use n as character line width in fixed mode.
 
 ffpe-trap=
 Fortran RejectNegative JoinedOrMissing
--ffpe-trap=[...]	Stop on following floating point exceptions
+-ffpe-trap=[...]	Stop on following floating point exceptions.
 
 ffpe-summary=
 Fortran RejectNegative JoinedOrMissing
--ffpe-summary=[...]	Print summary of floating point exceptions
+-ffpe-summary=[...]	Print summary of floating point exceptions.
 
 ffree-form
 Fortran RejectNegative
-Assume that the source file is free form
+Assume that the source file is free form.
 
 ffree-line-length-none
 Fortran RejectNegative Var(flag_free_line_length,0)
-Allow arbitrary character line width in free mode
+Allow arbitrary character line width in free mode.
 
 ffree-line-length-
 Fortran RejectNegative Joined UInteger Var(flag_free_line_length) Init(132)
--ffree-line-length-<n>	Use n as character line width in free mode
+-ffree-line-length-<n>	Use n as character line width in free mode.
 
 ffrontend-optimize
 Fortran Var(flag_frontend_optimize) Init(-1)
-Enable front end optimization
+Enable front end optimization.
 
 fimplicit-none
 Fortran Var(flag_implicit_none)
-Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements
+Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements.
 
 finit-character=
 Fortran RejectNegative Joined UInteger
--finit-character=<n>	Initialize local character variables to ASCII value n
+-finit-character=<n>	Initialize local character variables to ASCII value n.
 
 finit-integer=
 Fortran RejectNegative Joined
--finit-integer=<n>	Initialize local integer variables to n
+-finit-integer=<n>	Initialize local integer variables to n.
 
 finit-local-zero
 Fortran
-Initialize local variables to zero (from g77)
+Initialize local variables to zero (from g77).
 
 finit-logical=
 Fortran RejectNegative Joined
--finit-logical=<true|false>	Initialize local logical variables
+-finit-logical=<true|false>	Initialize local logical variables.
 
 finit-real=
 Fortran RejectNegative ToLower Joined Enum(gfc_init_local_real) Var(flag_init_real) Init(GFC_INIT_REAL_OFF)
--finit-real=<zero|snan|nan|inf|-inf>	Initialize local real variables
+-finit-real=<zero|snan|nan|inf|-inf>	Initialize local real variables.
 
 Enum
 Name(gfc_init_local_real) Type(enum gfc_init_local_real) UnknownError(Unrecognized option to floating-point init value: %qs)
@@ -548,23 +548,23 @@ Enum(gfc_init_local_real) String(-inf) Value(GFC_INIT_REAL_NEG_INF)
 
 finline-matmul-limit=
 Fortran RejectNegative Joined UInteger Var(flag_inline_matmul_limit) Init(-1)
--finline-matmul-limit=<n>	Specify the size of the largest matrix for which matmul will be inlined
+-finline-matmul-limit=<n>	Specify the size of the largest matrix for which matmul will be inlined.
 
 fmax-array-constructor=
 Fortran RejectNegative Joined UInteger Var(flag_max_array_constructor) Init(65535)
--fmax-array-constructor=<n>	Maximum number of objects in an array constructor
+-fmax-array-constructor=<n>	Maximum number of objects in an array constructor.
 
 fmax-identifier-length=
 Fortran RejectNegative Joined UInteger
--fmax-identifier-length=<n>	Maximum identifier length
+-fmax-identifier-length=<n>	Maximum identifier length.
 
 fmax-subrecord-length=
 Fortran RejectNegative Joined UInteger Var(flag_max_subrecord_length)
--fmax-subrecord-length=<n>	Maximum length for subrecords
+-fmax-subrecord-length=<n>	Maximum length for subrecords.
 
 fmax-stack-var-size=
 Fortran RejectNegative Joined UInteger Var(flag_max_stack_var_size) Init(-2)
--fmax-stack-var-size=<n>	Size in bytes of the largest array that will be put on the stack
+-fmax-stack-var-size=<n>	Size in bytes of the largest array that will be put on the stack.
 
 fstack-arrays
 Fortran Var(flag_stack_arrays) Init(-1)
@@ -588,7 +588,7 @@ Fortran
 
 fpack-derived
 Fortran Var(flag_pack_derived)
-Try to lay out derived types as compactly as possible
+Try to lay out derived types as compactly as possible.
 
 fpreprocessed
 Fortran
@@ -596,59 +596,59 @@ Fortran
 
 fprotect-parens
 Fortran Var(flag_protect_parens) Init(-1)
-Protect parentheses in expressions
+Protect parentheses in expressions.
 
 frange-check
 Fortran Var(flag_range_check) Init(1)
-Enable range checking during compilation
+Enable range checking during compilation.
 
 freal-4-real-8
 Fortran RejectNegative Var(flag_real4_kind,8)
-Interpret any REAL(4) as a REAL(8)
+Interpret any REAL(4) as a REAL(8).
 
 freal-4-real-10
 Fortran RejectNegative Var(flag_real4_kind,10)
-Interpret any REAL(4) as a REAL(10)
+Interpret any REAL(4) as a REAL(10).
 
 freal-4-real-16
 Fortran RejectNegative Var(flag_real4_kind,16)
-Interpret any REAL(4) as a REAL(16)
+Interpret any REAL(4) as a REAL(16).
 
 freal-8-real-4
 Fortran RejectNegative Var(flag_real8_kind,4)
-Interpret any REAL(8) as a REAL(4)
+Interpret any REAL(8) as a REAL(4).
 
 freal-8-real-10
 Fortran RejectNegative Var(flag_real8_kind,10)
-Interpret any REAL(8) as a REAL(10)
+Interpret any REAL(8) as a REAL(10).
 
 freal-8-real-16
 Fortran RejectNegative Var(flag_real8_kind,16)
-Interpret any REAL(8) as a REAL(16)
+Interpret any REAL(8) as a REAL(16).
 
 frealloc-lhs
 Fortran Var(flag_realloc_lhs) Init(-1)
-Reallocate the LHS in assignments
+Reallocate the LHS in assignments.
 
 frecord-marker=4
 Fortran RejectNegative Var(flag_record_marker,4)
-Use a 4-byte record marker for unformatted files
+Use a 4-byte record marker for unformatted files.
 
 frecord-marker=8
 Fortran RejectNegative Var(flag_record_marker,8)
-Use an 8-byte record marker for unformatted files
+Use an 8-byte record marker for unformatted files.
 
 frecursive
 Fortran Var(flag_recursive)
-Allocate local variables on the stack to allow indirect recursion
+Allocate local variables on the stack to allow indirect recursion.
 
 frepack-arrays
 Fortran Var(flag_repack_arrays)
-Copy array sections into a contiguous block on procedure entry
+Copy array sections into a contiguous block on procedure entry.
 
 fcoarray=
 Fortran RejectNegative Joined Enum(gfc_fcoarray) Var(flag_coarray) Init(GFC_FCOARRAY_NONE)
--fcoarray=<none|single|lib>	Specify which coarray parallelization should be used
+-fcoarray=<none|single|lib>	Specify which coarray parallelization should be used.
 
 Enum
 Name(gfc_fcoarray) Type(enum gfc_fcoarray) UnknownError(Unrecognized option: %qs)
@@ -664,11 +664,11 @@ Enum(gfc_fcoarray) String(lib) Value(GFC_FCOARRAY_LIB)
 
 fcheck=
 Fortran RejectNegative JoinedOrMissing
--fcheck=[...]	Specify which runtime checks are to be performed
+-fcheck=[...]	Specify which runtime checks are to be performed.
 
 fsecond-underscore
 Fortran Var(flag_second_underscore) Init(-1)
-Append a second underscore if the name already contains an underscore
+Append a second underscore if the name already contains an underscore.
 
 fshort-enums
 Fortran Var(flag_short_enums)
@@ -676,11 +676,11 @@ Fortran Var(flag_short_enums)
 
 fsign-zero
 Fortran Var(flag_sign_zero) Init(1)
-Apply negative sign to zero values
+Apply negative sign to zero values.
 
 funderscoring
 Fortran Var(flag_underscoring) Init(1)
-Append underscores to externally visible names
+Append underscores to externally visible names.
 
 fwhole-file
 Fortran Ignore
@@ -724,31 +724,31 @@ Fortran Joined Separate
 
 static-libgfortran
 Fortran
-Statically link the GNU Fortran helper library (libgfortran)
+Statically link the GNU Fortran helper library (libgfortran).
 
 std=f2003
 Fortran
-Conform to the ISO Fortran 2003 standard
+Conform to the ISO Fortran 2003 standard.
 
 std=f2008
 Fortran
-Conform to the ISO Fortran 2008 standard
+Conform to the ISO Fortran 2008 standard.
 
 std=f2008ts
 Fortran
-Conform to the ISO Fortran 2008 standard including TS 29113
+Conform to the ISO Fortran 2008 standard including TS 29113.
 
 std=f95
 Fortran
-Conform to the ISO Fortran 95 standard
+Conform to the ISO Fortran 95 standard.
 
 std=gnu
 Fortran
-Conform to nothing in particular
+Conform to nothing in particular.
 
 std=legacy
 Fortran
-Accept extensions to support legacy code
+Accept extensions to support legacy code.
 
 undef
 Fortran

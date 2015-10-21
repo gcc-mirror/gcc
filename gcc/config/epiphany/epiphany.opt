@@ -29,7 +29,7 @@ preferentially allocate registers that allow short instruction generation.
 
 mbranch-cost=
 Target RejectNegative Joined UInteger Var(epiphany_branch_cost) Init(3)
-Set branch cost
+Set branch cost.
 
 mcmove
 Target Mask(CMOVE)
@@ -37,7 +37,7 @@ enable conditional move instruction usage.
 
 mnops=
 Target RejectNegative Joined UInteger Var(epiphany_n_nops) Init(0)
-set number of nops to emit before each insn pattern
+set number of nops to emit before each insn pattern.
 
 ; Problems with using the flags from fsub for comparison are:
 ; - Because of underflow (lack of subnormal numbers), different small numbers
@@ -49,19 +49,19 @@ set number of nops to emit before each insn pattern
 ; equal.
 msoft-cmpsf
 Target Mask(SOFT_CMPSF)
-Use software floating point comparisons
+Use software floating point comparisons.
 
 msplit-lohi
 Target Mask(SPLIT_LOHI)
-Enable split of 32 bit immediate loads into low / high part
+Enable split of 32 bit immediate loads into low / high part.
 
 mpost-inc
 Target Mask(POST_INC)
-Enable use of POST_INC / POST_DEC
+Enable use of POST_INC / POST_DEC.
 
 mpost-modify
 Target Mask(POST_MODIFY)
-Enable use of POST_MODIFY
+Enable use of POST_MODIFY.
 
 mstack-offset=
 Target RejectNegative Joined UInteger Var(epiphany_stack_offset) Init(EPIPHANY_STACK_OFFSET)
@@ -73,11 +73,11 @@ Assume round to nearest is selected for purposes of scheduling.
 
 mlong-calls
 Target Mask(LONG_CALLS)
-Generate call insns as indirect calls
+Generate call insns as indirect calls.
 
 mshort-calls
 Target Mask(SHORT_CALLS)
-Generate call insns as direct calls
+Generate call insns as direct calls.
 
 msmall16
 Target Mask(SMALL16)
@@ -105,7 +105,7 @@ Enum(attr_fp_mode) String(int) Value(FP_MODE_INT)
 
 may-round-for-trunc
 Target Mask(MAY_ROUND_FOR_TRUNC)
-A floatig point to integer truncation may be replaced with rounding to save mode switching
+A floatig point to integer truncation may be replaced with rounding to save mode switching.
 
 mvect-double
 Target Mask(VECT_DOUBLE)

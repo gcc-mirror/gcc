@@ -21,4 +21,4 @@
 ; This option is ignored by gcc
 mieee-fp
 Target RejectNegative
-Use IEEE math for fp comparisons
+Use IEEE math for fp comparisons.

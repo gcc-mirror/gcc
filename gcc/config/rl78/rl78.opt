@@ -74,19 +74,19 @@ Enum(rl78_cpu_types) String(rl78) Value(CPU_G14)
 
 mg10
 Target RejectNegative Report Alias(mcpu=, g10)
-Alias for -mcpu=g10
+Alias for -mcpu=g10.
 
 mg13
 Target RejectNegative Report Alias(mcpu=, g13)
-Alias for -mcpu=g13
+Alias for -mcpu=g13.
 
 mg14
 Target RejectNegative Report Alias(mcpu=, g14)
-Alias for -mcpu=g14
+Alias for -mcpu=g14.
 
 mrl78
 Target RejectNegative Report Alias(mcpu=, g14)
-Alias for -mcpu=g14
+Alias for -mcpu=g14.
 
 mes0
 Target Mask(ES0)

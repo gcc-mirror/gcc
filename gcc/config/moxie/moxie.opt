@@ -20,15 +20,15 @@
 
 meb
 Target RejectNegative Report InverseMask(LITTLE_ENDIAN)
-Generate big-endian code
+Generate big-endian code.
 
 mel
 Target RejectNegative Report Mask(LITTLE_ENDIAN)
-Generate little-endian code
+Generate little-endian code.
 
 mmul.x
 Target Report Mask(HAS_MULX)
-Enable MUL.X and UMUL.X instructions
+Enable MUL.X and UMUL.X instructions.
 
 ; Ignored by the compiler
 mno-crt0
