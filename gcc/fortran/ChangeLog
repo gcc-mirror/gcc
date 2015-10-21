@@ -1,3 +1,8 @@
+2015-10-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/67939
+	* data.c (create_character_initializer): Deal with zero length string.
+
 2015-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* resolve.c (gfc_verify_binding_labels): Check for NULL pointer.
