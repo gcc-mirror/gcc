@@ -1,3 +1,8 @@
+2015-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68026
+	* gcc.dg/tree-ssa/ssa-ccp-39.c: New testcase.
+
 2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* c-c++-common/ubsan/float-cast-overflow-10.c: Adjust test.
