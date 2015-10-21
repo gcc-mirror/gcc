@@ -1,3 +1,10 @@
+2015-10-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68018
+	* config/i386/i386.c (ix86_compute_frame_layout): Realign the stack
+	for 64-bit MS_ABI targets also when default incoming stack boundary
+	is overriden.
+
 2015-10-21  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (cond_stmts_equal_p): Compare two GIMPLE
