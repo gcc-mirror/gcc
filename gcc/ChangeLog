@@ -1,5 +1,11 @@
 2015-10-21  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (cond_stmts_equal_p): Compare two GIMPLE
+	cond stmts, enhanced and split out from ...
+	(vn_phi_eq): ... here.
+
+2015-10-21  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/68031
 	* fold-const.c: Include tree-ssa-operands.h and tree-into-ssa.h.
 	(tree_ssa_name_nonnegative_warnv_p): Fold into ...

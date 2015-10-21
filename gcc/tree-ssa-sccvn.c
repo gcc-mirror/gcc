@@ -2687,6 +2687,43 @@ vn_phi_compute_hash (vn_phi_t vp1)
 }
 
 
+/* Return true if COND1 and COND2 represent the same condition, set
+   *INVERTED_P if one needs to be inverted to make it the same as
+   the other.  */
+
+static bool
+cond_stmts_equal_p (gcond *cond1, gcond *cond2, bool *inverted_p)
+{
+  enum tree_code code1 = gimple_cond_code (cond1);
+  enum tree_code code2 = gimple_cond_code (cond2);
+  tree lhs1 = gimple_cond_lhs (cond1);
+  tree lhs2 = gimple_cond_lhs (cond2);
+  tree rhs1 = gimple_cond_rhs (cond1);
+  tree rhs2 = gimple_cond_rhs (cond2);
+
+  *inverted_p = false;
+  if (code1 == code2)
+    ;
+  else if (code1 == swap_tree_comparison (code2))
+    std::swap (lhs2, rhs2);
+  else if (code1 == invert_tree_comparison (code2, HONOR_NANS (lhs2)))
+    *inverted_p = true;
+  else if (code1 == invert_tree_comparison
+	   	      (swap_tree_comparison (code2), HONOR_NANS (lhs2)))
+    {
+      std::swap (lhs2, rhs2);
+      *inverted_p = true;
+    }
+  else
+    return false;
+
+  if (! expressions_equal_p (vn_valueize (lhs1), vn_valueize (lhs2))
+      || ! expressions_equal_p (vn_valueize (rhs1), vn_valueize (rhs2)))
+    return false;
+
+  return true;
+}
+
 /* Compare two phi entries for equality, ignoring VN_TOP arguments.  */
 
 static int
@@ -2735,13 +2772,9 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 	    if (gimple_code (last1) != GIMPLE_COND
 		|| gimple_code (last2) != GIMPLE_COND)
 	      return false;
-	    gcond *cond1 = as_a <gcond *> (last1);
-	    gcond *cond2 = as_a <gcond *> (last2);
-	    if (gimple_cond_code (cond1) != gimple_cond_code (cond2)
-		|| ! expressions_equal_p (gimple_cond_lhs (cond1),
-				       gimple_cond_lhs (cond2))
-		|| ! expressions_equal_p (gimple_cond_rhs (cond1),
-					  gimple_cond_rhs (cond2)))
+	    bool inverted_p;
+	    if (! cond_stmts_equal_p (as_a <gcond *> (last1),
+				      as_a <gcond *> (last2), &inverted_p))
 	      return false;
 
 	    /* Get at true/false controlled edges into the PHI.  */
@@ -2751,6 +2784,11 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 		|| ! extract_true_false_controlled_edges (idom2, vp2->block,
 							  &te2, &fe2))
 	      return false;
+
+	    /* Swap edges if the second condition is the inverted of the
+	       first.  */
+	    if (inverted_p)
+	      std::swap (te2, fe2);
 
 	    /* ???  Handle VN_TOP specially.  */
 	    if (! expressions_equal_p (vp1->phiargs[te1->dest_idx],
