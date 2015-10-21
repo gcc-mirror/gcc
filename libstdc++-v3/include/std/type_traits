@@ -93,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __bool_constant = integral_constant<bool, __v>;
 
 #if __cplusplus > 201402L
-// TODO: #define __cpp_lib_bool_constant 201505
+# define __cpp_lib_bool_constant 201505
   template<bool __v>
     using bool_constant = integral_constant<bool, __v>;
 #endif
