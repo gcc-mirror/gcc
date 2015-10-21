@@ -20,7 +20,8 @@ struct StackDepotNode {
   StackDepotNode *link;
   u32 id;
   atomic_uint32_t hash_and_use_count; // hash_bits : 12; use_count : 20;
-  uptr size;
+  u32 size;
+  u32 tag;
   uptr stack[1];  // [size]
 
   static const u32 kTabSizeLog = 20;
@@ -35,7 +36,8 @@ struct StackDepotNode {
   bool eq(u32 hash, const args_type &args) const {
     u32 hash_bits =
         atomic_load(&hash_and_use_count, memory_order_relaxed) & kHashMask;
-    if ((hash & kHashMask) != hash_bits || args.size != size) return false;
+    if ((hash & kHashMask) != hash_bits || args.size != size || args.tag != tag)
+      return false;
     uptr i = 0;
     for (; i < size; i++) {
       if (stack[i] != args.trace[i]) return false;
@@ -70,10 +72,11 @@ struct StackDepotNode {
   void store(const args_type &args, u32 hash) {
     atomic_store(&hash_and_use_count, hash & kHashMask, memory_order_relaxed);
     size = args.size;
+    tag = args.tag;
     internal_memcpy(stack, args.trace, size * sizeof(uptr));
   }
   args_type load() const {
-    return args_type(&stack[0], size);
+    return args_type(&stack[0], size, tag);
   }
   StackDepotHandle get_handle() { return StackDepotHandle(this); }
 
@@ -147,7 +150,7 @@ StackDepotReverseMap::StackDepotReverseMap()
 StackTrace StackDepotReverseMap::Get(u32 id) {
   if (!map_.size())
     return StackTrace();
-  IdDescPair pair = {id, 0};
+  IdDescPair pair = {id, nullptr};
   uptr idx = InternalBinarySearch(map_, 0, map_.size(), pair,
                                   IdDescPair::IdComparator);
   if (idx > map_.size())
@@ -155,4 +158,4 @@ StackTrace StackDepotReverseMap::Get(u32 id) {
   return map_[idx].desc->load();
 }
 
-}  // namespace __sanitizer
+} // namespace __sanitizer

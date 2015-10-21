@@ -18,9 +18,9 @@
 
 namespace __tsan {
 
-const int kTracePartSizeBits = 14;
+const int kTracePartSizeBits = 13;
 const int kTracePartSize = 1 << kTracePartSizeBits;
-const int kTraceParts = 4 * 1024 * 1024 / kTracePartSize;
+const int kTraceParts = 2 * 1024 * 1024 / kTracePartSize;
 const int kTraceSize = kTracePartSize * kTraceParts;
 
 // Must fit into 3 bits.
@@ -40,7 +40,7 @@ enum EventType {
 typedef u64 Event;
 
 struct TraceHeader {
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
   BufferedStackTrace stack0;  // Start stack for the trace.
 #else
   VarSizeStackTrace stack0;
@@ -52,13 +52,15 @@ struct TraceHeader {
 };
 
 struct Trace {
-  TraceHeader headers[kTraceParts];
   Mutex mtx;
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
   // Must be last to catch overflow as paging fault.
   // Go shadow stack is dynamically allocated.
   uptr shadow_stack[kShadowStackSize];
 #endif
+  // Must be the last field, because we unmap the unused part in
+  // CreateThreadContext.
+  TraceHeader headers[kTraceParts];
 
   Trace()
     : mtx(MutexTypeTrace, StatMtxTrace) {

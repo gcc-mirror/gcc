@@ -13,6 +13,7 @@
 
 #include "sanitizer_platform.h"
 #if SANITIZER_MAC
+#include "sanitizer_posix.h"
 
 namespace __sanitizer {
 
@@ -25,9 +26,12 @@ enum MacosVersion {
   MACOS_VERSION_MOUNTAIN_LION,
   MACOS_VERSION_MAVERICKS,
   MACOS_VERSION_YOSEMITE,
+  MACOS_VERSION_UNKNOWN_NEWER
 };
 
 MacosVersion GetMacosVersion();
+
+char **GetEnviron();
 
 }  // namespace __sanitizer
 

@@ -78,17 +78,21 @@ uptr MetaMap::FreeBlock(ThreadState *thr, uptr pc, uptr p) {
   return sz;
 }
 
-void MetaMap::FreeRange(ThreadState *thr, uptr pc, uptr p, uptr sz) {
+bool MetaMap::FreeRange(ThreadState *thr, uptr pc, uptr p, uptr sz) {
+  bool has_something = false;
   u32 *meta = MemToMeta(p);
   u32 *end = MemToMeta(p + sz);
   if (end == meta)
     end++;
   for (; meta < end; meta++) {
     u32 idx = *meta;
+    if (idx == 0) {
+      // Note: don't write to meta in this case -- the block can be huge.
+      continue;
+    }
     *meta = 0;
-    for (;;) {
-      if (idx == 0)
-        break;
+    has_something = true;
+    while (idx != 0) {
       if (idx & kFlagBlock) {
         block_alloc_.Free(&thr->block_cache, idx & ~kFlagMask);
         break;
@@ -104,6 +108,64 @@ void MetaMap::FreeRange(ThreadState *thr, uptr pc, uptr p, uptr sz) {
       }
     }
   }
+  return has_something;
+}
+
+// ResetRange removes all meta objects from the range.
+// It is called for large mmap-ed regions. The function is best-effort wrt
+// freeing of meta objects, because we don't want to page in the whole range
+// which can be huge. The function probes pages one-by-one until it finds a page
+// without meta objects, at this point it stops freeing meta objects. Because
+// thread stacks grow top-down, we do the same starting from end as well.
+void MetaMap::ResetRange(ThreadState *thr, uptr pc, uptr p, uptr sz) {
+  const uptr kMetaRatio = kMetaShadowCell / kMetaShadowSize;
+  const uptr kPageSize = GetPageSizeCached() * kMetaRatio;
+  if (sz <= 4 * kPageSize) {
+    // If the range is small, just do the normal free procedure.
+    FreeRange(thr, pc, p, sz);
+    return;
+  }
+  // First, round both ends of the range to page size.
+  uptr diff = RoundUp(p, kPageSize) - p;
+  if (diff != 0) {
+    FreeRange(thr, pc, p, diff);
+    p += diff;
+    sz -= diff;
+  }
+  diff = p + sz - RoundDown(p + sz, kPageSize);
+  if (diff != 0) {
+    FreeRange(thr, pc, p + sz - diff, diff);
+    sz -= diff;
+  }
+  // Now we must have a non-empty page-aligned range.
+  CHECK_GT(sz, 0);
+  CHECK_EQ(p, RoundUp(p, kPageSize));
+  CHECK_EQ(sz, RoundUp(sz, kPageSize));
+  const uptr p0 = p;
+  const uptr sz0 = sz;
+  // Probe start of the range.
+  while (sz > 0) {
+    bool has_something = FreeRange(thr, pc, p, kPageSize);
+    p += kPageSize;
+    sz -= kPageSize;
+    if (!has_something)
+      break;
+  }
+  // Probe end of the range.
+  while (sz > 0) {
+    bool has_something = FreeRange(thr, pc, p - kPageSize, kPageSize);
+    sz -= kPageSize;
+    if (!has_something)
+      break;
+  }
+  // Finally, page out the whole range (including the parts that we've just
+  // freed). Note: we can't simply madvise, because we need to leave a zeroed
+  // range (otherwise __tsan_java_move can crash if it encounters a left-over
+  // meta objects in java heap).
+  uptr metap = (uptr)MemToMeta(p0);
+  uptr metasz = sz0 / kMetaRatio;
+  UnmapOrDie((void*)metap, metasz);
+  MmapFixedNoReserve(metap, metasz);
 }
 
 MBlock* MetaMap::GetBlock(uptr p) {

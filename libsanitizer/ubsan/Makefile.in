@@ -54,6 +54,7 @@ host_triplet = @host@
 target_triplet = @target@
 @USING_MAC_INTERPOSE_FALSE@am__append_1 = $(top_builddir)/interception/libinterception.la
 @LIBBACKTRACE_SUPPORTED_TRUE@am__append_2 = $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
+@USE_CXX_ABI_FLAG_TRUE@am__append_3 = -lc++abi
 subdir = ubsan
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -106,11 +107,14 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libubsan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(am__append_1) $(am__append_2) $(am__DEPENDENCIES_1)
+	$(am__append_1) $(am__append_2) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am__objects_1 = ubsan_diag.lo ubsan_flags.lo ubsan_handlers.lo \
 	ubsan_handlers_cxx.lo ubsan_init.lo ubsan_type_hash.lo \
+	ubsan_type_hash_itanium.lo ubsan_type_hash_win.lo \
 	ubsan_value.lo
-am_libubsan_la_OBJECTS = $(am__objects_1)
+am__objects_2 = $(am__objects_1) ubsan_init_standalone.lo
+am_libubsan_la_OBJECTS = $(am__objects_2)
 libubsan_la_OBJECTS = $(am_libubsan_la_OBJECTS)
 libubsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -160,7 +164,7 @@ CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
-DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DPIC
+DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DPIC -DCAN_SANITIZE_UB=1
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -290,19 +294,26 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-std=gnu++11
 ACLOCAL_AMFLAGS = -I m4
 toolexeclib_LTLIBRARIES = libubsan.la
-ubsan_files = \
+ubsan_plugin_files = \
 	ubsan_diag.cc \
 	ubsan_flags.cc \
 	ubsan_handlers.cc \
 	ubsan_handlers_cxx.cc \
 	ubsan_init.cc \
 	ubsan_type_hash.cc \
+	ubsan_type_hash_itanium.cc \
+	ubsan_type_hash_win.cc \
 	ubsan_value.cc
+
+ubsan_files = \
+	$(ubsan_plugin_files) \
+	ubsan_init_standalone.cc
 
 libubsan_la_SOURCES = $(ubsan_files) 
 libubsan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(am__append_1) $(am__append_2) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
+	$(am__append_1) $(am__append_2) $(LIBSTDCXX_RAW_CXX_LDFLAGS) \
+	$(am__append_3)
 libubsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libubsan)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -424,7 +435,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_handlers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_handlers_cxx.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_init.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_init_standalone.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_type_hash.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_type_hash_itanium.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_type_hash_win.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_value.Plo@am__quote@
 
 .cc.o:
@@ -631,7 +645,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 
 # Use special rules for files that require RTTI support.
-ubsan_handlers_cxx.% ubsan_type_hash.% : AM_CXXFLAGS += -frtti
+ubsan_handlers_cxx.% ubsan_type_hash.% ubsan_type_hash_itanium.% : AM_CXXFLAGS += -frtti
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -28,7 +28,7 @@ ThreadContext::ThreadContext(int tid)
   , epoch1() {
 }
 
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
 ThreadContext::~ThreadContext() {
 }
 #endif
@@ -90,7 +90,7 @@ void ThreadContext::OnStarted(void *arg) {
   epoch1 = (u64)-1;
   new(thr) ThreadState(ctx, tid, unique_id, epoch0, reuse_count,
       args->stk_addr, args->stk_size, args->tls_addr, args->tls_size);
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
   thr->shadow_stack = &ThreadTrace(thr->tid)->shadow_stack[0];
   thr->shadow_stack_pos = thr->shadow_stack;
   thr->shadow_stack_end = thr->shadow_stack + kShadowStackSize;
@@ -102,7 +102,7 @@ void ThreadContext::OnStarted(void *arg) {
   thr->shadow_stack_pos = thr->shadow_stack;
   thr->shadow_stack_end = thr->shadow_stack + kInitStackSize;
 #endif
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
   AllocatorThreadStart(thr);
 #endif
   if (common_flags()->detect_deadlocks) {
@@ -118,6 +118,7 @@ void ThreadContext::OnStarted(void *arg) {
   AcquireImpl(thr, 0, &sync);
   StatInc(thr, StatSyncAcquire);
   sync.Reset(&thr->clock_cache);
+  thr->is_inited = true;
   DPrintf("#%d: ThreadStart epoch=%zu stk_addr=%zx stk_size=%zx "
           "tls_addr=%zx tls_size=%zx\n",
           tid, (uptr)epoch0, args->stk_addr, args->stk_size,
@@ -139,15 +140,17 @@ void ThreadContext::OnFinished() {
   }
   ctx->clock_alloc.FlushCache(&thr->clock_cache);
   ctx->metamap.OnThreadIdle(thr);
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
   AllocatorThreadFinish(thr);
 #endif
   thr->~ThreadState();
+#if TSAN_COLLECT_STATS
   StatAggregate(ctx->stat, thr->stat);
+#endif
   thr = 0;
 }
 
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
 struct ThreadLeak {
   ThreadContext *tctx;
   int count;
@@ -169,7 +172,7 @@ static void MaybeReportThreadLeak(ThreadContextBase *tctx_base, void *arg) {
 }
 #endif
 
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
 static void ReportIgnoresEnabled(ThreadContext *tctx, IgnoreSet *set) {
   if (tctx->tid == 0) {
     Printf("ThreadSanitizer: main thread finished with ignores enabled\n");
@@ -201,7 +204,7 @@ static void ThreadCheckIgnore(ThreadState *thr) {}
 
 void ThreadFinalize(ThreadState *thr) {
   ThreadCheckIgnore(thr);
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
   if (!flags()->report_thread_leaks)
     return;
   ThreadRegistryLock l(ctx->thread_registry);
@@ -237,6 +240,7 @@ void ThreadStart(ThreadState *thr, int tid, uptr os_id) {
   uptr stk_size = 0;
   uptr tls_addr = 0;
   uptr tls_size = 0;
+#ifndef SANITIZER_GO
   GetThreadStackAndTls(tid == 0, &stk_addr, &stk_size, &tls_addr, &tls_size);
 
   if (tid) {
@@ -257,6 +261,7 @@ void ThreadStart(ThreadState *thr, int tid, uptr os_id) {
           thr_end, tls_addr + tls_size - thr_end);
     }
   }
+#endif
 
   ThreadRegistry *tr = ctx->thread_registry;
   OnStartedArgs args = { thr, stk_addr, stk_size, tls_addr, tls_size };
@@ -266,7 +271,7 @@ void ThreadStart(ThreadState *thr, int tid, uptr os_id) {
   thr->tctx = (ThreadContext*)tr->GetThreadLocked(tid);
   tr->Unlock();
 
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
   if (ctx->after_multithreaded_fork) {
     thr->ignore_interceptors++;
     ThreadIgnoreBegin(thr, 0);
@@ -328,7 +333,7 @@ void MemoryAccessRange(ThreadState *thr, uptr pc, uptr addr,
       thr->tid, (void*)pc, (void*)addr,
       (int)size, is_write);
 
-#if TSAN_DEBUG
+#if SANITIZER_DEBUG
   if (!IsAppMem(addr)) {
     Printf("Access to non app mem %zx\n", addr);
     DCHECK(IsAppMem(addr));

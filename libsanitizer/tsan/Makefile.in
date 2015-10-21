@@ -108,11 +108,11 @@ am__objects_1 = tsan_clock.lo tsan_fd.lo tsan_flags.lo \
 	tsan_ignoreset.lo tsan_interceptors.lo tsan_interface_ann.lo \
 	tsan_interface_atomic.lo tsan_interface.lo \
 	tsan_interface_java.lo tsan_md5.lo tsan_mman.lo tsan_mutex.lo \
-	tsan_mutexset.lo tsan_platform_linux.lo tsan_platform_mac.lo \
-	tsan_platform_windows.lo tsan_report.lo tsan_rtl.lo \
-	tsan_rtl_mutex.lo tsan_rtl_report.lo tsan_rtl_thread.lo \
-	tsan_stack_trace.lo tsan_stat.lo tsan_suppressions.lo \
-	tsan_symbolize.lo tsan_sync.lo
+	tsan_mutexset.lo tsan_new_delete.lo tsan_platform_linux.lo \
+	tsan_platform_mac.lo tsan_platform_windows.lo tsan_report.lo \
+	tsan_rtl.lo tsan_rtl_mutex.lo tsan_rtl_report.lo \
+	tsan_rtl_thread.lo tsan_stack_trace.lo tsan_stat.lo \
+	tsan_suppressions.lo tsan_symbolize.lo tsan_sync.lo
 am_libtsan_la_OBJECTS = $(am__objects_1)
 libtsan_la_OBJECTS = $(am_libtsan_la_OBJECTS)
 libtsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -177,7 +177,7 @@ CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
-DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS 
+DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DCAN_SANITIZE_UB=0
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -321,6 +321,7 @@ tsan_files = \
 	tsan_mman.cc \
 	tsan_mutex.cc \
 	tsan_mutexset.cc \
+	tsan_new_delete.cc \
 	tsan_platform_linux.cc \
 	tsan_platform_mac.cc \
 	tsan_platform_windows.cc \
@@ -475,6 +476,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_mman.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_mutex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_mutexset.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_new_delete.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_windows.Plo@am__quote@

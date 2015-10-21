@@ -8,6 +8,7 @@
 // A fast memory allocator that does not support free() nor realloc().
 // All allocations are forever.
 //===----------------------------------------------------------------------===//
+
 #ifndef SANITIZER_PERSISTENT_ALLOCATOR_H
 #define SANITIZER_PERSISTENT_ALLOCATOR_H
 
@@ -34,7 +35,7 @@ inline void *PersistentAllocator::tryAlloc(uptr size) {
   for (;;) {
     uptr cmp = atomic_load(&region_pos, memory_order_acquire);
     uptr end = atomic_load(&region_end, memory_order_acquire);
-    if (cmp == 0 || cmp + size > end) return 0;
+    if (cmp == 0 || cmp + size > end) return nullptr;
     if (atomic_compare_exchange_weak(&region_pos, &cmp, cmp + size,
                                      memory_order_acquire))
       return (void *)cmp;
@@ -66,4 +67,4 @@ inline void *PersistentAlloc(uptr sz) {
 
 } // namespace __sanitizer
 
-#endif  // SANITIZER_PERSISTENT_ALLOCATOR_H
+#endif // SANITIZER_PERSISTENT_ALLOCATOR_H

@@ -19,8 +19,6 @@
 #include "sanitizer_common/sanitizer_stacktrace.h"
 #include "sanitizer_common/sanitizer_libc.h"
 
-#define ASAN_DEFAULT_FAILURE_EXITCODE 1
-
 #if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
 # error "The AddressSanitizer run-time should not be"
         " instrumented by AddressSanitizer"
@@ -73,13 +71,11 @@ void *AsanDoesNotSupportStaticLinkage();
 void AsanCheckDynamicRTPrereqs();
 void AsanCheckIncompatibleRT();
 
-void GetPcSpBp(void *context, uptr *pc, uptr *sp, uptr *bp);
-void AsanOnSIGSEGV(int, void *siginfo, void *context);
+void AsanOnDeadlySignal(int, void *siginfo, void *context);
 
+void DisableReexec();
 void MaybeReexec();
-bool AsanInterceptsSignal(int signum);
 void ReadContextStack(void *context, uptr *stack, uptr *ssize);
-void AsanPlatformThreadInit();
 void StopInitOrderChecking();
 
 // Wrapper for TLS/TSD.
@@ -90,9 +86,9 @@ void PlatformTSDDtor(void *tsd);
 
 void AppendToErrorMessageBuffer(const char *buffer);
 
-void ParseExtraActivationFlags();
-
 void *AsanDlSymNext(const char *sym);
+
+void ReserveShadowMemoryRange(uptr beg, uptr end, const char *name);
 
 // Platform-specific options.
 #if SANITIZER_MAC
@@ -134,6 +130,8 @@ const int kAsanGlobalRedzoneMagic = 0xf9;
 const int kAsanInternalHeapMagic = 0xfe;
 const int kAsanArrayCookieMagic = 0xac;
 const int kAsanIntraObjectRedzone = 0xbb;
+const int kAsanAllocaLeftMagic = 0xca;
+const int kAsanAllocaRightMagic = 0xcb;
 
 static const uptr kCurrentStackFrameMagic = 0x41B58AB3;
 static const uptr kRetiredStackFrameMagic = 0x45E0360E;

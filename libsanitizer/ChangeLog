@@ -1,3 +1,24 @@
+2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* All source files: Merge from upstream r250806.
+	* configure.ac (link_sanitizer_common): Add -lrt flag.
+	* configure.tgt: Enable TSAN and LSAN for aarch64-linux targets.
+	Set USE_CXX_ABI_FLAG=true for darwin.
+	* asan/Makefile.am (asan_files): Add new files.
+	(DEFS): Add DCAN_SANITIZE_UB=0 and remove unused and legacy
+	DASAN_FLEXIBLE_MAPPING_AND_OFFSET=0.
+	* asan/Makefile.in: Regenerate.
+	* ubsan/Makefile.am (ubsan_files): Add new files.
+	(DEFS): Add DCAN_SANITIZE_UB=1.
+	(libubsan_la_LIBADD): Add -lc++abi if USE_CXX_ABI_FLAG is true.
+	* ubsan/Makefile.in: Regenerate.
+	* tsan/Makefile.am (tsan_files): Add new files.
+	(DEFS): Add DCAN_SANITIZE_UB=0.
+	* tsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.am (sanitizer_common_files): Add new files.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* asan/libtool-version: Bump the libasan SONAME.
+
 2015-09-09  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR sanitizer/67258

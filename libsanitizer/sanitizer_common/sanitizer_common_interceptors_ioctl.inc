@@ -518,7 +518,7 @@ static const ioctl_desc *ioctl_table_lookup(unsigned req) {
   if (left == right && ioctl_table[left].req == req)
     return ioctl_table + left;
   else
-    return 0;
+    return nullptr;
 }
 
 static bool ioctl_decode(unsigned req, ioctl_desc *desc) {
@@ -565,7 +565,7 @@ static const ioctl_desc *ioctl_lookup(unsigned req) {
       (desc->type == ioctl_desc::READWRITE || desc->type == ioctl_desc::WRITE ||
        desc->type == ioctl_desc::READ))
     return desc;
-  return 0;
+  return nullptr;
 }
 
 static void ioctl_common_pre(void *ctx, const ioctl_desc *desc, int d,
@@ -576,14 +576,10 @@ static void ioctl_common_pre(void *ctx, const ioctl_desc *desc, int d,
   }
   if (desc->type != ioctl_desc::CUSTOM)
     return;
-  switch (request) {
-    case 0x00008912: {  // SIOCGIFCONF
-      struct __sanitizer_ifconf *ifc = (__sanitizer_ifconf *)arg;
-      COMMON_INTERCEPTOR_READ_RANGE(ctx, &ifc->ifc_len, sizeof(ifc->ifc_len));
-      break;
-    }
+  if (request == IOCTL_SIOCGIFCONF) {
+    struct __sanitizer_ifconf *ifc = (__sanitizer_ifconf *)arg;
+    COMMON_INTERCEPTOR_READ_RANGE(ctx, &ifc->ifc_len, sizeof(ifc->ifc_len));
   }
-  return;
 }
 
 static void ioctl_common_post(void *ctx, const ioctl_desc *desc, int res, int d,
@@ -595,12 +591,8 @@ static void ioctl_common_post(void *ctx, const ioctl_desc *desc, int res, int d,
   }
   if (desc->type != ioctl_desc::CUSTOM)
     return;
-  switch (request) {
-    case 0x00008912: {  // SIOCGIFCONF
-      struct __sanitizer_ifconf *ifc = (__sanitizer_ifconf *)arg;
-      COMMON_INTERCEPTOR_WRITE_RANGE(ctx, ifc->ifc_ifcu.ifcu_req, ifc->ifc_len);
-      break;
-    }
+  if (request == IOCTL_SIOCGIFCONF) {
+    struct __sanitizer_ifconf *ifc = (__sanitizer_ifconf *)arg;
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, ifc->ifc_ifcu.ifcu_req, ifc->ifc_len);
   }
-  return;
 }

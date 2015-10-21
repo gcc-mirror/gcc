@@ -30,15 +30,15 @@ typedef unsigned char      a8;
 typedef unsigned short     a16;  // NOLINT
 typedef unsigned int       a32;
 typedef unsigned long long a64;  // NOLINT
-#if !defined(TSAN_GO) && (defined(__SIZEOF_INT128__) \
-    || (__clang_major__ * 100 + __clang_minor__ >= 302))
+#if !defined(SANITIZER_GO) && (defined(__SIZEOF_INT128__) \
+    || (__clang_major__ * 100 + __clang_minor__ >= 302)) && !defined(__mips64)
 __extension__ typedef __int128 a128;
 # define __TSAN_HAS_INT128 1
 #else
 # define __TSAN_HAS_INT128 0
 #endif
 
-#ifndef TSAN_GO
+#if !defined(SANITIZER_GO) && __TSAN_HAS_INT128
 // Protects emulation of 128-bit atomic operations.
 static StaticSpinMutex mutex128;
 #endif
@@ -123,7 +123,8 @@ template<typename T> T func_cas(volatile T *v, T cmp, T xch) {
 // Atomic ops are executed under tsan internal mutex,
 // here we assume that the atomic variables are not accessed
 // from non-instrumented code.
-#if !defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16) && !defined(TSAN_GO)
+#if !defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16) && !defined(SANITIZER_GO) \
+    && __TSAN_HAS_INT128
 a128 func_xchg(volatile a128 *v, a128 op) {
   SpinMutexLock lock(&mutex128);
   a128 cmp = *v;
@@ -196,22 +197,22 @@ static int SizeLog() {
   // this leads to false negatives only in very obscure cases.
 }
 
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
 static atomic_uint8_t *to_atomic(const volatile a8 *a) {
-  return (atomic_uint8_t*)a;
+  return reinterpret_cast<atomic_uint8_t *>(const_cast<a8 *>(a));
 }
 
 static atomic_uint16_t *to_atomic(const volatile a16 *a) {
-  return (atomic_uint16_t*)a;
+  return reinterpret_cast<atomic_uint16_t *>(const_cast<a16 *>(a));
 }
 #endif
 
 static atomic_uint32_t *to_atomic(const volatile a32 *a) {
-  return (atomic_uint32_t*)a;
+  return reinterpret_cast<atomic_uint32_t *>(const_cast<a32 *>(a));
 }
 
 static atomic_uint64_t *to_atomic(const volatile a64 *a) {
-  return (atomic_uint64_t*)a;
+  return reinterpret_cast<atomic_uint64_t *>(const_cast<a64 *>(a));
 }
 
 static memory_order to_mo(morder mo) {
@@ -232,7 +233,7 @@ static T NoTsanAtomicLoad(const volatile T *a, morder mo) {
   return atomic_load(to_atomic(a), to_mo(mo));
 }
 
-#if __TSAN_HAS_INT128 && !defined(TSAN_GO)
+#if __TSAN_HAS_INT128 && !defined(SANITIZER_GO)
 static a128 NoTsanAtomicLoad(const volatile a128 *a, morder mo) {
   SpinMutexLock lock(&mutex128);
   return *a;
@@ -262,7 +263,7 @@ static void NoTsanAtomicStore(volatile T *a, T v, morder mo) {
   atomic_store(to_atomic(a), v, to_mo(mo));
 }
 
-#if __TSAN_HAS_INT128 && !defined(TSAN_GO)
+#if __TSAN_HAS_INT128 && !defined(SANITIZER_GO)
 static void NoTsanAtomicStore(volatile a128 *a, a128 v, morder mo) {
   SpinMutexLock lock(&mutex128);
   *a = v;
@@ -454,7 +455,7 @@ static T AtomicCAS(ThreadState *thr, uptr pc,
   return c;
 }
 
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
 static void NoTsanAtomicFence(morder mo) {
   __sync_synchronize();
 }
@@ -466,7 +467,7 @@ static void AtomicFence(ThreadState *thr, uptr pc, morder mo) {
 #endif
 
 // Interface functions follow.
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
 
 // C/C++
 
@@ -865,7 +866,7 @@ void __tsan_atomic_signal_fence(morder mo) {
 }
 }  // extern "C"
 
-#else  // #ifndef TSAN_GO
+#else  // #ifndef SANITIZER_GO
 
 // Go
 
@@ -948,4 +949,4 @@ void __tsan_go_atomic64_compare_exchange(
   *(bool*)(a+24) = (cur == cmp);
 }
 }  // extern "C"
-#endif  // #ifndef TSAN_GO
+#endif  // #ifndef SANITIZER_GO

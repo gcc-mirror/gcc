@@ -16,6 +16,15 @@
 #include "sanitizer_internal_defs.h"
 #include "sanitizer_platform.h"
 
+#if SANITIZER_FREEBSD
+// FreeBSD's dlopen() returns a pointer to an Obj_Entry structure that
+// incroporates the map structure.
+# define GET_LINK_MAP_BY_DLOPEN_HANDLE(handle) \
+    ((link_map*)((handle) == nullptr ? nullptr : ((char*)(handle) + 544)))
+#else
+# define GET_LINK_MAP_BY_DLOPEN_HANDLE(handle) ((link_map*)(handle))
+#endif  // !SANITIZER_FREEBSD
+
 namespace __sanitizer {
   extern unsigned struct_utsname_sz;
   extern unsigned struct_stat_sz;
@@ -72,14 +81,6 @@ namespace __sanitizer {
   const unsigned struct_kernel_stat_sz = 144;
   #endif
   const unsigned struct_kernel_stat64_sz = 104;
-#elif defined(__sparc__) && defined(__arch64__)
-  const unsigned struct___old_kernel_stat_sz = 0;
-  const unsigned struct_kernel_stat_sz = 104;
-  const unsigned struct_kernel_stat64_sz = 144;
-#elif defined(__sparc__) && !defined(__arch64__)
-  const unsigned struct___old_kernel_stat_sz = 0;
-  const unsigned struct_kernel_stat_sz = 64;
-  const unsigned struct_kernel_stat64_sz = 104;
 #endif
   struct __sanitizer_perf_event_attr {
     unsigned type;
@@ -102,7 +103,7 @@ namespace __sanitizer {
 
 #if defined(__powerpc64__)
   const unsigned struct___old_kernel_stat_sz = 0;
-#elif !defined(__sparc__)
+#else
   const unsigned struct___old_kernel_stat_sz = 32;
 #endif
 
@@ -147,6 +148,18 @@ namespace __sanitizer {
   };
 
   const unsigned old_sigset_t_sz = sizeof(unsigned long);
+
+  struct __sanitizer_sem_t {
+#if SANITIZER_ANDROID && defined(_LP64)
+    int data[4];
+#elif SANITIZER_ANDROID && !defined(_LP64)
+    int data;
+#elif SANITIZER_LINUX
+    uptr data[4];
+#elif SANITIZER_FREEBSD
+    u32 data[4];
+#endif
+  };
 #endif // SANITIZER_LINUX || SANITIZER_FREEBSD
 
 #if SANITIZER_ANDROID
@@ -181,18 +194,6 @@ namespace __sanitizer {
     unsigned short __pad1;
     unsigned long __unused1;
     unsigned long __unused2;
-#elif defined(__sparc__)
-# if defined(__arch64__)
-    unsigned mode;
-    unsigned short __pad1;
-# else
-    unsigned short __pad1;
-    unsigned short mode;
-    unsigned short __pad2;
-# endif
-    unsigned short __seq;
-    unsigned long long __unused1;
-    unsigned long long __unused2;
 #else
     unsigned short mode;
     unsigned short __pad1;
@@ -210,26 +211,6 @@ namespace __sanitizer {
 
   struct __sanitizer_shmid_ds {
     __sanitizer_ipc_perm shm_perm;
-  #if defined(__sparc__)
-  # if !defined(__arch64__)
-    u32 __pad1;
-  # endif
-    long shm_atime;
-  # if !defined(__arch64__)
-    u32 __pad2;
-  # endif
-    long shm_dtime;
-  # if !defined(__arch64__)
-    u32 __pad3;
-  # endif
-    long shm_ctime;
-    uptr shm_segsz;
-    int shm_cpid;
-    int shm_lpid;
-    unsigned long shm_nattch;
-    unsigned long __glibc_reserved1;
-    unsigned long __glibc_reserved2;
-  #else    
   #ifndef __powerpc__
     uptr shm_segsz;
   #elif !defined(__powerpc64__)
@@ -267,7 +248,6 @@ namespace __sanitizer {
     uptr __unused4;
     uptr __unused5;
   #endif
-#endif
   };
 #elif SANITIZER_FREEBSD
   struct __sanitizer_ipc_perm {
@@ -351,7 +331,7 @@ namespace __sanitizer {
     long pw_change;
     char *pw_class;
 #endif
-#if !SANITIZER_ANDROID
+#if !(SANITIZER_ANDROID && (SANITIZER_WORDSIZE == 32))
     char *pw_gecos;
 #endif
     char *pw_dir;
@@ -413,7 +393,7 @@ namespace __sanitizer {
   };
 #endif
 
-#if SANITIZER_ANDROID || SANITIZER_MAC || SANITIZER_FREEBSD
+#if SANITIZER_MAC || SANITIZER_FREEBSD
   struct __sanitizer_msghdr {
     void *msg_name;
     unsigned msg_namelen;
@@ -550,6 +530,27 @@ namespace __sanitizer {
 #endif
 
   // Linux system headers define the 'sa_handler' and 'sa_sigaction' macros.
+#if SANITIZER_ANDROID && (SANITIZER_WORDSIZE == 64)
+  struct __sanitizer_sigaction {
+    unsigned sa_flags;
+    union {
+      void (*sigaction)(int sig, void *siginfo, void *uctx);
+      void (*handler)(int sig);
+    };
+    __sanitizer_sigset_t sa_mask;
+    void (*sa_restorer)();
+  };
+#elif SANITIZER_ANDROID && (SANITIZER_WORDSIZE == 32)
+  struct __sanitizer_sigaction {
+    union {
+      void (*sigaction)(int sig, void *siginfo, void *uctx);
+      void (*handler)(int sig);
+    };
+    __sanitizer_sigset_t sa_mask;
+    uptr sa_flags;
+    void (*sa_restorer)();
+  };
+#else // !SANITIZER_ANDROID
   struct __sanitizer_sigaction {
 #if defined(__mips__) && !SANITIZER_FREEBSD
     unsigned int sa_flags;
@@ -564,11 +565,7 @@ namespace __sanitizer {
 #else
     __sanitizer_sigset_t sa_mask;
 #ifndef __mips__
-#if defined(__sparc__)
-    unsigned long sa_flags;
-#else
     int sa_flags;
-#endif
 #endif
 #endif
 #if SANITIZER_LINUX
@@ -578,9 +575,14 @@ namespace __sanitizer {
     int sa_resv[1];
 #endif
   };
+#endif // !SANITIZER_ANDROID
 
 #if SANITIZER_FREEBSD
   typedef __sanitizer_sigset_t __sanitizer_kernel_sigset_t;
+#elif defined(__mips__)
+  struct __sanitizer_kernel_sigset_t {
+    u8 sig[16];
+  };
 #else
   struct __sanitizer_kernel_sigset_t {
     u8 sig[8];
@@ -617,6 +619,8 @@ namespace __sanitizer {
     const void *dlpi_phdr;
     short dlpi_phnum;
   };
+
+  extern unsigned struct_ElfW_Phdr_sz;
 #endif
 
   struct __sanitizer_addrinfo {
@@ -729,7 +733,8 @@ namespace __sanitizer {
 #endif
 
 #if SANITIZER_LINUX && !SANITIZER_ANDROID && \
-    (defined(__i386) || defined(__x86_64))
+  (defined(__i386) || defined(__x86_64) || defined(__mips64) || \
+    defined(__powerpc64__) || defined(__aarch64__))
   extern unsigned struct_user_regs_struct_sz;
   extern unsigned struct_user_fpregs_struct_sz;
   extern unsigned struct_user_fpxregs_struct_sz;
@@ -786,11 +791,25 @@ struct __sanitizer_obstack {
   char *next_free;
   uptr more_fields[7];
 };
+
+typedef uptr (*__sanitizer_cookie_io_read)(void *cookie, char *buf, uptr size);
+typedef uptr (*__sanitizer_cookie_io_write)(void *cookie, const char *buf,
+                                            uptr size);
+typedef int (*__sanitizer_cookie_io_seek)(void *cookie, u64 *offset,
+                                          int whence);
+typedef int (*__sanitizer_cookie_io_close)(void *cookie);
+
+struct __sanitizer_cookie_io_functions_t {
+  __sanitizer_cookie_io_read read;
+  __sanitizer_cookie_io_write write;
+  __sanitizer_cookie_io_seek seek;
+  __sanitizer_cookie_io_close close;
+};
 #endif
 
 #define IOC_NRBITS 8
 #define IOC_TYPEBITS 8
-#if defined(__powerpc__) || defined(__powerpc64__) || defined(__mips__) || defined(__sparc__)
+#if defined(__powerpc__) || defined(__powerpc64__) || defined(__mips__)
 #define IOC_SIZEBITS 13
 #define IOC_DIRBITS 3
 #define IOC_NONE 1U
@@ -820,24 +839,14 @@ struct __sanitizer_obstack {
 #define IOC_DIR(nr) (((nr) >> IOC_DIRSHIFT) & IOC_DIRMASK)
 #define IOC_TYPE(nr) (((nr) >> IOC_TYPESHIFT) & IOC_TYPEMASK)
 #define IOC_NR(nr) (((nr) >> IOC_NRSHIFT) & IOC_NRMASK)
-
-#if defined(__sparc__)
-// In sparc the 14 bits SIZE field overlaps with the
-// least significant bit of DIR, so either IOC_READ or
-// IOC_WRITE shall be 1 in order to get a non-zero SIZE.
-# define IOC_SIZE(nr)                       \
-  ((((((nr) >> 29) & 0x7) & (4U|2U)) == 0)? \
-   0 : (((nr) >> 16) & 0x3fff))
-#else
 #define IOC_SIZE(nr) (((nr) >> IOC_SIZESHIFT) & IOC_SIZEMASK)
-#endif
 
-  extern unsigned struct_arpreq_sz;
   extern unsigned struct_ifreq_sz;
   extern unsigned struct_termios_sz;
   extern unsigned struct_winsize_sz;
 
 #if SANITIZER_LINUX
+  extern unsigned struct_arpreq_sz;
   extern unsigned struct_cdrom_msf_sz;
   extern unsigned struct_cdrom_multisession_sz;
   extern unsigned struct_cdrom_read_audio_sz;

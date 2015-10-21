@@ -66,6 +66,12 @@ asan_rt_version_t  __asan_rt_version;
 
 namespace __asan {
 
+void InitializePlatformInterceptors() {}
+
+void DisableReexec() {
+  // No need to re-exec on Linux.
+}
+
 void MaybeReexec() {
   // No need to re-exec on Linux.
 }
@@ -105,8 +111,11 @@ static void ReportIncompatibleRT() {
 }
 
 void AsanCheckDynamicRTPrereqs() {
+  if (!ASAN_DYNAMIC)
+    return;
+
   // Ensure that dynamic RT is the first DSO in the list
-  const char *first_dso_name = 0;
+  const char *first_dso_name = nullptr;
   dl_iterate_phdr(FindFirstDSOCallback, &first_dso_name);
   if (first_dso_name && !IsDynamicRTName(first_dso_name)) {
     Report("ASan runtime does not come first in initial library list; "
@@ -131,7 +140,8 @@ void AsanCheckIncompatibleRT() {
       // system libraries, causing crashes later in ASan initialization.
       MemoryMappingLayout proc_maps(/*cache_enabled*/true);
       char filename[128];
-      while (proc_maps.Next(0, 0, 0, filename, sizeof(filename), 0)) {
+      while (proc_maps.Next(nullptr, nullptr, nullptr, filename,
+                            sizeof(filename), nullptr)) {
         if (IsDynamicRTName(filename)) {
           Report("Your application is linked against "
                  "incompatible ASan runtimes.\n");
@@ -144,87 +154,7 @@ void AsanCheckIncompatibleRT() {
     }
   }
 }
-#endif  // SANITIZER_ANDROID
-
-void GetPcSpBp(void *context, uptr *pc, uptr *sp, uptr *bp) {
-#if defined(__arm__)
-  ucontext_t *ucontext = (ucontext_t*)context;
-  *pc = ucontext->uc_mcontext.arm_pc;
-  *bp = ucontext->uc_mcontext.arm_fp;
-  *sp = ucontext->uc_mcontext.arm_sp;
-#elif defined(__aarch64__)
-  ucontext_t *ucontext = (ucontext_t*)context;
-  *pc = ucontext->uc_mcontext.pc;
-  *bp = ucontext->uc_mcontext.regs[29];
-  *sp = ucontext->uc_mcontext.sp;
-#elif defined(__hppa__)
-  ucontext_t *ucontext = (ucontext_t*)context;
-  *pc = ucontext->uc_mcontext.sc_iaoq[0];
-  /* GCC uses %r3 whenever a frame pointer is needed.  */
-  *bp = ucontext->uc_mcontext.sc_gr[3];
-  *sp = ucontext->uc_mcontext.sc_gr[30];
-#elif defined(__x86_64__)
-# if SANITIZER_FREEBSD
-  ucontext_t *ucontext = (ucontext_t*)context;
-  *pc = ucontext->uc_mcontext.mc_rip;
-  *bp = ucontext->uc_mcontext.mc_rbp;
-  *sp = ucontext->uc_mcontext.mc_rsp;
-# else
-  ucontext_t *ucontext = (ucontext_t*)context;
-  *pc = ucontext->uc_mcontext.gregs[REG_RIP];
-  *bp = ucontext->uc_mcontext.gregs[REG_RBP];
-  *sp = ucontext->uc_mcontext.gregs[REG_RSP];
-# endif
-#elif defined(__i386__)
-# if SANITIZER_FREEBSD
-  ucontext_t *ucontext = (ucontext_t*)context;
-  *pc = ucontext->uc_mcontext.mc_eip;
-  *bp = ucontext->uc_mcontext.mc_ebp;
-  *sp = ucontext->uc_mcontext.mc_esp;
-# else
-  ucontext_t *ucontext = (ucontext_t*)context;
-  *pc = ucontext->uc_mcontext.gregs[REG_EIP];
-  *bp = ucontext->uc_mcontext.gregs[REG_EBP];
-  *sp = ucontext->uc_mcontext.gregs[REG_ESP];
-# endif
-#elif defined(__powerpc__) || defined(__powerpc64__)
-  ucontext_t *ucontext = (ucontext_t*)context;
-  *pc = ucontext->uc_mcontext.regs->nip;
-  *sp = ucontext->uc_mcontext.regs->gpr[PT_R1];
-  // The powerpc{,64}-linux ABIs do not specify r31 as the frame
-  // pointer, but GCC always uses r31 when we need a frame pointer.
-  *bp = ucontext->uc_mcontext.regs->gpr[PT_R31];
-#elif defined(__sparc__)
-  ucontext_t *ucontext = (ucontext_t*)context;
-  uptr *stk_ptr;
-# if defined (__arch64__)
-  *pc = ucontext->uc_mcontext.mc_gregs[MC_PC];
-  *sp = ucontext->uc_mcontext.mc_gregs[MC_O6];
-  stk_ptr = (uptr *) (*sp + 2047);
-  *bp = stk_ptr[15];
-# else
-  *pc = ucontext->uc_mcontext.gregs[REG_PC];
-  *sp = ucontext->uc_mcontext.gregs[REG_O6];
-  stk_ptr = (uptr *) *sp;
-  *bp = stk_ptr[15];
-# endif
-#elif defined(__mips__)
-  ucontext_t *ucontext = (ucontext_t*)context;
-  *pc = ucontext->uc_mcontext.gregs[31];
-  *bp = ucontext->uc_mcontext.gregs[30];
-  *sp = ucontext->uc_mcontext.gregs[29];
-#else
-# error "Unsupported arch"
-#endif
-}
-
-bool AsanInterceptsSignal(int signum) {
-  return signum == SIGSEGV && common_flags()->handle_segv;
-}
-
-void AsanPlatformThreadInit() {
-  // Nothing here for now.
-}
+#endif // SANITIZER_ANDROID
 
 #if !SANITIZER_ANDROID
 void ReadContextStack(void *context, uptr *stack, uptr *ssize) {
@@ -242,6 +172,6 @@ void *AsanDlSymNext(const char *sym) {
   return dlsym(RTLD_NEXT, sym);
 }
 
-}  // namespace __asan
+} // namespace __asan
 
-#endif  // SANITIZER_FREEBSD || SANITIZER_LINUX
+#endif // SANITIZER_FREEBSD || SANITIZER_LINUX

@@ -11,6 +11,7 @@
 // with a few common GNU extensions.
 //
 //===----------------------------------------------------------------------===//
+
 #include <stdarg.h>
 
 static const char *parse_number(const char *p, int *out) {
@@ -189,7 +190,7 @@ static const char *scanf_parse_next(const char *p, bool allowGnuMalloc,
       continue;
     }
     if (*p == '\0') {
-      return 0;
+      return nullptr;
     }
     // %n$
     p = maybe_parse_param_index(p, &dir->argIdx);
@@ -204,7 +205,7 @@ static const char *scanf_parse_next(const char *p, bool allowGnuMalloc,
       p = parse_number(p, &dir->fieldWidth);
       CHECK(p);
       if (dir->fieldWidth <= 0)  // Width if at all must be non-zero
-        return 0;
+        return nullptr;
     }
     // m
     if (*p == 'm') {
@@ -224,8 +225,8 @@ static const char *scanf_parse_next(const char *p, bool allowGnuMalloc,
       while (*p && *p != ']')
         ++p;
       if (*p == 0)
-        return 0; // unexpected end of string
-                  // Consume the closing ']'.
+        return nullptr; // unexpected end of string
+                        // Consume the closing ']'.
       ++p;
     }
     // This is unfortunately ambiguous between old GNU extension
@@ -249,7 +250,7 @@ static const char *scanf_parse_next(const char *p, bool allowGnuMalloc,
         while (*q && *q != ']' && *q != '%')
           ++q;
         if (*q == 0 || *q == '%')
-          return 0;
+          return nullptr;
         p = q + 1; // Consume the closing ']'.
         dir->maybeGnuMalloc = true;
       }
@@ -393,7 +394,7 @@ static const char *printf_parse_next(const char *p, PrintfDirective *dir) {
       continue;
     }
     if (*p == '\0') {
-      return 0;
+      return nullptr;
     }
     // %n$
     p = maybe_parse_param_index(p, &dir->precisionIdx);
@@ -406,7 +407,7 @@ static const char *printf_parse_next(const char *p, PrintfDirective *dir) {
     p = maybe_parse_number_or_star(p, &dir->fieldWidth,
                                    &dir->starredWidth);
     if (!p)
-      return 0;
+      return nullptr;
     // Precision
     if (*p == '.') {
       ++p;
@@ -414,7 +415,7 @@ static const char *printf_parse_next(const char *p, PrintfDirective *dir) {
       p = maybe_parse_number_or_star(p, &dir->fieldPrecision,
                                      &dir->starredPrecision);
       if (!p)
-        return 0;
+        return nullptr;
       // m$
       if (dir->starredPrecision) {
         p = maybe_parse_param_index(p, &dir->precisionIdx);
@@ -554,4 +555,4 @@ static void printf_common(void *ctx, const char *format, va_list aq) {
   }
 }
 
-#endif  // SANITIZER_INTERCEPT_PRINTF
+#endif // SANITIZER_INTERCEPT_PRINTF

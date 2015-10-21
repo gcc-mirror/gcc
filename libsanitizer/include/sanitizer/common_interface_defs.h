@@ -60,15 +60,6 @@ extern "C" {
   void __sanitizer_unaligned_store32(void *p, uint32_t x);
   void __sanitizer_unaligned_store64(void *p, uint64_t x);
 
-  // Initialize coverage.
-  void __sanitizer_cov_init();
-  // Record and dump coverage info.
-  void __sanitizer_cov_dump();
-  // Open <name>.sancov.packed in the coverage directory and return the file
-  // descriptor. Returns -1 on failure, or if coverage dumping is disabled.
-  // This is intended for use by sandboxing code.
-  intptr_t __sanitizer_maybe_open_cov_file(const char *name);
-
   // Annotate the current state of a contiguous container, such as
   // std::vector, std::string or similar.
   // A contiguous container is a container that keeps all of its elements
@@ -115,6 +106,20 @@ extern "C" {
   // Print the stack trace leading to this call. Useful for debugging user code.
   void __sanitizer_print_stack_trace();
 
+  // Sets the callback to be called right before death on error.
+  // Passing 0 will unset the callback.
+  void __sanitizer_set_death_callback(void (*callback)(void));
+
+  // Interceptor hooks.
+  // Whenever a libc function interceptor is called it checks if the
+  // corresponding weak hook is defined, and it so -- calls it.
+  // The primary use case is data-flow-guided fuzzing, where the fuzzer needs
+  // to know what is being passed to libc functions, e.g. memcmp.
+  // FIXME: implement more hooks.
+  void __sanitizer_weak_hook_memcmp(void *called_pc, const void *s1,
+                                    const void *s2, size_t n);
+  void __sanitizer_weak_hook_strncmp(void *called_pc, const char *s1,
+                                    const char *s2, size_t n);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

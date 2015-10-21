@@ -22,7 +22,14 @@
 #include "sanitizer_common/sanitizer_libc.h"
 #include "sanitizer_common/sanitizer_mac.h"
 
-#include <crt_externs.h>  // for _NSGetArgv
+#if !SANITIZER_IOS
+#include <crt_externs.h>  // for _NSGetArgv and _NSGetEnviron
+#else
+extern "C" {
+  extern char ***_NSGetArgv(void);
+}
+#endif
+
 #include <dlfcn.h>  // for dladdr()
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>
@@ -38,19 +45,7 @@
 
 namespace __asan {
 
-void GetPcSpBp(void *context, uptr *pc, uptr *sp, uptr *bp) {
-  ucontext_t *ucontext = (ucontext_t*)context;
-# if SANITIZER_WORDSIZE == 64
-  *pc = ucontext->uc_mcontext->__ss.__rip;
-  *bp = ucontext->uc_mcontext->__ss.__rbp;
-  *sp = ucontext->uc_mcontext->__ss.__rsp;
-# else
-  *pc = ucontext->uc_mcontext->__ss.__eip;
-  *bp = ucontext->uc_mcontext->__ss.__ebp;
-  *sp = ucontext->uc_mcontext->__ss.__esp;
-# endif  // SANITIZER_WORDSIZE
-}
-
+void InitializePlatformInterceptors() {}
 
 bool PlatformHasDifferentMemcpyAndMemmove() {
   // On OS X 10.7 memcpy() and memmove() are both resolved
@@ -72,35 +67,51 @@ LowLevelAllocator allocator_for_env;
 // otherwise the corresponding "NAME=value" string is replaced with
 // |name_value|.
 void LeakyResetEnv(const char *name, const char *name_value) {
-  char ***env_ptr = _NSGetEnviron();
-  CHECK(env_ptr);
-  char **environ = *env_ptr;
-  CHECK(environ);
+  char **env = GetEnviron();
   uptr name_len = internal_strlen(name);
-  while (*environ != 0) {
-    uptr len = internal_strlen(*environ);
+  while (*env != 0) {
+    uptr len = internal_strlen(*env);
     if (len > name_len) {
-      const char *p = *environ;
+      const char *p = *env;
       if (!internal_memcmp(p, name, name_len) && p[name_len] == '=') {
         // Match.
         if (name_value) {
           // Replace the old value with the new one.
-          *environ = const_cast<char*>(name_value);
+          *env = const_cast<char*>(name_value);
         } else {
           // Shift the subsequent pointers back.
-          char **del = environ;
+          char **del = env;
           do {
             del[0] = del[1];
           } while (*del++);
         }
       }
     }
-    environ++;
+    env++;
   }
 }
 
+static bool reexec_disabled = false;
+
+void DisableReexec() {
+  reexec_disabled = true;
+}
+
+extern "C" double dyldVersionNumber;
+static const double kMinDyldVersionWithAutoInterposition = 360.0;
+
+bool DyldNeedsEnvVariable() {
+  // If running on OS X 10.11+ or iOS 9.0+, dyld will interpose even if
+  // DYLD_INSERT_LIBRARIES is not set. However, checking OS version via
+  // GetMacosVersion() doesn't work for the simulator. Let's instead check
+  // `dyldVersionNumber`, which is exported by dyld, against a known version
+  // number from the first OS release where this appeared.
+  return dyldVersionNumber < kMinDyldVersionWithAutoInterposition;
+}
+
 void MaybeReexec() {
-  if (!flags()->allow_reexec) return;
+  if (reexec_disabled) return;
+
   // Make sure the dynamic ASan runtime library is preloaded so that the
   // wrappers work. If it is not, set DYLD_INSERT_LIBRARIES and re-exec
   // ourselves.
@@ -111,8 +122,12 @@ void MaybeReexec() {
   uptr old_env_len = dyld_insert_libraries ?
       internal_strlen(dyld_insert_libraries) : 0;
   uptr fname_len = internal_strlen(info.dli_fname);
-  if (!dyld_insert_libraries ||
-      !REAL(strstr)(dyld_insert_libraries, info.dli_fname)) {
+  const char *dylib_name = StripModuleName(info.dli_fname);
+  uptr dylib_name_len = internal_strlen(dylib_name);
+
+  bool lib_is_in_env =
+      dyld_insert_libraries && REAL(strstr)(dyld_insert_libraries, dylib_name);
+  if (DyldNeedsEnvVariable() && !lib_is_in_env) {
     // DYLD_INSERT_LIBRARIES is not set or does not contain the runtime
     // library.
     char program_name[1024];
@@ -138,58 +153,77 @@ void MaybeReexec() {
     VReport(1, "exec()-ing the program with\n");
     VReport(1, "%s=%s\n", kDyldInsertLibraries, new_env);
     VReport(1, "to enable ASan wrappers.\n");
-    VReport(1, "Set ASAN_OPTIONS=allow_reexec=0 to disable this.\n");
     execv(program_name, *_NSGetArgv());
-  } else {
-    // DYLD_INSERT_LIBRARIES is set and contains the runtime library.
-    if (old_env_len == fname_len) {
-      // It's just the runtime library name - fine to unset the variable.
-      LeakyResetEnv(kDyldInsertLibraries, NULL);
-    } else {
-      uptr env_name_len = internal_strlen(kDyldInsertLibraries);
-      // Allocate memory to hold the previous env var name, its value, the '='
-      // sign and the '\0' char.
-      char *new_env = (char*)allocator_for_env.Allocate(
-          old_env_len + 2 + env_name_len);
-      CHECK(new_env);
-      internal_memset(new_env, '\0', old_env_len + 2 + env_name_len);
-      internal_strncpy(new_env, kDyldInsertLibraries, env_name_len);
-      new_env[env_name_len] = '=';
-      char *new_env_pos = new_env + env_name_len + 1;
 
-      // Iterate over colon-separated pieces of |dyld_insert_libraries|.
-      char *piece_start = dyld_insert_libraries;
-      char *piece_end = NULL;
-      char *old_env_end = dyld_insert_libraries + old_env_len;
-      do {
-        if (piece_start[0] == ':') piece_start++;
-        piece_end =  REAL(strchr)(piece_start, ':');
-        if (!piece_end) piece_end = dyld_insert_libraries + old_env_len;
-        if ((uptr)(piece_start - dyld_insert_libraries) > old_env_len) break;
-        uptr piece_len = piece_end - piece_start;
-
-        // If the current piece isn't the runtime library name,
-        // append it to new_env.
-        if ((piece_len != fname_len) ||
-            (internal_strncmp(piece_start, info.dli_fname, fname_len) != 0)) {
-          if (new_env_pos != new_env + env_name_len + 1) {
-            new_env_pos[0] = ':';
-            new_env_pos++;
-          }
-          internal_strncpy(new_env_pos, piece_start, piece_len);
-        }
-        // Move on to the next piece.
-        new_env_pos += piece_len;
-        piece_start = piece_end;
-      } while (piece_start < old_env_end);
-
-      // Can't use setenv() here, because it requires the allocator to be
-      // initialized.
-      // FIXME: instead of filtering DYLD_INSERT_LIBRARIES here, do it in
-      // a separate function called after InitializeAllocator().
-      LeakyResetEnv(kDyldInsertLibraries, new_env);
-    }
+    // We get here only if execv() failed.
+    Report("ERROR: The process is launched without DYLD_INSERT_LIBRARIES, "
+           "which is required for ASan to work. ASan tried to set the "
+           "environment variable and re-execute itself, but execv() failed, "
+           "possibly because of sandbox restrictions. Make sure to launch the "
+           "executable with:\n%s=%s\n", kDyldInsertLibraries, new_env);
+    CHECK("execv failed" && 0);
   }
+
+  if (!lib_is_in_env)
+    return;
+
+  // DYLD_INSERT_LIBRARIES is set and contains the runtime library. Let's remove
+  // the dylib from the environment variable, because interceptors are installed
+  // and we don't want our children to inherit the variable.
+
+  uptr env_name_len = internal_strlen(kDyldInsertLibraries);
+  // Allocate memory to hold the previous env var name, its value, the '='
+  // sign and the '\0' char.
+  char *new_env = (char*)allocator_for_env.Allocate(
+      old_env_len + 2 + env_name_len);
+  CHECK(new_env);
+  internal_memset(new_env, '\0', old_env_len + 2 + env_name_len);
+  internal_strncpy(new_env, kDyldInsertLibraries, env_name_len);
+  new_env[env_name_len] = '=';
+  char *new_env_pos = new_env + env_name_len + 1;
+
+  // Iterate over colon-separated pieces of |dyld_insert_libraries|.
+  char *piece_start = dyld_insert_libraries;
+  char *piece_end = NULL;
+  char *old_env_end = dyld_insert_libraries + old_env_len;
+  do {
+    if (piece_start[0] == ':') piece_start++;
+    piece_end = REAL(strchr)(piece_start, ':');
+    if (!piece_end) piece_end = dyld_insert_libraries + old_env_len;
+    if ((uptr)(piece_start - dyld_insert_libraries) > old_env_len) break;
+    uptr piece_len = piece_end - piece_start;
+
+    char *filename_start =
+        (char *)internal_memrchr(piece_start, '/', piece_len);
+    uptr filename_len = piece_len;
+    if (filename_start) {
+      filename_start += 1;
+      filename_len = piece_len - (filename_start - piece_start);
+    } else {
+      filename_start = piece_start;
+    }
+
+    // If the current piece isn't the runtime library name,
+    // append it to new_env.
+    if ((dylib_name_len != filename_len) ||
+        (internal_memcmp(filename_start, dylib_name, dylib_name_len) != 0)) {
+      if (new_env_pos != new_env + env_name_len + 1) {
+        new_env_pos[0] = ':';
+        new_env_pos++;
+      }
+      internal_strncpy(new_env_pos, piece_start, piece_len);
+      new_env_pos += piece_len;
+    }
+    // Move on to the next piece.
+    piece_start = piece_end;
+  } while (piece_start < old_env_end);
+
+  // Can't use setenv() here, because it requires the allocator to be
+  // initialized.
+  // FIXME: instead of filtering DYLD_INSERT_LIBRARIES here, do it in
+  // a separate function called after InitializeAllocator().
+  if (new_env_pos == new_env + env_name_len + 1) new_env = NULL;
+  LeakyResetEnv(kDyldInsertLibraries, new_env);
 }
 
 // No-op. Mac does not support static linkage anyway.
@@ -202,14 +236,6 @@ void AsanCheckDynamicRTPrereqs() {}
 
 // No-op. Mac does not support static linkage anyway.
 void AsanCheckIncompatibleRT() {}
-
-bool AsanInterceptsSignal(int signum) {
-  return (signum == SIGSEGV || signum == SIGBUS) &&
-         common_flags()->handle_segv;
-}
-
-void AsanPlatformThreadInit() {
-}
 
 void ReadContextStack(void *context, uptr *stack, uptr *ssize) {
   UNIMPLEMENTED();
@@ -262,9 +288,8 @@ ALWAYS_INLINE
 void asan_register_worker_thread(int parent_tid, StackTrace *stack) {
   AsanThread *t = GetCurrentThread();
   if (!t) {
-    t = AsanThread::Create(0, 0);
-    CreateThreadContextArgs args = { t, stack };
-    asanThreadRegistry().CreateThread(*(uptr*)t, true, parent_tid, &args);
+    t = AsanThread::Create(/* start_routine */ nullptr, /* arg */ nullptr,
+                           parent_tid, stack, /* detached */ true);
     t->Init();
     asanThreadRegistry().StartThread(t->tid(), 0, 0);
     SetCurrentThread(t);
@@ -311,7 +336,7 @@ asan_block_context_t *alloc_asan_context(void *ctxt, dispatch_function_t func,
                                   dispatch_function_t func) {                 \
     GET_STACK_TRACE_THREAD;                                                   \
     asan_block_context_t *asan_ctxt = alloc_asan_context(ctxt, func, &stack); \
-    if (common_flags()->verbosity >= 2) {                                     \
+    if (Verbosity() >= 2) {                                     \
       Report(#dispatch_x_f "(): context: %p, pthread_self: %p\n",             \
              asan_ctxt, pthread_self());                                      \
       PRINT_CURRENT_STACK();                                                  \
@@ -329,7 +354,7 @@ INTERCEPTOR(void, dispatch_after_f, dispatch_time_t when,
                                     dispatch_function_t func) {
   GET_STACK_TRACE_THREAD;
   asan_block_context_t *asan_ctxt = alloc_asan_context(ctxt, func, &stack);
-  if (common_flags()->verbosity >= 2) {
+  if (Verbosity() >= 2) {
     Report("dispatch_after_f: %p\n", asan_ctxt);
     PRINT_CURRENT_STACK();
   }
@@ -342,7 +367,7 @@ INTERCEPTOR(void, dispatch_group_async_f, dispatch_group_t group,
                                           dispatch_function_t func) {
   GET_STACK_TRACE_THREAD;
   asan_block_context_t *asan_ctxt = alloc_asan_context(ctxt, func, &stack);
-  if (common_flags()->verbosity >= 2) {
+  if (Verbosity() >= 2) {
     Report("dispatch_group_async_f(): context: %p, pthread_self: %p\n",
            asan_ctxt, pthread_self());
     PRINT_CURRENT_STACK();
@@ -372,13 +397,6 @@ void dispatch_source_set_event_handler(dispatch_source_t ds, void(^work)(void));
     work(); \
   }
 
-// Forces the compiler to generate a frame pointer in the function.
-#define ENABLE_FRAME_POINTER                                       \
-  do {                                                             \
-    volatile uptr enable_fp;                                       \
-    enable_fp = GET_CURRENT_FRAME();                               \
-  } while (0)
-
 INTERCEPTOR(void, dispatch_async,
             dispatch_queue_t dq, void(^work)(void)) {
   ENABLE_FRAME_POINTER;
@@ -402,6 +420,10 @@ INTERCEPTOR(void, dispatch_after,
 
 INTERCEPTOR(void, dispatch_source_set_cancel_handler,
             dispatch_source_t ds, void(^work)(void)) {
+  if (!work) {
+    REAL(dispatch_source_set_cancel_handler)(ds, work);
+    return;
+  }
   ENABLE_FRAME_POINTER;
   GET_ASAN_BLOCK(work);
   REAL(dispatch_source_set_cancel_handler)(ds, asan_block);
