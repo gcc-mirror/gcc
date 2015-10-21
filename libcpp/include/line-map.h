@@ -272,7 +272,7 @@ struct GTY((tag ("2"))) line_map_macro : public line_map {
   source_location expansion;
 };
 
-#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
+#if CHECKING_P && (GCC_VERSION >= 2007)
 
 /* Assertion macro to be used in line-map code.  */
 #define linemap_assert(EXPR)                  \
