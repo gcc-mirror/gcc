@@ -84,7 +84,7 @@ extern edge copy_bb_and_scalar_dependences (basic_block, sese_info_p, edge,
 					    vec<tree> , bool *);
 extern struct loop *outermost_loop_in_sese (sese_l &, basic_block);
 extern tree scalar_evolution_in_region (sese_l &, loop_p, tree);
-extern bool invariant_in_sese_p_rec (tree, sese_l &);
+extern bool invariant_in_sese_p_rec (tree, sese_l &, bool *);
 
 /* Check that SESE contains LOOP.  */
 

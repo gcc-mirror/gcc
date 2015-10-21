@@ -787,10 +787,11 @@ set_ifsese_condition (ifsese if_region, tree condition)
 }
 
 /* Return true when T is defined outside REGION or when no definitions are
-   variant in REGION.  */
+   variant in REGION.  When HAS_VDEFS is a valid pointer, sets HAS_VDEFS to true
+   when T depends on memory that may change in REGION.  */
 
 bool
-invariant_in_sese_p_rec (tree t, sese_l &region)
+invariant_in_sese_p_rec (tree t, sese_l &region, bool *has_vdefs)
 {
   ssa_op_iter iter;
   use_operand_p use_p;
@@ -805,11 +806,15 @@ invariant_in_sese_p_rec (tree t, sese_l &region)
 
   /* VDEF is variant when it is in the region.  */
   if (gimple_vdef (stmt))
-    return false;
+    {
+      if (has_vdefs)
+	*has_vdefs = true;
+      return false;
+    }
 
   /* A VUSE may or may not be variant following the VDEFs.  */
   if (tree vuse = gimple_vuse (stmt))
-    return invariant_in_sese_p_rec (vuse, region);
+    return invariant_in_sese_p_rec (vuse, region, has_vdefs);
 
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
     {
@@ -818,7 +823,7 @@ invariant_in_sese_p_rec (tree t, sese_l &region)
       if (!defined_in_sese_p (use, region))
 	continue;
 
-      if (!invariant_in_sese_p_rec (use, region))
+      if (!invariant_in_sese_p_rec (use, region, has_vdefs))
 	return false;
     }
 
@@ -856,8 +861,13 @@ scalar_evolution_in_region (sese_l &region, loop_p loop, tree t)
       return t;
     }
 
-  if (invariant_in_sese_p_rec (t, region))
+  bool has_vdefs = false;
+  if (invariant_in_sese_p_rec (t, region, &has_vdefs))
     return t;
+
+  /* T variates in REGION.  */
+  if (has_vdefs)
+    return chrec_dont_know;
 
   return instantiate_scev (before, loop, t);
 }

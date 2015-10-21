@@ -540,7 +540,7 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
 
     case SSA_NAME:
       gcc_assert (-1 != parameter_index_in_region_1 (e, s->scop_info)
-		  || !invariant_in_sese_p_rec (e, s->scop_info->region));
+		  || !invariant_in_sese_p_rec (e, s->scop_info->region, NULL));
       res = extract_affine_name (s, e, space);
       break;
 
