@@ -1,5 +1,9 @@
 2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/torture/builtin-symmetric-1.c: Don't run at -O0.
+
+2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/tree-ssa/backprop-1.c, gcc.dg/tree-ssa/backprop-2.c,
 	gcc.dg/tree-ssa/backprop-3.c, gcc.dg/tree-ssa/backprop-4.c,
 	gcc.dg/tree-ssa/backprop-5.c, gcc.dg/tree-ssa/backprop-6.c: New tests.

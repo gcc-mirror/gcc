@@ -1,5 +1,18 @@
 2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* fold-const.h (fold_strip_sign_ops): Delete.
+	* fold-const.c (fold_strip_sign_ops): Likewise.
+	(fold_unary_loc, fold_binary_loc): Remove calls to it.
+	* builtins.c (fold_builtin_cos, fold_builtin_cosh)
+	(fold_builtin_ccos): Delete.
+	(fold_builtin_pow): Don't call fold_strip_sign_ops.
+	(fold_builtin_hypot, fold_builtin_copysign): Likewise.
+	Remove fndecl argument.
+	(fold_builtin_1): Update calls accordingly.  Handle constant
+	cos, cosh, ccos and ccosh here.
+
+2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* doc/invoke.texi (-fdump-tree-backprop, -fssa-backprop): Document.
 	* Makefile.in (OBJS): Add gimple-ssa-backprop.o.
 	* common.opt (fssa-backprop): New option.

@@ -107,7 +107,6 @@ extern tree build_fold_addr_expr_loc (location_t, tree);
         build_fold_addr_expr_with_type_loc (UNKNOWN_LOCATION, (T), TYPE)
 extern tree build_fold_addr_expr_with_type_loc (location_t, tree, tree);
 extern tree fold_build_cleanup_point_expr (tree type, tree expr);
-extern tree fold_strip_sign_ops (tree);
 #define build_fold_indirect_ref(T)\
         build_fold_indirect_ref_loc (UNKNOWN_LOCATION, T)
 extern tree build_fold_indirect_ref_loc (location_t, tree);
