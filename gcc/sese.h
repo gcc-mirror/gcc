@@ -32,14 +32,6 @@ struct sese_l
 
   operator bool () const { return entry && exit; }
 
-  const sese_l &
-  operator= (const sese_l &s)
-  {
-    entry = s.entry;
-    exit = s.exit;
-    return *this;
-  }
-
   edge entry;
   edge exit;
 };
@@ -204,35 +196,6 @@ sese_loop_depth (sese_l &region, loop_p loop)
 
   return depth;
 }
-
-/* Splits BB to make a single entry single exit region.  */
-
-static inline sese_info_p
-split_region_for_bb (basic_block bb)
-{
-  edge entry, exit;
-
-  if (single_pred_p (bb))
-    entry = single_pred_edge (bb);
-  else
-    {
-      entry = split_block_after_labels (bb);
-      bb = single_succ (bb);
-    }
-
-  if (single_succ_p (bb))
-    exit = single_succ_edge (bb);
-  else
-    {
-      gimple_stmt_iterator gsi = gsi_last_bb (bb);
-      gsi_prev (&gsi);
-      exit = split_block (bb, gsi_stmt (gsi));
-    }
-
-  return new_sese_info (entry, exit);
-}
-
-
 
 /* A single entry single exit specialized for conditions.  */
 
