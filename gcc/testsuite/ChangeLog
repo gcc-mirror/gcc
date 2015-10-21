@@ -1,3 +1,8 @@
+2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/operand-equal-1.c: Verify that empty constructors
+	are matched.
+
 2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/lto/20110201-1_0.c: Restrict to sqrt_insn targets.
@@ -20,6 +25,7 @@
 	sra-max-scalarization-size-Ospeed.
 
 2015-10-21  Marek Polacek  <polacek@redhat.com>
+
 
 	PR c/68024
 	* gcc.dg/pr68024.c: New test.
