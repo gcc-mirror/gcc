@@ -5,7 +5,7 @@ f_omp_parallel (void)
   {
     int i;
 
-#pragma acc loop
+#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
     for (i = 0; i < 2; ++i)
       ;
   }
