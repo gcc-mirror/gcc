@@ -849,6 +849,13 @@ DEFPARAM (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION,
 	  "maximum number of basic blocks per function to be analyzed by Graphite",
 	  100, 0, 0)
 
+/* Maximal number of array references in a scop.  */
+
+DEFPARAM (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP,
+	  "graphite-max-arrays-per-scop",
+	  "maximum number of arrays per scop",
+	  100, 0, 0)
+
 /* Maximal number of basic blocks in the functions analyzed by Graphite.  */
 
 DEFPARAM (PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION,
