@@ -1,5 +1,16 @@
 2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
 
+	* graphite-poly.h (struct dr_info): Added invalid_alias_set number.
+	(operator=): Removed.
+	(dr_info): Make alias_set number the last argument with default value of invalid_alias_set.
+	* graphite-sese-to-poly.c (build_scop_drs): Update constructor of dr_info.
+	(rewrite_reductions_out_of_ssa): Iterate only through the basic blocks which are inside region.
+	(rewrite_cross_bb_scalar_deps_out_of_ssa): Same.
+	* sese.h (struct sese_l): Removed assignment operator.
+	(split_region_for_bb): Removed dead code.
+
+2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
+
 	* graphite-poly.h (struct dr_info): Removed conversion constructor.
 	(struct scop): Renamed scop::region to scop::scop_info
 	(scop_set_region): Same.

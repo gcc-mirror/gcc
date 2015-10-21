@@ -1151,7 +1151,7 @@ build_scop_drs (scop_p scop)
   FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     if (pbb)
       FOR_EACH_VEC_ELT (GBB_DATA_REFS (PBB_BLACK_BOX (pbb)), j, dr)
-	scop->drs.safe_push (dr_info (dr, -1, pbb));
+	scop->drs.safe_push (dr_info (dr, pbb));
 
   build_alias_set (scop);
 
@@ -1497,31 +1497,29 @@ rewrite_degenerate_phi (gphi_iterator *psi)
 static void
 rewrite_reductions_out_of_ssa (scop_p scop)
 {
+  int i;
   basic_block bb;
-  sese_l region = scop->scop_info->region;
+  FOR_EACH_VEC_ELT (scop->scop_info->bbs, i, bb)
+    for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);)
+      {
+	gphi *phi = psi.phi ();
 
-  FOR_EACH_BB_FN (bb, cfun)
-    if (bb_in_sese_p (bb, region))
-      for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);)
-	{
-	  gphi *phi = psi.phi ();
+	if (virtual_operand_p (gimple_phi_result (phi)))
+	  {
+	    gsi_next (&psi);
+	    continue;
+	  }
 
-	  if (virtual_operand_p (gimple_phi_result (phi)))
-	    {
-	      gsi_next (&psi);
-	      continue;
-	    }
+	if (gimple_phi_num_args (phi) > 1
+	    && degenerate_phi_result (phi))
+	  rewrite_degenerate_phi (&psi);
 
-	  if (gimple_phi_num_args (phi) > 1
-	      && degenerate_phi_result (phi))
-	    rewrite_degenerate_phi (&psi);
+	else if (scalar_close_phi_node_p (phi))
+	  rewrite_close_phi_out_of_ssa (scop, &psi);
 
-	  else if (scalar_close_phi_node_p (phi))
-	    rewrite_close_phi_out_of_ssa (scop, &psi);
-
-	  else if (reduction_phi_p (region, &psi))
-	    rewrite_phi_out_of_ssa (scop, &psi);
-	}
+	else if (reduction_phi_p (scop->scop_info->region, &psi))
+	  rewrite_phi_out_of_ssa (scop, &psi);
+      }
 
   update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
@@ -1684,7 +1682,6 @@ rewrite_cross_bb_scalar_deps (scop_p scop, gimple_stmt_iterator *gsi)
 static void
 rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
 {
-  basic_block bb;
   gimple_stmt_iterator psi;
   sese_l region = scop->scop_info->region;
   bool changed = false;
@@ -1692,10 +1689,11 @@ rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
   /* Create an extra empty BB after the scop.  */
   split_edge (region.exit);
 
-  FOR_EACH_BB_FN (bb, cfun)
-    if (bb_in_sese_p (bb, region))
-      for (psi = gsi_start_bb (bb); !gsi_end_p (psi); gsi_next (&psi))
-	changed |= rewrite_cross_bb_scalar_deps (scop, &psi);
+  int i;
+  basic_block bb;
+  FOR_EACH_VEC_ELT (scop->scop_info->bbs, i, bb)
+    for (psi = gsi_start_bb (bb); !gsi_end_p (psi); gsi_next (&psi))
+      changed |= rewrite_cross_bb_scalar_deps (scop, &psi);
 
   if (changed)
     {

@@ -373,29 +373,23 @@ pbb_set_black_box (poly_bb_p pbb, gimple_poly_bb_p black_box)
 
 struct dr_info
 {
+  enum {
+    invalid_alias_set = -1
+  };
   /* The data reference.  */
   data_reference_p dr;
-
-  /* ALIAS_SET is the SCC number assigned by a graph_dfs of the alias graph.  -1
-     is an invalid alias set.  */
-  int alias_set;
 
   /* The polyhedral BB containing this DR.  */
   poly_bb_p pbb;
 
-  /* Construct a DR_INFO from a data reference DR, an ALIAS_SET, and a PBB.  */
-  dr_info (data_reference_p dr, int alias_set, poly_bb_p pbb)
-    : dr (dr), alias_set (alias_set), pbb (pbb) {}
+  /* ALIAS_SET is the SCC number assigned by a graph_dfs of the alias graph.
+     -1 is an invalid alias set.  */
+  int alias_set;
 
-  /* Assignment operator, to be able to iterate over a vec of these objects.  */
-  const dr_info &
-  operator= (const dr_info &p)
-  {
-    dr = p.dr;
-    alias_set = p.alias_set;
-    pbb = p.pbb;
-    return *this;
-  }
+  /* Construct a DR_INFO from a data reference DR, an ALIAS_SET, and a PBB.  */
+  dr_info (data_reference_p dr, poly_bb_p pbb,
+	   int alias_set = invalid_alias_set)
+    : dr (dr), pbb (pbb), alias_set (alias_set) {}
 };
 
 /* A SCOP is a Static Control Part of the program, simple enough to be
