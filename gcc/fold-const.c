@@ -79,6 +79,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs-query.h"
 #include "gimple-fold.h"
 #include "params.h"
+#include "tree-ssa-operands.h"
+#include "tree-into-ssa.h"
 
 #ifndef LOAD_EXTEND_OP
 #define LOAD_EXTEND_OP(M) UNKNOWN
@@ -12940,25 +12942,6 @@ tree_binary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
   return false;
 }
 
-/* Return true if SSA name T is known to be non-negative.  If the return
-   value is based on the assumption that signed overflow is undefined,
-   set *STRICT_OVERFLOW_P to true; otherwise, don't change
-   *STRICT_OVERFLOW_P.  DEPTH is the current nesting depth of the query.  */
-
-static bool
-tree_ssa_name_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
-{
-  /* Limit the depth of recursion to avoid quadratic behavior.
-     This is expected to catch almost all occurrences in practice.
-     If this code misses important cases that unbounded recursion
-     would not, passes that need this information could be revised
-     to provide it through dataflow propagation.  */
-  if (depth < PARAM_VALUE (PARAM_MAX_SSA_NAME_QUERY_DEPTH))
-    return gimple_stmt_nonnegative_warnv_p (SSA_NAME_DEF_STMT (t),
-					    strict_overflow_p, depth);
-  return tree_simple_nonnegative_warnv_p (TREE_CODE (t), TREE_TYPE (t));
-}
-
 /* Return true if T is known to be non-negative.  If the return
    value is based on the assumption that signed overflow is undefined,
    set *STRICT_OVERFLOW_P to true; otherwise, don't change
@@ -12967,6 +12950,10 @@ tree_ssa_name_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
 bool
 tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
 {
+  if (TREE_CODE (t) == SSA_NAME
+      && name_registered_for_update_p (t))
+    return false;
+
   if (TYPE_UNSIGNED (TREE_TYPE (t)))
     return true;
 
@@ -12985,8 +12972,16 @@ tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
       return RECURSE (TREE_OPERAND (t, 1)) && RECURSE (TREE_OPERAND (t, 2));
 
     case SSA_NAME:
-      return tree_ssa_name_nonnegative_warnv_p (t, strict_overflow_p, depth);
+      /* Limit the depth of recursion to avoid quadratic behavior.
+	 This is expected to catch almost all occurrences in practice.
+	 If this code misses important cases that unbounded recursion
+	 would not, passes that need this information could be revised
+	 to provide it through dataflow propagation.  */
+      if (depth < PARAM_VALUE (PARAM_MAX_SSA_NAME_QUERY_DEPTH))
+	return gimple_stmt_nonnegative_warnv_p (SSA_NAME_DEF_STMT (t),
+						strict_overflow_p, depth);
 
+      /* Fallthru.  */
     default:
       return tree_simple_nonnegative_warnv_p (TREE_CODE (t), TREE_TYPE (t));
     }
