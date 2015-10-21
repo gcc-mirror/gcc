@@ -1,3 +1,11 @@
+2015-10-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66583
+	* init.c (innermost_aggr_scope): New.
+	(build_field_list): Change uses_unions_p to uses_unions_or_anon_p.
+	(sort_mem_initializers): Handle initializers for entire anonymous
+	aggregates.
+
 2015-10-20  Marek Polacek  <polacek@redhat.com>
 
 	* parser.c (is_cilkplus_vector_p): Don't define here.
