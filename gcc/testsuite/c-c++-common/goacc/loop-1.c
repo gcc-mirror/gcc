@@ -38,16 +38,16 @@ int test1()
       i = d;
       a[i] = 1;
     }
-  #pragma acc loop
+  #pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
   for (i = 1; i < 30; i++ )
     if (i == 16) break; /* { dg-error "break statement used" } */
 
 /* different types of for loop are allowed */
-  #pragma acc loop
+  #pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
   for (i = 1; i < 10; i++)
     {
     }
-  #pragma acc loop
+  #pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
   for (i = 1; i < 10; i+=2)
     {
       a[i] = i;
