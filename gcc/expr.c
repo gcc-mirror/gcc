@@ -8171,34 +8171,40 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
     case ADDR_SPACE_CONVERT_EXPR:
       {
 	tree treeop0_type = TREE_TYPE (treeop0);
-	addr_space_t as_to;
-	addr_space_t as_from;
 
 	gcc_assert (POINTER_TYPE_P (type));
 	gcc_assert (POINTER_TYPE_P (treeop0_type));
 
-	as_to = TYPE_ADDR_SPACE (TREE_TYPE (type));
-	as_from = TYPE_ADDR_SPACE (TREE_TYPE (treeop0_type));
+	addr_space_t as_to = TYPE_ADDR_SPACE (TREE_TYPE (type));
+	addr_space_t as_from = TYPE_ADDR_SPACE (TREE_TYPE (treeop0_type));
 
         /* Conversions between pointers to the same address space should
 	   have been implemented via CONVERT_EXPR / NOP_EXPR.  */
 	gcc_assert (as_to != as_from);
+
+	op0 = expand_expr (treeop0, NULL_RTX, VOIDmode, modifier);
 
         /* Ask target code to handle conversion between pointers
 	   to overlapping address spaces.  */
 	if (targetm.addr_space.subset_p (as_to, as_from)
 	    || targetm.addr_space.subset_p (as_from, as_to))
 	  {
-	    op0 = expand_expr (treeop0, NULL_RTX, VOIDmode, modifier);
 	    op0 = targetm.addr_space.convert (op0, treeop0_type, type);
-	    gcc_assert (op0);
-	    return op0;
 	  }
-
-	/* For disjoint address spaces, converting anything but
-	   a null pointer invokes undefined behaviour.  We simply
-	   always return a null pointer here.  */
-	return CONST0_RTX (mode);
+        else
+          {
+	    /* For disjoint address spaces, converting anything but a null
+	       pointer invokes undefined behaviour.  We truncate or extend the
+	       value as if we'd converted via integers, which handles 0 as
+	       required, and all others as the programmer likely expects.  */
+#ifndef POINTERS_EXTEND_UNSIGNED
+	    const int POINTERS_EXTEND_UNSIGNED = 1;
+#endif
+	    op0 = convert_modes (mode, TYPE_MODE (treeop0_type),
+				 op0, POINTERS_EXTEND_UNSIGNED);
+	  }
+	gcc_assert (op0);
+	return op0;
       }
 
     case POINTER_PLUS_EXPR:
