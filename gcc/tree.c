@@ -13408,6 +13408,14 @@ verify_type (const_tree t)
       error_found = true;
     }
 
+  if (COMPLETE_TYPE_P (t) && TYPE_CANONICAL (t)
+      && TYPE_MODE (t) != TYPE_MODE (TYPE_CANONICAL (t)))
+    {
+      error ("TYPE_MODE of TYPE_CANONICAL is not compatible");
+      debug_tree (ct);
+      error_found = true;
+    }
+
 
   /* Check various uses of TYPE_MINVAL.  */
   if (RECORD_OR_UNION_TYPE_P (t))

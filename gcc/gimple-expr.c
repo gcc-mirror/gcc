@@ -87,10 +87,8 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   if (inner_type == outer_type)
     return true;
 
-  /* Changes in machine mode are never useless conversions unless we
-     deal with aggregate types in which case we defer to later checks.  */
-  if (TYPE_MODE (inner_type) != TYPE_MODE (outer_type)
-      && !AGGREGATE_TYPE_P (inner_type))
+  /* Changes in machine mode are never useless conversions unless.  */
+  if (TYPE_MODE (inner_type) != TYPE_MODE (outer_type))
     return false;
 
   /* If both the inner and outer types are integral types, then the
@@ -270,10 +268,9 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
      use the types in move operations.  */
   else if (AGGREGATE_TYPE_P (inner_type)
 	   && TREE_CODE (inner_type) == TREE_CODE (outer_type))
-    return (!TYPE_SIZE (outer_type)
-	    || (TYPE_SIZE (inner_type)
-		&& operand_equal_p (TYPE_SIZE (inner_type),
-				    TYPE_SIZE (outer_type), 0)));
+    return (TYPE_MODE (outer_type) != BLKmode
+	    || operand_equal_p (TYPE_SIZE (inner_type),
+			        TYPE_SIZE (outer_type), 0));
 
   else if (TREE_CODE (inner_type) == OFFSET_TYPE
 	   && TREE_CODE (outer_type) == OFFSET_TYPE)

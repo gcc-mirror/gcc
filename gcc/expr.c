@@ -5425,14 +5425,6 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
     temp = convert_modes (GET_MODE (target), TYPE_MODE (TREE_TYPE (exp)),
 			  temp, TYPE_UNSIGNED (TREE_TYPE (exp)));
 
-  /* We allow move between structures of same size but different mode.
-     If source is in memory and the mode differs, simply change the memory.  */
-  if (GET_MODE (temp) == BLKmode && GET_MODE (target) != BLKmode)
-    {
-      gcc_assert (MEM_P (temp));
-      temp = adjust_address_nv (temp, GET_MODE (target), 0);
-    }
-
   /* If value was not generated in the target, store it there.
      Convert the value to TARGET's type first if necessary and emit the
      pending incrementations that have been queued when expanding EXP.
