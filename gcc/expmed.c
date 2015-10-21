@@ -757,14 +757,6 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       }
   }
 
-  /* We allow move between structures of same size but different mode.
-     If source is in memory and the mode differs, simply change the memory.  */
-  if (GET_MODE (value) == BLKmode && GET_MODE (op0) != BLKmode)
-    {
-      gcc_assert (MEM_P (value));
-      value = adjust_address_nv (value, GET_MODE (op0), 0);
-    }
-
   /* Storing an lsb-aligned field in a register
      can be done with a movstrict instruction.  */
 
