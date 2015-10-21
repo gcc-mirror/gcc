@@ -12908,11 +12908,13 @@ tree_binary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
       return RECURSE (op0) && RECURSE (op1);
 
     case TRUNC_MOD_EXPR:
-    case CEIL_MOD_EXPR:
-    case FLOOR_MOD_EXPR:
-    case ROUND_MOD_EXPR:
       return RECURSE (op0);
 
+    case FLOOR_MOD_EXPR:
+      return RECURSE (op1);
+
+    case CEIL_MOD_EXPR:
+    case ROUND_MOD_EXPR:
     default:
       return tree_simple_nonnegative_warnv_p (code, type);
     }
