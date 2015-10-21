@@ -9803,20 +9803,6 @@ fold_binary_loc (location_t loc,
       goto associate;
 
     case MULT_EXPR:
-      /* (-A) * (-B) -> A * B  */
-      if (TREE_CODE (arg0) == NEGATE_EXPR && negate_expr_p (arg1))
-	return fold_build2_loc (loc, MULT_EXPR, type,
-			    fold_convert_loc (loc, type,
-					      TREE_OPERAND (arg0, 0)),
-			    fold_convert_loc (loc, type,
-					      negate_expr (arg1)));
-      if (TREE_CODE (arg1) == NEGATE_EXPR && negate_expr_p (arg0))
-	return fold_build2_loc (loc, MULT_EXPR, type,
-			    fold_convert_loc (loc, type,
-					      negate_expr (arg0)),
-			    fold_convert_loc (loc, type,
-					      TREE_OPERAND (arg1, 0)));
-
       if (! FLOAT_TYPE_P (type))
 	{
 	  /* Transform x * -C into -x * C if x is easily negatable.  */
@@ -9829,16 +9815,6 @@ fold_binary_loc (location_t loc,
 	    			fold_convert_loc (loc, type,
 						  negate_expr (arg0)),
 				tem);
-
-	  /* (a * (1 << b)) is (a << b)  */
-	  if (TREE_CODE (arg1) == LSHIFT_EXPR
-	      && integer_onep (TREE_OPERAND (arg1, 0)))
-	    return fold_build2_loc (loc, LSHIFT_EXPR, type, op0,
-				TREE_OPERAND (arg1, 1));
-	  if (TREE_CODE (arg0) == LSHIFT_EXPR
-	      && integer_onep (TREE_OPERAND (arg0, 0)))
-	    return fold_build2_loc (loc, LSHIFT_EXPR, type, op1,
-				TREE_OPERAND (arg0, 1));
 
 	  /* (A + A) * C -> A * 2 * C  */
 	  if (TREE_CODE (arg0) == PLUS_EXPR
@@ -9882,21 +9858,6 @@ fold_binary_loc (location_t loc,
 	}
       else
 	{
-	  /* Convert (C1/X)*C2 into (C1*C2)/X.  This transformation may change
-             the result for floating point types due to rounding so it is applied
-             only if -fassociative-math was specify.  */
-	  if (flag_associative_math
-	      && TREE_CODE (arg0) == RDIV_EXPR
-	      && TREE_CODE (arg1) == REAL_CST
-	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == REAL_CST)
-	    {
-	      tree tem = const_binop (MULT_EXPR, TREE_OPERAND (arg0, 0),
-				      arg1);
-	      if (tem)
-		return fold_build2_loc (loc, RDIV_EXPR, type, tem,
-				    TREE_OPERAND (arg0, 1));
-	    }
-
           /* Strip sign operations from X in X*X, i.e. -Y*-Y -> Y*Y.  */
 	  if (operand_equal_p (arg0, arg1, 0))
 	    {
@@ -10053,22 +10014,6 @@ fold_binary_loc (location_t loc,
       goto bit_rotate;
 
     case BIT_AND_EXPR:
-      /* ~X & X, (X == 0) & X, and !X & X are always zero.  */
-      if ((TREE_CODE (arg0) == BIT_NOT_EXPR
-	   || TREE_CODE (arg0) == TRUTH_NOT_EXPR
-	   || (TREE_CODE (arg0) == EQ_EXPR
-	       && integer_zerop (TREE_OPERAND (arg0, 1))))
-	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
-	return omit_one_operand_loc (loc, type, integer_zero_node, arg1);
-
-      /* X & ~X , X & (X == 0), and X & !X are always zero.  */
-      if ((TREE_CODE (arg1) == BIT_NOT_EXPR
-	   || TREE_CODE (arg1) == TRUTH_NOT_EXPR
-	   || (TREE_CODE (arg1) == EQ_EXPR
-	       && integer_zerop (TREE_OPERAND (arg1, 1))))
-	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
-	return omit_one_operand_loc (loc, type, integer_zero_node, arg0);
-
       /* Fold (X ^ 1) & 1 as (X & 1) == 0.  */
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
 	  && INTEGRAL_TYPE_P (type)
