@@ -470,6 +470,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 #define VECTOR_TYPE_P(TYPE) (TREE_CODE (TYPE) == VECTOR_TYPE)
 
+/* Nonzero if TYPE represents a vector of booleans.  */
+
+#define VECTOR_BOOLEAN_TYPE_P(TYPE)				\
+  (TREE_CODE (TYPE) == VECTOR_TYPE			\
+   && TREE_CODE (TREE_TYPE (TYPE)) == BOOLEAN_TYPE)
+
 /* Nonzero if TYPE represents an integral type.  Note that we do not
    include COMPLEX types here.  Keep these checks in ascending code
    order.  */
@@ -3895,6 +3901,8 @@ extern tree build_reference_type_for_mode (tree, machine_mode, bool);
 extern tree build_reference_type (tree);
 extern tree build_vector_type_for_mode (tree, machine_mode);
 extern tree build_vector_type (tree innertype, int nunits);
+extern tree build_truth_vector_type (unsigned, unsigned);
+extern tree build_same_sized_truth_vector_type (tree vectype);
 extern tree build_opaque_vector_type (tree innertype, int nunits);
 extern tree build_index_type (tree);
 extern tree build_array_type (tree, tree);
@@ -4615,6 +4623,7 @@ extern void init_ttree (void);
 extern void build_common_tree_nodes (bool, bool);
 extern void build_common_builtin_nodes (void);
 extern tree build_nonstandard_integer_type (unsigned HOST_WIDE_INT, int);
+extern tree build_nonstandard_boolean_type (unsigned HOST_WIDE_INT);
 extern tree build_range_type (tree, tree, tree);
 extern tree build_nonshared_range_type (tree, tree, tree);
 extern bool subrange_type_for_debug_p (const_tree, tree *, tree *);

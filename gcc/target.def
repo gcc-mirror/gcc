@@ -1810,6 +1810,16 @@ The default is zero which means to not iterate over other vector sizes.",
  (void),
  default_autovectorize_vector_sizes)
 
+/* Function to get a target mode for a vector mask.  */
+DEFHOOK
+(get_mask_mode,
+ "This hook returns mode to be used for a mask to be used for a vector\n\
+of specified @var{length} with @var{nunits} elements.  By default an integer\n\
+vector mode of a proper size is returned.",
+ machine_mode,
+ (unsigned nunits, unsigned length),
+ default_get_mask_mode)
+
 /* Target builtin that implements vector gather operation.  */
 DEFHOOK
 (builtin_gather,

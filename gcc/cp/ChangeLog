@@ -1,3 +1,10 @@
+2015-10-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* call.c (build_conditional_expr_1): Use boolean vector
+	type for vector comparison.
+	* typeck.c (build_vec_cmp): New.
+	(cp_build_binary_op): Use build_vec_cmp for comparison.
+
 2015-10-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66583

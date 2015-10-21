@@ -1,5 +1,45 @@
 2015-10-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in (TARGET_VECTORIZE_GET_MASK_MODE): New.
+	* stor-layout.c (layout_type): Use mode to get vector mask size.
+	* target.def (get_mask_mode): New.
+	* targhooks.c (default_get_mask_mode): New.
+	* targhooks.h (default_get_mask_mode): New.
+	* gcc/tree-vect-stmts.c (get_same_sized_vectype): Add special case
+	for boolean vector.
+	* tree.c (MAX_BOOL_CACHED_PREC): New.
+	(nonstandard_boolean_type_cache): New.
+	(build_nonstandard_boolean_type): New.
+	(make_vector_type): Vector mask has no canonical type.
+	(build_truth_vector_type): New.
+	(build_same_sized_truth_vector_type): New.
+	(truth_type_for): Support vector masks.
+	* tree.h (VECTOR_BOOLEAN_TYPE_P): New.
+	(build_truth_vector_type): New.
+	(build_same_sized_truth_vector_type): New.
+	(build_nonstandard_boolean_type): New.
+	* tree-cfg.c (verify_gimple_comparison) Require boolean
+	vector type for vector comparison.
+	(verify_gimple_assign_ternary): Likewise.
+	* optabs.c (expand_vec_cond_expr): Accept boolean vector as
+	condition operand.
+	* tree-vect-stmts.c (vectorizable_condition): Use boolean
+	vector type for vector comparison.
+	* tree-vect-generic.c (elem_op_func): Add new operand to hold
+	vector type.
+	(do_unop): Adjust to modified function type.
+	(do_binop): Likewise.
+	(do_plus_minus): Likewise.
+	(do_negate); Likewise.
+	(expand_vector_piecewise): Likewise.
+	(do_cond): Likewise.
+	(do_compare): Use comparison instead of condition.
+	(expand_vector_divmod): Use boolean vector type for comparison.
+	(expand_vector_operations_1): Skip scalar mask operations.
+
+2015-10-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* omp-low.c (simd_clone_create): Set in_other_partition
 	for created clones.
 
