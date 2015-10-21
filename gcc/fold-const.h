@@ -173,6 +173,7 @@ extern tree sign_bit_p (tree, const_tree);
 extern tree exact_inverse (tree, tree);
 extern tree const_unop (enum tree_code, tree, tree);
 extern tree const_binop (enum tree_code, tree, tree, tree);
+extern bool negate_mathfn_p (enum built_in_function);
 
 /* Return OFF converted to a pointer offset type suitable as offset for
    POINTER_PLUS_EXPR.  Use location LOC for this conversion.  */

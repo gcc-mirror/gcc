@@ -2114,6 +2114,10 @@ fsplit-wide-types
 Common Report Var(flag_split_wide_types) Optimization
 Split wide types into independent registers
 
+fssa-backprop
+Common Report Var(flag_ssa_backprop) Init(1) Optimization
+Enable backward propagation of use properties at the SSA level.
+
 fssa-phiopt
 Common Report Var(flag_ssa_phiopt) Optimization
 Optimize conditional patterns using SSA PHI nodes

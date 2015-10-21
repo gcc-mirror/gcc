@@ -1,3 +1,15 @@
+2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi (-fdump-tree-backprop, -fssa-backprop): Document.
+	* Makefile.in (OBJS): Add gimple-ssa-backprop.o.
+	* common.opt (fssa-backprop): New option.
+	* fold-const.h (negate_mathfn_p): Declare.
+	* fold-const.c (negate_mathfn_p): Make public.
+	* timevar.def (TV_TREE_BACKPROP): New.
+	* tree-pass.h (make_pass_backprop): Declare.
+	* passes.def (pass_backprop): Add.
+	* gimple-ssa-backprop.c: New file.
+
 2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 

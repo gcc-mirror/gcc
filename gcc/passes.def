@@ -159,6 +159,7 @@ along with GCC; see the file COPYING3.  If not see
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
       NEXT_PASS (pass_complete_unrolli);
+      NEXT_PASS (pass_backprop);
       NEXT_PASS (pass_phiprop);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_object_sizes);
