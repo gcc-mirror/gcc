@@ -60,8 +60,8 @@ static inline uhwptr *GetCanonicFrame(uptr bp,
   // Nope, this does not look right either. This means the frame after next does
   // not have a valid frame pointer, but we can still extract the caller PC.
   // Unfortunately, there is no way to decide between GCC and LLVM frame
-  // layouts. Assume LLVM.
-  return bp_prev;
+  // layouts. Assume GCC.
+  return bp_prev - 1;
 #else
   return (uhwptr*)bp;
 #endif
