@@ -343,6 +343,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-dse@r{[}-@var{n}@r{]} @gol
 -fdump-tree-phiprop@r{[}-@var{n}@r{]} @gol
 -fdump-tree-phiopt@r{[}-@var{n}@r{]} @gol
+-fdump-tree-backprop@r{[}-@var{n}@r{]} @gol
 -fdump-tree-forwprop@r{[}-@var{n}@r{]} @gol
 -fdump-tree-nrv -fdump-tree-vect @gol
 -fdump-tree-sink @gol
@@ -443,9 +444,9 @@ Objective-C and Objective-C++ Dialects}.
 -fschedule-insns -fschedule-insns2 -fsection-anchors @gol
 -fselective-scheduling -fselective-scheduling2 @gol
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
--fsemantic-interposition @gol
--fshrink-wrap -fsignaling-nans -fsingle-precision-constant @gol
--fsplit-ivs-in-unroller -fsplit-wide-types -fssa-phiopt @gol
+-fsemantic-interposition -fshrink-wrap -fsignaling-nans @gol
+-fsingle-precision-constant -fsplit-ivs-in-unroller @gol
+-fsplit-wide-types -fssa-backprop -fssa-phiopt @gol
 -fstack-protector -fstack-protector-all -fstack-protector-strong @gol
 -fstack-protector-explicit -fstdarg-opt -fstrict-aliasing @gol
 -fstrict-overflow -fthread-jumps -ftracer -ftree-bit-ccp @gol
@@ -7236,6 +7237,12 @@ name is made by appending @file{.dse} to the source file name.
 Dump each function after optimizing PHI nodes into straightline code.  The file
 name is made by appending @file{.phiopt} to the source file name.
 
+@item backprop
+@opindex fdump-tree-backprop
+Dump each function after back-propagating use information up the definition
+chain.  The file name is made by appending @file{.backprop} to the
+source file name.
+
 @item forwprop
 @opindex fdump-tree-forwprop
 Dump each function after forward propagating single use variables.  The file
@@ -7707,9 +7714,10 @@ compilation time.
 -freorder-blocks @gol
 -fshrink-wrap @gol
 -fsplit-wide-types @gol
+-fssa-backprop @gol
+-fssa-phiopt @gol
 -ftree-bit-ccp @gol
 -ftree-ccp @gol
--fssa-phiopt @gol
 -ftree-ch @gol
 -ftree-coalesce-vars @gol
 -ftree-copy-prop @gol
@@ -8794,6 +8802,13 @@ at @option{-O} and higher.  It requires that @option{-ftree-ccp} is enabled.
 Perform sparse conditional constant propagation (CCP) on trees.  This
 pass only operates on local scalar variables and is enabled by default
 at @option{-O} and higher.
+
+@item -fssa-backprop
+@opindex fssa-backprop
+Propagate information about uses of a value up the definition chain
+in order to simplify the definitions.  For example, this pass strips
+sign operations if the sign of a value never matters.  The flag is
+enabled by default at @option{-O} and higher.
 
 @item -fssa-phiopt
 @opindex fssa-phiopt

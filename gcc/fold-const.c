@@ -112,7 +112,6 @@ enum comparison_code {
   COMPCODE_TRUE = 15
 };
 
-static bool negate_mathfn_p (enum built_in_function);
 static bool negate_expr_p (tree);
 static tree negate_expr (tree);
 static tree split_tree (tree, enum tree_code, tree *, tree *, tree *, int);
@@ -321,7 +320,7 @@ fold_overflow_warning (const char* gmsgid, enum warn_strict_overflow_code wc)
 /* Return true if the built-in mathematical function specified by CODE
    is odd, i.e. -f(x) == f(-x).  */
 
-static bool
+bool
 negate_mathfn_p (enum built_in_function code)
 {
   switch (code)
