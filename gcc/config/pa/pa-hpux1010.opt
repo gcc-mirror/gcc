@@ -20,4 +20,4 @@
 
 munix=95
 Target RejectNegative Var(flag_pa_unix, 1995)
-Specify UNIX standard for predefines and linking
+Specify UNIX standard for predefines and linking.

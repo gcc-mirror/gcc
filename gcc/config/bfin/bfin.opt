@@ -37,19 +37,19 @@ unsigned int bfin_workarounds = 0
 
 msim
 Target RejectNegative
-Use simulator runtime
+Use simulator runtime.
 
 mcpu=
 Target RejectNegative Joined
-Specify the name of the target CPU
+Specify the name of the target CPU.
 
 momit-leaf-frame-pointer
 Target Report Mask(OMIT_LEAF_FRAME_POINTER)
-Omit frame pointer for leaf functions
+Omit frame pointer for leaf functions.
 
 mlow64k
 Target Report Mask(LOW_64K)
-Program is entirely located in low 64k of memory
+Program is entirely located in low 64k of memory.
 
 mcsync-anomaly
 Target Report Var(bfin_csync_anomaly) Init(-1)
@@ -62,7 +62,7 @@ Avoid speculative loads to work around a hardware anomaly.
 
 mid-shared-library
 Target Report Mask(ID_SHARED_LIBRARY)
-Enabled ID based shared library
+Enabled ID based shared library.
 
 mleaf-id-shared-library
 Target Report Mask(LEAF_ID_SHARED_LIBRARY)
@@ -71,47 +71,47 @@ but may be used as a shared library.
 
 mshared-library-id=
 Target RejectNegative Joined UInteger Var(bfin_library_id)
-ID of shared library to build
+ID of shared library to build.
 
 msep-data
 Target Report Mask(SEP_DATA)
-Enable separate data segment
+Enable separate data segment.
 
 mlong-calls
 Target Report Mask(LONG_CALLS)
-Avoid generating pc-relative calls; use indirection
+Avoid generating pc-relative calls; use indirection.
 
 mfast-fp
 Target Report Mask(FAST_FP)
-Link with the fast floating-point library
+Link with the fast floating-point library.
 
 mfdpic
 Target Report Mask(FDPIC)
-Enable Function Descriptor PIC mode
+Enable Function Descriptor PIC mode.
 
 minline-plt
 Target Report Mask(INLINE_PLT)
-Enable inlining of PLT in function calls
+Enable inlining of PLT in function calls.
 
 mstack-check-l1
 Target Report Mask(STACK_CHECK_L1)
-Do stack checking using bounds in L1 scratch memory
+Do stack checking using bounds in L1 scratch memory.
 
 mmulticore
 Target Report Mask(MULTICORE)
-Enable multicore support
+Enable multicore support.
 
 mcorea
 Target Report Mask(COREA)
-Build for Core A
+Build for Core A.
 
 mcoreb
 Target Report Mask(COREB)
-Build for Core B
+Build for Core B.
 
 msdram
 Target Report Mask(SDRAM)
-Build for SDRAM
+Build for SDRAM.
 
 micplb
 Target Report Mask(ICPLB)

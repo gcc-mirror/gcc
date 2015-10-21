@@ -20,30 +20,30 @@
 
 msim
 Target
--msim   Use simulator runtime
+-msim   Use simulator runtime.
 
 mbit-ops
 Target Report Mask(BIT_OPS)
-Generate SBIT, CBIT instructions
+Generate SBIT, CBIT instructions.
 
 mmac
 Target Report Mask(MAC)
-Support multiply accumulate instructions
+Support multiply accumulate instructions.
 
 mdebug-addr
 Target RejectNegative Var(TARGET_DEBUG_ADDR) Undocumented
 
 mdata-model=
 Target RejectNegative JoinedOrMissing Var(cr16_data_model)
-Treat data references as near, far or medium. medium is default
+Treat data references as near, far or medium. medium is default.
 
 mcr16c
 Target RejectNegative Mask(CR16C)
-Generate code for CR16C architecture
+Generate code for CR16C architecture.
 
 mcr16cplus
 Target RejectNegative InverseMask(CR16C,CR16CP)
-Generate code for CR16C+ architecture (Default)
+Generate code for CR16C+ architecture (Default).
 
 mint32
 Target RejectNegative Mask(INT32)

@@ -181,7 +181,8 @@ base_of_path (const char *path, const char **base_out)
 }
 
 /* What to print when a switch has no documentation.  */
-static const char undocumented_msg[] = N_("This switch lacks documentation");
+static const char undocumented_msg[] = N_("This option lacks documentation.");
+static const char use_diagnosed_msg[] = N_("Uses of this option are diagnosed.");
 
 typedef char *char_p; /* For DEF_VEC_P.  */
 
@@ -1012,7 +1013,7 @@ print_filtered_help (unsigned int include_flags,
   const char *help;
   bool found = false;
   bool displayed = false;
-  char new_help[128];
+  char new_help[256];
 
   if (include_flags == CL_PARAMS)
     {
@@ -1088,7 +1089,46 @@ print_filtered_help (unsigned int include_flags,
 	{
 	  if (exclude_flags & CL_UNDOCUMENTED)
 	    continue;
+
 	  help = undocumented_msg;
+	}
+
+      if (option->alias_target < N_OPTS
+	  && cl_options [option->alias_target].help)
+	{
+	  if (help == undocumented_msg)
+	    {
+	      /* For undocumented options that are aliases for other options
+		 that are documented, point the reader to the other option in
+		 preference of the former.  */
+	      snprintf (new_help, sizeof new_help,
+			_("Same as %s.  Use the latter option instead."),
+			cl_options [option->alias_target].opt_text);
+	    }
+	  else
+	    {
+	      /* For documented options with aliases, mention the aliased
+		 option's name for reference.  */
+	      snprintf (new_help, sizeof new_help,
+			_("%s  Same as %s."),
+			help, cl_options [option->alias_target].opt_text);
+	    }
+
+	  help = new_help;
+	}
+
+      if (option->warn_message)
+	{
+	  /* Mention that the use of the option will trigger a warning.  */
+	  if (help == new_help)
+	    snprintf (new_help + strlen (new_help),
+		      sizeof new_help - strlen (new_help),
+		      "  %s", _(use_diagnosed_msg));
+	  else
+	    snprintf (new_help, sizeof new_help,
+		      "%s  %s", help, _(use_diagnosed_msg));
+
+	  help = new_help;
 	}
 
       /* Get the translation.  */
@@ -1180,7 +1220,7 @@ print_filtered_help (unsigned int include_flags,
 	     options supported by a specific front end.  */
 	  for (i = 0; (1U << i) < CL_LANG_ALL; i ++)
 	    if ((1U << i) & langs)
-	      printf (_(" None found.  Use --help=%s to show *all* the options supported by the %s front-end\n"),
+	      printf (_(" None found.  Use --help=%s to show *all* the options supported by the %s front-end.\n"),
 		      lang_names[i], lang_names[i]);
 	}
 

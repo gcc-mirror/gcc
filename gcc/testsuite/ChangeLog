@@ -1,3 +1,9 @@
+2015-10-21  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/68043
+	* gcc.misc-tests/help.exp: Adjust.
+	* lib/options.exp (check_for_options): Add detail to output.
+
 2015-10-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67939

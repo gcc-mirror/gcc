@@ -31,7 +31,7 @@ gcc_parallel_test_enable 0
 
 # Document --version.  Ideally, there should be no undocumented switches
 # in --help.
-check_for_options c "--help" "--version" "This switch lacks documentation" ""
+check_for_options c "--help" "--version" "This option lacks documentation" ""
 
 # Output from different subprocesses should not be intermingled
 # (we check for some patterns that could be seen with a missing
@@ -43,7 +43,7 @@ check_for_options c "-v --help" "" {
 } ""
 
 # There are still undocumented switches in -v --help.
-check_for_options c "-v --help" "" "This switch lacks documentation" "xfail"
+check_for_options c "-v --help" "" "This option lacks documentation" "xfail"
 
 # Check whether multiline conversion in optc-gen is broken.
 check_for_options c "-v --help" "" {are likely to\n  -std} ""
@@ -54,10 +54,10 @@ check_for_options c "--help=params" "maximum number of" "-Wunsafe-loop-optimizat
 check_for_options c "--help=C" "-ansi" "-gnatO" ""
 check_for_options c {--help=C++} {-std=c\+\+} "-gnatO" ""
 check_for_options c "--help=common" "-dumpbase" "-gnatO" ""
-check_for_options c "--help=undocumented" "This switch lacks documentation" "" ""
+check_for_options c "--help=undocumented" "This option lacks documentation" "" ""
 
 # Undocumented flags are not yet consistently marked as such.
-check_for_options c "--help=^undocumented" "-Wall" "This switch lacks documentation" "xfail"
+check_for_options c "--help=^undocumented" "-Wall" "This option lacks documentation" "xfail"
 
 # Try some --help=* examples from the manual.
 check_for_options c "--help=target,undocumented" "" "" ""
@@ -78,14 +78,27 @@ maximum number of
 } "" ""
 
 # Ensure PR 37805 is fixed.
-check_for_options c "--help=joined" "Wformat=" "-fstrict-prototype" ""
-check_for_options c "--help=separate" "-MF" "-fstrict-prototype" ""
-check_for_options c "--help=warnings,joined" "Wformat=" "Wtrigraphs" ""
-check_for_options c "--help=warnings,^joined" "Wtrigraphs" "Wformat=" ""
-check_for_options c "--help=joined,separate" "-I" "" ""
-check_for_options c "--help=^joined,separate" "--param " "" ""
-check_for_options c "--help=joined,^separate" "--help=" "" ""
+# Specify patterns (arguments 3 and later) that match option names
+# at the beginning of the line and not when they are referenced by
+# some other options later on.
+# The (?w) Tcl embedded option tells the Tcl regexp  parser to treat
+# the '^' character as an anchor.
+check_for_options c "--help=joined" \
+    "(?w)^ *-Wformat=" "(?w)^ *-fstrict-prototype" ""
+check_for_options c "--help=separate" \
+    "(?w)^ *-MF" "(?w)^ *-fstrict-prototype" ""
+check_for_options c "--help=warnings,joined" \
+    "(?w)^ *-Wformat=" "(?w)^ *-Wtrigraphs" ""
+check_for_options c "--help=warnings,^joined" \
+    "(?w)^ *-Wtrigraphs" "(?w)^ *-Wformat=" ""
+check_for_options c "--help=joined,separate" \
+    "(?w)^ *-I" "" ""
+check_for_options c "--help=^joined,separate" \
+    "(?w)^ *--param " "" ""
+check_for_options c "--help=joined,^separate" \
+    "(?w)^ *--help=" "" ""
 check_for_options c "--help=joined,undocumented" "" "" ""
+
 # Listing only excludes gives empty results.
 check_for_options c "--help=^joined,^separate" "" "" ""
 

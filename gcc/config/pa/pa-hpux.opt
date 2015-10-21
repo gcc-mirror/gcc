@@ -24,15 +24,15 @@ int flag_pa_unix = TARGET_HPUX_11_31 ? 2003 : TARGET_HPUX_11_11 ? 1998 : TARGET_
 
 msio
 Target RejectNegative Mask(SIO)
-Generate cpp defines for server IO
+Generate cpp defines for server IO.
 
 munix=93
 Target RejectNegative Var(flag_pa_unix, 1993)
-Specify UNIX standard for predefines and linking
+Specify UNIX standard for predefines and linking.
 
 mwsio
 Target RejectNegative InverseMask(SIO)
-Generate cpp defines for workstation IO
+Generate cpp defines for workstation IO.
 
 nolibdld
 Driver

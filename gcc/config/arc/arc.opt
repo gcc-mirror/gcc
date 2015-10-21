@@ -23,39 +23,39 @@ config/arc/arc-opts.h
 
 mbig-endian
 Target Report RejectNegative Mask(BIG_ENDIAN)
-Compile code for big endian mode
+Compile code for big endian mode.
 
 mlittle-endian
 Target Report RejectNegative InverseMask(BIG_ENDIAN)
-Compile code for little endian mode.  This is the default
+Compile code for little endian mode.  This is the default.
 
 mno-cond-exec
 Target Report RejectNegative Mask(NO_COND_EXEC)
-Disable ARCompact specific pass to generate conditional execution instructions
+Disable ARCompact specific pass to generate conditional execution instructions.
 
 mA6
 Target Report
-Generate ARCompact 32-bit code for ARC600 processor
+Generate ARCompact 32-bit code for ARC600 processor.
 
 mARC600
 Target Report
-Same as -mA6
+Same as -mA6.
 
 mARC601
 Target Report
-Generate ARCompact 32-bit code for ARC601 processor
+Generate ARCompact 32-bit code for ARC601 processor.
 
 mA7
 Target Report
-Generate ARCompact 32-bit code for ARC700 processor
+Generate ARCompact 32-bit code for ARC700 processor.
 
 mARC700
 Target Report
-Same as -mA7
+Same as -mA7.
 
 mmixed-code
 Target Report Mask(MIXED_CODE_SET)
-Tweak register allocation to help 16-bit instruction generation
+Tweak register allocation to help 16-bit instruction generation.
 ; originally this was:
 ;Generate ARCompact 16-bit instructions intermixed with 32-bit instructions
 ; but we do that without -mmixed-code, too, it's just a different instruction
@@ -65,43 +65,43 @@ Tweak register allocation to help 16-bit instruction generation
 ; actually interesting option, and we want that to have its own comment.
 mvolatile-cache
 Target Report RejectNegative Mask(VOLATILE_CACHE_SET)
-Use ordinarily cached memory accesses for volatile references
+Use ordinarily cached memory accesses for volatile references.
 
 mno-volatile-cache
 Target Report RejectNegative InverseMask(VOLATILE_CACHE_SET)
-Enable cache bypass for volatile references
+Enable cache bypass for volatile references.
 
 mbarrel-shifter
 Target Report Mask(BARREL_SHIFTER)
-Generate instructions supported by barrel shifter
+Generate instructions supported by barrel shifter.
 
 mnorm
 Target Report Mask(NORM_SET)
-Generate norm instruction
+Generate norm instruction.
 
 mswap
 Target Report Mask(SWAP_SET)
-Generate swap instruction
+Generate swap instruction.
 
 mmul64
 Target Report Mask(MUL64_SET)
-Generate mul64 and mulu64 instructions
+Generate mul64 and mulu64 instructions.
 
 mno-mpy
 Target Report Mask(NOMPY_SET)
-Do not generate mpy instructions for ARC700
+Do not generate mpy instructions for ARC700.
 
 mea
 Target Report Mask(EA_SET)
-Generate Extended arithmetic instructions.  Currently only divaw, adds, subs and sat16 are supported
+Generate Extended arithmetic instructions.  Currently only divaw, adds, subs and sat16 are supported.
 
 msoft-float
 Target Report Mask(0)
-Dummy flag. This is the default unless FPX switches are provided explicitly
+Dummy flag. This is the default unless FPX switches are provided explicitly.
 
 mlong-calls
 Target Report Mask(LONG_CALLS_SET)
-Generate call insns as register indirect calls
+Generate call insns as register indirect calls.
 
 mno-brcc
 Target Report Mask(NO_BRCC_SET)
@@ -113,7 +113,7 @@ Generate sdata references.  This is the default, unless you compile for PIC.
 
 mno-millicode
 Target Report Mask(NO_MILLICODE_THUNK_SET)
-Do not generate millicode thunks (needed only with -Os)
+Do not generate millicode thunks (needed only with -Os).
 
 mspfp
 Target Report Mask(SPFP_COMPACT_SET)
@@ -153,7 +153,7 @@ Enable generation of ARC SIMD instructions via target-specific builtins.
 
 mcpu=
 Target RejectNegative Joined Var(arc_cpu) Enum(processor_type) Init(PROCESSOR_NONE)
--mcpu=CPU	Compile code for ARC variant CPU
+-mcpu=CPU	Compile code for ARC variant CPU.
 
 Enum
 Name(processor_type) Type(enum processor_type)
@@ -169,11 +169,11 @@ Enum(processor_type) String(ARC700) Value(PROCESSOR_ARC700)
 
 msize-level=
 Target RejectNegative Joined UInteger Var(arc_size_opt_level) Init(-1)
-size optimization level: 0:none 1:opportunistic 2: regalloc 3:drop align, -Os
+size optimization level: 0:none 1:opportunistic 2: regalloc 3:drop align, -Os.
 
 misize
 Target Report PchIgnore Var(TARGET_DUMPISIZE)
-Annotate assembler instructions with estimated addresses
+Annotate assembler instructions with estimated addresses.
 
 mmultcost=
 Target RejectNegative Joined UInteger Var(arc_multcost) Init(-1)
@@ -205,7 +205,7 @@ Tune for ARC700 R4.2 Cpu with XMAC block.
 
 mindexed-loads
 Target Var(TARGET_INDEXED_LOADS)
-Enable the use of indexed loads
+Enable the use of indexed loads.
 
 mauto-modify-reg
 Target Var(TARGET_AUTO_MODIFY_REG)
@@ -213,13 +213,13 @@ Enable the use of pre/post modify with register displacement.
 
 mmul32x16
 Target Report Mask(MULMAC_32BY16_SET)
-Generate 32x16 multiply and mac instructions
+Generate 32x16 multiply and mac instructions.
 
 ; the initializer is supposed to be: Init(REG_BR_PROB_BASE/2) ,
 ; alas, basic-block.h is not included in options.c .
 munalign-prob-threshold=
 Target RejectNegative Joined UInteger Var(arc_unalign_prob_threshold) Init(10000/2)
-Set probability threshold for unaligning branches
+Set probability threshold for unaligning branches.
 
 mmedium-calls
 Target Var(TARGET_MEDIUM_CALLS) Init(TARGET_MMEDIUM_CALLS_DEFAULT)
@@ -243,11 +243,11 @@ Enable Rcw constraint handling - ccfsm condexec mostly depends on this.
 
 mearly-cbranchsi
 Target Var(TARGET_EARLY_CBRANCHSI)
-Enable pre-reload use of cbranchsi pattern
+Enable pre-reload use of cbranchsi pattern.
 
 mbbit-peephole
 Target Var(TARGET_BBIT_PEEPHOLE)
-Enable bbit peephole2
+Enable bbit peephole2.
 
 mcase-vector-pcrel
 Target Var(TARGET_CASE_VECTOR_PC_RELATIVE)
@@ -255,7 +255,7 @@ Use pc-relative switch case tables - this enables case table shortening.
 
 mcompact-casesi
 Target Var(TARGET_COMPACT_CASESI)
-Enable compact casesi pattern
+Enable compact casesi pattern.
 
 mq-class
 Target Var(TARGET_Q_CLASS)
@@ -270,15 +270,15 @@ Expand adddi3 and subdi3 at rtl generation time into add.f / adc etc.
 ; macro symbols as well.
 mcrc
 Target Report
-Enable variable polynomial CRC extension
+Enable variable polynomial CRC extension.
 
 mdsp-packa
 Target Report
-Enable DSP 3.1 Pack A extensions
+Enable DSP 3.1 Pack A extensions.
 
 mdvbf
 Target Report
-Enable dual viterbi butterfly extension
+Enable dual viterbi butterfly extension.
 
 mmac-d16
 Target Report Undocumented
@@ -288,24 +288,24 @@ Target Report Undocumented
 
 mtelephony
 Target Report RejectNegative
-Enable Dual and Single Operand Instructions for Telephony
+Enable Dual and Single Operand Instructions for Telephony.
 
 mxy
 Target Report
-Enable XY Memory extension (DSP version 3)
+Enable XY Memory extension (DSP version 3).
 
 ; ARC700 4.10 extension instructions
 mlock
 Target Report
-Enable Locked Load/Store Conditional extension
+Enable Locked Load/Store Conditional extension.
 
 mswape
 Target Report
-Enable swap byte ordering extension instruction
+Enable swap byte ordering extension instruction.
 
 mrtsc
 Target Report
-Enable 64-bit Time-Stamp Counter extension instruction
+Enable 64-bit Time-Stamp Counter extension instruction.
 
 mno-epilogue-cfi
 Target Report RejectNegative InverseMask(EPILOGUE_CFI)
@@ -337,23 +337,23 @@ Pass -marclinux_prof option through to linker.
 ; so don't enable by default.
 mlra
 Target Mask(LRA)
-Enable lra
+Enable lra.
 
 mlra-priority-none
 Target RejectNegative Var(arc_lra_priority_tag, ARC_LRA_PRIORITY_NONE)
-Don't indicate any priority with TARGET_REGISTER_PRIORITY
+Don't indicate any priority with TARGET_REGISTER_PRIORITY.
 
 mlra-priority-compact
 Target RejectNegative Var(arc_lra_prioritytag, ARC_LRA_PRIORITY_COMPACT)
-Indicate priority for r0..r3 / r12..r15 with TARGET_REGISTER_PRIORITY
+Indicate priority for r0..r3 / r12..r15 with TARGET_REGISTER_PRIORITY.
 
 mlra-priority-noncompact
 Target RejectNegative Var(arc_lra_prioritytag, ARC_LRA_PRIORITY_NONCOMPACT)
-Reduce priority for r0..r3 / r12..r15 with TARGET_REGISTER_PRIORITY
+Reduce priority for r0..r3 / r12..r15 with TARGET_REGISTER_PRIORITY.
 
 mucb-mcount
 Target Report Var(TARGET_UCB_MCOUNT)
-instrument with mcount calls as in the ucb code
+instrument with mcount calls as in the ucb code.
 
 ; backward-compatibility aliases, translated by DRIVER_SELF_SPECS
 

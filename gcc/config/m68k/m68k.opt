@@ -27,169 +27,169 @@ const char *m68k_library_id_string = "_current_shared_library_a5_offset_"
 
 m5200
 Target RejectNegative Alias(mcpu=, 5206)
-Generate code for a 520X
+Generate code for a 520X.
 
 m5206e
 Target RejectNegative Alias(mcpu=, 5206e)
-Generate code for a 5206e
+Generate code for a 5206e.
 
 m528x
 Target RejectNegative Alias(mcpu=, 528x)
-Generate code for a 528x
+Generate code for a 528x.
 
 m5307
 Target RejectNegative Alias(mcpu=, 5307)
-Generate code for a 5307
+Generate code for a 5307.
 
 m5407
 Target RejectNegative Alias(mcpu=, 5407)
-Generate code for a 5407
+Generate code for a 5407.
 
 m68000
 Target RejectNegative Alias(mcpu=, 68000)
-Generate code for a 68000
+Generate code for a 68000.
 
 m68010
 Target RejectNegative Alias(mcpu=, 68010)
-Generate code for a 68010
+Generate code for a 68010.
 
 m68020
 Target RejectNegative Alias(mcpu=, 68020)
-Generate code for a 68020
+Generate code for a 68020.
 
 m68020-40
 Target RejectNegative
-Generate code for a 68040, without any new instructions
+Generate code for a 68040, without any new instructions.
 
 m68020-60
 Target RejectNegative
-Generate code for a 68060, without any new instructions
+Generate code for a 68060, without any new instructions.
 
 m68030
 Target RejectNegative Alias(mcpu=, 68030)
-Generate code for a 68030
+Generate code for a 68030.
 
 m68040
 Target RejectNegative Alias(mcpu=, 68040)
-Generate code for a 68040
+Generate code for a 68040.
 
 m68060
 Target RejectNegative Alias(mcpu=, 68060)
-Generate code for a 68060
+Generate code for a 68060.
 
 m68302
 Target RejectNegative Alias(mcpu=, 68302)
-Generate code for a 68302
+Generate code for a 68302.
 
 m68332
 Target RejectNegative Alias(mcpu=, 68332)
-Generate code for a 68332
+Generate code for a 68332.
 
 ; Has no effect on gcc
 m68851
 Target
-Generate code for a 68851
+Generate code for a 68851.
 
 m68881
 Target RejectNegative Mask(HARD_FLOAT)
-Generate code that uses 68881 floating-point instructions
+Generate code that uses 68881 floating-point instructions.
 
 malign-int
 Target Report Mask(ALIGN_INT)
-Align variables on a 32-bit boundary
+Align variables on a 32-bit boundary.
 
 march=
 Target RejectNegative Joined Enum(m68k_isa) Var(m68k_arch_option)
-Specify the name of the target architecture
+Specify the name of the target architecture.
 
 mbitfield
 Target Report Mask(BITFIELD)
-Use the bit-field instructions
+Use the bit-field instructions.
 
 mc68000
 Target RejectNegative Alias(mcpu=, 68000)
-Generate code for a 68000
+Generate code for a 68000.
 
 mc68020
 Target RejectNegative Alias(mcpu=, 68020)
-Generate code for a 68020
+Generate code for a 68020.
 
 mcfv4e
 Target RejectNegative Alias(mcpu=, 547x)
-Generate code for a ColdFire v4e
+Generate code for a ColdFire v4e.
 
 mcpu=
 Target RejectNegative Joined Enum(target_device) Var(m68k_cpu_option) Init(unk_device)
-Specify the target CPU
+Specify the target CPU.
 
 mcpu32
 Target RejectNegative Alias(mcpu=, 68332)
-Generate code for a cpu32
+Generate code for a cpu32.
 
 mdiv
 Target Report Mask(CF_HWDIV)
-Use hardware division instructions on ColdFire
+Use hardware division instructions on ColdFire.
 
 mfidoa
 Target RejectNegative
-Generate code for a Fido A
+Generate code for a Fido A.
 
 mhard-float
 Target RejectNegative Mask(HARD_FLOAT)
-Generate code which uses hardware floating point instructions
+Generate code which uses hardware floating point instructions.
 
 mid-shared-library
 Target Report Mask(ID_SHARED_LIBRARY)
-Enable ID based shared library
+Enable ID based shared library.
 
 mnobitfield
 Target RejectNegative InverseMask(BITFIELD)
-Do not use the bit-field instructions
+Do not use the bit-field instructions.
 
 mnortd
 Target RejectNegative InverseMask(RTD)
-Use normal calling convention
+Use normal calling convention.
 
 mnoshort
 Target RejectNegative InverseMask(SHORT)
-Consider type 'int' to be 32 bits wide
+Consider type 'int' to be 32 bits wide.
 
 mpcrel
 Target Report Mask(PCREL)
-Generate pc-relative code
+Generate pc-relative code.
 
 mrtd
 Target Report Mask(RTD)
-Use different calling convention using 'rtd'
+Use different calling convention using 'rtd'.
 
 msep-data
 Target Report Mask(SEP_DATA)
-Enable separate data segment
+Enable separate data segment.
 
 mshared-library-id=
 Target RejectNegative Joined UInteger
-ID of shared library to build
+ID of shared library to build.
 
 mshort
 Target Report Mask(SHORT)
-Consider type 'int' to be 16 bits wide
+Consider type 'int' to be 16 bits wide.
 
 msoft-float
 Target RejectNegative InverseMask(HARD_FLOAT)
-Generate code with library calls for floating point
+Generate code with library calls for floating point.
 
 mstrict-align
 Target Report Mask(STRICT_ALIGNMENT)
-Do not use unaligned memory references
+Do not use unaligned memory references.
 
 mtune=
 Target RejectNegative Joined Enum(uarch_type) Var(m68k_tune_option) Init(unk_arch)
-Tune for the specified target CPU or architecture
+Tune for the specified target CPU or architecture.
 
 mxgot
 Target Report Mask(XGOT)
-Support more than 8192 GOT entries on ColdFire
+Support more than 8192 GOT entries on ColdFire.
 
 mxtls
 Target Report Mask(XTLS)
-Support TLS segment larger than 64K
+Support TLS segment larger than 64K.

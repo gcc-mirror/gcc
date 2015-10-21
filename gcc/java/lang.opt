@@ -119,15 +119,15 @@ Java Var(warn_deprecated)
 
 Wextraneous-semicolon
 Java Var(flag_extraneous_semicolon)
-Warn if deprecated empty statements are found
+Warn if deprecated empty statements are found.
 
 Wout-of-date
 Java Var(flag_newer) Init(1)
-Warn if .class files are out of date
+Warn if .class files are out of date.
 
 Wredundant-modifiers
 Java Var(flag_redundant)
-Warn if modifiers are specified when not necessary
+Warn if modifiers are specified when not necessary.
 
 bootclasspath
 Java Separate Alias(fbootclasspath=)
@@ -147,14 +147,14 @@ Driver Separate
 
 fCLASSPATH=
 Java JoinedOrMissing RejectNegative Alias(fclasspath=)
---CLASSPATH	Deprecated; use --classpath instead
+--CLASSPATH	Deprecated; use --classpath instead.
 
 faux-classpath
 Java Separate RejectNegative Undocumented
 
 fassert
 Java Var(flag_assert) Init(1)
-Permit the use of the assert keyword
+Permit the use of the assert keyword.
 
 fassume-compiled
 Java
@@ -176,34 +176,34 @@ Java JoinedOrMissing
 
 fbootclasspath=
 Java JoinedOrMissing RejectNegative
---bootclasspath=<path>	Replace system path
+--bootclasspath=<path>	Replace system path.
 
 fcheck-references
 Java Var(flag_check_references)
-Generate checks for references to NULL
+Generate checks for references to NULL.
 
 fclasspath=
 Java JoinedOrMissing RejectNegative
---classpath=<path>	Set class path
+--classpath=<path>	Set class path.
 
 fcompile-resource=
 Java Joined RejectNegative
 
 femit-class-file
 Java Var(flag_emit_class_files)
-Output a class file
+Output a class file.
 
 femit-class-files
 Java Var(flag_emit_class_files)
-Alias for -femit-class-file
+Alias for -femit-class-file.
 
 fencoding=
 Java Joined RejectNegative
---encoding=<encoding>	Choose input encoding (defaults from your locale)
+--encoding=<encoding>	Choose input encoding (defaults from your locale).
 
 fextdirs=
 Java Joined RejectNegative
---extdirs=<path>	Set the extension directory path
+--extdirs=<path>	Set the extension directory path.
 
 fmain=
 Driver JoinedOrMissing RejectNegative
@@ -213,72 +213,72 @@ Java Joined Undocumented
 
 ffilelist-file
 Java Var(flag_filelist_file)
-Input file is a file with a list of filenames to compile
+Input file is a file with a list of filenames to compile.
 
 fsaw-java-file
 Java Undocumented RejectNegative
 
 fforce-classes-archive-check
 Java Var(flag_force_classes_archive_check)
-Always check for non gcj generated classes archives
+Always check for non gcj generated classes archives.
 
 fhash-synchronization
 Java Var(flag_hash_synchronization)
-Assume the runtime uses a hash table to map an object to its synchronization structure
+Assume the runtime uses a hash table to map an object to its synchronization structure.
 
 findirect-classes
 Java Var(flag_indirect_classes) Init(1)
-Generate instances of Class at runtime
+Generate instances of Class at runtime.
 
 findirect-dispatch
 Java Var(flag_indirect_dispatch)
-Use offset tables for virtual method calls
+Use offset tables for virtual method calls.
 
 finline-functions
 Java
 
 fjni
 Java Var(flag_jni)
-Assume native functions are implemented using JNI
+Assume native functions are implemented using JNI.
 
 foptimize-static-class-initialization
 Java Var(flag_optimize_sci)
-Enable optimization of static class initialization code
+Enable optimization of static class initialization code.
 
 foutput-class-dir=
 Java Joined RejectNegative
 
 freduced-reflection
 Java Var(flag_reduced_reflection)
-Reduce the amount of reflection meta-data generated
+Reduce the amount of reflection meta-data generated.
 
 fstore-check
 Java Var(flag_store_check) Init(1)
-Enable assignability checks for stores into object arrays
+Enable assignability checks for stores into object arrays.
 
 fuse-boehm-gc
 Java Var(flag_use_boehm_gc)
-Generate code for the Boehm GC
+Generate code for the Boehm GC.
 
 fuse-divide-subroutine
 Java Var(flag_use_divide_subroutine) Init(1)
-Call a library routine to do integer divisions
+Call a library routine to do integer divisions.
 
 fuse-atomic-builtins
 Java Var(flag_use_atomic_builtins) Init(0)
-Generate code for built-in atomic operations
+Generate code for built-in atomic operations.
 
 fbootstrap-classes
 Java Var(flag_bootstrap_classes)
-Generated should be loaded by bootstrap loader
+Generated should be loaded by bootstrap loader.
 
 fsource=
 Java Joined
-Set the source language version
+Set the source language version.
 
 ftarget=
 Java Joined
-Set the target VM version
+Set the target VM version.
 
 s-bc-abi
 Driver

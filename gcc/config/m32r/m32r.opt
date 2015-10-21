@@ -31,51 +31,51 @@ enum m32r_sdata m32r_sdata_selected = M32R_SDATA_DEFAULT
 
 m32rx
 Target Report RejectNegative Mask(M32RX)
-Compile for the m32rx
+Compile for the m32rx.
 
 m32r2
 Target Report RejectNegative Mask(M32R2)
-Compile for the m32r2
+Compile for the m32r2.
 
 m32r
 Target RejectNegative
-Compile for the m32r
+Compile for the m32r.
 
 malign-loops
 Target Report Mask(ALIGN_LOOPS)
-Align all loops to 32 byte boundary
+Align all loops to 32 byte boundary.
 
 mbranch-cost=1
 Target Report RejectNegative Mask(BRANCH_COST)
-Prefer branches over conditional execution
+Prefer branches over conditional execution.
 
 mbranch-cost=2
 Target Report RejectNegative InverseMask(BRANCH_COST)
-Give branches their default cost
+Give branches their default cost.
 
 mdebug
 Target Mask(DEBUG)
-Display compile time statistics
+Display compile time statistics.
 
 mflush-func=
 Target RejectNegative Joined Var(m32r_cache_flush_func) Init(CACHE_FLUSH_FUNC)
-Specify cache flush function
+Specify cache flush function.
 
 mflush-trap=
 Target RejectNegative Joined UInteger Var(m32r_cache_flush_trap) Init(CACHE_FLUSH_TRAP)
-Specify cache flush trap number
+Specify cache flush trap number.
 
 missue-rate=1
 Target Report RejectNegative Mask(LOW_ISSUE_RATE)
-Only issue one instruction per cycle
+Only issue one instruction per cycle.
 
 missue-rate=2
 Target Report RejectNegative InverseMask(LOW_ISSUE_RATE)
-Allow two instructions to be issued per cycle
+Allow two instructions to be issued per cycle.
 
 mmodel=
 Target RejectNegative Joined Enum(m32r_model) Var(m32r_model_selected)
-Code size: small, medium or large
+Code size: small, medium or large.
 
 Enum
 Name(m32r_model) Type(enum m32r_model)
@@ -91,18 +91,18 @@ Enum(m32r_model) String(large) Value(M32R_MODEL_LARGE)
 
 mno-flush-func
 Target RejectNegative
-Don't call any cache flush functions
+Don't call any cache flush functions.
 
 mno-flush-trap
 Target RejectNegative Var(m32r_cache_flush_trap, -1)
-Don't call any cache flush trap
+Don't call any cache flush trap.
 
 ; mrelax
 ; Target Mask(RELAX)
 
 msdata=
 Target RejectNegative Joined Enum(m32r_sdata) Var(m32r_sdata_selected)
-Small data area: none, sdata, use
+Small data area: none, sdata, use.
 
 Enum
 Name(m32r_sdata) Type(enum m32r_sdata)

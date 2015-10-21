@@ -20,35 +20,35 @@
 
 mconsole
 Target RejectNegative
-Create console application
+Create console application.
 
 mdll
 Target RejectNegative
-Generate code for a DLL
+Generate code for a DLL.
 
 mnop-fun-dllimport
 Target Report Var(TARGET_NOP_FUN_DLLIMPORT)
-Ignore dllimport for functions
+Ignore dllimport for functions.
 
 mthreads
 Target RejectNegative
-Use Mingw-specific thread support
+Use Mingw-specific thread support.
 
 mwin32
 Target
-Set Windows defines
+Set Windows defines.
 
 mwindows
 Target
-Create GUI application
+Create GUI application.
 
 mpe-aligned-commons
 Target Var(use_pe_aligned_common) Init(HAVE_GAS_ALIGNED_COMM)
-Use the GNU extension to the PE format for aligned common data
+Use the GNU extension to the PE format for aligned common data.
 
 muse-libstdc-wrappers
 Target Condition({defined (USE_CYGWIN_LIBSTDCXX_WRAPPERS)})
-Compile code that relies on Cygwin DLL wrappers to support C++ operator new/delete replacement
+Compile code that relies on Cygwin DLL wrappers to support C++ operator new/delete replacement.
 
 posix
 Driver

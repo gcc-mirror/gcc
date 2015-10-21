@@ -20,8 +20,8 @@
 
 msim
 Target Report Mask(SIM)
-target the software simulator
+target the software simulator.
 
 mlra
 Target Report Var(ft32_lra_flag) Init(0) Save
-Use LRA instead of reload
+Use LRA instead of reload.

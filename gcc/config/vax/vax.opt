@@ -20,32 +20,32 @@
 
 md
 Target RejectNegative InverseMask(G_FLOAT)
-Target DFLOAT double precision code
+Target DFLOAT double precision code.
 
 md-float
 Target RejectNegative InverseMask(G_FLOAT)
-Target DFLOAT double precision code
+Target DFLOAT double precision code.
 
 mg
 Target RejectNegative Mask(G_FLOAT)
-Generate GFLOAT double precision code
+Generate GFLOAT double precision code.
 
 mg-float
 Target RejectNegative Mask(G_FLOAT)
-Generate GFLOAT double precision code
+Generate GFLOAT double precision code.
 
 mgnu
 Target RejectNegative InverseMask(UNIX_ASM)
-Generate code for GNU assembler (gas)
+Generate code for GNU assembler (gas).
 
 munix
 Target RejectNegative Mask(UNIX_ASM)
-Generate code for UNIX assembler
+Generate code for UNIX assembler.
 
 mvaxc-alignment
 Target RejectNegative Mask(VAXC_ALIGNMENT)
-Use VAXC structure conventions
+Use VAXC structure conventions.
 
 mqmath
 Target Mask(QMATH)
-Use new adddi3/subdi3 patterns
+Use new adddi3/subdi3 patterns.

@@ -20,28 +20,28 @@
 
 mconst16
 Target Report Mask(CONST16)
-Use CONST16 instruction to load constants
+Use CONST16 instruction to load constants.
 
 mforce-no-pic
 Target Report Mask(FORCE_NO_PIC)
-Disable position-independent code (PIC) for use in OS kernel code
+Disable position-independent code (PIC) for use in OS kernel code.
 
 mlongcalls
 Target
-Use indirect CALLXn instructions for large programs
+Use indirect CALLXn instructions for large programs.
 
 mtarget-align
 Target
-Automatically align branch targets to reduce branch penalties
+Automatically align branch targets to reduce branch penalties.
 
 mtext-section-literals
 Target
-Intersperse literal pools with code in the text section
+Intersperse literal pools with code in the text section.
 
 mauto-litpools
 Target Report Mask(AUTO_LITPOOLS)
-Relax literals in assembler and place them automatically in the text section
+Relax literals in assembler and place them automatically in the text section.
 
 mserialize-volatile
 Target Report Mask(SERIALIZE_VOLATILE)
--mno-serialize-volatile	Do not serialize volatile memory references with MEMW instructions
+-mno-serialize-volatile	Do not serialize volatile memory references with MEMW instructions.

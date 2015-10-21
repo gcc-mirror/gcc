@@ -27,46 +27,46 @@ frv_cpu_t frv_cpu_type = CPU_TYPE
 
 macc-4
 Target Report RejectNegative Mask(ACC_4)
-Use 4 media accumulators
+Use 4 media accumulators.
 
 macc-8
 Target Report RejectNegative InverseMask(ACC_4, ACC_8)
-Use 8 media accumulators
+Use 8 media accumulators.
 
 malign-labels
 Target Report Mask(ALIGN_LABELS)
-Enable label alignment optimizations
+Enable label alignment optimizations.
 
 malloc-cc
 Target Report RejectNegative Mask(ALLOC_CC)
-Dynamically allocate cc registers
+Dynamically allocate cc registers.
 
 ; We used to default the branch cost to 2, but it was changed it to 1 to avoid
 ; generating SCC instructions and or/and-ing them together, and then doing the
 ; branch on the result, which collectively generate much worse code.
 mbranch-cost=
 Target RejectNegative Joined UInteger Var(frv_branch_cost_int) Init(1)
-Set the cost of branches
+Set the cost of branches.
 
 mcond-exec
 Target Report Mask(COND_EXEC)
-Enable conditional execution other than moves/scc
+Enable conditional execution other than moves/scc.
 
 mcond-exec-insns=
 Target RejectNegative Joined UInteger Var(frv_condexec_insns) Init(8)
-Change the maximum length of conditionally-executed sequences
+Change the maximum length of conditionally-executed sequences.
 
 mcond-exec-temps=
 Target RejectNegative Joined UInteger Var(frv_condexec_temps) Init(4)
-Change the number of temporary registers that are available to conditionally-executed sequences
+Change the number of temporary registers that are available to conditionally-executed sequences.
 
 mcond-move
 Target Report Mask(COND_MOVE)
-Enable conditional moves
+Enable conditional moves.
 
 mcpu=
 Target RejectNegative Joined Enum(frv_cpu) Var(frv_cpu_type)
-Set the target CPU type
+Set the target CPU type.
 
 Enum
 Name(frv_cpu) Type(frv_cpu_t)
@@ -119,119 +119,119 @@ Target Undocumented Var(TARGET_DEBUG_STACK)
 
 mdouble
 Target Report Mask(DOUBLE)
-Use fp double instructions
+Use fp double instructions.
 
 mdword
 Target Report Mask(DWORD)
-Change the ABI to allow double word insns
+Change the ABI to allow double word insns.
 
 mfdpic
 Target Report Mask(FDPIC)
-Enable Function Descriptor PIC mode
+Enable Function Descriptor PIC mode.
 
 mfixed-cc
 Target Report RejectNegative InverseMask(ALLOC_CC, FIXED_CC)
-Just use icc0/fcc0
+Just use icc0/fcc0.
 
 mfpr-32
 Target Report RejectNegative Mask(FPR_32)
-Only use 32 FPRs
+Only use 32 FPRs.
 
 mfpr-64
 Target Report RejectNegative InverseMask(FPR_32, FPR_64)
-Use 64 FPRs
+Use 64 FPRs.
 
 mgpr-32
 Target Report RejectNegative Mask(GPR_32)
-Only use 32 GPRs
+Only use 32 GPRs.
 
 mgpr-64
 Target Report RejectNegative InverseMask(GPR_32, GPR_64)
-Use 64 GPRs
+Use 64 GPRs.
 
 mgprel-ro
 Target Report Mask(GPREL_RO)
-Enable use of GPREL for read-only data in FDPIC
+Enable use of GPREL for read-only data in FDPIC.
 
 mhard-float
 Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
-Use hardware floating point
+Use hardware floating point.
 
 minline-plt
 Target Report Mask(INLINE_PLT)
-Enable inlining of PLT in function calls
+Enable inlining of PLT in function calls.
 
 mlibrary-pic
 Target Report Mask(LIBPIC)
-Enable PIC support for building libraries
+Enable PIC support for building libraries.
 
 mlinked-fp
 Target Report Mask(LINKED_FP)
-Follow the EABI linkage requirements
+Follow the EABI linkage requirements.
 
 mlong-calls
 Target Report Mask(LONG_CALLS)
-Disallow direct calls to global functions
+Disallow direct calls to global functions.
 
 mmedia
 Target Report Mask(MEDIA)
-Use media instructions
+Use media instructions.
 
 mmuladd
 Target Report Mask(MULADD)
-Use multiply add/subtract instructions
+Use multiply add/subtract instructions.
 
 mmulti-cond-exec
 Target Report Mask(MULTI_CE)
-Enable optimizing &&/|| in conditional execution
+Enable optimizing &&/|| in conditional execution.
 
 mnested-cond-exec
 Target Report Mask(NESTED_CE)
-Enable nested conditional execution optimizations
+Enable nested conditional execution optimizations.
 
 ; Not used by the compiler proper.
 mno-eflags
 Target RejectNegative
-Do not mark ABI switches in e_flags
+Do not mark ABI switches in e_flags.
 
 moptimize-membar
 Target Report Mask(OPTIMIZE_MEMBAR)
-Remove redundant membars
+Remove redundant membars.
 
 mpack
 Target Report Mask(PACK)
-Pack VLIW instructions
+Pack VLIW instructions.
 
 mscc
 Target Report Mask(SCC)
-Enable setting GPRs to the result of comparisons
+Enable setting GPRs to the result of comparisons.
 
 msched-lookahead=
 Target RejectNegative Joined UInteger Var(frv_sched_lookahead) Init(4)
-Change the amount of scheduler lookahead
+Change the amount of scheduler lookahead.
 
 msoft-float
 Target Report RejectNegative Mask(SOFT_FLOAT)
-Use software floating point
+Use software floating point.
 
 mTLS
 Target Report RejectNegative Mask(BIG_TLS)
-Assume a large TLS segment
+Assume a large TLS segment.
 
 mtls
 Target Report RejectNegative InverseMask(BIG_TLS)
-Do not assume a large TLS segment
+Do not assume a large TLS segment.
 
 ; Not used by the compiler proper.
 mtomcat-stats
 Target
-Cause gas to print tomcat statistics
+Cause gas to print tomcat statistics.
 
 ; Not used by the compiler proper.
 multilib-library-pic
 Target RejectNegative
-Link with the library-pic libraries
+Link with the library-pic libraries.
 
 mvliw-branch
 Target Report Mask(VLIW_BRANCH)
-Allow branches to be packed with other instructions
+Allow branches to be packed with other instructions.
