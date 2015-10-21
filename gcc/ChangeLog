@@ -1,3 +1,8 @@
+2015-10-21  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (expand_expr_real_2): Use convert_modes on disjoint
+	address spaces.
+
 2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* builtins.c (fold_builtin_cabs): Delete.
