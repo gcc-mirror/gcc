@@ -1,5 +1,16 @@
 2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
+	PR bootstrap/63888
+	Reapply:
+	2015-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_globals.cc (RegisterGlobal): Disable detect_odr_violation
+	support until it is rewritten upstream.
+
+	* c-c++-common/asan/pr63888.c: New test.
+
+2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
 	PR sanitizer/63958
 	Reapply:
 	2014-10-14  David S. Miller  <davem@davemloft.net>
