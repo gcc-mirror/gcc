@@ -1,3 +1,13 @@
+2015-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66781
+	* g++.dg/parse/enum13.C: New.
+
+2015-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67847
+	* g++.dg/parse/enum12.C: New.
+
 2015-10-21  Martin Sebor  <msebor@redhat.com>
 
 	PR driver/68043

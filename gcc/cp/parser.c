@@ -16655,8 +16655,12 @@ cp_parser_enum_specifier (cp_parser* parser)
       else if (nested_name_specifier == error_mark_node)
 	/* We already issued an error.  */;
       else
-	error_at (type_start_token->location,
-		  "%qD is not an enumerator-name", identifier);
+	{
+	  error_at (type_start_token->location,
+		    "%qD does not name an enumeration in %qT",
+		    identifier, nested_name_specifier);
+	  nested_name_specifier = error_mark_node;
+	}
     }
   else
     {
@@ -16781,6 +16785,14 @@ cp_parser_enum_specifier (cp_parser* parser)
 			"%<%T::%E%> has not been declared",
 			TYPE_CONTEXT (nested_name_specifier),
 			nested_name_specifier);
+	      type = error_mark_node;
+	    }
+	  else if (TREE_CODE (nested_name_specifier) != NAMESPACE_DECL
+		   && !CLASS_TYPE_P (nested_name_specifier))
+	    {
+	      error_at (type_start_token->location, "nested name specifier "
+			"%qT for enum declaration does not name a class "
+			"or namespace", nested_name_specifier);
 	      type = error_mark_node;
 	    }
 	  /* If that scope does not contain the scope in which the
