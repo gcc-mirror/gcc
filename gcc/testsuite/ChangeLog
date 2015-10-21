@@ -1,3 +1,8 @@
+2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* gcc.dg/graphite/scop-11.c: Update pattern.
+
 2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/67056

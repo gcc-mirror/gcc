@@ -1521,7 +1521,7 @@ parameter_index_in_region (tree name, sese_info_p region)
   if (TREE_CODE (TREE_TYPE (name)) != INTEGER_TYPE)
     return -1;
 
-  if (!invariant_in_sese_p_rec (name, region->region))
+  if (!invariant_in_sese_p_rec (name, region->region, NULL))
     return -1;
 
   i = parameter_index_in_region_1 (name, region);

@@ -1,6 +1,17 @@
 2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-scop-detection.c (parameter_index_in_region): Update call to
+	invariant_in_sese_p_rec.
+	* graphite-sese-to-poly.c (extract_affine): Same.
+	* sese.c (invariant_in_sese_p_rec): Pass in an extra parameter has_vdefs.
+	(scalar_evolution_in_region): Return chrec_dont_know when the scalar variable
+	depends on virtual definitions in the current region.
+	* sese.h (invariant_in_sese_p_rec): Update declaration.
+
+2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-scop-detection.c (build_scops): Do not handle scops with more
 	than PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP arrays.
 	* params.def (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP): New.
