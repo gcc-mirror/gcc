@@ -1,3 +1,14 @@
+2015-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.def (CEIL_DIV_EXPR, FLOOR_DIV_EXPR, ROUND_DIV_EXPR): Tweak
+	comments.
+	(TRUNC_MOD_EXPR, CEIL_MOD_EXPR, FLOOR_MOD_EXPR, ROUND_MOD_EXPR):
+	Add comments on sign of the result.
+	* fold-const.c (tree_binary_nonnegative_warnv_p) <FLOOR_MOD_EXPR>:
+	Recurse on operand #1 instead of operand #0.
+	<CEIL_MOD_EXPR>: Do not recurse.
+	<ROUND_MOD_EXPR>: Likewise.
+
 2015-10-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* cfgrtl.c (pass_free_cfg::execute): Adjust.
