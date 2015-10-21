@@ -1,3 +1,8 @@
+2015-10-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68018
+	* gcc.target/i386/pr68018.c: New test.
+
 2015-10-21  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/68031
@@ -202,7 +207,7 @@
 	* gcc.dg/tree-ssa/ssa-dom-thread-2e.c: Likewise.
 	* gcc.dg/tree-ssa/ssa-dom-thread-2f.c: Likewise.
 
-        PR testsuite/67959
+	PR testsuite/67959
 	* gcc.dg/tree-ssa/ssa-thread-13.c: Avoid bitfield assumptions.
 
 2015-10-14  Marek Polacek  <polacek@redhat.com>
@@ -385,9 +390,9 @@
 
 2015-10-09  Martin Jambor  <mjambor@suse.cz>
 
-	tree-optimization/67794
-        * gcc.dg/ipa/ipa-sra-10.c: Nw test.
-        * gcc.dg/torture/pr67794.c: Likewise.
+	PR tree-optimization/67794
+	* gcc.dg/ipa/ipa-sra-10.c: New test.
+	* gcc.dg/torture/pr67794.c: Likewise.
 
 2015-10-09  Alexandre Oliva <aoliva@redhat.com>
 
