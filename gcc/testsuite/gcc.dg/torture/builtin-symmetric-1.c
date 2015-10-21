@@ -7,6 +7,7 @@
 
 /* { dg-do link } */
 /* { dg-options "-ffast-math" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
 /* All references to link_error should go away at compile-time.  */
 extern void link_error(int);

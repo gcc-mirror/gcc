@@ -160,8 +160,6 @@ static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
 static tree fold_builtin_pow (location_t, tree, tree, tree, tree);
 static tree fold_builtin_powi (location_t, tree, tree, tree, tree);
-static tree fold_builtin_cos (location_t, tree, tree, tree);
-static tree fold_builtin_cosh (location_t, tree, tree, tree);
 static tree fold_builtin_tan (tree, tree);
 static tree fold_builtin_trunc (location_t, tree, tree);
 static tree fold_builtin_floor (location_t, tree, tree);
@@ -175,7 +173,6 @@ static tree fold_builtin_memcmp (location_t, tree, tree, tree);
 static tree fold_builtin_strcmp (location_t, tree, tree);
 static tree fold_builtin_strncmp (location_t, tree, tree, tree);
 static tree fold_builtin_signbit (location_t, tree, tree);
-static tree fold_builtin_copysign (location_t, tree, tree, tree, tree);
 static tree fold_builtin_isascii (location_t, tree);
 static tree fold_builtin_toascii (location_t, tree);
 static tree fold_builtin_isdigit (location_t, tree);
@@ -7661,77 +7658,6 @@ fold_builtin_cproj (location_t loc, tree arg, tree type)
   return NULL_TREE;
 }
 
-/* Fold function call to builtin cos, cosf, or cosl with argument ARG.
-   TYPE is the type of the return value.  Return NULL_TREE if no
-   simplification can be made.  */
-
-static tree
-fold_builtin_cos (location_t loc,
-		  tree arg, tree type, tree fndecl)
-{
-  tree res, narg;
-
-  if (!validate_arg (arg, REAL_TYPE))
-    return NULL_TREE;
-
-  /* Calculate the result when the argument is a constant.  */
-  if ((res = do_mpfr_arg1 (arg, type, mpfr_cos, NULL, NULL, 0)))
-    return res;
-
-  /* Optimize cos(-x) into cos (x).  */
-  if ((narg = fold_strip_sign_ops (arg)))
-    return build_call_expr_loc (loc, fndecl, 1, narg);
-
-  return NULL_TREE;
-}
-
-/* Fold function call to builtin cosh, coshf, or coshl with argument ARG.
-   Return NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_cosh (location_t loc, tree arg, tree type, tree fndecl)
-{
-  if (validate_arg (arg, REAL_TYPE))
-    {
-      tree res, narg;
-
-      /* Calculate the result when the argument is a constant.  */
-      if ((res = do_mpfr_arg1 (arg, type, mpfr_cosh, NULL, NULL, 0)))
-	return res;
-
-      /* Optimize cosh(-x) into cosh (x).  */
-      if ((narg = fold_strip_sign_ops (arg)))
-	return build_call_expr_loc (loc, fndecl, 1, narg);
-    }
-
-  return NULL_TREE;
-}
-
-/* Fold function call to builtin ccos (or ccosh if HYPER is TRUE) with
-   argument ARG.  TYPE is the type of the return value.  Return
-   NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_ccos (location_t loc, tree arg, tree type, tree fndecl,
-		   bool hyper)
-{
-  if (validate_arg (arg, COMPLEX_TYPE)
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == REAL_TYPE)
-    {
-      tree tmp;
-
-      /* Calculate the result when the argument is a constant.  */
-      if ((tmp = do_mpc_arg1 (arg, type, (hyper ? mpc_cosh : mpc_cos))))
-	return tmp;
-
-      /* Optimize fn(-x) into fn(x).  */
-      if ((tmp = fold_strip_sign_ops (arg)))
-	return build_call_expr_loc (loc, fndecl, 1, tmp);
-    }
-
-  return NULL_TREE;
-}
-
 /* Fold function call to builtin tan, tanf, or tanl with argument ARG.
    Return NULL_TREE if no simplification can be made.  */
 
@@ -8147,10 +8073,9 @@ fold_builtin_bswap (tree fndecl, tree arg)
    NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_hypot (location_t loc, tree fndecl,
-		    tree arg0, tree arg1, tree type)
+fold_builtin_hypot (location_t loc, tree arg0, tree arg1, tree type)
 {
-  tree res, narg0, narg1;
+  tree res;
 
   if (!validate_arg (arg0, REAL_TYPE)
       || !validate_arg (arg1, REAL_TYPE))
@@ -8159,16 +8084,6 @@ fold_builtin_hypot (location_t loc, tree fndecl,
   /* Calculate the result when the argument is a constant.  */
   if ((res = do_mpfr_arg2 (arg0, arg1, type, mpfr_hypot)))
     return res;
-
-  /* If either argument to hypot has a negate or abs, strip that off.
-     E.g. hypot(-x,fabs(y)) -> hypot(x,y).  */
-  narg0 = fold_strip_sign_ops (arg0);
-  narg1 = fold_strip_sign_ops (arg1);
-  if (narg0 || narg1)
-    {
-      return build_call_expr_loc (loc, fndecl, 2, narg0 ? narg0 : arg0,
-			      narg1 ? narg1 : arg1);
-    }
 
   /* If either argument is zero, hypot is fabs of the other.  */
   if (real_zerop (arg0))
@@ -8273,14 +8188,6 @@ fold_builtin_pow (location_t loc, tree fndecl, tree arg0, tree arg1, tree type)
 	      inexact = real_powi (&x, TYPE_MODE (type), &x, n);
 	      if (flag_unsafe_math_optimizations || !inexact)
 		return build_real (type, x);
-	    }
-
-	  /* Strip sign ops from even integer powers.  */
-	  if ((n & 1) == 0 && flag_unsafe_math_optimizations)
-	    {
-	      tree narg0 = fold_strip_sign_ops (arg0);
-	      if (narg0)
-		return build_call_expr_loc (loc, fndecl, 2, narg0, arg1);
 	    }
 	}
     }
@@ -8729,11 +8636,8 @@ fold_builtin_signbit (location_t loc, tree arg, tree type)
    be made.  */
 
 static tree
-fold_builtin_copysign (location_t loc, tree fndecl,
-		       tree arg1, tree arg2, tree type)
+fold_builtin_copysign (location_t loc, tree arg1, tree arg2, tree type)
 {
-  tree tem;
-
   if (!validate_arg (arg1, REAL_TYPE)
       || !validate_arg (arg2, REAL_TYPE))
     return NULL_TREE;
@@ -8763,11 +8667,6 @@ fold_builtin_copysign (location_t loc, tree fndecl,
     return omit_one_operand_loc (loc, type,
 			     fold_build1_loc (loc, ABS_EXPR, type, arg1),
 			     arg2);
-
-  /* Strip sign changing operations for the first argument.  */
-  tem = fold_strip_sign_ops (arg1);
-  if (tem)
-    return build_call_expr_loc (loc, fndecl, 2, tem, arg2);
 
   return NULL_TREE;
 }
@@ -9669,10 +9568,16 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
     break;
 
     CASE_FLT_FN (BUILT_IN_CCOS):
-      return fold_builtin_ccos (loc, arg0, type, fndecl, /*hyper=*/ false);
+      if (validate_arg (arg0, COMPLEX_TYPE)
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) == REAL_TYPE)
+	return do_mpc_arg1 (arg0, type, mpc_cos);
+      break;
 
     CASE_FLT_FN (BUILT_IN_CCOSH):
-      return fold_builtin_ccos (loc, arg0, type, fndecl, /*hyper=*/ true);
+      if (validate_arg (arg0, COMPLEX_TYPE)
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) == REAL_TYPE)
+	return do_mpc_arg1 (arg0, type, mpc_cosh);
+      break;
 
     CASE_FLT_FN (BUILT_IN_CPROJ):
       return fold_builtin_cproj (loc, arg0, type);
@@ -9805,7 +9710,9 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
     break;
 
     CASE_FLT_FN (BUILT_IN_COS):
-      return fold_builtin_cos (loc, arg0, type, fndecl);
+      if (validate_arg (arg0, REAL_TYPE))
+	return do_mpfr_arg1 (arg0, type, mpfr_cos, NULL, NULL, 0);
+      break;
 
     CASE_FLT_FN (BUILT_IN_TAN):
       return fold_builtin_tan (arg0, type);
@@ -9824,7 +9731,9 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
     break;
 
     CASE_FLT_FN (BUILT_IN_COSH):
-      return fold_builtin_cosh (loc, arg0, type, fndecl);
+      if (validate_arg (arg0, REAL_TYPE))
+	return do_mpfr_arg1 (arg0, type, mpfr_cosh, NULL, NULL, 0);
+      break;
 
     CASE_FLT_FN (BUILT_IN_TANH):
       if (validate_arg (arg0, REAL_TYPE))
@@ -10078,7 +9987,7 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
     break;
 
     CASE_FLT_FN (BUILT_IN_HYPOT):
-      return fold_builtin_hypot (loc, fndecl, arg0, arg1, type);
+      return fold_builtin_hypot (loc, arg0, arg1, type);
 
     CASE_FLT_FN (BUILT_IN_CPOW):
       if (validate_arg (arg0, COMPLEX_TYPE)
@@ -10134,7 +10043,7 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
       return fold_builtin_powi (loc, fndecl, arg0, arg1, type);
 
     CASE_FLT_FN (BUILT_IN_COPYSIGN):
-      return fold_builtin_copysign (loc, fndecl, arg0, arg1, type);
+      return fold_builtin_copysign (loc, arg0, arg1, type);
 
     CASE_FLT_FN (BUILT_IN_FMIN):
       return fold_builtin_fmin_fmax (loc, arg0, arg1, type, /*max=*/false);

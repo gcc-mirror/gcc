@@ -7803,15 +7803,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 						  TREE_TYPE (targ0),
 						  targ0));
 	}
-
-      /* Strip sign ops from argument.  */
-      if (TREE_CODE (type) == REAL_TYPE)
-	{
-	  tem = fold_strip_sign_ops (arg0);
-	  if (tem)
-	    return fold_build1_loc (loc, ABS_EXPR, type,
-				fold_convert_loc (loc, type, tem));
-	}
       return NULL_TREE;
 
     case BIT_NOT_EXPR:
@@ -9859,17 +9850,6 @@ fold_binary_loc (location_t loc,
 	}
       else
 	{
-          /* Strip sign operations from X in X*X, i.e. -Y*-Y -> Y*Y.  */
-	  if (operand_equal_p (arg0, arg1, 0))
-	    {
-	      tree tem = fold_strip_sign_ops (arg0);
-	      if (tem != NULL_TREE)
-		{
-		  tem = fold_convert_loc (loc, type, tem);
-		  return fold_build2_loc (loc, MULT_EXPR, type, tem, tem);
-		}
-	    }
-
 	  /* Fold z * +-I to __complex__ (-+__imag z, +-__real z).
 	     This is not the same for NaNs or if signed zeros are
 	     involved.  */
@@ -14250,82 +14230,6 @@ ptr_difference_const (tree e1, tree e2, HOST_WIDE_INT *diff)
 
   *diff += (bitpos1 - bitpos2) / BITS_PER_UNIT;
   return true;
-}
-
-/* Simplify the floating point expression EXP when the sign of the
-   result is not significant.  Return NULL_TREE if no simplification
-   is possible.  */
-
-tree
-fold_strip_sign_ops (tree exp)
-{
-  tree arg0, arg1;
-  location_t loc = EXPR_LOCATION (exp);
-
-  switch (TREE_CODE (exp))
-    {
-    case ABS_EXPR:
-    case NEGATE_EXPR:
-      arg0 = fold_strip_sign_ops (TREE_OPERAND (exp, 0));
-      return arg0 ? arg0 : TREE_OPERAND (exp, 0);
-
-    case MULT_EXPR:
-    case RDIV_EXPR:
-      if (HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (exp)))
-	return NULL_TREE;
-      arg0 = fold_strip_sign_ops (TREE_OPERAND (exp, 0));
-      arg1 = fold_strip_sign_ops (TREE_OPERAND (exp, 1));
-      if (arg0 != NULL_TREE || arg1 != NULL_TREE)
-	return fold_build2_loc (loc, TREE_CODE (exp), TREE_TYPE (exp),
-			    arg0 ? arg0 : TREE_OPERAND (exp, 0),
-			    arg1 ? arg1 : TREE_OPERAND (exp, 1));
-      break;
-
-    case COMPOUND_EXPR:
-      arg0 = TREE_OPERAND (exp, 0);
-      arg1 = fold_strip_sign_ops (TREE_OPERAND (exp, 1));
-      if (arg1)
-	return fold_build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (exp), arg0, arg1);
-      break;
-
-    case COND_EXPR:
-      arg0 = fold_strip_sign_ops (TREE_OPERAND (exp, 1));
-      arg1 = fold_strip_sign_ops (TREE_OPERAND (exp, 2));
-      if (arg0 || arg1)
-	return fold_build3_loc (loc,
-			    COND_EXPR, TREE_TYPE (exp), TREE_OPERAND (exp, 0),
-			    arg0 ? arg0 : TREE_OPERAND (exp, 1),
-			    arg1 ? arg1 : TREE_OPERAND (exp, 2));
-      break;
-
-    case CALL_EXPR:
-      {
-	const enum built_in_function fcode = builtin_mathfn_code (exp);
-	switch (fcode)
-	{
-	CASE_FLT_FN (BUILT_IN_COPYSIGN):
-	  /* Strip copysign function call, return the 1st argument. */
-	  arg0 = CALL_EXPR_ARG (exp, 0);
-	  arg1 = CALL_EXPR_ARG (exp, 1);
-	  return omit_one_operand_loc (loc, TREE_TYPE (exp), arg0, arg1);
-
-	default:
-	  /* Strip sign ops from the argument of "odd" math functions.  */
-	  if (negate_mathfn_p (fcode))
-            {
-	      arg0 = fold_strip_sign_ops (CALL_EXPR_ARG (exp, 0));
-	      if (arg0)
-		return build_call_expr_loc (loc, get_callee_fndecl (exp), 1, arg0);
-	    }
-	  break;
-	}
-      }
-      break;
-
-    default:
-      break;
-    }
-  return NULL_TREE;
 }
 
 /* Return OFF converted to a pointer offset type suitable as offset for
