@@ -16318,6 +16318,8 @@ simd_clone_create (struct cgraph_node *old_node)
       DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
       DECL_STATIC_DESTRUCTOR (new_decl) = 0;
       new_node = old_node->create_version_clone (new_decl, vNULL, NULL);
+      if (old_node->in_other_partition)
+	new_node->in_other_partition = 1;
       symtab->call_cgraph_insertion_hooks (new_node);
     }
   if (new_node == NULL)

@@ -1,3 +1,8 @@
+2015-10-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* omp-low.c (simd_clone_create): Set in_other_partition
+	for created clones.
+
 2015-10-21  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* doc/extend.exp (Local Register Variables): Rewrite.
