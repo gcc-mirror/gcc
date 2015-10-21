@@ -1777,6 +1777,17 @@ build_scops (vec<scop_p> *scops)
 	  continue;
 	}
 
+      unsigned max_arrays = PARAM_VALUE (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP);
+      if (scop->drs.length () >= max_arrays)
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] too many data references: "
+		       << scop->drs.length ()
+		       << " is larger than --param graphite-max-arrays-per-scop="
+		       << max_arrays << ".\n");
+	  free_scop (scop);
+	  continue;
+	}
+
       build_sese_loop_nests (scop->scop_info);
 
       find_scop_parameters (scop);

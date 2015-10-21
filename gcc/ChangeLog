@@ -1,3 +1,10 @@
+2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-scop-detection.c (build_scops): Do not handle scops with more
+	than PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP arrays.
+	* params.def (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP): New.
+
 2015-10-21  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* config.in: Regenerate.
