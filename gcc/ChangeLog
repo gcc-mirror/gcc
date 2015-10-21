@@ -1,5 +1,11 @@
 2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_cabs): Delete.
+	(fold_builtin_1): Update accordingly.  Handle constant arguments here.
+	* match.pd: Add rules previously handled by fold_builtin_cabs.
+
+2015-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* fold-const.h (fold_strip_sign_ops): Delete.
 	* fold-const.c (fold_strip_sign_ops): Likewise.
 	(fold_unary_loc, fold_binary_loc): Remove calls to it.

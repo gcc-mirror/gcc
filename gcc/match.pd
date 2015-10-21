@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 (define_operator_list COPYSIGN BUILT_IN_COPYSIGNF
 			       BUILT_IN_COPYSIGN
 			       BUILT_IN_COPYSIGNL)
+(define_operator_list CABS BUILT_IN_CABSF BUILT_IN_CABS BUILT_IN_CABSL)
 
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
@@ -393,6 +394,13 @@ along with GCC; see the file COPYING3.  If not see
  (simplify
   (ccoss (negate @0))
    (ccoss @0)))
+
+/* cabs(-x) and cos(conj(x)) -> cabs(x).  */
+(for ops (conj negate)
+ (for cabss (CABS)
+  (simplify
+   (cabss (ops @0))
+   (cabss @0))))
 
 /* Fold (a * (1 << b)) into (a << b)  */
 (simplify
@@ -2368,6 +2376,11 @@ along with GCC; see the file COPYING3.  If not see
    (cbrts (exps @0))
    (exps (mult @0 { build_real_truncate (type, dconst_third ()); })))))
 
+/* cabs(x+0i) or cabs(0+xi) -> abs(x).  */
+(simplify
+ (CABS (complex:c @0 real_zerop@1))
+ (abs @0))
+
 /* Canonicalization of sequences of math builtins.  These rules represent
    IL simplifications but are not necessarily optimizations.
 
@@ -2459,7 +2472,12 @@ along with GCC; see the file COPYING3.  If not see
   /* cbrt(pow(x,y)) -> pow(x,y/3), iff x is nonnegative.  */
   (simplify
    (cbrts (pows tree_expr_nonnegative_p@0 @1))
-   (pows @0 (mult @1 { build_real_truncate (type, dconst_third ()); })))))
+   (pows @0 (mult @1 { build_real_truncate (type, dconst_third ()); }))))
+
+ /* cabs(x+xi) -> fabs(x)*sqrt(2).  */
+ (simplify
+  (CABS (complex @0 @0))
+  (mult (abs @0) { build_real_truncate (type, dconst_sqrt2 ()); })))
 
 /* If the real part is inf and the imag part is known to be
    nonnegative, return (inf + 0i).  */

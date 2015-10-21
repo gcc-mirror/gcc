@@ -1,6 +1,8 @@
 /* { dg-lto-do run } */
 /* { dg-lto-options { { -O0 -flto } } } */
+/* { dg-lto-options { "-O0 -flto -mfloat-abi=softfp -mfpu=neon-vfpv4" } { target arm*-*-* } } */
 /* { dg-require-linker-plugin "" } */
+/* { dg-require-effective-target sqrt_insn } */
 
 /* We require a linker plugin because otherwise we'd need to link
    against libm which we are not sure here has cabs on all targets.
@@ -14,15 +16,6 @@ foo (_Complex double x, int b)
   if (b)
     x = 0;
   return cabs(x);
-}
-
-/* We provide a dummy sqrt to avoid link failures on targets that do not
-   expand sqrt inline.  Note that we do not link against libm in order
-   to ensure cabs is not satisfied by the library, but must be folded.  */
-double __attribute__((used))
-sqrt (double x)
-{
-  return x;
 }
 
 int main() { return 0; }
