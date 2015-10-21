@@ -21,8 +21,8 @@
 
 namespace __sanitizer {
 
-// Depending on allocator_may_return_null either return 0 or crash.
-void *AllocatorReturnNull();
+// Prints error message and kills the program.
+void NORETURN ReportAllocatorCannotReturnNull();
 
 // SizeClassMap maps allocation sizes into size classes and back.
 // Class 0 corresponds to size 0.
@@ -209,6 +209,7 @@ class AllocatorStats {
   void Init() {
     internal_memset(this, 0, sizeof(*this));
   }
+  void InitLinkerInitialized() {}
 
   void Add(AllocatorStat i, uptr v) {
     v += atomic_load(&stats_[i], memory_order_relaxed);
@@ -238,10 +239,13 @@ class AllocatorStats {
 // Global stats, used for aggregation and querying.
 class AllocatorGlobalStats : public AllocatorStats {
  public:
-  void Init() {
-    internal_memset(this, 0, sizeof(*this));
+  void InitLinkerInitialized() {
     next_ = this;
     prev_ = this;
+  }
+  void Init() {
+    internal_memset(this, 0, sizeof(*this));
+    InitLinkerInitialized();
   }
 
   void Register(AllocatorStats *s) {
@@ -317,7 +321,7 @@ class SizeClassAllocator64 {
 
   void Init() {
     CHECK_EQ(kSpaceBeg,
-             reinterpret_cast<uptr>(Mprotect(kSpaceBeg, kSpaceSize)));
+             reinterpret_cast<uptr>(MmapNoAccess(kSpaceBeg, kSpaceSize)));
     MapWithCallback(kSpaceEnd, AdditionalSize());
   }
 
@@ -341,7 +345,7 @@ class SizeClassAllocator64 {
     CHECK_LT(class_id, kNumClasses);
     RegionInfo *region = GetRegionInfo(class_id);
     Batch *b = region->free_list.Pop();
-    if (b == 0)
+    if (!b)
       b = PopulateFreeList(stat, c, class_id, region);
     region->n_allocated += b->count;
     return b;
@@ -365,16 +369,16 @@ class SizeClassAllocator64 {
   void *GetBlockBegin(const void *p) {
     uptr class_id = GetSizeClass(p);
     uptr size = SizeClassMap::Size(class_id);
-    if (!size) return 0;
+    if (!size) return nullptr;
     uptr chunk_idx = GetChunkIdx((uptr)p, size);
     uptr reg_beg = (uptr)p & ~(kRegionSize - 1);
     uptr beg = chunk_idx * size;
     uptr next_beg = beg + size;
-    if (class_id >= kNumClasses) return 0;
+    if (class_id >= kNumClasses) return nullptr;
     RegionInfo *region = GetRegionInfo(class_id);
     if (region->mapped_user >= next_beg)
       return reinterpret_cast<void*>(reg_beg + beg);
-    return 0;
+    return nullptr;
   }
 
   static uptr GetActuallyAllocatedSize(void *p) {
@@ -603,6 +607,7 @@ class TwoLevelByteMap {
     internal_memset(map1_, 0, sizeof(map1_));
     mu_.Init();
   }
+
   void TestOnlyUnmap() {
     for (uptr i = 0; i < kSize1; i++) {
       u8 *p = Get(i);
@@ -816,6 +821,10 @@ class SizeClassAllocator32 {
   void PrintStats() {
   }
 
+  static uptr AdditionalSize() {
+    return 0;
+  }
+
   typedef SizeClassMap SizeClassMapT;
   static const uptr kNumClasses = SizeClassMap::kNumClasses;
 
@@ -862,9 +871,9 @@ class SizeClassAllocator32 {
     uptr reg = AllocateRegion(stat, class_id);
     uptr n_chunks = kRegionSize / (size + kMetadataSize);
     uptr max_count = SizeClassMap::MaxCached(class_id);
-    Batch *b = 0;
+    Batch *b = nullptr;
     for (uptr i = reg; i < reg + n_chunks * size; i += size) {
-      if (b == 0) {
+      if (!b) {
         if (SizeClassMap::SizeClassRequiresSeparateTransferBatch(class_id))
           b = (Batch*)c->Allocate(this, SizeClassMap::ClassID(sizeof(Batch)));
         else
@@ -875,7 +884,7 @@ class SizeClassAllocator32 {
       if (b->count == max_count) {
         CHECK_GT(b->count, 0);
         sci->free_list.push_back(b);
-        b = 0;
+        b = nullptr;
       }
     }
     if (b) {
@@ -1000,9 +1009,14 @@ struct SizeClassAllocatorLocalCache {
 template <class MapUnmapCallback = NoOpMapUnmapCallback>
 class LargeMmapAllocator {
  public:
-  void Init() {
-    internal_memset(this, 0, sizeof(*this));
+  void InitLinkerInitialized(bool may_return_null) {
     page_size_ = GetPageSizeCached();
+    atomic_store(&may_return_null_, may_return_null, memory_order_relaxed);
+  }
+
+  void Init(bool may_return_null) {
+    internal_memset(this, 0, sizeof(*this));
+    InitLinkerInitialized(may_return_null);
   }
 
   void *Allocate(AllocatorStats *stat, uptr size, uptr alignment) {
@@ -1010,7 +1024,9 @@ class LargeMmapAllocator {
     uptr map_size = RoundUpMapSize(size);
     if (alignment > page_size_)
       map_size += alignment;
-    if (map_size < size) return AllocatorReturnNull();  // Overflow.
+    // Overflow.
+    if (map_size < size)
+      return ReturnNullOrDie();
     uptr map_beg = reinterpret_cast<uptr>(
         MmapOrDie(map_size, "LargeMmapAllocator"));
     CHECK(IsAligned(map_beg, page_size_));
@@ -1046,6 +1062,16 @@ class LargeMmapAllocator {
     return reinterpret_cast<void*>(res);
   }
 
+  void *ReturnNullOrDie() {
+    if (atomic_load(&may_return_null_, memory_order_acquire))
+      return nullptr;
+    ReportAllocatorCannotReturnNull();
+  }
+
+  void SetMayReturnNull(bool may_return_null) {
+    atomic_store(&may_return_null_, may_return_null, memory_order_release);
+  }
+
   void Deallocate(AllocatorStats *stat, void *p) {
     Header *h = GetHeader(p);
     {
@@ -1078,7 +1104,7 @@ class LargeMmapAllocator {
   }
 
   bool PointerIsMine(const void *p) {
-    return GetBlockBegin(p) != 0;
+    return GetBlockBegin(p) != nullptr;
   }
 
   uptr GetActuallyAllocatedSize(void *p) {
@@ -1107,13 +1133,13 @@ class LargeMmapAllocator {
         nearest_chunk = ch;
     }
     if (!nearest_chunk)
-      return 0;
+      return nullptr;
     Header *h = reinterpret_cast<Header *>(nearest_chunk);
     CHECK_GE(nearest_chunk, h->map_beg);
     CHECK_LT(nearest_chunk, h->map_beg + h->map_size);
     CHECK_LE(nearest_chunk, p);
     if (h->map_beg + h->map_size <= p)
-      return 0;
+      return nullptr;
     return GetUser(h);
   }
 
@@ -1123,7 +1149,7 @@ class LargeMmapAllocator {
     mutex_.CheckLocked();
     uptr p = reinterpret_cast<uptr>(ptr);
     uptr n = n_chunks_;
-    if (!n) return 0;
+    if (!n) return nullptr;
     if (!chunks_sorted_) {
       // Do one-time sort. chunks_sorted_ is reset in Allocate/Deallocate.
       SortArray(reinterpret_cast<uptr*>(chunks_), n);
@@ -1135,7 +1161,7 @@ class LargeMmapAllocator {
           chunks_[n - 1]->map_size;
     }
     if (p < min_mmap_ || p >= max_mmap_)
-      return 0;
+      return nullptr;
     uptr beg = 0, end = n - 1;
     // This loop is a log(n) lower_bound. It does not check for the exact match
     // to avoid expensive cache-thrashing loads.
@@ -1156,7 +1182,7 @@ class LargeMmapAllocator {
 
     Header *h = chunks_[beg];
     if (h->map_beg + h->map_size <= p || p < h->map_beg)
-      return 0;
+      return nullptr;
     return GetUser(h);
   }
 
@@ -1224,6 +1250,7 @@ class LargeMmapAllocator {
   struct Stats {
     uptr n_allocs, n_frees, currently_allocated, max_allocated, by_size_log[64];
   } stats;
+  atomic_uint8_t may_return_null_;
   SpinMutex mutex_;
 };
 
@@ -1237,19 +1264,32 @@ template <class PrimaryAllocator, class AllocatorCache,
           class SecondaryAllocator>  // NOLINT
 class CombinedAllocator {
  public:
-  void Init() {
+  void InitCommon(bool may_return_null) {
     primary_.Init();
-    secondary_.Init();
+    atomic_store(&may_return_null_, may_return_null, memory_order_relaxed);
+  }
+
+  void InitLinkerInitialized(bool may_return_null) {
+    secondary_.InitLinkerInitialized(may_return_null);
+    stats_.InitLinkerInitialized();
+    InitCommon(may_return_null);
+  }
+
+  void Init(bool may_return_null) {
+    secondary_.Init(may_return_null);
     stats_.Init();
+    InitCommon(may_return_null);
   }
 
   void *Allocate(AllocatorCache *cache, uptr size, uptr alignment,
-                 bool cleared = false) {
+                 bool cleared = false, bool check_rss_limit = false) {
     // Returning 0 on malloc(0) may break a lot of code.
     if (size == 0)
       size = 1;
     if (size + alignment < size)
-      return AllocatorReturnNull();
+      return ReturnNullOrDie();
+    if (check_rss_limit && RssLimitIsExceeded())
+      return ReturnNullOrDie();
     if (alignment > 8)
       size = RoundUpTo(size, alignment);
     void *res;
@@ -1263,6 +1303,30 @@ class CombinedAllocator {
     if (cleared && res && from_primary)
       internal_bzero_aligned16(res, RoundUpTo(size, 16));
     return res;
+  }
+
+  bool MayReturnNull() const {
+    return atomic_load(&may_return_null_, memory_order_acquire);
+  }
+
+  void *ReturnNullOrDie() {
+    if (MayReturnNull())
+      return nullptr;
+    ReportAllocatorCannotReturnNull();
+  }
+
+  void SetMayReturnNull(bool may_return_null) {
+    secondary_.SetMayReturnNull(may_return_null);
+    atomic_store(&may_return_null_, may_return_null, memory_order_release);
+  }
+
+  bool RssLimitIsExceeded() {
+    return atomic_load(&rss_limit_is_exceeded_, memory_order_acquire);
+  }
+
+  void SetRssLimitIsExceeded(bool rss_limit_is_exceeded) {
+    atomic_store(&rss_limit_is_exceeded_, rss_limit_is_exceeded,
+                 memory_order_release);
   }
 
   void Deallocate(AllocatorCache *cache, void *p) {
@@ -1279,7 +1343,7 @@ class CombinedAllocator {
       return Allocate(cache, new_size, alignment);
     if (!new_size) {
       Deallocate(cache, p);
-      return 0;
+      return nullptr;
     }
     CHECK(PointerIsMine(p));
     uptr old_size = GetActuallyAllocatedSize(p);
@@ -1377,11 +1441,13 @@ class CombinedAllocator {
   PrimaryAllocator primary_;
   SecondaryAllocator secondary_;
   AllocatorGlobalStats stats_;
+  atomic_uint8_t may_return_null_;
+  atomic_uint8_t rss_limit_is_exceeded_;
 };
 
 // Returns true if calloc(size, n) should return 0 due to overflow in size*n.
 bool CallocShouldReturnNullDueToOverflow(uptr size, uptr n);
 
-}  // namespace __sanitizer
+} // namespace __sanitizer
 
-#endif  // SANITIZER_ALLOCATOR_H
+#endif // SANITIZER_ALLOCATOR_H

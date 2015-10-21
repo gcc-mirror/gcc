@@ -9,19 +9,23 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "ubsan_platform.h"
+#if CAN_SANITIZE_UB
 #include "ubsan_diag.h"
 #include "ubsan_init.h"
 #include "ubsan_flags.h"
+#include "sanitizer_common/sanitizer_placement_new.h"
 #include "sanitizer_common/sanitizer_report_decorator.h"
 #include "sanitizer_common/sanitizer_stacktrace.h"
 #include "sanitizer_common/sanitizer_stacktrace_printer.h"
+#include "sanitizer_common/sanitizer_suppressions.h"
 #include "sanitizer_common/sanitizer_symbolizer.h"
 #include <stdio.h>
 
 using namespace __ubsan;
 
 static void MaybePrintStackTrace(uptr pc, uptr bp) {
-  // We assume that flags are already parsed: InitIfNecessary
+  // We assume that flags are already parsed, as UBSan runtime
   // will definitely be called when we print the first diagnostics message.
   if (!flags()->print_stacktrace)
     return;
@@ -37,20 +41,41 @@ static void MaybePrintStackTrace(uptr pc, uptr bp) {
   stack.Print();
 }
 
-static void MaybeReportErrorSummary(Location Loc) {
+static const char *ConvertTypeToString(ErrorType Type) {
+  switch (Type) {
+#define UBSAN_CHECK(Name, SummaryKind, FlagName)                               \
+  case ErrorType::Name:                                                        \
+    return SummaryKind;
+#include "ubsan_checks.inc"
+#undef UBSAN_CHECK
+  }
+  UNREACHABLE("unknown ErrorType!");
+}
+
+static void MaybeReportErrorSummary(Location Loc, ErrorType Type) {
   if (!common_flags()->print_summary)
     return;
-  // Don't try to unwind the stack trace in UBSan summaries: just use the
-  // provided location.
+  if (!flags()->report_error_type)
+    Type = ErrorType::GenericUB;
+  const char *ErrorKind = ConvertTypeToString(Type);
   if (Loc.isSourceLocation()) {
     SourceLocation SLoc = Loc.getSourceLocation();
     if (!SLoc.isInvalid()) {
-      ReportErrorSummary("undefined-behavior", SLoc.getFilename(),
-                         SLoc.getLine(), "");
+      AddressInfo AI;
+      AI.file = internal_strdup(SLoc.getFilename());
+      AI.line = SLoc.getLine();
+      AI.column = SLoc.getColumn();
+      AI.function = internal_strdup("");  // Avoid printing ?? as function name.
+      ReportErrorSummary(ErrorKind, AI);
+      AI.Clear();
       return;
     }
+  } else if (Loc.isSymbolizedStack()) {
+    const AddressInfo &AI = Loc.getSymbolizedStack()->info;
+    ReportErrorSummary(ErrorKind, AI);
+    return;
   }
-  ReportErrorSummary("undefined-behavior");
+  ReportErrorSummary(ErrorKind);
 }
 
 namespace {
@@ -64,31 +89,9 @@ class Decorator : public SanitizerCommonDecorator {
 };
 }
 
-Location __ubsan::getCallerLocation(uptr CallerLoc) {
-  if (!CallerLoc)
-    return Location();
-
-  uptr Loc = StackTrace::GetPreviousInstructionPc(CallerLoc);
-  return getFunctionLocation(Loc, 0);
-}
-
-Location __ubsan::getFunctionLocation(uptr Loc, const char **FName) {
-  if (!Loc)
-    return Location();
-  InitIfNecessary();
-
-  AddressInfo Info;
-  if (!Symbolizer::GetOrInit()->SymbolizePC(Loc, &Info, 1) || !Info.module ||
-      !*Info.module)
-    return Location(Loc);
-
-  if (FName && Info.function)
-    *FName = Info.function;
-
-  if (!Info.file)
-    return ModuleLocation(Info.module, Info.module_offset);
-
-  return SourceLocation(Info.file, Info.line, Info.column);
+SymbolizedStack *__ubsan::getSymbolizedLocation(uptr PC) {
+  InitAsStandaloneIfNecessary();
+  return Symbolizer::GetOrInit()->SymbolizePC(PC);
 }
 
 Diag &Diag::operator<<(const TypeDescriptor &V) {
@@ -129,18 +132,27 @@ static void renderLocation(Location Loc) {
       LocBuffer.append("<unknown>");
     else
       RenderSourceLocation(&LocBuffer, SLoc.getFilename(), SLoc.getLine(),
-                           SLoc.getColumn(), common_flags()->strip_path_prefix);
-    break;
-  }
-  case Location::LK_Module: {
-    ModuleLocation MLoc = Loc.getModuleLocation();
-    RenderModuleLocation(&LocBuffer, MLoc.getModuleName(), MLoc.getOffset(),
-                         common_flags()->strip_path_prefix);
+                           SLoc.getColumn(), common_flags()->symbolize_vs_style,
+                           common_flags()->strip_path_prefix);
     break;
   }
   case Location::LK_Memory:
     LocBuffer.append("%p", Loc.getMemoryLocation());
     break;
+  case Location::LK_Symbolized: {
+    const AddressInfo &Info = Loc.getSymbolizedStack()->info;
+    if (Info.file) {
+      RenderSourceLocation(&LocBuffer, Info.file, Info.line, Info.column,
+                           common_flags()->symbolize_vs_style,
+                           common_flags()->strip_path_prefix);
+    } else if (Info.module) {
+      RenderModuleLocation(&LocBuffer, Info.module, Info.module_offset,
+                           common_flags()->strip_path_prefix);
+    } else {
+      LocBuffer.append("%p", Info.address);
+    }
+    break;
+  }
   case Location::LK_Null:
     LocBuffer.append("<unknown>");
     break;
@@ -164,8 +176,12 @@ static void renderText(const char *Message, const Diag::Arg *Args) {
       case Diag::AK_String:
         Printf("%s", A.String);
         break;
-      case Diag::AK_Mangled: {
-        Printf("'%s'", Symbolizer::GetOrInit()->Demangle(A.String));
+      case Diag::AK_TypeName: {
+        if (SANITIZER_WINDOWS)
+          // The Windows implementation demangles names early.
+          Printf("'%s'", A.String);
+        else
+          Printf("'%s'", Symbolizer::GetOrInit()->Demangle(A.String));
         break;
       }
       case Diag::AK_SInt:
@@ -185,7 +201,11 @@ static void renderText(const char *Message, const Diag::Arg *Args) {
         // FIXME: Support floating-point formatting in sanitizer_common's
         //        printf, and stop using snprintf here.
         char Buffer[32];
+#if SANITIZER_WINDOWS
+        sprintf_s(Buffer, sizeof(Buffer), "%Lg", (long double)A.Float);
+#else
         snprintf(Buffer, sizeof(Buffer), "%Lg", (long double)A.Float);
+#endif
         Printf("%s", Buffer);
         break;
       }
@@ -332,25 +352,38 @@ Diag::~Diag() {
                         NumRanges, Args);
 }
 
-ScopedReport::ScopedReport(ReportOptions Opts, Location SummaryLoc)
-    : Opts(Opts), SummaryLoc(SummaryLoc) {
-  InitIfNecessary();
+ScopedReport::ScopedReport(ReportOptions Opts, Location SummaryLoc,
+                           ErrorType Type)
+    : Opts(Opts), SummaryLoc(SummaryLoc), Type(Type) {
+  InitAsStandaloneIfNecessary();
   CommonSanitizerReportMutex.Lock();
 }
 
 ScopedReport::~ScopedReport() {
   MaybePrintStackTrace(Opts.pc, Opts.bp);
-  MaybeReportErrorSummary(SummaryLoc);
+  MaybeReportErrorSummary(SummaryLoc, Type);
   CommonSanitizerReportMutex.Unlock();
   if (Opts.DieAfterReport || flags()->halt_on_error)
     Die();
 }
 
-bool __ubsan::MatchSuppression(const char *Str, SuppressionType Type) {
-  Suppression *s;
-  // If .preinit_array is not used, it is possible that the UBSan runtime is not
-  // initialized.
-  if (!SANITIZER_CAN_USE_PREINIT_ARRAY)
-    InitIfNecessary();
-  return SuppressionContext::Get()->Match(Str, Type, &s);
+ALIGNED(64) static char suppression_placeholder[sizeof(SuppressionContext)];
+static SuppressionContext *suppression_ctx = nullptr;
+static const char kVptrCheck[] = "vptr_check";
+static const char *kSuppressionTypes[] = { kVptrCheck };
+
+void __ubsan::InitializeSuppressions() {
+  CHECK_EQ(nullptr, suppression_ctx);
+  suppression_ctx = new (suppression_placeholder) // NOLINT
+      SuppressionContext(kSuppressionTypes, ARRAY_SIZE(kSuppressionTypes));
+  suppression_ctx->ParseFromFile(flags()->suppressions);
 }
+
+bool __ubsan::IsVptrCheckSuppressed(const char *TypeName) {
+  InitAsStandaloneIfNecessary();
+  CHECK(suppression_ctx);
+  Suppression *s;
+  return suppression_ctx->Match(TypeName, kVptrCheck, &s);
+}
+
+#endif  // CAN_SANITIZE_UB

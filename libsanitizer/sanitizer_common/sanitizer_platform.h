@@ -36,9 +36,15 @@
 # else
 #  define SANITIZER_IOS    0
 # endif
+# if TARGET_IPHONE_SIMULATOR
+#  define SANITIZER_IOSSIM 1
+# else
+#  define SANITIZER_IOSSIM 0
+# endif
 #else
 # define SANITIZER_MAC     0
 # define SANITIZER_IOS     0
+# define SANITIZER_IOSSIM  0
 #endif
 
 #if defined(_WIN32)
@@ -73,13 +79,23 @@
 # define SANITIZER_X32 0
 #endif
 
+// VMA size definition for architecture that support multiple sizes.
+// AArch64 has 3 VMA sizes: 39, 42 and 48.
+#if !defined(SANITIZER_AARCH64_VMA)
+# define SANITIZER_AARCH64_VMA 39
+#else
+# if SANITIZER_AARCH64_VMA != 39 && SANITIZER_AARCH64_VMA != 42
+#  error "invalid SANITIZER_AARCH64_VMA size"
+# endif
+#endif
+
 // By default we allow to use SizeClassAllocator64 on 64-bit platform.
 // But in some cases (e.g. AArch64's 39-bit address space) SizeClassAllocator64
 // does not work well and we need to fallback to SizeClassAllocator32.
 // For such platforms build this code with -DSANITIZER_CAN_USE_ALLOCATOR64=0 or
 // change the definition of SANITIZER_CAN_USE_ALLOCATOR64 here.
 #ifndef SANITIZER_CAN_USE_ALLOCATOR64
-# if defined(__aarch64__) || defined(__mips64)
+# if defined(__mips64) || (defined(__aarch64__) && SANITIZER_AARCH64_VMA == 39)
 #  define SANITIZER_CAN_USE_ALLOCATOR64 0
 # else
 #  define SANITIZER_CAN_USE_ALLOCATOR64 (SANITIZER_WORDSIZE == 64)
@@ -91,7 +107,13 @@
 // e.g. on AArch64 it is most likely (1ULL << 39). Larger values will still work
 // but will consume more memory for TwoLevelByteMap.
 #if defined(__aarch64__)
-# define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 39)
+# if SANITIZER_AARCH64_VMA == 39
+#  define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 39)
+# elif SANITIZER_AARCH64_VMA == 42
+#  define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 42)
+# endif
+#elif defined(__mips__)
+# define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 40)
 #else
 # define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 47)
 #endif
@@ -120,8 +142,10 @@
 #define SANITIZER_USES_UID16_SYSCALLS 0
 #endif
 
-#ifdef __mips__
+#if defined(__mips__) || (defined(__aarch64__) && SANITIZER_AARCH64_VMA == 39)
 # define SANITIZER_POINTER_FORMAT_LENGTH FIRST_32_SECOND_64(8, 10)
+#elif defined(__aarch64__) && SANITIZER_AARCH64_VMA == 42
+# define SANITIZER_POINTER_FORMAT_LENGTH FIRST_32_SECOND_64(8, 11)
 #else
 # define SANITIZER_POINTER_FORMAT_LENGTH FIRST_32_SECOND_64(8, 12)
 #endif
@@ -130,6 +154,17 @@
 #if !defined(HAVE_RPC_XDR_H) && !defined(HAVE_TIRPC_RPC_XDR_H)
 # define HAVE_RPC_XDR_H (SANITIZER_LINUX && !SANITIZER_ANDROID)
 # define HAVE_TIRPC_RPC_XDR_H 0
+#endif
+
+/// \macro MSC_PREREQ
+/// \brief Is the compiler MSVC of at least the specified version?
+/// The common \param version values to check for are:
+///  * 1800: Microsoft Visual Studio 2013 / 12.0
+///  * 1900: Microsoft Visual Studio 2015 / 14.0
+#ifdef _MSC_VER
+# define MSC_PREREQ(version) (_MSC_VER >= (version))
+#else
+# define MSC_PREREQ(version) 0
 #endif
 
 #endif // SANITIZER_PLATFORM_H

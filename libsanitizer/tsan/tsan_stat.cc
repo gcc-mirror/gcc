@@ -13,17 +13,14 @@
 
 namespace __tsan {
 
+#if TSAN_COLLECT_STATS
+
 void StatAggregate(u64 *dst, u64 *src) {
-  if (!kCollectStats)
-    return;
   for (int i = 0; i < StatCnt; i++)
     dst[i] += src[i];
 }
 
 void StatOutput(u64 *stat) {
-  if (!kCollectStats)
-    return;
-
   stat[StatShadowNonZero] = stat[StatShadowProcessed] - stat[StatShadowZero];
 
   static const char *name[StatCnt] = {};
@@ -165,13 +162,16 @@ void StatOutput(u64 *stat) {
   name[StatMtxAtExit]                    = "  Atexit                          ";
   name[StatMtxAnnotations]               = "  Annotations                     ";
   name[StatMtxMBlock]                    = "  MBlock                          ";
-  name[StatMtxJavaMBlock]                = "  JavaMBlock                      ";
   name[StatMtxDeadlockDetector]          = "  DeadlockDetector                ";
+  name[StatMtxFired]                     = "  FiredSuppressions               ";
+  name[StatMtxRacy]                      = "  RacyStacks                      ";
   name[StatMtxFD]                        = "  FD                              ";
 
   Printf("Statistics:\n");
   for (int i = 0; i < StatCnt; i++)
     Printf("%s: %16zu\n", name[i], (uptr)stat[i]);
 }
+
+#endif
 
 }  // namespace __tsan

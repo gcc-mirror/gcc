@@ -14,7 +14,7 @@
 #define ASAN_ACTIVATION_H
 
 namespace __asan {
-void AsanStartDeactivated();
+void AsanDeactivate();
 void AsanActivate();
 }  // namespace __asan
 

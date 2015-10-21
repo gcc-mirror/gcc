@@ -15,18 +15,13 @@
 
 namespace __sanitizer {
 
-uptr StackTrace::GetPreviousInstructionPc(uptr pc) {
-#if defined(__arm__)
-  // Cancel Thumb bit.
-  pc = pc & (~1);
-#endif
-#if defined(__powerpc__) || defined(__powerpc64__)
-  // PCs are always 4 byte aligned.
-  return pc - 4;
-#elif defined(__sparc__) || defined(__mips__)
-  return pc - 8;
+uptr StackTrace::GetNextInstructionPc(uptr pc) {
+#if defined(__mips__)
+  return pc + 8;
+#elif defined(__powerpc__)
+  return pc + 4;
 #else
-  return pc - 1;
+  return pc + 1;
 #endif
 }
 
@@ -73,7 +68,7 @@ static inline uhwptr *GetCanonicFrame(uptr bp,
 }
 
 void BufferedStackTrace::FastUnwindStack(uptr pc, uptr bp, uptr stack_top,
-                                         uptr stack_bottom, uptr max_depth) {
+                                         uptr stack_bottom, u32 max_depth) {
   CHECK_GE(max_depth, 2);
   trace_buffer[0] = pc;
   size = 1;
@@ -92,7 +87,7 @@ void BufferedStackTrace::FastUnwindStack(uptr pc, uptr bp, uptr stack_top,
     // back chain to find the caller frame before extracting it.
     uhwptr *caller_frame = (uhwptr*)frame[0];
     if (!IsValidFrame((uptr)caller_frame, stack_top, bottom) ||
-	!IsAligned((uptr)caller_frame, sizeof(uhwptr)))
+        !IsAligned((uptr)caller_frame, sizeof(uhwptr)))
       break;
     uhwptr pc1 = caller_frame[2];
 #else
@@ -121,7 +116,7 @@ void BufferedStackTrace::PopStackFrames(uptr count) {
 uptr BufferedStackTrace::LocatePcInTrace(uptr pc) {
   // Use threshold to find PC in stack trace, as PC we want to unwind from may
   // slightly differ from return address in the actual unwinded stack trace.
-  const int kPcThreshold = 288;
+  const int kPcThreshold = 304;
   for (uptr i = 0; i < size; ++i) {
     if (MatchPc(pc, trace[i], kPcThreshold))
       return i;

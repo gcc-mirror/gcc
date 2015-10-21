@@ -34,12 +34,8 @@ struct Callback : DDCallback {
     DDCallback::lt = thr->dd_lt;
   }
 
-  virtual u32 Unwind() {
-    return CurrentStackId(thr, pc);
-  }
-  virtual int UniqueTid() {
-    return thr->unique_id;
-  }
+  u32 Unwind() override { return CurrentStackId(thr, pc); }
+  int UniqueTid() override { return thr->unique_id; }
 };
 
 void DDMutexInit(ThreadState *thr, uptr pc, SyncVar *s) {
@@ -86,7 +82,7 @@ void MutexCreate(ThreadState *thr, uptr pc, uptr addr,
 void MutexDestroy(ThreadState *thr, uptr pc, uptr addr) {
   DPrintf("#%d: MutexDestroy %zx\n", thr->tid, addr);
   StatInc(thr, StatMutexDestroy);
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
   // Global mutexes not marked as LINKER_INITIALIZED
   // cause tons of not interesting reports, so just ignore it.
   if (IsGlobalVar(addr))
@@ -403,7 +399,7 @@ void ReleaseStore(ThreadState *thr, uptr pc, uptr addr) {
   s->mtx.Unlock();
 }
 
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
 static void UpdateSleepClockCallback(ThreadContextBase *tctx_base, void *arg) {
   ThreadState *thr = reinterpret_cast<ThreadState*>(arg);
   ThreadContext *tctx = static_cast<ThreadContext*>(tctx_base);
@@ -474,7 +470,7 @@ void ReportDeadlock(ThreadState *thr, uptr pc, DDReport *r) {
   for (int i = 0; i < r->n; i++) {
     for (int j = 0; j < (flags()->second_deadlock_stack ? 2 : 1); j++) {
       u32 stk = r->loop[i].stk[j];
-      if (stk) {
+      if (stk && stk != 0xffffffff) {
         rep.AddStack(StackDepotGet(stk), true);
       } else {
         // Sometimes we fail to extract the stack trace (FIXME: investigate),

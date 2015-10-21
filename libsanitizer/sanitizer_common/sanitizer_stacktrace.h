@@ -15,10 +15,9 @@
 
 namespace __sanitizer {
 
-static const uptr kStackTraceMax = 256;
+static const u32 kStackTraceMax = 256;
 
-#if SANITIZER_LINUX && (defined(__aarch64__) || defined(__sparc__) || \
-                        defined(__mips__))
+#if SANITIZER_LINUX &&  (defined(__sparc__) || defined(__mips__))
 # define SANITIZER_CAN_FAST_UNWIND 0
 #elif SANITIZER_WINDOWS
 # define SANITIZER_CAN_FAST_UNWIND 0
@@ -37,10 +36,18 @@ static const uptr kStackTraceMax = 256;
 
 struct StackTrace {
   const uptr *trace;
-  uptr size;
+  u32 size;
+  u32 tag;
 
-  StackTrace() : trace(nullptr), size(0) {}
-  StackTrace(const uptr *trace, uptr size) : trace(trace), size(size) {}
+  static const int TAG_UNKNOWN = 0;
+  static const int TAG_ALLOC = 1;
+  static const int TAG_DEALLOC = 2;
+  static const int TAG_CUSTOM = 100; // Tool specific tags start here.
+
+  StackTrace() : trace(nullptr), size(0), tag(0) {}
+  StackTrace(const uptr *trace, u32 size) : trace(trace), size(size), tag(0) {}
+  StackTrace(const uptr *trace, u32 size, u32 tag)
+      : trace(trace), size(size), tag(tag) {}
 
   // Prints a symbolized stacktrace, followed by an empty line.
   void Print() const;
@@ -54,10 +61,28 @@ struct StackTrace {
   }
 
   static uptr GetCurrentPc();
-  static uptr GetPreviousInstructionPc(uptr pc);
+  static inline uptr GetPreviousInstructionPc(uptr pc);
+  static uptr GetNextInstructionPc(uptr pc);
   typedef bool (*SymbolizeCallback)(const void *pc, char *out_buffer,
                                     int out_size);
 };
+
+// Performance-critical, must be in the header.
+ALWAYS_INLINE
+uptr StackTrace::GetPreviousInstructionPc(uptr pc) {
+#if defined(__arm__)
+  // Cancel Thumb bit.
+  pc = pc & (~1);
+#endif
+#if defined(__powerpc__) || defined(__powerpc64__)
+  // PCs are always 4 byte aligned.
+  return pc - 4;
+#elif defined(__sparc__) || defined(__mips__)
+  return pc - 8;
+#else
+  return pc - 1;
+#endif
+}
 
 // StackTrace that owns the buffer used to store the addresses.
 struct BufferedStackTrace : public StackTrace {
@@ -67,15 +92,15 @@ struct BufferedStackTrace : public StackTrace {
   BufferedStackTrace() : StackTrace(trace_buffer, 0), top_frame_bp(0) {}
 
   void Init(const uptr *pcs, uptr cnt, uptr extra_top_pc = 0);
-  void Unwind(uptr max_depth, uptr pc, uptr bp, void *context, uptr stack_top,
+  void Unwind(u32 max_depth, uptr pc, uptr bp, void *context, uptr stack_top,
               uptr stack_bottom, bool request_fast_unwind);
 
  private:
   void FastUnwindStack(uptr pc, uptr bp, uptr stack_top, uptr stack_bottom,
-                       uptr max_depth);
-  void SlowUnwindStack(uptr pc, uptr max_depth);
+                       u32 max_depth);
+  void SlowUnwindStack(uptr pc, u32 max_depth);
   void SlowUnwindStackWithContext(uptr pc, void *context,
-                                  uptr max_depth);
+                                  u32 max_depth);
   void PopStackFrames(uptr count);
   uptr LocatePcInTrace(uptr pc);
 

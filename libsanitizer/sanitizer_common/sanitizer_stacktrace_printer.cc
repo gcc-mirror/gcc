@@ -8,13 +8,14 @@
 // This file is shared between sanitizers' run-time libraries.
 //
 //===----------------------------------------------------------------------===//
+
 #include "sanitizer_stacktrace_printer.h"
 
 namespace __sanitizer {
 
 static const char *StripFunctionName(const char *function, const char *prefix) {
-  if (function == 0) return 0;
-  if (prefix == 0) return function;
+  if (!function) return nullptr;
+  if (!prefix) return function;
   uptr prefix_len = internal_strlen(prefix);
   if (0 == internal_strncmp(function, prefix, prefix_len))
     return function + prefix_len;
@@ -24,8 +25,8 @@ static const char *StripFunctionName(const char *function, const char *prefix) {
 static const char kDefaultFormat[] = "    #%n %p %F %L";
 
 void RenderFrame(InternalScopedString *buffer, const char *format, int frame_no,
-                 const AddressInfo &info, const char *strip_path_prefix,
-                 const char *strip_func_prefix) {
+                 const AddressInfo &info, bool vs_style,
+                 const char *strip_path_prefix, const char *strip_func_prefix) {
   if (0 == internal_strcmp(format, "DEFAULT"))
     format = kDefaultFormat;
   for (const char *p = format; *p != '\0'; p++) {
@@ -80,14 +81,14 @@ void RenderFrame(InternalScopedString *buffer, const char *format, int frame_no,
       break;
     case 'S':
       // File/line information.
-      RenderSourceLocation(buffer, info.file, info.line, info.column,
+      RenderSourceLocation(buffer, info.file, info.line, info.column, vs_style,
                            strip_path_prefix);
       break;
     case 'L':
       // Source location, or module location.
       if (info.file) {
         RenderSourceLocation(buffer, info.file, info.line, info.column,
-                             strip_path_prefix);
+                             vs_style, strip_path_prefix);
       } else if (info.module) {
         RenderModuleLocation(buffer, info.module, info.module_offset,
                              strip_path_prefix);
@@ -97,22 +98,33 @@ void RenderFrame(InternalScopedString *buffer, const char *format, int frame_no,
       break;
     case 'M':
       // Module basename and offset, or PC.
-      if (info.module)
+      if (info.address & kExternalPCBit)
+        {} // There PCs are not meaningful.
+      else if (info.module)
         buffer->append("(%s+%p)", StripModuleName(info.module),
                        (void *)info.module_offset);
       else
         buffer->append("(%p)", (void *)info.address);
       break;
     default:
-      Report("Unsupported specifier in stack frame format: %c (0x%zx)!\n",
-             *p, *p);
+      Report("Unsupported specifier in stack frame format: %c (0x%zx)!\n", *p,
+             *p);
       Die();
     }
   }
 }
 
 void RenderSourceLocation(InternalScopedString *buffer, const char *file,
-                          int line, int column, const char *strip_path_prefix) {
+                          int line, int column, bool vs_style,
+                          const char *strip_path_prefix) {
+  if (vs_style && line > 0) {
+    buffer->append("%s(%d", StripPathPrefix(file, strip_path_prefix), line);
+    if (column > 0)
+      buffer->append(",%d", column);
+    buffer->append(")");
+    return;
+  }
+
   buffer->append("%s", StripPathPrefix(file, strip_path_prefix));
   if (line > 0) {
     buffer->append(":%d", line);
@@ -127,4 +139,4 @@ void RenderModuleLocation(InternalScopedString *buffer, const char *module,
                  offset);
 }
 
-}  // namespace __sanitizer
+} // namespace __sanitizer

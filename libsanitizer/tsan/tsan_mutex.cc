@@ -23,7 +23,7 @@ namespace __tsan {
 // then Report mutex can be locked while under Threads mutex.
 // The leaf mutexes can be locked under any other mutexes.
 // Recursive locking is not supported.
-#if TSAN_DEBUG && !TSAN_GO
+#if SANITIZER_DEBUG && !SANITIZER_GO
 const MutexType MutexTypeLeaf = (MutexType)-1;
 static MutexType CanLockTab[MutexTypeCount][MutexTypeCount] = {
   /*0  MutexTypeInvalid*/     {},
@@ -39,13 +39,15 @@ static MutexType CanLockTab[MutexTypeCount][MutexTypeCount] = {
   /*9  MutexTypeMBlock*/      {MutexTypeSyncVar},
   /*10 MutexTypeJavaMBlock*/  {MutexTypeSyncVar},
   /*11 MutexTypeDDetector*/   {},
+  /*12 MutexTypeFired*/       {MutexTypeLeaf},
+  /*13 MutexTypeRacy*/        {MutexTypeLeaf},
 };
 
 static bool CanLockAdj[MutexTypeCount][MutexTypeCount];
 #endif
 
 void InitializeMutex() {
-#if TSAN_DEBUG && !TSAN_GO
+#if SANITIZER_DEBUG && !SANITIZER_GO
   // Build the "can lock" adjacency matrix.
   // If [i][j]==true, then one can lock mutex j while under mutex i.
   const int N = MutexTypeCount;
@@ -126,7 +128,7 @@ InternalDeadlockDetector::InternalDeadlockDetector() {
   // Rely on zero initialization because some mutexes can be locked before ctor.
 }
 
-#if TSAN_DEBUG && !TSAN_GO
+#if SANITIZER_DEBUG && !SANITIZER_GO
 void InternalDeadlockDetector::Lock(MutexType t) {
   // Printf("LOCK %d @%zu\n", t, seq_ + 1);
   CHECK_GT(t, MutexTypeInvalid);
@@ -168,7 +170,7 @@ void InternalDeadlockDetector::CheckNoLocks() {
 #endif
 
 void CheckNoLocks(ThreadState *thr) {
-#if TSAN_DEBUG && !TSAN_GO
+#if SANITIZER_DEBUG && !SANITIZER_GO
   thr->internal_deadlock_detector.CheckNoLocks();
 #endif
 }
@@ -206,7 +208,7 @@ class Backoff {
 Mutex::Mutex(MutexType type, StatType stat_type) {
   CHECK_GT(type, MutexTypeInvalid);
   CHECK_LT(type, MutexTypeCount);
-#if TSAN_DEBUG
+#if SANITIZER_DEBUG
   type_ = type;
 #endif
 #if TSAN_COLLECT_STATS
@@ -220,7 +222,7 @@ Mutex::~Mutex() {
 }
 
 void Mutex::Lock() {
-#if TSAN_DEBUG && !TSAN_GO
+#if SANITIZER_DEBUG && !SANITIZER_GO
   cur_thread()->internal_deadlock_detector.Lock(type_);
 #endif
   uptr cmp = kUnlocked;
@@ -232,7 +234,7 @@ void Mutex::Lock() {
       cmp = kUnlocked;
       if (atomic_compare_exchange_weak(&state_, &cmp, kWriteLock,
                                        memory_order_acquire)) {
-#if TSAN_COLLECT_STATS && !TSAN_GO
+#if TSAN_COLLECT_STATS && !SANITIZER_GO
         StatInc(cur_thread(), stat_type_, backoff.Contention());
 #endif
         return;
@@ -245,13 +247,13 @@ void Mutex::Unlock() {
   uptr prev = atomic_fetch_sub(&state_, kWriteLock, memory_order_release);
   (void)prev;
   DCHECK_NE(prev & kWriteLock, 0);
-#if TSAN_DEBUG && !TSAN_GO
+#if SANITIZER_DEBUG && !SANITIZER_GO
   cur_thread()->internal_deadlock_detector.Unlock(type_);
 #endif
 }
 
 void Mutex::ReadLock() {
-#if TSAN_DEBUG && !TSAN_GO
+#if SANITIZER_DEBUG && !SANITIZER_GO
   cur_thread()->internal_deadlock_detector.Lock(type_);
 #endif
   uptr prev = atomic_fetch_add(&state_, kReadLock, memory_order_acquire);
@@ -260,7 +262,7 @@ void Mutex::ReadLock() {
   for (Backoff backoff; backoff.Do();) {
     prev = atomic_load(&state_, memory_order_acquire);
     if ((prev & kWriteLock) == 0) {
-#if TSAN_COLLECT_STATS && !TSAN_GO
+#if TSAN_COLLECT_STATS && !SANITIZER_GO
       StatInc(cur_thread(), stat_type_, backoff.Contention());
 #endif
       return;
@@ -273,7 +275,7 @@ void Mutex::ReadUnlock() {
   (void)prev;
   DCHECK_EQ(prev & kWriteLock, 0);
   DCHECK_GT(prev & ~kWriteLock, 0);
-#if TSAN_DEBUG && !TSAN_GO
+#if SANITIZER_DEBUG && !SANITIZER_GO
   cur_thread()->internal_deadlock_detector.Unlock(type_);
 #endif
 }

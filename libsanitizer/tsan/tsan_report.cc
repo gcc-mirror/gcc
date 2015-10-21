@@ -17,13 +17,11 @@
 
 namespace __tsan {
 
-ReportStack::ReportStack() : next(nullptr), info(), suppressable(false) {}
+ReportStack::ReportStack() : frames(nullptr), suppressable(false) {}
 
-ReportStack *ReportStack::New(uptr addr) {
+ReportStack *ReportStack::New() {
   void *mem = internal_alloc(MBlockReportStack, sizeof(ReportStack));
-  ReportStack *res = new(mem) ReportStack();
-  res->info.address = addr;
-  return res;
+  return new(mem) ReportStack();
 }
 
 ReportLocation::ReportLocation(ReportLocationType type)
@@ -71,7 +69,7 @@ ReportDesc::~ReportDesc() {
   // FIXME(dvyukov): it must be leaking a lot of memory.
 }
 
-#ifndef TSAN_GO
+#ifndef SANITIZER_GO
 
 const int kThreadBufSize = 32;
 const char *thread_name(char *buf, int tid) {
@@ -112,13 +110,15 @@ static const char *ReportTypeString(ReportType typ) {
 }
 
 void PrintStack(const ReportStack *ent) {
-  if (ent == 0) {
+  if (ent == 0 || ent->frames == 0) {
     Printf("    [failed to restore the stack]\n\n");
     return;
   }
-  for (int i = 0; ent && ent->info.address; ent = ent->next, i++) {
+  SymbolizedStack *frame = ent->frames;
+  for (int i = 0; frame && frame->info.address; frame = frame->next, i++) {
     InternalScopedString res(2 * GetPageSizeCached());
-    RenderFrame(&res, common_flags()->stack_trace_format, i, ent->info,
+    RenderFrame(&res, common_flags()->stack_trace_format, i, frame->info,
+                common_flags()->symbolize_vs_style,
                 common_flags()->strip_path_prefix, "__interceptor_");
     Printf("%s\n", res.data());
   }
@@ -250,10 +250,20 @@ static ReportStack *ChooseSummaryStack(const ReportDesc *rep) {
   return 0;
 }
 
-ReportStack *SkipTsanInternalFrames(ReportStack *ent) {
-  while (FrameIsInternal(ent) && ent->next)
-    ent = ent->next;
-  return ent;
+static bool FrameIsInternal(const SymbolizedStack *frame) {
+  if (frame == 0)
+    return false;
+  const char *file = frame->info.file;
+  return file != 0 &&
+         (internal_strstr(file, "tsan_interceptors.cc") ||
+          internal_strstr(file, "sanitizer_common_interceptors.inc") ||
+          internal_strstr(file, "tsan_interface_"));
+}
+
+static SymbolizedStack *SkipTsanInternalFrames(SymbolizedStack *frames) {
+  while (FrameIsInternal(frames) && frames->next)
+    frames = frames->next;
+  return frames;
 }
 
 void PrintReport(const ReportDesc *rep) {
@@ -323,27 +333,29 @@ void PrintReport(const ReportDesc *rep) {
   if (rep->typ == ReportTypeThreadLeak && rep->count > 1)
     Printf("  And %d more similar thread leaks.\n\n", rep->count - 1);
 
-  if (ReportStack *ent = SkipTsanInternalFrames(ChooseSummaryStack(rep))) {
-    const AddressInfo &info = ent->info;
-    ReportErrorSummary(rep_typ_str, info.file, info.line, info.function);
+  if (ReportStack *stack = ChooseSummaryStack(rep)) {
+    if (SymbolizedStack *frame = SkipTsanInternalFrames(stack->frames))
+      ReportErrorSummary(rep_typ_str, frame->info);
   }
 
   Printf("==================\n");
 }
 
-#else  // #ifndef TSAN_GO
+#else  // #ifndef SANITIZER_GO
 
 const int kMainThreadId = 1;
 
 void PrintStack(const ReportStack *ent) {
-  if (ent == 0) {
+  if (ent == 0 || ent->frames == 0) {
     Printf("  [failed to restore the stack]\n");
     return;
   }
-  for (int i = 0; ent; ent = ent->next, i++) {
-    const AddressInfo &info = ent->info;
-    Printf("  %s()\n      %s:%d +0x%zx\n", info.function, info.file, info.line,
-           (void *)info.module_offset);
+  SymbolizedStack *frame = ent->frames;
+  for (int i = 0; frame; frame = frame->next, i++) {
+    const AddressInfo &info = frame->info;
+    Printf("  %s()\n      %s:%d +0x%zx\n", info.function,
+        StripPathPrefix(info.file, common_flags()->strip_path_prefix),
+        info.line, (void *)info.module_offset);
   }
 }
 

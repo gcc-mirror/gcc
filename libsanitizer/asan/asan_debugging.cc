@@ -79,8 +79,8 @@ void AsanLocateAddress(uptr addr, AddressDescription *descr) {
   GetInfoForHeapAddress(addr, descr);
 }
 
-uptr AsanGetStack(uptr addr, uptr *trace, uptr size, u32 *thread_id,
-                  bool alloc_stack) {
+static uptr AsanGetStack(uptr addr, uptr *trace, u32 size, u32 *thread_id,
+                         bool alloc_stack) {
   AsanChunkView chunk = FindHeapChunkByAddress(addr);
   if (!chunk.IsValid()) return 0;
 
@@ -106,14 +106,14 @@ uptr AsanGetStack(uptr addr, uptr *trace, uptr size, u32 *thread_id,
   return 0;
 }
 
-}  // namespace __asan
+} // namespace __asan
 
 using namespace __asan;
 
 SANITIZER_INTERFACE_ATTRIBUTE
 const char *__asan_locate_address(uptr addr, char *name, uptr name_size,
                                   uptr *region_address, uptr *region_size) {
-  AddressDescription descr = { name, name_size, 0, 0, 0 };
+  AddressDescription descr = { name, name_size, 0, 0, nullptr };
   AsanLocateAddress(addr, &descr);
   if (region_address) *region_address = descr.region_address;
   if (region_size) *region_size = descr.region_size;

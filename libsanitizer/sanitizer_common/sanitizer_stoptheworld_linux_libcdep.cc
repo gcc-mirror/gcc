@@ -10,13 +10,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-
 #include "sanitizer_platform.h"
-#if SANITIZER_LINUX && defined(__x86_64__)
+
+#if SANITIZER_LINUX && (defined(__x86_64__) || defined(__mips__) || \
+                        defined(__aarch64__))
 
 #include "sanitizer_stoptheworld.h"
 
 #include "sanitizer_platform_limits_posix.h"
+#include "sanitizer_atomic.h"
 
 #include <errno.h>
 #include <sched.h> // for CLONE_* definitions
@@ -24,9 +26,15 @@
 #include <sys/prctl.h> // for PR_* definitions
 #include <sys/ptrace.h> // for PTRACE_* definitions
 #include <sys/types.h> // for pid_t
+#include <sys/uio.h> // for iovec
+#include <elf.h> // for NT_PRSTATUS
 #if SANITIZER_ANDROID && defined(__arm__)
 # include <linux/user.h>  // for pt_regs
 #else
+# ifdef __aarch64__
+// GLIBC 2.20+ sys/user does not include asm/ptrace.h
+#  include <asm/ptrace.h>
+# endif
 # include <sys/user.h>  // for user_regs_struct
 #endif
 #include <sys/wait.h> // for signal-related stuff
@@ -68,11 +76,25 @@
 COMPILER_CHECK(sizeof(SuspendedThreadID) == sizeof(pid_t));
 
 namespace __sanitizer {
+
+// Structure for passing arguments into the tracer thread.
+struct TracerThreadArgument {
+  StopTheWorldCallback callback;
+  void *callback_argument;
+  // The tracer thread waits on this mutex while the parent finishes its
+  // preparations.
+  BlockingMutex mutex;
+  // Tracer thread signals its completion by setting done.
+  atomic_uintptr_t done;
+  uptr parent_pid;
+};
+
 // This class handles thread suspending/unsuspending in the tracer thread.
 class ThreadSuspender {
  public:
-  explicit ThreadSuspender(pid_t pid)
-    : pid_(pid) {
+  explicit ThreadSuspender(pid_t pid, TracerThreadArgument *arg)
+    : arg(arg)
+    , pid_(pid) {
       CHECK_GE(pid, 0);
     }
   bool SuspendAllThreads();
@@ -81,42 +103,58 @@ class ThreadSuspender {
   SuspendedThreadsList &suspended_threads_list() {
     return suspended_threads_list_;
   }
+  TracerThreadArgument *arg;
  private:
   SuspendedThreadsList suspended_threads_list_;
   pid_t pid_;
   bool SuspendThread(SuspendedThreadID thread_id);
 };
 
-bool ThreadSuspender::SuspendThread(SuspendedThreadID thread_id) {
+bool ThreadSuspender::SuspendThread(SuspendedThreadID tid) {
   // Are we already attached to this thread?
   // Currently this check takes linear time, however the number of threads is
   // usually small.
-  if (suspended_threads_list_.Contains(thread_id))
+  if (suspended_threads_list_.Contains(tid))
     return false;
   int pterrno;
-  if (internal_iserror(internal_ptrace(PTRACE_ATTACH, thread_id, NULL, NULL),
+  if (internal_iserror(internal_ptrace(PTRACE_ATTACH, tid, nullptr, nullptr),
                        &pterrno)) {
     // Either the thread is dead, or something prevented us from attaching.
     // Log this event and move on.
-    VReport(1, "Could not attach to thread %d (errno %d).\n", thread_id,
-            pterrno);
+    VReport(1, "Could not attach to thread %d (errno %d).\n", tid, pterrno);
     return false;
   } else {
-    VReport(1, "Attached to thread %d.\n", thread_id);
+    VReport(2, "Attached to thread %d.\n", tid);
     // The thread is not guaranteed to stop before ptrace returns, so we must
-    // wait on it.
-    uptr waitpid_status;
-    HANDLE_EINTR(waitpid_status, internal_waitpid(thread_id, NULL, __WALL));
-    int wperrno;
-    if (internal_iserror(waitpid_status, &wperrno)) {
-      // Got a ECHILD error. I don't think this situation is possible, but it
-      // doesn't hurt to report it.
-      VReport(1, "Waiting on thread %d failed, detaching (errno %d).\n",
-              thread_id, wperrno);
-      internal_ptrace(PTRACE_DETACH, thread_id, NULL, NULL);
-      return false;
+    // wait on it. Note: if the thread receives a signal concurrently,
+    // we can get notification about the signal before notification about stop.
+    // In such case we need to forward the signal to the thread, otherwise
+    // the signal will be missed (as we do PTRACE_DETACH with arg=0) and
+    // any logic relying on signals will break. After forwarding we need to
+    // continue to wait for stopping, because the thread is not stopped yet.
+    // We do ignore delivery of SIGSTOP, because we want to make stop-the-world
+    // as invisible as possible.
+    for (;;) {
+      int status;
+      uptr waitpid_status;
+      HANDLE_EINTR(waitpid_status, internal_waitpid(tid, &status, __WALL));
+      int wperrno;
+      if (internal_iserror(waitpid_status, &wperrno)) {
+        // Got a ECHILD error. I don't think this situation is possible, but it
+        // doesn't hurt to report it.
+        VReport(1, "Waiting on thread %d failed, detaching (errno %d).\n",
+                tid, wperrno);
+        internal_ptrace(PTRACE_DETACH, tid, nullptr, nullptr);
+        return false;
+      }
+      if (WIFSTOPPED(status) && WSTOPSIG(status) != SIGSTOP) {
+        internal_ptrace(PTRACE_CONT, tid, nullptr,
+                        (void*)(uptr)WSTOPSIG(status));
+        continue;
+      }
+      break;
     }
-    suspended_threads_list_.Append(thread_id);
+    suspended_threads_list_.Append(tid);
     return true;
   }
 }
@@ -125,9 +163,9 @@ void ThreadSuspender::ResumeAllThreads() {
   for (uptr i = 0; i < suspended_threads_list_.thread_count(); i++) {
     pid_t tid = suspended_threads_list_.GetThreadID(i);
     int pterrno;
-    if (!internal_iserror(internal_ptrace(PTRACE_DETACH, tid, NULL, NULL),
+    if (!internal_iserror(internal_ptrace(PTRACE_DETACH, tid, nullptr, nullptr),
                           &pterrno)) {
-      VReport(1, "Detached from thread %d.\n", tid);
+      VReport(2, "Detached from thread %d.\n", tid);
     } else {
       // Either the thread is dead, or we are already detached.
       // The latter case is possible, for instance, if this function was called
@@ -140,7 +178,7 @@ void ThreadSuspender::ResumeAllThreads() {
 void ThreadSuspender::KillAllThreads() {
   for (uptr i = 0; i < suspended_threads_list_.thread_count(); i++)
     internal_ptrace(PTRACE_KILL, suspended_threads_list_.GetThreadID(i),
-                    NULL, NULL);
+                    nullptr, nullptr);
 }
 
 bool ThreadSuspender::SuspendAllThreads() {
@@ -166,35 +204,11 @@ bool ThreadSuspender::SuspendAllThreads() {
 }
 
 // Pointer to the ThreadSuspender instance for use in signal handler.
-static ThreadSuspender *thread_suspender_instance = NULL;
+static ThreadSuspender *thread_suspender_instance = nullptr;
 
-// Signals that should not be blocked (this is used in the parent thread as well
-// as the tracer thread).
-static const int kUnblockedSignals[] = { SIGABRT, SIGILL, SIGFPE, SIGSEGV,
-                                         SIGBUS, SIGXCPU, SIGXFSZ };
-
-// Structure for passing arguments into the tracer thread.
-struct TracerThreadArgument {
-  StopTheWorldCallback callback;
-  void *callback_argument;
-  // The tracer thread waits on this mutex while the parent finishes its
-  // preparations.
-  BlockingMutex mutex;
-  uptr parent_pid;
-};
-
-static DieCallbackType old_die_callback;
-
-// Signal handler to wake up suspended threads when the tracer thread dies.
-void TracerThreadSignalHandler(int signum, void *siginfo, void *) {
-  if (thread_suspender_instance != NULL) {
-    if (signum == SIGABRT)
-      thread_suspender_instance->KillAllThreads();
-    else
-      thread_suspender_instance->ResumeAllThreads();
-  }
-  internal__exit((signum == SIGABRT) ? 1 : 2);
-}
+// Synchronous signals that should not be blocked.
+static const int kSyncSignals[] = { SIGABRT, SIGILL, SIGFPE, SIGSEGV, SIGBUS,
+                                    SIGXCPU, SIGXFSZ };
 
 static void TracerThreadDieCallback() {
   // Generally a call to Die() in the tracer thread should be fatal to the
@@ -203,10 +217,29 @@ static void TracerThreadDieCallback() {
   // point. So we correctly handle calls to Die() from within the callback, but
   // not those that happen before or after the callback. Hopefully there aren't
   // a lot of opportunities for that to happen...
-  if (thread_suspender_instance)
-    thread_suspender_instance->KillAllThreads();
-  if (old_die_callback)
-    old_die_callback();
+  ThreadSuspender *inst = thread_suspender_instance;
+  if (inst && stoptheworld_tracer_pid == internal_getpid()) {
+    inst->KillAllThreads();
+    thread_suspender_instance = nullptr;
+  }
+}
+
+// Signal handler to wake up suspended threads when the tracer thread dies.
+static void TracerThreadSignalHandler(int signum, void *siginfo, void *uctx) {
+  SignalContext ctx = SignalContext::Create(siginfo, uctx);
+  VPrintf(1, "Tracer caught signal %d: addr=0x%zx pc=0x%zx sp=0x%zx\n",
+      signum, ctx.addr, ctx.pc, ctx.sp);
+  ThreadSuspender *inst = thread_suspender_instance;
+  if (inst) {
+    if (signum == SIGABRT)
+      inst->KillAllThreads();
+    else
+      inst->ResumeAllThreads();
+    RAW_CHECK(RemoveDieCallback(TracerThreadDieCallback));
+    thread_suspender_instance = nullptr;
+    atomic_store(&inst->arg->done, 1, memory_order_relaxed);
+  }
+  internal__exit((signum == SIGABRT) ? 1 : 2);
 }
 
 // Size of alternative stack for signal handlers in the tracer thread.
@@ -226,9 +259,9 @@ static int TracerThread(void* argument) {
   tracer_thread_argument->mutex.Lock();
   tracer_thread_argument->mutex.Unlock();
 
-  SetDieCallback(TracerThreadDieCallback);
+  RAW_CHECK(AddDieCallback(TracerThreadDieCallback));
 
-  ThreadSuspender thread_suspender(internal_getppid());
+  ThreadSuspender thread_suspender(internal_getppid(), tracer_thread_argument);
   // Global pointer for the signal handler.
   thread_suspender_instance = &thread_suspender;
 
@@ -238,19 +271,16 @@ static int TracerThread(void* argument) {
   internal_memset(&handler_stack, 0, sizeof(handler_stack));
   handler_stack.ss_sp = handler_stack_memory.data();
   handler_stack.ss_size = kHandlerStackSize;
-  internal_sigaltstack(&handler_stack, NULL);
+  internal_sigaltstack(&handler_stack, nullptr);
 
-  // Install our handler for fatal signals. Other signals should be blocked by
-  // the mask we inherited from the caller thread.
-  for (uptr signal_index = 0; signal_index < ARRAY_SIZE(kUnblockedSignals);
-       signal_index++) {
-    __sanitizer_sigaction new_sigaction;
-    internal_memset(&new_sigaction, 0, sizeof(new_sigaction));
-    new_sigaction.sigaction = TracerThreadSignalHandler;
-    new_sigaction.sa_flags = SA_ONSTACK | SA_SIGINFO;
-    internal_sigfillset(&new_sigaction.sa_mask);
-    internal_sigaction_norestorer(kUnblockedSignals[signal_index],
-                                  &new_sigaction, NULL);
+  // Install our handler for synchronous signals. Other signals should be
+  // blocked by the mask we inherited from the parent thread.
+  for (uptr i = 0; i < ARRAY_SIZE(kSyncSignals); i++) {
+    __sanitizer_sigaction act;
+    internal_memset(&act, 0, sizeof(act));
+    act.sigaction = TracerThreadSignalHandler;
+    act.sa_flags = SA_ONSTACK | SA_SIGINFO;
+    internal_sigaction_norestorer(kSyncSignals[i], &act, 0);
   }
 
   int exit_code = 0;
@@ -263,9 +293,9 @@ static int TracerThread(void* argument) {
     thread_suspender.ResumeAllThreads();
     exit_code = 0;
   }
-  thread_suspender_instance = NULL;
-  handler_stack.ss_flags = SS_DISABLE;
-  internal_sigaltstack(&handler_stack, NULL);
+  RAW_CHECK(RemoveDieCallback(TracerThreadDieCallback));
+  thread_suspender_instance = nullptr;
+  atomic_store(&tracer_thread_argument->done, 1, memory_order_relaxed);
   return exit_code;
 }
 
@@ -278,7 +308,7 @@ class ScopedStackSpaceWithGuard {
     // in the future.
     guard_start_ = (uptr)MmapOrDie(stack_size_ + guard_size_,
                                    "ScopedStackWithGuard");
-    CHECK_EQ(guard_start_, (uptr)Mprotect((uptr)guard_start_, guard_size_));
+    CHECK(MprotectNoAccess((uptr)guard_start_, guard_size_));
   }
   ~ScopedStackSpaceWithGuard() {
     UnmapOrDie((void *)guard_start_, stack_size_ + guard_size_);
@@ -297,53 +327,21 @@ class ScopedStackSpaceWithGuard {
 // into globals.
 static __sanitizer_sigset_t blocked_sigset;
 static __sanitizer_sigset_t old_sigset;
-static __sanitizer_sigaction old_sigactions
-    [ARRAY_SIZE(kUnblockedSignals)];
 
 class StopTheWorldScope {
  public:
   StopTheWorldScope() {
-    // Block all signals that can be blocked safely, and install
-    // default handlers for the remaining signals.
-    // We cannot allow user-defined handlers to run while the ThreadSuspender
-    // thread is active, because they could conceivably call some libc functions
-    // which modify errno (which is shared between the two threads).
-    internal_sigfillset(&blocked_sigset);
-    for (uptr signal_index = 0; signal_index < ARRAY_SIZE(kUnblockedSignals);
-         signal_index++) {
-      // Remove the signal from the set of blocked signals.
-      internal_sigdelset(&blocked_sigset, kUnblockedSignals[signal_index]);
-      // Install the default handler.
-      __sanitizer_sigaction new_sigaction;
-      internal_memset(&new_sigaction, 0, sizeof(new_sigaction));
-      new_sigaction.handler = SIG_DFL;
-      internal_sigfillset(&new_sigaction.sa_mask);
-      internal_sigaction_norestorer(kUnblockedSignals[signal_index],
-          &new_sigaction, &old_sigactions[signal_index]);
-    }
-    int sigprocmask_status =
-        internal_sigprocmask(SIG_BLOCK, &blocked_sigset, &old_sigset);
-    CHECK_EQ(sigprocmask_status, 0); // sigprocmask should never fail
     // Make this process dumpable. Processes that are not dumpable cannot be
     // attached to.
     process_was_dumpable_ = internal_prctl(PR_GET_DUMPABLE, 0, 0, 0, 0);
     if (!process_was_dumpable_)
       internal_prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
-    old_die_callback = GetDieCallback();
   }
 
   ~StopTheWorldScope() {
-    SetDieCallback(old_die_callback);
     // Restore the dumpable flag.
     if (!process_was_dumpable_)
       internal_prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);
-    // Restore the signal handlers.
-    for (uptr signal_index = 0; signal_index < ARRAY_SIZE(kUnblockedSignals);
-         signal_index++) {
-      internal_sigaction_norestorer(kUnblockedSignals[signal_index],
-                                    &old_sigactions[signal_index], NULL);
-    }
-    internal_sigprocmask(SIG_SETMASK, &old_sigset, &old_sigset);
   }
 
  private:
@@ -371,16 +369,42 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
   tracer_thread_argument.callback = callback;
   tracer_thread_argument.callback_argument = argument;
   tracer_thread_argument.parent_pid = internal_getpid();
+  atomic_store(&tracer_thread_argument.done, 0, memory_order_relaxed);
   const uptr kTracerStackSize = 2 * 1024 * 1024;
   ScopedStackSpaceWithGuard tracer_stack(kTracerStackSize);
   // Block the execution of TracerThread until after we have set ptrace
   // permissions.
   tracer_thread_argument.mutex.Lock();
+  // Signal handling story.
+  // We don't want async signals to be delivered to the tracer thread,
+  // so we block all async signals before creating the thread. An async signal
+  // handler can temporary modify errno, which is shared with this thread.
+  // We ought to use pthread_sigmask here, because sigprocmask has undefined
+  // behavior in multithreaded programs. However, on linux sigprocmask is
+  // equivalent to pthread_sigmask with the exception that pthread_sigmask
+  // does not allow to block some signals used internally in pthread
+  // implementation. We are fine with blocking them here, we are really not
+  // going to pthread_cancel the thread.
+  // The tracer thread should not raise any synchronous signals. But in case it
+  // does, we setup a special handler for sync signals that properly kills the
+  // parent as well. Note: we don't pass CLONE_SIGHAND to clone, so handlers
+  // in the tracer thread won't interfere with user program. Double note: if a
+  // user does something along the lines of 'kill -11 pid', that can kill the
+  // process even if user setup own handler for SEGV.
+  // Thing to watch out for: this code should not change behavior of user code
+  // in any observable way. In particular it should not override user signal
+  // handlers.
+  internal_sigfillset(&blocked_sigset);
+  for (uptr i = 0; i < ARRAY_SIZE(kSyncSignals); i++)
+    internal_sigdelset(&blocked_sigset, kSyncSignals[i]);
+  int rv = internal_sigprocmask(SIG_BLOCK, &blocked_sigset, &old_sigset);
+  CHECK_EQ(rv, 0);
   uptr tracer_pid = internal_clone(
       TracerThread, tracer_stack.Bottom(),
       CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_UNTRACED,
-      &tracer_thread_argument, 0 /* parent_tidptr */, 0 /* newtls */, 0
-      /* child_tidptr */);
+      &tracer_thread_argument, nullptr /* parent_tidptr */,
+      nullptr /* newtls */, nullptr /* child_tidptr */);
+  internal_sigprocmask(SIG_SETMASK, &old_sigset, 0);
   int local_errno = 0;
   if (internal_iserror(tracer_pid, &local_errno)) {
     VReport(1, "Failed spawning a tracer thread (errno %d).\n", local_errno);
@@ -394,14 +418,27 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
 #endif
     // Allow the tracer thread to start.
     tracer_thread_argument.mutex.Unlock();
-    // Since errno is shared between this thread and the tracer thread, we
-    // must avoid using errno while the tracer thread is running.
-    // At this point, any signal will either be blocked or kill us, so waitpid
-    // should never return (and set errno) while the tracer thread is alive.
-    uptr waitpid_status = internal_waitpid(tracer_pid, NULL, __WALL);
-    if (internal_iserror(waitpid_status, &local_errno))
+    // NOTE: errno is shared between this thread and the tracer thread.
+    // internal_waitpid() may call syscall() which can access/spoil errno,
+    // so we can't call it now. Instead we for the tracer thread to finish using
+    // the spin loop below. Man page for sched_yield() says "In the Linux
+    // implementation, sched_yield() always succeeds", so let's hope it does not
+    // spoil errno. Note that this spin loop runs only for brief periods before
+    // the tracer thread has suspended us and when it starts unblocking threads.
+    while (atomic_load(&tracer_thread_argument.done, memory_order_relaxed) == 0)
+      sched_yield();
+    // Now the tracer thread is about to exit and does not touch errno,
+    // wait for it.
+    for (;;) {
+      uptr waitpid_status = internal_waitpid(tracer_pid, nullptr, __WALL);
+      if (!internal_iserror(waitpid_status, &local_errno))
+        break;
+      if (local_errno == EINTR)
+        continue;
       VReport(1, "Waiting on the tracer thread failed (errno %d).\n",
               local_errno);
+      break;
+    }
   }
 }
 
@@ -430,6 +467,11 @@ typedef pt_regs regs_struct;
 typedef struct user regs_struct;
 #define REG_SP regs[EF_REG29]
 
+#elif defined(__aarch64__)
+typedef struct user_pt_regs regs_struct;
+#define REG_SP sp
+#define ARCH_IOVEC_FOR_GETREGSET
+
 #else
 #error "Unsupported architecture"
 #endif // SANITIZER_ANDROID && defined(__arm__)
@@ -440,8 +482,18 @@ int SuspendedThreadsList::GetRegistersAndSP(uptr index,
   pid_t tid = GetThreadID(index);
   regs_struct regs;
   int pterrno;
-  if (internal_iserror(internal_ptrace(PTRACE_GETREGS, tid, NULL, &regs),
-                       &pterrno)) {
+#ifdef ARCH_IOVEC_FOR_GETREGSET
+  struct iovec regset_io;
+  regset_io.iov_base = &regs;
+  regset_io.iov_len = sizeof(regs_struct);
+  bool isErr = internal_iserror(internal_ptrace(PTRACE_GETREGSET, tid,
+                                (void*)NT_PRSTATUS, (void*)&regset_io),
+                                &pterrno);
+#else
+  bool isErr = internal_iserror(internal_ptrace(PTRACE_GETREGS, tid, nullptr,
+                                &regs), &pterrno);
+#endif
+  if (isErr) {
     VReport(1, "Could not get registers from thread %d (errno %d).\n", tid,
             pterrno);
     return -1;
@@ -455,6 +507,7 @@ int SuspendedThreadsList::GetRegistersAndSP(uptr index,
 uptr SuspendedThreadsList::RegisterCount() {
   return sizeof(regs_struct) / sizeof(uptr);
 }
-}  // namespace __sanitizer
+} // namespace __sanitizer
 
-#endif  // SANITIZER_LINUX && defined(__x86_64__)
+#endif // SANITIZER_LINUX && (defined(__x86_64__) || defined(__mips__)
+       // || defined(__aarch64__)

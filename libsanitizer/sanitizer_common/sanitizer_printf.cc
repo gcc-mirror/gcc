@@ -12,7 +12,6 @@
 // inside it.
 //===----------------------------------------------------------------------===//
 
-
 #include "sanitizer_common.h"
 #include "sanitizer_flags.h"
 #include "sanitizer_libc.h"
@@ -96,7 +95,7 @@ static int AppendSignedDecimal(char **buff, const char *buff_end, s64 num,
 
 static int AppendString(char **buff, const char *buff_end, int precision,
                         const char *s) {
-  if (s == 0)
+  if (!s)
     s = "<null>";
   int result = 0;
   for (; *s; s++) {
@@ -249,29 +248,36 @@ static void SharedPrintfCode(bool append_pid, const char *format,
       buffer_size = kLen;
     }
     needed_length = 0;
+    // Check that data fits into the current buffer.
+#   define CHECK_NEEDED_LENGTH \
+      if (needed_length >= buffer_size) { \
+        if (!use_mmap) continue; \
+        RAW_CHECK_MSG(needed_length < kLen, \
+                      "Buffer in Report is too short!\n"); \
+      }
     if (append_pid) {
       int pid = internal_getpid();
-      needed_length += internal_snprintf(buffer, buffer_size, "==%d==", pid);
-      if (needed_length >= buffer_size) {
-        // The pid doesn't fit into the current buffer.
-        if (!use_mmap)
-          continue;
-        RAW_CHECK_MSG(needed_length < kLen, "Buffer in Report is too short!\n");
+      const char *exe_name = GetProcessName();
+      if (common_flags()->log_exe_name && exe_name) {
+        needed_length += internal_snprintf(buffer, buffer_size,
+                                           "==%s", exe_name);
+        CHECK_NEEDED_LENGTH
       }
+      needed_length += internal_snprintf(buffer + needed_length,
+                                         buffer_size - needed_length,
+                                         "==%d==", pid);
+      CHECK_NEEDED_LENGTH
     }
     needed_length += VSNPrintf(buffer + needed_length,
                                buffer_size - needed_length, format, args);
-    if (needed_length >= buffer_size) {
-      // The message doesn't fit into the current buffer.
-      if (!use_mmap)
-        continue;
-      RAW_CHECK_MSG(needed_length < kLen, "Buffer in Report is too short!\n");
-    }
+    CHECK_NEEDED_LENGTH
     // If the message fit into the buffer, print it and exit.
     break;
+#   undef CHECK_NEEDED_LENGTH
   }
   RawWrite(buffer);
-  AndroidLogWrite(buffer);
+  if (common_flags()->log_to_syslog)
+    WriteToSyslog(buffer);
   CallPrintfAndReportCallback(buffer);
   // If we had mapped any memory, clean up.
   if (buffer != local_buffer)
@@ -320,4 +326,4 @@ void InternalScopedString::append(const char *format, ...) {
   CHECK_LT(length_, size());
 }
 
-}  // namespace __sanitizer
+} // namespace __sanitizer

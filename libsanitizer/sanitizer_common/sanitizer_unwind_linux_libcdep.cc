@@ -1,4 +1,4 @@
-//===-- sanitizer_unwind_posix.cc ----------------------------------------===//
+//===-- sanitizer_unwind_linux_libcdep.cc ---------------------------------===//
 //
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
@@ -6,11 +6,11 @@
 //===----------------------------------------------------------------------===//
 //
 // This file contains the unwind.h-based (aka "slow") stack unwinding routines
-// available to the tools on Linux, Android, FreeBSD and OS X.
+// available to the tools on Linux, Android, and FreeBSD.
 //===----------------------------------------------------------------------===//
 
 #include "sanitizer_platform.h"
-#if SANITIZER_POSIX
+#if SANITIZER_FREEBSD || SANITIZER_LINUX
 #include "sanitizer_common.h"
 #include "sanitizer_stacktrace.h"
 
@@ -80,7 +80,7 @@ void SanitizerInitializeUnwinder() {
 #endif
 
 uptr Unwind_GetIP(struct _Unwind_Context *ctx) {
-#ifdef __arm__
+#if defined(__arm__) && !SANITIZER_MAC
   uptr val;
   _Unwind_VRS_Result res = _Unwind_VRS_Get(ctx, _UVRSC_CORE,
       15 /* r15 = PC */, _UVRSD_UINT32, &val);
@@ -94,7 +94,7 @@ uptr Unwind_GetIP(struct _Unwind_Context *ctx) {
 
 struct UnwindTraceArg {
   BufferedStackTrace *stack;
-  uptr max_depth;
+  u32 max_depth;
 };
 
 _Unwind_Reason_Code Unwind_Trace(struct _Unwind_Context *ctx, void *param) {
@@ -106,14 +106,19 @@ _Unwind_Reason_Code Unwind_Trace(struct _Unwind_Context *ctx, void *param) {
   return UNWIND_CONTINUE;
 }
 
-void BufferedStackTrace::SlowUnwindStack(uptr pc, uptr max_depth) {
+void BufferedStackTrace::SlowUnwindStack(uptr pc, u32 max_depth) {
   CHECK_GE(max_depth, 2);
   size = 0;
   UnwindTraceArg arg = {this, Min(max_depth + 1, kStackTraceMax)};
   _Unwind_Backtrace(Unwind_Trace, &arg);
   // We need to pop a few frames so that pc is on top.
   uptr to_pop = LocatePcInTrace(pc);
-  // trace_buffer[0] belongs to the current function so we always pop it.
+  // trace_buffer[0] belongs to the current function so we always pop it,
+  // unless there is only 1 frame in the stack trace (1 frame is always better
+  // than 0!).
+  // 1-frame stacks don't normally happen, but this depends on the actual
+  // unwinder implementation (libgcc, libunwind, etc) which is outside of our
+  // control.
   if (to_pop == 0 && size > 1)
     to_pop = 1;
   PopStackFrames(to_pop);
@@ -121,7 +126,7 @@ void BufferedStackTrace::SlowUnwindStack(uptr pc, uptr max_depth) {
 }
 
 void BufferedStackTrace::SlowUnwindStackWithContext(uptr pc, void *context,
-                                                    uptr max_depth) {
+                                                    u32 max_depth) {
   CHECK_GE(max_depth, 2);
   if (!unwind_backtrace_signal_arch) {
     SlowUnwindStack(pc, max_depth);
@@ -148,4 +153,4 @@ void BufferedStackTrace::SlowUnwindStackWithContext(uptr pc, void *context,
 
 }  // namespace __sanitizer
 
-#endif  // SANITIZER_POSIX
+#endif  // SANITIZER_FREEBSD || SANITIZER_LINUX
