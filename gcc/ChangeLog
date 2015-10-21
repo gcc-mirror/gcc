@@ -1,3 +1,8 @@
+2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* fold-const.c (operand_equal_p): Add code matching empty
+	constructors.
+
 2015-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.def (CEIL_DIV_EXPR, FLOOR_DIV_EXPR, ROUND_DIV_EXPR): Tweak

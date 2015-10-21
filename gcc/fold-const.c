@@ -2891,6 +2891,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	return operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 0),
 				flags | OEP_ADDRESS_OF
 				| OEP_CONSTANT_ADDRESS_OF);
+      case CONSTRUCTOR:
+	/* In GIMPLE empty constructors are allowed in initializers of
+	   aggregates.  */
+	return (!vec_safe_length (CONSTRUCTOR_ELTS (arg0))
+		&& !vec_safe_length (CONSTRUCTOR_ELTS (arg1)));
       default:
 	break;
       }
