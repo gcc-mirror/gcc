@@ -1,0 +1,26 @@
+In general, merging process should not be very difficult, but we need to
+track various ABI changes and GCC-specific patches carefully.  Here is a
+general list of actions required to perform the merge:
+
+- Checkout recent GCC tree.
+- Run merge.sh script from libsanitizer directory.
+- Modify Makefile.am files into asan/tsan/lsan/ubsan/sanitizer_common/interception
+  directories if needed.  In particular, you may need to add new source files
+  and remove old ones in source files list, add new flags to {C, CXX}FLAGS if
+  needed and update DEFS with new defined variables.
+- Apply all needed GCC-specific patches to libsanitizer (note that some of
+  them might be already included to upstream).
+- Apply all necessary compiler changes.  Be especially careful here, you must
+  not break ABI between compiler and library.
+- Modify configure.ac file if needed (e.g. if you need to add link against new
+  library for sanitizer lilbs).
+- Remove unused (deleted by merge) files from all source and include
+  directories.  Be especially careful with headers, because they aren't listed
+  in Makefiles explicitly.
+- Regenerate configure script and all Makefiles by autoreconf.  You should use
+  exactly the same autotools version as for other GCC directories (current
+  version is 2.64, https://www.gnu.org/software/automake/faq/autotools-faq.html
+  for details how to install/use it).
+- Run regression testing on at least three platforms (e.g. x86-linux-gnu,
+  x86_64-linux-gnu, aarch64-linux-gnu).
+- Run {A, UB}San bootstrap on at least three platforms.

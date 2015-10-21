@@ -1,5 +1,9 @@
 2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
+	* HOWTO_MERGE: New file.
+
+2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
 	* sanitizer_common/sanitizer_stacktrace.cc (GetCanonicFrame): Assume we
 	compiled code with GCC when extracting the caller PC for ARM if no
 	valid frame pointer is available.
