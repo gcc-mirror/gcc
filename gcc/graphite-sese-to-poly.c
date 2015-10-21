@@ -335,7 +335,7 @@ build_scop_scattering (scop_p scop)
       int prefix = 0;
 
       if (previous_gbb)
-	prefix = nb_common_loops (scop->region->region, previous_gbb, gbb);
+	prefix = nb_common_loops (scop->scop_info->region, previous_gbb, gbb);
 
       previous_gbb = gbb;
 
@@ -357,7 +357,7 @@ extract_affine_chrec (scop_p s, tree e, __isl_take isl_space *space)
   isl_pw_aff *lhs = extract_affine (s, CHREC_LEFT (e), isl_space_copy (space));
   isl_pw_aff *rhs = extract_affine (s, CHREC_RIGHT (e), isl_space_copy (space));
   isl_local_space *ls = isl_local_space_from_space (space);
-  unsigned pos = sese_loop_depth (s->region->region, get_chrec_loop (e)) - 1;
+  unsigned pos = sese_loop_depth (s->scop_info->region, get_chrec_loop (e)) - 1;
   isl_aff *loop = isl_aff_set_coefficient_si
     (isl_aff_zero_on_domain (ls), isl_dim_in, pos, 1);
   isl_pw_aff *l = isl_pw_aff_from_aff (loop);
@@ -539,8 +539,8 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
       break;
 
     case SSA_NAME:
-      gcc_assert (-1 != parameter_index_in_region_1 (e, s->region)
-		  || !invariant_in_sese_p_rec (e, s->region->region));
+      gcc_assert (-1 != parameter_index_in_region_1 (e, s->scop_info)
+		  || !invariant_in_sese_p_rec (e, s->scop_info->region));
       res = extract_affine_name (s, e, space);
       break;
 
@@ -571,7 +571,7 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
 static void
 set_scop_parameter_dim (scop_p scop)
 {
-  sese_info_p region = scop->region;
+  sese_info_p region = scop->scop_info;
   unsigned nbp = sese_nb_params (region);
   isl_space *space = isl_space_set_alloc (scop->isl_context, nbp, 0);
 
@@ -594,7 +594,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 {
 
   tree nb_iters = number_of_latch_executions (loop);
-  sese_l region = scop->region->region;
+  sese_l region = scop->scop_info->region;
   gcc_assert (loop_in_sese_p (loop, region));
 
   isl_set *inner = isl_set_copy (outer);
@@ -704,7 +704,7 @@ create_pw_aff_from_tree (poly_bb_p pbb, tree t)
 {
   scop_p scop = PBB_SCOP (pbb);
 
-  t = scalar_evolution_in_region (scop->region->region, pbb_loop (pbb), t);
+  t = scalar_evolution_in_region (scop->scop_info->region, pbb_loop (pbb), t);
   gcc_assert (!automatically_generated_chrec_p (t));
 
   return extract_affine (scop, t, isl_set_get_space (pbb->domain));
@@ -818,7 +818,7 @@ add_conditions_to_constraints (scop_p scop)
 static void
 add_param_constraints (scop_p scop, graphite_dim_t p)
 {
-  tree parameter = SESE_PARAMS (scop->region)[p];
+  tree parameter = SESE_PARAMS (scop->scop_info)[p];
   tree type = TREE_TYPE (parameter);
   tree lb = NULL_TREE;
   tree ub = NULL_TREE;
@@ -892,7 +892,7 @@ build_scop_context (scop_p scop)
 static void
 build_scop_iteration_domain (scop_p scop)
 {
-  sese_info_p region = scop->region;
+  sese_info_p region = scop->scop_info;
   int nb_loops = number_of_loops (cfun);
   isl_set **doms = XCNEWVEC (isl_set *, nb_loops);
 
@@ -1103,13 +1103,13 @@ build_alias_set (scop_p scop)
 {
   int num_vertices = scop->drs.length ();
   struct graph *g = new_graph (num_vertices);
-  dr_info dr1 (0), dr2 (0);
+  dr_info *dr1, *dr2;
   int i, j;
   int *all_vertices;
 
   FOR_EACH_VEC_ELT (scop->drs, i, dr1)
     for (j = i+1; scop->drs.iterate (j, &dr2); j++)
-      if (dr_may_alias_p (dr1.dr, dr2.dr, true))
+      if (dr_may_alias_p (dr1->dr, dr2->dr, true))
 	{
 	  add_edge (g, i, j);
 	  add_edge (g, j, i);
@@ -1155,9 +1155,9 @@ build_scop_drs (scop_p scop)
 
   build_alias_set (scop);
 
-  dr_info dri (0);
+  dr_info *dri;
   FOR_EACH_VEC_ELT (scop->drs, i, dri)
-    build_poly_dr (dri);
+    build_poly_dr (*dri);
 }
 
 /* Analyze all the data references of STMTS and add them to the
@@ -1166,7 +1166,7 @@ build_scop_drs (scop_p scop)
 static void
 analyze_drs_in_stmts (scop_p scop, basic_block bb, vec<gimple *> stmts)
 {
-  sese_l region = scop->region->region;
+  sese_l region = scop->scop_info->region;
   if (!bb_in_sese_p (bb, region))
     return;
 
@@ -1283,7 +1283,7 @@ insert_out_of_ssa_copy_on_edge (scop_p scop, edge e, tree res, tree expr)
   gsi_commit_edge_inserts ();
   basic_block bb = gimple_bb (stmt);
 
-  if (!bb_in_sese_p (bb, scop->region->region))
+  if (!bb_in_sese_p (bb, scop->scop_info->region))
     return;
 
   if (!gbb_from_bb (bb))
@@ -1365,7 +1365,7 @@ propagate_expr_outside_region (tree def, tree expr, sese_l &region)
 static void
 rewrite_close_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
 {
-  sese_l region = scop->region->region;
+  sese_l region = scop->scop_info->region;
   gimple *phi = gsi_stmt (*psi);
   tree res = gimple_phi_result (phi);
   basic_block bb = gimple_bb (phi);
@@ -1498,7 +1498,7 @@ static void
 rewrite_reductions_out_of_ssa (scop_p scop)
 {
   basic_block bb;
-  sese_l region = scop->region->region;
+  sese_l region = scop->scop_info->region;
 
   FOR_EACH_BB_FN (bb, cfun)
     if (bb_in_sese_p (bb, region))
@@ -1563,7 +1563,7 @@ handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple *stmt)
   tree var = create_tmp_reg (TREE_TYPE (def));
   tree new_name = make_ssa_name (var, stmt);
   bool needs_copy = false;
-  sese_l region = scop->region->region;
+  sese_l region = scop->scop_info->region;
 
   imm_use_iterator imm_iter;
   gimple *use_stmt;
@@ -1601,7 +1601,7 @@ handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple *stmt)
 static bool
 rewrite_cross_bb_scalar_deps (scop_p scop, gimple_stmt_iterator *gsi)
 {
-  sese_l region = scop->region->region;
+  sese_l region = scop->scop_info->region;
   gimple *stmt = gsi_stmt (*gsi);
   imm_use_iterator imm_iter;
   tree def;
@@ -1686,7 +1686,7 @@ rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
 {
   basic_block bb;
   gimple_stmt_iterator psi;
-  sese_l region = scop->region->region;
+  sese_l region = scop->scop_info->region;
   bool changed = false;
 
   /* Create an extra empty BB after the scop.  */
@@ -1729,6 +1729,6 @@ build_poly_scop (scop_p scop)
 
   /* This SCoP has been translated to the polyhedral
      representation.  */
-  POLY_SCOP_P (scop) = true;
+  scop->poly_scop_p = true;
 }
 #endif  /* HAVE_isl */

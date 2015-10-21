@@ -144,7 +144,7 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
       gimple_stmt_iterator psi;
       loop_p loop = bb->loop_father;
 
-      if (!bb_in_sese_p (bb, scop->region->region))
+      if (!bb_in_sese_p (bb, scop->scop_info->region))
 	continue;
 
       n_bbs++;
@@ -162,7 +162,7 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
 	  n_p_stmts += bb->count;
 	}
 
-      if (loop->header == bb && loop_in_sese_p (loop, scop->region->region))
+      if (loop->header == bb && loop_in_sese_p (loop, scop->scop_info->region))
 	{
 	  n_loops++;
 	  n_p_loops += bb->count;
@@ -171,8 +171,8 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
 
   fprintf (file, "\nFunction Name: %s\n", current_function_name ());
 
-  edge scop_begin = scop->region->region.entry;
-  edge scop_end = scop->region->region.exit;
+  edge scop_begin = scop->scop_info->region.entry;
+  edge scop_end = scop->scop_info->region.exit;
 
   fprintf (file, "\nSCoP (entry_edge (bb_%d, bb_%d), ",
 	   scop_begin->src->index, scop_begin->dest->index);
@@ -334,7 +334,7 @@ graphite_transform_loops (void)
 	if (dump_file && dump_flags)
 	  print_scop (dump_file, scop);
 
-	if (POLY_SCOP_P (scop)
+	if (scop->poly_scop_p
 	    && apply_poly_transforms (scop)
 	    && graphite_regenerate_ast_isl (scop))
 	  need_cfg_cleanup_p = true;

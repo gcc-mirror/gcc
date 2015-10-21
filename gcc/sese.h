@@ -30,9 +30,6 @@ struct sese_l
 {
   sese_l (edge e, edge x) : entry (e), exit (x) {}
 
-  /* This is to push objects of sese_l in a vec.  */
-  sese_l (int i) : entry (NULL), exit (NULL) { gcc_assert (i == 0); }
-
   operator bool () const { return entry && exit; }
 
   const sese_l &
