@@ -1,3 +1,9 @@
+2015-10-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68024
+	* c-decl.c (start_function): Warn about vararg functions without
+	a prototype.
+
 2015-10-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* c-typeck.c (build_conditional_expr): Use boolean vector

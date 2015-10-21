@@ -8328,6 +8328,12 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 	  && comptypes (TREE_TYPE (TREE_TYPE (decl1)),
 			TREE_TYPE (TREE_TYPE (old_decl))))
 	{
+	  if (stdarg_p (TREE_TYPE (old_decl)))
+	    {
+	      warning_at (loc, 0, "%q+D defined as variadic function "
+			  "without prototype", decl1);
+	      locate_old_decl (old_decl);
+	    }
 	  TREE_TYPE (decl1) = composite_type (TREE_TYPE (old_decl),
 					      TREE_TYPE (decl1));
 	  current_function_prototype_locus = DECL_SOURCE_LOCATION (old_decl);
