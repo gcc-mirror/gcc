@@ -3916,6 +3916,20 @@ build_binary_op (location_t location, enum tree_code code, tree op0, tree op1,
   return cp_build_binary_op (location, code, op0, op1, tf_warning_or_error);
 }
 
+/* Build a vector comparison of ARG0 and ARG1 using CODE opcode
+   into a value of TYPE type.  Comparison is done via VEC_COND_EXPR.  */
+
+static tree
+build_vec_cmp (tree_code code, tree type,
+	       tree arg0, tree arg1)
+{
+  tree zero_vec = build_zero_cst (type);
+  tree minus_one_vec = build_minus_one_cst (type);
+  tree cmp_type = build_same_sized_truth_vector_type(type);
+  tree cmp = build2 (code, cmp_type, arg0, arg1);
+  cmp = fold_if_not_in_template (cmp);
+  return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
+}
 
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
@@ -4785,7 +4799,7 @@ cp_build_binary_op (location_t location,
 	  result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
 	  converted = 1;
-	  break;
+	  return build_vec_cmp (resultcode, result_type, op0, op1);
 	}
       build_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE

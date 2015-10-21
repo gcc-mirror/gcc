@@ -1087,6 +1087,20 @@ default_autovectorize_vector_sizes (void)
   return 0;
 }
 
+/* By defaults a vector of integers is used as a mask.  */
+
+machine_mode
+default_get_mask_mode (unsigned nunits, unsigned vector_size)
+{
+  unsigned elem_size = vector_size / nunits;
+  machine_mode elem_mode
+    = smallest_mode_for_size (elem_size * BITS_PER_UNIT, MODE_INT);
+
+  gcc_assert (elem_size * nunits == vector_size);
+
+  return mode_for_vector (elem_mode, nunits);
+}
+
 /* By default, the cost model accumulates three separate costs (prologue,
    loop body, and epilogue) for a vectorized loop or block.  So allocate an
    array of three unsigned ints, set it to zero, and return its address.  */

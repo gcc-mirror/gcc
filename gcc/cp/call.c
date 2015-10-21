@@ -4627,6 +4627,15 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 
   if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg1)))
     {
+      /* If arg1 is another cond_expr choosing between -1 and 0,
+	 then we can use its comparison.  It may help to avoid
+	 additional comparison, produce more accurate diagnostics
+	 and enables folding.  */
+      if (TREE_CODE (arg1) == VEC_COND_EXPR
+	  && integer_minus_onep (TREE_OPERAND (arg1, 1))
+	  && integer_zerop (TREE_OPERAND (arg1, 2)))
+	arg1 = TREE_OPERAND (arg1, 0);
+
       arg1 = force_rvalue (arg1, complain);
       arg2 = force_rvalue (arg2, complain);
       arg3 = force_rvalue (arg3, complain);
@@ -4739,8 +4748,10 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	}
 
       if (!COMPARISON_CLASS_P (arg1))
-	arg1 = cp_build_binary_op (loc, NE_EXPR, arg1,
-				   build_zero_cst (arg1_type), complain);
+	{
+	  tree cmp_type = build_same_sized_truth_vector_type (arg1_type);
+	  arg1 = build2 (NE_EXPR, cmp_type, arg1, build_zero_cst (arg1_type));
+	}
       return fold_build3 (VEC_COND_EXPR, arg2_type, arg1, arg2, arg3);
     }
 

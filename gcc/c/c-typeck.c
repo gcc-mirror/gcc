@@ -4771,6 +4771,18 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 		       && TREE_CODE (orig_op2) == INTEGER_CST
 		       && !TREE_OVERFLOW (orig_op2)));
     }
+
+  /* Need to convert condition operand into a vector mask.  */
+  if (VECTOR_TYPE_P (TREE_TYPE (ifexp)))
+    {
+      tree vectype = TREE_TYPE (ifexp);
+      tree elem_type = TREE_TYPE (vectype);
+      tree zero = build_int_cst (elem_type, 0);
+      tree zero_vec = build_vector_from_val (vectype, zero);
+      tree cmp_type = build_same_sized_truth_vector_type (vectype);
+      ifexp = build2 (NE_EXPR, cmp_type, ifexp, zero_vec);
+    }
+
   if (int_const || (ifexp_bcp && TREE_CODE (ifexp) == INTEGER_CST))
     ret = fold_build3_loc (colon_loc, COND_EXPR, result_type, ifexp, op1, op2);
   else
@@ -10237,6 +10249,20 @@ push_cleanup (tree decl, tree cleanup, bool eh_only)
   STATEMENT_LIST_STMT_EXPR (list) = stmt_expr;
 }
 
+/* Build a vector comparison of ARG0 and ARG1 using CODE opcode
+   into a value of TYPE type.  Comparison is done via VEC_COND_EXPR.  */
+
+static tree
+build_vec_cmp (tree_code code, tree type,
+	       tree arg0, tree arg1)
+{
+  tree zero_vec = build_zero_cst (type);
+  tree minus_one_vec = build_minus_one_cst (type);
+  tree cmp_type = build_same_sized_truth_vector_type (type);
+  tree cmp = build2 (code, cmp_type, arg0, arg1);
+  return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
+}
+
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
    LOCATION is the operator's location.
@@ -10803,7 +10829,8 @@ build_binary_op (location_t location, enum tree_code code,
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;
-          break;
+	  ret = build_vec_cmp (resultcode, result_type, op0, op1);
+	  goto return_build_binary_op;
         }
       if (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1))
 	warning_at (location,
@@ -10955,7 +10982,8 @@ build_binary_op (location_t location, enum tree_code code,
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;
-          break;
+	  ret = build_vec_cmp (resultcode, result_type, op0, op1);
+	  goto return_build_binary_op;
         }
       build_type = integer_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE

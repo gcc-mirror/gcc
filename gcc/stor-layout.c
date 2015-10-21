@@ -2184,10 +2184,16 @@ layout_type (tree type)
 
 	TYPE_SATURATING (type) = TYPE_SATURATING (TREE_TYPE (type));
         TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
-	TYPE_SIZE_UNIT (type) = int_const_binop (MULT_EXPR,
-					         TYPE_SIZE_UNIT (innertype),
-					         size_int (nunits));
-	TYPE_SIZE (type) = int_const_binop (MULT_EXPR, TYPE_SIZE (innertype),
+	/* Several boolean vector elements may fit in a single unit.  */
+	if (VECTOR_BOOLEAN_TYPE_P (type))
+	  TYPE_SIZE_UNIT (type)
+	    = size_int (GET_MODE_SIZE (type->type_common.mode));
+	else
+	  TYPE_SIZE_UNIT (type) = int_const_binop (MULT_EXPR,
+						   TYPE_SIZE_UNIT (innertype),
+						   size_int (nunits));
+	TYPE_SIZE (type) = int_const_binop (MULT_EXPR,
+					    TYPE_SIZE (innertype),
 					    bitsize_int (nunits));
 
 	/* For vector types, we do not default to the mode's alignment.

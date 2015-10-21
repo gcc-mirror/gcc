@@ -3465,10 +3465,10 @@ verify_gimple_comparison (tree type, tree op0, tree op1)
           return true;
         }
     }
-  /* Or an integer vector type with the same size and element count
+  /* Or a boolean vector type with the same element count
      as the comparison operand types.  */
   else if (TREE_CODE (type) == VECTOR_TYPE
-	   && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE)
+	   && TREE_CODE (TREE_TYPE (type)) == BOOLEAN_TYPE)
     {
       if (TREE_CODE (op0_type) != VECTOR_TYPE
 	  || TREE_CODE (op1_type) != VECTOR_TYPE)
@@ -3479,12 +3479,7 @@ verify_gimple_comparison (tree type, tree op0, tree op1)
           return true;
         }
 
-      if (TYPE_VECTOR_SUBPARTS (type) != TYPE_VECTOR_SUBPARTS (op0_type)
-	  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (type)))
-	      != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0_type))))
-	  /* The result of a vector comparison is of signed
-	     integral type.  */
-	  || TYPE_UNSIGNED (TREE_TYPE (type)))
+      if (TYPE_VECTOR_SUBPARTS (type) != TYPE_VECTOR_SUBPARTS (op0_type))
         {
           error ("invalid vector comparison resulting type");
           debug_generic_expr (type);
@@ -3971,15 +3966,13 @@ verify_gimple_assign_ternary (gassign *stmt)
       break;
 
     case VEC_COND_EXPR:
-      if (!VECTOR_INTEGER_TYPE_P (rhs1_type)
-	  || TYPE_SIGN (rhs1_type) != SIGNED
-	  || TYPE_SIZE (rhs1_type) != TYPE_SIZE (lhs_type)
+      if (!VECTOR_BOOLEAN_TYPE_P (rhs1_type)
 	  || TYPE_VECTOR_SUBPARTS (rhs1_type)
 	     != TYPE_VECTOR_SUBPARTS (lhs_type))
 	{
-	  error ("the first argument of a VEC_COND_EXPR must be of a signed "
-		 "integral vector type of the same size and number of "
-		 "elements as the result");
+	  error ("the first argument of a VEC_COND_EXPR must be of a "
+		 "boolean vector type of the same number of elements "
+		 "as the result");
 	  debug_generic_expr (lhs_type);
 	  debug_generic_expr (rhs1_type);
 	  return true;

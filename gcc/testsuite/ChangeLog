@@ -1,5 +1,9 @@
 2015-10-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* g++.dg/ext/vector22.C: Allow VEC_COND_EXPR.
+
+2015-10-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* gcc.dg/lto/simd-function_0.c: New test.
 
 2015-10-21  Uros Bizjak  <ubizjak@gmail.com>

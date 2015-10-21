@@ -5365,16 +5365,17 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
       op0a = TREE_OPERAND (op0, 0);
       op0b = TREE_OPERAND (op0, 1);
       tcode = TREE_CODE (op0);
+      unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
     }
   else
     {
       /* Fake op0 < 0.  */
-      gcc_assert (!TYPE_UNSIGNED (TREE_TYPE (op0)));
+      gcc_assert (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (op0)));
       op0a = op0;
       op0b = build_zero_cst (TREE_TYPE (op0));
       tcode = LT_EXPR;
+      unsignedp = false;
     }
-  unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
   cmp_op_mode = TYPE_MODE (TREE_TYPE (op0a));
 
 

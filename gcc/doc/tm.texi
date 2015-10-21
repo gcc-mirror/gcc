@@ -5688,6 +5688,12 @@ mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
 The default is zero which means to not iterate over other vector sizes.
 @end deftypefn
 
+@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_GET_MASK_MODE (unsigned @var{nunits}, unsigned @var{length})
+This hook returns mode to be used for a mask to be used for a vector
+of specified @var{length} with @var{nunits} elements.  By default an integer
+vector mode of a proper size is returned.
+@end deftypefn
+
 @deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (struct loop *@var{loop_info})
 This hook should initialize target-specific data structures in preparation for modeling the costs of vectorizing a loop or basic block.  The default allocates three unsigned integers for accumulating costs for the prologue, body, and epilogue of the loop or basic block.  If @var{loop_info} is non-NULL, it identifies the loop being vectorized; otherwise a single block is being vectorized.
 @end deftypefn

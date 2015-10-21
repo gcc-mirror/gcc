@@ -1,3 +1,10 @@
+2015-10-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* c-typeck.c (build_conditional_expr): Use boolean vector
+	type for vector comparison.
+	(build_vec_cmp): New.
+	(build_binary_op): Use build_vec_cmp for comparison.
+
 2015-10-20  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c (is_cilkplus_vector_p): Don't define here.

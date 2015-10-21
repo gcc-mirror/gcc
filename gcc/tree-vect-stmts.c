@@ -7254,10 +7254,7 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!vect_is_simple_use (else_clause, stmt_info->vinfo, &def_stmt, &dt))
     return false;
 
-  unsigned int prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vectype)));
-  /* The result of a vector comparison should be signed type.  */
-  tree cmp_type = build_nonstandard_integer_type (prec, 0);
-  vec_cmp_type = get_same_sized_vectype (cmp_type, vectype);
+  vec_cmp_type = build_same_sized_truth_vector_type (comp_vectype);
   if (vec_cmp_type == NULL_TREE)
     return false;
 
@@ -8067,6 +8064,9 @@ get_vectype_for_scalar_type (tree scalar_type)
 tree
 get_same_sized_vectype (tree scalar_type, tree vector_type)
 {
+  if (TREE_CODE (scalar_type) == BOOLEAN_TYPE)
+    return build_same_sized_truth_vector_type (vector_type);
+
   return get_vectype_for_scalar_type_and_size
 	   (scalar_type, GET_MODE_SIZE (TYPE_MODE (vector_type)));
 }
