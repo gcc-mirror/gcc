@@ -1,3 +1,15 @@
+2015-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66781
+	* parser.c (cp_parser_enum_specifier): Upon error_at set
+	nested_name_specifier to error_mark_node; improve error message.
+
+2015-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67847
+	* parser.c (cp_parser_enum_specifier): Reject a nested_name_specifier
+	which doesn't name a class or namespace.
+
 2015-10-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* call.c (build_conditional_expr_1): Use boolean vector
