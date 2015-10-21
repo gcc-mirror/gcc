@@ -7747,7 +7747,7 @@ default_asm_output_ident_directive (const char *ident_str)
    a single call to "switch_to_section (sect)".  */
 
 static void
-handle_vtv_comdat_section (section *sect, const_tree decl)
+handle_vtv_comdat_section (section *sect, const_tree decl ATTRIBUTE_UNUSED)
 {
 #if defined (OBJECT_FORMAT_ELF)
   targetm.asm_out.named_section (sect->named.name,
