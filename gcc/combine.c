@@ -112,6 +112,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "valtrack.h"
 #include "cgraph.h"
 #include "rtl-iter.h"
+#include "print-rtl.h"
 
 #ifndef LOAD_EXTEND_OP
 #define LOAD_EXTEND_OP(M) UNKNOWN

@@ -137,6 +137,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "lra.h"
 #include "insn-attr.h"
 #include "lra-int.h"
+#include "print-rtl.h"
 
 /* Dump bitmap SET with TITLE and BB INDEX.  */
 void

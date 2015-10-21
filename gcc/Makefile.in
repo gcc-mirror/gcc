@@ -1385,7 +1385,6 @@ OBJS = \
 	sched-deps.o \
 	sched-ebb.o \
 	sched-rgn.o \
-	sched-vis.o \
 	sdbout.o \
 	sel-sched-ir.o \
 	sel-sched-dump.o \

@@ -1,5 +1,14 @@
 2015-10-21  Jeff Law  <law@redhat.com>
 
+	* Makefile.in (OBJS): Remove sched-vis.c
+	* sched-vis.c: Removed.  Code moved into...
+	* print-rtl.c: Here.  Include cfg.h, pretty-print.h and print-rtl.h.
+	* rtl.h: Remove prototypes for functions now living in print-rtl.c
+	* print-rtl.h Add prototypes for new functions in print-rtl.c.
+	* auto-inc-dec.c: Include print-rtl.h
+	* cfgrtl.c, combine.c, final.c haifa-sched.c: Likewise.
+	* ira.c, lra-constraints.c, lra.c, sel-sched-dump.c: Likewise.
+
 	* varasm.c (handle_vtv_comdat_section): Mark 2nd parameter with
 	ATTRIBUTE_UNUSED.
 

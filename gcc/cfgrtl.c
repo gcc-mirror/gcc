@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "cfgloop.h"
 #include "tree-pass.h"
+#include "print-rtl.h"
 
 /* Holds the interesting leading and trailing notes for the function.
    Only applicable if the CFG is in cfglayout mode.  */
