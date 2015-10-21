@@ -1195,35 +1195,31 @@ default_ref_may_alias_errno (ao_ref *ref)
   return false;
 }
 
-/* Return the mode for a pointer to a given ADDRSPACE, defaulting to ptr_mode
-   for the generic address space only.  */
+/* Return the mode for a pointer to a given ADDRSPACE,
+   defaulting to ptr_mode for all address spaces.  */
 
 machine_mode
 default_addr_space_pointer_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 {
-  gcc_assert (ADDR_SPACE_GENERIC_P (addrspace));
   return ptr_mode;
 }
 
-/* Return the mode for an address in a given ADDRSPACE, defaulting to Pmode
-   for the generic address space only.  */
+/* Return the mode for an address in a given ADDRSPACE,
+   defaulting to Pmode for all address spaces.  */
 
 machine_mode
 default_addr_space_address_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 {
-  gcc_assert (ADDR_SPACE_GENERIC_P (addrspace));
   return Pmode;
 }
 
-/* Named address space version of valid_pointer_mode.  */
+/* Named address space version of valid_pointer_mode.
+   To match the above, the same modes apply to all address spaces.  */
 
 bool
-default_addr_space_valid_pointer_mode (machine_mode mode, addr_space_t as)
+default_addr_space_valid_pointer_mode (machine_mode mode,
+				       addr_space_t as ATTRIBUTE_UNUSED)
 {
-  if (!ADDR_SPACE_GENERIC_P (as))
-    return (mode == targetm.addr_space.pointer_mode (as)
-	    || mode == targetm.addr_space.address_mode (as));
-
   return targetm.valid_pointer_mode (mode);
 }
 
@@ -1243,27 +1239,24 @@ target_default_pointer_address_modes_p (void)
   return true;
 }
 
-/* Named address space version of legitimate_address_p.  */
+/* Named address space version of legitimate_address_p.
+   By default, all address spaces have the same form.  */
 
 bool
 default_addr_space_legitimate_address_p (machine_mode mode, rtx mem,
-					 bool strict, addr_space_t as)
+					 bool strict,
+					 addr_space_t as ATTRIBUTE_UNUSED)
 {
-  if (!ADDR_SPACE_GENERIC_P (as))
-    gcc_unreachable ();
-
   return targetm.legitimate_address_p (mode, mem, strict);
 }
 
-/* Named address space version of LEGITIMIZE_ADDRESS.  */
+/* Named address space version of LEGITIMIZE_ADDRESS.
+   By default, all address spaces have the same form.  */
 
 rtx
-default_addr_space_legitimize_address (rtx x, rtx oldx,
-				       machine_mode mode, addr_space_t as)
+default_addr_space_legitimize_address (rtx x, rtx oldx, machine_mode mode,
+				       addr_space_t as ATTRIBUTE_UNUSED)
 {
-  if (!ADDR_SPACE_GENERIC_P (as))
-    return x;
-
   return targetm.legitimize_address (x, oldx, mode);
 }
 
