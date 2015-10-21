@@ -10276,15 +10276,13 @@ c_register_addr_space ("__ea", ADDR_SPACE_EA);
 @deftypefn {Target Hook} machine_mode TARGET_ADDR_SPACE_POINTER_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for pointers to
 @var{address_space} if the target supports named address spaces.
-The default version of this hook returns @code{ptr_mode} for the
-generic address space only.
+The default version of this hook returns @code{ptr_mode}.
 @end deftypefn
 
 @deftypefn {Target Hook} machine_mode TARGET_ADDR_SPACE_ADDRESS_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for addresses in
 @var{address_space} if the target supports named address spaces.
-The default version of this hook returns @code{Pmode} for the
-generic address space only.
+The default version of this hook returns @code{Pmode}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_ADDR_SPACE_VALID_POINTER_MODE (machine_mode @var{mode}, addr_space_t @var{as})

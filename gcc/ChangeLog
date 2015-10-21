@@ -6,6 +6,10 @@
 	(default_addr_space_valid_pointer_mode): Likewise.
 	(default_addr_space_legitimate_address_p): Likewise.
 	(default_addr_space_legitimize_address): Likewise.
+	* target.def (addr_space.pointer_mode): Update documentation
+	of default behavior.
+	(addr_space.address_mode): Likewise.
+	* tm.texi: Update.
 
 	* expr.c (expand_expr_real_2): Use convert_modes on disjoint
 	address spaces.
