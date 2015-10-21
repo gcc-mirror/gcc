@@ -1,5 +1,12 @@
 2015-10-21  Richard Henderson  <rth@redhat.com>
 
+	* targhooks.c (default_addr_space_pointer_mode): Remove check
+	for generic address space.
+	(default_addr_space_address_mode): Likewise.
+	(default_addr_space_valid_pointer_mode): Likewise.
+	(default_addr_space_legitimate_address_p): Likewise.
+	(default_addr_space_legitimize_address): Likewise.
+
 	* expr.c (expand_expr_real_2): Use convert_modes on disjoint
 	address spaces.
 
