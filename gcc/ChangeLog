@@ -1,5 +1,13 @@
 2015-10-21  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/68031
+	* fold-const.c: Include tree-ssa-operands.h and tree-into-ssa.h.
+	(tree_ssa_name_nonnegative_warnv_p): Fold into ...
+	(tree_single_nonnegative_warnv_p): ... here.  For SSA names
+	make sure they are not registered for update.
+
+2015-10-21  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/68026
 	* tree-ssa-ccp.c (get_value_for_expr): Zero-extend mask for
 	unsigned VARYING values.
