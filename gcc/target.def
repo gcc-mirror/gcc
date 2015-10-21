@@ -3129,8 +3129,7 @@ DEFHOOK
 (pointer_mode,
  "Define this to return the machine mode to use for pointers to\n\
 @var{address_space} if the target supports named address spaces.\n\
-The default version of this hook returns @code{ptr_mode} for the\n\
-generic address space only.",
+The default version of this hook returns @code{ptr_mode}.",
  machine_mode, (addr_space_t address_space),
  default_addr_space_pointer_mode)
 
@@ -3139,8 +3138,7 @@ DEFHOOK
 (address_mode,
  "Define this to return the machine mode to use for addresses in\n\
 @var{address_space} if the target supports named address spaces.\n\
-The default version of this hook returns @code{Pmode} for the\n\
-generic address space only.",
+The default version of this hook returns @code{Pmode}.",
  machine_mode, (addr_space_t address_space),
  default_addr_space_address_mode)
 
