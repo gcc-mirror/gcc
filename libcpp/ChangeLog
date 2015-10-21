@@ -1,5 +1,12 @@
 2015-10-21  Mikhail Maltsev  <maltsevm@gmail.com>
 
+	* include/line-map.h: Use CHECKING_P instead of ENABLE_CHECKING.
+	* init.c: Likewise.
+	* macro.c (struct macro_arg_token_iter, set_arg_token,
+	macro_arg_token_iter_init, macro_arg_token_iter_forward,
+	macro_arg_token_iter_get_token, macro_arg_token_iter_get_location,
+	alloc_expanded_arg_mem, _cpp_backup_tokens): Likewise.
+
 	* config.in: Regenerate.
 	* configure: Regenerate.
 	* configure.ac (CHECKING_P): Define.
