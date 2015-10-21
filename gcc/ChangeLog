@@ -1,3 +1,8 @@
+2015-10-21  Jeff Law  <law@redhat.com>
+
+	* varasm.c (handle_vtv_comdat_section): Mark 2nd parameter with
+	ATTRIBUTE_UNUSED.
+
 2015-10-21  Richard Biener  <rguenther@suse.de>
 	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
