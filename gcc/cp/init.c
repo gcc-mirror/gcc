@@ -823,13 +823,13 @@ perform_member_init (tree member, tree init)
    the FIELD_DECLs on the TYPE_FIELDS list for T, in reverse order.  */
 
 static tree
-build_field_list (tree t, tree list, int *uses_unions_p)
+build_field_list (tree t, tree list, int *uses_unions_or_anon_p)
 {
   tree fields;
 
   /* Note whether or not T is a union.  */
   if (TREE_CODE (t) == UNION_TYPE)
-    *uses_unions_p = 1;
+    *uses_unions_or_anon_p = 1;
 
   for (fields = TYPE_FIELDS (t); fields; fields = DECL_CHAIN (fields))
     {
@@ -840,9 +840,6 @@ build_field_list (tree t, tree list, int *uses_unions_p)
 	continue;
 
       fieldtype = TREE_TYPE (fields);
-      /* Keep track of whether or not any fields are unions.  */
-      if (TREE_CODE (fieldtype) == UNION_TYPE)
-	*uses_unions_p = 1;
 
       /* For an anonymous struct or union, we must recursively
 	 consider the fields of the anonymous type.  They can be
@@ -853,7 +850,8 @@ build_field_list (tree t, tree list, int *uses_unions_p)
 	     initialize the entire aggregate.  */
 	  list = tree_cons (fields, NULL_TREE, list);
 	  /* And now add the fields in the anonymous aggregate.  */
-	  list = build_field_list (fieldtype, list, uses_unions_p);
+	  list = build_field_list (fieldtype, list, uses_unions_or_anon_p);
+	  *uses_unions_or_anon_p = 1;
 	}
       /* Add this field.  */
       else if (DECL_NAME (fields))
@@ -861,6 +859,18 @@ build_field_list (tree t, tree list, int *uses_unions_p)
     }
 
   return list;
+}
+
+/* Return the innermost aggregate scope for FIELD, whether that is
+   the enclosing class or an anonymous aggregate within it.  */
+
+static tree
+innermost_aggr_scope (tree field)
+{
+  if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+    return TREE_TYPE (field);
+  else
+    return DECL_CONTEXT (field);
 }
 
 /* The MEM_INITS are a TREE_LIST.  The TREE_PURPOSE of each list gives
@@ -880,7 +890,7 @@ sort_mem_initializers (tree t, tree mem_inits)
   tree next_subobject;
   vec<tree, va_gc> *vbases;
   int i;
-  int uses_unions_p = 0;
+  int uses_unions_or_anon_p = 0;
 
   /* Build up a list of initializations.  The TREE_PURPOSE of entry
      will be the subobject (a FIELD_DECL or BINFO) to initialize.  The
@@ -900,7 +910,7 @@ sort_mem_initializers (tree t, tree mem_inits)
       sorted_inits = tree_cons (base_binfo, NULL_TREE, sorted_inits);
 
   /* Process the non-static data members.  */
-  sorted_inits = build_field_list (t, sorted_inits, &uses_unions_p);
+  sorted_inits = build_field_list (t, sorted_inits, &uses_unions_or_anon_p);
   /* Reverse the entire list of initializations, so that they are in
      the order that they will actually be performed.  */
   sorted_inits = nreverse (sorted_inits);
@@ -984,7 +994,7 @@ sort_mem_initializers (tree t, tree mem_inits)
      anonymous unions), the ctor-initializer is ill-formed.
 
      Here we also splice out uninitialized union members.  */
-  if (uses_unions_p)
+  if (uses_unions_or_anon_p)
     {
       tree *last_p = NULL;
       tree *p;
@@ -1001,21 +1011,18 @@ sort_mem_initializers (tree t, tree mem_inits)
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    goto next;
 
-	  /* If this is an anonymous union with no explicit initializer,
+	  /* If this is an anonymous aggregate with no explicit initializer,
 	     splice it out.  */
-	  if (!TREE_VALUE (init) && ANON_UNION_TYPE_P (TREE_TYPE (field)))
+	  if (!TREE_VALUE (init) && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
 	    goto splice;
 
 	  /* See if this field is a member of a union, or a member of a
 	     structure contained in a union, etc.  */
-	  for (ctx = DECL_CONTEXT (field);
-	       !same_type_p (ctx, t);
-	       ctx = TYPE_CONTEXT (ctx))
-	    if (TREE_CODE (ctx) == UNION_TYPE
-		|| !ANON_AGGR_TYPE_P (ctx))
-	      break;
+	  ctx = innermost_aggr_scope (field);
+
 	  /* If this field is not a member of a union, skip it.  */
-	  if (TREE_CODE (ctx) != UNION_TYPE)
+	  if (TREE_CODE (ctx) != UNION_TYPE
+	      && !ANON_AGGR_TYPE_P (ctx))
 	    goto next;
 
 	  /* If this union member has no explicit initializer and no NSDMI,
@@ -1034,17 +1041,19 @@ sort_mem_initializers (tree t, tree mem_inits)
 	    }
 
 	  /* See if LAST_FIELD and the field initialized by INIT are
-	     members of the same union.  If so, there's a problem,
-	     unless they're actually members of the same structure
+	     members of the same union (or the union itself). If so, there's
+	     a problem, unless they're actually members of the same structure
 	     which is itself a member of a union.  For example, given:
 
 	       union { struct { int i; int j; }; };
 
 	     initializing both `i' and `j' makes sense.  */
-	  ctx = common_enclosing_class (DECL_CONTEXT (field),
-					DECL_CONTEXT (TREE_PURPOSE (*last_p)));
+	  ctx = common_enclosing_class
+	    (innermost_aggr_scope (field),
+	     innermost_aggr_scope (TREE_PURPOSE (*last_p)));
 
-	  if (ctx && TREE_CODE (ctx) == UNION_TYPE)
+	  if (ctx && (TREE_CODE (ctx) == UNION_TYPE
+		      || ctx == TREE_TYPE (TREE_PURPOSE (*last_p))))
 	    {
 	      /* A mem-initializer hides an NSDMI.  */
 	      if (TREE_VALUE (init) && !TREE_VALUE (*last_p))
