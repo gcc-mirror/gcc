@@ -1,5 +1,9 @@
 2015-10-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66583
+	* init.c (innermost_aggr_scope): New.
+	(sort_mem_initializers): Use it.
+
 	PR c++/67557
 	* call.c (is_base_field_ref): New.
 	(unsafe_copy_elision_p): New.
