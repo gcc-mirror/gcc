@@ -1,3 +1,10 @@
+2015-10-21  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (CHECKING_P): Define.
+	* system.h: Use CHECKING_P.
+
 2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/67056
