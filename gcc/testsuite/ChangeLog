@@ -1,3 +1,8 @@
+2015-10-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68024
+	* gcc.dg/pr68024.c: New test.
+
 2015-10-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-c++-common/goacc/clauses-fail.c: Adjust errors.
