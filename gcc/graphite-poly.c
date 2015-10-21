@@ -306,7 +306,7 @@ new_scop (edge entry, edge exit)
   scop->may_waw_no_source = NULL;
   scop_set_region (scop, region);
   scop->pbbs.create (3);
-  POLY_SCOP_P (scop) = false;
+  scop->poly_scop_p = false;
   scop->drs.create (3);
 
   return scop;
@@ -321,7 +321,7 @@ free_scop (scop_p scop)
   poly_bb_p pbb;
 
   remove_gbbs_in_scop (scop);
-  free_sese_info (SCOP_REGION (scop));
+  free_sese_info (scop->scop_info);
 
   FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     free_poly_bb (pbb);
@@ -475,13 +475,13 @@ print_pbb (FILE *file, poly_bb_p pbb)
 void
 print_scop_params (FILE *file, scop_p scop)
 {
-  if (SESE_PARAMS (SCOP_REGION (scop)).is_empty ())
+  if (SESE_PARAMS (scop->scop_info).is_empty ())
     return;
 
   int i;
   tree t;
   fprintf (file, "parameters (");
-  FOR_EACH_VEC_ELT (SESE_PARAMS (SCOP_REGION (scop)), i, t)
+  FOR_EACH_VEC_ELT (SESE_PARAMS (scop->scop_info), i, t)
     {
       print_generic_expr (file, t, 0);
       fprintf (file, ", ");

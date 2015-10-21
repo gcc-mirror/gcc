@@ -786,10 +786,10 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
   iv_map.create (nb_loops);
   iv_map.safe_grow_cleared (nb_loops);
 
-  build_iv_mapping (iv_map, gbb, user_expr, ip, pbb->scop->region->region);
+  build_iv_mapping (iv_map, gbb, user_expr, ip, pbb->scop->scop_info->region);
   isl_ast_expr_free (user_expr);
   next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb),
-					   pbb->scop->region, next_e,
+					   pbb->scop->scop_info, next_e,
 					   iv_map,
 					   &graphite_regenerate_error);
   iv_map.release ();
@@ -909,7 +909,7 @@ print_isl_ast_node (FILE *file, __isl_keep isl_ast_node *node,
 static void
 add_parameters_to_ivs_params (scop_p scop, ivs_params &ip)
 {
-  sese_info_p region = scop->region;
+  sese_info_p region = scop->scop_info;
   unsigned nb_parameters = isl_set_dim (scop->param_context, isl_dim_param);
   gcc_assert (nb_parameters == SESE_PARAMS (region).length ());
   unsigned i;
@@ -1144,7 +1144,7 @@ bool
 graphite_regenerate_ast_isl (scop_p scop)
 {
   loop_p context_loop;
-  sese_info_p region = scop->region;
+  sese_info_p region = scop->scop_info;
   ifsese if_region = NULL;
   isl_ast_node *root_node;
   ivs_params ip;

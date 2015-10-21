@@ -491,7 +491,7 @@ private:
   vec<sese_l> scops;
 };
 
-sese_l scop_detection::invalid_sese (0);
+sese_l scop_detection::invalid_sese (NULL, NULL);
 
 /* Return an sese_l around the LOOP.  */
 
@@ -888,13 +888,13 @@ void
 scop_detection::remove_subscops (sese_l s1)
 {
   int j;
-  sese_l s2 (0);
+  sese_l *s2;
   FOR_EACH_VEC_ELT_REVERSE (scops, j, s2)
     {
-      if (subsumes (s1, s2))
+      if (subsumes (s1, *s2))
 	{
 	  DEBUG_PRINT (dp << "\nRemoving sub-SCoP";
-		       print_sese (dump_file, s2));
+		       print_sese (dump_file, *s2));
 	  scops.unordered_remove (j);
 	}
     }
@@ -923,13 +923,13 @@ void
 scop_detection::remove_intersecting_scops (sese_l s1)
 {
   int j;
-  sese_l s2 (0);
+  sese_l *s2;
   FOR_EACH_VEC_ELT_REVERSE (scops, j, s2)
     {
-      if (intersects (s1, s2))
+      if (intersects (s1, *s2))
 	{
 	  DEBUG_PRINT (dp << "\nRemoving intersecting SCoP";
-		       print_sese (dump_file, s2); dp << "Intersects with:";
+		       print_sese (dump_file, *s2); dp << "Intersects with:";
 		       print_sese (dump_file, s1));
 	  scops.unordered_remove (j);
 	}
@@ -1273,7 +1273,7 @@ dot_all_scops_1 (FILE *file, vec<scop_p> scops)
       /* Select color for SCoP.  */
       FOR_EACH_VEC_ELT (scops, i, scop)
 	{
-	  sese_l region = scop->region->region;
+	  sese_l region = scop->scop_info->region;
 	  if (bb_in_sese_p (bb, region) || (region.exit->dest == bb)
 	      || (region.entry->dest == bb))
 	    {
@@ -1482,7 +1482,7 @@ scop_detection::nb_pbbs_in_loops (scop_p scop)
   int res = 0;
 
   FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    if (loop_in_sese_p (gbb_loop (PBB_BLACK_BOX (pbb)), scop->region->region))
+    if (loop_in_sese_p (gbb_loop (PBB_BLACK_BOX (pbb)), scop->scop_info->region))
       res++;
 
   return res;
@@ -1623,7 +1623,7 @@ static void
 find_scop_parameters (scop_p scop)
 {
   unsigned i;
-  sese_info_p region = scop->region;
+  sese_info_p region = scop->scop_info;
   struct loop *loop;
 
   /* Find the parameters used in the loop bounds.  */
@@ -1655,7 +1655,7 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
 {
   vec<data_reference_p> drs;
   drs.create (5);
-  sese_l region = scop->region->region;
+  sese_l region = scop->scop_info->region;
   loop_p nest = outermost_loop_in_sese (region, bb);
 
   loop_p loop = bb->loop_father;
@@ -1700,7 +1700,7 @@ gather_bbs::gather_bbs (cdi_direction direction, scop_p scop)
 void
 gather_bbs::before_dom_children (basic_block bb)
 {
-  if (!bb_in_sese_p (bb, scop->region->region))
+  if (!bb_in_sese_p (bb, scop->scop_info->region))
     return;
 
   gcond *stmt = single_pred_cond_non_loop_exit (bb);
@@ -1717,7 +1717,7 @@ gather_bbs::before_dom_children (basic_block bb)
 	cases.safe_push (NULL);
     }
 
-  scop->region->bbs.safe_push (bb);
+  scop->scop_info->bbs.safe_push (bb);
 
   gimple_poly_bb_p gbb = try_generate_gimple_bb (scop, bb);
   GBB_CONDITIONS (gbb) = conditions.copy ();
@@ -1733,7 +1733,7 @@ gather_bbs::before_dom_children (basic_block bb)
 void
 gather_bbs::after_dom_children (basic_block bb)
 {
-  if (!bb_in_sese_p (bb, scop->region->region))
+  if (!bb_in_sese_p (bb, scop->scop_info->region))
     return;
 
   if (single_pred_cond_non_loop_exit (bb))
@@ -1760,10 +1760,10 @@ build_scops (vec<scop_p> *scops)
   /* Now create scops from the lightweight SESEs.  */
   vec<sese_l> scops_l = sb.get_scops ();
   int i;
-  sese_l s (0);
+  sese_l *s;
   FOR_EACH_VEC_ELT (scops_l, i, s)
     {
-      scop_p scop = new_scop (s.entry, s.exit);
+      scop_p scop = new_scop (s->entry, s->exit);
 
       /* Record all basic blocks and their conditions in REGION.  */
       gather_bbs (CDI_DOMINATORS, scop).walk (cfun->cfg->x_entry_block_ptr);
@@ -1777,7 +1777,7 @@ build_scops (vec<scop_p> *scops)
 	  continue;
 	}
 
-      build_sese_loop_nests (scop->region);
+      build_sese_loop_nests (scop->scop_info);
 
       find_scop_parameters (scop);
       graphite_dim_t max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);

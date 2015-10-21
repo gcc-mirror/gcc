@@ -1,3 +1,49 @@
+2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-poly.h (struct dr_info): Removed conversion constructor.
+	(struct scop): Renamed scop::region to scop::scop_info
+	(scop_set_region): Same.
+	(SCOP_REGION): Removed
+	(SCOP_CONTEXT): Removed.
+	(POLY_SCOP_P): Removed.
+	* graphite-isl-ast-to-gimple.c (translate_isl_ast_node_user):
+	Rename scop->region to scop->scop_info.
+	(add_parameters_to_ivs_params): Same.
+	(graphite_regenerate_ast_isl): Same.
+	* graphite-poly.c (new_scop): Same.
+	(free_scop): Same.
+	(print_scop_params): Same.
+	* graphite-scop-detection.c (scop_detection::remove_subscops): Same.
+	(scop_detection::remove_intersecting_scops): Use pointer to sese_l.
+	(dot_all_scops_1): Rename scop->region to scop->scop_info.
+	(scop_detection::nb_pbbs_in_loops): Same.
+	(find_scop_parameters): Same.
+	(try_generate_gimple_bb): Same.
+	(gather_bbs::before_dom_children): Same.
+	(gather_bbs::after_dom_children): Same.
+	(build_scops): Same.
+	* graphite-sese-to-poly.c (build_scop_scattering): Same.
+	(extract_affine_chrec): Same.
+	(extract_affine): Same.
+	(set_scop_parameter_dim): Same.
+	(build_loop_iteration_domains): Same.
+	(create_pw_aff_from_tree): Same.
+	(add_param_constraints): Same.
+	(build_scop_iteration_domain): Same.
+	(build_scop_drs): Same.
+	(analyze_drs_in_stmts): Same.
+	(insert_out_of_ssa_copy_on_edge): Same.
+	(rewrite_close_phi_out_of_ssa):Same.
+	(rewrite_reductions_out_of_ssa):Same.
+	(handle_scalar_deps_crossing_scop_limits):Same.
+	(rewrite_cross_bb_scalar_deps):Same.
+	(rewrite_cross_bb_scalar_deps_out_of_ssa):Same.
+	(build_poly_scop):Same.
+	(build_alias_set): Use pointer to dr_info.
+	* graphite.c (print_graphite_scop_statistics):
+	(graphite_transform_loops):
+	* sese.h (struct sese_l): Remove conversion constructor.
+
 2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/67966

@@ -387,12 +387,6 @@ struct dr_info
   dr_info (data_reference_p dr, int alias_set, poly_bb_p pbb)
     : dr (dr), alias_set (alias_set), pbb (pbb) {}
 
-  /* A simpler constructor to be able to push these objects in a vec.  */
-  dr_info (int i) : dr (NULL), alias_set (-1), pbb (NULL)
-  {
-    gcc_assert (i == 0);
-  }
-
   /* Assignment operator, to be able to iterate over a vec of these objects.  */
   const dr_info &
   operator= (const dr_info &p)
@@ -409,7 +403,7 @@ struct dr_info
 struct scop
 {
   /* A SCOP is defined as a SESE region.  */
-  sese_info_p region;
+  sese_info_p scop_info;
 
   /* Number of parameters in SCoP.  */
   graphite_dim_t nb_params;
@@ -453,10 +447,6 @@ struct scop
   bool poly_scop_p;
 };
 
-#define SCOP_REGION(S) (S->region)
-#define SCOP_CONTEXT(S) (NULL)
-#define POLY_SCOP_P(S) (S->poly_scop_p)
-
 extern scop_p new_scop (edge, edge);
 extern void free_scop (scop_p);
 extern gimple_poly_bb_p new_gimple_poly_bb (basic_block, vec<data_reference_p>);
@@ -471,7 +461,7 @@ extern bool apply_poly_transforms (scop_p);
 static inline void
 scop_set_region (scop_p scop, sese_info_p region)
 {
-  scop->region = region;
+  scop->scop_info = region;
 }
 
 /* Returns the number of parameters for SCOP.  */
