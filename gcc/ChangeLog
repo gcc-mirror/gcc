@@ -1,3 +1,9 @@
+2015-10-22  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/68043
+	* config/i386/i386.opt: Add missing periods to the ends of sentences.
+	* config/msp430/msp430.opt: Same.
+
 2015-10-21  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* doc/extend.exp (Global Register Variables): Rewrite.

@@ -83,8 +83,8 @@ Enum(msp430_regions) String(upper) Value(UPPER)
 
 msilicon-errata=
 Target Joined RejectNegative Report ToLower
-Passes on a request to the assembler to enable fixes for various silicon errata
+Passes on a request to the assembler to enable fixes for various silicon errata.
 
 msilicon-errata-warn=
 Target Joined RejectNegative Report ToLower
-Passes on a request to the assembler to warn about various silicon errata
+Passes on a request to the assembler to warn about various silicon errata.

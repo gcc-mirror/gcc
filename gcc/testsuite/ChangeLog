@@ -1,3 +1,11 @@
+2015-10-22  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/68043
+	* gcc.misc-tests/help.exp: Verify that option descriptions
+	end in periods.
+	* lib/options.exp (check_for_options): Use the regexp --line option.
+	Print unexpected match on failure.
+
 2015-10-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr67985-3.c (dg-options): Add -mfpmath=sse.
