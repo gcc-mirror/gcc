@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2 -miamcu -march=lakemont" } */
+/* { dg-options "-O2 -miamcu -mfpmath=sse -march=lakemont" } */
 
 float
 __attribute__((target("arch=haswell")))

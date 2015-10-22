@@ -1,3 +1,7 @@
+2015-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr67985-3.c (dg-options): Add -mfpmath=sse.
+
 2015-10-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67838
