@@ -2479,30 +2479,24 @@ along with GCC; see the file COPYING3.  If not see
   (CABS (complex @0 @0))
   (mult (abs @0) { build_real_truncate (type, dconst_sqrt2 ()); })))
 
+/* cproj(x) -> x if we're ignoring infinities.  */
+(simplify
+ (CPROJ @0)
+ (if (!HONOR_INFINITIES (type))
+   @0))
+
 /* If the real part is inf and the imag part is known to be
    nonnegative, return (inf + 0i).  */
 (simplify
  (CPROJ (complex REAL_CST@0 tree_expr_nonnegative_p@1))
  (if (real_isinf (TREE_REAL_CST_PTR (@0)))
-  (with
-    {
-      REAL_VALUE_TYPE rinf;
-      real_inf (&rinf);
-    }
-   { build_complex (type, build_real (TREE_TYPE (type), rinf),
-		    build_zero_cst (TREE_TYPE (type))); })))
+  { build_complex_inf (type, false); }))
+
 /* If the imag part is inf, return (inf+I*copysign(0,imag)).  */
 (simplify
  (CPROJ (complex @0 REAL_CST@1))
  (if (real_isinf (TREE_REAL_CST_PTR (@1)))
-  (with
-    {
-      REAL_VALUE_TYPE rinf, rzero = dconst0;
-      real_inf (&rinf);
-      rzero.sign = TREE_REAL_CST_PTR (@1)->sign;
-    }
-   { build_complex (type, build_real (TREE_TYPE (type), rinf),
-		    build_real (TREE_TYPE (type), rzero)); })))
+  { build_complex_inf (type, TREE_REAL_CST_PTR (@1)->sign); }))
 
 
 /* Narrowing of arithmetic and logical operations. 
