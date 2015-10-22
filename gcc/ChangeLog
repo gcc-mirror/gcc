@@ -39,7 +39,8 @@
 	* config/aarch64/aarch64.md (aarch64_reload_movcp<GPF_TF:mode><P:mode>):
 	Use aarch64_nopcrelative_literal_loads.
 	(aarch64_reload_movcp<VALL:mode><P:mode>): Likewise.
-	* config/aarch64/aarch64-protos.h (aarch64_nopcrelative_literal_loads): Declare
+	* config/aarch64/aarch64-protos.h (aarch64_nopcrelative_literal_loads):
+	Declare.
 
 2015-10-21  Martin Sebor  <msebor@redhat.com>
 
@@ -136,16 +137,17 @@
 	* graphite-scop-detection.c (parameter_index_in_region): Update call to
 	invariant_in_sese_p_rec.
 	* graphite-sese-to-poly.c (extract_affine): Same.
-	* sese.c (invariant_in_sese_p_rec): Pass in an extra parameter has_vdefs.
-	(scalar_evolution_in_region): Return chrec_dont_know when the scalar variable
-	depends on virtual definitions in the current region.
+	* sese.c (invariant_in_sese_p_rec): Pass in an extra
+	parameter has_vdefs.
+	(scalar_evolution_in_region): Return chrec_dont_know when the scalar
+	variable depends on virtual definitions in the current region.
 	* sese.h (invariant_in_sese_p_rec): Update declaration.
 
 2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
-	* graphite-scop-detection.c (build_scops): Do not handle scops with more
-	than PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP arrays.
+	* graphite-scop-detection.c (build_scops): Do not handle scops
+	with more than PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP arrays.
 	* params.def (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP): New.
 
 2015-10-21  Mikhail Maltsev  <maltsevm@gmail.com>
@@ -165,8 +167,7 @@
 
 2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
-	* fold-const.c (operand_equal_p): Add code matching empty
-	constructors.
+	* fold-const.c (operand_equal_p): Add code matching empty constructors.
 
 2015-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -250,17 +251,20 @@
 2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
-	* graphite-isl-ast-to-gimple.c (graphite_create_new_loop_guard): Do not call
-	create_empty_if_region_on_edge when cond_expr is true.
+	* graphite-isl-ast-to-gimple.c (graphite_create_new_loop_guard):
+	Do not call create_empty_if_region_on_edge when cond_expr is true.
 	(translate_isl_ast_node_for): Check whether a guard has been generated.
 
 2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
 
 	* graphite-poly.h (struct dr_info): Added invalid_alias_set number.
 	(operator=): Removed.
-	(dr_info): Make alias_set number the last argument with default value of invalid_alias_set.
-	* graphite-sese-to-poly.c (build_scop_drs): Update constructor of dr_info.
-	(rewrite_reductions_out_of_ssa): Iterate only through the basic blocks which are inside region.
+	(dr_info): Make alias_set number the last argument with default
+	value of invalid_alias_set.
+	* graphite-sese-to-poly.c (build_scop_drs): Update constructor
+	of dr_info.
+	(rewrite_reductions_out_of_ssa): Iterate only through the
+	basic blocks which are inside region.
 	(rewrite_cross_bb_scalar_deps_out_of_ssa): Same.
 	* sese.h (struct sese_l): Removed assignment operator.
 	(split_region_for_bb): Removed dead code.
@@ -315,11 +319,11 @@
 
 	PR middle-end/67966
 	* tree.c (verify_type): Verify that TYPE_MODE match
- 	between TYPE_CANONICAL and type.
- 	* expr.c (store_expr_with_bounds): Revert my previous change.
- 	* expmed.c (store_bit_field_1): Revert prevoius change.
- 	* gimple-expr.c (useless_type_conversion_p): Require TYPE_MODE
- 	to match for all types.
+	between TYPE_CANONICAL and type.
+	* expr.c (store_expr_with_bounds): Revert my previous change.
+	* expmed.c (store_bit_field_1): Revert prevoius change.
+	* gimple-expr.c (useless_type_conversion_p): Require TYPE_MODE
+	to match for all types.
 
 2015-10-21  Nathan Sidwell  <nathan@codesourcery.com>
 
