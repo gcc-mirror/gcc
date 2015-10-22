@@ -1,5 +1,13 @@
 2015-10-22  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/68046
+	PR middle-end/61893
+	* optabs.c (emit_libcall_block_1): Allow a NULL_RTX equiv.
+	(expand_binop): For -ftrapv optabs do not record an REG_EQUAL note.
+	(expand_unop): Likewise.
+
+2015-10-22  Richard Biener  <rguenther@suse.de>
+
 	* fold-const.c (fold_addr_of_array_ref_difference): Properly
 	convert operands before folding a MINUS_EXPR.
 	(fold_binary_loc): Move simplification of MINUS_EXPR on
