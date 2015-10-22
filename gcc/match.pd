@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 (define_operator_list SIN BUILT_IN_SINF BUILT_IN_SIN BUILT_IN_SINL)
 (define_operator_list COS BUILT_IN_COSF BUILT_IN_COS BUILT_IN_COSL)
 (define_operator_list TAN BUILT_IN_TANF BUILT_IN_TAN BUILT_IN_TANL)
+(define_operator_list ATAN BUILT_IN_ATANF BUILT_IN_ATAN BUILT_IN_ATANL)
 (define_operator_list COSH BUILT_IN_COSHF BUILT_IN_COSH BUILT_IN_COSHL)
 (define_operator_list CEXPI BUILT_IN_CEXPIF BUILT_IN_CEXPI BUILT_IN_CEXPIL)
 (define_operator_list CPROJ BUILT_IN_CPROJF BUILT_IN_CPROJ BUILT_IN_CPROJL)
@@ -2374,7 +2375,14 @@ along with GCC; see the file COPYING3.  If not see
   /* cbrt(expN(x)) -> expN(x/3).  */
   (simplify
    (cbrts (exps @0))
-   (exps (mult @0 { build_real_truncate (type, dconst_third ()); })))))
+   (exps (mult @0 { build_real_truncate (type, dconst_third ()); }))))
+
+ /* tan(atan(x)) -> x.  */
+ (for tans (TAN)
+      atans (ATAN)
+  (simplify
+   (tans (atans @0))
+   @0)))
 
 /* cabs(x+0i) or cabs(0+xi) -> abs(x).  */
 (simplify
