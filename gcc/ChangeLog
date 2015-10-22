@@ -1,5 +1,12 @@
 2015-10-22  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/58497
+	* tree-vect-generic.c (ssa_uniform_vector_p): New helper.
+	(expand_vector_operations_1): Use it.  Lower operations on
+	all uniform vectors to scalar operations if the HW supports it.
+
+2015-10-22  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/19049
 	PR tree-optimization/65962
 	* tree-vect-data-refs.c (vect_analyze_group_access_1): Fall back

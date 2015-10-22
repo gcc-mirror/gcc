@@ -1339,6 +1339,23 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   update_stmt (gsi_stmt (*gsi));
 }
 
+/* If OP is a uniform vector return the element it is a splat from.  */
+
+static tree
+ssa_uniform_vector_p (tree op)
+{
+  if (TREE_CODE (op) == VECTOR_CST
+      || TREE_CODE (op) == CONSTRUCTOR)
+    return uniform_vector_p (op);
+  if (TREE_CODE (op) == SSA_NAME)
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (op);
+      if (gimple_assign_single_p (def_stmt))
+	return uniform_vector_p (gimple_assign_rhs1 (def_stmt));
+    }
+  return NULL_TREE;
+}
+
 /* Return type in which CODE operation with optab OP can be
    computed.  */
 
@@ -1505,6 +1522,29 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (TREE_CODE (type) != VECTOR_TYPE)
     return;
 
+  /* If the vector operation is operating on all same vector elements
+     implement it with a scalar operation and a splat if the target
+     supports the scalar operation.  */
+  tree srhs1, srhs2 = NULL_TREE;
+  if ((srhs1 = ssa_uniform_vector_p (rhs1)) != NULL_TREE
+      && (rhs2 == NULL_TREE
+	  || (srhs2 = ssa_uniform_vector_p (rhs2)) != NULL_TREE)
+      /* As we query direct optabs restrict to non-convert operations.  */
+      && TYPE_MODE (TREE_TYPE (type)) == TYPE_MODE (TREE_TYPE (srhs1)))
+    {
+      op = optab_for_tree_code (code, TREE_TYPE (type), optab_scalar);
+      if (optab_handler (op, TYPE_MODE (TREE_TYPE (type))) != CODE_FOR_nothing)
+	{
+	  tree slhs = make_ssa_name (TREE_TYPE (srhs1));
+	  gimple *repl = gimple_build_assign (slhs, code, srhs1, srhs2);
+	  gsi_insert_before (gsi, repl, GSI_SAME_STMT);
+	  gimple_assign_set_rhs_from_tree (gsi,
+					   build_vector_from_val (type, slhs));
+	  update_stmt (stmt);
+	  return;
+	}
+    }
+ 
   /* A scalar operation pretending to be a vector one.  */
   if (VECTOR_BOOLEAN_TYPE_P (type)
       && !VECTOR_MODE_P (TYPE_MODE (type))
@@ -1554,15 +1594,8 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (rhs2)))
         {
           tree first;
-	  gimple *def_stmt;
 
-          if ((TREE_CODE (rhs2) == VECTOR_CST
-	       && (first = uniform_vector_p (rhs2)) != NULL_TREE)
-	      || (TREE_CODE (rhs2) == SSA_NAME
-		  && (def_stmt = SSA_NAME_DEF_STMT (rhs2))
-		  && gimple_assign_single_p (def_stmt)
-		  && (first = uniform_vector_p
-		      (gimple_assign_rhs1 (def_stmt))) != NULL_TREE))
+          if ((first = ssa_uniform_vector_p (rhs2)) != NULL_TREE)
             {
               gimple_assign_set_rhs2 (stmt, first);
               update_stmt (stmt);
