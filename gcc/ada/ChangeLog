@@ -6,6 +6,12 @@
 	* gcc-interface/utils2.c (build_binary_op, build_unary_op): Use
 	gcc_checking_assert
 
+2015-10-21  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/68043
+	* gcc-interface/lang.opt: End each sentence that describes
+	an option with a period.
+
 2015-10-20  Yannick Moy  <moy@adacore.com>
 
 	* fmap.adb, a-cihama.adb, sem_ch5.adb, make.adb, inline.adb,
@@ -1753,7 +1759,7 @@
 	* gcc-interface/trans.c : Likewise.
 	* gcc-interface/utils.c : Likewise.
 	* gcc-interface/utils2.c : Likewise.
-	
+
 2015-06-08  John Marino  <gnugcc@marino.st>
 
 	* a-intnam-dragonfly.ads: New.
@@ -5974,7 +5980,7 @@
 
 2015-01-07  Tristan Gingold  <gingold@adacore.com>
 
-	PR ada/64349  
+	PR ada/64349
 	* env.c (__gnat_environ): Adjust for darwin9/darwin10.
 
 2015-01-07  Javier Miranda  <miranda@adacore.com>

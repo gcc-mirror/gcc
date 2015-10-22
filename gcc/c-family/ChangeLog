@@ -1,3 +1,8 @@
+2015-10-21  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/68043
+	* c.opt: End each sentence that describes an option with a period.
+
 2015-10-20  Marek Polacek  <polacek@redhat.com>
 
 	* array-notation-common.c (is_cilkplus_vector_p): Define.
@@ -442,7 +447,7 @@
 	(c_alignof_expr): Likewise.
 	* c-pretty-print.c (c_pretty_printer::postfix_expression): Likewise.
 	* c-ubsan.c (ubsan_instrument_bounds): Likewise.
-	* cilk.c (create_parm_list): Likewise. 
+	* cilk.c (create_parm_list): Likewise.
 
 2015-06-26  Marek Polacek  <polacek@redhat.com>
 
@@ -632,7 +637,7 @@
 	STACK_GROWS_DOWNWARD rather than if it is defined.
 
 2015-05-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
-	
+
 	PR c/52952
 	* c-format.c (location_column_from_byte_offset): New.
 	(location_from_offset): New.
@@ -915,7 +920,7 @@
 2015-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/63307
-	* cilk.c (fill_decls_vec): Only put decls into vector v.                                                                                   
+	* cilk.c (fill_decls_vec): Only put decls into vector v.
 	(compare_decls): Fix up formatting.
 
 2015-01-21  Igor Zamyatin  <igor.zamyatin@intel.com>
@@ -1723,7 +1728,7 @@
 
 2014-07-03  Jakub Jelinek  <jakub@redhat.com>
 
-	* c-ada-spec.c (dump_ada_nodes): Don't call qsort if 
+	* c-ada-spec.c (dump_ada_nodes): Don't call qsort if
 	comments->count <= 1, as comments->entries might be NULL.
 
 2014-07-01  Marek Polacek  <polacek@redhat.com>
@@ -2249,7 +2254,7 @@
 	PRAGMA_CILK_CLAUSE_FIRSTPRIVATE, PRAGMA_CILK_CLAUSE_LASTPRIVATE,
 	PRAGMA_CILK_CLAUSE_UNIFORM.
 
-	
+
 2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* cilk.c (cilk_outline): Made this function non-static.
@@ -2285,7 +2290,7 @@
 	* c-common.h (c_sizeof_or_alignof_type): Update prototype.
 	(c_sizeof, c_alignof): Update calls to c_sizeof_or_alignof_type.
 
-2013-12-04  Jakub Jelinek  <jakub@redhat.com>  
+2013-12-04  Jakub Jelinek  <jakub@redhat.com>
 	    Marek Polacek  <polacek@redhat.com>
 
 	* c-gimplify.c (c_gimplify_expr): If doing the integer-overflow
@@ -4959,7 +4964,7 @@
 	* c-common.h (objc_add_property_variable): Renamed to
 	objc_add_property_declaration.  Added location argument.
 	* stub-objc.c (objc_add_property_variable): Same change.
-	
+
 2010-10-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-common.h (objc_maybe_printable_name): New.

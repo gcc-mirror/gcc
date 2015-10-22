@@ -91,10 +91,8 @@
 	documented.  Mention when using an option is diagnosed.
 	* gcc.c (display_help): End each sentence with a period.
 
-	* ada/gcc-interface/lang.opt: End each sentence that describes
-	an option with a period.
-	* c-family/c.opt: Same.
-	* common.opt: Same.
+	* common.opt: End each sentence that describes an option with
+	a period.
 	* config/aarch64/aarch64.opt: Same.
 	* config/alpha/alpha.opt: Same.
 	* config/arc/arc.opt: Same.
@@ -169,7 +167,6 @@
 	* config/vms/vms.opt: Same.
 	* config/vxworks.opt: Same.
 	* config/xtensa/xtensa.opt: Same.
-	* fortran/lang.opt: Same.
 
 2015-10-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
