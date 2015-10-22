@@ -35,9 +35,6 @@ if LIBBACKTRACE_SUPPORTED
 libubsan_la_LIBADD += $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
 endif
 libubsan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
-if USE_CXX_ABI_FLAG
-libubsan_la_LIBADD += -lc++abi
-endif
 libubsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libubsan)
 
 # Use special rules for files that require RTTI support.
