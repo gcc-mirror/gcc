@@ -54,7 +54,6 @@ host_triplet = @host@
 target_triplet = @target@
 @USING_MAC_INTERPOSE_FALSE@am__append_1 = $(top_builddir)/interception/libinterception.la
 @LIBBACKTRACE_SUPPORTED_TRUE@am__append_2 = $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
-@USE_CXX_ABI_FLAG_TRUE@am__append_3 = -lc++abi
 subdir = ubsan
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -107,8 +106,7 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libubsan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(am__append_1) $(am__append_2) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__append_1) $(am__append_2) $(am__DEPENDENCIES_1)
 am__objects_1 = ubsan_diag.lo ubsan_flags.lo ubsan_handlers.lo \
 	ubsan_handlers_cxx.lo ubsan_init.lo ubsan_type_hash.lo \
 	ubsan_type_hash_itanium.lo ubsan_type_hash_win.lo \
@@ -312,8 +310,7 @@ ubsan_files = \
 libubsan_la_SOURCES = $(ubsan_files) 
 libubsan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(am__append_1) $(am__append_2) $(LIBSTDCXX_RAW_CXX_LDFLAGS) \
-	$(am__append_3)
+	$(am__append_1) $(am__append_2) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 libubsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libubsan)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS

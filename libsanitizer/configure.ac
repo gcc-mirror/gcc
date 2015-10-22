@@ -96,7 +96,13 @@ AM_CONDITIONAL(LSAN_SUPPORTED, [test "x$LSAN_SUPPORTED" = "xyes"])
 AC_CHECK_FUNCS(clock_getres clock_gettime clock_settime)
 
 # Common libraries that we need to link against for all sanitizer libs.
-link_sanitizer_common='-lrt -lpthread -ldl -lm'
+link_sanitizer_common='-lpthread -ldl -lm'
+
+# At least for glibc, shm_open is in librt.  But don't pull that
+# in if it still doesn't give us the function we want.  This
+# test is copied from libgomp.
+AC_CHECK_LIB(rt, shm_open,
+  [link_sanitizer_common="-lrt $link_sanitizer_common"])
 
 # Set up the set of additional libraries that we need to link against for libasan.
 link_libasan=$link_sanitizer_common
@@ -114,12 +120,21 @@ AC_SUBST(link_libubsan)
 link_liblsan=$link_sanitizer_common
 AC_SUBST(link_liblsan)
 
+
+# At least for glibc, clock_gettime is in librt.  But don't pull that
+# in if it still doesn't give us the function we want.  This
+# test is copied from libgomp.
+AC_CHECK_LIB(rt, clock_gettime,
+  [link_libasan="-lrt $link_libasan"
+link_libtsan="-lrt $link_libtsan"
+# Other sanitizers do not override clock_* API
+])
+
 case "$host" in
-  *-*-darwin*) MAC_INTERPOSE=true ; enable_static=no ; CXX_ABI_NEEDED=true ;;
-  *) MAC_INTERPOSE=false ; CXX_ABI_NEEDED=false ;;
+  *-*-darwin*) MAC_INTERPOSE=true ; enable_static=no ;;
+  *) MAC_INTERPOSE=false ;;
 esac
 AM_CONDITIONAL(USING_MAC_INTERPOSE, $MAC_INTERPOSE)
-AM_CONDITIONAL(USE_CXX_ABI_FLAG, $CXX_ABI_NEEDED)
 
 backtrace_supported=yes
 

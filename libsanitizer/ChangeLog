@@ -1,3 +1,13 @@
+2015-10-22  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR bootstrap/68041
+	* configure.ac (link_sanitizer_common): Link against librt only if it
+	contains shm_open, required by sanitizers.
+	(CXX_ABI_NEEDED): Remove variable.
+	* configure: Regenerate.
+	* ubsan/Makefile.am (libubsan_la_LIBADD): Do not add -lc++abi anymore.
+	* ubsan/Makefile.in: Regenerate.
+
 2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* HOWTO_MERGE: New file.
