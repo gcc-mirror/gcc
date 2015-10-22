@@ -1,3 +1,9 @@
+2015-10-22  Jeff Law  <law@redhat.com>
+
+	* genattrtab.c (main): If we do not have any annul-true or annul-false
+	slots, then write out a dummy eligible_for_annul_true or
+	eligible_for_annul_false as needed.
+
 2015-10-22  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.opt: Add -msilicon-errata and

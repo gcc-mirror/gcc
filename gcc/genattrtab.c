@@ -4411,6 +4411,26 @@ write_indent (FILE *outf, int indent)
     fprintf (outf, " ");
 }
 
+/* If the target does not have annul-true or annul-false delay slots, this
+   function will create a dummy eligible_for function on OUTF which always
+   returns false.  KIND will be annul_true or annul_false.  */
+
+static void
+write_dummy_eligible_delay (FILE *outf, const char *kind)
+{
+  /* Write function prelude.  */
+
+  fprintf (outf, "int\n");
+  fprintf (outf, "eligible_for_%s (rtx_insn *delay_insn ATTRIBUTE_UNUSED,\n"
+		 "    int slot ATTRIBUTE_UNUSED,\n"
+		 "    rtx_insn *candidate_insn ATTRIBUTE_UNUSED,\n"
+		 "    int flags ATTRIBUTE_UNUSED)\n",
+	   kind);
+  fprintf (outf, "{\n");
+  fprintf (outf, "  return 0;\n");
+  fprintf (outf, "}\n\n");
+}
+
 /* Write a subroutine that is given an insn that requires a delay slot, a
    delay slot ordinal, and a candidate insn.  It returns nonzero if the
    candidate can be placed in the specified delay slot of the insn.
@@ -5307,8 +5327,14 @@ main (int argc, char **argv)
      (The function to compute the number of delay slots will be written
      below.)  */
   write_eligible_delay (attr_file, "delay");
-  write_eligible_delay (attr_file, "annul_true");
-  write_eligible_delay (attr_file, "annul_false");
+  if (have_annul_true)
+    write_eligible_delay (attr_file, "annul_true");
+  else
+    write_dummy_eligible_delay (attr_file, "annul_true");
+  if (have_annul_false)
+    write_eligible_delay (attr_file, "annul_false");
+  else
+    write_dummy_eligible_delay (attr_file, "annul_false");
 
   /* Write out constant delay slot info.  */
   write_const_num_delay_slots (attr_file);
