@@ -12547,7 +12547,9 @@ c_finish_omp_clauses (tree clauses, bool is_omp, bool declare_simd)
 	      s = pointer_int_sum (OMP_CLAUSE_LOCATION (c), PLUS_EXPR,
 				   OMP_CLAUSE_DECL (c), s);
 	      s = fold_build2_loc (OMP_CLAUSE_LOCATION (c), MINUS_EXPR,
-				   sizetype, s, OMP_CLAUSE_DECL (c));
+				   sizetype, fold_convert (sizetype, s),
+				   fold_convert
+				     (sizetype, OMP_CLAUSE_DECL (c)));
 	      if (s == error_mark_node)
 		s = size_one_node;
 	      OMP_CLAUSE_LINEAR_STEP (c) = s;
@@ -12671,7 +12673,9 @@ c_finish_omp_clauses (tree clauses, bool is_omp, bool declare_simd)
 						 neg ? MINUS_EXPR : PLUS_EXPR,
 						 decl, offset);
 		      t2 = fold_build2_loc (OMP_CLAUSE_LOCATION (c), MINUS_EXPR,
-					    sizetype, t2, decl);
+					    sizetype,
+					    fold_convert (sizetype, t2),
+					    fold_convert (sizetype, decl));
 		      if (t2 == error_mark_node)
 			{
 			  remove = true;

@@ -1,3 +1,11 @@
+2015-10-22  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_addr_of_array_ref_difference): Properly
+	convert operands before folding a MINUS_EXPR.
+	(fold_binary_loc): Move simplification of MINUS_EXPR on
+	converted POINTER_PLUS_EXPRs ...
+	* match.pd: ... here.
+
 2015-10-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* builtins.c (fold_builtin_tan): Delete.
