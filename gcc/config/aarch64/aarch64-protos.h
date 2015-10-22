@@ -402,4 +402,5 @@ int aarch64_ccmp_mode_to_code (enum machine_mode mode);
 bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
 bool aarch64_operands_ok_for_ldpstp (rtx *, bool, enum machine_mode);
 bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, enum machine_mode);
+extern bool aarch64_nopcrelative_literal_loads;
 #endif /* GCC_AARCH64_PROTOS_H */

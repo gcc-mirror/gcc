@@ -1,3 +1,9 @@
+2015-10-22  Jiong Wang  <jiong.wang@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/63304
+	* gcc.target/aarch64/pr63304_1.c: New test.
+
 2015-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/66781
