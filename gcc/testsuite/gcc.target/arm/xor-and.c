@@ -10,6 +10,6 @@ unsigned short foo (unsigned short x)
   return x;
 }
 
-/* { dg-final { scan-assembler "orr" } } */
+/* { dg-final { scan-assembler "eor" } } */
 /* { dg-final { scan-assembler-not "mvn" } } */
 /* { dg-final { scan-assembler-not "uxth" } } */
