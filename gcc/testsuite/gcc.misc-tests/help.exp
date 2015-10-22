@@ -29,6 +29,18 @@ if ![gcc_parallel_test_run_p help] {
 }
 gcc_parallel_test_enable 0
 
+# GCC breaks up --help output into lines at most $COLUMNS characters
+# wide (or 80 when COLUMNS is not defined), set the COLUMNS environment
+# variable to a value large enough to prevent this (and restore it when
+# done).
+global env
+
+if [ info exists env(COLUMNS) ] {
+    set prev_columns $env(COLUMNS)
+}
+
+set env(COLUMNS) 1024
+
 # Document --version.  Ideally, there should be no undocumented switches
 # in --help.
 check_for_options c "--help" "--version" "This option lacks documentation" ""
@@ -81,25 +93,44 @@ maximum number of
 # Specify patterns (arguments 3 and later) that match option names
 # at the beginning of the line and not when they are referenced by
 # some other options later on.
-# The (?w) Tcl embedded option tells the Tcl regexp  parser to treat
-# the '^' character as an anchor.
 check_for_options c "--help=joined" \
-    "(?w)^ *-Wformat=" "(?w)^ *-fstrict-prototype" ""
+    "^ +-Wformat=" "^ +-fstrict-prototype" ""
 check_for_options c "--help=separate" \
-    "(?w)^ *-MF" "(?w)^ *-fstrict-prototype" ""
+    "^ +-MF" "^ +-fstrict-prototype" ""
 check_for_options c "--help=warnings,joined" \
-    "(?w)^ *-Wformat=" "(?w)^ *-Wtrigraphs" ""
+    "^ +-Wformat=" "^ +-Wtrigraphs" ""
 check_for_options c "--help=warnings,^joined" \
-    "(?w)^ *-Wtrigraphs" "(?w)^ *-Wformat=" ""
+    "^ +-Wtrigraphs" "^ +-Wformat=" ""
 check_for_options c "--help=joined,separate" \
-    "(?w)^ *-I" "" ""
+    "^ +-I" "" ""
 check_for_options c "--help=^joined,separate" \
-    "(?w)^ *--param " "" ""
+    "^ +--param " "" ""
 check_for_options c "--help=joined,^separate" \
-    "(?w)^ *--help=" "" ""
+    "^ +--help=" "" ""
 check_for_options c "--help=joined,undocumented" "" "" ""
+
+# Check to make sure the description for every option is a complete
+# sentence ending in a period.  This matters not just for consistency
+# but also because other sentences may be appended to it by the help
+# subsystem.  Do this one help class at a time to make it easier to
+# find the source a failure.
+
+foreach cls { "ada" "c" "c++" "fortran" "go" \
+		    "optimizers" "param" "target" "warnings" } {
+
+    check_for_options c "--help=$cls" "" "^ +-.*\[^:.\]$" ""
+}
 
 # Listing only excludes gives empty results.
 check_for_options c "--help=^joined,^separate" "" "" ""
+
+if [ info exists prev_columns ] {
+    # Reset the enviroment variable to its oriuginal value.
+    set env(COLUMNS) $prev_columns
+} else {
+    # Remove the variable from the environment if it didn't exist
+    # to begin with to avoid affecting subsequent tests.
+    array unset env COLUMNS
+}
 
 gcc_parallel_test_enable 1

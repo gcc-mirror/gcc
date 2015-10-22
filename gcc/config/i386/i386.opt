@@ -104,7 +104,7 @@ enum asm_dialect x_ix86_asm_dialect
 TargetSave
 int x_ix86_branch_cost
 
-;; -mdump-tune-features= 
+;; -mdump-tune-features=
 TargetSave
 int x_ix86_dump_tunes
 
@@ -112,7 +112,7 @@ int x_ix86_dump_tunes
 TargetSave
 int x_ix86_force_align_arg_pointer
 
-;; -mforce-drap= 
+;; -mforce-drap=
 TargetSave
 int x_ix86_force_drap
 
@@ -124,7 +124,7 @@ int x_ix86_incoming_stack_boundary_arg
 TargetSave
 enum pmode x_ix86_pmode
 
-;; -mpreferred-stack-boundary= 
+;; -mpreferred-stack-boundary=
 TargetSave
 int x_ix86_preferred_stack_boundary_arg
 
@@ -701,15 +701,15 @@ Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation.
 
 mfma4
 Target Report Mask(ISA_FMA4) Var(ix86_isa_flags) Save
-Support FMA4 built-in functions and code generation 
+Support FMA4 built-in functions and code generation.
 
 mxop
 Target Report Mask(ISA_XOP) Var(ix86_isa_flags) Save
-Support XOP built-in functions and code generation 
+Support XOP built-in functions and code generation.
 
 mlwp
 Target Report Mask(ISA_LWP) Var(ix86_isa_flags) Save
-Support LWP built-in functions and code generation 
+Support LWP built-in functions and code generation.
 
 mabm
 Target Report Mask(ISA_ABM) Var(ix86_isa_flags) Save
