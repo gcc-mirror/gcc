@@ -1,3 +1,8 @@
+2015-10-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67838
+	* g++.dg/cpp1y/var-templ46.C: New.
+
 2015-10-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58497
