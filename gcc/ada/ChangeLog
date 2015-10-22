@@ -1,3 +1,11 @@
+2015-10-22  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use gcc_checking_assert.
+	* gcc-interface/trans.c (assoc_to_constructor): Use flag_checking.
+	* gcc-interface/utils.c (relate_alias_sets): Likewise.
+	* gcc-interface/utils2.c (build_binary_op, build_unary_op): Use
+	gcc_checking_assert
+
 2015-10-20  Yannick Moy  <moy@adacore.com>
 
 	* fmap.adb, a-cihama.adb, sem_ch5.adb, make.adb, inline.adb,

@@ -1499,9 +1499,7 @@ relate_alias_sets (tree gnu_new_type, tree gnu_old_type, enum alias_set_op op)
       /* The alias set shouldn't be copied between array types with different
 	 aliasing settings because this can break the aliasing relationship
 	 between the array type and its element type.  */
-#ifndef ENABLE_CHECKING
-      if (flag_strict_aliasing)
-#endif
+      if (flag_checking || flag_strict_aliasing)
 	gcc_assert (!(TREE_CODE (gnu_new_type) == ARRAY_TYPE
 		      && TREE_CODE (gnu_old_type) == ARRAY_TYPE
 		      && TYPE_NONALIASED_COMPONENT (gnu_new_type)

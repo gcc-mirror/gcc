@@ -854,9 +854,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
     {
     case INIT_EXPR:
     case MODIFY_EXPR:
-#ifdef ENABLE_CHECKING
-      gcc_assert (result_type == NULL_TREE);
-#endif
+      gcc_checking_assert (result_type == NULL_TREE);
+
       /* If there were integral or pointer conversions on the LHS, remove
 	 them; we'll be putting them back below if needed.  Likewise for
 	 conversions between array and record types, except for justified
@@ -1039,9 +1038,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
-#ifdef ENABLE_CHECKING
-      gcc_assert (TREE_CODE (get_base_type (result_type)) == BOOLEAN_TYPE);
-#endif
+      gcc_checking_assert (TREE_CODE (
+				get_base_type (result_type)) == BOOLEAN_TYPE);
       operation_type = left_base_type;
       left_operand = convert (operation_type, left_operand);
       right_operand = convert (operation_type, right_operand);
@@ -1053,9 +1051,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
     case LT_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
-#ifdef ENABLE_CHECKING
-      gcc_assert (TREE_CODE (get_base_type (result_type)) == BOOLEAN_TYPE);
-#endif
+      gcc_checking_assert (TREE_CODE (
+				get_base_type (result_type)) == BOOLEAN_TYPE);
       /* If either operand is a NULL_EXPR, just return a new one.  */
       if (TREE_CODE (left_operand) == NULL_EXPR)
 	return build2 (op_code, result_type,
@@ -1335,9 +1332,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
       break;
 
     case TRUTH_NOT_EXPR:
-#ifdef ENABLE_CHECKING
-      gcc_assert (TREE_CODE (get_base_type (result_type)) == BOOLEAN_TYPE);
-#endif
+      gcc_checking_assert (TREE_CODE (
+				get_base_type (result_type)) == BOOLEAN_TYPE);
       result = invert_truthvalue_loc (EXPR_LOCATION (operand), operand);
       /* When not optimizing, fold the result as invert_truthvalue_loc
 	 doesn't fold the result of comparisons.  This is intended to undo

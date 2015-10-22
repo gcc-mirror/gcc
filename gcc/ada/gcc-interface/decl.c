@@ -2710,10 +2710,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		      TYPE_HAS_ACTUAL_BOUNDS_P (gnu_inner) = 1;
 
-#ifdef ENABLE_CHECKING
 		      /* Check for other cases of overloading.  */
-		      gcc_assert (!TYPE_ACTUAL_BOUNDS (gnu_inner));
-#endif
+		      gcc_checking_assert (!TYPE_ACTUAL_BOUNDS (gnu_inner));
 		    }
 
 		  for (gnat_index = First_Index (gnat_entity);
