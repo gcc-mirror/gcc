@@ -1,3 +1,8 @@
+2015-10-22  Richard Biener  <rguenther@suse.de>
+
+	* c-typeck.c (c_finish_omp_clauses): Properly convert operands
+	before folding a MINUS_EXPR.
+
 2015-10-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68024

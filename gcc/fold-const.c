@@ -8841,9 +8841,11 @@ fold_addr_of_array_ref_difference (location_t loc, tree type,
 	   = fold_addr_of_array_ref_difference (loc, type, base0, base1)))
       || (INDIRECT_REF_P (base0)
 	  && INDIRECT_REF_P (base1)
-	  && (base_offset = fold_binary_loc (loc, MINUS_EXPR, type,
-					     TREE_OPERAND (base0, 0),
-					     TREE_OPERAND (base1, 0))))
+	  && (base_offset
+	        = fold_binary_loc (loc, MINUS_EXPR, type,
+				   fold_convert (type, TREE_OPERAND (base0, 0)),
+				   fold_convert (type,
+						 TREE_OPERAND (base1, 0)))))
       || operand_equal_p (base0, base1, OEP_ADDRESS_OF))
     {
       tree op0 = fold_convert_loc (loc, type, TREE_OPERAND (aref0, 1));
@@ -9637,48 +9639,6 @@ fold_binary_loc (location_t loc,
       return NULL_TREE;
 
     case MINUS_EXPR:
-      /* Pointer simplifications for subtraction, simple reassociations. */
-      if (POINTER_TYPE_P (TREE_TYPE (arg1)) && POINTER_TYPE_P (TREE_TYPE (arg0)))
-	{
-	  /* (PTR0 p+ A) - (PTR1 p+ B) -> (PTR0 - PTR1) + (A - B) */
-	  if (TREE_CODE (arg0) == POINTER_PLUS_EXPR
-	      && TREE_CODE (arg1) == POINTER_PLUS_EXPR)
-	    {
-	      tree arg00 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
-	      tree arg01 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 1));
-	      tree arg10 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 0));
-	      tree arg11 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 1));
-	      return fold_build2_loc (loc, PLUS_EXPR, type,
-				  fold_build2_loc (loc, MINUS_EXPR, type,
-					       arg00, arg10),
-				  fold_build2_loc (loc, MINUS_EXPR, type,
-					       arg01, arg11));
-	    }
-	  /* (PTR0 p+ A) - PTR1 -> (PTR0 - PTR1) + A, assuming PTR0 - PTR1 simplifies. */
-	  else if (TREE_CODE (arg0) == POINTER_PLUS_EXPR)
-	    {
-	      tree arg00 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
-	      tree arg01 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 1));
-	      tree tmp = fold_binary_loc (loc, MINUS_EXPR, type, arg00,
-				      fold_convert_loc (loc, type, arg1));
-	      if (tmp)
-	        return fold_build2_loc (loc, PLUS_EXPR, type, tmp, arg01);
-	    }
-	  /* PTR0 - (PTR1 p+ A) -> (PTR0 - PTR1) - A, assuming PTR0 - PTR1
-	     simplifies. */
-	  else if (TREE_CODE (arg1) == POINTER_PLUS_EXPR)
-	    {
-	      tree arg10 = fold_convert_loc (loc, type,
-					     TREE_OPERAND (arg1, 0));
-	      tree arg11 = fold_convert_loc (loc, type,
-					     TREE_OPERAND (arg1, 1));
-	      tree tmp = fold_binary_loc (loc, MINUS_EXPR, type,
-					  fold_convert_loc (loc, type, arg0),
-					  arg10);
-	      if (tmp)
-		return fold_build2_loc (loc, MINUS_EXPR, type, tmp, arg11);
-	    }
-	}
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
 	  && negate_expr_p (arg1)
