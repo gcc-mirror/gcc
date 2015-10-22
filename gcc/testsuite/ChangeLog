@@ -1,3 +1,8 @@
+2015-10-22  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/68015
+	* gcc.target/s390/pr68015.c: New test.
+
 2015-10-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	PR testsuite/67948
