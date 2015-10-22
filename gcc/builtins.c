@@ -160,7 +160,6 @@ static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
 static tree fold_builtin_pow (location_t, tree, tree, tree, tree);
 static tree fold_builtin_powi (location_t, tree, tree, tree, tree);
-static tree fold_builtin_tan (tree, tree);
 static tree fold_builtin_trunc (location_t, tree, tree);
 static tree fold_builtin_floor (location_t, tree, tree);
 static tree fold_builtin_ceil (location_t, tree, tree);
@@ -7538,33 +7537,6 @@ fold_fixed_mathfn (location_t loc, tree fndecl, tree arg)
   return NULL_TREE;
 }
 
-/* Fold function call to builtin tan, tanf, or tanl with argument ARG.
-   Return NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_tan (tree arg, tree type)
-{
-  enum built_in_function fcode;
-  tree res;
-
-  if (!validate_arg (arg, REAL_TYPE))
-    return NULL_TREE;
-
-  /* Calculate the result when the argument is a constant.  */
-  if ((res = do_mpfr_arg1 (arg, type, mpfr_tan, NULL, NULL, 0)))
-    return res;
-
-  /* Optimize tan(atan(x)) = x.  */
-  fcode = builtin_mathfn_code (arg);
-  if (flag_unsafe_math_optimizations
-      && (fcode == BUILT_IN_ATAN
-	  || fcode == BUILT_IN_ATANF
-	  || fcode == BUILT_IN_ATANL))
-    return CALL_EXPR_ARG (arg, 0);
-
-  return NULL_TREE;
-}
-
 /* Fold function call to builtin sincos, sincosf, or sincosl.  Return
    NULL_TREE if no simplification can be made.  */
 
@@ -9612,7 +9584,9 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
       break;
 
     CASE_FLT_FN (BUILT_IN_TAN):
-      return fold_builtin_tan (arg0, type);
+      if (validate_arg (arg0, REAL_TYPE))
+	return do_mpfr_arg1 (arg0, type, mpfr_tan, NULL, NULL, 0);
+      break;
 
     CASE_FLT_FN (BUILT_IN_CEXP):
       return fold_builtin_cexp (loc, arg0, type);

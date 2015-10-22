@@ -1,5 +1,11 @@
 2015-10-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_tan): Delete.
+	(fold_builtin_1): Handle constant tan arguments here.
+	* match.pd: Simplify (tan (atan x)) to x.
+
+2015-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_cproj): Delete.
 	(fold_builtin_1): Handle constant arguments here.
 	(build_complex_cproj): Move and rename to...
