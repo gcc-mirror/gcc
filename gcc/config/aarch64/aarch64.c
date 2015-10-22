@@ -147,6 +147,9 @@ enum aarch64_processor aarch64_tune = cortexa53;
 /* Mask to specify which instruction scheduling options should be used.  */
 unsigned long aarch64_tune_flags = 0;
 
+/* Global flag for PC relative loads.  */
+bool aarch64_nopcrelative_literal_loads;
+
 /* Support for command line parsing of boolean flags in the tuning
    structures.  */
 struct aarch64_flag_desc
@@ -1535,7 +1538,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	     we need to expand the literal pool access carefully.
 	     This is something that needs to be done in a number
 	     of places, so could well live as a separate function.  */
-	  if (nopcrelative_literal_loads)
+	  if (aarch64_nopcrelative_literal_loads)
 	    {
 	      gcc_assert (can_create_pseudo_p ());
 	      base = gen_reg_rtx (ptr_mode);
@@ -3661,7 +3664,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  return ((GET_CODE (sym) == LABEL_REF
 		   || (GET_CODE (sym) == SYMBOL_REF
 		       && CONSTANT_POOL_ADDRESS_P (sym)
-		       && !nopcrelative_literal_loads)));
+		       && !aarch64_nopcrelative_literal_loads)));
 	}
       return false;
 
@@ -4895,7 +4898,7 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
   if (MEM_P (x) && GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x)
       && (SCALAR_FLOAT_MODE_P (GET_MODE (x))
 	  || targetm.vector_mode_supported_p (GET_MODE (x)))
-      && nopcrelative_literal_loads)
+      && aarch64_nopcrelative_literal_loads)
     {
       sri->icode = aarch64_constant_pool_reload_icode (mode);
       return NO_REGS;
@@ -7550,7 +7553,7 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
   else if (opts->x_flag_omit_leaf_frame_pointer)
     opts->x_flag_omit_frame_pointer = true;
 
-  /* If not opzimizing for size, set the default
+  /* If not optimizing for size, set the default
      alignment to what the target wants.  */
   if (!opts->x_optimize_size)
     {
@@ -7564,21 +7567,21 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
 
   /* If nopcrelative_literal_loads is set on the command line, this
      implies that the user asked for PC relative literal loads.  */
-  if (nopcrelative_literal_loads == 1)
-    nopcrelative_literal_loads = 0;
+  if (opts->x_nopcrelative_literal_loads == 1)
+    aarch64_nopcrelative_literal_loads = false;
 
   /* If it is not set on the command line, we default to no
      pc relative literal loads.  */
-  if (nopcrelative_literal_loads == 2)
-    nopcrelative_literal_loads = 1;
+  if (opts->x_nopcrelative_literal_loads == 2)
+    aarch64_nopcrelative_literal_loads = true;
 
   /* In the tiny memory model it makes no sense
      to disallow non PC relative literal pool loads
      as many other things will break anyway.  */
-  if (nopcrelative_literal_loads
+  if (opts->x_nopcrelative_literal_loads
       && (aarch64_cmodel == AARCH64_CMODEL_TINY
 	  || aarch64_cmodel == AARCH64_CMODEL_TINY_PIC))
-    nopcrelative_literal_loads = 0;
+    aarch64_nopcrelative_literal_loads = false;
 }
 
 /* 'Unpack' up the internal tuning structs and update the options

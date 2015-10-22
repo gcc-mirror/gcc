@@ -4510,7 +4510,7 @@
  [(set (match_operand:GPF_TF 0 "register_operand" "=w")
        (mem:GPF_TF (match_operand 1 "aarch64_constant_pool_symref" "S")))
   (clobber (match_operand:P 2 "register_operand" "=&r"))]
- "TARGET_FLOAT && nopcrelative_literal_loads"
+ "TARGET_FLOAT && aarch64_nopcrelative_literal_loads"
  {
    aarch64_expand_mov_immediate (operands[2], XEXP (operands[1], 0));
    emit_move_insn (operands[0], gen_rtx_MEM (<GPF_TF:MODE>mode, operands[2]));
@@ -4523,7 +4523,7 @@
  [(set (match_operand:VALL 0 "register_operand" "=w")
        (mem:VALL (match_operand 1 "aarch64_constant_pool_symref" "S")))
   (clobber (match_operand:P 2 "register_operand" "=&r"))]
- "TARGET_FLOAT && nopcrelative_literal_loads"
+ "TARGET_FLOAT && aarch64_nopcrelative_literal_loads"
  {
    aarch64_expand_mov_immediate (operands[2], XEXP (operands[1], 0));
    emit_move_insn (operands[0], gen_rtx_MEM (<VALL:MODE>mode, operands[2]));
