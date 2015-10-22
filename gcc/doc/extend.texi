@@ -8579,6 +8579,10 @@ should make other arrangements to save the values of the global register
 variables, and to restore them in a @code{longjmp}. This way, the same
 thing happens regardless of what @code{longjmp} does.
 
+Eventually there may be a way of asking the compiler to choose a register 
+automatically, but first we need to figure out how it should choose and 
+how to enable you to guide the choice.  No solution is evident.
+
 @node Local Register Variables
 @subsubsection Specifying Registers for Local Variables
 @anchor{Local Reg Vars}
@@ -8586,55 +8590,33 @@ thing happens regardless of what @code{longjmp} does.
 @cindex specifying registers for local variables
 @cindex registers for local variables
 
-You can define a local register variable with a specified register
-like this:
+You can define a local register variable and associate it with a specified 
+register like this:
 
 @smallexample
-register int *foo asm ("a5");
+register int *foo asm ("r12");
 @end smallexample
 
 @noindent
-Here @code{a5} is the name of the register that should be used.  Note
-that this is the same syntax used for defining global register
-variables, but for a local variable it appears within a function.
+Here @code{r12} is the name of the register that should be used.  Note
+that this is the same syntax used for defining global register variables, 
+but for a local variable the declaration appears within a function.  The 
+@code{register} keyword is required, and cannot be combined with 
+@code{static}.  The register name must be a valid register name for the
+target platform.
 
-Naturally the register name is CPU-dependent, but this is not a
-problem, since specific registers are most often useful with explicit
-assembler instructions (@pxref{Extended Asm}).  Both of these things
-generally require that you conditionalize your program according to
-CPU type.
+As with global register variables, it is recommended that you choose 
+a register that is normally saved and restored by function calls on your 
+machine, so that calls to library routines will not clobber it.
 
-In addition, operating systems on one type of CPU may differ in how they
-name the registers; then you need additional conditionals.  For
-example, some 68000 operating systems call this register @code{%a5}.
-
-Defining such a register variable does not reserve the register; it
-remains available for other uses in places where flow control determines
-the variable's value is not live.
-
-This option does not guarantee that GCC generates code that has
-this variable in the register you specify at all times.  You may not
-code an explicit reference to this register in the assembler
-instruction template part of an @code{asm} statement and assume it
-always refers to this variable.
-However, using the variable as an input or output operand to the @code{asm}
-guarantees that the specified register is used for that operand.  
-@xref{Extended Asm}, for more information.
-
-Stores into local register variables may be deleted when they appear to be dead
-according to dataflow analysis.  References to local register variables may
-be deleted or moved or simplified.
-
-As with global register variables, it is recommended that you choose a
-register that is normally saved and restored by function calls on
-your machine, so that library routines will not clobber it.  
-
-Sometimes when writing inline @code{asm} code, you need to make an operand be a 
-specific register, but there's no matching constraint letter for that 
-register. To force the operand into that register, create a local variable 
-and specify the register in the variable's declaration. Then use the local 
-variable for the asm operand and specify any constraint letter that matches 
-the register:
+The only supported use for this feature is to specify registers
+for input and output operands when calling Extended @code{asm} 
+(@pxref{Extended Asm}).  This may be necessary if the constraints for a 
+particular machine don't provide sufficient control to select the desired 
+register.  To force an operand into a register, create a local variable 
+and specify the register name after the variable's declaration.  Then use 
+the local variable for the @code{asm} operand and specify any constraint 
+letter that matches the register:
 
 @smallexample
 register int *p1 asm ("r0") = @dots{};
@@ -8643,11 +8625,11 @@ register int *result asm ("r0");
 asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
 @end smallexample
 
-@emph{Warning:} In the above example, be aware that a register (for example r0) can be 
-call-clobbered by subsequent code, including function calls and library calls 
-for arithmetic operators on other variables (for example the initialization 
-of p2). In this case, use temporary variables for expressions between the 
-register assignments:
+@emph{Warning:} In the above example, be aware that a register (for example 
+@code{r0}) can be call-clobbered by subsequent code, including function 
+calls and library calls for arithmetic operators on other variables (for 
+example the initialization of @code{p2}).  In this case, use temporary 
+variables for expressions between the register assignments:
 
 @smallexample
 int t1 = @dots{};
@@ -8656,6 +8638,35 @@ register int *p2 asm ("r1") = t1;
 register int *result asm ("r0");
 asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
 @end smallexample
+
+Defining a register variable does not reserve the register.  Other than
+when invoking the Extended @code{asm}, the contents of the specified 
+register are not guaranteed.  For this reason, the following uses 
+are explicitly @emph{not} supported.  If they appear to work, it is only 
+happenstance, and may stop working as intended due to (seemingly) 
+unrelated changes in surrounding code, or even minor changes in the 
+optimization of a future version of gcc:
+
+@itemize @bullet
+@item Passing parameters to or from Basic @code{asm}
+@item Passing parameters to or from Extended @code{asm} without using input 
+or output operands.
+@item Passing parameters to or from routines written in assembler (or
+other languages) using non-standard calling conventions.
+@end itemize
+
+Some developers use Local Register Variables in an attempt to improve 
+gcc's allocation of registers, especially in large functions.  In this 
+case the register name is essentially a hint to the register allocator.
+While in some instances this can generate better code, improvements are
+subject to the whims of the allocator/optimizers.  Since there are no
+guarantees that your improvements won't be lost, this usage of Local
+Register Variables is discouraged.
+
+On the MIPS platform, there is related use for local register variables 
+with slightly different characteristics (@pxref{MIPS Coprocessors,, 
+Defining coprocessor specifics for MIPS targets, gccint, 
+GNU Compiler Collection (GCC) Internals}).
 
 @node Size of an asm
 @subsection Size of an @code{asm}

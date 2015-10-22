@@ -1,3 +1,7 @@
+2015-10-21  David Wohlferd  <dw@LimeGreenSocks.com>
+
+	* doc/extend.exp (Global Register Variables): Rewrite.
+
 2015-10-22  Jeff Law  <law@redhat.com>
 
 	* genattrtab.c (main): If we do not have any annul-true or annul-false
