@@ -1,5 +1,17 @@
 2015-10-22  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/19049
+	PR tree-optimization/65962
+	* gcc.dg/vect/vect-strided-store-pr65962.c: New testcase.
+	* gcc.dg/vect/vect-63.c: Adjust.
+	* gcc.dg/vect/vect-70.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i2-gap.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i2-gap.c: Likewise.
+	* gfortran.dg/vect/pr19049.f90: Likewise.
+	* gfortran.dg/vect/vect-8.f90: Likewise.
+
+2015-10-22  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/68046
 	PR middle-end/61893
 	* gcc.dg/torture/ftrapv-2.c: New testcase.

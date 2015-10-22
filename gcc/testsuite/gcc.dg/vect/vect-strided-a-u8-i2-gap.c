@@ -44,7 +44,7 @@ main1 ()
     }
 
   ptr = arr;
-  /* Not vectorizable: gap in store.  */ 
+  /* gap in store, use strided stores  */ 
   for (i = 0; i < N; i++)
     {
       res[i].a = ptr->b;
@@ -71,5 +71,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target vect_strided2 } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect"  { target vect_strided2 } } } */
   
