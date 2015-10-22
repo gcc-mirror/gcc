@@ -1905,14 +1905,12 @@ java_mark_decl_local (tree decl)
 {
   DECL_EXTERNAL (decl) = 0;
 
-#ifdef ENABLE_CHECKING
   /* Double check that we didn't pass the function to the callgraph early.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL)
+  if (flag_checking && TREE_CODE (decl) == FUNCTION_DECL)
     {
       struct cgraph_node *node = cgraph_node::get (decl);
       gcc_assert (!node || !node->definition);
     }
-#endif
   gcc_assert (!DECL_RTL_SET_P (decl));
 }
 

@@ -9411,11 +9411,12 @@ assoc_to_constructor (Entity_Id gnat_entity, Node_Id gnat_assoc, tree gnu_type)
 
   gnu_result = extract_values (gnu_list, gnu_type);
 
-#ifdef ENABLE_CHECKING
-  /* Verify that every entry in GNU_LIST was used.  */
-  for (; gnu_list; gnu_list = TREE_CHAIN (gnu_list))
-    gcc_assert (TREE_ADDRESSABLE (gnu_list));
-#endif
+  if (flag_checking)
+    {
+      /* Verify that every entry in GNU_LIST was used.  */
+      for (; gnu_list; gnu_list = TREE_CHAIN (gnu_list))
+	gcc_assert (TREE_ADDRESSABLE (gnu_list));
+    }
 
   return gnu_result;
 }
