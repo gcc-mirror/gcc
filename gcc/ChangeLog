@@ -1,5 +1,12 @@
 2015-10-22  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/19049
+	PR tree-optimization/65962
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Fall back
+	to strided accesses if single-element interleaving doesn't work.
+
+2015-10-22  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/68046
 	PR middle-end/61893
 	* optabs.c (emit_libcall_block_1): Allow a NULL_RTX equiv.
