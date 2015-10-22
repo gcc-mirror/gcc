@@ -1986,6 +1986,21 @@ build_complex (tree type, tree real, tree imag)
   return t;
 }
 
+/* Build a complex (inf +- 0i), such as for the result of cproj.
+   TYPE is the complex tree type of the result.  If NEG is true, the
+   imaginary zero is negative.  */
+
+tree
+build_complex_inf (tree type, bool neg)
+{
+  REAL_VALUE_TYPE rinf, rzero = dconst0;
+
+  real_inf (&rinf);
+  rzero.sign = neg;
+  return build_complex (type, build_real (TREE_TYPE (type), rinf),
+			build_real (TREE_TYPE (type), rzero));
+}
+
 /* Return the constant 1 in type TYPE.  If TYPE has several elements, each
    element is set to 1.  In particular, this is 1 + i for complex types.  */
 

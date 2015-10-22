@@ -1,3 +1,13 @@
+2015-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* builtins.c (fold_builtin_cproj): Delete.
+	(fold_builtin_1): Handle constant arguments here.
+	(build_complex_cproj): Move and rename to...
+	* tree.c: (build_complex_inf): ...this.
+	* tree.h (build_complex_inf): Declare.
+	* match.pd: Fold cproj(x)->x if x has no infinity.
+	Use build_complex_inf for existing cproj rules.
+
 2015-10-22  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/68015
