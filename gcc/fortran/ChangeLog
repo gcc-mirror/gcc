@@ -1,3 +1,8 @@
+2015-10-21  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/68043
+	* lang.opt: End each sentence that describes an option with a period.
+
 2015-10-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67939
