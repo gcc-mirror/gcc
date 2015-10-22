@@ -1,3 +1,13 @@
+2015-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2015-10-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68018
+	* config/i386/i386.c (ix86_compute_frame_layout): Realign the stack
+	for 64-bit MS_ABI targets also when default incoming stack boundary
+	is overriden.
+
 2015-10-20  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline r229024
@@ -742,7 +752,7 @@
 	Backport from mainline
 	2015-08-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
-    	* config/s390/s390-builtins.def: Fix value range of vec_load_bndry.
+	* config/s390/s390-builtins.def: Fix value range of vec_load_bndry.
 
 2015-08-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 

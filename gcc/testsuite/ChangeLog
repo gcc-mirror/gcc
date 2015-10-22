@@ -1,3 +1,11 @@
+2015-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2015-10-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68018
+	* gcc.target/i386/pr68018.c: New test.
+
 2015-10-20  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline r229024
@@ -210,8 +218,8 @@
 
 2015-04-28  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * gcc.target/i386/avx512vbmi-check.h (main): Fix register
-        name while checking for AVX-512VBMI presence.
+	* gcc.target/i386/avx512vbmi-check.h (main): Fix register
+	name while checking for AVX-512VBMI presence.
 
 2015-09-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
@@ -423,7 +431,7 @@
 	Backport from mainline
 	2015-08-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
-    	* gcc.target/s390/zvector/vec-load_bndry-1.c: New test.
+	* gcc.target/s390/zvector/vec-load_bndry-1.c: New test.
 
 2015-08-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -560,9 +568,9 @@
 	backport from trunk:
 	2015-07-21  Alex Velenko  <Alex.Velenko@arm.com>
 
-        * gcc.target/arm/split-live-ranges-for-shrink-wrap.c (dg-skip-if):
+	* gcc.target/arm/split-live-ranges-for-shrink-wrap.c (dg-skip-if):
 	Skip -march=armv4t.
-        (dg-additional-options): Set armv5t flag.
+	(dg-additional-options): Set armv5t flag.
 
 2015-07-25  Tom de Vries  <tom@codesourcery.com>
 
