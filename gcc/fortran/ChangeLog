@@ -1,3 +1,10 @@
+2015-10-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58754
+	* trans-stmt.c (gfc_trans_allocate): Do not use the scalar
+	character assignment if the allocate expression is an array
+	descriptor.
+
 2015-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67900
@@ -13,7 +20,7 @@
 
 	PR fortran/67987
 	* decl.c (char_len_param_value): Unwrap unlong line.  If LEN < 0,
-	force it to zero per the Fortran 90, 95, 2003, and 2008 Standards. 
+	force it to zero per the Fortran 90, 95, 2003, and 2008 Standards.
 	* resolve.c (gfc_resolve_substring_charlen): Unwrap unlong line.
 	If 'start' is larger than 'end', length of substring is negative,
 	so explicitly set it to zero.

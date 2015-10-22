@@ -5629,7 +5629,8 @@ gfc_trans_allocate (gfc_code * code)
 	      tmp = gfc_copy_class_to_class (expr3, to,
 					     nelems, upoly_expr);
 	    }
-	  else if (code->expr3->ts.type == BT_CHARACTER)
+	  else if (code->expr3->ts.type == BT_CHARACTER
+		   && !GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)))
 	    {
 	      tmp = INDIRECT_REF_P (se.expr) ?
 			se.expr :
