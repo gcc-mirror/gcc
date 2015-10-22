@@ -841,6 +841,7 @@ Objective-C and Objective-C++ Dialects}.
 @emph{MSP430 Options}
 @gccoptlist{-msim -masm-hex -mmcu= -mcpu= -mlarge -msmall -mrelax @gol
 -mcode-region= -mdata-region= @gol
+-msilicon-errata= -msilicon-errata-warn= @gol
 -mhwmult= -minrt}
 
 @emph{NDS32 Options}
@@ -18448,6 +18449,16 @@ like the corresponding attribute.  The fourth possible value -
 @code{any} - is the default.  It leaves placement entirely up to the
 linker script and how it assigns the standard sections (.text, .data
 etc) to the memory regions.
+
+@item -msilicon-errata=
+@opindex msilicon-errata
+This option passes on a request to assembler to enable the fixes for
+the names silicon errata.
+
+@item -msilicon-errata-warn=
+@opindex msilicon-errata-warn
+This option passes on a request to the assembler to enable warning
+messages when a silicon errata might need to be applied.
 
 @end table
 

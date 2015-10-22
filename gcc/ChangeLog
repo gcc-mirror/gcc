@@ -1,3 +1,11 @@
+2015-10-22  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.opt: Add -msilicon-errata and
+	-msilicon-errata-warn.
+	* config/msp430/msp430.h (ASM_SPEC): Pass new options on to
+	assembler.
+	* doc/invoke.texi: Document new options.
+
 2015-10-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58497
