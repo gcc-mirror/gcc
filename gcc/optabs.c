@@ -1748,11 +1748,12 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       insns = get_insns ();
       end_sequence ();
 
+      bool trapv = trapv_binoptab_p (binoptab);
       target = gen_reg_rtx (mode);
       emit_libcall_block_1 (insns, target, value,
-			    gen_rtx_fmt_ee (optab_to_code (binoptab),
-					    mode, op0, op1),
-			    trapv_binoptab_p (binoptab));
+			    trapv ? NULL_RTX
+			    : gen_rtx_fmt_ee (optab_to_code (binoptab),
+					      mode, op0, op1), trapv);
 
       return target;
     }
@@ -2880,13 +2881,19 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       end_sequence ();
 
       target = gen_reg_rtx (outmode);
-      eq_value = gen_rtx_fmt_e (optab_to_code (unoptab), mode, op0);
-      if (GET_MODE_SIZE (outmode) < GET_MODE_SIZE (mode))
-	eq_value = simplify_gen_unary (TRUNCATE, outmode, eq_value, mode);
-      else if (GET_MODE_SIZE (outmode) > GET_MODE_SIZE (mode))
-	eq_value = simplify_gen_unary (ZERO_EXTEND, outmode, eq_value, mode);
-      emit_libcall_block_1 (insns, target, value, eq_value,
-			    trapv_unoptab_p (unoptab));
+      bool trapv = trapv_unoptab_p (unoptab);
+      if (trapv)
+	eq_value = NULL_RTX;
+      else
+	{
+	  eq_value = gen_rtx_fmt_e (optab_to_code (unoptab), mode, op0);
+	  if (GET_MODE_SIZE (outmode) < GET_MODE_SIZE (mode))
+	    eq_value = simplify_gen_unary (TRUNCATE, outmode, eq_value, mode);
+	  else if (GET_MODE_SIZE (outmode) > GET_MODE_SIZE (mode))
+	    eq_value = simplify_gen_unary (ZERO_EXTEND,
+					   outmode, eq_value, mode);
+	}
+      emit_libcall_block_1 (insns, target, value, eq_value, trapv);
 
       return target;
     }
@@ -3573,7 +3580,8 @@ emit_libcall_block_1 (rtx_insn *insns, rtx target, rtx result, rtx equiv,
     }
 
   last = emit_move_insn (target, result);
-  set_dst_reg_note (last, REG_EQUAL, copy_rtx (equiv), target);
+  if (equiv)
+    set_dst_reg_note (last, REG_EQUAL, copy_rtx (equiv), target);
 
   if (final_dest != target)
     emit_move_insn (final_dest, target);

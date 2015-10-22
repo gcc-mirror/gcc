@@ -1,3 +1,9 @@
+2015-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68046
+	PR middle-end/61893
+	* gcc.dg/torture/ftrapv-2.c: New testcase.
+
 2015-10-22  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/68015
