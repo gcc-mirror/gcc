@@ -178,9 +178,6 @@ static struct z_candidate *add_template_candidate
 static struct z_candidate *add_template_candidate_real
 	(struct z_candidate **, tree, tree, tree, tree, const vec<tree, va_gc> *,
 	 tree, tree, tree, int, tree, unification_kind_t, tsubst_flags_t);
-static struct z_candidate *add_template_conv_candidate
-	(struct z_candidate **, tree, tree, tree, const vec<tree, va_gc> *,
-	 tree, tree, tree, tsubst_flags_t);
 static void add_builtin_candidates
 	(struct z_candidate **, enum tree_code, enum tree_code,
 	 tree, tree *, int, tsubst_flags_t);
@@ -192,7 +189,7 @@ static void build_builtin_candidate
 	(struct z_candidate **, tree, tree, tree, tree *, tree *,
 	 int, tsubst_flags_t);
 static struct z_candidate *add_conv_candidate
-	(struct z_candidate **, tree, tree, tree, const vec<tree, va_gc> *, tree,
+	(struct z_candidate **, tree, tree, const vec<tree, va_gc> *, tree,
 	 tree, tsubst_flags_t);
 static struct z_candidate *add_function_candidate
 	(struct z_candidate **, tree, tree, tree, const vec<tree, va_gc> *, tree,
@@ -2176,7 +2173,7 @@ add_function_candidate (struct z_candidate **candidates,
 
 static struct z_candidate *
 add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
-		    tree first_arg, const vec<tree, va_gc> *arglist,
+		    const vec<tree, va_gc> *arglist,
 		    tree access_path, tree conversion_path,
 		    tsubst_flags_t complain)
 {
@@ -2190,7 +2187,7 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
     parmlist = TREE_TYPE (parmlist);
   parmlist = TYPE_ARG_TYPES (parmlist);
 
-  len = vec_safe_length (arglist) + (first_arg != NULL_TREE ? 1 : 0) + 1;
+  len = vec_safe_length (arglist) + 1;
   convs = alloc_conversions (len);
   parmnode = parmlist;
   viable = 1;
@@ -2208,10 +2205,8 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
 
       if (i == 0)
 	arg = obj;
-      else if (i == 1 && first_arg != NULL_TREE)
-	arg = first_arg;
       else
-	arg = (*arglist)[i - (first_arg != NULL_TREE ? 1 : 0) - 1];
+	arg = (*arglist)[i - 1];
       argtype = lvalue_type (arg);
 
       if (i == 0)
@@ -2260,7 +2255,7 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
       reason = arity_rejection (NULL_TREE, i + remaining, len);
     }
 
-  return add_candidate (candidates, totype, first_arg, arglist, len, convs,
+  return add_candidate (candidates, totype, obj, arglist, len, convs,
 			access_path, conversion_path, viable, reason, flags);
 }
 
@@ -3122,7 +3117,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 
   if (obj != NULL_TREE)
     /* Aha, this is a conversion function.  */
-    cand = add_conv_candidate (candidates, fn, obj, first_arg, arglist,
+    cand = add_conv_candidate (candidates, fn, obj, arglist,
 			       access_path, conversion_path, complain);
   else
     cand = add_function_candidate (candidates, fn, ctype,
@@ -3175,14 +3170,14 @@ add_template_candidate (struct z_candidate **candidates, tree tmpl, tree ctype,
 
 static struct z_candidate *
 add_template_conv_candidate (struct z_candidate **candidates, tree tmpl,
-			     tree obj, tree first_arg,
+			     tree obj,
 			     const vec<tree, va_gc> *arglist,
 			     tree return_type, tree access_path,
 			     tree conversion_path, tsubst_flags_t complain)
 {
   return
     add_template_candidate_real (candidates, tmpl, NULL_TREE, NULL_TREE,
-				 first_arg, arglist, return_type, access_path,
+				 NULL_TREE, arglist, return_type, access_path,
 				 conversion_path, 0, obj, DEDUCE_CONV,
 				 complain);
 }
@@ -4335,11 +4330,11 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 
 	    if (TREE_CODE (fn) == TEMPLATE_DECL)
 	      add_template_conv_candidate
-		(&candidates, fn, obj, NULL_TREE, *args, totype,
+		(&candidates, fn, obj, *args, totype,
 		 /*access_path=*/NULL_TREE,
 		 /*conversion_path=*/NULL_TREE, complain);
 	    else
-	      add_conv_candidate (&candidates, fn, obj, NULL_TREE,
+	      add_conv_candidate (&candidates, fn, obj,
 				  *args, /*conversion_path=*/NULL_TREE,
 				  /*access_path=*/NULL_TREE, complain);
 	  }
