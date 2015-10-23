@@ -1862,7 +1862,7 @@ a cross compiler, they will not be used to configure target libraries.
 @item --with-stage1-ldflags=@var{flags}
 This option may be used to set linker flags to be used when linking
 stage 1 of GCC.  These are also used when linking GCC if configured with
-@option{--disable-bootstrap}.  If @option{–with-stage1-libs} is not set to a
+@option{--disable-bootstrap}.  If @option{--with-stage1-libs} is not set to a
 value, then the default is @samp{-static-libstdc++ -static-libgcc}, if
 supported.
 
@@ -3950,6 +3950,10 @@ Support for AIX version 4.2 and older was discontinued in GCC 4.5.
 process resource limits (ulimit).  Hard limits are configured in the
 @file{/etc/security/limits} system configuration file.
 
+GCC 4.9 and above require a C++ compiler for bootstrap.  IBM VAC++ / xlC
+cannot bootstrap GCC.  xlc can bootstrap an older version of GCC and
+G++ can bootstrap recent releases of GCC.
+
 GCC can bootstrap with recent versions of IBM XLC, but bootstrapping
 with an earlier release of GCC is recommended.  Bootstrapping with XLC
 requires a larger data segment, which can be enabled through the
@@ -3997,6 +4001,12 @@ bootstrapping on AIX@.  The GNU Assembler, GNU Linker, and GNU
 Binutils version 2.20 is the minimum level that supports bootstrap on
 AIX 5@.  The GNU Assembler has not been updated to support AIX 6@ or
 AIX 7.  The native AIX tools do interoperate with GCC@.
+
+AIX 7.1 added partial support for DWARF debugging, but full support
+requires AIX 7.1 TL03 SP7 that supports additional DWARF sections and
+fixes a bug in the assembler.  AIX 7.1 TL03 SP5 distributed a version
+of libm.a missing important symbols; a fix for IV77796 will be
+included in SP6.
 
 AIX 5.3 TL10, AIX 6.1 TL05 and AIX 7.1 TL00 introduced an AIX
 assembler change that sometimes produces corrupt assembly files
