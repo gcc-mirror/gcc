@@ -4728,7 +4728,12 @@ package body Sem_Ch13 is
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Overlaid_Controlled_Object));
 
-                  elsif Present (O_Ent)
+                  --  Issue an unconditional warning for a constant overlaying
+                  --  a variable. For the reverse case, we will issue it only
+                  --  if the variable is modified, see below.
+
+                  elsif Address_Clause_Overlay_Warnings
+                    and then Present (O_Ent)
                     and then Ekind (U_Ent) = E_Constant
                     and then not Is_Constant_Object (O_Ent)
                   then
@@ -4859,13 +4864,27 @@ package body Sem_Ch13 is
 
                      --  If variable overlays a constant view, and we are
                      --  warning on overlays, then mark the variable as
-                     --  overlaying a constant (we will give warnings later
-                     --  if this variable is assigned).
+                     --  overlaying a constant and warn immediately if it
+                     --  is initialized. We will give other warnings later
+                     --  if the variable is assigned.
 
                      if Is_Constant_Object (O_Ent)
                        and then Ekind (U_Ent) = E_Variable
                      then
-                        Set_Overlays_Constant (U_Ent);
+                        declare
+                           Init : constant Node_Id :=
+                             Expression (Declaration_Node (U_Ent));
+                        begin
+                           Set_Overlays_Constant (U_Ent);
+                           if Present (Init)
+                             and then Comes_From_Source (Init)
+                           then
+                              Error_Msg_Sloc := Sloc (N);
+                              Error_Msg_NE
+                                ("??constant& may be modified via address "
+                                 & "clause#", Declaration_Node (U_Ent), O_Ent);
+                           end if;
+                        end;
                      end if;
                   end if;
                end;

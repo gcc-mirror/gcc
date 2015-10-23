@@ -619,6 +619,10 @@ package body Sem_Ch6 is
       R_Type : constant Entity_Id := Etype (Scope_Id);
       --  Function result subtype
 
+      procedure Check_Aggregate_Accessibility (Aggr : Node_Id);
+      --  Apply legality rule of 6.5 (8.2) to the access discriminants of
+      --  an aggregate in a return statement.
+
       procedure Check_Limited_Return (Expr : Node_Id);
       --  Check the appropriate (Ada 95 or Ada 2005) rules for returning
       --  limited types. Used only for simple return statements.
@@ -627,6 +631,57 @@ package body Sem_Ch6 is
       procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id);
       --  Check that the return_subtype_indication properly matches the result
       --  subtype of the function, as required by RM-6.5(5.1/2-5.3/2).
+
+      -----------------------------------
+      -- Check_Aggregate_Accessibility --
+      -----------------------------------
+
+      procedure Check_Aggregate_Accessibility (Aggr : Node_Id) is
+         Typ    : constant Entity_Id := Etype (Aggr);
+         Assoc  : Node_Id;
+         Discr  : Entity_Id;
+         Expr   : Node_Id;
+         Obj    : Node_Id;
+
+      begin
+         if Is_Record_Type (Typ)
+           and then Has_Discriminants (Typ)
+         then
+            Discr := First_Discriminant (Typ);
+            Assoc := First (Component_Associations (Aggr));
+            while Present (Discr) loop
+               if Ekind (Etype (Discr)) = E_Anonymous_Access_Type then
+                  Expr := Expression (Assoc);
+                  if Nkind (Expr) = N_Attribute_Reference
+                    and then Attribute_Name (Expr) /= Name_Unrestricted_Access
+                  then
+                     Obj := Prefix (Expr);
+                     while Nkind_In (Obj,
+                       N_Selected_Component, N_Indexed_Component)
+                     loop
+                        Obj := Prefix (Obj);
+                     end loop;
+
+                     if Is_Entity_Name (Obj)
+                       and then Is_Formal (Entity (Obj))
+                     then
+                        --  A run-time check may be needed ???
+                        null;
+
+                     elsif Object_Access_Level (Obj) >
+                       Scope_Depth (Scope (Scope_Id))
+                     then
+                        Error_Msg_N
+                           ("access discriminant in return aggregate " &
+                              "will be a dangling reference", Obj);
+                     end if;
+                  end if;
+               end if;
+
+               Next_Discriminant (Discr);
+            end loop;
+         end if;
+      end Check_Aggregate_Accessibility;
 
       --------------------------
       -- Check_Limited_Return --
@@ -931,6 +986,10 @@ package body Sem_Ch6 is
 
             Resolve (Expr, R_Type);
             Check_Limited_Return (Expr);
+
+            if Present (Expr) and then Nkind (Expr) = N_Aggregate then
+               Check_Aggregate_Accessibility (Expr);
+            end if;
          end if;
 
          --  RETURN only allowed in SPARK as the last statement in function

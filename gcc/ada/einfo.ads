@@ -3945,7 +3945,7 @@ package Einfo is
 
 --    Rewritten_For_C (Flag287)
 --       Defined on functions that return a constrained array type, when
---       Modify_Tree_For_C is set. indicates that a procedure with an extra
+--       Modify_Tree_For_C is set. Indicates that a procedure with an extra
 --       out parameter has been created for it, and calls must be rewritten as
 --       calls to the new procedure.
 
