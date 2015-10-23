@@ -1,3 +1,18 @@
+2015-10-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Complete previous
+	change and update comments.
+
+2015-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Check_Function_With_Address_Parameter):
+	A subprogram that has an Address parameter and is declared in a Pure
+	package is not considered Pure, because the parameter may be used as a
+	pointer and the referenced data may change even if the address value
+	itself does not.
+	* freeze.adb (Freeze_Subprogram): use it.
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Use it.
+
 2015-10-23  Olivier Hainque  <hainque@adacore.com>
 
 	* tracebak.c: Fallback to generic unwinder for gcc-sjlj on x86 &
