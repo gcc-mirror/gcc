@@ -70,6 +70,7 @@ package Ada.Containers.Formal_Hashed_Maps with
   SPARK_Mode
 is
    pragma Annotate (GNATprove, External_Axiomatization);
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is private with
      Iterable => (First       => First,

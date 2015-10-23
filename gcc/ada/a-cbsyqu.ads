@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -42,6 +42,7 @@ generic
    Default_Ceiling  : System.Any_Priority := System.Priority'Last;
 
 package Ada.Containers.Bounded_Synchronized_Queues is
+   pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
 
    package Implementation is

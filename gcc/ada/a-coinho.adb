@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2012-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,8 +28,6 @@
 with Ada.Unchecked_Deallocation;
 
 package body Ada.Containers.Indefinite_Holders is
-
-   pragma Annotate (CodePeer, Skip_Analysis);
 
    procedure Free is
      new Ada.Unchecked_Deallocation (Element_Type, Element_Access);

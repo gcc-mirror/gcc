@@ -38,6 +38,8 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Bounded_Holders is
+   pragma Annotate (CodePeer, Skip_Analysis);
+
    --  This package is patterned after Ada.Containers.Indefinite_Holders. It is
    --  used to treat indefinite subtypes as definite, but without using heap
    --  allocation. For example, you might like to say:

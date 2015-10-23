@@ -5165,7 +5165,7 @@ package body Exp_Ch4 is
       elsif Is_Boolean_Type (Etype (Expression (N))) then
          Force_Boolean_Evaluation (Expression (N));
 
-      --  The expression of an expression_with_actions node may not necessarely
+      --  The expression of an expression_with_actions node may not necessarily
       --  be Boolean when the node appears in an if expression. In this case do
       --  the usual forced evaluation to encapsulate potential aliasing.
 

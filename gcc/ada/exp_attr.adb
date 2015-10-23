@@ -1458,68 +1458,45 @@ package body Exp_Attr is
                      Duplicate_Subexpr_No_Checks (Left),
                      Duplicate_Subexpr_No_Checks (Right))));
 
-            --  Otherwise we generate declarations to capture the values. We
-            --  can't put these declarations inside the if expression, since
-            --  we could end up with an N_Expression_With_Actions which has
-            --  declarations in the actions, forbidden for Modify_Tree_For_C.
+            --  Otherwise we generate declarations to capture the values.
 
             --  The translation is
 
-            --    T1 : styp;    --  inserted high up in tree
-            --    T2 : styp;    --  inserted high up in tree
-
             --    do
-            --      T1 := styp!(Left);
-            --      T2 := styp!(Right);
+            --      T1 : constant typ := Left;
+            --      T2 : constant typ := Right;
             --    in
-            --      (if T1 >=|<= T2 then typ!(T1) else typ!(T2))
+            --      (if T1 >=|<= T2 then T1 else T2)
             --    end;
-
-            --  We insert the T1,T2 declarations with Insert_Declaration which
-            --  inserts these declarations high up in the tree unconditionally.
-            --  This is safe since no code is associated with the declarations.
-            --  Here styp is a standard type whose Esize matches the size of
-            --  our type. We do this because the actual type may be a result of
-            --  some local declaration which would not be visible at the point
-            --  where we insert the declarations of T1 and T2.
 
             else
                declare
-                  T1   : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
-                  T2   : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
-                  Styp : constant Entity_Id := Matching_Standard_Type (Typ);
-
+                  T1 : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
+                  T2 : constant Entity_Id := Make_Temporary (Loc, 'T', Right);
                begin
-                  Insert_Declaration (N,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => T1,
-                      Object_Definition   => New_Occurrence_Of (Styp, Loc)));
-
-                  Insert_Declaration (N,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => T2,
-                      Object_Definition   => New_Occurrence_Of (Styp, Loc)));
-
                   Rewrite (N,
                     Make_Expression_With_Actions (Loc,
                       Actions => New_List (
-                        Make_Assignment_Statement (Loc,
-                          Name       => New_Occurrence_Of (T1, Loc),
-                          Expression => Unchecked_Convert_To (Styp, Left)),
-                        Make_Assignment_Statement (Loc,
-                          Name       => New_Occurrence_Of (T2, Loc),
-                          Expression => Unchecked_Convert_To (Styp, Right))),
-
+                        Make_Object_Declaration (Loc,
+                          Defining_Identifier => T1,
+                          Object_Definition   =>
+                            New_Occurrence_Of (Etype (Left), Loc),
+                          Constant_Present    => True,
+                          Expression          => Relocate_Node (Left)),
+                        Make_Object_Declaration (Loc,
+                          Defining_Identifier => T2,
+                          Object_Definition   =>
+                            New_Occurrence_Of (Etype (Right), Loc),
+                          Constant_Present    => True,
+                          Expression          => Relocate_Node (Right))),
                       Expression =>
                         Make_If_Expression (Loc,
                           Expressions => New_List (
                             Make_Compare
                               (New_Occurrence_Of (T1, Loc),
                                New_Occurrence_Of (T2, Loc)),
-                            Unchecked_Convert_To (Typ,
-                              New_Occurrence_Of (T1, Loc)),
-                            Unchecked_Convert_To (Typ,
-                              New_Occurrence_Of (T2, Loc))))));
+                               New_Occurrence_Of (T1, Loc),
+                               New_Occurrence_Of (T2, Loc)))));
                end;
             end if;
 

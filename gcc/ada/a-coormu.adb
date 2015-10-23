@@ -42,8 +42,6 @@ with System; use type System.Address;
 
 package body Ada.Containers.Ordered_Multisets is
 
-   pragma Annotate (CodePeer, Skip_Analysis);
-
    pragma Warnings (Off, "variable ""Busy*"" is not referenced");
    pragma Warnings (Off, "variable ""Lock*"" is not referenced");
    --  See comment in Ada.Containers.Helpers

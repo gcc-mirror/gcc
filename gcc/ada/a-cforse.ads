@@ -69,6 +69,7 @@ package Ada.Containers.Formal_Ordered_Sets with
   SPARK_Mode
 is
    pragma Annotate (GNATprove, External_Axiomatization);
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean
    with
