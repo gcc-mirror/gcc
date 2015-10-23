@@ -49,9 +49,9 @@ __udivsi3 (unsigned int a, unsigned int b)
   u0.f = (int) a;
   u1.f = (int) b;
 #ifdef CONCISE
-  if (a < 0)
+  if ((int) a < 0)
     u0.i = (a >> 8) - 0x00800000 + 0x3f800000 + (31 << 23);
-#else /* To use flag seting / cmove, this can be written as:  */
+#else /* To use flag setting / cmove, this can be written as:  */
  {
   unsigned c = 0xff800000 - 0x4f000000;
   t = (int)a >> 8;
