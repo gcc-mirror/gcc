@@ -1446,10 +1446,6 @@ package body Sem is
 
              or else Debug_Flag_X
 
-             --  Or if we are generating C code
-
-             or else Generate_C_Code
-
              --  Or if in configuration run-time mode. We do this so we get
              --  error messages about missing entities in the run-time even
              --  if we are compiling in -gnatc (no code generation) mode.
