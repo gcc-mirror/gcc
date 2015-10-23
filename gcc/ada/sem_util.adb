@@ -12114,21 +12114,37 @@ package body Sem_Util is
    -----------------
 
    function Is_Iterator (Typ : Entity_Id) return Boolean is
-      Ifaces_List : Elist_Id;
-      Iface_Elmt  : Elmt_Id;
-      Iface       : Entity_Id;
+      function Denotes_Iterator (Iter_Typ : Entity_Id) return Boolean;
+      --  Determine whether type Iter_Typ is a predefined forward or reversible
+      --  iterator.
+
+      ----------------------
+      -- Denotes_Iterator --
+      ----------------------
+
+      function Denotes_Iterator (Iter_Typ : Entity_Id) return Boolean is
+      begin
+         return
+           Nam_In (Chars (Iter_Typ), Name_Forward_Iterator,
+                                     Name_Reversible_Iterator)
+             and then Is_Predefined_File_Name
+                        (Unit_File_Name (Get_Source_Unit (Iter_Typ)));
+      end Denotes_Iterator;
+
+      --  Local variables
+
+      Iface_Elmt : Elmt_Id;
+      Ifaces     : Elist_Id;
+
+   --  Start of processing for Is_Iterator
 
    begin
       --  The type may be a subtype of a descendant of the proper instance of
       --  the predefined interface type, so we must use the root type of the
-      --  given type. The same us done for Is_Reversible_Iterator.
+      --  given type. The same is done for Is_Reversible_Iterator.
 
       if Is_Class_Wide_Type (Typ)
-        and then Nam_In (Chars (Root_Type (Typ)), Name_Forward_Iterator,
-                                              Name_Reversible_Iterator)
-        and then
-          Is_Predefined_File_Name
-            (Unit_File_Name (Get_Source_Unit (Root_Type (Typ))))
+        and then Denotes_Iterator (Root_Type (Typ))
       then
          return True;
 
@@ -12139,16 +12155,11 @@ package body Sem_Util is
          return True;
 
       else
-         Collect_Interfaces (Typ, Ifaces_List);
+         Collect_Interfaces (Typ, Ifaces);
 
-         Iface_Elmt := First_Elmt (Ifaces_List);
+         Iface_Elmt := First_Elmt (Ifaces);
          while Present (Iface_Elmt) loop
-            Iface := Node (Iface_Elmt);
-            if Chars (Iface) = Name_Forward_Iterator
-              and then
-                Is_Predefined_File_Name
-                  (Unit_File_Name (Get_Source_Unit (Iface)))
-            then
+            if Denotes_Iterator (Node (Iface_Elmt)) then
                return True;
             end if;
 

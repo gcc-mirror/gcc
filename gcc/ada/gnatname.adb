@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -434,7 +434,7 @@ procedure Gnatname is
                elsif Arg = "-h" then
                   Usage_Needed := True;
 
-               --  -p
+               --  -P
 
                elsif Arg'Length >= 2 and then Arg (1 .. 2) = "-P" then
                   if File_Set then

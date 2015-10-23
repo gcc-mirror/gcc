@@ -6916,6 +6916,7 @@ package body Exp_Ch3 is
             elsif Is_Tagged_Type (Typ)
               and then Is_Class_Wide_Type (Typ)
               and then Is_Limited_Record (Typ)
+              and then not Is_Limited_Interface (Typ)
             then
                --  Given that the type is limited we cannot perform a copy. If
                --  Expr_Q is the reference to a variable we mark the variable

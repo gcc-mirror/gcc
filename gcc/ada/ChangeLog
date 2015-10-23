@@ -1,3 +1,33 @@
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Denotes_Iterator): New routine.
+	(Is_Iterator): Code cleanup. Factor out the detection of a
+	predefined iterator.  As a result this fixes a missing case
+	where a tagged type implements interface Reversible_Iterator.
+
+2015-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Constant-fold 'Enabled if
+	not within a generic unit, even if expander is not active, so
+	that instances of container packages remain preelaborable in
+	-gnatc mode.
+
+2015-10-23  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c (__gnat_sigtramp): New assembly function for arm64-darwin.
+	(__gnat_error_handler): Use trampoline for arm64.
+
+2015-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): if the type of the
+	object is a class-wide limited interface type, the expression
+	is not restricted to the forms specified for limited types.
+
+2015-10-23  Vincent Celier  <celier@adacore.com>
+
+	* gnatname.adb: Code clean up.
+	* s-taasde.ads: Fix comment.
+
 2015-10-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Is_Iterator, Is_Reversible_iterator): Use

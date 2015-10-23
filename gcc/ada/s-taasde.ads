@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -133,7 +133,7 @@ private
       --  A double linked list
    end record;
 
-   --  The above "overlaying" of Self_ID and Level to hold other data that has
+   --  The above "overlaying" of Self_Id and Level to hold other data that has
    --  a non-overlapping lifetime is an unabashed hack to save memory.
 
    procedure Time_Enqueue

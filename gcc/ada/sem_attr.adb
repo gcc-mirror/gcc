@@ -7209,10 +7209,11 @@ package body Sem_Attr is
          --  We skip evaluation if the expander is not active. This is not just
          --  an optimization. It is of key importance that we not rewrite the
          --  attribute in a generic template, since we want to pick up the
-         --  setting of the check in the instance, and testing expander active
-         --  is as easy way of doing this as any.
+         --  setting of the check in the instance, Testing Expander_Active
+         --  might seem an easy way of doing this, but we need to account for
+         --  ASIS needs, so check explicitly for a generic context.
 
-         if Expander_Active then
+         if not Inside_A_Generic then
             declare
                C : constant Check_Id := Get_Check_Id (Chars (P));
                R : Boolean;

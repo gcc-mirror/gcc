@@ -2256,6 +2256,47 @@ char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
 #include <mach/vm_statistics.h>
 #endif
 
+#ifdef __arm64__
+#include <sys/ucontext.h>
+
+/* Trampoline inserted before raising the exception.  It modifies the
+   stack so that PROC (D, M) looks to be called from the fault point.  Note
+   that LR may be incorrectly set.  */
+void __gnat_sigtramp (struct Exception_Data *d, const char *m,
+		      mcontext_t ctxt,
+		      void (*proc)(struct Exception_Data *, const char *));
+
+asm("\n"
+"	.section	__TEXT,__text,regular,pure_instructions\n"
+"	.align  2\n"
+"___gnat_sigtramp:\n"
+"	.cfi_startproc\n"
+	/* Restore callee saved registers.  */
+"	ldp	x19, x20, [x2, #168]\n"
+"	ldp	x21, x22, [x2, #184]\n"
+"	ldp	x23, x24, [x2, #200]\n"
+"	ldp	x25, x26, [x2, #216]\n"
+"	ldp	x27, x28, [x2, #232]\n"
+"	ldp	q8, q9, [x2, #416]\n"
+"	ldp	q10, q11, [x2, #448]\n"
+"	ldp	q12, q13, [x2, #480]\n"
+"	ldp	q14, q15, [x2, #512]\n"
+	/* Read FP from mcontext.  */
+"	ldp	fp, lr, [x2, #248]\n"
+	/* Read SP and PC from mcontext.  */
+"	ldp	x6, x7, [x2, #264]\n"
+"	add	lr, x7, #1\n"
+"	mov	sp, x6\n"
+	/* Create a standard frame.  */
+"	stp	fp, lr, [sp, #-16]!\n"
+"	.cfi_def_cfa	w29, 16\n"
+"	.cfi_offset	w30, -8\n"
+"	.cfi_offset	w29, -16\n"
+"	br	x3\n"
+"	.cfi_endproc\n"
+);
+#endif
+
 /* Return true if ADDR is within a stack guard area.  */
 static int
 __gnat_is_stack_guard (mach_vm_address_t addr)
@@ -2363,6 +2404,15 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 	 for the next signal delivery.
          The stack can't be used in case of stack checking.  */
       syscall (SYS_sigreturn, NULL, UC_RESET_ALT_STACK);
+
+#ifdef __arm64__
+      /* On arm64, use a trampoline so that the unwinder won't see the
+	 signal frame.  */
+      __gnat_sigtramp (exception, msg,
+		       ((ucontext_t *)ucontext)->uc_mcontext,
+		       Raise_From_Signal_Handler);
+      return;
+#endif
       break;
 
     case SIGFPE:
