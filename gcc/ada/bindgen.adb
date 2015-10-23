@@ -2810,8 +2810,8 @@ package body Bindgen is
 
       procedure Check_Package (Var : in out Boolean; Name : String);
       --  Set Var to true iff the current identifier in Namet is Name. Do
-      --  nothing if it doesn't match. This procedure is just an helper to
-      --  avoid to explicitely deal with length.
+      --  nothing if it doesn't match. This procedure is just a helper to
+      --  avoid explicitly dealing with length.
 
       -------------------
       -- Check_Package --
