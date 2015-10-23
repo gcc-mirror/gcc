@@ -2156,7 +2156,7 @@ package Sem_Util is
    --  Determines if Current_Scope is within an init proc
 
    function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean;
-   --  Returns True if entity Id is declared within scope S
+   --  Returns True if entity E is declared within scope S
 
    procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id);
    --  Output error message for incorrectly typed expression. Expr is the node

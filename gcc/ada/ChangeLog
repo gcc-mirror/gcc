@@ -1,3 +1,18 @@
+2015-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Iterator, Is_Reversible_iterator): Use
+	root type to determine whether the type is a descendant of the
+	corresponding interface type, so take into account multiple
+	levels of subtypes and derivations.
+
+2015-10-23  Olivier Hainque  <hainque@adacore.com>
+
+	* tracebak.c: Refine selection of GCC/GENERIC_UNWINDER for
+	tracebacks on x86 & x86_64.
+	(x86 & x86_64): If !SJLJ, always pick the
+	GCC_UNWINDER for x86_64 (not only on linux).
+	* sem_util.ads: Minor fix in comment.
+
 2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Pragma Volatile_Function should

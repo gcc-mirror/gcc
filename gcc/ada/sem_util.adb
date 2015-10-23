@@ -12119,12 +12119,16 @@ package body Sem_Util is
       Iface       : Entity_Id;
 
    begin
+      --  The type may be a subtype of a descendant of the proper instance of
+      --  the predefined interface type, so we must use the root type of the
+      --  given type. The same us done for Is_Reversible_Iterator.
+
       if Is_Class_Wide_Type (Typ)
-        and then Nam_In (Chars (Etype (Typ)), Name_Forward_Iterator,
+        and then Nam_In (Chars (Root_Type (Typ)), Name_Forward_Iterator,
                                               Name_Reversible_Iterator)
         and then
           Is_Predefined_File_Name
-            (Unit_File_Name (Get_Source_Unit (Etype (Typ))))
+            (Unit_File_Name (Get_Source_Unit (Root_Type (Typ))))
       then
          return True;
 
@@ -13009,9 +13013,9 @@ package body Sem_Util is
 
    begin
       if Is_Class_Wide_Type (Typ)
-        and then Chars (Etype (Typ)) = Name_Reversible_Iterator
+        and then Chars (Root_Type (Typ)) = Name_Reversible_Iterator
         and then Is_Predefined_File_Name
-                   (Unit_File_Name (Get_Source_Unit (Etype (Typ))))
+                   (Unit_File_Name (Get_Source_Unit (Root_Type (Typ))))
       then
          return True;
 
