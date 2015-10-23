@@ -3027,6 +3027,9 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
     {
       if (first_arg_without_in_chrg != NULL_TREE)
 	first_arg_without_in_chrg = NULL_TREE;
+      else if (return_type && strict == DEDUCE_CALL)
+	/* We're deducing for a call to the result of a template conversion
+	   function, so the args don't contain 'this'; leave them alone.  */;
       else
 	++skip_without_in_chrg;
     }
@@ -3167,6 +3170,11 @@ add_template_candidate (struct z_candidate **candidates, tree tmpl, tree ctype,
 				 flags, NULL_TREE, strict, complain);
 }
 
+/* Create an overload candidate for the conversion function template TMPL,
+   returning RETURN_TYPE, which will be invoked for expression OBJ to produce a
+   pointer-to-function which will in turn be called with the argument list
+   ARGLIST, and add it to CANDIDATES.  This does not change ARGLIST.  FLAGS is
+   passed on to implicit_conversion.  */
 
 static struct z_candidate *
 add_template_conv_candidate (struct z_candidate **candidates, tree tmpl,
@@ -3178,7 +3186,7 @@ add_template_conv_candidate (struct z_candidate **candidates, tree tmpl,
   return
     add_template_candidate_real (candidates, tmpl, NULL_TREE, NULL_TREE,
 				 NULL_TREE, arglist, return_type, access_path,
-				 conversion_path, 0, obj, DEDUCE_CONV,
+				 conversion_path, 0, obj, DEDUCE_CALL,
 				 complain);
 }
 
