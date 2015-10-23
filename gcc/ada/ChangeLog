@@ -1,5 +1,29 @@
 2015-10-23  Bob Duff  <duff@adacore.com>
 
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Do not call
+	SS_Release for a block statement enclosing the return statement in the
+	case where a build-in-place function return is returning
+	the result on the secondary stack. This is accomplished by
+	setting the Sec_Stack_Needed_For_Return flag on such blocks.
+	It was already being set for the function itself, and it was
+	already set correctly for blocks in the non-build-in-place case
+	(in Expand_Simple_Function_Return).
+	(Set_Enclosing_Sec_Stack_Return): New procedure to perform
+	the Set_Sec_Stack_Needed_For_Return calls. Called in the
+	build-in-place and non-build-in-place cases.
+	(Expand_Simple_Function_Return): Call
+	Set_Enclosing_Sec_Stack_Return instead of performing the loop
+	in line.
+
+2015-10-23  Bob Duff  <duff@adacore.com>
+
+	* scng.adb (Char_Literal_Case): If an apostrophe
+	follows a reserved word, treat it as a lone apostrophe, rather
+	than the start of a character literal. This was already done for
+	"all", but it needs to be done also for (e.g.) "Delta".
+
+2015-10-23  Bob Duff  <duff@adacore.com>
+
 	* exp_strm.adb (Build_Record_Or_Elementary_Input_Function): Use
 	Underlying_Type for B_Typ, in case the Typ is a subtype of a type with
 	unknown discriminants.
