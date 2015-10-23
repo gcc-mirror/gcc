@@ -6151,17 +6151,17 @@ package body Sem_Ch12 is
             else
                Formal_Decl := Parent (Associated_Formal_Package (E));
 
-               --  Nothing to check if the formal has a box or an
-               --  others_clause (necessarily with a box).
+               --  Nothing to check if the formal has a box or an others_clause
+               --  (necessarily with a box).
 
                if Box_Present (Formal_Decl) then
                   null;
 
                elsif Nkind (First (Generic_Associations (Formal_Decl))) =
-                 N_Others_Choice
+                       N_Others_Choice
                then
-                  --  The internal validating package was generated but
-                  --  formal and instance are known to be compatible..
+                  --  The internal validating package was generated but formal
+                  --  and instance are known to be compatible.
 
                   Formal_P := Next_Entity (E);
                   Remove (Unit_Declaration_Node (Formal_P));
@@ -6172,8 +6172,8 @@ package body Sem_Ch12 is
 
                   --  After checking, remove the internal validating package.
                   --  It is only needed for semantic checks, and as it may
-                  --  contain generic formal declarations it should not
-                  --  reach gigi.
+                  --  contain generic formal declarations it should not reach
+                  --  gigi.
 
                   Remove (Unit_Declaration_Node (Formal_P));
                end if;
