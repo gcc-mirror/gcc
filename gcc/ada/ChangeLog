@@ -1,3 +1,17 @@
+2015-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Missing_Return): Do not report a missing
+	return statement on a function body constructed to complete a
+	package body for a premature instantiation.
+
+2015-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Build_Procedure_Body_Form): Replace body of
+	original function with that of generated procedure, to simplify
+	processing and avoid scoping problems with local declarations.
+	(Rewrite_Function_Call_For_C): Handle properly the case of a
+	parameterless function.
+
 2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* a-exextr.adb, sem_ch6.adb, sem_ch13.adb: Minor reformatting.
