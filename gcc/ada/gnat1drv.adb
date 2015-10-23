@@ -27,7 +27,6 @@ with Atree;    use Atree;
 with Back_End; use Back_End;
 with Checks;
 with Comperr;
-with Cprint;
 with Csets;    use Csets;
 with Debug;    use Debug;
 with Elists;
@@ -1357,13 +1356,6 @@ begin
       --  the library file output.
 
       Namet.Unlock;
-
-      --  Finally generate C source code if needed. Note that this needs to
-      --  happen after calling gigi to take advantage of the back annotation.
-
-      if Generate_C_Code then
-         Cprint.Source_Dump;
-      end if;
 
       --  Generate the call-graph output of dispatching calls
 
