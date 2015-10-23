@@ -1,5 +1,13 @@
 2015-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/pr67600
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::get_dynamic_type): Do not confuse
+	instance offset with offset of outer type.
+	* g++.dg/torture/pr67600.C: New testcase.
+
+2015-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* fold-const.c (operand_equal_p): Handle VIEW_CONVERT_EXPR.
 
 2015-10-23  Caroline Tice  <cmtice@google.com>
