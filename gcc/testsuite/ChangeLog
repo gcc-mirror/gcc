@@ -1,3 +1,9 @@
+2015-10-23  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR sanitizer/68042
+	* c-c++-common/asan/memcmp-1.c: Adjust test to pass on Darwin.
+	* c-c++-common/asan/sanity-check-pure-c-1.c: Likewise.
+
 2015-10-22  Martin Sebor  <msebor@redhat.com>
 
 	PR driver/68043
