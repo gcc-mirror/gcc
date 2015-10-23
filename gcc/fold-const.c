@@ -2967,6 +2967,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
 	case REALPART_EXPR:
 	case IMAGPART_EXPR:
+	case VIEW_CONVERT_EXPR:
 	  return OP_SAME (0);
 
 	case TARGET_MEM_REF:
