@@ -6509,9 +6509,10 @@ package body Exp_Aggr is
               Into        => Target,
               Scalar_Comp => Is_Scalar_Type (Component_Type (Typ)),
               Indexes     => No_List);
-      else
-         --  Directly or indirectly (e.g. access protected procedure) a record
 
+      --  Directly or indirectly (e.g. access protected procedure) a record
+
+      else
          Aggr_Code := Build_Record_Aggr_Code (N, Typ, Target);
       end if;
 

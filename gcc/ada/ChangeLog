@@ -1,3 +1,8 @@
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb, freeze.adb, sem_attr.adb, exp_aggr.adb,
+	gnatname.adb: Minor reformatting.
+
 2015-10-23  Steve Baird  <baird@adacore.com>
 
 	* a-cbdlli.ads, a-cbhama.ads, a-cbhase.ads, a-cbmutr.ads,

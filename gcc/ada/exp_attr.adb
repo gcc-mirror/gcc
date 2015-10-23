@@ -1473,22 +1473,25 @@ package body Exp_Attr is
                declare
                   T1 : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
                   T2 : constant Entity_Id := Make_Temporary (Loc, 'T', Right);
+
                begin
                   Rewrite (N,
                     Make_Expression_With_Actions (Loc,
-                      Actions => New_List (
+                      Actions    => New_List (
                         Make_Object_Declaration (Loc,
                           Defining_Identifier => T1,
+                          Constant_Present    => True,
                           Object_Definition   =>
                             New_Occurrence_Of (Etype (Left), Loc),
-                          Constant_Present    => True,
                           Expression          => Relocate_Node (Left)),
+
                         Make_Object_Declaration (Loc,
                           Defining_Identifier => T2,
+                          Constant_Present    => True,
                           Object_Definition   =>
                             New_Occurrence_Of (Etype (Right), Loc),
-                          Constant_Present    => True,
                           Expression          => Relocate_Node (Right))),
+
                       Expression =>
                         Make_If_Expression (Loc,
                           Expressions => New_List (
