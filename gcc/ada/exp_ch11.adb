@@ -99,7 +99,7 @@ package body Exp_Ch11 is
    --  and the code generator (e.g. gigi) must still handle proper generation
    --  of cleanup calls for the non-exceptional case.
 
-   procedure Expand_At_End_Handler (HSS : Node_Id; Block : Node_Id) is
+   procedure Expand_At_End_Handler (HSS : Node_Id; Blk_Id : Entity_Id) is
       Clean   : constant Entity_Id  := Entity (At_End_Proc (HSS));
       Ohandle : Node_Id;
       Stmnts  : List_Id;
@@ -138,8 +138,8 @@ package body Exp_Ch11 is
          return;
       end if;
 
-      if Present (Block) then
-         Push_Scope (Block);
+      if Present (Blk_Id) then
+         Push_Scope (Blk_Id);
       end if;
 
       Ohandle :=
@@ -175,7 +175,7 @@ package body Exp_Ch11 is
       Analyze_List (Stmnts, Suppress => All_Checks);
       Expand_Exception_Handlers (HSS);
 
-      if Present (Block) then
+      if Present (Blk_Id) then
          Pop_Scope;
       end if;
    end Expand_At_End_Handler;

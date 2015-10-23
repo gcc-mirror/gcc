@@ -378,10 +378,7 @@ procedure Gnat1drv is
          Optimization_Level := 0;
 
          --  Enable some restrictions systematically to simplify the generated
-         --  code (and ease analysis). Note that restriction checks are also
-         --  disabled in SPARK mode, see Restrict.Check_Restriction, and user
-         --  specified Restrictions pragmas are ignored, see
-         --  Sem_Prag.Process_Restrictions_Or_Restriction_Warnings.
+         --  code (and ease analysis).
 
          Restrict.Restrictions.Set (No_Initialize_Scalars) := True;
 

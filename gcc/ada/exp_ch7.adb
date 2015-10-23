@@ -4683,28 +4683,97 @@ package body Exp_Ch7 is
 
          --  Local variables
 
+         Exceptions_OK : constant Boolean :=
+                           not Restriction_Active (No_Exception_Propagation);
+
          Built     : Boolean := False;
+         Blk_Decl  : Node_Id := Empty;
+         Blk_Decls : List_Id := No_List;
+         Blk_Ins   : Node_Id;
+         Blk_Stmts : List_Id;
          Desig_Typ : Entity_Id;
-         Expr      : Node_Id;
-         Fin_Block : Node_Id;
+         Fin_Call  : Node_Id;
          Fin_Data  : Finalization_Exception_Data;
-         Fin_Decls : List_Id;
-         Fin_Insrt : Node_Id;
-         Last_Fin  : Node_Id := Empty;
+         Fin_Stmts : List_Id;
+         Hook_Clr  : Node_Id := Empty;
+         Hook_Id   : Entity_Id;
+         Hook_Ins  : Node_Id;
+         Init_Expr : Node_Id;
          Loc       : Source_Ptr;
+         Obj_Decl  : Node_Id;
          Obj_Id    : Entity_Id;
          Obj_Ref   : Node_Id;
          Obj_Typ   : Entity_Id;
-         Prev_Fin  : Node_Id := Empty;
-         Ptr_Id    : Entity_Id;
-         Stmt      : Node_Id;
-         Stmts     : List_Id;
-         Temp_Id   : Entity_Id;
-         Temp_Ins  : Node_Id;
+         Ptr_Typ   : Entity_Id;
 
       --  Start of processing for Process_Transient_Objects
 
       begin
+         --  The expansion performed by this routine is as follows:
+
+         --    type Ptr_Typ_1 is access all Ctrl_Trans_Obj_1_Typ;
+         --    Hook_1 : Ptr_Typ_1 := null;
+         --    Ctrl_Trans_Obj_1 : ...;
+         --    Hook_1 := Ctrl_Trans_Obj_1'Unrestricted_Access;
+         --    . . .
+         --    type Ptr_Typ_N is access all Ctrl_Trans_Obj_N_Typ;
+         --    Hook_N : Ptr_Typ_N := null;
+         --    Ctrl_Trans_Obj_N : ...;
+         --    Hook_N := Ctrl_Trans_Obj_N'Unrestricted_Access;
+
+         --    declare
+         --       Abrt   : constant Boolean := ...;
+         --       Ex     : Exception_Occurrence;
+         --       Raised : Boolean := False;
+
+         --    begin
+         --       begin
+         --          Hook_N := null;
+         --          [Deep_]Finalize (Ctrl_Trans_Obj_N);
+
+         --       exception
+         --          when others =>
+         --             if not Raised then
+         --                Raised := True;
+         --                Save_Occurrence (Ex, Get_Current_Excep.all.all);
+         --       end;
+         --       . . .
+         --       begin
+         --          Hook_1 := null;
+         --          [Deep_]Finalize (Ctrl_Trans_Obj_1);
+
+         --       exception
+         --          when others =>
+         --             if not Raised then
+         --                Raised := True;
+         --                Save_Occurrence (Ex, Get_Current_Excep.all.all);
+         --       end;
+
+         --       if Raised and not Abrt then
+         --          Raise_From_Controlled_Operation (Ex);
+         --       end if;
+         --    end;
+
+         --  When restriction No_Exception_Propagation is active, the expansion
+         --  is as follows:
+
+         --    type Ptr_Typ_1 is access all Ctrl_Trans_Obj_1_Typ;
+         --    Hook_1 : Ptr_Typ_1 := null;
+         --    Ctrl_Trans_Obj_1 : ...;
+         --    Hook_1 := Ctrl_Trans_Obj_1'Unrestricted_Access;
+         --    . . .
+         --    type Ptr_Typ_N is access all Ctrl_Trans_Obj_N_Typ;
+         --    Hook_N : Ptr_Typ_N := null;
+         --    Ctrl_Trans_Obj_N : ...;
+         --    Hook_N := Ctrl_Trans_Obj_N'Unrestricted_Access;
+
+         --    begin
+         --       Hook_N := null;
+         --       [Deep_]Finalize (Ctrl_Trans_Obj_N);
+         --       Hook_1 := null;
+         --       [Deep_]Finalize (Ctrl_Trans_Obj_1);
+         --    end;
+
          --  Recognize a scenario where the transient context is an object
          --  declaration initialized by a build-in-place function call:
 
@@ -4723,7 +4792,7 @@ package body Exp_Ch7 is
            and then Present (BIP_Initialization_Call (Defining_Identifier (N)))
          then
             Must_Hook := True;
-            Fin_Insrt := BIP_Initialization_Call (Defining_Identifier (N));
+            Blk_Ins   := BIP_Initialization_Call (Defining_Identifier (N));
 
          --  Search the context for at least one subprogram call. If found, the
          --  machinery exports all transient objects to the enclosing finalizer
@@ -4731,24 +4800,28 @@ package body Exp_Ch7 is
 
          else
             Detect_Subprogram_Call (N);
-            Fin_Insrt := Last_Object;
+            Blk_Ins := Last_Object;
+         end if;
+
+         if Clean then
+            Insert_List_After_And_Analyze (Blk_Ins, Act_Cleanup);
          end if;
 
          --  Examine all objects in the list First_Object .. Last_Object
 
-         Stmt := First_Object;
-         while Present (Stmt) loop
-            if Nkind (Stmt) = N_Object_Declaration
-              and then Analyzed (Stmt)
-              and then Is_Finalizable_Transient (Stmt, N)
+         Obj_Decl := First_Object;
+         while Present (Obj_Decl) loop
+            if Nkind (Obj_Decl) = N_Object_Declaration
+              and then Analyzed (Obj_Decl)
+              and then Is_Finalizable_Transient (Obj_Decl, N)
 
               --  Do not process the node to be wrapped since it will be
               --  handled by the enclosing finalizer.
 
-              and then Stmt /= Related_Node
+              and then Obj_Decl /= Related_Node
             then
-               Loc       := Sloc (Stmt);
-               Obj_Id    := Defining_Identifier (Stmt);
+               Loc       := Sloc (Obj_Decl);
+               Obj_Id    := Defining_Identifier (Obj_Decl);
                Obj_Typ   := Base_Type (Etype (Obj_Id));
                Desig_Typ := Obj_Typ;
 
@@ -4760,18 +4833,8 @@ package body Exp_Ch7 is
                   Desig_Typ := Available_View (Designated_Type (Desig_Typ));
                end if;
 
-               --  Create the necessary entities and declarations the first
-               --  time around.
-
-               if not Built then
-                  Built     := True;
-                  Fin_Decls := New_List;
-
-                  Build_Object_Declarations (Fin_Data, Fin_Decls, Loc);
-               end if;
-
-               --  Transient variables associated with subprogram calls need
-               --  extra processing. These variables are usually created right
+               --  Transient objects associated with subprogram calls need
+               --  extra processing. These objects are usually created right
                --  before the call and finalized immediately after the call.
                --  If an exception occurs during the call, the clean up code
                --  is skipped due to the sudden change in control and the
@@ -4783,16 +4846,15 @@ package body Exp_Ch7 is
 
                if Must_Hook then
 
-                  --  Step 1: Create an access type which provides a reference
-                  --  to the transient object. Generate:
+                  --  Create an access type which provides a reference to the
+                  --  transient object. Generate:
+                  --    type Ptr_Typ is access [all] Desig_Typ;
 
-                  --    Ann : access [all] <Desig_Typ>;
+                  Ptr_Typ := Make_Temporary (Loc, 'A');
 
-                  Ptr_Id := Make_Temporary (Loc, 'A');
-
-                  Insert_Action (Stmt,
+                  Insert_Action (Obj_Decl,
                     Make_Full_Type_Declaration (Loc,
-                      Defining_Identifier => Ptr_Id,
+                      Defining_Identifier => Ptr_Typ,
                       Type_Definition     =>
                         Make_Access_To_Object_Definition (Loc,
                           All_Present        =>
@@ -4800,41 +4862,38 @@ package body Exp_Ch7 is
                           Subtype_Indication =>
                             New_Occurrence_Of (Desig_Typ, Loc))));
 
-                  --  Step 2: Create a temporary which acts as a hook to the
-                  --  transient object. Generate:
+                  --  Create a temporary which acts as a hook to the transient
+                  --  object. Generate:
+                  --    Hook : Ptr_Typ := null;
 
-                  --    Temp : Ptr_Id := null;
+                  Hook_Id := Make_Temporary (Loc, 'T');
 
-                  Temp_Id := Make_Temporary (Loc, 'T');
-
-                  Insert_Action (Stmt,
+                  Insert_Action (Obj_Decl,
                     Make_Object_Declaration (Loc,
-                      Defining_Identifier => Temp_Id,
+                      Defining_Identifier => Hook_Id,
                       Object_Definition   =>
-                        New_Occurrence_Of (Ptr_Id, Loc)));
+                        New_Occurrence_Of (Ptr_Typ, Loc)));
 
-                  --  Mark the temporary as a transient hook. This signals the
-                  --  machinery in Build_Finalizer to recognize this special
-                  --  case.
+                  --  Mark the temporary as a hook. This signals the machinery
+                  --  in Build_Finalizer to recognize this special case.
 
-                  Set_Status_Flag_Or_Transient_Decl (Temp_Id, Stmt);
+                  Set_Status_Flag_Or_Transient_Decl (Hook_Id, Obj_Decl);
 
-                  --  Step 3: Hook the transient object to the temporary
+                  --  Hook the transient object to the temporary. Generate:
+                  --    Hook := Ptr_Typ (Obj_Id);
+                  --      <or>
+                  --    Hook := Obj_Id'Unrestricted_Access;
 
                   if Is_Access_Type (Obj_Typ) then
-                     Expr :=
-                       Convert_To (Ptr_Id, New_Occurrence_Of (Obj_Id, Loc));
+                     Init_Expr :=
+                       Convert_To (Ptr_Typ, New_Occurrence_Of (Obj_Id, Loc));
+
                   else
-                     Expr :=
+                     Init_Expr :=
                        Make_Attribute_Reference (Loc,
                          Prefix         => New_Occurrence_Of (Obj_Id, Loc),
                          Attribute_Name => Name_Unrestricted_Access);
                   end if;
-
-                  --  Generate:
-                  --    Temp := Ptr_Id (Obj_Id);
-                  --      <or>
-                  --    Temp := Obj_Id'Unrestricted_Access;
 
                   --  When the transient object is initialized by an aggregate,
                   --  the hook must capture the object after the last component
@@ -4844,55 +4903,88 @@ package body Exp_Ch7 is
                   if Ekind (Obj_Id) = E_Variable
                     and then Present (Last_Aggregate_Assignment (Obj_Id))
                   then
-                     Temp_Ins := Last_Aggregate_Assignment (Obj_Id);
+                     Hook_Ins := Last_Aggregate_Assignment (Obj_Id);
 
                   --  Otherwise the hook seizes the related object immediately
 
                   else
-                     Temp_Ins := Stmt;
+                     Hook_Ins := Obj_Decl;
                   end if;
 
-                  Insert_After_And_Analyze (Temp_Ins,
+                  Insert_After_And_Analyze (Hook_Ins,
                     Make_Assignment_Statement (Loc,
-                      Name       => New_Occurrence_Of (Temp_Id, Loc),
-                      Expression => Expr));
+                      Name       => New_Occurrence_Of (Hook_Id, Loc),
+                      Expression => Init_Expr));
+
+                  --  The transient object is about to be finalized by the
+                  --  clean up code following the subprogram call. In order
+                  --  to avoid double finalization, clear the hook.
+
+                  --  Generate:
+                  --    Hook := null;
+
+                  Hook_Clr :=
+                    Make_Assignment_Statement (Loc,
+                      Name       => New_Occurrence_Of (Hook_Id, Loc),
+                      Expression => Make_Null (Loc));
                end if;
 
-               Stmts := New_List;
+               --  Before generating the clean up code for the first transient
+               --  object, create a wrapper block which houses all hook clear
+               --  statements and finalization calls. This wrapper is needed by
+               --  the back-end.
 
-               --  The transient object is about to be finalized by the clean
-               --  up code following the subprogram call. In order to avoid
-               --  double finalization, clear the hook.
+               if not Built then
+                  Built     := True;
+                  Blk_Stmts := New_List;
 
-               --  Generate:
-               --    Temp := null;
+                  --  Create the declarations of all entities that participate
+                  --  in exception detection and propagation.
 
-               if Must_Hook then
-                  Append_To (Stmts,
-                    Make_Assignment_Statement (Loc,
-                      Name       => New_Occurrence_Of (Temp_Id, Loc),
-                      Expression => Make_Null (Loc)));
+                  if Exceptions_OK then
+                     Blk_Decls := New_List;
+
+                     --  Generate:
+                     --    Abrt   : constant Boolean := ...;
+                     --    Ex     : Exception_Occurrence;
+                     --    Raised : Boolean := False;
+
+                     Build_Object_Declarations (Fin_Data, Blk_Decls, Loc);
+
+                     --  Generate:
+                     --    if Raised and then not Abrt then
+                     --       Raise_From_Controlled_Operation (Ex);
+                     --    end if;
+
+                     Append_To (Blk_Stmts, Build_Raise_Statement (Fin_Data));
+                  end if;
+
+                  Blk_Decl :=
+                    Make_Block_Statement (Loc,
+                      Declarations               => Blk_Decls,
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements => Blk_Stmts));
                end if;
 
                --  Generate:
                --    [Deep_]Finalize (Obj_Ref);
 
-               --  Set type of dereference, so that proper conversion are
-               --  generated when operation is inherited.
-
                Obj_Ref := New_Occurrence_Of (Obj_Id, Loc);
 
                if Is_Access_Type (Obj_Typ) then
                   Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
-                  Set_Etype (Obj_Ref, Directly_Designated_Type (Obj_Typ));
+                  Set_Etype (Obj_Ref, Desig_Typ);
                end if;
 
-               Append_To (Stmts,
-                 Make_Final_Call (Obj_Ref => Obj_Ref, Typ => Desig_Typ));
+               Fin_Call :=
+                 Make_Final_Call (Obj_Ref => Obj_Ref, Typ => Desig_Typ);
 
-               --  Generate:
-               --    [Temp := null;]
+               --  When exception propagation is enabled wrap the hook clear
+               --  statement and the finalization call into a block to catch
+               --  potential exceptions raised during finalization. Generate:
                --    begin
+               --       [Temp := null;]
                --       [Deep_]Finalize (Obj_Ref);
 
                --    exception
@@ -4904,60 +4996,48 @@ package body Exp_Ch7 is
                --          end if;
                --    end;
 
-               Fin_Block :=
-                 Make_Block_Statement (Loc,
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements => Stmts,
-                       Exception_Handlers => New_List (
-                         Build_Exception_Handler (Fin_Data))));
+               if Exceptions_OK then
+                  Fin_Stmts := New_List;
 
-               --  The single raise statement must be inserted after all the
-               --  finalization blocks, and we put everything into a wrapper
-               --  block to clearly expose the construct to the back-end.
+                  if Present (Hook_Clr) then
+                     Append_To (Fin_Stmts, Hook_Clr);
+                  end if;
 
-               if Present (Prev_Fin) then
-                  Insert_Before_And_Analyze (Prev_Fin, Fin_Block);
-               else
-                  Insert_After_And_Analyze (Fin_Insrt,
+                  Append_To (Fin_Stmts, Fin_Call);
+
+                  Prepend_To (Blk_Stmts,
                     Make_Block_Statement (Loc,
-                      Declarations => Fin_Decls,
                       Handled_Statement_Sequence =>
                         Make_Handled_Sequence_Of_Statements (Loc,
-                          Statements => New_List (Fin_Block))));
+                          Statements         => Fin_Stmts,
+                          Exception_Handlers => New_List (
+                            Build_Exception_Handler (Fin_Data)))));
 
-                  Last_Fin := Fin_Block;
+               --  Otherwise generate:
+               --    [Temp := null;]
+               --    [Deep_]Finalize (Obj_Ref);
+
+               else
+                  Prepend_To (Blk_Stmts, Fin_Call);
+
+                  if Present (Hook_Clr) then
+                     Prepend_To (Blk_Stmts, Hook_Clr);
+                  end if;
                end if;
-
-               Prev_Fin := Fin_Block;
             end if;
 
             --  Terminate the scan after the last object has been processed to
             --  avoid touching unrelated code.
 
-            if Stmt = Last_Object then
+            if Obj_Decl = Last_Object then
                exit;
             end if;
 
-            Next (Stmt);
+            Next (Obj_Decl);
          end loop;
 
-         if Clean then
-            if Present (Prev_Fin) then
-               Insert_List_Before_And_Analyze (Prev_Fin, Act_Cleanup);
-            else
-               Insert_List_After_And_Analyze (Fin_Insrt, Act_Cleanup);
-            end if;
-         end if;
-
-         --  Generate:
-         --    if Raised and then not Abort then
-         --       Raise_From_Controlled_Operation (E);
-         --    end if;
-
-         if Built and then Present (Last_Fin) then
-            Insert_After_And_Analyze (Last_Fin,
-              Build_Raise_Statement (Fin_Data));
+         if Present (Blk_Decl) then
+            Insert_After_And_Analyze (Blk_Ins, Blk_Decl);
          end if;
       end Process_Transient_Objects;
 

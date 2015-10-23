@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,12 +40,11 @@ package Exp_Ch11 is
    --  See runtime routine Ada.Exceptions for full details on the format and
    --  content of these tables.
 
-   procedure Expand_At_End_Handler (HSS : Node_Id; Block : Node_Id);
-   --  Given a handled statement sequence, HSS, for which the At_End_Proc
-   --  field is set, and which currently has no exception handlers, this
-   --  procedure expands the special exception handler required.
-   --  This procedure also create a new scope for the given Block, if
-   --  Block is not Empty.
+   procedure Expand_At_End_Handler (HSS : Node_Id; Blk_Id : Entity_Id);
+   --  Given handled statement sequence HSS for which the At_End_Proc field
+   --  is set, and which currently has no exception handlers, this procedure
+   --  expands the special exception handler required. This procedure also
+   --  create a new scope for the given block, if Blk_Id is not Empty.
 
    procedure Expand_Exception_Handlers (HSS : Node_Id);
    --  This procedure expands exception handlers, and is called as part
