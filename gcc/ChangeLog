@@ -1,3 +1,8 @@
+2015-10-23  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-structalias.c (create_variable_info_for_1): Add missing
+	setting of is_full_var in case of a single field.
+
 2015-10-22  Martin Sebor  <msebor@redhat.com>
 
 	PR driver/68043
