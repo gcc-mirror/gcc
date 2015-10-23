@@ -686,14 +686,13 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
       TREE_STATIC (ctor) = 1;
       DECL_INITIAL (decl) = ctor;
 
-#ifdef ENABLE_CHECKING
-      {
-	tree field, value;
-	unsigned HOST_WIDE_INT idx;
-	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), idx, field, value)
-	  gcc_assert (TREE_CODE (field) == FIELD_DECL);
-      }
-#endif
+      if (flag_checking)
+	{
+	  tree field, value;
+	  unsigned HOST_WIDE_INT idx;
+	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), idx, field, value)
+	    gcc_assert (TREE_CODE (field) == FIELD_DECL);
+	}
     }
 
   /* Build component reference for each variable.  */

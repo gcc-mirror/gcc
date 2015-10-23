@@ -1,3 +1,8 @@
+2015-10-23  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* trans-common.c (create_common): Adjust to use flag_checking.
+	* trans.c (gfc_add_modify_loc): Use gcc_checking_assert.
+
 2015-10-21  Martin Sebor  <msebor@redhat.com>
 
 	PR driver/68043

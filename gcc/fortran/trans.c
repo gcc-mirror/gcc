@@ -151,7 +151,6 @@ gfc_add_modify_loc (location_t loc, stmtblock_t * pblock, tree lhs, tree rhs)
 {
   tree tmp;
 
-#ifdef ENABLE_CHECKING
   tree t1, t2;
   t1 = TREE_TYPE (rhs);
   t2 = TREE_TYPE (lhs);
@@ -159,9 +158,8 @@ gfc_add_modify_loc (location_t loc, stmtblock_t * pblock, tree lhs, tree rhs)
      for scalar assignments.  We should probably have something
      similar for aggregates, but right now removing that check just
      breaks everything.  */
-  gcc_assert (t1 == t2
-	      || AGGREGATE_TYPE_P (TREE_TYPE (lhs)));
-#endif
+  gcc_checking_assert (t1 == t2
+		       || AGGREGATE_TYPE_P (TREE_TYPE (lhs)));
 
   tmp = fold_build2_loc (loc, MODIFY_EXPR, void_type_node, lhs,
 			 rhs);
