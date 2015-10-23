@@ -1,3 +1,12 @@
+2015-10-23  Jeff Law  <law@redhat.com>
+
+	* passes.c (execute_function_todo): Do not call flush_ssaname_freelist
+	here.  Instead...
+	(execute_todo): Call it here.
+	* tree-ssanames.c (make_ssa_name_fn): Unconditionally gather reuse
+	statistics
+	(pass_release_ssa_names::execute): Do not call flusH_ssaname_freelist.
+
 2015-10-23  Gregor Richards  <gregor.richards@uwaterloo.ca>
 	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
