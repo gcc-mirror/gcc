@@ -5035,6 +5035,23 @@ package body Exp_Ch6 is
          Spec_Id := Body_Id;
       end if;
 
+      --  If this is a Pure function which has any parameters whose root type
+      --  is System.Address, reset the Pure indication.
+      --  This check is also performed when the subprogram is frozen, but we
+      --  repeat it on the body so that the indication is consistent, and so
+      --  it applies as well to bodies without separate specifications.
+
+      if Is_Pure (Spec_Id)
+        and then Is_Subprogram (Spec_Id)
+        and then not Has_Pragma_Pure_Function (Spec_Id)
+      then
+         Check_Function_With_Address_Parameter (Spec_Id);
+
+         if Spec_Id /= Body_Id then
+            Set_Is_Pure (Body_Id, Is_Pure (Spec_Id));
+         end if;
+      end if;
+
       --  The subprogram body is Ghost when it is stand alone and subject to
       --  pragma Ghost or the corresponding spec is Ghost. To accomodate both
       --  cases, set the mode now to ensure that any nodes generated during
@@ -5111,51 +5128,6 @@ package body Exp_Ch6 is
          else
             Generate_Poll_Call (First (L));
          end if;
-      end if;
-
-      --  If this is a Pure function which has any parameters whose root type
-      --  is System.Address, reset the Pure indication, since it will likely
-      --  cause incorrect code to be generated as the parameter is probably
-      --  a pointer, and the fact that the same pointer is passed does not mean
-      --  that the same value is being referenced.
-
-      --  Note that if the programmer gave an explicit Pure_Function pragma,
-      --  then we believe the programmer, and leave the subprogram Pure.
-
-      --  This code should probably be at the freeze point, so that it happens
-      --  even on a -gnatc (or more importantly -gnatt) compile, so that the
-      --  semantic tree has Is_Pure set properly ???
-
-      if Is_Pure (Spec_Id)
-        and then Is_Subprogram (Spec_Id)
-        and then not Has_Pragma_Pure_Function (Spec_Id)
-      then
-         declare
-            F : Entity_Id;
-
-         begin
-            F := First_Formal (Spec_Id);
-            while Present (F) loop
-               if Is_Descendent_Of_Address (Etype (F))
-
-                 --  Note that this test is being made in the body of the
-                 --  subprogram, not the spec, so we are testing the full
-                 --  type for being limited here, as required.
-
-                 or else Is_Limited_Type (Etype (F))
-               then
-                  Set_Is_Pure (Spec_Id, False);
-
-                  if Spec_Id /= Body_Id then
-                     Set_Is_Pure (Body_Id, False);
-                  end if;
-
-                  exit;
-               end if;
-
-               Next_Formal (F);
-            end loop;
-         end;
       end if;
 
       --  Initialize any scalar OUT args if Initialize/Normalize_Scalars

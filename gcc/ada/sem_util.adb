@@ -2091,6 +2091,34 @@ package body Sem_Util is
       end if;
    end Check_Fully_Declared;
 
+   -------------------------------------------
+   -- Check_Function_With_Address_Parameter --
+   -------------------------------------------
+
+   procedure Check_Function_With_Address_Parameter (Subp_Id : Entity_Id) is
+      F : Entity_Id;
+      T : Entity_Id;
+
+   begin
+      F := First_Formal (Subp_Id);
+      while Present (F) loop
+         T := Etype (F);
+
+         if Is_Private_Type (T) and then Present (Full_View (T)) then
+            T := Full_View (T);
+         end if;
+
+         if Is_Descendent_Of_Address (T)
+           or else Is_Limited_Type (T)
+         then
+            Set_Is_Pure (Subp_Id, False);
+            exit;
+         end if;
+
+         Next_Formal (F);
+      end loop;
+   end Check_Function_With_Address_Parameter;
+
    -------------------------------------
    -- Check_Function_Writable_Actuals --
    -------------------------------------
