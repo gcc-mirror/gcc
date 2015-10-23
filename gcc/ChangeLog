@@ -1,3 +1,8 @@
+2015-10-23  Gregor Richards  <gregor.richards@uwaterloo.ca>
+	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.gcc (enable_secureplt): Add *-linux*-musl*.
+
 2015-10-23  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/67830
