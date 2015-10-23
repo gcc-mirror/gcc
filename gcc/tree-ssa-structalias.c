@@ -5693,6 +5693,8 @@ create_variable_info_for_1 (tree decl, const char *name)
 
   vi = new_var_info (decl, name);
   vi->fullsize = tree_to_uhwi (declsize);
+  if (fieldstack.length () == 1)
+    vi->is_full_var = true;
   for (i = 0, newvi = vi;
        fieldstack.iterate (i, &fo);
        ++i, newvi = vi_next (newvi))
