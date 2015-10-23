@@ -29,6 +29,7 @@ different compilers on different platforms.
 However, since Ada is designed to be used in a
 wide variety of applications, it also contains a number of system
 dependent features to be used in interfacing to the external world.
+
 .. index:: Implementation-dependent features
 
 .. index:: Portability

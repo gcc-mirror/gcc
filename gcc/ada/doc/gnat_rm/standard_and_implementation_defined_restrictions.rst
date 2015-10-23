@@ -459,6 +459,19 @@ intermediate temporary, and without generating a loop to initialize individual
 components. Otherwise, a loop is created for arrays larger than about 5000
 scalar components.
 
+No_Implicit_Protected_Object_Allocations
+----------------------------------------
+.. index: No_Implicit_Protected_Object_Allocations
+
+[GNAT] No constructs are allowed to cause implicit heap allocation of a
+protected object.
+
+No_Implicit_Task_Allocations
+----------------------------
+.. index: No_Implicit_Task_Allocations
+
+[GNAT] No constructs are allowed to cause implicit heap allocation of a task.
+
 No_Initialize_Scalars
 ---------------------
 .. index:: No_Initialize_Scalars
@@ -665,6 +678,15 @@ No_Task_Allocators
 
 [RM D.7] There are no allocators for task types
 or types containing task subcomponents.
+
+No_Task_At_Interrupt_Priority
+-----------------------------
+.. index:: No_Task_At_Interrupt_Priority
+
+[GNAT] This restriction ensures at compile time that there is no
+Interrupt_Priority aspect or pragma for a task or a task type. As
+a consequence, the tasks are always created with a priority below
+that an interrupt priority.
 
 No_Task_Attributes_Package
 --------------------------
@@ -1003,7 +1025,7 @@ restriction is in force:
 * No object renaming
 * No use clause
 * Aggregates must be qualified
-* Non-static choice in array aggregates not allowed
+* Nonstatic choice in array aggregates not allowed
 * The only view conversions which are allowed as in-out parameters are conversions of a tagged type to an ancestor type
 * No mixing of positional and named association in aggregate, no multi choice
 * AND, OR and XOR for arrays only allowed when operands have same static bounds
@@ -1024,7 +1046,7 @@ restriction is in force:
 * Untagged record cannot be null
 * No class-wide operations
 * Initialization expressions must respect SPARK restrictions
-* Non-static ranges not allowed except in iteration schemes
+* Nonstatic ranges not allowed except in iteration schemes
 * String subtypes must have lower bound of 1
 * Subtype of Boolean cannot have constraint
 * At most one tagged type or extension per package

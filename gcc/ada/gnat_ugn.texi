@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , October 20, 2015
+GNAT User's Guide for Native Platforms , October 23, 2015
 
 AdaCore
 
@@ -11028,7 +11028,7 @@ are not treated as errors if this switch is present.
 
 @item @code{-gnatw.e}
 
-@emph{Activate every optional warning}
+@emph{Activate every optional warning.}
 
 @geindex Warnings
 @geindex activate every optional warning
@@ -11114,7 +11114,7 @@ This switch suppresses warnings for unrecognized pragmas.
 
 @item @code{-gnatw.g}
 
-@emph{Warnings used for GNAT sources}
+@emph{Warnings used for GNAT sources.}
 
 This switch sets the warning categories that are used by the standard
 GNAT style. Currently this is equivalent to
@@ -11276,18 +11276,28 @@ Note that this warning option functions differently from the
 restriction @cite{No_Obsolescent_Features} in two respects.
 First, the restriction applies only to annex J features.
 Second, the restriction does flag uses of package @cite{ASCII}.
+@end table
+
+@geindex -gnatwJ (gcc)
+
+
+@table @asis
 
 @item @code{-gnatwJ}
 
 @emph{Suppress warnings on obsolescent features (Annex J).}
-.. index:: -gnatwJ  (gcc)
 
 This switch disables warnings on use of obsolescent features.
+@end table
+
+@geindex -gnatwk (gcc)
+
+
+@table @asis
 
 @item @code{-gnatwk}
 
 @emph{Activate warnings on variables that could be constants.}
-.. index:: -gnatwk  (gcc)
 
 This switch activates warnings for variables that are initialized but
 never modified, and then could be declared constants. The default is that
@@ -12076,7 +12086,7 @@ procedure K (S : String) is
 
 @item @code{-gnatw.w}
 
-@emph{Activate warnings on Warnings Off pragmas}
+@emph{Activate warnings on Warnings Off pragmas.}
 
 This switch activates warnings for use of @cite{pragma Warnings (Off@comma{} entity)}
 where either the pragma is entirely useless (because it suppresses no
@@ -12095,7 +12105,7 @@ The default is that these warnings are not given.
 
 @item @code{-gnatw.W}
 
-@emph{Suppress warnings on unnecessary Warnings Off pragmas}
+@emph{Suppress warnings on unnecessary Warnings Off pragmas.}
 
 This switch suppresses warnings for use of @cite{pragma Warnings (Off@comma{} ...)}.
 @end table
@@ -12204,7 +12214,7 @@ incompatibilities between Ada language versions.
 
 @item @code{-gnatw.y}
 
-@emph{Activate information messages for why package spec needs body}
+@emph{Activate information messages for why package spec needs body.}
 
 There are a number of cases in which a package spec needs a body.
 For example, the use of pragma Elaborate_Body, or the declaration
@@ -12224,7 +12234,7 @@ body. The default is that such information messages are not output.
 
 @item @code{-gnatw.Y}
 
-@emph{Disable information messages for why package spec needs body}
+@emph{Disable information messages for why package spec needs body.}
 
 This switch suppresses the output of information messages showing why
 a package specification needs a body.
@@ -12692,7 +12702,7 @@ options. For example, @emph{-gnatVif} or @emph{-gnatVfi}
 
 @item @code{-gnatVi}
 
-@emph{Validity checks for `in} mode parameters`
+@emph{Validity checks for `in` mode parameters.}
 
 Arguments for parameters of mode @cite{in} are validity checked in function
 and procedure calls at the point of call.
@@ -12705,7 +12715,7 @@ and procedure calls at the point of call.
 
 @item @code{-gnatVm}
 
-@emph{Validity checks for `in out} mode parameters.`
+@emph{Validity checks for `in out` mode parameters.}
 
 Arguments for parameters of mode @cite{in out} are validity checked in
 procedure calls at the point of call. The @cite{'m'} here stands for
@@ -12730,11 +12740,16 @@ for case statements and left hand side subscripts. Note that the use of
 the switch @emph{-gnatp} suppresses all run-time checks, including
 validity checks, and thus implies @emph{-gnatVn}. When this switch
 is used, it cancels any other @emph{-gnatV} previously issued.
+@end table
+
+@geindex -gnatVo (gcc)
+
+
+@table @asis
 
 @item @code{-gnatVo}
 
 @emph{Validity checks for operator and attribute operands.}
-.. index:: -gnatVo  (gcc)
 
 Arguments for predefined operators and attributes are validity checked.
 This includes all operators in package @cite{Standard},
@@ -13469,7 +13484,7 @@ around conditions in @cite{if} statements, @cite{while} statements and
 
 @item @code{-gnatyy}
 
-@emph{Set all standard style check options}
+@emph{Set all standard style check options.}
 
 This is equivalent to @cite{gnaty3aAbcefhiklmnprst}, that is all checking
 options enabled with the exception of @emph{-gnatyB}, @emph{-gnatyd},
@@ -13484,7 +13499,7 @@ options enabled with the exception of @emph{-gnatyB}, @emph{-gnatyd},
 
 @item @code{-gnaty-}
 
-@emph{Remove style check options}
+@emph{Remove style check options.}
 
 This causes any subsequent options in the string to act as canceling the
 corresponding style check option. To cancel maximum nesting level control,
@@ -13502,7 +13517,7 @@ allowed after @emph{-}.
 
 @item @code{-gnaty+}
 
-@emph{Enable style check options}
+@emph{Enable style check options.}
 
 This causes any subsequent options in the string to enable the corresponding
 style check option. That is, it cancels the effect of a previous -,
@@ -13888,7 +13903,7 @@ indicate Ada 83 compatibility mode.
 
 @table @asis
 
-@item @code{-gnat83 (Ada 83 Compatibility Mode)}
+@item @code{-gnat83} (Ada 83 Compatibility Mode)
 
 Although GNAT is primarily an Ada 95 / Ada 2005 compiler, this switch
 specifies that the program is to be compiled in Ada 83 mode. With
@@ -13903,9 +13918,10 @@ where, due to contractual reasons, existing code needs to be maintained
 using only Ada 83 features.
 
 With few exceptions (most notably the need to use @cite{<>} on
-.. index:: Generic formal parameters
-
-unconstrained generic formal parameters, the use of the new Ada 95 / Ada 2005
+unconstrained 
+@geindex Generic formal parameters
+generic formal parameters,
+the use of the new Ada 95 / Ada 2005
 reserved words, and the use of packages
 with optional bodies), it is not necessary to specify the
 @emph{-gnat83} switch when compiling Ada 83 programs, because, with rare
@@ -15133,6 +15149,34 @@ size of the environment task's secondary stack.
 Output complete list of elaboration-order dependencies.
 @end table
 
+@geindex -Ea (gnatbind)
+
+
+@table @asis
+
+@item @code{-Ea}
+
+Store tracebacks in exception occurrences when the target supports it.
+The "a" is for "address"; tracebacks will contain hexadecimal addresses,
+unless symbolic tracebacks are enabled.
+
+See also the packages @cite{GNAT.Traceback} and
+@cite{GNAT.Traceback.Symbolic} for more information.
+Note that on x86 ports, you must not use @emph{-fomit-frame-pointer}
+@emph{gcc} option.
+@end table
+
+@geindex -Es (gnatbind)
+
+
+@table @asis
+
+@item @code{-Es}
+
+Store tracebacks in exception occurrences when the target supports it.
+The "s" is for "symbolic"; symbolic tracebacks are enabled.
+@end table
+
 @geindex -E (gnatbind)
 
 
@@ -15140,12 +15184,7 @@ Output complete list of elaboration-order dependencies.
 
 @item @code{-E}
 
-Store tracebacks in exception occurrences when the target supports it.
-
-See also the packages @cite{GNAT.Traceback} and
-@cite{GNAT.Traceback.Symbolic} for more information.
-Note that on x86 ports, you must not use @emph{-fomit-frame-pointer}
-@emph{gcc} option.
+Currently the same as @cite{-Ea}.
 @end table
 
 @geindex -F (gnatbind)
@@ -15171,7 +15210,7 @@ flag checks are generated.
 
 @item @code{-h}
 
-Output usage (help) information
+Output usage (help) information.
 
 @geindex -H32 (gnatbind)
 
@@ -15280,7 +15319,7 @@ Output object list (to standard output or to the named file).
 
 @item @code{-p}
 
-Pessimistic (worst-case) elaboration order
+Pessimistic (worst-case) elaboration order.
 
 @geindex -P (gnatbind)
 
@@ -15319,7 +15358,7 @@ The @cite{xxx} string specified with the switch is one of:
 @itemize *
 
 @item 
-@code{in} for an invalid value*.
+@code{in} for an invalid value.
 
 If zero is invalid for the discrete type in question,
 then the scalar value is set to all zero bits.
@@ -15388,7 +15427,7 @@ Link against a shared GNAT run time when available.
 
 @item @code{-t}
 
-Tolerate time stamp and other consistency errors
+Tolerate time stamp and other consistency errors.
 
 @geindex -T (gnatbind)
 
@@ -15435,7 +15474,7 @@ Values stored this way can be retrieved at run time using
 
 @item @code{-w@emph{x}}
 
-Warning mode; @cite{x} = s/e for suppress/treat as error
+Warning mode; @cite{x} = s/e for suppress/treat as error.
 
 @geindex -Wx (gnatbind)
 
@@ -21187,12 +21226,20 @@ case-insensitive values are "false" and "true" (the default).
 Value is the name of the target platform. Taken into account only in the main
 project.
 
+Note that when the target is specified on the command line (usually with
+a switch --target=), the value of attribute reference 'Target is the one
+specified on the command line.
+
 @item 
 @strong{Runtime}: single, indexed, case-insensitive index
 
 Index is a language name. Indicates the runtime directory that is to be used
 when using the compiler of the language. Taken into account only in the main
 project.
+
+Note that when the runtime is specified for a language on the command line
+(usually with a switch --RTS), the value of attribute reference 'Runtime
+for this language is the one specified on the command line.
 @end itemize
 
 @item 
@@ -26331,6 +26378,15 @@ end STB;
 @end example
 @end quotation
 
+@subsubheading Automatic Symbolic Tracebacks
+
+
+Symbolic tracebacks may also be enabled by using the -Es switch to gnatbind (as
+in @cite{gprbuild -g ... -bargs -Es}).
+This will cause the Exception_Information to contain a symbolic traceback,
+which will also be printed if an unhandled exception terminates the
+program.
+
 @geindex Code Coverage
 
 @geindex Profiling
@@ -28474,8 +28530,13 @@ This retains compatibility with previous versions of
 GNAT which suppressed overflow checks by default and always
 used the base type for computation of intermediate results.
 
-The switch @emph{-gnato} (with no digits following) is equivalent to
-.. index:: -gnato (gcc)
+@c Sphinx allows no emphasis within :index: role. As a workaround we
+@c point the index to "switch" and use emphasis for "-gnato".
+
+The 
+@geindex -gnato (gcc)
+switch @emph{-gnato} (with no digits following)
+is equivalent to
 
 @quotation
 

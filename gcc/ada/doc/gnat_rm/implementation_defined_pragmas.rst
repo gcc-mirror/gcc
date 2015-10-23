@@ -1057,6 +1057,12 @@ If the alignment for a record or array type is not specified (using
 pragma `Pack`, pragma `Component_Alignment`, or a record rep
 clause), the GNAT uses the default alignment as described previously.
 
+Pragma Constant_After_Elaboration
+=================================
+
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 3.3.1.
+
 Pragma Contract_Cases
 =====================
 .. index:: Contract cases
@@ -1309,6 +1315,12 @@ Syntax:
 This pragma is standard in Ada 2012, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
+
+Pragma Default_Initial_Condition
+================================
+
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.3.3.
 
 Pragma Debug
 ============
@@ -1962,6 +1974,12 @@ of GNAT specific extensions are recognized as follows:
   is constrained.
 
 
+Pragma Extensions_Visible
+=========================
+
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 6.1.7.
+
 Pragma External
 ===============
 
@@ -2157,6 +2175,12 @@ be `IEEE_Float` to specify the use of IEEE format, as follows:
   For a digits value of 15, 64-bit IEEE long format will be used.
 *
   No other value of digits is permitted.
+
+Pragma Ghost
+============
+
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 6.9.
 
 Pragma Global
 =============
@@ -5376,7 +5400,7 @@ Pragma Source_File_Name_Project
 ===============================
 
 This pragma has the same syntax and semantics as pragma Source_File_Name.
-It is only allowed as a stand alone configuration pragma.
+It is only allowed as a stand-alone configuration pragma.
 It cannot appear after a :ref:`Pragma_Source_File_Name`, and
 most importantly, once pragma Source_File_Name_Project appears,
 no further Source_File_Name pragmas are allowed.
@@ -6567,6 +6591,12 @@ the same object.
 
 It is not permissible to specify `Volatile_Full_Access` for a composite
 (record or array) type or object that has at least one `Aliased` component.
+
+Pragma Volatile_Function
+========================
+
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.2.
 
 Pragma Warning_As_Error
 =======================
