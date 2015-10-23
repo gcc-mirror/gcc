@@ -258,6 +258,13 @@ package body Exp_Ch6 is
    --  Expand simple return from function. In the case where we are returning
    --  from a function body this is called by Expand_N_Simple_Return_Statement.
 
+   procedure Set_Enclosing_Sec_Stack_Return (N : Node_Id);
+   --  N is a return statement for a function that returns its result on the
+   --  secondary stack. This sets the Sec_Stack_Needed_For_Return flag on the
+   --  function and all blocks and loops that the return statement is jumping
+   --  out of. This ensures that the secondary stack is not released; otherwise
+   --  the function result would be reclaimed before returning to the caller.
+
    ----------------------------------------------
    -- Add_Access_Actual_To_Build_In_Place_Call --
    ----------------------------------------------
@@ -4662,18 +4669,18 @@ package body Exp_Ch6 is
 
                      --  The allocator is returned on the secondary stack,
                      --  so indicate that the function return, as well as
-                     --  the block that encloses the allocator, must not
+                     --  all blocks that encloses the allocator, must not
                      --  release it. The flags must be set now because
                      --  the decision to use the secondary stack is done
                      --  very late in the course of expanding the return
                      --  statement, past the point where these flags are
                      --  normally set.
 
-                     Set_Sec_Stack_Needed_For_Return (Func_Id);
-                     Set_Sec_Stack_Needed_For_Return
-                       (Return_Statement_Entity (N));
                      Set_Uses_Sec_Stack (Func_Id);
                      Set_Uses_Sec_Stack (Return_Statement_Entity (N));
+                     Set_Sec_Stack_Needed_For_Return
+                       (Return_Statement_Entity (N));
+                     Set_Enclosing_Sec_Stack_Return (N);
 
                      --  Create an if statement to test the BIP_Alloc_Form
                      --  formal and initialize the access object to either the
@@ -5966,44 +5973,10 @@ package body Exp_Ch6 is
 
       else
          --  Prevent the reclamation of the secondary stack by all enclosing
-         --  blocks and loops as well as the related function, otherwise the
-         --  result will be reclaimed too early or even clobbered. Due to a
-         --  possible mix of internally generated blocks, source blocks and
-         --  loops, the scope stack may not be contiguous as all labels are
-         --  inserted at the top level within the related function. Instead,
-         --  perform a parent-based traversal and mark all appropriate
-         --  constructs.
+         --  blocks and loops as well as the related function; otherwise the
+         --  result would be reclaimed too early.
 
-         declare
-            P : Node_Id;
-
-         begin
-            P := N;
-            while Present (P) loop
-
-               --  Mark the label of a source or internally generated block or
-               --  loop.
-
-               if Nkind_In (P, N_Block_Statement, N_Loop_Statement) then
-                  Set_Sec_Stack_Needed_For_Return (Entity (Identifier (P)));
-
-               --  Mark the enclosing function
-
-               elsif Nkind (P) = N_Subprogram_Body then
-                  if Present (Corresponding_Spec (P)) then
-                     Set_Sec_Stack_Needed_For_Return (Corresponding_Spec (P));
-                  else
-                     Set_Sec_Stack_Needed_For_Return (Defining_Entity (P));
-                  end if;
-
-                  --  Do not go beyond the enclosing function
-
-                  exit;
-               end if;
-
-               P := Parent (P);
-            end loop;
-         end;
+         Set_Enclosing_Sec_Stack_Return (N);
 
          --  Optimize the case where the result is a function call. In this
          --  case either the result is already on the secondary stack, or is
@@ -9417,6 +9390,45 @@ package body Exp_Ch6 is
          return False;
       end if;
    end Needs_Result_Accessibility_Level;
+
+   ------------------------------------
+   -- Set_Enclosing_Sec_Stack_Return --
+   ------------------------------------
+
+   procedure Set_Enclosing_Sec_Stack_Return (N : Node_Id) is
+      P : Node_Id := N;
+
+   begin
+      --  Due to a possible mix of internally generated blocks, source blocks
+      --  and loops, the scope stack may not be contiguous as all labels are
+      --  inserted at the top level within the related function. Instead,
+      --  perform a parent-based traversal and mark all appropriate constructs.
+
+      while Present (P) loop
+
+         --  Mark the label of a source or internally generated block or
+         --  loop.
+
+         if Nkind_In (P, N_Block_Statement, N_Loop_Statement) then
+            Set_Sec_Stack_Needed_For_Return (Entity (Identifier (P)));
+
+         --  Mark the enclosing function
+
+         elsif Nkind (P) = N_Subprogram_Body then
+            if Present (Corresponding_Spec (P)) then
+               Set_Sec_Stack_Needed_For_Return (Corresponding_Spec (P));
+            else
+               Set_Sec_Stack_Needed_For_Return (Defining_Entity (P));
+            end if;
+
+            --  Do not go beyond the enclosing function
+
+            exit;
+         end if;
+
+         P := Parent (P);
+      end loop;
+   end Set_Enclosing_Sec_Stack_Return;
 
    ------------------------
    -- Unnest_Subprograms --
