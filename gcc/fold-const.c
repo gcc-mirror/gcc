@@ -2809,11 +2809,12 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	return 0;
     }
 
-  /* This is needed for conversions and for COMPONENT_REF.
-     Might as well play it safe and always test this.  */
+  /* When not checking adddresses, this is needed for conversions and for
+     COMPONENT_REF.  Might as well play it safe and always test this.  */
   if (TREE_CODE (TREE_TYPE (arg0)) == ERROR_MARK
       || TREE_CODE (TREE_TYPE (arg1)) == ERROR_MARK
-      || TYPE_MODE (TREE_TYPE (arg0)) != TYPE_MODE (TREE_TYPE (arg1)))
+      || (TYPE_MODE (TREE_TYPE (arg0)) != TYPE_MODE (TREE_TYPE (arg1))
+	  && !(flags & OEP_ADDRESS_OF)))
     return 0;
 
   /* If ARG0 and ARG1 are the same SAVE_EXPR, they are necessarily equal.
