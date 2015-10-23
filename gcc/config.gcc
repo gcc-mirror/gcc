@@ -2443,6 +2443,10 @@ powerpc*-*-linux*)
 	    powerpc*-*-linux*paired*)
 		tm_file="${tm_file} rs6000/750cl.h" ;;
 	esac
+	case ${target} in
+	    *-linux*-musl*)
+		enable_secureplt=yes ;;
+	esac
 	if test x${enable_secureplt} = xyes; then
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
