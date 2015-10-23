@@ -1,3 +1,7 @@
+2015-10-23  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/restrict-4.c: Add -fno-ipa-icf to dg-options.
+
 2015-10-23  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	PR sanitizer/68042
