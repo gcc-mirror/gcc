@@ -18453,7 +18453,7 @@ etc) to the memory regions.
 @item -msilicon-errata=
 @opindex msilicon-errata
 This option passes on a request to assembler to enable the fixes for
-the names silicon errata.
+the named silicon errata.
 
 @item -msilicon-errata-warn=
 @opindex msilicon-errata-warn
