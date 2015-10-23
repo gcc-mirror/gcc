@@ -10671,8 +10671,14 @@ build_truth_vector_type (unsigned nunits, unsigned vector_size)
 
   gcc_assert (mask_mode != VOIDmode);
 
-  unsigned HOST_WIDE_INT esize = GET_MODE_BITSIZE (mask_mode) / nunits;
-  gcc_assert (esize * nunits == GET_MODE_BITSIZE (mask_mode));
+  unsigned HOST_WIDE_INT vsize;
+  if (mask_mode == BLKmode)
+    vsize = vector_size * BITS_PER_UNIT;
+  else
+    vsize = GET_MODE_BITSIZE (mask_mode);
+
+  unsigned HOST_WIDE_INT esize = vsize / nunits;
+  gcc_assert (esize * nunits == vsize);
 
   tree bool_type = build_nonstandard_boolean_type (esize);
 
