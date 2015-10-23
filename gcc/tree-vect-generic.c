@@ -844,7 +844,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
   tree type = gimple_expr_type (stmt);
   tree a = gimple_assign_rhs1 (stmt);
   tree a1 = a;
-  tree a2;
+  tree a2 = NULL_TREE;
   bool a_is_comparison = false;
   tree b = gimple_assign_rhs2 (stmt);
   tree c = gimple_assign_rhs3 (stmt);
