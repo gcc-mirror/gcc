@@ -9649,28 +9649,6 @@ fold_binary_loc (location_t loc,
 			    fold_convert_loc (loc, type,
 					      TREE_OPERAND (arg0, 0)));
 
-      if (! FLOAT_TYPE_P (type))
-	{
-	  /* Fold (A & ~B) - (A & B) into (A ^ B) - B, where B is
-	     any power of 2 minus 1.  */
-	  if (TREE_CODE (arg0) == BIT_AND_EXPR
-	      && TREE_CODE (arg1) == BIT_AND_EXPR
-	      && operand_equal_p (TREE_OPERAND (arg0, 0),
-				  TREE_OPERAND (arg1, 0), 0))
-	    {
-	      tree mask0 = TREE_OPERAND (arg0, 1);
-	      tree mask1 = TREE_OPERAND (arg1, 1);
-	      tree tem = fold_build1_loc (loc, BIT_NOT_EXPR, type, mask0);
-
-	      if (operand_equal_p (tem, mask1, 0))
-		{
-		  tem = fold_build2_loc (loc, BIT_XOR_EXPR, type,
-				     TREE_OPERAND (arg0, 0), mask1);
-		  return fold_build2_loc (loc, MINUS_EXPR, type, tem, mask1);
-		}
-	    }
-	}
-
       /* Fold __complex__ ( x, 0 ) - __complex__ ( 0, y ) to
 	 __complex__ ( x, -y ).  This is not the same for SNaNs or if
 	 signed zeros are involved.  */
@@ -9918,28 +9896,6 @@ fold_binary_loc (location_t loc,
 						     wide_int_to_tree (type,
 								       c3)),
 				    arg1);
-	}
-
-      /* (X & ~Y) | (~X & Y) is X ^ Y */
-      if (TREE_CODE (arg0) == BIT_AND_EXPR
-	  && TREE_CODE (arg1) == BIT_AND_EXPR)
-        {
-	  tree a0, a1, l0, l1, n0, n1;
-
-	  a0 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 0));
-	  a1 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 1));
-
-	  l0 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
-	  l1 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 1));
-	  
-	  n0 = fold_build1_loc (loc, BIT_NOT_EXPR, type, l0);
-	  n1 = fold_build1_loc (loc, BIT_NOT_EXPR, type, l1);
-	  
-	  if ((operand_equal_p (n0, a0, 0)
-	       && operand_equal_p (n1, a1, 0))
-	      || (operand_equal_p (n0, a1, 0)
-		  && operand_equal_p (n1, a0, 0)))
-	    return fold_build2_loc (loc, BIT_XOR_EXPR, type, l0, n1);
 	}
 
       /* See if this can be simplified into a rotate first.  If that
