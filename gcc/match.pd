@@ -2719,8 +2719,8 @@ along with GCC; see the file COPYING3.  If not see
        && types_match (@0, @1)
        && (tree_int_cst_min_precision (@4, TYPE_SIGN (TREE_TYPE (@0)))
 	   <= TYPE_PRECISION (TREE_TYPE (@0)))
-       && (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))
-	   || tree_int_cst_sgn (@4) >= 0))
+       && (wi::bit_and (@4, wi::mask (TYPE_PRECISION (TREE_TYPE (@0)),
+			true, TYPE_PRECISION (type))) == 0))
    (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
     (with { tree ntype = TREE_TYPE (@0); }
      (convert (bit_and (op @0 @1) (convert:ntype @4))))

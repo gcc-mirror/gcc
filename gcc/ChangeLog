@@ -1,3 +1,10 @@
+2015-10-23  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/67830
+	* match.pd ((bit_and (plus/minus (convert @0) (convert @1)) mask)):
+	Explicitly verify the mask has no bits outside the type of
+	the innermost operands.
+
 2015-10-23  Gregor Richards  <gregor.richards@uwaterloo.ca>
 	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
