@@ -1,3 +1,21 @@
+2015-10-23  Richard Biener  <rguenther@suse.de>
+	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* fold-const.c (fold_binary_loc) : Move Fold (A & ~B) - (A & B)
+	into (A ^ B) - B to match.pd
+	Move (X & ~Y) | (~X & Y) is X ^ Y to match.pd.
+
+	* match.pd (minus (bit_and:cs @0 (bit_not @1)) (bit_and:s @0 @1)):
+	New simplifier.
+	(minus (bit_and:s @0 INTEGER_CST@2) (bit_and:s @0 INTEGER_CST@1)):
+	New simplifier.
+	(minus (bit_and:s @0 @1) (bit_and:cs @0 (bit_not @1))):
+	New simplifier.
+	(bit_ior:c (bit_and:c @0 (bit_not @1)) (bit_and:c (bit_not @0) @1)):
+	New simplifier.
+	(bit_ior:c (bit_and @0 INTEGER_CST@2) (bit_and (bit_not @0)
+	INTEGER_CST@1)): New simplifier.
+
 2015-10-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* builtins.c (integer_valued_real_p): Move to fold-const.c.

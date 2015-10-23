@@ -433,6 +433,29 @@ along with GCC; see the file COPYING3.  If not see
  (bit_and:c (convert? @0) (convert? (bit_not @0)))
   { build_zero_cst (type); })
 
+/* Fold (A & ~B) - (A & B) into (A ^ B) - B.  */
+(simplify
+ (minus (bit_and:cs @0 (bit_not @1)) (bit_and:s @0 @1))
+  (minus (bit_xor @0 @1) @1))
+(simplify
+ (minus (bit_and:s @0 INTEGER_CST@2) (bit_and:s @0 INTEGER_CST@1))
+ (if (wi::bit_not (@2) == @1)
+  (minus (bit_xor @0 @1) @1)))
+
+/* Fold (A & B) - (A & ~B) into B - (A ^ B).  */
+(simplify
+ (minus (bit_and:s @0 @1) (bit_and:cs @0 (bit_not @1)))
+  (minus @1 (bit_xor @0 @1)))
+
+/* Simplify (X & ~Y) | (~X & Y) -> X ^ Y.  */
+(simplify
+ (bit_ior:c (bit_and:c @0 (bit_not @1)) (bit_and:c (bit_not @0) @1))
+  (bit_xor @0 @1))
+(simplify
+ (bit_ior:c (bit_and @0 INTEGER_CST@2) (bit_and (bit_not @0) INTEGER_CST@1))
+ (if (wi::bit_not (@2) == @1)
+  (bit_xor @0 @1)))
+
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)
  (simplify
