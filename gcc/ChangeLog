@@ -1,4 +1,9 @@
 2015-10-23  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.in (build/genmatch.o): Properly depend on is-a.h, tree.def
+	and builtins.def.
+
+2015-10-23  Richard Biener  <rguenther@suse.de>
 	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* fold-const.c (fold_binary_loc) : Move Fold (A & ~B) - (A & B)
