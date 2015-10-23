@@ -1,3 +1,10 @@
+2015-10-22  Jason Merrill  <jason@redhat.com>
+
+	* call.c (add_conv_candidate): Remove first_arg parm.
+	(add_template_conv_candidate): Likewise.
+	(add_template_candidate_real): Don't pass it.
+	(build_op_call_1): Likewise.
+
 2015-10-22  Richard Biener  <rguenther@suse.de>
 
 	* semantics.c (cp_finish_omp_clause_depend_sink): Properly convert
