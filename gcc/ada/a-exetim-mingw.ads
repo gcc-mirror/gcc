@@ -59,34 +59,48 @@ is
 
    function "+"
      (Left  : CPU_Time;
-      Right : Ada.Real_Time.Time_Span) return CPU_Time;
+      Right : Ada.Real_Time.Time_Span) return CPU_Time
+   with
+     Global => null;
 
    function "+"
      (Left  : Ada.Real_Time.Time_Span;
-      Right : CPU_Time) return CPU_Time;
+      Right : CPU_Time) return CPU_Time
+   with
+     Global => null;
 
    function "-"
      (Left  : CPU_Time;
-      Right : Ada.Real_Time.Time_Span) return CPU_Time;
+      Right : Ada.Real_Time.Time_Span) return CPU_Time
+   with
+     Global => null;
 
    function "-"
      (Left  : CPU_Time;
       Right : CPU_Time) return Ada.Real_Time.Time_Span;
 
-   function "<"  (Left, Right : CPU_Time) return Boolean;
-   function "<=" (Left, Right : CPU_Time) return Boolean;
-   function ">"  (Left, Right : CPU_Time) return Boolean;
-   function ">=" (Left, Right : CPU_Time) return Boolean;
+   function "<"  (Left, Right : CPU_Time) return Boolean with
+     Global => null;
+   function "<=" (Left, Right : CPU_Time) return Boolean with
+     Global => null;
+   function ">"  (Left, Right : CPU_Time) return Boolean with
+     Global => null;
+   function ">=" (Left, Right : CPU_Time) return Boolean with
+     Global => null;
 
    procedure Split
      (T  : CPU_Time;
       SC : out Ada.Real_Time.Seconds_Count;
-      TS : out Ada.Real_Time.Time_Span);
+      TS : out Ada.Real_Time.Time_Span)
+   with
+     Global => null;
 
    function Time_Of
      (SC : Ada.Real_Time.Seconds_Count;
       TS : Ada.Real_Time.Time_Span := Ada.Real_Time.Time_Span_Zero)
-      return CPU_Time;
+      return CPU_Time
+   with
+     Global => null;
 
    Interrupt_Clocks_Supported          : constant Boolean := False;
    Separate_Interrupt_Clocks_Supported : constant Boolean := False;

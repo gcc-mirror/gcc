@@ -1,3 +1,28 @@
+2015-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension_Extension_Or_Record_Aggregate):
+	Handle properly a box-initialized aggregate component.
+
+2015-10-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Reject Volatile_Function not placed
+	on a function.
+
+2015-10-23  Yannick Moy  <moy@adacore.com>
+
+	* a-extiin.ads, a-reatim.ads, a-interr.ads, a-exetim-mingw.ads,
+	a-exetim-default.ads, a-exetim.ads, a-taside.ads: Add "Global => null"
+	contract on subprograms.
+	* lib-xref-spark_specific.adb: collect scopes for stubs of
+	protected objects
+
+2015-10-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Enable
+	Back_Annotate_Rep_Info to get size information from gigi.
+	(Gnat1drv): Code clean ups.
+	* frontend.adb (Frontend): Ditto.
+
 2015-10-23  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): Adjust settings.

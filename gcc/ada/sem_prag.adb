@@ -21580,6 +21580,11 @@ package body Sem_Prag is
             Spec_Id := Corresponding_Spec_Of (Subp_Decl);
             Over_Id := Overridden_Operation (Spec_Id);
 
+            if not Ekind_In (Spec_Id, E_Function, E_Generic_Function) then
+               Pragma_Misplaced;
+               return;
+            end if;
+
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 

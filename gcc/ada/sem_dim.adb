@@ -1817,10 +1817,15 @@ package body Sem_Dim is
          if Has_Dimension_System (Base_Type (Comp_Typ)) then
             Expr := Expression (Comp);
 
+            --  A box-initialized component needs no checking.
+
+            if No (Expr) and then Box_Present (Comp) then
+               null;
+
             --  Issue an error if the dimensions of the component type and the
             --  dimensions of the component mismatch.
 
-            if Dimensions_Of (Expr) /= Dimensions_Of (Comp_Typ) then
+            elsif Dimensions_Of (Expr) /= Dimensions_Of (Comp_Typ) then
 
                --  Check if an error has already been encountered so far
 
