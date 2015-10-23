@@ -3149,6 +3149,56 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	      && DECL_BUILT_IN_CLASS (arg0) == DECL_BUILT_IN_CLASS (arg1)
 	      && DECL_FUNCTION_CODE (arg0) == DECL_FUNCTION_CODE (arg1));
 
+    case tcc_exceptional:
+      if (TREE_CODE (arg0) == CONSTRUCTOR)
+	{
+	  /* In GIMPLE constructors are used only to build vectors from
+	     elements.  Individual elements in the constructor must be
+	     indexed in increasing order and form an initial sequence.
+
+	     We make no effort to compare constructors in generic.
+	     (see sem_variable::equals in ipa-icf which can do so for
+	      constants).  */
+	  if (!VECTOR_TYPE_P (TREE_TYPE (arg0))
+	      || !VECTOR_TYPE_P (TREE_TYPE (arg1)))
+	    return 0;
+
+	  /* Be sure that vectors constructed have the same representation.
+	     We only tested element precision and modes to match.
+	     Vectors may be BLKmode and thus also check that the number of
+	     parts match.  */
+	  if (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0))
+	      != TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)))
+	    return 0;
+
+	  vec<constructor_elt, va_gc> *v0 = CONSTRUCTOR_ELTS (arg0);
+	  vec<constructor_elt, va_gc> *v1 = CONSTRUCTOR_ELTS (arg1);
+	  unsigned int len = vec_safe_length (v0);
+
+	  if (len != vec_safe_length (v1))
+	    return 0;
+
+	  for (unsigned int i = 0; i < len; i++)
+	    {
+	      constructor_elt *c0 = &(*v0)[i];
+	      constructor_elt *c1 = &(*v1)[i];
+
+	      if (!operand_equal_p (c0->value, c1->value, flags)
+		  /* In GIMPLE the indexes can be either NULL or matching i.
+		     Double check this so we won't get false
+		     positives for GENERIC.  */
+		  || (c0->index
+		      && (TREE_CODE (c0->index) != INTEGER_CST 
+			  || !compare_tree_int (c0->index, i)))
+		  || (c1->index
+		      && (TREE_CODE (c1->index) != INTEGER_CST 
+			  || !compare_tree_int (c1->index, i))))
+		return 0;
+	    }
+	  return 1;
+	}
+      return 0;
+
     default:
       return 0;
     }

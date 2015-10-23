@@ -1,3 +1,8 @@
+2015-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* fold-const.c (operand_equal_p): Handle matching of vector
+	constructors.
+
 2015-10-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* doc/install.texi (*-ibm-aix*): Additional information for AIX 7.1.
