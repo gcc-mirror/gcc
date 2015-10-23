@@ -3356,8 +3356,9 @@ package body Freeze is
               and then not Has_Warnings_Off (E)
               and then not Has_Warnings_Off (R_Type)
             then
-               Error_Msg_N ("?x?foreign convention function& should not " &
-                 "return unconstrained array!", E);
+               Error_Msg_N
+                 ("?x?foreign convention function& should not return "
+                  & "unconstrained array!", E);
             end if;
          end if;
 
@@ -4266,7 +4267,7 @@ package body Freeze is
             end if;
          end if;
 
-         --  The following checks are only relevant when SPARK_Mode is on as
+         --  The following checks are relevant only when SPARK_Mode is on as
          --  they are not standard Ada legality rules.
 
          if SPARK_Mode = On then

@@ -4312,10 +4312,10 @@ package body Sem_Attr is
             Stmt := Parent (Stmt);
          end loop;
 
-            --  Loop_Entry must appear within a Loop_Assertion pragma (Assert,
-            --  Assert_And_Cut, Assume count as loop assertion pragmas for this
-            --  purpose if they appear in an appropriate location in a loop,
-            --  which was already checked by the top level pragma circuit).
+         --  Loop_Entry must appear within a Loop_Assertion pragma (Assert,
+         --  Assert_And_Cut, Assume count as loop assertion pragmas for this
+         --  purpose if they appear in an appropriate location in a loop,
+         --  which was already checked by the top level pragma circuit).
 
          if No (Enclosing_Pragma) then
             Error_Attr ("attribute% must appear within appropriate pragma", N);

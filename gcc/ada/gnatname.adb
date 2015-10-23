@@ -613,22 +613,22 @@ begin
       declare
          Gnatname : constant String_Access :=
                       Program_Name ("gnatname", "gnatname");
+         Arg_Len  : Positive      := Argument_Count;
          Target   : String_Access := null;
-         Arg_Len  : Positive := Argument_Count;
 
       begin
          --  Find the target, if any
 
          if Gnatname.all /= "gnatname" then
-            Target := new String'(Gnatname
-                                  (Gnatname'First .. Gnatname'Last - 9));
+            Target :=
+              new String'(Gnatname (Gnatname'First .. Gnatname'Last - 9));
             Arg_Len := Arg_Len + 1;
          end if;
 
          declare
+            Args    : Argument_List (1 .. Arg_Len);
             Gprname : String_Access :=
-                         Locate_Exec_On_Path (Exec_Name => "gprname");
-            Args : Argument_List (1 .. Arg_Len);
+                        Locate_Exec_On_Path (Exec_Name => "gprname");
             Success : Boolean;
 
          begin
@@ -640,8 +640,7 @@ begin
                --  Add the target if there is one
 
                if Target /= null then
-                  Args (Args'Last) :=
-                    new String'("--target=" & Target.all);
+                  Args (Args'Last) := new String'("--target=" & Target.all);
                end if;
 
                Spawn (Gprname.all, Args, Success);
@@ -656,19 +655,19 @@ begin
       end;
    end if;
 
-   if Create_Project then
-      --  This only happens if gprname is not found or if the invocation of
-      --  gprname did not succeed.
+   --  This only happens if gprname is not found or if the invocation of
+   --  gprname did not succeed.
 
+   if Create_Project then
       Write_Line
-           ("warning: gnatname -P is obsolete and will not be available "
-            & "in the next release; use gprname instead");
+        ("warning: gnatname -P is obsolete and will not be available in the "
+         & "next release; use gprname instead");
    end if;
 
    --  If no Ada or foreign pattern was specified, print the usage and return
 
    if Patterns.Last (Arguments.Table (Arguments.Last).Name_Patterns) = 0
-      and then
+        and then
       Patterns.Last (Arguments.Table (Arguments.Last).Foreign_Patterns) = 0
    then
       if Argument_Count = 0 then
@@ -685,9 +684,7 @@ begin
    --  information, the current directory is the directory of the specified
    --  file.
 
-   if Patterns.Last
-     (Arguments.Table (Arguments.Last).Directories) = 0
-   then
+   if Patterns.Last (Arguments.Table (Arguments.Last).Directories) = 0 then
       Patterns.Append
         (Arguments.Table (Arguments.Last).Directories, new String'("."));
    end if;
