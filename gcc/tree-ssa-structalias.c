@@ -5867,20 +5867,13 @@ intra_create_variable_infos (struct function *fn)
 	  && TYPE_RESTRICT (TREE_TYPE (t))
 	  && !type_contains_placeholder_p (TREE_TYPE (TREE_TYPE (t))))
 	{
-	  struct constraint_expr lhsc, rhsc;
 	  varinfo_t vi;
 	  tree heapvar = build_fake_var_decl (TREE_TYPE (TREE_TYPE (t)));
 	  DECL_EXTERNAL (heapvar) = 1;
 	  vi = create_variable_info_for_1 (heapvar, "PARM_NOALIAS");
 	  vi->is_restrict_var = 1;
 	  insert_vi_for_tree (heapvar, vi);
-	  lhsc.var = p->id;
-	  lhsc.type = SCALAR;
-	  lhsc.offset = 0;
-	  rhsc.var = vi->id;
-	  rhsc.type = ADDRESSOF;
-	  rhsc.offset = 0;
-	  process_constraint (new_constraint (lhsc, rhsc));
+	  make_constraint_from (p, vi->id);
 	  for (; vi; vi = vi_next (vi))
 	    if (vi->may_have_pointers)
 	      {
