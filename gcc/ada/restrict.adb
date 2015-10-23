@@ -498,14 +498,18 @@ package body Restrict is
    begin
       Msg_Issued := False;
 
-      --  In CodePeer and SPARK mode, we do not want to check for any
-      --  restriction, or set additional restrictions other than those already
-      --  set in gnat1drv.adb so that we have consistency between each
-      --  compilation.
+      --  In CodePeer mode, we do not want to check for any restriction, or set
+      --  additional restrictions other than those already set in gnat1drv.adb
+      --  so that we have consistency between each compilation.
+
+      --  In GNATprove mode restrictions are checked, except for
+      --  No_Initialize_Scalars, which is implicitely set in gnat1drv.adb.
 
       --  Just checking, SPARK does not allow restrictions to be set ???
 
-      if CodePeer_Mode then
+      if CodePeer_Mode
+        or else (GNATprove_Mode and then R = No_Initialize_Scalars)
+      then
          return;
       end if;
 

@@ -1,3 +1,15 @@
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Process_Transient_Objects): Reimplement to properly
+	handle restriction No_Exception_Propagation.
+	* exp_ch11.adb (Expand_At_End_Handler): Update the parameter
+	profile and all references to Block.
+	* exp_ch11.ads (Expand_At_End_Handler): Update the parameter
+	profile and comment on usage.
+	* exp_intr.adb (Expand_Unc_Deallocation): Reimplement to properly
+	handle restriction No_Exception_Propagation.
+	* gnat1drv.adb, restrict.adb: Update comment.
+
 2015-10-23  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Do not call
