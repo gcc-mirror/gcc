@@ -3983,11 +3983,19 @@ Project Level Attributes
     Value is the name of the target platform. Taken into account only in the main
     project.
 
+    Note that when the target is specified on the command line (usually with
+    a switch --target=), the value of attribute reference 'Target is the one
+    specified on the command line.
+
   * **Runtime**: single, indexed, case-insensitive index
 
     Index is a language name. Indicates the runtime directory that is to be used
     when using the compiler of the language. Taken into account only in the main
     project.
+
+    Note that when the runtime is specified for a language on the command line
+    (usually with a switch --RTS), the value of attribute reference 'Runtime
+    for this language is the one specified on the command line.
 
 * **Configuration - Libraries**
 

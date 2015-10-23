@@ -62,7 +62,7 @@ def get_lexer_tokens(tag_highlighting=False, project_support=False):
              r'Version|Value_Size|Value|Valid_Scalars|VADS_Size|Valid|Val|'
              r'Update|Unrestricted_Access|Universal_Literal_String|'
              r'Unconstrained_Array|Unchecked_Access|Unbiased_Rounding|'
-             r'UET_Address|Truncation|Type_Class|To_Address|Tick|Terminated|'
+             r'Truncation|Type_Class|To_Address|Tick|Terminated|'
              r'Target_Name|Tag|System_Allocator_Alignment|Succ|Stub_Type|'
              r'Stream_Size|Storage_Unit|Storage_Size|Storage_Pool|Small|Size|'
              r'Simple_Storage_Pool|Signed_Zeros|Scaling|Scale|'

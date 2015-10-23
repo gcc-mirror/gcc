@@ -294,8 +294,8 @@ RM 13.1 (21-24): Representation Clauses
   qualified as follows:
 
   An implementation need not support representation items containing
-  non-static expressions, except that an implementation should support a
-  representation item for a given entity if each non-static expression in
+  nonstatic expressions, except that an implementation should support a
+  representation item for a given entity if each nonstatic expression in
   the representation item is a name that statically denotes a constant
   declared before the entity."
 
@@ -318,7 +318,7 @@ For example:
   constraints on the subtype and its composite subcomponents (if any) are
   all static constraints."
 
-Followed.  Size Clauses are not permitted on non-static components, as
+Followed.  Size Clauses are not permitted on nonstatic components, as
 described above.
 
 

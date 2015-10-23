@@ -17,17 +17,17 @@ Machine Code Insertions
 Package `Machine_Code` provides machine code support as described
 in the Ada Reference Manual in two separate forms:
 
-* 
+*
   Machine code statements, consisting of qualified expressions that
   fit the requirements of RM section 13.8.
-* 
+*
   An intrinsic callable procedure, providing an alternative mechanism of
   including machine instructions in a subprogram.
 
 The two features are similar, and both are closely related to the mechanism
 provided by the asm instruction in the GNU C compiler.  Full understanding
 and use of the facilities in this package requires understanding the asm
-instruction, see the section on Extended Asm in 
+instruction, see the section on Extended Asm in
 :title:`Using_the_GNU_Compiler_Collection_(GCC)`.
 
 Calls to the function `Asm` and the procedure `Asm` have identical
@@ -40,7 +40,7 @@ Consider this C `asm` instruction:
 ::
 
      asm ("fsinx %1 %0" : "=f" (result) : "f" (angle));
-  
+
 
 The equivalent can be written for GNAT as:
 
@@ -49,7 +49,7 @@ The equivalent can be written for GNAT as:
   Asm ("fsinx %1 %0",
        My_Float'Asm_Output ("=f", result),
        My_Float'Asm_Input  ("f",  angle));
-  
+
 
 The first argument to `Asm` is the assembler template, and is
 identical to what is used in GNU C.  This string must be a static
@@ -62,7 +62,7 @@ The `Asm_Output` attribute denotes a function that takes two
 parameters.  The first is a string, the second is the name of a variable
 of the type designated by the attribute prefix.  The first (string)
 argument is required to be a static expression and designates the
-constraint (see the section on Constraints in 
+constraint (see the section on Constraints in
 :title:`Using_the_GNU_Compiler_Collection_(GCC)`)
 for the parameter; e.g., what kind of register is required.  The second
 argument is the variable to be written or updated with the
@@ -129,7 +129,7 @@ appear as aggregates of the form:
 
   Asm_Insn'(Asm (...));
   Asm_Insn'(Asm_Volatile (...));
-  
+
 In accordance with RM rules, such code statements are allowed only
 within subprograms whose entire body consists of such statements.  It is
 not permissible to intermix such statements with other Ada statements.
@@ -165,7 +165,7 @@ normal rules for use of positional and named arguments:
 
   INPUT_OPERAND_ATTRIBUTE ::=
     SUBTYPE_MARK'Asm_Input (static_string_EXPRESSION, EXPRESSION)
-  
+
 The identifiers `No_Input_Operands` and `No_Output_Operands`
 are declared in the package `Machine_Code` and must be referenced
 according to normal visibility rules. In particular if there is no
@@ -215,27 +215,28 @@ kernel.  For example, in the case of VxWorks, one Ada task = one VxWorks task.
 In addition Ada task priorities map onto the underlying thread priorities.
 Mapping Ada tasks onto the underlying kernel threads has several advantages:
 
-* 
+*
   The underlying scheduler is used to schedule the Ada tasks.  This
   makes Ada tasks as efficient as kernel threads from a scheduling
   standpoint.
 
-* 
+*
   Interaction with code written in C containing threads is eased
   since at the lowest level Ada tasks and C threads map onto the same
   underlying kernel concept.
 
-* 
+*
   When an Ada task is blocked during I/O the remaining Ada tasks are
   able to proceed.
 
-* 
+*
   On multiprocessor systems Ada tasks can execute in parallel.
 
 Some threads libraries offer a mechanism to fork a new process, with the
 child process duplicating the threads from the parent.
 GNAT does not
 support this functionality when the parent contains more than one task.
+
 .. index:: Forking a new process
 
 .. _Ensuring_Compliance_with_the_Real-Time_Annex:
@@ -291,14 +292,14 @@ GNAT Implementation of Shared Passive Packages
 
 .. index:: Shared passive packages
 
-GNAT fully implements the pragma `Shared_Passive` for
-.. index:: pragma `Shared_Passive`
-
+GNAT fully implements the :index:`pragma <pragma Shared_Passive>`
+`Shared_Passive` for
 the purpose of designating shared passive packages.
 This allows the use of passive partitions in the
 context described in the Ada Reference Manual; i.e., for communication
 between separate partitions of a distributed application using the
 features in Annex E.
+
 .. index:: Annex E
 
 .. index:: Distribution Systems Annex
@@ -348,7 +349,7 @@ will have the names:
 
   /stemp/x.y
   /stemp/x.z
-  
+
 
 These files are created when a value is initially written to the object, and
 the files are retained until manually deleted. This provides the persistence
@@ -411,7 +412,7 @@ For the declarations:
 
       type One_Dim is array (1..10) of integer;
       ar0 : constant One_Dim := (1, 2, 3, 4, 5, 6, 7, 8, 9, 0);
-  
+
 
 GNAT generates no executable code: the constant ar0 is placed in static memory.
 The same is true for constant aggregates with named associations:
@@ -421,7 +422,7 @@ The same is true for constant aggregates with named associations:
 
       Cr1 : constant One_Dim := (4 => 16, 2 => 4, 3 => 9, 1 => 1, 5 .. 10 => 0);
       Cr3 : constant One_Dim := (others => 7777);
-  
+
 
 The same is true for multidimensional constant arrays such as:
 
@@ -429,7 +430,7 @@ The same is true for multidimensional constant arrays such as:
 
       type two_dim is array (1..3, 1..3) of integer;
       Unit : constant two_dim := ( (1,0,0), (0,1,0), (0,0,1));
-  
+
 
 The same is true for arrays of one-dimensional arrays: the following are
 static:
@@ -441,7 +442,7 @@ static:
   type ar_ar is array (1..3) of ar1b;
   None  : constant ar1b := (others => false);     --  fully static
   None2 : constant ar_ar := (1..3 => None);       --  fully static
-  
+
 
 However, for multidimensional aggregates with named associations, GNAT will
 generate assignments and loops, even if all associations are static.  The
@@ -453,7 +454,7 @@ individual component assignments for the second dimension:
 
   Zero1: constant two_dim := (1..3 => (1..3 => 0));
   Zero2: constant two_dim := (others => (others => 0));
-  
+
 
 .. _Constant_aggregates_with_unconstrained_nominal_types:
 
@@ -470,7 +471,7 @@ aggregate statically as well.  No code is generated for the following:
 
       type One_Unc is array (natural range <>) of integer;
       Cr_Unc : constant One_Unc := (12,24,36);
-  
+
 
 .. _Aggregates_with_static_bounds:
 
@@ -487,7 +488,7 @@ object.  The declarations
 
          Cr_Var1 : One_Dim := (2, 5, 7, 11, 0, 0, 0, 0, 0, 0);
          Cr_Var2 : One_Dim := (others > -1);
-  
+
 
 generate the equivalent of
 
@@ -502,11 +503,11 @@ generate the equivalent of
          for I in Cr_Var2'range loop
             Cr_Var2 (I) := -1;
          end loop;
-  
 
-.. _Aggregates_with_non-static_bounds:
 
-Aggregates with non-static bounds
+.. _Aggregates_with_nonstatic_bounds:
+
+Aggregates with nonstatic bounds
 ---------------------------------
 
 If the bounds of the aggregate are not statically compatible with the bounds
@@ -529,7 +530,7 @@ component assignments.  For example, consider the simple case:
 .. code-block:: ada
 
           A := (A(2), A(1));
-  
+
 
 This cannot be converted into:
 
@@ -538,16 +539,16 @@ This cannot be converted into:
 
           A(1) := A(2);
           A(2) := A(1);
-  
+
 
 So the aggregate has to be built first in a separate location, and then
 copied into the target.  GNAT recognizes simple cases where this intermediate
 step is not required, and the assignments can be performed in place, directly
 into the target.  The following sufficient criteria are applied:
 
-* 
+*
   The bounds of the aggregate are static, and the associations are static.
-* 
+*
   The components of the aggregate are static constants, names of
   simple variables that are not renamings, or expressions not involving
   indexed components whose operands obey these rules.
@@ -575,7 +576,7 @@ constraint:
   end T;
 
   Word : Rec;
-  
+
 
 Such an object is said to be *unconstrained*.
 The discriminant of the object
@@ -648,17 +649,15 @@ Strict Conformance to the Ada Reference Manual
 The dynamic semantics defined by the Ada Reference Manual impose a set of
 run-time checks to be generated. By default, the GNAT compiler will insert many
 run-time checks into the compiled code, including most of those required by the
-Ada Reference Manual. However, there are three checks that are not enabled
-in the default mode for efficiency reasons: arithmetic overflow checking for
-integer operations (including division by zero), checks for access before
-elaboration on subprogram calls, and stack overflow checking (most operating
-systems do not perform this check by default).
+Ada Reference Manual. However, there are two checks that are not enabled in
+the default mode for efficiency reasons: checks for access before elaboration
+on subprogram calls, and stack overflow checking (most operating systems do not
+perform this check by default).
 
-Strict conformance to the Ada Reference Manual can be achieved by adding
-three compiler options for overflow checking for integer operations
-(*-gnato*), dynamic checks for access-before-elaboration on subprogram
-calls and generic instantiations (*-gnatE*), and stack overflow
-checking (*-fstack-check*).
+Strict conformance to the Ada Reference Manual can be achieved by adding two
+compiler options for dynamic checks for access-before-elaboration on subprogram
+calls and generic instantiations (*-gnatE*), and stack overflow checking
+(*-fstack-check*).
 
 Note that the result of a floating point arithmetic operation in overflow and
 invalid situations, when the `Machine_Overflows` attribute of the result
@@ -668,4 +667,3 @@ machines that are not fully compliant with this standard, such as Alpha, the
 *-mieee* compiler flag must be used for achieving IEEE confirming
 behavior (although at the cost of a significant performance penalty), so
 infinite and NaN values are properly generated.
-
