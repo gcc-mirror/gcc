@@ -2540,6 +2540,7 @@ rs6000-ibm-aix6.* | powerpc-ibm-aix6.*)
 	thread_file='aix'
 	use_gcc_stdint=wrap
 	extra_headers=altivec.h
+	default_use_cxa_atexit=yes
 	;;
 rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix71.h rs6000/xcoff.h rs6000/aix-stdint.h"
@@ -2549,6 +2550,7 @@ rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
 	thread_file='aix'
 	use_gcc_stdint=wrap
 	extra_headers=altivec.h
+	default_use_cxa_atexit=yes
 	;;
 rl78-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"

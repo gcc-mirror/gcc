@@ -1,3 +1,8 @@
+2015-10-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.gcc (powerpc-ibm-aix[6789]) [default_use_cxa_atexit]:
+	Define as yes.
+
 2015-10-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* tree-vect-generic.c (expand_vector_operations_1): Check
