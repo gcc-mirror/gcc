@@ -1919,14 +1919,6 @@ execute_function_todo (function *fn, void *data)
     {
       cleanup_tree_cfg ();
 
-      /* Once unreachable nodes have been removed from the CFG,
-	 there can't be any lingering references to released
-	 SSA_NAMES (because there is no more unreachable code).
-
-	 Thus, now is the time to flush the SSA_NAMEs freelist.  */
-      if (fn->gimple_df)
-	flush_ssaname_freelist ();
-
       /* When cleanup_tree_cfg merges consecutive blocks, it may
 	 perform some simplistic propagation when removing single
 	 valued PHI nodes.  This propagation may, in turn, cause the
@@ -2031,6 +2023,11 @@ execute_todo (unsigned int flags)
 
   if (flags)
     do_per_function (execute_function_todo, (void *)(size_t) flags);
+
+  /* At this point we should not have any unreachable code in the
+     CFG, so it is safe to flush the pending freelist for SSA_NAMES.  */
+  if (cfun && cfun->gimple_df)
+    flush_ssaname_freelist ();
 
   /* Always remove functions just as before inlining: IPA passes might be
      interested to see bodies of extern inline functions that are not inlined
