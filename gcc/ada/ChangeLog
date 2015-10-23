@@ -1,3 +1,31 @@
+2015-10-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taskin.ads: Minor code clean up.
+	(Ada_Task_Control_Block): Move fixed size field before variable sized
+	ones.
+	* einfo.ads: Minor editing.
+
+2015-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Aggregate_Accessibility): Apply rule in RM
+	6.5 (8.3) to verify that access discriminants in an aggregate
+	in a return statement have the proper accessibility, i.e. do
+	not lead to dangling references.
+
+2015-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Add missing
+	test on Address_Clause_Overlay_Warnings to the "constant overlays
+	variable" warning. For the reverse case, also issue a warning if
+	the modification is potentially made through the initialization
+	of the variable.
+
+2015-10-23  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-exetim-posix.adb (Clock): Use the pthread_getcpuclockid
+	function to have access to CPU clocks for tasks other than the
+	calling task.
+
 2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* debug.adb: Switch -gnatd.5 is no longer in use, remove the
