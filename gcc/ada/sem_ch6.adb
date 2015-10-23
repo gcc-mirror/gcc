@@ -2732,6 +2732,18 @@ package body Sem_Ch6 is
                   Set_Has_Missing_Return (Id);
                end if;
 
+            --  Within a premature instantiation of a package with no body, we
+            --  build completions of the functions therein, with a Raise
+            --  statement. No point in complaining about a missing return in
+            --  this case.
+
+            elsif Ekind (Id) = E_Function
+              and then In_Instance
+              and then Present (Statements (HSS))
+              and then Nkind (First (Statements (HSS))) = N_Raise_Program_Error
+            then
+               null;
+
             elsif Is_Generic_Subprogram (Id)
               or else not Is_Machine_Code_Subprogram (Id)
             then

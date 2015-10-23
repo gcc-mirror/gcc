@@ -4962,7 +4962,8 @@ package body Exp_Ch6 is
 
       procedure Build_Procedure_Body_Form (Func_Id : Entity_Id);
       --  Create a procedure body which emulates the behavior of function
-      --  Func_Id.
+      --  Func_Id. This body replaces the original function body, which is
+      --  not needed for the C program.
 
       ----------------
       -- Add_Return --
@@ -5123,7 +5124,7 @@ package body Exp_Ch6 is
       --  Start of processing for Build_Procedure_Body_Form
 
       begin
-         --  This routine performs the following expansion:
+         --  This routine replaces the original function body:
 
          --    function F (...) return Array_Typ is
          --    begin
@@ -5131,23 +5132,27 @@ package body Exp_Ch6 is
          --       return Something;
          --    end F;
 
+         --    with the following:
+
          --    procedure P (..., Result : out Array_Typ) is
          --    begin
          --       ...
          --       Result := Something;
          --    end P;
 
-         Stmts := New_Copy_List (Statements (HSS));
+         Stmts := Statements (HSS);
          Replace_Returns (Last_Entity (Proc_Id), Stmts);
 
-         Insert_After_And_Analyze (N,
+         Replace (N,
            Make_Subprogram_Body (Loc,
              Specification              =>
                Copy_Subprogram_Spec (Specification (Proc_Decl)),
-             Declarations               => New_Copy_List (Declarations (N)),
+             Declarations               => Declarations (N),
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Stmts)));
+
+         Analyze (N);
       end Build_Procedure_Body_Form;
 
       --  Local varaibles
@@ -5491,7 +5496,7 @@ package body Exp_Ch6 is
 
       procedure Build_Procedure_Form;
       --  Create a procedure declaration which emulates the behavior of
-      --  function Subp.
+      --  function Subp, for SPARK_To_C.
 
       --------------------------
       -- Build_Procedure_Form --
@@ -9592,6 +9597,12 @@ package body Exp_Ch6 is
 
    begin
       Actuals := Parameter_Associations (N);
+
+      --  Original function amy have been parameterless.
+
+      if No (Actuals) then
+         Actuals := New_List;
+      end if;
 
       --  If the function call is the expression of an assignment statement,
       --  transform the assignment into a procedure call. Generate:
