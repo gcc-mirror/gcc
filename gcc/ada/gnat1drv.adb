@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Back_End; use Back_End;
 with Checks;
 with Comperr;
+with Cprint;
 with Csets;    use Csets;
 with Debug;    use Debug;
 with Elists;
@@ -148,6 +149,7 @@ procedure Gnat1drv is
          Generate_C_Code := True;
          Modify_Tree_For_C := True;
          Unnest_Subprogram_Mode := True;
+         Back_Annotate_Rep_Info := True;
 
          --  Enable some restrictions systematically to simplify the generated
          --  code. Note that restriction checks are also disabled in C mode,
@@ -1355,6 +1357,13 @@ begin
       --  the library file output.
 
       Namet.Unlock;
+
+      --  Finally generate C source code if needed. Note that this needs to
+      --  happen after calling gigi to take advantage of the back annotation.
+
+      if Generate_C_Code then
+         Cprint.Source_Dump;
+      end if;
 
       --  Generate the call-graph output of dispatching calls
 

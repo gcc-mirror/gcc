@@ -112,6 +112,10 @@ package body SPARK_Specific is
      (N            : Node_Id;
       Process      : Node_Processing;
       Inside_Stubs : Boolean);
+   procedure Traverse_Protected_Body
+     (N            : Node_Id;
+      Process      : Node_Processing;
+      Inside_Stubs : Boolean);
    procedure Traverse_Package_Body
      (N            : Node_Id;
       Process      : Node_Processing;
@@ -1201,6 +1205,9 @@ package body SPARK_Specific is
       elsif Nkind (Lu) = N_Package_Body then
          Traverse_Package_Body (Lu, Process, Inside_Stubs);
 
+      elsif Nkind (Lu) = N_Protected_Body then
+         Traverse_Protected_Body (Lu, Process, Inside_Stubs);
+
       --  All other cases of compilation units (e.g. renamings), are not
       --  declarations, or else generic declarations which are ignored.
 
@@ -1298,8 +1305,7 @@ package body SPARK_Specific is
                  (Private_Declarations (N), Process, Inside_Stubs);
 
             when N_Protected_Body =>
-               Traverse_Declarations_Or_Statements
-                 (Declarations (N), Process, Inside_Stubs);
+               Traverse_Protected_Body (N, Process, Inside_Stubs);
 
             when N_Protected_Body_Stub =>
                if Present (Library_Unit (N)) then
@@ -1474,6 +1480,19 @@ package body SPARK_Specific is
       Traverse_Declarations_Or_Statements
         (Private_Declarations (Spec), Process, Inside_Stubs);
    end Traverse_Package_Declaration;
+
+   -----------------------------
+   -- Traverse_Protected_Body --
+   -----------------------------
+
+   procedure Traverse_Protected_Body
+     (N            : Node_Id;
+      Process      : Node_Processing;
+      Inside_Stubs : Boolean) is
+   begin
+      Traverse_Declarations_Or_Statements
+        (Declarations (N), Process, Inside_Stubs);
+   end Traverse_Protected_Body;
 
    ------------------------------
    -- Traverse_Subprogram_Body --

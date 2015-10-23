@@ -27,6 +27,8 @@ is
      Volatile_Function,
      Global => Ada.Real_Time.Clock_Time;
 
-   function Supported (Interrupt : Ada.Interrupts.Interrupt_ID) return Boolean;
+   function Supported (Interrupt : Ada.Interrupts.Interrupt_ID) return Boolean
+   with
+     Global => null;
 
 end Ada.Execution_Time.Interrupts;
