@@ -1,3 +1,7 @@
+2015-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* fold-const.c (operand_equal_p): Handle VIEW_CONVERT_EXPR.
+
 2015-10-23  Caroline Tice  <cmtice@google.com>
 
 	(from Richard Biener
