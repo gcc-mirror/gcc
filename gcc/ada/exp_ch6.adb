@@ -258,6 +258,10 @@ package body Exp_Ch6 is
    --  Expand simple return from function. In the case where we are returning
    --  from a function body this is called by Expand_N_Simple_Return_Statement.
 
+   procedure Rewrite_Function_Call_For_C (N : Node_Id);
+   --  When generating C code, replace a call to a function that returns an
+   --  array into the generated procedure with an additional out parameter.
+
    procedure Set_Enclosing_Sec_Stack_Return (N : Node_Id);
    --  N is a return statement for a function that returns its result on the
    --  secondary stack. This sets the Sec_Stack_Needed_For_Return flag on the
@@ -2505,6 +2509,18 @@ package body Exp_Ch6 is
                end if;
             end if;
          end;
+      end if;
+
+      --  When generating C code, transform a function call that returns a
+      --  constrained array type into procedure form.
+
+      if Modify_Tree_For_C
+        and then Nkind (Call_Node) = N_Function_Call
+        and then Is_Entity_Name (Name (Call_Node))
+        and then Rewritten_For_C (Entity (Name (Call_Node)))
+      then
+         Rewrite_Function_Call_For_C (Call_Node);
+         return;
       end if;
 
       --  First step, compute extra actuals, corresponding to any Extra_Formals
@@ -4940,21 +4956,23 @@ package body Exp_Ch6 is
       Body_Id  : constant Entity_Id  := Defining_Entity (N);
       HSS      : constant Node_Id    := Handled_Statement_Sequence (N);
       Loc      : constant Source_Ptr := Sloc (N);
-      Except_H : Node_Id;
-      L        : List_Id;
-      Spec_Id  : Entity_Id;
 
-      procedure Add_Return (S : List_Id);
-      --  Append a return statement to the statement sequence S if the last
-      --  statement is not already a return or a goto statement. Note that
-      --  the latter test is not critical, it does not matter if we add a few
-      --  extra returns, since they get eliminated anyway later on.
+      procedure Add_Return (Spec_Id : Entity_Id; Stmts : List_Id);
+      --  Append a return statement to the statement sequence Stmts if the last
+      --  statement is not already a return or a goto statement. Note that the
+      --  latter test is not critical, it does not matter if we add a few extra
+      --  returns, since they get eliminated anyway later on. Spec_Id denotes
+      --  the corresponding spec of the subprogram body.
+
+      procedure Build_Procedure_Body_Form (Func_Id : Entity_Id);
+      --  Create a procedure body which emulates the behavior of function
+      --  Func_Id.
 
       ----------------
       -- Add_Return --
       ----------------
 
-      procedure Add_Return (S : List_Id) is
+      procedure Add_Return (Spec_Id : Entity_Id; Stmts : List_Id) is
          Last_Stmt : Node_Id;
          Loc       : Source_Ptr;
          Stmt      : Node_Id;
@@ -4963,7 +4981,7 @@ package body Exp_Ch6 is
          --  Get last statement, ignoring any Pop_xxx_Label nodes, which are
          --  not relevant in this context since they are not executable.
 
-         Last_Stmt := Last (S);
+         Last_Stmt := Last (Stmts);
          while Nkind (Last_Stmt) in N_Pop_xxx_Label loop
             Prev (Last_Stmt);
          end loop;
@@ -4979,8 +4997,8 @@ package body Exp_Ch6 is
             --  all the statements within the handler are made invisible
             --  to the debugger.
 
-            if Nkind (Parent (S)) = N_Exception_Handler
-              and then not Comes_From_Source (Parent (S))
+            if Nkind (Parent (Stmts)) = N_Exception_Handler
+              and then not Comes_From_Source (Parent (Stmts))
             then
                Loc := Sloc (Last_Stmt);
             elsif Present (End_Label (HSS)) then
@@ -5005,7 +5023,7 @@ package body Exp_Ch6 is
             --  added to it. A guard in Sem_Elab is needed to prevent that
             --  spurious check, see Check_Elab_Call.
 
-            Append_To (S, Stmt);
+            Append_To (Stmts, Stmt);
             Set_Analyzed (Stmt);
 
             --  Call the _Postconditions procedure if the related subprogram
@@ -5022,9 +5040,127 @@ package body Exp_Ch6 is
          end if;
       end Add_Return;
 
+      -------------------------------
+      -- Build_Procedure_Body_Form --
+      -------------------------------
+
+      procedure Build_Procedure_Body_Form (Func_Id : Entity_Id) is
+         Proc_Decl : constant Node_Id   :=
+                       Next (Unit_Declaration_Node (Func_Id));
+         --  It is assumed that the next node following the declaration of the
+         --  corresponding subprogram spec is the declaration of the procedure
+         --  form.
+
+         Proc_Id : constant Entity_Id := Defining_Entity (Proc_Decl);
+
+         procedure Replace_Returns (Param_Id : Entity_Id; Stmts : List_Id);
+         --  Replace each return statement found in the list Stmts with an
+         --  assignment of the return expression to parameter Param_Id.
+
+         ---------------------
+         -- Replace_Returns --
+         ---------------------
+
+         procedure Replace_Returns (Param_Id : Entity_Id; Stmts : List_Id) is
+            Stmt : Node_Id;
+
+         begin
+            Stmt := First (Stmts);
+            while Present (Stmt) loop
+               if Nkind (Stmt) = N_Block_Statement then
+                  Replace_Returns (Param_Id, Statements (Stmt));
+
+               elsif Nkind (Stmt) = N_Case_Statement then
+                  declare
+                     Alt : Node_Id;
+                  begin
+                     Alt := First (Alternatives (Stmt));
+                     while Present (Alt) loop
+                        Replace_Returns (Param_Id, Statements (Alt));
+                        Next (Alt);
+                     end loop;
+                  end;
+
+               elsif Nkind (Stmt) = N_If_Statement then
+                  Replace_Returns (Param_Id, Then_Statements (Stmt));
+                  Replace_Returns (Param_Id, Else_Statements (Stmt));
+
+                  declare
+                     Part : Node_Id;
+                  begin
+                     Part := First (Elsif_Parts (Stmt));
+                     while Present (Part) loop
+                        Replace_Returns (Part, Then_Statements (Part));
+                        Next (Part);
+                     end loop;
+                  end;
+
+               elsif Nkind (Stmt) = N_Loop_Statement then
+                  Replace_Returns (Param_Id, Statements (Stmt));
+
+               elsif Nkind (Stmt) = N_Simple_Return_Statement then
+
+                  --  Generate:
+                  --    Param := Expr;
+                  --    return;
+
+                  Rewrite (Stmt,
+                    Make_Assignment_Statement (Sloc (Stmt),
+                      Name       => New_Occurrence_Of (Param_Id, Loc),
+                      Expression => Relocate_Node (Expression (Stmt))));
+
+                  Insert_After (Stmt, Make_Simple_Return_Statement (Loc));
+
+                  --  Skip the added return
+
+                  Next (Stmt);
+               end if;
+
+               Next (Stmt);
+            end loop;
+         end Replace_Returns;
+
+         --  Local variables
+
+         Stmts : List_Id;
+
+      --  Start of processing for Build_Procedure_Body_Form
+
+      begin
+         --  This routine performs the following expansion:
+
+         --    function F (...) return Array_Typ is
+         --    begin
+         --       ...
+         --       return Something;
+         --    end F;
+
+         --    procedure P (..., Result : out Array_Typ) is
+         --    begin
+         --       ...
+         --       Result := Something;
+         --    end P;
+
+         Stmts := New_Copy_List (Statements (HSS));
+         Replace_Returns (Last_Entity (Proc_Id), Stmts);
+
+         Insert_After_And_Analyze (N,
+           Make_Subprogram_Body (Loc,
+             Specification              =>
+               Copy_Subprogram_Spec (Specification (Proc_Decl)),
+             Declarations               => New_Copy_List (Declarations (N)),
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => Stmts)));
+      end Build_Procedure_Body_Form;
+
       --  Local varaibles
 
       Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
+      Except_H : Node_Id;
+      L        : List_Id;
+      Spec_Id  : Entity_Id;
 
    --  Start of processing for Expand_N_Subprogram_Body
 
@@ -5221,12 +5357,12 @@ package body Exp_Ch6 is
       --  the subprogram.
 
       if Ekind_In (Spec_Id, E_Procedure, E_Generic_Procedure) then
-         Add_Return (Statements (HSS));
+         Add_Return (Spec_Id, Statements (HSS));
 
          if Present (Exception_Handlers (HSS)) then
             Except_H := First_Non_Pragma (Exception_Handlers (HSS));
             while Present (Except_H) loop
-               Add_Return (Statements (Except_H));
+               Add_Return (Spec_Id, Statements (Except_H));
                Next_Non_Pragma (Except_H);
             end loop;
          end if;
@@ -5316,6 +5452,17 @@ package body Exp_Ch6 is
          Unest_Bodies.Append ((Spec_Id, N));
       end if;
 
+      --  When generating C code, transform a function that returns a
+      --  constrained array type into a procedure with an out parameter
+      --  that carries the return value.
+
+      if Modify_Tree_For_C
+        and then Ekind (Spec_Id) = E_Function
+        and then Rewritten_For_C (Spec_Id)
+      then
+         Build_Procedure_Body_Form (Spec_Id);
+      end if;
+
       Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Subprogram_Body;
 
@@ -5343,12 +5490,72 @@ package body Exp_Ch6 is
    --  If the declaration is for a null procedure, emit null body
 
    procedure Expand_N_Subprogram_Declaration (N : Node_Id) is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Subp      : constant Entity_Id  := Defining_Entity (N);
+      Loc  : constant Source_Ptr := Sloc (N);
+      Subp : constant Entity_Id  := Defining_Entity (N);
+
+      procedure Build_Procedure_Form;
+      --  Create a procedure declaration which emulates the behavior of
+      --  function Subp.
+
+      --------------------------
+      -- Build_Procedure_Form --
+      --------------------------
+
+      procedure Build_Procedure_Form is
+         Func_Formal  : Entity_Id;
+         Proc_Formals : List_Id;
+
+      begin
+         Proc_Formals := New_List;
+
+         --  Create a list of formal parameters with the same types as the
+         --  function.
+
+         Func_Formal := First_Formal (Subp);
+         while Present (Func_Formal) loop
+            Append_To (Proc_Formals,
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc, Chars (Func_Formal)),
+                Parameter_Type      =>
+                  New_Occurrence_Of (Etype (Func_Formal), Loc)));
+
+            Next_Formal (Func_Formal);
+         end loop;
+
+         --  Add an extra out parameter to carry the function result
+
+         Append_To (Proc_Formals,
+           Make_Parameter_Specification (Loc,
+             Defining_Identifier => Make_Temporary (Loc, 'R'),
+             Out_Present         => True,
+             Parameter_Type      => New_Occurrence_Of (Etype (Subp), Loc)));
+
+         --  The new procedure declaration is inserted immediately after the
+         --  function declaration. The processing in Build_Procedure_Body_Form
+         --  relies on this order.
+
+         Insert_After_And_Analyze (N,
+           Make_Subprogram_Declaration (Loc,
+             Specification =>
+               Make_Procedure_Specification (Loc,
+                 Defining_Unit_Name       =>
+                   Make_Defining_Identifier (Loc, Chars (Subp)),
+                 Parameter_Specifications => Proc_Formals)));
+
+         --  Mark the function as having a procedure form
+
+         Set_Rewritten_For_C (Subp);
+      end Build_Procedure_Form;
+
+      --  Local variables
+
       Scop      : constant Entity_Id  := Scope (Subp);
       Prot_Bod  : Node_Id;
       Prot_Decl : Node_Id;
       Prot_Id   : Entity_Id;
+
+   --  Start of processing for Expand_N_Subprogram_Declaration
 
    begin
       --  In SPARK, subprogram declarations are only allowed in package
@@ -5450,6 +5657,18 @@ package body Exp_Ch6 is
 
             Set_Is_Inlined (Subp, False);
          end;
+      end if;
+
+      --  When generating C code, transform a function that returns a
+      --  constrained array type into a procedure with an out parameter
+      --  that carries the return value.
+
+      if Modify_Tree_For_C
+        and then Nkind (Specification (N)) = N_Function_Specification
+        and then Is_Array_Type (Etype (Subp))
+        and then Is_Constrained (Etype (Subp))
+      then
+         Build_Procedure_Form;
       end if;
    end Expand_N_Subprogram_Declaration;
 
@@ -9362,6 +9581,76 @@ package body Exp_Ch6 is
          return False;
       end if;
    end Needs_Result_Accessibility_Level;
+
+   ---------------------------------
+   -- Rewrite_Function_Call_For_C --
+   ---------------------------------
+
+   procedure Rewrite_Function_Call_For_C (N : Node_Id) is
+      Func_Id   : constant Entity_Id  := Entity (Name (N));
+      Func_Decl : constant Node_Id    := Unit_Declaration_Node (Func_Id);
+      Par       : constant Node_Id    := Parent (N);
+      Loc       : constant Source_Ptr := Sloc (Par);
+      Proc_Id   : constant Entity_Id  := Defining_Entity (Next (Func_Decl));
+      Actuals   : List_Id;
+
+   begin
+      Actuals := Parameter_Associations (N);
+
+      --  If the function call is the expression of an assignment statement,
+      --  transform the assignment into a procedure call. Generate:
+
+      --    LHS := Func_Call (...);
+
+      --    Proc_Call (..., LHS);
+
+      if Nkind (Par) = N_Assignment_Statement then
+         Append_To (Actuals, (Name (Par)));
+         Rewrite (Par,
+           Make_Procedure_Call_Statement (Loc,
+             Name                   => New_Occurrence_Of (Proc_Id, Loc),
+             Parameter_Associations => Actuals));
+         Analyze (Par);
+
+      --  Otherwise the context is an expression. Generate a temporary and a
+      --  procedure call to obtain the function result. Generate:
+
+      --    ... Func_Call (...) ...
+
+      --    Temp : ...;
+      --    Proc_Call (..., Temp);
+      --    ... Temp ...
+
+      else
+         declare
+            Temp_Id : constant Entity_Id := Make_Temporary (Loc, 'T');
+            Call    : Node_Id;
+            Decl    : Node_Id;
+
+         begin
+            --  Generate:
+            --    Temp : ...;
+
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp_Id,
+                Object_Definition   =>
+                  New_Occurrence_Of (Etype (Func_Id), Loc));
+
+            --  Generate:
+            --    Proc_Call (..., Temp);
+
+            Append_To (Actuals, New_Occurrence_Of (Temp_Id, Loc));
+            Call :=
+              Make_Procedure_Call_Statement (Loc,
+                Name                   => New_Occurrence_Of (Proc_Id, Loc),
+                Parameter_Associations => Actuals);
+
+            Insert_Actions (Par, New_List (Decl, Call));
+            Rewrite (N, New_Occurrence_Of (Temp_Id, Loc));
+         end;
+      end if;
+   end Rewrite_Function_Call_For_C;
 
    ------------------------------------
    -- Set_Enclosing_Sec_Stack_Return --

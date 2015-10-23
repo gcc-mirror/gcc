@@ -785,7 +785,7 @@ package body Exp_Dbug is
       if Is_Ignored_Ghost_Entity (E)
         or else (Debug_Flag_Dot_5 and Is_Ghost_Entity (E))
       then
-         Add_Str_To_Name_Buffer ("_ghost_");
+         Add_Str_To_Name_Buffer ("___ghost_");
       end if;
 
       --  Case of interface name being used

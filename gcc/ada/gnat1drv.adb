@@ -648,7 +648,7 @@ procedure Gnat1drv is
          --  back end some day, it would not be true for this test, but it
          --  would be non-GCC, so this is a bit troublesome ???
 
-         Front_End_Inlining := AAMP_On_Target;
+         Front_End_Inlining := AAMP_On_Target or Generate_C_Code;
       end if;
 
       --  Set back end inlining indication
@@ -658,6 +658,10 @@ procedure Gnat1drv is
         --  No back end inlining available on AAMP
 
         not AAMP_On_Target
+
+        --  No back end inlining available on C generation
+
+        and then not Generate_C_Code
 
         --  No back end inlining in GNATprove mode, since it just confuses
         --  the formal verification process.

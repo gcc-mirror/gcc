@@ -801,9 +801,10 @@ package body Ghost is
               Enables_Ghostness (First (Pragma_Argument_Associations (Decl)));
 
          --  A source construct ends the region where pragma Ghost may appear,
-         --  stop the traversal.
+         --  stop the traversal. Check the original node as source constructs
+         --  may be rewritten into something else by expansion.
 
-         elsif Comes_From_Source (Decl) then
+         elsif Comes_From_Source (Original_Node (Decl)) then
             exit;
          end if;
 
