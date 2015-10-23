@@ -1,3 +1,10 @@
+2015-10-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.c-torture/execute/20030125-1.c (floor, floorf, sin, sinf):
+	Make weak rather than noinline.
+	* gcc.dg/builtins-57.c: Compile with -O.
+	* gcc.dg/torture/builtin-integral-1.c: Skip for -O0.
+
 2015-10-23  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/tree-ssa/restrict-4.c: Add -fno-ipa-icf to dg-options.

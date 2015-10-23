@@ -120,6 +120,7 @@ gimple_convert_to_ptrofftype (gimple_seq *seq, tree op)
 }
 
 extern bool gimple_stmt_nonnegative_warnv_p (gimple *, bool *, int = 0);
+extern bool gimple_stmt_integer_valued_real_p (gimple *, int = 0);
 
 /* In gimple-match.c.  */
 extern tree gimple_simplify (enum tree_code, tree, tree,

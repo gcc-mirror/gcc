@@ -10,6 +10,7 @@
    that various math functions are marked const/pure and can be
    folded.  */
 /* { dg-options "-ffinite-math-only -fno-math-errno" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
 extern int link_failure (int);
 

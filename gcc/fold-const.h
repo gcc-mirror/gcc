@@ -139,6 +139,12 @@ extern bool tree_single_nonnegative_warnv_p (tree, bool *, int);
 extern bool tree_call_nonnegative_warnv_p (tree, tree, tree, tree, bool *,
 					   int);
 
+extern bool integer_valued_real_unary_p (tree_code, tree, int);
+extern bool integer_valued_real_binary_p (tree_code, tree, tree, int);
+extern bool integer_valued_real_call_p (tree, tree, tree, int);
+extern bool integer_valued_real_single_p (tree, int);
+extern bool integer_valued_real_p (tree, int = 0);
+
 extern bool fold_real_zero_addition_p (const_tree, const_tree, int);
 extern tree combine_comparisons (location_t, enum tree_code, enum tree_code,
 				 enum tree_code, tree, tree, tree);
