@@ -595,7 +595,12 @@ package Opt is
 
    Exception_Tracebacks : Boolean := False;
    --  GNATBIND
-   --  Set to True to store tracebacks in exception occurrences (-E)
+   --  Set to True to store tracebacks in exception occurrences (-Ea or -E)
+
+   Exception_Tracebacks_Symbolic : Boolean := False;
+   --  GNATBIND
+   --  Set to True to store tracebacks in exception occurrences and enable
+   --  symbolic tracebacks (-Es).
 
    Extensions_Allowed : Boolean := False;
    --  GNAT

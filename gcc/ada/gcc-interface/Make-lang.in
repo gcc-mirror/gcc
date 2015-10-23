@@ -243,6 +243,7 @@ GNAT_ADA_OBJS =	\
  ada/casing.o	\
  ada/checks.o	\
  ada/comperr.o	\
+ ada/contracts.o	\
  ada/csets.o	\
  ada/cstand.o	\
  ada/debug.o	\

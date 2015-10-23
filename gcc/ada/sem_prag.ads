@@ -209,8 +209,12 @@ package Sem_Prag is
    --  uses Analyze_Global_In_Decl_Part as a starting point, then performs
    --  various consistency checks between Global and Refined_Global.
 
-   procedure Analyze_Refined_State_In_Decl_Part (N : Node_Id);
-   --  Perform full analysis of delayed pragma Refined_State
+   procedure Analyze_Refined_State_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty);
+   --  Perform full analysis of delayed pragma Refined_State. Freeze_Id denotes
+   --  the entity of [generic] package body or [generic] subprogram body which
+   --  caused "freezing" of the related contract where the pragma resides.
 
    procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id);
    --  Perform preanalysis of pragma Test_Case

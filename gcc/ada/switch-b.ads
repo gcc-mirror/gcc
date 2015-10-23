@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 package Switch.B is
 
    procedure Scan_Binder_Switches (Switch_Chars : String);
-   --  Procedures to scan out binder switches stored in the given string.
+   --  Procedure to scan out binder switches stored in the given string.
    --  The first character is known to be a valid switch character, and there
    --  are no blanks or other switch terminator characters in the string, so
    --  the entire string should consist of valid switch characters, except that

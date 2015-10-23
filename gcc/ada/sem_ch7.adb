@@ -28,44 +28,45 @@
 --  handling of private and full declarations, and the construction of dispatch
 --  tables for tagged types.
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Disp; use Exp_Disp;
-with Exp_Dist; use Exp_Dist;
-with Exp_Dbug; use Exp_Dbug;
-with Ghost;    use Ghost;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch10; use Sem_Ch10;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Disp; use Sem_Disp;
-with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
+with Aspects;   use Aspects;
+with Atree;     use Atree;
+with Contracts; use Contracts;
+with Debug;     use Debug;
+with Einfo;     use Einfo;
+with Elists;    use Elists;
+with Errout;    use Errout;
+with Exp_Disp;  use Exp_Disp;
+with Exp_Dist;  use Exp_Dist;
+with Exp_Dbug;  use Exp_Dbug;
+with Ghost;     use Ghost;
+with Lib;       use Lib;
+with Lib.Xref;  use Lib.Xref;
+with Namet;     use Namet;
+with Nmake;     use Nmake;
+with Nlists;    use Nlists;
+with Opt;       use Opt;
+with Output;    use Output;
+with Restrict;  use Restrict;
+with Sem;       use Sem;
+with Sem_Aux;   use Sem_Aux;
+with Sem_Cat;   use Sem_Cat;
+with Sem_Ch3;   use Sem_Ch3;
+with Sem_Ch6;   use Sem_Ch6;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch10;  use Sem_Ch10;
+with Sem_Ch12;  use Sem_Ch12;
+with Sem_Ch13;  use Sem_Ch13;
+with Sem_Disp;  use Sem_Disp;
+with Sem_Eval;  use Sem_Eval;
+with Sem_Prag;  use Sem_Prag;
+with Sem_Util;  use Sem_Util;
+with Sem_Warn;  use Sem_Warn;
+with Snames;    use Snames;
+with Stand;     use Stand;
+with Sinfo;     use Sinfo;
+with Sinput;    use Sinput;
 with Style;
-with Uintp;    use Uintp;
+with Uintp;     use Uintp;
 
 package body Sem_Ch7 is
 
@@ -181,47 +182,6 @@ package body Sem_Ch7 is
          Write_Eol;
       end if;
    end Analyze_Package_Body;
-
-   -----------------------------------
-   -- Analyze_Package_Body_Contract --
-   -----------------------------------
-
-   procedure Analyze_Package_Body_Contract (Body_Id : Entity_Id) is
-      Spec_Id   : constant Entity_Id := Spec_Entity (Body_Id);
-      Mode      : SPARK_Mode_Type;
-      Ref_State : Node_Id;
-
-   begin
-      --  Due to the timing of contract analysis, delayed pragmas may be
-      --  subject to the wrong SPARK_Mode, usually that of the enclosing
-      --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related package body.
-
-      Save_SPARK_Mode_And_Set (Body_Id, Mode);
-
-      Ref_State := Get_Pragma (Body_Id, Pragma_Refined_State);
-
-      --  The analysis of pragma Refined_State detects whether the spec has
-      --  abstract states available for refinement.
-
-      if Present (Ref_State) then
-         Analyze_Refined_State_In_Decl_Part (Ref_State);
-
-      --  State refinement is required when the package declaration defines at
-      --  least one abstract state. Null states are not considered. Refinement
-      --  is not envorced when SPARK checks are turned off.
-
-      elsif SPARK_Mode /= Off
-        and then Requires_State_Refinement (Spec_Id, Body_Id)
-      then
-         Error_Msg_N ("package & requires state refinement", Spec_Id);
-      end if;
-
-      --  Restore the SPARK_Mode of the enclosing context after all delayed
-      --  pragmas have been analyzed.
-
-      Restore_SPARK_Mode (Mode);
-   end Analyze_Package_Body_Contract;
 
    ---------------------------------
    -- Analyze_Package_Body_Helper --
@@ -582,6 +542,30 @@ package body Sem_Ch7 is
    --  Start of processing for Analyze_Package_Body_Helper
 
    begin
+      --  A [generic] package body "freezes" the contract of the nearest
+      --  enclosing package body:
+
+      --    package body Nearest_Enclosing_Package
+      --      with Refined_State => (State => Constit)
+      --    is
+      --       Constit : ...;
+
+      --       package body Freezes_Enclosing_Package_Body
+      --         with Refined_State => (State_2 => Constit_2)
+      --       is
+      --          Constit_2 : ...;
+
+      --          procedure Proc
+      --            with Refined_Depends => (Input => (Constit, Constit_2)) ...
+
+      --  This ensures that any annotations referenced by the contract of a
+      --  [generic] subprogram body declared within the current package body
+      --  are available. This form of "freezing" is decoupled from the usual
+      --  Freeze_xxx mechanism because it must also work in the context of
+      --  generics where normal freezing is disabled.
+
+      Analyze_Enclosing_Package_Body_Contract (N);
+
       --  Find corresponding package specification, and establish the current
       --  scope. The visible defining entity for the package is the defining
       --  occurrence in the spec. On exit from the package body, all body
@@ -943,74 +927,6 @@ package body Sem_Ch7 is
 
       Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Package_Body_Helper;
-
-   ------------------------------
-   -- Analyze_Package_Contract --
-   ------------------------------
-
-   procedure Analyze_Package_Contract (Pack_Id : Entity_Id) is
-      Items     : constant Node_Id := Contract (Pack_Id);
-      Init      : Node_Id := Empty;
-      Init_Cond : Node_Id := Empty;
-      Mode      : SPARK_Mode_Type;
-      Prag      : Node_Id;
-      Prag_Nam  : Name_Id;
-
-   begin
-      --  Due to the timing of contract analysis, delayed pragmas may be
-      --  subject to the wrong SPARK_Mode, usually that of the enclosing
-      --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related package.
-
-      Save_SPARK_Mode_And_Set (Pack_Id, Mode);
-
-      if Present (Items) then
-
-         --  Locate and store pragmas Initial_Condition and Initializes since
-         --  their order of analysis matters.
-
-         Prag := Classifications (Items);
-         while Present (Prag) loop
-            Prag_Nam := Pragma_Name (Prag);
-
-            if Prag_Nam = Name_Initial_Condition then
-               Init_Cond := Prag;
-
-            elsif Prag_Nam = Name_Initializes then
-               Init := Prag;
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Analyze the initialization related pragmas. Initializes must come
-         --  before Initial_Condition due to item dependencies.
-
-         if Present (Init) then
-            Analyze_Initializes_In_Decl_Part (Init);
-         end if;
-
-         if Present (Init_Cond) then
-            Analyze_Initial_Condition_In_Decl_Part (Init_Cond);
-         end if;
-      end if;
-
-      --  Check whether the lack of indicator Part_Of agrees with the placement
-      --  of the package instantiation with respect to the state space.
-
-      if Is_Generic_Instance (Pack_Id) then
-         Prag := Get_Pragma (Pack_Id, Pragma_Part_Of);
-
-         if No (Prag) then
-            Check_Missing_Part_Of (Pack_Id);
-         end if;
-      end if;
-
-      --  Restore the SPARK_Mode of the enclosing context after all delayed
-      --  pragmas have been analyzed.
-
-      Restore_SPARK_Mode (Mode);
-   end Analyze_Package_Contract;
 
    ---------------------------------
    -- Analyze_Package_Declaration --

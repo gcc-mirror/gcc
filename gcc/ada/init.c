@@ -110,6 +110,7 @@ char *__gl_interrupt_states              = 0;
 int   __gl_num_interrupt_states          = 0;
 int   __gl_unreserve_all_interrupts      = 0;
 int   __gl_exception_tracebacks          = 0;
+int   __gl_exception_tracebacks_symbolic = 0;
 int   __gl_detect_blocking               = 0;
 int   __gl_default_stack_size            = -1;
 int   __gl_leap_seconds_support          = 0;
