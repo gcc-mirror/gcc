@@ -2108,9 +2108,7 @@ package body Sem_Util is
             T := Full_View (T);
          end if;
 
-         if Is_Descendent_Of_Address (T)
-           or else Is_Limited_Type (T)
-         then
+         if Is_Descendent_Of_Address (T) or else Is_Limited_Type (T) then
             Set_Is_Pure (Subp_Id, False);
             exit;
          end if;
@@ -8552,6 +8550,39 @@ package body Sem_Util is
       return False;
    end Has_Discriminant_Dependent_Constraint;
 
+   --------------------------------------
+   -- Has_Effectively_Volatile_Profile --
+   --------------------------------------
+
+   function Has_Effectively_Volatile_Profile
+     (Subp_Id : Entity_Id) return Boolean
+   is
+      Formal : Entity_Id;
+
+   begin
+      --  Inspect the formal parameters looking for an effectively volatile
+      --  type.
+
+      Formal := First_Formal (Subp_Id);
+      while Present (Formal) loop
+         if Is_Effectively_Volatile (Etype (Formal)) then
+            return True;
+         end if;
+
+         Next_Formal (Formal);
+      end loop;
+
+      --  Inspect the return type of functions
+
+      if Ekind_In (Subp_Id, E_Function, E_Generic_Function)
+        and then Is_Effectively_Volatile (Etype (Subp_Id))
+      then
+         return True;
+      end if;
+
+      return False;
+   end Has_Effectively_Volatile_Profile;
+
    --------------------------
    -- Has_Enabled_Property --
    --------------------------
@@ -13718,6 +13749,14 @@ package body Sem_Util is
       if Is_Primitive (Func_Id)
         and then Present (First_Formal (Func_Id))
         and then Is_Protected_Type (Etype (First_Formal (Func_Id)))
+      then
+         return True;
+
+      --  An instance of Ada.Unchecked_Conversion is a volatile function if
+      --  either the source or the target are effectively volatile.
+
+      elsif Is_Unchecked_Conversion_Instance (Func_Id)
+        and then Has_Effectively_Volatile_Profile (Func_Id)
       then
          return True;
 

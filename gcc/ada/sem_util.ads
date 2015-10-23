@@ -1006,6 +1006,11 @@ package Sem_Util is
    --  Returns True if and only if Comp has a constrained subtype that depends
    --  on a discriminant.
 
+   function Has_Effectively_Volatile_Profile
+     (Subp_Id : Entity_Id) return Boolean;
+   --  Determine whether subprogram Subp_Id has an effectively volatile formal
+   --  parameter or returns an effectively volatile value.
+
    function Has_Infinities (E : Entity_Id) return Boolean;
    --  Determines if the range of the floating-point type E includes
    --  infinities. Returns False if E is not a floating-point type.

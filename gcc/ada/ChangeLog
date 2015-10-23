@@ -1,3 +1,13 @@
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Pragma Volatile_Function should
+	not apply to a function instantiation.
+	* sem_util.adb (Has_Effectively_Volatile_Profile): New routine.
+	(Is_Volatile_Function): An instance of Ada.Unchecked_Conversion
+	is a volatile function when its profile contains an effectively
+	volatile type.
+	* sem_util.ads (Has_Effectively_Volatile_Profile): New routine.
+
 2015-10-23  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_unst.adb (Unnest_Subprogram): Complete previous

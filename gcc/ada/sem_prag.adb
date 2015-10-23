@@ -21543,14 +21543,9 @@ package body Sem_Prag is
             Subp_Decl :=
               Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
 
-            --  Function instantiation
-
-            if Nkind (Subp_Decl) = N_Function_Instantiation then
-               null;
-
             --  Generic subprogram
 
-            elsif Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
+            if Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
                null;
 
             --  Body acts as spec
@@ -21578,7 +21573,6 @@ package body Sem_Prag is
             end if;
 
             Spec_Id := Corresponding_Spec_Of (Subp_Decl);
-            Over_Id := Overridden_Operation (Spec_Id);
 
             if not Ekind_In (Spec_Id, E_Function, E_Generic_Function) then
                Pragma_Misplaced;
@@ -21594,6 +21588,8 @@ package body Sem_Prag is
             --  (SPARK RM 7.1.2(15)). Overriding checks are usually performed
             --  in New_Overloaded_Entity, however at that point the pragma has
             --  not been processed yet.
+
+            Over_Id := Overridden_Operation (Spec_Id);
 
             if Present (Over_Id)
               and then not Is_Volatile_Function (Over_Id)
