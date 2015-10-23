@@ -136,17 +136,34 @@ procedure Gnat1drv is
          Unnest_Subprogram_Mode := True;
       end if;
 
-      --  -gnatd.V or -gnatd.u enables special C expansion mode
+      --  -gnatd.u enables special C expansion mode
 
-      if Debug_Flag_Dot_VV or Debug_Flag_Dot_U then
+      if Debug_Flag_Dot_U then
          Modify_Tree_For_C := True;
       end if;
 
-      --  Other flags set if we are generating C code
+      --  Set all flags required when generating C code (-gnatd.V)
 
       if Debug_Flag_Dot_VV then
          Generate_C_Code := True;
+         Modify_Tree_For_C := True;
          Unnest_Subprogram_Mode := True;
+
+         --  Enable some restrictions systematically to simplify the generated
+         --  code. Note that restriction checks are also disabled in C mode,
+         --  see Restrict.Check_Restriction.
+
+         Restrict.Restrictions.Set   (No_Exception_Registration)       := True;
+         Restrict.Restrictions.Set   (No_Initialize_Scalars)           := True;
+         Restrict.Restrictions.Set   (No_Task_Hierarchy)               := True;
+         Restrict.Restrictions.Set   (No_Abort_Statements)             := True;
+         Restrict.Restrictions.Set   (Max_Asynchronous_Select_Nesting) := True;
+         Restrict.Restrictions.Value (Max_Asynchronous_Select_Nesting) := 0;
+
+         --  Set operating mode to Generate_Code to benefit from full front-end
+         --  expansion (e.g. generics).
+
+         Operating_Mode := Generate_Code;
       end if;
 
       --  -gnatd.E sets Error_To_Warning mode, causing selected error messages
@@ -229,6 +246,7 @@ procedure Gnat1drv is
          --  user specified Restrictions pragmas are ignored, see
          --  Sem_Prag.Process_Restrictions_Or_Restriction_Warnings.
 
+         Restrict.Restrictions.Set   (No_Exception_Registration)       := True;
          Restrict.Restrictions.Set   (No_Initialize_Scalars)           := True;
          Restrict.Restrictions.Set   (No_Task_Hierarchy)               := True;
          Restrict.Restrictions.Set   (No_Abort_Statements)             := True;

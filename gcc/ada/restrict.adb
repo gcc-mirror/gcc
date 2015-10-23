@@ -505,16 +505,14 @@ package body Restrict is
       --  In GNATprove mode restrictions are checked, except for
       --  No_Initialize_Scalars, which is implicitly set in gnat1drv.adb.
 
-      --  Just checking, SPARK does not allow restrictions to be set ???
-
       if CodePeer_Mode
         or else (GNATprove_Mode and then R = No_Initialize_Scalars)
       then
          return;
       end if;
 
-      --  In SPARK mode, issue an error for any use of class-wide, even if the
-      --  No_Dispatch restriction is not set.
+      --  In SPARK 05 mode, issue an error for any use of class-wide, even if
+      --  the No_Dispatch restriction is not set.
 
       if R = No_Dispatch then
          Check_SPARK_05_Restriction ("class-wide is not allowed", N);
