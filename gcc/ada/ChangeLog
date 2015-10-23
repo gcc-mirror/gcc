@@ -1,3 +1,38 @@
+2015-10-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Adjust.
+
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_dbug.ads, exp_dbug.adb (Get_External_Name): The special prefix for
+	ignored Ghost entities is now ___ghost_.
+
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* ghost.adb (Is_Subject_To_Ghost): Check the
+	original node when searching for pragma Ghost to catch cases
+	where a source construct has been rewritten into something else.
+
+2015-10-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb (Rewritten_For_C): New flag on functions
+	that return a constrained array type.  When generating C these
+	functions are rewritten as procedures with an out parameter,
+	and calls to such functions are rewritten accordingly.
+	* exp_ch6.adb (Expand_N_Subprogram_Declaration): When
+	Modify_Tree_For_C is set and the function returns a constrained
+	array type, generate a procedure declaration with an additional
+	out parameter. Mark original function as Rewritten_For_C.
+	The new declaration is inserted in tree immediately after
+	current declaration.
+	(Expand_Subprogram_Body): If entity is marked Rewritten_For_C,
+	generate body of corresponding procedure using declarations
+	and statements for function body. Replace return statements
+	with assignments to the out parameter, followed by a simple
+	return statement.
+	(Rewrite_Function_Call_For_C): New procedure to replace a function
+	call that returns an array by a procedure call.
+
 2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_util.adb (Denotes_Iterator): New routine.
