@@ -1,3 +1,9 @@
+2015-10-23  Caroline Tice  <cmtice@google.com>
+
+	(from Richard Biener
+	* tree.c (int_cst_hasher::hash):  Replace XOR with more efficient
+	call to iterative_hash_host_wide_int.
+
 2015-10-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config.gcc (powerpc-ibm-aix[6789]) [default_use_cxa_atexit]:
