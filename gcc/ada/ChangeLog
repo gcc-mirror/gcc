@@ -1,3 +1,12 @@
+2015-10-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* bindgen.adb, restrict.adb: Minor spelling/grammar fixes.
+
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Code cleanup. Check for possible
+	elaboration issues in SPARK when the name denotes a source variable.
+
 2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Process_Transient_Objects): Reimplement to properly

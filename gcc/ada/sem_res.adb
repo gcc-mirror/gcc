@@ -7179,44 +7179,40 @@ package body Sem_Res is
          Par := Parent (Par);
       end if;
 
-      --  The following checks are only relevant when SPARK_Mode is on as they
-      --  are not standard Ada legality rules. An effectively volatile object
-      --  subject to enabled properties Async_Writers or Effective_Reads must
-      --  appear in a specific context.
+      if Comes_From_Source (N) then
 
-      if SPARK_Mode = On
-        and then Is_Object (E)
-        and then Is_Effectively_Volatile (E)
-        and then (Async_Writers_Enabled (E)
-                   or else Effective_Reads_Enabled (E))
-        and then Comes_From_Source (N)
-      then
-         --  The effectively volatile objects appears in a "non-interfering
-         --  context" as defined in SPARK RM 7.1.3(12).
+         --  The following checks are only relevant when SPARK_Mode is on as
+         --  they are not standard Ada legality rules.
 
-         if Is_OK_Volatile_Context (Par, N) then
-            null;
+         if SPARK_Mode = On then
 
-         --  Otherwise the context causes a side effect with respect to the
-         --  effectively volatile object.
+            --  An effectively volatile object subject to enabled properties
+            --  Async_Writers or Effective_Reads must appear in non-interfering
+            --  context (SPARK RM 7.1.3(12)).
 
-         else
-            SPARK_Msg_N
-              ("volatile object cannot appear in this context "
-               & "(SPARK RM 7.1.3(12))", N);
+            if Is_Object (E)
+              and then Is_Effectively_Volatile (E)
+              and then (Async_Writers_Enabled (E)
+                         or else Effective_Reads_Enabled (E))
+              and then not Is_OK_Volatile_Context (Par, N)
+            then
+               SPARK_Msg_N
+                 ("volatile object cannot appear in this context "
+                  & "(SPARK RM 7.1.3(12))", N);
+            end if;
+
+            --  Check possible elaboration issues with respect to variables
+
+            if Ekind (E) = E_Variable then
+               Check_Elab_Call (N);
+            end if;
          end if;
-      end if;
 
-      --  A Ghost entity must appear in a specific context
+         --  A Ghost entity must appear in a specific context
 
-      if Is_Ghost_Entity (E) and then Comes_From_Source (N) then
-         Check_Ghost_Context (E, N);
-      end if;
-
-      --  In SPARK mode, need to check possible elaboration issues
-
-      if SPARK_Mode = On and then Ekind (E) = E_Variable then
-         Check_Elab_Call (N);
+         if Is_Ghost_Entity (E) then
+            Check_Ghost_Context (E, N);
+         end if;
       end if;
    end Resolve_Entity_Name;
 

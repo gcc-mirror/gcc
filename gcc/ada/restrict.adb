@@ -503,7 +503,7 @@ package body Restrict is
       --  so that we have consistency between each compilation.
 
       --  In GNATprove mode restrictions are checked, except for
-      --  No_Initialize_Scalars, which is implicitely set in gnat1drv.adb.
+      --  No_Initialize_Scalars, which is implicitly set in gnat1drv.adb.
 
       --  Just checking, SPARK does not allow restrictions to be set ???
 
