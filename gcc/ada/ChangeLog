@@ -1,3 +1,13 @@
+2015-10-23  Bob Duff  <duff@adacore.com>
+
+	* a-convec.adb (Copy): Make sure C is initialized
+	on all paths, including when Checks is False.
+
+2015-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Remove
+	error as unreachable.
+
 2015-10-23  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): Adjust.
