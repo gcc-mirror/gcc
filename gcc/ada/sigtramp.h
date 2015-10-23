@@ -43,19 +43,7 @@ extern "C" {
 
 #ifdef __ANDROID__
 #include <stdlib.h>
-#include <asm/signal.h>
-#include <asm/sigcontext.h>
-
-/* Android SDK doesn't define these structs */
-typedef struct sigcontext mcontext_t;
-
-typedef struct ucontext
-  {
-    unsigned long uc_flags;
-    struct ucontext *uc_link;
-    stack_t uc_stack;
-    mcontext_t uc_mcontext;
-} ucontext_t;
+#include <sys/ucontext.h>
 #endif
 
   /* This typedef signature sometimes conflicts with the sighandler_t from

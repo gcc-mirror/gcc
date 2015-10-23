@@ -66,6 +66,7 @@ package Ada.Containers.Formal_Doubly_Linked_Lists with
   SPARK_Mode
 is
    pragma Annotate (GNATprove, External_Axiomatization);
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    type List (Capacity : Count_Type) is private with
      Iterable => (First       => First,

@@ -61,6 +61,7 @@ generic
       Color : Color_Type) is <>;
 
 package Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
+   pragma Annotate (CodePeer, Skip_Analysis);
    pragma Pure;
 
    function Min (Tree : Tree_Type'Class; Node : Count_Type) return Count_Type;

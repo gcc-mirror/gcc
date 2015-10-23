@@ -29,8 +29,6 @@ with Unchecked_Conversion;
 
 package body Ada.Containers.Bounded_Holders is
 
-   pragma Annotate (CodePeer, Skip_Analysis);
-
    function Size_In_Storage_Elements (Element : Element_Type) return Natural;
    --  This returns the size of Element in storage units. It raises an
    --  exception if the size is not a multiple of Storage_Unit, or if the size

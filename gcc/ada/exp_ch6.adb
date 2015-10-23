@@ -1990,10 +1990,6 @@ package body Exp_Ch6 is
                --       Tnnn;
                --    end;
 
-               --  Note: this won't do in Modify_Tree_For_C mode, but we
-               --  will deal with that later (it will require creating a
-               --  declaration for Temp, using Insert_Declaration) ???
-
                declare
                   Tnnn  : constant Entity_Id := Make_Temporary (Loc, 'T');
                   FRTyp : constant Entity_Id := Etype (N);

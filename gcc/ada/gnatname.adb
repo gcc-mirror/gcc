@@ -609,6 +609,62 @@ begin
       Usage;
    end if;
 
+   if Create_Project then
+      declare
+         Gnatname : constant String_Access :=
+                      Program_Name ("gnatname", "gnatname");
+         Target   : String_Access := null;
+         Arg_Len  : Positive := Argument_Count;
+
+      begin
+         --  Find the target, if any
+
+         if Gnatname.all /= "gnatname" then
+            Target := new String'(Gnatname
+                                  (Gnatname'First .. Gnatname'Last - 9));
+            Arg_Len := Arg_Len + 1;
+         end if;
+
+         declare
+            Gprname : String_Access :=
+                         Locate_Exec_On_Path (Exec_Name => "gprname");
+            Args : Argument_List (1 .. Arg_Len);
+            Success : Boolean;
+
+         begin
+            if Gprname /= null then
+               for J in 1 .. Argument_Count loop
+                  Args (J) := new String'(Argument (J));
+               end loop;
+
+               --  Add the target if there is one
+
+               if Target /= null then
+                  Args (Args'Last) :=
+                    new String'("--target=" & Target.all);
+               end if;
+
+               Spawn (Gprname.all, Args, Success);
+
+               Free (Gprname);
+
+               if Success then
+                  Exit_Program (E_Success);
+               end if;
+            end if;
+         end;
+      end;
+   end if;
+
+   if Create_Project then
+      --  This only happens if gprname is not found or if the invocation of
+      --  gprname did not succeed.
+
+      Write_Line
+           ("warning: gnatname -P is obsolete and will not be available "
+            & "in the next release; use gprname instead");
+   end if;
+
    --  If no Ada or foreign pattern was specified, print the usage and return
 
    if Patterns.Last (Arguments.Table (Arguments.Last).Name_Patterns) = 0

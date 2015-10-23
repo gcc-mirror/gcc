@@ -29,6 +29,7 @@ with Ada.Finalization;
 with System.Atomic_Counters;
 
 package Ada.Containers.Helpers is
+   pragma Annotate (CodePeer, Skip_Analysis);
    pragma Pure;
 
    --  Miscellaneous helpers shared among various containers

@@ -88,6 +88,9 @@ package body Exp_Aggr is
    --  N is an aggregate (record or array). Checks the presence of default
    --  initialization (<>) in any component (Ada 2005: AI-287).
 
+   function In_Object_Declaration (N : Node_Id) return Boolean;
+   --  Return True if N is part of an object declaration, False otherwise
+
    function Is_Static_Dispatch_Table_Aggregate (N : Node_Id) return Boolean;
    --  Returns true if N is an aggregate used to initialize the components
    --  of a statically allocated dispatch table.
@@ -3897,6 +3900,14 @@ package body Exp_Aggr is
    --  Start of processing for Convert_To_Positional
 
    begin
+      --  Only convert to positional when generating C in case of an
+      --  object declaration, this is the only case where aggregates are
+      --  supported in C.
+
+      if Modify_Tree_For_C and then not In_Object_Declaration (N) then
+         return;
+      end if;
+
       --  Ada 2005 (AI-287): Do not convert in case of default initialized
       --  components because in this case will need to call the corresponding
       --  IP procedure.
@@ -6038,6 +6049,12 @@ package body Exp_Aggr is
       elsif Type_May_Have_Bit_Aligned_Components (Typ) then
          Convert_To_Assignments (N, Typ);
 
+      --  When generating C, only generate an aggregate when declaring objects
+      --  since C does not support aggregates in e.g. assignment statements.
+
+      elsif Modify_Tree_For_C and then not In_Object_Declaration (N) then
+         Convert_To_Assignments (N, Typ);
+
       --  In all other cases, build a proper aggregate to be handled by gigi
 
       else
@@ -6408,6 +6425,24 @@ package body Exp_Aggr is
       end if;
    end Is_Delayed_Aggregate;
 
+   ---------------------------
+   -- In_Object_Declaration --
+   ---------------------------
+
+   function In_Object_Declaration (N : Node_Id) return Boolean is
+      P : Node_Id := Parent (N);
+   begin
+      while Present (P) loop
+         if Nkind (P) = N_Object_Declaration then
+            return True;
+         end if;
+
+         P := Parent (P);
+      end loop;
+
+      return False;
+   end In_Object_Declaration;
+
    ----------------------------------------
    -- Is_Static_Dispatch_Table_Aggregate --
    ----------------------------------------
@@ -6465,10 +6500,7 @@ package body Exp_Aggr is
       Aggr_Code : List_Id;
 
    begin
-      if Is_Record_Type (Etype (N)) then
-         Aggr_Code := Build_Record_Aggr_Code (N, Typ, Target);
-
-      else pragma Assert (Is_Array_Type (Etype (N)));
+      if Is_Array_Type (Etype (N)) then
          Aggr_Code :=
            Build_Array_Aggr_Code
              (N           => N,
@@ -6477,6 +6509,10 @@ package body Exp_Aggr is
               Into        => Target,
               Scalar_Comp => Is_Scalar_Type (Component_Type (Typ)),
               Indexes     => No_List);
+      else
+         --  Directly or indirectly (e.g. access protected procedure) a record
+
+         Aggr_Code := Build_Record_Aggr_Code (N, Typ, Target);
       end if;
 
       --  Save the last assignment statement associated with the aggregate

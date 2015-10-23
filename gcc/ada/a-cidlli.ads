@@ -44,6 +44,7 @@ generic
       return Boolean is <>;
 
 package Ada.Containers.Indefinite_Doubly_Linked_Lists is
+   pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
    pragma Remote_Types;
 

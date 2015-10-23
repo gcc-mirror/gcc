@@ -50,6 +50,7 @@ package Ada.Containers.Formal_Vectors with
   SPARK_Mode
 is
    pragma Annotate (GNATprove, External_Axiomatization);
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    subtype Extended_Index is Index_Type'Base
    range Index_Type'First - 1 ..

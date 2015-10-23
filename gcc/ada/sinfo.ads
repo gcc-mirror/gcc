@@ -728,8 +728,12 @@ package Sinfo is
    --    Mod for signed integer types is expanded into equivalent expressions
    --    using Rem (which is % in C) and other C-available operators.
 
-   --    The Actions list of an Expression_With_Actions node does not contain
-   --    any declarations,(so that DO X, .. Y IN Z becomes (X, .. Y, Z) in C).
+   --    Functions returning bounded arrays are transformed into procedures
+   --    with an extra out parameter, and the calls updated accordingly.
+
+   --    Aggregates are only kept unexpanded for object declarations, otherwise
+   --    they are systematically expanded into loops (for arrays) and
+   --    individual assignments (for records).
 
    ------------------------------------
    -- Description of Semantic Fields --

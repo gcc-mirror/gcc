@@ -44,6 +44,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Indefinite_Ordered_Multisets is
+   pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
    pragma Remote_Types;
 
