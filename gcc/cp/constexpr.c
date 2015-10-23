@@ -2802,10 +2802,13 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     {
       /* Create a new CONSTRUCTOR in case evaluation of the initializer
 	 wants to modify it.  */
-      new_ctx.ctor = build_constructor (type, NULL);
       if (*valp == NULL_TREE)
-	*valp = new_ctx.ctor;
-      CONSTRUCTOR_NO_IMPLICIT_ZERO (new_ctx.ctor) = no_zero_init;
+	{
+	  *valp = new_ctx.ctor = build_constructor (type, NULL);
+	  CONSTRUCTOR_NO_IMPLICIT_ZERO (new_ctx.ctor) = no_zero_init;
+	}
+      else
+	new_ctx.ctor = *valp;
       new_ctx.object = target;
     }
 
