@@ -108,7 +108,10 @@ package body Bindusg is
 
       --  Line for -E switch
 
-      Write_Line ("  -E        Store tracebacks in exception occurrences");
+      Write_Line ("  -Ea       Store tracebacks in exception occurrences");
+      Write_Line ("  -Es       Store tracebacks in exception occurrences,");
+      Write_Line ("            and enable symbolic tracebacks");
+      Write_Line ("  -E        Same as -Ea");
 
       --  The -f switch is voluntarily omitted, because it is obsolete
 

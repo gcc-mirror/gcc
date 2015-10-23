@@ -48,6 +48,10 @@
 --  may return any string output in association with a provided call chain.
 --  The decorator replaces the default backtrace mentioned above.
 
+--  On systems that use DWARF debugging output, then if the "-g" compiler
+--  switch and the "-Es" binder switch are used, the decorator is automatically
+--  set to Symbolic_Traceback.
+
 with System.Traceback_Entries;
 
 package System.Exception_Traces is
@@ -89,12 +93,15 @@ package System.Exception_Traces is
    --  output for a call chain provided by way of a tracebacks array.
 
    procedure Set_Trace_Decorator (Decorator : Traceback_Decorator);
-   --  Set the decorator to be used for future automatic outputs. Restore
-   --  the default behavior (output of raw addresses) if the provided
-   --  access value is null.
+   --  Set the decorator to be used for future automatic outputs. Restore the
+   --  default behavior if the provided access value is null.
    --
    --  Note: System.Traceback.Symbolic.Symbolic_Traceback may be used as the
    --  Decorator, to get a symbolic traceback. This will cause a significant
-   --  cpu and memory overhead.
+   --  cpu and memory overhead on some platforms.
+   --
+   --  Note: The Decorator is called when constructing the
+   --  Exception_Information; that needs to be taken into account
+   --  if the Decorator has any side effects.
 
 end System.Exception_Traces;

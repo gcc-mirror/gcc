@@ -23,64 +23,62 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Elists;   use Elists;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Eval_Fat; use Eval_Fat;
-with Exp_Ch3;  use Exp_Ch3;
-with Exp_Ch9;  use Exp_Ch9;
-with Exp_Disp; use Exp_Disp;
-with Exp_Dist; use Exp_Dist;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
-with Freeze;   use Freeze;
-with Ghost;    use Ghost;
-with Itypes;   use Itypes;
-with Layout;   use Layout;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Case; use Sem_Case;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch7;  use Sem_Ch7;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch10; use Sem_Ch10;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Disp; use Sem_Disp;
-with Sem_Dist; use Sem_Dist;
-with Sem_Elim; use Sem_Elim;
-with Sem_Eval; use Sem_Eval;
-with Sem_Mech; use Sem_Mech;
-with Sem_Prag; use Sem_Prag;
-with Sem_Res;  use Sem_Res;
-with Sem_Smem; use Sem_Smem;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
+with Aspects;   use Aspects;
+with Atree;     use Atree;
+with Checks;    use Checks;
+with Contracts; use Contracts;
+with Debug;     use Debug;
+with Elists;    use Elists;
+with Einfo;     use Einfo;
+with Errout;    use Errout;
+with Eval_Fat;  use Eval_Fat;
+with Exp_Ch3;   use Exp_Ch3;
+with Exp_Ch9;   use Exp_Ch9;
+with Exp_Disp;  use Exp_Disp;
+with Exp_Dist;  use Exp_Dist;
+with Exp_Tss;   use Exp_Tss;
+with Exp_Util;  use Exp_Util;
+with Fname;     use Fname;
+with Freeze;    use Freeze;
+with Ghost;     use Ghost;
+with Itypes;    use Itypes;
+with Layout;    use Layout;
+with Lib;       use Lib;
+with Lib.Xref;  use Lib.Xref;
+with Namet;     use Namet;
+with Nmake;     use Nmake;
+with Opt;       use Opt;
+with Restrict;  use Restrict;
+with Rident;    use Rident;
+with Rtsfind;   use Rtsfind;
+with Sem;       use Sem;
+with Sem_Aux;   use Sem_Aux;
+with Sem_Case;  use Sem_Case;
+with Sem_Cat;   use Sem_Cat;
+with Sem_Ch6;   use Sem_Ch6;
+with Sem_Ch7;   use Sem_Ch7;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch13;  use Sem_Ch13;
+with Sem_Dim;   use Sem_Dim;
+with Sem_Disp;  use Sem_Disp;
+with Sem_Dist;  use Sem_Dist;
+with Sem_Elim;  use Sem_Elim;
+with Sem_Eval;  use Sem_Eval;
+with Sem_Mech;  use Sem_Mech;
+with Sem_Res;   use Sem_Res;
+with Sem_Smem;  use Sem_Smem;
+with Sem_Type;  use Sem_Type;
+with Sem_Util;  use Sem_Util;
+with Sem_Warn;  use Sem_Warn;
+with Stand;     use Stand;
+with Sinfo;     use Sinfo;
+with Sinput;    use Sinput;
+with Snames;    use Snames;
+with Targparm;  use Targparm;
+with Tbuild;    use Tbuild;
+with Ttypes;    use Ttypes;
+with Uintp;     use Uintp;
+with Urealp;    use Urealp;
 
 package body Sem_Ch3 is
 
@@ -92,16 +90,6 @@ package body Sem_Ch3 is
    --  Ada 2005 (AI-251): Add the tag components corresponding to all the
    --  abstract interface types implemented by a record type or a derived
    --  record type.
-
-   procedure Analyze_Object_Contract (Obj_Id : Entity_Id);
-   --  Analyze all delayed pragmas chained on the contract of object Obj_Id as
-   --  if they appeared at the end of the declarative region. The pragmas to be
-   --  considered are:
-   --    Async_Readers
-   --    Async_Writers
-   --    Effective_Reads
-   --    Effective_Writes
-   --    Part_Of
 
    procedure Build_Derived_Type
      (N             : Node_Id;
@@ -2306,7 +2294,6 @@ package body Sem_Ch3 is
       Context     : Node_Id   := Empty;
       Freeze_From : Entity_Id := Empty;
       Next_Decl   : Node_Id;
-      Pack_Decl   : Node_Id   := Empty;
 
       Body_Seen : Boolean := False;
       --  Flag set when the first body [stub] is encountered
@@ -2477,7 +2464,6 @@ package body Sem_Ch3 is
          Context := Parent (L);
 
          if Nkind (Context) = N_Package_Specification then
-            Pack_Decl := Parent (Context);
 
             --  When a package has private declarations, its contract must be
             --  analyzed at the end of the said declarations. This way both the
@@ -2506,14 +2492,12 @@ package body Sem_Ch3 is
             end if;
 
          elsif Nkind (Context) = N_Package_Body then
-            Pack_Decl := Context;
             Analyze_Package_Body_Contract (Defining_Entity (Context));
          end if;
 
          --  Analyze the contracts of all subprogram declarations, subprogram
-         --  bodies and variables now due to the delayed visibility needs of
-         --  of their aspects and pragmas. Capture global references in generic
-         --  subprograms or bodies.
+         --  bodies and variables due to the delayed visibility needs of their
+         --  aspects and pragmas.
 
          Decl := First (L);
          while Present (Decl) loop
@@ -2533,43 +2517,21 @@ package body Sem_Ch3 is
                Analyze_Subprogram_Body_Stub_Contract (Defining_Entity (Decl));
             end if;
 
-            --  Capture all global references in a generic subprogram or a body
-            --  [stub] now that the contract has been analyzed.
-
-            if Nkind_In (Decl, N_Generic_Subprogram_Declaration,
-                               N_Subprogram_Body,
-                               N_Subprogram_Body_Stub)
-              and then Is_Generic_Declaration_Or_Body (Decl)
-            then
-               Save_Global_References_In_Contract
-                 (Templ  => Original_Node (Decl),
-                  Gen_Id => Corresponding_Spec_Of (Decl));
-            end if;
-
             Next (Decl);
          end loop;
 
-         --  The owner of the declarations is a package [body]
+         if Nkind (Context) = N_Package_Body then
 
-         if Present (Pack_Decl) then
+            --  Ensure that all abstract states and objects declared in the
+            --  state space of a package body are utilized as constituents.
 
-            --  Capture all global references in a generic package or a body
-            --  after all nested generic subprograms and bodies were subjected
-            --  to the same processing.
-
-            if Is_Generic_Declaration_Or_Body (Pack_Decl) then
-               Save_Global_References_In_Contract
-                 (Templ  => Original_Node (Pack_Decl),
-                  Gen_Id => Corresponding_Spec_Of (Pack_Decl));
-            end if;
+            Check_Unused_Body_States (Defining_Entity (Context));
 
             --  State refinements are visible upto the end the of the package
             --  body declarations. Hide the state refinements from visibility
             --  to restore the original state conditions.
 
-            if Nkind (Pack_Decl) = N_Package_Body then
-               Remove_Visible_Refinements (Corresponding_Spec (Pack_Decl));
-            end if;
+            Remove_Visible_Refinements (Corresponding_Spec (Context));
          end if;
       end if;
    end Analyze_Declarations;
@@ -3287,173 +3249,6 @@ package body Sem_Ch3 is
          Set_Etype (E, Any_Type);
       end if;
    end Analyze_Number_Declaration;
-
-   -----------------------------
-   -- Analyze_Object_Contract --
-   -----------------------------
-
-   procedure Analyze_Object_Contract (Obj_Id : Entity_Id) is
-      Obj_Typ : constant Entity_Id := Etype (Obj_Id);
-      AR_Val  : Boolean := False;
-      AW_Val  : Boolean := False;
-      ER_Val  : Boolean := False;
-      EW_Val  : Boolean := False;
-      Prag    : Node_Id;
-      Seen    : Boolean := False;
-
-   begin
-      --  The loop parameter in an element iterator over a formal container
-      --  is declared with an object declaration but no contracts apply.
-
-      if Ekind (Obj_Id) = E_Loop_Parameter then
-         return;
-      end if;
-
-      --  Constant related checks
-
-      if Ekind (Obj_Id) = E_Constant then
-
-         --  A constant cannot be effectively volatile (SPARK RM 7.1.3(4)).
-         --  This check is relevant only when SPARK_Mode is on as it is not a
-         --  standard Ada legality rule. Internally-generated constants that
-         --  map generic formals to actuals in instantiations are allowed to
-         --  be volatile.
-
-         if SPARK_Mode = On
-           and then Comes_From_Source (Obj_Id)
-           and then Is_Effectively_Volatile (Obj_Id)
-           and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
-         then
-            Error_Msg_N ("constant cannot be volatile", Obj_Id);
-         end if;
-
-      --  Variable related checks
-
-      else pragma Assert (Ekind (Obj_Id) = E_Variable);
-
-         --  The following checks are relevant only when SPARK_Mode is on as
-         --  they are not standard Ada legality rules. Internally generated
-         --  temporaries are ignored.
-
-         if SPARK_Mode = On and then Comes_From_Source (Obj_Id) then
-            if Is_Effectively_Volatile (Obj_Id) then
-
-               --  The declaration of an effectively volatile object must
-               --  appear at the library level (SPARK RM 7.1.3(3), C.6(6)).
-
-               if not Is_Library_Level_Entity (Obj_Id) then
-                  Error_Msg_N
-                    ("volatile variable & must be declared at library level",
-                     Obj_Id);
-
-               --  An object of a discriminated type cannot be effectively
-               --  volatile except for protected objects (SPARK RM 7.1.3(5)).
-
-               elsif Has_Discriminants (Obj_Typ)
-                 and then not Is_Protected_Type (Obj_Typ)
-               then
-                  Error_Msg_N
-                    ("discriminated object & cannot be volatile", Obj_Id);
-
-               --  An object of a tagged type cannot be effectively volatile
-               --  (SPARK RM C.6(5)).
-
-               elsif Is_Tagged_Type (Obj_Typ) then
-                  Error_Msg_N ("tagged object & cannot be volatile", Obj_Id);
-               end if;
-
-            --  The object is not effectively volatile
-
-            else
-               --  A non-effectively volatile object cannot have effectively
-               --  volatile components (SPARK RM 7.1.3(6)).
-
-               if not Is_Effectively_Volatile (Obj_Id)
-                 and then Has_Volatile_Component (Obj_Typ)
-               then
-                  Error_Msg_N
-                    ("non-volatile object & cannot have volatile components",
-                     Obj_Id);
-               end if;
-            end if;
-         end if;
-
-         if Is_Ghost_Entity (Obj_Id) then
-
-            --  A Ghost object cannot be effectively volatile (SPARK RM 6.9(8))
-
-            if Is_Effectively_Volatile (Obj_Id) then
-               Error_Msg_N ("ghost variable & cannot be volatile", Obj_Id);
-
-            --  A Ghost object cannot be imported or exported (SPARK RM 6.9(8))
-
-            elsif Is_Imported (Obj_Id) then
-               Error_Msg_N ("ghost object & cannot be imported", Obj_Id);
-
-            elsif Is_Exported (Obj_Id) then
-               Error_Msg_N ("ghost object & cannot be exported", Obj_Id);
-            end if;
-         end if;
-
-         --  Analyze all external properties
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Async_Readers);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, AR_Val);
-            Seen := True;
-         end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Async_Writers);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, AW_Val);
-            Seen := True;
-         end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Effective_Reads);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, ER_Val);
-            Seen := True;
-         end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Effective_Writes);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, EW_Val);
-            Seen := True;
-         end if;
-
-         --  Verify the mutual interaction of the various external properties
-
-         if Seen then
-            Check_External_Properties (Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
-         end if;
-      end if;
-
-      --  Check whether the lack of indicator Part_Of agrees with the placement
-      --  of the object with respect to the state space.
-
-      Prag := Get_Pragma (Obj_Id, Pragma_Part_Of);
-
-      if No (Prag) then
-         Check_Missing_Part_Of (Obj_Id);
-      end if;
-
-      --  A ghost object cannot be imported or exported (SPARK RM 6.9(8)). One
-      --  exception to this is the object that represents the dispatch table of
-      --  a Ghost tagged type as the symbol needs to be exported.
-
-      if Comes_From_Source (Obj_Id) and then Is_Ghost_Entity (Obj_Id) then
-         if Is_Exported (Obj_Id) then
-            Error_Msg_N ("ghost object & cannot be exported", Obj_Id);
-
-         elsif Is_Imported (Obj_Id) then
-            Error_Msg_N ("ghost object & cannot be imported", Obj_Id);
-         end if;
-      end if;
-   end Analyze_Object_Contract;
 
    --------------------------------
    -- Analyze_Object_Declaration --

@@ -23,50 +23,50 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Exp_Util; use Exp_Util;
-with Elists;   use Elists;
-with Fname;    use Fname;
-with Fname.UF; use Fname.UF;
-with Freeze;   use Freeze;
-with Impunit;  use Impunit;
-with Inline;   use Inline;
-with Lib;      use Lib;
-with Lib.Load; use Lib.Load;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Par_SCO;  use Par_SCO;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch7;  use Sem_Ch7;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Dist; use Sem_Dist;
-with Sem_Prag; use Sem_Prag;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Sinfo.CN; use Sinfo.CN;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Style;    use Style;
-with Stylesw;  use Stylesw;
-with Tbuild;   use Tbuild;
-with Uname;    use Uname;
+with Aspects;   use Aspects;
+with Atree;     use Atree;
+with Contracts; use Contracts;
+with Debug;     use Debug;
+with Einfo;     use Einfo;
+with Errout;    use Errout;
+with Exp_Util;  use Exp_Util;
+with Elists;    use Elists;
+with Fname;     use Fname;
+with Fname.UF;  use Fname.UF;
+with Freeze;    use Freeze;
+with Impunit;   use Impunit;
+with Inline;    use Inline;
+with Lib;       use Lib;
+with Lib.Load;  use Lib.Load;
+with Lib.Xref;  use Lib.Xref;
+with Namet;     use Namet;
+with Nlists;    use Nlists;
+with Nmake;     use Nmake;
+with Opt;       use Opt;
+with Output;    use Output;
+with Par_SCO;   use Par_SCO;
+with Restrict;  use Restrict;
+with Rident;    use Rident;
+with Rtsfind;   use Rtsfind;
+with Sem;       use Sem;
+with Sem_Aux;   use Sem_Aux;
+with Sem_Ch3;   use Sem_Ch3;
+with Sem_Ch6;   use Sem_Ch6;
+with Sem_Ch7;   use Sem_Ch7;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Dist;  use Sem_Dist;
+with Sem_Prag;  use Sem_Prag;
+with Sem_Util;  use Sem_Util;
+with Sem_Warn;  use Sem_Warn;
+with Stand;     use Stand;
+with Sinfo;     use Sinfo;
+with Sinfo.CN;  use Sinfo.CN;
+with Sinput;    use Sinput;
+with Snames;    use Snames;
+with Style;     use Style;
+with Stylesw;   use Stylesw;
+with Tbuild;    use Tbuild;
+with Uname;     use Uname;
 
 package body Sem_Ch10 is
 
@@ -940,15 +940,6 @@ package body Sem_Ch10 is
                               N_Subprogram_Declaration)
       then
          Analyze_Subprogram_Contract (Defining_Entity (Unit_Node));
-
-         --  Capture all global references in a generic subprogram that acts as
-         --  a compilation unit now that the contract has been analyzed.
-
-         if Is_Generic_Declaration_Or_Body (Unit_Node) then
-            Save_Global_References_In_Contract
-              (Templ  => Original_Node (Unit_Node),
-               Gen_Id => Defining_Entity (Unit_Node));
-         end if;
       end if;
 
       --  Generate distribution stubs if requested and no error
@@ -2005,39 +1996,6 @@ package body Sem_Ch10 is
 
       Restore_Opt_Config_Switches (Opts);
    end Analyze_Subprogram_Body_Stub;
-
-   -------------------------------------------
-   -- Analyze_Subprogram_Body_Stub_Contract --
-   -------------------------------------------
-
-   procedure Analyze_Subprogram_Body_Stub_Contract (Stub_Id : Entity_Id) is
-      Stub_Decl : constant Node_Id   := Parent (Parent (Stub_Id));
-      Spec_Id   : constant Entity_Id := Corresponding_Spec_Of_Stub (Stub_Decl);
-
-   begin
-      --  A subprogram body stub may act as its own spec or as the completion
-      --  of a previous declaration. Depending on the context, the contract of
-      --  the stub may contain two sets of pragmas.
-
-      --  The stub is a completion, the applicable pragmas are:
-      --    Refined_Depends
-      --    Refined_Global
-
-      if Present (Spec_Id) then
-         Analyze_Subprogram_Body_Contract (Stub_Id);
-
-      --  The stub acts as its own spec, the applicable pragmas are:
-      --    Contract_Cases
-      --    Depends
-      --    Global
-      --    Postcondition
-      --    Precondition
-      --    Test_Case
-
-      else
-         Analyze_Subprogram_Contract (Stub_Id);
-      end if;
-   end Analyze_Subprogram_Body_Stub_Contract;
 
    ---------------------
    -- Analyze_Subunit --

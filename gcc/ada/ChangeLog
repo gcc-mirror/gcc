@@ -1,3 +1,105 @@
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* contracts.ads, contracts.adb: New unit.
+	* exp_ch6.adb Add with and use clauses for Contracts.
+	(Expand_Subprogram_Contract): Moved to Contracts.
+	* exp_ch6.ads (Expand_Subprogram_Contract): Moved to Contracts.
+	* sem_ch3.adb Add with and use clauses for Contracts.
+	(Analyze_Object_Contract): Moved to Contracts.
+	(Analyze_Declarations): Remove local variable Pack_Decl. Do not
+	capture global references in contracts. Check the hidden states
+	of a package body.
+	* sem_ch6.adb Add with and use clauses in Contracts.
+	(Analyze_Generic_Subprogram_Body): Do not capture global
+	references in contracts.
+	(Analyze_Subprogram_Body_Contract):
+	Moved to Contracts.
+	(Analyze_Subprogram_Body_Helper): Freeze the
+	contract of the nearest enclosing package body. Always analyze
+	the subprogram body contract. Do not expand the subprogram
+	body contract.
+	(Analyze_Subprogram_Contract): Moved to Contracts.
+	* sem_ch6.ads (Analyze_Subprogram_Body_Contract): Moved to Contracts.
+	(Analyze_Subprogram_Contract): Moved to Contracts.
+	* sem_ch7.adb Add with and use clauses for Contracts.
+	(Analyze_Package_Body_Contract): Moved to Contracts.
+	(Analyze_Package_Body_Helper): Freeze the contract of the
+	nearest enclosing package body.
+	(Analyze_Package_Contract): Moved to Contracts.
+	* sem_ch7.ads (Analyze_Package_Body_Contract): Moved to Contracts.
+	(Analyze_Package_Contract): Moved to Contracts.
+	* sem_ch10.adb Add with and use clauses for Contracts.
+	(Analyze_Compilation_Unit): Do not capture global references
+	in contracts.
+	(Analyze_Subprogram_Body_Stub_Contract): Moved to Contracts.
+	* sem_ch10.ads (Analyze_Subprogram_Body_Stub_Contract): Moved
+	to Contracts.
+	* sem_ch12.adb Add with and use clauses for Contracts.
+	(Analyze_Subprogram_Instantiation): Update the call to
+	Instantiate_Subprogram_Contract.
+	(Instantiate_Package_Body):
+	Do not copy the entity of the spec when creating an entity
+	for the body. Construct a brand new defining identifier for
+	the body and inherit the Comes_From_Source flag from the spec.
+	(Instantiate_Subprogram_Body): Remove Anon_Id to Act_Decl_Id
+	and update all occurrences. Construct a brand new defining
+	identifier for the body and inherit the Comes_From_Source
+	flag from the spec.
+	(Instantiate_Subprogram_Contract): Moved
+	to Contracts.
+	(Save_Global_References_In_Aspects): Moved to
+	the spec of Sem_Ch12.
+	(Save_Global_References_In_Contract):
+	Moved to Contracts.
+	* sem_ch12.ads (Save_Global_References_In_Aspects): Moved from
+	the body of Sem_Ch12.
+	(Save_Global_References_In_Contract):
+	Moved to Contracts.
+	* sem_prag.adb Add with and use clauses for Contracts.
+	(Add_Item): Removed. All references to this routine have been
+	replaced with calls to Append_New_Elmt.
+	(Analyze_Constituent):
+	Add special diagnostics for errors caused by freezing of
+	contracts.
+	(Analyze_Refined_State_In_Decl_Part): Add formal
+	parameter Freeze_Id. Add new global variable Freeze_Posted.
+	(Collect_Body_States): Removed.
+	(Report_Unused_States): Removed.
+	* sem_prag.ads (Analyze_Defined_State_In_Decl_Part): Add formal
+	parameter Freeze_Id and update comment on usage.
+	* sem_util.adb Remove with and use clauses for
+	Sem_Ch12.
+	(Add_Contract_Item): Moved to Contracts.
+	(Check_Unused_Body_States): New routine.
+	(Collect_Body_States):
+	New routine.
+	(Create_Generic_Contract): Moved to Contracts.
+	(Inherit_Subprogram_Contract): Moved to Contracts.
+	(Report_Unused_Body_States): New routine.
+	* sem_util.ads (Add_Contract_Item): Moved to Contracts.
+	(Check_Unused_Body_States): New routine.
+	(Collect_Body_States): New routine.
+	(Create_Generic_Contract): Moved to Contracts.
+	(Inherit_Subprogram_Contract): Moved to Contracts.
+	(Report_Unused_Body_States): New routine.
+	* sinfo.adb (Is_Expanded_Contract): New routine.
+	(Set_Is_Expanded_Contract): New routine.
+	* sinfo.ads New attribute Is_Expanded_Contract along with
+	placement in nodes.
+	(Is_Expanded_Contract): New routine along
+	with pragma Inline.
+	(Set_Is_Expanded_Contract): New routine
+	along with pragma Inline.
+	* gcc-interface/Make-lang.in: Add entry for contracts.o
+
+2015-10-23  Bob Duff  <duff@adacore.com>
+
+	* bindgen.adb, init.c, opt.ads, switch-b.adb: Implement new -Ea and
+	-Es switches.
+	* switch-b.ads: Minor comment fix.
+	* bindusg.adb: Document new -Ea and -Es switches.
+	* s-exctra.ads: Use -Es instead of -E.
+
 2015-10-23  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/utils2.c (build_call_alloc_dealloc): Check no implicit

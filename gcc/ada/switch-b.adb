@@ -127,7 +127,7 @@ package body Switch.B is
       --  A little check, "gnat" at the start of a switch is not allowed except
       --  for the compiler
 
-      if Switch_Chars'Last >= Ptr + 3
+      if Max >= Ptr + 3
         and then Switch_Chars (Ptr .. Ptr + 3) = "gnat"
       then
          Osint.Fail ("invalid switch: """ & Switch_Chars & """"
@@ -229,8 +229,28 @@ package body Switch.B is
          --  Processing for E switch
 
          when 'E' =>
-            Ptr := Ptr + 1;
+
+            --  -E is equivalent to -Ea (see below)
+
             Exception_Tracebacks := True;
+            Ptr := Ptr + 1;
+
+            if Ptr <= Max then
+               case Switch_Chars (Ptr) is
+
+                  --  -Ea sets Exception_Tracebacks
+
+                  when 'a' => null;
+
+                  --  -Es sets both Exception_Tracebacks and
+                  --  Exception_Tracebacks_Symbolic.
+
+                  when 's' => Exception_Tracebacks_Symbolic := True;
+                  when others => Bad_Switch (Switch_Chars);
+               end case;
+
+               Ptr := Ptr + 1;
+            end if;
 
          --  Processing for F switch
 
@@ -542,13 +562,11 @@ package body Switch.B is
                   declare
                      Src_Path_Name : constant String_Ptr :=
                                        Get_RTS_Search_Dir
-                                         (Switch_Chars
-                                           (Ptr + 1 .. Switch_Chars'Last),
+                                         (Switch_Chars (Ptr + 1 .. Max),
                                           Include);
                      Lib_Path_Name : constant String_Ptr :=
                                        Get_RTS_Search_Dir
-                                         (Switch_Chars
-                                           (Ptr + 1 .. Switch_Chars'Last),
+                                         (Switch_Chars (Ptr + 1 .. Max),
                                           Objects);
 
                   begin

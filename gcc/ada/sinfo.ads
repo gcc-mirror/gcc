@@ -1542,6 +1542,10 @@ package Sinfo is
    --    is called in a dispatching context. Used to prevent a formal/actual
    --    mismatch when the call is rewritten as a dispatching call.
 
+   --  Is_Expanded_Contract (Flag1-Sem)
+   --    Present in N_Contract nodes. Set if the contract has already undergone
+   --    expansion activities.
+
    --  Is_Asynchronous_Call_Block (Flag7-Sem)
    --    A flag set in a Block_Statement node to indicate that it is the
    --    expansion of an asynchronous entry call. Such a block needs cleanup
@@ -7564,6 +7568,7 @@ package Sinfo is
       --  Pre_Post_Conditions (Node1-Sem) (set to Empty if none)
       --  Contract_Test_Cases (Node2-Sem) (set to Empty if none)
       --  Classifications (Node3-Sem) (set to Empty if none)
+      --  Is_Expanded_Contract (Flag1-Sem)
 
       --  Pre_Post_Conditions contains a collection of pragmas that correspond
       --  to pre- and postconditions associated with an entry or a subprogram
@@ -7592,9 +7597,11 @@ package Sinfo is
       --    Abstract_States
       --    Async_Readers
       --    Async_Writers
+      --    Constant_After_Elaboration
       --    Depends
       --    Effective_Reads
       --    Effective_Writes
+      --    Extensions_Visible
       --    Global
       --    Initial_Condition
       --    Initializes
@@ -7602,6 +7609,7 @@ package Sinfo is
       --    Refined_Depends
       --    Refined_Global
       --    Refined_States
+      --    Volatile_Function
       --  The ordering is in LIFO fashion.
 
       -------------------
@@ -9322,6 +9330,9 @@ package Sinfo is
    function Is_Expanded_Build_In_Place_Call
      (N : Node_Id) return Boolean;    -- Flag11
 
+   function Is_Expanded_Contract
+     (N : Node_Id) return Boolean;    -- Flag1
+
    function Is_Finalization_Wrapper
      (N : Node_Id) return Boolean;    -- Flag9
 
@@ -10347,6 +10358,9 @@ package Sinfo is
 
    procedure Set_Is_Expanded_Build_In_Place_Call
      (N : Node_Id; Val : Boolean := True);    -- Flag11
+
+   procedure Set_Is_Expanded_Contract
+     (N : Node_Id; Val : Boolean := True);    -- Flag1
 
    procedure Set_Is_Finalization_Wrapper
      (N : Node_Id; Val : Boolean := True);    -- Flag9
@@ -12748,6 +12762,7 @@ package Sinfo is
    pragma Inline (Is_Elsif);
    pragma Inline (Is_Entry_Barrier_Function);
    pragma Inline (Is_Expanded_Build_In_Place_Call);
+   pragma Inline (Is_Expanded_Contract);
    pragma Inline (Is_Finalization_Wrapper);
    pragma Inline (Is_Folded_In_Parser);
    pragma Inline (Is_Generic_Contract_Pragma);
@@ -13085,6 +13100,7 @@ package Sinfo is
    pragma Inline (Set_Is_Elsif);
    pragma Inline (Set_Is_Entry_Barrier_Function);
    pragma Inline (Set_Is_Expanded_Build_In_Place_Call);
+   pragma Inline (Set_Is_Expanded_Contract);
    pragma Inline (Set_Is_Finalization_Wrapper);
    pragma Inline (Set_Is_Folded_In_Parser);
    pragma Inline (Set_Is_Generic_Contract_Pragma);

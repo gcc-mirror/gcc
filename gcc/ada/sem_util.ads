@@ -49,32 +49,6 @@ package Sem_Util is
    --  it the identifier of the block. Id denotes the generated entity. If the
    --  block already has an identifier, Id returns the entity of its label.
 
-   procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id);
-   --  Add pragma Prag to the contract of a constant, entry, package [body],
-   --  subprogram [body] or variable denoted by Id. The following are valid
-   --  pragmas:
-   --    Abstract_State
-   --    Async_Readers
-   --    Async_Writers
-   --    Constant_After_Elaboration
-   --    Contract_Cases
-   --    Depends
-   --    Effective_Reads
-   --    Effective_Writes
-   --    Extensions_Visible
-   --    Global
-   --    Initial_Condition
-   --    Initializes
-   --    Part_Of
-   --    Postcondition
-   --    Precondition
-   --    Refined_Depends
-   --    Refined_Global
-   --    Refined_Post
-   --    Refined_States
-   --    Test_Case
-   --    Volatile_Function
-
    procedure Add_Global_Declaration (N : Node_Id);
    --  These procedures adds a declaration N at the library level, to be
    --  elaborated before any other code in the unit. It is used for example
@@ -276,6 +250,14 @@ package Sem_Util is
    --  error message on node N. Used in object declarations, type conversions
    --  and qualified expressions.
 
+   procedure Check_Function_With_Address_Parameter (Subp_Id : Entity_Id);
+   --  A subprogram that has an Address parameter and is declared in a Pure
+   --  package is not considered Pure, because the parameter may be used as a
+   --  pointer and the referenced data may change even if the address value
+   --  itself does not.
+   --  If the programmer gave an explicit Pure_Function pragma, then we respect
+   --  the pragma and leave the subprogram Pure.
+
    procedure Check_Function_Writable_Actuals (N : Node_Id);
    --  (Ada 2012): If the construct N has two or more direct constituents that
    --  are names or expressions whose evaluation may occur in an arbitrary
@@ -322,18 +304,19 @@ package Sem_Util is
    --  N is one of the statement forms that is a potentially blocking
    --  operation. If it appears within a protected action, emit warning.
 
-   procedure Check_Function_With_Address_Parameter (Subp_Id : Entity_Id);
-   --  A subprogram that has an Address parameter and is declared in a Pure
-   --  package is not considered Pure, because the parameter may be used as a
-   --  pointer and the referenced data may change even if the address value
-   --  itself does not.
-   --  If the programmer gave an explicit Pure_Function pragma, then we respect
-   --  the pragma and leave the subprogram Pure.
-
    procedure Check_Result_And_Post_State (Subp_Id : Entity_Id);
    --  Determine whether the contract of subprogram Subp_Id mentions attribute
    --  'Result and it contains an expression that evaluates differently in pre-
    --  and post-state.
+
+   procedure Check_Unused_Body_States (Body_Id : Entity_Id);
+   --  Verify that all abstract states and object declared in the state space
+   --  of a package body denoted by entity Body_Id are used as constituents.
+   --  Emit an error if this is not the case.
+
+   function Collect_Body_States (Body_Id : Entity_Id) return Elist_Id;
+   --  Gather the entities of all abstract states and objects declared in the
+   --  body state space of package body Body_Id.
 
    procedure Check_Unprotected_Access
      (Context : Node_Id;
@@ -433,11 +416,6 @@ package Sem_Util is
    function Corresponding_Spec_Of (Decl : Node_Id) return Entity_Id;
    --  Return the corresponding spec of Decl when it denotes a package or a
    --  subprogram [stub], or the defining entity of Decl.
-
-   procedure Create_Generic_Contract (Unit : Node_Id);
-   --  Create a contract node for a generic package, generic subprogram or a
-   --  generic body denoted by Unit by collecting all source contract-related
-   --  pragmas in the contract of the unit.
 
    function Current_Entity (N : Node_Id) return Entity_Id;
    pragma Inline (Current_Entity);
@@ -1159,14 +1137,6 @@ package Sem_Util is
    --  Inherit the rep item chain of type From_Typ without clobbering any
    --  existing rep items on Typ's chain. Typ is the destination type.
 
-   procedure Inherit_Subprogram_Contract
-     (Subp      : Entity_Id;
-      From_Subp : Entity_Id);
-   --  Inherit relevant contract items from source subprogram From_Subp. Subp
-   --  denotes the destination subprogram. The inherited items are:
-   --    Extensions_Visible
-   --  ??? it would be nice if this routine handles Pre'Class and Post'Class
-
    procedure Insert_Explicit_Dereference (N : Node_Id);
    --  In a context that requires a composite or subprogram type and where a
    --  prefix is an access type, rewrite the access type node N (which is the
@@ -1876,6 +1846,13 @@ package Sem_Util is
    --  believe a request to suppress exceptions if possible, and further
    --  more there is at least one case in the generated code (the code for
    --  array assignment in a loop) that depends on this suppression.
+
+   procedure Report_Unused_Body_States
+     (Body_Id : Entity_Id;
+      States  : Elist_Id);
+   --  Emit errors for each abstract state or object found in list States that
+   --  is declared in package body Body_Id, but is not used as constituent in a
+   --  state refinement.
 
    procedure Require_Entity (N : Node_Id);
    --  N is a node which should have an entity value if it is an entity name.

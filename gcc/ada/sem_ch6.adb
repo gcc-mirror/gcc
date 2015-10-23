@@ -23,70 +23,71 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Expander; use Expander;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch9;  use Exp_Ch9;
-with Exp_Dbug; use Exp_Dbug;
-with Exp_Disp; use Exp_Disp;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
-with Freeze;   use Freeze;
-with Ghost;    use Ghost;
-with Inline;   use Inline;
-with Itypes;   use Itypes;
-with Lib.Xref; use Lib.Xref;
-with Layout;   use Layout;
-with Namet;    use Namet;
-with Lib;      use Lib;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch4;  use Sem_Ch4;
-with Sem_Ch5;  use Sem_Ch5;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch10; use Sem_Ch10;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Disp; use Sem_Disp;
-with Sem_Dist; use Sem_Dist;
-with Sem_Elim; use Sem_Elim;
-with Sem_Eval; use Sem_Eval;
-with Sem_Mech; use Sem_Mech;
-with Sem_Prag; use Sem_Prag;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sem_Type; use Sem_Type;
-with Sem_Warn; use Sem_Warn;
-with Sinput;   use Sinput;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Sinfo.CN; use Sinfo.CN;
-with Snames;   use Snames;
-with Stringt;  use Stringt;
+with Aspects;   use Aspects;
+with Atree;     use Atree;
+with Checks;    use Checks;
+with Contracts; use Contracts;
+with Debug;     use Debug;
+with Einfo;     use Einfo;
+with Elists;    use Elists;
+with Errout;    use Errout;
+with Expander;  use Expander;
+with Exp_Ch6;   use Exp_Ch6;
+with Exp_Ch7;   use Exp_Ch7;
+with Exp_Ch9;   use Exp_Ch9;
+with Exp_Dbug;  use Exp_Dbug;
+with Exp_Disp;  use Exp_Disp;
+with Exp_Tss;   use Exp_Tss;
+with Exp_Util;  use Exp_Util;
+with Fname;     use Fname;
+with Freeze;    use Freeze;
+with Ghost;     use Ghost;
+with Inline;    use Inline;
+with Itypes;    use Itypes;
+with Lib.Xref;  use Lib.Xref;
+with Layout;    use Layout;
+with Namet;     use Namet;
+with Lib;       use Lib;
+with Nlists;    use Nlists;
+with Nmake;     use Nmake;
+with Opt;       use Opt;
+with Output;    use Output;
+with Restrict;  use Restrict;
+with Rident;    use Rident;
+with Rtsfind;   use Rtsfind;
+with Sem;       use Sem;
+with Sem_Aux;   use Sem_Aux;
+with Sem_Cat;   use Sem_Cat;
+with Sem_Ch3;   use Sem_Ch3;
+with Sem_Ch4;   use Sem_Ch4;
+with Sem_Ch5;   use Sem_Ch5;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch10;  use Sem_Ch10;
+with Sem_Ch12;  use Sem_Ch12;
+with Sem_Ch13;  use Sem_Ch13;
+with Sem_Dim;   use Sem_Dim;
+with Sem_Disp;  use Sem_Disp;
+with Sem_Dist;  use Sem_Dist;
+with Sem_Elim;  use Sem_Elim;
+with Sem_Eval;  use Sem_Eval;
+with Sem_Mech;  use Sem_Mech;
+with Sem_Prag;  use Sem_Prag;
+with Sem_Res;   use Sem_Res;
+with Sem_Util;  use Sem_Util;
+with Sem_Type;  use Sem_Type;
+with Sem_Warn;  use Sem_Warn;
+with Sinput;    use Sinput;
+with Stand;     use Stand;
+with Sinfo;     use Sinfo;
+with Sinfo.CN;  use Sinfo.CN;
+with Snames;    use Snames;
+with Stringt;   use Stringt;
 with Style;
-with Stylesw;  use Stylesw;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
-with Validsw;  use Validsw;
+with Stylesw;   use Stylesw;
+with Tbuild;    use Tbuild;
+with Uintp;     use Uintp;
+with Urealp;    use Urealp;
+with Validsw;   use Validsw;
 
 package body Sem_Ch6 is
 
@@ -1377,23 +1378,11 @@ package body Sem_Ch6 is
          Analyze_Declarations (Declarations (N));
          Check_Completion;
 
-         --  When a generic subprogram body appears inside a package, its
-         --  contract is analyzed at the end of the package body declarations.
-         --  This is due to the delay with respect of the package contract upon
-         --  which the body contract may depend. When the generic subprogram
-         --  body is a compilation unit, this delay is not necessary.
+         --  Process the contract of the subprogram body after all declarations
+         --  have been analyzed. This ensures that any contract-related pragmas
+         --  are available through the N_Contract node of the body.
 
-         if Nkind (Parent (N)) = N_Compilation_Unit then
-            Analyze_Subprogram_Body_Contract (Body_Id);
-
-            --  Capture all global references in a generic subprogram body
-            --  that acts as a compilation unit now that the contract has
-            --  been analyzed.
-
-            Save_Global_References_In_Contract
-              (Templ  => Original_Node (N),
-               Gen_Id => Gen_Id);
-         end if;
+         Analyze_Subprogram_Body_Contract (Body_Id);
 
          Analyze (Handled_Statement_Sequence (N));
          Save_Global_References (Original_Node (N));
@@ -2220,102 +2209,6 @@ package body Sem_Ch6 is
       end if;
    end Analyze_Subprogram_Body;
 
-   --------------------------------------
-   -- Analyze_Subprogram_Body_Contract --
-   --------------------------------------
-
-   procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id) is
-      Items       : constant Node_Id := Contract (Body_Id);
-      Mode        : SPARK_Mode_Type;
-      Prag        : Node_Id;
-      Prag_Nam    : Name_Id;
-      Ref_Depends : Node_Id := Empty;
-      Ref_Global  : Node_Id := Empty;
-
-   begin
-      --  When a subprogram body declaration is illegal, its defining entity is
-      --  left unanalyzed. There is nothing left to do in this case because the
-      --  body lacks a contract, or even a proper Ekind.
-
-      if Ekind (Body_Id) = E_Void then
-         return;
-      end if;
-
-      --  Due to the timing of contract analysis, delayed pragmas may be
-      --  subject to the wrong SPARK_Mode, usually that of the enclosing
-      --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related subprogram body.
-
-      Save_SPARK_Mode_And_Set (Body_Id, Mode);
-
-      --  All subprograms carry a contract, but for some it is not significant
-      --  and should not be processed.
-
-      if not Has_Significant_Contract (Body_Id) then
-         null;
-
-      --  The subprogram body is a completion, analyze all delayed pragmas that
-      --  apply. Note that when the body is stand alone, the pragmas are always
-      --  analyzed on the spot.
-
-      elsif Present (Items) then
-
-         --  Locate and store pragmas Refined_Depends and Refined_Global since
-         --  their order of analysis matters.
-
-         Prag := Classifications (Items);
-         while Present (Prag) loop
-            Prag_Nam := Pragma_Name (Prag);
-
-            if Prag_Nam = Name_Refined_Depends then
-               Ref_Depends := Prag;
-
-            elsif Prag_Nam = Name_Refined_Global then
-               Ref_Global := Prag;
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Analyze Refined_Global first as Refined_Depends may mention items
-         --  classified in the global refinement.
-
-         if Present (Ref_Global) then
-            Analyze_Refined_Global_In_Decl_Part (Ref_Global);
-         end if;
-
-         --  Refined_Depends must be analyzed after Refined_Global in order to
-         --  see the modes of all global refinements.
-
-         if Present (Ref_Depends) then
-            Analyze_Refined_Depends_In_Decl_Part (Ref_Depends);
-         end if;
-      end if;
-
-      --  Ensure that the contract cases or postconditions mention 'Result or
-      --  define a post-state.
-
-      Check_Result_And_Post_State (Body_Id);
-
-      --  A stand alone non-volatile function body cannot have an effectively
-      --  volatile formal parameter or return type (SPARK RM 7.1.3(9)). This
-      --  check is relevant only when SPARK_Mode is on as it is not a standard
-      --  legality rule. The check is performed here because Volatile_Function
-      --  is processed after the analysis of the related subprogram body.
-
-      if SPARK_Mode = On
-        and then Ekind_In (Body_Id, E_Function, E_Generic_Function)
-        and then not Is_Volatile_Function (Body_Id)
-      then
-         Check_Nonvolatile_Function_Profile (Body_Id);
-      end if;
-
-      --  Restore the SPARK_Mode of the enclosing context after all delayed
-      --  pragmas have been analyzed.
-
-      Restore_SPARK_Mode (Mode);
-   end Analyze_Subprogram_Body_Contract;
-
    ------------------------------------
    -- Analyze_Subprogram_Body_Helper --
    ------------------------------------
@@ -3102,6 +2995,24 @@ package body Sem_Ch6 is
    --  Start of processing for Analyze_Subprogram_Body_Helper
 
    begin
+      --  A [generic] subprogram body "freezes" the contract of the nearest
+      --  enclosing package body:
+
+      --    package body Nearest_Enclosing_Package
+      --      with Refined_State => (State => Constit)
+      --    is
+      --       Constit : ...;
+
+      --       procedure Freezes_Enclosing_Package_Body
+      --         with Refined_Depends => (Input => Constit) ...
+
+      --  This ensures that any annotations referenced by the contract of the
+      --  [generic] subprogram body are available. This form of "freezing" is
+      --  decoupled from the usual Freeze_xxx mechanism because it must also
+      --  work in the context of generics where normal freezing is disabled.
+
+      Analyze_Enclosing_Package_Body_Contract (N);
+
       --  Generic subprograms are handled separately. They always have a
       --  generic specification. Determine whether current scope has a
       --  previous declaration.
@@ -3842,23 +3753,11 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  When a subprogram body appears inside a package, its contract is
-      --  analyzed at the end of the package body declarations. This is due
-      --  to the delay with respect of the package contract upon which the
-      --  body contract may depend. When the subprogram body is stand alone
-      --  and acts as a compilation unit, this delay is not necessary.
+      --  A subprogram body "freezes" its own contract. Analyze the contract
+      --  after the declarations of the body have been processed as pragmas
+      --  are now chained on the contract of the subprogram body.
 
-      if Nkind (Parent (N)) = N_Compilation_Unit then
-         Analyze_Subprogram_Body_Contract (Body_Id);
-      end if;
-
-      --  Deal with preconditions, [refined] postconditions, Contract_Cases,
-      --  invariants and predicates associated with body and its spec. Since
-      --  there is no routine Expand_Declarations which would otherwise deal
-      --  with the contract expansion, generate all necessary mechanisms to
-      --  verify the contract assertions now.
-
-      Expand_Subprogram_Contract (N);
+      Analyze_Subprogram_Body_Contract (Body_Id);
 
       --  If SPARK_Mode for body is not On, disable frontend inlining for this
       --  subprogram in GNATprove mode, as its body should not be analyzed.
@@ -4095,116 +3994,6 @@ package body Sem_Ch6 is
 
       Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Subprogram_Body_Helper;
-
-   ---------------------------------
-   -- Analyze_Subprogram_Contract --
-   ---------------------------------
-
-   procedure Analyze_Subprogram_Contract (Subp_Id : Entity_Id) is
-      Items    : constant Node_Id := Contract (Subp_Id);
-      Depends  : Node_Id := Empty;
-      Global   : Node_Id := Empty;
-      Mode     : SPARK_Mode_Type;
-      Prag     : Node_Id;
-      Prag_Nam : Name_Id;
-
-   begin
-      --  Due to the timing of contract analysis, delayed pragmas may be
-      --  subject to the wrong SPARK_Mode, usually that of the enclosing
-      --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related subprogram body.
-
-      Save_SPARK_Mode_And_Set (Subp_Id, Mode);
-
-      --  All subprograms carry a contract, but for some it is not significant
-      --  and should not be processed.
-
-      if not Has_Significant_Contract (Subp_Id) then
-         null;
-
-      elsif Present (Items) then
-
-         --  Analyze pre- and postconditions
-
-         Prag := Pre_Post_Conditions (Items);
-         while Present (Prag) loop
-            Analyze_Pre_Post_Condition_In_Decl_Part (Prag);
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Analyze contract-cases and test-cases
-
-         Prag := Contract_Test_Cases (Items);
-         while Present (Prag) loop
-            Prag_Nam := Pragma_Name (Prag);
-
-            if Prag_Nam = Name_Contract_Cases then
-               Analyze_Contract_Cases_In_Decl_Part (Prag);
-            else
-               pragma Assert (Prag_Nam = Name_Test_Case);
-               Analyze_Test_Case_In_Decl_Part (Prag);
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Analyze classification pragmas
-
-         Prag := Classifications (Items);
-         while Present (Prag) loop
-            Prag_Nam := Pragma_Name (Prag);
-
-            if Prag_Nam = Name_Depends then
-               Depends := Prag;
-
-            elsif Prag_Nam = Name_Global then
-               Global := Prag;
-
-            --  Note that pragma Extensions_Visible has already been analyzed
-
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Analyze Global first as Depends may mention items classified in
-         --  the global categorization.
-
-         if Present (Global) then
-            Analyze_Global_In_Decl_Part (Global);
-         end if;
-
-         --  Depends must be analyzed after Global in order to see the modes of
-         --  all global items.
-
-         if Present (Depends) then
-            Analyze_Depends_In_Decl_Part (Depends);
-         end if;
-
-         --  Ensure that the contract cases or postconditions mention 'Result
-         --  or define a post-state.
-
-         Check_Result_And_Post_State (Subp_Id);
-      end if;
-
-      --  A non-volatile function cannot have an effectively volatile formal
-      --  parameter or return type (SPARK RM 7.1.3(9)). This check is relevant
-      --  only when SPARK_Mode is on as it is not a standard legality rule. The
-      --  check is performed here because pragma Volatile_Function is processed
-      --  after the analysis of the related subprogram declaration.
-
-      if SPARK_Mode = On
-        and then Ekind_In (Subp_Id, E_Function, E_Generic_Function)
-        and then not Is_Volatile_Function (Subp_Id)
-      then
-         Check_Nonvolatile_Function_Profile (Subp_Id);
-      end if;
-
-      --  Restore the SPARK_Mode of the enclosing context after all delayed
-      --  pragmas have been analyzed.
-
-      Restore_SPARK_Mode (Mode);
-   end Analyze_Subprogram_Contract;
 
    ------------------------------------
    -- Analyze_Subprogram_Declaration --

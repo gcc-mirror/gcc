@@ -29,62 +29,63 @@
 --  to complete the syntax checks. Certain pragmas are handled partially or
 --  completely by the parser (see Par.Prag for further details).
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Checks;   use Checks;
-with Csets;    use Csets;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Dist; use Exp_Dist;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Ghost;    use Ghost;
-with Lib;      use Lib;
-with Lib.Writ; use Lib.Writ;
-with Lib.Xref; use Lib.Xref;
-with Namet.Sp; use Namet.Sp;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Output;   use Output;
-with Par_SCO;  use Par_SCO;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Disp; use Sem_Disp;
-with Sem_Dist; use Sem_Dist;
-with Sem_Elim; use Sem_Elim;
-with Sem_Eval; use Sem_Eval;
-with Sem_Intr; use Sem_Intr;
-with Sem_Mech; use Sem_Mech;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Sinfo.CN; use Sinfo.CN;
-with Sinput;   use Sinput;
-with Stringt;  use Stringt;
-with Stylesw;  use Stylesw;
+with Aspects;   use Aspects;
+with Atree;     use Atree;
+with Casing;    use Casing;
+with Checks;    use Checks;
+with Contracts; use Contracts;
+with Csets;     use Csets;
+with Debug;     use Debug;
+with Einfo;     use Einfo;
+with Elists;    use Elists;
+with Errout;    use Errout;
+with Exp_Dist;  use Exp_Dist;
+with Exp_Util;  use Exp_Util;
+with Freeze;    use Freeze;
+with Ghost;     use Ghost;
+with Lib;       use Lib;
+with Lib.Writ;  use Lib.Writ;
+with Lib.Xref;  use Lib.Xref;
+with Namet.Sp;  use Namet.Sp;
+with Nlists;    use Nlists;
+with Nmake;     use Nmake;
+with Output;    use Output;
+with Par_SCO;   use Par_SCO;
+with Restrict;  use Restrict;
+with Rident;    use Rident;
+with Rtsfind;   use Rtsfind;
+with Sem;       use Sem;
+with Sem_Aux;   use Sem_Aux;
+with Sem_Ch3;   use Sem_Ch3;
+with Sem_Ch6;   use Sem_Ch6;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch12;  use Sem_Ch12;
+with Sem_Ch13;  use Sem_Ch13;
+with Sem_Disp;  use Sem_Disp;
+with Sem_Dist;  use Sem_Dist;
+with Sem_Elim;  use Sem_Elim;
+with Sem_Eval;  use Sem_Eval;
+with Sem_Intr;  use Sem_Intr;
+with Sem_Mech;  use Sem_Mech;
+with Sem_Res;   use Sem_Res;
+with Sem_Type;  use Sem_Type;
+with Sem_Util;  use Sem_Util;
+with Sem_Warn;  use Sem_Warn;
+with Stand;     use Stand;
+with Sinfo;     use Sinfo;
+with Sinfo.CN;  use Sinfo.CN;
+with Sinput;    use Sinput;
+with Stringt;   use Stringt;
+with Stylesw;   use Stylesw;
 with Table;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
+with Targparm;  use Targparm;
+with Tbuild;    use Tbuild;
 with Ttypes;
-with Uintp;    use Uintp;
-with Uname;    use Uname;
-with Urealp;   use Urealp;
-with Validsw;  use Validsw;
-with Warnsw;   use Warnsw;
+with Uintp;     use Uintp;
+with Uname;     use Uname;
+with Urealp;    use Urealp;
+with Validsw;   use Validsw;
+with Warnsw;    use Warnsw;
 
 package body Sem_Prag is
 
@@ -164,11 +165,6 @@ package body Sem_Prag is
    -------------------------------------
    -- Local Subprograms and Variables --
    -------------------------------------
-
-   procedure Add_Item (Item : Entity_Id; To_List : in out Elist_Id);
-   --  Subsidiary routine to the analysis of pragmas Depends, Global and
-   --  Refined_State. Append an entity to a list. If the list is empty, create
-   --  a new list.
 
    function Adjust_External_Name_Case (N : Node_Id) return Node_Id;
    --  This routine is used for possible casing adjustment of an explicit
@@ -276,15 +272,6 @@ package body Sem_Prag is
    --  It is there for assisting front end debugging. By placing a Reviewable
    --  pragma in the source program, a breakpoint on rv catches this place in
    --  the source, allowing convenient stepping to the point of interest.
-
-   --------------
-   -- Add_Item --
-   --------------
-
-   procedure Add_Item (Item : Entity_Id; To_List : in out Elist_Id) is
-   begin
-      Append_New_Elmt (Item, To => To_List);
-   end Add_Item;
 
    -------------------------------
    -- Adjust_External_Name_Case --
@@ -826,7 +813,7 @@ package body Sem_Prag is
                         SPARK_Msg_NE
                           ("duplicate use of item &", Item, Item_Id);
                      else
-                        Add_Item (Item_Id, Seen);
+                        Append_New_Elmt (Item_Id, Seen);
                      end if;
 
                      --  Detect illegal use of an input related to a null
@@ -846,7 +833,7 @@ package body Sem_Prag is
                      --  of all processed inputs.
 
                      if Is_Input or else Self_Ref then
-                        Add_Item (Item_Id, All_Inputs_Seen);
+                        Append_New_Elmt (Item_Id, All_Inputs_Seen);
                      end if;
 
                      --  State related checks (SPARK RM 6.1.5(3))
@@ -901,7 +888,7 @@ package body Sem_Prag is
                      --  processed items.
 
                      if Ekind (Item_Id) = E_Abstract_State then
-                        Add_Item (Item_Id, States_Seen);
+                        Append_New_Elmt (Item_Id, States_Seen);
                      end if;
 
                      if Ekind_In (Item_Id, E_Abstract_State,
@@ -909,7 +896,7 @@ package body Sem_Prag is
                                            E_Variable)
                        and then Present (Encapsulating_State (Item_Id))
                      then
-                        Add_Item (Item_Id, Constits_Seen);
+                        Append_New_Elmt (Item_Id, Constits_Seen);
                      end if;
 
                   --  All other input/output items are illegal
@@ -2016,16 +2003,16 @@ package body Sem_Prag is
             --  items.
 
             else
-               Add_Item (Item_Id, Seen);
+               Append_New_Elmt (Item_Id, Seen);
 
                if Ekind (Item_Id) = E_Abstract_State then
-                  Add_Item (Item_Id, States_Seen);
+                  Append_New_Elmt (Item_Id, States_Seen);
                end if;
 
                if Ekind_In (Item_Id, E_Abstract_State, E_Constant, E_Variable)
                  and then Present (Encapsulating_State (Item_Id))
                then
-                  Add_Item (Item_Id, Constits_Seen);
+                  Append_New_Elmt (Item_Id, Constits_Seen);
                end if;
             end if;
          end Analyze_Global_Item;
@@ -2396,14 +2383,14 @@ package body Sem_Prag is
                   --  and variables.
 
                   else
-                     Add_Item (Item_Id, Items_Seen);
+                     Append_New_Elmt (Item_Id, Items_Seen);
 
                      if Ekind (Item_Id) = E_Abstract_State then
-                        Add_Item (Item_Id, States_Seen);
+                        Append_New_Elmt (Item_Id, States_Seen);
                      end if;
 
                      if Present (Encapsulating_State (Item_Id)) then
-                        Add_Item (Item_Id, Constits_Seen);
+                        Append_New_Elmt (Item_Id, Constits_Seen);
                      end if;
                   end if;
 
@@ -2504,10 +2491,10 @@ package body Sem_Prag is
                      --  Input is legal, add it to the list of processed inputs
 
                      else
-                        Add_Item (Input_Id, Inputs_Seen);
+                        Append_New_Elmt (Input_Id, Inputs_Seen);
 
                         if Ekind (Input_Id) = E_Abstract_State then
-                           Add_Item (Input_Id, States_Seen);
+                           Append_New_Elmt (Input_Id, States_Seen);
                         end if;
 
                         if Ekind_In (Input_Id, E_Abstract_State,
@@ -2515,7 +2502,7 @@ package body Sem_Prag is
                                                E_Variable)
                           and then Present (Encapsulating_State (Input_Id))
                         then
-                           Add_Item (Input_Id, Constits_Seen);
+                           Append_New_Elmt (Input_Id, Constits_Seen);
                         end if;
                      end if;
 
@@ -2610,7 +2597,7 @@ package body Sem_Prag is
                if Comes_From_Source (Decl)
                  and then Nkind (Decl) = N_Object_Declaration
                then
-                  Add_Item (Defining_Entity (Decl), States_And_Objs);
+                  Append_New_Elmt (Defining_Entity (Decl), States_And_Objs);
                end if;
 
                Next (Decl);
@@ -3481,8 +3468,8 @@ package body Sem_Prag is
 
                if not Is_Child_Or_Sibling (Pack_Id, Scope (State_Id)) then
                   SPARK_Msg_NE
-                    ("indicator Part_Of must denote an abstract state of& "
-                     & "or public descendant (SPARK RM 7.2.6(3))",
+                    ("indicator Part_Of must denote an abstract state or "
+                     & "public descendant of & (SPARK RM 7.2.6(3))",
                        Indic, Parent_Unit);
 
                elsif Scope (State_Id) = Parent_Unit
@@ -3494,8 +3481,8 @@ package body Sem_Prag is
 
                else
                   SPARK_Msg_NE
-                    ("indicator Part_Of must denote an abstract state of& "
-                     & "or public descendant (SPARK RM 7.2.6(3))",
+                    ("indicator Part_Of must denote an abstract state or "
+                     & "public descendant of & (SPARK RM 7.2.6(3))",
                        Indic, Parent_Unit);
                end if;
 
@@ -22493,7 +22480,7 @@ package body Sem_Prag is
          procedure Record_Item (Item_Id : Entity_Id) is
          begin
             if not Contains (Matched_Items, Item_Id) then
-               Add_Item (Item_Id, Matched_Items);
+               Append_New_Elmt (Item_Id, Matched_Items);
             end if;
          end Record_Item;
 
@@ -23664,16 +23651,16 @@ package body Sem_Prag is
              and then Has_Visible_Refinement (Encapsulating_State (Item_Id))
             then
                if Global_Mode = Name_Input then
-                  Add_Item (Item_Id, In_Constits);
+                  Append_New_Elmt (Item_Id, In_Constits);
 
                elsif Global_Mode = Name_In_Out then
-                  Add_Item (Item_Id, In_Out_Constits);
+                  Append_New_Elmt (Item_Id, In_Out_Constits);
 
                elsif Global_Mode = Name_Output then
-                  Add_Item (Item_Id, Out_Constits);
+                  Append_New_Elmt (Item_Id, Out_Constits);
 
                elsif Global_Mode = Name_Proof_In then
-                  Add_Item (Item_Id, Proof_In_Constits);
+                  Append_New_Elmt (Item_Id, Proof_In_Constits);
                end if;
 
             --  When not a constituent, ensure that both occurrences of the
@@ -23821,13 +23808,13 @@ package body Sem_Prag is
             --  Add the item to the proper list
 
             if Item_Mode = Name_Input then
-               Add_Item (Item_Id, In_Items);
+               Append_New_Elmt (Item_Id, In_Items);
             elsif Item_Mode = Name_In_Out then
-               Add_Item (Item_Id, In_Out_Items);
+               Append_New_Elmt (Item_Id, In_Out_Items);
             elsif Item_Mode = Name_Output then
-               Add_Item (Item_Id, Out_Items);
+               Append_New_Elmt (Item_Id, Out_Items);
             elsif Item_Mode = Name_Proof_In then
-               Add_Item (Item_Id, Proof_In_Items);
+               Append_New_Elmt (Item_Id, Proof_In_Items);
             end if;
          end Collect_Global_Item;
 
@@ -24091,7 +24078,10 @@ package body Sem_Prag is
    -- Analyze_Refined_State_In_Decl_Part --
    ----------------------------------------
 
-   procedure Analyze_Refined_State_In_Decl_Part (N : Node_Id) is
+   procedure Analyze_Refined_State_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty)
+   is
       Body_Decl : constant Node_Id   := Find_Related_Package_Or_Body (N);
       Body_Id   : constant Entity_Id := Defining_Entity (Body_Decl);
       Spec_Id   : constant Entity_Id := Corresponding_Spec (Body_Decl);
@@ -24109,6 +24099,10 @@ package body Sem_Prag is
       --  A list that contains all constituents processed so far. The list is
       --  used to detect multiple uses of the same constituent.
 
+      Freeze_Posted : Boolean := False;
+      --  A flag that controls the output of a freezing-related error (see use
+      --  below).
+
       Refined_States_Seen : Elist_Id := No_Elist;
       --  A list that contains all refined states processed so far. The list is
       --  used to detect duplicate refinements.
@@ -24116,15 +24110,8 @@ package body Sem_Prag is
       procedure Analyze_Refinement_Clause (Clause : Node_Id);
       --  Perform full analysis of a single refinement clause
 
-      function Collect_Body_States (Pack_Id : Entity_Id) return Elist_Id;
-      --  Gather the entities of all abstract states and objects declared in
-      --  the body state space of package Pack_Id.
-
       procedure Report_Unrefined_States (States : Elist_Id);
       --  Emit errors for all unrefined abstract states found in list States
-
-      procedure Report_Unused_States (States : Elist_Id);
-      --  Emit errors for all unused states found in list States
 
       -------------------------------
       -- Analyze_Refinement_Clause --
@@ -24190,10 +24177,10 @@ package body Sem_Prag is
 
             procedure Check_Matching_Constituent (Constit_Id : Entity_Id);
             --  Determine whether constituent Constit denoted by its entity
-            --  Constit_Id appears in Hidden_States. Emit an error when the
+            --  Constit_Id appears in Body_States. Emit an error when the
             --  constituent is not a valid hidden state of the related package
             --  or when it is used more than once. Otherwise remove the
-            --  constituent from Hidden_States.
+            --  constituent from Body_States.
 
             --------------------------------
             -- Check_Matching_Constituent --
@@ -24212,7 +24199,7 @@ package body Sem_Prag is
                   --  Add the constituent to the list of processed items to aid
                   --  with the detection of duplicates.
 
-                  Add_Item (Constit_Id, Constituents_Seen);
+                  Append_New_Elmt (Constit_Id, Constituents_Seen);
 
                   --  Collect the constituent in the list of refinement items
                   --  and establish a relation between the refined state and
@@ -24436,11 +24423,55 @@ package body Sem_Prag is
                if Is_Entity_Name (Constit) then
                   Constit_Id := Entity_Of (Constit);
 
-                  if Ekind_In (Constit_Id, E_Abstract_State,
-                                           E_Constant,
-                                           E_Variable)
+                  --  When a constituent is declared after a subprogram body
+                  --  that caused "freezing" of the related contract where
+                  --  pragma Refined_State resides, the constituent appears
+                  --  undefined and carries Any_Id as its entity.
+
+                  --    package body Pack
+                  --      with Refined_State => (State => Constit)
+                  --    is
+                  --       procedure Proc
+                  --         with Refined_Global => (Input => Constit)
+                  --       is
+                  --          ...
+                  --       end Proc;
+
+                  --       Constit : ...;
+                  --    end Pack;
+
+                  if Constit_Id = Any_Id then
+                     SPARK_Msg_NE ("& is undefined", Constit, Constit_Id);
+
+                     --  Emit a specialized info message when the contract of
+                     --  the related package body was "frozen" by another body.
+                     --  Note that it is not possible to precisely identify why
+                     --  the constituent is undefined because it is not visible
+                     --  when pragma Refined_State is analyzed. This message is
+                     --  a reasonable approximation.
+
+                     if Present (Freeze_Id) and then not Freeze_Posted then
+                        Freeze_Posted := True;
+
+                        Error_Msg_Name_1 := Chars (Body_Id);
+                        Error_Msg_Sloc   := Sloc (Freeze_Id);
+                        SPARK_Msg_NE
+                          ("body & declared # freezes the contract of %",
+                           N, Freeze_Id);
+                        SPARK_Msg_N
+                          ("\all constituents must be declared before body #",
+                           N);
+                     end if;
+
+                  --  The constituent is a valid state or object
+
+                  elsif Ekind_In (Constit_Id, E_Abstract_State,
+                                              E_Constant,
+                                              E_Variable)
                   then
                      Check_Matching_Constituent (Constit_Id);
+
+                  --  Otherwise the constituent is illegal
 
                   else
                      SPARK_Msg_NE
@@ -24519,7 +24550,7 @@ package body Sem_Prag is
                --  been refined.
 
                if Node (State_Elmt) = State_Id then
-                  Add_Item (State_Id, Refined_States_Seen);
+                  Append_New_Elmt (State_Id, Refined_States_Seen);
                   Remove_Elmt (Available_States, State_Elmt);
                   return;
                end if;
@@ -24754,104 +24785,6 @@ package body Sem_Prag is
          Report_Unused_Constituents (Part_Of_Constits);
       end Analyze_Refinement_Clause;
 
-      -------------------------
-      -- Collect_Body_States --
-      -------------------------
-
-      function Collect_Body_States (Pack_Id : Entity_Id) return Elist_Id is
-         Result : Elist_Id := No_Elist;
-         --  A list containing all body states of Pack_Id
-
-         procedure Collect_Visible_States (Pack_Id : Entity_Id);
-         --  Gather the entities of all abstract states and objects declared in
-         --  the visible state space of package Pack_Id.
-
-         ----------------------------
-         -- Collect_Visible_States --
-         ----------------------------
-
-         procedure Collect_Visible_States (Pack_Id : Entity_Id) is
-            Item_Id : Entity_Id;
-
-         begin
-            --  Traverse the entity chain of the package and inspect all
-            --  visible items.
-
-            Item_Id := First_Entity (Pack_Id);
-            while Present (Item_Id) and then not In_Private_Part (Item_Id) loop
-
-               --  Do not consider internally generated items as those cannot
-               --  be named and participate in refinement.
-
-               if not Comes_From_Source (Item_Id) then
-                  null;
-
-               elsif Ekind (Item_Id) = E_Abstract_State then
-                  Add_Item (Item_Id, Result);
-
-               --  Do not consider constants or variables that map generic
-               --  formals to their actuals, as the formals cannot be named
-               --  from the outside and participate in refinement.
-
-               elsif Ekind_In (Item_Id, E_Constant, E_Variable)
-                 and then No (Corresponding_Generic_Association
-                                (Declaration_Node (Item_Id)))
-               then
-                  Add_Item (Item_Id, Result);
-
-               --  Recursively gather the visible states of a nested package
-
-               elsif Ekind (Item_Id) = E_Package then
-                  Collect_Visible_States (Item_Id);
-               end if;
-
-               Next_Entity (Item_Id);
-            end loop;
-         end Collect_Visible_States;
-
-         --  Local variables
-
-         Pack_Body : constant Node_Id :=
-                       Declaration_Node (Body_Entity (Pack_Id));
-         Decl      : Node_Id;
-         Item_Id   : Entity_Id;
-
-      --  Start of processing for Collect_Body_States
-
-      begin
-         --  Inspect the declarations of the body looking for source objects,
-         --  packages and package instantiations.
-
-         Decl := First (Declarations (Pack_Body));
-         while Present (Decl) loop
-
-            --  Capture source objects as internally generated temporaries
-            --  cannot be named and participate in refinement.
-
-            if Nkind (Decl) = N_Object_Declaration then
-               Item_Id := Defining_Entity (Decl);
-
-               if Comes_From_Source (Item_Id) then
-                  Add_Item (Item_Id, Result);
-               end if;
-
-            --  Capture the visible abstract states and objects of a source
-            --  package [instantiation].
-
-            elsif Nkind (Decl) = N_Package_Declaration then
-               Item_Id := Defining_Entity (Decl);
-
-               if Comes_From_Source (Item_Id) then
-                  Collect_Visible_States (Item_Id);
-               end if;
-            end if;
-
-            Next (Decl);
-         end loop;
-
-         return Result;
-      end Collect_Body_States;
-
       -----------------------------
       -- Report_Unrefined_States --
       -----------------------------
@@ -24870,61 +24803,6 @@ package body Sem_Prag is
             end loop;
          end if;
       end Report_Unrefined_States;
-
-      --------------------------
-      -- Report_Unused_States --
-      --------------------------
-
-      procedure Report_Unused_States (States : Elist_Id) is
-         Posted     : Boolean := False;
-         State_Elmt : Elmt_Id;
-         State_Id   : Entity_Id;
-
-      begin
-         if Present (States) then
-            State_Elmt := First_Elmt (States);
-            while Present (State_Elmt) loop
-               State_Id := Node (State_Elmt);
-
-               --  Constants are part of the hidden state of a package, but the
-               --  compiler cannot determine whether they have variable input
-               --  (SPARK RM 7.1.1(2)) and cannot classify them properly as a
-               --  hidden state. Do not emit an error when a constant does not
-               --  participate in a state refinement, even though it acts as a
-               --  hidden state.
-
-               if Ekind (State_Id) = E_Constant then
-                  null;
-
-               --  Generate an error message of the form:
-
-               --    body of package ... has unused hidden states
-               --      abstract state ... defined at ...
-               --      variable ... defined at ...
-
-               else
-                  if not Posted then
-                     Posted := True;
-                     SPARK_Msg_N
-                       ("body of package & has unused hidden states", Body_Id);
-                  end if;
-
-                  Error_Msg_Sloc := Sloc (State_Id);
-
-                  if Ekind (State_Id) = E_Abstract_State then
-                     SPARK_Msg_NE
-                       ("\abstract state & defined #", Body_Id, State_Id);
-
-                  else
-                     pragma Assert (Ekind (State_Id) = E_Variable);
-                     SPARK_Msg_NE ("\variable & defined #", Body_Id, State_Id);
-                  end if;
-               end if;
-
-               Next_Elmt (State_Elmt);
-            end loop;
-         end if;
-      end Report_Unused_States;
 
       --  Local declarations
 
@@ -24945,7 +24823,7 @@ package body Sem_Prag is
       --  state space of the package body. These items must be utilized as
       --  constituents in a state refinement.
 
-      Body_States := Collect_Body_States (Spec_Id);
+      Body_States := Collect_Body_States (Body_Id);
 
       --  Multiple non-null state refinements appear as an aggregate
 
@@ -24977,7 +24855,7 @@ package body Sem_Prag is
       --  Ensure that all abstract states and objects declared in the body
       --  state space of the related package are utilized as constituents.
 
-      Report_Unused_States (Body_States);
+      Report_Unused_Body_States (Body_Id, Body_States);
    end Analyze_Refined_State_In_Decl_Part;
 
    ------------------------------------
@@ -25857,9 +25735,9 @@ package body Sem_Prag is
 
             else
                if Is_Input then
-                  Add_Item (Item, Subp_Inputs);
+                  Append_New_Elmt (Item, Subp_Inputs);
                else
-                  Add_Item (Item, Subp_Outputs);
+                  Append_New_Elmt (Item, Subp_Outputs);
                end if;
             end if;
          end Collect_Dependency_Item;
@@ -25908,11 +25786,11 @@ package body Sem_Prag is
          procedure Collect_Global_Item (Item : Node_Id; Mode : Name_Id) is
          begin
             if Nam_In (Mode, Name_In_Out, Name_Input) then
-               Add_Item (Item, Subp_Inputs);
+               Append_New_Elmt (Item, Subp_Inputs);
             end if;
 
             if Nam_In (Mode, Name_In_Out, Name_Output) then
-               Add_Item (Item, Subp_Outputs);
+               Append_New_Elmt (Item, Subp_Outputs);
             end if;
          end Collect_Global_Item;
 
@@ -25988,14 +25866,14 @@ package body Sem_Prag is
                               E_In_Out_Parameter,
                               E_In_Parameter)
          then
-            Add_Item (Formal, Subp_Inputs);
+            Append_New_Elmt (Formal, Subp_Inputs);
          end if;
 
          if Ekind_In (Formal, E_Generic_In_Out_Parameter,
                               E_In_Out_Parameter,
                               E_Out_Parameter)
          then
-            Add_Item (Formal, Subp_Outputs);
+            Append_New_Elmt (Formal, Subp_Outputs);
 
             --  Out parameters can act as inputs when the related type is
             --  tagged, unconstrained array, unconstrained record or record
@@ -26004,7 +25882,7 @@ package body Sem_Prag is
             if Ekind (Formal) = E_Out_Parameter
               and then Is_Unconstrained_Or_Tagged_Item (Formal)
             then
-               Add_Item (Formal, Subp_Inputs);
+               Append_New_Elmt (Formal, Subp_Inputs);
             end if;
          end if;
 
