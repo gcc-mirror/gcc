@@ -2590,6 +2590,7 @@ package body Sem_Ch12 is
         or else Nkind (First (Generic_Associations (N))) = N_Others_Choice
       then
          Associations := False;
+         Set_Box_Present (N);
       end if;
 
       --  If there are no generic associations, the generic parameters appear
@@ -6127,8 +6128,9 @@ package body Sem_Ch12 is
    ---------------------------
 
    procedure Check_Formal_Packages (P_Id : Entity_Id) is
-      E        : Entity_Id;
-      Formal_P : Entity_Id;
+      E           : Entity_Id;
+      Formal_P    : Entity_Id;
+      Formal_Decl : Node_Id;
 
    begin
       --  Iterate through the declarations in the instance, looking for package
@@ -6146,15 +6148,35 @@ package body Sem_Ch12 is
             elsif Nkind (Parent (E)) /= N_Package_Renaming_Declaration then
                null;
 
-            elsif not Box_Present (Parent (Associated_Formal_Package (E))) then
-               Formal_P := Next_Entity (E);
-               Check_Formal_Package_Instance (Formal_P, E);
+            else
+               Formal_Decl := Parent (Associated_Formal_Package (E));
 
-               --  After checking, remove the internal validating package. It
-               --  is only needed for semantic checks, and as it may contain
-               --  generic formal declarations it should not reach gigi.
+               --  Nothing to check if the formal has a box or an
+               --  others_clause (necessarily with a box).
 
-               Remove (Unit_Declaration_Node (Formal_P));
+               if Box_Present (Formal_Decl) then
+                  null;
+
+               elsif Nkind (First (Generic_Associations (Formal_Decl))) =
+                 N_Others_Choice
+               then
+                  --  The internal validating package was generated but
+                  --  formal and instance are known to be compatible..
+
+                  Formal_P := Next_Entity (E);
+                  Remove (Unit_Declaration_Node (Formal_P));
+
+               else
+                  Formal_P := Next_Entity (E);
+                  Check_Formal_Package_Instance (Formal_P, E);
+
+                  --  After checking, remove the internal validating package.
+                  --  It is only needed for semantic checks, and as it may
+                  --  contain generic formal declarations it should not
+                  --  reach gigi.
+
+                  Remove (Unit_Declaration_Node (Formal_P));
+               end if;
             end if;
          end if;
 

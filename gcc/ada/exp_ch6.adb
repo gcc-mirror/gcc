@@ -9598,7 +9598,7 @@ package body Exp_Ch6 is
    begin
       Actuals := Parameter_Associations (N);
 
-      --  Original function amy have been parameterless.
+      --  Original function may have been parameterless
 
       if No (Actuals) then
          Actuals := New_List;
