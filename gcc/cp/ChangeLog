@@ -2,7 +2,7 @@
 
 	* call.c (add_template_conv_candidate): Pass DEDUCE_CALL.
 	(add_template_candidate_real): Handle it.
-	(fn_type_unification): Handle it.
+	* pt.c (fn_type_unification): Handle it.
 
 	* call.c (add_conv_candidate): Remove first_arg parm.
 	(add_template_conv_candidate): Likewise.
