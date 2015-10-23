@@ -1,3 +1,8 @@
+2015-10-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* tree-vect-generic.c (expand_vector_condition): Avoid
+	uninitialized variable warning.
+
 2015-10-23  Jeff Law  <law@redhat.com>
 
 	* passes.c (execute_function_todo): Do not call flush_ssaname_freelist
