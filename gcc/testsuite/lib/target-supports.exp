@@ -6485,3 +6485,12 @@ proc check_effective_target_builtin_eh_return { } {
 	}
     } "" ]
 }
+
+# Return 1 if the target supports max reduction for vectors.
+
+proc check_effective_target_vect_max_reduc { } {
+    if { [istarget aarch64*-*-*] || [istarget arm*-*-*] } {
+	return 1
+    }
+    return 0
+}

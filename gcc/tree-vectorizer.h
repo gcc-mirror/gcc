@@ -60,6 +60,12 @@ enum vect_def_type {
   vect_unknown_def_type
 };
 
+/* Define type of reduction.  */
+enum vect_reduction_type {
+  TREE_CODE_REDUCTION,
+  COND_REDUCTION
+};
+
 #define VECTORIZABLE_CYCLE_DEF(D) (((D) == vect_reduction_def)           \
                                    || ((D) == vect_double_reduction_def) \
                                    || ((D) == vect_nested_cycle))
@@ -581,6 +587,10 @@ typedef struct _stmt_vec_info {
 
   /* For both loads and stores.  */
   bool simd_lane_access_p;
+
+  /* For reduction loops, this is the type of reduction.  */
+  enum vect_reduction_type v_reduc_type;
+
 } *stmt_vec_info;
 
 /* Access Functions.  */
@@ -609,6 +619,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_GATHER_SCATTER_P(S)	   (S)->gather_scatter_p
 #define STMT_VINFO_STRIDED_P(S)	   	   (S)->strided_p
 #define STMT_VINFO_SIMD_LANE_ACCESS_P(S)   (S)->simd_lane_access_p
+#define STMT_VINFO_VEC_REDUCTION_TYPE(S)   (S)->v_reduc_type
 
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_base_address
 #define STMT_VINFO_DR_INIT(S)              (S)->dr_init

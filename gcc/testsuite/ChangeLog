@@ -1,3 +1,20 @@
+2015-10-23  Alan Hayward <alan.hayward@arm.com>
+
+	PR tree-optimization/65947
+	* lib/target-supports.exp
+	(check_effective_target_vect_max_reduc): Add.
+	* gcc.dg/vect/pr65947-1.c: New test.
+	* gcc.dg/vect/pr65947-2.c: New test.
+	* gcc.dg/vect/pr65947-3.c: New test.
+	* gcc.dg/vect/pr65947-4.c: New test.
+	* gcc.dg/vect/pr65947-5.c: New test.
+	* gcc.dg/vect/pr65947-6.c: New test.
+	* gcc.dg/vect/pr65947-7.c: New test.
+	* gcc.dg/vect/pr65947-8.c: New test.
+	* gcc.dg/vect/pr65947-9.c: New test.
+	* gcc.dg/vect/pr65947-10.c: New test.
+	* gcc.dg/vect/pr65947-11.c: New test.
+
 2015-10-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.c-torture/execute/20030125-1.c (floor, floorf, sin, sinf):

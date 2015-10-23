@@ -1,3 +1,16 @@
+2015-10-23  Alan Hayward <alan.hayward@arm.com>
+
+	PR tree-optimization/65947
+	* tree-vect-loop.c
+	(vect_is_simple_reduction_1): Find condition reductions.
+	(vect_model_reduction_cost): Add condition reduction costs.
+	(get_initial_def_for_reduction): Add condition reduction initial var.
+	(vect_create_epilog_for_reduction): Add condition reduction epilog.
+	(vectorizable_reduction): Condition reduction support.
+	* tree-vect-stmts.c (vectorizable_condition): Add vect reduction arg
+	* doc/sourcebuild.texi (Vector-specific attributes): Document
+	vect_max_reduc
+
 2015-10-23  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.in (build/genmatch.o): Properly depend on is-a.h, tree.def
