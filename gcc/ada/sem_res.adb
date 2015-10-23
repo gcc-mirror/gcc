@@ -4528,7 +4528,8 @@ package body Sem_Res is
             --  The actual parameter of a Ghost subprogram whose formal is of
             --  mode IN OUT or OUT must be a Ghost variable (SPARK RM 6.9(13)).
 
-            if Is_Ghost_Entity (Nam)
+            if Comes_From_Source (Nam)
+              and then Is_Ghost_Entity (Nam)
               and then Ekind_In (F, E_In_Out_Parameter, E_Out_Parameter)
               and then Is_Entity_Name (A)
               and then Present (Entity (A))

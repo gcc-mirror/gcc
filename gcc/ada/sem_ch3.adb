@@ -3441,9 +3441,11 @@ package body Sem_Ch3 is
          Check_Missing_Part_Of (Obj_Id);
       end if;
 
-      --  A ghost object cannot be imported or exported (SPARK RM 6.9(8))
+      --  A ghost object cannot be imported or exported (SPARK RM 6.9(8)). One
+      --  exception to this is the object that represents the dispatch table of
+      --  a Ghost tagged type as the symbol needs to be exported.
 
-      if Is_Ghost_Entity (Obj_Id) then
+      if Comes_From_Source (Obj_Id) and then Is_Ghost_Entity (Obj_Id) then
          if Is_Exported (Obj_Id) then
             Error_Msg_N ("ghost object & cannot be exported", Obj_Id);
 
@@ -4166,7 +4168,7 @@ package body Sem_Ch3 is
                --  An object declared within a Ghost region is automatically
                --  Ghost (SPARK RM 6.9(2)).
 
-               if Comes_From_Source (Id) and then Ghost_Mode > None then
+               if Ghost_Mode > None then
                   Set_Is_Ghost_Entity (Id);
 
                   --  The Ghost policy in effect at the point of declaration
@@ -4347,10 +4349,8 @@ package body Sem_Ch3 is
       --  An object declared within a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
-      if Comes_From_Source (Id)
-        and then (Ghost_Mode > None
-                   or else (Present (Prev_Entity)
-                             and then Is_Ghost_Entity (Prev_Entity)))
+      if Ghost_Mode > None
+        or else (Present (Prev_Entity) and then Is_Ghost_Entity (Prev_Entity))
       then
          Set_Is_Ghost_Entity (Id);
 
@@ -5730,7 +5730,7 @@ package body Sem_Ch3 is
 
          --  Inherit the "ghostness" from the constrained array type
 
-         if Is_Ghost_Entity (T) or else Ghost_Mode > None then
+         if Ghost_Mode > None or else Is_Ghost_Entity (T) then
             Set_Is_Ghost_Entity (Implicit_Base);
          end if;
 
@@ -6214,7 +6214,7 @@ package body Sem_Ch3 is
 
          --  Inherit the "ghostness" from the parent base type
 
-         if Is_Ghost_Entity (Parent_Base) or else Ghost_Mode > None then
+         if Ghost_Mode > None or else Is_Ghost_Entity (Parent_Base) then
             Set_Is_Ghost_Entity (Implicit_Base);
          end if;
       end Make_Implicit_Base;
@@ -15815,25 +15815,23 @@ package body Sem_Ch3 is
 
                elsif Protected_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared"
-                       & " as a protected interface",
-                         N, Parent_Type);
+                    ("descendant of & must be declared as a protected "
+                     & "interface", N, Parent_Type);
 
                elsif Synchronized_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared"
-                       & " as a synchronized interface",
-                         N, Parent_Type);
+                    ("descendant of & must be declared as a synchronized "
+                     & "interface", N, Parent_Type);
 
                elsif Task_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared as a task interface",
+                    ("descendant of & must be declared as a task interface",
                        N, Parent_Type);
 
                else
                   Error_Msg_N
-                    ("(Ada 2005) limited interface cannot "
-                     & "inherit from non-limited interface", Indic);
+                    ("(Ada 2005) limited interface cannot inherit from "
+                     & "non-limited interface", Indic);
                end if;
 
             --  Ada 2005 (AI-345): Non-limited interfaces can only inherit
@@ -15848,19 +15846,17 @@ package body Sem_Ch3 is
 
                elsif Protected_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared"
-                       & " as a protected interface",
-                         N, Parent_Type);
+                    ("descendant of & must be declared as a protected "
+                     & "interface", N, Parent_Type);
 
                elsif Synchronized_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared"
-                       & " as a synchronized interface",
-                         N, Parent_Type);
+                    ("descendant of & must be declared as a synchronized "
+                     & "interface", N, Parent_Type);
 
                elsif Task_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared as a task interface",
+                    ("descendant of & must be declared as a task interface",
                        N, Parent_Type);
                else
                   null;
@@ -15874,8 +15870,8 @@ package body Sem_Ch3 is
         and then not Is_Interface (Parent_Type)
       then
          Error_Msg_N
-           ("parent type of a record extension cannot be "
-            & "a synchronized tagged type (RM 3.9.1 (3/1))", N);
+           ("parent type of a record extension cannot be a synchronized "
+            & "tagged type (RM 3.9.1 (3/1))", N);
          Set_Etype (T, Any_Type);
          return;
       end if;
@@ -18240,6 +18236,12 @@ package body Sem_Ch3 is
       --  The class-wide type of a class-wide type is itself (RM 3.9(14))
 
       Set_Class_Wide_Type (CW_Type, CW_Type);
+
+      --  Inherit the "ghostness" from the root tagged type
+
+      if Ghost_Mode > None or else Is_Ghost_Entity (T) then
+         Set_Is_Ghost_Entity (CW_Type);
+      end if;
    end Make_Class_Wide_Type;
 
    ----------------

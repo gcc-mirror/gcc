@@ -7836,7 +7836,7 @@ package body Sem_Ch13 is
       end if;
 
       --  The related type may be subject to pragma Ghost. Set the mode now to
-      --  ensure that the predicate functions are properly marked as Ghost.
+      --  ensure that the invariant procedure is properly marked as Ghost.
 
       Set_Ghost_Mode_From_Entity (Typ);
 
@@ -7889,23 +7889,11 @@ package body Sem_Ch13 is
    --  end typInvariant;
 
    procedure Build_Invariant_Procedure (Typ : Entity_Id; N : Node_Id) is
-      Priv_Decls : constant List_Id := Private_Declarations (N);
-      Vis_Decls  : constant List_Id := Visible_Declarations (N);
-
-      Loc   : constant Source_Ptr := Sloc (Typ);
-      Stmts : List_Id;
-      Spec  : Node_Id;
-      SId   : Entity_Id;
-      PDecl : Node_Id;
-      PBody : Node_Id;
-
-      Object_Entity : Node_Id;
-      --  The entity of the formal for the procedure
-
-      Object_Name : Name_Id;
-      --  Name for argument of invariant procedure
-
-      procedure Add_Invariants (T : Entity_Id; Inherit : Boolean);
+      procedure Add_Invariants
+        (T       : Entity_Id;
+         Obj_Id  : Entity_Id;
+         Stmts   : in out List_Id;
+         Inherit : Boolean);
       --  Appends statements to Stmts for any invariants in the rep item chain
       --  of the given type. If Inherit is False, then we only process entries
       --  on the chain for the type Typ. If Inherit is True, then we ignore any
@@ -7917,7 +7905,12 @@ package body Sem_Ch13 is
       -- Add_Invariants --
       --------------------
 
-      procedure Add_Invariants (T : Entity_Id; Inherit : Boolean) is
+      procedure Add_Invariants
+        (T       : Entity_Id;
+         Obj_Id  : Entity_Id;
+         Stmts   : in out List_Id;
+         Inherit : Boolean)
+      is
          procedure Add_Invariant (Prag : Node_Id);
          --  Create a runtime check to verify the exression of invariant pragma
          --  Prag. All generated code is added to list Stmts.
@@ -7988,17 +7981,18 @@ package body Sem_Ch13 is
                            Make_Attribute_Reference (Nloc,
                              Prefix         => New_Occurrence_Of (T, Nloc),
                              Attribute_Name => Name_Class),
-                         Expression   => Make_Identifier (Nloc, Object_Name)));
+                         Expression   =>
+                           Make_Identifier (Nloc, Chars (Obj_Id))));
 
-                     Set_Entity (Expression (N), Object_Entity);
+                     Set_Entity (Expression (N), Obj_Id);
                      Set_Etype  (Expression (N), Typ);
                   end if;
 
                --  Invariant, replace with obj
 
                else
-                  Rewrite (N, Make_Identifier (Nloc, Object_Name));
-                  Set_Entity (N, Object_Entity);
+                  Rewrite (N, Make_Identifier (Nloc, Chars (Obj_Id)));
+                  Set_Entity (N, Obj_Id);
                   Set_Etype  (N, Typ);
                end if;
 
@@ -8190,9 +8184,31 @@ package body Sem_Ch13 is
          end loop;
       end Add_Invariants;
 
+      --  Local variables
+
+      Loc        : constant Source_Ptr := Sloc (Typ);
+      Priv_Decls : constant List_Id    := Private_Declarations (N);
+      Vis_Decls  : constant List_Id    := Visible_Declarations (N);
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
+      PBody : Node_Id;
+      PDecl : Node_Id;
+      SId   : Entity_Id;
+      Spec  : Node_Id;
+      Stmts : List_Id;
+
+      Obj_Id : Node_Id;
+      --  The entity of the formal for the procedure
+
    --  Start of processing for Build_Invariant_Procedure
 
    begin
+      --  The related type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the invariant procedure is properly marked as Ghost.
+
+      Set_Ghost_Mode_From_Entity (Typ);
+
       Stmts := No_List;
       PDecl := Empty;
       PBody := Empty;
@@ -8219,6 +8235,7 @@ package body Sem_Ch13 is
            and then Nkind (PDecl) = N_Subprogram_Declaration
            and then Present (Corresponding_Body (PDecl))
          then
+            Ghost_Mode := Save_Ghost_Mode;
             return;
          end if;
 
@@ -8229,14 +8246,17 @@ package body Sem_Ch13 is
       --  Recover formal of procedure, for use in the calls to invariant
       --  functions (including inherited ones).
 
-      Object_Entity :=
+      Obj_Id :=
         Defining_Identifier
           (First (Parameter_Specifications (Specification (PDecl))));
-      Object_Name := Chars (Object_Entity);
 
       --  Add invariants for the current type
 
-      Add_Invariants (Typ, Inherit => False);
+      Add_Invariants
+        (T       => Typ,
+         Obj_Id  => Obj_Id,
+         Stmts   => Stmts,
+         Inherit => False);
 
       --  Add invariants for parent types
 
@@ -8258,7 +8278,11 @@ package body Sem_Ch13 is
             exit when Parent_Typ = Current_Typ;
 
             Current_Typ := Parent_Typ;
-            Add_Invariants (Current_Typ, Inherit => True);
+            Add_Invariants
+              (T       => Current_Typ,
+               Obj_Id  => Obj_Id,
+               Stmts   => Stmts,
+               Inherit => True);
          end loop;
       end;
 
@@ -8278,7 +8302,11 @@ package body Sem_Ch13 is
                Iface := Node (AI);
 
                if not Is_Ancestor (Iface, Typ, Use_Full_View => True) then
-                  Add_Invariants (Iface, Inherit => True);
+                  Add_Invariants
+                    (T       => Iface,
+                     Obj_Id  => Obj_Id,
+                     Stmts   => Stmts,
+                     Inherit => True);
                end if;
 
                Next_Elmt (AI);
@@ -8289,7 +8317,7 @@ package body Sem_Ch13 is
       --  Build the procedure if we generated at least one Check pragma
 
       if Stmts /= No_List then
-         Spec  := Copy_Separate_Tree (Specification (PDecl));
+         Spec := Copy_Separate_Tree (Specification (PDecl));
 
          PBody :=
            Make_Subprogram_Body (Loc,
@@ -8342,6 +8370,8 @@ package body Sem_Ch13 is
             Analyze (PBody);
          end if;
       end if;
+
+      Ghost_Mode := Save_Ghost_Mode;
    end Build_Invariant_Procedure;
 
    -------------------------------

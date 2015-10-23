@@ -76,6 +76,12 @@ package Exp_Dbug is
    --  qualification for such entities. In particular this means that direct
    --  local variables of a procedure are not qualified.
 
+   --  For ignored Ghost entities, the encoding adds a prefix "_ghost_" to aid
+   --  the detection of leaks in the "living" space. Ignored Ghost entities and
+   --  any code associated with them should be removed by the compiler in a
+   --  post-processing pass. As a result, object files should not contain any
+   --  occurrences of this prefix.
+
    --  As an example of the local name convention, consider a procedure V.W
    --  with a local variable X, and a nested block Y containing an entity Z.
    --  The fully qualified names of the entities X and Z are:
@@ -414,7 +420,7 @@ package Exp_Dbug is
    procedure Get_External_Name
      (Entity     : Entity_Id;
       Has_Suffix : Boolean := False;
-      Suffix     : String := "");
+      Suffix     : String  := "");
    --  Set Name_Buffer and Name_Len to the external name of the entity. The
    --  external name is the Interface_Name, if specified, unless the entity
    --  has an address clause or Has_Suffix is true.
@@ -1185,8 +1191,7 @@ package Exp_Dbug is
 
    function Make_Packed_Array_Impl_Type_Name
      (Typ   : Entity_Id;
-      Csize : Uint)
-      return  Name_Id;
+      Csize : Uint) return Name_Id;
    --  This function is used in Exp_Pakd to create the name that is encoded as
    --  described above. The entity Typ provides the name ttt, and the value
    --  Csize is the component size that provides the nnn value.

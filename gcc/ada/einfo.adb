@@ -3399,8 +3399,7 @@ package body Einfo is
 
    function Is_Concurrent_Body                  (Id : E) return B is
    begin
-      return Ekind (Id) in
-        Concurrent_Body_Kind;
+      return Ekind (Id) in Concurrent_Body_Kind;
    end Is_Concurrent_Body;
 
    function Is_Concurrent_Record_Type           (Id : E) return B is
@@ -3415,8 +3414,7 @@ package body Einfo is
 
    function Is_Decimal_Fixed_Point_Type         (Id : E) return B is
    begin
-      return Ekind (Id) in
-        Decimal_Fixed_Point_Kind;
+      return Ekind (Id) in Decimal_Fixed_Point_Kind;
    end Is_Decimal_Fixed_Point_Type;
 
    function Is_Digits_Type                      (Id : E) return B is
@@ -3446,14 +3444,12 @@ package body Einfo is
 
    function Is_Enumeration_Type                 (Id : E) return B is
    begin
-      return Ekind (Id) in
-        Enumeration_Kind;
+      return Ekind (Id) in Enumeration_Kind;
    end Is_Enumeration_Type;
 
    function Is_Fixed_Point_Type                 (Id : E) return B is
    begin
-      return Ekind (Id) in
-        Fixed_Point_Kind;
+      return Ekind (Id) in Fixed_Point_Kind;
    end Is_Fixed_Point_Type;
 
    function Is_Floating_Point_Type              (Id : E) return B is
@@ -3481,16 +3477,19 @@ package body Einfo is
       return Ekind (Id) in Generic_Unit_Kind;
    end Is_Generic_Unit;
 
+   function Is_Ghost_Entity (Id : Entity_Id) return Boolean is
+   begin
+      return Is_Checked_Ghost_Entity (Id) or else Is_Ignored_Ghost_Entity (Id);
+   end Is_Ghost_Entity;
+
    function Is_Incomplete_Or_Private_Type       (Id : E) return B is
    begin
-      return Ekind (Id) in
-        Incomplete_Or_Private_Kind;
+      return Ekind (Id) in Incomplete_Or_Private_Kind;
    end Is_Incomplete_Or_Private_Type;
 
    function Is_Incomplete_Type                  (Id : E) return B is
    begin
-      return Ekind (Id) in
-        Incomplete_Kind;
+      return Ekind (Id) in Incomplete_Kind;
    end Is_Incomplete_Type;
 
    function Is_Integer_Type                     (Id : E) return B is
@@ -3500,8 +3499,7 @@ package body Einfo is
 
    function Is_Modular_Integer_Type             (Id : E) return B is
    begin
-      return Ekind (Id) in
-        Modular_Integer_Kind;
+      return Ekind (Id) in Modular_Integer_Kind;
    end Is_Modular_Integer_Type;
 
    function Is_Named_Number                     (Id : E) return B is
@@ -3521,8 +3519,7 @@ package body Einfo is
 
    function Is_Ordinary_Fixed_Point_Type        (Id : E) return B is
    begin
-      return Ekind (Id) in
-        Ordinary_Fixed_Point_Kind;
+      return Ekind (Id) in Ordinary_Fixed_Point_Kind;
    end Is_Ordinary_Fixed_Point_Type;
 
    function Is_Overloadable                     (Id : E) return B is

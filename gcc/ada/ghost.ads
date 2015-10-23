@@ -62,10 +62,6 @@ package Ghost is
    procedure Initialize;
    --  Initialize internal tables
 
-   function Is_Ghost_Entity (Id : Entity_Id) return Boolean;
-   --  Determine whether entity Id is Ghost. To qualify as such, the entity
-   --  must be subject to pragma Ghost.
-
    procedure Lock;
    --  Lock internal tables before calling backend
 

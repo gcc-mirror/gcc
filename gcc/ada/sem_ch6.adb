@@ -1267,7 +1267,7 @@ package body Sem_Ch6 is
          --  property is not directly inherited as the body may be subject
          --  to a different Ghost assertion policy.
 
-         if Is_Ghost_Entity (Gen_Id) or else Ghost_Mode > None then
+         if Ghost_Mode > None or else Is_Ghost_Entity (Gen_Id) then
             Set_Is_Ghost_Entity (Body_Id);
 
             --  The Ghost policy in effect at the point of declaration and at
@@ -3286,7 +3286,7 @@ package body Sem_Ch6 is
             --  property is not directly inherited as the body may be subject
             --  to a different Ghost assertion policy.
 
-            if Is_Ghost_Entity (Spec_Id) or else Ghost_Mode > None then
+            if Ghost_Mode > None or else Is_Ghost_Entity (Spec_Id) then
                Set_Is_Ghost_Entity (Body_Id);
 
                --  The Ghost policy in effect at the point of declaration and
@@ -3456,6 +3456,13 @@ package body Sem_Ch6 is
          end if;
 
          New_Overloaded_Entity (Body_Id);
+
+         --  A subprogram body declared within a Ghost region is automatically
+         --  Ghost (SPARK RM 6.9(2)).
+
+         if Ghost_Mode > None then
+            Set_Is_Ghost_Entity (Body_Id);
+         end if;
 
          if Nkind (N) /= N_Subprogram_Body_Stub then
             Set_Acts_As_Spec (N);
@@ -4184,7 +4191,7 @@ package body Sem_Ch6 is
       --  A subprogram declared within a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
-      if Comes_From_Source (Designator) and then Ghost_Mode > None then
+      if Ghost_Mode > None then
          Set_Is_Ghost_Entity (Designator);
       end if;
 

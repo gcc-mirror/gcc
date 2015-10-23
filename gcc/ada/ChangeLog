@@ -1,3 +1,71 @@
+2015-10-23  Bob Duff  <duff@adacore.com>
+
+	* exp_strm.adb (Build_Record_Or_Elementary_Input_Function): Use
+	Underlying_Type for B_Typ, in case the Typ is a subtype of a type with
+	unknown discriminants.
+	* g-awk.ads: Minor style fix in comment
+
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* debug.adb: Document the use of debug switch -gnatd.5.
+	* einfo.adb: Code reformatting.	(Is_Ghost_Entity): Moved from ghost.adb.
+	* einfo.ads New synthesized attribute Is_Ghost_Enity along
+	with usage in nodes and pragma Inline.
+	(Is_Ghost_Entity: Moved from ghost.ads.
+	* exp_ch3.adb Code reformatting.
+	(Expand_Freeze_Array_Type): Capture, set and restore the Ghost mode.
+	(Expand_Freeze_Class_Wide_Type): Capture, set and restore the
+	Ghost mode.
+	(Expand_Freeze_Enumeration_Type): Capture, set and
+	restore the Ghost mode.
+	(Expand_Freeze_Record_Type): Capture, set and restore the Ghost mode.
+	* exp_ch6.adb (Expand_Subprogram_Contract): Do not expand the
+	contract of an ignored Ghost subprogram.
+	* exp_ch13.adb Add with and use clauses for Ghost.
+	(Expand_N_Freeze_Entity): Capture, set and restore the Ghost mode.
+	* exp_dbug.adb (Get_External_Name): Code reformatting. Add a
+	special prefix for ignored Ghost entities or when requested by
+	-gnatd.5 for any Ghost entity.
+	* exp_dbug.ads Document the use of prefix "_ghost_" for ignored
+	Ghost entities.
+	* exp_prag.adb (Expand_Pragma_Check): Capture, set and restore the
+	Ghost mode.
+	(Expand_Pragma_Loop_Variant): Use In_Assertion_Expr
+	to signal the original context.
+	* ghost.adb (Check_Ghost_Overriding): Code cleanup.
+	(Is_Ghost_Entity): Moved to einfo.adb.	(Is_OK_Declaration):
+	Move the assertion expression check to the outer level.
+	(Is_OK_Ghost_Context): An assertion expression is a valid Ghost
+	context.
+	* ghost.ads (Is_Ghost_Entity): Moved to einfo.ads.
+	* sem_ch3.adb (Analyze_Object_Contract): A source Ghost object
+	cannot be imported or exported. Mark internally generated objects
+	as Ghost when applicable.
+	(Make_Class_Wide_Type): Inherit the ghostness of the root tagged type.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Mark
+	a stand alone subprogram body as Ghost when applicable.
+	(Analyze_Subprogram_Declaration): Mark internally generated
+	subprograms as Ghost when applicable.
+	* sem_ch7.adb: Code cleanup.
+	* sem_ch13.adb (Add_Invariants): Add various formal
+	parameters to break dependency on global variables.
+	(Build_Invariant_Procedure): Code cleanup. Capture, set and
+	restore the Ghost mode.
+	* sem_res.adb (Resolve_Actuals): The actual parameter of a source
+	Ghost subprogram whose formal is of mode IN OUT or OUT must be
+	a Ghost variable.
+
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch8.adb Code cleanup.
+	(Find_Expanded_Name): Replace
+	the call to In_Pragmas_Depends_Or_Global with a call to
+	In_Abstract_View_Pragma.
+	(In_Abstract_View_Pragma): New routine.
+	(In_Pragmas_Depends_Or_Global): Removed.
+	* sem_prag.adb (Analyze_Part_Of): Catch a case where indicator
+	Part_Of denotes the abstract view of a variable.
+
 2015-10-23  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_util.ads (Unique_Defining_Entity): Document the result

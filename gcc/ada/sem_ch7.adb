@@ -742,11 +742,11 @@ package body Sem_Ch7 is
          Set_SPARK_Aux_Pragma_Inherited (Body_Id);
       end if;
 
-      --  Inherit the "ghostness" of the subprogram spec. Note that this
-      --  property is not directly inherited as the body may be subject to a
-      --  different Ghost assertion policy.
+      --  Inherit the "ghostness" of the package spec. Note that this property
+      --  is not directly inherited as the body may be subject to a different
+      --  Ghost assertion policy.
 
-      if Is_Ghost_Entity (Spec_Id) or else Ghost_Mode > None then
+      if Ghost_Mode > None or else Is_Ghost_Entity (Spec_Id) then
          Set_Is_Ghost_Entity (Body_Id);
 
          --  The Ghost policy in effect at the point of declaration and at the

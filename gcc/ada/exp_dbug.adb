@@ -575,9 +575,7 @@ package body Exp_Dbug is
 
       --  Couldn't we just test Original_Operating_Mode here? ???
 
-      if Operating_Mode /= Generate_Code
-        and then not Generating_Code
-      then
+      if Operating_Mode /= Generate_Code and then not Generating_Code then
          return;
       end if;
 
@@ -641,11 +639,11 @@ package body Exp_Dbug is
 
             Lo_Discr : constant Boolean :=
                          Nkind (Lo) = N_Identifier
-                          and then Ekind (Entity (Lo)) = E_Discriminant;
+                           and then Ekind (Entity (Lo)) = E_Discriminant;
 
             Hi_Discr : constant Boolean :=
                          Nkind (Hi) = N_Identifier
-                          and then Ekind (Entity (Hi)) = E_Discriminant;
+                           and then Ekind (Entity (Hi)) = E_Discriminant;
 
             Lo_Encode : constant Boolean := Lo_Con or Lo_Discr;
             Hi_Encode : constant Boolean := Hi_Con or Hi_Discr;
@@ -717,11 +715,8 @@ package body Exp_Dbug is
    procedure Get_External_Name
      (Entity     : Entity_Id;
       Has_Suffix : Boolean := False;
-      Suffix     : String := "")
+      Suffix     : String  := "")
    is
-      E    : Entity_Id := Entity;
-      Kind : Entity_Kind;
-
       procedure Get_Qualified_Name_And_Append (Entity : Entity_Id);
       --  Appends fully qualified name of given entity to Name_Buffer
 
@@ -752,6 +747,10 @@ package body Exp_Dbug is
          end if;
       end Get_Qualified_Name_And_Append;
 
+      --  Local variables
+
+      E : Entity_Id := Entity;
+
    --  Start of processing for Get_External_Name
 
    begin
@@ -777,15 +776,25 @@ package body Exp_Dbug is
          E := Defining_Identifier (Entity);
       end if;
 
-      Kind := Ekind (E);
+      --  Add a special prefix to distinguish ignored Ghost entities. These
+      --  entities should not leak in the "living" space and they should be
+      --  removed by the compiler in a post-processing pass. The prefix is
+      --  also added to any kind of Ghost entity when switch -gnatd.5 is
+      --  enabled.
+
+      if Is_Ignored_Ghost_Entity (E)
+        or else (Debug_Flag_Dot_5 and Is_Ghost_Entity (E))
+      then
+         Add_Str_To_Name_Buffer ("_ghost_");
+      end if;
 
       --  Case of interface name being used
 
-      if (Kind = E_Procedure or else
-          Kind = E_Function  or else
-          Kind = E_Constant  or else
-          Kind = E_Variable  or else
-          Kind = E_Exception)
+      if Ekind_In (E, E_Constant,
+                      E_Exception,
+                      E_Function,
+                      E_Procedure,
+                      E_Variable)
         and then Present (Interface_Name (E))
         and then No (Address_Clause (E))
         and then not Has_Suffix
@@ -816,9 +825,7 @@ package body Exp_Dbug is
          if Is_Generic_Instance (E)
            and then Is_Subprogram (E)
            and then not Is_Compilation_Unit (Scope (E))
-           and then (Ekind (Scope (E)) = E_Package
-                      or else
-                     Ekind (Scope (E)) = E_Package_Body)
+           and then Ekind_In (Scope (E), E_Package, E_Package_Body)
            and then Present (Related_Instance (Scope (E)))
          then
             E := Related_Instance (Scope (E));
