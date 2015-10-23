@@ -2329,8 +2329,13 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, tree gnu_type,
 
       /* Check that we aren't violating the associated restriction.  */
       if (!(Nkind (gnat_node) == N_Allocator && Comes_From_Source (gnat_node)))
-	Check_No_Implicit_Heap_Alloc (gnat_node);
-
+	{
+	  Check_No_Implicit_Heap_Alloc (gnat_node);
+	  if (Has_Task (Etype (gnat_node)))
+	    Check_No_Implicit_Task_Alloc (gnat_node);
+	  if (Has_Protected (Etype (gnat_node)))
+	    Check_No_Implicit_Protected_Alloc (gnat_node);
+	}
       return maybe_wrap_malloc (gnu_size, gnu_type, gnat_node);
     }
 }
