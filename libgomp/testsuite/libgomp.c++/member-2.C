@@ -154,7 +154,7 @@ A<Q>::m1 ()
     {
       f = false;
     #pragma omp single
-    #pragma omp taskloop lastprivate (a, T<Q>::t, b, n)
+    #pragma omp taskloop lastprivate (a, T<Q>::t, b, n) private (R::r)
       for (int i = 0; i < 30; i++)
 	{
 	  int q = omp_get_thread_num ();
