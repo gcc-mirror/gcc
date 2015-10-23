@@ -1,3 +1,33 @@
+2015-10-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* builtins.c (integer_valued_real_p): Move to fold-const.c.
+	(fold_trunc_transparent_mathfn, fold_builtin_trunc, fold_builtin_floor)
+	(fold_builtin_ceil, fold_builtin_round): Delete.
+	(fold_builtin_1): Handle constant trunc, floor, ceil and round
+	arguments here.
+	* convert.c (convert_to_real): Remove narrowing of rounding
+	functions.
+	* fold-const.h (integer_valued_real_unary_p)
+	(integer_valued_real_binary_p, integer_valued_real_call_p)
+	(integer_valued_real_single_p, integer_valued_real_p): Declare.
+	* fold-const.c (tree_single_nonnegative_warnv_p): Move
+	name_registered_for_update_p check to SSA_NAME case statement.
+	Don't call tree_simple_nonnegative_warnv_p for SSA names.
+	(integer_valued_real_unary_p, integer_valued_real_binary_p)
+	(integer_valued_real_call_p, integer_valued_real_single_p)
+	(integer_valued_real_invalid_p): New functions.
+	(integer_valued_real_p): Move from fold-const.c and rework
+	to call the functions above.  Handle SSA names.
+	* gimple-fold.h (gimple_stmt_integer_valued_real_p): Declare.
+	* gimple-fold.c (gimple_assign_integer_valued_real_p)
+	(gimple_call_integer_valued_real_p, gimple_phi_integer_valued_real_p)
+	(gimple_stmt_integer_valued_real_p): New functions.
+	* match.pd: Fold f(f(x))->f(x) for fp->fp rounding functions f.
+	Fold f(x)->x for the same f if x is known to be integer-valued.
+	Fold f(extend(x))->extend(f'(x)) if doing so doesn't affect
+	the result.  Canonicalize floor(x) as trunc(x) if x is
+	nonnegative.
+
 2015-10-23  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-structalias.c (intra_create_variable_infos): Use

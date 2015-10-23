@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
    zerop
    CONSTANT_CLASS_P
    tree_expr_nonnegative_p
+   integer_valued_real_p
    integer_pow2p
    HONOR_NANS)
 
@@ -70,6 +71,14 @@ along with GCC; see the file COPYING3.  If not see
 			       BUILT_IN_COPYSIGN
 			       BUILT_IN_COPYSIGNL)
 (define_operator_list CABS BUILT_IN_CABSF BUILT_IN_CABS BUILT_IN_CABSL)
+(define_operator_list TRUNC BUILT_IN_TRUNCF BUILT_IN_TRUNC BUILT_IN_TRUNCL)
+(define_operator_list FLOOR BUILT_IN_FLOORF BUILT_IN_FLOOR BUILT_IN_FLOORL)
+(define_operator_list CEIL BUILT_IN_CEILF BUILT_IN_CEIL BUILT_IN_CEILL)
+(define_operator_list ROUND BUILT_IN_ROUNDF BUILT_IN_ROUND BUILT_IN_ROUNDL)
+(define_operator_list NEARBYINT BUILT_IN_NEARBYINTF
+				BUILT_IN_NEARBYINT
+				BUILT_IN_NEARBYINTL)
+(define_operator_list RINT BUILT_IN_RINTF BUILT_IN_RINT BUILT_IN_RINTL)
 
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
@@ -2439,6 +2448,23 @@ along with GCC; see the file COPYING3.  If not see
  (CABS (complex:c @0 real_zerop@1))
  (abs @0))
 
+/* trunc(trunc(x)) -> trunc(x), etc.  */
+(for fns (TRUNC FLOOR CEIL ROUND NEARBYINT RINT)
+ (simplify
+  (fns (fns @0))
+  (fns @0)))
+/* f(x) -> x if x is integer valued and f does nothing for such values.  */
+(for fns (TRUNC FLOOR CEIL ROUND NEARBYINT)
+ (simplify
+  (fns integer_valued_real_p@0)
+  @0))
+/* Same for rint.  We have to check flag_errno_math because
+   integer_valued_real_p accepts +Inf, -Inf and NaNs as integers.  */
+(if (!flag_errno_math)
+ (simplify
+  (RINT integer_valued_real_p@0)
+  @0))
+
 /* Canonicalization of sequences of math builtins.  These rules represent
    IL simplifications but are not necessarily optimizations.
 
@@ -2536,6 +2562,57 @@ along with GCC; see the file COPYING3.  If not see
  (simplify
   (CABS (complex @0 @0))
   (mult (abs @0) { build_real_truncate (type, dconst_sqrt2 ()); })))
+
+(if (canonicalize_math_p ())
+ /* floor(x) -> trunc(x) if x is nonnegative.  */
+ (for floors (FLOOR)
+      truncs (TRUNC)
+  (simplify
+   (floors tree_expr_nonnegative_p@0)
+   (truncs @0))))
+
+(match double_value_p
+ @0
+ (if (TYPE_MAIN_VARIANT (TREE_TYPE (@0)) == double_type_node)))
+(for froms (BUILT_IN_TRUNCL
+	    BUILT_IN_FLOORL
+	    BUILT_IN_CEILL
+	    BUILT_IN_ROUNDL
+	    BUILT_IN_NEARBYINTL
+	    BUILT_IN_RINTL)
+     tos (BUILT_IN_TRUNC
+	  BUILT_IN_FLOOR
+	  BUILT_IN_CEIL
+	  BUILT_IN_ROUND
+	  BUILT_IN_NEARBYINT
+	  BUILT_IN_RINT)
+ /* truncl(extend(x)) -> extend(trunc(x)), etc., if x is a double.  */
+ (if (optimize && canonicalize_math_p ())
+  (simplify
+   (froms (convert double_value_p@0))
+   (convert (tos @0)))))
+
+(match float_value_p
+ @0
+ (if (TYPE_MAIN_VARIANT (TREE_TYPE (@0)) == float_type_node)))
+(for froms (BUILT_IN_TRUNCL BUILT_IN_TRUNC
+	    BUILT_IN_FLOORL BUILT_IN_FLOOR
+	    BUILT_IN_CEILL BUILT_IN_CEIL
+	    BUILT_IN_ROUNDL BUILT_IN_ROUND
+	    BUILT_IN_NEARBYINTL BUILT_IN_NEARBYINT
+	    BUILT_IN_RINTL BUILT_IN_RINT)
+     tos (BUILT_IN_TRUNCF BUILT_IN_TRUNCF
+	  BUILT_IN_FLOORF BUILT_IN_FLOORF
+	  BUILT_IN_CEILF BUILT_IN_CEILF
+	  BUILT_IN_ROUNDF BUILT_IN_ROUNDF
+	  BUILT_IN_NEARBYINTF BUILT_IN_NEARBYINTF
+	  BUILT_IN_RINTF BUILT_IN_RINTF)
+ /* truncl(extend(x)) and trunc(extend(x)) -> extend(truncf(x)), etc.,
+    if x is a float.  */
+ (if (optimize && canonicalize_math_p ())
+  (simplify
+   (froms (convert float_value_p@0))
+   (convert (tos @0)))))
 
 /* cproj(x) -> x if we're ignoring infinities.  */
 (simplify

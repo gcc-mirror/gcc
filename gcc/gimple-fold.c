@@ -6266,3 +6266,91 @@ gimple_stmt_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
       return false;
     }
 }
+
+/* Return true if the floating-point value computed by assignment STMT
+   is known to have an integer value.  We also allow +Inf, -Inf and NaN
+   to be considered integer values.
+
+   DEPTH is the current nesting depth of the query.  */
+
+static bool
+gimple_assign_integer_valued_real_p (gimple *stmt, int depth)
+{
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  switch (get_gimple_rhs_class (code))
+    {
+    case GIMPLE_UNARY_RHS:
+      return integer_valued_real_unary_p (gimple_assign_rhs_code (stmt),
+					  gimple_assign_rhs1 (stmt), depth);
+    case GIMPLE_BINARY_RHS:
+      return integer_valued_real_binary_p (gimple_assign_rhs_code (stmt),
+					   gimple_assign_rhs1 (stmt),
+					   gimple_assign_rhs2 (stmt), depth);
+    case GIMPLE_TERNARY_RHS:
+      return false;
+    case GIMPLE_SINGLE_RHS:
+      return integer_valued_real_single_p (gimple_assign_rhs1 (stmt), depth);
+    case GIMPLE_INVALID_RHS:
+      break;
+    }
+  gcc_unreachable ();
+}
+
+/* Return true if the floating-point value computed by call STMT is known
+   to have an integer value.  We also allow +Inf, -Inf and NaN to be
+   considered integer values.
+
+   DEPTH is the current nesting depth of the query.  */
+
+static bool
+gimple_call_integer_valued_real_p (gimple *stmt, int depth)
+{
+  tree arg0 = (gimple_call_num_args (stmt) > 0
+	       ? gimple_call_arg (stmt, 0)
+	       : NULL_TREE);
+  tree arg1 = (gimple_call_num_args (stmt) > 1
+	       ? gimple_call_arg (stmt, 1)
+	       : NULL_TREE);
+  return integer_valued_real_call_p (gimple_call_fndecl (stmt),
+				     arg0, arg1, depth);
+}
+
+/* Return true if the floating-point result of phi STMT is known to have
+   an integer value.  We also allow +Inf, -Inf and NaN to be considered
+   integer values.
+
+   DEPTH is the current nesting depth of the query.  */
+
+static bool
+gimple_phi_integer_valued_real_p (gimple *stmt, int depth)
+{
+  for (unsigned i = 0; i < gimple_phi_num_args (stmt); ++i)
+    {
+      tree arg = gimple_phi_arg_def (stmt, i);
+      if (!integer_valued_real_single_p (arg, depth + 1))
+	return false;
+    }
+  return true;
+}
+
+/* Return true if the floating-point value computed by STMT is known
+   to have an integer value.  We also allow +Inf, -Inf and NaN to be
+   considered integer values.
+
+   DEPTH is the current nesting depth of the query.  */
+
+bool
+gimple_stmt_integer_valued_real_p (gimple *stmt, int depth)
+{
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_ASSIGN:
+      return gimple_assign_integer_valued_real_p (stmt, depth);
+    case GIMPLE_CALL:
+      return gimple_call_integer_valued_real_p (stmt, depth);
+    case GIMPLE_PHI:
+      return gimple_phi_integer_valued_real_p (stmt, depth);
+    default:
+      return false;
+    }
+}
