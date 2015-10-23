@@ -19082,6 +19082,32 @@ package body Sem_Util is
                U := Spec_Entity (E);
             end if;
 
+         when E_Task_Body =>
+            P := Parent (E);
+            U := Corresponding_Spec (P);
+
+         when E_Entry =>
+            if Nkind (Parent (E)) = N_Entry_Body then
+               declare
+                  Decl : Entity_Id := First_Entity (Scope (E));
+               begin
+                  --  Traverse the entity list of the protected object
+                  --  and locate an entry declaration with a matching
+                  --  Corresponding_Body.
+
+                  while Present (Decl) loop
+                     if Ekind (Decl) = E_Entry
+                       and then Corresponding_Body (Parent (Decl)) = E
+                     then
+                        U := Decl;
+                        exit;
+                     end if;
+                     Next_Entity (Decl);
+                  end loop;
+                  pragma Assert (Present (Decl));
+               end;
+            end if;
+
          when others =>
             null;
       end case;

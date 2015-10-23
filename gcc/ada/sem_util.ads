@@ -2105,6 +2105,8 @@ package Sem_Util is
    --  views of the same entity have the same unique defining entity:
    --  * package spec and body;
    --  * subprogram declaration, subprogram stub and subprogram body;
+   --  * entry declaration and entry body;
+   --  * task declaration, task body stub and task body;
    --  * private view and full view of a type;
    --  * private view and full view of a deferred constant.
    --  In other cases, return the defining entity for N.

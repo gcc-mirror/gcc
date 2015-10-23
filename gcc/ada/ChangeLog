@@ -1,3 +1,10 @@
+2015-10-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.ads (Unique_Defining_Entity): Document the result
+	for tasks and entries.
+	* sem_util.adb (Unique_Entity): Return declaration entity for task and
+	entry bodies
+
 2015-10-22  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Use gcc_checking_assert.
