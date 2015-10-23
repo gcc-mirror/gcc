@@ -76,12 +76,6 @@ package Exp_Dbug is
    --  qualification for such entities. In particular this means that direct
    --  local variables of a procedure are not qualified.
 
-   --  For ignored Ghost entities, the encoding adds a prefix "___ghost_" to
-   --  aid the detection of leaks in the "living" space. Ignored Ghost entities
-   --  and any code associated with them should be removed by the compiler in a
-   --  post-processing pass. As a result, object files should not contain any
-   --  occurrences of this prefix.
-
    --  As an example of the local name convention, consider a procedure V.W
    --  with a local variable X, and a nested block Y containing an entity Z.
    --  The fully qualified names of the entities X and Z are:

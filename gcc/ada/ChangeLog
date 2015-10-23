@@ -1,5 +1,22 @@
 2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* debug.adb: Switch -gnatd.5 is no longer in use, remove the
+	associated documentation.
+	* exp_dbug.adb (Get_External_Name): Do not add a special prefix
+	for ignored Ghost entities or when switch -gnatd.5 is enabled.
+	* exp_dbug.ads Remove the documentation concerning the encoding
+	of ignored Ghost entities.
+
+2015-10-23  Bob Duff  <duff@adacore.com>
+
+	* a-exextr.adb (Notify_Exception): For Unhandled_Raise_In_Main,
+	mimic the output from Ada.Exceptions.Last_Chance_Handler; don't
+	print "Exception raised".
+	* s-stalib.ads, s-exctra.ads, s-exctra.adb: Add
+	Unhandled_Raise_In_Main to types Exception_Trace_Kind/Trace_Kind.
+
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_attr.adb, freeze.adb, sem_attr.adb, exp_aggr.adb,
 	gnatname.adb: Minor reformatting.
 

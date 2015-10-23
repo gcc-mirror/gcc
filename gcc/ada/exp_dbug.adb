@@ -776,18 +776,6 @@ package body Exp_Dbug is
          E := Defining_Identifier (Entity);
       end if;
 
-      --  Add a special prefix to distinguish ignored Ghost entities. These
-      --  entities should not leak in the "living" space and they should be
-      --  removed by the compiler in a post-processing pass. The prefix is
-      --  also added to any kind of Ghost entity when switch -gnatd.5 is
-      --  enabled.
-
-      if Is_Ignored_Ghost_Entity (E)
-        or else (Debug_Flag_Dot_5 and Is_Ghost_Entity (E))
-      then
-         Add_Str_To_Name_Buffer ("___ghost_");
-      end if;
-
       --  Case of interface name being used
 
       if Ekind_In (E, E_Constant,

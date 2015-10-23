@@ -114,6 +114,8 @@ package body System.Exception_Traces is
             Exception_Trace := Every_Raise;
          when Unhandled_Raise =>
             Exception_Trace := Unhandled_Raise;
+         when Unhandled_Raise_In_Main =>
+            Exception_Trace := Unhandled_Raise_In_Main;
       end case;
    end Trace_On;
 
