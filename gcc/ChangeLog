@@ -1,3 +1,22 @@
+2015-10-23  Gregor Richards  <gregor.richards@uwaterloo.ca>
+	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/rs6000/linux64.h (MUSL_DYNAMIC_LINKER32): Define.
+	(MUSL_DYNAMIC_LINKER64): Define.
+	(GNU_USER_DYNAMIC_LINKER32): Update.
+	(GNU_USER_DYNAMIC_LINKER64): Update.
+	(CHOOSE_DYNAMIC_LINKER): Update.
+
+	* config/rs6000/sysv4.h (GNU_USER_DYNAMIC_LINKER): Update.
+	(MUSL_DYNAMIC_LINKER, MUSL_DYNAMIC_LINKER_E,)
+	(INCLUDE_DEFAULTS_MUSL_GPP, INCLUDE_DEFAULTS_MUSL_LOCAL,)
+	(INCLUDE_DEFAULTS_MUSL_PREFIX, INCLUDE_DEFAULTS_MUSL_CROSS,)
+	(INCLUDE_DEFAULTS_MUSL_TOOL, INCLUDE_DEFAULTS_MUSL_NATIVE): Define.
+	(CHOOSE_DYNAMIC_LINKER): Update.
+	(INCLUDE_DEFAULTS): Redefine.
+
+	* config/rs6000/sysv4le.h (MUSL_DYNAMIC_LINKER_E): Define.
+
 2015-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* fold-const.c (operand_equal_p): Do not compare TYPE_MODE when

@@ -31,3 +31,5 @@
 /* Little-endian PowerPC64 Linux uses the ELF v2 ABI by default.  */
 #define LINUX64_DEFAULT_ABI_ELFv2
 
+#undef MUSL_DYNAMIC_LINKER_E
+#define MUSL_DYNAMIC_LINKER_E ENDIAN_SELECT("","le","le")

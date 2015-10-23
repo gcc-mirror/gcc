@@ -762,17 +762,27 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 
 #define LINK_START_LINUX_SPEC ""
 
+#define MUSL_DYNAMIC_LINKER_E ENDIAN_SELECT("","le","")
+
 #define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
 #define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
+#define MUSL_DYNAMIC_LINKER \
+  "/lib/ld-musl-powerpc" MUSL_DYNAMIC_LINKER_E "%{msoft-float:-sf}.so.1"
 #if DEFAULT_LIBC == LIBC_UCLIBC
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:" G ";:" U "}"
+#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
+  "%{mglibc:" G ";:%{mmusl:" M ";:" U "}}"
+#elif DEFAULT_LIBC == LIBC_MUSL
+#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
+  "%{mglibc:" G ";:%{muclibc:" U ";:" M "}}"
 #elif !defined (DEFAULT_LIBC) || DEFAULT_LIBC == LIBC_GLIBC
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:" U ";:" G "}"
+#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
+  "%{muclibc:" U ";:%{mmusl:" M ";:" G "}}"
 #else
 #error "Unsupported DEFAULT_LIBC"
 #endif
 #define GNU_USER_DYNAMIC_LINKER \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER)
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER, \
+			 MUSL_DYNAMIC_LINKER)
 
 #define LINK_OS_LINUX_SPEC "-m elf32ppclinux %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
@@ -949,3 +959,73 @@ ncrtn.o%s"
 /* This target uses the sysv4.opt file.  */
 #define TARGET_USES_SYSV4_OPT 1
 
+/* Include order changes for musl, same as in generic linux.h.  */
+#if DEFAULT_LIBC == LIBC_MUSL
+#define INCLUDE_DEFAULTS_MUSL_GPP			\
+    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1,		\
+      GPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT, 0 },		\
+    { GPLUSPLUS_TOOL_INCLUDE_DIR, "G++", 1, 1,		\
+      GPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT, 1 },		\
+    { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1,	\
+      GPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT, 0 },
+
+#ifdef LOCAL_INCLUDE_DIR
+#define INCLUDE_DEFAULTS_MUSL_LOCAL			\
+    { LOCAL_INCLUDE_DIR, 0, 0, 1, 1, 2 },		\
+    { LOCAL_INCLUDE_DIR, 0, 0, 1, 1, 0 },
+#else
+#define INCLUDE_DEFAULTS_MUSL_LOCAL
+#endif
+
+#ifdef PREFIX_INCLUDE_DIR
+#define INCLUDE_DEFAULTS_MUSL_PREFIX			\
+    { PREFIX_INCLUDE_DIR, 0, 0, 1, 0, 0},
+#else
+#define INCLUDE_DEFAULTS_MUSL_PREFIX
+#endif
+
+#ifdef CROSS_INCLUDE_DIR
+#define INCLUDE_DEFAULTS_MUSL_CROSS			\
+    { CROSS_INCLUDE_DIR, "GCC", 0, 0, 0, 0},
+#else
+#define INCLUDE_DEFAULTS_MUSL_CROSS
+#endif
+
+#ifdef TOOL_INCLUDE_DIR
+#define INCLUDE_DEFAULTS_MUSL_TOOL			\
+    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 1, 0, 0},
+#else
+#define INCLUDE_DEFAULTS_MUSL_TOOL
+#endif
+
+#ifdef NATIVE_SYSTEM_HEADER_DIR
+#define INCLUDE_DEFAULTS_MUSL_NATIVE			\
+    { NATIVE_SYSTEM_HEADER_DIR, 0, 0, 0, 1, 2 },	\
+    { NATIVE_SYSTEM_HEADER_DIR, 0, 0, 0, 1, 0 },
+#else
+#define INCLUDE_DEFAULTS_MUSL_NATIVE
+#endif
+
+#if defined (CROSS_DIRECTORY_STRUCTURE) && !defined (TARGET_SYSTEM_ROOT)
+# undef INCLUDE_DEFAULTS_MUSL_LOCAL
+# define INCLUDE_DEFAULTS_MUSL_LOCAL
+# undef INCLUDE_DEFAULTS_MUSL_NATIVE
+# define INCLUDE_DEFAULTS_MUSL_NATIVE
+#else
+# undef INCLUDE_DEFAULTS_MUSL_CROSS
+# define INCLUDE_DEFAULTS_MUSL_CROSS
+#endif
+
+#undef INCLUDE_DEFAULTS
+#define INCLUDE_DEFAULTS				\
+  {							\
+    INCLUDE_DEFAULTS_MUSL_GPP				\
+    INCLUDE_DEFAULTS_MUSL_LOCAL				\
+    INCLUDE_DEFAULTS_MUSL_PREFIX			\
+    INCLUDE_DEFAULTS_MUSL_CROSS				\
+    INCLUDE_DEFAULTS_MUSL_TOOL				\
+    INCLUDE_DEFAULTS_MUSL_NATIVE			\
+    { GCC_INCLUDE_DIR, "GCC", 0, 1, 0, 0 },		\
+    { 0, 0, 0, 0, 0, 0 }				\
+  }
+#endif
