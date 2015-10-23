@@ -2502,6 +2502,13 @@ package Einfo is
 --       package, generic function, generic procedure), and False for all
 --       other entities.
 
+--    Is_Ghost_Entity (synthesized)
+--       Applies to all entities. Yields True for abstract states, [generic]
+--       packages, [generic] subprograms, components, discriminants, formal
+--       parameters, objects, package bodies, subprogram bodies, and [sub]types
+--       subject to pragma Ghost or those that inherit the Ghost propery from
+--       an enclosing construct.
+
 --    Is_Hidden (Flag57)
 --       Defined in all entities. Set for all entities declared in the
 --       private part or body of a package. Also marks generic formals of a
@@ -5384,6 +5391,7 @@ package Einfo is
    --    Declaration_Node                    (synth)
    --    Has_Foreign_Convention              (synth)
    --    Is_Dynamic_Scope                    (synth)
+   --    Is_Ghost_Entity                     (synth)
    --    Is_Standard_Character_Type          (synth)
    --    Is_Standard_String_Type             (synth)
    --    Underlying_Type                     (synth)
@@ -7158,9 +7166,10 @@ package Einfo is
    function Is_Formal_Subprogram                (Id : E) return B;
    function Is_Generic_Actual_Subprogram        (Id : E) return B;
    function Is_Generic_Actual_Type              (Id : E) return B;
-   function Is_Generic_Unit                     (Id : E) return B;
-   function Is_Generic_Type                     (Id : E) return B;
    function Is_Generic_Subprogram               (Id : E) return B;
+   function Is_Generic_Type                     (Id : E) return B;
+   function Is_Generic_Unit                     (Id : E) return B;
+   function Is_Ghost_Entity                     (Id : E) return B;
    function Is_Incomplete_Or_Private_Type       (Id : E) return B;
    function Is_Incomplete_Type                  (Id : E) return B;
    function Is_Integer_Type                     (Id : E) return B;
@@ -8380,6 +8389,7 @@ package Einfo is
    pragma Inline (Is_Generic_Subprogram);
    pragma Inline (Is_Generic_Type);
    pragma Inline (Is_Generic_Unit);
+   pragma Inline (Is_Ghost_Entity);
    pragma Inline (Is_Hidden);
    pragma Inline (Is_Hidden_Non_Overridden_Subpgm);
    pragma Inline (Is_Hidden_Open_Scope);

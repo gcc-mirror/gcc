@@ -321,12 +321,21 @@ package body Exp_Prag is
       --  Assert_Failure, so that coverage analysis tools can relate the
       --  call to the failed check.
 
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
    begin
       --  Nothing to do if pragma is ignored
 
       if Is_Ignored (N) then
          return;
       end if;
+
+      --  Pragmas Assert, Assert_And_Cut, Assume, Check and Loop_Invariant are
+      --  Ghost when they apply to a Ghost entity. Set the mode now to ensure
+      --  that any nodes generated during expansion are properly flagged as
+      --  Ghost.
+
+      Set_Ghost_Mode (N);
 
       --  Since this check is active, we rewrite the pragma into a
       --  corresponding if statement, and then analyze the statement.
@@ -482,7 +491,7 @@ package body Exp_Prag is
          if Is_Entity_Name (Original_Node (Cond))
            and then Entity (Original_Node (Cond)) = Standard_False
          then
-            return;
+            null;
 
          elsif Nam = Name_Assert then
             Error_Msg_N ("?A?assertion will fail at run time", N);
@@ -491,6 +500,8 @@ package body Exp_Prag is
             Error_Msg_N ("?A?check will fail at run time", N);
          end if;
       end if;
+
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Pragma_Check;
 
    ---------------------------------
@@ -1806,6 +1817,14 @@ package body Exp_Prag is
 
       Set_Ghost_Mode (N);
 
+      --  The expansion of Loop_Variant is quite distributed as it produces
+      --  various statements to capture and compare the arguments. To preserve
+      --  the original context, set the Is_Assertion_Expr flag. This aids the
+      --  Ghost legality checks when verifying the placement of a reference to
+      --  a Ghost entity.
+
+      In_Assertion_Expr := In_Assertion_Expr + 1;
+
       --  Locate the enclosing loop for which this assertion applies. In the
       --  case of Ada 2012 array iteration, we might be dealing with nested
       --  loops. Only the outermost loop has an identifier.
@@ -1867,6 +1886,7 @@ package body Exp_Prag is
       --  corresponding declarations and statements. We leave it in the tree
       --  for documentation purposes. It will be ignored by the backend.
 
+      In_Assertion_Expr := In_Assertion_Expr - 1;
       Ghost_Mode := Save_Ghost_Mode;
    end Expand_Pragma_Loop_Variant;
 

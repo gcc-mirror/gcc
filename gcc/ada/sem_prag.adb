@@ -3413,6 +3413,19 @@ package body Sem_Prag is
             return;
          end if;
 
+         --  Catch a case where indicator Part_Of denotes the abstract view of
+         --  a variable which appears as an abstract state (SPARK RM 10.1.2 2).
+
+         if From_Limited_With (State_Id)
+           and then Present (Non_Limited_View (State_Id))
+           and then Ekind (Non_Limited_View (State_Id)) = E_Variable
+         then
+            SPARK_Msg_N
+              ("indicator Part_Of must denote an abstract state", State);
+            SPARK_Msg_N ("\& denotes abstract view of object", State);
+            return;
+         end if;
+
          --  Determine where the state, object or the package instantiation
          --  lives with respect to the enclosing packages or package bodies (if
          --  any). This placement dictates the legality of the encapsulating
@@ -11693,7 +11706,7 @@ package body Sem_Prag is
                      Scope_Suppress.Overflow_Mode_Assertions  := Eliminated;
                   end;
 
-               --  Not that special case!
+               --  Not that special case
 
                else
                   Analyze (N);

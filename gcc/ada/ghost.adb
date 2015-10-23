@@ -229,11 +229,6 @@ package body Ghost is
 
                elsif Is_Subject_To_Ghost (Decl) then
                   return True;
-
-               --  The declaration appears within an assertion expression
-
-               elsif In_Assertion_Expr > 0 then
-                  return True;
                end if;
 
             --  Special cases
@@ -338,13 +333,13 @@ package body Ghost is
                if Is_Ghost_Pragma (Prag) then
                   return True;
 
-               --  An assertion expression is a Ghost pragma when it contains a
+               --  An assertion expression pragma is Ghost when it contains a
                --  reference to a Ghost entity (SPARK RM 6.9(11)).
 
                elsif Assertion_Expression_Pragma (Prag_Id) then
 
                   --  Predicates are excluded from this category when they do
-                  --  not apply to a Ghost subtype (SPARK RM 6.9(12)).
+                  --  not apply to a Ghost subtype (SPARK RM 6.9(11)).
 
                   if Nam_In (Prag_Nam, Name_Dynamic_Predicate,
                                        Name_Predicate,
@@ -413,27 +408,17 @@ package body Ghost is
 
             --  Special cases
 
-            elsif Nkind (Stmt) = N_If_Statement then
+            --  An if statement is a suitable context for a Ghost entity if it
+            --  is the byproduct of assertion expression expansion. Note that
+            --  the assertion expression may not be related to a Ghost entity,
+            --  but it may still contain references to Ghost entities.
 
-               --  An if statement is a suitable context for a Ghost entity if
-               --  it is the byproduct of assertion expression expansion. Note
-               --  that the assertion expression may not be related to a Ghost
-               --  entity, but it may still contain references to Ghost
-               --  entities.
-
-               if Nkind (Original_Node (Stmt)) = N_Pragma
-                 and then Assertion_Expression_Pragma
-                            (Get_Pragma_Id (Original_Node (Stmt)))
-               then
-                  return True;
-
-               --  The expansion of pragma Contract_Cases produces various if
-               --  statements to evaluate all case guards. This is a suitable
-               --  context as Contract_Cases is an assertion expression.
-
-               elsif In_Assertion_Expr > 0 then
-                  return True;
-               end if;
+            elsif Nkind (Stmt) = N_If_Statement
+              and then Nkind (Original_Node (Stmt)) = N_Pragma
+              and then Assertion_Expression_Pragma
+                         (Get_Pragma_Id (Original_Node (Stmt)))
+            then
+               return True;
             end if;
 
             return False;
@@ -487,13 +472,26 @@ package body Ghost is
                --  Prevent the search from going too far
 
                elsif Is_Body_Or_Package_Declaration (Par) then
-                  return False;
+                  exit;
                end if;
 
                Par := Parent (Par);
             end loop;
 
-            return False;
+            --  The expansion of assertion expression pragmas and attribute Old
+            --  may cause a legal Ghost entity reference to become illegal due
+            --  to node relocation. Check the In_Assertion_Expr counter as last
+            --  resort to try and infer the original legal context.
+
+            if In_Assertion_Expr > 0 then
+               return True;
+
+            --  Otherwise the context is not suitable for a reference to a
+            --  Ghost entity.
+
+            else
+               return False;
+            end if;
          end if;
       end Is_OK_Ghost_Context;
 
@@ -592,32 +590,32 @@ package body Ghost is
      (Subp            : Entity_Id;
       Overridden_Subp : Entity_Id)
    is
-      Par_Subp : Entity_Id;
+      Over_Subp : Entity_Id;
 
    begin
       if Present (Subp) and then Present (Overridden_Subp) then
-         Par_Subp := Ultimate_Alias (Overridden_Subp);
+         Over_Subp := Ultimate_Alias (Overridden_Subp);
 
          --  The Ghost policy in effect at the point of declaration of a parent
          --  and an overriding subprogram must match (SPARK RM 6.9(17)).
 
-         if Is_Checked_Ghost_Entity (Par_Subp)
+         if Is_Checked_Ghost_Entity (Over_Subp)
            and then Is_Ignored_Ghost_Entity (Subp)
          then
             Error_Msg_N ("incompatible ghost policies in effect",    Subp);
 
-            Error_Msg_Sloc := Sloc (Par_Subp);
+            Error_Msg_Sloc := Sloc (Over_Subp);
             Error_Msg_N ("\& declared # with ghost policy `Check`",  Subp);
 
             Error_Msg_Sloc := Sloc (Subp);
             Error_Msg_N ("\overridden # with ghost policy `Ignore`", Subp);
 
-         elsif Is_Ignored_Ghost_Entity (Par_Subp)
+         elsif Is_Ignored_Ghost_Entity (Over_Subp)
            and then Is_Checked_Ghost_Entity (Subp)
          then
             Error_Msg_N ("incompatible ghost policies in effect",    Subp);
 
-            Error_Msg_Sloc := Sloc (Par_Subp);
+            Error_Msg_Sloc := Sloc (Over_Subp);
             Error_Msg_N ("\& declared # with ghost policy `Ignore`", Subp);
 
             Error_Msg_Sloc := Sloc (Subp);
@@ -685,15 +683,6 @@ package body Ghost is
    begin
       Ignored_Ghost_Units.Init;
    end Initialize;
-
-   ---------------------
-   -- Is_Ghost_Entity --
-   ---------------------
-
-   function Is_Ghost_Entity (Id : Entity_Id) return Boolean is
-   begin
-      return Is_Checked_Ghost_Entity (Id) or else Is_Ignored_Ghost_Entity (Id);
-   end Is_Ghost_Entity;
 
    -------------------------
    -- Is_Subject_To_Ghost --

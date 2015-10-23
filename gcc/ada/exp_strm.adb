@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1121,7 +1121,7 @@ package body Exp_Strm is
       Decl : out Node_Id;
       Fnam : out Entity_Id)
    is
-      B_Typ      : constant Entity_Id := Base_Type (Typ);
+      B_Typ      : constant Entity_Id := Underlying_Type (Base_Type (Typ));
       Cn         : Name_Id;
       Constr     : List_Id;
       Decls      : List_Id;

@@ -5644,41 +5644,61 @@ package body Sem_Ch8 is
    --  the scope of its declaration.
 
    procedure Find_Expanded_Name (N : Node_Id) is
-      function In_Pragmas_Depends_Or_Global (N : Node_Id) return Boolean;
-      --  Determine whether an arbitrary node N appears in pragmas [Refined_]
-      --  Depends or [Refined_]Global.
+      function In_Abstract_View_Pragma (Nod : Node_Id) return Boolean;
+      --  Determine whether expanded name Nod appears within a pragma which is
+      --  a suitable context for an abstract view of a state or variable. The
+      --  following pragmas fall in this category:
+      --    Depends
+      --    Global
+      --    Initializes
+      --    Refined_Depends
+      --    Refined_Global
+      --
+      --  In addition, pragma Abstract_State is also considered suitable even
+      --  though it is an illegal context for an abstract view as this allows
+      --  for proper resolution of abstract views of variables. This illegal
+      --  context is later flagged in the analysis of indicator Part_Of.
 
-      ----------------------------------
-      -- In_Pragmas_Depends_Or_Global --
-      ----------------------------------
+      -----------------------------
+      -- In_Abstract_View_Pragma --
+      -----------------------------
 
-      function In_Pragmas_Depends_Or_Global (N : Node_Id) return Boolean is
+      function In_Abstract_View_Pragma (Nod : Node_Id) return Boolean is
          Par : Node_Id;
 
       begin
          --  Climb the parent chain looking for a pragma
 
-         Par := N;
+         Par := Nod;
          while Present (Par) loop
-            if Nkind (Par) = N_Pragma
-              and then Nam_In (Pragma_Name (Par), Name_Depends,
-                                                  Name_Global,
-                                                  Name_Refined_Depends,
-                                                  Name_Refined_Global)
-            then
-               return True;
+            if Nkind (Par) = N_Pragma then
+               if Nam_In (Pragma_Name (Par), Name_Abstract_State,
+                                             Name_Depends,
+                                             Name_Global,
+                                             Name_Initializes,
+                                             Name_Refined_Depends,
+                                             Name_Refined_Global)
+               then
+                  return True;
+
+               --  Otherwise the pragma is not a legal context for an abstract
+               --  view.
+
+               else
+                  exit;
+               end if;
 
             --  Prevent the search from going too far
 
             elsif Is_Body_Or_Package_Declaration (Par) then
-               return False;
+               exit;
             end if;
 
             Par := Parent (Par);
          end loop;
 
          return False;
-      end In_Pragmas_Depends_Or_Global;
+      end In_Abstract_View_Pragma;
 
       --  Local variables
 
@@ -5724,18 +5744,19 @@ package body Sem_Ch8 is
                Is_New_Candidate := True;
 
                --  Handle abstract views of states and variables. These are
-               --  acceptable only when the reference to the view appears in
-               --  pragmas [Refined_]Depends and [Refined_]Global.
+               --  acceptable candidates only when the reference to the view
+               --  appears in certain pragmas.
 
                if Ekind (Id) = E_Abstract_State
                  and then From_Limited_With (Id)
                  and then Present (Non_Limited_View (Id))
                then
-                  if In_Pragmas_Depends_Or_Global (N) then
+                  if In_Abstract_View_Pragma (N) then
                      Candidate        := Non_Limited_View (Id);
                      Is_New_Candidate := True;
 
-                  --  Hide candidate because it is not used in a proper context
+                  --  Hide the candidate because it is not used in a proper
+                  --  context.
 
                   else
                      Candidate        := Empty;
@@ -5827,22 +5848,22 @@ package body Sem_Ch8 is
             Find_Expanded_Name (N);
             return;
 
+         --  There is an implicit instance of the predefined operator in
+         --  the given scope. The operator entity is defined in Standard.
+         --  Has_Implicit_Operator makes the node into an Expanded_Name.
+
          elsif Nkind (Selector) = N_Operator_Symbol
            and then Has_Implicit_Operator (N)
          then
-            --  There is an implicit instance of the predefined operator in
-            --  the given scope. The operator entity is defined in Standard.
-            --  Has_Implicit_Operator makes the node into an Expanded_Name.
-
             return;
+
+         --  If there is no literal defined in the scope denoted by the
+         --  prefix, the literal may belong to (a type derived from)
+         --  Standard_Character, for which we have no explicit literals.
 
          elsif Nkind (Selector) = N_Character_Literal
            and then Has_Implicit_Character_Literal (N)
          then
-            --  If there is no literal defined in the scope denoted by the
-            --  prefix, the literal may belong to (a type derived from)
-            --  Standard_Character, for which we have no explicit literals.
-
             return;
 
          else
@@ -5879,8 +5900,8 @@ package body Sem_Ch8 is
                     and then not In_Private_Part (Current_Scope)
                     and then not Is_Private_Descendant (Current_Scope)
                   then
-                     Error_Msg_N ("private child unit& is not visible here",
-                                  Selector);
+                     Error_Msg_N
+                       ("private child unit& is not visible here", Selector);
 
                   --  Normal case where we have a missing with for a child unit
 
@@ -5929,8 +5950,9 @@ package body Sem_Ch8 is
                                         E_Package,
                                         E_Procedure)
                         then
-                           P := Generic_Parent (Specification
-                                  (Unit_Declaration_Node (S)));
+                           P :=
+                             Generic_Parent (Specification
+                               (Unit_Declaration_Node (S)));
 
                            --  Check that P is a generic child of the generic
                            --  parent of the prefix.
@@ -5968,7 +5990,6 @@ package body Sem_Ch8 is
                --  Here we have the case of an undefined component
 
                else
-
                   --  The prefix may hide a homonym in the context that
                   --  declares the desired entity. This error can use a
                   --  specialized message.

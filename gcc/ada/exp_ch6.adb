@@ -7766,6 +7766,12 @@ package body Exp_Ch6 is
 
       elsif not Has_Significant_Contract (Subp_Id) then
          return;
+
+      --  The contract of an ignored Ghost subprogram does not need expansion
+      --  because the subprogram and all calls to it will be removed.
+
+      elsif Is_Ignored_Ghost_Entity (Subp_Id) then
+         return;
       end if;
 
       --  Do not re-expand the same contract. This scenario occurs when a
