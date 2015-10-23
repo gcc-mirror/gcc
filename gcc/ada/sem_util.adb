@@ -2232,11 +2232,26 @@ package body Sem_Util is
                end if;
 
                if Is_Writable_Actual then
-                  if Contains (Writable_Actuals_List, N) then
+
+                  --  Skip checking the error in non-elementary types since
+                  --  RM 6.4.1(6.15/3) is restricted to elementary types, but
+                  --  store this actual in Writable_Actuals_List since it is
+                  --  needed to perform checks on other constructs that have
+                  --  arbitrary order of evaluation (for example, aggregates).
+
+                  if not Is_Elementary_Type (Etype (N)) then
+                     if not Contains (Writable_Actuals_List, N) then
+                        Append_New_Elmt (N, To => Writable_Actuals_List);
+                     end if;
+
+                  --  Second occurrence of an elementary type writable actual
+
+                  elsif Contains (Writable_Actuals_List, N) then
 
                      --  Report the error on the second occurrence of the
                      --  identifier. We cannot assume that N is the second
-                     --  occurrence, since Traverse_Func walks through Field2
+                     --  occurrence (according to their location in the
+                     --  sources), since Traverse_Func walks through Field2
                      --  last (see comment in the body of Traverse_Func).
 
                      declare
@@ -2262,9 +2277,12 @@ package body Sem_Util is
                            Error_Node, Id);
                         return Abandon;
                      end;
-                  end if;
 
-                  Append_New_Elmt (N, To => Writable_Actuals_List);
+                  --  First occurrence of a elementary type writable actual
+
+                  else
+                     Append_New_Elmt (N, To => Writable_Actuals_List);
+                  end if;
 
                else
                   if Identifiers_List = No_Elist then
