@@ -4808,15 +4808,6 @@ package body Sem_Ch13 is
                      end if;
                   end;
 
-                  if Is_Exported (U_Ent) then
-                     Error_Msg_N
-                       ("& cannot be exported if an address clause is given",
-                        Nam);
-                     Error_Msg_N
-                       ("\define and export a variable "
-                        & "that holds its address instead", Nam);
-                  end if;
-
                   --  Entity has delayed freeze, so we will generate an
                   --  alignment check at the freeze point unless suppressed.
 
