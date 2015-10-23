@@ -159,7 +159,7 @@ package body Debug is
    --  d.2  Allow statements in declarative part
    --  d.3  Output debugging information from Exp_Unst
    --  d.4
-   --  d.5  Generate Ghost external sumbols regardless of Ghost policy
+   --  d.5
    --  d.6
    --  d.7
    --  d.8
@@ -761,12 +761,6 @@ package body Debug is
 
    --  d.3  Output debugging information from Exp_Unst, including the name of
    --       any unreachable subprograms that get deleted.
-
-   --  d.5  Generate specialized external symbols for Ghost entities where the
-   --       name of the entity is prefixed by "_ghost_" regardless of whether
-   --       the Ghost policy is Check or Ignore. WARNING: This switch may cause
-   --       linking issues related to Ghost entities declared with Ghost policy
-   --       Check.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

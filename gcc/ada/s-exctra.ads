@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2014, AdaCore                     --
+--                     Copyright (C) 2000-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,10 +61,14 @@ package System.Exception_Traces is
       --  explicit or due to a specific language rule, within the context of a
       --  task or not.
 
-      Unhandled_Raise
+      Unhandled_Raise,
       --  Denotes the raise events corresponding to exceptions for which there
-      --  is no user defined handler, in particular, when a task dies due to an
-      --  unhandled exception.
+      --  is no user defined handler. This includes unhandled exceptions in
+      --  task bodies.
+
+      Unhandled_Raise_In_Main
+      --  Same as Unhandled_Raise, except exceptions in task bodies are not
+      --  included.
      );
 
    --  The following procedures can be used to activate and deactivate
