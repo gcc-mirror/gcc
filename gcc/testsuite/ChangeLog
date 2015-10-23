@@ -2,8 +2,8 @@
 	    Andrew Pinski  <apinski@cavium.com>
 
 	PR rtl-optimization/67736
-	* combine.c (simplify_comparison): Use gen_lowpart_or_truncate instead
-	of gen_lowpart.
+	* gcc.dg/torture/pr67736.c: New test.
+	* gcc.dg/combine-subregs.c: New test.
 
 2015-10-23  Alan Hayward <alan.hayward@arm.com>
 
