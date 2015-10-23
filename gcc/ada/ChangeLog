@@ -1,3 +1,7 @@
+2015-10-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-exextr.adb, sem_ch6.adb, sem_ch13.adb: Minor reformatting.
+
 2015-10-23  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-taskin.ads: Minor code clean up.

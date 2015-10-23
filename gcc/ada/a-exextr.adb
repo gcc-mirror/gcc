@@ -85,9 +85,11 @@ package body Exception_Traces is
       if not Excep.Id.Not_Handled_By_Others
         and then
           (Exception_Trace = Every_Raise
-            or else (Is_Unhandled
-                       and then (Exception_Trace = Unhandled_Raise
-                         or else Exception_Trace = Unhandled_Raise_In_Main)))
+            or else
+              (Is_Unhandled
+                and then
+                  (Exception_Trace = Unhandled_Raise
+                    or else Exception_Trace = Unhandled_Raise_In_Main)))
       then
          --  Exception trace messages need to be protected when several tasks
          --  can issue them at the same time.

@@ -620,8 +620,8 @@ package body Sem_Ch6 is
       --  Function result subtype
 
       procedure Check_Aggregate_Accessibility (Aggr : Node_Id);
-      --  Apply legality rule of 6.5 (8.2) to the access discriminants of
-      --  an aggregate in a return statement.
+      --  Apply legality rule of 6.5 (8.2) to the access discriminants of an
+      --  aggregate in a return statement.
 
       procedure Check_Limited_Return (Expr : Node_Id);
       --  Check the appropriate (Ada 95 or Ada 2005) rules for returning
@@ -644,9 +644,7 @@ package body Sem_Ch6 is
          Obj    : Node_Id;
 
       begin
-         if Is_Record_Type (Typ)
-           and then Has_Discriminants (Typ)
-         then
+         if Is_Record_Type (Typ) and then Has_Discriminants (Typ) then
             Discr := First_Discriminant (Typ);
             Assoc := First (Component_Associations (Aggr));
             while Present (Discr) loop
@@ -656,8 +654,8 @@ package body Sem_Ch6 is
                     and then Attribute_Name (Expr) /= Name_Unrestricted_Access
                   then
                      Obj := Prefix (Expr);
-                     while Nkind_In (Obj,
-                       N_Selected_Component, N_Indexed_Component)
+                     while Nkind_In (Obj, N_Indexed_Component,
+                                          N_Selected_Component)
                      loop
                         Obj := Prefix (Obj);
                      end loop;
@@ -669,11 +667,11 @@ package body Sem_Ch6 is
                         null;
 
                      elsif Object_Access_Level (Obj) >
-                       Scope_Depth (Scope (Scope_Id))
+                             Scope_Depth (Scope (Scope_Id))
                      then
                         Error_Msg_N
-                           ("access discriminant in return aggregate " &
-                              "will be a dangling reference", Obj);
+                          ("access discriminant in return aggregate will be "
+                           & "a dangling reference", Obj);
                      end if;
                   end if;
                end if;
