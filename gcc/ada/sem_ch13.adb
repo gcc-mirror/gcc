@@ -4873,9 +4873,10 @@ package body Sem_Ch13 is
                      then
                         declare
                            Init : constant Node_Id :=
-                             Expression (Declaration_Node (U_Ent));
+                                    Expression (Declaration_Node (U_Ent));
                         begin
                            Set_Overlays_Constant (U_Ent);
+
                            if Present (Init)
                              and then Comes_From_Source (Init)
                            then
