@@ -1,5 +1,12 @@
 2015-10-23  Jason Merrill  <jason@redhat.com>
 
+	DR 1518
+	DR 1630
+	PR c++/54835
+	PR c++/60417
+	* call.c (convert_like_real): Value-initialization can't use
+	explicit constructors in C++11 and up.
+
 	PR c++/67813
 	* constexpr.c (cxx_eval_store_expression): Always use *valp if
 	set.
