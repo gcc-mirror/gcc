@@ -1,5 +1,11 @@
 2015-10-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/68055
+	* decl.c (gfc_match_decl_type_spec): Check for valid kind in old-style
+	declarations.
+
+2015-10-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/67805
 	* array.c (gfc_match_array_constructor): Check for error from type
 	spec matching.
