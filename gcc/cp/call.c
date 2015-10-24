@@ -6341,9 +6341,32 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	tree convfn = cand->fn;
 	unsigned i;
 
-	/* If we're initializing from {}, it's value-initialization.  Note
-	   that under the resolution of core 1630, value-initialization can
-	   use explicit constructors.  */
+	/* When converting from an init list we consider explicit
+	   constructors, but actually trying to call one is an error.  */
+	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
+	    /* Unless this is for direct-list-initialization.  */
+	    && !DIRECT_LIST_INIT_P (expr)
+	    /* And in C++98 a default constructor can't be explicit.  */
+	    && cxx_dialect >= cxx11)
+	  {
+	    if (!(complain & tf_error))
+	      return error_mark_node;
+	    location_t loc = location_of (expr);
+	    if (CONSTRUCTOR_NELTS (expr) == 0
+		&& FUNCTION_FIRST_USER_PARMTYPE (convfn) != void_list_node)
+	      {
+		if (pedwarn (loc, 0, "converting to %qT from initializer list "
+			     "would use explicit constructor %qD",
+			     totype, convfn))
+		  inform (loc, "in C++11 and above a default constructor "
+			  "can be explicit");
+	      }
+	    else
+	      error ("converting to %qT from initializer list would use "
+		     "explicit constructor %qD", totype, convfn);
+	  }
+
+	/* If we're initializing from {}, it's value-initialization.  */
 	if (BRACE_ENCLOSED_INITIALIZER_P (expr)
 	    && CONSTRUCTOR_NELTS (expr) == 0
 	    && TYPE_HAS_DEFAULT_CONSTRUCTOR (totype))
@@ -6357,18 +6380,6 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		TARGET_EXPR_DIRECT_INIT_P (expr) = direct;
 	      }
 	    return expr;
-	  }
-
-	/* When converting from an init list we consider explicit
-	   constructors, but actually trying to call one is an error.  */
-	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
-	    /* Unless this is for direct-list-initialization.  */
-	    && !DIRECT_LIST_INIT_P (expr))
-	  {
-	    if (!(complain & tf_error))
-	      return error_mark_node;
-	    error ("converting to %qT from initializer list would use "
-		   "explicit constructor %qD", totype, convfn);
 	  }
 
 	expr = mark_rvalue_use (expr);
