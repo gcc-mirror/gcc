@@ -1939,6 +1939,11 @@ kind_selector:
   if (m == MATCH_NO)
     m = MATCH_YES;		/* No kind specifier found.  */
 
+  /* gfortran may have matched REAL(a=1), which is the keyword form of the
+     intrinsic procedure.  */
+  if (ts->type == BT_REAL && m == MATCH_ERROR)
+    m = MATCH_NO;
+
   return m;
 }
 
