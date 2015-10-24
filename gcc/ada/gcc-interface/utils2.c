@@ -1038,8 +1038,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
-      gcc_checking_assert (TREE_CODE (
-				get_base_type (result_type)) == BOOLEAN_TYPE);
+      gcc_checking_assert
+	(TREE_CODE (get_base_type (result_type)) == BOOLEAN_TYPE);
       operation_type = left_base_type;
       left_operand = convert (operation_type, left_operand);
       right_operand = convert (operation_type, right_operand);
@@ -1051,8 +1051,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
     case LT_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
-      gcc_checking_assert (TREE_CODE (
-				get_base_type (result_type)) == BOOLEAN_TYPE);
+      gcc_checking_assert
+	(TREE_CODE (get_base_type (result_type)) == BOOLEAN_TYPE);
       /* If either operand is a NULL_EXPR, just return a new one.  */
       if (TREE_CODE (left_operand) == NULL_EXPR)
 	return build2 (op_code, result_type,
@@ -1332,8 +1332,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
       break;
 
     case TRUTH_NOT_EXPR:
-      gcc_checking_assert (TREE_CODE (
-				get_base_type (result_type)) == BOOLEAN_TYPE);
+      gcc_checking_assert
+	(TREE_CODE (get_base_type (result_type)) == BOOLEAN_TYPE);
       result = invert_truthvalue_loc (EXPR_LOCATION (operand), operand);
       /* When not optimizing, fold the result as invert_truthvalue_loc
 	 doesn't fold the result of comparisons.  This is intended to undo
