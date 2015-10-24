@@ -9,7 +9,6 @@ implicit none
 
 type t
   character (a) :: arr (1) = [ "a" ]
-  ! { dg-error "no IMPLICIT type" "" { target *-*-* } 11 }
   ! { dg-error "specification expression" "" { target *-*-* } 11 }
 end type t
 

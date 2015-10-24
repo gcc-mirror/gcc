@@ -17,14 +17,14 @@ CONTAINS
     test1 = "foobar"
   END FUNCTION test1
 
-  CHARACTER(len=x) FUNCTION test2 (x) ! { dg-bogus "used before|of INTEGER" }
+  CHARACTER(len=x) FUNCTION test2 (x) ! { dg-error "of INTEGER" }
     IMPLICIT INTEGER(a-z)
     test2 = "foobar"
   END FUNCTION test2
 
 END MODULE testmod
   
-CHARACTER(len=i) FUNCTION test3 (i) ! { dg-bogus "used before|of INTEGER" }
+CHARACTER(len=i) FUNCTION test3 (i)
   ! i is IMPLICIT INTEGER by default
   test3 = "foobar"
 END FUNCTION test3

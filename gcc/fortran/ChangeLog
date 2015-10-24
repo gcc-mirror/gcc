@@ -1,3 +1,12 @@
+2015-10-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/67805
+	* array.c (gfc_match_array_constructor): Check for error from type
+	spec matching.
+	* decl.c (char_len_param_value): Check for valid of charlen parameter.
+	Reap dead code dating to 2008.
+	match.c (gfc_match_type_spec): Special case the keyword use in REAL.
+
 2015-10-23  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* trans-common.c (create_common): Adjust to use flag_checking.
