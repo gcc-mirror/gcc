@@ -1,3 +1,8 @@
+2015-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (async): Use deferred function on exception.
+	* testsuite/30_threads/async/except.cc: New.
+
 2015-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (__cpp_lib_bool_constant): Define.
