@@ -1,5 +1,22 @@
 2015-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (__invoke_impl): New overloads.
+	(__invoke): Replace with a single function calling __invoke_impl.
+	(invoke): Add C++17 std::invoke.
+	(reference_wrapper::operator()): Qualify call to __invoke.
+	(_Mem_fn_traits_base, _Mem_fn_traits): Remove unused typedefs.
+	(_Mem_fn_base): Remove unused typedefs and implement call operator in
+	terms of __invoke.
+	* include/std/future (__future_base::_Async_state_commonV2): Do not
+	pass reference_wrapper as object argument to call_once.
+	* include/std/type_traits (result_of): Define nested __invoke_type.
+	Handle reference_wrapper as per LWG 2219.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error directives.
+	* testsuite/20_util/function_objects/mem_fn/55463.cc: Remove tests
+	using member functions of reference_wrapper.
+
+2015-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/std/future (async): Use deferred function on exception.
 	* testsuite/30_threads/async/except.cc: New.
 
