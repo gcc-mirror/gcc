@@ -3250,7 +3250,7 @@ build_array_ref (tree desc, tree offset, tree decl, tree vptr)
     {
       type = gfc_get_element_type (type);
       tmp = TREE_OPERAND (cdecl, 0);
-      tmp = gfc_get_class_array_ref (offset, tmp);
+      tmp = gfc_get_class_array_ref (offset, tmp, NULL_TREE);
       tmp = fold_convert (build_pointer_type (type), tmp);
       tmp = build_fold_indirect_ref_loc (input_location, tmp);
       return tmp;
@@ -7107,9 +7107,20 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	    }
 	  else if (GFC_ARRAY_TYPE_P (TREE_TYPE (desc)) || se->use_offset)
 	    {
+	      bool toonebased;
 	      tmp = gfc_conv_array_lbound (desc, n);
+	      toonebased = integer_onep (tmp);
+	      // lb(arr) - from (- start + 1)
 	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				     TREE_TYPE (base), tmp, from);
+	      if (onebased && toonebased)
+		{
+		  tmp = fold_build2_loc (input_location, MINUS_EXPR,
+					 TREE_TYPE (base), tmp, start);
+		  tmp = fold_build2_loc (input_location, PLUS_EXPR,
+					 TREE_TYPE (base), tmp,
+					 gfc_index_one_node);
+		}
 	      tmp = fold_build2_loc (input_location, MULT_EXPR,
 				     TREE_TYPE (base), tmp,
 				     gfc_conv_array_stride (desc, n));
@@ -7183,12 +7194,13 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
   /* For class arrays add the class tree into the saved descriptor to
      enable getting of _vptr and the like.  */
   if (expr->expr_type == EXPR_VARIABLE && VAR_P (desc)
-      && IS_CLASS_ARRAY (expr->symtree->n.sym)
-      && DECL_LANG_SPECIFIC (expr->symtree->n.sym->backend_decl))
+      && IS_CLASS_ARRAY (expr->symtree->n.sym))
     {
       gfc_allocate_lang_decl (desc);
       GFC_DECL_SAVED_DESCRIPTOR (desc) =
-	  GFC_DECL_SAVED_DESCRIPTOR (expr->symtree->n.sym->backend_decl);
+	  DECL_LANG_SPECIFIC (expr->symtree->n.sym->backend_decl) ?
+	    GFC_DECL_SAVED_DESCRIPTOR (expr->symtree->n.sym->backend_decl)
+	  : expr->symtree->n.sym->backend_decl;
     }
   if (!se->direct_byref || se->byref_noassign)
     {

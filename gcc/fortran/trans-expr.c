@@ -1039,9 +1039,10 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
    of the referenced element.  */
 
 tree
-gfc_get_class_array_ref (tree index, tree class_decl)
+gfc_get_class_array_ref (tree index, tree class_decl, tree data_comp)
 {
-  tree data = gfc_class_data_get (class_decl);
+  tree data = data_comp != NULL_TREE ? data_comp :
+				       gfc_class_data_get (class_decl);
   tree size = gfc_class_vtab_size_get (class_decl);
   tree offset = fold_build2_loc (input_location, MULT_EXPR,
 				 gfc_array_index_type,
@@ -1075,6 +1076,7 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
   tree stdcopy;
   tree extcopy;
   tree index;
+  bool is_from_desc = false, is_to_class = false;
 
   args = NULL;
   /* To prevent warnings on uninitialized variables.  */
@@ -1088,7 +1090,19 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
   fcn_type = TREE_TYPE (TREE_TYPE (fcn));
 
   if (from != NULL_TREE)
-    from_data = gfc_class_data_get (from);
+    {
+      is_from_desc = GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (from));
+      if (is_from_desc)
+	{
+	  from_data = from;
+	  from = GFC_DECL_SAVED_DESCRIPTOR (from);
+	}
+      else
+	{
+	  from_data = gfc_class_data_get (from);
+	  is_from_desc = GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (from_data));
+	}
+     }
   else
     from_data = gfc_class_vtab_def_init_get (to);
 
@@ -1100,9 +1114,16 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
 	from_len = integer_zero_node;
     }
 
-  to_data = gfc_class_data_get (to);
-  if (unlimited)
-    to_len = gfc_class_len_get (to);
+  if (GFC_CLASS_TYPE_P (TREE_TYPE (to)))
+    {
+      is_to_class = true;
+      to_data = gfc_class_data_get (to);
+      if (unlimited)
+	to_len = gfc_class_len_get (to);
+    }
+  else
+    /* When to is a BT_DERIVED and not a BT_CLASS, then to_data == to.  */
+    to_data = to;
 
   if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (to_data)))
     {
@@ -1118,15 +1139,23 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
       nelems = gfc_evaluate_now (tmp, &body);
       index = gfc_create_var (gfc_array_index_type, "S");
 
-      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (from_data)))
+      if (is_from_desc)
 	{
-	  from_ref = gfc_get_class_array_ref (index, from);
+	  from_ref = gfc_get_class_array_ref (index, from, from_data);
 	  vec_safe_push (args, from_ref);
 	}
       else
         vec_safe_push (args, from_data);
 
-      to_ref = gfc_get_class_array_ref (index, to);
+      if (is_to_class)
+	to_ref = gfc_get_class_array_ref (index, to, to_data);
+      else
+	{
+	  tmp = gfc_conv_array_data (to);
+	  tmp = build_fold_indirect_ref_loc (input_location, tmp);
+	  to_ref = gfc_build_addr_expr (NULL_TREE,
+					gfc_build_array_ref (tmp, index, to));
+	}
       vec_safe_push (args, to_ref);
 
       tmp = build_call_vec (fcn_type, fcn, args);
@@ -1183,7 +1212,7 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
     }
   else
     {
-      gcc_assert (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (from_data)));
+      gcc_assert (!is_from_desc);
       vec_safe_push (args, from_data);
       vec_safe_push (args, to_data);
       stdcopy = build_call_vec (fcn_type, fcn, args);
