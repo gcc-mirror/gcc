@@ -1,5 +1,7 @@
 2015-10-25  John David Anglin  <danglin@gcc.gnu.org>
 
+	* config/pa/som.h (EH_FRAME_THROUGH_COLLECT2): Define.
+
 	PR middle-end/68079
 	* dojump.c (do_compare_and_jump): Canonicalize both function and
 	method types.
