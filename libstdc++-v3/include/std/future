@@ -1641,7 +1641,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // the shared state, whichever happens first.
     virtual void _M_complete_async() { _M_join(); }
 
-    void _M_join() { std::call_once(_M_once, &thread::join, ref(_M_thread)); }
+    void _M_join() { std::call_once(_M_once, &thread::join, &_M_thread); }
 
     thread _M_thread;
     once_flag _M_once;
