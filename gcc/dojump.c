@@ -1217,12 +1217,12 @@ do_compare_and_jump (tree treeop0, tree treeop1, enum rtx_code signed_code,
      If one side isn't, we want a noncanonicalized comparison.  See PR
      middle-end/17564.  */
   if (HAVE_canonicalize_funcptr_for_compare
-      && TREE_CODE (TREE_TYPE (treeop0)) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (treeop0)))
-          == FUNCTION_TYPE
-      && TREE_CODE (TREE_TYPE (treeop1)) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (treeop1)))
-          == FUNCTION_TYPE)
+      && POINTER_TYPE_P (TREE_TYPE (treeop0))
+      && POINTER_TYPE_P (TREE_TYPE (treeop1))
+      && (TREE_CODE (TREE_TYPE (TREE_TYPE (treeop0))) == FUNCTION_TYPE
+	  || TREE_CODE (TREE_TYPE (TREE_TYPE (treeop0))) == METHOD_TYPE)
+      && (TREE_CODE (TREE_TYPE (TREE_TYPE (treeop1))) == FUNCTION_TYPE
+	  || TREE_CODE (TREE_TYPE (TREE_TYPE (treeop1))) == METHOD_TYPE))
     {
       rtx new_op0 = gen_reg_rtx (mode);
       rtx new_op1 = gen_reg_rtx (mode);
