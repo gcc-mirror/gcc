@@ -1,3 +1,13 @@
+2015-10-25  Andre Vehreschild  <vehre@gmx.de>
+
+        PR fortran/66927
+        PR fortran/67044
+	* gfortran.dg/allocate_with_source_10.f08: New test.
+	* gfortran.dg/allocate_with_source_11.f08: New test.
+	* gfortran.dg/class_array_15.f03: Changed count of expected
+	_builtin_frees to 11. One step of temporaries is spared, therefore
+	the allocatable component of that temporary is not to be freeed.
+
 2015-10-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68055

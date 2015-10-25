@@ -1,3 +1,20 @@
+2015-10-25  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/66927
+	PR fortran/67044	
+	* trans-array.c (build_array_ref): Modified call to 
+	gfc_get_class_array_ref to adhere to new interface.
+	(gfc_conv_expr_descriptor): For one-based arrays that
+	are filled by a loop starting at one the start index of the
+	source array has to be mangled into the offset.
+	* trans-expr.c (gfc_get_class_array_ref): When the tree to get
+	the _data component is present already, add a way to supply it.
+	(gfc_copy_class_to_class): Allow to copy to a derived type also.
+	* trans-stmt.c (gfc_trans_allocate): Do not conv_expr_descriptor
+	for functions returning	a class or derived object. Get the
+	reference instead.
+	* trans.h: Interface change of gfc_get_class_array_ref.
+
 2015-10-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68055
