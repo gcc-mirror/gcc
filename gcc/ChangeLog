@@ -1,10 +1,15 @@
+2015-10-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68084
+	* config/i386/i386.c (ix86_md_asm_adjust) [case 'a']: Use NE code
+	for =@ccae.
+
 2015-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/pr67600
 	* ipa-polymorphic-call.c
 	(ipa_polymorphic_call_context::get_dynamic_type): Do not confuse
 	instance offset with offset of outer type.
-	* g++.dg/torture/pr67600.C: New testcase.
 
 2015-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
