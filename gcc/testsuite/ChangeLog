@@ -1,3 +1,8 @@
+2015-10-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68084
+	* gcc.target/i386/pr68084.c: New test.
+
 2015-10-25  Andre Vehreschild  <vehre@gmx.de>
 
         PR fortran/66927

@@ -46934,7 +46934,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 	  if (con[1] == 0)
 	    mode = CCAmode, code = EQ;
 	  else if (con[1] == 'e' && con[2] == 0)
-	    mode = CCCmode, code = EQ;
+	    mode = CCCmode, code = NE;
 	  break;
 	case 'b':
 	  if (con[1] == 0)
