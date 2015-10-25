@@ -1,3 +1,7 @@
+2015-10-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/Wno-frame-address.C: Skip on hppa*-*-*.
+
 2015-10-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/68084
