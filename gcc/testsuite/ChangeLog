@@ -1,3 +1,14 @@
+2015-01-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67171
+	* gfortran.dg/allocate_with_source_12.f03: New test
+
+	PR fortran/61819
+	* gfortran.dg/allocate_with_source_13.f03: New test
+
+	PR fortran/61830
+	* gfortran.dg/allocate_with_source_14.f03: New test
+
 2015-10-25  John David Anglin  <danglin@gcc.gnu.org>
 
 	* g++.dg/Wno-frame-address.C: Skip on hppa*-*-*.

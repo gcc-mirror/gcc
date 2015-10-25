@@ -271,15 +271,29 @@ gfc_expr *
 gfc_find_and_cut_at_last_class_ref (gfc_expr *e)
 {
   gfc_expr *base_expr;
-  gfc_ref *ref, *class_ref, *tail;
+  gfc_ref *ref, *class_ref, *tail, *array_ref;
 
   /* Find the last class reference.  */
   class_ref = NULL;
+  array_ref = NULL;
   for (ref = e->ref; ref; ref = ref->next)
     {
+      if (ref->type == REF_ARRAY
+	  && ref->u.ar.type != AR_ELEMENT)
+	array_ref = ref;
+
       if (ref->type == REF_COMPONENT
 	  && ref->u.c.component->ts.type == BT_CLASS)
+	{
+	  /* Component to the right of a part reference with nonzero rank
+	     must not have the ALLOCATABLE attribute.  If attempts are
+	     made to reference such a component reference, an error results
+	     followed by anICE.  */
+	  if (array_ref
+	      && CLASS_DATA (ref->u.c.component)->attr.allocatable)
+	    return NULL;
 	class_ref = ref;
+	}
 
       if (ref->next == NULL)
 	break;
@@ -320,47 +334,37 @@ gfc_find_and_cut_at_last_class_ref (gfc_expr *e)
 void
 gfc_reset_vptr (stmtblock_t *block, gfc_expr *e)
 {
-  gfc_expr *rhs, *lhs = gfc_copy_expr (e);
   gfc_symbol *vtab;
-  tree tmp;
-  gfc_ref *ref;
+  tree vptr;
+  tree vtable;
+  gfc_se se;
 
-  /* If we have a class array, we need go back to the class
-     container.  */
-  if (lhs->ref && lhs->ref->next && !lhs->ref->next->next
-      && lhs->ref->next->type == REF_ARRAY
-      && lhs->ref->next->u.ar.type == AR_FULL
-      && lhs->ref->type == REF_COMPONENT
-      && strcmp (lhs->ref->u.c.component->name, "_data") == 0)
-    {
-      gfc_free_ref_list (lhs->ref);
-      lhs->ref = NULL;
-    }
+  /* Evaluate the expression and obtain the vptr from it.  */
+  gfc_init_se (&se, NULL);
+  if (e->rank)
+    gfc_conv_expr_descriptor (&se, e);
   else
-    for (ref = lhs->ref; ref; ref = ref->next)
-      if (ref->next && ref->next->next && !ref->next->next->next
-	  && ref->next->next->type == REF_ARRAY
-	  && ref->next->next->u.ar.type == AR_FULL
-	  && ref->next->type == REF_COMPONENT
-	  && strcmp (ref->next->u.c.component->name, "_data") == 0)
-	{
-	  gfc_free_ref_list (ref->next);
-	  ref->next = NULL;
-	}
+    gfc_conv_expr (&se, e);
+  gfc_add_block_to_block (block, &se.pre);
+  vptr = gfc_get_vptr_from_expr (se.expr);
 
-  gfc_add_vptr_component (lhs);
+  /* If a vptr is not found, we can do nothing more.  */
+  if (vptr == NULL_TREE)
+    return;
 
   if (UNLIMITED_POLY (e))
-    rhs = gfc_get_null_expr (NULL);
+    gfc_add_modify (block, vptr, build_int_cst (TREE_TYPE (vptr), 0));
   else
     {
+      /* Return the vptr to the address of the declared type.  */
       vtab = gfc_find_derived_vtab (e->ts.u.derived);
-      rhs = gfc_lval_expr_from_sym (vtab);
+      vtable = vtab->backend_decl;
+      if (vtable == NULL_TREE)
+	vtable = gfc_get_symbol_decl (vtab);
+      vtable = gfc_build_addr_expr (NULL, vtable);
+      vtable = fold_convert (TREE_TYPE (vptr), vtable);
+      gfc_add_modify (block, vptr, vtable);
     }
-  tmp = gfc_trans_pointer_assignment (lhs, rhs);
-  gfc_add_expr_to_block (block, tmp);
-  gfc_free_expr (lhs);
-  gfc_free_expr (rhs);
 }
 
 
@@ -372,6 +376,8 @@ gfc_reset_len (stmtblock_t *block, gfc_expr *expr)
   gfc_expr *e;
   gfc_se se_len;
   e = gfc_find_and_cut_at_last_class_ref (expr);
+  if (e == NULL)
+    return;
   gfc_add_len_component (e);
   gfc_init_se (&se_len, NULL);
   gfc_conv_expr (&se_len, e);

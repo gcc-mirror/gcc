@@ -1,8 +1,25 @@
+2015-01-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67171
+	* trans-array.c (structure_alloc_comps): On deallocation of
+	class components, reset the vptr to the declared type vtable
+	and reset the _len field of unlimited polymorphic components.
+	*trans-expr.c (gfc_find_and_cut_at_last_class_ref): Bail out on
+	allocatable component references to the right of part reference
+	with non-zero rank and return NULL.
+	(gfc_reset_vptr): Simplify this function by using the function
+	gfc_get_vptr_from_expr. Return if the vptr is NULL_TREE.
+	(gfc_reset_len): If gfc_find_and_cut_at_last_class_ref returns
+	NULL return.
+	* trans-stmt.c (gfc_trans_allocate): Rely on the use of
+	gfc_trans_assignment if expr3 is a variable expression since
+	this deals correctly with array sections.
+
 2015-10-25  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/66927
-	PR fortran/67044	
-	* trans-array.c (build_array_ref): Modified call to 
+	PR fortran/67044
+	* trans-array.c (build_array_ref): Modified call to
 	gfc_get_class_array_ref to adhere to new interface.
 	(gfc_conv_expr_descriptor): For one-based arrays that
 	are filled by a loop starting at one the start index of the

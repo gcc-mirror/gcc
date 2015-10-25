@@ -5379,8 +5379,13 @@ gfc_trans_allocate (gfc_code * code)
 	     will benefit of every enhancements gfc_trans_assignment ()
 	     gets.
 	     No need to check whether e3_is is E3_UNSET, because that is
-	     done by expr3 != NULL_TREE.  */
-	  if (e3_is != E3_MOLD && expr3 != NULL_TREE
+	     done by expr3 != NULL_TREE.
+	     Exclude variables since the following block does not handle
+	     array sections. In any case, there is no harm in sending
+	     variables to gfc_trans_assignment because there is no
+	     evaluation of variables.  */
+	  if (code->expr3->expr_type != EXPR_VARIABLE
+	      && e3_is != E3_MOLD && expr3 != NULL_TREE
 	      && DECL_P (expr3) && DECL_ARTIFICIAL (expr3))
 	    {
 	      /* Build a temporary symtree and symbol.  Do not add it to

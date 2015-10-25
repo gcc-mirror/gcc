@@ -8024,6 +8024,38 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 					 build_int_cst (TREE_TYPE (comp), 0));
 		}
 	      gfc_add_expr_to_block (&tmpblock, tmp);
+
+	      /* Finally, reset the vptr to the declared type vtable and, if
+		 necessary reset the _len field.
+
+		 First recover the reference to the component and obtain
+		 the vptr.  */
+	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+				     decl, cdecl, NULL_TREE);
+	      tmp = gfc_class_vptr_get (comp);
+
+	      if (UNLIMITED_POLY (c))
+		{
+		  /* Both vptr and _len field should be nulled.  */
+		  gfc_add_modify (&tmpblock, tmp,
+				  build_int_cst (TREE_TYPE (tmp), 0));
+		  tmp = gfc_class_len_get (comp);
+		  gfc_add_modify (&tmpblock, tmp,
+				  build_int_cst (TREE_TYPE (tmp), 0));
+		}
+	      else
+		{
+		  /* Build the vtable address and set the vptr with it.  */
+		  tree vtab;
+		  gfc_symbol *vtable;
+		  vtable = gfc_find_derived_vtab (c->ts.u.derived);
+		  vtab = vtable->backend_decl;
+		  if (vtab == NULL_TREE)
+		    vtab = gfc_get_symbol_decl (vtable);
+		  vtab = gfc_build_addr_expr (NULL, vtab);
+		  vtab = fold_convert (TREE_TYPE (tmp), vtab);
+		  gfc_add_modify (&tmpblock, tmp, vtab);
+		}
 	    }
 
 	  if (cmp_has_alloc_comps
