@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-skip-if "Cannot access arbitrary stack frames." { arm*-*-* } }
+// { dg-skip-if "Cannot access arbitrary stack frames." { arm*-*-* hppa*-*-* } }
 // { dg-options "-Werror" }
 
 // Verify that -Wframe-address is not enabled by default by enabling
