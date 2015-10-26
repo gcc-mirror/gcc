@@ -1,5 +1,19 @@
 2015-10-26  Yannick Moy  <moy@adacore.com>
 
+	* lib-xref-spark_specific.adb (Traverse_Protected_Declaration): New
+	procedure for traversal.
+	(Add_SPARK_Xrefs): Remove debugging code.
+	(Traverse_Declaration_Or_Statement): Call the new traversal
+	procedure.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Pragma
+	Extensions_Visible can now appear on an abstract subprogram
+	declaration.
+
+2015-10-26  Yannick Moy  <moy@adacore.com>
+
 	* lib-xref-spark_specific.adb (Add_SPARK_Xrefs): Use character 'r' to
 	denote a reference to a constant which may have variable input, and
 	thus may be treated as a variable in GNATprove, instead of the

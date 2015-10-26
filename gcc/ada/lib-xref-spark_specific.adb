@@ -124,10 +124,6 @@ package body SPARK_Specific is
      (N            : Node_Id;
       Process      : Node_Processing;
       Inside_Stubs : Boolean);
-   procedure Traverse_Package_Declaration
-     (N            : Node_Id;
-      Process      : Node_Processing;
-      Inside_Stubs : Boolean);
    procedure Traverse_Subprogram_Body
      (N            : Node_Id;
       Process      : Node_Processing;
@@ -483,12 +479,7 @@ package body SPARK_Specific is
          begin
             for Index in SPARK_Scope_Table.First .. S - 1 loop
                if SPARK_Scope_Table.Table (Index).Scope_Entity = E then
-                  declare
-                     Dummy : constant SPARK_Scope_Record :=
-                               SPARK_Scope_Table.Table (Index);
-                  begin
-                     return True;
-                  end;
+                  return True;
                end if;
             end loop;
 
@@ -523,13 +514,13 @@ package body SPARK_Specific is
       is
       begin
          --  The only references of interest on callable entities are calls. On
-         --  non-callable entities, the only references of interest are reads
-         --  and writes.
+         --  uncallable entities, the only references of interest are reads and
+         --  writes.
 
          if Ekind (E) in Overloadable_Kind then
             return Typ = 's';
 
-         --  Objects of Task type or protected type are not SPARK references
+         --  Objects of task or protected types are not SPARK references
 
          elsif Present (Etype (E))
            and then Ekind (Etype (E)) in Concurrent_Kind
@@ -1254,7 +1245,14 @@ package body SPARK_Specific is
    begin
       case Nkind (N) is
          when N_Package_Declaration =>
-            Traverse_Package_Declaration (N, Process, Inside_Stubs);
+            declare
+               Spec : constant Node_Id := Specification (N);
+            begin
+               Traverse_Declarations_Or_Statements
+                 (Visible_Declarations (Spec), Process, Inside_Stubs);
+               Traverse_Declarations_Or_Statements
+                 (Private_Declarations (Spec), Process, Inside_Stubs);
+            end;
 
          when N_Package_Body =>
             if Ekind (Defining_Entity (N)) /= E_Generic_Package then
@@ -1297,12 +1295,6 @@ package body SPARK_Specific is
                end;
             end if;
 
-         when N_Protected_Definition =>
-            Traverse_Declarations_Or_Statements
-              (Visible_Declarations (N), Process, Inside_Stubs);
-            Traverse_Declarations_Or_Statements
-              (Private_Declarations (N), Process, Inside_Stubs);
-
          when N_Protected_Body =>
             Traverse_Protected_Body (N, Process, Inside_Stubs);
 
@@ -1317,6 +1309,16 @@ package body SPARK_Specific is
                   end if;
                end;
             end if;
+
+         when N_Protected_Type_Declaration | N_Single_Protected_Declaration =>
+            declare
+               Def : constant Node_Id := Protected_Definition (N);
+            begin
+               Traverse_Declarations_Or_Statements
+                 (Visible_Declarations (Def), Process, Inside_Stubs);
+               Traverse_Declarations_Or_Statements
+                 (Private_Declarations (Def), Process, Inside_Stubs);
+            end;
 
          when N_Task_Definition =>
             Traverse_Declarations_Or_Statements
@@ -1480,23 +1482,6 @@ package body SPARK_Specific is
       Traverse_Handled_Statement_Sequence
         (Handled_Statement_Sequence (N), Process, Inside_Stubs);
    end Traverse_Package_Body;
-
-   ----------------------------------
-   -- Traverse_Package_Declaration --
-   ----------------------------------
-
-   procedure Traverse_Package_Declaration
-     (N            : Node_Id;
-      Process      : Node_Processing;
-      Inside_Stubs : Boolean)
-   is
-      Spec : constant Node_Id := Specification (N);
-   begin
-      Traverse_Declarations_Or_Statements
-        (Visible_Declarations (Spec), Process, Inside_Stubs);
-      Traverse_Declarations_Or_Statements
-        (Private_Declarations (Spec), Process, Inside_Stubs);
-   end Traverse_Package_Declaration;
 
    -----------------------------
    -- Traverse_Protected_Body --
