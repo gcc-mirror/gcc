@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ generic
    --  The array which is a sequence of element
 
    type Element_Set is private;
-   --  This type represent a set of elements. This set does not defined a
+   --  This type represent a set of elements. This set does not define a
    --  specific order of the elements. The conversion of a sequence to a
    --  set and membership tests in the set is performed using the routines
    --  To_Set and Is_In defined below.
@@ -74,7 +74,7 @@ package GNAT.Array_Split is
    type Slice_Set is private;
    --  This type uses by-reference semantics. This is a set of slices as
    --  returned by Create or Set routines below. The abstraction represents
-   --  a set of items. Each item is a part of the original string named a
+   --  a set of items. Each item is a part of the original array named a
    --  Slice. It is possible to access individual slices by using the Slice
    --  routine below. The first slice in the Set is at the position/index
    --  1. The total number of slices in the set is returned by Slice_Count.
