@@ -1,3 +1,13 @@
+2015-10-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/66927
+	* trans-array.c (evaluate_bound): For deferred length arrays get the
+	bounds directly from the descriptor, i.e., prevent using constant
+	zero lower bound from the gfc_conv_array_lbound () routine.
+	(gfc_conv_section_startstride): Hand deferred array status to
+	evaluate_bound ().
+	(gfc_conv_expr_descriptor): Same.
+
 2015-01-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/67171
