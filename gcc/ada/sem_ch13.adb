@@ -1208,39 +1208,28 @@ package body Sem_Ch13 is
       procedure Decorate (Asp : Node_Id; Prag : Node_Id);
       --  Establish linkages between an aspect and its corresponding pragma
 
-      procedure Insert_After_SPARK_Mode
-        (Prag    : Node_Id;
-         Ins_Nod : Node_Id;
-         Decls   : List_Id);
+      procedure Insert_Pragma
+        (Prag        : Node_Id;
+         Is_Instance : Boolean := False);
       --  Subsidiary to the analysis of aspects
       --    Abstract_State
-      --    Ghost
-      --    Initializes
-      --    Initial_Condition
-      --    Refined_State
-      --  Insert node Prag before node Ins_Nod. If Ins_Nod is for pragma
-      --  SPARK_Mode, then skip SPARK_Mode. Decls is the associated declarative
-      --  list where Prag is to reside.
-
-      procedure Insert_Pragma (Prag : Node_Id);
-      --  Subsidiary to the analysis of aspects
       --    Attach_Handler
       --    Contract_Cases
       --    Depends
+      --    Ghost
       --    Global
+      --    Initial_Condition
+      --    Initializes
       --    Post
       --    Pre
       --    Refined_Depends
       --    Refined_Global
+      --    Refined_State
       --    SPARK_Mode
       --    Warnings
       --  Insert pragma Prag such that it mimics the placement of a source
-      --  pragma of the same kind.
-      --
-      --    procedure Proc (Formal : ...) with Global => ...;
-      --
-      --    procedure Proc (Formal : ...);
-      --    pragma Global (...);
+      --  pragma of the same kind. Flag Is_Generic should be set when the
+      --  context denotes a generic instance.
 
       --------------
       -- Decorate --
@@ -1254,42 +1243,14 @@ package body Sem_Ch13 is
          Set_Parent                    (Prag, Asp);
       end Decorate;
 
-      -----------------------------
-      -- Insert_After_SPARK_Mode --
-      -----------------------------
-
-      procedure Insert_After_SPARK_Mode
-        (Prag    : Node_Id;
-         Ins_Nod : Node_Id;
-         Decls   : List_Id)
-      is
-         Decl : Node_Id := Ins_Nod;
-
-      begin
-         --  Skip SPARK_Mode
-
-         if Present (Decl)
-           and then Nkind (Decl) = N_Pragma
-           and then Pragma_Name (Decl) = Name_SPARK_Mode
-         then
-            Decl := Next (Decl);
-         end if;
-
-         if Present (Decl) then
-            Insert_Before (Decl, Prag);
-
-         --  Aitem acts as the last declaration
-
-         else
-            Append_To (Decls, Prag);
-         end if;
-      end Insert_After_SPARK_Mode;
-
       -------------------
       -- Insert_Pragma --
       -------------------
 
-      procedure Insert_Pragma (Prag : Node_Id) is
+      procedure Insert_Pragma
+        (Prag        : Node_Id;
+         Is_Instance : Boolean := False)
+      is
          Aux   : Node_Id;
          Decl  : Node_Id;
          Decls : List_Id;
@@ -1365,7 +1326,39 @@ package body Sem_Ch13 is
                Set_Visible_Declarations (Specification (N), Decls);
             end if;
 
-            Prepend_To (Decls, Prag);
+            --  The visible declarations of a generic instance have the
+            --  following structure:
+
+            --    <renamings of generic formals>
+            --    <renamings of internally-generated spec and body>
+            --    <first source declaration>
+
+            --  Insert the pragma before the first source declaration by
+            --  skipping the instance "header".
+
+            if Is_Instance then
+               Decl := First (Decls);
+               while Present (Decl) and then not Comes_From_Source (Decl) loop
+                  Decl := Next (Decl);
+               end loop;
+
+               --  The instance "header" is followed by at least one source
+               --  declaration.
+
+               if Present (Decl) then
+                  Insert_Before (Decl, Prag);
+
+               --  Otherwise the pragma is placed after the instance "header"
+
+               else
+                  Append_To (Decls, Prag);
+               end if;
+
+            --  Otherwise this is not a generic instance
+
+            else
+               Prepend_To (Decls, Prag);
+            end if;
 
          --  When the aspect is associated with a protected unit declaration,
          --  insert the generated pragma at the top of the visible declarations
@@ -2298,8 +2291,6 @@ package body Sem_Ch13 is
 
                when Aspect_Abstract_State => Abstract_State : declare
                   Context : Node_Id := N;
-                  Decl    : Node_Id;
-                  Decls   : List_Id;
 
                begin
                   --  When aspect Abstract_State appears on a generic package,
@@ -2318,54 +2309,12 @@ package body Sem_Ch13 is
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Abstract_State);
+
                      Decorate (Aspect, Aitem);
-
-                     Decls := Visible_Declarations (Specification (Context));
-
-                     --  In general pragma Abstract_State must be at the top
-                     --  of the existing visible declarations to emulate its
-                     --  source counterpart. The only exception to this is a
-                     --  generic instance in which case the pragma must be
-                     --  inserted after the association renamings.
-
-                     if Present (Decls) then
-                        Decl := First (Decls);
-
-                        --  The visible declarations of a generic instance have
-                        --  the following structure:
-
-                        --    <renamings of generic formals>
-                        --    <renamings of internally-generated spec and body>
-                        --    <first source declaration>
-
-                        --  The pragma must be inserted before the first source
-                        --  declaration, skip the instance "header".
-
-                        if Is_Generic_Instance (Defining_Entity (Context)) then
-                           while Present (Decl)
-                             and then not Comes_From_Source (Decl)
-                           loop
-                              Decl := Next (Decl);
-                           end loop;
-                        end if;
-
-                        --  When aspects Abstract_State, Ghost,
-                        --  Initial_Condition and Initializes are out of order,
-                        --  ensure that pragma SPARK_Mode is always at the top
-                        --  of the declarations to properly enabled/suppress
-                        --  errors.
-
-                        Insert_After_SPARK_Mode
-                          (Prag    => Aitem,
-                           Ins_Nod => Decl,
-                           Decls   => Decls);
-
-                     --  Otherwise the pragma forms a new declarative list
-
-                     else
-                        Set_Visible_Declarations
-                          (Specification (Context), New_List (Aitem));
-                     end if;
+                     Insert_Pragma
+                       (Prag        => Aitem,
+                        Is_Instance =>
+                          Is_Generic_Instance (Defining_Entity (Context)));
 
                   else
                      Error_Msg_NE
@@ -2526,10 +2475,7 @@ package body Sem_Ch13 is
                --  declarations or after an object, a [generic] subprogram, or
                --  a type declaration.
 
-               when Aspect_Ghost => Ghost : declare
-                  Decls : List_Id;
-
-               begin
+               when Aspect_Ghost =>
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
@@ -2537,40 +2483,8 @@ package body Sem_Ch13 is
                      Pragma_Name                  => Name_Ghost);
 
                   Decorate (Aspect, Aitem);
-
-                  --  When the aspect applies to a [generic] package, insert
-                  --  the pragma at the top of the visible declarations. This
-                  --  emulates the placement of a source pragma.
-
-                  if Nkind_In (N, N_Generic_Package_Declaration,
-                                  N_Package_Declaration)
-                  then
-                     Decls := Visible_Declarations (Specification (N));
-
-                     if No (Decls) then
-                        Decls := New_List;
-                        Set_Visible_Declarations (N, Decls);
-                     end if;
-
-                     --  When aspects Abstract_State, Ghost, Initial_Condition
-                     --  and Initializes are out of order, ensure that pragma
-                     --  SPARK_Mode is always at the top of the declarations to
-                     --  properly enabled/suppress errors.
-
-                     Insert_After_SPARK_Mode
-                       (Prag    => Aitem,
-                        Ins_Nod => First (Decls),
-                        Decls   => Decls);
-
-                  --  Otherwise the context is an object, [generic] subprogram
-                  --  or type declaration.
-
-                  else
-                     Insert_Pragma (Aitem);
-                  end if;
-
+                  Insert_Pragma (Aitem);
                   goto Continue;
-               end Ghost;
 
                --  Global
 
@@ -2604,7 +2518,6 @@ package body Sem_Ch13 is
 
                when Aspect_Initial_Condition => Initial_Condition : declare
                   Context : Node_Id := N;
-                  Decls   : List_Id;
 
                begin
                   --  When aspect Initial_Condition appears on a generic
@@ -2618,30 +2531,20 @@ package body Sem_Ch13 is
                   if Nkind_In (Context, N_Generic_Package_Declaration,
                                         N_Package_Declaration)
                   then
-                     Decls := Visible_Declarations (Specification (Context));
-
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  =>
                           Name_Initial_Condition);
+
                      Decorate (Aspect, Aitem);
+                     Insert_Pragma
+                       (Prag        => Aitem,
+                        Is_Instance =>
+                          Is_Generic_Instance (Defining_Entity (Context)));
 
-                     if No (Decls) then
-                        Decls := New_List;
-                        Set_Visible_Declarations (Context, Decls);
-                     end if;
-
-                     --  When aspects Abstract_State, Ghost, Initial_Condition
-                     --  and Initializes are out of order, ensure that pragma
-                     --  SPARK_Mode is always at the top of the declarations to
-                     --  properly enabled/suppress errors.
-
-                     Insert_After_SPARK_Mode
-                       (Prag    => Aitem,
-                        Ins_Nod => First (Decls),
-                        Decls   => Decls);
+                  --  Otherwise the context is illegal
 
                   else
                      Error_Msg_NE
@@ -2663,7 +2566,6 @@ package body Sem_Ch13 is
 
                when Aspect_Initializes => Initializes : declare
                   Context : Node_Id := N;
-                  Decls   : List_Id;
 
                begin
                   --  When aspect Initializes appears on a generic package,
@@ -2677,29 +2579,19 @@ package body Sem_Ch13 is
                   if Nkind_In (Context, N_Generic_Package_Declaration,
                                         N_Package_Declaration)
                   then
-                     Decls := Visible_Declarations (Specification (Context));
-
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Initializes);
+
                      Decorate (Aspect, Aitem);
+                     Insert_Pragma
+                       (Prag        => Aitem,
+                        Is_Instance =>
+                          Is_Generic_Instance (Defining_Entity (Context)));
 
-                     if No (Decls) then
-                        Decls := New_List;
-                        Set_Visible_Declarations (Context, Decls);
-                     end if;
-
-                     --  When aspects Abstract_State, Ghost, Initial_Condition
-                     --  and Initializes are out of order, ensure that pragma
-                     --  SPARK_Mode is always at the top of the declarations to
-                     --  properly enabled/suppress errors.
-
-                     Insert_After_SPARK_Mode
-                       (Prag    => Aitem,
-                        Ins_Nod => First (Decls),
-                        Decls   => Decls);
+                  --  Otherwise the context is illegal
 
                   else
                      Error_Msg_NE
@@ -2813,39 +2705,24 @@ package body Sem_Ch13 is
 
                --  Refined_State
 
-               when Aspect_Refined_State => Refined_State : declare
-                  Decls : List_Id;
+               when Aspect_Refined_State =>
 
-               begin
                   --  The corresponding pragma for Refined_State is inserted in
                   --  the declarations of the related package body. This action
                   --  synchronizes both the source and from-aspect versions of
                   --  the pragma.
 
                   if Nkind (N) = N_Package_Body then
-                     Decls := Declarations (N);
-
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Refined_State);
+
                      Decorate (Aspect, Aitem);
+                     Insert_Pragma (Aitem);
 
-                     if No (Decls) then
-                        Decls := New_List;
-                        Set_Declarations (N, Decls);
-                     end if;
-
-                     --  Pragma Refined_State must be inserted after pragma
-                     --  SPARK_Mode in the tree. This ensures that any error
-                     --  messages dependent on SPARK_Mode will be properly
-                     --  enabled/suppressed.
-
-                     Insert_After_SPARK_Mode
-                       (Prag    => Aitem,
-                        Ins_Nod => First (Decls),
-                        Decls   => Decls);
+                  --  Otherwise the context is illegal
 
                   else
                      Error_Msg_NE
@@ -2853,7 +2730,6 @@ package body Sem_Ch13 is
                   end if;
 
                   goto Continue;
-               end Refined_State;
 
                --  Relative_Deadline
 

@@ -1802,7 +1802,7 @@ package body Sem_Ch4 is
       --  call to a user-defined equality operator.
 
       --  For the predefined case, the result is Boolean, regardless of the
-      --  type of the  operands. The operands may even be limited, if they are
+      --  type of the operands. The operands may even be limited, if they are
       --  generic actuals. If they are overloaded, label the left argument with
       --  the common type that must be present, or with the type of the formal
       --  of the user-defined function.
@@ -3196,7 +3196,7 @@ package body Sem_Ch4 is
       --  Try_Indexed_Call and there is nothing else to do.
 
       if Is_Indexed
-        and then  Nkind (N) = N_Slice
+        and then Nkind (N) = N_Slice
       then
          return;
       end if;
@@ -5422,7 +5422,7 @@ package body Sem_Ch4 is
             --  and no further processing is required (this is the case of an
             --  operator constructed by Exp_Fixd for a fixed point operation)
             --  Otherwise add one interpretation with universal fixed result
-            --  If the operator is given in  functional notation, it comes
+            --  If the operator is given in functional notation, it comes
             --  from source and Fixed_As_Integer cannot apply.
 
             if (Nkind (N) not in N_Op

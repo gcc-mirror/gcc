@@ -149,7 +149,7 @@ package body Sem_Ch12 is
    --  However, for private types, this by itself does not insure that the
    --  proper VIEW of the entity is used (the full type may be visible at the
    --  point of generic definition, but not at instantiation, or vice-versa).
-   --  In  order to reference the proper view, we special-case any reference
+   --  In order to reference the proper view, we special-case any reference
    --  to private types in the generic object, by saving both views, one in
    --  the generic and one in the semantic copy. At time of instantiation, we
    --  check whether the two views are consistent, and exchange declarations if
@@ -708,7 +708,7 @@ package body Sem_Ch12 is
    --  If the instantiation happens textually before the body of the generic,
    --  the instantiation of the body must be analyzed after the generic body,
    --  and not at the point of instantiation. Such early instantiations can
-   --  happen if the generic and the instance appear in  a package declaration
+   --  happen if the generic and the instance appear in a package declaration
    --  because the generic body can only appear in the corresponding package
    --  body. Early instantiations can also appear if generic, instance and
    --  body are all in the declarative part of a subprogram or entry. Entities
@@ -807,7 +807,7 @@ package body Sem_Ch12 is
    --  Within the generic part, entities in the formal package are
    --  visible. To validate subsequent type declarations, indicate
    --  the correspondence between the entities in the analyzed formal,
-   --  and the entities in  the actual package. There are three packages
+   --  and the entities in the actual package. There are three packages
    --  involved in the instantiation of a formal package: the parent
    --  generic P1 which appears in the generic declaration, the fake
    --  instantiation P2 which appears in the analyzed generic, and whose
@@ -1101,8 +1101,8 @@ package body Sem_Ch12 is
       --  include an Others clause.
 
       procedure Process_Default (F : Entity_Id);
-      --  Add a copy of the declaration of generic formal  F to the list of
-      --  associations, and add an explicit box association for F  if there
+      --  Add a copy of the declaration of generic formal F to the list of
+      --  associations, and add an explicit box association for F if there
       --  is none yet, and the default comes from an Others_Choice.
 
       function Renames_Standard_Subprogram (Subp : Entity_Id) return Boolean;
@@ -1268,7 +1268,7 @@ package body Sem_Ch12 is
             --  insert actuals for those defaults, and cannot rely on their
             --  names to disambiguate them.
 
-            if Actual = First_Named  then
+            if Actual = First_Named then
                Next (First_Named);
 
             elsif Present (Actual) then
@@ -2883,7 +2883,7 @@ package body Sem_Ch12 is
          end if;
 
          --  Default name may be overloaded, in which case the interpretation
-         --  with the correct profile must be  selected, as for a renaming.
+         --  with the correct profile must be selected, as for a renaming.
          --  If the definition is an indexed component, it must denote a
          --  member of an entry family. If it is a selected component, it
          --  can be a protected operation.
@@ -4600,14 +4600,14 @@ package body Sem_Ch12 is
                Scope_Stack.Table (Scope_Stack.Last - J + 1).First_Use_Clause :=
                  Use_Clauses (J);
                Install_Use_Clauses (Use_Clauses (J));
-            end  loop;
+            end loop;
 
          else
             for J in reverse 1 .. Num_Scopes loop
                Scope_Stack.Table (Scope_Stack.Last - J + 1).First_Use_Clause :=
                  Use_Clauses (J);
                Install_Use_Clauses (Use_Clauses (J));
-            end  loop;
+            end loop;
          end if;
 
          --  Restore status of instances. If one of them is a body, make its
@@ -5897,7 +5897,7 @@ package body Sem_Ch12 is
            and then not Comes_From_Source (E1)
            and then Chars (E1) /= Chars (E2)
          then
-            while Present (E1) and then  Chars (E1) /= Chars (E2) loop
+            while Present (E1) and then Chars (E1) /= Chars (E2) loop
                Next_Entity (E1);
             end loop;
          end if;
@@ -7695,14 +7695,14 @@ package body Sem_Ch12 is
 
       begin
          E1 := First_Entity (P);
-         while Present (E1) and then  E1 /= Instance loop
+         while Present (E1) and then E1 /= Instance loop
             if Ekind (E1) = E_Package
               and then Nkind (Parent (E1)) = N_Package_Renaming_Declaration
             then
                if Renamed_Object (E1) = Pack then
                   return True;
 
-               elsif E1 = P or else  Renamed_Object (E1) = P then
+               elsif E1 = P or else Renamed_Object (E1) = P then
                   return False;
 
                elsif Is_Actual_Of_Previous_Formal (E1) then
@@ -8724,7 +8724,7 @@ package body Sem_Ch12 is
                   if Scop = Par_I then
                      null;
 
-                  --  If the next node is a source  body we must freeze in
+                  --  If the next node is a source body we must freeze in
                   --  the current scope as well.
 
                   elsif Present (Next (N))
@@ -9472,7 +9472,7 @@ package body Sem_Ch12 is
       --  same order.
 
       function Get_Formal_Entity (N : Node_Id) return Entity_Id;
-      --  Retrieve entity of defining entity of  generic formal parameter.
+      --  Retrieve entity of defining entity of generic formal parameter.
       --  Only the declarations of formals need to be considered when
       --  linking them to actuals, but the declarative list may include
       --  internal entities generated during analysis, and those are ignored.
@@ -9571,7 +9571,7 @@ package body Sem_Ch12 is
 
                Actual := Entity (Name (Original_Node (Formal_Node)));
 
-               --  The actual in the formal package declaration  may be a
+               --  The actual in the formal package declaration may be a
                --  renamed generic package, in which case we want to retrieve
                --  the original generic in order to traverse its formal part.
 
@@ -9710,7 +9710,7 @@ package body Sem_Ch12 is
       Analyze (Actual);
 
       if not Is_Entity_Name (Actual)
-        or else  Ekind (Entity (Actual)) /= E_Package
+        or else Ekind (Entity (Actual)) /= E_Package
       then
          Error_Msg_N
            ("expect package instance to instantiate formal", Actual);
@@ -12259,7 +12259,7 @@ package body Sem_Ch12 is
          end if;
 
          --  Verify that limitedness matches. If parent is a limited
-         --  interface then  the generic formal is not unless declared
+         --  interface then the generic formal is not unless declared
          --  explicitly so. If not declared limited, the actual cannot be
          --  limited (see AI05-0087).
 

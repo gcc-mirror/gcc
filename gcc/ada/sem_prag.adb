@@ -2760,6 +2760,10 @@ package body Sem_Prag is
       --  is the entity of the related subprogram. Subp_Decl is the declaration
       --  of the related subprogram. Sets flag Legal when the pragma is legal.
 
+      procedure Analyze_If_Present (Id : Pragma_Id);
+      --  Inspect the remainder of the list containing pragma N and look for
+      --  a pragma that matches Id. If found, analyze the pragma.
+
       procedure Analyze_Part_Of
         (Item_Id : Entity_Id;
          State   : Node_Id;
@@ -2887,11 +2891,6 @@ package body Sem_Prag is
       --  constrained subtypes, and for restrictions on finalizable components.
       --  UU_Typ is the related Unchecked_Union type. Flag In_Variant_Part
       --  should be set when Comp comes from a record variant.
-
-      procedure Check_Declaration_Order (First : Node_Id; Second : Node_Id);
-      --  Subsidiary routine to the analysis of pragmas Abstract_State,
-      --  Initial_Condition and Initializes. Determine whether pragma First
-      --  appears before pragma Second. If this is not the case, emit an error.
 
       procedure Check_Duplicate_Pragma (E : Entity_Id);
       --  Check if a rep item of the same name as the current pragma is already
@@ -3125,10 +3124,6 @@ package body Sem_Prag is
       --  Determines if the placement of the current pragma is appropriate
       --  for a configuration pragma.
 
-      function Is_Followed_By_Pragma (Prag_Nam : Name_Id) return Boolean;
-      --  Determine whether pragma N is followed by another pragma denoted by
-      --  its name Prag_Nam. It is assumed that N is a list member.
-
       function Is_In_Context_Clause return Boolean;
       --  Returns True if pragma appears within the context clause of a unit,
       --  and False for any other placement (does not generate any messages).
@@ -3349,11 +3344,6 @@ package body Sem_Prag is
          Subp_Decl := Empty;
          Legal     := False;
 
-         --  Reset the Analyzed flag because the pragma requires further
-         --  analysis.
-
-         Set_Analyzed (N, False);
-
          GNAT_Pragma;
          Check_Arg_Count (1);
 
@@ -3403,6 +3393,37 @@ package body Sem_Prag is
          Mark_Pragma_As_Ghost (N, Spec_Id);
          Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
       end Analyze_Depends_Global;
+
+      ------------------------
+      -- Analyze_If_Present --
+      ------------------------
+
+      procedure Analyze_If_Present (Id : Pragma_Id) is
+         Stmt : Node_Id;
+
+      begin
+         pragma Assert (Is_List_Member (N));
+
+         --  Inspect the declarations or statements following pragma N looking
+         --  for another pragma whose Id matches the caller's request. If it is
+         --  available, analyze it.
+
+         Stmt := Next (N);
+         while Present (Stmt) loop
+            if Nkind (Stmt) = N_Pragma and then Get_Pragma_Id (Stmt) = Id then
+               Analyze_Pragma (Stmt);
+               exit;
+
+            --  The first source declaration or statement immediately following
+            --  N ends the region where a pragma may appear.
+
+            elsif Comes_From_Source (Stmt) then
+               exit;
+            end if;
+
+            Next (Stmt);
+         end loop;
+      end Analyze_If_Present;
 
       ---------------------
       -- Analyze_Part_Of --
@@ -3603,11 +3624,6 @@ package body Sem_Prag is
          --  Post_Class.
 
       begin
-         --  Reset the Analyzed flag because the pragma requires further
-         --  analysis.
-
-         Set_Analyzed (N, False);
-
          --  Change the name of pragmas Pre, Pre_Class, Post and Post_Class to
          --  offer uniformity among the various kinds of pre/postconditions by
          --  rewriting the pragma identifier. This allows the retrieval of the
@@ -3733,6 +3749,11 @@ package body Sem_Prag is
 
          Subp_Id := Defining_Entity (Subp_Decl);
 
+         --  Chain the pragma on the contract for further processing by
+         --  Analyze_Pre_Post_Condition_In_Decl_Part.
+
+         Add_Contract_Item (N, Defining_Entity (Subp_Decl));
+
          --  A pragma that applies to a Ghost entity becomes Ghost for the
          --  purposes of legality checks and removal of ignored Ghost code.
 
@@ -3744,13 +3765,14 @@ package body Sem_Prag is
          if Nkind_In (Subp_Decl, N_Subprogram_Body,
                                  N_Subprogram_Body_Stub)
          then
+            --  The legality checks of pragmas Precondition and Postcondition
+            --  are affected by the SPARK mode in effect and the volatility of
+            --  the context. Analyze all pragmas in a specific order.
+
+            Analyze_If_Present (Pragma_SPARK_Mode);
+            Analyze_If_Present (Pragma_Volatile_Function);
             Analyze_Pre_Post_Condition_In_Decl_Part (N);
          end if;
-
-         --  Chain the pragma on the contract for further processing by
-         --  Analyze_Pre_Post_Condition_In_Decl_Part.
-
-         Add_Contract_Item (N, Defining_Entity (Subp_Decl));
       end Analyze_Pre_Post_Condition;
 
       -----------------------------------------
@@ -3771,11 +3793,6 @@ package body Sem_Prag is
          Spec_Id := Empty;
          Body_Id := Empty;
          Legal   := False;
-
-         --  Reset the Analyzed flag because the pragma requires further
-         --  analysis.
-
-         Set_Analyzed (N, False);
 
          GNAT_Pragma;
          Check_Arg_Count (1);
@@ -4330,107 +4347,6 @@ package body Sem_Prag is
               ("component of unchecked union cannot have tasks", Comp);
          end if;
       end Check_Component;
-
-      -----------------------------
-      -- Check_Declaration_Order --
-      -----------------------------
-
-      procedure Check_Declaration_Order (First : Node_Id; Second : Node_Id) is
-         procedure Check_Aspect_Specification_Order;
-         --  Inspect the aspect specifications of the context to determine the
-         --  proper order.
-
-         --------------------------------------
-         -- Check_Aspect_Specification_Order --
-         --------------------------------------
-
-         procedure Check_Aspect_Specification_Order is
-            Asp_First  : constant Node_Id := Corresponding_Aspect (First);
-            Asp_Second : constant Node_Id := Corresponding_Aspect (Second);
-            Asp        : Node_Id;
-
-         begin
-            --  Both aspects must be part of the same aspect specification list
-
-            pragma Assert
-              (List_Containing (Asp_First) = List_Containing (Asp_Second));
-
-            --  Try to reach Second starting from First in a left to right
-            --  traversal of the aspect specifications.
-
-            Asp := Next (Asp_First);
-            while Present (Asp) loop
-
-               --  The order is ok, First is followed by Second
-
-               if Asp = Asp_Second then
-                  return;
-               end if;
-
-               Next (Asp);
-            end loop;
-
-            --  If we get here, then the aspects are out of order
-
-            SPARK_Msg_N ("aspect % cannot come after aspect %", First);
-         end Check_Aspect_Specification_Order;
-
-         --  Local variables
-
-         Stmt : Node_Id;
-
-      --  Start of processing for Check_Declaration_Order
-
-      begin
-         --  Cannot check the order if one of the pragmas is missing
-
-         if No (First) or else No (Second) then
-            return;
-         end if;
-
-         --  Set up the error names in case the order is incorrect
-
-         Error_Msg_Name_1 := Pragma_Name (First);
-         Error_Msg_Name_2 := Pragma_Name (Second);
-
-         if From_Aspect_Specification (First) then
-
-            --  Both pragmas are actually aspects, check their declaration
-            --  order in the associated aspect specification list. Otherwise
-            --  First is an aspect and Second a source pragma.
-
-            if From_Aspect_Specification (Second) then
-               Check_Aspect_Specification_Order;
-            end if;
-
-         --  Abstract_States is a source pragma
-
-         else
-            if From_Aspect_Specification (Second) then
-               SPARK_Msg_N ("pragma % cannot come after aspect %", First);
-
-            --  Both pragmas are source constructs. Try to reach First from
-            --  Second by traversing the declarations backwards.
-
-            else
-               Stmt := Prev (Second);
-               while Present (Stmt) loop
-
-                  --  The order is ok, First is followed by Second
-
-                  if Stmt = First then
-                     return;
-                  end if;
-
-                  Prev (Stmt);
-               end loop;
-
-               --  If we get here, then the pragmas are out of order
-
-               SPARK_Msg_N ("pragma % cannot come after pragma %", First);
-            end if;
-         end if;
-      end Check_Declaration_Order;
 
       ----------------------------
       -- Check_Duplicate_Pragma --
@@ -5889,39 +5805,6 @@ package body Sem_Prag is
             return False;
          end if;
       end Is_Configuration_Pragma;
-
-      ---------------------------
-      -- Is_Followed_By_Pragma --
-      ---------------------------
-
-      function Is_Followed_By_Pragma (Prag_Nam : Name_Id) return Boolean is
-         Stmt : Node_Id;
-
-      begin
-         pragma Assert (Is_List_Member (N));
-
-         --  Inspect the declarations or statements following pragma N looking
-         --  for another pragma whose name matches the caller's request.
-
-         Stmt := Next (N);
-         while Present (Stmt) loop
-            if Nkind (Stmt) = N_Pragma
-              and then Pragma_Name (Stmt) = Prag_Nam
-            then
-               return True;
-
-            --  The first source declaration or statement immediately following
-            --  N ends the region where a pragma may appear.
-
-            elsif Comes_From_Source (Stmt) then
-               exit;
-            end if;
-
-            Next (Stmt);
-         end loop;
-
-         return False;
-      end Is_Followed_By_Pragma;
 
       --------------------------
       -- Is_In_Context_Clause --
@@ -10416,6 +10299,22 @@ package body Sem_Prag is
 
             Pack_Id := Defining_Entity (Pack_Decl);
 
+            --  Chain the pragma on the contract for completeness
+
+            Add_Contract_Item (N, Pack_Id);
+
+            --  The legality checks of pragmas Abstract_State, Initializes, and
+            --  Initial_Condition are affected by the SPARK mode in effect. In
+            --  addition, these three pragmas are subject to an inherent order:
+
+            --    1) Abstract_State
+            --    2) Initializes
+            --    3) Initial_Condition
+
+            --  Analyze all these pragmas in the order outlined above
+
+            Analyze_If_Present (Pragma_SPARK_Mode);
+
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
@@ -10452,16 +10351,8 @@ package body Sem_Prag is
                Analyze_Abstract_State (States, Pack_Id);
             end if;
 
-            --  Verify the declaration order of pragmas Abstract_State and
-            --  Initializes.
-
-            Check_Declaration_Order
-              (First  => N,
-               Second => Get_Pragma (Pack_Id, Pragma_Initializes));
-
-            --  Chain the pragma on the contract for completeness
-
-            Add_Contract_Item (N, Pack_Id);
+            Analyze_If_Present (Pragma_Initializes);
+            Analyze_If_Present (Pragma_Initial_Condition);
          end Abstract_State;
 
          ------------
@@ -11001,7 +10892,7 @@ package body Sem_Prag is
          --  POLICY_IDENTIFIER ::= Check | Disable | Ignore
 
          --  Note: Check and Ignore are language-defined. Disable is a GNAT
-         --  implementation defined addition that results in totally ignoring
+         --  implementation-defined addition that results in totally ignoring
          --  the corresponding assertion. If Disable is specified, then the
          --  argument of the assertion is not even analyzed. This is useful
          --  when the aspect/pragma argument references entities in a with'ed
@@ -11213,11 +11104,6 @@ package body Sem_Prag is
             Obj_Id   : Entity_Id;
 
          begin
-            --  Reset the Analyzed flag because the pragma requires further
-            --  analysis.
-
-            Set_Analyzed (N, False);
-
             GNAT_Pragma;
             Check_No_Identifiers;
             Check_At_Most_N_Arguments  (1);
@@ -11244,6 +11130,11 @@ package body Sem_Prag is
 
             if Ekind (Obj_Id) = E_Variable then
 
+               --  Chain the pragma on the contract for further processing by
+               --  Analyze_External_Property_In_Decl_Part.
+
+               Add_Contract_Item (N, Obj_Id);
+
                --  A pragma that applies to a Ghost entity becomes Ghost for
                --  the purposes of legality checks and removal of ignored Ghost
                --  code.
@@ -11255,11 +11146,6 @@ package body Sem_Prag is
                if Present (Arg1) then
                   Check_Static_Boolean_Expression (Get_Pragma_Arg (Arg1));
                end if;
-
-               --  Chain the pragma on the contract for further processing by
-               --  Analyze_External_Property_In_Decl_Part.
-
-               Add_Contract_Item (N, Obj_Id);
 
             --  Otherwise the external property applies to a constant
 
@@ -12290,11 +12176,6 @@ package body Sem_Prag is
 
             Obj_Id := Defining_Entity (Obj_Decl);
 
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
-
-            Mark_Pragma_As_Ghost (N, Obj_Id);
-
             --  The object declaration must be a library-level variable with
             --  an initialization expression. The expression must depend on
             --  a variable, parameter, or another constant_after_elaboration,
@@ -12320,15 +12201,20 @@ package body Sem_Prag is
                return;
             end if;
 
+            --  Chain the pragma on the contract for completeness
+
+            Add_Contract_Item (N, Obj_Id);
+
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Pragma_As_Ghost (N, Obj_Id);
+
             --  Analyze the Boolean expression (if any)
 
             if Present (Arg1) then
                Check_Static_Boolean_Expression (Get_Pragma_Arg (Arg1));
             end if;
-
-            --  Chain the pragma on the contract for completeness
-
-            Add_Contract_Item (N, Obj_Id);
          end Constant_After_Elaboration;
 
          --------------------
@@ -12384,11 +12270,6 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_Arg_Count (1);
 
-            --  The pragma is analyzed at the end of the declarative part which
-            --  contains the related subprogram. Reset the analyzed flag.
-
-            Set_Analyzed (N, False);
-
             --  Ensure the proper placement of the pragma. Contract_Cases must
             --  be associated with a subprogram declaration or a body that acts
             --  as a spec.
@@ -12427,6 +12308,11 @@ package body Sem_Prag is
 
             Spec_Id := Unique_Defining_Entity (Subp_Decl);
 
+            --  Chain the pragma on the contract for further processing by
+            --  Analyze_Contract_Cases_In_Decl_Part.
+
+            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
+
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
@@ -12439,13 +12325,14 @@ package body Sem_Prag is
             if Nkind_In (Subp_Decl, N_Subprogram_Body,
                                     N_Subprogram_Body_Stub)
             then
+               --  The legality checks of pragma Contract_Cases are affected by
+               --  the SPARK mode in effect and the volatility of the context.
+               --  Analyze all pragmas in a specific order.
+
+               Analyze_If_Present (Pragma_SPARK_Mode);
+               Analyze_If_Present (Pragma_Volatile_Function);
                Analyze_Contract_Cases_In_Decl_Part (N);
             end if;
-
-            --  Chain the pragma on the contract for further processing by
-            --  Analyze_Contract_Cases_In_Decl_Part.
-
-            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
          end Contract_Cases;
 
          ----------------
@@ -13145,7 +13032,6 @@ package body Sem_Prag is
          --    the annotation must instantiate itself.
 
          when Pragma_Depends => Depends : declare
-            Global    : Node_Id;
             Legal     : Boolean;
             Spec_Id   : Entity_Id;
             Subp_Decl : Node_Id;
@@ -13166,34 +13052,20 @@ package body Sem_Prag is
                if Nkind_In (Subp_Decl, N_Subprogram_Body,
                                        N_Subprogram_Body_Stub)
                then
-                  --  Pragmas Global and Depends must be analyzed in a specific
-                  --  order, as the latter depends on the former. When the two
-                  --  pragmas appear out of order, their analyis is triggered
-                  --  by pragma Global.
+                  --  The legality checks of pragmas Depends and Global are
+                  --  affected by the SPARK mode in effect and the volatility
+                  --  of the context. In addition these two pragmas are subject
+                  --  to an inherent order:
 
-                  --    pragma Depends ...;
-                  --    pragma Global  ...;  <analyze both pragmas here>
+                  --    1) Global
+                  --    2) Depends
 
-                  --  Wait until pragma Global is encountered
+                  --  Analyze all these pragmas in the order outlined above
 
-                  if Is_Followed_By_Pragma (Name_Global) then
-                     null;
-
-                  --  Otherwise pragma Depends is the last of the pair. Analyze
-                  --  both pragmas when they appear in order.
-
-                  --    pragma Global  ...;
-                  --    pragma Depends ...;  <analyze both pragmas here>
-
-                  else
-                     Global := Get_Pragma (Spec_Id, Pragma_Global);
-
-                     if Present (Global) then
-                        Analyze_Global_In_Decl_Part (Global);
-                     end if;
-
-                     Analyze_Depends_In_Decl_Part (N);
-                  end if;
+                  Analyze_If_Present (Pragma_SPARK_Mode);
+                  Analyze_If_Present (Pragma_Volatile_Function);
+                  Analyze_If_Present (Pragma_Global);
+                  Analyze_Depends_In_Decl_Part (N);
                end if;
             end if;
          end Depends;
@@ -14154,12 +14026,21 @@ package body Sem_Prag is
                return;
             end if;
 
-            Spec_Id := Unique_Defining_Entity (Subp_Decl);
+            --  Chain the pragma on the contract for completeness
+
+            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
+
+            --  The legality checks of pragma Extension_Visible are affected
+            --  by the SPARK mode in effect. Analyze all pragmas in specific
+            --  order.
+
+            Analyze_If_Present (Pragma_SPARK_Mode);
 
             --  Mark the pragma as Ghost if the related subprogram is also
             --  Ghost. This also ensures that any expansion performed further
             --  below will produce Ghost nodes.
 
+            Spec_Id := Unique_Defining_Entity (Subp_Decl);
             Mark_Pragma_As_Ghost (N, Spec_Id);
 
             --  Examine the formals of the related subprogram
@@ -14205,10 +14086,6 @@ package body Sem_Prag is
                Check_Static_Boolean_Expression
                  (Expression (Get_Argument (N, Spec_Id)));
             end if;
-
-            --  Chain the pragma on the contract for completeness
-
-            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
          end Extensions_Visible;
 
          --------------
@@ -14673,7 +14550,6 @@ package body Sem_Prag is
          --    the annotation must instantiate itself.
 
          when Pragma_Global => Global : declare
-            Depends   : Node_Id;
             Legal     : Boolean;
             Spec_Id   : Entity_Id;
             Subp_Decl : Node_Id;
@@ -14694,34 +14570,20 @@ package body Sem_Prag is
                if Nkind_In (Subp_Decl, N_Subprogram_Body,
                                        N_Subprogram_Body_Stub)
                then
-                  --  Pragmas Global and Depends must be analyzed in a specific
-                  --  order, as the latter depends on the former. When the two
-                  --  pragmas appear in order, their analysis is triggered by
-                  --  pragma Depends.
+                  --  The legality checks of pragmas Depends and Global are
+                  --  affected by the SPARK mode in effect and the volatility
+                  --  of the context. In addition these two pragmas are subject
+                  --  to an inherent order:
 
-                  --    pragma Global  ...;
-                  --    pragma Depends ...;  <analyze both pragmas here>
+                  --    1) Global
+                  --    2) Depends
 
-                  --  Wait until pragma Global is encountered
+                  --  Analyze all these pragmas in the order outlined above
 
-                  if Is_Followed_By_Pragma (Name_Depends) then
-                     null;
-
-                  --  Otherwise pragma Global is the last of the pair. Analyze
-                  --  both pragmas when they are out of order.
-
-                  --    pragma Depends ...;
-                  --    pragma Global  ...;  <analyze both pragmas here>
-
-                  else
-                     Analyze_Global_In_Decl_Part (N);
-
-                     Depends := Get_Pragma (Spec_Id, Pragma_Depends);
-
-                     if Present (Depends) then
-                        Analyze_Depends_In_Decl_Part (Depends);
-                     end if;
-                  end if;
+                  Analyze_If_Present (Pragma_SPARK_Mode);
+                  Analyze_If_Present (Pragma_Volatile_Function);
+                  Analyze_Global_In_Decl_Part (N);
+                  Analyze_If_Present (Pragma_Depends);
                end if;
             end if;
          end Global;
@@ -15315,11 +15177,6 @@ package body Sem_Prag is
             Pack_Id   : Entity_Id;
 
          begin
-            --  Reset the Analyzed flag because the pragma requires further
-            --  analysis.
-
-            Set_Analyzed (N, False);
-
             GNAT_Pragma;
             Check_No_Identifiers;
             Check_Arg_Count (1);
@@ -15341,36 +15198,31 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  The pragma must be analyzed at the end of the visible
-            --  declarations of the related package. Save the pragma for later
-            --  (see Analyze_Initial_Condition_In_Decl_Part) by adding it to
-            --  the contract of the package.
-
             Pack_Id := Defining_Entity (Pack_Decl);
-
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
-
-            Mark_Pragma_As_Ghost (N, Pack_Id);
-
-            --  Verify the declaration order of pragma Initial_Condition with
-            --  respect to pragmas Abstract_State and Initializes when SPARK
-            --  checks are enabled.
-
-            if SPARK_Mode /= Off then
-               Check_Declaration_Order
-                 (First  => Get_Pragma (Pack_Id, Pragma_Abstract_State),
-                  Second => N);
-
-               Check_Declaration_Order
-                 (First  => Get_Pragma (Pack_Id, Pragma_Initializes),
-                  Second => N);
-            end if;
 
             --  Chain the pragma on the contract for further processing by
             --  Analyze_Initial_Condition_In_Decl_Part.
 
             Add_Contract_Item (N, Pack_Id);
+
+            --  The legality checks of pragmas Abstract_State, Initializes, and
+            --  Initial_Condition are affected by the SPARK mode in effect. In
+            --  addition, these three pragmas are subject to an inherent order:
+
+            --    1) Abstract_State
+            --    2) Initializes
+            --    3) Initial_Condition
+
+            --  Analyze all these pragmas in the order outlined above
+
+            Analyze_If_Present (Pragma_SPARK_Mode);
+            Analyze_If_Present (Pragma_Abstract_State);
+            Analyze_If_Present (Pragma_Initializes);
+
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Pragma_As_Ghost (N, Pack_Id);
          end Initial_Condition;
 
          ------------------------
@@ -15441,11 +15293,6 @@ package body Sem_Prag is
             Pack_Id   : Entity_Id;
 
          begin
-            --  Reset the Analyzed flag because the pragma requires further
-            --  analysis.
-
-            Set_Analyzed (N, False);
-
             GNAT_Pragma;
             Check_No_Identifiers;
             Check_Arg_Count (1);
@@ -15469,25 +15316,31 @@ package body Sem_Prag is
 
             Pack_Id := Defining_Entity (Pack_Decl);
 
+            --  Chain the pragma on the contract for further processing by
+            --  Analyze_Initializes_In_Decl_Part.
+
+            Add_Contract_Item (N, Pack_Id);
+
+            --  The legality checks of pragmas Abstract_State, Initializes, and
+            --  Initial_Condition are affected by the SPARK mode in effect. In
+            --  addition, these three pragmas are subject to an inherent order:
+
+            --    1) Abstract_State
+            --    2) Initializes
+            --    3) Initial_Condition
+
+            --  Analyze all these pragmas in the order outlined above
+
+            Analyze_If_Present (Pragma_SPARK_Mode);
+            Analyze_If_Present (Pragma_Abstract_State);
+
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
             Mark_Pragma_As_Ghost (N, Pack_Id);
             Ensure_Aggregate_Form (Get_Argument (N, Pack_Id));
 
-            --  Verify the declaration order of pragmas Abstract_State and
-            --  Initializes when SPARK checks are enabled.
-
-            if SPARK_Mode /= Off then
-               Check_Declaration_Order
-                 (First  => Get_Pragma (Pack_Id, Pragma_Abstract_State),
-                  Second => N);
-            end if;
-
-            --  Chain the pragma on the contract for further processing by
-            --  Analyze_Initializes_In_Decl_Part.
-
-            Add_Contract_Item (N, Pack_Id);
+            Analyze_If_Present (Pragma_Initial_Condition);
          end Initializes;
 
          ------------
@@ -17760,10 +17613,16 @@ package body Sem_Prag is
                Legal   => Legal);
 
             if Legal then
-               State_Id := Entity (State);
+
+               --  Add the pragma to the contract of the item. This aids with
+               --  the detection of a missing but required Part_Of indicator.
+
+               Add_Contract_Item (N, Item_Id);
 
                --  The Part_Of indicator turns an object into a constituent of
                --  the encapsulating state.
+
+               State_Id := Entity (State);
 
                if Ekind_In (Item_Id, E_Constant, E_Variable) then
                   Append_Elmt (Item_Id, Part_Of_Constituents (State_Id));
@@ -17778,11 +17637,6 @@ package body Sem_Prag is
                      State_Id => State_Id,
                      Instance => Stmt);
                end if;
-
-               --  Add the pragma to the contract of the item. This aids with
-               --  the detection of a missing but required Part_Of indicator.
-
-               Add_Contract_Item (N, Item_Id);
             end if;
          end Part_Of;
 
@@ -18974,10 +18828,9 @@ package body Sem_Prag is
          --    the related generic subprogram body is instantiated.
 
          when Pragma_Refined_Depends => Refined_Depends : declare
-            Body_Id    : Entity_Id;
-            Legal      : Boolean;
-            Ref_Global : Node_Id;
-            Spec_Id    : Entity_Id;
+            Body_Id : Entity_Id;
+            Legal   : Boolean;
+            Spec_Id : Entity_Id;
 
          begin
             Analyze_Refined_Depends_Global_Post (Spec_Id, Body_Id, Legal);
@@ -18989,34 +18842,20 @@ package body Sem_Prag is
 
                Add_Contract_Item (N, Body_Id);
 
-               --  Pragmas Refined_Global and Refined_Depends must be analyzed
-               --  in a specific order, as the latter depends on the former.
-               --  When the two pragmas appear out of order, their analysis is
-               --  triggered by pragma Refined_Global.
+               --  The legality checks of pragmas Refined_Depends and
+               --  Refined_Global are affected by the SPARK mode in effect and
+               --  the volatility of the context. In addition these two pragmas
+               --  are subject to an inherent order:
 
-               --    pragma Refined_Depends ...;
-               --    pragma Refined_Global  ...;  <analyze both pragmas here>
+               --    1) Refined_Global
+               --    2) Refined_Depends
 
-               --  Wait until pragma Refined_Global is enountered
+               --  Analyze all these pragmas in the order outlined above
 
-               if Is_Followed_By_Pragma (Name_Refined_Global) then
-                  null;
-
-               --  Otherwise pragma Refined_Depends is the last of the pair.
-               --  Analyze both pragmas when they appear in order.
-
-               --    pragma Refined_Global  ...;
-               --    pragma Refined_Depends ...;  <analyze both pragmas here>
-
-               else
-                  Ref_Global := Get_Pragma (Body_Id, Pragma_Refined_Global);
-
-                  if Present (Ref_Global) then
-                     Analyze_Refined_Global_In_Decl_Part (Ref_Global);
-                  end if;
-
-                  Analyze_Refined_Depends_In_Decl_Part (N);
-               end if;
+               Analyze_If_Present (Pragma_SPARK_Mode);
+               Analyze_If_Present (Pragma_Volatile_Function);
+               Analyze_If_Present (Pragma_Refined_Global);
+               Analyze_Refined_Depends_In_Decl_Part (N);
             end if;
          end Refined_Depends;
 
@@ -19057,10 +18896,9 @@ package body Sem_Prag is
          --    the related generic subprogram body is instantiated.
 
          when Pragma_Refined_Global => Refined_Global : declare
-            Body_Id     : Entity_Id;
-            Legal       : Boolean;
-            Ref_Depends : Node_Id;
-            Spec_Id     : Entity_Id;
+            Body_Id : Entity_Id;
+            Legal   : Boolean;
+            Spec_Id : Entity_Id;
 
          begin
             Analyze_Refined_Depends_Global_Post (Spec_Id, Body_Id, Legal);
@@ -19072,34 +18910,20 @@ package body Sem_Prag is
 
                Add_Contract_Item (N, Body_Id);
 
-               --  Pragmas Refined_Global and Refined_Depends must be analyzed
-               --  in a specific order, as the latter depends on the former.
-               --  When the two pragmas are in order, their analysis must be
-               --  triggered by pragma Refined_Depends.
+               --  The legality checks of pragmas Refined_Depends and
+               --  Refined_Global are affected by the SPARK mode in effect and
+               --  the volatility of the context. In addition these two pragmas
+               --  are subject to an inherent order:
 
-               --    pragma Refined_Global  ...;
-               --    pragma Refined_Depends ...;  <analyze both pragmas here>
+               --    1) Refined_Global
+               --    2) Refined_Depends
 
-               --  Wait until pragma Refined_Depends is encountered
+               --  Analyze all these pragmas in the order outlined above
 
-               if Is_Followed_By_Pragma (Name_Refined_Depends) then
-                  null;
-
-               --  Otherwise pragma Refined_Global is the last of the pair.
-               --  Analyze both pragmas when they are out of order.
-
-               --    pragma Refined_Depends ...;
-               --    pragma Refined_Global  ...;  <analyze both pragmas here>
-
-               else
-                  Analyze_Refined_Global_In_Decl_Part (N);
-
-                  Ref_Depends := Get_Pragma (Body_Id, Pragma_Refined_Depends);
-
-                  if Present (Ref_Depends) then
-                     Analyze_Refined_Depends_In_Decl_Part (Ref_Depends);
-                  end if;
-               end if;
+               Analyze_If_Present (Pragma_SPARK_Mode);
+               Analyze_If_Present (Pragma_Volatile_Function);
+               Analyze_Refined_Global_In_Decl_Part (N);
+               Analyze_If_Present (Pragma_Refined_Depends);
             end if;
          end Refined_Global;
 
@@ -19140,16 +18964,23 @@ package body Sem_Prag is
             --  body because it cannot benefit from forward references.
 
             if Legal then
+
+               --  Chain the pragma on the contract for completeness
+
+               Add_Contract_Item (N, Body_Id);
+
+               --  The legality checks of pragma Refined_Post are affected by
+               --  the SPARK mode in effect and the volatility of the context.
+               --  Analyze all pragmas in a specific order.
+
+               Analyze_If_Present (Pragma_SPARK_Mode);
+               Analyze_If_Present (Pragma_Volatile_Function);
                Analyze_Pre_Post_Condition_In_Decl_Part (N);
 
                --  Currently it is not possible to inline pre/postconditions on
                --  a subprogram subject to pragma Inline_Always.
 
                Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
-
-               --  Chain the pragma on the contract for completeness
-
-               Add_Contract_Item (N, Body_Id);
             end if;
          end Refined_Post;
 
@@ -19196,11 +19027,6 @@ package body Sem_Prag is
             Spec_Id   : Entity_Id;
 
          begin
-            --  Reset the Analyzed flag because the pragma requires further
-            --  analysis.
-
-            Set_Analyzed (N, False);
-
             GNAT_Pragma;
             Check_No_Identifiers;
             Check_Arg_Count (1);
@@ -19222,6 +19048,16 @@ package body Sem_Prag is
 
             Spec_Id := Corresponding_Spec (Pack_Decl);
 
+            --  Chain the pragma on the contract for further processing by
+            --  Analyze_Refined_State_In_Decl_Part.
+
+            Add_Contract_Item (N, Defining_Entity (Pack_Decl));
+
+            --  The legality checks of pragma Refined_State are affected by the
+            --  SPARK mode in effect. Analyze all pragmas in a specific order.
+
+            Analyze_If_Present (Pragma_SPARK_Mode);
+
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
@@ -19241,11 +19077,6 @@ package body Sem_Prag is
                   & "states", N, Spec_Id);
                return;
             end if;
-
-            --  Chain the pragma on the contract for further processing by
-            --  Analyze_Refined_State_In_Decl_Part.
-
-            Add_Contract_Item (N, Defining_Entity (Pack_Decl));
          end Refined_State;
 
          -----------------------
@@ -21092,6 +20923,7 @@ package body Sem_Prag is
                   Prag := Contract_Test_Cases (Items);
                   while Present (Prag) loop
                      if Pragma_Name (Prag) = Name_Test_Case
+                       and then Prag /= N
                        and then String_Equal
                                   (Name, Get_Name_From_CTC_Pragma (Prag))
                      then
@@ -21115,11 +20947,6 @@ package body Sem_Prag is
          --  Start of processing for Test_Case
 
          begin
-            --  Reset the Analyzed flag because the pragma requires further
-            --  analysis.
-
-            Set_Analyzed (N, False);
-
             GNAT_Pragma;
             Check_At_Least_N_Arguments (2);
             Check_At_Most_N_Arguments (4);
@@ -21194,7 +21021,7 @@ package body Sem_Prag is
               and then Nkind_In (Context, N_Generic_Package_Declaration,
                                           N_Package_Declaration)
             then
-               Subp_Id := Defining_Entity (Subp_Decl);
+               null;
 
             --  Otherwise the placement is illegal
 
@@ -21202,6 +21029,13 @@ package body Sem_Prag is
                Pragma_Misplaced;
                return;
             end if;
+
+            Subp_Id := Defining_Entity (Subp_Decl);
+
+            --  Chain the pragma on the contract for further processing by
+            --  Analyze_Test_Case_In_Decl_Part.
+
+            Add_Contract_Item (N, Subp_Id);
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
@@ -21239,13 +21073,14 @@ package body Sem_Prag is
             if Nkind_In (Subp_Decl, N_Subprogram_Body,
                                     N_Subprogram_Body_Stub)
             then
+               --  The legality checks of pragma Test_Case are affected by the
+               --  SPARK mode in effect and the volatility of the context.
+               --  Analyze all pragmas in a specific order.
+
+               Analyze_If_Present (Pragma_SPARK_Mode);
+               Analyze_If_Present (Pragma_Volatile_Function);
                Analyze_Test_Case_In_Decl_Part (N);
             end if;
-
-            --  Chain the pragma on the contract for further processing by
-            --  Analyze_Test_Case_In_Decl_Part.
-
-            Add_Contract_Item (N, Subp_Id);
          end Test_Case;
 
          --------------------------
@@ -22113,6 +21948,16 @@ package body Sem_Prag is
                return;
             end if;
 
+            --  Chain the pragma on the contract for completeness
+
+            Add_Contract_Item (N, Spec_Id);
+
+            --  The legality checks of pragma Volatile_Function are affected by
+            --  the SPARK mode in effect. Analyze all pragmas in a specific
+            --  order.
+
+            Analyze_If_Present (Pragma_SPARK_Mode);
+
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
@@ -22147,8 +21992,6 @@ package body Sem_Prag is
             if Present (Arg1) then
                Check_Static_Boolean_Expression (Get_Pragma_Arg (Arg1));
             end if;
-
-            Add_Contract_Item (N, Spec_Id);
          end Volatile_Function;
 
          ----------------------
@@ -25221,11 +25064,18 @@ package body Sem_Prag is
          if Is_Entity_Name (State) then
             State_Id := Entity_Of (State);
 
+            --  When the abstract state is undefined, it appears as Any_Id. Do
+            --  not continue with the analysis of the clause.
+
+            if State_Id = Any_Id then
+               return;
+
             --  Catch any attempts to re-refine a state or refine a state that
             --  is not defined in the package declaration.
 
-            if Ekind (State_Id) = E_Abstract_State then
+            elsif Ekind (State_Id) = E_Abstract_State then
                Check_Matching_State;
+
             else
                SPARK_Msg_NE
                  ("& must denote an abstract state", State, State_Id);

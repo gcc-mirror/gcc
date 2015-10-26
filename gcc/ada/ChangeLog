@@ -1,5 +1,45 @@
 2015-10-26  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch4.adb (Expand_N_Case_Expression): In the scope of a
+	predicate function, delay the expansion of the expression only
+	if the target type has a specified Static_ Predicate aspect,
+	because the expression is processed later. A dynamic predicate
+	must be expanded in standard fashion.
+
+2015-10-26  Claire Dross  <dross@adacore.com>
+
+	* a-nudira.ads: Remove SPARK_Mode as it currently causes an error.
+
+2015-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_aggr.adb, sem_type.adb, sem_ch12.adb, sem_res.adb, sem_ch4.adb,
+	sem_ch8.adb, exp_aggr.adb, sem_eval.adb, s-fatgen.adb, a-tienio.adb:
+	Fix typos.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): The processing
+	for aspects Abstract_State, Ghost, Initial_Condition, Initializes
+	and Refined_State no longer have to take SPARK_Mode into account.
+	(Insert_After_SPARK_Mode): Removed.
+	(Insert_Pragma): Update profile and comment on usage. The routine can
+	now insert a pragma after the "header" of an instance.
+	* sem_prag.adb (Analyze_If_Available): New routine.
+	(Analyze_Pragma): Do not reset the Analyzed flag of various
+	SPARK pragmas as they use the Is_Analyzed_Pragma attribute to
+	avoid reanalysis. Various pragmas now trigger the analysis
+	of related pragmas that depend on or are dependent on the
+	current pragma. Remove the declaration order checks related
+	to pragmas Abstract_State, Initial_Condition and Initializes.
+	(Analyze_Pre_Post_Condition): Analyze pragmas SPARK_Mode and
+	Volatile_Function prior to analyzing the pre/postcondition.
+	(Check_Declaration_Order): Removed.
+	(Check_Distinct_Name): Ensure that a potentially duplicated pragma
+	Test_Case is not the pragma being analyzed.
+	(Is_Followed_By_Pragma): Removed.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch6.adb: Handle subprogram bodies without previous specs.
 
 2015-10-26  Claire Dross  <dross@adacore.com>
