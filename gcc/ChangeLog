@@ -1,3 +1,9 @@
+2015-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gimple-fold.c (replace_stmt_with_simplification): Don't allow
+	new statements to be inserted if inplace.  Allow calls to have
+	nonempty sequences.
+
 2015-10-26  Richard Biener  <rguenther@suse.de>
 
 	* tree-object-size.c: Remove builtins.h include, include tree-cfg.h.

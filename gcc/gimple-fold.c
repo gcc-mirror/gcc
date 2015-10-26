@@ -3289,6 +3289,11 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	  && !has_use_on_stmt (ops[2], stmt)))
     return false;
 
+  /* Don't insert new statements when INPLACE is true, even if we could
+     reuse STMT for the final statement.  */
+  if (inplace && !gimple_seq_empty_p (*seq))
+    return false;
+
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
     {
       gcc_assert (rcode.is_tree_code ());
@@ -3365,7 +3370,14 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	}
       if (i < 3)
 	gcc_assert (ops[i] == NULL_TREE);
-      gcc_assert (gimple_seq_empty_p (*seq));
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "gimple_simplified to ");
+	  if (!gimple_seq_empty_p (*seq))
+	    print_gimple_seq (dump_file, *seq, 0, TDF_SLIM);
+	  print_gimple_stmt (dump_file, gsi_stmt (*gsi), 0, TDF_SLIM);
+	}
+      gsi_insert_seq_before (gsi, *seq, GSI_SAME_STMT);
       return true;
     }
   else if (!inplace)
