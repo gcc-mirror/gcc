@@ -741,16 +741,16 @@ package Sem_Util is
    --  alternatives, and the warnings that may apply to them, are removed.
 
    function First_Actual (Node : Node_Id) return Node_Id;
-   --  Node is an N_Function_Call or N_Procedure_Call_Statement node. The
-   --  result returned is the first actual parameter in declaration order
-   --  (not the order of parameters as they appeared in the source, which
-   --  can be quite different as a result of the use of named parameters).
-   --  Empty is returned for a call with no parameters. The procedure for
-   --  iterating through the actuals in declaration order is to use this
-   --  function to find the first actual, and then use Next_Actual to obtain
-   --  the next actual in declaration order. Note that the value returned
-   --  is always the expression (not the N_Parameter_Association nodes,
-   --  even if named association is used).
+   --  Node is an N_Function_Call, N_Procedure_Call_Statement or
+   --  N_Entry_Call_Statement node. The result returned is the first actual
+   --  parameter in declaration order (not the order of parameters as they
+   --  appeared in the source, which can be quite different as a result of the
+   --  use of named parameters). Empty is returned for a call with no
+   --  parameters. The procedure for iterating through the actuals in
+   --  declaration order is to use this function to find the first actual, and
+   --  then use Next_Actual to obtain the next actual in declaration order.
+   --  Note that the value returned is always the expression (not the
+   --  N_Parameter_Association nodes, even if named association is used).
 
    procedure Gather_Components
      (Typ           : Entity_Id;

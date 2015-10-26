@@ -1286,14 +1286,15 @@ package Einfo is
 --       objects.
 
 --    First_Component (synthesized)
---       Applies to record types. Returns the first component by following the
---       chain of declared entities for the record until a component is found
---       (one with an Ekind of E_Component). The discriminants are skipped. If
---       the record is null, then Empty is returned.
+--       Applies to incomplete, private, protected, record and task types.
+--       Returns the first component by following the chain of declared
+--       entities for the type a component is found (one with an Ekind of
+--       E_Component). The discriminants are skipped. If the record is null,
+--       then Empty is returned.
 
 --    First_Component_Or_Discriminant (synthesized)
---      Similar to First_Component, but discriminants are not skipped, so will
---      find the first discriminant if discriminants are present.
+--       Similar to First_Component, but discriminants are not skipped, so will
+--       find the first discriminant if discriminants are present.
 
 --    First_Entity (Node17)
 --       Defined in all entities which act as scopes to which a list of
@@ -6263,6 +6264,8 @@ package Einfo is
    --    SPARK_Pragma_Inherited              (Flag265)
    --    Uses_Lock_Free                      (Flag188)
    --    Uses_Sec_Stack                      (Flag95)   ???
+   --    First_Component                     (synth)
+   --    First_Component_Or_Discriminant     (synth)
    --    Has_Entries                         (synth)
    --    Has_Interrupt_Handler               (synth)
    --    Number_Entries                      (synth)
@@ -6410,6 +6413,8 @@ package Einfo is
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
    --    SPARK_Pragma_Inherited              (Flag265)
    --    Uses_Sec_Stack                      (Flag95)   ???
+   --    First_Component                     (synth)
+   --    First_Component_Or_Discriminant     (synth)
    --    Has_Entries                         (synth)
    --    Number_Entries                      (synth)
    --    (plus type attributes)

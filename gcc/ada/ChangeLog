@@ -1,3 +1,39 @@
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (First_Component): Update the assertion to allow
+	for concurrent types.
+	(First_Component_Or_Discriminant): Update the assertion to allow for
+	concurrent types.
+	* einfo.ads: Update the documentation of attributes First_Component
+	and First_Component_Or_Discriminant along with uses in entities.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): An effectively
+	volatile object may act as an actual when the corresponding
+	formal is of a non-scalar effectively volatile type, not just
+	a non-scalar volatile type.
+
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads, sem_util.ads: Update comments.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refined_Depends_Global_Post): When dealing with
+	protected entries or protected subprograms, use the enclosing protected
+	type to ensure that the protected type declaration is declared
+	in a package spec. Remove an obsolete attempt to ensure the
+	aggregate for of pragma Refined_State as this routine is never
+	called in that case.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Container): For
+	an element iterator loop, the element is a constant if the
+	container object is a constant, even if the container type has
+	a Variable_Indexing aspect.
+
 2015-10-26  Bob Duff  <duff@adacore.com>
 
 	* s-fileio.adb (Fopen_Mode): Use "r+" for Out_File/Stream_IO,
