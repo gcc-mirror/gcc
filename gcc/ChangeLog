@@ -1,3 +1,7 @@
+2015-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Use macros to define built-in operator lists.
+
 2015-10-20  Richard Sandiford  <richard.sandiford@arm.com>
 	    Richard Biener  <rguenther@suse.de>
 
