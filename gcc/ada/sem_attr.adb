@@ -7303,7 +7303,7 @@ package body Sem_Attr is
                   P_Entity := Etype (P);
 
                --  Otherwise the attribute must be expanded into a conversion
-               --  and evaluated at runtime.
+               --  and evaluated at run time.
 
                else
                   Check_Expressions;
@@ -8013,7 +8013,7 @@ package body Sem_Attr is
          Val : Node_Id;
 
       begin
-         --  The attribute appears in the form
+         --  The attribute appears in the form:
 
          --    Enum_Typ'Enum_Rep (Const)
          --    Enum_Typ'Enum_Rep (Enum_Lit)
@@ -8021,7 +8021,7 @@ package body Sem_Attr is
          if Present (E1) then
             Val := E1;
 
-         --  Otherwise the prefix denotes a constant or enumeration literal
+         --  Otherwise the prefix denotes a constant or enumeration literal:
 
          --    Const'Enum_Rep
          --    Enum_Lit'Enum_Rep
