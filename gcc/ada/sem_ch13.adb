@@ -1642,7 +1642,7 @@ package body Sem_Ch13 is
                end if;
 
                Set_Corresponding_Aspect (Aitem, Aspect);
-               Set_From_Aspect_Specification (Aitem, True);
+               Set_From_Aspect_Specification (Aitem);
             end Make_Aitem_Pragma;
 
          --  Start of processing for Analyze_One_Aspect
@@ -1979,7 +1979,7 @@ package body Sem_Ch13 is
                          Expression => Ent),
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr))),
-                     Pragma_Name                  => Name_Predicate);
+                     Pragma_Name => Name_Predicate);
 
                   --  Mark type has predicates, and remember what kind of
                   --  aspect lead to this predicate (we need this to access
@@ -2006,6 +2006,46 @@ package body Sem_Ch13 is
                         Set_Has_Static_Predicate_Aspect (Full_View (E));
                      end if;
 
+                     Set_Has_Delayed_Aspects (Full_View (E));
+                     Ensure_Freeze_Node (Full_View (E));
+                  end if;
+
+               --  Predicate_Failure
+
+               when Aspect_Predicate_Failure =>
+
+                  --  This aspect applies only to subtypes
+
+                  if not Is_Type (E) then
+                     Error_Msg_N
+                       ("predicate can only be specified for a subtype",
+                        Aspect);
+                     goto Continue;
+
+                  elsif Is_Incomplete_Type (E) then
+                     Error_Msg_N
+                       ("predicate cannot apply to incomplete view", Aspect);
+                     goto Continue;
+                  end if;
+
+                  --  Construct the pragma
+
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Sloc (Ent),
+                         Expression => Ent),
+                       Make_Pragma_Argument_Association (Sloc (Expr),
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name => Name_Predicate_Failure);
+
+                  Set_Has_Predicates (E);
+
+                  --  If the type is private, indicate that its completion
+                  --  has a freeze node, because that is the one that will
+                  --  be visible at freeze time.
+
+                  if Is_Private_Type (E) and then Present (Full_View (E)) then
+                     Set_Has_Predicates (Full_View (E));
                      Set_Has_Delayed_Aspects (Full_View (E));
                      Ensure_Freeze_Node (Full_View (E));
                   end if;
@@ -7670,7 +7710,7 @@ package body Sem_Ch13 is
    --  Start of processing for Build_Discrete_Static_Predicate
 
    begin
-      --  Establish  bounds for the predicate
+      --  Establish bounds for the predicate
 
       if Compile_Time_Known_Value (Type_Low_Bound (Typ)) then
          TLo := Expr_Value (Type_Low_Bound (Typ));
@@ -9372,6 +9412,9 @@ package body Sem_Ch13 is
               Aspect_Static_Predicate  |
               Aspect_Type_Invariant    =>
             T := Standard_Boolean;
+
+         when Aspect_Predicate_Failure =>
+            T := Standard_String;
 
          --  Here is the list of aspects that don't require delay analysis
 
@@ -12509,9 +12552,10 @@ package body Sem_Ch13 is
             case A_Id is
                --  For now we only deal with aspects that do not generate
                --  subprograms, or that may mention current instances of
-               --  types. These will require special handling (TBD).
+               --  types. These will require special handling (???TBD).
 
                when Aspect_Predicate |
+                    Aspect_Predicate_Failure |
                     Aspect_Invariant |
                     Aspect_Static_Predicate |
                     Aspect_Dynamic_Predicate =>

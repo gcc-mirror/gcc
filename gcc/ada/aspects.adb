@@ -582,6 +582,7 @@ package body Aspects is
     Aspect_Pre                          => Aspect_Pre,
     Aspect_Precondition                 => Aspect_Pre,
     Aspect_Predicate                    => Aspect_Predicate,
+    Aspect_Predicate_Failure            => Aspect_Predicate_Failure,
     Aspect_Preelaborate                 => Aspect_Preelaborate,
     Aspect_Preelaborable_Initialization => Aspect_Preelaborable_Initialization,
     Aspect_Priority                     => Aspect_Priority,

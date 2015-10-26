@@ -6507,8 +6507,9 @@ package body Exp_Util is
      (Typ  : Entity_Id;
       Expr : Node_Id) return Node_Id
    is
-      Loc : constant Source_Ptr := Sloc (Expr);
-      Nam : Name_Id;
+      Loc      : constant Source_Ptr := Sloc (Expr);
+      Nam      : Name_Id;
+      Arg_List : List_Id;
 
    begin
       --  If predicate checks are suppressed, then return a null statement.
@@ -6537,14 +6538,24 @@ package body Exp_Util is
          Nam := Name_Predicate;
       end if;
 
+      Arg_List := New_List (
+        Make_Pragma_Argument_Association (Loc,
+          Expression => Make_Identifier (Loc, Nam)),
+        Make_Pragma_Argument_Association (Loc,
+          Expression => Make_Predicate_Call (Typ, Expr)));
+
+      if Has_Aspect (Typ, Aspect_Predicate_Failure) then
+         Append_To (Arg_List,
+           Make_Pragma_Argument_Association (Loc,
+             Expression =>
+               New_Copy_Tree (Expression
+                 (Find_Aspect (Typ, Aspect_Predicate_Failure)))));
+      end if;
+
       return
         Make_Pragma (Loc,
           Pragma_Identifier            => Make_Identifier (Loc, Name_Check),
-          Pragma_Argument_Associations => New_List (
-            Make_Pragma_Argument_Association (Loc,
-              Expression => Make_Identifier (Loc, Nam)),
-            Make_Pragma_Argument_Association (Loc,
-              Expression => Make_Predicate_Call (Typ, Expr))));
+          Pragma_Argument_Associations => Arg_List);
    end Make_Predicate_Check;
 
    ----------------------------
@@ -9427,7 +9438,8 @@ package body Exp_Util is
 
       return Present (S)
         and then Get_TSS_Name (S) /= TSS_Null
-        and then not Is_Predicate_Function (S);
+        and then not Is_Predicate_Function (S)
+        and then not Is_Predicate_Function_M (S);
    end Within_Internal_Subprogram;
 
    ----------------------------

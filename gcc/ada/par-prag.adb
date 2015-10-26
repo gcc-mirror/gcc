@@ -1421,6 +1421,7 @@ begin
            Pragma_Pre                            |
            Pragma_Precondition                   |
            Pragma_Predicate                      |
+           Pragma_Predicate_Failure              |
            Pragma_Preelaborate                   |
            Pragma_Pre_Class                      |
            Pragma_Priority                       |

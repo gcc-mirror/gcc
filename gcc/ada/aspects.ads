@@ -125,6 +125,7 @@ package Aspects is
       Aspect_Pre,
       Aspect_Precondition,
       Aspect_Predicate,                     -- GNAT
+      Aspect_Predicate_Failure,
       Aspect_Priority,
       Aspect_Read,
       Aspect_Refined_Depends,               -- GNAT
@@ -361,6 +362,7 @@ package Aspects is
       Aspect_Pre                        => Expression,
       Aspect_Precondition               => Expression,
       Aspect_Predicate                  => Expression,
+      Aspect_Predicate_Failure          => Expression,
       Aspect_Priority                   => Expression,
       Aspect_Read                       => Name,
       Aspect_Refined_Depends            => Expression,
@@ -472,6 +474,7 @@ package Aspects is
       Aspect_Pre                          => Name_Pre,
       Aspect_Precondition                 => Name_Precondition,
       Aspect_Predicate                    => Name_Predicate,
+      Aspect_Predicate_Failure            => Name_Predicate_Failure,
       Aspect_Preelaborable_Initialization => Name_Preelaborable_Initialization,
       Aspect_Preelaborate                 => Name_Preelaborate,
       Aspect_Priority                     => Name_Priority,
@@ -587,7 +590,7 @@ package Aspects is
    --  constructs. To handle forward references in such aspects, the compiler
    --  delays the analysis of their respective pragmas by collecting them in
    --  N_Contract nodes. The pragmas are then analyzed at the end of the
-   --  declarative region which contains the related construct. For details,
+   --  declarative region containing the related construct. For details,
    --  see routines Analyze_xxx_In_Decl_Part.
 
    --  The following shows which aspects are delayed. There are three cases:
@@ -676,6 +679,7 @@ package Aspects is
       Aspect_Pre                          => Always_Delay,
       Aspect_Precondition                 => Always_Delay,
       Aspect_Predicate                    => Always_Delay,
+      Aspect_Predicate_Failure            => Always_Delay,
       Aspect_Preelaborable_Initialization => Always_Delay,
       Aspect_Preelaborate                 => Always_Delay,
       Aspect_Priority                     => Always_Delay,

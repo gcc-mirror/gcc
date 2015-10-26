@@ -18243,6 +18243,47 @@ package body Sem_Prag is
             Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
          end Predicate;
 
+         -----------------------
+         -- Predicate_Failure --
+         -----------------------
+
+         --  pragma Predicate_Failure
+         --    ([Entity  =>] type_LOCAL_NAME,
+         --     [Message =>] string_EXPRESSION);
+
+         when Pragma_Predicate_Failure => Predicate_Failure : declare
+            Discard : Boolean;
+            Typ     : Entity_Id;
+            Type_Id : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (2);
+            Check_Optional_Identifier (Arg1, Name_Entity);
+            Check_Optional_Identifier (Arg2, Name_Message);
+
+            Check_Arg_Is_Local_Name (Arg1);
+
+            Type_Id := Get_Pragma_Arg (Arg1);
+            Find_Type (Type_Id);
+            Typ := Entity (Type_Id);
+
+            if Typ = Any_Type then
+               return;
+            end if;
+
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Pragma_As_Ghost (N, Typ);
+
+            --  The remaining processing is simply to link the pragma on to
+            --  the rep item chain, for processing when the type is frozen.
+            --  This is accomplished by a call to Rep_Item_Too_Late.
+
+            Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
+         end Predicate_Failure;
+
          ------------------
          -- Preelaborate --
          ------------------
@@ -27291,7 +27332,7 @@ package body Sem_Prag is
    --  0   indicates that appearance in any argument is not significant
    --  +n  indicates that appearance as argument n is significant, but all
    --      other arguments are not significant
-   --  9n  arguments from n on are significant, before n inisignificant
+   --  9n  arguments from n on are significant, before n insignificant
 
    Sig_Flags : constant array (Pragma_Id) of Int :=
      (Pragma_Abort_Defer                    => -1,
@@ -27446,6 +27487,7 @@ package body Sem_Prag is
       Pragma_Pre                            => -1,
       Pragma_Precondition                   => -1,
       Pragma_Predicate                      => -1,
+      Pragma_Predicate_Failure              => -1,
       Pragma_Preelaborable_Initialization   => -1,
       Pragma_Preelaborate                   =>  0,
       Pragma_Pre_Class                      => -1,
