@@ -3809,7 +3809,7 @@ gfc_trans_scalarized_loop_boundary (gfc_loopinfo * loop, stmtblock_t * body)
 
 static void
 evaluate_bound (stmtblock_t *block, tree *bounds, gfc_expr ** values,
-		tree desc, int dim, bool lbound)
+		tree desc, int dim, bool lbound, bool deferred)
 {
   gfc_se se;
   gfc_expr * input_val = values[dim];
@@ -3823,6 +3823,17 @@ evaluate_bound (stmtblock_t *block, tree *bounds, gfc_expr ** values,
       gfc_conv_expr_type (&se, input_val, gfc_array_index_type);
       gfc_add_block_to_block (block, &se.pre);
       *output = se.expr;
+    }
+  else if (deferred)
+    {
+      /* The gfc_conv_array_lbound () routine returns a constant zero for
+	 deferred length arrays, which in the scalarizer wrecks havoc, when
+	 copying to a (newly allocated) one-based array.
+	 Keep returning the actual result in sync for both bounds.  */
+      *output = lbound ? gfc_conv_descriptor_lbound_get (desc,
+							 gfc_rank_cst[dim]):
+			 gfc_conv_descriptor_ubound_get (desc,
+							 gfc_rank_cst[dim]);
     }
   else
     {
@@ -3864,14 +3875,18 @@ gfc_conv_section_startstride (stmtblock_t * block, gfc_ss * ss, int dim)
   desc = info->descriptor;
   stride = ar->stride[dim];
 
+
   /* Calculate the start of the range.  For vector subscripts this will
      be the range of the vector.  */
-  evaluate_bound (block, info->start, ar->start, desc, dim, true);
+  evaluate_bound (block, info->start, ar->start, desc, dim, true,
+		  ar->as->type == AS_DEFERRED);
 
   /* Similarly calculate the end.  Although this is not used in the
      scalarizer, it is needed when checking bounds and where the end
      is an expression with side-effects.  */
-  evaluate_bound (block, info->end, ar->end, desc, dim, false);
+  evaluate_bound (block, info->end, ar->end, desc, dim, false,
+		  ar->as->type == AS_DEFERRED);
+
 
   /* Calculate the stride.  */
   if (stride == NULL)
@@ -6965,7 +6980,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
 	  gcc_assert (n == codim - 1);
 	  evaluate_bound (&loop.pre, info->start, ar->start,
-			  info->descriptor, n + ndim, true);
+			  info->descriptor, n + ndim, true,
+			  ar->as->type == AS_DEFERRED);
 	  loop.from[n + loop.dimen] = info->start[n + ndim];
 	}
       else
