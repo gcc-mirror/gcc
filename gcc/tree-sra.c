@@ -4580,61 +4580,45 @@ get_adjustment_for_base (ipa_parm_adjustment_vec adjustments, tree base)
   return NULL;
 }
 
-/* If the statement STMT defines an SSA_NAME of a parameter which is to be
-   removed because its value is not used, replace the SSA_NAME with a one
-   relating to a created VAR_DECL together all of its uses and return true.
-   ADJUSTMENTS is a pointer to an adjustments vector.  */
+/* If OLD_NAME, which is being defined by statement STMT, is an SSA_NAME of a
+   parameter which is to be removed because its value is not used, create a new
+   SSA_NAME relating to a replacement VAR_DECL, replace all uses of the
+   original with it and return it.  If there is no need to re-map, return NULL.
+   ADJUSTMENTS is a pointer to a vector of IPA-SRA adjustments.  */
 
-static bool
-replace_removed_params_ssa_names (gimple stmt,
+static tree
+replace_removed_params_ssa_names (tree old_name, gimple *stmt,
 				  ipa_parm_adjustment_vec adjustments)
 {
   struct ipa_parm_adjustment *adj;
-  tree lhs, decl, repl, name;
+  tree decl, repl, new_name;
 
-  if (gimple_code (stmt) == GIMPLE_PHI)
-    lhs = gimple_phi_result (stmt);
-  else if (is_gimple_assign (stmt))
-    lhs = gimple_assign_lhs (stmt);
-  else if (is_gimple_call (stmt))
-    lhs = gimple_call_lhs (stmt);
-  else
-    gcc_unreachable ();
+  if (TREE_CODE (old_name) != SSA_NAME)
+    return NULL;
 
-  if (TREE_CODE (lhs) != SSA_NAME)
-    return false;
-
-  decl = SSA_NAME_VAR (lhs);
+  decl = SSA_NAME_VAR (old_name);
   if (decl == NULL_TREE
       || TREE_CODE (decl) != PARM_DECL)
-    return false;
+    return NULL;
 
   adj = get_adjustment_for_base (adjustments, decl);
   if (!adj)
-    return false;
+    return NULL;
 
   repl = get_replaced_param_substitute (adj);
-  name = make_ssa_name (repl, stmt);
+  new_name = make_ssa_name (repl, stmt);
 
   if (dump_file)
     {
       fprintf (dump_file, "replacing an SSA name of a removed param ");
-      print_generic_expr (dump_file, lhs, 0);
+      print_generic_expr (dump_file, old_name, 0);
       fprintf (dump_file, " with ");
-      print_generic_expr (dump_file, name, 0);
+      print_generic_expr (dump_file, new_name, 0);
       fprintf (dump_file, "\n");
     }
 
-  if (is_gimple_assign (stmt))
-    gimple_assign_set_lhs (stmt, name);
-  else if (is_gimple_call (stmt))
-    gimple_call_set_lhs (stmt, name);
-  else
-    gimple_phi_set_result (as_a <gphi *> (stmt), name);
-
-  replace_uses_by (lhs, name);
-  release_ssa_name (lhs);
-  return true;
+  replace_uses_by (old_name, new_name);
+  return new_name;
 }
 
 /* If the statement STMT contains any expressions that need to replaced with a
@@ -4713,7 +4697,16 @@ ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
       gimple_stmt_iterator gsi;
 
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	replace_removed_params_ssa_names (gsi_stmt (gsi), adjustments);
+	{
+	  gphi *phi = as_a <gphi *> (gsi_stmt (gsi));
+	  tree new_lhs, old_lhs = gimple_phi_result (phi);
+	  new_lhs = replace_removed_params_ssa_names (old_lhs, phi, adjustments);
+	  if (new_lhs)
+	    {
+	      gimple_phi_set_result (phi, new_lhs);
+	      release_ssa_name (old_lhs);
+	    }
+	}
 
       gsi = gsi_start_bb (bb);
       while (!gsi_end_p (gsi))
@@ -4733,7 +4726,6 @@ ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
 
 	    case GIMPLE_ASSIGN:
 	      modified |= sra_ipa_modify_assign (stmt, &gsi, adjustments);
-	      modified |= replace_removed_params_ssa_names (stmt, adjustments);
 	      break;
 
 	    case GIMPLE_CALL:
@@ -4748,8 +4740,6 @@ ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
 		{
 		  t = gimple_call_lhs_ptr (stmt);
 		  modified |= ipa_modify_expr (t, false, adjustments);
-		  modified |= replace_removed_params_ssa_names (stmt,
-								adjustments);
 		}
 	      break;
 
@@ -4771,6 +4761,20 @@ ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
 
 	    default:
 	      break;
+	    }
+
+	  def_operand_p defp;
+	  ssa_op_iter iter;
+	  FOR_EACH_SSA_DEF_OPERAND (defp, stmt, iter, SSA_OP_DEF)
+	    {
+	      tree old_def = DEF_FROM_PTR (defp);
+	      if (tree new_def = replace_removed_params_ssa_names (old_def, stmt,
+								   adjustments))
+		{
+		  SET_DEF (defp, new_def);
+		  release_ssa_name (old_def);
+		  modified = true;
+		}
 	    }
 
 	  if (modified)

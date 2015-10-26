@@ -1,3 +1,15 @@
+2015-10-26  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2015-10-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/67794
+	* tree-sra.c (replace_removed_params_ssa_names): Do not distinguish
+	between types of statements but accept original definitions as a
+	parameter.
+	(ipa_sra_modify_function_body): Use FOR_EACH_SSA_DEF_OPERAND to
+	iterate over definitions.
+
 2015-10-25  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR middle-end/68079
