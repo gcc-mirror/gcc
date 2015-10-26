@@ -877,14 +877,12 @@ package System.OS_Lib is
    --  there is no notion of executables under this OS.
 
    procedure Kill (Pid : Process_Id; Hard_Kill : Boolean := True);
-   --  Kill process known as Pid by the OS. Does nothing if Pid is
-   --  Invalid_Pid or on platforms where it is not supported like
-   --  VxWorks.
-   --  Hard_Kill is True by default and in this case the process
-   --  is terminated immediately. If Hard_Kill is False a signal
-   --  SIGINT is sent to the process on POSIX OS or a CTRL-C event
-   --  on Windows, this let the process a chance to quit properly
-   --  using a corresponding handler.
+   --  Kill the process designated by Pid. Does nothing if Pid is Invalid_Pid
+   --  or on platforms where it is not supported, such as VxWorks. Hard_Kill
+   --  is True by default, and when True the process is terminated immediately.
+   --  If Hard_Kill is False, then a signal SIGINT is sent to the process on
+   --  POSIX OS or a ctrl-C event on Windows, allowing the process a chance to
+   --  terminate properly using a corresponding handler.
 
    function Argument_String_To_List
      (Arg_String : String) return Argument_List_Access;

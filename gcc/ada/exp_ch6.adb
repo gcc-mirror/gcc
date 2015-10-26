@@ -5666,10 +5666,15 @@ package body Exp_Ch6 is
       --  constrained array type into a procedure with an out parameter
       --  that carries the return value.
 
+      --  We skip this transformation for unchecked conversions, since they
+      --  are not needed by the C generator (and this also produces cleaner
+      --  output).
+
       if Modify_Tree_For_C
         and then Nkind (Specification (N)) = N_Function_Specification
         and then Is_Array_Type (Etype (Subp))
         and then Is_Constrained (Etype (Subp))
+        and then not Is_Unchecked_Conversion_Instance (Subp)
       then
          Build_Procedure_Form;
       end if;
