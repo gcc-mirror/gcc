@@ -2,7 +2,7 @@
 ! { dg-options "-std=gnu" }
 ! See PR38956.  Test fails on cygwin when user has Administrator rights
   implicit none
-  character(len=*), parameter :: n = "foobar_file"
+  character(len=*), parameter :: n = "foobar_file_chmod_1"
   integer :: i
 
   open (10,file=n)

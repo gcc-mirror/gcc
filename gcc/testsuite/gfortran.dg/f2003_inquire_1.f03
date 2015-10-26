@@ -4,7 +4,7 @@ character(25) :: sround, ssign, sasynchronous, sdecimal, sencoding
 integer :: vsize, vid
 logical :: vpending
 
-open(10, file='mydata', asynchronous="yes", blank="null", &
+open(10, file='mydata_f2003_inquire_1', asynchronous="yes", blank="null", &
 & decimal="comma", encoding="utf-8", sign="plus")
 
 inquire(unit=10, round=sround, sign=ssign, size=vsize, id=vid, &

@@ -1,3 +1,25 @@
+2015-10-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gfortran.dg/chmod_1.f90: Add suffix to the temporary filename to
+	make it unique per testcase.
+	* gfortran.dg/chmod_2.f90: Likewise.
+	* gfortran.dg/chmod_3.f90: Likewise.
+	* gfortran.dg/direct_io_8.f90: Likewise.
+	* gfortran.dg/f2003_inquire_1.f03: Likewise.
+	* gfortran.dg/f2003_io_1.f03: Likewise.
+	* gfortran.dg/f2003_io_2.f03: Likewise.
+	* gfortran.dg/f2003_io_8.f03: Likewise.
+	* gfortran.dg/inquire_size.f90: Likewise.
+	* gfortran.dg/namelist_66.f90: Likewise.
+	* gfortran.dg/namelist_82.f90: Likewise.
+	* gfortran.dg/namelist_87.f90: Likewise.
+	* gfortran.dg/open_negative_unit_1.f90: Likewise.
+	* gfortran.dg/open_new.f90: Likewise.
+	* gfortran.dg/stat_1.f90: Likewise.
+	* gfortran.dg/stat_2.f90: Likewise.
+	* gfortran.dg/streamio_15.f90: Likewise.
+	* gfortran.dg/unf_read_corrupted_1.f90: Likewise.
+
 2015-10-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/67989

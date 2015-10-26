@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! { dg-skip-if "" { *-*-mingw* spu-*-* } { "*" } { "" } }
 ! { dg-options "-std=gnu" }
-  character(len=*), parameter :: f = "testfile"
+  character(len=*), parameter :: f = "testfile_stat_2"
   integer :: s1(13), r1, s2(13), r2, s3(13), r3, d(13), rd
   
   open (10,file=f)
