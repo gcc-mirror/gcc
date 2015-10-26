@@ -3276,7 +3276,7 @@ package body Sem_Ch3 is
       function Count_Tasks (T : Entity_Id) return Uint;
       --  This function is called when a non-generic library level object of a
       --  task type is declared. Its function is to count the static number of
-      --  tasks declared within the type (it is only called if Has_Tasks is set
+      --  tasks declared within the type (it is only called if Has_Task is set
       --  for T). As a side effect, if an array of tasks with non-static bounds
       --  or a variant record type is encountered, Check_Restriction is called
       --  indicating the count is unknown.
@@ -5241,14 +5241,13 @@ package body Sem_Ch3 is
             Cstr : constant Node_Id := Constraint (Subtype_Indication (N));
          begin
             if Nkind (Cstr) = N_Index_Or_Discriminant_Constraint
-              and then not (Is_Internal (Defining_Identifier (N))
-                              and then Is_TSS (Scope (Defining_Identifier (N)),
-                                               TSS_Composite_Equality))
+              and then not (Is_Internal (Id)
+                             and then Is_TSS (Scope (Id),
+                                              TSS_Composite_Equality))
               and then not Within_Init_Proc
+              and then not All_Composite_Constraints_Static (Cstr)
             then
-               if not All_Composite_Constraints_Static (Cstr) then
-                  Check_Restriction (No_Dynamic_Sized_Objects, Cstr);
-               end if;
+               Check_Restriction (No_Dynamic_Sized_Objects, Cstr);
             end if;
          end;
       end if;

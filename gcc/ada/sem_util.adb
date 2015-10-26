@@ -452,33 +452,39 @@ package body Sem_Util is
               and then Present (Entity (Constr))
             then
                if Is_Type (Entity (Constr)) then
-                  return not Is_Discrete_Type (Entity (Constr))
-                    or else Is_OK_Static_Subtype (Entity (Constr));
+                  return
+                    not Is_Discrete_Type (Entity (Constr))
+                      or else Is_OK_Static_Subtype (Entity (Constr));
                end if;
 
             elsif Nkind (Constr) = N_Range then
-               return Is_OK_Static_Expression (Low_Bound (Constr))
-                 and then Is_OK_Static_Expression (High_Bound (Constr));
+               return
+                 Is_OK_Static_Expression (Low_Bound (Constr))
+                   and then
+                 Is_OK_Static_Expression (High_Bound (Constr));
 
             elsif Nkind (Constr) = N_Attribute_Reference
               and then Attribute_Name (Constr) = Name_Range
             then
-               return Is_OK_Static_Expression
-                   (Type_Low_Bound  (Etype (Prefix (Constr))))
-                 and then Is_OK_Static_Expression
+               return
+                 Is_OK_Static_Expression
+                   (Type_Low_Bound (Etype (Prefix (Constr))))
+                     and then
+                 Is_OK_Static_Expression
                    (Type_High_Bound (Etype (Prefix (Constr))));
             end if;
 
-            return not Present (Etype (Constr)) -- previous error
-              or else not Is_Discrete_Type (Etype (Constr))
-              or else Is_OK_Static_Expression (Constr);
+            return
+              not Present (Etype (Constr)) -- previous error
+                or else not Is_Discrete_Type (Etype (Constr))
+                or else Is_OK_Static_Expression (Constr);
 
          when N_Discriminant_Association =>
             return All_Composite_Constraints_Static (Expression (Constr));
 
          when N_Range_Constraint =>
-            return All_Composite_Constraints_Static
-              (Range_Expression (Constr));
+            return
+              All_Composite_Constraints_Static (Range_Expression (Constr));
 
          when N_Index_Or_Discriminant_Constraint =>
             declare
@@ -497,8 +503,10 @@ package body Sem_Util is
             return True;
 
          when N_Subtype_Indication =>
-            return All_Composite_Constraints_Static (Subtype_Mark (Constr))
-              and then All_Composite_Constraints_Static (Constraint (Constr));
+            return
+              All_Composite_Constraints_Static (Subtype_Mark (Constr))
+                and then
+              All_Composite_Constraints_Static (Constraint (Constr));
 
          when others =>
             raise Program_Error;
