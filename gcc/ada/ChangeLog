@@ -1,5 +1,13 @@
 2015-10-26  Jerome Lambourg  <lambourg@adacore.com>
 
+	* sysdep.c (__gnat_get_task_options): Refine the workaround for
+	the VX_USR_TASK_OPTION bug in VxWorks 7, as we cannot check the
+	value of VX_DEALLOC_TCB in RTP mode, the macro value not being
+	defined in the headers.
+	* g-arrspl.ads: Fix typo.
+
+2015-10-26  Jerome Lambourg  <lambourg@adacore.com>
+
 	* sysdep.c (__gnat_get_task_options): Workaround a VxWorks
 	bug where VX_DEALLOC_TCB task option is forbidden when calling
 	taskCreate but allowed in VX_USR_TASK_OPTIONS.
