@@ -6450,6 +6450,16 @@ should probably only be given to addresses with different numbers of
 registers on machines with lots of registers.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P (void)
+This predicate controls the use of the eager delay slot filler to disallow
+speculatively executed instructions being placed in delay slots.  Targets
+such as certain MIPS architectures possess both branches with and without
+delay slots.  As the eager delay slot filler can decrease performance,
+disabling it is beneficial when ordinary branches are available.  Use of
+delay slot branches filled using the basic filler is often still desirable
+as the delay slot can hide a pipeline bubble.
+@end deftypefn
+
 @node Scheduling
 @section Adjusting the Instruction Scheduler
 

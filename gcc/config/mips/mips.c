@@ -4312,6 +4312,14 @@ mips_address_cost (rtx addr, machine_mode mode,
 {
   return mips_address_insns (addr, mode, false);
 }
+
+/* Implement TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P.  */
+
+static bool
+mips_no_speculation_in_delay_slots_p ()
+{
+  return TARGET_CB_MAYBE;
+}
 
 /* Information about a single instruction in a multi-instruction
    asm sequence.  */
@@ -19822,6 +19830,9 @@ mips_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class)
 #define TARGET_RTX_COSTS mips_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST mips_address_cost
+
+#undef TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
+#define TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P mips_no_speculation_in_delay_slots_p
 
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P mips_in_small_data_p

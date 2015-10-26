@@ -4726,6 +4726,8 @@ Define this macro if a non-short-circuit operation produced by
 
 @hook TARGET_ADDRESS_COST
 
+@hook TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
+
 @node Scheduling
 @section Adjusting the Instruction Scheduler
 

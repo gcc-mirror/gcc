@@ -3506,6 +3506,19 @@ registers on machines with lots of registers.",
  int, (rtx address, machine_mode mode, addr_space_t as, bool speed),
  default_address_cost)
 
+/* Permit speculative instructions in delay slots during delayed-branch 
+   scheduling.  */
+DEFHOOK
+(no_speculation_in_delay_slots_p,
+ "This predicate controls the use of the eager delay slot filler to disallow\n\
+speculatively executed instructions being placed in delay slots.  Targets\n\
+such as certain MIPS architectures possess both branches with and without\n\
+delay slots.  As the eager delay slot filler can decrease performance,\n\
+disabling it is beneficial when ordinary branches are available.  Use of\n\
+delay slot branches filled using the basic filler is often still desirable\n\
+as the delay slot can hide a pipeline bubble.", bool, (void),
+  hook_bool_void_false)
+
 /* Return where to allocate pseudo for a given hard register initial value.  */
 DEFHOOK
 (allocate_initial_value,
