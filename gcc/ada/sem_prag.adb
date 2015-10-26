@@ -3879,17 +3879,22 @@ package body Sem_Prag is
             return;
          end if;
 
-         --  The pragma can only apply to the body [stub] of a subprogram
+         --  A refined pragma can only apply to the body [stub] of a subprogram
          --  declared in the visible part of a package. Retrieve the context of
          --  the subprogram declaration.
 
          Spec_Decl := Unit_Declaration_Node (Spec_Id);
 
-         --  The proper context of a entry declaration is the declaration of
-         --  the enclosing synchronized type.
+         --  When dealing with protected entries or protected subprograms, use
+         --  the enclosing protected type as the proper context.
 
-         if Nkind (Spec_Decl) = N_Entry_Declaration then
-            Spec_Decl := Parent (Parent (Spec_Decl));
+         if Ekind_In (Spec_Id, E_Entry,
+                               E_Entry_Family,
+                               E_Function,
+                               E_Procedure)
+           and then Ekind (Scope (Spec_Id)) = E_Protected_Type
+         then
+            Spec_Decl := Declaration_Node (Scope (Spec_Id));
          end if;
 
          if Nkind (Parent (Spec_Decl)) /= N_Package_Specification then
@@ -3908,10 +3913,7 @@ package body Sem_Prag is
 
          Mark_Pragma_As_Ghost (N, Spec_Id);
 
-         if Nam_In (Pname, Name_Refined_Depends,
-                           Name_Refined_Global,
-                           Name_Refined_State)
-         then
+         if Nam_In (Pname, Name_Refined_Depends, Name_Refined_Global) then
             Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
          end if;
       end Analyze_Refined_Depends_Global_Post;

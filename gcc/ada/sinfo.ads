@@ -3700,7 +3700,7 @@ package Sinfo is
       --  node. See description of this node in the section on semantic nodes.
 
       --  N_Selected_Component
-      --  Sloc points to period
+      --  Sloc points to the period
       --  Prefix (Node3)
       --  Selector_Name (Node2)
       --  Associated_Node (Node4-Sem)

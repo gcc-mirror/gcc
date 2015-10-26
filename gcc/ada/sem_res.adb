@@ -4465,11 +4465,11 @@ package body Sem_Res is
               and then Is_Effectively_Volatile_Object (A)
             then
                --  An effectively volatile object may act as an actual when the
-               --  corresponding formal is of a non-scalar volatile type
-               --  (SPARK RM 7.1.3(12)).
+               --  corresponding formal is of a non-scalar effectively volatile
+               --  type (SPARK RM 7.1.3(12)).
 
-               if Is_Volatile (Etype (F))
-                 and then not Is_Scalar_Type (Etype (F))
+               if not Is_Scalar_Type (Etype (F))
+                 and then Is_Effectively_Volatile (Etype (F))
                then
                   null;
 
