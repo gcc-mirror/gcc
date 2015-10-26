@@ -1577,11 +1577,14 @@ begin
                --  versions of these files. Another exception is System.RPC
                --  and its children. This allows a user to supply their own
                --  communication layer.
+               --  Similarly we do not generate an error in CodePeer mode
+               --  to allow users to analyze third party compier packages.
 
                if Comp_Unit_Node /= Error
                  and then Operating_Mode = Generate_Code
                  and then Current_Source_Unit = Main_Unit
                  and then not GNAT_Mode
+                 and then not CodePeer_Mode
                then
                   declare
                      Uname : constant String :=

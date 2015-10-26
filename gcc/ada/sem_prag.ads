@@ -300,9 +300,10 @@ package Sem_Prag is
    --  and Subp_Outputs (outputs). The inputs and outputs are gathered from:
    --    1) The formal parameters of the subprogram
    --    2) The generic formal parameters of the generic subprogram
-   --    3) The items of pragma [Refined_]Global
+   --    3) The current instance of a concurrent type
+   --    4) The items of pragma [Refined_]Global
    --         or
-   --    4) The items of pragma [Refined_]Depends if there is no pragma
+   --    5) The items of pragma [Refined_]Depends if there is no pragma
    --       [Refined_]Global present and flag Synthesize is set to True.
    --  If the subprogram has no inputs and/or outputs, then the returned list
    --  is No_Elist. Flag Global_Seen is set when the related subprogram has

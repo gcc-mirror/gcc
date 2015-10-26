@@ -705,6 +705,7 @@ package body Einfo is
    function Access_Disp_Table (Id : E) return L is
    begin
       pragma Assert (Ekind_In (Id, E_Record_Type,
+                                   E_Record_Type_With_Private,
                                    E_Record_Subtype));
       return Elist16 (Implementation_Base_Type (Id));
    end Access_Disp_Table;

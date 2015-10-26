@@ -1378,6 +1378,15 @@ package body Sem_Ch6 is
             Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
          end if;
 
+         --  A generic subprogram body "freezes" the contract of its initial
+         --  declaration. This analysis depends on attribute Corresponding_Spec
+         --  being set. Only bodies coming from source should cause this type
+         --  of "freezing".
+
+         if Comes_From_Source (N) then
+            Analyze_Initial_Declaration_Contract (N);
+         end if;
+
          Analyze_Declarations (Declarations (N));
          Check_Completion;
 
@@ -3754,6 +3763,14 @@ package body Sem_Ch6 is
 
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
+      end if;
+
+      --  A subprogram body "freezes" the contract of its initial declaration.
+      --  This analysis depends on attribute Corresponding_Spec being set. Only
+      --  bodies coming from source should cause this type of "freezing".
+
+      if Comes_From_Source (N) then
+         Analyze_Initial_Declaration_Contract (N);
       end if;
 
       Analyze_Declarations (Declarations (N));

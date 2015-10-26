@@ -58,7 +58,7 @@ package Contracts is
    --    Volatile_Function
 
    procedure Analyze_Enclosing_Package_Body_Contract (Body_Decl : Node_Id);
-   --  Analyze the contract of the nearest package body (if any) enclosing
+   --  Analyze the contract of the nearest package body (if any) which encloses
    --  package or subprogram body Body_Decl.
 
    procedure Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id : Entity_Id);
@@ -85,6 +85,10 @@ package Contracts is
    --    Postcondition
    --    Precondition
    --    Test_Case
+
+   procedure Analyze_Initial_Declaration_Contract (Body_Decl : Node_Id);
+   --  Analyze the contract of the initial declaration of entry body, package
+   --  body, protected body, subprogram body or task body Body_Decl.
 
    procedure Analyze_Object_Contract (Obj_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of object Obj_Id as

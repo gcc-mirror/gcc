@@ -770,7 +770,7 @@ package Sem_Util is
    --  the Ekind of Id as follows:
    --    * Replace "subprogram" with
    --      - "entry" when Id is an entry [family]
-   --      - "task unit" when Id is a single task object, task type or task
+   --      - "task type" when Id is a single task object, task type or task
    --         body.
    --    * Replace "protected" with
    --      - "task" when Id is a single task object, task type or task body

@@ -1,3 +1,59 @@
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* atree.ads, atree.adb (Ekind_In): New 10 and 11 parameter versions.
+	* contracts.ads, contracts.adb (Analyze_Initial_Declaration_Contract):
+	New routine.
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body):
+	Analyze the contract of the initial declaration.
+	(Analyze_Subprogram_Body_Helper): Analyze the contract of the
+	initial declaration.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Analyze the contract
+	of the initial declaration.
+	* sem_ch9.adb (Analyze_Entry_Body): Analyze the contract of
+	the initial declaration.
+	(Analyze_Protected_Body): Analyze
+	the contract of the initial declaration.
+	(Analyze_Task_Body): Analyze the contract of the initial declaration.
+	* sem_prag.adb (Add_Entity_To_Name_Buffer): Use "type" rather
+	than "unit" as it makes the error messages sound better.
+	(Add_Item_To_Name_Buffer): Update comment on usage. The routine
+	now supports discriminants and current instances of concurrent
+	types.
+	(Analyze_Depends_In_Decl_Part): Install the discriminants
+	of a task type.
+	(Analyze_Global_In_Decl_Part): Install the discriminants of a task type.
+	(Analyze_Global_Item): Add processing for current instances of
+	concurrent types and include discriminants as valid global items.
+	(Analyze_Input_Output): Discriminants and current instances of
+	concurrent types are now valid items. Update various error messages.
+	(Check_Usage): Current instances of protected and task types behaves
+	as formal parameters.
+	(Collect_Subprogram_Inputs_Outputs): There is
+	no longer need to manually analyze [Refined_]Global thanks to
+	freezing of initial declaration contracts.  Add processing for
+	the current instance of a concurrent type.
+	(Find_Role): Add categorizations for discriminants, protected and task
+	types.
+	(Is_CCT_Instance): New routine.
+	(Match_Items): Update the comment on usage. Update internal comments.
+	* sem_prag.ads (Collect_Subprogram_Inputs_Outputs): Update the
+	comment on usage.
+	* sem_util.adb (Entity_Of): Ensure that the entity is an object
+	when traversing a potential renaming chain.
+	(Fix_Msg): Use "type" rather than "unit" as it makes the error messages
+	sound better.
+	* sem_util.ads (Fix_Msg): Update the comment on usage.
+
+2015-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* par.adb (Par): Do not generate an error when generating
+	SCIL for predefined units or new children of system and co.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.adb: Access_Disp_Table applies to a private
+	extension.
+
 2015-10-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Generalized_Indexing): In ASIS mode, when
