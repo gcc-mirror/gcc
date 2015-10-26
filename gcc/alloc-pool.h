@@ -363,7 +363,7 @@ base_pool_allocator <TBlockAllocator>::allocate ()
 
 	  /* Make the block.  */
 	  block = reinterpret_cast<char *> (TBlockAllocator::allocate ());
-	  block_header = (allocation_pool_list*) block;
+	  block_header = new (block) allocation_pool_list;
 	  block += align_eight (sizeof (allocation_pool_list));
 
 	  /* Throw it on the block list.  */
@@ -414,6 +414,8 @@ template <typename TBlockAllocator>
 inline void
 base_pool_allocator <TBlockAllocator>::remove (void *object)
 {
+  int size = m_elt_size - offsetof (allocation_object, u.data);
+
   if (flag_checking)
     {
       gcc_assert (m_initialized);
@@ -423,14 +425,13 @@ base_pool_allocator <TBlockAllocator>::remove (void *object)
 	      /* Check whether the PTR was allocated from POOL.  */
 	      && m_id == allocation_object::get_instance (object)->id);
 
-      int size = m_elt_size - offsetof (allocation_object, u.data);
       memset (object, 0xaf, size);
     }
 
   /* Mark the element to be free.  */
   allocation_object::get_instance (object)->id = 0;
 
-  allocation_pool_list *header = (allocation_pool_list*) object;
+  allocation_pool_list *header = new (object) allocation_pool_list;
   header->next = m_returned_free_list;
   m_returned_free_list = header;
   VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (object, size));
