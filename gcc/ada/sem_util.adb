@@ -4766,27 +4766,6 @@ package body Sem_Util is
       end if;
    end Corresponding_Generic_Type;
 
-   ---------------------------
-   -- Corresponding_Spec_Of --
-   ---------------------------
-
-   function Corresponding_Spec_Of (Decl : Node_Id) return Entity_Id is
-   begin
-      if Nkind_In (Decl, N_Package_Body, N_Subprogram_Body)
-        and then Present (Corresponding_Spec (Decl))
-      then
-         return Corresponding_Spec (Decl);
-
-      elsif Nkind_In (Decl, N_Package_Body_Stub, N_Subprogram_Body_Stub)
-        and then Present (Corresponding_Spec_Of_Stub (Decl))
-      then
-         return Corresponding_Spec_Of_Stub (Decl);
-
-      else
-         return Defining_Entity (Decl);
-      end if;
-   end Corresponding_Spec_Of;
-
    --------------------
    -- Current_Entity --
    --------------------
@@ -19031,9 +19010,31 @@ package body Sem_Util is
                U := Full_View (E);
             end if;
 
-         when Type_Kind =>
-            if Present (Full_View (E)) then
-               U := Full_View (E);
+         when Entry_Kind =>
+            if Nkind (Parent (E)) = N_Entry_Body then
+               declare
+                  Prot_Item : Entity_Id;
+               begin
+                  --  Traverse the entity list of the protected type and locate
+                  --  an entry declaration which matches the entry body.
+
+                  Prot_Item := First_Entity (Scope (E));
+                  while Present (Prot_Item) loop
+                     if Ekind (Prot_Item) = E_Entry
+                       and then Corresponding_Body (Parent (Prot_Item)) = E
+                     then
+                        U := Prot_Item;
+                        exit;
+                     end if;
+
+                     Next_Entity (Prot_Item);
+                  end loop;
+               end;
+            end if;
+
+         when Formal_Kind =>
+            if Present (Spec_Entity (E)) then
+               U := Spec_Entity (E);
             end if;
 
          when E_Package_Body =>
@@ -19043,7 +19044,30 @@ package body Sem_Util is
                P := Parent (P);
             end if;
 
-            U := Corresponding_Spec (P);
+            if Nkind (P) = N_Package_Body
+              and then Present (Corresponding_Spec (P))
+            then
+               U := Corresponding_Spec (P);
+
+            elsif Nkind (P) = N_Package_Body_Stub
+              and then Present (Corresponding_Spec_Of_Stub (P))
+            then
+               U := Corresponding_Spec_Of_Stub (P);
+            end if;
+
+         when E_Protected_Body =>
+            P := Parent (E);
+
+            if Nkind (P) = N_Protected_Body
+              and then Present (Corresponding_Spec (P))
+            then
+               U := Corresponding_Spec (P);
+
+            elsif Nkind (P) = N_Protected_Body_Stub
+              and then Present (Corresponding_Spec_Of_Stub (P))
+            then
+               U := Corresponding_Spec_Of_Stub (P);
+            end if;
 
          when E_Subprogram_Body =>
             P := Parent (E);
@@ -19054,48 +19078,34 @@ package body Sem_Util is
 
             P := Parent (P);
 
-            if Nkind (P) = N_Subprogram_Body_Stub then
-               if Present (Library_Unit (P)) then
-
-                  --  Get to the function or procedure (generic) entity through
-                  --  the body entity.
-
-                  U :=
-                    Unique_Entity (Defining_Entity (Get_Body_From_Stub (P)));
-               end if;
-            else
+            if Nkind (P) = N_Subprogram_Body
+              and then Present (Corresponding_Spec (P))
+            then
                U := Corresponding_Spec (P);
-            end if;
 
-         when Formal_Kind =>
-            if Present (Spec_Entity (E)) then
-               U := Spec_Entity (E);
+            elsif Nkind (P) = N_Subprogram_Body_Stub
+              and then Present (Corresponding_Spec_Of_Stub (P))
+            then
+               U := Corresponding_Spec_Of_Stub (P);
             end if;
 
          when E_Task_Body =>
             P := Parent (E);
-            U := Corresponding_Spec (P);
 
-         when E_Entry =>
-            if Nkind (Parent (E)) = N_Entry_Body then
-               declare
-                  Decl : Entity_Id := First_Entity (Scope (E));
-               begin
-                  --  Traverse the entity list of the protected object
-                  --  and locate an entry declaration with a matching
-                  --  Corresponding_Body.
+            if Nkind (P) = N_Task_Body
+              and then Present (Corresponding_Spec (P))
+            then
+               U := Corresponding_Spec (P);
 
-                  while Present (Decl) loop
-                     if Ekind (Decl) = E_Entry
-                       and then Corresponding_Body (Parent (Decl)) = E
-                     then
-                        U := Decl;
-                        exit;
-                     end if;
-                     Next_Entity (Decl);
-                  end loop;
-                  pragma Assert (Present (Decl));
-               end;
+            elsif Nkind (P) = N_Task_Body_Stub
+              and then Present (Corresponding_Spec_Of_Stub (P))
+            then
+               U := Corresponding_Spec_Of_Stub (P);
+            end if;
+
+         when Type_Kind =>
+            if Present (Full_View (E)) then
+               U := Full_View (E);
             end if;
 
          when others =>

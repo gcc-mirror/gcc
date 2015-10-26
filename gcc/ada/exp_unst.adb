@@ -520,7 +520,7 @@ package body Exp_Unst is
             --  of no corresponding body being available is ignored for now.
 
             elsif Nkind (N) = N_Subprogram_Body then
-               Ent := Corresponding_Spec_Of (N);
+               Ent := Unique_Defining_Entity (N);
 
                --  Ignore generic subprogram
 

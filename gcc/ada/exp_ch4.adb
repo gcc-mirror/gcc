@@ -463,7 +463,7 @@ package body Exp_Ch4 is
          --  Local variables
 
          Loc       : constant Source_Ptr := Sloc (Unit_Id);
-         Spec_Id   : constant Entity_Id  := Corresponding_Spec_Of (Unit_Decl);
+         Spec_Id   : constant Entity_Id  := Unique_Defining_Entity (Unit_Decl);
          Decls     : List_Id;
          FM_Id     : Entity_Id;
          Pref      : Character;

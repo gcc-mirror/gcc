@@ -377,7 +377,7 @@ package Sem_Aux is
    --  The result returned is the next _Tag field in this record, or Empty
    --  if this is the last such field.
 
-   function Number_Components (Typ : Entity_Id) return Pos;
+   function Number_Components (Typ : Entity_Id) return Nat;
    --  Typ is a record type, yields number of components (including
    --  discriminants) in type.
 

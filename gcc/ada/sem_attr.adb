@@ -1351,7 +1351,7 @@ package body Sem_Attr is
          --  If we get here, then the attribute is legal
 
          Legal   := True;
-         Spec_Id := Corresponding_Spec_Of (Subp_Decl);
+         Spec_Id := Unique_Defining_Entity (Subp_Decl);
       end Analyze_Attribute_Old_Result;
 
       ---------------------------------

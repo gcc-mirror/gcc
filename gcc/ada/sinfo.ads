@@ -1571,7 +1571,7 @@ package Sinfo is
    --    concatenation nodes in instances.
 
    --  Is_Controlling_Actual (Flag16-Sem)
-   --    This flag is set on in an expression that is a controlling argument in
+   --    This flag is set on an expression that is a controlling argument in
    --    a dispatching call. It is off in all other cases. See Sem_Disp for
    --    details of its use.
 
@@ -1596,9 +1596,9 @@ package Sinfo is
    --    the enclosing object.
 
    --  Is_Entry_Barrier_Function (Flag8-Sem)
-   --    This flag is set in an N_Subprogram_Body node which is the expansion
-   --    of an entry barrier from a protected entry body. It is used for the
-   --    circuitry checking for incorrect use of Current_Task.
+   --    This flag is set on N_Subprogram_Declaration and N_Subprogram_Body
+   --    nodes which emulate the barrier function of a protected entry body.
+   --    The flag is used when checking for incorrect use of Current_Task.
 
    --  Is_Expanded_Build_In_Place_Call (Flag11-Sem)
    --    This flag is set in an N_Function_Call node to indicate that the extra
@@ -1727,6 +1727,10 @@ package Sinfo is
    --    containing tasks. Such a block requires a cleanup handler to call
    --    Expunge_Unactivated_Tasks to complete any tasks that have been
    --    allocated but not activated when the allocator completes abnormally.
+
+   --  Is_Task_Body_Procedure (Flag1-Sem)
+   --    This flag is set on N_Subprogram_Declaration and N_Subprogram_Body
+   --    nodes which emulate the body of a task unit.
 
    --  Is_Task_Master (Flag5-Sem)
    --    A flag set in a Subprogram_Body, Block_Statement or Task_Body node to
@@ -4953,6 +4957,8 @@ package Sinfo is
       --  Body_To_Inline (Node3-Sem)
       --  Corresponding_Body (Node5-Sem)
       --  Parent_Spec (Node4-Sem)
+      --  Is_Entry_Barrier_Function (Flag8-Sem)
+      --  Is_Task_Body_Procedure (Flag1-Sem)
 
       ------------------------------------------
       -- 6.1  Abstract Subprogram Declaration --
@@ -5192,8 +5198,9 @@ package Sinfo is
       --  Acts_As_Spec (Flag4-Sem)
       --  Bad_Is_Detected (Flag15) used only by parser
       --  Do_Storage_Check (Flag17-Sem)
-      --  Is_Protected_Subprogram_Body (Flag7-Sem)
       --  Is_Entry_Barrier_Function (Flag8-Sem)
+      --  Is_Protected_Subprogram_Body (Flag7-Sem)
+      --  Is_Task_Body_Procedure (Flag1-Sem)
       --  Is_Task_Master (Flag5-Sem)
       --  Was_Originally_Stub (Flag13-Sem)
       --  Has_Relative_Deadline_Pragma (Flag9-Sem)
@@ -9384,6 +9391,9 @@ package Sinfo is
    function Is_Task_Allocation_Block
      (N : Node_Id) return Boolean;    -- Flag6
 
+   function Is_Task_Body_Procedure
+     (N : Node_Id) return Boolean;    -- Flag1
+
    function Is_Task_Master
      (N : Node_Id) return Boolean;    -- Flag5
 
@@ -10412,6 +10422,9 @@ package Sinfo is
 
    procedure Set_Is_Task_Allocation_Block
      (N : Node_Id; Val : Boolean := True);    -- Flag6
+
+   procedure Set_Is_Task_Body_Procedure
+     (N : Node_Id; Val : Boolean := True);    -- Flag1
 
    procedure Set_Is_Task_Master
      (N : Node_Id; Val : Boolean := True);    -- Flag5
@@ -12780,6 +12793,7 @@ package Sinfo is
    pragma Inline (Is_Static_Expression);
    pragma Inline (Is_Subprogram_Descriptor);
    pragma Inline (Is_Task_Allocation_Block);
+   pragma Inline (Is_Task_Body_Procedure);
    pragma Inline (Is_Task_Master);
    pragma Inline (Iteration_Scheme);
    pragma Inline (Itype);
@@ -13118,6 +13132,7 @@ package Sinfo is
    pragma Inline (Set_Is_Static_Expression);
    pragma Inline (Set_Is_Subprogram_Descriptor);
    pragma Inline (Set_Is_Task_Allocation_Block);
+   pragma Inline (Set_Is_Task_Body_Procedure);
    pragma Inline (Set_Is_Task_Master);
    pragma Inline (Set_Iteration_Scheme);
    pragma Inline (Set_Iterator_Specification);

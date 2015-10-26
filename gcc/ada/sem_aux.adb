@@ -1380,7 +1380,7 @@ package body Sem_Aux is
    -- Number_Components --
    -----------------------
 
-   function Number_Components (Typ : Entity_Id) return Pos is
+   function Number_Components (Typ : Entity_Id) return Nat is
       N    : Int;
       Comp : Entity_Id;
 
