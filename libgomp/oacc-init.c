@@ -449,6 +449,8 @@ ialias (acc_init)
 void
 acc_shutdown (acc_device_t d)
 {
+  gomp_init_targets_once ();
+
   gomp_mutex_lock (&acc_device_lock);
 
   acc_shutdown_1 (d);

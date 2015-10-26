@@ -1,5 +1,8 @@
 2015-10-26  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* oacc-init.c (acc_shutdown): Call gomp_init_targets_once.
+	* testsuite/libgomp.oacc-c-c++-common/lib-8.c: New file.
+
 	PR libgomp/66518
 	* testsuite/libgomp.oacc-c-c++-common/lib-3.c: Resolve XFAIL.
 
