@@ -1,3 +1,10 @@
+2015-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/atomic-noinline.c: Change test on __atomic_is_lock_free.
+	* gcc.dg/atomic-noinline-aux.c: Adjust accordingly.
+	* gnat.dg/opt51.adb: New test.
+	* gnat.dg/opt51_pkg.ads: New helper.
+
 2015-10-26  Simon Dardis  <simon.dardis@imgtec.com>
 
 	* gcc.target/mips/ds-schedule-1.c: New.
