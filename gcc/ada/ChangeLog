@@ -1,3 +1,14 @@
+2015-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* osint-c.ads: Minor comment update.
+
+2015-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osinte-hpux.ads, s-osinte-aix.ads, s-osinte-solaris-posix.ads,
+	s-osinte-darwin.ads, s-osinte-android.ads, s-osinte-freebsd.ads,
+	s-taprop-posix.adb (Get_Page_Size): C function returns an int. Adjust
+	callers accordingly.
+
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Is_OK_Object_Reference): New routine.

@@ -315,21 +315,20 @@ package body System.Task_Primitives.Operations is
 
    procedure Stack_Guard (T : ST.Task_Id; On : Boolean) is
       Stack_Base : constant Address := Get_Stack_Base (T.Common.LL.Thread);
-      Guard_Page_Address : Address;
-
-      Res : Interfaces.C.int;
+      Page_Size  : Address;
+      Res        : Interfaces.C.int;
 
    begin
       if Stack_Base_Available then
 
          --  Compute the guard page address
 
-         Guard_Page_Address :=
-           Stack_Base - (Stack_Base mod Get_Page_Size) + Get_Page_Size;
-
+         Page_Size := Address (Get_Page_Size);
          Res :=
-           mprotect (Guard_Page_Address, Get_Page_Size,
-                     prot => (if On then PROT_ON else PROT_OFF));
+           mprotect
+             (Stack_Base - (Stack_Base mod Page_Size) + Page_Size,
+              size_t (Page_Size),
+              prot => (if On then PROT_ON else PROT_OFF));
          pragma Assert (Res = 0);
       end if;
    end Stack_Guard;
@@ -978,7 +977,8 @@ package body System.Task_Primitives.Operations is
    is
       Attributes          : aliased pthread_attr_t;
       Adjusted_Stack_Size : Interfaces.C.size_t;
-      Page_Size           : constant Interfaces.C.size_t := Get_Page_Size;
+      Page_Size           : constant Interfaces.C.size_t :=
+                              Interfaces.C.size_t (Get_Page_Size);
       Result              : Interfaces.C.int;
 
       function Thread_Body_Access is new
