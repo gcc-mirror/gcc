@@ -1,3 +1,10 @@
+2015-10-26  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/68013
+	* tree-ssa-threadbackward.c
+	(fsm_find_control_statement_thread_paths): Make sure the first block
+	in the path is in VISITED_BBs.
+
 2015-10-26  Richard Biener  <rguenther@suse.de>
 	Dominik Vogt  <vogt@linux.vnet.ibm.com>
 

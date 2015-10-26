@@ -136,6 +136,11 @@ fsm_find_control_statement_thread_paths (tree name,
       vec<basic_block, va_gc> *next_path;
       vec_alloc (next_path, n_basic_blocks_for_fn (cfun));
 
+      /* When VAR_BB == LAST_BB_IN_PATH, then the first block in the path
+	 will already be in VISITED_BBS.  When they are not equal, then we
+	 must ensure that first block is accounted for to ensure we do not
+	 create bogus jump threading paths.  */
+      visited_bbs->add ((*path)[0]);
       FOR_EACH_EDGE (e, ei, last_bb_in_path->preds)
 	{
 	  hash_set<basic_block> *visited_bbs = new hash_set<basic_block>;
