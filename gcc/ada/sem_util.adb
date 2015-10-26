@@ -10320,6 +10320,25 @@ package body Sem_Util is
          Item := Next_Rep_Item (Item);
       end loop;
 
+      Item := First_Rep_Item (From_Typ);
+
+      --  Additional check when both parent and current type have rep.
+      --  items, to prevent circularities when the derivation completes
+      --  a private declaration and inherits from both views of the parent.
+      --  There may be a remaining problem with the proper ordering of
+      --  attribute specifications and aspects on the chains of the four
+      --  entities involved. ???
+
+      if Present (Item) and then Present (From_Item) then
+         while Present (Item) loop
+            if Item = First_Rep_Item (Typ) then
+               return;
+            end if;
+
+            Item := Next_Rep_Item (Item);
+         end loop;
+      end if;
+
       --  When the destination type has a rep item chain, the chain of the
       --  source type is appended to it.
 
