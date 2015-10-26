@@ -1,3 +1,11 @@
+2015-10-26  Christian Bruel  <christian.bruel@st.com>
+
+	* function.h (MINIMUM_METHOD_BOUNDARY): New macro.
+	* cp/decl.c (grokfndecl): Set DECL_ALIGN with MINIMUM_METHOD_BOUNDARY.
+	* cp/method.c (implicitly_declare_fn): Likewise.
+	* cp/lambda.c (maybe_add_lambda_conv_op): Likewise. Remove VBIT setting.
+	* java/class.c (add_method_1): Likewise.
+
 2015-10-26  Richard Biener  <rguenther@suse.de>
 
 	* alloc-pool.h (base_pool_allocator): Use placement new.
