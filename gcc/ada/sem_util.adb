@@ -11331,7 +11331,9 @@ package body Sem_Util is
                 and then Present (Scope (Id))
                 and then Chars (Scope (Id)) = Name_Synchronous_Task_Control
                 and then Present (Scope (Scope (Id)))
-                and then Chars (Scope (Scope (Id))) = Name_Ada;
+                and then Chars (Scope (Scope (Id))) = Name_Ada
+                and then Present (Scope (Scope (Scope (Id))))
+                and then Scope (Scope (Scope (Id))) = Standard_Standard;
          end Is_Suspension_Object;
 
          --  Local variables

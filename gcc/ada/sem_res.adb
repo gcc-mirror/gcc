@@ -4464,17 +4464,18 @@ package body Sem_Res is
               and then Comes_From_Source (A)
               and then Is_Effectively_Volatile_Object (A)
             then
-               --  An effectively volatile object may act as an actual
-               --  parameter when the corresponding formal is of a non-scalar
-               --  volatile type.
+               --  An effectively volatile object may act as an actual when the
+               --  corresponding formal is of a non-scalar volatile type
+               --  (SPARK RM 7.1.3(12)).
 
                if Is_Volatile (Etype (F))
                  and then not Is_Scalar_Type (Etype (F))
                then
                   null;
 
-               --  An effectively volatile object may act as an actual
-               --  parameter in a call to an instance of Unchecked_Conversion.
+               --  An effectively volatile object may act as an actual in a
+               --  call to an instance of Unchecked_Conversion.
+               --  (SPARK RM 7.1.3(12)).
 
                elsif Is_Unchecked_Conversion_Instance (Nam) then
                   null;
@@ -6843,7 +6844,7 @@ package body Sem_Res is
          function Within_Check (Nod : Node_Id) return Boolean;
          --  Determine whether an arbitrary node appears in a check node
 
-         function Within_Procedure_Call (Nod : Node_Id) return Boolean;
+         function Within_Subprogram_Call (Nod : Node_Id) return Boolean;
          --  Determine whether an arbitrary node appears in a procedure call
 
          function Within_Volatile_Function (Id : Entity_Id) return Boolean;
@@ -6907,19 +6908,21 @@ package body Sem_Res is
             return False;
          end Within_Check;
 
-         ---------------------------
-         -- Within_Procedure_Call --
-         ---------------------------
+         ----------------------------
+         -- Within_Subprogram_Call --
+         ----------------------------
 
-         function Within_Procedure_Call (Nod : Node_Id) return Boolean is
+         function Within_Subprogram_Call (Nod : Node_Id) return Boolean is
             Par : Node_Id;
 
          begin
-            --  Climb the parent chain looking for a procedure call
+            --  Climb the parent chain looking for a function or procedure call
 
             Par := Nod;
             while Present (Par) loop
-               if Nkind (Par) = N_Procedure_Call_Statement then
+               if Nkind_In (Par, N_Function_Call,
+                                 N_Procedure_Call_Statement)
+               then
                   return True;
 
                --  Prevent the search from going too far
@@ -6932,7 +6935,7 @@ package body Sem_Res is
             end loop;
 
             return False;
-         end Within_Procedure_Call;
+         end Within_Subprogram_Call;
 
          ------------------------------
          -- Within_Volatile_Function --
@@ -7049,10 +7052,10 @@ package body Sem_Res is
             return True;
 
          --  Assume that references to effectively volatile objects that appear
-         --  as actual parameters in a procedure call are always legal. A full
+         --  as actual parameters in a subprogram call are always legal. A full
          --  legality check is done when the actuals are resolved.
 
-         elsif Within_Procedure_Call (Context) then
+         elsif Within_Subprogram_Call (Context) then
             return True;
 
          --  Otherwise the context is not suitable for an effectively volatile
