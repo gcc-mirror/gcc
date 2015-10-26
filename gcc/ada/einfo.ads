@@ -704,6 +704,12 @@ package Einfo is
 --       bodies. Set if the entity contains any ignored Ghost code in the form
 --       of declaration, procedure call, assignment statement or pragma.
 
+--    Contract (Node34)
+--       Defined in constant, entry, entry family, [generic] package, package
+--       body, [generic] subprogram, subprogram body, and variable entities.
+--       Points to the contract of the entity, holding various assertion items
+--       and data classifiers.
+
 --    Corresponding_Concurrent_Type (Node18)
 --       Defined in record types that are constructed by the expander to
 --       represent task and protected types (Is_Concurrent_Record_Type flag
@@ -1123,12 +1129,6 @@ package Einfo is
 --       accept statement for a member of the family, and in the prefix of
 --       'COUNT when it applies to a family member.
 
---    Contract (Node34)
---       Defined in constant, entry, entry family, [generic] package, package
---       body, [generic] subprogram, subprogram body, and variable entities.
---       Points to the contract of the entity, holding various assertion items
---       and data classifiers.
-
 --    Entry_Parameters_Type (Node15)
 --       Defined in entries. Points to the access-to-record type that is
 --       constructed by the expander to hold a reference to the parameter
@@ -1519,15 +1519,15 @@ package Einfo is
 --       Defined in enumeration types. Set if the type as a representation
 --       clause whose entries are successive integers.
 
---    Has_Controlling_Result (Flag98)
---       Defined in E_Function entities. Set if the function is a primitive
---       function of a tagged type which can dispatch on result.
-
 --    Has_Controlled_Component (Flag43) [base type only]
 --       Defined in all type and subtype entities. Set only for composite type
 --       entities which contain a component that either is a controlled type,
 --       or itself contains controlled component (i.e. either Is_Controlled or
 --       Has_Controlled_Component is set for at least one component).
+
+--    Has_Controlling_Result (Flag98)
+--       Defined in E_Function entities. Set if the function is a primitive
+--       function of a tagged type which can dispatch on result.
 
 --    Has_Convention_Pragma (Flag119)
 --       Defined in all entities. Set for an entity for which a valid pragma
@@ -1836,19 +1836,19 @@ package Einfo is
 --       valid pragma Pack was given for the type. Note that this flag is not
 --       inherited by derived type. See also the Is_Packed flag.
 
+--    Has_Pragma_Preelab_Init (Flag221)
+--       Defined in type and subtype entities. If set indicates that a valid
+--       pragma Preelaborable_Initialization applies to the type.
+
 --    Has_Pragma_Pure (Flag203)
 --       Defined in all entities. If set, indicates that a valid pragma Pure
 --       was given for the entity. In some cases, we need to test whether
 --       Is_Pure was explicitly set using this pragma.
 
---    Has_Pragma_Preelab_Init (Flag221)
---       Defined in type and subtype entities. If set indicates that a valid
---       pragma Preelaborable_Initialization applies to the type.
-
 --    Has_Pragma_Pure_Function (Flag179)
 --       Defined in all entities. If set, indicates that a valid pragma
---       Pure_Function was given for the entity. In some cases, we need to
---       know that Is_Pure was explicitly set using this pragma. We also set
+--       Pure_Function was given for the entity. In some cases, we need to test
+--       whether Is_Pure was explicitly set using this pragma. We also set
 --       this flag for some internal entities that we know should be treated
 --       as pure for optimization purposes.
 
@@ -2209,6 +2209,13 @@ package Einfo is
 --       carry the keyword aliased, and on record components that have the
 --       keyword. For Ada 2012, also applies to formal parameters.
 
+--    Is_Array_Type (synthesized)
+--       Applies to all entities, true for array types and subtypes
+
+--    Is_Asynchronous (Flag81)
+--       Defined in all type entities and in procedure entities. Set
+--       if a pragma Asynchronous applies to the entity.
+
 --    Is_Atomic (Flag85)
 --       Defined in all type entities, and also in constants, components, and
 --       variables. Set if a pragma Atomic or Shared applies to the entity.
@@ -2222,13 +2229,6 @@ package Einfo is
 --       the same as Atomic objects, and this predicate is intended for that
 --       usage. In the case of private and incomplete types, the predicate
 --       applies to both the partial view and the full view.
-
---    Is_Array_Type (synthesized)
---       Applies to all entities, true for array types and subtypes
-
---    Is_Asynchronous (Flag81)
---       Defined in all type entities and in procedure entities. Set
---       if a pragma Asynchronous applies to the entity.
 
 --    Is_Base_Type (synthesized)
 --       Applies to type and subtype entities. True if entity is a base type
@@ -2266,13 +2266,13 @@ package Einfo is
 --       Defined in all entities. Set only for defining entities of program
 --       units that are child units (but False for subunits).
 
---    Is_Class_Wide_Type (synthesized)
---       Applies to all entities, true for class wide types and subtypes
-
 --    Is_Class_Wide_Equivalent_Type (Flag35)
 --       Defined in record types and subtypes. Set to True, if the type acts
 --       as a class-wide equivalent type, i.e. the Equivalent_Type field of
 --       some class-wide subtype entity references this record type.
+
+--    Is_Class_Wide_Type (synthesized)
+--       Applies to all entities, true for class wide types and subtypes
 
 --    Is_Compilation_Unit (Flag149)
 --       Defined in all entities. Set if the entity is a package or subprogram
@@ -2360,12 +2360,12 @@ package Einfo is
 --       Defined in all entities. True if the entity is type System.Address,
 --       or (recursively) a subtype or derived type of System.Address.
 
---    Is_Discrete_Type (synthesized)
---       Applies to all entities, true for all discrete types and subtypes
-
 --    Is_Discrete_Or_Fixed_Point_Type (synthesized)
 --       Applies to all entities, true for all discrete types and subtypes
 --       and all fixed-point types and subtypes.
+
+--    Is_Discrete_Type (synthesized)
+--       Applies to all entities, true for all discrete types and subtypes
 
 --    Is_Discrim_SO_Function (Flag176)
 --       Defined in all entities. Set only in E_Function entities that Layout
@@ -2404,9 +2404,6 @@ package Einfo is
 --       of pragma Eliminate. Also used to mark subprogram entities whose
 --       declaration and body are within unreachable code that is removed.
 
---    Is_Enumeration_Type (synthesized)
---       Defined in all entities, true for enumeration types and subtypes
-
 --    Is_Entry (synthesized)
 --       Applies to all entities, True only for entry and entry family
 --       entities and False for all other entity kinds.
@@ -2415,6 +2412,9 @@ package Einfo is
 --       Defined in all entities. Set only for entry formals (which can only
 --       be in, in-out or out parameters). This flag is used to speed up the
 --       test for the need to replace references in Exp_Ch2.
+
+--    Is_Enumeration_Type (synthesized)
+--       Defined in all entities, true for enumeration types and subtypes
 
 --    Is_Exported (Flag99)
 --       Defined in all entities. Set if the entity is exported. For now we
@@ -2807,13 +2807,13 @@ package Einfo is
 --       Applies to all entities, true for ordinary fixed point types and
 --       subtypes.
 
---    Is_Package_Or_Generic_Package (synthesized)
---       Applies to all entities. True for packages and generic packages.
---       False for all other entities.
-
 --    Is_Package_Body_Entity (Flag160)
 --       Defined in all entities. Set for entities defined at the top level
 --       of a package body. Used to control externally generated names.
+
+--    Is_Package_Or_Generic_Package (synthesized)
+--       Applies to all entities. True for packages and generic packages.
+--       False for all other entities.
 
 --    Is_Packed (Flag51) [implementation base type only]
 --       Defined in all type entities. This flag is set only for record and
@@ -2946,6 +2946,10 @@ package Einfo is
 --       Defined in types that are interfaces. True if interface is declared
 --       protected, or is derived from protected interfaces.
 
+--    Is_Protected_Record_Type (synthesized)
+--       Applies to all entities, true if Is_Concurrent_Record_Type is true and
+--       Corresponding_Concurrent_Type is a protected type.
+
 --    Is_Protected_Type (synthesized)
 --       Applies to all entities, true for protected types and subtypes
 
@@ -2955,10 +2959,6 @@ package Einfo is
 --       If this reference causes a reference in the generated code, for
 --       example in the case of a variable name, then the backend will generate
 --       an appropriate external name for use by the linker.
-
---    Is_Protected_Record_Type (synthesized)
---       Applies to all entities, true if Is_Concurrent_Record_Type is true and
---       Corresponding_Concurrent_Type is a protected type.
 
 --    Is_Pure (Flag44)
 --       Defined in all entities. Set in all entities of a unit to which a
@@ -3772,15 +3772,15 @@ package Einfo is
 --       in the shadow entity, it points to the proper location in which to
 --       restore the private view saved in the shadow.
 
+--    Protected_Body_Subprogram (Node11)
+--       Defined in protected operations. References the entity for the
+--       subprogram which implements the body of the operation.
+
 --    Protected_Formal (Node22)
 --       Defined in formal parameters (in, in out and out parameters). Used
 --       only for formals of protected operations. References corresponding
 --       formal parameter in the unprotected version of the operation that
 --       is created during expansion.
-
---    Protected_Body_Subprogram (Node11)
---       Defined in protected operations. References the entity for the
---       subprogram which implements the body of the operation.
 
 --    Protection_Object (Node23)
 --       Applies to protected entries, entry families and subprograms. Denotes
@@ -3902,19 +3902,19 @@ package Einfo is
 --       is True only for implicitly declared subprograms; it is not set on the
 --       parent type's subprogram. See also Is_Abstract_Subprogram.
 
---    Return_Present (Flag54)
---       Defined in function and generic function entities. Set if the
---       function contains a return statement (used for error checking).
---       This flag can also be set in procedure and generic procedure
---       entities (for convenience in setting it), but is only tested
---       for the function case.
-
 --    Return_Applies_To (Node8)
 --       Defined in E_Return_Statement. Points to the entity representing
 --       the construct to which the return statement applies, as defined in
 --       RM-6.5(4/2). Note that a (simple) return statement within an
 --       extended_return_statement applies to the extended_return_statement,
 --       even though it causes the whole function to return.
+
+--    Return_Present (Flag54)
+--       Defined in function and generic function entities. Set if the
+--       function contains a return statement (used for error checking).
+--       This flag can also be set in procedure and generic procedure
+--       entities (for convenience in setting it), but is only tested
+--       for the function case.
 
 --    Returns_By_Ref (Flag90)
 --       Defined in function entities. Set if the function returns the result
@@ -4127,6 +4127,21 @@ package Einfo is
 --       are fully analyzed and typed with the base type of the subtype. Note
 --       that all entries are static and have values within the subtype range.
 
+--    Static_Elaboration_Desired (Flag77)
+--       Defined in library-level packages. Set by the pragma of the same
+--       name, to indicate that static initialization must be attempted for
+--       all types declared in the package, and that a warning must be emitted
+--       for those types to which static initialization is not available.
+
+--    Static_Initialization (Node30)
+--       Defined in initialization procedures for types whose objects can be
+--       initialized statically. The value of this attribute is a positional
+--       aggregate whose components are compile-time static values. Used
+--       when available in object declarations to eliminate the call to the
+--       initialization procedure, and to minimize elaboration code. Note:
+--       This attribute uses the same field as Overridden_Operation, which is
+--       irrelevant in init_procs.
+
 --    Static_Real_Or_String_Predicate (Node25)
 --       Defined in real types/subtypes with static predicates (with the two
 --       flags Has_Predicates and Has_Static_Predicate set). Set if the type
@@ -4155,21 +4170,6 @@ package Einfo is
 --       of a flag which specifies particular behavior over a region of code
 --       or the declaration of a "hook" object.
 --       In which case is it a flag, or a hook object???
-
---    Static_Elaboration_Desired (Flag77)
---       Defined in library-level packages. Set by the pragma of the same
---       name, to indicate that static initialization must be attempted for
---       all types declared in the package, and that a warning must be emitted
---       for those types to which static initialization is not available.
-
---    Static_Initialization (Node30)
---       Defined in initialization procedures for types whose objects can be
---       initialized statically. The value of this attribute is a positional
---       aggregate whose components are compile-time static values. Used
---       when available in object declarations to eliminate the call to the
---       initialization procedure, and to minimize elaboration code. Note:
---       This attribute uses the same field as Overridden_Operation, which is
---       irrelevant in init_procs.
 
 --    Storage_Size_Variable (Node26) [implementation base type only]
 --       Defined in access types and task type entities. This flag is set

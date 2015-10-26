@@ -1,3 +1,35 @@
+2015-10-26  Joel Brobecker  <brobecker@adacore.com brobecker>
+
+	* adaint.c (__gnat_lwp_self): Replace current implementation re-using
+	the Linux one, which uses an __NR_gettid syscall rather than
+	pthread_self.
+
+2015-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* sinfo.ads, exp_ch3.adb (Build_Array_Init_Proc,
+	Build_Record_Init_Proc): Do not inline init procs when
+	Modify_Tree_For_C is True.
+
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* errout.ads: Minor comment fix.
+	* einfo.ads: Minor style fix.
+
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Derive_Interface_Subprogram): Fix
+	Is_Abstract_Subprogram, which might have been calculated
+	incorrectly, because we're passing Ultimate_Alias (Subp) (and
+	its dispatching type) to Derive_Subprogram, instead of the true
+	parent subprogram and type.
+
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Check_Iterator_Functions): When
+	printing the "default iterator must be unique" error message,
+	also print references to the places where the duplicates are
+	declared. This makes the message clearer.
+
 2015-10-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Analyze_Formal_Package_Declaration): Do not set
