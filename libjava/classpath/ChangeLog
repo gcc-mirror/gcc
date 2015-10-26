@@ -1,3 +1,8 @@
+2015-10-26  Mike Frysinger  <vapier@gentoo.org>
+
+	* scripts/check_jni_methods.sh.in: Run sort with LC_ALL=C, and
+	combine `sort|uniq` into `sort -u`.
+
 2015-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac (tools/gjdoc): Depend on CREATE_WRAPPERS.
