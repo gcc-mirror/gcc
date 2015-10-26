@@ -1,3 +1,12 @@
+2015-10-26  Emmanuel Briot  <briot@adacore.com>
+
+	* s-os_lib.adb (Argument_String_To_List): Remove backslashes in
+	argument value.
+
+2015-10-26  Javier Miranda  <miranda@adacore.com>
+
+	* exp_unst.ads, exp_unst.adb (Is_Uplevel_Referenced): Removed.
+
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb, sem_aux.adb, exp_attr.adb, sem_eval.adb: Minor

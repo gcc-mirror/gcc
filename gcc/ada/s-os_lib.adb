@@ -189,6 +189,12 @@ package body System.OS_Lib is
       New_Argc : Natural := 0;
       Idx      : Integer;
 
+      Cleaned     : String (1 .. Arg_String'Length);
+      Cleaned_Idx : Natural;
+      --  A cleaned up version of the argument. This function is taking
+      --  backslash escapes when computing the bounds for arguments. It is
+      --  then removing the extra backslashes from the argument.
+
    begin
       Idx := Arg_String'First;
 
@@ -198,10 +204,9 @@ package body System.OS_Lib is
          declare
             Quoted  : Boolean := False;
             Backqd  : Boolean := False;
-            Old_Idx : Integer;
 
          begin
-            Old_Idx := Idx;
+            Cleaned_Idx := Cleaned'First;
 
             loop
                --  An unquoted space is the end of an argument
@@ -217,25 +222,34 @@ package body System.OS_Lib is
                  and then Arg_String (Idx) = '"'
                then
                   Quoted := True;
+                  Cleaned (Cleaned_Idx) := Arg_String (Idx);
+                  Cleaned_Idx := Cleaned_Idx + 1;
 
                --  End of a quoted string and end of an argument
 
                elsif (Quoted and not Backqd)
                  and then Arg_String (Idx) = '"'
                then
+                  Cleaned (Cleaned_Idx) := Arg_String (Idx);
+                  Cleaned_Idx := Cleaned_Idx + 1;
                   Idx := Idx + 1;
                   exit;
+
+               --  Turn off backquoting after advancing one character
+
+               elsif Backqd then
+                  Backqd := False;
+                  Cleaned (Cleaned_Idx) := Arg_String (Idx);
+                  Cleaned_Idx := Cleaned_Idx + 1;
 
                --  Following character is backquoted
 
                elsif Arg_String (Idx) = '\' then
                   Backqd := True;
 
-               --  Turn off backquoting after advancing one character
-
-               elsif Backqd then
-                  Backqd := False;
-
+               else
+                  Cleaned (Cleaned_Idx) := Arg_String (Idx);
+                  Cleaned_Idx := Cleaned_Idx + 1;
                end if;
 
                Idx := Idx + 1;
@@ -246,7 +260,7 @@ package body System.OS_Lib is
 
             New_Argc := New_Argc + 1;
             New_Argv (New_Argc) :=
-              new String'(Arg_String (Old_Idx .. Idx - 1));
+              new String'(Cleaned (Cleaned'First .. Cleaned_Idx - 1));
 
             --  Skip extraneous spaces
 
