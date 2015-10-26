@@ -1197,9 +1197,14 @@ package body Freeze is
                      Attribute_Scalar_Storage_Order);
       Comp_ADC_Present := Present (Comp_ADC);
 
-      --  Case of record or array component: check storage order compatibility
+      --  Case of record or array component: check storage order compatibility.
+      --  But, if the record has Complex_Representation, then it is treated as
+      --  a scalar in the back end so the storage order is irrelevant.
 
-      if Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type) then
+      if (Is_Record_Type (Comp_Type)
+            and then not Has_Complex_Representation (Comp_Type))
+        or else Is_Array_Type (Comp_Type)
+      then
          Comp_SSO_Differs :=
            Reverse_Storage_Order (Encl_Type)
              /=
@@ -3940,61 +3945,74 @@ package body Freeze is
             Next_Entity (Comp);
          end loop;
 
-         --  Deal with default setting of reverse storage order
+         SSO_ADC :=
+           Get_Attribute_Definition_Clause
+             (Rec, Attribute_Scalar_Storage_Order);
 
-         Set_SSO_From_Default (Rec);
+         --  If the record type has Complex_Representation, then it is treated
+         --  as a scalar in the back end so the storage order is irrelevant.
 
-         --  Check consistent attribute setting on component types
-
-         SSO_ADC := Get_Attribute_Definition_Clause
-                      (Rec, Attribute_Scalar_Storage_Order);
-
-         declare
-            Comp_ADC_Present : Boolean;
-         begin
-            Comp := First_Component (Rec);
-            while Present (Comp) loop
-               Check_Component_Storage_Order
-                 (Encl_Type        => Rec,
-                  Comp             => Comp,
-                  ADC              => SSO_ADC,
-                  Comp_ADC_Present => Comp_ADC_Present);
-               SSO_ADC_Component := SSO_ADC_Component or Comp_ADC_Present;
-               Next_Component (Comp);
-            end loop;
-         end;
-
-         --  Now deal with reverse storage order/bit order issues
-
-         if Present (SSO_ADC) then
-
-            --  Check compatibility of Scalar_Storage_Order with Bit_Order, if
-            --  the former is specified.
-
-            if Reverse_Bit_Order (Rec) /= Reverse_Storage_Order (Rec) then
-
-               --  Note: report error on Rec, not on SSO_ADC, as ADC may apply
-               --  to some ancestor type.
-
-               Error_Msg_Sloc := Sloc (SSO_ADC);
+         if Has_Complex_Representation (Rec) then
+            if Present (SSO_ADC) then
                Error_Msg_N
-                 ("scalar storage order for& specified# inconsistent with "
-                  & "bit order", Rec);
+                 ("??storage order has no effect with Complex_Representation",
+                  SSO_ADC);
             end if;
 
-            --  Warn if there is an Scalar_Storage_Order attribute definition
-            --  clause but no component clause, no component that itself has
-            --  such an attribute definition, and no pragma Pack.
+         else
+            --  Deal with default setting of reverse storage order
 
-            if not (Placed_Component
-                      or else
-                    SSO_ADC_Component
-                      or else
-                    Is_Packed (Rec))
-            then
-               Error_Msg_N
-                 ("??scalar storage order specified but no component clause",
-                  SSO_ADC);
+            Set_SSO_From_Default (Rec);
+
+            --  Check consistent attribute setting on component types
+
+            declare
+               Comp_ADC_Present : Boolean;
+            begin
+               Comp := First_Component (Rec);
+               while Present (Comp) loop
+                  Check_Component_Storage_Order
+                    (Encl_Type        => Rec,
+                     Comp             => Comp,
+                     ADC              => SSO_ADC,
+                     Comp_ADC_Present => Comp_ADC_Present);
+                  SSO_ADC_Component := SSO_ADC_Component or Comp_ADC_Present;
+                  Next_Component (Comp);
+               end loop;
+            end;
+
+            --  Now deal with reverse storage order/bit order issues
+
+            if Present (SSO_ADC) then
+
+               --  Check compatibility of Scalar_Storage_Order with Bit_Order,
+               --  if the former is specified.
+
+               if Reverse_Bit_Order (Rec) /= Reverse_Storage_Order (Rec) then
+
+                  --  Note: report error on Rec, not on SSO_ADC, as ADC may
+                  --  apply to some ancestor type.
+
+                  Error_Msg_Sloc := Sloc (SSO_ADC);
+                  Error_Msg_N
+                    ("scalar storage order for& specified# inconsistent with "
+                     & "bit order", Rec);
+               end if;
+
+               --  Warn if there is a Scalar_Storage_Order attribute definition
+               --  clause but no component clause, no component that itself has
+               --  such an attribute definition, and no pragma Pack.
+
+               if not (Placed_Component
+                         or else
+                       SSO_ADC_Component
+                         or else
+                       Is_Packed (Rec))
+               then
+                  Error_Msg_N
+                    ("??scalar storage order specified but no component "
+                     & "clause", SSO_ADC);
+               end if;
             end if;
          end if;
 
