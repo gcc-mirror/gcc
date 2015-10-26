@@ -3011,7 +3011,14 @@ package body Sem_Ch6 is
       --  decoupled from the usual Freeze_xxx mechanism because it must also
       --  work in the context of generics where normal freezing is disabled.
 
-      Analyze_Enclosing_Package_Body_Contract (N);
+      --  Only bodies coming from source should cause this type of "freezing".
+      --  Expression functions that act as bodies and complete an initial
+      --  declaration must be included in this category, hence the use of
+      --  Original_Node.
+
+      if Comes_From_Source (Original_Node (N)) then
+         Analyze_Enclosing_Package_Body_Contract (N);
+      end if;
 
       --  Generic subprograms are handled separately. They always have a
       --  generic specification. Determine whether current scope has a

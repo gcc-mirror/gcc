@@ -1,3 +1,16 @@
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Check_Iterator_Functions): For a Default_Iterator
+	aspect, make sure an implicitly declared interpretation is
+	overridden by an explicit one.
+	* sem_util.ads: Update comment.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch7.adb, sem_ch6.adb (Analyze_Subprogram_Body_Helper): Only source
+	bodies should "freeze" the contract of the nearest enclosing
+	package body.
+
 2015-10-26  Joel Brobecker  <brobecker@adacore.com brobecker>
 
 	* adaint.c (__gnat_lwp_self): Replace current implementation re-using

@@ -564,7 +564,11 @@ package body Sem_Ch7 is
       --  Freeze_xxx mechanism because it must also work in the context of
       --  generics where normal freezing is disabled.
 
-      Analyze_Enclosing_Package_Body_Contract (N);
+      --  Only bodies coming from source should cause this type of "freezing"
+
+      if Comes_From_Source (N) then
+         Analyze_Enclosing_Package_Body_Contract (N);
+      end if;
 
       --  Find corresponding package specification, and establish the current
       --  scope. The visible defining entity for the package is the defining

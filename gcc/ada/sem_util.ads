@@ -538,10 +538,9 @@ package Sem_Util is
 
    function Enclosing_Lib_Unit_Entity
      (E : Entity_Id := Current_Scope) return Entity_Id;
-   --  Returns the entity of enclosing library unit node which is the
-   --  root of the current scope (which must not be Standard_Standard, and the
-   --  caller is responsible for ensuring this condition) or other specified
-   --  entity.
+   --  Returns the entity of enclosing library unit node which is the root of
+   --  the current scope (which must not be Standard_Standard, and the caller
+   --  is responsible for ensuring this condition) or other specified entity.
 
    function Enclosing_Lib_Unit_Node (N : Node_Id) return Node_Id;
    --  Returns the N_Compilation_Unit node of the library unit that is directly

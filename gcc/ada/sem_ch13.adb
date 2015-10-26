@@ -4277,8 +4277,8 @@ package body Sem_Ch13 is
          else
             declare
                Default : Entity_Id := Empty;
-               I : Interp_Index;
-               It : Interp;
+               I       : Interp_Index;
+               It      : Interp;
 
             begin
                Get_First_Interp (Expr, I, It);
@@ -4289,12 +4289,21 @@ package body Sem_Ch13 is
                      Remove_Interp (I);
 
                   elsif Present (Default) then
-                     Error_Msg_N ("default iterator must be unique", Expr);
-                     Error_Msg_Sloc := Sloc (Default);
-                     Error_Msg_N ("\\possible interpretation#", Expr);
-                     Error_Msg_Sloc := Sloc (It.Nam);
-                     Error_Msg_N ("\\possible interpretation#", Expr);
 
+                     --  An explicit one should override an implicit one
+
+                     if Comes_From_Source (Default) =
+                          Comes_From_Source (It.Nam)
+                     then
+                        Error_Msg_N ("default iterator must be unique", Expr);
+                        Error_Msg_Sloc := Sloc (Default);
+                        Error_Msg_N ("\\possible interpretation#", Expr);
+                        Error_Msg_Sloc := Sloc (It.Nam);
+                        Error_Msg_N ("\\possible interpretation#", Expr);
+
+                     elsif Comes_From_Source (It.Nam) then
+                        Default := It.Nam;
+                     end if;
                   else
                      Default := It.Nam;
                   end if;
