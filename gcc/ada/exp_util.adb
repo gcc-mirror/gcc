@@ -3860,10 +3860,10 @@ package body Exp_Util is
       --  caller. Note that in the subexpression case, N is always the child we
       --  came from.
 
-      --  N_Raise_xxx_Error is an annoying special case, it is a statement if
-      --  it has type Standard_Void_Type, and a subexpression otherwise.
-      --  otherwise. Procedure calls, and similarly procedure attribute
-      --  references, are also statements.
+      --  N_Raise_xxx_Error is an annoying special case, it is a statement
+      --  if it has type Standard_Void_Type, and a subexpression otherwise.
+      --  Procedure calls, and similarly procedure attribute references, are
+      --  also statements.
 
       if Nkind (Assoc_Node) in N_Subexpr
         and then (Nkind (Assoc_Node) not in N_Raise_xxx_Error

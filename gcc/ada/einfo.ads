@@ -4149,7 +4149,7 @@ package Einfo is
 --       as Predicate_Function (typ). Also, in the case where a predicate is
 --       inherited, the expression is of the form:
 --
---         expression AND THEN xxxPredicate (typ2 (ent))
+--         xxxPredicate (typ2 (ent)) AND THEN expression
 --
 --       where typ2 is the type from which the predicate is inherited, ent is
 --       the entity for the current predicate function, and xxxPredicate is the

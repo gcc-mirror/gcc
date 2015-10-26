@@ -1,3 +1,23 @@
+2015-10-26  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Return False when
+	generating C code.
+	* sem_ch3.adb: Fix typos.
+
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): Change the
+	structure of the predicate functions to reflect the requirements
+	of AI12-0071.
+	(Add_Condition): New procedure to do the "and-then-ing" in Add_Call
+	and Add_Predicates.
+	* einfo.ads (Static_Real_Or_String_Predicate): Change the
+	documentation to reflect the new structure.
+	* sem_eval.adb (Real_Or_String_Static_Predicate_Matches):
+	Change the walking of the predicate expression to reflect the
+	new structure.
+	* exp_util.adb: Minor comment fix.
+
 2015-10-26  Bob Duff  <duff@adacore.com>
 
 	* s-rident.ads (No_Dynamic_Sized_Objects): New restriction name.
