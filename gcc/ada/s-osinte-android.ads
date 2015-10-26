@@ -317,8 +317,7 @@ package System.OS_Interface is
      return Address is (Null_Address);
    --  This is a dummy procedure to share some GNULLI files
 
-   function Get_Page_Size return size_t;
-   function Get_Page_Size return Address;
+   function Get_Page_Size return int;
    pragma Import (C, Get_Page_Size, "_getpagesize");
    --  Returns the size of a page
 

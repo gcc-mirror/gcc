@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -299,8 +299,7 @@ package System.OS_Interface is
    --  returns the stack base of the specified thread. Only call this function
    --  when Stack_Base_Available is True.
 
-   function Get_Page_Size return size_t;
-   function Get_Page_Size return System.Address;
+   function Get_Page_Size return int;
    pragma Import (C, Get_Page_Size, "getpagesize");
    --  Returns the size of a page
 
