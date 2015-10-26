@@ -814,7 +814,7 @@ package body Sem_Eval is
             V := UI_Negate (Intval (Right_Opnd (N)));
             return;
 
-         elsif Nkind (N) = N_Attribute_Reference  then
+         elsif Nkind (N) = N_Attribute_Reference then
             if Attribute_Name (N) = Name_Succ then
                R := First (Expressions (N));
                V := Uint_1;
@@ -2909,7 +2909,7 @@ package body Sem_Eval is
    -- Eval_Op_Not --
    -----------------
 
-   --  The not operation is a  static functions, so the result is potentially
+   --  The not operation is a static functions, so the result is potentially
    --  static if the operand is potentially static (RM 4.9(7), 4.9(20)).
 
    procedure Eval_Op_Not (N : Node_Id) is

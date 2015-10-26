@@ -744,7 +744,7 @@ package body System.Fat_Gen is
       else
          Result := Machine (Radix_To_M_Minus_1 + Result) - Radix_To_M_Minus_1;
 
-         if Result > abs X  then
+         if Result > abs X then
             Result := Result - 1.0;
          end if;
 

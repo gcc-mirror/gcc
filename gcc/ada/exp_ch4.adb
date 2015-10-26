@@ -4864,12 +4864,14 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  If the case expression is a predicate specification, do not
-      --  expand, because it will be converted to the proper predicate
-      --  form when building the predicate function.
+      --  If the case expression is a predicate specification, and the type
+      --  to which it applies has a static predicate aspect, do not expand,
+      --  because it will be converted to the proper predicate form later.
 
       if Ekind_In (Current_Scope, E_Function, E_Procedure)
         and then Is_Predicate_Function (Current_Scope)
+        and then
+          Has_Static_Predicate_Aspect (Etype (First_Entity (Current_Scope)))
       then
          return;
       end if;

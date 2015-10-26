@@ -41,7 +41,7 @@ with System.Random_Numbers;
 generic
    type Result_Subtype is (<>);
 
-package Ada.Numerics.Discrete_Random with SPARK_Mode is
+package Ada.Numerics.Discrete_Random is
 
    --  Basic facilities
 
@@ -65,7 +65,6 @@ package Ada.Numerics.Discrete_Random with SPARK_Mode is
    function Value (Coded_State : String) return State;
 
 private
-   pragma SPARK_Mode (Off);
 
    type Generator is new System.Random_Numbers.Generator;
 
