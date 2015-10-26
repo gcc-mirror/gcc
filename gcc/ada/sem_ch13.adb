@@ -4003,14 +4003,14 @@ package body Sem_Ch13 is
                if Debug_Flag_Dot_XX then
                   null;
 
-               --  OK if current attribute_definition_clause is expansion
-               --  of inherited aspect.
+               --  OK if current attribute_definition_clause is expansion of
+               --  inherited aspect.
 
                elsif Aspect_Rep_Item (Inherited) = N then
                   null;
 
-               --  Indicate the operation that must be overridden, rather
-               --  than redefining the indexing aspect
+               --  Indicate the operation that must be overridden, rather than
+               --  redefining the indexing aspect.
 
                else
                   Illegal_Indexing

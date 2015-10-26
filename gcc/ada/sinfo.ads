@@ -735,9 +735,6 @@ package Sinfo is
    --    they are systematically expanded into loops (for arrays) and
    --    individual assignments (for records).
 
-   --    Initialization procedures (init procs) for records and arrays are
-   --    not inlined.
-
    ------------------------------------
    -- Description of Semantic Fields --
    ------------------------------------
