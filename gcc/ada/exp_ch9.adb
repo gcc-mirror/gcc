@@ -11388,14 +11388,28 @@ package body Exp_Ch9 is
       end loop;
    end Expand_N_Selective_Accept;
 
+   -------------------------------------------
+   -- Expand_N_Single_Protected_Declaration --
+   -------------------------------------------
+
+   --  A single protected declaration should never be present after semantic
+   --  analysis because it is transformed into a protected type declaration
+   --  and an accompanying anonymous object. This routine ensures that the
+   --  transformation takes place.
+
+   procedure Expand_N_Single_Protected_Declaration (N : Node_Id) is
+   begin
+      raise Program_Error;
+   end Expand_N_Single_Protected_Declaration;
+
    --------------------------------------
    -- Expand_N_Single_Task_Declaration --
    --------------------------------------
 
-   --  Single task declarations should never be present after semantic
-   --  analysis, since we expect them to be replaced by a declaration of an
-   --  anonymous task type, followed by a declaration of the task object. We
-   --  include this routine to make sure that is happening.
+   --  A single task declaration should never be present after semantic
+   --  analysis because it is transformed into a task type declaration and
+   --  an accompanying anonymous object. This routine ensures that the
+   --  transformation takes place.
 
    procedure Expand_N_Single_Task_Declaration (N : Node_Id) is
    begin

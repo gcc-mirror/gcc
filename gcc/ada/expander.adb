@@ -432,6 +432,9 @@ package body Expander is
                when N_Selective_Accept =>
                   Expand_N_Selective_Accept (N);
 
+               when N_Single_Protected_Declaration =>
+                  Expand_N_Single_Protected_Declaration (N);
+
                when N_Single_Task_Declaration =>
                   Expand_N_Single_Task_Declaration (N);
 
@@ -471,7 +474,7 @@ package body Expander is
                when N_Variant_Part =>
                   Expand_N_Variant_Part (N);
 
-                  --  For all other node kinds, no expansion activity required
+               --  For all other node kinds, no expansion activity required
 
                when others =>
                   null;

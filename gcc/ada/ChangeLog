@@ -1,5 +1,33 @@
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* contracts.adb (Analyze_Object_Contract): Set and restore
+	the SPARK_Mode for both constants and objects. Factor out the
+	semantic checks concerning Ghost objects.
+	* freeze.adb (Freeze_Array_Type): A Ghost array type cannot have a
+	concurrent component type.
+	(Freeze_Entity): A Ghost type cannot also be concurrent.
+	(Freeze_Record_Type): A Ghost record type cannot have a concurrent
+	component.
+	* sem_prag.adb (Analyze_Abstract_State): A Ghost abstract
+	state cannot also be synchronized.
+	(Check_Ghost_Synchronous): New routine.
+	* sem_util.adb (Yields_Synchronized_Object): Correct the case
+	of record components to account for the case where the type has
+	no component list.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* expander.adb (Expand): Expand a single protected declaration.
+	* exp_ch9.ads, exp_ch9.adb (Expand_N_Single_Protected_Declaration): New
+	routine.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Is_OK_Volatile_Context): A volatile object may appear
+	in an object declaration as long as it denotes the name.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch9.adb (Analyze_Single_Protected_Declaration): The anonymous
 	object no longer comes from source.
 	(Analyze_Single_Task_Declaration): The anonymous object no longer

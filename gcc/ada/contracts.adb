@@ -648,9 +648,33 @@ package body Contracts is
          end if;
       end if;
 
+      --  The anonymous object created for a single concurrent type inherits
+      --  the SPARK_Mode from the type. Due to the timing of contract analysis,
+      --  delayed pragmas may be subject to the wrong SPARK_Mode, usually that
+      --  of the enclosing context. To remedy this, restore the original mode
+      --  of the related anonymous object.
+
+      if Is_Single_Concurrent_Object (Obj_Id)
+        and then Present (SPARK_Pragma (Obj_Id))
+      then
+         Restore_Mode := True;
+         Save_SPARK_Mode_And_Set (Obj_Id, Mode);
+      end if;
+
       --  Constant-related checks
 
       if Ekind (Obj_Id) = E_Constant then
+
+         --  Analyze indicator Part_Of
+
+         Prag := Get_Pragma (Obj_Id, Pragma_Part_Of);
+
+         --  Check whether the lack of indicator Part_Of agrees with the
+         --  placement of the constant with respect to the state space.
+
+         if No (Prag) then
+            Check_Missing_Part_Of (Obj_Id);
+         end if;
 
          --  A constant cannot be effectively volatile (SPARK RM 7.1.3(4)).
          --  This check is relevant only when SPARK_Mode is on, as it is not
@@ -666,31 +690,9 @@ package body Contracts is
             Error_Msg_N ("constant cannot be volatile", Obj_Id);
          end if;
 
-         Prag := Get_Pragma (Obj_Id, Pragma_Part_Of);
-
-         --  Check whether the lack of indicator Part_Of agrees with the
-         --  placement of the constant with respect to the state space.
-
-         if No (Prag) then
-            Check_Missing_Part_Of (Obj_Id);
-         end if;
-
       --  Variable-related checks
 
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
-
-         --  The anonymous object created for a single concurrent type inherits
-         --  the SPARK_Mode from the type. Due to the timing of contract
-         --  analysis, delayed pragmas may be subject to the wrong SPARK_Mode,
-         --  usually that of the enclosing context. To remedy this, restore the
-         --  original SPARK_Mode of the related variable.
-
-         if Is_Single_Concurrent_Object (Obj_Id)
-           and then Present (SPARK_Pragma (Obj_Id))
-         then
-            Restore_Mode := True;
-            Save_SPARK_Mode_And_Set (Obj_Id, Mode);
-         end if;
 
          --  Analyze all external properties
 
@@ -834,43 +836,41 @@ package body Contracts is
                   & "protected type %"), Obj_Id);
             end if;
          end if;
-
-         if Is_Ghost_Entity (Obj_Id) then
-
-            --  A Ghost object cannot be effectively volatile (SPARK RM 6.9(8))
-
-            if Is_Effectively_Volatile (Obj_Id) then
-               Error_Msg_N ("ghost variable & cannot be volatile", Obj_Id);
-
-            --  A Ghost object cannot be imported or exported (SPARK RM 6.9(8))
-
-            elsif Is_Imported (Obj_Id) then
-               Error_Msg_N ("ghost object & cannot be imported", Obj_Id);
-
-            elsif Is_Exported (Obj_Id) then
-               Error_Msg_N ("ghost object & cannot be exported", Obj_Id);
-            end if;
-         end if;
-
-         --  Restore the SPARK_Mode of the enclosing context after all delayed
-         --  pragmas have been analyzed.
-
-         if Restore_Mode then
-            Restore_SPARK_Mode (Mode);
-         end if;
       end if;
 
-      --  A ghost object cannot be imported or exported (SPARK RM 6.9(8)). One
-      --  exception to this is the object that represents the dispatch table of
-      --  a Ghost tagged type, as the symbol needs to be exported.
+      --  Common checks
 
       if Comes_From_Source (Obj_Id) and then Is_Ghost_Entity (Obj_Id) then
-         if Is_Exported (Obj_Id) then
+
+         --  A Ghost object cannot be of a type that yields a synchronized
+         --  object (SPARK RM 6.9(19)).
+
+         if Yields_Synchronized_Object (Obj_Typ) then
+            Error_Msg_N ("ghost object & cannot be synchronized", Obj_Id);
+
+         --  A Ghost object cannot be effectively volatile (SPARK RM 6.9(8) and
+         --  SPARK RM 6.9(19)).
+
+         elsif Is_Effectively_Volatile (Obj_Id) then
+            Error_Msg_N ("ghost object & cannot be volatile", Obj_Id);
+
+         --  A Ghost object cannot be imported or exported (SPARK RM 6.9(8)).
+         --  One exception to this is the object that represents the dispatch
+         --  table of a Ghost tagged type, as the symbol needs to be exported.
+
+         elsif Is_Exported (Obj_Id) then
             Error_Msg_N ("ghost object & cannot be exported", Obj_Id);
 
          elsif Is_Imported (Obj_Id) then
             Error_Msg_N ("ghost object & cannot be imported", Obj_Id);
          end if;
+      end if;
+
+      --  Restore the SPARK_Mode of the enclosing context after all delayed
+      --  pragmas have been analyzed.
+
+      if Restore_Mode then
+         Restore_SPARK_Mode (Mode);
       end if;
    end Analyze_Object_Contract;
 
