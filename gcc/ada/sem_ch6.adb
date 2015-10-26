@@ -674,7 +674,7 @@ package body Sem_Ch6 is
                              Scope_Depth (Scope (Scope_Id))
                      then
                         Error_Msg_N
-                          ("access discriminant in return aggregate will be "
+                          ("access discriminant in return aggregate would be "
                            & "a dangling reference", Obj);
                      end if;
                   end if;

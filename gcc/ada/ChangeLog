@@ -1,3 +1,18 @@
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Is_OK_Object_Reference): New routine.
+	(Substitute_Valid_Check): Perform the 'Valid subsitution but do
+	not suggest the use of the attribute if the left hand operand
+	does not denote an object as it leads to illegal code.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_unst.adb: Minor reformatting.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Improve error msg.
+
 2015-10-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_disp.adb (Check_Controlling_Type): Handle properly the

@@ -5493,9 +5493,6 @@ package body Exp_Ch4 is
       Rop    : constant Node_Id    := Right_Opnd (N);
       Static : constant Boolean    := Is_OK_Static_Expression (N);
 
-      Ltyp  : Entity_Id;
-      Rtyp  : Entity_Id;
-
       procedure Substitute_Valid_Check;
       --  Replaces node N by Lop'Valid. This is done when we have an explicit
       --  test for the left operand being in range of its subtype.
@@ -5505,6 +5502,49 @@ package body Exp_Ch4 is
       ----------------------------
 
       procedure Substitute_Valid_Check is
+         function Is_OK_Object_Reference (Nod : Node_Id) return Boolean;
+         --  Determine whether arbitrary node Nod denotes a source object that
+         --  may safely act as prefix of attribute 'Valid.
+
+         ----------------------------
+         -- Is_OK_Object_Reference --
+         ----------------------------
+
+         function Is_OK_Object_Reference (Nod : Node_Id) return Boolean is
+            Obj_Ref : Node_Id;
+
+         begin
+            --  Inspect the original operand
+
+            Obj_Ref := Original_Node (Nod);
+
+            --  The object reference must be a source construct, otherwise the
+            --  codefix suggestion may refer to nonexistent code from a user
+            --  perspective.
+
+            if Comes_From_Source (Obj_Ref) then
+
+               --  Recover the actual object reference. There may be more cases
+               --  to consider???
+
+               loop
+                  if Nkind_In (Obj_Ref, N_Type_Conversion,
+                                        N_Unchecked_Type_Conversion)
+                  then
+                     Obj_Ref := Expression (Obj_Ref);
+                  else
+                     exit;
+                  end if;
+               end loop;
+
+               return Is_Object_Reference (Obj_Ref);
+            end if;
+
+            return False;
+         end Is_OK_Object_Reference;
+
+      --  Start of processing for Substitute_Valid_Check
+
       begin
          Rewrite (N,
            Make_Attribute_Reference (Loc,
@@ -5513,19 +5553,26 @@ package body Exp_Ch4 is
 
          Analyze_And_Resolve (N, Restyp);
 
-         --  Give warning unless overflow checking is MINIMIZED or ELIMINATED,
-         --  in which case, this usage makes sense, and in any case, we have
-         --  actually eliminated the danger of optimization above.
+         --  Emit a warning when the left-hand operand of the membership test
+         --  is a source object, otherwise the use of attribute 'Valid would be
+         --  illegal. The warning is not given when overflow checking is either
+         --  MINIMIZED or ELIMINATED, as the danger of optimization has been
+         --  eliminated above.
 
-         if Overflow_Check_Mode not in Minimized_Or_Eliminated then
+         if Is_OK_Object_Reference (Lop)
+           and then Overflow_Check_Mode not in Minimized_Or_Eliminated
+         then
             Error_Msg_N
               ("??explicit membership test may be optimized away", N);
             Error_Msg_N -- CODEFIX
               ("\??use ''Valid attribute instead", N);
          end if;
-
-         return;
       end Substitute_Valid_Check;
+
+      --  Local variables
+
+      Ltyp : Entity_Id;
+      Rtyp : Entity_Id;
 
    --  Start of processing for Expand_N_In
 
@@ -9767,7 +9814,7 @@ package body Exp_Ch4 is
             if not Is_Discrete_Type (Etype (N)) then
                null;
 
-            --  Don't do this on the left hand of an assignment statement.
+            --  Don't do this on the left-hand side of an assignment statement.
             --  Normally one would think that references like this would not
             --  occur, but they do in generated code, and mean that we really
             --  do want to assign the discriminant.
@@ -10212,7 +10259,7 @@ package body Exp_Ch4 is
             Cons := No_List;
 
             --  If type is unconstrained we have to add a constraint, copied
-            --  from the actual value of the left hand side.
+            --  from the actual value of the left-hand side.
 
             if not Is_Constrained (Target_Type) then
                if Has_Discriminants (Operand_Type) then
