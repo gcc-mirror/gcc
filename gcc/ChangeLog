@@ -1,5 +1,10 @@
 2015-10-26  Tom de Vries  <tom@codesourcery.com>
 
+	* tree-ssa-structalias.c (intra_create_variable_infos): Add
+	restrict_pointer_p and recursive_restrict_p variables.
+
+2015-10-26  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-ssa-structalias.c (intra_create_variable_infos): Inline
 	get_vi_for_tree call.
 
