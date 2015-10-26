@@ -570,6 +570,7 @@ package Snames is
    Name_Pre                            : constant Name_Id := N + $; -- GNAT
    Name_Precondition                   : constant Name_Id := N + $; -- GNAT
    Name_Predicate                      : constant Name_Id := N + $; -- GNAT
+   Name_Predicate_Failure              : constant Name_Id := N + $; -- Ada 12
    Name_Preelaborable_Initialization   : constant Name_Id := N + $; -- Ada 05
    Name_Preelaborate                   : constant Name_Id := N + $;
    Name_Pre_Class                      : constant Name_Id := N + $; -- GNAT
@@ -1895,6 +1896,7 @@ package Snames is
       Pragma_Pre,
       Pragma_Precondition,
       Pragma_Predicate,
+      Pragma_Predicate_Failure,
       Pragma_Preelaborable_Initialization,
       Pragma_Preelaborate,
       Pragma_Pre_Class,

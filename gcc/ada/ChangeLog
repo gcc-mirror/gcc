@@ -1,5 +1,26 @@
 2015-10-26  Bob Duff  <duff@adacore.com>
 
+	* snames.ads-tmpl, aspects.adb, aspects.ads: Add the aspect and
+	pragma names and enter into relevant tables.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Analyze aspect
+	Predicate_Failure.
+	* sem_prag.adb (Predicate_Failure): Analyze pragma Predicate_Failure.
+	* exp_util.adb (Make_Predicate_Check): When building the Check
+	pragma, if Predicate_Failure has been specified, add the relevant
+	String argument to the pragma.
+	* par-prag.adb (Prag): Add Predicate_Failure to list of pragmas
+	handled during semantic analysis.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): If the left-hand side
+	is an indexed component with generalized indexing, discard
+	interpretation that yields a reference type, which is not
+	assignable. This prevent spurious ambiguities when the right-hand
+	side is an aggregate which does not provide a target type.
+
+2015-10-26  Bob Duff  <duff@adacore.com>
+
 	* exp_ch7.adb, exp_ch6.adb: Minor comment fix.
 
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>

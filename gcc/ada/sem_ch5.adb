@@ -316,7 +316,18 @@ package body Sem_Ch5 is
             Get_First_Interp (Lhs, I, It);
 
             while Present (It.Typ) loop
-               if Has_Compatible_Type (Rhs, It.Typ) then
+               --  An indexed component with generalized indexing is always
+               --  overloaded with the corresponding dereference. Discard
+               --  the interpretation that yields a reference type, which
+               --  is not assignable.
+
+               if Nkind (Lhs) = N_Indexed_Component
+                 and then Present (Generalized_Indexing (Lhs))
+                 and then Has_Implicit_Dereference (It.Typ)
+               then
+                  null;
+
+               elsif Has_Compatible_Type (Rhs, It.Typ) then
                   if T1 /= Any_Type then
 
                      --  An explicit dereference is overloaded if the prefix
