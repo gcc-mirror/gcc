@@ -1,3 +1,9 @@
+2015-10-25  Jason Merrill  <jason@redhat.com>
+
+	DR 2179
+	* pt.c (process_partial_specialization): Handle error_mark_node
+	from most_specialized_partial_spec.
+
 2015-10-23  Jason Merrill  <jason@redhat.com>
 
 	DR 1518
