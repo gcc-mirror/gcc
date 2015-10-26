@@ -431,20 +431,9 @@ package body Contracts is
       Prag_Nam  : Name_Id;
 
    begin
-      --  Do not analyze the contract of an entry declaration unless annotating
-      --  the original tree. It is preferable to analyze the contract after the
-      --  entry declaration has been transformed into a subprogram declaration
-      --  to properly handle references to unpacked formals.
-
-      if Ekind_In (Subp_Id, E_Entry, E_Entry_Family)
-        and then not ASIS_Mode
-        and then not GNATprove_Mode
-      then
-         return;
-
       --  Do not analyze a contract multiple times
 
-      elsif Present (Items) then
+      if Present (Items) then
          if Analyzed (Items) then
             return;
          else
@@ -467,13 +456,29 @@ package body Contracts is
 
       elsif Present (Items) then
 
-         --  Analyze pre- and postconditions
+         --  Do not analyze the pre/postconditions of an entry declaration
+         --  unless annotating the original tree for ASIS or GNATprove.
 
-         Prag := Pre_Post_Conditions (Items);
-         while Present (Prag) loop
-            Analyze_Pre_Post_Condition_In_Decl_Part (Prag);
-            Prag := Next_Pragma (Prag);
-         end loop;
+         --  ??? References to formals are causing problems during contract
+         --  expansion as the references resolve to the entry formals, not
+         --  the subprogram body emulating the entry body. This will have to
+         --  be addressed.
+
+         if Ekind_In (Subp_Id, E_Entry, E_Entry_Family)
+           and then not ASIS_Mode
+           and then not GNATprove_Mode
+         then
+            null;
+
+         --  Otherwise analyze the pre/postconditions
+
+         else
+            Prag := Pre_Post_Conditions (Items);
+            while Present (Prag) loop
+               Analyze_Pre_Post_Condition_In_Decl_Part (Prag);
+               Prag := Next_Pragma (Prag);
+            end loop;
+         end if;
 
          --  Analyze contract-cases and test-cases
 
