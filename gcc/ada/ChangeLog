@@ -1,3 +1,119 @@
+2015-10-26  Claire Dross  <dross@adacore.com>
+
+	* sem_aux.ads (Number_Components): Can return 0 when called on
+	an empty record.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* contracts.adb (Analyze_Subprogram_Body_Contract): Use
+	Unique_Defining_Entity instead of Corresponding_Spec_Of.
+	* einfo.adb SPARK_Pragma and SPARK_Aux_Pragma are now Node40 and
+	Node41 respectively.
+	(SPARK_Aux_Pragma): Update the assertion and node querry.
+	(SPARK_Aux_Pragma_Inherited): Update the assertion and node query.
+	(SPARK_Pragma): Update the assertion and node query.
+	(SPARK_Pragma_Inherited): Update the assertion and node query.
+	(Set_SPARK_Aux_Pragma): Update the assertion and node setting.
+	(Set_SPARK_Aux_Pragma_Inherited): Update the assertion and node setting.
+	(Set_SPARK_Pragma): Update the assertion and node setting.
+	(Set_SPARK_Pragma_Inherited): Update the assertion and node setting.
+	(Write_Field32_Name): Remove the output for SPARK_Pragma.
+	(Write_Field33_Name): Remove the output for SPARK_Aux_Pragma.
+	(Write_Field40_Name): Add output for SPARK_Pragma.
+	(Write_Field41_Name): Add output for SPARK_Aux_Pragma.
+	* einfo.ads Rewrite the documentation on attributes
+	SPARK_Pragma, SPARK_Aux_Pragma, SPARK_Pragma_Inherited and
+	SPARK_Aux_Pragma_Inherited. Update their uses in nodes.
+	* exp_ch4.adb (Create_Anonymous_Master): Use
+	Unique_Defining_Entity instead of Corresponding_Spec_Of.
+	* exp_ch9.adb (Expand_Entry_Declaration): Mark the barrier
+	function as such.
+	(Expand_N_Task_Body): Mark the task body as such.
+	(Expand_N_Task_Type_Declaration): Mark the task body as such.
+	* exp_unst.adb (Visit_Node): Use Unique_Defining_Entity instead
+	of Corresponding_Spec_Of.
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Use
+	Unique_Defining_Entity instead of Corresponding_Spec_Of.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Entry barrier
+	functions do not inherit the SPARK_Mode from the context.
+	(Build_Subprogram_Declaration): The matching spec is now marked
+	as a source construct to mimic the original stand alone body.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Code cleanup.
+	* sem_ch9.adb Add with and use clauses for Contracts.
+	(Analyze_Entry_Body): An entry body freezes the contract of
+	the nearest enclosing package body. The entry body now inherits
+	the SPARK_Mode from the context.
+	(Analyze_Entry_Declaration): A protected entry declaration now inherits
+	the SPARK_Mode from the context.
+	(Analyze_Protected_Body): A protected body freezes
+	the contract of the nearest enclosing package body. Set the
+	Etype of a protected body as this is neede for proper aspect
+	analysis. Protected bodies can now carry meaningful aspects and
+	those are now analyzed.
+	(Analyze_Protected_Type_Declaration): A protected type now inherits the
+	SPARK_Mode from the context.
+	(Analyze_Task_Body): A task body freezes the contract of the
+	nearest enclosing package body. Set the Etype of a task body
+	as this is needed for proper aspect analysis. A task body
+	now inherits the SPARK_Mode from the context.  Task bodies
+	can now carry meaningful aspects and those are now analyzed.
+	(Analyze_Task_Type_Declaration): A task type declaration now
+	inherits the SPARK_Mode of from the context.
+	* sem_ch10.adb (Analyze_Protected_Body_Stub): Protected body
+	stubs can now carry meaningful aspects.
+	(Analyze_Task_Body_Stub): Task body stubs can now carry meaningful
+	aspects.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Aspects SPARK_Mode
+	Warnings now use routine Insert_Pragma as means of insertion into
+	the tree.
+	(Insert_After_SPARK_Mode): Clean up documentation.
+	(Insert_Pragma): Clean up documentation. The routine is now
+	capable of operating on synchronized units.
+	* sem_prag.adb (Add_Entity_To_Name_Buffer): New routine.
+	(Analyze_Contract_Cases_In_Decl_Part): Use
+	Unique_Defining_Entity instead of Corresponding_Spec_Of.
+	(Analyze_Depends_Global): Use Unique_Defining_Entity instead
+	of Corresponding_Spec_Of.
+	(Analyze_Depends_In_Decl_Part): Use Unique_Defining_Entity instead of
+	Corresponding_Spec_Of.
+	(Analyze_Global_In_Decl_Part): Use Unique_Defining_Entity instead of
+	Corresponding_Spec_Of.
+	(Analyze_Pragma): Use Unique_Defining_Entity instead of
+	Corresponding_Spec_Of.
+	Update the detection of an illegal pragma Ghost when it applies
+	to a task or protected unit. Reimplement the handling of
+	pragma SPARK_Mode.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Use Unique_Defining_Entity
+	instead of Corresponding_Spec_Of.
+	(Analyze_Test_Case_In_Decl_Part): Use Unique_Defining_Entity instead of
+	Corresponding_Spec_Of.
+	(Check_Library_Level_Entity): Update the comment on usage.
+	Reimplemented to offer a more specialized errror context.
+	(Check_Pragma_Conformance): Update profile and comment on usage.
+	Handle error message output on single protected or task units.
+	(Collect_Subprogram_Inputs_Outputs): Use Unique_Defining_Entity
+	instead of Corresponding_Spec_Of.
+	(Process_Body): New routine.
+	(Process_Overloadable): New routine.
+	(Process_Private_Part): New routine.
+	(Process_Statement_Part): New routine.
+	(Process_Visible_Part): New routine.
+	(Set_SPARK_Context): New routine.
+	(Set_SPARK_Flags): Removed.
+	* sem_util.adb (Corresponding_Spec_Of): Removed.
+	(Unique_Entity): Reimplemented to handle many more cases.
+	* sem_util.ads (Corresponding_Spec_Of): Removed.
+	(Unique_Defining_Entity): Update the comment on usage.
+	* sinfo.ads (Is_Entry_Barrier_Function): Update the assertion.
+	(Is_Task_Body_Procedure): New routine.
+	(Set_Is_Entry_Barrier_Function): Update the assertion.
+	(Set_Is_Task_Body_Procedure): New routine.
+	* sinfo.adb Update the documentation of attribute
+	Is_Entry_Barrier_Function along with use in nodes. Add new
+	attribute Is_Task_Body_Procedure along with use in nodes.
+	(Is_Task_Body_Procedure): New routine along with pragma Inline.
+	(Set_Is_Task_Body_Procedure): New routine along with pragma Inline.
+
 2015-10-26  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch13.adb: Minor reformatting.

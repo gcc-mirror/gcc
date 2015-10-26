@@ -624,7 +624,7 @@ package body Contracts is
    procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id) is
       Body_Decl   : constant Node_Id   := Unit_Declaration_Node (Body_Id);
       Items       : constant Node_Id   := Contract (Body_Id);
-      Spec_Id     : constant Entity_Id := Corresponding_Spec_Of (Body_Decl);
+      Spec_Id     : constant Entity_Id := Unique_Defining_Entity (Body_Decl);
       Mode        : SPARK_Mode_Type;
       Prag        : Node_Id;
       Prag_Nam    : Name_Id;

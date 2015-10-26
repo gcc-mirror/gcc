@@ -1926,17 +1926,6 @@ package body Sem_Ch10 is
          Error_Msg_N ("missing specification for Protected body", N);
 
       else
-         --  Currently there are no language-defined aspects that can apply to
-         --  a protected body stub. Issue an error and remove the aspects to
-         --  prevent cascaded errors.
-
-         if Has_Aspects (N) then
-            Error_Msg_N
-              ("aspects on protected bodies are not allowed",
-               First (Aspect_Specifications (N)));
-            Remove_Aspects (N);
-         end if;
-
          Set_Scope (Defining_Entity (N), Current_Scope);
          Set_Has_Completion (Etype (Nam));
          Set_Corresponding_Spec_Of_Stub (N, Nam);
@@ -2390,17 +2379,6 @@ package body Sem_Ch10 is
          Error_Msg_N ("missing specification for task body", N);
 
       else
-         --  Currently there are no language-defined aspects that can apply to
-         --  a task body stub. Issue an error and remove the aspects to prevent
-         --  cascaded errors.
-
-         if Has_Aspects (N) then
-            Error_Msg_N
-              ("aspects on task bodies are not allowed",
-               First (Aspect_Specifications (N)));
-            Remove_Aspects (N);
-         end if;
-
          Set_Scope (Defining_Entity (N), Current_Scope);
          Generate_Reference (Nam, Defining_Identifier (N), 'b');
          Set_Corresponding_Spec_Of_Stub (N, Nam);
@@ -2425,7 +2403,7 @@ package body Sem_Ch10 is
          if Expander_Active then
             Insert_After (N,
               Make_Assignment_Statement (Loc,
-                Name =>
+                Name        =>
                   Make_Identifier (Loc,
                     Chars => New_External_Name (Chars (Etype (Nam)), 'E')),
                  Expression => New_Occurrence_Of (Standard_True, Loc)));

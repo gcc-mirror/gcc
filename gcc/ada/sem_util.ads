@@ -413,10 +413,6 @@ package Sem_Util is
    --  attribute, except in the case of formal private and derived types.
    --  Possible optimization???
 
-   function Corresponding_Spec_Of (Decl : Node_Id) return Entity_Id;
-   --  Return the corresponding spec of Decl when it denotes a package or a
-   --  subprogram [stub], or the defining entity of Decl.
-
    function Current_Entity (N : Node_Id) return Entity_Id;
    pragma Inline (Current_Entity);
    --  Find the currently visible definition for a given identifier, that is to
@@ -2092,12 +2088,13 @@ package Sem_Util is
    function Unique_Defining_Entity (N : Node_Id) return Entity_Id;
    --  Return the entity which represents declaration N, so that different
    --  views of the same entity have the same unique defining entity:
-   --  * package spec and body;
-   --  * subprogram declaration, subprogram stub and subprogram body;
-   --  * entry declaration and entry body;
-   --  * task declaration, task body stub and task body;
-   --  * private view and full view of a type;
-   --  * private view and full view of a deferred constant.
+   --    * entry declaration and entry body
+   --    * package spec and body
+   --    * protected type declaration, protected body stub and protected body
+   --    * private view and full view of a deferred constant
+   --    * private view and full view of a type
+   --    * subprogram declaration, subprogram stub and subprogram body
+   --    * task type declaration, task body stub and task body
    --  In other cases, return the defining entity for N.
 
    function Unique_Entity (E : Entity_Id) return Entity_Id;

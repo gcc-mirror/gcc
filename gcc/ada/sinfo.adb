@@ -1848,7 +1848,8 @@ package body Sinfo is
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Subprogram_Body);
+        or else NT (N).Nkind = N_Subprogram_Body
+        or else NT (N).Nkind = N_Subprogram_Declaration);
       return Flag8 (N);
    end Is_Entry_Barrier_Function;
 
@@ -2004,6 +2005,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Block_Statement);
       return Flag6 (N);
    end Is_Task_Allocation_Block;
+
+   function Is_Task_Body_Procedure
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Subprogram_Body
+        or else NT (N).Nkind = N_Subprogram_Declaration);
+      return Flag1 (N);
+   end Is_Task_Body_Procedure;
 
    function Is_Task_Master
       (N : Node_Id) return Boolean is
@@ -5069,7 +5079,8 @@ package body Sinfo is
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Subprogram_Body);
+        or else NT (N).Nkind = N_Subprogram_Body
+        or else NT (N).Nkind = N_Subprogram_Declaration);
       Set_Flag8 (N, Val);
    end Set_Is_Entry_Barrier_Function;
 
@@ -5225,6 +5236,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Block_Statement);
       Set_Flag6 (N, Val);
    end Set_Is_Task_Allocation_Block;
+
+   procedure Set_Is_Task_Body_Procedure
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Subprogram_Body
+        or else NT (N).Nkind = N_Subprogram_Declaration);
+      Set_Flag1 (N, Val);
+   end Set_Is_Task_Body_Procedure;
 
    procedure Set_Is_Task_Master
       (N : Node_Id; Val : Boolean := True) is

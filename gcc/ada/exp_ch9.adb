@@ -1019,14 +1019,16 @@ package body Exp_Ch9 is
       --  (whether coming from this routine, or directly from source).
 
       if Opt.Suppress_Control_Flow_Optimizations then
-         Stmt := Make_Implicit_If_Statement (Cond,
-                   Condition       => Cond,
-                   Then_Statements => New_List (
-                     Make_Simple_Return_Statement (Loc,
-                       New_Occurrence_Of (Standard_True, Loc))),
-                   Else_Statements => New_List (
-                     Make_Simple_Return_Statement (Loc,
-                       New_Occurrence_Of (Standard_False, Loc))));
+         Stmt :=
+           Make_Implicit_If_Statement (Cond,
+             Condition       => Cond,
+             Then_Statements => New_List (
+               Make_Simple_Return_Statement (Loc,
+                 New_Occurrence_Of (Standard_True, Loc))),
+
+             Else_Statements => New_List (
+               Make_Simple_Return_Statement (Loc,
+                 New_Occurrence_Of (Standard_False, Loc))));
 
       else
          Stmt := Make_Simple_Return_Statement (Loc, Cond);
@@ -1061,22 +1063,24 @@ package body Exp_Ch9 is
    begin
       Set_Debug_Info_Needed (Def_Id);
 
-      return Make_Function_Specification (Loc,
-        Defining_Unit_Name       => Def_Id,
-        Parameter_Specifications => New_List (
-          Make_Parameter_Specification (Loc,
-            Defining_Identifier =>
-              Make_Defining_Identifier (Loc, Name_uO),
-            Parameter_Type      =>
-              New_Occurrence_Of (RTE (RE_Address), Loc)),
+      return
+        Make_Function_Specification (Loc,
+          Defining_Unit_Name       => Def_Id,
+          Parameter_Specifications => New_List (
+            Make_Parameter_Specification (Loc,
+              Defining_Identifier =>
+                Make_Defining_Identifier (Loc, Name_uO),
+              Parameter_Type      =>
+                New_Occurrence_Of (RTE (RE_Address), Loc)),
 
-          Make_Parameter_Specification (Loc,
-            Defining_Identifier =>
-              Make_Defining_Identifier (Loc, Name_uE),
-            Parameter_Type      =>
-              New_Occurrence_Of (RTE (RE_Protected_Entry_Index), Loc))),
+            Make_Parameter_Specification (Loc,
+              Defining_Identifier =>
+                Make_Defining_Identifier (Loc, Name_uE),
+              Parameter_Type      =>
+                New_Occurrence_Of (RTE (RE_Protected_Entry_Index), Loc))),
 
-        Result_Definition        => New_Occurrence_Of (Standard_Boolean, Loc));
+          Result_Definition        =>
+            New_Occurrence_Of (Standard_Boolean, Loc));
    end Build_Barrier_Function_Specification;
 
    --------------------------
@@ -6260,7 +6264,7 @@ package body Exp_Ch9 is
       --  version of it because it is never called.
 
       if Expander_Active then
-         B_F := Build_Barrier_Function (N, Ent, Prot);
+         B_F  := Build_Barrier_Function (N, Ent, Prot);
          Func := Barrier_Function (Ent);
          Set_Corresponding_Spec (B_F, Func);
 
@@ -8827,8 +8831,9 @@ package body Exp_Ch9 is
    --  the specs refer to this type.
 
    procedure Expand_N_Protected_Type_Declaration (N : Node_Id) is
-      Loc      : constant Source_Ptr := Sloc (N);
-      Prot_Typ : constant Entity_Id  := Defining_Identifier (N);
+      Discr_Map : constant Elist_Id := New_Elmt_List;
+      Loc       : constant Source_Ptr := Sloc (N);
+      Prot_Typ  : constant Entity_Id  := Defining_Identifier (N);
 
       Lock_Free_Active : constant Boolean := Uses_Lock_Free (Prot_Typ);
       --  This flag indicates whether the lock free implementation is active
@@ -8836,20 +8841,19 @@ package body Exp_Ch9 is
       Pdef : constant Node_Id := Protected_Definition (N);
       --  This contains two lists; one for visible and one for private decls
 
-      Rec_Decl     : Node_Id;
+      Body_Arr     : Node_Id;
+      Body_Id      : Entity_Id;
       Cdecls       : List_Id;
-      Discr_Map    : constant Elist_Id := New_Elmt_List;
-      Priv         : Node_Id;
-      New_Priv     : Node_Id;
       Comp         : Node_Id;
       Comp_Id      : Entity_Id;
-      Sub          : Node_Id;
       Current_Node : Node_Id := N;
-      Entries_Aggr : Node_Id;
-      Body_Id      : Entity_Id;
-      Body_Arr     : Node_Id;
       E_Count      : Int;
+      Entries_Aggr : Node_Id;
+      New_Priv     : Node_Id;
       Object_Comp  : Node_Id;
+      Priv         : Node_Id;
+      Rec_Decl     : Node_Id;
+      Sub          : Node_Id;
 
       procedure Check_Inlining (Subp : Entity_Id);
       --  If the original operation has a pragma Inline, propagate the flag
@@ -9020,6 +9024,7 @@ package body Exp_Ch9 is
            Make_Subprogram_Declaration (Loc,
              Specification =>
                Build_Barrier_Function_Specification (Loc, Bdef));
+         Set_Is_Entry_Barrier_Function (Sub);
 
          Insert_After (Current_Node, Sub);
          Analyze (Sub);
@@ -9146,13 +9151,12 @@ package body Exp_Ch9 is
                   elsif Restriction_Active (No_Implicit_Heap_Allocations) then
                      if not Discriminated_Size (Defining_Identifier (Priv))
                      then
-
                         --  Any object of the type will be  non-static.
 
                         Error_Msg_N ("component has non-static size??", Priv);
                         Error_Msg_NE
-                          ("\creation of protected object of type& will"
-                           & " violate restriction "
+                          ("\creation of protected object of type& will "
+                           & "violate restriction "
                            & "No_Implicit_Heap_Allocations??", Priv, Prot_Typ);
                      else
 
@@ -9172,24 +9176,22 @@ package body Exp_Ch9 is
                   then
                      if not Discriminated_Size (Defining_Identifier (Priv))
                      then
-
                         --  Any object of the type will be  non-static.
 
                         Error_Msg_N ("component has non-static size??", Priv);
                         Error_Msg_NE
-                          ("\creation of protected object of type& will"
-                           & " violate restriction "
+                          ("\creation of protected object of type& will "
+                           & "violate restriction "
                            & "No_Implicit_Protected_Object_Allocations??",
                            Priv, Prot_Typ);
                      else
-
                         --  Object will be non-static if discriminants are.
 
                         Error_Msg_NE
                           ("creation of protected object of type& with "
-                           &  "non-static discriminants  will violate "
-                           & " restriction"
-                           & " No_Implicit_Protected_Object_Allocations??",
+                           & "non-static discriminants  will violate "
+                           & "restriction "
+                           & "No_Implicit_Protected_Object_Allocations??",
                            Priv, Prot_Typ);
                      end if;
                   end if;
@@ -9202,10 +9204,10 @@ package body Exp_Ch9 is
                declare
                   Old_Comp : constant Node_Id   := Component_Definition (Priv);
                   Oent     : constant Entity_Id := Defining_Identifier (Priv);
-                  New_Comp : Node_Id;
                   Nent     : constant Entity_Id :=
                                Make_Defining_Identifier (Sloc (Oent),
                                  Chars => Chars (Oent));
+                  New_Comp : Node_Id;
 
                begin
                   if Present (Subtype_Indication (Old_Comp)) then
@@ -9213,15 +9215,15 @@ package body Exp_Ch9 is
                        Make_Component_Definition (Sloc (Oent),
                          Aliased_Present    => False,
                          Subtype_Indication =>
-                           New_Copy_Tree (Subtype_Indication (Old_Comp),
-                                           Discr_Map));
+                           New_Copy_Tree
+                             (Subtype_Indication (Old_Comp), Discr_Map));
                   else
                      New_Comp :=
                        Make_Component_Definition (Sloc (Oent),
                          Aliased_Present    => False,
                          Access_Definition  =>
-                           New_Copy_Tree (Access_Definition (Old_Comp),
-                                           Discr_Map));
+                           New_Copy_Tree
+                             (Access_Definition (Old_Comp), Discr_Map));
                   end if;
 
                   New_Priv :=
@@ -9289,12 +9291,12 @@ package body Exp_Ch9 is
 
       if not Lock_Free_Active then
          declare
-            Ritem              : Node_Id;
-            Num_Attach_Handler : Int := 0;
-            Protection_Subtype : Node_Id;
             Entry_Count_Expr   : constant Node_Id :=
                                    Build_Entry_Count_Expression
                                      (Prot_Typ, Cdecls, Loc);
+            Num_Attach_Handler : Int := 0;
+            Protection_Subtype : Node_Id;
+            Ritem              : Node_Id;
 
          begin
             if Has_Attach_Handler (Prot_Typ) then
@@ -9486,9 +9488,7 @@ package body Exp_Ch9 is
             end if;
 
          elsif Nkind (Comp) = N_Entry_Declaration then
-
             Expand_Entry_Declaration (Comp);
-
          end if;
 
          Next (Comp);
@@ -9518,28 +9518,31 @@ package body Exp_Ch9 is
 
          case Corresponding_Runtime_Package (Prot_Typ) is
             when System_Tasking_Protected_Objects_Entries =>
-               Body_Arr := Make_Object_Declaration (Loc,
-                 Defining_Identifier => Body_Id,
-                 Aliased_Present => True,
-                 Object_Definition =>
-                   Make_Subtype_Indication (Loc,
-                     Subtype_Mark => New_Occurrence_Of (
-                       RTE (RE_Protected_Entry_Body_Array), Loc),
-                     Constraint =>
-                       Make_Index_Or_Discriminant_Constraint (Loc,
-                         Constraints => New_List (
-                            Make_Range (Loc,
-                              Make_Integer_Literal (Loc, 1),
-                              Make_Integer_Literal (Loc, E_Count))))),
-                 Expression => Entries_Aggr);
+               Body_Arr :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Body_Id,
+                   Aliased_Present => True,
+                   Object_Definition =>
+                     Make_Subtype_Indication (Loc,
+                       Subtype_Mark =>
+                         New_Occurrence_Of
+                           (RTE (RE_Protected_Entry_Body_Array), Loc),
+                       Constraint =>
+                         Make_Index_Or_Discriminant_Constraint (Loc,
+                           Constraints => New_List (
+                              Make_Range (Loc,
+                                Make_Integer_Literal (Loc, 1),
+                                Make_Integer_Literal (Loc, E_Count))))),
+                   Expression => Entries_Aggr);
 
             when System_Tasking_Protected_Objects_Single_Entry =>
-               Body_Arr := Make_Object_Declaration (Loc,
-                 Defining_Identifier => Body_Id,
-                 Aliased_Present => True,
-                 Object_Definition => New_Occurrence_Of
-                                        (RTE (RE_Entry_Body), Loc),
-                 Expression => Remove_Head (Expressions (Entries_Aggr)));
+               Body_Arr :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Body_Id,
+                   Aliased_Present     => True,
+                   Object_Definition   =>
+                     New_Occurrence_Of (RTE (RE_Entry_Body), Loc),
+                   Expression => Remove_Head (Expressions (Entries_Aggr)));
 
             when others =>
                raise Program_Error;
@@ -11512,6 +11515,7 @@ package body Exp_Ch9 is
           Specification              => Build_Task_Proc_Specification (Ttyp),
           Declarations               => Declarations (N),
           Handled_Statement_Sequence => Handled_Statement_Sequence (N));
+      Set_Is_Task_Body_Procedure (New_N);
 
       --  If the task contains generic instantiations, cleanup actions are
       --  delayed until after instantiation. Transfer the activation chain to
@@ -12052,6 +12056,7 @@ package body Exp_Ch9 is
       Body_Decl :=
         Make_Subprogram_Declaration (Loc,
           Specification => Proc_Spec);
+      Set_Is_Task_Body_Procedure (Body_Decl);
 
       Insert_After (Rec_Decl, Body_Decl);
 

@@ -23,42 +23,43 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Exp_Ch9;  use Exp_Ch9;
-with Elists;   use Elists;
-with Freeze;   use Freeze;
-with Layout;   use Layout;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch5;  use Sem_Ch5;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
+with Aspects;   use Aspects;
+with Atree;     use Atree;
+with Checks;    use Checks;
+with Contracts; use Contracts;
+with Debug;     use Debug;
+with Einfo;     use Einfo;
+with Errout;    use Errout;
+with Exp_Ch9;   use Exp_Ch9;
+with Elists;    use Elists;
+with Freeze;    use Freeze;
+with Layout;    use Layout;
+with Lib.Xref;  use Lib.Xref;
+with Namet;     use Namet;
+with Nlists;    use Nlists;
+with Nmake;     use Nmake;
+with Opt;       use Opt;
+with Restrict;  use Restrict;
+with Rident;    use Rident;
+with Rtsfind;   use Rtsfind;
+with Sem;       use Sem;
+with Sem_Aux;   use Sem_Aux;
+with Sem_Ch3;   use Sem_Ch3;
+with Sem_Ch5;   use Sem_Ch5;
+with Sem_Ch6;   use Sem_Ch6;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch13;  use Sem_Ch13;
+with Sem_Eval;  use Sem_Eval;
+with Sem_Res;   use Sem_Res;
+with Sem_Type;  use Sem_Type;
+with Sem_Util;  use Sem_Util;
+with Sem_Warn;  use Sem_Warn;
+with Snames;    use Snames;
+with Stand;     use Stand;
+with Sinfo;     use Sinfo;
 with Style;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Tbuild;    use Tbuild;
+with Uintp;     use Uintp;
 
 package body Sem_Ch9 is
 
@@ -1190,6 +1191,13 @@ package body Sem_Ch9 is
       Entry_Name : Entity_Id;
 
    begin
+      --  An entry body "freezes" the contract of the nearest enclosing
+      --  package body. This ensures that any annotations referenced by the
+      --  contract of an entry or subprogram body declared within the current
+      --  protected body are available.
+
+      Analyze_Enclosing_Package_Body_Contract (N);
+
       Tasking_Used := True;
 
       --  Entry_Name is initialized to Any_Id. It should get reset to the
@@ -1209,6 +1217,12 @@ package body Sem_Ch9 is
       Set_Etype          (Id, Standard_Void_Type);
       Set_Accept_Address (Id, New_Elmt_List);
 
+      --  Set the SPARK_Mode from the current context (may be overwritten later
+      --  with an explicit pragma).
+
+      Set_SPARK_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Id);
+
       E := First_Entity (P_Type);
       while Present (E) loop
          if Chars (E) = Chars (Id)
@@ -1217,7 +1231,7 @@ package body Sem_Ch9 is
          then
             Entry_Name := E;
             Set_Convention (Id, Convention (E));
-            Set_Corresponding_Body (Parent (Entry_Name), Id);
+            Set_Corresponding_Body (Parent (E), Id);
             Check_Fully_Conformant (Id, E, N);
 
             if Ekind (Id) = E_Entry_Family then
@@ -1601,6 +1615,15 @@ package body Sem_Ch9 is
       Set_Convention     (Def_Id, Convention_Entry);
       Set_Accept_Address (Def_Id, New_Elmt_List);
 
+      --  Set the SPARK_Mode from the current context (may be overwritten later
+      --  with an explicit pragma). Task entries are excluded because they are
+      --  not completed by entry bodies.
+
+      if Ekind (Current_Scope) = E_Protected_Type then
+         Set_SPARK_Pragma           (Def_Id, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma_Inherited (Def_Id);
+      end if;
+
       --  Process formals
 
       if Present (Formals) then
@@ -1730,29 +1753,19 @@ package body Sem_Ch9 is
    --  Start of processing for Analyze_Protected_Body
 
    begin
+      --  A protected body "freezes" the contract of the nearest enclosing
+      --  package body. This ensures that any annotations referenced by the
+      --  contract of an entry or subprogram body declared within the current
+      --  protected body are available.
+
+      Analyze_Enclosing_Package_Body_Contract (N);
+
       Tasking_Used := True;
       Set_Ekind (Body_Id, E_Protected_Body);
+      Set_Etype (Body_Id, Standard_Void_Type);
       Spec_Id := Find_Concurrent_Spec (Body_Id);
 
-      --  Protected bodies are currently removed by the expander. Since there
-      --  are no language-defined aspects that apply to a protected body, it is
-      --  not worth changing the whole expansion to accomodate implementation-
-      --  defined aspects. Plus we cannot possibly known the semantics of such
-      --  future implementation-defined aspects in order to plan ahead.
-
-      if Has_Aspects (N) then
-         Error_Msg_N
-           ("aspects on protected bodies are not allowed",
-            First (Aspect_Specifications (N)));
-
-         --  Remove illegal aspects to prevent cascaded errors later on
-
-         Remove_Aspects (N);
-      end if;
-
-      if Present (Spec_Id)
-        and then Ekind (Spec_Id) = E_Protected_Type
-      then
+      if Present (Spec_Id) and then Ekind (Spec_Id) = E_Protected_Type then
          null;
 
       elsif Present (Spec_Id)
@@ -1774,6 +1787,10 @@ package body Sem_Ch9 is
 
       if Ekind (Spec_Id) /= E_Protected_Type then
          Spec_Id := Etype (Spec_Id);
+      end if;
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Body_Id);
       end if;
 
       Push_Scope (Spec_Id);
@@ -1967,6 +1984,15 @@ package body Sem_Ch9 is
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);
       Set_Stored_Constraint  (T, No_Elist);
+
+      --  Set the SPARK_Mode from the current context (may be overwritten later
+      --  with an explicit pragma).
+
+      Set_SPARK_Pragma               (T, SPARK_Mode_Pragma);
+      Set_SPARK_Aux_Pragma           (T, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited     (T);
+      Set_SPARK_Aux_Pragma_Inherited (T);
+
       Push_Scope (T);
 
       if Ada_Version >= Ada_2005 then
@@ -2719,33 +2745,23 @@ package body Sem_Ch9 is
       --  a single task, since Spec_Id is set to the task type).
 
    begin
+      --  A task body "freezes" the contract of the nearest enclosing package
+      --  body. This ensures that any annotations referenced by the contract
+      --  of an entry or subprogram body declared within the current protected
+      --  body are available.
+
+      Analyze_Enclosing_Package_Body_Contract (N);
+
       Tasking_Used := True;
-      Set_Ekind (Body_Id, E_Task_Body);
       Set_Scope (Body_Id, Current_Scope);
+      Set_Ekind (Body_Id, E_Task_Body);
+      Set_Etype (Body_Id, Standard_Void_Type);
       Spec_Id := Find_Concurrent_Spec (Body_Id);
-
-      --  Task bodies are transformed into a subprogram spec and body pair by
-      --  the expander. Since there are no language-defined aspects that apply
-      --  to a task body, it is not worth changing the whole expansion to
-      --  accomodate implementation-defined aspects. Plus we cannot possibly
-      --  know semantics of such aspects in order to plan ahead.
-
-      if Has_Aspects (N) then
-         Error_Msg_N
-           ("aspects on task bodies are not allowed",
-            First (Aspect_Specifications (N)));
-
-         --  Remove illegal aspects to prevent cascaded errors later on
-
-         Remove_Aspects (N);
-      end if;
 
       --  The spec is either a task type declaration, or a single task
       --  declaration for which we have created an anonymous type.
 
-      if Present (Spec_Id)
-        and then Ekind (Spec_Id) = E_Task_Type
-      then
+      if Present (Spec_Id) and then Ekind (Spec_Id) = E_Task_Type then
          null;
 
       elsif Present (Spec_Id)
@@ -2777,6 +2793,16 @@ package body Sem_Ch9 is
 
       if Ekind (Spec_Id) = E_Variable then
          Spec_Id := Etype (Spec_Id);
+      end if;
+
+      --  Set the SPARK_Mode from the current context (may be overwritten later
+      --  with an explicit pragma).
+
+      Set_SPARK_Pragma           (Body_Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Body_Id);
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Body_Id);
       end if;
 
       Push_Scope (Spec_Id);
@@ -2939,6 +2965,15 @@ package body Sem_Ch9 is
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);
       Set_Stored_Constraint  (T, No_Elist);
+
+      --  Set the SPARK_Mode from the current context (may be overwritten later
+      --  with an explicit pragma).
+
+      Set_SPARK_Pragma               (T, SPARK_Mode_Pragma);
+      Set_SPARK_Aux_Pragma           (T, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited     (T);
+      Set_SPARK_Aux_Pragma_Inherited (T);
+
       Push_Scope (T);
 
       if Ada_Version >= Ada_2005 then

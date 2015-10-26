@@ -1212,15 +1212,28 @@ package body Sem_Ch13 is
         (Prag    : Node_Id;
          Ins_Nod : Node_Id;
          Decls   : List_Id);
-      --  Subsidiary to the analysis of aspects Abstract_State, Ghost,
-      --  Initializes, Initial_Condition and Refined_State. Insert node Prag
-      --  before node Ins_Nod. If Ins_Nod is for pragma SPARK_Mode, then skip
-      --  SPARK_Mode. Decls is the associated declarative list where Prag is to
-      --  reside.
+      --  Subsidiary to the analysis of aspects
+      --    Abstract_State
+      --    Ghost
+      --    Initializes
+      --    Initial_Condition
+      --    Refined_State
+      --  Insert node Prag before node Ins_Nod. If Ins_Nod is for pragma
+      --  SPARK_Mode, then skip SPARK_Mode. Decls is the associated declarative
+      --  list where Prag is to reside.
 
       procedure Insert_Pragma (Prag : Node_Id);
-      --  Subsidiary to the analysis of aspects Attach_Handler, Contract_Cases,
-      --  Depends, Global, Post, Pre, Refined_Depends and Refined_Global.
+      --  Subsidiary to the analysis of aspects
+      --    Attach_Handler
+      --    Contract_Cases
+      --    Depends
+      --    Global
+      --    Post
+      --    Pre
+      --    Refined_Depends
+      --    Refined_Global
+      --    SPARK_Mode
+      --    Warnings
       --  Insert pragma Prag such that it mimics the placement of a source
       --  pragma of the same kind.
       --
@@ -1277,45 +1290,122 @@ package body Sem_Ch13 is
       -------------------
 
       procedure Insert_Pragma (Prag : Node_Id) is
-         Aux  : Node_Id;
-         Decl : Node_Id;
+         Aux   : Node_Id;
+         Decl  : Node_Id;
+         Decls : List_Id;
 
       begin
-         if Nkind (N) = N_Subprogram_Body then
-            if Present (Declarations (N)) then
+         --  When the aspect appears on a package, protected unit, subprogram
+         --  or task unit body, insert the generated pragma at the top of the
+         --  body declarations to emulate the behavior of a source pragma.
 
-               --  Skip other internally generated pragmas from aspects to find
-               --  the proper insertion point. As a result the order of pragmas
-               --  is the same as the order of aspects.
+         --    package body Pack with Aspect is
 
-               --  As precondition pragmas generated from conjuncts in the
-               --  precondition aspect are presented in reverse order to
-               --  Insert_Pragma, insert them in the correct order here by not
-               --  skipping previously inserted precondition pragmas when the
-               --  current pragma is a precondition.
+         --    package body Pack is
+         --       pragma Prag;
 
-               Decl := First (Declarations (N));
-               while Present (Decl) loop
-                  if Nkind (Decl) = N_Pragma
-                    and then From_Aspect_Specification (Decl)
-                    and then not (Get_Pragma_Id (Decl) = Pragma_Precondition
-                                    and then
-                                  Get_Pragma_Id (Prag) = Pragma_Precondition)
-                  then
-                     Next (Decl);
-                  else
-                     exit;
-                  end if;
-               end loop;
+         if Nkind_In (N, N_Package_Body,
+                         N_Protected_Body,
+                         N_Subprogram_Body,
+                         N_Task_Body)
+         then
+            Decls := Declarations (N);
 
-               if Present (Decl) then
-                  Insert_Before (Decl, Prag);
-               else
-                  Append (Prag, Declarations (N));
-               end if;
-            else
-               Set_Declarations (N, New_List (Prag));
+            if No (Decls) then
+               Decls := New_List;
+               Set_Declarations (N, Decls);
             end if;
+
+            --  Skip other internally generated pragmas from aspects to find
+            --  the proper insertion point. As a result the order of pragmas
+            --  is the same as the order of aspects.
+
+            --  As precondition pragmas generated from conjuncts in the
+            --  precondition aspect are presented in reverse order to
+            --  Insert_Pragma, insert them in the correct order here by not
+            --  skipping previously inserted precondition pragmas when the
+            --  current pragma is a precondition.
+
+            Decl := First (Decls);
+            while Present (Decl) loop
+               if Nkind (Decl) = N_Pragma
+                 and then From_Aspect_Specification (Decl)
+                 and then not (Get_Pragma_Id (Decl) = Pragma_Precondition
+                                 and then
+                               Get_Pragma_Id (Prag) = Pragma_Precondition)
+               then
+                  Next (Decl);
+               else
+                  exit;
+               end if;
+            end loop;
+
+            if Present (Decl) then
+               Insert_Before (Decl, Prag);
+            else
+               Append_To (Decls, Prag);
+            end if;
+
+         --  When the aspect is associated with a [generic] package declaration
+         --  insert the generated pragma at the top of the visible declarations
+         --  to emulate the behavior of a source pragma.
+
+         --    package Pack with Aspect is
+
+         --    package Pack is
+         --       pragma Prag;
+
+         elsif Nkind_In (N, N_Generic_Package_Declaration,
+                            N_Package_Declaration)
+         then
+            Decls := Visible_Declarations (Specification (N));
+
+            if No (Decls) then
+               Decls := New_List;
+               Set_Visible_Declarations (Specification (N), Decls);
+            end if;
+
+            Prepend_To (Decls, Prag);
+
+         --  When the aspect is associated with a protected unit declaration,
+         --  insert the generated pragma at the top of the visible declarations
+         --  the emulate the behavior of a source pragma.
+
+         --    protected [type] Prot with Aspect is
+
+         --    protected [type] Prot is
+         --       pragma Prag;
+
+         elsif Nkind (N) = N_Protected_Type_Declaration then
+            Decls := Visible_Declarations (Protected_Definition (N));
+
+            if No (Decls) then
+               Decls := New_List;
+               Set_Visible_Declarations (Protected_Definition (N), Decls);
+            end if;
+
+            Prepend_To (Decls, Prag);
+
+         --  When the aspect is associated with a task unit declaration with a
+         --  definition, insert the generated pragma at the top of the visible
+         --  declarations the emulate the behavior of a source pragma.
+
+         --    task [type] Prot with Aspect is
+
+         --    task [type] Prot is
+         --       pragma Prag;
+
+         elsif Nkind (N) = N_Task_Type_Declaration
+           and then Present (Task_Definition (N))
+         then
+            Decls := Visible_Declarations (Task_Definition (N));
+
+            if No (Decls) then
+               Decls := New_List;
+               Set_Visible_Declarations (Task_Definition (N), Decls);
+            end if;
+
+            Prepend_To (Decls, Prag);
 
          --  When the context is a library unit, the pragma is added to the
          --  Pragmas_After list.
@@ -1329,7 +1419,7 @@ package body Sem_Ch13 is
 
             Prepend (Prag, Pragmas_After (Aux));
 
-         --  Default
+         --  Default, the pragma is inserted after the context
 
          else
             Insert_After (N, Prag);
@@ -2128,11 +2218,9 @@ package body Sem_Ch13 is
 
                      goto Continue;
 
-                  --  For tasks
+                  --  For tasks pass the aspect as an attribute
 
                   else
-                     --  Pass the aspect as an attribute
-
                      Aitem :=
                        Make_Attribute_Definition_Clause (Loc,
                          Name       => Ent,
@@ -2150,6 +2238,10 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => New_Occurrence_Of (E, Loc))),
                      Pragma_Name                  => Chars (Id));
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
 
                --  Case 2c: Aspects corresponding to pragmas with three
                --  arguments.
@@ -2657,54 +2749,16 @@ package body Sem_Ch13 is
 
                --  SPARK_Mode
 
-               when Aspect_SPARK_Mode => SPARK_Mode : declare
-                  Decls : List_Id;
-
-               begin
+               when Aspect_SPARK_Mode =>
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_SPARK_Mode);
 
-                  --  When the aspect appears on a package or a subprogram
-                  --  body, insert the generated pragma at the top of the body
-                  --  declarations to emulate the behavior of a source pragma.
-
-                  if Nkind_In (N, N_Package_Body, N_Subprogram_Body) then
-                     Decorate (Aspect, Aitem);
-
-                     Decls := Declarations (N);
-
-                     if No (Decls) then
-                        Decls := New_List;
-                        Set_Declarations (N, Decls);
-                     end if;
-
-                     Prepend_To (Decls, Aitem);
-                     goto Continue;
-
-                  --  When the aspect is associated with a [generic] package
-                  --  declaration, insert the generated pragma at the top of
-                  --  the visible declarations to emulate the behavior of a
-                  --  source pragma.
-
-                  elsif Nkind_In (N, N_Generic_Package_Declaration,
-                                     N_Package_Declaration)
-                  then
-                     Decorate (Aspect, Aitem);
-
-                     Decls := Visible_Declarations (Specification (N));
-
-                     if No (Decls) then
-                        Decls := New_List;
-                        Set_Visible_Declarations (Specification (N), Decls);
-                     end if;
-
-                     Prepend_To (Decls, Aitem);
-                     goto Continue;
-                  end if;
-               end SPARK_Mode;
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
 
                --  Refined_Depends
 
