@@ -2665,11 +2665,6 @@ package body Sem_Ch9 is
           Defining_Identifier => Obj_Id,
           Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
-      --  Relocate the aspects that appear on the original single protected
-      --  declaration to the object as the object is the visible name.
-
-      Set_Comes_From_Source (Obj_Decl, True);
-
       Insert_After (N, Obj_Decl);
       Mark_Rewrite_Insertion (Obj_Decl);
 
@@ -2755,11 +2750,6 @@ package body Sem_Ch9 is
         Make_Object_Declaration (Loc,
           Defining_Identifier => Obj_Id,
           Object_Definition   => New_Occurrence_Of (Typ, Loc));
-
-      --  Relocate the aspects that appear on the original single protected
-      --  declaration to the object as the object is the visible name.
-
-      Set_Comes_From_Source (Obj_Decl, True);
 
       Insert_After (N, Obj_Decl);
       Mark_Rewrite_Insertion (Obj_Decl);

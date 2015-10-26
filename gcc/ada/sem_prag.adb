@@ -20543,6 +20543,20 @@ package body Sem_Prag is
                      Process_Overloadable (Stmt);
                      return;
 
+                  --  The pragma applies to the anonymous object created for a
+                  --  single concurrent type.
+
+                  --    protected type Anon_Prot_Typ ...;
+                  --    Obj : Anon_Prot_Typ;
+                  --    pragma SPARK_Mode ...;
+
+                  elsif Nkind (Stmt) = N_Object_Declaration
+                    and then Is_Single_Concurrent_Object
+                               (Defining_Entity (Stmt))
+                  then
+                     Process_Overloadable (Stmt);
+                     return;
+
                   --  Skip internally generated code
 
                   elsif not Comes_From_Source (Stmt) then
@@ -20563,20 +20577,6 @@ package body Sem_Prag is
                     or else (Nkind (Stmt) = N_Entry_Declaration
                               and then Is_Protected_Type
                                          (Scope (Defining_Entity (Stmt))))
-                  then
-                     Process_Overloadable (Stmt);
-                     return;
-
-                  --  The pragma applies to the anonymous object created for a
-                  --  single concurrent type.
-
-                  --    protected type Anon_Prot_Typ ...;
-                  --    Obj : Anon_Prot_Typ;
-                  --    pragma SPARK_Mode ...;
-
-                  elsif Nkind (Stmt) = N_Object_Declaration
-                    and then Is_Single_Concurrent_Object
-                               (Defining_Entity (Stmt))
                   then
                      Process_Overloadable (Stmt);
                      return;
@@ -26697,7 +26697,15 @@ package body Sem_Prag is
          --  Skip internally generated code
 
          elsif not Comes_From_Source (Stmt) then
-            null;
+
+            --  The anonymous object created for a single concurrent type is a
+            --  suitable context.
+
+            if Nkind (Stmt) = N_Object_Declaration
+              and then Is_Single_Concurrent_Object (Defining_Entity (Stmt))
+            then
+               return Stmt;
+            end if;
 
          --  Return the current source construct
 
@@ -26800,7 +26808,16 @@ package body Sem_Prag is
          --  Skip internally generated code
 
          elsif not Comes_From_Source (Stmt) then
-            if Nkind (Stmt) = N_Subprogram_Declaration then
+
+            --  The anonymous object created for a single concurrent type is a
+            --  suitable context.
+
+            if Nkind (Stmt) = N_Object_Declaration
+              and then Is_Single_Concurrent_Object (Defining_Entity (Stmt))
+            then
+               return Stmt;
+
+            elsif Nkind (Stmt) = N_Subprogram_Declaration then
 
                --  The subprogram declaration is an internally generated spec
                --  for an expression function.

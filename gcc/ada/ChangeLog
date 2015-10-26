@@ -1,5 +1,26 @@
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch9.adb (Analyze_Single_Protected_Declaration): The anonymous
+	object no longer comes from source.
+	(Analyze_Single_Task_Declaration): The anonymous object no longer
+	comes from source.
+	* sem_prag.adb (Analyze_Pragma): The analysis of pragma SPARK_Mode
+	now recognizes the internal anonymous object created for a single
+	concurren type as a valid context.
+	(Find_Related_Context): The internal anonymous object created for a
+	single concurrent type is now a valid context.
+	(Find_Related_Declaration_Or_Body): The internal anonymous object
+	created for a single concurrent type is now a valid context.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Inherit_Rep_Item_Chain): Another another guard
+	to prevent circularities in the rep_item_chain of the full view
+	of a type extension in a child unit that extends a private type
+	from the parent.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* atree.ads, atree.adb (Ekind_In): New 10 and 11 parameter versions.
 	* contracts.ads, contracts.adb (Analyze_Initial_Declaration_Contract):
 	New routine.
