@@ -7460,74 +7460,6 @@ fold_builtin_sincos (location_t loc,
 			 build1 (REALPART_EXPR, type, call)));
 }
 
-/* Fold function call to builtin cexp, cexpf, or cexpl.  Return
-   NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_cexp (location_t loc, tree arg0, tree type)
-{
-  tree rtype;
-  tree realp, imagp, ifn;
-  tree res;
-
-  if (!validate_arg (arg0, COMPLEX_TYPE)
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) != REAL_TYPE)
-    return NULL_TREE;
-
-  /* Calculate the result when the argument is a constant.  */
-  if ((res = do_mpc_arg1 (arg0, type, mpc_exp)))
-    return res;
-
-  rtype = TREE_TYPE (TREE_TYPE (arg0));
-
-  /* In case we can figure out the real part of arg0 and it is constant zero
-     fold to cexpi.  */
-  if (!targetm.libc_has_function (function_c99_math_complex))
-    return NULL_TREE;
-  ifn = mathfn_built_in (rtype, BUILT_IN_CEXPI);
-  if (!ifn)
-    return NULL_TREE;
-
-  if ((realp = fold_unary_loc (loc, REALPART_EXPR, rtype, arg0))
-      && real_zerop (realp))
-    {
-      tree narg = fold_build1_loc (loc, IMAGPART_EXPR, rtype, arg0);
-      return build_call_expr_loc (loc, ifn, 1, narg);
-    }
-
-  /* In case we can easily decompose real and imaginary parts split cexp
-     to exp (r) * cexpi (i).  */
-  if (flag_unsafe_math_optimizations
-      && realp)
-    {
-      tree rfn, rcall, icall;
-
-      rfn = mathfn_built_in (rtype, BUILT_IN_EXP);
-      if (!rfn)
-	return NULL_TREE;
-
-      imagp = fold_unary_loc (loc, IMAGPART_EXPR, rtype, arg0);
-      if (!imagp)
-	return NULL_TREE;
-
-      icall = build_call_expr_loc (loc, ifn, 1, imagp);
-      icall = builtin_save_expr (icall);
-      rcall = build_call_expr_loc (loc, rfn, 1, realp);
-      rcall = builtin_save_expr (rcall);
-      return fold_build2_loc (loc, COMPLEX_EXPR, type,
-			  fold_build2_loc (loc, MULT_EXPR, rtype,
-				       rcall,
-			 	       fold_build1_loc (loc, REALPART_EXPR,
-						    rtype, icall)),
-			  fold_build2_loc (loc, MULT_EXPR, rtype,
-				       rcall,
-				       fold_build1_loc (loc, IMAGPART_EXPR,
-						    rtype, icall)));
-    }
-
-  return NULL_TREE;
-}
-
 /* Fold function call to builtin lround, lroundf or lroundl (or the
    corresponding long long versions) and other rounding functions.  ARG
    is the argument to the call.  Return NULL_TREE if no simplification
@@ -9357,7 +9289,10 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
       break;
 
     CASE_FLT_FN (BUILT_IN_CEXP):
-      return fold_builtin_cexp (loc, arg0, type);
+      if (validate_arg (arg0, COMPLEX_TYPE)
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) == REAL_TYPE)
+	return do_mpc_arg1 (arg0, type, mpc_exp);
+      break;
 
     CASE_FLT_FN (BUILT_IN_CEXPI):
       if (validate_arg (arg0, REAL_TYPE))

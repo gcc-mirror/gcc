@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 (define_operator_list TAN BUILT_IN_TANF BUILT_IN_TAN BUILT_IN_TANL)
 (define_operator_list ATAN BUILT_IN_ATANF BUILT_IN_ATAN BUILT_IN_ATANL)
 (define_operator_list COSH BUILT_IN_COSHF BUILT_IN_COSH BUILT_IN_COSHL)
+(define_operator_list CEXP BUILT_IN_CEXPF BUILT_IN_CEXP BUILT_IN_CEXPL)
 (define_operator_list CEXPI BUILT_IN_CEXPIF BUILT_IN_CEXPI BUILT_IN_CEXPIL)
 (define_operator_list CPROJ BUILT_IN_CPROJF BUILT_IN_CPROJ BUILT_IN_CPROJL)
 (define_operator_list CCOS BUILT_IN_CCOSF BUILT_IN_CCOS BUILT_IN_CCOSL)
@@ -1562,6 +1563,11 @@ along with GCC; see the file COPYING3.  If not see
  (mult @0 integer_minus_onep)
  (negate @0))
 
+/* True if we can easily extract the real and imaginary parts of a complex
+   number.  */
+(match compositional_complex
+ (convert? (complex @0 @1)))
+
 /* COMPLEX_EXPR and REALPART/IMAGPART_EXPR cancellations.  */
 (simplify
  (complex (realpart @0) (imagpart @0))
@@ -2584,7 +2590,18 @@ along with GCC; see the file COPYING3.  If not see
  /* cabs(x+xi) -> fabs(x)*sqrt(2).  */
  (simplify
   (CABS (complex @0 @0))
-  (mult (abs @0) { build_real_truncate (type, dconst_sqrt2 ()); })))
+  (mult (abs @0) { build_real_truncate (type, dconst_sqrt2 ()); }))
+
+ /* cexp(x+yi) -> exp(x)*cexpi(y).  */
+ (for cexps (CEXP)
+      exps (EXP)
+      cexpis (CEXPI)
+  (simplify
+   (cexps compositional_complex@0)
+   (if (targetm.libc_has_function (function_c99_math_complex))
+    (complex
+     (mult (exps@1 (realpart @0)) (realpart (cexpis:type@2 (imagpart @0))))
+     (mult @1 (imagpart @2)))))))
 
 (if (canonicalize_math_p ())
  /* floor(x) -> trunc(x) if x is nonnegative.  */

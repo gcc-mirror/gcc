@@ -1,3 +1,15 @@
+2015-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+2015-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (dt_simplify::gen): Skip captures that are
+	part of the result.
+	(parser::parse_expr): Allow captures in results too.
+	* builtins.c (fold_builtin_cexp): Delete.
+	(fold_builtin_1): Handle constant cexp arguments here.
+	* match.pd: Fold cexp(x+yi) to exp(x) * cexpi(y).
+
 2015-10-26  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* alloc-pool.h (base_pool_allocator::initialize, ::allocate): Remove
