@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -41,7 +41,7 @@ with System.Random_Numbers;
 generic
    type Result_Subtype is (<>);
 
-package Ada.Numerics.Discrete_Random is
+package Ada.Numerics.Discrete_Random with SPARK_Mode is
 
    --  Basic facilities
 
@@ -65,6 +65,7 @@ package Ada.Numerics.Discrete_Random is
    function Value (Coded_State : String) return State;
 
 private
+   pragma SPARK_Mode (Off);
 
    type Generator is new System.Random_Numbers.Generator;
 

@@ -3510,6 +3510,7 @@ package body Ch3 is
       end if;
 
       Ident_Sloc := Token_Ptr;
+      Check_Bad_Layout;
       Idents (1) := P_Defining_Identifier (C_Comma_Colon);
       Num_Idents := 1;
 

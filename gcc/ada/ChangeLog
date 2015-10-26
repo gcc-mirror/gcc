@@ -1,3 +1,70 @@
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Handle subprogram bodies without previous specs.
+
+2015-10-26  Claire Dross  <dross@adacore.com>
+
+	* a-nudira.ads: Specify appropriate SPARK_Mode so that the unit
+	can be used in SPARK code.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* contracts.adb (Analyze_Subprogram_Body_Contract): Do not analyze
+	pragmas Refined_Global and Refined_Depends because these pragmas
+	are now fully analyzed when encountered.
+	(Inherit_Pragma): Update the call to attribute Is_Inherited.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part): Add a guard
+	to prevent reanalysis. Mark the pragma as analyzed at the end of
+	the processing.
+	(Analyze_Depends_Global): New parameter profile
+	and comment on usage. Do not fully analyze the pragma, this is
+	now done at the outer level.
+	(Analyze_Depends_In_Decl_Part): Add a guard to prevent reanalysis.
+	Mark the pragma as analyzed at the end of the processing.
+	(Analyze_External_Property_In_Decl_Part): Add a guard to prevent
+	reanalysis.  Mark the pragma as analyzed at the end of the processing.
+	(Analyze_Global_In_Decl_Part): Add a guard to prevent reanalysis. Mark
+	the pragma as analyzed at the end of the processing.
+	(Analyze_Initial_Condition_In_Decl_Part): Add a guard to prevent
+	reanalysis.  Mark the pragma as analyzed at the end of the processing.
+	(Analyze_Initializes_In_Decl_Part): Add a guard to prevent reanalysis.
+	Mark the pragma as analyzed at the end of the processing.
+	(Analyze_Pragma): Reset the Analyzed flag on various pragmas that
+	require delayed full analysis. Contract_Cases is now analyzed
+	immediately when it applies to a subprogram body stub. Pragmas Depends,
+	Global, Refined_Depends and Refined_Global are now analyzed
+	in pairs when they appear in a subprogram body [stub].
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Add a guard to
+	prevent reanalysis.  Mark the pragma as analyzed at the end of
+	the processing.
+	(Analyze_Refined_Depends_Global_Post): Update the comment on usage.
+	(Analyze_Refined_Depends_In_Decl_Part): Add a guard to prevent
+	reanalysis. Mark the pragma as analyzed at the end of the processing.
+	(Analyze_Refined_Global_In_Decl_Part): Add a guard to prevent
+	reanalysis. Mark the pragma as analyzed at the end of the processing.
+	(Analyze_Refined_State_In_Decl_Part): Add a guard to prevent
+	reanalysis. Mark the pragma as analyzed at the end of the processing.
+	(Analyze_Test_Case_In_Decl_Part): Add a guard to prevent reanalysis.
+	Mark the pragma as analyzed at the end of the processing.
+	(Is_Followed_By_Pragma): New routine.
+	* sinfo.adb (Is_Analyzed_Pragma): New routine.
+	(Is_Inherited): Renamed to Is_Inherited_Pragma.
+	(Set_Is_Analyzed_Pragma): New routine.
+	(Set_Is_Inherited): Renamed to Set_Is_Inherited_Pragma.
+	* sinfo.ads Rename attribute Is_Inherited to Is_Inherited_Pragma
+	and update occurrences in nodes.
+	(Is_Analyzed_Pragma): New routine along with pragma Inline.
+	(Is_Inherited): Renamed to Is_Inherited_Pragma along with pragma Inline.
+	(Set_Is_Analyzed_Pragma): New routine along with pragma Inline.
+	(Set_Is_Inherited): Renamed to Set_Is_Inherited_Pragma along
+	with pragma Inline.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch3.adb (P_Component_Items): When style checks are enabled,
+	apply them to component declarations in a record type declaration
+	or extension.
+
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_util.adb (Is_Suspension_Object): Ensure that the scope of "Ada"
