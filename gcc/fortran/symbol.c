@@ -2195,7 +2195,7 @@ gfc_free_st_label (gfc_st_label *label)
   if (label == NULL)
     return;
 
-  gfc_delete_bbt (&gfc_current_ns->st_labels, label, compare_st_labels);
+  gfc_delete_bbt (&label->ns->st_labels, label, compare_st_labels);
 
   if (label->format != NULL)
     gfc_free_expr (label->format);
@@ -2260,6 +2260,7 @@ gfc_get_st_label (int labelno)
   lp->value = labelno;
   lp->defined = ST_LABEL_UNKNOWN;
   lp->referenced = ST_LABEL_UNKNOWN;
+  lp->ns = ns;
 
   gfc_insert_bbt (&ns->st_labels, lp, compare_st_labels);
 
