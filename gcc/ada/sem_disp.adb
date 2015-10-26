@@ -316,6 +316,18 @@ package body Sem_Disp is
             Tagged_Type := Base_Type (T);
          end if;
 
+      --  If the type is incomplete, it may have been declared without a
+      --  Tagged indication, but the full view may be tagged, in which case
+      --  that is the controlling type of the subprogram. This is one of the
+      --  approx. 579 places in the language where a lookahead would help.
+
+      elsif Ekind (T) = E_Incomplete_Type
+        and then Present (Full_View (T))
+        and then Is_Tagged_Type (Full_View (T))
+      then
+         Set_Is_Tagged_Type (T);
+         Tagged_Type := Full_View (T);
+
       elsif Ekind (T) = E_Anonymous_Access_Type
         and then Is_Tagged_Type (Designated_Type (T))
       then
@@ -595,14 +607,17 @@ package body Sem_Disp is
                     and then Is_Entity_Name (Name (Par))
                   then
                      declare
+                        Enc_Subp : constant Entity_Id := Entity (Name (Par));
                         A : Node_Id;
                         F : Entity_Id;
 
                      begin
-                        --  Find formal for which call is the actual.
+                        --  Find formal for which call is the actual, and is
+                        --  a controlling argument.
 
-                        F := First_Formal (Entity (Name (Par)));
+                        F := First_Formal (Enc_Subp);
                         A := First_Actual (Par);
+
                         while Present (F) loop
                            if Is_Controlling_Formal (F)
                              and then (N = A or else Parent (N) = A)
@@ -697,11 +712,11 @@ package body Sem_Disp is
          --  If the call doesn't have a controlling actual but does have an
          --  indeterminate actual that requires dispatching treatment, then an
          --  object is needed that will serve as the controlling argument for
-         --  a dispatching call on the indeterminate actual. This can only
-         --  occur in the unusual situation of a default actual given by
-         --  a tag-indeterminate call and where the type of the call is an
-         --  ancestor of the type associated with a containing call to an
-         --  inherited operation (see AI-239).
+         --  a dispatching call on the indeterminate actual. This can occur
+         --  in the unusual situation of a default actual given by a tag-
+         --  indeterminate call and where the type of the call is an ancestor
+         --  of the type associated with a containing call to an inherited
+         --  operation (see AI-239).
 
          --  Rather than create an object of the tagged type, which would
          --  be problematic for various reasons (default initialization,
@@ -849,6 +864,7 @@ package body Sem_Disp is
          end if;
 
       else
+
          --  If dispatching on result, the enclosing call, if any, will
          --  determine the controlling argument. Otherwise this is the
          --  primitive operation of the root type.

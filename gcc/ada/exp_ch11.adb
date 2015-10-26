@@ -1288,10 +1288,18 @@ package body Exp_Ch11 is
 
       --  Full_Name component: Standard.A_Char!(Nam'Address)
 
-      Append_To (L, Unchecked_Convert_To (Standard_A_Char,
-        Make_Attribute_Reference (Loc,
-          Prefix         => New_Occurrence_Of (Ex_Id, Loc),
-          Attribute_Name => Name_Address)));
+      --  The unchecked conversion causes capacity issues for CodePeer in some
+      --  cases and is never useful, so we set the Full_Name component to null
+      --  instead for CodePeer.
+
+      if CodePeer_Mode then
+         Append_To (L, Make_Null (Loc));
+      else
+         Append_To (L, Unchecked_Convert_To (Standard_A_Char,
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Occurrence_Of (Ex_Id, Loc),
+             Attribute_Name => Name_Address)));
+      end if;
 
       --  HTable_Ptr component: null
 
