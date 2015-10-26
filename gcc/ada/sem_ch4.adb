@@ -7161,18 +7161,147 @@ package body Sem_Ch4 is
       Prefix : Node_Id;
       Exprs  : List_Id) return Boolean
    is
+      function Constant_Indexing_OK return Boolean;
+      --  Constant_Indexing is legal if there is no Variable_Indexing defined
+      --  for the type, or else node not a target of assignment, or an actual
+      --  for an IN OUT or OUT formal (RM 4.1.6 (11)).
+
+      --------------------------
+      -- Constant_Indexing_OK --
+      --------------------------
+
+      function Constant_Indexing_OK return Boolean is
+         Par : Node_Id;
+
+      begin
+         if No (Find_Value_Of_Aspect
+                 (Etype (Prefix), Aspect_Variable_Indexing))
+         then
+            return True;
+
+         elsif not Is_Variable (Prefix) then
+            return True;
+         end if;
+
+         Par := N;
+         while Present (Par) loop
+            if Nkind (Parent (Par)) = N_Assignment_Statement
+              and then Par = Name (Parent (Par))
+            then
+               return False;
+
+            --  The call may be overloaded, in which case we assume that its
+            --  resolution does not depend on the type of the parameter that
+            --  includes the indexing operation.
+
+            elsif Nkind_In (Parent (Par), N_Function_Call,
+                                          N_Procedure_Call_Statement)
+              and then Is_Entity_Name (Name (Parent (Par)))
+            then
+               declare
+                  Actual : Node_Id;
+                  Formal : Entity_Id;
+                  Proc   : Entity_Id;
+
+               begin
+                  --  We should look for an interpretation with the proper
+                  --  number of formals, and determine whether it is an
+                  --  In_Parameter, but for now assume that in the overloaded
+                  --  case constant indexing is legal. To be improved ???
+
+                  if Is_Overloaded (Name (Parent (Par))) then
+                     return True;
+
+                  else
+                     Proc := Entity (Name (Parent (Par)));
+
+                     --  If this is an indirect call, get formals from
+                     --  designated type.
+
+                     if Is_Access_Subprogram_Type (Etype (Proc)) then
+                        Proc := Designated_Type (Etype (Proc));
+                     end if;
+                  end if;
+
+                  Formal := First_Formal (Proc);
+                  Actual := First_Actual (Parent (Par));
+
+                  --  Find corresponding actual
+
+                  while Present (Actual) loop
+                     exit when Actual = Par;
+                     Next_Actual (Actual);
+
+                     if Present (Formal) then
+                        Next_Formal (Formal);
+
+                     --  Otherwise this is a parameter mismatch, the error is
+                     --  reported elsewhere.
+
+                     else
+                        return False;
+                     end if;
+                  end loop;
+
+                  return Ekind (Formal) = E_In_Parameter;
+               end;
+
+            elsif Nkind (Parent (Par)) = N_Object_Renaming_Declaration then
+               return False;
+
+            --  If the indexed component is a prefix it may be the first actual
+            --  of a prefixed call. Retrieve the called entity, if any, and
+            --  check its first formal.
+
+            elsif Nkind (Parent (Par)) = N_Selected_Component then
+               declare
+                  Sel : constant Node_Id   := Selector_Name (Parent (Par));
+                  Nam : constant Entity_Id := Current_Entity (Sel);
+
+               begin
+                  if Present (Nam)
+                    and then Is_Overloadable (Nam)
+                    and then Present (First_Formal (Nam))
+                  then
+                     return Ekind (First_Formal (Nam)) = E_In_Parameter;
+                  end if;
+               end;
+
+            elsif Nkind ((Par)) in N_Op then
+               return True;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         --  In all other cases, constant indexing is legal
+
+         return True;
+      end Constant_Indexing_OK;
+
+      --  Local variables
+
       Loc       : constant Source_Ptr := Sloc (N);
-      C_Type    : Entity_Id;
       Assoc     : List_Id;
+      C_Type    : Entity_Id;
       Func      : Entity_Id;
       Func_Name : Node_Id;
       Indexing  : Node_Id;
 
+   --  Start of processing for Try_Container_Indexing
+
    begin
+      --  Node may have been analyzed already when testing for a prefixed
+      --  call, in which case do not redo analysis.
+
+      if Present (Generalized_Indexing (N)) then
+         return True;
+      end if;
+
       C_Type := Etype (Prefix);
 
-      --  If indexing a class-wide container, obtain indexing primitive
-      --  from specific type.
+      --  If indexing a class-wide container, obtain indexing primitive from
+      --  specific type.
 
       if Is_Class_Wide_Type (C_Type) then
          C_Type := Etype (Base_Type (C_Type));
@@ -7182,14 +7311,14 @@ package body Sem_Ch4 is
 
       Func_Name := Empty;
 
-      if Is_Variable (Prefix) then
+      if Constant_Indexing_OK then
          Func_Name :=
-           Find_Value_Of_Aspect (Etype (Prefix), Aspect_Variable_Indexing);
+           Find_Value_Of_Aspect (Etype (Prefix), Aspect_Constant_Indexing);
       end if;
 
       if No (Func_Name) then
          Func_Name :=
-           Find_Value_Of_Aspect (Etype (Prefix), Aspect_Constant_Indexing);
+           Find_Value_Of_Aspect (Etype (Prefix), Aspect_Variable_Indexing);
       end if;
 
       --  If aspect does not exist the expression is illegal. Error is
@@ -7197,8 +7326,8 @@ package body Sem_Ch4 is
 
       if No (Func_Name) then
 
-         --  The prefix itself may be an indexing of a container: rewrite
-         --  as such and re-analyze.
+         --  The prefix itself may be an indexing of a container: rewrite as
+         --  such and re-analyze.
 
          if Has_Implicit_Dereference (Etype (Prefix)) then
             Build_Explicit_Dereference
@@ -7213,14 +7342,14 @@ package body Sem_Ch4 is
       --  value of the inherited aspect is the Reference operation declared
       --  for the parent type.
 
-      --  However, Reference is also a primitive operation of the type, and
-      --  the inherited operation has a different signature. We retrieve the
-      --  right ones (the function may be overloaded) from the list of
-      --  primitive operations of the derived type.
+      --  However, Reference is also a primitive operation of the type, and the
+      --  inherited operation has a different signature. We retrieve the right
+      --  ones (the function may be overloaded) from the list of primitive
+      --  operations of the derived type.
 
-      --  Note that predefined containers are typically all derived from one
-      --  of the Controlled types. The code below is motivated by containers
-      --  that are derived from other types with a Reference aspect.
+      --  Note that predefined containers are typically all derived from one of
+      --  the Controlled types. The code below is motivated by containers that
+      --  are derived from other types with a Reference aspect.
 
       elsif Is_Derived_Type (C_Type)
         and then Etype (First_Formal (Entity (Func_Name))) /= Etype (Prefix)
@@ -7238,8 +7367,8 @@ package body Sem_Ch4 is
 
       --  The generalized indexing node is the one on which analysis and
       --  resolution take place. Before expansion the original node is replaced
-      --  with the generalized indexing node, which is a call, possibly with
-      --  a dereference operation.
+      --  with the generalized indexing node, which is a call, possibly with a
+      --  dereference operation.
 
       if Comes_From_Source (N) then
          Check_Compiler_Unit ("generalized indexing", N);
@@ -7279,7 +7408,8 @@ package body Sem_Ch4 is
       else
          Indexing :=
            Make_Function_Call (Loc,
-             Name => Make_Identifier (Loc, Chars (Func_Name)),
+             Name                   =>
+               Make_Identifier (Loc, Chars (Func_Name)),
              Parameter_Associations => Assoc);
 
          Set_Parent (Indexing, Parent (N));
@@ -7297,7 +7427,7 @@ package body Sem_Ch4 is
                Analyze_One_Call (Indexing, It.Nam, False, Success);
 
                if Success then
-                  Set_Etype (Name (Indexing), It.Typ);
+                  Set_Etype  (Name (Indexing), It.Typ);
                   Set_Entity (Name (Indexing), It.Nam);
                   Set_Etype (N, Etype (Indexing));
 

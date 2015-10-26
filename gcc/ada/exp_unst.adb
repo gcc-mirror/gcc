@@ -119,6 +119,21 @@ package body Exp_Unst is
      Table_Increment      => 200,
      Table_Name           => "Unnest_Urefs");
 
+   ---------------------------
+   -- Is_Uplevel_Referenced --
+   ---------------------------
+
+   function Is_Uplevel_Referenced (E : Entity_Id) return Boolean is
+   begin
+      for J in Urefs.First .. Urefs.Last loop
+         if Urefs.Table (J).Ent = E then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Is_Uplevel_Referenced;
+
    -----------------------
    -- Unnest_Subprogram --
    -----------------------

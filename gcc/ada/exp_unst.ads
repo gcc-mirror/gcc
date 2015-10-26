@@ -686,4 +686,7 @@ package Exp_Unst is
    --  adds the ARECP parameter to all nested subprograms which need it, and
    --  modifies all uplevel references appropriately.
 
+   function Is_Uplevel_Referenced (E : Entity_Id) return Boolean;
+   --  Determines if E has some uplevel reference from a nested subprogram
+
 end Exp_Unst;

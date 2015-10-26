@@ -1,3 +1,19 @@
+2015-10-26  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sysdep.c (__gnat_get_task_options): Workaround a VxWorks
+	bug where VX_DEALLOC_TCB task option is forbidden when calling
+	taskCreate but allowed in VX_USR_TASK_OPTIONS.
+
+2015-10-26  Javier Miranda  <miranda@adacore.com>
+
+	* exp_unst.ads, exp_unst.adb (Is_Uplevel_Referenced): New subprogram.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Constant_Indexing_OK): New predicate, subsidiary
+	of Try_Container_Indexing, that implements the name resolution
+	rules given in RM 4.1.6 (13-15).
+
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb, sem_util.adb: Minor reformatting.
