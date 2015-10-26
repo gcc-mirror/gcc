@@ -1,5 +1,8 @@
 2015-10-26  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/66518
+	* testsuite/libgomp.oacc-c-c++-common/lib-3.c: Resolve XFAIL.
+
 	PR libgomp/65437
 	PR libgomp/66518
 	* oacc-mem.c (update_dev_host): Call goacc_lazy_initialize.

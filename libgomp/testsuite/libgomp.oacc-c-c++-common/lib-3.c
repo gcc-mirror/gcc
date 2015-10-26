@@ -1,4 +1,6 @@
-/* { dg-do run } */
+/* Expect an error message when shutting down a device different from the one
+   that has been initialized.  */
+/* { dg-do run { target { ! openacc_host_selected } } } */
 
 #include <stdio.h>
 #include <openacc.h>
@@ -15,6 +17,5 @@ main (int argc, char **argv)
 }
 
 /* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
-/* TODO: currently prints: "libgomp: no device found".  */
-/* { dg-output "device \[0-9\]+\\\(\[0-9\]+\\\) is initialized" { xfail *-*-* } } */
+/* { dg-output "no device initialized" } */
 /* { dg-shouldfail "" } */
