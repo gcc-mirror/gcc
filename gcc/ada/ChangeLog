@@ -1,3 +1,7 @@
+2015-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* debug.adb: Introduce debug flag -gnatd.5.
+
 2015-10-26  Pascal Obry  <obry@adacore.com>
 
 	* s-os_lib.ads, s-os_lib.adb (Kill): New routine. This routine
