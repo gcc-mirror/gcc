@@ -1254,6 +1254,7 @@ package body Sem_Ch13 is
          Aux   : Node_Id;
          Decl  : Node_Id;
          Decls : List_Id;
+         Def   : Node_Id;
 
       begin
          --  When the aspect appears on a package, protected unit, subprogram
@@ -1370,32 +1371,52 @@ package body Sem_Ch13 is
          --       pragma Prag;
 
          elsif Nkind (N) = N_Protected_Type_Declaration then
-            Decls := Visible_Declarations (Protected_Definition (N));
+            Def := Protected_Definition (N);
+
+            if No (Def) then
+               Def :=
+                 Make_Protected_Definition (Sloc (N),
+                   Visible_Declarations => New_List,
+                   End_Label            => Empty);
+
+               Set_Protected_Definition (N, Def);
+            end if;
+
+            Decls := Visible_Declarations (Def);
 
             if No (Decls) then
                Decls := New_List;
-               Set_Visible_Declarations (Protected_Definition (N), Decls);
+               Set_Visible_Declarations (Def, Decls);
             end if;
 
             Prepend_To (Decls, Prag);
 
-         --  When the aspect is associated with a task unit declaration with a
-         --  definition, insert the generated pragma at the top of the visible
-         --  declarations the emulate the behavior of a source pragma.
+         --  When the aspect is associated with a task unit declaration, insert
+         --  insert the generated pragma at the top of the visible declarations
+         --  the emulate the behavior of a source pragma.
 
          --    task [type] Prot with Aspect is
 
          --    task [type] Prot is
          --       pragma Prag;
 
-         elsif Nkind (N) = N_Task_Type_Declaration
-           and then Present (Task_Definition (N))
-         then
-            Decls := Visible_Declarations (Task_Definition (N));
+         elsif Nkind (N) = N_Task_Type_Declaration then
+            Def := Task_Definition (N);
+
+            if No (Def) then
+               Def :=
+                 Make_Task_Definition (Sloc (N),
+                   Visible_Declarations => New_List,
+                   End_Label            => Empty);
+
+               Set_Task_Definition (N, Def);
+            end if;
+
+            Decls := Visible_Declarations (Def);
 
             if No (Decls) then
                Decls := New_List;
-               Set_Visible_Declarations (Task_Definition (N), Decls);
+               Set_Visible_Declarations (Def, Decls);
             end if;
 
             Prepend_To (Decls, Prag);
@@ -2626,6 +2647,7 @@ package body Sem_Ch13 is
                when Aspect_Part_Of =>
                   if Nkind_In (N, N_Object_Declaration,
                                   N_Package_Instantiation)
+                    or else Is_Single_Concurrent_Type_Declaration (N)
                   then
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
@@ -2633,10 +2655,15 @@ package body Sem_Ch13 is
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Part_Of);
 
+                     Decorate (Aspect, Aitem);
+                     Insert_Pragma (Aitem);
+                     goto Continue;
+
                   else
                      Error_Msg_NE
-                       ("aspect & must apply to a variable or package "
-                        & "instantiation", Aspect, Id);
+                       ("aspect & must apply to package instantiation, "
+                        & "object, single protected type or single task type",
+                        Aspect, Id);
                   end if;
 
                --  SPARK_Mode

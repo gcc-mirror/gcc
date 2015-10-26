@@ -1,3 +1,147 @@
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb, exp_ch6.adb: Minor comment fix.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb (Move_Or_Merge_Aspects): Move all aspects related
+	to a single concurrent type declaration to the declaration
+	of the anonymous object if they qualify.
+	(Relocate_Aspect): Update comment on usage.
+	* aspects.ads Add new sectioon on aspect specifications on single
+	concurrent types. Add new table Aspect_On_Anonymous_Object_OK.
+	(Move_Or_Merge_Aspects): Udate the comment on usage.
+	* atree.adb (Elist36): New routine.
+	(Set_Elist36): New routine.
+	* atree.ads (Elist36): New routine along with pragma Inline.
+	(Set_Elist36): New routine along with pragma Inline.
+	* atree.h: Elist36 is now an alias for Field36.
+	* contracts.adb (Add_Contract_Item): Add processing
+	for protected units and extra processing for variables.
+	(Analyze_Object_Contract): Code cleanup. The processing of
+	Part_Of now depends on wherer the object is a constant or
+	a variable. Add processing for pragmas Depends and Global
+	when they apply to a single concurrent object. Verify that a
+	variable which is part of a single concurrent type has full
+	default initialization. Set/restore the SPARK_Mode of a single
+	concurrent object.
+	(Analyze_Protected_Contract): New routine.
+	* contracts.ads (Add_Contract_Item): Update the comment on usage.
+	(Analyze_Object_Contract): Update the comment on usage.
+	(Analyze_Protected_Contract): New routine.
+	(Analyze_Task_Contract): Update the comment on usage.
+	* einfo.adb Part_Of_Constituents now uses Elist10.
+	(Anonymous_Object): New routine.
+	(Contract): Code cleanup.
+	(Has_Option): Remove the assumption that the only simple
+	option is External.
+	(Is_Synchronized_State): New routine.
+	(Part_Of_Constituents): This attribute applies to
+	variables and uses Elist10.
+	(Set_Anonymous_Object): New routine.
+	(Set_Contract): Code cleanup.
+	(Set_Part_Of_Constituents): This attribute applies to variables and
+	uses Elist10.
+	(Set_SPARK_Aux_Pragma): Code cleanup.
+	(Set_SPARK_Aux_Pragma_Inherited): Code cleanup.
+	(Set_SPARK_Pragma): Code cleanup. This attribute applies to
+	variables.
+	(Set_SPARK_Pragma_Inherited): Code cleanup. This
+	attribute applies to variables.
+	(SPARK_Aux_Pragma): Code cleanup.
+	(SPARK_Aux_Pragma_Inherited): Code cleanup.
+	(SPARK_Pragma): Code cleanup. This attribute applies to variables.
+	(SPARK_Pragma_Inherited): Code cleanup. This attribute applies
+	to variables.
+	(Write_Field9_Name): Remove the output for Part_Of_Constituents.
+	(Write_Field10_Name): Add output for Part_Of_Constituents.
+	(Write_Field30_Name): Add output for Anonymous_Object.
+	(Write_Field34_Name): Output SPARK_Pragma
+	for protected types and variables.
+	* einfo.ads: New attributes Anonymous_Object and
+	Is_Synchronized_State along with usage in entities. Update
+	the documentation of attributes Contract Encapsulating_State
+	Part_Of_Constituents SPARK_Aux_Pragma SPARK_Aux_Pragma_Inherited
+	SPARK_Pragma SPARK_Pragma_Inherited (Anonymous_Object): New
+	routine along with pragma Inline.
+	(Is_Synchronized_State): New routine.
+	(Set_Anonymous_Object): New routine along with pragma Inline.
+	* freeze.adb (Freeze_Record_Type): Ensure that a non-synchronized
+	record does not have synchronized components.
+	* sem_ch3.adb (Analyze_Declarations): Code cleanup. Analyze the
+	contract of protected units.
+	* sem_ch9.adb Add with and use clauses for Sem_Prag. Code cleanup.
+	(Analyze_Single_Protected_Declaration): Reimplemented.
+	(Analyze_Single_Task_Declaration): Reimplemented.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Aspect Part_Of
+	can now apply to a single concurrent type declaration. Rely on
+	Insert_Pragma to place the pragma.  Update the error message on
+	usage to reflect the new context.
+	(Insert_Pragma): When inserting
+	pragmas for a protected or task type, create a definition if
+	the type lacks one.
+	* sem_elab.adb (Check_A_Call): Code cleanup. Issue error message
+	related to elaboration issues for SPARK when SPARK_Mode is "on"
+	and the offending entity comes from source.
+	* sem_prag.adb (Analyze_Abstract_State): Add new flag
+	Synchronous_Seen. Update the analysis of simple options Externa,
+	Ghost and Synchronous. Update various error messages to reflect
+	the use of single concurrent types.
+	(Analyze_Depends_Global): Pragmas Depends and Global can now apply to
+	a single task type or a single concurrent object created for a task
+	type.
+	(Analyze_Depends_In_Decl_Part): Do not push a scope when the
+	context is a single concurrent object.	(Analyze_Part_Of):
+	Moved out of Analyze_Pragma. The routine has a new profile
+	and comment on usage.
+	(Analyze_Part_Of_In_Decl_Part): New routine.
+	(Analyze_Part_Of_Option): Update the call to Analyze_Part_Of.
+	(Analyze_Pragma): Pragma Abstract_State can
+	now carry simple option Synchronous. Pragma Part_Of can now
+	apply to a single concurrent type declaration. The analysis
+	of pragma Part_Of is delayed when the context is a single
+	concurrent object.
+	(Analyze_Refined_Depends_In_Decl_Part): Use the anonymous object when
+	the context is a single concurren type.
+	(Analyze_Refined_Global_In_Decl_Part): Use the
+	anonymous object when the context is a single concurren type.
+	(Check_Ghost_Constituent): Removed.
+	(Check_Matching_Constituent): Renamed to Match_Constituent.
+	(Check_Matching_State): Renamed to Match_State.
+	(Collect_Constituent): Update the comment
+	on usage. Verify various legality rules related to ghost and
+	synchronized entities.
+	(Find_Related_Declaration_Or_Body): A single task declaration is no
+	longer a valid context for a pragma.
+	(Fix_Msg): Moved to Sem_Util.
+	(Process_Overloadable): Add processing for single task objects.
+	(Process_Visible_Part): Add processing for single concurrent
+	types.
+	(Relocate_Pragmas_To_Anonymous_Object): New routine.
+	* sem_prag.ads Add new table Pragma_On_Anonymous_Object_OK.
+	(Analyze_Part_Of_In_Decl_Part): New routine.
+	(Relocate_Pragmas_To_Anonymous_Object): New routine.
+	* sem_util.adb (Defining_Entity): Code cleanup.
+	(Fix_Msg): Moved from Sem_Prag and augmented to handle
+	mode replacements.
+	(Has_Full_Default_Initialization): New routine.
+	(Is_Descendant_Of_Suspension_Object): Moved out of
+	Is_Effectively_Volatile.
+	(Is_Single_Concurrent_Object): New routine.
+	(Is_Single_Concurrent_Type): New routine.
+	(Is_Single_Concurrent_Type_Declaration): New routine.
+	(Is_Synchronized_Object): New routine.
+	(Yields_Synchronized_Object): New routine.
+	* sem_util.ads (Fix_Msg): Moved form Sem_Prag. Update the
+	comment on usage.
+	(Has_Full_Default_Initialization): New routine.
+	(Is_Single_Concurrent_Object): New routine.
+	(Is_Single_Concurrent_Type): New routine.
+	(Is_Single_Concurrent_Type_Declaration): New routine.
+	(Is_Synchronized_Object): New routine.
+	(Yields_Synchronized_Object): New routine.
+	* snames.ads-tmpl: Add name Synchronous.
+
 2015-10-26  Jerome Lambourg  <lambourg@adacore.com>
 
 	* sysdep.c (__gnat_get_task_options): Refine the workaround for

@@ -444,6 +444,10 @@ package Einfo is
 --       finalization master that services most anonymous access-to-controlled
 --       allocations that occur within the unit.
 
+--    Anonymous_Object (Node30)
+--       Present in protected and task type entities. Contains the entity of
+--       the anonymous object created for a single protected or task type.
+
 --    Associated_Entity (Node37)
 --       Defined in all entities. This field is similar to Associated_Node, but
 --       applied to entities. The attribute links an entity from the generic
@@ -706,9 +710,9 @@ package Einfo is
 
 --    Contract (Node34)
 --       Defined in constant, entry, entry family, operator, [generic] package,
---       package body, [generic] subprogram, subprogram body, variable and task
---       type entities. Points to the contract of the entity, holding various
---       assertion items and data classifiers.
+--       package body, protected type, [generic] subprogram, subprogram body,
+--       variable and task type entities. Points to the contract of the entity,
+--       holding various assertion items and data classifiers.
 
 --    Corresponding_Concurrent_Type (Node18)
 --       Defined in record types that are constructed by the expander to
@@ -1074,9 +1078,9 @@ package Einfo is
 --       need to set the flag.
 
 --    Encapsulating_State (Node32)
---       Defined in abstract states, constants and variables. Contains the
---       entity of an ancestor state whose refinement utilizes this item as
---       a constituent.
+--       Defined in abstract state, constant and variable entities. Contains
+--       the entity of an ancestor state or a single concurrent type whose
+--       refinement utilizes this item as a constituent.
 
 --    Enclosing_Scope (Node18)
 --       Defined in labels. Denotes the innermost enclosing construct that
@@ -3080,6 +3084,10 @@ package Einfo is
 --       synchronized, task, or protected, or is derived from a synchronized
 --       interface.
 
+--    Is_Synchronized_State (synthesized)
+--       Applies to all entities, true for abstract states that are subject to
+--       option Synchronous.
+
 --    Is_Tag (Flag78)
 --       Defined in E_Component and E_Constant entities. For regular tagged
 --       type this flag is set on the tag component (whose name is Name_uTag).
@@ -3675,9 +3683,10 @@ package Einfo is
 --       case it points to the subtype of the parent type. This is the type
 --       that is used as the Etype of the _parent field.
 
---    Part_Of_Constituents (Elist9)
---       Present in abstract state entities. Contains all constituents that are
---       subject to indicator Part_Of (both aspect and option variants).
+--    Part_Of_Constituents (Elist10)
+--       Present in abstract state and variable entities. Contains all
+--       constituents that are subject to indicator Part_Of (both aspect and
+--       option variants).
 
 --    Partial_View_Has_Unknown_Discr (Flag280)
 --       Present in all types. Set to Indicate that the partial view of a type
@@ -4064,36 +4073,36 @@ package Einfo is
 --       as computed (as a power of two) by the compiler.
 
 --    SPARK_Aux_Pragma (Node41)
---       Present in [generic] package specs, package bodies and synchronized
---       types. For package specs and synchronized types it refers to the SPARK
---       mode setting for the private part. This field points to the N_Pragma
---       node that either appears in the private part or is inherited from the
---       enclosing context. For package bodies, it refers to the SPARK mode of
---       the elaboration sequence after the BEGIN. The fields points to the
---       N_Pragma node that either appears in the statement sequence or is
+--       Present in concurrent type, [generic] package spec and package body
+--       entities. For concurrent types and package specs it refers to the
+--       SPARK mode setting for the private part. This field points to the
+--       N_Pragma node that either appears in the private part or is inherited
+--       from the enclosing context. For package bodies, it refers to the SPARK
+--       mode of the elaboration sequence after the BEGIN. The fields points to
+--       the N_Pragma node that either appears in the statement sequence or is
 --       inherited from the enclosing context. In all cases, if the pragma is
 --       inherited, then the SPARK_Aux_Pragma_Inherited flag is set.
 
 --    SPARK_Aux_Pragma_Inherited (Flag266)
---       Present in [generic] package specs, package bodies and synchronized
---       types. Set if the SPARK_Aux_Pragma field points to a pragma that is
+--       Present in concurrent type, [generic] package spec and package body
+--       entities. Set if the SPARK_Aux_Pragma field points to a pragma that is
 --       inherited, rather than a local one.
 
 --    SPARK_Pragma (Node40)
---       Present in entries, operators, [generic] packages, package bodies,
---       [generic] subprograms, subprogram bodies and synchronized types.
---       Points to the N_Pragma node that applies to the spec or body. This
---       is either set by a local SPARK_Mode pragma or is inherited from the
---       context (from an outer scope for the spec case or from the spec for
---       the body case). In the case where it is inherited the flag
---       SPARK_Pragma_Inherited is set. Empty if no SPARK_Mode pragma is
---       applicable.
+--       Present in concurrent type, entry, operator, [generic] package,
+--       package body, [generic] subprogram, subprogram body and variable
+--       entities. Points to the N_Pragma node that applies to the initial
+--       declaration or body. This is either set by a local SPARK_Mode pragma
+--       or is inherited from the context (from an outer scope for the spec
+--       case or from the spec for the body case). In the case where it is
+--       inherited the flag SPARK_Pragma_Inherited is set. Empty if no
+--       SPARK_Mode pragma is applicable.
 
 --    SPARK_Pragma_Inherited (Flag265)
---       Present in entries, operators, [generic] packages, package bodies,
---       [generic] subprograms, subprogram bodies and synchronized types. Set
---       if the SPARK_Pragma attribute points to a pragma that is inherited,
---       rather than a local one.
+--       Present in concurrent type, entry, operator, [generic] package,
+--       package body, [generic] subprogram, subprogram body and variable
+--       entities. Set if the SPARK_Pragma attribute points to a pragma that is
+--       inherited, rather than a local one.
 
 --    Spec_Entity (Node19)
 --       Defined in package body entities. Points to corresponding package
@@ -5507,7 +5516,7 @@ package Einfo is
 
    --  E_Abstract_State
    --    Refinement_Constituents             (Elist8)
-   --    Part_Of_Constituents                (Elist9)
+   --    Part_Of_Constituents                (Elist10)
    --    Body_References                     (Elist16)
    --    Non_Limited_View                    (Node19)
    --    Encapsulating_State                 (Node32)
@@ -5518,6 +5527,7 @@ package Einfo is
    --    Has_Null_Refinement                 (synth)
    --    Is_External_State                   (synth)
    --    Is_Null_State                       (synth)
+   --    Is_Synchronized_State               (synth)
 
    --  E_Access_Protected_Subprogram_Type
    --    Equivalent_Type                     (Node18)
@@ -6248,6 +6258,8 @@ package Einfo is
    --    Discriminant_Constraint             (Elist21)
    --    Scope_Depth_Value                   (Uint22)
    --    Stored_Constraint                   (Elist23)
+   --    Anonymous_Object                    (Node30)
+   --    Contract                            (Node34)
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
    --    Sec_Stack_Needed_For_Return         (Flag167)  ???
@@ -6261,6 +6273,7 @@ package Einfo is
    --    Has_Interrupt_Handler               (synth)
    --    Number_Entries                      (synth)
    --    Scope_Depth                         (synth)
+   --    (plus type attributes)
 
    --  E_Record_Type
    --  E_Record_Subtype
@@ -6389,11 +6402,11 @@ package Einfo is
    --    Last_Entity                         (Node20)
    --    Discriminant_Constraint             (Elist21)
    --    Scope_Depth_Value                   (Uint22)
-   --    Scope_Depth                         (synth)
    --    Stored_Constraint                   (Elist23)
    --    Task_Body_Procedure                 (Node25)
    --    Storage_Size_Variable               (Node26)   (base type only)
    --    Relative_Deadline_Variable          (Node28)   (base type only)
+   --    Anonymous_Object                    (Node30)
    --    Contract                            (Node34)
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
@@ -6408,11 +6421,13 @@ package Einfo is
    --    First_Component_Or_Discriminant     (synth)
    --    Has_Entries                         (synth)
    --    Number_Entries                      (synth)
+   --    Scope_Depth                         (synth)
    --    (plus type attributes)
 
    --  E_Variable
    --    Hiding_Loop_Variable                (Node8)
    --    Current_Value                       (Node9)
+   --    Part_Of_Constituents                (Elist10)
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)
    --    Alignment                           (Uint14)
@@ -6436,6 +6451,7 @@ package Einfo is
    --    Encapsulating_State                 (Node32)
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
+   --    SPARK_Pragma                        (Node40)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
@@ -6457,6 +6473,7 @@ package Einfo is
    --    OK_To_Rename                        (Flag247)
    --    Optimize_Alignment_Space            (Flag241)
    --    Optimize_Alignment_Time             (Flag242)
+   --    SPARK_Pragma_Inherited              (Flag265)
    --    Suppress_Initialization             (Flag105)
    --    Treat_As_Volatile                   (Flag41)
    --    Address_Clause                      (synth)
@@ -6707,6 +6724,7 @@ package Einfo is
    function Alias                               (Id : E) return E;
    function Alignment                           (Id : E) return U;
    function Anonymous_Master                    (Id : E) return E;
+   function Anonymous_Object                    (Id : E) return E;
    function Associated_Entity                   (Id : E) return E;
    function Associated_Formal_Package           (Id : E) return E;
    function Associated_Node_For_Itype           (Id : E) return N;
@@ -7258,6 +7276,7 @@ package Einfo is
    function Is_Standard_String_Type             (Id : E) return B;
    function Is_String_Type                      (Id : E) return B;
    function Is_Synchronized_Interface           (Id : E) return B;
+   function Is_Synchronized_State               (Id : E) return B;
    function Is_Task_Interface                   (Id : E) return B;
    function Is_Task_Record_Type                 (Id : E) return B;
    function Is_Wrapper_Package                  (Id : E) return B;
@@ -7369,6 +7388,7 @@ package Einfo is
    procedure Set_Alias                           (Id : E; V : E);
    procedure Set_Alignment                       (Id : E; V : U);
    procedure Set_Anonymous_Master                (Id : E; V : E);
+   procedure Set_Anonymous_Object                (Id : E; V : E);
    procedure Set_Associated_Entity               (Id : E; V : E);
    procedure Set_Associated_Formal_Package       (Id : E; V : E);
    procedure Set_Associated_Node_For_Itype       (Id : E; V : N);
@@ -8148,6 +8168,7 @@ package Einfo is
    pragma Inline (Alias);
    pragma Inline (Alignment);
    pragma Inline (Anonymous_Master);
+   pragma Inline (Anonymous_Object);
    pragma Inline (Associated_Entity);
    pragma Inline (Associated_Formal_Package);
    pragma Inline (Associated_Node_For_Itype);
@@ -8655,6 +8676,7 @@ package Einfo is
    pragma Inline (Set_Alias);
    pragma Inline (Set_Alignment);
    pragma Inline (Set_Anonymous_Master);
+   pragma Inline (Set_Anonymous_Object);
    pragma Inline (Set_Associated_Entity);
    pragma Inline (Set_Associated_Formal_Package);
    pragma Inline (Set_Associated_Node_For_Itype);

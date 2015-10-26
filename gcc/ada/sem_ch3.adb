@@ -2495,28 +2495,45 @@ package body Sem_Ch3 is
             Analyze_Package_Body_Contract (Defining_Entity (Context));
          end if;
 
-         --  Analyze the contracts of all subprogram declarations, subprogram
-         --  bodies and variables due to the delayed visibility needs of their
-         --  aspects and pragmas.
+         --  Analyze the contracts of eligible constructs (see below) due to
+         --  the delayed visibility needs of their aspects and pragmas.
 
          Decl := First (L);
          while Present (Decl) loop
-            if Nkind (Decl) = N_Object_Declaration then
-               Analyze_Object_Contract (Defining_Entity (Decl));
 
-            elsif Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
-                                  N_Entry_Declaration,
-                                  N_Generic_Subprogram_Declaration,
-                                  N_Subprogram_Declaration)
+            --  Entry or subprogram declarations
+
+            if Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
+                               N_Entry_Declaration,
+                               N_Generic_Subprogram_Declaration,
+                               N_Subprogram_Declaration)
             then
                Analyze_Entry_Or_Subprogram_Contract (Defining_Entity (Decl));
+
+            --  Entry or subprogram bodies
 
             elsif Nkind_In (Decl, N_Entry_Body, N_Subprogram_Body) then
                Analyze_Entry_Or_Subprogram_Body_Contract
                  (Defining_Entity (Decl));
 
+            --  Objects
+
+            elsif Nkind (Decl) = N_Object_Declaration then
+               Analyze_Object_Contract (Defining_Entity (Decl));
+
+            --  Protected untis
+
+            elsif Nkind_In (Decl, N_Protected_Type_Declaration,
+                                  N_Single_Protected_Declaration)
+            then
+               Analyze_Protected_Contract (Defining_Entity (Decl));
+
+            --  Subprogram body stubs
+
             elsif Nkind (Decl) = N_Subprogram_Body_Stub then
                Analyze_Subprogram_Body_Stub_Contract (Defining_Entity (Decl));
+
+            --  Task units
 
             elsif Nkind_In (Decl, N_Single_Task_Declaration,
                                   N_Task_Type_Declaration)

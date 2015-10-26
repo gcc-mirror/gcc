@@ -4322,6 +4322,25 @@ package body Freeze is
                   Next_Component (Comp);
                end loop;
             end if;
+
+            --  A type which does not yield a synchronized object cannot have
+            --  a component that yields a synchronized object (SPARK RM 9.5).
+
+            if not Yields_Synchronized_Object (Rec) then
+               Comp := First_Component (Rec);
+               while Present (Comp) loop
+                  if Comes_From_Source (Comp)
+                    and then Yields_Synchronized_Object (Etype (Comp))
+                  then
+                     Error_Msg_Name_1 := Chars (Rec);
+                     Error_Msg_N
+                       ("component & of non-synchronized type % cannot be "
+                        & "synchronized", Comp);
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end if;
          end if;
 
          --  Make sure that if we have an iterator aspect, then we have

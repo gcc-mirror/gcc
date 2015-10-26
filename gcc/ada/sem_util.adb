@@ -4951,75 +4951,71 @@ package body Sem_Util is
    ---------------------
 
    function Defining_Entity (N : Node_Id) return Entity_Id is
-      K   : constant Node_Kind := Nkind (N);
       Err : Entity_Id := Empty;
 
    begin
-      case K is
-         when
-           N_Subprogram_Declaration                 |
-           N_Abstract_Subprogram_Declaration        |
-           N_Subprogram_Body                        |
-           N_Package_Declaration                    |
-           N_Subprogram_Renaming_Declaration        |
-           N_Subprogram_Body_Stub                   |
-           N_Generic_Subprogram_Declaration         |
-           N_Generic_Package_Declaration            |
-           N_Formal_Subprogram_Declaration          |
-           N_Expression_Function
+      case Nkind (N) is
+         when N_Abstract_Subprogram_Declaration        |
+              N_Expression_Function                    |
+              N_Formal_Subprogram_Declaration          |
+              N_Generic_Package_Declaration            |
+              N_Generic_Subprogram_Declaration         |
+              N_Package_Declaration                    |
+              N_Subprogram_Body                        |
+              N_Subprogram_Body_Stub                   |
+              N_Subprogram_Declaration                 |
+              N_Subprogram_Renaming_Declaration
          =>
             return Defining_Entity (Specification (N));
 
-         when
-           N_Component_Declaration                  |
-           N_Defining_Program_Unit_Name             |
-           N_Discriminant_Specification             |
-           N_Entry_Body                             |
-           N_Entry_Declaration                      |
-           N_Entry_Index_Specification              |
-           N_Exception_Declaration                  |
-           N_Exception_Renaming_Declaration         |
-           N_Formal_Object_Declaration              |
-           N_Formal_Package_Declaration             |
-           N_Formal_Type_Declaration                |
-           N_Full_Type_Declaration                  |
-           N_Implicit_Label_Declaration             |
-           N_Incomplete_Type_Declaration            |
-           N_Loop_Parameter_Specification           |
-           N_Number_Declaration                     |
-           N_Object_Declaration                     |
-           N_Object_Renaming_Declaration            |
-           N_Package_Body_Stub                      |
-           N_Parameter_Specification                |
-           N_Private_Extension_Declaration          |
-           N_Private_Type_Declaration               |
-           N_Protected_Body                         |
-           N_Protected_Body_Stub                    |
-           N_Protected_Type_Declaration             |
-           N_Single_Protected_Declaration           |
-           N_Single_Task_Declaration                |
-           N_Subtype_Declaration                    |
-           N_Task_Body                              |
-           N_Task_Body_Stub                         |
-           N_Task_Type_Declaration
+         when N_Component_Declaration                  |
+              N_Defining_Program_Unit_Name             |
+              N_Discriminant_Specification             |
+              N_Entry_Body                             |
+              N_Entry_Declaration                      |
+              N_Entry_Index_Specification              |
+              N_Exception_Declaration                  |
+              N_Exception_Renaming_Declaration         |
+              N_Formal_Object_Declaration              |
+              N_Formal_Package_Declaration             |
+              N_Formal_Type_Declaration                |
+              N_Full_Type_Declaration                  |
+              N_Implicit_Label_Declaration             |
+              N_Incomplete_Type_Declaration            |
+              N_Loop_Parameter_Specification           |
+              N_Number_Declaration                     |
+              N_Object_Declaration                     |
+              N_Object_Renaming_Declaration            |
+              N_Package_Body_Stub                      |
+              N_Parameter_Specification                |
+              N_Private_Extension_Declaration          |
+              N_Private_Type_Declaration               |
+              N_Protected_Body                         |
+              N_Protected_Body_Stub                    |
+              N_Protected_Type_Declaration             |
+              N_Single_Protected_Declaration           |
+              N_Single_Task_Declaration                |
+              N_Subtype_Declaration                    |
+              N_Task_Body                              |
+              N_Task_Body_Stub                         |
+              N_Task_Type_Declaration
          =>
             return Defining_Identifier (N);
 
          when N_Subunit =>
             return Defining_Entity (Proper_Body (N));
 
-         when
-           N_Function_Instantiation                 |
-           N_Function_Specification                 |
-           N_Generic_Function_Renaming_Declaration  |
-           N_Generic_Package_Renaming_Declaration   |
-           N_Generic_Procedure_Renaming_Declaration |
-           N_Package_Body                           |
-           N_Package_Instantiation                  |
-           N_Package_Renaming_Declaration           |
-           N_Package_Specification                  |
-           N_Procedure_Instantiation                |
-           N_Procedure_Specification
+         when N_Function_Instantiation                 |
+              N_Function_Specification                 |
+              N_Generic_Function_Renaming_Declaration  |
+              N_Generic_Package_Renaming_Declaration   |
+              N_Generic_Procedure_Renaming_Declaration |
+              N_Package_Body                           |
+              N_Package_Instantiation                  |
+              N_Package_Renaming_Declaration           |
+              N_Package_Specification                  |
+              N_Procedure_Instantiation                |
+              N_Procedure_Specification
          =>
             declare
                Nam : constant Node_Id := Defining_Unit_Name (N);
@@ -5028,8 +5024,8 @@ package body Sem_Util is
                if Nkind (Nam) in N_Entity then
                   return Nam;
 
-               --  For Error, make up a name and attach to declaration
-               --  so we can continue semantic analysis
+               --  For Error, make up a name and attach to declaration so we
+               --  can continue semantic analysis.
 
                elsif Nam = Error then
                   Err := Make_Temporary (Sloc (N), 'T');
@@ -5044,10 +5040,8 @@ package body Sem_Util is
                end if;
             end;
 
-         when
-           N_Block_Statement                        |
-           N_Loop_Statement
-         =>
+         when N_Block_Statement                        |
+              N_Loop_Statement                         =>
             return Entity (Identifier (N));
 
          when others =>
@@ -7088,6 +7082,70 @@ package body Sem_Util is
       end if;
    end First_Actual;
 
+   -------------
+   -- Fix_Msg --
+   -------------
+
+   function Fix_Msg (Id : Entity_Id; Msg : String) return String is
+      Is_Task   : constant Boolean :=
+                    Ekind_In (Id, E_Task_Body, E_Task_Type)
+                      or else (Is_Single_Concurrent_Object (Id)
+                                and then Ekind (Etype (Id)) = E_Task_Type);
+      Msg_Last  : constant Natural := Msg'Last;
+      Msg_Index : Natural;
+      Res       : String (Msg'Range) := (others => ' ');
+      Res_Index : Natural;
+
+   begin
+      --  Copy all characters from the input message Msg to result Res with
+      --  suitable replacements.
+
+      Msg_Index := Msg'First;
+      Res_Index := Res'First;
+      while Msg_Index <= Msg_Last loop
+
+         --  Replace "subprogram" with a different word
+
+         if Msg_Index <= Msg_Last - 10
+           and then Msg (Msg_Index .. Msg_Index + 9) = "subprogram"
+         then
+            if Ekind_In (Id, E_Entry, E_Entry_Family) then
+               Res (Res_Index .. Res_Index + 4) := "entry";
+               Res_Index := Res_Index + 5;
+
+            elsif Is_Task then
+               Res (Res_Index .. Res_Index + 8) := "task unit";
+               Res_Index := Res_Index + 9;
+
+            else
+               Res (Res_Index .. Res_Index + 9) := "subprogram";
+               Res_Index := Res_Index + 10;
+            end if;
+
+            Msg_Index := Msg_Index + 10;
+
+         --  Replace "protected" with a different word
+
+         elsif Msg_Index <= Msg_Last - 9
+           and then Msg (Msg_Index .. Msg_Index + 8) = "protected"
+           and then Is_Task
+         then
+            Res (Res_Index .. Res_Index + 3) := "task";
+            Res_Index := Res_Index + 4;
+            Msg_Index := Msg_Index + 9;
+
+         --  Otherwise copy the character
+
+         else
+            Res (Res_Index) := Msg (Msg_Index);
+            Msg_Index := Msg_Index + 1;
+            Res_Index := Res_Index + 1;
+         end if;
+      end loop;
+
+      return Res (Res'First .. Res_Index - 1);
+   end Fix_Msg;
+
    -----------------------
    -- Gather_Components --
    -----------------------
@@ -8739,6 +8797,92 @@ package body Sem_Util is
          return Is_Effectively_Volatile (Item_Id);
       end if;
    end Has_Enabled_Property;
+
+   -------------------------------------
+   -- Has_Full_Default_Initialization --
+   -------------------------------------
+
+   function Has_Full_Default_Initialization (Typ : Entity_Id) return Boolean is
+      Comp : Entity_Id;
+
+   begin
+      --  A scalar type is fully default initialized if it is subjec to aspect
+      --  Default_Value.
+
+      if Is_Scalar_Type (Typ) then
+         return Has_Default_Aspect (Typ);
+
+      --  An array type is fully default initialized if its element type is
+      --  scalar and the array type carries aspect Default_Component_Value or
+      --  the element type is fully default initialized.
+
+      elsif Is_Array_Type (Typ) then
+         return
+           Has_Default_Aspect (Typ)
+             or else Has_Full_Default_Initialization (Component_Type (Typ));
+
+      --  A protected type, record type or type extension is fully default
+      --  initialized if all its components either carry an initialization
+      --  expression or have a type that is fully default initialized. The
+      --  parent type of a type extension must be fully default initialized.
+
+      elsif Is_Record_Type (Typ) or else Is_Protected_Type (Typ) then
+
+         --  Inspect all entities defined in the scope of the type, looking for
+         --  uninitialized components.
+
+         Comp := First_Entity (Typ);
+         while Present (Comp) loop
+            if Ekind (Comp) = E_Component
+              and then Comes_From_Source (Comp)
+              and then No (Expression (Parent (Comp)))
+              and then not Has_Full_Default_Initialization (Etype (Comp))
+            then
+               return False;
+            end if;
+
+            Next_Entity (Comp);
+         end loop;
+
+         --  Ensure that the parent type of a type extension is fully default
+         --  initialized.
+
+         if Etype (Typ) /= Typ
+           and then not Has_Full_Default_Initialization (Etype (Typ))
+         then
+            return False;
+         end if;
+
+         --  If we get here, then all components and parent portion are fully
+         --  default initialized.
+
+         return True;
+
+      --  A task type is fully default initialized by default
+
+      elsif Is_Task_Type (Typ) then
+         return True;
+      end if;
+
+      --  A private type and by extension its full view is fully default
+      --  initialized if it is subject to pragma Default_Initial_Condition
+      --  with a non-null argument or inherits the pragma from a parent type.
+      --  Since any type can act as the full view of a private type, this check
+      --  is separated from the circuitry above.
+
+      if Has_Default_Init_Cond (Typ)
+        or else Has_Inherited_Default_Init_Cond (Typ)
+      then
+         return
+           Nkind (First (Pragma_Argument_Associations (Get_Pragma
+             (Typ, Pragma_Default_Initial_Condition)))) /= N_Null;
+
+      --  Otherwise the type is not fully default initialized
+
+      else
+         return False;
+      end if;
+   end Has_Full_Default_Initialization;
 
    --------------------
    -- Has_Infinities --
@@ -11357,6 +11501,42 @@ package body Sem_Util is
       end if;
    end Is_Descendent_Of;
 
+   ----------------------------------------
+   -- Is_Descendant_Of_Suspension_Object --
+   ----------------------------------------
+
+   function Is_Descendant_Of_Suspension_Object
+     (Typ : Entity_Id) return Boolean
+   is
+      Cur_Typ : Entity_Id;
+      Par_Typ : Entity_Id;
+
+   begin
+      --  Climb the type derivation chain checking each parent type against
+      --  Suspension_Object.
+
+      Cur_Typ := Base_Type (Typ);
+      while Present (Cur_Typ) loop
+         Par_Typ := Etype (Cur_Typ);
+
+         --  The current type is a match
+
+         if Is_Suspension_Object (Cur_Typ) then
+            return True;
+
+         --  Stop the traversal once the root of the derivation chain has been
+         --  reached. In that case the current type is its own base type.
+
+         elsif Cur_Typ = Par_Typ then
+            exit;
+         end if;
+
+         Cur_Typ := Base_Type (Par_Typ);
+      end loop;
+
+      return False;
+   end Is_Descendant_Of_Suspension_Object;
+
    ---------------------------------------------
    -- Is_Double_Precision_Floating_Point_Type --
    ---------------------------------------------
@@ -11376,50 +11556,6 @@ package body Sem_Util is
    -----------------------------
 
    function Is_Effectively_Volatile (Id : Entity_Id) return Boolean is
-      function Is_Descendant_Of_Suspension_Object
-        (Typ : Entity_Id) return Boolean;
-      --  Determine whether type Typ is a descendant of type Suspension_Object
-      --  defined in Ada.Synchronous_Task_Control.
-
-      ----------------------------------------
-      -- Is_Descendant_Of_Suspension_Object --
-      ----------------------------------------
-
-      function Is_Descendant_Of_Suspension_Object
-        (Typ : Entity_Id) return Boolean
-      is
-         Cur_Typ : Entity_Id;
-         Par_Typ : Entity_Id;
-
-      begin
-         --  Climb the type derivation chain checking each parent type against
-         --  Suspension_Object.
-
-         Cur_Typ := Base_Type (Typ);
-         while Present (Cur_Typ) loop
-            Par_Typ := Etype (Cur_Typ);
-
-            --  The current type is a match
-
-            if Is_Suspension_Object (Cur_Typ) then
-               return True;
-
-            --  Stop the traversal once the root of the derivation chain has
-            --  been reached. In that case the current type is its own base
-            --  type.
-
-            elsif Cur_Typ = Par_Typ then
-               exit;
-            end if;
-
-            Cur_Typ := Base_Type (Par_Typ);
-         end loop;
-
-         return False;
-      end Is_Descendant_Of_Suspension_Object;
-
-   --  Start of processing for Is_Effectively_Volatile
-
    begin
       if Is_Type (Id) then
 
@@ -12969,6 +13105,41 @@ package body Sem_Util is
       end if;
    end Is_Selector_Name;
 
+   ---------------------------------
+   -- Is_Single_Concurrent_Object --
+   ---------------------------------
+
+   function Is_Single_Concurrent_Object (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Ekind (Id) = E_Variable
+          and then Is_Single_Concurrent_Type (Etype (Id));
+   end Is_Single_Concurrent_Object;
+
+   -------------------------------
+   -- Is_Single_Concurrent_Type --
+   -------------------------------
+
+   function Is_Single_Concurrent_Type (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Ekind_In (Id, E_Protected_Type, E_Task_Type)
+          and then Is_Single_Concurrent_Type_Declaration
+                     (Declaration_Node (Id));
+   end Is_Single_Concurrent_Type;
+
+   -------------------------------------------
+   -- Is_Single_Concurrent_Type_Declaration --
+   -------------------------------------------
+
+   function Is_Single_Concurrent_Type_Declaration
+     (N : Node_Id) return Boolean
+   is
+   begin
+      return Nkind_In (Original_Node (N), N_Single_Protected_Declaration,
+                                          N_Single_Task_Declaration);
+   end Is_Single_Concurrent_Type_Declaration;
+
    ---------------------------------------------
    -- Is_Single_Precision_Floating_Point_Type --
    ---------------------------------------------
@@ -13230,6 +13401,49 @@ package body Sem_Util is
           and then Present (Scope (Scope (Scope (Id))))
           and then Scope (Scope (Scope (Id))) = Standard_Standard;
    end Is_Suspension_Object;
+
+   ----------------------------
+   -- Is_Synchronized_Object --
+   ----------------------------
+
+   function Is_Synchronized_Object (Id : Entity_Id) return Boolean is
+      Prag : Node_Id;
+
+   begin
+      if Is_Object (Id) then
+
+         --  The object is synchronized if it is of a type that yields a
+         --  synchronized object.
+
+         if Yields_Synchronized_Object (Etype (Id)) then
+            return True;
+
+         --  The object is synchronized if it is atomic and Async_Writers is
+         --  enabled.
+
+         elsif Is_Atomic (Id) and then Async_Writers_Enabled (Id) then
+            return True;
+
+         --  A constant is a synchronized object by default
+
+         elsif Ekind (Id) = E_Constant then
+            return True;
+
+         --  A variable is a synchronized object if it is subject to pragma
+         --  Constant_After_Elaboration.
+
+         elsif Ekind (Id) = E_Variable then
+            Prag := Get_Pragma (Id, Pragma_Constant_After_Elaboration);
+
+            return Present (Prag) and then Is_Enabled_Pragma (Prag);
+         end if;
+      end if;
+
+      --  Otherwise the input is not an object or it does not qualify as a
+      --  synchronized object.
+
+      return False;
+   end Is_Synchronized_Object;
 
    ---------------------------------
    -- Is_Synchronized_Tagged_Type --
@@ -19879,5 +20093,89 @@ package body Sem_Util is
          Error_Msg_Qual_Level := 0;
       end if;
    end Wrong_Type;
+
+   --------------------------------
+   -- Yields_Synchronized_Object --
+   --------------------------------
+
+   function Yields_Synchronized_Object (Typ : Entity_Id) return Boolean is
+      Id : Entity_Id;
+
+   begin
+      --  An array type yields a synchronized object if its component type
+      --  yields a synchronized object.
+
+      if Is_Array_Type (Typ) then
+         return Yields_Synchronized_Object (Component_Type (Typ));
+
+      --  A descendant of type Ada.Synchronous_Task_Control.Suspension_Object
+      --  yields a synchronized object by default.
+
+      elsif Is_Descendant_Of_Suspension_Object (Typ) then
+         return True;
+
+      --  A protected type yields a synchronized object by default
+
+      elsif Is_Protected_Type (Typ) then
+         return True;
+
+      --  A record type or type extension yields a synchronized object when its
+      --  discriminants (if any) lack default values and all components are of
+      --  a type that yelds a synchronized object.
+
+      elsif Is_Record_Type (Typ) then
+
+         --  Inspect all entities defined in the scope of the type, looking for
+         --  components of a type that does not yeld a synchronized object or
+         --  for discriminants with default values.
+
+         Id := First_Entity (Typ);
+         while Present (Id) loop
+            if Comes_From_Source (Id) then
+               if Ekind (Id) = E_Component
+                 and then not Yields_Synchronized_Object (Etype (Id))
+               then
+                  return False;
+
+               elsif Ekind (Id) = E_Discriminant
+                 and then Present (Expression (Parent (Id)))
+               then
+                  return False;
+               end if;
+            end if;
+
+            Next_Entity (Id);
+         end loop;
+
+         --  Ensure that the parent type of a type extension yields a
+         --  synchronized object.
+
+         if Etype (Typ) /= Typ
+           and then not Yields_Synchronized_Object (Etype (Typ))
+         then
+            return False;
+         end if;
+
+         --  If we get here, then all discriminants lack default values and all
+         --  components are of a type that yields a synchronized object.
+
+         return True;
+
+      --  A synchronized interface type yields a synchronized object by default
+
+      elsif Is_Synchronized_Interface (Typ) then
+         return True;
+
+      --  A task type yelds a synchronized object by default
+
+      elsif Is_Task_Type (Typ) then
+         return True;
+
+      --  Otherwise the type does not yield a synchronized object
+
+      else
+         return False;
+      end if;
+   end Yields_Synchronized_Object;
 
 end Sem_Util;

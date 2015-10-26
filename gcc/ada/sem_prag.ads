@@ -152,9 +152,19 @@ package Sem_Prag is
       others                           => False);
 
    --  The following table lists all the implementation-defined pragmas that
+   --  should apply to the anonymous object produced by the analysis of a
+   --  single protected or task type. The table should be synchronized with
+   --  Aspect_On_Anonymous_Object_OK in unit Aspects.
+
+   Pragma_On_Anonymous_Object_OK : constant array (Pragma_Id) of Boolean :=
+     (Pragma_Depends => True,
+      Pragma_Global  => True,
+      Pragma_Part_Of => True,
+      others         => False);
+
+   --  The following table lists all the implementation-defined pragmas that
    --  may apply to a body stub (no language defined pragmas apply). The table
-   --  should be synchronized with Aspect_On_Body_Or_Stub_OK in unit Aspects if
-   --  the pragmas below implement an aspect.
+   --  should be synchronized with Aspect_On_Body_Or_Stub_OK in unit Aspects.
 
    Pragma_On_Body_Or_Stub_OK : constant array (Pragma_Id) of Boolean :=
      (Pragma_Refined_Depends => True,
@@ -195,9 +205,11 @@ package Sem_Prag is
    procedure Analyze_Initializes_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Initializes
 
+   procedure Analyze_Part_Of_In_Decl_Part (N : Node_Id);
+   --  Perform full analysis of delayed pragma Part_Of
+
    procedure Analyze_Pre_Post_Condition_In_Decl_Part (N : Node_Id);
-   --  Perform preanalysis of [refined] precondition or postcondition pragma
-   --  N that appears on a subprogram declaration or body [stub].
+   --  Perform full analysis of pragmas Precondition and Postcondition
 
    procedure Analyze_Refined_Depends_In_Decl_Part (N : Node_Id);
    --  Preform full analysis of delayed pragma Refined_Depends. This routine
@@ -435,6 +447,14 @@ package Sem_Prag is
    --  special issues regarding pragmas. In particular, we have to deal with
    --  Suppress_All at this stage, since it can appear after the unit instead
    --  of before (actually we allow it to appear anywhere).
+
+   procedure Relocate_Pragmas_To_Anonymous_Object
+     (Typ_Decl : Node_Id;
+      Obj_Decl : Node_Id);
+   --  Relocate all pragmas that appear in the visible declarations of task or
+   --  protected type declaration Typ_Decl after the declaration of anonymous
+   --  object Obj_Decl. Table Pragmas_On_Anonymous_Object_OK contains the list
+   --  of candidate pragmas.
 
    procedure Relocate_Pragmas_To_Body
      (Subp_Body   : Node_Id;
