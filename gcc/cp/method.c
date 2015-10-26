@@ -1849,13 +1849,8 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       DECL_ASSIGNMENT_OPERATOR_P (fn) = 1;
       SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
     }
-  
-  /* If pointers to member functions use the least significant bit to
-     indicate whether a function is virtual, ensure a pointer
-     to this function will have that bit clear.  */
-  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
-      && DECL_ALIGN (fn) < 2 * BITS_PER_UNIT)
-    DECL_ALIGN (fn) = 2 * BITS_PER_UNIT;
+
+  DECL_ALIGN (fn) = MINIMUM_METHOD_BOUNDARY;
 
   /* Create the explicit arguments.  */
   if (rhs_parm_type)
