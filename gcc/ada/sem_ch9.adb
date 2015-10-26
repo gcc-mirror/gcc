@@ -50,6 +50,7 @@ with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch8;   use Sem_Ch8;
 with Sem_Ch13;  use Sem_Ch13;
 with Sem_Eval;  use Sem_Eval;
+with Sem_Prag;  use Sem_Prag;
 with Sem_Res;   use Sem_Res;
 with Sem_Type;  use Sem_Type;
 with Sem_Util;  use Sem_Util;
@@ -2112,20 +2113,23 @@ package body Sem_Ch9 is
                  or else From_Aspect_Specification (Prio_Item)
                then
                   Error_Msg_Name_1 := Chars (Identifier (Prio_Item));
-                  Error_Msg_NE ("aspect% for & has no effect when Lock_Free" &
-                                " given??", Prio_Item, Id);
+                  Error_Msg_NE
+                    ("aspect% for & has no effect when Lock_Free given??",
+                     Prio_Item, Id);
 
                --  Pragma case
 
                else
                   Error_Msg_Name_1 := Pragma_Name (Prio_Item);
-                  Error_Msg_NE ("pragma% for & has no effect when Lock_Free" &
-                                " given??", Prio_Item, Id);
+                  Error_Msg_NE
+                    ("pragma% for & has no effect when Lock_Free given??",
+                     Prio_Item, Id);
                end if;
             end if;
          end;
 
-         if not Allows_Lock_Free_Implementation (N, True) then
+         if not Allows_Lock_Free_Implementation (N, Lock_Free_Given => True)
+         then
             return;
          end if;
       end if;
@@ -2149,16 +2153,18 @@ package body Sem_Ch9 is
                     or else From_Aspect_Specification (Prio_Item))
                  and then Chars (Identifier (Prio_Item)) = Name_Priority
                then
-                  Error_Msg_N ("aspect Interrupt_Priority is preferred "
-                               & "in presence of handlers??", Prio_Item);
+                  Error_Msg_N
+                    ("aspect Interrupt_Priority is preferred in presence of "
+                     & "handlers??", Prio_Item);
 
                --  Pragma case
 
                elsif Nkind (Prio_Item) = N_Pragma
                  and then Pragma_Name (Prio_Item) = Name_Priority
                then
-                  Error_Msg_N ("pragma Interrupt_Priority is preferred "
-                               & "in presence of handlers??", Prio_Item);
+                  Error_Msg_N
+                    ("pragma Interrupt_Priority is preferred in presence of "
+                     & "handlers??", Prio_Item);
                end if;
             end if;
          end;
@@ -2612,49 +2618,80 @@ package body Sem_Ch9 is
    ------------------------------------------
 
    procedure Analyze_Single_Protected_Declaration (N : Node_Id) is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Id     : constant Node_Id    := Defining_Identifier (N);
-      T      : Entity_Id;
-      T_Decl : Node_Id;
-      O_Decl : Node_Id;
-      O_Name : constant Entity_Id := Id;
+      Loc      : constant Source_Ptr := Sloc (N);
+      Obj_Id   : constant Node_Id    := Defining_Identifier (N);
+      Obj_Decl : Node_Id;
+      Typ      : Entity_Id;
 
    begin
-      Generate_Definition (Id);
+      Generate_Definition (Obj_Id);
       Tasking_Used := True;
 
-      --  The node is rewritten as a protected type declaration, in exact
-      --  analogy with what is done with single tasks.
+      --  A single protected declaration is transformed into a pair of an
+      --  anonymous protected type and an object of that type. Generate:
 
-      T :=
-        Make_Defining_Identifier (Sloc (Id),
-          New_External_Name (Chars (Id), 'T'));
+      --    protected type Typ is ...;
 
-      T_Decl :=
+      Typ :=
+        Make_Defining_Identifier (Sloc (Obj_Id),
+          Chars => New_External_Name (Chars (Obj_Id), 'T'));
+
+      Rewrite (N,
         Make_Protected_Type_Declaration (Loc,
-         Defining_Identifier => T,
+         Defining_Identifier => Typ,
          Protected_Definition => Relocate_Node (Protected_Definition (N)),
-         Interface_List       => Interface_List (N));
+         Interface_List       => Interface_List (N)));
 
-      O_Decl :=
+      --  Use the original defining identifier of the single protected
+      --  declaration in the generated object declaration to allow for debug
+      --  information to be attached to it when compiling with -gnatD. The
+      --  parent of the entity is the new object declaration. The single
+      --  protected declaration is not used in semantics or code generation,
+      --  but is scanned when generating debug information, and therefore needs
+      --  the updated Sloc information from the entity (see Sprint). Generate:
+
+      --    Obj : Typ;
+
+      Obj_Decl :=
         Make_Object_Declaration (Loc,
-          Defining_Identifier => O_Name,
-          Object_Definition   => Make_Identifier (Loc,  Chars (T)));
+          Defining_Identifier => Obj_Id,
+          Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
-      Rewrite (N, T_Decl);
-      Insert_After (N, O_Decl);
-      Mark_Rewrite_Insertion (O_Decl);
+      --  Relocate the aspects that appear on the original single protected
+      --  declaration to the object as the object is the visible name.
 
-      --  Enter names of type and object before analysis, because the name of
-      --  the object may be used in its own body.
+      Set_Comes_From_Source (Obj_Decl, True);
 
-      Enter_Name (T);
-      Set_Ekind (T, E_Protected_Type);
-      Set_Etype (T, T);
+      Insert_After (N, Obj_Decl);
+      Mark_Rewrite_Insertion (Obj_Decl);
 
-      Enter_Name (O_Name);
-      Set_Ekind (O_Name, E_Variable);
-      Set_Etype (O_Name, T);
+      --  Relocate aspect Part_Of from the the original single protected
+      --  declaration to the anonymous object declaration. This emulates the
+      --  placement of an equivalent source pragma.
+
+      Move_Or_Merge_Aspects (N, To => Obj_Decl);
+
+      --  Relocate pragma Part_Of from the visible declarations of the original
+      --  single protected declaration to the anonymous object declaration. The
+      --  new placement better reflects the role of the pragma.
+
+      Relocate_Pragmas_To_Anonymous_Object (N, Obj_Decl);
+
+      --  Enter the names of the anonymous protected type and the object before
+      --  analysis takes places, because the name of the object may be used in
+      --  its own body.
+
+      Enter_Name (Typ);
+      Set_Ekind            (Typ, E_Protected_Type);
+      Set_Etype            (Typ, Typ);
+      Set_Anonymous_Object (Typ, Obj_Id);
+
+      Enter_Name (Obj_Id);
+      Set_Ekind                  (Obj_Id, E_Variable);
+      Set_Etype                  (Obj_Id, Typ);
+      Set_Part_Of_Constituents   (Obj_Id, New_Elmt_List);
+      Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Obj_Id);
 
       --  Instead of calling Analyze on the new node, call the proper analysis
       --  procedure directly. Otherwise the node would be expanded twice, with
@@ -2663,7 +2700,7 @@ package body Sem_Ch9 is
       Analyze_Protected_Type_Declaration (N);
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
+         Analyze_Aspect_Specifications (N, Obj_Id);
       end if;
    end Analyze_Single_Protected_Declaration;
 
@@ -2672,58 +2709,81 @@ package body Sem_Ch9 is
    -------------------------------------
 
    procedure Analyze_Single_Task_Declaration (N : Node_Id) is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Id     : constant Node_Id    := Defining_Identifier (N);
-      T      : Entity_Id;
-      T_Decl : Node_Id;
-      O_Decl : Node_Id;
-      O_Name : constant Entity_Id := Id;
+      Loc      : constant Source_Ptr := Sloc (N);
+      Obj_Id   : constant Node_Id    := Defining_Identifier (N);
+      Obj_Decl : Node_Id;
+      Typ      : Entity_Id;
 
    begin
-      Generate_Definition (Id);
+      Generate_Definition (Obj_Id);
       Tasking_Used := True;
 
-      --  The node is rewritten as a task type declaration, followed by an
-      --  object declaration of that anonymous task type.
+      --  A single task declaration is transformed into a pait of an anonymous
+      --  task type and an object of that type. Generate:
 
-      T :=
-        Make_Defining_Identifier (Sloc (Id),
-          New_External_Name (Chars (Id), Suffix => "TK"));
+      --    task type Typ is ...;
 
-      T_Decl :=
+      Typ :=
+        Make_Defining_Identifier (Sloc (Obj_Id),
+          Chars => New_External_Name (Chars (Obj_Id), Suffix => "TK"));
+
+      Rewrite (N,
         Make_Task_Type_Declaration (Loc,
-          Defining_Identifier => T,
+          Defining_Identifier => Typ,
           Task_Definition     => Relocate_Node (Task_Definition (N)),
-          Interface_List      => Interface_List (N));
+          Interface_List      => Interface_List (N)));
 
-      --  We use the original defining identifier of the single task in the
-      --  generated object declaration, so that debugging information can
-      --  be attached to it when compiling with -gnatD. The parent of the
-      --  entity is the new object declaration. The single_task_declaration
-      --  is not used further in semantics or code generation, but is scanned
-      --  when generating debug information, and therefore needs the updated
-      --  Sloc information for the entity (see Sprint). Aspect specifications
-      --  are moved from the single task node to the object declaration node.
+      --  Use the original defining identifier of the single task declaration
+      --  in the generated object declaration to allow for debug information
+      --  to be attached to it when compiling with -gnatD. The parent of the
+      --  entity is the new object declaration. The single task declaration
+      --  is not used in semantics or code generation, but is scanned when
+      --  generating debug information, and therefore needs the updated Sloc
+      --  information from the entity (see Sprint). Generate:
 
-      O_Decl :=
+      --    Obj : Typ;
+
+      Obj_Decl :=
         Make_Object_Declaration (Loc,
-          Defining_Identifier => O_Name,
-          Object_Definition   => Make_Identifier (Loc, Chars (T)));
+          Defining_Identifier => Obj_Id,
+          Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
-      Rewrite (N, T_Decl);
-      Insert_After (N, O_Decl);
-      Mark_Rewrite_Insertion (O_Decl);
+      --  Relocate the aspects that appear on the original single protected
+      --  declaration to the object as the object is the visible name.
 
-      --  Enter names of type and object before analysis, because the name of
-      --  the object may be used in its own body.
+      Set_Comes_From_Source (Obj_Decl, True);
 
-      Enter_Name (T);
-      Set_Ekind (T, E_Task_Type);
-      Set_Etype (T, T);
+      Insert_After (N, Obj_Decl);
+      Mark_Rewrite_Insertion (Obj_Decl);
 
-      Enter_Name (O_Name);
-      Set_Ekind (O_Name, E_Variable);
-      Set_Etype (O_Name, T);
+      --  Relocate aspects Depends, Global and Part_Of from the original single
+      --  task declaration to the anonymous object declaration. This emulates
+      --  the placement of an equivalent source pragma.
+
+      Move_Or_Merge_Aspects (N, To => Obj_Decl);
+
+      --  Relocate pragmas Depends, Global and Part_Of from the visible
+      --  declarations of the original single protected declaration to the
+      --  anonymous object declaration. The new placement better reflects the
+      --  role of the pragmas.
+
+      Relocate_Pragmas_To_Anonymous_Object (N, Obj_Decl);
+
+      --  Enter the names of the anonymous task type and the object before
+      --  analysis takes places, because the name of the object may be used
+      --  in its own body.
+
+      Enter_Name (Typ);
+      Set_Ekind            (Typ, E_Task_Type);
+      Set_Etype            (Typ, Typ);
+      Set_Anonymous_Object (Typ, Obj_Id);
+
+      Enter_Name (Obj_Id);
+      Set_Ekind                  (Obj_Id, E_Variable);
+      Set_Etype                  (Obj_Id, Typ);
+      Set_Part_Of_Constituents   (Obj_Id, New_Elmt_List);
+      Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Obj_Id);
 
       --  Instead of calling Analyze on the new node, call the proper analysis
       --  procedure directly. Otherwise the node would be expanded twice, with
@@ -2732,7 +2792,7 @@ package body Sem_Ch9 is
       Analyze_Task_Type_Declaration (N);
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
+         Analyze_Aspect_Specifications (N, Obj_Id);
       end if;
    end Analyze_Single_Task_Declaration;
 
@@ -3499,4 +3559,5 @@ package body Sem_Ch9 is
          Next_Entity (E);
       end loop;
    end Install_Declarations;
+
 end Sem_Ch9;

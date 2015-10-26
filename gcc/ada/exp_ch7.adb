@@ -1285,7 +1285,7 @@ package body Exp_Ch7 is
             Prepend_To (Decls, Counter_Decl);
             Prepend_To (Decls, Counter_Typ_Decl);
 
-            --  The counter and its associated type must be manually analized
+            --  The counter and its associated type must be manually analyzed
             --  since N has already been analyzed. Use the scope of the spec
             --  when inserting in a package.
 

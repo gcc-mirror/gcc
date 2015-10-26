@@ -32,8 +32,9 @@ package Contracts is
 
    procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id);
    --  Add pragma Prag to the contract of a constant, entry, entry family,
-   --  [generic] package, package body, [generic] subprogram, subprogram body,
-   --  variable or task unit denoted by Id. The following are valid pragmas:
+   --  [generic] package, package body, protected unit, [generic] subprogram,
+   --  subprogram body, variable or task unit denoted by Id. The following are
+   --  valid pragmas:
    --    Abstract_State
    --    Async_Readers
    --    Async_Writers
@@ -91,8 +92,10 @@ package Contracts is
    --  considered are:
    --    Async_Readers
    --    Async_Writers
+   --    Depends           (single concurrent object)
    --    Effective_Reads
    --    Effective_Writes
+   --    Global            (single concurrent object)
    --    Part_Of
 
    procedure Analyze_Package_Body_Contract
@@ -114,8 +117,13 @@ package Contracts is
    --    Initializes
    --    Part_Of
 
+   procedure Analyze_Protected_Contract (Prot_Id : Entity_Id);
+   --  Analyze all delayed pragmas chained on the contract of protected unit
+   --  Prot_Id if they appeared at the end of a declarative region. Currently
+   --  there are no such pragmas.
+
    procedure Analyze_Subprogram_Body_Stub_Contract (Stub_Id : Entity_Id);
-   --  Analyze all delayed pragmas chained on the contract of a subprogram body
+   --  Analyze all delayed pragmas chained on the contract of subprogram body
    --  stub Stub_Id as if they appeared at the end of a declarative region. The
    --  pragmas in question are:
    --    Contract_Cases
@@ -129,9 +137,9 @@ package Contracts is
    --    Test_Case
 
    procedure Analyze_Task_Contract (Task_Id : Entity_Id);
-   --  Analyze all delayed pragmas chained on the contract of a task unit
-   --  Task_Id as if they appeared at the end of a declarative region. The
-   --  pragmas in question are:
+   --  Analyze all delayed pragmas chained on the contract of task unit Task_Id
+   --  as if they appeared at the end of a declarative region. The pragmas in
+   --  question are:
    --    Depends
    --    Global
 

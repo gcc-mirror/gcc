@@ -794,7 +794,7 @@ package Aspects is
    --    package body P with SPARK_Mode is ...;
 
    --  The table should be synchronized with Pragma_On_Body_Or_Stub_OK in unit
-   --  Sem_Prag if the aspects below are implemented by a pragma.
+   --  Sem_Prag.
 
    Aspect_On_Body_Or_Stub_OK : constant array (Aspect_Id) of Boolean :=
      (Aspect_Refined_Depends              => True,
@@ -802,6 +802,26 @@ package Aspects is
       Aspect_Refined_Post                 => True,
       Aspect_SPARK_Mode                   => True,
       Aspect_Warnings                     => True,
+      others                              => False);
+
+   -------------------------------------------------------------------
+   -- Handling of Aspects Specifications on Single Concurrent Types --
+   -------------------------------------------------------------------
+
+   --  Certain aspects that appear on the following nodes
+
+   --    N_Single_Protected_Declaration
+   --    N_Single_Task_Declaration
+
+   --  are treated as if they apply to the anonymous object produced by the
+   --  analysis of a single concurrent type. The following table lists all
+   --  aspects that should apply to the anonymous object. The table should
+   --  be synchronized with Pragma_On_Anonymous_Object_OK in unit Sem_Prag.
+
+   Aspect_On_Anonymous_Object_OK : constant array (Aspect_Id) of Boolean :=
+     (Aspect_Depends                      => True,
+      Aspect_Global                       => True,
+      Aspect_Part_Of                      => True,
       others                              => False);
 
    ---------------------------------------------------
@@ -861,10 +881,14 @@ package Aspects is
 
    procedure Move_Or_Merge_Aspects (From : Node_Id; To : Node_Id);
    --  Relocate the aspect specifications of node From to node To. If To has
-   --  aspects, the aspects of From are added to the aspects of To. If From has
-   --  no aspects, the routine has no effect. When From denotes a subprogram
-   --  body stub that also acts as a spec, the only aspects relocated to node
-   --  To are those from table Aspect_On_Body_Or_Stub_OK and preconditions.
+   --  aspects, the aspects of From are appended to the aspects of To. If From
+   --  has no aspects, the routine has no effect. Special behavior:
+   --    * When node From denotes a subprogram body stub without a previous
+   --      declaration, the only aspects relocated to node To are those found
+   --      in table Aspect_On_Body_Or_Stub_OK.
+   --    * When node From denotes a single synchronized type declaration, the
+   --      only aspects relocated to node To are those found in table
+   --      Aspect_On_Anonymous_Object_OK.
 
    function Permits_Aspect_Specifications (N : Node_Id) return Boolean;
    --  Returns True if the node N is a declaration node that permits aspect

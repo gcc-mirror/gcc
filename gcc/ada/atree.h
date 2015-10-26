@@ -525,6 +525,7 @@ extern Node_Id Current_Error_Node;
 #define Elist24(N)    Field24 (N)
 #define Elist25(N)    Field25 (N)
 #define Elist26(N)    Field26 (N)
+#define Elist36(N)    Field36 (N)
 
 #define Name1(N)      Field1  (N)
 #define Name2(N)      Field2  (N)

@@ -765,6 +765,17 @@ package Sem_Util is
    --  Note that the value returned is always the expression (not the
    --  N_Parameter_Association nodes, even if named association is used).
 
+   function Fix_Msg (Id : Entity_Id; Msg : String) return String;
+   --  Replace all occurrences of a particular word in string Msg depending on
+   --  the Ekind of Id as follows:
+   --    * Replace "subprogram" with
+   --      - "entry" when Id is an entry [family]
+   --      - "task unit" when Id is a single task object, task type or task
+   --         body.
+   --    * Replace "protected" with
+   --      - "task" when Id is a single task object, task type or task body
+   --  All other non-matching words remain as is
+
    procedure Gather_Components
      (Typ           : Entity_Id;
       Comp_List     : Node_Id;
@@ -953,9 +964,6 @@ package Sem_Util is
    --  as an access type internally, this function tests only for access types
    --  known to the programmer. See also Has_Tagged_Component.
 
-   function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean;
-   --  Simple predicate to test for defaulted discriminants
-
    type Alignment_Result is (Known_Compatible, Unknown, Known_Incompatible);
    --  Result of Has_Compatible_Alignment test, description found below. Note
    --  that the values are arranged in increasing order of problematicness.
@@ -983,6 +991,9 @@ package Sem_Util is
    function Has_Declarations (N : Node_Id) return Boolean;
    --  Determines if the node can have declarations
 
+   function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean;
+   --  Simple predicate to test for defaulted discriminants
+
    function Has_Denormals (E : Entity_Id) return Boolean;
    --  Determines if the floating-point type E supports denormal numbers.
    --  Returns False if E is not a floating-point type.
@@ -996,6 +1007,19 @@ package Sem_Util is
      (Subp_Id : Entity_Id) return Boolean;
    --  Determine whether subprogram Subp_Id has an effectively volatile formal
    --  parameter or returns an effectively volatile value.
+
+   function Has_Full_Default_Initialization (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ defines "full default initialization" as
+   --  specified by SPARK RM 3.1. To qualify as such, the type must be
+   --    * A scalar type with specified Default_Value
+   --    * An array-of-scalar type with specified Default_Component_Value
+   --    * An array type whose element type defines full default initialization
+   --    * A protected type, record type or type extension whose components
+   --      either include a default expression or have a type which defines
+   --      full default initialization. In the case of type extensions, the
+   --      parent type defines full default initialization.
+   --   * A task type
+   --   * A private type whose Default_Initial_Condition is non-null
 
    function Has_Infinities (E : Entity_Id) return Boolean;
    --  Determines if the range of the floating-point type E includes
@@ -1274,6 +1298,13 @@ package Sem_Util is
    --  This is the RM definition, a type is a descendent of another type if it
    --  is the same type or is derived from a descendent of the other type.
 
+   function Is_Descendant_Of_Suspension_Object
+     (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ is a descendant of type Suspension_Object
+   --  defined in Ada.Synchronous_Task_Control. This version is different from
+   --  Is_Descendent_Of as the detection of Suspension_Object does not involve
+   --  an entity and by extension a call to RTSfind.
+
    function Is_Double_Precision_Floating_Point_Type
      (E : Entity_Id) return Boolean;
    --  Return whether E is a double precision floating point type,
@@ -1463,6 +1494,18 @@ package Sem_Util is
    --  represent use of the N_Identifier node for a true identifier, when
    --  normally such nodes represent a direct name.
 
+   function Is_Single_Concurrent_Object (Id : Entity_Id) return Boolean;
+   --  Determine whether arbitrary entity Id denotes the anonymous object
+   --  created for a single protected or single task type.
+
+   function Is_Single_Concurrent_Type (Id : Entity_Id) return Boolean;
+   --  Determine whether arbitrary entity Id denotes a single protected or
+   --  single task type.
+
+   function Is_Single_Concurrent_Type_Declaration (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N denotes the declaration of a single
+   --  protected type or single task type.
+
    function Is_Single_Precision_Floating_Point_Type
      (E : Entity_Id) return Boolean;
    --  Return whether E is a single precision floating point type,
@@ -1519,6 +1562,15 @@ package Sem_Util is
    function Is_Suspension_Object (Id : Entity_Id) return Boolean;
    --  Determine whether arbitrary entity Id denotes Suspension_Object defined
    --  in Ada.Synchronous_Task_Control.
+
+   function Is_Synchronized_Object (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id denotes an object and if it does, whether
+   --  this object is synchronized as specified in SPARK RM 9.1. To qualify as
+   --  such, the object must be
+   --    * Of a type that yields a synchronized object
+   --    * An atomic object with enabled Async_Writers
+   --    * A constant
+   --    * A variable subject to pragma Constant_After_Elaboration
 
    function Is_Synchronized_Tagged_Type (E : Entity_Id) return Boolean;
    --  Returns True if E is a synchronized tagged type (AARM 3.9.4 (6/2))
@@ -2160,5 +2212,16 @@ package Sem_Util is
    --  and Expected_Type is the entity for the expected type. Note that Expr
    --  does not have to be a subexpression, anything with an Etype field may
    --  be used.
+
+   function Yields_Synchronized_Object (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ "yields synchronized object" as specified by
+   --  SPARK RM 9.1. To qualify as such, a type must be
+   --    * An array type whose element type yields a synchronized object
+   --    * A descendant of type Ada.Synchronous_Task_Control.Suspension_Object
+   --    * A protected type
+   --    * A record type or type extension without defaulted discriminants
+   --      whose components are of a type that yields a synchronized object.
+   --    * A synchronized interface type
+   --    * A task type
 
 end Sem_Util;

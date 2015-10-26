@@ -3291,7 +3291,7 @@ package body Exp_Ch6 is
 
                if Subp = Eq_Prim_Op then
 
-                  --  Mark the node as analyzed to avoid reanalizing this
+                  --  Mark the node as analyzed to avoid reanalyzing this
                   --  dispatching call (which would cause a never-ending loop)
 
                   Prev_Call := Relocate_Node (Call_Node);

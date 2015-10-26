@@ -338,8 +338,7 @@ package body Aspects is
 
    procedure Move_Or_Merge_Aspects (From : Node_Id; To : Node_Id) is
       procedure Relocate_Aspect (Asp : Node_Id);
-      --  Asp denotes an aspect specification of node From. Relocate the Asp to
-      --  the aspect specifications of node To (if any).
+      --  Move aspect specification Asp to the aspect specifications of node To
 
       ---------------------
       -- Relocate_Aspect --
@@ -360,8 +359,8 @@ package body Aspects is
             Set_Has_Aspects (To);
          end if;
 
-         --  Remove the aspect from node From's aspect specifications and
-         --  append it to node To.
+         --  Remove the aspect from its original owner and relocate it to node
+         --  To.
 
          Remove (Asp);
          Append (Asp, Asps);
@@ -400,6 +399,23 @@ package body Aspects is
                  or else Asp_Id = Aspect_Pre
                  or else Asp_Id = Aspect_Precondition
                then
+                  Relocate_Aspect (Asp);
+               end if;
+
+            --  When moving or merging aspects from a single concurrent type
+            --  declaration, relocate only those aspects that may apply to the
+            --  anonymous object created for the type.
+
+            --  Note: It is better to use Is_Single_Concurrent_Type_Declaration
+            --  here, but Aspects and Sem_Util have incompatible licenses.
+
+            elsif Nkind_In
+                    (Original_Node (From), N_Single_Protected_Declaration,
+                                           N_Single_Task_Declaration)
+            then
+               Asp_Id := Get_Aspect_Id (Asp);
+
+               if Aspect_On_Anonymous_Object_OK (Asp_Id) then
                   Relocate_Aspect (Asp);
                end if;
 

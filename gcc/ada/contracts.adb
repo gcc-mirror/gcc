@@ -228,6 +228,19 @@ package body Contracts is
             raise Program_Error;
          end if;
 
+      --  Protected units, the applicable pragmas are:
+      --    Part_Of
+
+      elsif Ekind (Id) = E_Protected_Type then
+         if Prag_Nam = Name_Part_Of then
+            Add_Classification;
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
+
       --  Subprogram bodies, the applicable pragmas are:
       --    Postcondition
       --    Precondition
@@ -268,9 +281,10 @@ package body Contracts is
       --  Task units, the applicable pragmas are:
       --    Depends
       --    Global
+      --    Part_Of
 
       elsif Ekind (Id) = E_Task_Type then
-         if Nam_In (Prag_Nam, Name_Depends, Name_Global) then
+         if Nam_In (Prag_Nam, Name_Depends, Name_Global, Name_Part_Of) then
             Add_Classification;
 
          --  The pragma is not a proper contract item
@@ -283,16 +297,20 @@ package body Contracts is
       --    Async_Readers
       --    Async_Writers
       --    Constant_After_Elaboration
+      --    Depends
       --    Effective_Reads
       --    Effective_Writes
+      --    Global
       --    Part_Of
 
       elsif Ekind (Id) = E_Variable then
          if Nam_In (Prag_Nam, Name_Async_Readers,
                               Name_Async_Writers,
                               Name_Constant_After_Elaboration,
+                              Name_Depends,
                               Name_Effective_Reads,
                               Name_Effective_Writes,
+                              Name_Global,
                               Name_Part_Of)
          then
             Add_Classification;
@@ -565,14 +583,17 @@ package body Contracts is
    -----------------------------
 
    procedure Analyze_Object_Contract (Obj_Id : Entity_Id) is
-      Obj_Typ : constant Entity_Id := Etype (Obj_Id);
-      AR_Val  : Boolean := False;
-      AW_Val  : Boolean := False;
-      ER_Val  : Boolean := False;
-      EW_Val  : Boolean := False;
-      Items   : Node_Id;
-      Prag    : Node_Id;
-      Seen    : Boolean := False;
+      Obj_Typ      : constant Entity_Id := Etype (Obj_Id);
+      AR_Val       : Boolean := False;
+      AW_Val       : Boolean := False;
+      Encap_Id     : Entity_Id;
+      ER_Val       : Boolean := False;
+      EW_Val       : Boolean := False;
+      Items        : Node_Id;
+      Mode         : SPARK_Mode_Type;
+      Prag         : Node_Id;
+      Restore_Mode : Boolean := False;
+      Seen         : Boolean := False;
 
    begin
       --  The loop parameter in an element iterator over a formal container
@@ -612,9 +633,105 @@ package body Contracts is
             Error_Msg_N ("constant cannot be volatile", Obj_Id);
          end if;
 
+         Prag := Get_Pragma (Obj_Id, Pragma_Part_Of);
+
+         --  Check whether the lack of indicator Part_Of agrees with the
+         --  placement of the constant with respect to the state space.
+
+         if No (Prag) then
+            Check_Missing_Part_Of (Obj_Id);
+         end if;
+
       --  Variable-related checks
 
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
+
+         --  The anonymous object created for a single concurrent type inherits
+         --  the SPARK_Mode from the type. Due to the timing of contract
+         --  analysis, delayed pragmas may be subject to the wrong SPARK_Mode,
+         --  usually that of the enclosing context. To remedy this, restore the
+         --  original SPARK_Mode of the related variable.
+
+         if Is_Single_Concurrent_Object (Obj_Id)
+           and then Present (SPARK_Pragma (Obj_Id))
+         then
+            Restore_Mode := True;
+            Save_SPARK_Mode_And_Set (Obj_Id, Mode);
+         end if;
+
+         --  Analyze all external properties
+
+         Prag := Get_Pragma (Obj_Id, Pragma_Async_Readers);
+
+         if Present (Prag) then
+            Analyze_External_Property_In_Decl_Part (Prag, AR_Val);
+            Seen := True;
+         end if;
+
+         Prag := Get_Pragma (Obj_Id, Pragma_Async_Writers);
+
+         if Present (Prag) then
+            Analyze_External_Property_In_Decl_Part (Prag, AW_Val);
+            Seen := True;
+         end if;
+
+         Prag := Get_Pragma (Obj_Id, Pragma_Effective_Reads);
+
+         if Present (Prag) then
+            Analyze_External_Property_In_Decl_Part (Prag, ER_Val);
+            Seen := True;
+         end if;
+
+         Prag := Get_Pragma (Obj_Id, Pragma_Effective_Writes);
+
+         if Present (Prag) then
+            Analyze_External_Property_In_Decl_Part (Prag, EW_Val);
+            Seen := True;
+         end if;
+
+         --  Verify the mutual interaction of the various external properties
+
+         if Seen then
+            Check_External_Properties (Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
+         end if;
+
+         --  The anonymous object created for a single concurrent type carries
+         --  pragmas Depends and Globat of the type.
+
+         if Is_Single_Concurrent_Object (Obj_Id) then
+
+            --  Analyze Global first, as Depends may mention items classified
+            --  in the global categorization.
+
+            Prag := Get_Pragma (Obj_Id, Pragma_Global);
+
+            if Present (Prag) then
+               Analyze_Global_In_Decl_Part (Prag);
+            end if;
+
+            --  Depends must be analyzed after Global in order to see the modes
+            --  of all global items.
+
+            Prag := Get_Pragma (Obj_Id, Pragma_Depends);
+
+            if Present (Prag) then
+               Analyze_Depends_In_Decl_Part (Prag);
+            end if;
+         end if;
+
+         Prag := Get_Pragma (Obj_Id, Pragma_Part_Of);
+
+         --  Analyze indicator Part_Of
+
+         if Present (Prag) then
+            Analyze_Part_Of_In_Decl_Part (Prag);
+
+         --  Otherwise check whether the lack of indicator Part_Of agrees with
+         --  the placement of the variable with respect to the state space.
+
+         else
+            Check_Missing_Part_Of (Obj_Id);
+         end if;
 
          --  The following checks are relevant only when SPARK_Mode is on, as
          --  they are not standard Ada legality rules. Internally generated
@@ -661,6 +778,28 @@ package body Contracts is
                      Obj_Id);
                end if;
             end if;
+
+            --  A variable whose Part_Of pragma specifies a single concurrent
+            --  type as encapsulator must be (SPARK RM 9.4):
+            --    * Of a type that defines full default initialization, or
+            --    * Declared with a default value, or
+            --    * Imported
+
+            Encap_Id := Encapsulating_State (Obj_Id);
+
+            if Present (Encap_Id)
+              and then Is_Single_Concurrent_Object (Encap_Id)
+              and then not Has_Full_Default_Initialization (Etype (Obj_Id))
+              and then not Has_Initial_Value (Obj_Id)
+              and then not Is_Imported (Obj_Id)
+            then
+               Error_Msg_N ("& requires full default initialization", Obj_Id);
+
+               Error_Msg_Name_1 := Chars (Encap_Id);
+               Error_Msg_N
+                 (Fix_Msg (Encap_Id, "\object acts as constituent of single "
+                  & "protected type %"), Obj_Id);
+            end if;
          end if;
 
          if Is_Ghost_Entity (Obj_Id) then
@@ -680,50 +819,12 @@ package body Contracts is
             end if;
          end if;
 
-         --  Analyze all external properties
+         --  Restore the SPARK_Mode of the enclosing context after all delayed
+         --  pragmas have been analyzed.
 
-         Prag := Get_Pragma (Obj_Id, Pragma_Async_Readers);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, AR_Val);
-            Seen := True;
+         if Restore_Mode then
+            Restore_SPARK_Mode (Mode);
          end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Async_Writers);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, AW_Val);
-            Seen := True;
-         end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Effective_Reads);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, ER_Val);
-            Seen := True;
-         end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Effective_Writes);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, EW_Val);
-            Seen := True;
-         end if;
-
-         --  Verify the mutual interaction of the various external properties
-
-         if Seen then
-            Check_External_Properties (Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
-         end if;
-      end if;
-
-      --  Check whether the lack of indicator Part_Of agrees with the placement
-      --  of the object with respect to the state space.
-
-      Prag := Get_Pragma (Obj_Id, Pragma_Part_Of);
-
-      if No (Prag) then
-         Check_Missing_Part_Of (Obj_Id);
       end if;
 
       --  A ghost object cannot be imported or exported (SPARK RM 6.9(8)). One
@@ -893,6 +994,50 @@ package body Contracts is
       end if;
    end Analyze_Package_Contract;
 
+   --------------------------------
+   -- Analyze_Protected_Contract --
+   --------------------------------
+
+   procedure Analyze_Protected_Contract (Prot_Id : Entity_Id) is
+      Items : constant Node_Id := Contract (Prot_Id);
+      Mode  : SPARK_Mode_Type;
+
+   begin
+      --  Do not analyze a contract multiple times
+
+      if Present (Items) then
+         if Analyzed (Items) then
+            return;
+         else
+            Set_Analyzed (Items);
+         end if;
+      end if;
+
+      --  Due to the timing of contract analysis, delayed pragmas may be
+      --  subject to the wrong SPARK_Mode, usually that of the enclosing
+      --  context. To remedy this, restore the original SPARK_Mode of the
+      --  related protected unit.
+
+      Save_SPARK_Mode_And_Set (Prot_Id, Mode);
+
+      --  A protected type must define full default initialization
+      --  (SPARK RM 9.4). This check is relevant only when SPARK_Mode is on as
+      --  it is not a standard Ada legality rule.
+
+      if SPARK_Mode = On
+        and then not Has_Full_Default_Initialization (Prot_Id)
+      then
+         Error_Msg_N
+           ("protected type & must define full default initialization",
+            Prot_Id);
+      end if;
+
+      --  Restore the SPARK_Mode of the enclosing context after all delayed
+      --  pragmas have been analyzed.
+
+      Restore_SPARK_Mode (Mode);
+   end Analyze_Protected_Contract;
+
    -------------------------------------------
    -- Analyze_Subprogram_Body_Stub_Contract --
    -------------------------------------------
@@ -949,7 +1094,7 @@ package body Contracts is
       --  Due to the timing of contract analysis, delayed pragmas may be
       --  subject to the wrong SPARK_Mode, usually that of the enclosing
       --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related subprogram body.
+      --  related task unit.
 
       Save_SPARK_Mode_And_Set (Task_Id, Mode);
 
