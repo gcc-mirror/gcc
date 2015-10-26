@@ -530,6 +530,7 @@ package body Sem_Prag is
       --    E_Generic_Out_Parameter    - "generic parameter"
       --    E_In_Parameter             - "parameter"
       --    E_In_Out_Parameter         - "parameter"
+      --    E_Loop_Parameter           - "loop parameter"
       --    E_Out_Parameter            - "parameter"
       --    E_Protected_Type           - "current instance of protected type"
       --    E_Task_Type                - "current instance of task type"
@@ -589,6 +590,9 @@ package body Sem_Prag is
 
          elsif Is_Formal (Item_Id) then
             Add_Str_To_Name_Buffer ("parameter");
+
+         elsif Ekind (Item_Id) = E_Loop_Parameter then
+            Add_Str_To_Name_Buffer ("loop parameter");
 
          elsif Ekind (Item_Id) = E_Protected_Type then
             Add_Str_To_Name_Buffer ("current instance of protected type");
@@ -826,17 +830,31 @@ package body Sem_Prag is
                Item_Id := Entity_Of (Item);
 
                if Present (Item_Id) then
-                  if Ekind_In (Item_Id, E_Abstract_State,
-                                        E_Constant,
+
+                  --  Constants
+
+                  if Ekind_In (Item_Id, E_Constant,
                                         E_Discriminant,
-                                        E_Generic_In_Out_Parameter,
-                                        E_Generic_In_Parameter,
-                                        E_In_Parameter,
-                                        E_In_Out_Parameter,
-                                        E_Out_Parameter,
-                                        E_Protected_Type,
-                                        E_Task_Type,
-                                        E_Variable)
+                                        E_Loop_Parameter)
+                      or else
+
+                    --  Current instances of concurrent types
+
+                    Ekind_In (Item_Id, E_Protected_Type, E_Task_Type)
+                      or else
+
+                    --  Formal parameters
+
+                    Ekind_In (Item_Id, E_Generic_In_Out_Parameter,
+                                       E_Generic_In_Parameter,
+                                       E_In_Parameter,
+                                       E_In_Out_Parameter,
+                                       E_Out_Parameter)
+                      or else
+
+                    --  States, variables
+
+                    Ekind_In (Item_Id, E_Abstract_State, E_Variable)
                   then
                      --  The item denotes a concurrent type, but it is not the
                      --  current instance of an enclosing concurrent type.
@@ -1063,7 +1081,7 @@ package body Sem_Prag is
             Item_Is_Input  := False;
             Item_Is_Output := False;
 
-            --  Abstract state cases
+            --  Abstract states
 
             if Ekind (Item_Id) = E_Abstract_State then
 
@@ -1086,29 +1104,24 @@ package body Sem_Prag is
                   Item_Is_Output := True;
                end if;
 
-            --  Constant case
+            --  Constants
 
-            elsif Ekind (Item_Id) = E_Constant then
+            elsif Ekind_In (Item_Id, E_Constant,
+                                     E_Discriminant,
+                                     E_Loop_Parameter)
+            then
                Item_Is_Input := True;
 
-            elsif Ekind (Item_Id) = E_Discriminant then
+            --  Parameters
+
+            elsif Ekind_In (Item_Id, E_Generic_In_Parameter,
+                                     E_In_Parameter)
+            then
                Item_Is_Input := True;
 
-            --  Generic parameter cases
-
-            elsif Ekind (Item_Id) = E_Generic_In_Parameter then
-               Item_Is_Input := True;
-
-            elsif Ekind (Item_Id) = E_Generic_In_Out_Parameter then
-               Item_Is_Input  := True;
-               Item_Is_Output := True;
-
-            --  Parameter cases
-
-            elsif Ekind (Item_Id) = E_In_Parameter then
-               Item_Is_Input := True;
-
-            elsif Ekind (Item_Id) = E_In_Out_Parameter then
+            elsif Ekind_In (Item_Id, E_Generic_In_Out_Parameter,
+                                     E_In_Out_Parameter)
+            then
                Item_Is_Input  := True;
                Item_Is_Output := True;
 
@@ -2021,11 +2034,12 @@ package body Sem_Prag is
                   null;
 
                --  The only legal references are those to abstract states,
-               --  discriminants and objects (SPARK RM 6.1.4(4)).
+               --  objects and various kinds of constants (SPARK RM 6.1.4(4)).
 
                elsif not Ekind_In (Item_Id, E_Abstract_State,
                                             E_Constant,
                                             E_Discriminant,
+                                            E_Loop_Parameter,
                                             E_Variable)
                then
                   SPARK_Msg_N
@@ -2105,6 +2119,20 @@ package body Sem_Prag is
                   if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
                      SPARK_Msg_NE
                        ("discriminant & cannot act as output", Item, Item_Id);
+                     return;
+                  end if;
+
+               --  Loop parameter related checks
+
+               elsif Ekind (Item_Id) = E_Loop_Parameter then
+
+                  --  A loop parameter is a read-only item, therefore it cannot
+                  --  act as an output.
+
+                  if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
+                     SPARK_Msg_NE
+                       ("loop parameter & cannot act as output",
+                        Item, Item_Id);
                      return;
                   end if;
 

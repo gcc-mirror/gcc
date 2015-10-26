@@ -3569,7 +3569,7 @@ package body Sem_Ch12 is
    begin
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
-      --  Very first thing: check for Text_IO sp[ecial unit in case we are
+      --  Very first thing: check for Text_IO special unit in case we are
       --  instantiating one of the children of [[Wide_]Wide_]Text_IO.
 
       Check_Text_IO_Special_Unit (Name (N));

@@ -1,5 +1,37 @@
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Add_Item_To_Name_Buffer): Update the comment on usage.
+	Add an output string for loop parameters.
+	(Analyze_Global_Items): Loop parameters are now a
+	valid global item. The share the legality checks of constants.
+	(Analyze_Input_Output): Loop parameters are now a valid dependency item.
+	(Find_Role): Loop parameters share the role of constants.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Generalized_Indexing): In ASIS mode,
+	preserve the Generalized_ indexing link if the context is not
+	a spec expression that will be analyzed anew.
+
+2015-10-26  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.ads, exp_ch6.adb (Build_Procedure_Body_Form): Promote it to
+	library level (to invoke this routine from the semantic analyzer).
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): When generating
+	C code, invoke Build_Procedure_Body_Form to transform a function
+	that returns a constrained array type into a procedure with an
+	out parameter that carries the return value.
+
+2015-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-reatim.ads: Add "Clock_Time with Synchronous" contract in package
+	Ada.Real_Time.
+	* a-taside.ads: Add "Tasking_State with Synchronous" contract in
+	package Ada.Task_Identification.
+	* sem_ch12.adb: minor typo in comment
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* contracts.adb (Analyze_Object_Contract): Set and restore
 	the SPARK_Mode for both constants and objects. Factor out the
 	semantic checks concerning Ghost objects.

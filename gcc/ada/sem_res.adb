@@ -8174,7 +8174,15 @@ package body Sem_Res is
             Indexes := Parameter_Associations (Call);
             Pref := Remove_Head (Indexes);
             Set_Expressions (N, Indexes);
-            Set_Generalized_Indexing (N, Empty);
+
+            --  If expression is to be reanalyzed, reset Generalized_Indexing
+            --  to recreate call node, as is the case when the expression is
+            --  part of an expression function.
+
+            if In_Spec_Expression then
+               Set_Generalized_Indexing (N, Empty);
+            end if;
+
             Set_Prefix (N, Pref);
          end if;
 

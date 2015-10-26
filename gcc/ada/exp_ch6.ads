@@ -110,6 +110,13 @@ package Exp_Ch6 is
    --  function Func, and returns its Entity_Id. It is a bug if not found; the
    --  caller should ensure this is called only when the extra formal exists.
 
+   function Build_Procedure_Body_Form
+     (Func_Id : Entity_Id; Func_Body : Node_Id) return Node_Id;
+   --  Create a procedure body which emulates the behavior of function Func_Id.
+   --  Func_Body is the root of the body of the function before its analysis.
+   --  The returned node is the root of the procedure body which will replace
+   --  the original function body, which is not needed for the C program.
+
    procedure Initialize;
    --  Initialize internal tables
 
