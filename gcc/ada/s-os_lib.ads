@@ -876,6 +876,16 @@ package System.OS_Lib is
    --  This function will always set success to False under VxWorks, since
    --  there is no notion of executables under this OS.
 
+   procedure Kill (Pid : Process_Id; Hard_Kill : Boolean := True);
+   --  Kill process known as Pid by the OS. Does nothing if Pid is
+   --  Invalid_Pid or on platforms where it is not supported like
+   --  VxWorks.
+   --  Hard_Kill is True by default and in this case the process
+   --  is terminated immediately. If Hard_Kill is False a signal
+   --  SIGINT is sent to the process on POSIX OS or a CTRL-C event
+   --  on Windows, this let the process a chance to quit properly
+   --  using a corresponding handler.
+
    function Argument_String_To_List
      (Arg_String : String) return Argument_List_Access;
    --  Take a string that is a program and its arguments and parse it into an

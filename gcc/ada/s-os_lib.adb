@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2014, AdaCore                     --
+--                     Copyright (C) 1995-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1496,6 +1496,25 @@ package body System.OS_Lib is
       F_Name (F_Name'Last)      := ASCII.NUL;
       return Is_Writable_File (F_Name'Address);
    end Is_Writable_File;
+
+   ----------
+   -- Kill --
+   ----------
+
+   procedure Kill (Pid : Process_Id; Hard_Kill : Boolean := True) is
+      SIGKILL : constant := 9;
+      SIGINT  : constant := 2;
+
+      procedure C_Kill (Pid : Process_Id; Sig_Num : Integer; Close : Integer);
+      pragma Import (C, C_Kill, "__gnat_kill");
+
+   begin
+      if Hard_Kill then
+         C_Kill (Pid, SIGKILL, 1);
+      else
+         C_Kill (Pid, SIGINT, 1);
+      end if;
+   end Kill;
 
    -------------------------
    -- Locate_Exec_On_Path --

@@ -87,10 +87,6 @@ package body Make is
    --  Every program depends on this package, that must then be checked,
    --  especially when -f and -a are used.
 
-   procedure Kill (Pid : Process_Id; Sig_Num : Integer; Close : Integer);
-   pragma Import (C, Kill, "__gnat_kill");
-   --  Called by Sigint_Intercepted to kill all spawned compilation processes
-
    type Sigint_Handler is access procedure;
    pragma Convention (C, Sigint_Handler);
 
@@ -7306,8 +7302,6 @@ package body Make is
    ------------------------
 
    procedure Sigint_Intercepted is
-      SIGINT  : constant := 2;
-
    begin
       Set_Standard_Error;
       Write_Line ("*** Interrupted ***");
@@ -7315,7 +7309,7 @@ package body Make is
       --  Send SIGINT to all outstanding compilation processes spawned
 
       for J in 1 .. Outstanding_Compiles loop
-         Kill (Running_Compile (J).Pid, SIGINT, 1);
+         Kill (Running_Compile (J).Pid, Hard_Kill => False);
       end loop;
 
       Finish_Program (Project_Tree, E_No_Compile);

@@ -1,3 +1,13 @@
+2015-10-26  Pascal Obry  <obry@adacore.com>
+
+	* s-os_lib.ads, s-os_lib.adb (Kill): New routine. This routine
+	makes visible support for killing processes in expect.c.
+	* expect.c (__gnat_kill): Removed from here.
+	* adaint.c (__gnat_kill): Added here to be usable in the compiler
+	(System.OS_Lib).
+	* make.adb (Sigint_Intercepted): Use the Kill routine from
+	System.OS_Lib.
+
 2015-10-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* einfo.ads, einfo.adb, exp_unst.adb (Needs_Typedef,
