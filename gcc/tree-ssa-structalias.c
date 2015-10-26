@@ -5857,6 +5857,11 @@ intra_create_variable_infos (struct function *fn)
      passed-by-reference argument.  */
   for (t = DECL_ARGUMENTS (fn->decl); t; t = DECL_CHAIN (t))
     {
+      bool restrict_pointer_p = (POINTER_TYPE_P (TREE_TYPE (t))
+				 && TYPE_RESTRICT (TREE_TYPE (t)));
+      bool recursive_restrict_p
+	= (restrict_pointer_p
+	   && !type_contains_placeholder_p (TREE_TYPE (TREE_TYPE (t))));
       varinfo_t p = lookup_vi_for_tree (t);
       if (p == NULL)
 	{
@@ -5868,9 +5873,7 @@ intra_create_variable_infos (struct function *fn)
 	 the pointed-to object.  Note that this ends up handling
 	 out-of-bound references conservatively by aggregating them
 	 in the first/last subfield of the object.  */
-      if (POINTER_TYPE_P (TREE_TYPE (t))
-	  && TYPE_RESTRICT (TREE_TYPE (t))
-	  && !type_contains_placeholder_p (TREE_TYPE (TREE_TYPE (t))))
+      if (recursive_restrict_p)
 	{
 	  varinfo_t vi;
 	  tree heapvar = build_fake_var_decl (TREE_TYPE (TREE_TYPE (t)));
@@ -5890,8 +5893,7 @@ intra_create_variable_infos (struct function *fn)
 	  continue;
 	}
 
-      if (POINTER_TYPE_P (TREE_TYPE (t))
-	  && TYPE_RESTRICT (TREE_TYPE (t)))
+      if (restrict_pointer_p)
 	make_constraint_from_global_restrict (p, "PARM_RESTRICT");
       else
 	{
