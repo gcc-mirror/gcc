@@ -3903,6 +3903,10 @@ package body Exp_Disp is
             end loop;
          end if;
 
+         if Generate_SCIL then
+            Nb_Predef_Prims := 0;
+         end if;
+
          --  Stage 2: Create the thunks associated with the predefined
          --  primitives and save their entity to fill the aggregate.
 
@@ -3924,6 +3928,7 @@ package body Exp_Disp is
                   if Is_Predefined_Dispatching_Operation (Prim)
                     and then not Is_Abstract_Subprogram (Prim)
                     and then not Is_Eliminated (Prim)
+                    and then not Generate_SCIL
                     and then not Present (Prim_Table
                                            (UI_To_Int (DT_Position (Prim))))
                   then
@@ -4620,6 +4625,10 @@ package body Exp_Disp is
       DT_Ptr  := Node (First_Elmt (Access_Disp_Table (Typ)));
       Nb_Prim := UI_To_Int (DT_Entry_Count (First_Tag_Component (Typ)));
 
+      if Generate_SCIL then
+         Nb_Prim := 0;
+      end if;
+
       Set_Is_Statically_Allocated (DT,  Is_Library_Level_Tagged_Type (Typ));
       Set_Is_Statically_Allocated (SSD, Is_Library_Level_Tagged_Type (Typ));
       Set_Is_Statically_Allocated (TSD, Is_Library_Level_Tagged_Type (Typ));
@@ -4685,6 +4694,14 @@ package body Exp_Disp is
                  Make_SCIL_Dispatch_Table_Tag_Init (Sloc (Last (Result)));
                Set_SCIL_Entity (New_Node, Typ);
                Set_SCIL_Node (Last (Result), New_Node);
+
+               goto Early_Exit_For_SCIL;
+
+               --  Gnat2scil has its own implementation of dispatch tables,
+               --  different than what is being implemented here. Generating
+               --  further dispatch table initialization code would just
+               --  cause gnat2scil to generate useless Scil which CodePeer
+               --  would waste time and space analyzing, so we skip it.
             end if;
 
          --  Generate:
@@ -4754,6 +4771,14 @@ package body Exp_Disp is
                  Make_SCIL_Dispatch_Table_Tag_Init (Sloc (Last (Result)));
                Set_SCIL_Entity (New_Node, Typ);
                Set_SCIL_Node (Last (Result), New_Node);
+
+               goto Early_Exit_For_SCIL;
+
+               --  Gnat2scil has its own implementation of dispatch tables,
+               --  different than what is being implemented here. Generating
+               --  further dispatch table initialization code would just
+               --  cause gnat2scil to generate useless Scil which CodePeer
+               --  would waste time and space analyzing, so we skip it.
             end if;
 
             Append_To (Result,
@@ -6213,6 +6238,8 @@ package body Exp_Disp is
          end;
       end if;
 
+      <<Early_Exit_For_SCIL>>
+
       --  Register the tagged type in the call graph nodes table
 
       Register_CG_Node (Typ);
@@ -7087,6 +7114,7 @@ package body Exp_Disp is
 
       if not RTE_Available (RE_Tag)
         or else Is_Eliminated (Ultimate_Alias (Prim))
+        or else Generate_SCIL
       then
          return L;
       end if;

@@ -1,3 +1,18 @@
+2015-10-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+
+2015-10-26  Steve Baird  <baird@adacore.com>
+
+	* exp_disp.adb: Omit most dispatch table initialization code
+	if Generate_SCIL is true.
+
+2015-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* sinfo.ads, exp_ch3.adb: Revert previous change.
+	(Build_Record_Init_Proc): Do not build an aggregate if
+	Modify_Tree_For_C.
+
 2015-10-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Find_Corresponding_Spec): Reject a subprogram
