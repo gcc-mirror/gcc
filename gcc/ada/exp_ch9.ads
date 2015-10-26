@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -266,12 +266,13 @@ package Exp_Ch9 is
    --  allows these two nodes to be found from the type, without benefit of
    --  further attributes, using Corresponding_Record.
 
-   procedure Expand_N_Requeue_Statement          (N : Node_Id);
-   procedure Expand_N_Selective_Accept           (N : Node_Id);
-   procedure Expand_N_Single_Task_Declaration    (N : Node_Id);
-   procedure Expand_N_Task_Body                  (N : Node_Id);
-   procedure Expand_N_Task_Type_Declaration      (N : Node_Id);
-   procedure Expand_N_Timed_Entry_Call           (N : Node_Id);
+   procedure Expand_N_Requeue_Statement            (N : Node_Id);
+   procedure Expand_N_Selective_Accept             (N : Node_Id);
+   procedure Expand_N_Single_Protected_Declaration (N : Node_Id);
+   procedure Expand_N_Single_Task_Declaration      (N : Node_Id);
+   procedure Expand_N_Task_Body                    (N : Node_Id);
+   procedure Expand_N_Task_Type_Declaration        (N : Node_Id);
+   procedure Expand_N_Timed_Entry_Call             (N : Node_Id);
 
    procedure Expand_Protected_Body_Declarations
      (N       : Node_Id;

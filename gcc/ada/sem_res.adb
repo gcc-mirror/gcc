@@ -6993,6 +6993,13 @@ package body Sem_Res is
                return True;
             end if;
 
+         --  The volatile object acts as the name of a renaming declaration
+
+         elsif Nkind (Context) = N_Object_Renaming_Declaration
+           and then Name (Context) = Obj_Ref
+         then
+            return True;
+
          --  The volatile object appears as an actual parameter in a call to an
          --  instance of Unchecked_Conversion whose result is renamed.
 

@@ -20121,7 +20121,8 @@ package body Sem_Util is
    --------------------------------
 
    function Yields_Synchronized_Object (Typ : Entity_Id) return Boolean is
-      Id : Entity_Id;
+      Has_Sync_Comp : Boolean := False;
+      Id            : Entity_Id;
 
    begin
       --  An array type yields a synchronized object if its component type
@@ -20154,10 +20155,15 @@ package body Sem_Util is
          Id := First_Entity (Typ);
          while Present (Id) loop
             if Comes_From_Source (Id) then
-               if Ekind (Id) = E_Component
-                 and then not Yields_Synchronized_Object (Etype (Id))
-               then
-                  return False;
+               if Ekind (Id) = E_Component then
+                  if Yields_Synchronized_Object (Etype (Id)) then
+                     Has_Sync_Comp := True;
+
+                  --  The component does not yield a synchronized object
+
+                  else
+                     return False;
+                  end if;
 
                elsif Ekind (Id) = E_Discriminant
                  and then Present (Expression (Parent (Id)))
@@ -20181,7 +20187,7 @@ package body Sem_Util is
          --  If we get here, then all discriminants lack default values and all
          --  components are of a type that yields a synchronized object.
 
-         return True;
+         return Has_Sync_Comp;
 
       --  A synchronized interface type yields a synchronized object by default
 

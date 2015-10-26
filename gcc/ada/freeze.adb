@@ -2806,6 +2806,15 @@ package body Freeze is
          then
             Set_Alignment (Arr, Alignment (Component_Type (Arr)));
          end if;
+
+         --  A Ghost type cannot have a component of protected or task type
+         --  (SPARK RM 6.9(19)).
+
+         if Is_Ghost_Entity (Arr) and then Is_Concurrent_Type (Ctyp) then
+            Error_Msg_N
+              ("ghost array type & cannot have concurrent component type",
+               Arr);
+         end if;
       end Freeze_Array_Type;
 
       -------------------------------
@@ -4341,6 +4350,25 @@ package body Freeze is
                   Next_Component (Comp);
                end loop;
             end if;
+
+            --  A Ghost type cannot have a component of protected or task type
+            --  (SPARK RM 6.9(19)).
+
+            if Is_Ghost_Entity (Rec) then
+               Comp := First_Component (Rec);
+               while Present (Comp) loop
+                  if Comes_From_Source (Comp)
+                    and then Is_Concurrent_Type (Etype (Comp))
+                  then
+                     Error_Msg_Name_1 := Chars (Rec);
+                     Error_Msg_N
+                       ("component & of ghost type % cannot be concurrent",
+                        Comp);
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end if;
          end if;
 
          --  Make sure that if we have an iterator aspect, then we have
@@ -5091,12 +5119,19 @@ package body Freeze is
             end if;
          end;
 
-         --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(8))
+         if Is_Ghost_Entity (E) then
 
-         if Is_Ghost_Entity (E)
-           and then Is_Effectively_Volatile (E)
-         then
-            Error_Msg_N ("ghost type & cannot be volatile", E);
+            --  A Ghost type cannot be concurrent (SPARK RM 6.9(19)). Verify
+            --  this legality rule first to five a finer-grained diagnostic.
+
+            if Is_Concurrent_Type (E) then
+               Error_Msg_N ("ghost type & cannot be concurrent", E);
+
+            --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(8))
+
+            elsif Is_Effectively_Volatile (E) then
+               Error_Msg_N ("ghost type & cannot be volatile", E);
+            end if;
          end if;
 
          --  Deal with special cases of freezing for subtype

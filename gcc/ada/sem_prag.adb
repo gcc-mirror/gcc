@@ -10068,6 +10068,11 @@ package body Sem_Prag is
                --  Opt is not a duplicate property and sets the flag Status.
                --  (SPARK RM 7.1.4(2))
 
+               procedure Check_Ghost_Synchronous;
+               --  Ensure that the abstract state is not subject to both Ghost
+               --  and Synchronous simple options. Emit an error if this is the
+               --  case.
+
                procedure Create_Abstract_State
                  (Nam     : Name_Id;
                   Decl    : Node_Id;
@@ -10320,6 +10325,20 @@ package body Sem_Prag is
                   Status := True;
                end Check_Duplicate_Property;
 
+               -----------------------------
+               -- Check_Ghost_Synchronous --
+               -----------------------------
+
+               procedure Check_Ghost_Synchronous is
+               begin
+                  --  A synchronized abstract state cannot be Ghost and vice
+                  --  versa (SPARK RM 6.9(19)).
+
+                  if Ghost_Seen and Synchronous_Seen then
+                     SPARK_Msg_N ("synchronized state cannot be ghost", State);
+                  end if;
+               end Check_Ghost_Synchronous;
+
                ---------------------------
                -- Create_Abstract_State --
                ---------------------------
@@ -10464,6 +10483,7 @@ package body Sem_Prag is
 
                         elsif Chars (Opt) = Name_Ghost then
                            Check_Duplicate_Option (Opt, Ghost_Seen);
+                           Check_Ghost_Synchronous;
 
                            if Present (State_Id) then
                               Set_Is_Ghost_Entity (State_Id);
@@ -10473,6 +10493,7 @@ package body Sem_Prag is
 
                         elsif Chars (Opt) = Name_Synchronous then
                            Check_Duplicate_Option (Opt, Synchronous_Seen);
+                           Check_Ghost_Synchronous;
 
                         --  Option Part_Of without an encapsulating state is
                         --  illegal (SPARK RM 7.1.4(9)).
