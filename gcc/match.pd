@@ -52,6 +52,30 @@ along with GCC; see the file COPYING3.  If not see
 #define DEFINE_MATH_FN(FN) \
   (define_operator_list FN BUILT_IN_##FN##F BUILT_IN_##FN BUILT_IN_##FN##L)
 
+/* Define operand lists for math rounding functions {,i,l,ll}FN,
+   where the versions prefixed with "i" return an int, those prefixed with
+   "l" return a long and those prefixed with "ll" return a long long.
+
+   Also define operand lists:
+
+     X<FN>F for all float functions, in the order i, l, ll
+     X<FN> for all double functions, in the same order
+     X<FN>L for all long double functions, in the same order.  */
+#define DEFINE_INT_AND_FLOAT_ROUND_FN(FN) \
+  DEFINE_MATH_FN (FN) \
+  DEFINE_MATH_FN (I##FN) \
+  DEFINE_MATH_FN (L##FN) \
+  DEFINE_MATH_FN (LL##FN) \
+  (define_operator_list X##FN##F BUILT_IN_I##FN##F \
+				 BUILT_IN_L##FN##F \
+				 BUILT_IN_LL##FN##F) \
+  (define_operator_list X##FN BUILT_IN_I##FN \
+			      BUILT_IN_L##FN \
+			      BUILT_IN_LL##FN) \
+  (define_operator_list X##FN##L BUILT_IN_I##FN##L \
+				 BUILT_IN_L##FN##L \
+				 BUILT_IN_LL##FN##L)
+
 DEFINE_MATH_FN (LOG)
 DEFINE_MATH_FN (EXP)
 DEFINE_MATH_FN (LOG2)
@@ -76,11 +100,12 @@ DEFINE_MATH_FN (HYPOT)
 DEFINE_MATH_FN (COPYSIGN)
 DEFINE_MATH_FN (CABS)
 DEFINE_MATH_FN (TRUNC)
-DEFINE_MATH_FN (FLOOR)
-DEFINE_MATH_FN (CEIL)
-DEFINE_MATH_FN (ROUND)
 DEFINE_MATH_FN (NEARBYINT)
-DEFINE_MATH_FN (RINT)
+
+DEFINE_INT_AND_FLOAT_ROUND_FN (FLOOR)
+DEFINE_INT_AND_FLOAT_ROUND_FN (CEIL)
+DEFINE_INT_AND_FLOAT_ROUND_FN (ROUND)
+DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
@@ -2654,6 +2679,65 @@ DEFINE_MATH_FN (RINT)
   (simplify
    (froms (convert float_value_p@0))
    (convert (tos @0)))))
+
+(for froms (XFLOORL XCEILL XROUNDL XRINTL)
+     tos (XFLOOR XCEIL XROUND XRINT)
+ /* llfloorl(extend(x)) -> llfloor(x), etc., if x is a double.  */
+ (if (optimize && canonicalize_math_p ())
+  (simplify
+   (froms (convert double_value_p@0))
+   (tos @0))))
+
+(for froms (XFLOORL XCEILL XROUNDL XRINTL
+	    XFLOOR XCEIL XROUND XRINT)
+     tos (XFLOORF XCEILF XROUNDF XRINTF)
+ /* llfloorl(extend(x)) and llfloor(extend(x)) -> llfloorf(x), etc.,
+    if x is a float.  */
+ (if (optimize && canonicalize_math_p ())
+  (simplify
+   (froms (convert float_value_p@0))
+   (tos @0))))
+
+(if (canonicalize_math_p ())
+ /* xfloor(x) -> fix_trunc(x) if x is nonnegative.  */
+ (for floors (IFLOOR LFLOOR LLFLOOR)
+  (simplify
+   (floors tree_expr_nonnegative_p@0)
+   (fix_trunc @0))))
+
+(if (canonicalize_math_p ())
+ /* xfloor(x) -> fix_trunc(x), etc., if x is integer valued.  */
+ (for fns (IFLOOR LFLOOR LLFLOOR
+	   ICEIL LCEIL LLCEIL
+	   IROUND LROUND LLROUND)
+  (simplify
+   (fns integer_valued_real_p@0)
+   (fix_trunc @0)))
+ (if (!flag_errno_math)
+  /* xrint(x) -> fix_trunc(x), etc., if x is integer valued.  */
+  (for rints (IRINT LRINT LLRINT)
+   (simplify
+    (rints integer_valued_real_p@0)
+    (fix_trunc @0)))))
+
+(if (canonicalize_math_p ())
+ (for ifn (IFLOOR ICEIL IROUND IRINT)
+      lfn (LFLOOR LCEIL LROUND LRINT)
+      llfn (LLFLOOR LLCEIL LLROUND LLRINT)
+  /* Canonicalize iround (x) to lround (x) on ILP32 targets where
+     sizeof (int) == sizeof (long).  */
+  (if (TYPE_PRECISION (integer_type_node)
+       == TYPE_PRECISION (long_integer_type_node))
+   (simplify
+    (ifn @0)
+    (lfn:long_integer_type_node @0)))
+  /* Canonicalize llround (x) to lround (x) on LP64 targets where
+     sizeof (long long) == sizeof (long).  */
+  (if (TYPE_PRECISION (long_long_integer_type_node)
+       == TYPE_PRECISION (long_integer_type_node))
+   (simplify
+    (llfn @0)
+    (lfn:long_integer_type_node @0)))))
 
 /* cproj(x) -> x if we're ignoring infinities.  */
 (simplify
