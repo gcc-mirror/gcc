@@ -4290,8 +4290,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       /* Get various versions of the type of the vector of indexes.  */
       tree index_vec_type = TREE_TYPE (induction_index);
       gcc_checking_assert (TYPE_UNSIGNED (index_vec_type));
-      tree index_vec_type_signed = signed_type_for (index_vec_type);
       tree index_scalar_type = TREE_TYPE (index_vec_type);
+      tree index_vec_cmp_type = build_same_sized_truth_vector_type
+	(index_vec_type);
 
       /* Get an unsigned integer version of the type of the data vector.  */
       int scalar_precision = GET_MODE_PRECISION (TYPE_MODE (scalar_type));
@@ -4336,7 +4337,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 
       /* Compare the max index vector to the vector of found indexes to find
 	 the position of the max value.  */
-      tree vec_compare = make_ssa_name (index_vec_type_signed);
+      tree vec_compare = make_ssa_name (index_vec_cmp_type);
       gimple *vec_compare_stmt = gimple_build_assign (vec_compare, EQ_EXPR,
 						      induction_index,
 						      max_index_vec);
