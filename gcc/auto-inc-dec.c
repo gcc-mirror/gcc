@@ -439,24 +439,6 @@ move_dead_notes (rtx_insn *to_insn, rtx_insn *from_insn, rtx pattern)
     }
 }
 
-
-/* Create a mov insn DEST_REG <- SRC_REG and insert it before
-   NEXT_INSN.  */
-
-static rtx_insn *
-insert_move_insn_before (rtx_insn *next_insn, rtx dest_reg, rtx src_reg)
-{
-  rtx_insn *insns;
-
-  start_sequence ();
-  emit_move_insn (dest_reg, src_reg);
-  insns = get_insns ();
-  end_sequence ();
-  emit_insn_before (insns, next_insn);
-  return insns;
-}
-
-
 /* Change mem_insn.mem_loc so that uses NEW_ADDR which has an
    increment of INC_REG.  To have reached this point, the change is a
    legitimate one from a dataflow point of view.  The only questions
@@ -490,7 +472,20 @@ attempt_change (rtx new_addr, rtx inc_reg)
 
   old_cost = (set_src_cost (mem, mode, speed)
 	      + set_rtx_cost (PATTERN (inc_insn.insn), speed));
+
   new_cost = set_src_cost (mem_tmp, mode, speed);
+
+  /* In the FORM_PRE_ADD and FORM_POST_ADD cases we emit an extra move
+     whose cost we should account for.  */
+  if (inc_insn.form == FORM_PRE_ADD
+      || inc_insn.form == FORM_POST_ADD)
+    {
+      start_sequence ();
+      emit_move_insn (inc_insn.reg_res, inc_insn.reg0);
+      mov_insn = get_insns ();
+      end_sequence ();
+      new_cost += seq_cost (mov_insn, speed);
+    }
 
   /* The first item of business is to see if this is profitable.  */
   if (old_cost < new_cost)
@@ -522,8 +517,8 @@ attempt_change (rtx new_addr, rtx inc_reg)
       /* Replace the addition with a move.  Do it at the location of
 	 the addition since the operand of the addition may change
 	 before the memory reference.  */
-      mov_insn = insert_move_insn_before (inc_insn.insn,
-					  inc_insn.reg_res, inc_insn.reg0);
+      gcc_assert (mov_insn);
+      emit_insn_before (mov_insn, inc_insn.insn);
       move_dead_notes (mov_insn, inc_insn.insn, inc_insn.reg0);
 
       regno = REGNO (inc_insn.reg_res);
@@ -548,8 +543,8 @@ attempt_change (rtx new_addr, rtx inc_reg)
       break;
 
     case FORM_POST_ADD:
-      mov_insn = insert_move_insn_before (mem_insn.insn,
-					  inc_insn.reg_res, inc_insn.reg0);
+      gcc_assert (mov_insn);
+      emit_insn_before (mov_insn, mem_insn.insn);
       move_dead_notes (mov_insn, inc_insn.insn, inc_insn.reg0);
 
       /* Do not move anything to the mov insn because the instruction

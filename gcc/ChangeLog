@@ -1,3 +1,9 @@
+2015-10-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* auto-inc-dec.c (insert_move_insn_before): Delete.
+	(attempt_change): Remember to cost the simple move in the
+	FORM_PRE_ADD and FORM_POST_ADD cases.
+
 2015-10-26  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/68091
