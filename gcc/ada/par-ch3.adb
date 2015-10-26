@@ -4560,6 +4560,11 @@ package body Ch3 is
                Scan; -- past RECORD
                TF_Semicolon;
 
+               --  This might happen because of misplaced aspect specification.
+               --  After discarding the misplaced aspects we can continue the
+               --  scan.
+
+               Done := False;
             else
                Restore_Scan_State (Scan_State); -- to END
                Done := True;

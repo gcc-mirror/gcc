@@ -275,9 +275,9 @@ package body Exp_Unst is
 
       --  First step, we must mark all nested subprograms that require a static
       --  link (activation record) because either they contain explicit uplevel
-      --  references (as indicated by ??? being set at this
-      --  point), or they make calls to other subprograms in the same nest that
-      --  require a static link (in which case we set this flag).
+      --  references (as indicated by Is_Uplevel_Referenced_Entity being set at
+      --  this point), or they make calls to other subprograms in the same nest
+      --  that require a static link (in which case we set this flag).
 
       --  This is a recursive definition, and to implement this, we have to
       --  build a call graph for the set of nested subprograms, and then go
@@ -684,7 +684,7 @@ package body Exp_Unst is
          Modified : Boolean;
 
       begin
-         Subps.Table (1).Reachable := True;
+         Subps.Table (Subps_First).Reachable := True;
 
          --  We use a simple minded algorithm as follows (obviously this can
          --  be done more efficiently, using one of the standard algorithms
@@ -822,13 +822,13 @@ package body Exp_Unst is
 
       --  Remove unreachable subprograms from Subps table. Note that we do
       --  this after eliminating entries from the other two tables, since
-      --  thos elimination steps depend on referencing the Subps table.
+      --  those elimination steps depend on referencing the Subps table.
 
       declare
          New_SI : SI_Type;
 
       begin
-         New_SI := 0;
+         New_SI := Subps_First - 1;
          for J in Subps_First .. Subps.Last loop
             declare
                STJ  : Subp_Entry renames Subps.Table (J);
