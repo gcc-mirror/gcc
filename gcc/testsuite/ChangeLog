@@ -1,3 +1,8 @@
+2015-10-26  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/36192
+	* gfortran.dg/pr36192.f90: New test.
+
 2015-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/atomic-noinline.c: Change test on __atomic_is_lock_free.
