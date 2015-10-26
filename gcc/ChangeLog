@@ -1,3 +1,7 @@
+2015-10-26  Doug Evans  <dje@google.com>
+
+	* config/linux.h (INCLUDE_DEFAULTS): Add INCLUDE_DEFAULTS_MUSL_LOCAL.
+
 2015-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* match.pd (fold_widened_comparison): Apply simplifications to all
