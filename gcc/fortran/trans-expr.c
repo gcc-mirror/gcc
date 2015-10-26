@@ -8672,12 +8672,17 @@ alloc_scalar_allocatable_for_assignment (stmtblock_t *block,
   tree jump_label1;
   tree jump_label2;
   gfc_se lse;
+  gfc_ref *ref;
 
   if (!expr1 || expr1->rank)
     return;
 
   if (!expr2 || expr2->rank)
     return;
+
+  for (ref = expr1->ref; ref; ref = ref->next)
+    if (ref->type == REF_SUBSTRING)
+      return;
 
   realloc_lhs_warning (expr2->ts.type, false, &expr2->where);
 

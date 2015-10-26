@@ -1,3 +1,13 @@
+2015-10-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline r228940:
+	PR fortran/67177
+	* gfortran.dg/move_alloc_15.f90: New test
+	* gfortran.dg/move_alloc_16.f90: New test
+
+	PR fortran/67977
+	* gfortran.dg/deferred_character_assignment_1.f90: New test
+
 2015-10-26  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
