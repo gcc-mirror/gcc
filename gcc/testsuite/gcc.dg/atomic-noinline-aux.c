@@ -64,7 +64,8 @@ __atomic_fetch_nand_1 (unsigned char *p, unsigned char v, int i)
   return ret;
 }
 
-int __atomic_is_lock_free (int i, void *p)
+bool __atomic_is_lock_free (int i, void *p)
 {
-  return 10;
+  *(short *)p = 1;
+  return true;
 }

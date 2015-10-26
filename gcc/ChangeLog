@@ -1,4 +1,9 @@
-2015-10-26  Simon Dardis <simon.dardis@imgtec.com>
+2015-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* match.pd (fold_widened_comparison): Apply simplifications to all
+	integral types.
+
+2015-10-26  Simon Dardis  <simon.dardis@imgtec.com>
 
 	* target.def (TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P): New hook.
 	* doc/tm.texi.in (TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P): Document.
@@ -9,9 +14,8 @@
 2015-10-26  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/68013
-	* tree-ssa-threadbackward.c
-	(fsm_find_control_statement_thread_paths): Make sure the first block
-	in the path is in VISITED_BBs.
+	* tree-ssa-threadbackward.c (fsm_find_control_statement_thread_paths):
+	Make sure the first block in the path is in VISITED_BBs.
 
 2015-10-26  Richard Biener  <rguenther@suse.de>
 	Dominik Vogt  <vogt@linux.vnet.ibm.com>

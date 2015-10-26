@@ -2099,12 +2099,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		  && (TYPE_UNSIGNED (TREE_TYPE (@00))
 		      == TYPE_UNSIGNED (TREE_TYPE (@10))))
 	      || (TREE_CODE (@10) == INTEGER_CST
-		  && (TREE_CODE (TREE_TYPE (@00)) == INTEGER_TYPE
-		      || TREE_CODE (TREE_TYPE (@00)) == BOOLEAN_TYPE)
+		  && INTEGRAL_TYPE_P (TREE_TYPE (@00))
 		  && int_fits_type_p (@10, TREE_TYPE (@00)))))
       (cmp @00 (convert @10))
       (if (TREE_CODE (@10) == INTEGER_CST
-	   && TREE_CODE (TREE_TYPE (@00)) == INTEGER_TYPE
+	   && INTEGRAL_TYPE_P (TREE_TYPE (@00))
 	   && !int_fits_type_p (@10, TREE_TYPE (@00)))
        (with
 	{
