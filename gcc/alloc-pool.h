@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define ALLOC_POOL_H
 
 #include "memory-block.h"
+#include "options.h"	    // for flag_checking
 
 extern void dump_alloc_pool_statistics (void);
 
@@ -275,7 +276,6 @@ base_pool_allocator <TBlockAllocator>::initialize ()
   m_elts_per_block = (TBlockAllocator::block_size - header_size) / size;
   gcc_checking_assert (m_elts_per_block != 0);
 
-#ifdef ENABLE_CHECKING
   /* Increase the last used ID and use it for this pool.
      ID == 0 is used for free elements of pool so skip it.  */
   last_id++;
@@ -283,7 +283,6 @@ base_pool_allocator <TBlockAllocator>::initialize ()
     last_id++;
 
   m_id = last_id;
-#endif
 }
 
 /* Free all memory allocated for the given memory pool.  */
@@ -387,10 +386,9 @@ base_pool_allocator <TBlockAllocator>::allocate ()
       block = m_virgin_free_list;
       header = (allocation_pool_list*) allocation_object::get_data (block);
       header->next = NULL;
-#ifdef ENABLE_CHECKING
+
       /* Mark the element to be free.  */
       ((allocation_object*) block)->id = 0;
-#endif
       VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (header,size));
       m_returned_free_list = header;
       m_virgin_free_list += m_elt_size;
@@ -404,10 +402,8 @@ base_pool_allocator <TBlockAllocator>::allocate ()
   m_returned_free_list = header->next;
   m_elts_free--;
 
-#ifdef ENABLE_CHECKING
   /* Set the ID for element.  */
   allocation_object::get_instance (header)->id = m_id;
-#endif
   VALGRIND_DISCARD (VALGRIND_MAKE_MEM_UNDEFINED (header, size));
 
   return (void *)(header);
@@ -418,26 +414,23 @@ template <typename TBlockAllocator>
 inline void
 base_pool_allocator <TBlockAllocator>::remove (void *object)
 {
-  gcc_checking_assert (m_initialized);
-
-  allocation_pool_list *header;
-  int size ATTRIBUTE_UNUSED;
-  size = m_elt_size - offsetof (allocation_object, u.data);
-
-#ifdef ENABLE_CHECKING
-  gcc_assert (object
+  if (flag_checking)
+    {
+      gcc_assert (m_initialized);
+      gcc_assert (object
 	      /* Check if we free more than we allocated, which is Bad (TM).  */
 	      && m_elts_free < m_elts_allocated
 	      /* Check whether the PTR was allocated from POOL.  */
 	      && m_id == allocation_object::get_instance (object)->id);
 
-  memset (object, 0xaf, size);
+      int size = m_elt_size - offsetof (allocation_object, u.data);
+      memset (object, 0xaf, size);
+    }
 
   /* Mark the element to be free.  */
   allocation_object::get_instance (object)->id = 0;
-#endif
 
-  header = (allocation_pool_list*) object;
+  allocation_pool_list *header = (allocation_pool_list*) object;
   header->next = m_returned_free_list;
   m_returned_free_list = header;
   VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (object, size));
