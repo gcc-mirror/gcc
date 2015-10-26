@@ -4833,7 +4833,7 @@ package body Sem_Ch6 is
 
                else
                   declare
-                     T : constant  Entity_Id := Find_Dispatching_Type (New_Id);
+                     T : constant Entity_Id := Find_Dispatching_Type (New_Id);
                   begin
                      if Is_Protected_Type (Corresponding_Concurrent_Type (T))
                      then

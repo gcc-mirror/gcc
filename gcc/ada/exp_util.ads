@@ -467,6 +467,13 @@ package Exp_Util is
    --  Ada 2005 (AI-251): Given a type T implementing the interface Iface,
    --  return the record component containing the tag of Iface.
 
+   function Find_Primitive_Operations
+     (T    : Entity_Id;
+      Name : Name_Id) return Node_Id;
+   --  Return a reference to a primitive operation with given name. If
+   --  operation is overloaded, the node carries the corresponding set
+   --  of overloaded interpretations.
+
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of a tagged type T with name Name.
    --  This function allows the use of a primitive operation which is not

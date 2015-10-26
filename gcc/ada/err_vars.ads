@@ -54,7 +54,7 @@ package Err_Vars is
    --  variables are not reset by calls to the error message routines, so the
    --  caller is responsible for resetting the default behavior after use.
 
-   Error_Msg_Qual_Level : Int := 0;
+   Error_Msg_Qual_Level : Nat := 0;
    --  Number of levels of qualification required for type name (see the
    --  description of the } insertion character. Note that this value does
    --  not get reset by any Error_Msg call, so the caller is responsible

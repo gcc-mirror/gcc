@@ -1036,7 +1036,7 @@ begin
       Original_Operating_Mode := Operating_Mode;
       Frontend;
 
-      --  Exit with errors if the main source could not be parsed.
+      --  Exit with errors if the main source could not be parsed
 
       if Sinput.Main_Source_File = No_Source_File then
          Errout.Finalize (Last_Call => True);

@@ -4635,7 +4635,7 @@ package body Sem_Prag is
          P : constant Node_Id := Parent (N);
 
       begin
-         --  Must be at in subprogram body
+         --  Must be in subprogram body
 
          if Nkind (P) /= N_Subprogram_Body then
             Error_Pragma ("% pragma allowed only in subprogram");

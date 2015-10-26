@@ -394,7 +394,13 @@ package body Sem_Ch5 is
 
       --  Cases where Lhs is not a variable
 
-      if not Is_Variable (Lhs) then
+      --  Cases where Lhs is not a variable. In an instance or an inlined body
+      --  no need for further check because assignment was legal in template.
+
+      if In_Inlined_Body then
+         null;
+
+      elsif not Is_Variable (Lhs) then
 
          --  Ada 2005 (AI-327): Check assignment to the attribute Priority of a
          --  protected object.
