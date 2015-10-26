@@ -15330,7 +15330,10 @@ package body Sem_Util is
             while Present (Elmt) loop
                Next_Elmt (Elmt);
                New_Itype := Node (Elmt);
-               Copy_Itype_With_Replacement (New_Itype);
+
+               if Is_Itype (New_Itype) then
+                  Copy_Itype_With_Replacement (New_Itype);
+               end if;
                Next_Elmt (Elmt);
             end loop;
          end;
@@ -16041,10 +16044,15 @@ package body Sem_Util is
             return Type_Access_Level (Scope (E)) + 1;
 
          else
-            --  Aliased formals take their access level from the point of call.
-            --  This is smaller than the level of the subprogram itself.
+            --  Aliased formals of functions take their access level from the
+            --  point of call, i.e. require a dynamic check. For static check
+            --  purposes, this is smaller than the level of the subprogram
+            --  itself. For procedures the aliased makes no difference.
 
-            if Is_Formal (E) and then Is_Aliased (E) then
+            if Is_Formal (E)
+               and then Is_Aliased (E)
+               and then Ekind (Scope (E)) = E_Function
+            then
                return Type_Access_Level (Etype (E));
 
             else

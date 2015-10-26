@@ -1,3 +1,18 @@
+2015-10-26  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb (Add_SPARK_Xrefs): Use character 'r' to
+	denote a reference to a constant which may have variable input, and
+	thus may be treated as a variable in GNATprove, instead of the
+	character 'c' used for constants.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Object_Access_Level): Only aliased formals of
+	functions have the accessibility level of the point of call;
+	aliased formals of procedures have the same level as unaliased
+	formals.
+	(New_Copy_Tree): Add guard on copying itypes. From code reading.
+
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* inline.adb: Minor reformatting.
