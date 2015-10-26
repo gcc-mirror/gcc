@@ -1,3 +1,10 @@
+2015-10-26  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* gfortran.dg/streamio_4.f90, gfortran.dg/streamio_5.f90,
+	* gfortran.dg/streamio_6.f90, gfortran.dg/streamio_7.f90,
+	* gfortran.dg/streamio_10.f90, gfortran.dg/streamio_12.f90: Add
+	suffix to the temporary filename to make it unique per testcase.
+
 2015-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/torture/builtin-minmax-1.c: Don't run at -O0.
