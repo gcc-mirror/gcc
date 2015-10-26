@@ -1,3 +1,15 @@
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb, sem_aux.adb, exp_attr.adb, sem_eval.adb: Minor
+	reformatting.
+	* sem_util.adb, sem_ch5.adb: Minor reformatting.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Add guard to prevent compiler
+	abort when handling a reference to a formal in an aspect of a
+	nested subprogram declaration as an uplevel reference.
+
 2015-10-26  Bob Duff  <duff@adacore.com>
 
 	* snames.ads-tmpl, aspects.adb, aspects.ads: Add the aspect and

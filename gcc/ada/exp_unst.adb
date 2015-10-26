@@ -496,7 +496,7 @@ package body Exp_Unst is
                --  We have a new uplevel referenced entity
 
                --  All we do at this stage is to add the uplevel reference to
-               --  the table. It's too earch to do anything else, since this
+               --  the table. It's too early to do anything else, since this
                --  uplevel reference may come from an unreachable subprogram
                --  in which case the entry will be deleted.
 
@@ -798,6 +798,13 @@ package body Exp_Unst is
                   S := URJ.Caller;
                   loop
                      S := Enclosing_Subprogram (S);
+
+                     --  if we are at the top level, as can happen with
+                     --  references to formals in aspects of nested subprogram
+                     --  declarations, there are no further subprograms to
+                     --  mark as requiring activation records.
+
+                     exit when No (S);
                      Subps.Table (Subp_Index (S)).Declares_AREC := True;
                      exit when S = URJ.Callee;
                   end loop;

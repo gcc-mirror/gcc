@@ -3761,9 +3761,6 @@ package body Sem_Eval is
       Source_Type : constant Entity_Id := Etype (Operand);
       Target_Type : constant Entity_Id := Etype (N);
 
-      Stat   : Boolean;
-      Fold   : Boolean;
-
       function To_Be_Treated_As_Integer (T : Entity_Id) return Boolean;
       --  Returns true if type T is an integer type, or if it is a fixed-point
       --  type to be treated as an integer (i.e. the flag Conversion_OK is set
@@ -3795,6 +3792,11 @@ package body Sem_Eval is
            Is_Floating_Point_Type (T)
              or else (Is_Fixed_Point_Type (T) and then not Conversion_OK (N));
       end To_Be_Treated_As_Real;
+
+      --  Local variables
+
+      Fold : Boolean;
+      Stat : Boolean;
 
    --  Start of processing for Eval_Type_Conversion
 
