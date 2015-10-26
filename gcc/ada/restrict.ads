@@ -546,7 +546,7 @@ package Restrict is
    function Cunit_Boolean_Restrictions_Save
      return Save_Cunit_Boolean_Restrictions;
    --  This function saves the compilation unit restriction settings, leaving
-   --  then unchanged. This is used e.g. at the start of processing a context
+   --  them unchanged. This is used e.g. at the start of processing a context
    --  clause, so that the main unit restrictions can be restored after all
    --  the with'ed units have been processed.
 

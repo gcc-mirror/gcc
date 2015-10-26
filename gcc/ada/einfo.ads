@@ -1566,7 +1566,7 @@ package Einfo is
 --       delayed and is one of the characteristics that may be inherited by
 --       types derived from this type if not overridden. If this flag is set,
 --       then types derived from this type have May_Inherit_Delayed_Rep_Aspects
---       set, signalling that Freeze.Inhert_Delayed_Rep_Aspects must be called
+--       set, signalling that Freeze.Inherit_Delayed_Rep_Aspects must be called
 --       at the freeze point of the derived type.
 
 --    Has_Discriminants (Flag5)

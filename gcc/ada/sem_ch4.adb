@@ -7215,20 +7215,17 @@ package body Sem_Ch4 is
 
       --  However, Reference is also a primitive operation of the type, and
       --  the inherited operation has a different signature. We retrieve the
-      --  right one from the list of primitive operations of the derived type.
+      --  right ones (the function may be overloaded) from the list of
+      --  primitive operations of the derived type.
 
       --  Note that predefined containers are typically all derived from one
       --  of the Controlled types. The code below is motivated by containers
       --  that are derived from other types with a Reference aspect.
 
-      --  Additional machinery may be needed for types that have several user-
-      --  defined Reference operations with different signatures ???
-
       elsif Is_Derived_Type (C_Type)
         and then Etype (First_Formal (Entity (Func_Name))) /= Etype (Prefix)
       then
-         Func := Find_Prim_Op (C_Type, Chars (Func_Name));
-         Func_Name := New_Occurrence_Of (Func, Loc);
+         Func_Name := Find_Primitive_Operations (C_Type, Chars (Func_Name));
       end if;
 
       Assoc := New_List (Relocate_Node (Prefix));

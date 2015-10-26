@@ -1,3 +1,31 @@
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* s-fileio.adb (Fopen_Mode): Use "r+" for Out_File/Stream_IO,
+	so the file won't be truncated on 'fopen', as required by
+	AI95-00283-1.
+
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* gnat1drv.adb, prj.adb, sem_ch6.adb, s-regpat.adb,
+	sem_prag.adb: Fix typos.
+	* einfo.ads, restrict.ads: Minor comment fixes.
+	* err_vars.ads, sem_util.adb, errout.ads: Code clean up.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Do not check that the
+	Left-hand side is legal in an inlined body, check is done on
+	the original template.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.ads, exp_util.adb (Find_Primitive_Operations): New
+	subprogram to retrieve by name the possibly overloaded set of
+	primitive operations of a type.
+	* sem_ch4.adb (Try_Container_Indexing): Use
+	Find_Primitive_Operations to handle overloaded indexing operations
+	of a derived type.
+
 2015-10-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* osint-c.ads: Minor comment update.

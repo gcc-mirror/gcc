@@ -474,7 +474,7 @@ package Errout is
    Error_Msg_Node_2 : Node_Id renames Err_Vars.Error_Msg_Node_2;
    --  Node_Id values for & insertion characters in message
 
-   Error_Msg_Qual_Level : Int renames Err_Vars.Error_Msg_Qual_Level;
+   Error_Msg_Qual_Level : Nat renames Err_Vars.Error_Msg_Qual_Level;
    --  Number of levels of qualification required for type name (see the
    --  description of the } insertion character). Note that this value does
    --  not get reset by any Error_Msg call, so the caller is responsible
