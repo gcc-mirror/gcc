@@ -11444,6 +11444,28 @@ package body Sem_Util is
       end if;
    end Is_Effectively_Volatile_Object;
 
+   -------------------
+   -- Is_Entry_Body --
+   -------------------
+
+   function Is_Entry_Body (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Ekind_In (Id, E_Entry, E_Entry_Family)
+          and then Nkind (Unit_Declaration_Node (Id)) = N_Entry_Body;
+   end Is_Entry_Body;
+
+   --------------------------
+   -- Is_Entry_Declaration --
+   --------------------------
+
+   function Is_Entry_Declaration (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Ekind_In (Id, E_Entry, E_Entry_Family)
+          and then Nkind (Unit_Declaration_Node (Id)) = N_Entry_Declaration;
+   end Is_Entry_Declaration;
+
    ----------------------------
    -- Is_Expression_Function --
    ----------------------------

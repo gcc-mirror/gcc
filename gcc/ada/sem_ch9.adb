@@ -1213,8 +1213,8 @@ package body Sem_Ch9 is
          Set_Ekind (Id, E_Entry);
       end if;
 
-      Set_Scope          (Id, Current_Scope);
       Set_Etype          (Id, Standard_Void_Type);
+      Set_Scope          (Id, Current_Scope);
       Set_Accept_Address (Id, New_Elmt_List);
 
       --  Set the SPARK_Mode from the current context (may be overwritten later
@@ -1222,6 +1222,12 @@ package body Sem_Ch9 is
 
       Set_SPARK_Pragma           (Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Id);
+
+      --  Analyze any aspect specifications that appear on the entry body
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
+      end if;
 
       E := First_Entity (P_Type);
       while Present (E) loop
@@ -1351,6 +1357,12 @@ package body Sem_Ch9 is
          Analyze_Declarations (Decls);
          Inspect_Deferred_Constant_Completion (Decls);
       end if;
+
+      --  Process the contract of the subprogram body after all declarations
+      --  have been analyzed. This ensures that any contract-related pragmas
+      --  are available through the N_Contract node of the body.
+
+      Analyze_Entry_Or_Subprogram_Body_Contract (Id);
 
       if Present (Stats) then
          Analyze (Stats);

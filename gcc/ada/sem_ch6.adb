@@ -1385,7 +1385,7 @@ package body Sem_Ch6 is
          --  have been analyzed. This ensures that any contract-related pragmas
          --  are available through the N_Contract node of the body.
 
-         Analyze_Subprogram_Body_Contract (Body_Id);
+         Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id);
 
          Analyze (Handled_Statement_Sequence (N));
          Save_Global_References (Original_Node (N));
@@ -3789,7 +3789,7 @@ package body Sem_Ch6 is
       --  after the declarations of the body have been processed as pragmas
       --  are now chained on the contract of the subprogram body.
 
-      Analyze_Subprogram_Body_Contract (Body_Id);
+      Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id);
 
       --  If SPARK_Mode for body is not On, disable frontend inlining for this
       --  subprogram in GNATprove mode, as its body should not be analyzed.

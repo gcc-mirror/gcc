@@ -1330,7 +1330,7 @@ package body Sem_Attr is
          if Nkind (Prag) = N_Aspect_Specification then
             Subp_Decl := Parent (Prag);
          else
-            Subp_Decl := Find_Related_Subprogram_Or_Body (Prag);
+            Subp_Decl := Find_Related_Declaration_Or_Body (Prag);
          end if;
 
          --  The aspect or pragma where the attribute resides should be

@@ -760,7 +760,7 @@ private
    --  for this file. This routine merely constructs the name.
 
    procedure Write_Info (Info : String);
-   --  Implement Write_Binder_Info, Write_Debug_Info, and Write_Library_Info
+   --  Implements Write_Binder_Info, Write_Debug_Info, and Write_Library_Info
 
    procedure Write_With_Check (A : Address; N  : Integer);
    --  Writes N bytes from buffer starting at address A to file whose FD is

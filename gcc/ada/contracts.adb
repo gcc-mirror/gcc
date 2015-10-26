@@ -121,7 +121,7 @@ package body Contracts is
          Set_Contract (Id, Items);
       end if;
 
-      --  Contract items related to constants. Applicable pragmas are:
+      --  Constants, the applicable pragmas are:
       --    Part_Of
 
       if Ekind (Id) = E_Constant then
@@ -134,24 +134,17 @@ package body Contracts is
             raise Program_Error;
          end if;
 
-      --  Contract items related to [generic] packages or instantiations. The
-      --  applicable pragmas are:
-      --    Abstract_States
-      --    Initial_Condition
-      --    Initializes
-      --    Part_Of (instantiation only)
+      --  Entry bodies, the applicable pragmas are:
+      --    Refined_Depends
+      --    Refined_Global
+      --    Refined_Post
 
-      elsif Ekind_In (Id, E_Generic_Package, E_Package) then
-         if Nam_In (Prag_Nam, Name_Abstract_State,
-                              Name_Initial_Condition,
-                              Name_Initializes)
-         then
+      elsif Is_Entry_Body (Id) then
+         if Nam_In (Prag_Nam, Name_Refined_Depends, Name_Refined_Global) then
             Add_Classification;
 
-         --  Indicator Part_Of must be associated with a package instantiation
-
-         elsif Prag_Nam = Name_Part_Of and then Is_Generic_Instance (Id) then
-            Add_Classification;
+         elsif Prag_Nam = Name_Refined_Post then
+            Add_Pre_Post_Condition;
 
          --  The pragma is not a proper contract item
 
@@ -159,21 +152,7 @@ package body Contracts is
             raise Program_Error;
          end if;
 
-      --  Contract items related to package bodies. The applicable pragmas are:
-      --    Refined_States
-
-      elsif Ekind (Id) = E_Package_Body then
-         if Prag_Nam = Name_Refined_State then
-            Add_Classification;
-
-         --  The pragma is not a proper contract item
-
-         else
-            raise Program_Error;
-         end if;
-
-      --  Contract items related to subprogram or entry declarations. The
-      --  applicable pragmas are:
+      --  Entry or subprogram declarations, the applicable pragmas are:
       --    Contract_Cases
       --    Depends
       --    Extensions_Visible
@@ -183,9 +162,11 @@ package body Contracts is
       --    Test_Case
       --    Volatile_Function
 
-      elsif Ekind_In (Id, E_Entry, E_Entry_Family)
-        or else Is_Generic_Subprogram (Id)
-        or else Is_Subprogram (Id)
+      elsif Is_Entry_Declaration (Id)
+        or else Ekind_In (Id, E_Function,
+                              E_Generic_Function,
+                              E_Generic_Procedure,
+                              E_Procedure)
       then
          if Nam_In (Prag_Nam, Name_Postcondition, Name_Precondition) then
             Add_Pre_Post_Condition;
@@ -210,7 +191,44 @@ package body Contracts is
             raise Program_Error;
          end if;
 
-      --  Contract items related to subprogram bodies. Applicable pragmas are:
+      --  Packages or instantiations, the applicable pragmas are:
+      --    Abstract_States
+      --    Initial_Condition
+      --    Initializes
+      --    Part_Of (instantiation only)
+
+      elsif Ekind_In (Id, E_Generic_Package, E_Package) then
+         if Nam_In (Prag_Nam, Name_Abstract_State,
+                              Name_Initial_Condition,
+                              Name_Initializes)
+         then
+            Add_Classification;
+
+         --  Indicator Part_Of must be associated with a package instantiation
+
+         elsif Prag_Nam = Name_Part_Of and then Is_Generic_Instance (Id) then
+            Add_Classification;
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
+
+      --  Package bodies, the applicable pragmas are:
+      --    Refined_States
+
+      elsif Ekind (Id) = E_Package_Body then
+         if Prag_Nam = Name_Refined_State then
+            Add_Classification;
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
+
+      --  Subprogram bodies, the applicable pragmas are:
       --    Postcondition
       --    Precondition
       --    Refined_Depends
@@ -233,7 +251,35 @@ package body Contracts is
             raise Program_Error;
          end if;
 
-      --  Contract items related to variables. Applicable pragmas are:
+      --  Task bodies, the applicable pragmas are:
+      --    Refined_Depends
+      --    Refined_Global
+
+      elsif Ekind (Id) = E_Task_Body then
+         if Nam_In (Prag_Nam, Name_Refined_Depends, Name_Refined_Global) then
+            Add_Classification;
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
+
+      --  Task units, the applicable pragmas are:
+      --    Depends
+      --    Global
+
+      elsif Ekind (Id) = E_Task_Type then
+         if Nam_In (Prag_Nam, Name_Depends, Name_Global) then
+            Add_Classification;
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
+
+      --  Variables, the applicable pragmas are:
       --    Async_Readers
       --    Async_Writers
       --    Constant_After_Elaboration
@@ -283,6 +329,231 @@ package body Contracts is
          Par := Parent (Par);
       end loop;
    end Analyze_Enclosing_Package_Body_Contract;
+
+   -----------------------------------------------
+   -- Analyze_Entry_Or_Subprogram_Body_Contract --
+   -----------------------------------------------
+
+   procedure Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id : Entity_Id) is
+      Body_Decl : constant Node_Id   := Unit_Declaration_Node (Body_Id);
+      Items     : constant Node_Id   := Contract (Body_Id);
+      Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Body_Decl);
+      Mode      : SPARK_Mode_Type;
+
+   begin
+      --  When a subprogram body declaration is illegal, its defining entity is
+      --  left unanalyzed. There is nothing left to do in this case because the
+      --  body lacks a contract, or even a proper Ekind.
+
+      if Ekind (Body_Id) = E_Void then
+         return;
+
+      --  Do not analyze the contract of an entry body unless annotating the
+      --  original tree. It is preferable to analyze the contract after the
+      --  entry body has been transformed into a subprogram body to properly
+      --  handle references to unpacked formals.
+
+      elsif Ekind_In (Body_Id, E_Entry, E_Entry_Family)
+        and then not ASIS_Mode
+        and then not GNATprove_Mode
+      then
+         return;
+
+      --  Do not analyze a contract multiple times
+
+      elsif Present (Items) then
+         if Analyzed (Items) then
+            return;
+         else
+            Set_Analyzed (Items);
+         end if;
+      end if;
+
+      --  Due to the timing of contract analysis, delayed pragmas may be
+      --  subject to the wrong SPARK_Mode, usually that of the enclosing
+      --  context. To remedy this, restore the original SPARK_Mode of the
+      --  related subprogram body.
+
+      Save_SPARK_Mode_And_Set (Body_Id, Mode);
+
+      --  Ensure that the contract cases or postconditions mention 'Result or
+      --  define a post-state.
+
+      Check_Result_And_Post_State (Body_Id);
+
+      --  A stand-alone nonvolatile function body cannot have an effectively
+      --  volatile formal parameter or return type (SPARK RM 7.1.3(9)). This
+      --  check is relevant only when SPARK_Mode is on, as it is not a standard
+      --  legality rule. The check is performed here because Volatile_Function
+      --  is processed after the analysis of the related subprogram body.
+
+      if SPARK_Mode = On
+        and then Ekind_In (Body_Id, E_Function, E_Generic_Function)
+        and then not Is_Volatile_Function (Body_Id)
+      then
+         Check_Nonvolatile_Function_Profile (Body_Id);
+      end if;
+
+      --  Restore the SPARK_Mode of the enclosing context after all delayed
+      --  pragmas have been analyzed.
+
+      Restore_SPARK_Mode (Mode);
+
+      --  Capture all global references in a generic subprogram body now that
+      --  the contract has been analyzed.
+
+      if Is_Generic_Declaration_Or_Body (Body_Decl) then
+         Save_Global_References_In_Contract
+           (Templ  => Original_Node (Body_Decl),
+            Gen_Id => Spec_Id);
+      end if;
+
+      --  Deal with preconditions, [refined] postconditions, Contract_Cases,
+      --  invariants and predicates associated with body and its spec. Do not
+      --  expand the contract of subprogram body stubs.
+
+      if Nkind (Body_Decl) = N_Subprogram_Body then
+         Expand_Subprogram_Contract (Body_Id);
+      end if;
+   end Analyze_Entry_Or_Subprogram_Body_Contract;
+
+   ------------------------------------------
+   -- Analyze_Entry_Or_Subprogram_Contract --
+   ------------------------------------------
+
+   procedure Analyze_Entry_Or_Subprogram_Contract (Subp_Id : Entity_Id) is
+      Items     : constant Node_Id := Contract (Subp_Id);
+      Subp_Decl : constant Node_Id := Unit_Declaration_Node (Subp_Id);
+      Depends   : Node_Id := Empty;
+      Global    : Node_Id := Empty;
+      Mode      : SPARK_Mode_Type;
+      Prag      : Node_Id;
+      Prag_Nam  : Name_Id;
+
+   begin
+      --  Do not analyze the contract of an entry declaration unless annotating
+      --  the original tree. It is preferable to analyze the contract after the
+      --  entry declaration has been transformed into a subprogram declaration
+      --  to properly handle references to unpacked formals.
+
+      if Ekind_In (Subp_Id, E_Entry, E_Entry_Family)
+        and then not ASIS_Mode
+        and then not GNATprove_Mode
+      then
+         return;
+
+      --  Do not analyze a contract multiple times
+
+      elsif Present (Items) then
+         if Analyzed (Items) then
+            return;
+         else
+            Set_Analyzed (Items);
+         end if;
+      end if;
+
+      --  Due to the timing of contract analysis, delayed pragmas may be
+      --  subject to the wrong SPARK_Mode, usually that of the enclosing
+      --  context. To remedy this, restore the original SPARK_Mode of the
+      --  related subprogram body.
+
+      Save_SPARK_Mode_And_Set (Subp_Id, Mode);
+
+      --  All subprograms carry a contract, but for some it is not significant
+      --  and should not be processed.
+
+      if not Has_Significant_Contract (Subp_Id) then
+         null;
+
+      elsif Present (Items) then
+
+         --  Analyze pre- and postconditions
+
+         Prag := Pre_Post_Conditions (Items);
+         while Present (Prag) loop
+            Analyze_Pre_Post_Condition_In_Decl_Part (Prag);
+            Prag := Next_Pragma (Prag);
+         end loop;
+
+         --  Analyze contract-cases and test-cases
+
+         Prag := Contract_Test_Cases (Items);
+         while Present (Prag) loop
+            Prag_Nam := Pragma_Name (Prag);
+
+            if Prag_Nam = Name_Contract_Cases then
+               Analyze_Contract_Cases_In_Decl_Part (Prag);
+            else
+               pragma Assert (Prag_Nam = Name_Test_Case);
+               Analyze_Test_Case_In_Decl_Part (Prag);
+            end if;
+
+            Prag := Next_Pragma (Prag);
+         end loop;
+
+         --  Analyze classification pragmas
+
+         Prag := Classifications (Items);
+         while Present (Prag) loop
+            Prag_Nam := Pragma_Name (Prag);
+
+            if Prag_Nam = Name_Depends then
+               Depends := Prag;
+
+            elsif Prag_Nam = Name_Global then
+               Global := Prag;
+            end if;
+
+            Prag := Next_Pragma (Prag);
+         end loop;
+
+         --  Analyze Global first, as Depends may mention items classified in
+         --  the global categorization.
+
+         if Present (Global) then
+            Analyze_Global_In_Decl_Part (Global);
+         end if;
+
+         --  Depends must be analyzed after Global in order to see the modes of
+         --  all global items.
+
+         if Present (Depends) then
+            Analyze_Depends_In_Decl_Part (Depends);
+         end if;
+
+         --  Ensure that the contract cases or postconditions mention 'Result
+         --  or define a post-state.
+
+         Check_Result_And_Post_State (Subp_Id);
+      end if;
+
+      --  A nonvolatile function cannot have an effectively volatile formal
+      --  parameter or return type (SPARK RM 7.1.3(9)). This check is relevant
+      --  only when SPARK_Mode is on, as it is not a standard legality rule.
+      --  The check is performed here because pragma Volatile_Function is
+      --  processed after the analysis of the related subprogram declaration.
+
+      if SPARK_Mode = On
+        and then Ekind_In (Subp_Id, E_Function, E_Generic_Function)
+        and then not Is_Volatile_Function (Subp_Id)
+      then
+         Check_Nonvolatile_Function_Profile (Subp_Id);
+      end if;
+
+      --  Restore the SPARK_Mode of the enclosing context after all delayed
+      --  pragmas have been analyzed.
+
+      Restore_SPARK_Mode (Mode);
+
+      --  Capture all global references in a generic subprogram now that the
+      --  contract has been analyzed.
+
+      if Is_Generic_Declaration_Or_Body (Subp_Decl) then
+         Save_Global_References_In_Contract
+           (Templ  => Original_Node (Subp_Decl),
+            Gen_Id => Subp_Id);
+      end if;
+   end Analyze_Entry_Or_Subprogram_Contract;
 
    -----------------------------
    -- Analyze_Object_Contract --
@@ -617,209 +888,6 @@ package body Contracts is
       end if;
    end Analyze_Package_Contract;
 
-   --------------------------------------
-   -- Analyze_Subprogram_Body_Contract --
-   --------------------------------------
-
-   procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id) is
-      Body_Decl : constant Node_Id   := Unit_Declaration_Node (Body_Id);
-      Items     : constant Node_Id   := Contract (Body_Id);
-      Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Body_Decl);
-      Mode      : SPARK_Mode_Type;
-
-   begin
-      --  When a subprogram body declaration is illegal, its defining entity is
-      --  left unanalyzed. There is nothing left to do in this case because the
-      --  body lacks a contract, or even a proper Ekind.
-
-      if Ekind (Body_Id) = E_Void then
-         return;
-
-      --  Do not analyze a contract multiple times
-
-      elsif Present (Items) then
-         if Analyzed (Items) then
-            return;
-         else
-            Set_Analyzed (Items);
-         end if;
-      end if;
-
-      --  Due to the timing of contract analysis, delayed pragmas may be
-      --  subject to the wrong SPARK_Mode, usually that of the enclosing
-      --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related subprogram body.
-
-      Save_SPARK_Mode_And_Set (Body_Id, Mode);
-
-      --  Ensure that the contract cases or postconditions mention 'Result or
-      --  define a post-state.
-
-      Check_Result_And_Post_State (Body_Id);
-
-      --  A stand-alone nonvolatile function body cannot have an effectively
-      --  volatile formal parameter or return type (SPARK RM 7.1.3(9)). This
-      --  check is relevant only when SPARK_Mode is on, as it is not a standard
-      --  legality rule. The check is performed here because Volatile_Function
-      --  is processed after the analysis of the related subprogram body.
-
-      if SPARK_Mode = On
-        and then Ekind_In (Body_Id, E_Function, E_Generic_Function)
-        and then not Is_Volatile_Function (Body_Id)
-      then
-         Check_Nonvolatile_Function_Profile (Body_Id);
-      end if;
-
-      --  Restore the SPARK_Mode of the enclosing context after all delayed
-      --  pragmas have been analyzed.
-
-      Restore_SPARK_Mode (Mode);
-
-      --  Capture all global references in a generic subprogram body now that
-      --  the contract has been analyzed.
-
-      if Is_Generic_Declaration_Or_Body (Body_Decl) then
-         Save_Global_References_In_Contract
-           (Templ  => Original_Node (Body_Decl),
-            Gen_Id => Spec_Id);
-      end if;
-
-      --  Deal with preconditions, [refined] postconditions, Contract_Cases,
-      --  invariants and predicates associated with body and its spec. Do not
-      --  expand the contract of subprogram body stubs.
-
-      if Nkind (Body_Decl) = N_Subprogram_Body then
-         Expand_Subprogram_Contract (Body_Id);
-      end if;
-   end Analyze_Subprogram_Body_Contract;
-
-   ---------------------------------
-   -- Analyze_Subprogram_Contract --
-   ---------------------------------
-
-   procedure Analyze_Subprogram_Contract (Subp_Id : Entity_Id) is
-      Items     : constant Node_Id := Contract (Subp_Id);
-      Subp_Decl : constant Node_Id := Unit_Declaration_Node (Subp_Id);
-      Depends   : Node_Id := Empty;
-      Global    : Node_Id := Empty;
-      Mode      : SPARK_Mode_Type;
-      Prag      : Node_Id;
-      Prag_Nam  : Name_Id;
-
-   begin
-      --  Do not analyze a contract multiple times
-
-      if Present (Items) then
-         if Analyzed (Items) then
-            return;
-         else
-            Set_Analyzed (Items);
-         end if;
-      end if;
-
-      --  Due to the timing of contract analysis, delayed pragmas may be
-      --  subject to the wrong SPARK_Mode, usually that of the enclosing
-      --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related subprogram body.
-
-      Save_SPARK_Mode_And_Set (Subp_Id, Mode);
-
-      --  All subprograms carry a contract, but for some it is not significant
-      --  and should not be processed.
-
-      if not Has_Significant_Contract (Subp_Id) then
-         null;
-
-      elsif Present (Items) then
-
-         --  Analyze pre- and postconditions
-
-         Prag := Pre_Post_Conditions (Items);
-         while Present (Prag) loop
-            Analyze_Pre_Post_Condition_In_Decl_Part (Prag);
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Analyze contract-cases and test-cases
-
-         Prag := Contract_Test_Cases (Items);
-         while Present (Prag) loop
-            Prag_Nam := Pragma_Name (Prag);
-
-            if Prag_Nam = Name_Contract_Cases then
-               Analyze_Contract_Cases_In_Decl_Part (Prag);
-            else
-               pragma Assert (Prag_Nam = Name_Test_Case);
-               Analyze_Test_Case_In_Decl_Part (Prag);
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Analyze classification pragmas
-
-         Prag := Classifications (Items);
-         while Present (Prag) loop
-            Prag_Nam := Pragma_Name (Prag);
-
-            if Prag_Nam = Name_Depends then
-               Depends := Prag;
-
-            elsif Prag_Nam = Name_Global then
-               Global := Prag;
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Analyze Global first, as Depends may mention items classified in
-         --  the global categorization.
-
-         if Present (Global) then
-            Analyze_Global_In_Decl_Part (Global);
-         end if;
-
-         --  Depends must be analyzed after Global in order to see the modes of
-         --  all global items.
-
-         if Present (Depends) then
-            Analyze_Depends_In_Decl_Part (Depends);
-         end if;
-
-         --  Ensure that the contract cases or postconditions mention 'Result
-         --  or define a post-state.
-
-         Check_Result_And_Post_State (Subp_Id);
-      end if;
-
-      --  A nonvolatile function cannot have an effectively volatile formal
-      --  parameter or return type (SPARK RM 7.1.3(9)). This check is relevant
-      --  only when SPARK_Mode is on, as it is not a standard legality rule.
-      --  The check is performed here because pragma Volatile_Function is
-      --  processed after the analysis of the related subprogram declaration.
-
-      if SPARK_Mode = On
-        and then Ekind_In (Subp_Id, E_Function, E_Generic_Function)
-        and then not Is_Volatile_Function (Subp_Id)
-      then
-         Check_Nonvolatile_Function_Profile (Subp_Id);
-      end if;
-
-      --  Restore the SPARK_Mode of the enclosing context after all delayed
-      --  pragmas have been analyzed.
-
-      Restore_SPARK_Mode (Mode);
-
-      --  Capture all global references in a generic subprogram now that the
-      --  contract has been analyzed.
-
-      if Is_Generic_Declaration_Or_Body (Subp_Decl) then
-         Save_Global_References_In_Contract
-           (Templ  => Original_Node (Subp_Decl),
-            Gen_Id => Subp_Id);
-      end if;
-   end Analyze_Subprogram_Contract;
-
    -------------------------------------------
    -- Analyze_Subprogram_Body_Stub_Contract --
    -------------------------------------------
@@ -838,7 +906,7 @@ package body Contracts is
       --    Refined_Global
 
       if Present (Spec_Id) then
-         Analyze_Subprogram_Body_Contract (Stub_Id);
+         Analyze_Entry_Or_Subprogram_Body_Contract (Stub_Id);
 
       --  The stub acts as its own spec, the applicable pragmas are:
       --    Contract_Cases
@@ -849,9 +917,60 @@ package body Contracts is
       --    Test_Case
 
       else
-         Analyze_Subprogram_Contract (Stub_Id);
+         Analyze_Entry_Or_Subprogram_Contract (Stub_Id);
       end if;
    end Analyze_Subprogram_Body_Stub_Contract;
+
+   ---------------------------
+   -- Analyze_Task_Contract --
+   ---------------------------
+
+   procedure Analyze_Task_Contract (Task_Id : Entity_Id) is
+      Items : constant Node_Id := Contract (Task_Id);
+      Mode  : SPARK_Mode_Type;
+      Prag  : Node_Id;
+
+   begin
+      --  Do not analyze a contract multiple times
+
+      if Present (Items) then
+         if Analyzed (Items) then
+            return;
+         else
+            Set_Analyzed (Items);
+         end if;
+      end if;
+
+      --  Due to the timing of contract analysis, delayed pragmas may be
+      --  subject to the wrong SPARK_Mode, usually that of the enclosing
+      --  context. To remedy this, restore the original SPARK_Mode of the
+      --  related subprogram body.
+
+      Save_SPARK_Mode_And_Set (Task_Id, Mode);
+
+      --  Analyze Global first, as Depends may mention items classified in the
+      --  global categorization.
+
+      Prag := Get_Pragma (Task_Id, Pragma_Global);
+
+      if Present (Prag) then
+         Analyze_Global_In_Decl_Part (Prag);
+      end if;
+
+      --  Depends must be analyzed after Global in order to see the modes of
+      --  all global items.
+
+      Prag := Get_Pragma (Task_Id, Pragma_Depends);
+
+      if Present (Prag) then
+         Analyze_Depends_In_Decl_Part (Prag);
+      end if;
+
+      --  Restore the SPARK_Mode of the enclosing context after all delayed
+      --  pragmas have been analyzed.
+
+      Restore_SPARK_Mode (Mode);
+   end Analyze_Task_Contract;
 
    -----------------------------
    -- Create_Generic_Contract --

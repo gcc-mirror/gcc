@@ -7105,7 +7105,7 @@ package body Exp_Ch6 is
       if Nkind (Parent (Subp)) = N_Procedure_Specification
         and then Null_Present (Parent (Subp))
       then
-         Analyze_Subprogram_Contract (Subp);
+         Analyze_Entry_Or_Subprogram_Contract (Subp);
       end if;
    end Freeze_Subprogram;
 

@@ -2505,16 +2505,23 @@ package body Sem_Ch3 is
                Analyze_Object_Contract (Defining_Entity (Decl));
 
             elsif Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
+                                  N_Entry_Declaration,
                                   N_Generic_Subprogram_Declaration,
                                   N_Subprogram_Declaration)
             then
-               Analyze_Subprogram_Contract (Defining_Entity (Decl));
+               Analyze_Entry_Or_Subprogram_Contract (Defining_Entity (Decl));
 
-            elsif Nkind (Decl) = N_Subprogram_Body then
-               Analyze_Subprogram_Body_Contract (Defining_Entity (Decl));
+            elsif Nkind_In (Decl, N_Entry_Body, N_Subprogram_Body) then
+               Analyze_Entry_Or_Subprogram_Body_Contract
+                 (Defining_Entity (Decl));
 
             elsif Nkind (Decl) = N_Subprogram_Body_Stub then
                Analyze_Subprogram_Body_Stub_Contract (Defining_Entity (Decl));
+
+            elsif Nkind_In (Decl, N_Single_Task_Declaration,
+                                  N_Task_Type_Declaration)
+            then
+               Analyze_Task_Contract (Defining_Entity (Decl));
             end if;
 
             Next (Decl);

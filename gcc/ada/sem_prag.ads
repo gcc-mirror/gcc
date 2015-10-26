@@ -327,22 +327,29 @@ package Sem_Prag is
    --  the pragma is illegal. If flag Do_Checks is set, the routine reports
    --  duplicate pragmas.
 
-   function Find_Related_Subprogram_Or_Body
+   function Find_Related_Declaration_Or_Body
      (Prag      : Node_Id;
       Do_Checks : Boolean := False) return Node_Id;
-   --  Subsidiary to the analysis of pragmas Contract_Cases, Depends, Global,
-   --  Refined_Depends, Refined_Global and Refined_Post and attribute 'Result.
-   --  Find the declaration of the related subprogram [body or stub] subject
-   --  to pragma Prag. If flag Do_Checks is set, the routine reports duplicate
-   --  pragmas and detects improper use of refinement pragmas in stand alone
-   --  expression functions. The returned value depends on the related pragma
-   --  as follows:
-   --    1) Pragmas Contract_Cases, Depends and Global yield the corresponding
-   --       N_Subprogram_Declaration node or if the pragma applies to a stand
-   --       alone body, the N_Subprogram_Body node or Empty if illegal.
-   --    2) Pragmas Refined_Depends, Refined_Global and Refined_Post yield
-   --       N_Subprogram_Body or N_Subprogram_Body_Stub nodes or Empty if
-   --       illegal.
+   --  Subsidiary to the analysis of pragmas
+   --    Contract_Cases
+   --    Depends
+   --    Extensions_Visible
+   --    Global
+   --    Post
+   --    Post_Class
+   --    Postcondition
+   --    Pre
+   --    Pre_Class
+   --    Precondition
+   --    Refined_Depends
+   --    Refined_Global
+   --    Refined_Post
+   --    Test_Case
+   --  as well as attributes 'Old and 'Result. Find the declaration of the
+   --  related entry, subprogram or task type [body] subject to pragma Prag.
+   --  If flag Do_Checks is set, the routine reports duplicate pragmas and
+   --  detects improper use of refinement pragmas in stand alone expression
+   --  functions.
 
    function Get_Argument
      (Prag       : Node_Id;

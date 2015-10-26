@@ -14796,10 +14796,9 @@ package body Sem_Ch12 is
             elsif Is_Generic_Contract_Pragma (Prag) and then Prag /= Templ then
                if Is_Package_Contract_Annotation (Prag) then
                   Context := Find_Related_Package_Or_Body (Prag);
-
                else
                   pragma Assert (Is_Subprogram_Contract_Annotation (Prag));
-                  Context := Find_Related_Subprogram_Or_Body (Prag);
+                  Context := Find_Related_Declaration_Or_Body (Prag);
                end if;
 
                --  The use of Original_Node accounts for the case when the

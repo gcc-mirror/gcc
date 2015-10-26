@@ -939,7 +939,7 @@ package body Sem_Ch10 is
       if Nkind_In (Unit_Node, N_Generic_Subprogram_Declaration,
                               N_Subprogram_Declaration)
       then
-         Analyze_Subprogram_Contract (Defining_Entity (Unit_Node));
+         Analyze_Entry_Or_Subprogram_Contract (Defining_Entity (Unit_Node));
       end if;
 
       --  Generate distribution stubs if requested and no error
