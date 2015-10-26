@@ -5857,7 +5857,12 @@ intra_create_variable_infos (struct function *fn)
      passed-by-reference argument.  */
   for (t = DECL_ARGUMENTS (fn->decl); t; t = DECL_CHAIN (t))
     {
-      varinfo_t p = get_vi_for_tree (t);
+      varinfo_t p = lookup_vi_for_tree (t);
+      if (p == NULL)
+	{
+	  p = create_variable_info_for_1 (t, alias_get_name (t));
+	  insert_vi_for_tree (t, p);
+	}
 
       /* For restrict qualified pointers build a representative for
 	 the pointed-to object.  Note that this ends up handling
