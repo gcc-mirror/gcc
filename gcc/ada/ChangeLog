@@ -1,3 +1,13 @@
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Find_Corresponding_Spec): Reject a subprogram
+	body whose signature is type conformant with a previous expression
+	function.
+
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* treepr.adb: Code clean up.
+
 2015-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* freeze.adb (Check_Component_Storage_Order): Skip a record

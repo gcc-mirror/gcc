@@ -7310,6 +7310,19 @@ package body Sem_Ch6 is
                then
                   return E;
 
+               --  Expression functions can be completions, but cannot be
+               --  completed by an explicit body.
+
+               elsif Comes_From_Source (E)
+                 and then Comes_From_Source (N)
+                 and then Nkind (N) = N_Subprogram_Body
+                 and then Nkind (Original_Node (Unit_Declaration_Node (E))) =
+                            N_Expression_Function
+               then
+                  Error_Msg_Sloc := Sloc (E);
+                  Error_Msg_N ("body conflicts with expression function#", N);
+                  return Empty;
+
                elsif not Has_Completion (E) then
                   if Nkind (N) /= N_Subprogram_Body_Stub then
                      Set_Corresponding_Spec (N, E);
