@@ -1,5 +1,8 @@
 2015-10-26  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/abort-1.c: Print to stderr.
+	* testsuite/libgomp.oacc-c-c++-common/abort-3.c: Likewise.
+
 	* testsuite/libgomp.oacc-c-c++-common/lib-1.c: Remove explicit
 	acc_device_nvidia usage.
 	* testsuite/libgomp.oacc-c-c++-common/lib-10.c: Likewise.
