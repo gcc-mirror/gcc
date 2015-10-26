@@ -1,5 +1,11 @@
 2015-10-26  Tom de Vries  <tom@codesourcery.com>
 
+	* tree-ssa-structalias.c (make_restrict_var_constraints): New function,
+	factored out of ...
+	(intra_create_variable_infos): ... here.
+
+2015-10-26  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-ssa-structalias.c (intra_create_variable_infos): Add
 	restrict_pointer_p and recursive_restrict_p variables.
 
