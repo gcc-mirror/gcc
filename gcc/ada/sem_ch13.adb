@@ -3971,6 +3971,10 @@ package body Sem_Ch13 is
       procedure Check_Indexing_Functions is
          Indexing_Found : Boolean := False;
 
+         procedure Check_Inherited_Indexing;
+         --  For a derived type, check that no indexing aspect is specified
+         --  for the type if it is also inherited
+
          procedure Check_One_Function (Subp : Entity_Id);
          --  Check one possible interpretation. Sets Indexing_Found True if a
          --  legal indexing function is found.
@@ -3978,6 +3982,46 @@ package body Sem_Ch13 is
          procedure Illegal_Indexing (Msg : String);
          --  Diagnose illegal indexing function if not overloaded. In the
          --  overloaded case indicate that no legal interpretation  exists.
+
+         ------------------------------
+         -- Check_Inherited_Indexing --
+         ------------------------------
+
+         procedure Check_Inherited_Indexing is
+            Inherited : Node_Id;
+
+         begin
+            if Attr = Name_Constant_Indexing then
+               Inherited :=
+                 Find_Aspect (Etype (Ent), Aspect_Constant_Indexing);
+            else pragma Assert (Attr = Name_Variable_Indexing);
+               Inherited :=
+                  Find_Aspect (Etype (Ent), Aspect_Variable_Indexing);
+            end if;
+
+            if Present (Inherited) then
+               if Debug_Flag_Dot_XX then
+                  null;
+
+               --  OK if current attribute_definition_clause is expansion
+               --  of inherited aspect.
+
+               elsif Aspect_Rep_Item (Inherited) = N then
+                  null;
+
+               --  Indicate the operation that must be overridden, rather
+               --  than redefining the indexing aspect
+
+               else
+                  Illegal_Indexing
+                    ("indexing function already inherited "
+                     & "from parent type");
+                  Error_Msg_NE
+                    ("!override & instead",
+                     N, Entity (Expression (Inherited)));
+               end if;
+            end if;
+         end Check_Inherited_Indexing;
 
          ------------------------
          -- Check_One_Function --
@@ -4013,40 +4057,8 @@ package body Sem_Ch13 is
                  ("indexing function must have at least two parameters");
                return;
 
-            --  For a derived type, check that no indexing aspect is specified
-            --  for the type if it is also inherited
-
             elsif Is_Derived_Type (Ent) then
-               declare
-                  Inherited : Node_Id;
-
-               begin
-                  if Attr = Name_Constant_Indexing then
-                     Inherited :=
-                       Find_Aspect (Etype (Ent), Aspect_Constant_Indexing);
-                  else pragma Assert (Attr = Name_Variable_Indexing);
-                     Inherited :=
-                        Find_Aspect (Etype (Ent), Aspect_Variable_Indexing);
-                  end if;
-
-                  if Present (Inherited) then
-                     if Debug_Flag_Dot_XX then
-                        null;
-
-                     --  Indicate the operation that must be overridden, rather
-                     --  than redefining the indexing aspect
-
-                     else
-                        Illegal_Indexing
-                          ("indexing function already inherited "
-                           & "from parent type");
-                        Error_Msg_NE
-                          ("!override & instead",
-                           N, Entity (Expression (Inherited)));
-                        return;
-                     end if;
-                  end if;
-               end;
+               Check_Inherited_Indexing;
             end if;
 
             if not Check_Primitive_Function (Subp) then
@@ -4165,7 +4177,7 @@ package body Sem_Ch13 is
 
       begin
          if In_Instance then
-            return;
+            Check_Inherited_Indexing;
          end if;
 
          Analyze (Expr);

@@ -2587,7 +2587,6 @@ package body Sem_Ch12 is
         or else Nkind (First (Generic_Associations (N))) = N_Others_Choice
       then
          Associations := False;
-         Set_Box_Present (N);
       end if;
 
       --  If there are no generic associations, the generic parameters appear

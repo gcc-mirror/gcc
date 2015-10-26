@@ -1,3 +1,12 @@
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Formal_Package_Declaration): Code clean up.
+	* sem_ch13.adb (Check_Inherited_Indexing): New inner procedure
+	of Check_Indexing_Functions, to verify that a derived type with an
+	Indexing aspect is not inheriting such an aspect from an ancestor.
+	(Check_Indexing_Functions): Call Check_Inherited_Indexing within
+	an instance.
+
 2015-10-26  Gary Dismukes  <dismukes@adacore.com>
 
 	* a-reatim.adb, contracts.adb, contracts.ads: Minor reformatting and
