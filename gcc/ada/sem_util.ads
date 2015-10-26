@@ -85,6 +85,19 @@ package Sem_Util is
    --  Otherwise Uint_0 is returned, indicating that the alignment of the
    --  entity is not yet known to the compiler.
 
+   function All_Composite_Constraints_Static (Constr : Node_Id) return Boolean;
+   --  Used to implement pragma Restrictions (No_Dynamic_Sized_Objects).
+   --  Given a constraint or subtree of a constraint on a composite
+   --  subtype/object, returns True if there are no nonstatic constraints,
+   --  which might cause objects to be created with dynamic size.
+   --  Called for subtype declarations (including implicit ones created for
+   --  subtype indications in object declarations, as well as discriminated
+   --  record aggregate cases). For record aggregates, only records containing
+   --  discriminant-dependent arrays matter, because the discriminants must be
+   --  static when governing a variant part. Access discriminants are
+   --  irrelevant. Also called for array aggregates, but only named notation,
+   --  because those are the only dynamic cases.
+
    procedure Append_Inherited_Subprogram (S : Entity_Id);
    --  If the parent of the operation is declared in the visible part of
    --  the current scope, the inherited operation is visible even though the

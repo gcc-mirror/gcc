@@ -171,6 +171,7 @@ package System.Rident is
       --  units, it applies to all units in this extended main source.
 
       Immediate_Reclamation,                     -- (RM H.4(10))
+      No_Dynamic_Sized_Objects,                  -- GNAT
       No_Implementation_Aspect_Specifications,   -- Ada 2012 AI-241
       No_Implementation_Attributes,              -- Ada 2005 AI-257
       No_Implementation_Identifiers,             -- Ada 2012 AI-246

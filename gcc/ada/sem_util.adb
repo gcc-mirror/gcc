@@ -434,6 +434,77 @@ package body Sem_Util is
       return Alignment (E) * System_Storage_Unit;
    end Alignment_In_Bits;
 
+   --------------------------------------
+   -- All_Composite_Constraints_Static --
+   --------------------------------------
+
+   function All_Composite_Constraints_Static
+     (Constr : Node_Id) return Boolean
+   is
+   begin
+      if No (Constr) or else Error_Posted (Constr) then
+         return True;
+      end if;
+
+      case Nkind (Constr) is
+         when N_Subexpr =>
+            if Nkind (Constr) in N_Has_Entity
+              and then Present (Entity (Constr))
+            then
+               if Is_Type (Entity (Constr)) then
+                  return not Is_Discrete_Type (Entity (Constr))
+                    or else Is_OK_Static_Subtype (Entity (Constr));
+               end if;
+
+            elsif Nkind (Constr) = N_Range then
+               return Is_OK_Static_Expression (Low_Bound (Constr))
+                 and then Is_OK_Static_Expression (High_Bound (Constr));
+
+            elsif Nkind (Constr) = N_Attribute_Reference
+              and then Attribute_Name (Constr) = Name_Range
+            then
+               return Is_OK_Static_Expression
+                   (Type_Low_Bound  (Etype (Prefix (Constr))))
+                 and then Is_OK_Static_Expression
+                   (Type_High_Bound (Etype (Prefix (Constr))));
+            end if;
+
+            return not Present (Etype (Constr)) -- previous error
+              or else not Is_Discrete_Type (Etype (Constr))
+              or else Is_OK_Static_Expression (Constr);
+
+         when N_Discriminant_Association =>
+            return All_Composite_Constraints_Static (Expression (Constr));
+
+         when N_Range_Constraint =>
+            return All_Composite_Constraints_Static
+              (Range_Expression (Constr));
+
+         when N_Index_Or_Discriminant_Constraint =>
+            declare
+               One_Cstr : Entity_Id;
+            begin
+               One_Cstr := First (Constraints (Constr));
+               while Present (One_Cstr) loop
+                  if not All_Composite_Constraints_Static (One_Cstr) then
+                     return False;
+                  end if;
+
+                  Next (One_Cstr);
+               end loop;
+            end;
+
+            return True;
+
+         when N_Subtype_Indication =>
+            return All_Composite_Constraints_Static (Subtype_Mark (Constr))
+              and then All_Composite_Constraints_Static (Constraint (Constr));
+
+         when others =>
+            raise Program_Error;
+      end case;
+   end All_Composite_Constraints_Static;
+
    ---------------------------------
    -- Append_Inherited_Subprogram --
    ---------------------------------

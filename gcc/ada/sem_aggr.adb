@@ -42,6 +42,7 @@ with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
@@ -1965,6 +1966,14 @@ package body Sem_Aggr is
                        ("dynamic or empty choice in aggregate "
                         & "must be the only choice", Choice);
                      return Failure;
+                  end if;
+
+                  if not (All_Composite_Constraints_Static (Low)
+                            and then All_Composite_Constraints_Static (High)
+                            and then All_Composite_Constraints_Static (S_Low)
+                            and then All_Composite_Constraints_Static (S_High))
+                  then
+                     Check_Restriction (No_Dynamic_Sized_Objects, Choice);
                   end if;
 
                   Nb_Discrete_Choices := Nb_Discrete_Choices + 1;
