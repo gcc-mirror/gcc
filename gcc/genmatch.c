@@ -3163,7 +3163,11 @@ dt_simplify::gen (FILE *f, int indent, bool gimple)
 		      s->capture_max + 1, indexes[0]->get_name (opname));
 
       for (int i = 1; i <= s->capture_max; ++i)
-	fprintf (f, ", %s", indexes[i]->get_name (opname));
+	{
+	  if (!indexes[i])
+	    break;
+	  fprintf (f, ", %s", indexes[i]->get_name (opname));
+	}
       fprintf (f, " };\n");
     }
 
@@ -3831,7 +3835,7 @@ parser::parse_expr ()
 
   if (token->type == CPP_ATSIGN
       && !(token->flags & PREV_WHITE))
-    op = parse_capture (e, !parsing_match_operand);
+    op = parse_capture (e, false);
   else if (force_capture)
     {
       unsigned num = capture_ids->elements ();
