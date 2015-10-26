@@ -8110,6 +8110,7 @@ package body Sem_Res is
       end if;
 
       Analyze_Dimension (N);
+
       --  Note: No Eval processing is required for an explicit dereference,
       --  because such a name can never be static.
 
@@ -8166,6 +8167,7 @@ package body Sem_Res is
             Indexes := Parameter_Associations (Call);
             Pref := Remove_Head (Indexes);
             Set_Expressions (N, Indexes);
+            Set_Generalized_Indexing (N, Empty);
             Set_Prefix (N, Pref);
          end if;
 

@@ -1,3 +1,23 @@
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Generalized_Indexing): In ASIS mode, when
+	restoring original node, remove Generalized_Indexing operation
+	so that it is recreated during re- analysis.
+
+2015-10-26  Javier Miranda  <miranda@adacore.com>
+
+	* exp_unst.adb: (Unnest_Subprogram):
+	Replace absolute references to 1 and 0 by their counterpart
+	relative references through Subps_First.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch3.adb (P_Declarative_Items): In case of misplaced
+	aspect specifications, ensure that flag Done is properly set to
+	continue parse.
+	* sem_prag.adb, sem_prag.ads: Remove Build_Generic_Class_Condition,
+	unused.
+
 2015-10-26  Emmanuel Briot  <briot@adacore.com>
 
 	* s-os_lib.adb (Argument_String_To_List): Remove backslashes in
