@@ -1,3 +1,8 @@
+2015-10-26  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/68013
+	* gcc.c-torture/compile/pr68013.c: New test.
+
 2015-10-26  Richard Biener  <rguenther@suse.de>
 	Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
