@@ -661,10 +661,13 @@ package body Sem_Ch6 is
                         Obj := Prefix (Obj);
                      end loop;
 
+                     --  No check needed for an aliased formal.
+                     --  A run-time check may still be needed ???
+
                      if Is_Entity_Name (Obj)
                        and then Is_Formal (Entity (Obj))
+                       and then Is_Aliased (Entity (Obj))
                      then
-                        --  A run-time check may be needed ???
                         null;
 
                      elsif Object_Access_Level (Obj) >

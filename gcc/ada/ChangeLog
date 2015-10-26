@@ -1,3 +1,22 @@
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Is_Suspension_Object): Ensure that the scope of "Ada"
+	is Standard_Standard.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Is_OK_Volatile_Context): A subprogram call is an OK
+	context for a reference to an effectively volatile object.
+	(Resolve_Actuals): Add references to SPARK RM.
+	(Within_Procedure_Call): Removed.
+	(Within_Subprogram_Call): New routine.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Aggregate_Accessibility): A reference to a
+	formal parameter in an aggregate does not need an accesibility
+	check only if the formal is aliased.
+
 2015-10-26  Claire Dross  <dross@adacore.com>
 
 	* sem_aux.ads (Number_Components): Can return 0 when called on
