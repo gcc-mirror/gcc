@@ -1,3 +1,9 @@
+2015-10-26  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* alloc-pool.h (base_pool_allocator::initialize, ::allocate): Remove
+	conditional compilation.
+	(base_pool_allocator::remove): Use flag_checking.
+
 2015-10-25  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/som.h (EH_FRAME_THROUGH_COLLECT2): Define.
