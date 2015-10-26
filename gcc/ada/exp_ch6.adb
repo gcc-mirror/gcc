@@ -674,6 +674,131 @@ package body Exp_Ch6 is
       return Extra_Formal;
    end Build_In_Place_Formal;
 
+   -------------------------------
+   -- Build_Procedure_Body_Form --
+   -------------------------------
+
+   function Build_Procedure_Body_Form
+     (Func_Id   : Entity_Id;
+      Func_Body : Node_Id) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (Func_Body);
+
+      Proc_Decl : constant Node_Id   :=
+                    Next (Unit_Declaration_Node (Func_Id));
+      --  It is assumed that the next node following the declaration of the
+      --  corresponding subprogram spec is the declaration of the procedure
+      --  form.
+
+      Proc_Id : constant Entity_Id := Defining_Entity (Proc_Decl);
+
+      procedure Replace_Returns (Param_Id : Entity_Id; Stmts : List_Id);
+      --  Replace each return statement found in the list Stmts with an
+      --  assignment of the return expression to parameter Param_Id.
+
+      ---------------------
+      -- Replace_Returns --
+      ---------------------
+
+      procedure Replace_Returns (Param_Id : Entity_Id; Stmts : List_Id) is
+         Stmt : Node_Id;
+
+      begin
+         Stmt := First (Stmts);
+         while Present (Stmt) loop
+            if Nkind (Stmt) = N_Block_Statement then
+               Replace_Returns (Param_Id, Statements (Stmt));
+
+            elsif Nkind (Stmt) = N_Case_Statement then
+               declare
+                  Alt : Node_Id;
+               begin
+                  Alt := First (Alternatives (Stmt));
+                  while Present (Alt) loop
+                     Replace_Returns (Param_Id, Statements (Alt));
+                     Next (Alt);
+                  end loop;
+               end;
+
+            elsif Nkind (Stmt) = N_If_Statement then
+               Replace_Returns (Param_Id, Then_Statements (Stmt));
+               Replace_Returns (Param_Id, Else_Statements (Stmt));
+
+               declare
+                  Part : Node_Id;
+               begin
+                  Part := First (Elsif_Parts (Stmt));
+                  while Present (Part) loop
+                     Replace_Returns (Part, Then_Statements (Part));
+                     Next (Part);
+                  end loop;
+               end;
+
+            elsif Nkind (Stmt) = N_Loop_Statement then
+               Replace_Returns (Param_Id, Statements (Stmt));
+
+            elsif Nkind (Stmt) = N_Simple_Return_Statement then
+
+               --  Generate:
+               --    Param := Expr;
+               --    return;
+
+               Rewrite (Stmt,
+                 Make_Assignment_Statement (Sloc (Stmt),
+                   Name       => New_Occurrence_Of (Param_Id, Loc),
+                   Expression => Relocate_Node (Expression (Stmt))));
+
+               Insert_After (Stmt, Make_Simple_Return_Statement (Loc));
+
+               --  Skip the added return
+
+               Next (Stmt);
+            end if;
+
+            Next (Stmt);
+         end loop;
+      end Replace_Returns;
+
+      --  Local variables
+
+      Stmts    : List_Id;
+      New_Body : Node_Id;
+
+   --  Start of processing for Build_Procedure_Body_Form
+
+   begin
+      --  This routine replaces the original function body:
+
+      --    function F (...) return Array_Typ is
+      --    begin
+      --       ...
+      --       return Something;
+      --    end F;
+
+      --    with the following:
+
+      --    procedure P (..., Result : out Array_Typ) is
+      --    begin
+      --       ...
+      --       Result := Something;
+      --    end P;
+
+      Stmts :=
+        Statements (Handled_Statement_Sequence (Func_Body));
+      Replace_Returns (Last_Entity (Proc_Id), Stmts);
+
+      New_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Copy_Subprogram_Spec (Specification (Proc_Decl)),
+          Declarations               => Declarations (Func_Body),
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => Stmts));
+
+      return New_Body;
+   end Build_Procedure_Body_Form;
+
    --------------------------------
    -- Check_Overriding_Operation --
    --------------------------------
@@ -4959,11 +5084,6 @@ package body Exp_Ch6 is
       --  returns, since they get eliminated anyway later on. Spec_Id denotes
       --  the corresponding spec of the subprogram body.
 
-      procedure Build_Procedure_Body_Form (Func_Id : Entity_Id);
-      --  Create a procedure body which emulates the behavior of function
-      --  Func_Id. This body replaces the original function body, which is
-      --  not needed for the C program.
-
       ----------------
       -- Add_Return --
       ----------------
@@ -5036,125 +5156,7 @@ package body Exp_Ch6 is
          end if;
       end Add_Return;
 
-      -------------------------------
-      -- Build_Procedure_Body_Form --
-      -------------------------------
-
-      procedure Build_Procedure_Body_Form (Func_Id : Entity_Id) is
-         Proc_Decl : constant Node_Id   :=
-                       Next (Unit_Declaration_Node (Func_Id));
-         --  It is assumed that the next node following the declaration of the
-         --  corresponding subprogram spec is the declaration of the procedure
-         --  form.
-
-         Proc_Id : constant Entity_Id := Defining_Entity (Proc_Decl);
-
-         procedure Replace_Returns (Param_Id : Entity_Id; Stmts : List_Id);
-         --  Replace each return statement found in the list Stmts with an
-         --  assignment of the return expression to parameter Param_Id.
-
-         ---------------------
-         -- Replace_Returns --
-         ---------------------
-
-         procedure Replace_Returns (Param_Id : Entity_Id; Stmts : List_Id) is
-            Stmt : Node_Id;
-
-         begin
-            Stmt := First (Stmts);
-            while Present (Stmt) loop
-               if Nkind (Stmt) = N_Block_Statement then
-                  Replace_Returns (Param_Id, Statements (Stmt));
-
-               elsif Nkind (Stmt) = N_Case_Statement then
-                  declare
-                     Alt : Node_Id;
-                  begin
-                     Alt := First (Alternatives (Stmt));
-                     while Present (Alt) loop
-                        Replace_Returns (Param_Id, Statements (Alt));
-                        Next (Alt);
-                     end loop;
-                  end;
-
-               elsif Nkind (Stmt) = N_If_Statement then
-                  Replace_Returns (Param_Id, Then_Statements (Stmt));
-                  Replace_Returns (Param_Id, Else_Statements (Stmt));
-
-                  declare
-                     Part : Node_Id;
-                  begin
-                     Part := First (Elsif_Parts (Stmt));
-                     while Present (Part) loop
-                        Replace_Returns (Part, Then_Statements (Part));
-                        Next (Part);
-                     end loop;
-                  end;
-
-               elsif Nkind (Stmt) = N_Loop_Statement then
-                  Replace_Returns (Param_Id, Statements (Stmt));
-
-               elsif Nkind (Stmt) = N_Simple_Return_Statement then
-
-                  --  Generate:
-                  --    Param := Expr;
-                  --    return;
-
-                  Rewrite (Stmt,
-                    Make_Assignment_Statement (Sloc (Stmt),
-                      Name       => New_Occurrence_Of (Param_Id, Loc),
-                      Expression => Relocate_Node (Expression (Stmt))));
-
-                  Insert_After (Stmt, Make_Simple_Return_Statement (Loc));
-
-                  --  Skip the added return
-
-                  Next (Stmt);
-               end if;
-
-               Next (Stmt);
-            end loop;
-         end Replace_Returns;
-
-         --  Local variables
-
-         Stmts : List_Id;
-
-      --  Start of processing for Build_Procedure_Body_Form
-
-      begin
-         --  This routine replaces the original function body:
-
-         --    function F (...) return Array_Typ is
-         --    begin
-         --       ...
-         --       return Something;
-         --    end F;
-
-         --    with the following:
-
-         --    procedure P (..., Result : out Array_Typ) is
-         --    begin
-         --       ...
-         --       Result := Something;
-         --    end P;
-
-         Stmts := Statements (HSS);
-         Replace_Returns (Last_Entity (Proc_Id), Stmts);
-
-         Replace (N,
-           Make_Subprogram_Body (Loc,
-             Specification              =>
-               Copy_Subprogram_Spec (Specification (Proc_Decl)),
-             Declarations               => Declarations (N),
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Stmts)));
-
-         Analyze (N);
-      end Build_Procedure_Body_Form;
-
-      --  Local varaibles
+      --  Local variables
 
       Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
@@ -5450,17 +5452,6 @@ package body Exp_Ch6 is
         and then Has_Nested_Subprogram (Spec_Id)
       then
          Unest_Bodies.Append ((Spec_Id, N));
-      end if;
-
-      --  When generating C code, transform a function that returns a
-      --  constrained array type into a procedure with an out parameter
-      --  that carries the return value.
-
-      if Modify_Tree_For_C
-        and then Ekind (Spec_Id) = E_Function
-        and then Rewritten_For_C (Spec_Id)
-      then
-         Build_Procedure_Body_Form (Spec_Id);
       end if;
 
       Ghost_Mode := Save_Ghost_Mode;

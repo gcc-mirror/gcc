@@ -38,7 +38,8 @@ pragma Elaborate_All (System.Task_Primitives.Operations);
 
 package Ada.Real_Time with
   SPARK_Mode,
-  Abstract_State => (Clock_Time with External => (Async_Readers,
+  Abstract_State => (Clock_Time with Synchronous,
+                                     External => (Async_Readers,
                                                   Async_Writers))
 is
 
