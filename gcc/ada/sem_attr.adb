@@ -7265,19 +7265,57 @@ package body Sem_Attr is
          return;
       end if;
 
-      --  Special processing for cases where the prefix is an object. For
-      --  this purpose, a string literal counts as an object (attributes
-      --  of string literals can only appear in generated code).
+      --  Special processing for cases where the prefix is an object. For this
+      --  purpose, a string literal counts as an object (attributes of string
+      --  literals can only appear in generated code).
 
       if Is_Object_Reference (P) or else Nkind (P) = N_String_Literal then
 
          --  For Component_Size, the prefix is an array object, and we apply
-         --  the attribute to the type of the object. This is allowed for
-         --  both unconstrained and constrained arrays, since the bounds
-         --  have no influence on the value of this attribute.
+         --  the attribute to the type of the object. This is allowed for both
+         --  unconstrained and constrained arrays, since the bounds have no
+         --  influence on the value of this attribute.
 
          if Id = Attribute_Component_Size then
             P_Entity := Etype (P);
+
+         --  For Enum_Rep, evaluation depends on the nature of the prefix and
+         --  the optional argument.
+
+         elsif Id = Attribute_Enum_Rep then
+            if Is_Entity_Name (P) then
+
+               --  The prefix denotes a constant or an enumeration literal, the
+               --  attribute can be folded.
+
+               if Ekind_In (Entity (P), E_Constant, E_Enumeration_Literal) then
+                  P_Entity := Etype (P);
+
+               --  The prefix denotes an enumeration type. Folding can occur
+               --  when the argument is a constant or an enumeration literal.
+
+               elsif Is_Enumeration_Type (Entity (P))
+                 and then Present (E1)
+                 and then Is_Entity_Name (E1)
+                 and then Ekind_In (Entity (E1), E_Constant,
+                                                 E_Enumeration_Literal)
+               then
+                  P_Entity := Etype (P);
+
+               --  Otherwise the attribute must be expanded into a conversion
+               --  and evaluated at runtime.
+
+               else
+                  Check_Expressions;
+                  return;
+               end if;
+
+            --  Otherwise the attribute is illegal, do not attempt to perform
+            --  any kind of folding.
+
+            else
+               return;
+            end if;
 
          --  For First and Last, the prefix is an array object, and we apply
          --  the attribute to the type of the array, but we need a constrained
@@ -7971,7 +8009,26 @@ package body Sem_Attr is
       -- Enum_Rep --
       --------------
 
-      when Attribute_Enum_Rep =>
+      when Attribute_Enum_Rep => Enum_Rep : declare
+         Val : Node_Id;
+
+      begin
+         --  The attribute appears in the form
+
+         --    Enum_Typ'Enum_Rep (Const)
+         --    Enum_Typ'Enum_Rep (Enum_Lit)
+
+         if Present (E1) then
+            Val := E1;
+
+         --  Otherwise the prefix denotes a constant or enumeration literal
+
+         --    Const'Enum_Rep
+         --    Enum_Lit'Enum_Rep
+
+         else
+            Val := P;
+         end if;
 
          --  For an enumeration type with a non-standard representation use
          --  the Enumeration_Rep field of the proper constant. Note that this
@@ -7983,15 +8040,16 @@ package body Sem_Attr is
          if Is_Enumeration_Type (P_Type)
            and then Has_Non_Standard_Rep (P_Type)
          then
-            Fold_Uint (N, Enumeration_Rep (Expr_Value_E (E1)), Static);
+            Fold_Uint (N, Enumeration_Rep (Expr_Value_E (Val)), Static);
 
-         --  For enumeration types with standard representations and all
-         --  other cases (i.e. all integer and modular types), Enum_Rep
-         --  is equivalent to Pos.
+         --  For enumeration types with standard representations and all other
+         --  cases (i.e. all integer and modular types), Enum_Rep is equivalent
+         --  to Pos.
 
          else
-            Fold_Uint (N, Expr_Value (E1), Static);
+            Fold_Uint (N, Expr_Value (Val), Static);
          end if;
+      end Enum_Rep;
 
       --------------
       -- Enum_Val --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,9 +111,10 @@ package SPARK_Xrefs is
    --      type is a single letter identifying the type of the entity, using
    --      the same code as in cross-references:
 
-   --        K = package
-   --        V = function
-   --        U = procedure
+   --        K = package (k = generic package)
+   --        V = function (v = generic function)
+   --        U = procedure (u = generic procedure)
+   --        Y = entry
 
    --      col is the column number of the scope entity
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -293,9 +293,6 @@ begin
                Col   := Get_Nat;
 
                pragma Assert (Scope = Cur_Scope);
-               pragma Assert         (Typ = 'K'
-                              or else Typ = 'V'
-                              or else Typ = 'U');
 
                --  Scan out scope entity name
 

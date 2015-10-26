@@ -1,5 +1,34 @@
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* inline.adb: Minor reformatting.
+
+2015-10-26  Yannick Moy  <moy@adacore.com>
+
+	* get_spark_xrefs.adb (get_SPARK_Xrefs): Remove obsolete
+	assertion.
+	* lib-xref-spark_specific.adb (Traverse_Declaration_Or_Statement):
+	New procedure to factor duplicated code and add
+	treatment of protected entries.
+	(Add_SPARK_Scope, Traverse_Declarations_Or_Statements): Call the new
+	procedure Traverse_Declaration_Or_Statement. Use same character used in
+	normal xrefs for SPARK xrefs, for a given entity used as scope.
+	* spark_xrefs.ads Document character used for entries.
+	* sem_prag.adb (Check_Loop_Pragma_Placement): Account for possible
+	introduction of declarations and statements by the expansion, between
+	two otherwise consecutive loop pragmas.
+	* sem_util.ads, sem_util.adb (Is_Suspension_Object): Lifted from nested
+	function.
+	(Is_Descendant_Of_Suspension_Object): nested function lifted.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Attribute 'Enum_Rep can be folded
+	when its prefix denotes a constant, an enumeration literal or
+	an enumeration type. Use the expression of the attribute in the
+	enumeration type form, otherwise use the prefix to fold.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* aspects.adb Add an entry for entry bodies in table
 	Has_Aspect_Specifications_Flag.
 	(Aspects_On_Body_Or_Stub_OK): Entry bodies now allow for certain

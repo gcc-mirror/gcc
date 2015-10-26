@@ -11309,39 +11309,8 @@ package body Sem_Util is
       function Is_Descendant_Of_Suspension_Object
         (Typ : Entity_Id) return Boolean
       is
-         function Is_Suspension_Object (Id : Entity_Id) return Boolean;
-         --  Determine whether arbitrary entity Id denotes Suspension_Object
-         --  defined in Ada.Synchronous_Task_Control.
-
-         --------------------------
-         -- Is_Suspension_Object --
-         --------------------------
-
-         function Is_Suspension_Object (Id : Entity_Id) return Boolean is
-         begin
-            --  This approach does an exact name match rather than to rely on
-            --  RTSfind. Routine Is_Effectively_Volatile is used by clients of
-            --  the front end at point where all auxiliary tables are locked
-            --  and any modifications to them are treated as violations. Do not
-            --  tamper with the tables, instead examine the Chars fields of all
-            --  the scopes of Id.
-
-            return
-              Chars (Id) = Name_Suspension_Object
-                and then Present (Scope (Id))
-                and then Chars (Scope (Id)) = Name_Synchronous_Task_Control
-                and then Present (Scope (Scope (Id)))
-                and then Chars (Scope (Scope (Id))) = Name_Ada
-                and then Present (Scope (Scope (Scope (Id))))
-                and then Scope (Scope (Scope (Id))) = Standard_Standard;
-         end Is_Suspension_Object;
-
-         --  Local variables
-
          Cur_Typ : Entity_Id;
          Par_Typ : Entity_Id;
-
-      --  Start of processing for Is_Descendant_Of_Suspension_Object
 
       begin
          --  Climb the type derivation chain checking each parent type against
@@ -13160,6 +13129,28 @@ package body Sem_Util is
       return Nkind (N) = N_Subprogram_Body_Stub
         and then Ekind (Defining_Entity (N)) /= E_Subprogram_Body;
    end Is_Subprogram_Stub_Without_Prior_Declaration;
+
+   --------------------------
+   -- Is_Suspension_Object --
+   --------------------------
+
+   function Is_Suspension_Object (Id : Entity_Id) return Boolean is
+   begin
+      --  This approach does an exact name match rather than to rely on
+      --  RTSfind. Routine Is_Effectively_Volatile is used by clients of the
+      --  front end at point where all auxiliary tables are locked and any
+      --  modifications to them are treated as violations. Do not tamper with
+      --  the tables, instead examine the Chars fields of all the scopes of Id.
+
+      return
+        Chars (Id) = Name_Suspension_Object
+          and then Present (Scope (Id))
+          and then Chars (Scope (Id)) = Name_Synchronous_Task_Control
+          and then Present (Scope (Scope (Id)))
+          and then Chars (Scope (Scope (Id))) = Name_Ada
+          and then Present (Scope (Scope (Scope (Id))))
+          and then Scope (Scope (Scope (Id))) = Standard_Standard;
+   end Is_Suspension_Object;
 
    ---------------------------------
    -- Is_Synchronized_Tagged_Type --
