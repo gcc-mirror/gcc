@@ -4014,8 +4014,7 @@ package body Sem_Ch13 is
 
                else
                   Illegal_Indexing
-                    ("indexing function already inherited "
-                     & "from parent type");
+                    ("indexing function already inherited from parent type");
                   Error_Msg_NE
                     ("!override & instead",
                      N, Entity (Expression (Inherited)));

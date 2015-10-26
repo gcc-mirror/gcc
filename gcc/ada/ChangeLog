@@ -1,5 +1,21 @@
 2015-10-26  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch12.adb (Analyze_Formal_Package_Declaration): Do not set
+	Box_Present when the formal part is (others => <>) even though
+	it is equivalent to a formal part (<>), because ASIS tools depend
+	on the syntactic setting of this flag.
+
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+	* einfo.ads: Minor typo.
+
+2015-10-26  Joel Brobecker  <brobecker@adacore.com brobecker>
+
+	* adaint.c (__gnat_open_new_temp): Use mkstemp on Android.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch12.adb (Analyze_Formal_Package_Declaration): Code clean up.
 	* sem_ch13.adb (Check_Inherited_Indexing): New inner procedure
 	of Check_Indexing_Functions, to verify that a derived type with an

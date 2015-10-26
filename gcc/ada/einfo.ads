@@ -3899,7 +3899,7 @@ package Einfo is
 --    Requires_Overriding (Flag213)
 --       Defined in all subprograms and entries. Set for subprograms that
 --       require overriding as defined by RM-2005-3.9.3(6/2). Note that this
---       is True only for implicitly declare subprograms; it is not set on the
+--       is True only for implicitly declared subprograms; it is not set on the
 --       parent type's subprogram. See also Is_Abstract_Subprogram.
 
 --    Return_Present (Flag54)
