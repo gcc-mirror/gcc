@@ -2,7 +2,7 @@
 ! { dg-options "-std=gnu -fdefault-integer-8" }
 ! See PR38956.  Test fails on cygwin when user has Administrator rights
   implicit none
-  character(len=*), parameter :: n = "foobar_file"
+  character(len=*), parameter :: n = "foobar_file_chmod_3"
   integer :: i
 
   open (10,file=n)
