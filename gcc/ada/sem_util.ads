@@ -601,7 +601,7 @@ package Sem_Util is
      (N      : Node_Id;
       Formal : out Entity_Id;
       Call   : out Node_Id);
-   --  Determines if the node N is an actual parameter of a function of a
+   --  Determines if the node N is an actual parameter of a function or a
    --  procedure call. If so, then Formal points to the entity for the formal
    --  (Ekind is E_In_Parameter, E_Out_Parameter, or E_In_Out_Parameter) and
    --  Call is set to the node for the corresponding call. If the node N is not

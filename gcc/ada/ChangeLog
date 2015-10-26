@@ -1,5 +1,13 @@
 2015-10-26  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_case.adb (Check_Choice_Set): Choose initial choice range
+	below low bound of type, to prevent spurious errors on case
+	statements whose expressions have an integer subtype with a
+	static predicate.
+	* sem_util.ads: Fix typo.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch4.adb (Expand_N_Case_Expression): In the scope of a
 	predicate function, delay the expansion of the expression only
 	if the target type has a specified Static_ Predicate aspect,

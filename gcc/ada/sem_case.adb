@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -766,8 +766,14 @@ package body Sem_Case is
 
       if Has_Predicate then
          Pred    := First (Static_Discrete_Predicate (Bounds_Type));
-         Prev_Lo := Uint_Minus_1;
-         Prev_Hi := Uint_Minus_1;
+
+         --  Make initial value smaller than 'First of type, so that first
+         --  range comparison succeeds. This applies both to integer types
+         --  and to enumeration types.
+
+         Prev_Lo := Expr_Value (Type_Low_Bound (Bounds_Type)) - 1;
+         Prev_Hi := Prev_Lo;
+
          Error   := False;
 
          for Index in 1 .. Num_Choices loop
