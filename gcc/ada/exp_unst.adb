@@ -316,12 +316,12 @@ package body Exp_Unst is
             Callee : Entity_Id;
 
             procedure Check_Static_Type (T : Entity_Id; DT : in out Boolean);
-               --  Given a type T, checks if it is a static type defined as a
-               --  type with no dynamic bounds in sight. If so, the only action
-               --  is to set Is_Static_Type True for T. If T is not a static
-               --  type, then all types with dynamic bounds associated with
-               --  T are detected, and their bounds are marked as uplevel
-               --  referenced if not at the library level, and DT is set True.
+            --  Given a type T, checks if it is a static type defined as a type
+            --  with no dynamic bounds in sight. If so, the only action is to
+            --  set Is_Static_Type True for T. If T is not a static type, then
+            --  all types with dynamic bounds associated with T are detected,
+            --  and their bounds are marked as uplevel referenced if not at the
+            --  library level, and DT is set True.
 
             procedure Note_Uplevel_Ref
               (E      : Entity_Id;
@@ -407,7 +407,7 @@ package body Exp_Unst is
                      end if;
                   end;
 
-                  --  For record type, check all components
+               --  For record type, check all components
 
                elsif Is_Record_Type (T) then
                   declare
@@ -420,7 +420,7 @@ package body Exp_Unst is
                      end loop;
                   end;
 
-                  --  For array type, check index types and component type
+               --  For array type, check index types and component type
 
                elsif Is_Array_Type (T) then
                   declare
@@ -467,9 +467,9 @@ package body Exp_Unst is
                if Caller = Callee then
                   return;
 
-               --  Callee may be a function that returns an array, and
-               --  that has been rewritten as a procedure. If caller is
-               --  that procedure, nothing to do either.
+               --  Callee may be a function that returns an array, and that has
+               --  been rewritten as a procedure. If caller is that procedure,
+               --  nothing to do either.
 
                elsif Ekind (Callee) = E_Function
                  and then Rewritten_For_C (Callee)
@@ -1183,8 +1183,9 @@ package body Exp_Unst is
 
                      --  Now we can insert the AREC declarations into the body
 
-                     --  type ARECnT is record .. end record;
-                     --  pragma Suppress_Initialization (ARECnT);
+                     --    type ARECnT is record .. end record;
+                     --    pragma Suppress_Initialization (ARECnT);
+
                      --  Note that we need to set the Suppress_Initialization
                      --  flag after Decl_ARECnT has been analyzed.
 
@@ -1438,8 +1439,8 @@ package body Exp_Unst is
                --  probably happens as a result of not properly treating
                --  instance bodies. To be examined ???
 
-               --  If this test is omitted, then the compilation of
-               --  freeze.adb and inline.adb fail in unnesting mode.
+               --  If this test is omitted, then the compilation of freeze.adb
+               --  and inline.adb fail in unnesting mode.
 
                if No (STJR.ARECnF) then
                   goto Continue;
@@ -1451,12 +1452,11 @@ package body Exp_Unst is
 
                Push_Scope (STJR.Ent);
 
-               --  Now we need to rewrite the reference. We have a
-               --  reference is from level STJR.Lev to level STJE.Lev.
-               --  The general form of the rewritten reference for
-               --  entity X is:
+               --  Now we need to rewrite the reference. We have a reference
+               --  from level STJR.Lev to level STJE.Lev. The general form of
+               --  the rewritten reference for entity X is:
 
-               --   Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECm.X)
+               --    Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECm.X)
 
                --  where a,b,c,d .. m =
                --    STJR.Lev - 1,  STJR.Lev - 2, .. STJE.Lev
@@ -1562,11 +1562,10 @@ package body Exp_Unst is
          begin
             if Present (STT.ARECnF) then
 
-               --  CTJ.N is a call to a subprogram which may require
-               --  a pointer to an activation record. The subprogram
-               --  containing the call is CTJ.From and the subprogram being
-               --  called is CTJ.To, so we have a call from level STF.Lev to
-               --  level STT.Lev.
+               --  CTJ.N is a call to a subprogram which may require a pointer
+               --  to an activation record. The subprogram containing the call
+               --  is CTJ.From and the subprogram being called is CTJ.To, so we
+               --  have a call from level STF.Lev to level STT.Lev.
 
                --  There are three possibilities:
 
@@ -1576,10 +1575,10 @@ package body Exp_Unst is
                if STF.Lev = STT.Lev then
                   Extra := New_Occurrence_Of (STF.ARECnF, Loc);
 
-               --  For a call that goes down a level, we pass a pointer
-               --  to the activation record constructed within the caller
-               --  (which may be the outer level subprogram, but also may
-               --  be a more deeply nested caller).
+               --  For a call that goes down a level, we pass a pointer to the
+               --  activation record constructed within the caller (which may
+               --  be the outer-level subprogram, but also may be a more deeply
+               --  nested caller).
 
                elsif STT.Lev = STF.Lev + 1 then
                   Extra := New_Occurrence_Of (STF.ARECnP, Loc);
@@ -1601,9 +1600,9 @@ package body Exp_Unst is
                   pragma Assert (STT.Lev < STF.Lev);
 
                   Extra := New_Occurrence_Of (STF.ARECnF, Loc);
-                  SubX := Subp_Index (CTJ.Caller);
+                  SubX  := Subp_Index (CTJ.Caller);
                   for K in reverse STT.Lev .. STF.Lev - 1 loop
-                     SubX := Enclosing_Subp (SubX);
+                     SubX  := Enclosing_Subp (SubX);
                      Extra :=
                        Make_Selected_Component (Loc,
                          Prefix        => Extra,
@@ -1628,8 +1627,8 @@ package body Exp_Unst is
 
                Append (ExtraP, Parameter_Associations (CTJ.N));
 
-               --  We need to deal with the actual parameter chain as well.
-               --  The newly added parameter is always the last actual.
+               --  We need to deal with the actual parameter chain as well. The
+               --  newly added parameter is always the last actual.
 
                Act := First_Named_Actual (CTJ.N);
 
