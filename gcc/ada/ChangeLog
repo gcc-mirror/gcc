@@ -1,3 +1,8 @@
+2015-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.ads, einfo.adb, exp_unst.adb (Needs_Typedef,
+	Set_Needs_Typedef): Removed, no longer used.
+
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (First_Component): Update the assertion to allow

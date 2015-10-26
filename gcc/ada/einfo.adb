@@ -595,7 +595,7 @@ package body Einfo is
    --    Is_Uplevel_Referenced_Entity    Flag283
    --    Is_Unimplemented                Flag284
    --    Is_Volatile_Full_Access         Flag285
-   --    Needs_Typedef                   Flag286
+   --    (unused)                        Flag286
    --    Rewritten_For_C                 Flag287
 
    --    (unused)                        Flag288
@@ -2686,12 +2686,6 @@ package body Einfo is
            or else Ekind_In (Id, E_Subprogram_Type, E_Entry_Family));
       return Flag22 (Id);
    end Needs_No_Actuals;
-
-   function Needs_Typedef (Id : E) return B is
-   begin
-      pragma Assert (Is_Type (Id));
-      return Flag286 (Id);
-   end Needs_Typedef;
 
    function Never_Set_In_Source (Id : E) return B is
    begin
@@ -5714,12 +5708,6 @@ package body Einfo is
            or else Ekind_In (Id, E_Subprogram_Type, E_Entry_Family));
       Set_Flag22 (Id, V);
    end Set_Needs_No_Actuals;
-
-   procedure Set_Needs_Typedef (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Type (Id));
-      Set_Flag286 (Id, V);
-   end Set_Needs_Typedef;
 
    procedure Set_Never_Set_In_Source (Id : E; V : B := True) is
    begin
@@ -9010,7 +8998,6 @@ package body Einfo is
       W ("Must_Have_Preelab_Init",          Flag208 (Id));
       W ("Needs_Debug_Info",                Flag147 (Id));
       W ("Needs_No_Actuals",                Flag22  (Id));
-      W ("Needs_Typedef",                   Flag286 (Id));
       W ("Never_Set_In_Source",             Flag115 (Id));
       W ("No_Dynamic_Predicate_On_actual",  Flag276 (Id));
       W ("No_Pool_Assigned",                Flag131 (Id));
