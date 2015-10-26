@@ -3148,6 +3148,18 @@ package body Sem_Ch6 is
                  and then not Inside_A_Generic
                then
                   Build_Subprogram_Declaration;
+
+               --  If this is a function that returns a constrained array, and
+               --  we are generating SPARK_For_C, create subprogram declaration
+               --  to simplify subsequent C generation.
+
+               elsif No (Spec_Id)
+                 and then Modify_Tree_For_C
+                 and then Nkind (Body_Spec) = N_Function_Specification
+                 and then Is_Array_Type (Etype (Body_Id))
+                 and then Is_Constrained (Etype (Body_Id))
+               then
+                  Build_Subprogram_Declaration;
                end if;
             end if;
 

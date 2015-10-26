@@ -622,14 +622,10 @@ package body Contracts is
    --------------------------------------
 
    procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id) is
-      Body_Decl   : constant Node_Id   := Unit_Declaration_Node (Body_Id);
-      Items       : constant Node_Id   := Contract (Body_Id);
-      Spec_Id     : constant Entity_Id := Unique_Defining_Entity (Body_Decl);
-      Mode        : SPARK_Mode_Type;
-      Prag        : Node_Id;
-      Prag_Nam    : Name_Id;
-      Ref_Depends : Node_Id   := Empty;
-      Ref_Global  : Node_Id   := Empty;
+      Body_Decl : constant Node_Id   := Unit_Declaration_Node (Body_Id);
+      Items     : constant Node_Id   := Contract (Body_Id);
+      Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Body_Decl);
+      Mode      : SPARK_Mode_Type;
 
    begin
       --  When a subprogram body declaration is illegal, its defining entity is
@@ -655,50 +651,6 @@ package body Contracts is
       --  related subprogram body.
 
       Save_SPARK_Mode_And_Set (Body_Id, Mode);
-
-      --  All subprograms carry a contract, but for some it is not significant
-      --  and should not be processed.
-
-      if not Has_Significant_Contract (Body_Id) then
-         null;
-
-      --  The subprogram body is a completion, analyze all delayed pragmas that
-      --  apply. Note that when the body is stand-alone, the pragmas are always
-      --  analyzed on the spot.
-
-      elsif Present (Items) then
-
-         --  Locate and store pragmas Refined_Depends and Refined_Global, since
-         --  their order of analysis matters.
-
-         Prag := Classifications (Items);
-         while Present (Prag) loop
-            Prag_Nam := Pragma_Name (Prag);
-
-            if Prag_Nam = Name_Refined_Depends then
-               Ref_Depends := Prag;
-
-            elsif Prag_Nam = Name_Refined_Global then
-               Ref_Global := Prag;
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Analyze Refined_Global first, as Refined_Depends may mention items
-         --  classified in the global refinement.
-
-         if Present (Ref_Global) then
-            Analyze_Refined_Global_In_Decl_Part (Ref_Global);
-         end if;
-
-         --  Refined_Depends must be analyzed after Refined_Global in order to
-         --  see the modes of all global refinements.
-
-         if Present (Ref_Depends) then
-            Analyze_Refined_Depends_In_Decl_Part (Ref_Depends);
-         end if;
-      end if;
 
       --  Ensure that the contract cases or postconditions mention 'Result or
       --  define a post-state.
@@ -2327,7 +2279,7 @@ package body Contracts is
 
          if Present (Prag) then
             New_Prag := New_Copy_Tree (Prag);
-            Set_Is_Inherited (New_Prag);
+            Set_Is_Inherited_Pragma (New_Prag);
 
             Add_Contract_Item (New_Prag, Subp);
          end if;
