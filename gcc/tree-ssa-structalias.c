@@ -5844,6 +5844,21 @@ debug_solution_for_var (unsigned int var)
   dump_solution_for_var (stderr, var);
 }
 
+/* Register the constraints for restrict var VI.  */
+
+static void
+make_restrict_var_constraints (varinfo_t vi)
+{
+  for (; vi; vi = vi_next (vi))
+    if (vi->may_have_pointers)
+      {
+	if (vi->only_restrict_pointers)
+	  make_constraint_from_global_restrict (vi, "GLOBAL_RESTRICT");
+	else
+	  make_copy_constraint (vi, nonlocal_id);
+      }
+}
+
 /* Create varinfo structures for all of the variables in the
    function for intraprocedural mode.  */
 
@@ -5882,14 +5897,7 @@ intra_create_variable_infos (struct function *fn)
 	  vi->is_restrict_var = 1;
 	  insert_vi_for_tree (heapvar, vi);
 	  make_constraint_from (p, vi->id);
-	  for (; vi; vi = vi_next (vi))
-	    if (vi->may_have_pointers)
-	      {
-		if (vi->only_restrict_pointers)
-		  make_constraint_from_global_restrict (vi, "GLOBAL_RESTRICT");
-		else
-		  make_copy_constraint (vi, nonlocal_id);
-	      }
+	  make_restrict_var_constraints (vi);
 	  continue;
 	}
 
