@@ -2208,7 +2208,8 @@ gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result, mpz_t *end)
       if (ar->start[dimen] == NULL)
 	{
 	  if (ar->as->lower[dimen] == NULL
-	      || ar->as->lower[dimen]->expr_type != EXPR_CONSTANT)
+	      || ar->as->lower[dimen]->expr_type != EXPR_CONSTANT
+	      || ar->as->lower[dimen]->ts.type != BT_INTEGER)
 	    goto cleanup;
 	  mpz_set (lower, ar->as->lower[dimen]->value.integer);
 	}
@@ -2222,7 +2223,8 @@ gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result, mpz_t *end)
       if (ar->end[dimen] == NULL)
 	{
 	  if (ar->as->upper[dimen] == NULL
-	      || ar->as->upper[dimen]->expr_type != EXPR_CONSTANT)
+	      || ar->as->upper[dimen]->expr_type != EXPR_CONSTANT
+	      || ar->as->upper[dimen]->ts.type != BT_INTEGER)
 	    goto cleanup;
 	  mpz_set (upper, ar->as->upper[dimen]->value.integer);
 	}
