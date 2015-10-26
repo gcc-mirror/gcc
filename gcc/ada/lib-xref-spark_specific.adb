@@ -272,9 +272,7 @@ package body SPARK_Specific is
          =>
             Typ := Xref_Entity_Letters (Ekind (E));
 
-         when E_Package_Body
-            | E_Subprogram_Body
-         =>
+         when E_Package_Body | E_Subprogram_Body =>
             Typ := Xref_Entity_Letters (Ekind (Unique_Entity (E)));
 
          when E_Void =>
@@ -317,6 +315,16 @@ package body SPARK_Specific is
       function Get_Entity_Type (E : Entity_Id) return Character;
       --  Return a character representing the type of entity
 
+      function Is_Constant_Object_Without_Variable_Input
+        (E : Entity_Id) return Boolean;
+      --  Return True if E is known to have no variable input, as defined in
+      --  SPARK RM.
+
+      function Is_Future_Scope_Entity
+        (E : Entity_Id;
+         S : Scope_Index) return Boolean;
+      --  Check whether entity E is in SPARK_Scope_Table at index S or higher
+
       function Is_SPARK_Reference
         (E   : Entity_Id;
          Typ : Character) return Boolean;
@@ -326,11 +334,6 @@ package body SPARK_Specific is
       function Is_SPARK_Scope (E : Entity_Id) return Boolean;
       --  Return whether the entity or reference scope meets requirements for
       --  being an SPARK scope.
-
-      function Is_Future_Scope_Entity
-        (E : Entity_Id;
-         S : Scope_Index) return Boolean;
-      --  Check whether entity E is in SPARK_Scope_Table at index S or higher
 
       function Lt (Op1 : Natural; Op2 : Natural) return Boolean;
       --  Comparison function for Sort call
@@ -418,48 +421,47 @@ package body SPARK_Specific is
          return Scopes.Get (N).Num;
       end Get_Scope_Num;
 
-      ------------------------
-      -- Is_SPARK_Reference --
-      ------------------------
+      -----------------------------------------------
+      -- Is_Constant_Object_Without_Variable_Input --
+      -----------------------------------------------
 
-      function Is_SPARK_Reference
-        (E   : Entity_Id;
-         Typ : Character) return Boolean
+      function Is_Constant_Object_Without_Variable_Input
+        (E : Entity_Id) return Boolean
       is
+         Result : Boolean;
+
       begin
-         --  The only references of interest on callable entities are calls. On
-         --  non-callable entities, the only references of interest are reads
-         --  and writes.
+         case Ekind (E) is
 
-         if Ekind (E) in Overloadable_Kind then
-            return Typ = 's';
+            --  A constant is known to have no variable input if its
+            --  initializing expression is static (a value which is
+            --  compile-time-known is not guaranteed to have no variable input
+            --  as defined in the SPARK RM). Otherwise, the constant may or not
+            --  have variable input.
 
-         --  Objects of Task type or protected type are not SPARK references
+            when E_Constant =>
+               declare
+                  Decl : Node_Id;
+               begin
+                  if Present (Full_View (E)) then
+                     Decl := Parent (Full_View (E));
+                  else
+                     Decl := Parent (E);
+                  end if;
 
-         elsif Present (Etype (E))
-           and then Ekind (Etype (E)) in Concurrent_Kind
-         then
-            return False;
+                  pragma Assert (Present (Expression (Decl)));
+                  Result := Is_Static_Expression (Expression (Decl));
+               end;
 
-         --  In all other cases, result is true for reference/modify cases,
-         --  and false for all other cases.
+            when E_Loop_Parameter | E_In_Parameter =>
+               Result := True;
 
-         else
-            return Typ = 'r' or else Typ = 'm';
-         end if;
-      end Is_SPARK_Reference;
+            when others =>
+               Result := False;
+         end case;
 
-      --------------------
-      -- Is_SPARK_Scope --
-      --------------------
-
-      function Is_SPARK_Scope (E : Entity_Id) return Boolean is
-      begin
-         return Present (E)
-           and then not Is_Generic_Unit (E)
-           and then Renamed_Entity (E) = Empty
-           and then Get_Scope_Num (E) /= No_Scope;
-      end Is_SPARK_Scope;
+         return Result;
+      end Is_Constant_Object_Without_Variable_Input;
 
       ----------------------------
       -- Is_Future_Scope_Entity --
@@ -510,6 +512,49 @@ package body SPARK_Specific is
 
          return False;
       end Is_Future_Scope_Entity;
+
+      ------------------------
+      -- Is_SPARK_Reference --
+      ------------------------
+
+      function Is_SPARK_Reference
+        (E   : Entity_Id;
+         Typ : Character) return Boolean
+      is
+      begin
+         --  The only references of interest on callable entities are calls. On
+         --  non-callable entities, the only references of interest are reads
+         --  and writes.
+
+         if Ekind (E) in Overloadable_Kind then
+            return Typ = 's';
+
+         --  Objects of Task type or protected type are not SPARK references
+
+         elsif Present (Etype (E))
+           and then Ekind (Etype (E)) in Concurrent_Kind
+         then
+            return False;
+
+         --  In all other cases, result is true for reference/modify cases,
+         --  and false for all other cases.
+
+         else
+            return Typ = 'r' or else Typ = 'm';
+         end if;
+      end Is_SPARK_Reference;
+
+      --------------------
+      -- Is_SPARK_Scope --
+      --------------------
+
+      function Is_SPARK_Scope (E : Entity_Id) return Boolean is
+      begin
+         return Present (E)
+           and then not Is_Generic_Unit (E)
+           and then Renamed_Entity (E) = Empty
+           and then Get_Scope_Num (E) /= No_Scope;
+      end Is_SPARK_Scope;
 
       --------
       -- Lt --
@@ -819,12 +864,15 @@ package body SPARK_Specific is
                Col  := Int (Get_Column_Number (Ref_Entry.Def));
             end if;
 
-            --  References to constant objects are considered specially in
-            --  SPARK section, because these will be translated as constants in
-            --  the intermediate language for formal verification, and should
-            --  therefore never appear in frame conditions.
+            --  References to constant objects without variable inputs (see
+            --  SPARK RM 3.3.1) are considered specially in SPARK section,
+            --  because these will be translated as constants in the
+            --  intermediate language for formal verification, and should
+            --  therefore never appear in frame conditions. Other constants may
+            --  later be treated the same, up to GNATprove to decide based on
+            --  its flow analysis.
 
-            if Is_Constant_Object (Ref.Ent) then
+            if Is_Constant_Object_Without_Variable_Input (Ref.Ent) then
                Typ := 'c';
             else
                Typ := Ref.Typ;
@@ -1230,9 +1278,7 @@ package body SPARK_Specific is
          when N_Subprogram_Declaration =>
             null;
 
-         when N_Entry_Body
-            | N_Subprogram_Body
-         =>
+         when N_Entry_Body | N_Subprogram_Body =>
             if not Is_Generic_Subprogram (Defining_Entity (N)) then
                Traverse_Subprogram_Body (N, Process, Inside_Stubs);
             end if;
