@@ -12133,7 +12133,7 @@ sh_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 bool
 sh_vector_mode_supported_p (machine_mode mode)
 {
-  if (TARGET_FPU_ANY
+  if (TARGET_SHMEDIA_FPU
       && ((mode == V2SFmode)
 	  || (mode == V4SFmode)
 	  || (mode == V16SFmode)))
