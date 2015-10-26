@@ -548,6 +548,12 @@ package body Sem_Elab is
                if Msg_D /= "" and then Elab_Warnings then
                   Error_Msg_NE (Msg_D, N, Ent);
                end if;
+
+            --  In the access case emit first warning message as well,
+            --  otherwise list of calls will appear as errors.
+
+            elsif Elab_Warnings then
+               Error_Msg_NE (Msg_S, N, Ent);
             end if;
 
          --  Static elaboration checks, info message

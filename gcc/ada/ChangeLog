@@ -1,3 +1,37 @@
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Controlling_Type): Handle properly the
+	case of an incomplete type whose full view is tagged, when a
+	primitive operation of the type is declared between the two views.
+
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* adaint.c (__gnat_locate_exec_on_path): If the PATH environment
+	variable is not set, do not return NULL, because we can still find
+	the executable if it includes a directory name.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elab.adb (Elab_Warning): Under dynamic elaboration, when
+	elaboration warnings are enabled, emit proper warning header
+	when triggered by an access attribute.
+
+2015-10-26  Steve Baird  <baird@adacore.com>
+
+	* exp_ch11.adb: If CodePeer_Mode is true, generate simplified
+	SCIL for exception declarations.
+	* exp_ch11.adb (Expand_N_Exception_Declaration) If CodePeer_Mode
+	is True, initialize the Full_Name component of the exception
+	record to null instead of to the result of an unchecked
+	conversion.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Note_Uplevel_Ref) : Handle properly a reference
+	that denotes a function returning a constrained array, that has
+	been rewritten as a procedure.
+	* makeutl.ads: Minor edit.
+
 2015-10-26  Yannick Moy  <moy@adacore.com>
 
 	* lib-xref-spark_specific.adb (Traverse_Protected_Declaration): New

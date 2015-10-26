@@ -2787,16 +2787,19 @@ __gnat_locate_exec_on_path (char *exec_name)
   apath_val = (char *) alloca (EXPAND_BUFFER_SIZE);
 
   WS2SC (apath_val, wapath_val, EXPAND_BUFFER_SIZE);
-  return __gnat_locate_exec (exec_name, apath_val);
 
 #else
   char *path_val = getenv ("PATH");
 
-  if (path_val == NULL) return NULL;
+  /* If PATH is not defined, proceed with __gnat_locate_exec anyway, so we can
+     find files that contain directory names.  */
+
+  if (path_val == NULL) path_val = "";
   apath_val = (char *) alloca (strlen (path_val) + 1);
   strcpy (apath_val, path_val);
-  return __gnat_locate_exec (exec_name, apath_val);
 #endif
+
+  return __gnat_locate_exec (exec_name, apath_val);
 }
 
 /* Dummy functions for Osint import for non-VMS systems.

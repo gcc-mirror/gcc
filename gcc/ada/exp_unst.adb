@@ -466,6 +466,16 @@ package body Exp_Unst is
 
                if Caller = Callee then
                   return;
+
+               --  Callee may be a function that returns an array, and
+               --  that has been rewritten as a procedure. If caller is
+               --  that procedure, nothing to do either.
+
+               elsif Ekind (Callee) = E_Function
+                 and then Rewritten_For_C (Callee)
+                 and then Next_Entity (Callee) = Caller
+               then
+                  return;
                end if;
 
                --  We have a new uplevel referenced entity

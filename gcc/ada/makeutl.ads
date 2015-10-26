@@ -476,7 +476,7 @@ package Makeutl is
 
       function Number_Of_Mains (Tree : Project_Tree_Ref) return Natural;
       --  Returns the number of mains in this project tree (if Tree is null, it
-      --  returns the total number of project trees)
+      --  returns the total number of project trees).
 
       procedure Fill_From_Project
         (Root_Project : Project_Id;
