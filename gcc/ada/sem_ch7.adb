@@ -763,6 +763,14 @@ package body Sem_Ch7 is
          Declare_Inherited_Private_Subprograms (Spec_Id);
       end if;
 
+      --  A package body "freezes" the contract of its initial declaration.
+      --  This analysis depends on attribute Corresponding_Spec being set. Only
+      --  bodies coming from source shuld cause this type of "freezing".
+
+      if Comes_From_Source (N) then
+         Analyze_Initial_Declaration_Contract (N);
+      end if;
+
       if Present (Declarations (N)) then
          Analyze_Declarations (Declarations (N));
          Inspect_Deferred_Constant_Completion (Declarations (N));

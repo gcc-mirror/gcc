@@ -237,6 +237,11 @@ package body Sem_Prag is
    --  Determine whether dependency clause Clause is surrounded by extra
    --  parentheses. If this is the case, issue an error message.
 
+   function Is_CCT_Instance (Ref : Node_Id) return Boolean;
+   --  Subsidiary to the analysis of pragmas [Refined_]Depends and [Refined_]
+   --  Global. Determine whether reference Ref denotes the current instance of
+   --  a concurrent type.
+
    function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
    --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of
    --  pragma Depends. Determine whether the type of dependency item Item is
@@ -520,11 +525,14 @@ package body Sem_Prag is
       --  to the name buffer. The individual kinds are as follows:
       --    E_Abstract_State           - "state"
       --    E_Constant                 - "constant"
+      --    E_Discriminant             - "discriminant"
       --    E_Generic_In_Out_Parameter - "generic parameter"
       --    E_Generic_Out_Parameter    - "generic parameter"
       --    E_In_Parameter             - "parameter"
       --    E_In_Out_Parameter         - "parameter"
       --    E_Out_Parameter            - "parameter"
+      --    E_Protected_Type           - "current instance of protected type"
+      --    E_Task_Type                - "current instance of task type"
       --    E_Variable                 - "global"
 
       procedure Analyze_Dependency_Clause
@@ -571,6 +579,9 @@ package body Sem_Prag is
          elsif Ekind (Item_Id) = E_Constant then
             Add_Str_To_Name_Buffer ("constant");
 
+         elsif Ekind (Item_Id) = E_Discriminant then
+            Add_Str_To_Name_Buffer ("discriminant");
+
          elsif Ekind_In (Item_Id, E_Generic_In_Out_Parameter,
                                   E_Generic_In_Parameter)
          then
@@ -578,6 +589,12 @@ package body Sem_Prag is
 
          elsif Is_Formal (Item_Id) then
             Add_Str_To_Name_Buffer ("parameter");
+
+         elsif Ekind (Item_Id) = E_Protected_Type then
+            Add_Str_To_Name_Buffer ("current instance of protected type");
+
+         elsif Ekind (Item_Id) = E_Task_Type then
+            Add_Str_To_Name_Buffer ("current instance of task type");
 
          elsif Ekind (Item_Id) = E_Variable then
             Add_Str_To_Name_Buffer ("global");
@@ -811,13 +828,27 @@ package body Sem_Prag is
                if Present (Item_Id) then
                   if Ekind_In (Item_Id, E_Abstract_State,
                                         E_Constant,
+                                        E_Discriminant,
                                         E_Generic_In_Out_Parameter,
                                         E_Generic_In_Parameter,
                                         E_In_Parameter,
                                         E_In_Out_Parameter,
                                         E_Out_Parameter,
+                                        E_Protected_Type,
+                                        E_Task_Type,
                                         E_Variable)
                   then
+                     --  The item denotes a concurrent type, but it is not the
+                     --  current instance of an enclosing concurrent type.
+
+                     if Ekind_In (Item_Id, E_Protected_Type, E_Task_Type)
+                       and then not Is_CCT_Instance (Item)
+                     then
+                        SPARK_Msg_N
+                          ("invalid use of subtype mark in dependency "
+                           & "relation", Item);
+                     end if;
+
                      --  Ensure that the item fulfils its role as input and/or
                      --  output as specified by pragma Global or the enclosing
                      --  context.
@@ -923,8 +954,8 @@ package body Sem_Prag is
 
                   else
                      SPARK_Msg_N
-                       ("item must denote parameter, variable, or state",
-                        Item);
+                       ("item must denote parameter, variable, state or "
+                        & "current instance of concurren type", Item);
                   end if;
 
                --  All other input/output items are illegal
@@ -932,7 +963,8 @@ package body Sem_Prag is
 
                else
                   Error_Msg_N
-                    ("item must denote parameter, variable, or state", Item);
+                    ("item must denote parameter, variable, state or current "
+                     & "instance of concurrent type", Item);
                end if;
             end if;
          end Analyze_Input_Output;
@@ -1059,6 +1091,9 @@ package body Sem_Prag is
             elsif Ekind (Item_Id) = E_Constant then
                Item_Is_Input := True;
 
+            elsif Ekind (Item_Id) = E_Discriminant then
+               Item_Is_Input := True;
+
             --  Generic parameter cases
 
             elsif Ekind (Item_Id) = E_Generic_In_Parameter then
@@ -1097,6 +1132,29 @@ package body Sem_Prag is
                   Item_Is_Input  := True;
                   Item_Is_Output := True;
                end if;
+
+            --  Protected types
+
+            elsif Ekind (Item_Id) = E_Protected_Type then
+
+               --  A protected type acts as a formal parameter of mode IN when
+               --  it applies to a protected function.
+
+               if Ekind (Spec_Id) = E_Function then
+                  Item_Is_Input := True;
+
+               --  Otherwise the protected type acts as a formal of mode IN OUT
+
+               else
+                  Item_Is_Input  := True;
+                  Item_Is_Output := True;
+               end if;
+
+            --  Task types
+
+            elsif Ekind (Item_Id) = E_Task_Type then
+               Item_Is_Input  := True;
+               Item_Is_Output := True;
 
             --  Variable case
 
@@ -1303,7 +1361,12 @@ package body Sem_Prag is
             if Present (Item_Id)
               and then not Contains (Used_Items, Item_Id)
             then
-               if Is_Formal (Item_Id) then
+               --  The current instance of a concurrent type behaves as a
+               --  formal parameter (SPARK RM 6.1.4).
+
+               if Is_Formal (Item_Id)
+                 or else Ekind_In (Item_Id, E_Protected_Type, E_Task_Type)
+               then
                   Usage_Error (Item_Id);
 
                --  States and global objects are not used properly only when
@@ -1658,9 +1721,13 @@ package body Sem_Prag is
                Push_Scope (Spec_Id);
 
                if Ekind (Spec_Id) = E_Task_Type then
-                  null;
+                  if Has_Discriminants (Spec_Id) then
+                     Install_Discriminants (Spec_Id);
+                  end if;
+
                elsif Is_Generic_Subprogram (Spec_Id) then
                   Install_Generic_Formals (Spec_Id);
+
                else
                   Install_Formals (Spec_Id);
                end if;
@@ -1902,20 +1969,68 @@ package body Sem_Prag is
                      return;
                   end if;
 
+               --  A global item may denote a concurrent type as long as it is
+               --  the current instance of an enclosing concurrent type
+               --  (SPARK RM 6.1.4).
+
+               elsif Ekind_In (Item_Id, E_Protected_Type, E_Task_Type) then
+                  if Is_CCT_Instance (Item) then
+
+                     --  Pragma [Refined_]Global associated with a protected
+                     --  subprogram cannot mention the current instance of a
+                     --  protected type because the instance behaves as a
+                     --  formal parameter.
+
+                     if Ekind (Item_Id) = E_Protected_Type
+                       and then Scope (Spec_Id) = Item_Id
+                     then
+                        Error_Msg_Name_1 := Chars (Item_Id);
+                        SPARK_Msg_NE
+                          (Fix_Msg (Spec_Id, "global item of subprogram & "
+                           & "cannot reference current instance of protected "
+                           & "type %"), Item, Spec_Id);
+                        return;
+
+                     --  Pragma [Refined_]Global associated with a task type
+                     --  cannot mention the current instance of a task type
+                     --  because the instance behaves as a formal parameter.
+
+                     elsif Ekind (Item_Id) = E_Task_Type
+                       and then Spec_Id = Item_Id
+                     then
+                        Error_Msg_Name_1 := Chars (Item_Id);
+                        SPARK_Msg_NE
+                          (Fix_Msg (Spec_Id, "global item of subprogram & "
+                           & "cannot reference current instance of task type "
+                           & "%"), Item, Spec_Id);
+                        return;
+                     end if;
+
+                  --  Otherwise the global item denotes a subtype mark that is
+                  --  not a current instance.
+
+                  else
+                     SPARK_Msg_N
+                       ("invalid use of subtype mark in global list", Item);
+                     return;
+                  end if;
+
                --  A formal object may act as a global item inside a generic
 
                elsif Is_Formal_Object (Item_Id) then
                   null;
 
-               --  The only legal references are those to abstract states and
-               --  objects (SPARK RM 6.1.4(4)).
+               --  The only legal references are those to abstract states,
+               --  discriminants and objects (SPARK RM 6.1.4(4)).
 
                elsif not Ekind_In (Item_Id, E_Abstract_State,
                                             E_Constant,
+                                            E_Discriminant,
                                             E_Variable)
                then
                   SPARK_Msg_N
-                    ("global item must denote object or state", Item);
+                    ("global item must denote object, state or current "
+                     & "instance of concurrent type", Item);
                   return;
                end if;
 
@@ -1971,12 +2086,25 @@ package body Sem_Prag is
 
                elsif Ekind (Item_Id) = E_Constant then
 
-                  --  A constant is read-only item, therefore it cannot act as
-                  --  an output.
+                  --  A constant is a read-only item, therefore it cannot act
+                  --  as an output.
 
                   if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
                      SPARK_Msg_NE
                        ("constant & cannot act as output", Item, Item_Id);
+                     return;
+                  end if;
+
+               --  Discriminant related checks
+
+               elsif Ekind (Item_Id) = E_Discriminant then
+
+                  --  A discriminant is a read-only item, therefore it cannot
+                  --  act as an output.
+
+                  if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
+                     SPARK_Msg_NE
+                       ("discriminant & cannot act as output", Item, Item_Id);
                      return;
                   end if;
 
@@ -2025,7 +2153,9 @@ package body Sem_Prag is
             --  (SPARK RM 6.1.4(4)).
 
             else
-               Error_Msg_N ("global item must denote object or state", Item);
+               Error_Msg_N
+                 ("global item must denote object, state or current instance "
+                  & "of concurrent type", Item);
                return;
             end if;
 
@@ -2286,9 +2416,13 @@ package body Sem_Prag is
             Push_Scope (Spec_Id);
 
             if Ekind (Spec_Id) = E_Task_Type then
-               null;
+               if Has_Discriminants (Spec_Id) then
+                  Install_Discriminants (Spec_Id);
+               end if;
+
             elsif Is_Generic_Subprogram (Spec_Id) then
                Install_Generic_Formals (Spec_Id);
+
             else
                Install_Formals (Spec_Id);
             end if;
@@ -20040,7 +20174,7 @@ package body Sem_Prag is
                      Add_Str_To_Name_Buffer ("package");
 
                   elsif Ekind_In (E, E_Protected_Body, E_Protected_Type) then
-                     Add_Str_To_Name_Buffer ("protected unit");
+                     Add_Str_To_Name_Buffer ("protected type");
 
                   elsif Ekind_In (E, E_Function,
                                      E_Generic_Function,
@@ -20052,7 +20186,7 @@ package body Sem_Prag is
 
                   else
                      pragma Assert (Ekind_In (E, E_Task_Body, E_Task_Type));
-                     Add_Str_To_Name_Buffer ("task unit");
+                     Add_Str_To_Name_Buffer ("task type");
                   end if;
                end Add_Entity_To_Name_Buffer;
 
@@ -23030,17 +23164,19 @@ package body Sem_Prag is
          --    1) Both items denote null
          --    2) Dep_Item denotes null and Ref_Item is Empty (special case)
          --    3) Both items denote attribute 'Result
-         --    4) Both items denote the same formal parameter
-         --    5) Both items denote the same object
-         --    6) Dep_Item is an abstract state with visible null refinement
+         --    4) Both items denote the same object
+         --    5) Both items denote the same formal parameter
+         --    6) Both items denote the same current instance of a type
+         --    7) Both items denote the same discriminant
+         --    8) Dep_Item is an abstract state with visible null refinement
          --       and Ref_Item denotes null.
-         --    7) Dep_Item is an abstract state with visible null refinement
+         --    9) Dep_Item is an abstract state with visible null refinement
          --       and Ref_Item is Empty (special case).
-         --    8) Dep_Item is an abstract state with visible non-null
+         --   10) Dep_Item is an abstract state with visible non-null
          --       refinement and Ref_Item denotes one of its constituents.
-         --    9) Dep_Item is an abstract state without a visible refinement
+         --   11) Dep_Item is an abstract state without a visible refinement
          --       and Ref_Item denotes the same state.
-         --  When scenario 8 is in effect, the entity of the abstract state
+         --  When scenario 10 is in effect, the entity of the abstract state
          --  denoted by Dep_Item is added to list Refined_States.
 
          procedure Record_Item (Item_Id : Entity_Id);
@@ -23127,7 +23263,8 @@ package body Sem_Prag is
             then
                Matched := True;
 
-            --  Abstract states, formal parameters and objects
+            --  Abstract states, current instances of concurrent types,
+            --  discriminants, formal parameters and objects.
 
             elsif Is_Entity_Name (Dep_Item) then
 
@@ -23175,7 +23312,8 @@ package body Sem_Prag is
                      Matched := True;
                   end if;
 
-               --  A formal parameter or an object matches itself
+               --  A current instance of a concurrent type, discriminant,
+               --  formal parameter or an object matches itself.
 
                elsif Is_Entity_Name (Ref_Item)
                  and then Entity_Of (Ref_Item) = Dep_Item_Id
@@ -26364,7 +26502,7 @@ package body Sem_Prag is
       Depends   : Node_Id;
       Formal    : Entity_Id;
       Global    : Node_Id;
-      List      : Node_Id;
+      Typ       : Entity_Id;
 
    --  Start of processing for Collect_Subprogram_Inputs_Outputs
 
@@ -26425,21 +26563,7 @@ package body Sem_Prag is
 
       if Present (Global) then
          Global_Seen := True;
-         List := Expression (Get_Argument (Global, Spec_Id));
-
-         --  The pragma may not have been analyzed because of the arbitrary
-         --  declaration order of aspects. Make sure that it is analyzed for
-         --  the purposes of item extraction.
-
-         if not Analyzed (List) then
-            if Pragma_Name (Global) = Name_Refined_Global then
-               Analyze_Refined_Global_In_Decl_Part (Global);
-            else
-               Analyze_Global_In_Decl_Part (Global);
-            end if;
-         end if;
-
-         Collect_Global_List (List);
+         Collect_Global_List (Expression (Get_Argument (Global, Spec_Id)));
 
       --  When the related subprogram lacks pragma [Refined_]Global, fall back
       --  to [Refined_]Depends if the caller requests this behavior. Synthesize
@@ -26461,6 +26585,45 @@ package body Sem_Prag is
 
          else
             Collect_Dependency_Clause (Clauses);
+         end if;
+      end if;
+
+      if Ekind (Scope (Spec_Id)) = E_Protected_Type then
+         Typ := Scope (Spec_Id);
+
+         --  A single protected type declaration does not have a current
+         --  instance because the type is technically an object.
+
+         if Is_Single_Concurrent_Type_Declaration (Declaration_Node (Typ)) then
+            null;
+
+         --  Otherwise the current instance of the protected type acts as a
+         --  formal parameter of mode IN for functions and IN OUT for entries
+         --  and procedures (SPARK RM 6.1.4).
+
+         else
+            Append_New_Elmt (Typ, Subp_Inputs);
+
+            if Ekind_In (Spec_Id, E_Entry, E_Entry_Family, E_Procedure) then
+               Append_New_Elmt (Typ, Subp_Outputs);
+            end if;
+         end if;
+
+      elsif Ekind (Spec_Id) = E_Task_Type then
+         Typ := Spec_Id;
+
+         --  A single task type declaration does not have a current instance
+         --  because the type is technically an object.
+
+         if Is_Single_Concurrent_Type_Declaration (Declaration_Node (Typ)) then
+            null;
+
+         --  Otherwise the current instance of the task type acts as a formal
+         --  parameter of mode IN OUT (SPARK RM 6.1.4).
+
+         else
+            Append_New_Elmt (Typ, Subp_Inputs);
+            Append_New_Elmt (Typ, Subp_Outputs);
          end if;
       end if;
    end Collect_Subprogram_Inputs_Outputs;
@@ -27021,6 +27184,31 @@ package body Sem_Prag is
 
       return Add_Config_Static_String (Arg);
    end Is_Config_Static_String;
+
+   ---------------------
+   -- Is_CCT_Instance --
+   ---------------------
+
+   function Is_CCT_Instance (Ref : Node_Id) return Boolean is
+      Ref_Id : constant Entity_Id := Entity (Ref);
+      S      : Entity_Id;
+
+   begin
+      --  Climb the scope chain looking for an enclosing concurrent type that
+      --  matches the referenced entity.
+
+      S := Current_Scope;
+      while Present (S) and then S /= Standard_Standard loop
+         if Ekind_In (S, E_Protected_Type, E_Task_Type) and then S = Ref_Id
+         then
+            return True;
+         end if;
+
+         S := Scope (S);
+      end loop;
+
+      return False;
+   end Is_CCT_Instance;
 
    -------------------------------
    -- Is_Elaboration_SPARK_Mode --

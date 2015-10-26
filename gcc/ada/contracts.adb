@@ -578,6 +578,39 @@ package body Contracts is
       end if;
    end Analyze_Entry_Or_Subprogram_Contract;
 
+   ------------------------------------------
+   -- Analyze_Initial_Declaration_Contract --
+   ------------------------------------------
+
+   procedure Analyze_Initial_Declaration_Contract (Body_Decl : Node_Id) is
+      Spec_Id : constant Entity_Id := Unique_Defining_Entity (Body_Decl);
+
+   begin
+      --  Note that stubs are excluded because the compiler always analyzes the
+      --  proper body when a stub is encountered.
+
+      if Nkind (Body_Decl) = N_Entry_Body then
+         Analyze_Entry_Or_Subprogram_Contract (Spec_Id);
+
+      elsif Nkind (Body_Decl) = N_Package_Body then
+         Analyze_Package_Contract (Spec_Id);
+
+      elsif Nkind (Body_Decl) = N_Protected_Body then
+         Analyze_Protected_Contract (Spec_Id);
+
+      elsif Nkind (Body_Decl) = N_Subprogram_Body then
+         if Present (Corresponding_Spec (Body_Decl)) then
+            Analyze_Entry_Or_Subprogram_Contract (Spec_Id);
+         end if;
+
+      elsif Nkind (Body_Decl) = N_Task_Body then
+         Analyze_Task_Contract (Spec_Id);
+
+      else
+         raise Program_Error;
+      end if;
+   end Analyze_Initial_Declaration_Contract;
+
    -----------------------------
    -- Analyze_Object_Contract --
    -----------------------------

@@ -1354,6 +1354,11 @@ package body Sem_Ch9 is
            (Sloc (N), Entry_Name, P_Type, N, Decls);
       end if;
 
+      --  An entry body "freezes" the contract of its initial declaration. This
+      --  analysis depends on attribute Corresponding_Body being set.
+
+      Analyze_Initial_Declaration_Contract (N);
+
       if Present (Decls) then
          Analyze_Declarations (Decls);
          Inspect_Deferred_Constant_Completion (Decls);
@@ -1811,10 +1816,13 @@ package body Sem_Ch9 is
       Set_Corresponding_Body (Parent (Spec_Id), Body_Id);
       Set_Has_Completion (Spec_Id);
       Install_Declarations (Spec_Id);
-
       Expand_Protected_Body_Declarations (N, Spec_Id);
-
       Last_E := Last_Entity (Spec_Id);
+
+      --  A protected body "freezes" the contract of its initial declaration.
+      --  This analysis depends on attribute Corresponding_Spec being set.
+
+      Analyze_Initial_Declaration_Contract (N);
 
       Analyze_Declarations (Declarations (N));
 
@@ -2818,9 +2826,9 @@ package body Sem_Ch9 is
 
    begin
       --  A task body "freezes" the contract of the nearest enclosing package
-      --  body. This ensures that any annotations referenced by the contract
-      --  of an entry or subprogram body declared within the current protected
-      --  body are available.
+      --  body. This ensures that annotations referenced by the contract of an
+      --  entry or subprogram body declared within the current protected body
+      --  are available.
 
       Analyze_Enclosing_Package_Body_Contract (N);
 
@@ -2883,6 +2891,11 @@ package body Sem_Ch9 is
       Set_Has_Completion (Spec_Id);
       Install_Declarations (Spec_Id);
       Last_E := Last_Entity (Spec_Id);
+
+      --  A task body "freezes" the contract of its initial declaration. This
+      --  analysis depends on attribute Corresponding_Spec being set.
+
+      Analyze_Initial_Declaration_Contract (N);
 
       Analyze_Declarations (Decls);
       Inspect_Deferred_Constant_Completion (Decls);

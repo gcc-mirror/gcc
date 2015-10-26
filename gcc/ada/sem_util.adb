@@ -6347,7 +6347,10 @@ package body Sem_Util is
          --  Follow a possible chain of renamings to reach the root renamed
          --  object.
 
-         while Present (Id) and then Present (Renamed_Object (Id)) loop
+         while Present (Id)
+           and then Is_Object (Id)
+           and then Present (Renamed_Object (Id))
+         loop
             if Is_Entity_Name (Renamed_Object (Id)) then
                Id := Entity (Renamed_Object (Id));
             else
@@ -7113,7 +7116,7 @@ package body Sem_Util is
                Res_Index := Res_Index + 5;
 
             elsif Is_Task then
-               Res (Res_Index .. Res_Index + 8) := "task unit";
+               Res (Res_Index .. Res_Index + 8) := "task type";
                Res_Index := Res_Index + 9;
 
             else
