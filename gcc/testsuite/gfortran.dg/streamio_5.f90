@@ -7,7 +7,7 @@ program streamtest5
   character(1)   :: tchar
   integer        :: i,j,k
    
-  open(10, file="teststream", access="stream", form="unformatted")
+  open(10, file="teststream_streamio_5", access="stream", form="unformatted")
   
   do i=1,1229
     do j=0,9
@@ -18,7 +18,7 @@ program streamtest5
   
   close(10)
   
-  open(10, file="teststream", access="stream", form="unformatted")
+  open(10, file="teststream_streamio_5", access="stream", form="unformatted")
   
   do i=1,1229
     do j=0,9

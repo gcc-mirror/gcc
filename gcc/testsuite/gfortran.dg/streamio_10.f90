@@ -8,7 +8,7 @@ program stream_io_10
   integer(kind=8) :: thepos
   a = (/ 1, 2, 3, 4 /)
   b = a
-  open(10, file="teststream", access="stream")
+  open(10, file="teststream_streamio_10", access="stream")
   write(10) a
   inquire(10, pos=thepos)
   if (thepos.ne.17) call abort()
