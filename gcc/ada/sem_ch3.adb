@@ -5227,6 +5227,31 @@ package body Sem_Ch3 is
       end if;
 
       Analyze_Dimension (N);
+
+      --  Check No_Dynamic_Sized_Objects restriction, which disallows subtype
+      --  indications on composite types where the constraints are dynamic.
+      --  Note that object declarations and aggregates generate implicit
+      --  subtype declarations, which this covers. One special case is that the
+      --  implicitly generated "=" for discriminated types includes an
+      --  offending subtype declaration, which is harmless, so we ignore it
+      --  here.
+
+      if Nkind (Subtype_Indication (N)) = N_Subtype_Indication then
+         declare
+            Cstr : constant Node_Id := Constraint (Subtype_Indication (N));
+         begin
+            if Nkind (Cstr) = N_Index_Or_Discriminant_Constraint
+              and then not (Is_Internal (Defining_Identifier (N))
+                              and then Is_TSS (Scope (Defining_Identifier (N)),
+                                               TSS_Composite_Equality))
+              and then not Within_Init_Proc
+            then
+               if not All_Composite_Constraints_Static (Cstr) then
+                  Check_Restriction (No_Dynamic_Sized_Objects, Cstr);
+               end if;
+            end if;
+         end;
+      end if;
    end Analyze_Subtype_Declaration;
 
    --------------------------------

@@ -1,3 +1,15 @@
+2015-10-26  Bob Duff  <duff@adacore.com>
+
+	* s-rident.ads (No_Dynamic_Sized_Objects): New restriction name.
+	* sem_util.ads, sem_util.adb (All_Composite_Constraints_Static):
+	New function to check that all relevant constraints are static.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Call
+	All_Composite_Constraints_Static on the bounds of named array
+	aggregates.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Call
+	All_Composite_Constraints_Static if the type is composite and
+	the subtype is constrained.
+
 2015-10-26  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch6.adb (Expand_N_Subprogram_Declaration): Skip the frontend
