@@ -1,3 +1,10 @@
+2015-10-26  Ilya Verbin  <ilya.verbin@intel.com>
+	    Aleksander Ivanushenko  <aleksander.ivanushenko@intel.com>
+
+	* runtime/offload_host.cpp (OffloadDescriptor::setup_misc_data): Use
+	calloc instead of malloc.
+	(__offload_fini_library): Set mic_engines_total to zero.
+
 2015-10-13  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_dev2dev): New

@@ -2421,8 +2421,8 @@ bool OffloadDescriptor::setup_misc_data(const char *name)
         }
 
         // initialize function descriptor
-        m_func_desc = (FunctionDescriptor*) malloc(m_func_desc_size +
-                                                   misc_data_size);
+        m_func_desc = (FunctionDescriptor*) calloc(1, m_func_desc_size
+						      + misc_data_size);
         if (m_func_desc == NULL)
           LIBOFFLOAD_ERROR(c_malloc);
         m_func_desc->console_enabled = console_enabled;
@@ -5087,6 +5087,7 @@ static void __offload_fini_library(void)
     OFFLOAD_DEBUG_TRACE(2, "Cleanup offload library ...\n");
     if (mic_engines_total > 0) {
         delete[] mic_engines;
+        mic_engines_total = 0;
 
         if (mic_proxy_fs_root != 0) {
             free(mic_proxy_fs_root);
