@@ -1,5 +1,19 @@
 2015-10-26  Richard Biener  <rguenther@suse.de>
 
+	* tree-object-size.c: Remove builtins.h include, include tree-cfg.h.
+	(do_valueize): New function.
+	(pass_object_sizes::execute): Use gimple_fold_stmt_to_constant and
+	replace_uses_by.
+	* tree-ssa-threadedge.c: Remove builtins.h include, include
+	gimple-fold.h
+	(fold_assignment_stmt): Remove.
+	(threadedge_valueize): New function.
+	(record_temporary_equivalences_from_stmts): Use
+	gimple_fold_stmt_to_constant_1, note additional cleanup
+	opportunities.
+
+2015-10-26  Richard Biener  <rguenther@suse.de>
+
 	* match.pd ((A & ~B) - (A & B) -> (A ^ B) - B): Add missing :c.
 	( (X & ~Y) | (~X & Y) -> X ^ Y): Remove redundant :c.
 
