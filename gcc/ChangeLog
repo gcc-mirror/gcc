@@ -1,5 +1,14 @@
 2015-10-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (do_real_to_int_conversion): New function.
+	(fold_fixed_mathfn, fold_builtin_int_roundingfn): Delete.
+	(fold_builtin_1): Handle constant {i,l,ll}{ceil,floor,round}{f,,l}
+	arguments here.
+	* match.pd: Add rules previously handled by fold_fixed_mathfn
+	and fold_builtin_int_roundingfn.
+
+2015-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* match.pd: Use macros to define built-in operator lists.
 
 2015-10-20  Richard Sandiford  <richard.sandiford@arm.com>

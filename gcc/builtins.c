@@ -158,7 +158,6 @@ static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
 static tree fold_builtin_pow (location_t, tree, tree, tree, tree);
 static tree fold_builtin_powi (location_t, tree, tree, tree, tree);
-static tree fold_builtin_int_roundingfn (location_t, tree, tree);
 static tree fold_builtin_bitop (tree, tree);
 static tree fold_builtin_strchr (location_t, tree, tree, tree);
 static tree fold_builtin_memchr (location_t, tree, tree, tree, tree);
@@ -7273,6 +7272,35 @@ fold_builtin_strlen (location_t loc, tree type, tree arg)
     }
 }
 
+/* If ARG is a foldable constant real, use FN to round it to an integer
+   value and try to represent the result in integer type ITYPE.  Return
+   the value on success, otherwise return null.  */
+
+static tree
+do_real_to_int_conversion (tree itype, tree arg,
+			   void (*fn) (REAL_VALUE_TYPE *, machine_mode,
+				       const REAL_VALUE_TYPE *))
+{
+  if (TREE_CODE (arg) != REAL_CST || TREE_OVERFLOW (arg))
+    return NULL_TREE;
+
+  const REAL_VALUE_TYPE *value = TREE_REAL_CST_PTR (arg);
+  if (!real_isfinite (value))
+    return NULL_TREE;
+
+  tree ftype = TREE_TYPE (arg);
+  REAL_VALUE_TYPE rounded;
+  fn (&rounded, TYPE_MODE (ftype), value);
+
+  bool fail = false;
+  wide_int ival = real_to_integer (&rounded, &fail, TYPE_PRECISION (itype));
+  if (fail)
+    return NULL_TREE;
+
+  return wide_int_to_tree (itype, ival);
+}
+
+
 /* Fold a call to __builtin_inf or __builtin_huge_val.  */
 
 static tree
@@ -7314,112 +7342,6 @@ fold_builtin_nan (tree arg, tree type, int quiet)
   return build_real (type, real);
 }
 
-/* FNDECL is assumed to be builtin which can narrow the FP type of
-   the argument, for instance lround((double)f) -> lroundf (f).
-   Do the transformation for a call with argument ARG.  */
-
-static tree
-fold_fixed_mathfn (location_t loc, tree fndecl, tree arg)
-{
-  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
-
-  if (!validate_arg (arg, REAL_TYPE))
-    return NULL_TREE;
-
-  /* If argument is already integer valued, and we don't need to worry
-     about setting errno, there's no need to perform rounding.  */
-  if (! flag_errno_math && integer_valued_real_p (arg))
-    return fold_build1_loc (loc, FIX_TRUNC_EXPR,
-			TREE_TYPE (TREE_TYPE (fndecl)), arg);
-
-  if (optimize)
-    {
-      tree ftype = TREE_TYPE (arg);
-      tree arg0 = strip_float_extensions (arg);
-      tree newtype = TREE_TYPE (arg0);
-      tree decl;
-
-      if (TYPE_PRECISION (newtype) < TYPE_PRECISION (ftype)
-	  && (decl = mathfn_built_in (newtype, fcode)))
-	return build_call_expr_loc (loc, decl, 1,
-				fold_convert_loc (loc, newtype, arg0));
-    }
-
-  /* Canonicalize iround (x) to lround (x) on ILP32 targets where
-     sizeof (int) == sizeof (long).  */
-  if (TYPE_PRECISION (integer_type_node)
-      == TYPE_PRECISION (long_integer_type_node))
-    {
-      tree newfn = NULL_TREE;
-      switch (fcode)
-	{
-	CASE_FLT_FN (BUILT_IN_ICEIL):
-	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LCEIL);
-	  break;
-
-	CASE_FLT_FN (BUILT_IN_IFLOOR):
-	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LFLOOR);
-	  break;
-
-	CASE_FLT_FN (BUILT_IN_IROUND):
-	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LROUND);
-	  break;
-
-	CASE_FLT_FN (BUILT_IN_IRINT):
-	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LRINT);
-	  break;
-
-	default:
-	  break;
-	}
-
-      if (newfn)
-	{
-	  tree newcall = build_call_expr_loc (loc, newfn, 1, arg);
-	  return fold_convert_loc (loc,
-				   TREE_TYPE (TREE_TYPE (fndecl)), newcall);
-	}
-    }
-
-  /* Canonicalize llround (x) to lround (x) on LP64 targets where
-     sizeof (long long) == sizeof (long).  */
-  if (TYPE_PRECISION (long_long_integer_type_node)
-      == TYPE_PRECISION (long_integer_type_node))
-    {
-      tree newfn = NULL_TREE;
-      switch (fcode)
-	{
-	CASE_FLT_FN (BUILT_IN_LLCEIL):
-	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LCEIL);
-	  break;
-
-	CASE_FLT_FN (BUILT_IN_LLFLOOR):
-	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LFLOOR);
-	  break;
-
-	CASE_FLT_FN (BUILT_IN_LLROUND):
-	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LROUND);
-	  break;
-
-	CASE_FLT_FN (BUILT_IN_LLRINT):
-	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LRINT);
-	  break;
-
-	default:
-	  break;
-	}
-
-      if (newfn)
-	{
-	  tree newcall = build_call_expr_loc (loc, newfn, 1, arg);
-	  return fold_convert_loc (loc,
-				   TREE_TYPE (TREE_TYPE (fndecl)), newcall);
-	}
-    }
-
-  return NULL_TREE;
-}
-
 /* Fold function call to builtin sincos, sincosf, or sincosl.  Return
    NULL_TREE if no simplification can be made.  */
 
@@ -7458,74 +7380,6 @@ fold_builtin_sincos (location_t loc,
 		 build2 (MODIFY_EXPR, void_type_node,
 			 build_fold_indirect_ref_loc (loc, arg2),
 			 build1 (REALPART_EXPR, type, call)));
-}
-
-/* Fold function call to builtin lround, lroundf or lroundl (or the
-   corresponding long long versions) and other rounding functions.  ARG
-   is the argument to the call.  Return NULL_TREE if no simplification
-   can be made.  */
-
-static tree
-fold_builtin_int_roundingfn (location_t loc, tree fndecl, tree arg)
-{
-  if (!validate_arg (arg, REAL_TYPE))
-    return NULL_TREE;
-
-  /* Optimize lround of constant value.  */
-  if (TREE_CODE (arg) == REAL_CST && !TREE_OVERFLOW (arg))
-    {
-      const REAL_VALUE_TYPE x = TREE_REAL_CST (arg);
-
-      if (real_isfinite (&x))
-	{
-	  tree itype = TREE_TYPE (TREE_TYPE (fndecl));
-	  tree ftype = TREE_TYPE (arg);
-	  REAL_VALUE_TYPE r;
-	  bool fail = false;
-
-	  switch (DECL_FUNCTION_CODE (fndecl))
-	    {
-	    CASE_FLT_FN (BUILT_IN_IFLOOR):
-	    CASE_FLT_FN (BUILT_IN_LFLOOR):
-	    CASE_FLT_FN (BUILT_IN_LLFLOOR):
-	      real_floor (&r, TYPE_MODE (ftype), &x);
-	      break;
-
-	    CASE_FLT_FN (BUILT_IN_ICEIL):
-	    CASE_FLT_FN (BUILT_IN_LCEIL):
-	    CASE_FLT_FN (BUILT_IN_LLCEIL):
-	      real_ceil (&r, TYPE_MODE (ftype), &x);
-	      break;
-
-	    CASE_FLT_FN (BUILT_IN_IROUND):
-	    CASE_FLT_FN (BUILT_IN_LROUND):
-	    CASE_FLT_FN (BUILT_IN_LLROUND):
-	      real_round (&r, TYPE_MODE (ftype), &x);
-	      break;
-
-	    default:
-	      gcc_unreachable ();
-	    }
-
-	  wide_int val = real_to_integer (&r, &fail, TYPE_PRECISION (itype));
-	  if (!fail)
-	    return wide_int_to_tree (itype, val);
-	}
-    }
-
-  switch (DECL_FUNCTION_CODE (fndecl))
-    {
-    CASE_FLT_FN (BUILT_IN_LFLOOR):
-    CASE_FLT_FN (BUILT_IN_LLFLOOR):
-      /* Fold lfloor (x) where x is nonnegative to FIX_TRUNC (x).  */
-      if (tree_expr_nonnegative_p (arg))
-	return fold_build1_loc (loc, FIX_TRUNC_EXPR,
-			    TREE_TYPE (TREE_TYPE (fndecl)), arg);
-      break;
-    default:;
-    }
-
-  return fold_fixed_mathfn (loc, fndecl, arg);
 }
 
 /* Fold function call to builtin ffs, clz, ctz, popcount and parity
@@ -9453,18 +9307,23 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
     CASE_FLT_FN (BUILT_IN_ICEIL):
     CASE_FLT_FN (BUILT_IN_LCEIL):
     CASE_FLT_FN (BUILT_IN_LLCEIL):
+      return do_real_to_int_conversion (type, arg0, real_ceil);
+
     CASE_FLT_FN (BUILT_IN_LFLOOR):
     CASE_FLT_FN (BUILT_IN_IFLOOR):
     CASE_FLT_FN (BUILT_IN_LLFLOOR):
+      return do_real_to_int_conversion (type, arg0, real_floor);
+
     CASE_FLT_FN (BUILT_IN_IROUND):
     CASE_FLT_FN (BUILT_IN_LROUND):
     CASE_FLT_FN (BUILT_IN_LLROUND):
-      return fold_builtin_int_roundingfn (loc, fndecl, arg0);
+      return do_real_to_int_conversion (type, arg0, real_round);
 
     CASE_FLT_FN (BUILT_IN_IRINT):
     CASE_FLT_FN (BUILT_IN_LRINT):
     CASE_FLT_FN (BUILT_IN_LLRINT):
-      return fold_fixed_mathfn (loc, fndecl, arg0);
+      /* Not yet folded to a constant.  */
+      return NULL_TREE;
 
     case BUILT_IN_BSWAP16:
     case BUILT_IN_BSWAP32:

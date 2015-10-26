@@ -1,3 +1,7 @@
+2015-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/builtin-minmax-1.c: Don't run at -O0.
+
 2015-01-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/67171
