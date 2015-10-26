@@ -9103,9 +9103,19 @@ package body Sem_Ch13 is
    --  Start of processing for Check_Aspect_At_End_Of_Declarations
 
    begin
+      --  In an instance we do not perform the consistency check between freeze
+      --  point and end of declarations, because it was done already in the
+      --  analysis of the generic. Furthermore, the delayed analysis of an
+      --  aspect of the instance may produce spurious errors when the generic
+      --  is a child unit that references entities in the parent (which might
+      --  not be in scope at the freeze point of the instance).
+
+      if In_Instance then
+         return;
+
       --  Case of aspects Dimension, Dimension_System and Synchronization
 
-      if A_Id = Aspect_Synchronization then
+      elsif A_Id = Aspect_Synchronization then
          return;
 
       --  Case of stream attributes, just have to compare entities. However,

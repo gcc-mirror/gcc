@@ -6409,14 +6409,14 @@ package body Sem_Res is
             --  assertions as logic expressions.
 
             elsif In_Assertion_Expr /= 0 then
-               Error_Msg_NE ("?no contextual analysis of &", N, Nam);
+               Error_Msg_NE ("info: no contextual analysis of &?", N, Nam);
                Error_Msg_N ("\call appears in assertion expression", N);
                Set_Is_Inlined_Always (Nam_UA, False);
 
             --  Calls cannot be inlined inside default expressions
 
             elsif In_Default_Expr then
-               Error_Msg_NE ("?no contextual analysis of &", N, Nam);
+               Error_Msg_NE ("info: no contextual analysis of &?", N, Nam);
                Error_Msg_N ("\call appears in default expression", N);
                Set_Is_Inlined_Always (Nam_UA, False);
 
@@ -6429,7 +6429,7 @@ package body Sem_Res is
 
                if No (Body_Id) then
                   Error_Msg_NE
-                    ("?no contextual analysis of & (body not seen yet)",
+                    ("info: no contextual analysis of & (body not seen yet)?",
                      N, Nam);
                   Set_Is_Inlined_Always (Nam_UA, False);
 
@@ -6445,7 +6445,7 @@ package body Sem_Res is
                --  expressions, that are not handled by GNATprove.
 
                elsif Is_Potentially_Unevaluated (N) then
-                  Error_Msg_NE ("?no contextual analysis of &", N, Nam);
+                  Error_Msg_NE ("info: no contextual analysis of &?", N, Nam);
                   Error_Msg_N
                     ("\call appears in potentially unevaluated context", N);
                   Set_Is_Inlined_Always (Nam_UA, False);

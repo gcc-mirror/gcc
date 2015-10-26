@@ -123,7 +123,7 @@ is
       --  rounding of the division operator in particular, to be the same as
       --  effects on integer types. To get the correct rounding we first
       --  convert Time_Span to its root type Duration, which is represented as
-      --  an 64-bit signed integer, and then use integer division.
+      --  a 64-bit signed integer, and then use integer division.
 
       type Duration_Rep is range -(2 ** 63) .. +((2 ** 63 - 1));
 
@@ -131,7 +131,7 @@ is
         new Unchecked_Conversion (Duration, Duration_Rep);
    begin
       return Integer
-        (To_Integer (Duration (Left)) / To_Integer (Duration (Right)));
+               (To_Integer (Duration (Left)) / To_Integer (Duration (Right)));
    end "/";
 
    function "/" (Left : Time_Span; Right : Integer) return Time_Span is
