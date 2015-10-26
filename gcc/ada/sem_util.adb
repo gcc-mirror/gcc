@@ -5345,7 +5345,6 @@ package body Sem_Util is
    -------------------------
 
    function Denotes_Same_Prefix (A1, A2 : Node_Id) return Boolean is
-
    begin
       if Is_Entity_Name (A1) then
          if Nkind_In (A2, N_Selected_Component, N_Indexed_Component)
@@ -7856,6 +7855,7 @@ package body Sem_Util is
          return Defining_Entity (Unit);
       end if;
    end Get_Parent_Entity;
+
    -------------------
    -- Get_Pragma_Id --
    -------------------
@@ -8806,7 +8806,7 @@ package body Sem_Util is
       Comp : Entity_Id;
 
    begin
-      --  A scalar type is fully default initialized if it is subjec to aspect
+      --  A scalar type is fully default initialized if it is subject to aspect
       --  Default_Value.
 
       if Is_Scalar_Type (Typ) then

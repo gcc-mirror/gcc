@@ -120,7 +120,7 @@ package body Sem_Aux is
       --  If there is an expression, return it
 
       elsif Present (Expression (D)) then
-         return (Expression (D));
+         return Expression (D);
 
       --  For a constant, see if we have a full view
 

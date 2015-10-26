@@ -6508,13 +6508,13 @@ package body Exp_Util is
       Expr : Node_Id) return Node_Id
    is
       Loc      : constant Source_Ptr := Sloc (Expr);
-      Nam      : Name_Id;
       Arg_List : List_Id;
+      Nam      : Name_Id;
 
    begin
-      --  If predicate checks are suppressed, then return a null statement.
-      --  For this call, we check only the scope setting. If the caller wants
-      --  to check a specific entity's setting, they must do it manually.
+      --  If predicate checks are suppressed, then return a null statement. For
+      --  this call, we check only the scope setting. If the caller wants to
+      --  check a specific entity's setting, they must do it manually.
 
       if Predicate_Checks_Suppressed (Empty) then
          return Make_Null_Statement (Loc);
@@ -6548,8 +6548,8 @@ package body Exp_Util is
          Append_To (Arg_List,
            Make_Pragma_Argument_Association (Loc,
              Expression =>
-               New_Copy_Tree (Expression
-                 (Find_Aspect (Typ, Aspect_Predicate_Failure)))));
+               New_Copy_Tree
+                 (Expression (Find_Aspect (Typ, Aspect_Predicate_Failure)))));
       end if;
 
       return
