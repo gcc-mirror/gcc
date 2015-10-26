@@ -1,11 +1,12 @@
 /* { dg-do run } */
 
+#include <stdio.h>
 #include <stdlib.h>
 
 int
 main (void)
 {
-  __builtin_printf ("CheCKpOInT\n");
+  fprintf (stderr, "CheCKpOInT\n");
 #pragma acc kernels
   {
     abort ();
