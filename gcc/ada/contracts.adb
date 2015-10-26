@@ -268,7 +268,7 @@ package body Contracts is
 
    begin
       --  Climb the parent chain looking for an enclosing body. Do not use the
-      --  scope stack as a body uses the entity of its corresponding spec.
+      --  scope stack, as a body uses the entity of its corresponding spec.
 
       Par := Parent (Body_Decl);
       while Present (Par) loop
@@ -300,13 +300,13 @@ package body Contracts is
 
    begin
       --  The loop parameter in an element iterator over a formal container
-      --  is declared with an object declaration but no contracts apply.
+      --  is declared with an object declaration, but no contracts apply.
 
       if Ekind (Obj_Id) = E_Loop_Parameter then
          return;
       end if;
 
-      --  Do not analyze a contract mutiple times
+      --  Do not analyze a contract multiple times
 
       Items := Contract (Obj_Id);
 
@@ -318,13 +318,13 @@ package body Contracts is
          end if;
       end if;
 
-      --  Constant related checks
+      --  Constant-related checks
 
       if Ekind (Obj_Id) = E_Constant then
 
          --  A constant cannot be effectively volatile (SPARK RM 7.1.3(4)).
-         --  This check is relevant only when SPARK_Mode is on as it is not a
-         --  standard Ada legality rule. Internally-generated constants that
+         --  This check is relevant only when SPARK_Mode is on, as it is not
+         --  a standard Ada legality rule. Internally-generated constants that
          --  map generic formals to actuals in instantiations are allowed to
          --  be volatile.
 
@@ -336,11 +336,11 @@ package body Contracts is
             Error_Msg_N ("constant cannot be volatile", Obj_Id);
          end if;
 
-      --  Variable related checks
+      --  Variable-related checks
 
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
 
-         --  The following checks are relevant only when SPARK_Mode is on as
+         --  The following checks are relevant only when SPARK_Mode is on, as
          --  they are not standard Ada legality rules. Internally generated
          --  temporaries are ignored.
 
@@ -452,7 +452,7 @@ package body Contracts is
 
       --  A ghost object cannot be imported or exported (SPARK RM 6.9(8)). One
       --  exception to this is the object that represents the dispatch table of
-      --  a Ghost tagged type as the symbol needs to be exported.
+      --  a Ghost tagged type, as the symbol needs to be exported.
 
       if Comes_From_Source (Obj_Id) and then Is_Ghost_Entity (Obj_Id) then
          if Is_Exported (Obj_Id) then
@@ -479,7 +479,7 @@ package body Contracts is
       Ref_State : Node_Id;
 
    begin
-      --  Do not analyze a contract mutiple times
+      --  Do not analyze a contract multiple times
 
       if Present (Items) then
          if Analyzed (Items) then
@@ -506,7 +506,7 @@ package body Contracts is
 
       --  State refinement is required when the package declaration defines at
       --  least one abstract state. Null states are not considered. Refinement
-      --  is not envorced when SPARK checks are turned off.
+      --  is not enforced when SPARK checks are turned off.
 
       elsif SPARK_Mode /= Off
         and then Requires_State_Refinement (Spec_Id, Body_Id)
@@ -543,7 +543,7 @@ package body Contracts is
       Prag_Nam  : Name_Id;
 
    begin
-      --  Do not analyze a contract mutiple times
+      --  Do not analyze a contract multiple times
 
       if Present (Items) then
          if Analyzed (Items) then
@@ -562,7 +562,7 @@ package body Contracts is
 
       if Present (Items) then
 
-         --  Locate and store pragmas Initial_Condition and Initializes since
+         --  Locate and store pragmas Initial_Condition and Initializes, since
          --  their order of analysis matters.
 
          Prag := Classifications (Items);
@@ -579,7 +579,7 @@ package body Contracts is
             Prag := Next_Pragma (Prag);
          end loop;
 
-         --  Analyze the initialization related pragmas. Initializes must come
+         --  Analyze the initialization-related pragmas. Initializes must come
          --  before Initial_Condition due to item dependencies.
 
          if Present (Init) then
@@ -639,7 +639,7 @@ package body Contracts is
       if Ekind (Body_Id) = E_Void then
          return;
 
-      --  Do not analyze a contract mutiple times
+      --  Do not analyze a contract multiple times
 
       elsif Present (Items) then
          if Analyzed (Items) then
@@ -663,12 +663,12 @@ package body Contracts is
          null;
 
       --  The subprogram body is a completion, analyze all delayed pragmas that
-      --  apply. Note that when the body is stand alone, the pragmas are always
+      --  apply. Note that when the body is stand-alone, the pragmas are always
       --  analyzed on the spot.
 
       elsif Present (Items) then
 
-         --  Locate and store pragmas Refined_Depends and Refined_Global since
+         --  Locate and store pragmas Refined_Depends and Refined_Global, since
          --  their order of analysis matters.
 
          Prag := Classifications (Items);
@@ -685,7 +685,7 @@ package body Contracts is
             Prag := Next_Pragma (Prag);
          end loop;
 
-         --  Analyze Refined_Global first as Refined_Depends may mention items
+         --  Analyze Refined_Global first, as Refined_Depends may mention items
          --  classified in the global refinement.
 
          if Present (Ref_Global) then
@@ -705,9 +705,9 @@ package body Contracts is
 
       Check_Result_And_Post_State (Body_Id);
 
-      --  A stand alone non-volatile function body cannot have an effectively
+      --  A stand-alone nonvolatile function body cannot have an effectively
       --  volatile formal parameter or return type (SPARK RM 7.1.3(9)). This
-      --  check is relevant only when SPARK_Mode is on as it is not a standard
+      --  check is relevant only when SPARK_Mode is on, as it is not a standard
       --  legality rule. The check is performed here because Volatile_Function
       --  is processed after the analysis of the related subprogram body.
 
@@ -755,7 +755,7 @@ package body Contracts is
       Prag_Nam  : Name_Id;
 
    begin
-      --  Do not analyze a contract mutiple times
+      --  Do not analyze a contract multiple times
 
       if Present (Items) then
          if Analyzed (Items) then
@@ -820,7 +820,7 @@ package body Contracts is
             Prag := Next_Pragma (Prag);
          end loop;
 
-         --  Analyze Global first as Depends may mention items classified in
+         --  Analyze Global first, as Depends may mention items classified in
          --  the global categorization.
 
          if Present (Global) then
@@ -840,11 +840,11 @@ package body Contracts is
          Check_Result_And_Post_State (Subp_Id);
       end if;
 
-      --  A non-volatile function cannot have an effectively volatile formal
+      --  A nonvolatile function cannot have an effectively volatile formal
       --  parameter or return type (SPARK RM 7.1.3(9)). This check is relevant
-      --  only when SPARK_Mode is on as it is not a standard legality rule. The
-      --  check is performed here because pragma Volatile_Function is processed
-      --  after the analysis of the related subprogram declaration.
+      --  only when SPARK_Mode is on, as it is not a standard legality rule.
+      --  The check is performed here because pragma Volatile_Function is
+      --  processed after the analysis of the related subprogram declaration.
 
       if SPARK_Mode = On
         and then Ekind_In (Subp_Id, E_Function, E_Generic_Function)
@@ -1368,7 +1368,7 @@ package body Contracts is
 
             --  If the pragma is a conjunct in a composite postcondition, it
             --  has been processed in reverse order. In the postcondition body
-            --  if must appear before the others.
+            --  it must appear before the others.
 
             if Nkind (Item) = N_Pragma
               and then From_Aspect_Specification (Item)
@@ -1451,7 +1451,7 @@ package body Contracts is
          Set_Debug_Info_Needed   (Proc_Id);
          Set_Postconditions_Proc (Subp_Id, Proc_Id);
 
-         --  The related subprogram is a function, create the specification of
+         --  The related subprogram is a function: create the specification of
          --  parameter _Result.
 
          if Present (Result) then
@@ -1464,7 +1464,7 @@ package body Contracts is
 
          --  Insert _Postconditions before the first source declaration of the
          --  body. This ensures that the body will not cause any premature
-         --  freezing as it may mention types:
+         --  freezing, as it may mention types:
 
          --    procedure Proc (Obj : Array_Typ) is
          --       procedure _postconditions is
@@ -1476,14 +1476,14 @@ package body Contracts is
          --    begin
 
          --  In the example above, Obj is of type T but the incorrect placement
-         --  of _Postconditions will cause a crash in gigi due to an out of
+         --  of _Postconditions will cause a crash in gigi due to an out-of-
          --  order reference. The body of _Postconditions must be placed after
          --  the declaration of Temp to preserve correct visibility.
 
-         --  Set an explicit End_Lavel to override the sloc of the implicit
+         --  Set an explicit End_Label to override the sloc of the implicit
          --  RETURN statement, and prevent it from inheriting the sloc of one
-         --  the postconditions: this would cause confusing debug into to be
-         --  produced, interfering with coverage analysis tools.
+         --  the postconditions: this would cause confusing debug info to be
+         --  produced, interfering with coverage-analysis tools.
 
          Proc_Bod :=
            Make_Subprogram_Body (Loc,
@@ -1701,11 +1701,11 @@ package body Contracts is
       procedure Process_Postconditions (Stmts : in out List_Id) is
          procedure Process_Body_Postconditions (Post_Nam : Name_Id);
          --  Collect all [refined] postconditions of a specific kind denoted
-         --  by Post_Nam that belong to the body and generate pragma Check
+         --  by Post_Nam that belong to the body, and generate pragma Check
          --  equivalents in list Stmts.
 
          procedure Process_Spec_Postconditions;
-         --  Collect all [inherited] postconditions of the spec and generate
+         --  Collect all [inherited] postconditions of the spec, and generate
          --  pragma Check equivalents in list Stmts.
 
          ---------------------------------
@@ -1736,7 +1736,7 @@ package body Contracts is
 
             --  The subprogram body being processed is actually the proper body
             --  of a stub with a corresponding spec. The subprogram stub may
-            --  carry a postcondition pragma in which case it must be taken
+            --  carry a postcondition pragma, in which case it must be taken
             --  into account. The pragma appears after the stub.
 
             if Present (Spec_Id) and then Nkind (Unit_Decl) = N_Subunit then
@@ -1867,8 +1867,8 @@ package body Contracts is
          --  Prepend a single item to the declarations of the subprogram body
 
          procedure Prepend_To_Decls_Or_Save (Prag : Node_Id);
-         --  Save a class-wide precondition into Class_Pre or prepend a normal
-         --  precondition ot the declarations of the body and analyze it.
+         --  Save a class-wide precondition into Class_Pre, or prepend a normal
+         --  precondition to the declarations of the body and analyze it.
 
          procedure Process_Inherited_Preconditions;
          --  Collect all inherited class-wide preconditions and merge them into
@@ -1885,7 +1885,7 @@ package body Contracts is
          procedure Merge_Preconditions (From : Node_Id; Into : Node_Id) is
             function Expression_Arg (Prag : Node_Id) return Node_Id;
             --  Return the boolean expression argument of a precondition while
-            --  updating its parenteses count for the subsequent merge.
+            --  updating its parentheses count for the subsequent merge.
 
             function Message_Arg (Prag : Node_Id) return Node_Id;
             --  Return the message argument of a precondition
@@ -1979,7 +1979,7 @@ package body Contracts is
             Check_Prag := Build_Pragma_Check_Equivalent (Prag);
 
             --  Save the sole class-wide precondition (if any) for the next
-            --  step where it will be merged with inherited preconditions.
+            --  step, where it will be merged with inherited preconditions.
 
             if Class_Present (Prag) then
                pragma Assert (No (Class_Pre));
@@ -2032,7 +2032,7 @@ package body Contracts is
                              Subp_Id  => Spec_Id,
                              Inher_Id => Subp_Id);
 
-                        --  The spec or an inherited subprogram already yielded
+                        --  The spec of an inherited subprogram already yielded
                         --  a class-wide precondition. Merge the existing
                         --  precondition with the current one using "or else".
 
@@ -2081,8 +2081,9 @@ package body Contracts is
             end if;
 
             --  The subprogram declaration being processed is actually a body
-            --  stub. The stub may carry a precondition pragma in which case it
-            --  must be taken into account. The pragma appears after the stub.
+            --  stub. The stub may carry a precondition pragma, in which case
+            --  it must be taken into account. The pragma appears after the
+            --  stub.
 
             Subp_Decl := Unit_Declaration_Node (Subp_Id);
 
@@ -2125,7 +2126,7 @@ package body Contracts is
       --  Start of processing for Process_Preconditions
 
       begin
-         --  Find the last internally generate declaration starting from the
+         --  Find the last internally generated declaration, starting from the
          --  top of the body declarations. This ensures that discriminals and
          --  subtypes are properly visible to the pragma Check equivalents.
 
@@ -2139,7 +2140,7 @@ package body Contracts is
          end if;
 
          --  The processing of preconditions is done in reverse order (body
-         --  first) because each pragma Check equivalent is inserted at the
+         --  first), because each pragma Check equivalent is inserted at the
          --  top of the declarations. This ensures that the final order is
          --  consistent with following diagram:
 
@@ -2189,7 +2190,7 @@ package body Contracts is
          return;
 
       --  The contract of a generic subprogram or one declared in a generic
-      --  context is not expanded as the corresponding instance will provide
+      --  context is not expanded, as the corresponding instance will provide
       --  the executable semantics of the contract.
 
       elsif Is_Generic_Subprogram (Subp_Id) or else Inside_A_Generic then
@@ -2201,7 +2202,7 @@ package body Contracts is
       elsif not Has_Significant_Contract (Subp_Id) then
          return;
 
-      --  The contract of an ignored Ghost subprogram does not need expansion
+      --  The contract of an ignored Ghost subprogram does not need expansion,
       --  because the subprogram and all calls to it will be removed.
 
       elsif Is_Ignored_Ghost_Entity (Subp_Id) then
@@ -2281,7 +2282,7 @@ package body Contracts is
 
       --  Step 3: Handle pragma Contract_Cases. This action must come before
       --  the processing of invariants and predicates because those append
-      --  items to list Smts.
+      --  items to list Stmts.
 
       Process_Contract_Cases (Stmts);
 
@@ -2322,7 +2323,7 @@ package body Contracts is
       begin
          --  A pragma cannot be part of more than one First_Pragma/Next_Pragma
          --  chains, therefore the node must be replicated. The new pragma is
-         --  flagged is inherited for distrinction purposes.
+         --  flagged as inherited for distinction purposes.
 
          if Present (Prag) then
             New_Prag := New_Copy_Tree (Prag);
@@ -2352,7 +2353,7 @@ package body Contracts is
 
    procedure Instantiate_Subprogram_Contract (Templ : Node_Id; L : List_Id) is
       procedure Instantiate_Pragmas (First_Prag : Node_Id);
-      --  Instantiate all contract-related source pragmas found in the list
+      --  Instantiate all contract-related source pragmas found in the list,
       --  starting with pragma First_Prag. Each instantiated pragma is added
       --  to list L.
 
@@ -2403,7 +2404,7 @@ package body Contracts is
    is
       procedure Save_Global_References_In_List (First_Prag : Node_Id);
       --  Save all global references in contract-related source pragmas found
-      --  in the list starting with pragma First_Prag.
+      --  in the list, starting with pragma First_Prag.
 
       ------------------------------------
       -- Save_Global_References_In_List --

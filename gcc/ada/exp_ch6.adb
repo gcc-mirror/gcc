@@ -5495,7 +5495,7 @@ package body Exp_Ch6 is
 
       procedure Build_Procedure_Form;
       --  Create a procedure declaration which emulates the behavior of
-      --  function Subp, for SPARK_To_C.
+      --  function Subp, for C-compatible generation.
 
       --------------------------
       -- Build_Procedure_Form --
@@ -5525,9 +5525,12 @@ package body Exp_Ch6 is
 
          --  Add an extra out parameter to carry the function result
 
+         Name_Len := 7;
+         Name_Buffer (1 .. Name_Len) := "_result";
          Append_To (Proc_Formals,
            Make_Parameter_Specification (Loc,
-             Defining_Identifier => Make_Temporary (Loc, 'R'),
+             Defining_Identifier =>
+               Make_Defining_Identifier (Loc, Chars => Name_Find),
              Out_Present         => True,
              Parameter_Type      => New_Occurrence_Of (Etype (Subp), Loc)));
 

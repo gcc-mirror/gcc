@@ -32,7 +32,7 @@ package Contracts is
 
    procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id);
    --  Add pragma Prag to the contract of a constant, entry, package [body],
-   --  subprogram [body] or variable denoted by Id. The following are valid
+   --  subprogram [body], or variable denoted by Id. The following are valid
    --  pragmas:
    --    Abstract_State
    --    Async_Readers
@@ -57,7 +57,7 @@ package Contracts is
    --    Volatile_Function
 
    procedure Analyze_Enclosing_Package_Body_Contract (Body_Decl : Node_Id);
-   --  Analyze the contract of the nearest package body (if any) which encloses
+   --  Analyze the contract of the nearest package body (if any) enclosing
    --  package or subprogram body Body_Decl.
 
    procedure Analyze_Object_Contract (Obj_Id : Entity_Id);
@@ -79,7 +79,7 @@ package Contracts is
    --    Refined_State
    --
    --  Freeze_Id is the entity of a [generic] package body or a [generic]
-   --  subprogram body which "feezes" the contract of Body_Id.
+   --  subprogram body which "freezes" the contract of Body_Id.
 
    procedure Analyze_Package_Contract (Pack_Id : Entity_Id);
    --  Analyze all delayed aspects chained on the contract of package Pack_Id
@@ -129,7 +129,7 @@ package Contracts is
    --    Test_Case
 
    procedure Create_Generic_Contract (Unit : Node_Id);
-   --  Create a contract node for a generic package, generic subprogram or a
+   --  Create a contract node for a generic package, generic subprogram, or a
    --  generic body denoted by Unit by collecting all source contract-related
    --  pragmas in the contract of the unit.
 

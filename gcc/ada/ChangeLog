@@ -1,3 +1,30 @@
+2015-10-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-reatim.adb, contracts.adb, contracts.ads: Minor reformatting and
+	typo corrections.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): Do not
+	recheck the consistency betwen the freeze point and the end of
+	declarations for the expression in an aspect specification,
+	because it was done already in the analysis of the generic.
+	Furthermore, the delayed analysis of an aspect of the instance
+	may produce spurious errors when the generic is a child unit
+	that references entities in the parent (which might not be in
+	scope at the freeze point of the instance).
+
+2015-10-26  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Issue info message
+	instead of warning when call cannot be inlined in GNATprove mode.
+
+2015-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb (Build_Procedure_Form): Use _result as the
+	name of the extra parameter, cleaner than a random temp name.
+	* gnat1drv.adb (Gnat1drv): Code clean up.
+
 2015-10-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c (build_binary_op): Tweak formatting.
