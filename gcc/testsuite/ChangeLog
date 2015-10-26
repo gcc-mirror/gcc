@@ -1,3 +1,8 @@
+2015-10-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/67989
+	* g++.dg/pr67989.C: New test.
+
 2015-10-26  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	* gfortran.dg/streamio_4.f90, gfortran.dg/streamio_5.f90,
