@@ -31128,7 +31128,7 @@
 	* config/aarch64/aarch64.c (aarch64_simd_attr_length_rglist)
 	(aarch64_reverse_mask): New functions.
 
-2015-01-21  Richard Sandiford  <richard.sandiford@arm.com>
+2015-01-21  Alan Hayward  <alan.hayward@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_simd_disambiguate_copy):
 	Declare.
