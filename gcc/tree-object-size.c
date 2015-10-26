@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
-#include "builtins.h"
+#include "tree-cfg.h"
 
 struct object_size_info
 {
@@ -1231,6 +1231,14 @@ public:
 
 }; // class pass_object_sizes
 
+/* Dummy valueize function.  */
+
+static tree
+do_valueize (tree t)
+{
+  return t;
+}
+
 unsigned int
 pass_object_sizes::execute (function *fun)
 {
@@ -1287,7 +1295,11 @@ pass_object_sizes::execute (function *fun)
 	      continue;
 	    }
 
-	  result = fold_call_stmt (as_a <gcall *> (call), false);
+	  tree lhs = gimple_call_lhs (call);
+	  if (!lhs)
+	    continue;
+
+	  result = gimple_fold_stmt_to_constant (call, do_valueize);
 	  if (!result)
 	    {
 	      tree ost = gimple_call_arg (call, 1);
@@ -1318,22 +1330,8 @@ pass_object_sizes::execute (function *fun)
 	      fprintf (dump_file, "\n");
 	    }
 
-	  tree lhs = gimple_call_lhs (call);
-	  if (!lhs)
-	    continue;
-
 	  /* Propagate into all uses and fold those stmts.  */
-	  gimple *use_stmt;
-	  imm_use_iterator iter;
-	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
-	    {
-	      use_operand_p use_p;
-	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-		SET_USE (use_p, result);
-	      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
-	      fold_stmt (&gsi);
-	      update_stmt (gsi_stmt (gsi));
-	    }
+	  replace_uses_by (lhs, result);
 	}
     }
 

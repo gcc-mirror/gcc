@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-threadedge.h"
 #include "tree-ssa-threadbackward.h"
 #include "tree-ssa-dom.h"
-#include "builtins.h"
+#include "gimple-fold.h"
 
 /* To avoid code explosion due to jump threading, we limit the
    number of statements we are going to copy.  This variable
@@ -180,54 +180,18 @@ record_temporary_equivalences_from_phis (edge e, const_and_copies *const_and_cop
   return true;
 }
 
-/* Fold the RHS of an assignment statement and return it as a tree.
-   May return NULL_TREE if no simplification is possible.  */
+/* Valueize hook for gimple_fold_stmt_to_constant_1.  */
 
 static tree
-fold_assignment_stmt (gimple *stmt)
+threadedge_valueize (tree t)
 {
-  enum tree_code subcode = gimple_assign_rhs_code (stmt);
-
-  switch (get_gimple_rhs_class (subcode))
+  if (TREE_CODE (t) == SSA_NAME)
     {
-    case GIMPLE_SINGLE_RHS:
-      return fold (gimple_assign_rhs1 (stmt));
-
-    case GIMPLE_UNARY_RHS:
-      {
-        tree lhs = gimple_assign_lhs (stmt);
-        tree op0 = gimple_assign_rhs1 (stmt);
-        return fold_unary (subcode, TREE_TYPE (lhs), op0);
-      }
-
-    case GIMPLE_BINARY_RHS:
-      {
-        tree lhs = gimple_assign_lhs (stmt);
-        tree op0 = gimple_assign_rhs1 (stmt);
-        tree op1 = gimple_assign_rhs2 (stmt);
-        return fold_binary (subcode, TREE_TYPE (lhs), op0, op1);
-      }
-
-    case GIMPLE_TERNARY_RHS:
-      {
-        tree lhs = gimple_assign_lhs (stmt);
-        tree op0 = gimple_assign_rhs1 (stmt);
-        tree op1 = gimple_assign_rhs2 (stmt);
-        tree op2 = gimple_assign_rhs3 (stmt);
-
-	/* Sadly, we have to handle conditional assignments specially
-	   here, because fold expects all the operands of an expression
-	   to be folded before the expression itself is folded, but we
-	   can't just substitute the folded condition here.  */
-        if (gimple_assign_rhs_code (stmt) == COND_EXPR)
-	  op0 = fold (op0);
-
-        return fold_ternary (subcode, TREE_TYPE (lhs), op0, op1, op2);
-      }
-
-    default:
-      gcc_unreachable ();
+      tree tem = SSA_NAME_VALUE (t);
+      if (tem)
+	return tem;
     }
+  return t;
 }
 
 /* Try to simplify each statement in E->dest, ultimately leading to
@@ -371,48 +335,50 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
       else
 	{
 	  /* A statement that is not a trivial copy or ASSERT_EXPR.
-	     We're going to temporarily copy propagate the operands
-	     and see if that allows us to simplify this statement.  */
-	  tree *copy;
-	  ssa_op_iter iter;
-	  use_operand_p use_p;
-	  unsigned int num, i = 0;
-
-	  num = NUM_SSA_OPERANDS (stmt, (SSA_OP_USE | SSA_OP_VUSE));
-	  copy = XCNEWVEC (tree, num);
-
-	  /* Make a copy of the uses & vuses into USES_COPY, then cprop into
-	     the operands.  */
-	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE | SSA_OP_VUSE)
-	    {
-	      tree tmp = NULL;
-	      tree use = USE_FROM_PTR (use_p);
-
-	      copy[i++] = use;
-	      if (TREE_CODE (use) == SSA_NAME)
-		tmp = SSA_NAME_VALUE (use);
-	      if (tmp)
-		SET_USE (use_p, tmp);
-	    }
-
-	  /* Try to fold/lookup the new expression.  Inserting the
+	     Try to fold the new expression.  Inserting the
 	     expression into the hash table is unlikely to help.  */
-          if (is_gimple_call (stmt))
-            cached_lhs = fold_call_stmt (as_a <gcall *> (stmt), false);
-	  else
-            cached_lhs = fold_assignment_stmt (stmt);
-
+	  /* ???  The DOM callback below can be changed to setting
+	     the mprts_hook around the call to thread_across_edge,
+	     avoiding the use substitution.  The VRP hook should be
+	     changed to properly valueize operands itself using
+	     SSA_NAME_VALUE in addition to its own lattice.  */
+	  cached_lhs = gimple_fold_stmt_to_constant_1 (stmt,
+						       threadedge_valueize);
           if (!cached_lhs
               || (TREE_CODE (cached_lhs) != SSA_NAME
                   && !is_gimple_min_invariant (cached_lhs)))
-            cached_lhs = (*simplify) (stmt, stmt, avail_exprs_stack);
+	    {
+	      /* We're going to temporarily copy propagate the operands
+		 and see if that allows us to simplify this statement.  */
+	      tree *copy;
+	      ssa_op_iter iter;
+	      use_operand_p use_p;
+	      unsigned int num, i = 0;
 
-	  /* Restore the statement's original uses/defs.  */
-	  i = 0;
-	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE | SSA_OP_VUSE)
-	    SET_USE (use_p, copy[i++]);
+	      num = NUM_SSA_OPERANDS (stmt, SSA_OP_ALL_USES);
+	      copy = XALLOCAVEC (tree, num);
 
-	  free (copy);
+	      /* Make a copy of the uses & vuses into USES_COPY, then cprop into
+		 the operands.  */
+	      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
+		{
+		  tree tmp = NULL;
+		  tree use = USE_FROM_PTR (use_p);
+
+		  copy[i++] = use;
+		  if (TREE_CODE (use) == SSA_NAME)
+		    tmp = SSA_NAME_VALUE (use);
+		  if (tmp)
+		    SET_USE (use_p, tmp);
+		}
+
+	      cached_lhs = (*simplify) (stmt, stmt, avail_exprs_stack);
+
+	      /* Restore the statement's original uses/defs.  */
+	      i = 0;
+	      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
+		SET_USE (use_p, copy[i++]);
+	    }
 	}
 
       /* Record the context sensitive equivalence if we were able
