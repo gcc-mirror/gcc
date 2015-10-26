@@ -1,3 +1,9 @@
+2015-10-26  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/68091
+	* config/sh/sh.c (sh_vector_mode_supported_p): Use
+	TARGET_SHMEDIA_FPU instead of TARGET_FPU_ANY.
+
 2015-10-26  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-structalias.c (make_restrict_var_constraints): New function,
