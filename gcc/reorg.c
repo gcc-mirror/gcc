@@ -3726,7 +3726,8 @@ dbr_schedule (rtx_insn *first)
     {
       fill_simple_delay_slots (1);
       fill_simple_delay_slots (0);
-      fill_eager_delay_slots ();
+      if (!targetm.no_speculation_in_delay_slots_p ())
+	fill_eager_delay_slots ();
       relax_delay_slots (first);
     }
 

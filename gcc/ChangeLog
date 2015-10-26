@@ -1,3 +1,11 @@
+2015-10-26  Simon Dardis <simon.dardis@imgtec.com>
+
+	* target.def (TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P): New hook.
+	* doc/tm.texi.in (TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P): Document.
+	* doc/tm.texi: Regenerated.
+	* reorg.c (dbr_schedule): Use new hook.
+	* config/mips/mips.c (mips_no_speculation_in_delay_slots_p): New.
+
 2015-10-26  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/68013

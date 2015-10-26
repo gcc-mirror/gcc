@@ -1,3 +1,8 @@
+2015-10-26  Simon Dardis  <simon.dardis@imgtec.com>
+
+	* gcc.target/mips/ds-schedule-1.c: New.
+	* gcc.target/mips/ds-schedule-2.c: New.
+
 2015-10-26  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/68013
