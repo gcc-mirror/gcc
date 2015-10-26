@@ -1205,16 +1205,25 @@ package body Einfo is
    function Contract (Id : E) return N is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Constant,
-                       E_Entry,
+        (Ekind_In (Id, E_Constant,         --  object variants
+                       E_Variable)
+           or else
+         Ekind_In (Id, E_Entry,            --  overloadable variants
                        E_Entry_Family,
-                       E_Generic_Package,
+                       E_Function,
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Operator,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
                        E_Package,
-                       E_Package_Body,
-                       E_Subprogram_Body,
-                       E_Variable,
-                       E_Void)
-          or else Is_Subprogram_Or_Generic_Subprogram (Id));
+                       E_Package_Body)
+           or else
+         Ekind_In (Id, E_Task_Body,         --  synchronized variants
+                       E_Task_Type,
+                       E_Void));            --  special purpose
       return Node34 (Id);
    end Contract;
 
@@ -3139,6 +3148,7 @@ package body Einfo is
                        E_Function,
                        E_Generic_Function,
                        E_Generic_Procedure,
+                       E_Operator,
                        E_Procedure,
                        E_Subprogram_Body)
            or else
@@ -3161,6 +3171,7 @@ package body Einfo is
                        E_Function,
                        E_Generic_Function,
                        E_Generic_Procedure,
+                       E_Operator,
                        E_Procedure,
                        E_Subprogram_Body)
            or else
@@ -3834,16 +3845,25 @@ package body Einfo is
    procedure Set_Contract (Id : E; V : N) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Constant,
-                       E_Entry,
+        (Ekind_In (Id, E_Constant,         --  object variants
+                       E_Variable)
+           or else
+         Ekind_In (Id, E_Entry,            --  overloadable variants
                        E_Entry_Family,
-                       E_Generic_Package,
+                       E_Function,
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Operator,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
                        E_Package,
-                       E_Package_Body,
-                       E_Subprogram_Body,
-                       E_Variable,
-                       E_Void)
-          or else Is_Subprogram_Or_Generic_Subprogram (Id));
+                       E_Package_Body)
+           or else
+         Ekind_In (Id, E_Task_Body,         --  synchronized variants
+                       E_Task_Type,
+                       E_Void));            --  special purpose
       Set_Node34 (Id, V);
    end Set_Contract;
 
@@ -6170,6 +6190,7 @@ package body Einfo is
                        E_Function,
                        E_Generic_Function,
                        E_Generic_Procedure,
+                       E_Operator,
                        E_Procedure,
                        E_Subprogram_Body)
            or else
@@ -6192,6 +6213,7 @@ package body Einfo is
                        E_Function,
                        E_Generic_Function,
                        E_Generic_Procedure,
+                       E_Operator,
                        E_Procedure,
                        E_Subprogram_Body)
            or else
@@ -10212,14 +10234,19 @@ package body Einfo is
          when E_Constant                                   |
               E_Entry                                      |
               E_Entry_Family                               |
+              E_Function                                   |
+              E_Generic_Function                           |
               E_Generic_Package                            |
+              E_Generic_Procedure                          |
+              E_Operator                                   |
               E_Package                                    |
               E_Package_Body                               |
+              E_Procedure                                  |
               E_Subprogram_Body                            |
+              E_Task_Body                                  |
+              E_Task_Type                                  |
               E_Variable                                   |
-              E_Void                                       |
-              Generic_Subprogram_Kind                      |
-              Subprogram_Kind                              =>
+              E_Void                                       =>
             Write_Str ("Contract");
 
          when others                                       =>
@@ -10317,6 +10344,7 @@ package body Einfo is
               E_Generic_Function                           |
               E_Generic_Package                            |
               E_Generic_Procedure                          |
+              E_Operator                                   |
               E_Package                                    |
               E_Package_Body                               |
               E_Procedure                                  |

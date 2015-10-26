@@ -3474,9 +3474,9 @@ package body Sem_Ch13 is
       Body_Id : constant Entity_Id := Defining_Entity (N);
 
       procedure Diagnose_Misplaced_Aspects (Spec_Id : Entity_Id);
-      --  Subprogram body [stub] N has aspects, but they are not properly
-      --  placed. Emit an error message depending on the aspects involved.
-      --  Spec_Id is the entity of the corresponding spec.
+      --  Body [stub] N has aspects, but they are not properly placed. Emit an
+      --  error message depending on the aspects involved. Spec_Id denotes the
+      --  entity of the corresponding spec.
 
       --------------------------------
       -- Diagnose_Misplaced_Aspects --
@@ -3532,7 +3532,7 @@ package body Sem_Ch13 is
 
             else
                Error_Msg_N
-                 ("aspect specification must appear in subprogram declaration",
+                 ("aspect specification must appear on initial declaration",
                   Asp);
             end if;
          end Misplaced_Aspect_Error;
@@ -3574,7 +3574,7 @@ package body Sem_Ch13 is
 
             else
                Error_Msg_N
-                 ("aspect specification must appear in subprogram declaration",
+                 ("aspect specification must appear on initial declaration",
                   Asp);
             end if;
 
@@ -3584,23 +3584,17 @@ package body Sem_Ch13 is
 
       --  Local variables
 
-      Spec_Id : Entity_Id;
+      Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
 
    --  Start of processing for Analyze_Aspects_On_Body_Or_Stub
 
    begin
-      if Nkind (N) = N_Subprogram_Body_Stub then
-         Spec_Id := Corresponding_Spec_Of_Stub (N);
-      else
-         Spec_Id := Corresponding_Spec (N);
-      end if;
-
       --  Language-defined aspects cannot be associated with a subprogram body
       --  [stub] if the subprogram has a spec. Certain implementation defined
       --  aspects are allowed to break this rule (for all applicable cases, see
       --  table Aspects.Aspect_On_Body_Or_Stub_OK).
 
-      if Present (Spec_Id) and then not Aspects_On_Body_Or_Stub_OK (N) then
+      if Spec_Id /= Body_Id and then not Aspects_On_Body_Or_Stub_OK (N) then
          Diagnose_Misplaced_Aspects (Spec_Id);
       else
          Analyze_Aspect_Specifications (N, Body_Id);

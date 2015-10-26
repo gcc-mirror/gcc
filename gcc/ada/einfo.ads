@@ -705,10 +705,10 @@ package Einfo is
 --       of declaration, procedure call, assignment statement or pragma.
 
 --    Contract (Node34)
---       Defined in constant, entry, entry family, [generic] package, package
---       body, [generic] subprogram, subprogram body, and variable entities.
---       Points to the contract of the entity, holding various assertion items
---       and data classifiers.
+--       Defined in constant, entry, entry family, operator, [generic] package,
+--       package body, [generic] subprogram, subprogram body, variable and task
+--       type entities. Points to the contract of the entity, holding various
+--       assertion items and data classifiers.
 
 --    Corresponding_Concurrent_Type (Node18)
 --       Defined in record types that are constructed by the expander to
@@ -4087,19 +4087,20 @@ package Einfo is
 --       inherited, rather than a local one.
 
 --    SPARK_Pragma (Node40)
---       Present in entries, [generic] package specs, package bodies, [generic]
---       subprogram specs, subprogram bodies and synchronized types. Points to
---       the N_Pragma node that applies to the spec or body. This is either set
---       by a local SPARK_Mode pragma or is inherited from the context (from an
---       outer scope for the spec case or from the spec for the body case). In
---       the case where it is inherited the flag SPARK_Pragma_Inherited is set.
---       Empty if no SPARK_Mode pragma is applicable.
+--       Present in entries, operators, [generic] packages, package bodies,
+--       [generic] subprograms, subprogram bodies and synchronized types.
+--       Points to the N_Pragma node that applies to the spec or body. This
+--       is either set by a local SPARK_Mode pragma or is inherited from the
+--       context (from an outer scope for the spec case or from the spec for
+--       the body case). In the case where it is inherited the flag
+--       SPARK_Pragma_Inherited is set. Empty if no SPARK_Mode pragma is
+--       applicable.
 
 --    SPARK_Pragma_Inherited (Flag265)
---       Present in entries, [generic] package specs, package bodies, [generic]
---       subprogram specs, subprogram bodies and synchronized types. Set if the
---       SPARK_Pragma attribute points to a pragma that is inherited, rather
---       than a local one.
+--       Present in entries, operators, [generic] packages, package bodies,
+--       [generic] subprograms, subprogram bodies and synchronized types. Set
+--       if the SPARK_Pragma attribute points to a pragma that is inherited,
+--       rather than a local one.
 
 --    Spec_Entity (Node19)
 --       Defined in package body entities. Points to corresponding package
@@ -6041,13 +6042,15 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)
+   --    SPARK_Pragma                        (Node40)
+   --    Default_Expressions_Processed       (Flag108)
    --    Has_Invariants                      (Flag232)
    --    Has_Nested_Subprogram               (Flag282)
-   --    Is_Machine_Code_Subprogram          (Flag137)
-   --    Is_Pure                             (Flag44)
    --    Is_Intrinsic_Subprogram             (Flag64)
+   --    Is_Machine_Code_Subprogram          (Flag137)
    --    Is_Primitive                        (Flag218)
-   --    Default_Expressions_Processed       (Flag108)
+   --    Is_Pure                             (Flag44)
+   --    SPARK_Pragma_Inherited              (Flag265)
    --    Aren't there more flags and fields? seems like this list should be
    --    more similar to the E_Function list, which is much longer ???
 
@@ -6378,6 +6381,7 @@ package Einfo is
    --    (plus type attributes)
 
    --  E_Task_Body
+   --    Contract                            (Node34)
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Pragma_Inherited              (Flag265)
    --    (any others??? First/Last Entity, Scope_Depth???)
@@ -6396,6 +6400,7 @@ package Einfo is
    --    Task_Body_Procedure                 (Node25)
    --    Storage_Size_Variable               (Node26)   (base type only)
    --    Relative_Deadline_Variable          (Node28)   (base type only)
+   --    Contract                            (Node34)
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
    --    Delay_Cleanups                      (Flag114)

@@ -1283,6 +1283,12 @@ package Sem_Util is
    --  Determine whether an arbitrary node denotes an effectively volatile
    --  object (SPARK RM 7.1.2).
 
+   function Is_Entry_Body (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id is the body entity of an entry [family]
+
+   function Is_Entry_Declaration (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id is the spec entity of an entry [family]
+
    function Is_Expression_Function (Subp : Entity_Id) return Boolean;
    --  Predicate to determine whether a scope entity comes from a rewritten
    --  expression function call, and should be inlined unconditionally. Also

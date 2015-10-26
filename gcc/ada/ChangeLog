@@ -1,3 +1,126 @@
+2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb Add an entry for entry bodies in table
+	Has_Aspect_Specifications_Flag.
+	(Aspects_On_Body_Or_Stub_OK): Entry bodies now allow for certain
+	aspects.
+	* contracts.adb (Add_Contract_Items): Code cleanup. Add
+	processing for entry bodies, entry declarations and task units.
+	(Analyze_Subprogram_Body_Contract): Renamed
+	to Analyze_Entry_Or_Subprogram_Body_Contract. Do not
+	analyze the contract of an entry body unless annotating the
+	original tree.
+	(Analyze_Subprogram_Contract): Renamed to
+	Analyze_Entry_Or_Subprogram_Contract.  Do not analyze the contract
+	of an entry declaration unless annotating the original tree.
+	(Analyze_Task_Contract): New routine.
+	* contracts.ads (Add_Contract_Item): Update the comment on usage.
+	(Analyze_Package_Body_Contract): Update comment on usage.
+	(Analyze_Package_Contract): Update the comment on usage.
+	(Analyze_Subprogram_Body_Contract): Renamed to
+	Analyze_Entry_Or_Subprogram_Body_Contract.
+	(Analyze_Subprogram_Body_Stub_Contract): Update the comment on usage.
+	(Analyze_Subprogram_Contract): Renamed to
+	Analyze_Entry_Or_Subprogram_Contract.
+	(Analyze_Task_Contract): New routine.
+	* einfo.adb (Contract): Restructure the assertion to include
+	entries and task units.
+	(SPARK_Pragma): This attribute now applies to operators.
+	(SPARK_Pragma_Inherited): This flag now applies to operators.
+	(Set_Contract): Restructure the assertion to include entries and task
+	units.
+	(Set_SPARK_Pragma): This attribute now applies to operators.
+	(Set_SPARK_Pragma_Inherited): This flag now applies to operators.
+	(Write_Field34_Name): Write out all Ekinds that have a contract.
+	(Write_Field40_Name): SPARK_Pragma now applies to operators.
+	* einfo.ads: Update the documentation of attribute Contract along
+	with usage in nodes.  Update the documentation of attributes
+	SPARK_Pragma and SPARK_Pragma_Inherited.
+	* exp_ch6.adb (Freeze_Subprogram): Update the call to
+	Analyze_Subprogram_Contract.
+	* par-ch9.adb (P_Entry_Barrier): Do not parse keyword "is" as it
+	is not part of the entry barrier production.
+	(P_Entry_Body): Parse the optional aspect specifications. Diagnose
+	misplaced aspects.
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Update the call
+	to Find_Related_Subprogram_Or_Body.
+	* sem_aux.adb (Unit_Declaration_Node) Add an entry for entry
+	declarations and bodies.
+	* sem_ch3.adb (Analyze_Declarations): Analyze the contracts of
+	entry declarations, entry bodies and task units.
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body):
+	Update the call to Analyze_Subprogram_Body_Contract.
+	(Analyze_Subprogram_Body_Helper): Update the call to
+	Analyze_Subprogram_Body_Contract.
+	* sem_ch9.adb (Analyze_Entry_Body): Analyze the aspect
+	specifications and the contract.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Update the call to
+	Analyze_Subprogram_Contract.
+	* sem_ch12.adb (Save_References_In_Pragma): Update the call to
+	Find_Related_Subprogram_Or_Body.
+	* sem_ch13.adb (Analyze_Aspects_On_Body_Or_Stub): Use
+	Unique_Defining_Entity rather than rummaging around in nodes.
+	(Diagnose_Misplaced_Aspects): Update comment on usage. Update the
+	error messages to accomondate the increasing number of contexts.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part):
+	Update the call to Find_Related_Subprogram_Or_Body.
+	(Analyze_Depends_Global): Update the call to
+	Find_Related_Subprogram_Or_Body. Add processing for entry
+	declarations.
+	(Analyze_Depends_In_Decl_Part): Update the call
+	to Find_Related_Subprogram_Or_Body. Task units have no formal
+	parameters to install.	(Analyze_Global_In_Decl_Part): Update
+	the call to Find_Related_Subprogram_Or_Body. Task units have no
+	formal parameters to install.
+	(Analyze_Global_Item): Use Fix_Msg to handle the increasing number of
+	contexts.
+	(Analyze_Pragma): Update the call to Find_Related_Subprogram_Or_Body.
+	Perform full analysis when various pragmas appear in an entry body.
+	(Analyze_Pre_Post_Condition): Update the call to
+	Find_Related_Subprogram_Or_Body. Perform full analysis when the pragma
+	appears in an entry body.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Update the call to
+	Find_Related_Subprogram_Or_Body.
+	(Analyze_Refined_Depends_Global_Post): Update
+	the call to Find_Related_Subprogram_Or_Body. Use
+	Fix_Msg to handle the increasing number of contexts.
+	(Analyze_Refined_Depends_In_Decl_Part): Update
+	the call to Find_Related_Subprogram_Or_Body. Use
+	Unique_Defining_Entity to obtain the entity of the
+	spec. Use Fix_Msg to handle the increasing number of contexts.
+	(Analyze_Refined_Global_In_Decl_Part): Update the call to
+	Find_Related_Subprogram_Or_Body. Use Unique_Defining_Entity to obtain
+	the entity of the spec. Use Fix_Msg to handle the increasing number of
+	contexts.
+	(Analyze_Test_Case_In_Decl_Part): Update the call to
+	Find_Related_Subprogram_Or_Body.
+	(Check_Dependency_Clause): Use Fix_Msg to handle the increasing number
+	of contexts.
+	(Check_Mode_Restriction_In_Enclosing_Context): Use
+	Fix_Msg to handle the increasing number of contexts.
+	(Collect_Subprogram_Inputs_Outputs): Use the refined
+	versions of the pragmas when the context is an entry body or
+	a task body.
+	(Find_Related_Subprogram_Or_Body): Renamed to
+	Find_Related_Declaration_Or_Body.  Add processing for entries
+	and task units.
+	(Fix_Msg): New routine.
+	(Role_Error): Use Fix_Msg to handle the increasing number of contexts.
+	* sem_prag.ads (Find_Related_Subprogram_Or_Body): Renamed to
+	Find_Related_Declaration_Or_Body.  Update the comment on usage.
+	* sem_util.adb (Is_Entry_Body): New routine.
+	(Is_Entry_Declaration): New routine.
+	* sem_util.ads (Is_Entry_Body): New routine.
+	(Is_Entry_Declaration): New routine.
+
+2015-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Has_Excluded_Declaration): A subtype declaration
+	with a predicate aspect generates a subprogram, and therefore
+	prevents the inlining of the enclosing subprogram.
+	* osint.ads: Fix typo.
+
+
 2015-10-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_case.adb (Check_Choice_Set): Choose initial choice range

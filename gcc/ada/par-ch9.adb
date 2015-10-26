@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1089,7 +1089,6 @@ package body Ch9 is
          Resync_Past_Semicolon;
          Pop_Scope_Stack; -- discard unused entry
          return Error;
-
    end P_Accept_Statement;
 
    ------------------------
@@ -1098,12 +1097,45 @@ package body Ch9 is
 
    --  Parsed by P_Expression (4.4)
 
+   --------------------------
+   -- 9.5.2  Entry Barrier --
+   --------------------------
+
+   --  ENTRY_BARRIER ::= when CONDITION
+
+   --  Error_Recovery: cannot raise Error_Resync
+
+   function P_Entry_Barrier return Node_Id is
+      Bnode : Node_Id;
+
+   begin
+      if Token = Tok_When then
+         Scan; -- past WHEN;
+         Bnode := P_Expression_No_Right_Paren;
+
+         if Token = Tok_Colon_Equal then
+            Error_Msg_SC -- CODEFIX
+              ("|"":="" should be ""=""");
+            Scan;
+            Bnode := P_Expression_No_Right_Paren;
+         end if;
+
+      else
+         T_When; -- to give error message
+         Bnode := Error;
+      end if;
+
+      return Bnode;
+   end P_Entry_Barrier;
+
    -----------------------
    -- 9.5.2  Entry Body --
    -----------------------
 
    --  ENTRY_BODY ::=
-   --    entry DEFINING_IDENTIFIER ENTRY_BODY_FORMAL_PART ENTRY_BARRIER is
+   --    entry DEFINING_IDENTIFIER ENTRY_BODY_FORMAL_PART
+   --      [ASPECT_SPECIFICATIONS] ENTRY_BARRIER
+   --    is
    --      DECLARATIVE_PART
    --    begin
    --      HANDLED_SEQUENCE_OF_STATEMENTS
@@ -1114,6 +1146,7 @@ package body Ch9 is
    --  Error_Recovery: cannot raise Error_Resync
 
    function P_Entry_Body return Node_Id is
+      Dummy_Node       : Node_Id;
       Entry_Node       : Node_Id;
       Formal_Part_Node : Node_Id;
       Name_Node        : Node_Id;
@@ -1135,8 +1168,34 @@ package body Ch9 is
       Formal_Part_Node := P_Entry_Body_Formal_Part;
       Set_Entry_Body_Formal_Part (Entry_Node, Formal_Part_Node);
 
+      --  Ada 2012 (AI12-0169): Aspect specifications may appear on an entry
+      --  body immediately after the formal part. Do not parse the aspect
+      --  specifications directly because the "when" of the entry barrier may
+      --  be interpreted as a misused "with".
+
+      if Token = Tok_With then
+         P_Aspect_Specifications (Entry_Node, Semicolon => False);
+      end if;
+
       Set_Condition (Formal_Part_Node, P_Entry_Barrier);
+
+      --  Detect an illegal placement of aspect specifications following the
+      --  entry barrier.
+
+      --    entry E ... when Barrier with Aspect is
+
+      if Token = Tok_With then
+         Error_Msg_SC ("aspect specifications must come before entry barrier");
+
+         --  Consume the illegal aspects to allow for parsing to continue
+
+         Dummy_Node := New_Node (N_Entry_Body, Sloc (Entry_Node));
+         P_Aspect_Specifications (Dummy_Node, Semicolon => False);
+      end if;
+
+      TF_Is;
       Parse_Decls_Begin_End (Entry_Node);
+
       return Entry_Node;
    end P_Entry_Body;
 
@@ -1184,38 +1243,6 @@ package body Ch9 is
       Set_Parameter_Specifications (Fpart_Node, P_Parameter_Profile);
       return Fpart_Node;
    end P_Entry_Body_Formal_Part;
-
-   --------------------------
-   -- 9.5.2  Entry Barrier --
-   --------------------------
-
-   --  ENTRY_BARRIER ::= when CONDITION
-
-   --  Error_Recovery: cannot raise Error_Resync
-
-   function P_Entry_Barrier return Node_Id is
-      Bnode : Node_Id;
-
-   begin
-      if Token = Tok_When then
-         Scan; -- past WHEN;
-         Bnode := P_Expression_No_Right_Paren;
-
-         if Token = Tok_Colon_Equal then
-            Error_Msg_SC -- CODEFIX
-              ("|"":="" should be ""=""");
-            Scan;
-            Bnode := P_Expression_No_Right_Paren;
-         end if;
-
-      else
-         T_When; -- to give error message
-         Bnode := Error;
-      end if;
-
-      TF_Is;
-      return Bnode;
-   end P_Entry_Barrier;
 
    --------------------------------------
    -- 9.5.2  Entry Index Specification --

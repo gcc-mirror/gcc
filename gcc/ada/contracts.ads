@@ -31,9 +31,9 @@ with Types; use Types;
 package Contracts is
 
    procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id);
-   --  Add pragma Prag to the contract of a constant, entry, package [body],
-   --  subprogram [body], or variable denoted by Id. The following are valid
-   --  pragmas:
+   --  Add pragma Prag to the contract of a constant, entry, entry family,
+   --  [generic] package, package body, [generic] subprogram, subprogram body,
+   --  variable or task unit denoted by Id. The following are valid pragmas:
    --    Abstract_State
    --    Async_Readers
    --    Async_Writers
@@ -60,6 +60,31 @@ package Contracts is
    --  Analyze the contract of the nearest package body (if any) enclosing
    --  package or subprogram body Body_Decl.
 
+   procedure Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id : Entity_Id);
+   --  Analyze all delayed pragmas chained on the contract of entry or
+   --  subprogram body Body_Id as if they appeared at the end of a declarative
+   --  region. Pragmas in question are:
+   --    Contract_Cases   (stand alone subprogram body)
+   --    Depends          (stand alone subprogram body)
+   --    Global           (stand alone subprogram body)
+   --    Postcondition    (stand alone subprogram body)
+   --    Precondition     (stand alone subprogram body)
+   --    Refined_Depends
+   --    Refined_Global
+   --    Refined_Post
+   --    Test_Case        (stand alone subprogram body)
+
+   procedure Analyze_Entry_Or_Subprogram_Contract (Subp_Id : Entity_Id);
+   --  Analyze all delayed pragmas chained on the contract of entry or
+   --  subprogram Subp_Id as if they appeared at the end of a declarative
+   --  region. The pragmas in question are:
+   --    Contract_Cases
+   --    Depends
+   --    Global
+   --    Postcondition
+   --    Precondition
+   --    Test_Case
+
    procedure Analyze_Object_Contract (Obj_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of object Obj_Id as
    --  if they appeared at the end of the declarative region. The pragmas to be
@@ -73,51 +98,26 @@ package Contracts is
    procedure Analyze_Package_Body_Contract
      (Body_Id   : Entity_Id;
       Freeze_Id : Entity_Id := Empty);
-   --  Analyze all delayed aspects chained on the contract of package body
+   --  Analyze all delayed pragmas chained on the contract of package body
    --  Body_Id as if they appeared at the end of a declarative region. The
-   --  aspects that are considered are:
+   --  pragmas that are considered are:
    --    Refined_State
    --
    --  Freeze_Id is the entity of a [generic] package body or a [generic]
    --  subprogram body which "freezes" the contract of Body_Id.
 
    procedure Analyze_Package_Contract (Pack_Id : Entity_Id);
-   --  Analyze all delayed aspects chained on the contract of package Pack_Id
-   --  as if they appeared at the end of a declarative region. The aspects
+   --  Analyze all delayed pragmas chained on the contract of package Pack_Id
+   --  as if they appeared at the end of a declarative region. The pragmas
    --  that are considered are:
    --    Initial_Condition
    --    Initializes
    --    Part_Of
 
-   procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id);
-   --  Analyze all delayed aspects chained on the contract of subprogram body
-   --  Body_Id as if they appeared at the end of a declarative region. Aspects
-   --  in question are:
-   --    Contract_Cases   (stand alone body)
-   --    Depends          (stand alone body)
-   --    Global           (stand alone body)
-   --    Postcondition    (stand alone body)
-   --    Precondition     (stand alone body)
-   --    Refined_Depends
-   --    Refined_Global
-   --    Refined_Post
-   --    Test_Case        (stand alone body)
-
-   procedure Analyze_Subprogram_Contract (Subp_Id : Entity_Id);
-   --  Analyze all delayed aspects chained on the contract of subprogram
-   --  Subp_Id as if they appeared at the end of a declarative region. The
-   --  aspects in question are:
-   --    Contract_Cases
-   --    Depends
-   --    Global
-   --    Postcondition
-   --    Precondition
-   --    Test_Case
-
    procedure Analyze_Subprogram_Body_Stub_Contract (Stub_Id : Entity_Id);
-   --  Analyze all delayed aspects chained on the contract of a subprogram body
+   --  Analyze all delayed pragmas chained on the contract of a subprogram body
    --  stub Stub_Id as if they appeared at the end of a declarative region. The
-   --  aspects in question are:
+   --  pragmas in question are:
    --    Contract_Cases
    --    Depends
    --    Global
@@ -127,6 +127,13 @@ package Contracts is
    --    Refined_Global
    --    Refined_Post
    --    Test_Case
+
+   procedure Analyze_Task_Contract (Task_Id : Entity_Id);
+   --  Analyze all delayed pragmas chained on the contract of a task unit
+   --  Task_Id as if they appeared at the end of a declarative region. The
+   --  pragmas in question are:
+   --    Depends
+   --    Global
 
    procedure Create_Generic_Contract (Unit : Node_Id);
    --  Create a contract node for a generic package, generic subprogram, or a

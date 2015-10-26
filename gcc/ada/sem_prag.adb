@@ -209,6 +209,12 @@ package body Sem_Prag is
    --  Do_Checks is set, the routine reports duplicate pragmas. The routine
    --  returns Empty when reaching the start of the node chain.
 
+   function Fix_Msg (Id : Entity_Id; Msg : String) return String;
+   --  Replace all occurrences of "subprogram" in string Msg with a specific
+   --  word depending on the Ekind of Id as follows:
+   --    * When Id is an entry [family], replace with "entry"
+   --    * When Id is a task type, replace with "task unit"
+
    function Get_Base_Subprogram (Def_Id : Entity_Id) return Entity_Id;
    --  If Def_Id refers to a renamed subprogram, then the base subprogram (the
    --  original one, following the renaming chain) is returned. Otherwise the
@@ -386,7 +392,7 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Subp_Decl : constant Node_Id   := Find_Related_Subprogram_Or_Body (N);
+      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
       Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
       CCases    : constant Node_Id   := Expression (Get_Argument (N, Spec_Id));
 
@@ -465,7 +471,7 @@ package body Sem_Prag is
 
    procedure Analyze_Depends_In_Decl_Part (N : Node_Id) is
       Loc       : constant Source_Ptr := Sloc (N);
-      Subp_Decl : constant Node_Id    := Find_Related_Subprogram_Or_Body (N);
+      Subp_Decl : constant Node_Id    := Find_Related_Declaration_Or_Body (N);
       Spec_Id   : constant Entity_Id  := Unique_Defining_Entity (Subp_Decl);
 
       All_Inputs_Seen : Elist_Id := No_Elist;
@@ -1144,8 +1150,8 @@ package body Sem_Prag is
 
                Error_Msg_Name_1 := Chars (Spec_Id);
                SPARK_Msg_NE
-                 ("\& is not part of the input or output set of subprogram %",
-                  Item, Item_Id);
+                 (Fix_Msg (Spec_Id, "\& is not part of the input or output "
+                  & "set of subprogram %"), Item, Item_Id);
 
             --  The mode of the item and its role in pragma [Refined_]Depends
             --  are in conflict. Construct a detailed message explaining the
@@ -1638,7 +1644,9 @@ package body Sem_Prag is
                Restore_Scope := True;
                Push_Scope (Spec_Id);
 
-               if Is_Generic_Subprogram (Spec_Id) then
+               if Ekind (Spec_Id) = E_Task_Type then
+                  null;
+               elsif Is_Generic_Subprogram (Spec_Id) then
                   Install_Generic_Formals (Spec_Id);
                else
                   Install_Formals (Spec_Id);
@@ -1772,7 +1780,7 @@ package body Sem_Prag is
    ---------------------------------
 
    procedure Analyze_Global_In_Decl_Part (N : Node_Id) is
-      Subp_Decl : constant Node_Id   := Find_Related_Subprogram_Or_Body (N);
+      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
       Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
       Subp_Id   : constant Entity_Id := Defining_Entity (Subp_Decl);
 
@@ -1876,8 +1884,8 @@ package body Sem_Prag is
                if Is_Formal (Item_Id) then
                   if Scope (Item_Id) = Spec_Id then
                      SPARK_Msg_NE
-                       ("global item cannot reference parameter of "
-                        & "subprogram &", Item, Spec_Id);
+                       (Fix_Msg (Spec_Id, "global item cannot reference "
+                        & "parameter of subprogram &"), Item, Spec_Id);
                      return;
                   end if;
 
@@ -2096,9 +2104,10 @@ package body Sem_Prag is
                      SPARK_Msg_NE
                        ("global item & cannot have mode In_Out or Output",
                         Item, Item_Id);
+
                      SPARK_Msg_NE
-                       ("\item already appears as input of subprogram &",
-                        Item, Context);
+                       (Fix_Msg (Subp_Id, "\item already appears as input of "
+                        & "subprogram &"), Item, Context);
 
                      --  Stop the traversal once an error has been detected
 
@@ -2257,7 +2266,9 @@ package body Sem_Prag is
             Restore_Scope := True;
             Push_Scope (Spec_Id);
 
-            if Is_Generic_Subprogram (Spec_Id) then
+            if Ekind (Spec_Id) = E_Task_Type then
+               null;
+            elsif Is_Generic_Subprogram (Spec_Id) then
                Install_Generic_Formals (Spec_Id);
             else
                Install_Formals (Spec_Id);
@@ -3351,21 +3362,26 @@ package body Sem_Prag is
          --  associated with a subprogram declaration or a body that acts as a
          --  spec.
 
-         Subp_Decl := Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
+         Subp_Decl := Find_Related_Declaration_Or_Body (N, Do_Checks => True);
+
+         --  Entry
+
+         if Nkind (Subp_Decl) = N_Entry_Declaration then
+            null;
 
          --  Generic subprogram
 
-         if Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
+         elsif Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
             null;
 
-         --  Body acts as spec
+         --  Subprogram body acts as spec
 
          elsif Nkind (Subp_Decl) = N_Subprogram_Body
            and then No (Corresponding_Spec (Subp_Decl))
          then
             null;
 
-         --  Body stub acts as spec
+         --  Subprogram body stub acts as spec
 
          elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
            and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
@@ -3377,6 +3393,11 @@ package body Sem_Prag is
          elsif Nkind (Subp_Decl) = N_Subprogram_Declaration then
             null;
 
+         --  Task unit
+
+         elsif Nkind (Subp_Decl) = N_Task_Type_Declaration then
+            null;
+
          else
             Pragma_Misplaced;
             return;
@@ -3386,6 +3407,16 @@ package body Sem_Prag is
 
          Legal   := True;
          Spec_Id := Unique_Defining_Entity (Subp_Decl);
+
+         --  When the related context is an entry, it must be a protected entry
+         --  (SPARK RM 6.1.4(6)).
+
+         if Is_Entry_Declaration (Spec_Id)
+           and then Ekind (Scope (Spec_Id)) /= E_Protected_Type
+         then
+            Pragma_Misplaced;
+            return;
+         end if;
 
          --  A pragma that applies to a Ghost entity becomes Ghost for the
          --  purposes of legality checks and removal of ignored Ghost code.
@@ -3686,7 +3717,8 @@ package body Sem_Prag is
          --  Ensure the proper placement of the pragma
 
          Subp_Decl :=
-           Find_Related_Subprogram_Or_Body (N, Do_Checks => not Duplicates_OK);
+           Find_Related_Declaration_Or_Body
+             (N, Do_Checks => not Duplicates_OK);
 
          --  When a pre/postcondition pragma applies to an abstract subprogram,
          --  its original form must be an aspect with 'Class.
@@ -3759,10 +3791,11 @@ package body Sem_Prag is
 
          Mark_Pragma_As_Ghost (N, Subp_Id);
 
-         --  Fully analyze the pragma when it appears inside a subprogram
-         --  body because it cannot benefit from forward references.
+         --  Fully analyze the pragma when it appears inside an entry or
+         --  subprogram body because it cannot benefit from forward references.
 
-         if Nkind_In (Subp_Decl, N_Subprogram_Body,
+         if Nkind_In (Subp_Decl, N_Entry_Body,
+                                 N_Subprogram_Body,
                                  N_Subprogram_Body_Stub)
          then
             --  The legality checks of pragmas Precondition and Postcondition
@@ -3801,22 +3834,35 @@ package body Sem_Prag is
          --  Verify the placement of the pragma and check for duplicates. The
          --  pragma must apply to a subprogram body [stub].
 
-         Body_Decl := Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
+         Body_Decl := Find_Related_Declaration_Or_Body (N, Do_Checks => True);
 
-         --  Extract the entities of the spec and body
+         --  Entry body
 
-         if Nkind (Body_Decl) = N_Subprogram_Body then
-            Body_Id := Defining_Entity (Body_Decl);
-            Spec_Id := Corresponding_Spec (Body_Decl);
+         if Nkind (Body_Decl) = N_Entry_Body then
+            null;
+
+         --  Subprogram body
+
+         elsif Nkind (Body_Decl) = N_Subprogram_Body then
+            null;
+
+         --  Subprogram body stub
 
          elsif Nkind (Body_Decl) = N_Subprogram_Body_Stub then
-            Body_Id := Defining_Entity (Body_Decl);
-            Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
+            null;
+
+         --  Task body
+
+         elsif Nkind (Body_Decl) = N_Task_Body then
+            null;
 
          else
             Pragma_Misplaced;
             return;
          end if;
+
+         Body_Id := Defining_Entity (Body_Decl);
+         Spec_Id := Unique_Defining_Entity (Body_Decl);
 
          --  The pragma must apply to the second declaration of a subprogram.
          --  In other words, the body [stub] cannot acts as a spec.
@@ -3839,10 +3885,17 @@ package body Sem_Prag is
 
          Spec_Decl := Unit_Declaration_Node (Spec_Id);
 
+         --  The proper context of a entry declaration is the declaration of
+         --  the enclosing synchronized type.
+
+         if Nkind (Spec_Decl) = N_Entry_Declaration then
+            Spec_Decl := Parent (Parent (Spec_Decl));
+         end if;
+
          if Nkind (Parent (Spec_Decl)) /= N_Package_Specification then
             Error_Pragma
-              ("pragma % must apply to the body of a subprogram declared in a "
-               & "package specification");
+              (Fix_Msg (Spec_Id, "pragma % must apply to the body of "
+               & "subprogram declared in a package specification"));
             return;
          end if;
 
@@ -12275,7 +12328,7 @@ package body Sem_Prag is
             --  as a spec.
 
             Subp_Decl :=
-              Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
+              Find_Related_Declaration_Or_Body (N, Do_Checks => True);
 
             --  Generic subprogram
 
@@ -12319,10 +12372,12 @@ package body Sem_Prag is
             Mark_Pragma_As_Ghost (N, Spec_Id);
             Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
 
-            --  Fully analyze the pragma when it appears inside a subprogram
-            --  body because it cannot benefit from forward references.
+            --  Fully analyze the pragma when it appears inside an entry
+            --  or subprogram body because it cannot benefit from forward
+            --  references.
 
-            if Nkind_In (Subp_Decl, N_Subprogram_Body,
+            if Nkind_In (Subp_Decl, N_Entry_Body,
+                                    N_Subprogram_Body,
                                     N_Subprogram_Body_Stub)
             then
                --  The legality checks of pragma Contract_Cases are affected by
@@ -13046,10 +13101,12 @@ package body Sem_Prag is
 
                Add_Contract_Item (N, Spec_Id);
 
-               --  Fully analyze the pragma when it appears inside a subprogram
-               --  body because it cannot benefit from forward references.
+               --  Fully analyze the pragma when it appears inside an entry
+               --  or subprogram body because it cannot benefit from forward
+               --  references.
 
-               if Nkind_In (Subp_Decl, N_Subprogram_Body,
+               if Nkind_In (Subp_Decl, N_Entry_Body,
+                                       N_Subprogram_Body,
                                        N_Subprogram_Body_Stub)
                then
                   --  The legality checks of pragmas Depends and Global are
@@ -13993,7 +14050,7 @@ package body Sem_Prag is
             Check_At_Most_N_Arguments (1);
 
             Subp_Decl :=
-              Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
+              Find_Related_Declaration_Or_Body (N, Do_Checks => True);
 
             --  Generic subprogram declaration
 
@@ -14564,10 +14621,12 @@ package body Sem_Prag is
 
                Add_Contract_Item (N, Spec_Id);
 
-               --  Fully analyze the pragma when it appears inside a subprogram
-               --  body because it cannot benefit from forward references.
+               --  Fully analyze the pragma when it appears inside an entry
+               --  or subprogram body because it cannot benefit from forward
+               --  references.
 
-               if Nkind_In (Subp_Decl, N_Subprogram_Body,
+               if Nkind_In (Subp_Decl, N_Entry_Body,
+                                       N_Subprogram_Body,
                                        N_Subprogram_Body_Stub)
                then
                   --  The legality checks of pragmas Depends and Global are
@@ -20991,7 +21050,7 @@ package body Sem_Prag is
                return;
             end if;
 
-            Subp_Decl := Find_Related_Subprogram_Or_Body (N);
+            Subp_Decl := Find_Related_Declaration_Or_Body (N);
 
             --  Find the enclosing context
 
@@ -21067,10 +21126,12 @@ package body Sem_Prag is
 
             Check_Distinct_Name (Subp_Id);
 
-            --  Fully analyze the pragma when it appears inside a subprogram
-            --  body because it cannot benefit from forward references.
+            --  Fully analyze the pragma when it appears inside an entry
+            --  or subprogram body because it cannot benefit from forward
+            --  references.
 
-            if Nkind_In (Subp_Decl, N_Subprogram_Body,
+            if Nkind_In (Subp_Decl, N_Entry_Body,
+                                    N_Subprogram_Body,
                                     N_Subprogram_Body_Stub)
             then
                --  The legality checks of pragma Test_Case are affected by the
@@ -21910,7 +21971,7 @@ package body Sem_Prag is
             Check_At_Most_N_Arguments (1);
 
             Subp_Decl :=
-              Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
+              Find_Related_Declaration_Or_Body (N, Do_Checks => True);
 
             --  Generic subprogram
 
@@ -22575,7 +22636,7 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Subp_Decl : constant Node_Id   := Find_Related_Subprogram_Or_Body (N);
+      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
       Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
       Expr      : constant Node_Id   := Expression (Get_Argument (N, Spec_Id));
 
@@ -22773,9 +22834,9 @@ package body Sem_Prag is
 
                Item_Id := Available_View (Entity_Of (Item));
 
-               return Ekind (Item_Id) = E_Abstract_State
-                 and then Has_Null_Refinement (Item_Id);
-
+               return
+                 Ekind (Item_Id) = E_Abstract_State
+                   and then Has_Null_Refinement (Item_Id);
             else
                return False;
             end if;
@@ -23059,8 +23120,8 @@ package body Sem_Prag is
 
          if not Clause_Matched then
             SPARK_Msg_NE
-              ("dependence clause of subprogram & has no matching refinement "
-               & "in body", Dep_Clause, Spec_Id);
+              (Fix_Msg (Spec_Id, "dependence clause of subprogram & has no "
+               & "matching refinement in body"), Dep_Clause, Spec_Id);
          end if;
       end Check_Dependency_Clause;
 
@@ -23377,7 +23438,7 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Body_Decl : constant Node_Id   := Find_Related_Subprogram_Or_Body (N);
+      Body_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
       Body_Id   : constant Entity_Id := Defining_Entity (Body_Decl);
       Errors    : constant Nat       := Serious_Errors_Detected;
       Clause    : Node_Id;
@@ -23394,12 +23455,7 @@ package body Sem_Prag is
          return;
       end if;
 
-      if Nkind (Body_Decl) = N_Subprogram_Body_Stub then
-         Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
-      else
-         Spec_Id := Corresponding_Spec (Body_Decl);
-      end if;
-
+      Spec_Id := Unique_Defining_Entity (Body_Decl);
       Depends := Get_Pragma (Spec_Id, Pragma_Depends);
 
       --  Subprogram declarations lacks pragma Depends. Refined_Depends is
@@ -23407,8 +23463,8 @@ package body Sem_Prag is
 
       if No (Depends) then
          SPARK_Msg_NE
-           ("useless refinement, declaration of subprogram & lacks aspect or "
-            & "pragma Depends", N, Spec_Id);
+           (Fix_Msg (Spec_Id, "useless refinement, declaration of subprogram "
+            & "& lacks aspect or pragma Depends"), N, Spec_Id);
          goto Leave;
       end if;
 
@@ -23421,8 +23477,8 @@ package body Sem_Prag is
 
       if Nkind (Deps) = N_Null then
          SPARK_Msg_NE
-           ("useless refinement, subprogram & does not depend on abstract "
-            & "state with visible refinement", N, Spec_Id);
+           (Fix_Msg (Spec_Id, "useless refinement, subprogram & does not "
+            & "depend on abstract state with visible refinement"), N, Spec_Id);
          goto Leave;
       end if;
 
@@ -24355,7 +24411,7 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Body_Decl : constant Node_Id := Find_Related_Subprogram_Or_Body (N);
+      Body_Decl : constant Node_Id := Find_Related_Declaration_Or_Body (N);
       Errors    : constant Nat     := Serious_Errors_Detected;
       Items     : Node_Id;
 
@@ -24368,22 +24424,17 @@ package body Sem_Prag is
          return;
       end if;
 
-      if Nkind (Body_Decl) = N_Subprogram_Body_Stub then
-         Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
-      else
-         Spec_Id := Corresponding_Spec (Body_Decl);
-      end if;
-
-      Global := Get_Pragma (Spec_Id, Pragma_Global);
-      Items  := Expression (Get_Argument (N, Spec_Id));
+      Spec_Id := Unique_Defining_Entity (Body_Decl);
+      Global  := Get_Pragma (Spec_Id, Pragma_Global);
+      Items   := Expression (Get_Argument (N, Spec_Id));
 
       --  The subprogram declaration lacks pragma Global. This renders
       --  Refined_Global useless as there is nothing to refine.
 
       if No (Global) then
          SPARK_Msg_NE
-           ("useless refinement, declaration of subprogram & lacks aspect or "
-            & "pragma Global", N, Spec_Id);
+           (Fix_Msg (Spec_Id, "useless refinement, declaration of subprogram "
+            & "& lacks aspect or pragma Global"), N, Spec_Id);
          goto Leave;
       end if;
 
@@ -24415,8 +24466,9 @@ package body Sem_Prag is
            and then not Has_Null_State
          then
             SPARK_Msg_NE
-              ("useless refinement, subprogram & does not depend on abstract "
-               & "state with visible refinement", N, Spec_Id);
+              (Fix_Msg (Spec_Id, "useless refinement, subprogram & does not "
+               & "depend on abstract state with visible refinement"),
+               N, Spec_Id);
             goto Leave;
 
          --  The global refinement of inputs and outputs cannot be null when
@@ -24432,8 +24484,8 @@ package body Sem_Prag is
            and then not Has_Null_State
          then
             SPARK_Msg_NE
-              ("refinement cannot be null, subprogram & has global items",
-               N, Spec_Id);
+              (Fix_Msg (Spec_Id, "refinement cannot be null, subprogram & has "
+               & "global items"), N, Spec_Id);
             goto Leave;
          end if;
       end if;
@@ -25292,7 +25344,7 @@ package body Sem_Prag is
    ------------------------------------
 
    procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id) is
-      Subp_Decl : constant Node_Id   := Find_Related_Subprogram_Or_Body (N);
+      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
       Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
 
       procedure Preanalyze_Test_Case_Arg (Arg_Nam : Name_Id);
@@ -26326,10 +26378,13 @@ package body Sem_Prag is
          Next_Entity (Formal);
       end loop;
 
-      --  When processing a subprogram body, look for pragmas Refined_Depends
-      --  and Refined_Global as they specify the inputs and outputs.
+      --  When processing an entry, subprogram or task body, look for pragmas
+      --  Refined_Depends and Refined_Global as they specify the inputs and
+      --  outputs.
 
-      if Ekind (Subp_Id) = E_Subprogram_Body then
+      if Is_Entry_Body (Subp_Id)
+        or else Ekind_In (Subp_Id, E_Subprogram_Body, E_Task_Body)
+      then
          Depends := Get_Pragma (Subp_Id, Pragma_Refined_Depends);
          Global  := Get_Pragma (Subp_Id, Pragma_Refined_Global);
 
@@ -26469,6 +26524,172 @@ package body Sem_Prag is
       return Empty;
    end Find_Related_Context;
 
+   --------------------------------------
+   -- Find_Related_Declaration_Or_Body --
+   --------------------------------------
+
+   function Find_Related_Declaration_Or_Body
+     (Prag      : Node_Id;
+      Do_Checks : Boolean := False) return Node_Id
+   is
+      Prag_Nam : constant Name_Id := Original_Aspect_Pragma_Name (Prag);
+
+      procedure Expression_Function_Error;
+      --  Emit an error concerning pragma Prag that illegaly applies to an
+      --  expression function.
+
+      -------------------------------
+      -- Expression_Function_Error --
+      -------------------------------
+
+      procedure Expression_Function_Error is
+      begin
+         Error_Msg_Name_1 := Prag_Nam;
+
+         --  Emit a precise message to distinguish between source pragmas and
+         --  pragmas generated from aspects.
+
+         if From_Aspect_Specification (Prag) then
+            Error_Msg_N
+              ("aspect % cannot apply to a stand alone expression function",
+               Prag);
+         else
+            Error_Msg_N
+              ("pragma % cannot apply to a stand alone expression function",
+               Prag);
+         end if;
+      end Expression_Function_Error;
+
+      --  Local variables
+
+      Context : constant Node_Id := Parent (Prag);
+      Stmt    : Node_Id;
+
+      Look_For_Body : constant Boolean :=
+                        Nam_In (Prag_Nam, Name_Refined_Depends,
+                                          Name_Refined_Global,
+                                          Name_Refined_Post);
+      --  Refinement pragmas must be associated with a subprogram body [stub]
+
+   --  Start of processing for Find_Related_Declaration_Or_Body
+
+   begin
+      Stmt := Prev (Prag);
+      while Present (Stmt) loop
+
+         --  Skip prior pragmas, but check for duplicates. Pragmas produced
+         --  by splitting a complex pre/postcondition are not considered to
+         --  be duplicates.
+
+         if Nkind (Stmt) = N_Pragma then
+            if Do_Checks
+              and then not Split_PPC (Stmt)
+              and then Original_Aspect_Pragma_Name (Stmt) = Prag_Nam
+            then
+               Duplication_Error
+                 (Prag => Prag,
+                  Prev => Stmt);
+            end if;
+
+         --  Emit an error when a refinement pragma appears on an expression
+         --  function without a completion.
+
+         elsif Do_Checks
+           and then Look_For_Body
+           and then Nkind (Stmt) = N_Subprogram_Declaration
+           and then Nkind (Original_Node (Stmt)) = N_Expression_Function
+           and then not Has_Completion (Defining_Entity (Stmt))
+         then
+            Expression_Function_Error;
+            return Empty;
+
+         --  The refinement pragma applies to a subprogram body stub
+
+         elsif Look_For_Body
+           and then Nkind (Stmt) = N_Subprogram_Body_Stub
+         then
+            return Stmt;
+
+         --  Skip internally generated code
+
+         elsif not Comes_From_Source (Stmt) then
+            if Nkind (Stmt) = N_Subprogram_Declaration then
+
+               --  The subprogram declaration is an internally generated spec
+               --  for an expression function.
+
+               if Nkind (Original_Node (Stmt)) = N_Expression_Function then
+                  return Stmt;
+
+               --  The subprogram is actually an instance housed within an
+               --  anonymous wrapper package.
+
+               elsif Present (Generic_Parent (Specification (Stmt))) then
+                  return Stmt;
+               end if;
+
+            --  The pragma applies to a single task declaration rewritten as a
+            --  task type.
+
+            elsif Nkind (Stmt) = N_Task_Type_Declaration
+              and then Nkind (Original_Node (Stmt)) = N_Single_Task_Declaration
+            then
+               return Stmt;
+            end if;
+
+         --  Return the current construct which is either a subprogram body,
+         --  a subprogram declaration or is illegal.
+
+         else
+            return Stmt;
+         end if;
+
+         Prev (Stmt);
+      end loop;
+
+      --  If we fall through, then the pragma was either the first declaration
+      --  or it was preceded by other pragmas and no source constructs.
+
+      --  The pragma is associated with a library-level subprogram
+
+      if Nkind (Context) = N_Compilation_Unit_Aux then
+         return Unit (Parent (Context));
+
+      --  The pragma appears inside the declarations of an entry body
+
+      elsif Nkind (Context) = N_Entry_Body then
+         return Context;
+
+      --  The pragma appears inside the statements of a subprogram body. This
+      --  placement is the result of subprogram contract expansion.
+
+      elsif Nkind (Context) = N_Handled_Sequence_Of_Statements then
+         return Parent (Context);
+
+      --  The pragma appears inside the declarative part of a subprogram body
+
+      elsif Nkind (Context) = N_Subprogram_Body then
+         return Context;
+
+      --  The pragma appears inside the declarative part of a task body
+
+      elsif Nkind (Context) = N_Task_Body then
+         return Context;
+
+      --  The pragma is a byproduct of aspect expansion, return the related
+      --  context of the original aspect. This case has a lower priority as
+      --  the above circuitry pinpoints precisely the related context.
+
+      elsif Present (Corresponding_Aspect (Prag)) then
+         return Parent (Corresponding_Aspect (Prag));
+
+      --  No candidate subprogram [body] found
+
+      else
+         return Empty;
+      end if;
+   end Find_Related_Declaration_Or_Body;
+
    ----------------------------------
    -- Find_Related_Package_Or_Body --
    ----------------------------------
@@ -26557,153 +26778,55 @@ package body Sem_Prag is
       end if;
    end Find_Related_Package_Or_Body;
 
-   -------------------------------------
-   -- Find_Related_Subprogram_Or_Body --
-   -------------------------------------
+   -------------
+   -- Fix_Msg --
+   -------------
 
-   function Find_Related_Subprogram_Or_Body
-     (Prag      : Node_Id;
-      Do_Checks : Boolean := False) return Node_Id
-   is
-      Prag_Nam : constant Name_Id := Original_Aspect_Pragma_Name (Prag);
-
-      procedure Expression_Function_Error;
-      --  Emit an error concerning pragma Prag that illegaly applies to an
-      --  expression function.
-
-      -------------------------------
-      -- Expression_Function_Error --
-      -------------------------------
-
-      procedure Expression_Function_Error is
-      begin
-         Error_Msg_Name_1 := Prag_Nam;
-
-         --  Emit a precise message to distinguish between source pragmas and
-         --  pragmas generated from aspects.
-
-         if From_Aspect_Specification (Prag) then
-            Error_Msg_N
-              ("aspect % cannot apply to a stand alone expression function",
-               Prag);
-         else
-            Error_Msg_N
-              ("pragma % cannot apply to a stand alone expression function",
-               Prag);
-         end if;
-      end Expression_Function_Error;
-
-      --  Local variables
-
-      Context : constant Node_Id := Parent (Prag);
-      Stmt    : Node_Id;
-
-      Look_For_Body : constant Boolean :=
-                        Nam_In (Prag_Nam, Name_Refined_Depends,
-                                          Name_Refined_Global,
-                                          Name_Refined_Post);
-      --  Refinement pragmas must be associated with a subprogram body [stub]
-
-   --  Start of processing for Find_Related_Subprogram_Or_Body
+   function Fix_Msg (Id : Entity_Id; Msg : String) return String is
+      Msg_Last  : constant Natural := Msg'Last;
+      Msg_Index : Natural;
+      Res       : String (Msg'Range) := (others => ' ');
+      Res_Index : Natural;
 
    begin
-      Stmt := Prev (Prag);
-      while Present (Stmt) loop
+      --  Copy all characters from the input message Msg to result Res with
+      --  suitable replacements.
 
-         --  Skip prior pragmas, but check for duplicates. Pragmas produced
-         --  by splitting a complex pre/postcondition are not considered to
-         --  be duplicates.
+      Msg_Index := Msg'First;
+      Res_Index := Res'First;
+      while Msg_Index <= Msg_Last loop
 
-         if Nkind (Stmt) = N_Pragma then
-            if Do_Checks
-              and then not Split_PPC (Stmt)
-              and then Original_Aspect_Pragma_Name (Stmt) = Prag_Nam
-            then
-               Duplication_Error
-                 (Prag => Prag,
-                  Prev => Stmt);
+         --  Replace "subprogram" with a different word
+
+         if Msg_Index <= Msg_Last - 10
+           and then Msg (Msg_Index .. Msg_Index + 9) = "subprogram"
+         then
+            if Ekind_In (Id, E_Entry, E_Entry_Family) then
+               Res (Res_Index .. Res_Index + 4) := "entry";
+               Res_Index := Res_Index + 5;
+
+            elsif Ekind_In (Id, E_Task_Body, E_Task_Type) then
+               Res (Res_Index .. Res_Index + 8) := "task unit";
+               Res_Index := Res_Index + 9;
+
+            else
+               Res (Res_Index .. Res_Index + 9) := "subprogram";
+               Res_Index := Res_Index + 10;
             end if;
 
-         --  Emit an error when a refinement pragma appears on an expression
-         --  function without a completion.
+            Msg_Index := Msg_Index + 10;
 
-         elsif Do_Checks
-           and then Look_For_Body
-           and then Nkind (Stmt) = N_Subprogram_Declaration
-           and then Nkind (Original_Node (Stmt)) = N_Expression_Function
-           and then not Has_Completion (Defining_Entity (Stmt))
-         then
-            Expression_Function_Error;
-            return Empty;
-
-         --  The refinement pragma applies to a subprogram body stub
-
-         elsif Look_For_Body
-           and then Nkind (Stmt) = N_Subprogram_Body_Stub
-         then
-            return Stmt;
-
-         --  Skip internally generated code
-
-         elsif not Comes_From_Source (Stmt) then
-            if Nkind (Stmt) = N_Subprogram_Declaration then
-
-               --  The subprogram declaration is an internally generated spec
-               --  for an expression function.
-
-               if Nkind (Original_Node (Stmt)) = N_Expression_Function then
-                  return Stmt;
-
-               --  The subprogram is actually an instance housed within an
-               --  anonymous wrapper package.
-
-               elsif Present (Generic_Parent (Specification (Stmt))) then
-                  return Stmt;
-               end if;
-            end if;
-
-         --  Return the current construct which is either a subprogram body,
-         --  a subprogram declaration or is illegal.
+         --  Otherwise copy the character
 
          else
-            return Stmt;
+            Res (Res_Index) := Msg (Msg_Index);
+            Msg_Index := Msg_Index + 1;
+            Res_Index := Res_Index + 1;
          end if;
-
-         Prev (Stmt);
       end loop;
 
-      --  If we fall through, then the pragma was either the first declaration
-      --  or it was preceded by other pragmas and no source constructs.
-
-      --  The pragma is associated with a library-level subprogram
-
-      if Nkind (Context) = N_Compilation_Unit_Aux then
-         return Unit (Parent (Context));
-
-      --  The pragma appears inside the statements of a subprogram body. This
-      --  placement is the result of subprogram contract expansion.
-
-      elsif Nkind (Context) = N_Handled_Sequence_Of_Statements then
-         return Parent (Context);
-
-      --  The pragma appears inside the declarative part of a subprogram body
-
-      elsif Nkind (Context) = N_Subprogram_Body then
-         return Context;
-
-      --  The pragma is a byproduct of aspect expansion, return the related
-      --  context of the original aspect. This case has a lower priority as
-      --  the above circuitry pinpoints precisely the related context.
-
-      elsif Present (Corresponding_Aspect (Prag)) then
-         return Parent (Corresponding_Aspect (Prag));
-
-      --  No candidate subprogram [body] found
-
-      else
-         return Empty;
-      end if;
-   end Find_Related_Subprogram_Or_Body;
+      return Res (Res'First .. Res_Index - 1);
+   end Fix_Msg;
 
    ------------------
    -- Get_Argument --
