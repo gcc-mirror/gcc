@@ -1,3 +1,8 @@
+2015-10-26  Alan Hayward <alan.hayward@arm.com>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Fix
+	VEC_COND_EXPR types.
+
 2015-10-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* auto-inc-dec.c (insert_move_insn_before): Delete.
