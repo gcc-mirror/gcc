@@ -1,3 +1,11 @@
+2015-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Skip a record
+	component if it has Complex_Representation.
+	(Freeze_Record_Type): If the type has Complex_Representation, skip the
+	regular treatment of Scalar_Storage_Order attribute and instead issue
+	a warning if it is present.
+
 2015-10-26  Bob Duff  <duff@adacore.com>
 
 	* sem_ch13.adb (Check_Iterator_Functions): For a Default_Iterator
