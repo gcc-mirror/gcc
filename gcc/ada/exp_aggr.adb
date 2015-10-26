@@ -4105,6 +4105,8 @@ package body Exp_Aggr is
       --  Backend processing by Gigi/gcc is possible only if all the following
       --  conditions are met:
 
+      --    0. We are not generating C code
+
       --    1. N consists of a single OTHERS choice, possibly recursively
 
       --    2. The array type is not packed
@@ -4135,6 +4137,10 @@ package body Exp_Aggr is
          Nunits    : Nat;
 
       begin
+         if Generate_C_Code then
+            return False;
+         end if;
+
          --  Recurse as far as possible to find the innermost component type
 
          Ctyp := Etype (N);

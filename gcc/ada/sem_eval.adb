@@ -5408,13 +5408,14 @@ package body Sem_Eval is
       --  First deal with special case of inherited predicate, where the
       --  predicate expression looks like:
 
-      --     Expr and then xxPredicate (typ (Ent))
+      --     xxPredicate (typ (Ent)) and then Expr
 
       --  where Expr is the predicate expression for this level, and the
-      --  right operand is the call to evaluate the inherited predicate.
+      --  left operand is the call to evaluate the inherited predicate.
 
       if Nkind (Expr) = N_And_Then
-        and then Nkind (Right_Opnd (Expr)) = N_Function_Call
+        and then Nkind (Left_Opnd (Expr)) = N_Function_Call
+        and then Is_Predicate_Function (Entity (Name (Left_Opnd (Expr))))
       then
          --  OK we have the inherited case, so make a call to evaluate the
          --  inherited predicate. If that fails, so do we!
@@ -5422,14 +5423,14 @@ package body Sem_Eval is
          if not
            Real_Or_String_Static_Predicate_Matches
              (Val => Val,
-              Typ => Etype (First_Formal (Entity (Name (Right_Opnd (Expr))))))
+              Typ => Etype (First_Formal (Entity (Name (Left_Opnd (Expr))))))
          then
             return False;
          end if;
 
-         --  Use the left operand for the continued processing
+         --  Use the right operand for the continued processing
 
-         Copy := Copy_Separate_Tree (Left_Opnd (Expr));
+         Copy := Copy_Separate_Tree (Right_Opnd (Expr));
 
       --  Case where call to predicate function appears on its own (this means
       --  that the predicate at this level is just inherited from the parent).

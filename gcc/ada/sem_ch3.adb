@@ -3278,7 +3278,7 @@ package body Sem_Ch3 is
       --  task type is declared. Its function is to count the static number of
       --  tasks declared within the type (it is only called if Has_Tasks is set
       --  for T). As a side effect, if an array of tasks with non-static bounds
-      --  or a variant record type is encountered, Check_Restrictions is called
+      --  or a variant record type is encountered, Check_Restriction is called
       --  indicating the count is unknown.
 
       function Delayed_Aspect_Present return Boolean;

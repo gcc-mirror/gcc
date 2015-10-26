@@ -8340,10 +8340,10 @@ package body Sem_Ch13 is
    --    function typPredicate (Ixxx : typ) return Boolean is
    --    begin
    --       return
-   --          exp1 and then exp2 and then ...
-   --          and then typ1Predicate (typ1 (Ixxx))
+   --          typ1Predicate (typ1 (Ixxx))
    --          and then typ2Predicate (typ2 (Ixxx))
    --          and then ...;
+   --          exp1 and then exp2 and then ...
    --    end typPredicate;
 
    --  Here exp1, and exp2 are expressions from Predicate pragmas. Note that
@@ -8351,6 +8351,12 @@ package body Sem_Ch13 is
    --  required delay, and typ1, typ2, are entities from which predicates are
    --  inherited. Note that we do NOT generate Check pragmas, that's because we
    --  use this function even if checks are off, e.g. for membership tests.
+
+   --  Note that the inherited predicates are evaluated first, as required by
+   --  AI12-0071-1.
+
+   --  Note that Sem_Eval.Real_Or_String_Static_Predicate_Matches depends on
+   --  the form of this return expression.
 
    --  If the expression has at least one Raise_Expression, then we also build
    --  the typPredicateM version of the function, in which any occurrence of a
@@ -8384,15 +8390,19 @@ package body Sem_Ch13 is
       Raise_Expression_Present : Boolean := False;
       --  Set True if Expr has at least one Raise_Expression
 
-      procedure Add_Call (T : Entity_Id);
-      --  Includes a call to the predicate function for type T in Expr if T
-      --  has predicates and Predicate_Function (T) is non-empty.
+      procedure Add_Condition (Cond : Node_Id);
+      --  Append Cond to Expr using "and then" (or just copy Cond to Expr if
+      --  Expr is empty).
 
       procedure Add_Predicates;
       --  Appends expressions for any Predicate pragmas in the rep item chain
       --  Typ to Expr. Note that we look only at items for this exact entity.
       --  Inheritance of predicates for the parent type is done by calling the
       --  Predicate_Function of the parent type, using Add_Call above.
+
+      procedure Add_Call (T : Entity_Id);
+      --  Includes a call to the predicate function for type T in Expr if T
+      --  has predicates and Predicate_Function (T) is non-empty.
 
       function Process_RE (N : Node_Id) return Traverse_Result;
       --  Used in Process REs, tests if node N is a raise expression, and if
@@ -8425,17 +8435,9 @@ package body Sem_Ch13 is
               Make_Predicate_Call
                 (T, Convert_To (T, Make_Identifier (Loc, Object_Name)));
 
-            --  Add call to evolving expression, using AND THEN if needed
+            --  "and"-in the call to evolving expression
 
-            if No (Expr) then
-               Expr := Exp;
-
-            else
-               Expr :=
-                 Make_And_Then (Sloc (Expr),
-                   Left_Opnd  => Relocate_Node (Expr),
-                   Right_Opnd => Exp);
-            end if;
+            Add_Condition (Exp);
 
             --  Output info message on inheritance if required. Note we do not
             --  give this information for generic actual types, since it is
@@ -8455,6 +8457,28 @@ package body Sem_Ch13 is
             end if;
          end if;
       end Add_Call;
+
+      -------------------
+      -- Add_Condition --
+      -------------------
+
+      procedure Add_Condition (Cond : Node_Id) is
+      begin
+         --  This is the first predicate expression
+
+         if No (Expr) then
+            Expr := Cond;
+
+         --  Otherwise concatenate to the existing predicate expressions by
+         --  using "and then".
+
+         else
+            Expr :=
+              Make_And_Then (Loc,
+                Left_Opnd  => Relocate_Node (Expr),
+                Right_Opnd => Cond);
+         end if;
+      end Add_Condition;
 
       --------------------
       -- Add_Predicates --
@@ -8535,24 +8559,12 @@ package body Sem_Ch13 is
                --  Check_Aspect_At_xxx routines.
 
                if Present (Asp) then
-
                   Set_Entity (Identifier (Asp), New_Copy_Tree (Arg2));
                end if;
 
-               --  Concatenate to the existing predicate expressions by using
-               --  "and then".
+               --  "and"-in the Arg2 condition to evolving expression
 
-               if Present (Expr) then
-                  Expr :=
-                    Make_And_Then (Loc,
-                      Left_Opnd  => Relocate_Node (Expr),
-                      Right_Opnd => Relocate_Node (Arg2));
-
-               --  Otherwise this is the first predicate expression
-
-               else
-                  Expr := Relocate_Node (Arg2);
-               end if;
+               Add_Condition (Relocate_Node (Arg2));
             end if;
          end Add_Predicate;
 
@@ -8627,11 +8639,8 @@ package body Sem_Ch13 is
 
       Expr := Empty;
 
-      --  Add Predicates for the current type
-
-      Add_Predicates;
-
-      --  Add predicates for ancestor if present
+      --  Add predicates for ancestor if present. These must come before the
+      --  ones for the current type, as required by AI12-0071-1.
 
       declare
          Atyp : constant Entity_Id := Nearest_Ancestor (Typ);
@@ -8640,6 +8649,10 @@ package body Sem_Ch13 is
             Add_Call (Atyp);
          end if;
       end;
+
+      --  Add Predicates for the current type
+
+      Add_Predicates;
 
       --  Case where predicates are present
 
@@ -8955,13 +8968,18 @@ package body Sem_Ch13 is
 
                --  First a little fiddling to get a nice location for the
                --  message. If the expression is of the form (A and then B),
-               --  then use the left operand for the Sloc. This avoids getting
-               --  confused by a call to a higher-level predicate with a less
-               --  convenient source location.
+               --  where A is an inherited predicate, then use the right
+               --  operand for the Sloc. This avoids getting confused by a call
+               --  to an inherited predicate with a less convenient source
+               --  location.
 
                EN := Expr;
-               while Nkind (EN) = N_And_Then loop
-                  EN := Left_Opnd (EN);
+               while Nkind (EN) = N_And_Then
+                 and then Nkind (Left_Opnd (EN)) = N_Function_Call
+                 and then Is_Predicate_Function
+                            (Entity (Name (Left_Opnd (EN))))
+               loop
+                  EN := Right_Opnd (EN);
                end loop;
 
                --  Now post appropriate message
@@ -11688,7 +11706,7 @@ package body Sem_Ch13 is
       --  references to inherited predicates, so that the expression we are
       --  processing looks like:
 
-      --    expression and then xxPredicate (typ (Inns))
+      --    xxPredicate (typ (Inns)) and then expression
 
       --  Where the call is to a Predicate function for an inherited predicate.
       --  We simply ignore such a call, which could be to either a dynamic or
