@@ -159,7 +159,7 @@ package body Debug is
    --  d.2  Allow statements in declarative part
    --  d.3  Output debugging information from Exp_Unst
    --  d.4
-   --  d.5
+   --  d.5  Do not generate imported subprogram definitions in C code
    --  d.6
    --  d.7
    --  d.8
@@ -761,6 +761,10 @@ package body Debug is
 
    --  d.3  Output debugging information from Exp_Unst, including the name of
    --       any unreachable subprograms that get deleted.
+
+   --  d.5  By default a subprogram imported generates a subprogram profile.
+   --       This debug flag disables this generation when generating C code,
+   --       assuming a proper #include will be used instead.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --
