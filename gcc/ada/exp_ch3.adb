@@ -760,8 +760,10 @@ package body Exp_Ch3 is
          --  want to inline, because nested stuff may cause difficulties in
          --  inter-unit inlining, and furthermore there is in any case no
          --  point in inlining such complex init procs.
+         --  Also do not inline in case of Modify_Tree_For_C where front-end
+         --  inlining is used and may not always play well with init procs.
 
-         if not Has_Task (Proc_Id) then
+         if not Has_Task (Proc_Id) and then not Modify_Tree_For_C then
             Set_Is_Inlined (Proc_Id);
          end if;
 
@@ -3598,9 +3600,12 @@ package body Exp_Ch3 is
          --  In addition, when compiled for another unit for inlining purposes,
          --  it may make reference to entities that have not been elaborated
          --  yet. Similar considerations apply to task types.
+         --  Also do not inline in case of Modify_Tree_For_C where front-end
+         --  inlining is used and may not always play well with init procs.
 
          if not Is_Concurrent_Type (Rec_Type)
            and then not Has_Task (Rec_Type)
+           and then not Modify_Tree_For_C
          then
             Set_Is_Inlined  (Proc_Id);
          end if;

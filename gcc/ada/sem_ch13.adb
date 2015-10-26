@@ -4219,8 +4219,6 @@ package body Sem_Ch13 is
       ------------------------------
 
       procedure Check_Iterator_Functions is
-         Default : Entity_Id;
-
          function Valid_Default_Iterator (Subp : Entity_Id) return Boolean;
          --  Check one possible interpretation for validity
 
@@ -4277,8 +4275,8 @@ package body Sem_Ch13 is
             end if;
 
          else
-            Default := Empty;
             declare
+               Default : Entity_Id := Empty;
                I : Interp_Index;
                It : Interp;
 
@@ -4292,6 +4290,10 @@ package body Sem_Ch13 is
 
                   elsif Present (Default) then
                      Error_Msg_N ("default iterator must be unique", Expr);
+                     Error_Msg_Sloc := Sloc (Default);
+                     Error_Msg_N ("\\possible interpretation#", Expr);
+                     Error_Msg_Sloc := Sloc (It.Nam);
+                     Error_Msg_N ("\\possible interpretation#", Expr);
 
                   else
                      Default := It.Nam;
@@ -4299,12 +4301,12 @@ package body Sem_Ch13 is
 
                   Get_Next_Interp (I, It);
                end loop;
-            end;
 
-            if Present (Default) then
-               Set_Entity (Expr, Default);
-               Set_Is_Overloaded (Expr, False);
-            end if;
+               if Present (Default) then
+                  Set_Entity (Expr, Default);
+                  Set_Is_Overloaded (Expr, False);
+               end if;
+            end;
          end if;
       end Check_Iterator_Functions;
 

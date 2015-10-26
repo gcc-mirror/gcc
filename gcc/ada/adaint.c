@@ -3061,17 +3061,7 @@ __gnat_sals_init_using_constructors (void)
 #endif
 }
 
-#if defined (__ANDROID__)
-
-#include <pthread.h>
-
-void *
-__gnat_lwp_self (void)
-{
-   return (void *) pthread_self ();
-}
-
-#elif defined (__linux__)
+#if defined (__linux__) || defined (__ANDROID__)
 /* There is no function in the glibc to retrieve the LWP of the current
    thread. We need to do a system call in order to retrieve this
    information. */
@@ -3081,7 +3071,9 @@ __gnat_lwp_self (void)
 {
    return (void *) syscall (__NR_gettid);
 }
+#endif
 
+#if defined (__linux__)
 #include <sched.h>
 
 /* glibc versions earlier than 2.7 do not define the routines to handle

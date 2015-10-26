@@ -15012,10 +15012,26 @@ package body Sem_Ch3 is
          --  Given that this new interface entity corresponds with a primitive
          --  of the parent that was not overridden we must leave it associated
          --  with its parent primitive to ensure that it will share the same
-         --  dispatch table slot when overridden.
+         --  dispatch table slot when overridden. We must set the Alias to Subp
+         --  (instead of Iface_Subp), and we must fix Is_Abstract_Subprogram
+         --  (in case we inherited Subp from Iface_Type via a nonabstract
+         --  generic formal type).
 
          if No (Actual_Subp) then
             Set_Alias (New_Subp, Subp);
+
+            declare
+               T : Entity_Id := Find_Dispatching_Type (Subp);
+            begin
+               while Etype (T) /= T loop
+                  if Is_Generic_Type (T) and then not Is_Abstract_Type (T) then
+                     Set_Is_Abstract_Subprogram (New_Subp, False);
+                     exit;
+                  end if;
+
+                  T := Etype (T);
+               end loop;
+            end;
 
          --  For instantiations this is not needed since the previous call to
          --  Derive_Subprogram leaves the entity well decorated.
