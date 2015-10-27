@@ -2383,7 +2383,7 @@ package body Sem_Ch6 is
          begin
             pragma Assert (Nkind (From) = N_Subprogram_Body);
 
-            --  The destination node must be part of a list as the pragmas are
+            --  The destination node must be part of a list, as the pragmas are
             --  inserted after it.
 
             pragma Assert (Is_List_Member (To));
@@ -3576,7 +3576,7 @@ package body Sem_Ch6 is
 
       --  Set the SPARK_Mode from the current context (may be overwritten later
       --  with explicit pragma). Exclude the case where the SPARK_Mode appears
-      --  initially on a stand alone subprogram body, but is then relocated to
+      --  initially on a stand-alone subprogram body, but is then relocated to
       --  a generated corresponding spec. In this scenario the mode is shared
       --  between the spec and body.
 

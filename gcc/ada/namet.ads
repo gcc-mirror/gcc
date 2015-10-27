@@ -561,6 +561,9 @@ package Namet is
    --  described for Get_Decoded_Name_String, and the resulting value stored
    --  in Name_Len and Name_Buffer is the decoded name.
 
+   function Name_Equals (N1, N2 : Name_Id) return Boolean;
+   --  Return whether N1 and N2 denote the same character sequence
+
    ------------------------------
    -- File and Unit Name Types --
    ------------------------------

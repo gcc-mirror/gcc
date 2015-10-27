@@ -1,3 +1,37 @@
+2015-10-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): Do not perform legality check
+	on allocators for limited objects in a qualified expression,
+	because expression has not been resolved.
+	* sem_res.adb (Resolve_Allocator): Perform check on legality of
+	limited objects after resolution.  Add sem_ch3.adb to context.
+
+2015-10-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refined_Global_In_Decl_Part): Add variable
+	States.
+	(Check_Refined_Global_Item): An object or state acts as a
+	constituent only when the corresponding encapsulating state
+	appears in pragma Global.
+	(Collect_Global_Item): Add a state with non-null visible refinement to
+	list States.
+
+2015-10-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.ads, par.adb, sem_ch6.adb: Minor reformatting and a few
+	typo corrections.
+
+2015-10-27  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* namet.ads, namet.adb (Name_Equals): New function.
+	* namet.h (Name_Equals): New macro.
+
+2015-10-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb (Build_Procedure_Form): Use 'RESULT' for the extra
+	parameter, to avoid ambiguity when generating tmps using _xxx which
+	might end up reusing _result.
+
 2015-10-27  Javier Miranda  <miranda@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Defining_Identifier): Adding a formal to

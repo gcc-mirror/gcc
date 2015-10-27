@@ -5516,8 +5516,8 @@ package body Exp_Ch6 is
 
          --  Add an extra out parameter to carry the function result
 
-         Name_Len := 7;
-         Name_Buffer (1 .. Name_Len) := "_result";
+         Name_Len := 6;
+         Name_Buffer (1 .. Name_Len) := "RESULT";
          Append_To (Proc_Formals,
            Make_Parameter_Specification (Loc,
              Defining_Identifier =>

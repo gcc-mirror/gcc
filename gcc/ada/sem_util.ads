@@ -480,8 +480,8 @@ package Sem_Util is
    --      internally generated entity which is subsequently returned. A node
    --      that does not allow for a defining entity raises Program_Error.
    --
-   --  The former semantic is appropriate for the backend; the latter semantic
-   --  is appropriate for the frontend.
+   --  The former semantics is appropriate for the back end; the latter
+   --  semantics is appropriate for the front end.
 
    function Denotes_Discriminant
      (N                : Node_Id;
