@@ -1,3 +1,8 @@
+2015-10-27  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* tree-vect-generic.c (expand_vector_operations_1): Check
+	optab type before using it.
+
 2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-protos.h

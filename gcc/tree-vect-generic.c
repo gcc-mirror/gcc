@@ -1533,7 +1533,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       && TYPE_MODE (TREE_TYPE (type)) == TYPE_MODE (TREE_TYPE (srhs1)))
     {
       op = optab_for_tree_code (code, TREE_TYPE (type), optab_scalar);
-      if (op != unknown_optab
+      if (op >= FIRST_NORM_OPTAB && op <= LAST_NORM_OPTAB
 	  && optab_handler (op, TYPE_MODE (TREE_TYPE (type))) != CODE_FOR_nothing)
 	{
 	  tree slhs = make_ssa_name (TREE_TYPE (srhs1));
