@@ -5793,10 +5793,11 @@ package body Sem_Res is
       --  is frozen in the usual fashion, by the appearance of a real body,
       --  or at the end of a declarative part.
 
-      if Is_Entity_Name (Subp) and then not In_Spec_Expression
-        and then not Is_Expression_Function (Current_Scope)
+      if Is_Entity_Name (Subp)
+        and then not In_Spec_Expression
+        and then not Is_Expression_Function_Or_Completion (Current_Scope)
         and then
-          (not Is_Expression_Function (Entity (Subp))
+          (not Is_Expression_Function_Or_Completion (Entity (Subp))
             or else Scope (Entity (Subp)) = Current_Scope)
       then
          Freeze_Expression (Subp);

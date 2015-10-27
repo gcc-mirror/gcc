@@ -1357,10 +1357,6 @@ package body Inline is
       --  Returns True if subprogram Id is defined in the visible part of a
       --  package specification.
 
-      function Is_Expression_Function (Id : Entity_Id) return Boolean;
-      --  Returns True if subprogram Id was defined originally as an expression
-      --  function.
-
       ---------------------------------------------------
       -- Has_Formal_With_Discriminant_Dependent_Fields --
       ---------------------------------------------------
@@ -1471,20 +1467,6 @@ package body Inline is
          return Nkind (P) = N_Package_Specification
            and then List_Containing (Decl) = Visible_Declarations (P);
       end In_Package_Visible_Spec;
-
-      ----------------------------
-      -- Is_Expression_Function --
-      ----------------------------
-
-      function Is_Expression_Function (Id : Entity_Id) return Boolean is
-         Decl : Node_Id := Parent (Parent (Id));
-      begin
-         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
-            Decl := Parent (Decl);
-         end if;
-
-         return Nkind (Original_Node (Decl)) = N_Expression_Function;
-      end Is_Expression_Function;
 
       ------------------------
       -- Is_Unit_Subprogram --
