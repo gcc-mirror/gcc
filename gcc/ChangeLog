@@ -1,3 +1,9 @@
+2015-10-27  Caroline Tice  <cmtice@google.com>
+
+	(from Richard Biener)
+	* tree.c (int_cst_hash_hash):  Replace XORs with more efficient
+	calls to iterative_hash_host_wide_int.
+
 2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
