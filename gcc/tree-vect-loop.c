@@ -5901,13 +5901,9 @@ vectorizable_live_operation (gimple *stmt,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  int i;
-  int op_type;
   tree op;
   gimple *def_stmt;
-  enum vect_def_type dt;
-  enum tree_code code;
-  enum gimple_rhs_class rhs_class;
+  ssa_op_iter iter;
 
   gcc_assert (STMT_VINFO_LIVE_P (stmt_info));
 
@@ -5958,24 +5954,14 @@ vectorizable_live_operation (gimple *stmt,
   if (nested_in_vect_loop_p (loop, stmt))
     return false;
 
-  code = gimple_assign_rhs_code (stmt);
-  op_type = TREE_CODE_LENGTH (code);
-  rhs_class = get_gimple_rhs_class (code);
-  gcc_assert (rhs_class != GIMPLE_UNARY_RHS || op_type == unary_op);
-  gcc_assert (rhs_class != GIMPLE_BINARY_RHS || op_type == binary_op);
-
   /* FORNOW: support only if all uses are invariant.  This means
      that the scalar operations can remain in place, unvectorized.
      The original last scalar value that they compute will be used.  */
-
-  for (i = 0; i < op_type; i++)
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
     {
-      if (rhs_class == GIMPLE_SINGLE_RHS)
-	op = TREE_OPERAND (gimple_op (stmt, 1), i);
-      else
-	op = gimple_op (stmt, i + 1);
-      if (op
-          && !vect_is_simple_use (op, loop_vinfo, &def_stmt, &dt))
+      enum vect_def_type dt = vect_uninitialized_def;
+
+      if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &dt))
         {
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
