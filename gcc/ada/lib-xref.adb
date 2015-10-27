@@ -192,7 +192,7 @@ package body Lib.Xref is
          Set_Has_Xref_Entry (Key.Ent);
 
       --  It was already in Xref_Set, so throw away the tentatively-added
-      --  entry
+      --  entry.
 
       else
          Xrefs.Decrement_Last;

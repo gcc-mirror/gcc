@@ -34,11 +34,11 @@ with GNAT.Table;
 
 package SPARK_Xrefs is
 
-   --  SPARK cross-reference information can exist in one of two forms. In the
-   --  ALI file, it is represented using a text format that is described in
-   --  this specification.  Internally it is stored using three tables
-   --  SPARK_Xref_Table, SPARK_Scope_Table and SPARK_File_Table, which are also
-   --  defined in this unit.
+   --  SPARK cross-reference information can exist in one of two forms. In
+   --  the ALI file, it is represented using a text format that is described
+   --  in this specification. Internally it is stored using three tables
+   --  SPARK_Xref_Table, SPARK_Scope_Table and SPARK_File_Table, which are
+   --  also defined in this unit.
 
    --  Lib.Xref.SPARK_Specific is part of the compiler. It extracts SPARK
    --  cross-reference information from the complete set of cross-references

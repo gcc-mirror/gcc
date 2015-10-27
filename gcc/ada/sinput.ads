@@ -136,7 +136,7 @@ package Sinput is
 
    --  The licensing status is determined either by the presence of a
    --  specific pragma License, or by scanning the header for a predefined
-   --  file, or any file if compiling in -gnatg mode.
+   --  statement, or any file if compiling in -gnatg mode.
 
    -----------------------
    -- Source File Table --
