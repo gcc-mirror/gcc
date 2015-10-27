@@ -2559,6 +2559,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (POW real_onep@0 @1)
  @0)
 
+(simplify
+ /* copysign(x,x) -> x.  */
+ (COPYSIGN @0 @0)
+ @0)
+
+(simplify
+ /* copysign(x,y) -> fabs(x) if y is nonnegative.  */
+ (COPYSIGN @0 tree_expr_nonnegative_p@1)
+ (abs @0))
+
 /* Canonicalization of sequences of math builtins.  These rules represent
    IL simplifications but are not necessarily optimizations.
 

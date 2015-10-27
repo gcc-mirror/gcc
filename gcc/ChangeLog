@@ -1,5 +1,11 @@
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_copysign): Delete.
+	(fold_builtin_2): Handle constant copysign arguments here.
+	* match.pd: Add rules previously handled by fold_builtin_copysign.
+
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_signbit): Delete.
 	(fold_builtin_2): Handle constant signbit arguments here.
 	* match.pd: Add rules previously handled by fold_builtin_signbit.
