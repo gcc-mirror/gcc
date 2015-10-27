@@ -1,5 +1,10 @@
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_fabs): Remove constant handling.
+	(fold_builtin_abs): Likewise.
+
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_copysign): Delete.
 	(fold_builtin_2): Handle constant copysign arguments here.
 	* match.pd: Add rules previously handled by fold_builtin_copysign.
