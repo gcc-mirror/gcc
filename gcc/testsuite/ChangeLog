@@ -5,6 +5,14 @@
 
 2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	Backport from mainline
+	2015-10-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/67989
+	* g++.dg/pr67989.C: New test.
+
+2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR target/67929
 	* gcc.target/arm/pr67929_1.c: New test.
 
