@@ -2364,9 +2364,56 @@ package body Sem_Ch6 is
       ----------------------------------
 
       procedure Build_Subprogram_Declaration is
-         Asp       : Node_Id;
+         procedure Move_Pragmas (From : Node_Id; To : Node_Id);
+         --  Relocate certain categorization pragmas from the declarative list
+         --  of subprogram body From and insert them after node To. The pragmas
+         --  in question are:
+         --    Ghost
+         --    SPARK_Mode
+         --    Volatile_Function
+
+         ------------------
+         -- Move_Pragmas --
+         ------------------
+
+         procedure Move_Pragmas (From : Node_Id; To : Node_Id) is
+            Decl      : Node_Id;
+            Next_Decl : Node_Id;
+
+         begin
+            pragma Assert (Nkind (From) = N_Subprogram_Body);
+
+            --  The destination node must be part of a list as the pragmas are
+            --  inserted after it.
+
+            pragma Assert (Is_List_Member (To));
+
+            --  Inspect the declarations of the subprogram body looking for
+            --  specific pragmas.
+
+            Decl := First (Declarations (N));
+            while Present (Decl) loop
+               Next_Decl := Next (Decl);
+
+               if Nkind (Decl) = N_Pragma
+                 and then Nam_In (Pragma_Name (Decl), Name_Ghost,
+                                                      Name_SPARK_Mode,
+                                                      Name_Volatile_Function)
+               then
+                  Remove (Decl);
+                  Insert_After (To, Decl);
+               end if;
+
+               Decl := Next_Decl;
+            end loop;
+         end Move_Pragmas;
+
+         --  Local variables
+
          Decl      : Node_Id;
          Subp_Decl : Node_Id;
+
+      --  Start of processing for Build_Subprogram_Declaration
 
       begin
          --  Create a matching subprogram spec using the profile of the body.
@@ -2378,15 +2425,17 @@ package body Sem_Ch6 is
              Specification => Copy_Subprogram_Spec (Body_Spec));
          Set_Comes_From_Source (Subp_Decl, True);
 
-         --  Relocate the aspects of the subprogram body to the new subprogram
-         --  spec because it acts as the initial declaration.
-         --  ??? what about pragmas
+         --  Relocate the aspects and relevant pragmas from the subprogram body
+         --  to the generated spec because it acts as the initial declaration.
 
+         Insert_Before (N, Subp_Decl);
          Move_Aspects (N, To => Subp_Decl);
-         Insert_Before_And_Analyze (N, Subp_Decl);
+         Move_Pragmas (N, To => Subp_Decl);
 
-         --  The analysis of the subprogram spec aspects may introduce pragmas
-         --  that need to be analyzed.
+         Analyze (Subp_Decl);
+
+         --  Analyze any relocated source pragmas or pragmas created for aspect
+         --  specifications.
 
          Decl := Next (Subp_Decl);
          while Present (Decl) loop
@@ -2412,17 +2461,6 @@ package body Sem_Ch6 is
 
          Set_Comes_From_Source (Spec_Id, True);
 
-         --  If aspect SPARK_Mode was specified on the body, it needs to be
-         --  repeated both on the generated spec and the body.
-
-         Asp := Find_Aspect (Spec_Id, Aspect_SPARK_Mode);
-
-         if Present (Asp) then
-            Asp := New_Copy_Tree (Asp);
-            Set_Analyzed (Asp, False);
-            Set_Aspect_Specifications (N, New_List (Asp));
-         end if;
-
          --  Ensure that the specs of the subprogram declaration and its body
          --  are identical, otherwise they will appear non-conformant due to
          --  rewritings in the default values of formal parameters.
@@ -2430,6 +2468,18 @@ package body Sem_Ch6 is
          Body_Spec := Copy_Subprogram_Spec (Body_Spec);
          Set_Specification (N, Body_Spec);
          Body_Id := Analyze_Subprogram_Specification (Body_Spec);
+
+         --  Ensure that the generated corresponding spec and original body
+         --  share the same Ghost and SPARK_Mode attributes.
+
+         Set_Is_Checked_Ghost_Entity
+           (Body_Id, Is_Checked_Ghost_Entity (Spec_Id));
+         Set_Is_Ignored_Ghost_Entity
+           (Body_Id, Is_Ignored_Ghost_Entity (Spec_Id));
+
+         Set_SPARK_Pragma (Body_Id, SPARK_Pragma (Spec_Id));
+         Set_SPARK_Pragma_Inherited
+           (Body_Id, SPARK_Pragma_Inherited (Spec_Id));
       end Build_Subprogram_Declaration;
 
       ----------------------------
@@ -3525,9 +3575,12 @@ package body Sem_Ch6 is
            (Body_Id, SPARK_Pragma_Inherited (Prev_Id));
 
       --  Set the SPARK_Mode from the current context (may be overwritten later
-      --  with explicit pragma).
+      --  with explicit pragma). Exclude the case where the SPARK_Mode appears
+      --  initially on a stand alone subprogram body, but is then relocated to
+      --  a generated corresponding spec. In this scenario the mode is shared
+      --  between the spec and body.
 
-      else
+      elsif No (SPARK_Pragma (Body_Id)) then
          Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Body_Id);
       end if;

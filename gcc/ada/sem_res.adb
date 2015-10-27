@@ -7158,7 +7158,8 @@ package body Sem_Res is
       else
          --  A deferred constant that appears in an expression must have a
          --  completion, unless it has been removed by in-place expansion of
-         --  an aggregate.
+         --  an aggregate. A constant that is a renaming does not need
+         --  initialization.
 
          if Ekind (E) = E_Constant
            and then Comes_From_Source (E)
@@ -7166,6 +7167,7 @@ package body Sem_Res is
            and then Is_Frozen (Etype (E))
            and then not In_Spec_Expression
            and then not Is_Imported (E)
+           and then Nkind (Parent (E)) /= N_Object_Renaming_Declaration
          then
             if No_Initialization (Parent (E))
               or else (Present (Full_View (E))
