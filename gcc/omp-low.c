@@ -17637,7 +17637,7 @@ public:
   /* opt_pass methods: */
   virtual unsigned int execute (function *)
     {
-      bool gate = (flag_openacc != 0 && !seen_error ());
+      bool gate = flag_openacc != 0;
 
       if (!gate)
 	return 0;
