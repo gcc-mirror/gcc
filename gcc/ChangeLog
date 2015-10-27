@@ -1,3 +1,8 @@
+2015-10-27  Alan Hayward  <alan.hayward@arm.com>
+
+	* tree-vect-looop.c
+	(vectorizable_live_operation): Change iterator.
+
 2015-10-27  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
 	    Aditya Kumar  <aditya.k7@samsung.com>
 
