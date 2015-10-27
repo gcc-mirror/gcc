@@ -4587,7 +4587,7 @@ get_adjustment_for_base (ipa_parm_adjustment_vec adjustments, tree base)
    ADJUSTMENTS is a pointer to a vector of IPA-SRA adjustments.  */
 
 static tree
-replace_removed_params_ssa_names (tree old_name, gimple *stmt,
+replace_removed_params_ssa_names (tree old_name, gimple stmt,
 				  ipa_parm_adjustment_vec adjustments)
 {
   struct ipa_parm_adjustment *adj;

@@ -1,3 +1,8 @@
+2015-10-27  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (replace_removed_params_ssa_names): Change type of
+	parameter stmt to gimple.
+
 2015-10-26  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
