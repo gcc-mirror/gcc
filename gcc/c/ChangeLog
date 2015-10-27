@@ -1,3 +1,15 @@
+2015-10-27  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Bernd Schmidt  <bschmidt@redhat.com>
+
+	* c-parser.c (c_parser_oacc_shape_clause): New.
+	(c_parser_oacc_simple_clause): New.
+	(c_parser_oacc_all_clauses): Add auto, gang, seq, vector, worker.
+	(OACC_LOOP_CLAUSE_MASK): Add gang, worker, vector, auto, seq.
+
 2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
