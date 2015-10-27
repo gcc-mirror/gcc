@@ -1859,6 +1859,10 @@ begin
    --  been compiled.
 
    if Opt.CodePeer_Mode then
+      if Tname_FD /= Invalid_FD then
+         Delete (Tname);
+      end if;
+
       return;
    end if;
 
@@ -2052,16 +2056,14 @@ begin
 
          System.OS_Lib.Spawn (Linker_Path.all, Args, Success);
 
-         if Success then
+         --  Delete the temporary file used in conjunction with linking if one
+         --  was created. See Process_Bind_File for details.
 
-            --  Delete the temporary file used in conjunction with linking
-            --  if one was created. See Process_Bind_File for details.
+         if Tname_FD /= Invalid_FD then
+            Delete (Tname);
+         end if;
 
-            if Tname_FD /= Invalid_FD then
-               Delete (Tname);
-            end if;
-
-         else
+         if not Success then
             Error_Msg ("error when calling " & Linker_Path.all);
             Exit_Program (E_Fatal);
          end if;

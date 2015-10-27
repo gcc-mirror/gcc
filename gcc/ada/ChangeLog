@@ -1,3 +1,37 @@
+2015-10-27  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Defining_Identifier): Adding a formal to
+	indicate the needed behavior in case of nodes with errors.
+
+2015-10-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): If the prefix of attribute
+	Enum_Rep is an object that is a generated loop variable for an
+	element iterator, no folding is possible.
+	* sem_res.adb (Resolve_Entity_Name): Do not check for a missing
+	initialization in the case of a constant that is an object
+	renaming.
+	* exp_attr.adb (Expand_N_Attribute_Reference, case Enum_Rep):
+	If the prefix is a constant that renames an expression there is
+	nothing to evaluate statically.
+
+2015-10-27  Vincent Celier  <celier@adacore.com>
+
+	* gnatlink.adb: Always delete the response file, even when the
+	invocation of gcc to link failed.
+
+2015-10-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper):
+	Do not inherit the SPARK_Mode from the context if it has been
+	set already.
+	(Build_Subprogram_Declaration): Relocate relevant
+	pragmas from the subprogram body to the generated corresponding
+	spec. Do not copy aspect SPARK_Mode as this leads to circularity
+	in Copy_Separate_Tree. Inherit the attributes that describe
+	pragmas Ghost and SPARK_Mode.
+	(Move_Pragmas): New routine.
+
 2015-10-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* inline.adb (Is_Expression_Function): Removed.

@@ -4950,7 +4950,10 @@ package body Sem_Util is
    -- Defining_Entity --
    ---------------------
 
-   function Defining_Entity (N : Node_Id) return Entity_Id is
+   function Defining_Entity
+     (N               : Node_Id;
+      Empty_On_Errors : Boolean := False) return Entity_Id
+   is
       Err : Entity_Id := Empty;
 
    begin
@@ -5028,10 +5031,14 @@ package body Sem_Util is
                --  can continue semantic analysis.
 
                elsif Nam = Error then
-                  Err := Make_Temporary (Sloc (N), 'T');
-                  Set_Defining_Unit_Name (N, Err);
+                  if Empty_On_Errors then
+                     return Empty;
+                  else
+                     Err := Make_Temporary (Sloc (N), 'T');
+                     Set_Defining_Unit_Name (N, Err);
 
-                  return Err;
+                     return Err;
+                  end if;
 
                --  If not an entity, get defining identifier
 
@@ -5045,7 +5052,11 @@ package body Sem_Util is
             return Entity (Identifier (N));
 
          when others =>
-            raise Program_Error;
+            if Empty_On_Errors then
+               return Empty;
+            else
+               raise Program_Error;
+            end if;
 
       end case;
    end Defining_Entity;

@@ -7286,9 +7286,14 @@ package body Sem_Attr is
             if Is_Entity_Name (P) then
 
                --  The prefix denotes a constant or an enumeration literal, the
-               --  attribute can be folded.
+               --  attribute can be folded. A generated loop variable for an
+               --  iterator is a constant, but cannot be constant-folded.
 
-               if Ekind_In (Entity (P), E_Constant, E_Enumeration_Literal) then
+               if Ekind (Entity (P)) = E_Enumeration_Literal
+                 or else
+                   (Ekind (Entity (P)) = E_Constant
+                     and then Ekind (Scope (Entity (P))) /= E_Loop)
+               then
                   P_Entity := Etype (P);
 
                --  The prefix denotes an enumeration type. Folding can occur
