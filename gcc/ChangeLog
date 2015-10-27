@@ -1,5 +1,13 @@
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_pow): Delete in favor of...
+	(fold_const_builtin_pow): ...this new function.  Only handle constant
+	arguments.
+	(fold_builtin_2): Update accordingly.
+	* match.pd: Add rules previously handled by fold_builtin_pow.
+
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_hypot): Delete.
 	(fold_builtin_2): Handle constant hypot arguments here.
 	* match.pd: Fold hypot(x, 0) and hypot(0, x) to x.  Canonicalize

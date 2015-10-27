@@ -156,7 +156,6 @@ static tree rewrite_call_expr (location_t, tree, int, tree, int, ...);
 static bool validate_arg (const_tree, enum tree_code code);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
-static tree fold_builtin_pow (location_t, tree, tree, tree, tree);
 static tree fold_builtin_powi (location_t, tree, tree, tree, tree);
 static tree fold_builtin_bitop (tree, tree);
 static tree fold_builtin_strchr (location_t, tree, tree, tree);
@@ -7478,7 +7477,7 @@ fold_builtin_bswap (tree fndecl, tree arg)
 /* Fold a builtin function call to pow, powf, or powl.  Return
    NULL_TREE if no simplification can be made.  */
 static tree
-fold_builtin_pow (location_t loc, tree fndecl, tree arg0, tree arg1, tree type)
+fold_const_builtin_pow (tree arg0, tree arg1, tree type)
 {
   tree res;
 
@@ -7490,127 +7489,28 @@ fold_builtin_pow (location_t loc, tree fndecl, tree arg0, tree arg1, tree type)
   if ((res = do_mpfr_arg2 (arg0, arg1, type, mpfr_pow)))
     return res;
 
-  /* Optimize pow(1.0,y) = 1.0.  */
-  if (real_onep (arg0))
-    return omit_one_operand_loc (loc, type, build_real (type, dconst1), arg1);
-
-  if (TREE_CODE (arg1) == REAL_CST
+  /* Check for an integer exponent.  */
+  if (TREE_CODE (arg0) == REAL_CST
+      && !TREE_OVERFLOW (arg0)
+      && TREE_CODE (arg1) == REAL_CST
       && !TREE_OVERFLOW (arg1))
     {
-      REAL_VALUE_TYPE cint;
-      REAL_VALUE_TYPE c;
-      HOST_WIDE_INT n;
-
-      c = TREE_REAL_CST (arg1);
-
-      /* Optimize pow(x,0.0) = 1.0.  */
-      if (real_equal (&c, &dconst0))
-	return omit_one_operand_loc (loc, type, build_real (type, dconst1),
-				 arg0);
-
-      /* Optimize pow(x,1.0) = x.  */
-      if (real_equal (&c, &dconst1))
-	return arg0;
-
-      /* Optimize pow(x,-1.0) = 1.0/x.  */
-      if (real_equal (&c, &dconstm1))
-	return fold_build2_loc (loc, RDIV_EXPR, type,
-			    build_real (type, dconst1), arg0);
-
-      /* Optimize pow(x,0.5) = sqrt(x).  */
-      if (flag_unsafe_math_optimizations
-	  && real_equal (&c, &dconsthalf))
+      REAL_VALUE_TYPE cint1;
+      const REAL_VALUE_TYPE *c0 = TREE_REAL_CST_PTR (arg0);
+      const REAL_VALUE_TYPE *c1 = TREE_REAL_CST_PTR (arg1);
+      HOST_WIDE_INT n1 = real_to_integer (c1);
+      real_from_integer (&cint1, VOIDmode, n1, SIGNED);
+      /* Attempt to evaluate pow at compile-time, unless this should
+	 raise an exception.  */
+      if (real_identical (c1, &cint1)
+	  && (n1 > 0
+	      || (!flag_trapping_math && !flag_errno_math)
+	      || !real_equal (c0, &dconst0)))
 	{
-	  tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
-
-	  if (sqrtfn != NULL_TREE)
-	    return build_call_expr_loc (loc, sqrtfn, 1, arg0);
-	}
-
-      /* Optimize pow(x,1.0/3.0) = cbrt(x).  */
-      if (flag_unsafe_math_optimizations)
-	{
-	  const REAL_VALUE_TYPE dconstroot
-	    = real_value_truncate (TYPE_MODE (type), dconst_third ());
-
-	  if (real_equal (&c, &dconstroot))
-	    {
-	      tree cbrtfn = mathfn_built_in (type, BUILT_IN_CBRT);
-	      if (cbrtfn != NULL_TREE)
-		return build_call_expr_loc (loc, cbrtfn, 1, arg0);
-	    }
-	}
-
-      /* Check for an integer exponent.  */
-      n = real_to_integer (&c);
-      real_from_integer (&cint, VOIDmode, n, SIGNED);
-      if (real_identical (&c, &cint))
-	{
-	  /* Attempt to evaluate pow at compile-time, unless this should
-	     raise an exception.  */
-	  if (TREE_CODE (arg0) == REAL_CST
-	      && !TREE_OVERFLOW (arg0)
-	      && (n > 0
-		  || (!flag_trapping_math && !flag_errno_math)
-		  || !real_equal (&TREE_REAL_CST (arg0), &dconst0)))
-	    {
-	      REAL_VALUE_TYPE x;
-	      bool inexact;
-
-	      x = TREE_REAL_CST (arg0);
-	      inexact = real_powi (&x, TYPE_MODE (type), &x, n);
-	      if (flag_unsafe_math_optimizations || !inexact)
-		return build_real (type, x);
-	    }
-	}
-    }
-
-  if (flag_unsafe_math_optimizations)
-    {
-      const enum built_in_function fcode = builtin_mathfn_code (arg0);
-
-      /* Optimize pow(expN(x),y) = expN(x*y).  */
-      if (BUILTIN_EXPONENT_P (fcode))
-	{
-	  tree expfn = TREE_OPERAND (CALL_EXPR_FN (arg0), 0);
-	  tree arg = CALL_EXPR_ARG (arg0, 0);
-	  arg = fold_build2_loc (loc, MULT_EXPR, type, arg, arg1);
-	  return build_call_expr_loc (loc, expfn, 1, arg);
-	}
-
-      /* Optimize pow(sqrt(x),y) = pow(x,y*0.5).  */
-      if (BUILTIN_SQRT_P (fcode))
-	{
-	  tree narg0 = CALL_EXPR_ARG (arg0, 0);
-	  tree narg1 = fold_build2_loc (loc, MULT_EXPR, type, arg1,
-				    build_real (type, dconsthalf));
-	  return build_call_expr_loc (loc, fndecl, 2, narg0, narg1);
-	}
-
-      /* Optimize pow(cbrt(x),y) = pow(x,y/3) iff x is nonnegative.  */
-      if (BUILTIN_CBRT_P (fcode))
-	{
-	  tree arg = CALL_EXPR_ARG (arg0, 0);
-	  if (tree_expr_nonnegative_p (arg))
-	    {
-	      tree c = build_real_truncate (type, dconst_third ());
-	      tree narg1 = fold_build2_loc (loc, MULT_EXPR, type, arg1, c);
-	      return build_call_expr_loc (loc, fndecl, 2, arg, narg1);
-	    }
-	}
-
-      /* Optimize pow(pow(x,y),z) = pow(x,y*z) iff x is nonnegative.  */
-      if (fcode == BUILT_IN_POW
-	  || fcode == BUILT_IN_POWF
-	  || fcode == BUILT_IN_POWL)
-	{
-	  tree arg00 = CALL_EXPR_ARG (arg0, 0);
-	  if (tree_expr_nonnegative_p (arg00))
-	    {
-	      tree arg01 = CALL_EXPR_ARG (arg0, 1);
-	      tree narg1 = fold_build2_loc (loc, MULT_EXPR, type, arg01, arg1);
-	      return build_call_expr_loc (loc, fndecl, 2, arg00, narg1);
-	    }
+	  REAL_VALUE_TYPE x;
+	  bool inexact = real_powi (&x, TYPE_MODE (type), c0, n1);
+	  if (flag_unsafe_math_optimizations || !inexact)
+	    return build_real (type, x);
 	}
     }
 
@@ -9476,7 +9376,7 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
       return fold_builtin_expect (loc, arg0, arg1, NULL_TREE);
 
     CASE_FLT_FN (BUILT_IN_POW):
-      return fold_builtin_pow (loc, fndecl, arg0, arg1, type);
+      return fold_const_builtin_pow (arg0, arg1, type);
 
     CASE_FLT_FN (BUILT_IN_POWI):
       return fold_builtin_powi (loc, fndecl, arg0, arg1, type);

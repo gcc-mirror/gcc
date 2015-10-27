@@ -1,3 +1,7 @@
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/builtin-math-1.c: Skip at -O0.
+
 2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c/64765
