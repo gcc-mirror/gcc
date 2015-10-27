@@ -1,5 +1,12 @@
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_hypot): Delete.
+	(fold_builtin_2): Handle constant hypot arguments here.
+	* match.pd: Fold hypot(x, 0) and hypot(0, x) to x.  Canonicalize
+	hypot(x, x) to fabs(x)*sqrt(2).
+
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gimple-match-head.c (maybe_push_res_to_seq): Use create_tmp_reg
 	instead of make_ssa_name if not yet in SSA form.
 

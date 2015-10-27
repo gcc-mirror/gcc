@@ -7475,39 +7475,6 @@ fold_builtin_bswap (tree fndecl, tree arg)
   return NULL_TREE;
 }
 
-/* Fold a builtin function call to hypot, hypotf, or hypotl.  Return
-   NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_hypot (location_t loc, tree arg0, tree arg1, tree type)
-{
-  tree res;
-
-  if (!validate_arg (arg0, REAL_TYPE)
-      || !validate_arg (arg1, REAL_TYPE))
-    return NULL_TREE;
-
-  /* Calculate the result when the argument is a constant.  */
-  if ((res = do_mpfr_arg2 (arg0, arg1, type, mpfr_hypot)))
-    return res;
-
-  /* If either argument is zero, hypot is fabs of the other.  */
-  if (real_zerop (arg0))
-    return fold_build1_loc (loc, ABS_EXPR, type, arg1);
-  else if (real_zerop (arg1))
-    return fold_build1_loc (loc, ABS_EXPR, type, arg0);
-
-  /* hypot(x,x) -> fabs(x)*sqrt(2).  */
-  if (flag_unsafe_math_optimizations
-      && operand_equal_p (arg0, arg1, OEP_PURE_SAME))
-    return fold_build2_loc (loc, MULT_EXPR, type,
-			    fold_build1_loc (loc, ABS_EXPR, type, arg0),
-			    build_real_truncate (type, dconst_sqrt2 ()));
-
-  return NULL_TREE;
-}
-
-
 /* Fold a builtin function call to pow, powf, or powl.  Return
    NULL_TREE if no simplification can be made.  */
 static tree
@@ -9456,7 +9423,10 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
     break;
 
     CASE_FLT_FN (BUILT_IN_HYPOT):
-      return fold_builtin_hypot (loc, arg0, arg1, type);
+      if (validate_arg (arg0, REAL_TYPE)
+	  && validate_arg (arg1, REAL_TYPE))
+	return do_mpfr_arg2 (arg0, arg1, type, mpfr_hypot);
+      break;
 
     CASE_FLT_FN (BUILT_IN_CPOW):
       if (validate_arg (arg0, COMPLEX_TYPE)

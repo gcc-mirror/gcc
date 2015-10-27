@@ -2519,6 +2519,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (RINT integer_valued_real_p@0)
   @0))
 
+/* hypot(x,0) and hypot(0,x) -> abs(x).  */
+(simplify
+ (hypot:c @0 real_zerop@1)
+ (abs @0))
+
 /* Canonicalization of sequences of math builtins.  These rules represent
    IL simplifications but are not necessarily optimizations.
 
@@ -2615,6 +2620,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* cabs(x+xi) -> fabs(x)*sqrt(2).  */
  (simplify
   (CABS (complex @0 @0))
+  (mult (abs @0) { build_real_truncate (type, dconst_sqrt2 ()); }))
+
+ /* hypot(x,x) -> fabs(x)*sqrt(2).  */
+ (simplify
+  (HYPOT @0 @0)
   (mult (abs @0) { build_real_truncate (type, dconst_sqrt2 ()); }))
 
  /* cexp(x+yi) -> exp(x)*cexpi(y).  */
