@@ -1,5 +1,13 @@
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_load_exponent): Rename to...
+	(fold_const_builtin_load_exponent): ...this and only handle
+	constant arguments.
+	(fold_builtin_2): Update accordingly.
+	* match.pd: Add rules previously handled by fold_builtin_load_exponent.
+
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_logb): Rename to...
 	(fold_const_builtin_logb): ...this and remove STRIP_NOPS call.
 	(fold_builtin_significand): Rename to...

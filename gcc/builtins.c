@@ -8060,20 +8060,11 @@ fold_builtin_frexp (location_t loc, tree arg0, tree arg1, tree rettype)
    check the mode of the TYPE parameter in certain cases.  */
 
 static tree
-fold_builtin_load_exponent (location_t loc, tree arg0, tree arg1,
-			    tree type, bool ldexp)
+fold_const_builtin_load_exponent (tree arg0, tree arg1,
+				  tree type, bool ldexp)
 {
   if (validate_arg (arg0, REAL_TYPE) && validate_arg (arg1, INTEGER_TYPE))
     {
-      STRIP_NOPS (arg0);
-      STRIP_NOPS (arg1);
-
-      /* If arg0 is 0, Inf or NaN, or if arg1 is 0, then return arg0.  */
-      if (real_zerop (arg0) || integer_zerop (arg1)
-	  || (TREE_CODE (arg0) == REAL_CST
-	      && !real_isfinite (&TREE_REAL_CST (arg0))))
-	return omit_one_operand_loc (loc, type, arg0, arg1);
-
       /* If both arguments are constant, then try to evaluate it.  */
       if ((ldexp || REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2)
 	  && TREE_CODE (arg0) == REAL_CST && !TREE_OVERFLOW (arg0)
@@ -9126,11 +9117,12 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
     break;
 
     CASE_FLT_FN (BUILT_IN_LDEXP):
-      return fold_builtin_load_exponent (loc, arg0, arg1, type, /*ldexp=*/true);
+      return fold_const_builtin_load_exponent (arg0, arg1, type,
+					       /*ldexp=*/true);
     CASE_FLT_FN (BUILT_IN_SCALBN):
     CASE_FLT_FN (BUILT_IN_SCALBLN):
-      return fold_builtin_load_exponent (loc, arg0, arg1,
-					 type, /*ldexp=*/false);
+      return fold_const_builtin_load_exponent (arg0, arg1, type,
+					       /*ldexp=*/false);
 
     CASE_FLT_FN (BUILT_IN_FREXP):
       return fold_builtin_frexp (loc, arg0, arg1, type);
