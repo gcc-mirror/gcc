@@ -7,6 +7,7 @@
 
 /* { dg-do link } */
 /* { dg-options "-fno-finite-math-only" { target sh*-*-* } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
 extern void link_error(int);
 

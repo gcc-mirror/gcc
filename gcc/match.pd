@@ -105,6 +105,9 @@ DEFINE_MATH_FN (NEARBYINT)
 DEFINE_MATH_FN (SIGNBIT)
 DEFINE_MATH_FN (FMIN)
 DEFINE_MATH_FN (FMAX)
+DEFINE_MATH_FN (LDEXP)
+DEFINE_MATH_FN (SCALBN)
+DEFINE_MATH_FN (SCALBLN)
 
 DEFINE_INT_AND_FLOAT_ROUND_FN (FLOOR)
 DEFINE_INT_AND_FLOAT_ROUND_FN (CEIL)
@@ -2597,6 +2600,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* copysign(x,y) -> fabs(x) if y is nonnegative.  */
  (COPYSIGN @0 tree_expr_nonnegative_p@1)
  (abs @0))
+
+(for scale (LDEXP SCALBN SCALBLN)
+ /* ldexp(0, x) -> 0.  */
+ (simplify
+  (scale real_zerop@0 @1)
+  @0)
+ /* ldexp(x, 0) -> x.  */
+ (simplify
+  (scale @0 integer_zerop@1)
+  @0)
+ /* ldexp(x, y) -> x if x is +-Inf or NaN.  */
+ (simplify
+  (scale REAL_CST@0 @1)
+  (if (!real_isfinite (TREE_REAL_CST_PTR (@0)))
+   @0)))
 
 /* Canonicalization of sequences of math builtins.  These rules represent
    IL simplifications but are not necessarily optimizations.
