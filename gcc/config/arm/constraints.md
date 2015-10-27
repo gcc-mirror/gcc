@@ -339,7 +339,8 @@
  "@internal
   In ARM/ Thumb2 a const_double which can be used with a vcvt.s32.f32 with bits operation"
   (and (match_code "const_double")
-       (match_test "TARGET_32BIT && TARGET_VFP && vfp3_const_double_for_bits (op)")))
+       (match_test "TARGET_32BIT && TARGET_VFP
+		    && vfp3_const_double_for_bits (op) > 0")))
 
 (define_register_constraint "Ts" "(arm_restrict_it) ? LO_REGS : GENERAL_REGS"
  "For arm_restrict_it the core registers @code{r0}-@code{r7}.  GENERAL_REGS otherwise.")

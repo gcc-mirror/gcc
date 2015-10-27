@@ -1,3 +1,10 @@
+2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/67929
+	* config/arm/arm.c (vfp3_const_double_for_bits): Rewrite.
+	* config/arm/constraints.md (Dp): Update callsite.
+	* config/arm/predicates.md (const_double_vcvt_power_of_two): Likewise.
+
 2015-10-27  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (replace_removed_params_ssa_names): Change type of
