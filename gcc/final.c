@@ -4676,7 +4676,7 @@ rest_of_clean_state (void)
 
   free_bb_for_insn ();
 
-  delete_tree_ssa ();
+  delete_tree_ssa (cfun);
 
   /* We can reduce stack alignment on call site only when we are sure that
      the function body just produced will be actually used in the final

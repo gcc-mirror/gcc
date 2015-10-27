@@ -1,3 +1,49 @@
+2015-10-27  Richard Biener  <rguenther@suse.de>
+
+	* cfg.c (free_edge): Add function argument and use it instead of cfun.
+	(clear_edges): Likewise.
+	* cfg.h (clear_edges): Adjust prototype.
+	* cfgexpand.c (pass_expand::execute): Adjust.
+	* cfgloop.c (release_recorded_exits): Add function argument and use
+	it instead of cfun.
+	* cfgloop.h (release_recorded_exits): Adjust prototype.
+	(loops_state_satisfies_p): Add overload with function argument.
+	(loops_state_set): Likewise.
+	(loops_state_clear): Likewise.
+	(struct loop_iterator): Add function argument to constructor
+	and iterator and use it instead of cfun.
+	(FOR_EACH_LOOP_FN): New macro.
+	(loop_optimizer_finalize): Add overload with function argument.
+	* loop-init.c (loop_optimizer_init): Adjust.
+	(fix_loop_structure): Likewise.
+	(loop_optimizer_finaliz): Add function argument and use it
+	instead of cfun.
+	* tree-cfg.c (delete_tree_cfg_annotations): Likewise.
+	* tree-cfg.h (delete_tree_cfg_annotations): Adjust prototype.
+	* cgraph.c (release_function_body): Do not push/pop cfun.
+	* final.c (rest_of_clean_state): Adjust.
+	* graphite.c (graphite_finalize): Likewise.
+	* tree-ssa-copy.c (fini_copy_prop): Likewise.
+	* tree-ssa-dce.c (perform_tree_ssa_dce): Likewise.
+	* tree-ssa-loop-ivcanon.c (canonicalize_induction_variables): Likewise.
+	(tree_unroll_loops_completely): Likewise.
+	(pass_complete_unrolli::execute): Likewise.
+	* tree-ssa-loop-niter.c (free_numbers_of_iterations_estimates):
+	Add function argument and use it instead of cfun.
+	* tree-ssa-loop-niter.h (free_numbers_of_iterations_estimates):
+	Adjust prototype.
+	* tree-ssa-loop.c (tree_ssa_loop_done): Adjust.
+	* tree-ssa.c (delete_tree_ssa): Add function argument and use it
+	instead of cfun.
+	* tree-ssa.h (delete_tree_ssa): Adjust prototype.
+	* tree-ssanames.c (fini_ssanames): Add function argument and use it
+	instead of cfun.
+	* tree-ssanames.c (fini_ssanames): Adjust prototype.
+	* tree-vrp.c (execute_vrp): Adjust.
+	* value-prof.c (free_histograms): Add function argument and use it
+	instead of cfun.
+	* value-prof.h (free_histograms): Adjust prototype.
+
 2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* tree.h (OACC_PARALLEL_BODY, OACC_PARALLEL_CLAUSES)

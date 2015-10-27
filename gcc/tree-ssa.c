@@ -1118,25 +1118,22 @@ make_pass_init_datastructures (gcc::context *ctxt)
 /* Deallocate memory associated with SSA data structures for FNDECL.  */
 
 void
-delete_tree_ssa (void)
+delete_tree_ssa (struct function *fn)
 {
-  fini_ssanames ();
+  fini_ssanames (fn);
 
   /* We no longer maintain the SSA operand cache at this point.  */
-  if (ssa_operands_active (cfun))
-    fini_ssa_operands (cfun);
+  if (ssa_operands_active (fn))
+    fini_ssa_operands (fn);
 
-  cfun->gimple_df->default_defs->empty ();
-  cfun->gimple_df->default_defs = NULL;
-  pt_solution_reset (&cfun->gimple_df->escaped);
-  if (cfun->gimple_df->decls_to_pointers != NULL)
-    delete cfun->gimple_df->decls_to_pointers;
-  cfun->gimple_df->decls_to_pointers = NULL;
-  cfun->gimple_df->modified_noreturn_calls = NULL;
-  cfun->gimple_df = NULL;
-
-  /* We no longer need the edge variable maps.  */
-  redirect_edge_var_map_destroy ();
+  fn->gimple_df->default_defs->empty ();
+  fn->gimple_df->default_defs = NULL;
+  pt_solution_reset (&fn->gimple_df->escaped);
+  if (fn->gimple_df->decls_to_pointers != NULL)
+    delete fn->gimple_df->decls_to_pointers;
+  fn->gimple_df->decls_to_pointers = NULL;
+  fn->gimple_df->modified_noreturn_calls = NULL;
+  fn->gimple_df = NULL;
 }
 
 /* Return true if EXPR is a useless type conversion, otherwise return

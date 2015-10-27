@@ -111,7 +111,7 @@ loop_optimizer_init (unsigned flags)
 
       /* Clear all flags.  */
       if (recorded_exits)
-	release_recorded_exits ();
+	release_recorded_exits (cfun);
       loops_state_clear (~0U);
 
       if (needs_fixup)
@@ -139,43 +139,41 @@ loop_optimizer_init (unsigned flags)
 /* Finalize loop structures.  */
 
 void
-loop_optimizer_finalize (void)
+loop_optimizer_finalize (struct function *fn)
 {
   struct loop *loop;
   basic_block bb;
 
   timevar_push (TV_LOOP_FINI);
 
-  if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
-    release_recorded_exits ();
+  if (loops_state_satisfies_p (fn, LOOPS_HAVE_RECORDED_EXITS))
+    release_recorded_exits (fn);
 
-  free_numbers_of_iterations_estimates ();
+  free_numbers_of_iterations_estimates (fn);
 
   /* If we should preserve loop structure, do not free it but clear
      flags that advanced properties are there as we are not preserving
      that in full.  */
-  if (cfun->curr_properties & PROP_loops)
+  if (fn->curr_properties & PROP_loops)
     {
-      loops_state_clear (LOOP_CLOSED_SSA
+      loops_state_clear (fn, LOOP_CLOSED_SSA
 			 | LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS
 			 | LOOPS_HAVE_PREHEADERS
 			 | LOOPS_HAVE_SIMPLE_LATCHES
 			 | LOOPS_HAVE_FALLTHRU_PREHEADERS);
-      loops_state_set (LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
+      loops_state_set (fn, LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
       goto loop_fini_done;
     }
 
-  gcc_assert (current_loops != NULL);
-
-  FOR_EACH_LOOP (loop, 0)
+  FOR_EACH_LOOP_FN (fn, loop, 0)
     free_simple_loop_desc (loop);
 
   /* Clean up.  */
-  flow_loops_free (current_loops);
-  ggc_free (current_loops);
-  current_loops = NULL;
+  flow_loops_free (loops_for_fn (fn));
+  ggc_free (loops_for_fn (fn));
+  set_loops_for_fn (fn, NULL);
 
-  FOR_ALL_BB_FN (bb, cfun)
+  FOR_ALL_BB_FN (bb, fn)
     {
       bb->loop_father = NULL;
     }
@@ -215,7 +213,7 @@ fix_loop_structure (bitmap changed_bbs)
 
   if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     {
-      release_recorded_exits ();
+      release_recorded_exits (cfun);
       record_exits = LOOPS_HAVE_RECORDED_EXITS;
     }
 

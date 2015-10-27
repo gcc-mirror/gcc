@@ -4267,11 +4267,11 @@ free_numbers_of_iterations_estimates_loop (struct loop *loop)
 /* Frees the information on upper bounds on numbers of iterations of loops.  */
 
 void
-free_numbers_of_iterations_estimates (void)
+free_numbers_of_iterations_estimates (function *fn)
 {
   struct loop *loop;
 
-  FOR_EACH_LOOP (loop, 0)
+  FOR_EACH_LOOP_FN (fn, loop, 0)
     {
       free_numbers_of_iterations_estimates_loop (loop);
     }

@@ -102,11 +102,11 @@ init_ssanames (struct function *fn, int size)
 /* Finalize management of SSA_NAMEs.  */
 
 void
-fini_ssanames (void)
+fini_ssanames (struct function *fn)
 {
-  vec_free (SSANAMES (cfun));
-  vec_free (FREE_SSANAMES (cfun));
-  vec_free (FREE_SSANAMES_QUEUE (cfun));
+  vec_free (SSANAMES (fn));
+  vec_free (FREE_SSANAMES (fn));
+  vec_free (FREE_SSANAMES_QUEUE (fn));
 }
 
 /* Dump some simple statistics regarding the re-use of SSA_NAME nodes.  */

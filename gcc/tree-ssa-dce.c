@@ -1669,7 +1669,7 @@ perform_tree_ssa_dce (bool aggressive)
 
   if (something_changed)
     {
-      free_numbers_of_iterations_estimates ();
+      free_numbers_of_iterations_estimates (cfun);
       if (scev_initialized_p ())
 	scev_reset ();
       return TODO_update_ssa | TODO_cleanup_cfg;

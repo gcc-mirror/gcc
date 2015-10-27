@@ -10281,7 +10281,7 @@ execute_vrp (void)
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
   vrp_finalize ();
 
-  free_numbers_of_iterations_estimates ();
+  free_numbers_of_iterations_estimates (cfun);
 
   /* ASSERT_EXPRs must be removed before finalizing jump threads
      as finalizing jump threads calls the CFG cleanup code which
