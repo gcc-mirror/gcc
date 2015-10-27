@@ -487,7 +487,11 @@ gimple_call_initialize_ctrl_altering (gimple *stmt)
       || ((flags & ECF_TM_BUILTIN)
 	  && is_tm_ending_fndecl (gimple_call_fndecl (stmt)))
       /* BUILT_IN_RETURN call is same as return statement.  */
-      || gimple_call_builtin_p (stmt, BUILT_IN_RETURN))
+      || gimple_call_builtin_p (stmt, BUILT_IN_RETURN)
+      /* IFN_UNIQUE should be the last insn, to make checking for it
+	 as cheap as possible.  */
+      || (gimple_call_internal_p (stmt)
+	  && gimple_call_internal_unique_p (stmt)))
     gimple_call_set_ctrl_altering (stmt, true);
   else
     gimple_call_set_ctrl_altering (stmt, false);

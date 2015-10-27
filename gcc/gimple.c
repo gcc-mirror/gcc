@@ -1346,7 +1346,8 @@ gimple_call_same_target_p (const gimple *c1, const gimple *c2)
 {
   if (gimple_call_internal_p (c1))
     return (gimple_call_internal_p (c2)
-	    && gimple_call_internal_fn (c1) == gimple_call_internal_fn (c2));
+	    && gimple_call_internal_fn (c1) == gimple_call_internal_fn (c2)
+	    && !gimple_call_internal_unique_p (as_a <const gcall *> (c1)));
   else
     return (gimple_call_fn (c1) == gimple_call_fn (c2)
 	    || (gimple_call_fndecl (c1)

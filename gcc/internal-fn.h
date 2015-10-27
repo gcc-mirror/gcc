@@ -20,6 +20,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_INTERNAL_FN_H
 #define GCC_INTERNAL_FN_H
 
+/* INTEGER_CST values for IFN_UNIQUE function arg-0.  */
+enum ifn_unique_kind {
+  IFN_UNIQUE_UNSPEC   /* Undifferentiated UNIQUE.  */
+};
+
 /* Initialize internal function tables.  */
 
 extern void init_internal_fns ();

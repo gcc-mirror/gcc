@@ -93,18 +93,25 @@ bb_seen_p (basic_block bb)
 static bool
 ignore_bb_p (const_basic_block bb)
 {
-  gimple *g;
-
   if (bb->index < NUM_FIXED_BLOCKS)
     return true;
   if (optimize_bb_for_size_p (bb))
     return true;
 
-  /* A transaction is a single entry multiple exit region.  It must be
-     duplicated in its entirety or not at all.  */
-  g = last_stmt (CONST_CAST_BB (bb));
-  if (g && gimple_code (g) == GIMPLE_TRANSACTION)
-    return true;
+  if (gimple *g = last_stmt (CONST_CAST_BB (bb)))
+    {
+      /* A transaction is a single entry multiple exit region.  It
+	 must be duplicated in its entirety or not at all.  */
+      if (gimple_code (g) == GIMPLE_TRANSACTION)
+	return true;
+
+      /* An IFN_UNIQUE call must be duplicated as part of its group,
+	 or not at all.  */
+      if (is_gimple_call (g)
+	  && gimple_call_internal_p (g)
+	  && gimple_call_internal_unique_p (g))
+	return true;
+    }
 
   return false;
 }
