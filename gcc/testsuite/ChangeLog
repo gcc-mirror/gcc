@@ -1,3 +1,8 @@
+2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/68102
+	* gcc.target/aarch64/pr68102_1.c: New test.
+
 2015-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/67933
