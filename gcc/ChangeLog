@@ -1,5 +1,11 @@
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_powi): Delete.
+	(fold_builtin_2): Handle constant powi arguments here.
+	* match.pd: Add rules previously handled by fold_builtin_powi.
+
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_pow): Delete in favor of...
 	(fold_const_builtin_pow): ...this new function.  Only handle constant
 	arguments.

@@ -156,7 +156,6 @@ static tree rewrite_call_expr (location_t, tree, int, tree, int, ...);
 static bool validate_arg (const_tree, enum tree_code code);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
-static tree fold_builtin_powi (location_t, tree, tree, tree, tree);
 static tree fold_builtin_bitop (tree, tree);
 static tree fold_builtin_strchr (location_t, tree, tree, tree);
 static tree fold_builtin_memchr (location_t, tree, tree, tree, tree);
@@ -7517,52 +7516,6 @@ fold_const_builtin_pow (tree arg0, tree arg1, tree type)
   return NULL_TREE;
 }
 
-/* Fold a builtin function call to powi, powif, or powil with argument ARG.
-   Return NULL_TREE if no simplification can be made.  */
-static tree
-fold_builtin_powi (location_t loc, tree fndecl ATTRIBUTE_UNUSED,
-		   tree arg0, tree arg1, tree type)
-{
-  if (!validate_arg (arg0, REAL_TYPE)
-      || !validate_arg (arg1, INTEGER_TYPE))
-    return NULL_TREE;
-
-  /* Optimize pow(1.0,y) = 1.0.  */
-  if (real_onep (arg0))
-    return omit_one_operand_loc (loc, type, build_real (type, dconst1), arg1);
-
-  if (tree_fits_shwi_p (arg1))
-    {
-      HOST_WIDE_INT c = tree_to_shwi (arg1);
-
-      /* Evaluate powi at compile-time.  */
-      if (TREE_CODE (arg0) == REAL_CST
-	  && !TREE_OVERFLOW (arg0))
-	{
-	  REAL_VALUE_TYPE x;
-	  x = TREE_REAL_CST (arg0);
-	  real_powi (&x, TYPE_MODE (type), &x, c);
-	  return build_real (type, x);
-	}
-
-      /* Optimize pow(x,0) = 1.0.  */
-      if (c == 0)
-	return omit_one_operand_loc (loc, type, build_real (type, dconst1),
-				 arg0);
-
-      /* Optimize pow(x,1) = x.  */
-      if (c == 1)
-	return arg0;
-
-      /* Optimize pow(x,-1) = 1.0/x.  */
-      if (c == -1)
-	return fold_build2_loc (loc, RDIV_EXPR, type,
-			   build_real (type, dconst1), arg0);
-    }
-
-  return NULL_TREE;
-}
-
 /* A subroutine of fold_builtin to fold the various exponent
    functions.  Return NULL_TREE if no simplification can be made.
    FUNC is the corresponding MPFR exponent function.  */
@@ -9379,7 +9332,16 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
       return fold_const_builtin_pow (arg0, arg1, type);
 
     CASE_FLT_FN (BUILT_IN_POWI):
-      return fold_builtin_powi (loc, fndecl, arg0, arg1, type);
+      if (TREE_CODE (arg0) == REAL_CST
+	  && !TREE_OVERFLOW (arg0)
+	  && tree_fits_shwi_p (arg1))
+	{
+	  HOST_WIDE_INT c = tree_to_shwi (arg1);
+	  REAL_VALUE_TYPE x;
+	  real_powi (&x, TYPE_MODE (type), TREE_REAL_CST_PTR (arg0), c);
+	  return build_real (type, x);
+	}
+      break;
 
     CASE_FLT_FN (BUILT_IN_COPYSIGN):
       return fold_builtin_copysign (loc, arg0, arg1, type);
