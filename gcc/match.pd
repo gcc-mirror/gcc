@@ -1973,6 +1973,25 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	{ constant_boolean_node (true, type); })
        /* sqrt(x) > y is the same as x >= 0, if y is negative.  */
        (ge @0 { build_real (TREE_TYPE (@0), dconst0); })))
+     (if (real_equal (TREE_REAL_CST_PTR (@1), &dconst0))
+      (switch
+       /* sqrt(x) < 0 is always false.  */
+       (if (cmp == LT_EXPR)
+	{ constant_boolean_node (false, type); })
+       /* sqrt(x) >= 0 is always true if we don't care about NaNs.  */
+       (if (cmp == GE_EXPR && !HONOR_NANS (@0))
+	{ constant_boolean_node (true, type); })
+       /* sqrt(x) <= 0 -> x == 0.  */
+       (if (cmp == LE_EXPR)
+	(eq @0 @1))
+       /* Otherwise sqrt(x) cmp 0 -> x cmp 0.  Here cmp can be >=, >,
+          == or !=.  In the last case:
+
+	    (sqrt(x) != 0) == (NaN != 0) == true == (x != 0)
+
+	  if x is negative or NaN.  Due to -funsafe-math-optimizations,
+	  the results for other x follow from natural arithmetic.  */
+       (cmp @0 @1)))
      (if (cmp == GT_EXPR || cmp == GE_EXPR)
       (with
        {
