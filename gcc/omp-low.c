@@ -17642,6 +17642,19 @@ oacc_validate_dims (tree fn, tree attrs, int *dims)
   return fn_level;
 }
 
+/* Default fork/join early expander.  Delete the function calls if
+   there is no RTL expander.  */
+
+bool
+default_goacc_fork_join (gcall *ARG_UNUSED (call),
+			 const int *ARG_UNUSED (dims), bool is_fork)
+{
+  if (is_fork)
+    return targetm.have_oacc_fork ();
+  else
+    return targetm.have_oacc_join ();
+}
+
 /* Main entry point for oacc transformations which run on the device
    compiler after LTO, so we know what the target device is at this
    point (including the host fallback).  */
