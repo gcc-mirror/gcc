@@ -5965,14 +5965,76 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	  OMP_CLAUSE_FINAL_EXPR (c) = t;
 	  break;
 
+	case OMP_CLAUSE_GANG:
+	  /* Operand 1 is the gang static: argument.  */
+	  t = OMP_CLAUSE_OPERAND (c, 1);
+	  if (t != NULL_TREE)
+	    {
+	      if (t == error_mark_node)
+		remove = true;
+	      else if (!type_dependent_expression_p (t)
+		       && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+		{
+		  error ("%<gang%> static expression must be integral");
+		  remove = true;
+		}
+	      else
+		{
+		  t = mark_rvalue_use (t);
+		  if (!processing_template_decl)
+		    {
+		      t = maybe_constant_value (t);
+		      if (TREE_CODE (t) == INTEGER_CST
+			  && tree_int_cst_sgn (t) != 1
+			  && t != integer_minus_one_node)
+			{
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "%<gang%> static value must be"
+				      "positive");
+			  t = integer_one_node;
+			}
+		    }
+		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		}
+	      OMP_CLAUSE_OPERAND (c, 1) = t;
+	    }
+	  /* Check operand 0, the num argument.  */
+
+	case OMP_CLAUSE_WORKER:
+	case OMP_CLAUSE_VECTOR:
+	  if (OMP_CLAUSE_OPERAND (c, 0) == NULL_TREE)
+	    break;
+
+	case OMP_CLAUSE_NUM_TASKS:
+	case OMP_CLAUSE_NUM_TEAMS:
 	case OMP_CLAUSE_NUM_THREADS:
-	  t = OMP_CLAUSE_NUM_THREADS_EXPR (c);
+	case OMP_CLAUSE_NUM_GANGS:
+	case OMP_CLAUSE_NUM_WORKERS:
+	case OMP_CLAUSE_VECTOR_LENGTH:
+	  t = OMP_CLAUSE_OPERAND (c, 0);
 	  if (t == error_mark_node)
 	    remove = true;
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("num_threads expression must be integral");
+	     switch (OMP_CLAUSE_CODE (c))
+		{
+		case OMP_CLAUSE_GANG:
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<gang%> num expression must be integral"); break;
+		case OMP_CLAUSE_VECTOR:
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<vector%> length expression must be integral");
+		  break;
+		case OMP_CLAUSE_WORKER:
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<worker%> num expression must be integral");
+		  break;
+		default:
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qs expression must be integral",
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		}
 	      remove = true;
 	    }
 	  else
@@ -5984,13 +6046,33 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 		  if (TREE_CODE (t) == INTEGER_CST
 		      && tree_int_cst_sgn (t) != 1)
 		    {
-		      warning_at (OMP_CLAUSE_LOCATION (c), 0,
-				  "%<num_threads%> value must be positive");
+		      switch (OMP_CLAUSE_CODE (c))
+			{
+			case OMP_CLAUSE_GANG:
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "%<gang%> num value must be positive");
+			  break;
+			case OMP_CLAUSE_VECTOR:
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "%<vector%> length value must be"
+				      "positive");
+			  break;
+			case OMP_CLAUSE_WORKER:
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "%<worker%> num value must be"
+				      "positive");
+			  break;
+			default:
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "%qs value must be positive",
+				      omp_clause_code_name
+				      [OMP_CLAUSE_CODE (c)]);
+			}
 		      t = integer_one_node;
 		    }
 		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
-	      OMP_CLAUSE_NUM_THREADS_EXPR (c) = t;
+	      OMP_CLAUSE_OPERAND (c, 0) = t;
 	    }
 	  break;
 
@@ -6062,35 +6144,6 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	    }
 	  break;
 
-	case OMP_CLAUSE_NUM_TEAMS:
-	  t = OMP_CLAUSE_NUM_TEAMS_EXPR (c);
-	  if (t == error_mark_node)
-	    remove = true;
-	  else if (!type_dependent_expression_p (t)
-		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
-	    {
-	      error ("%<num_teams%> expression must be integral");
-	      remove = true;
-	    }
-	  else
-	    {
-	      t = mark_rvalue_use (t);
-	      if (!processing_template_decl)
-		{
-		  t = maybe_constant_value (t);
-		  if (TREE_CODE (t) == INTEGER_CST
-		      && tree_int_cst_sgn (t) != 1)
-		    {
-		      warning_at (OMP_CLAUSE_LOCATION (c), 0,
-				  "%<num_teams%> value must be positive");
-		      t = integer_one_node;
-		    }
-		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
-		}
-	      OMP_CLAUSE_NUM_TEAMS_EXPR (c) = t;
-	    }
-	  break;
-
 	case OMP_CLAUSE_ASYNC:
 	  t = OMP_CLAUSE_ASYNC_EXPR (c);
 	  if (t == error_mark_node)
@@ -6108,16 +6161,6 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 		t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 	      OMP_CLAUSE_ASYNC_EXPR (c) = t;
 	    }
-	  break;
-
-	case OMP_CLAUSE_VECTOR_LENGTH:
-	  t = OMP_CLAUSE_VECTOR_LENGTH_EXPR (c);
-	  t = maybe_convert_cond (t);
-	  if (t == error_mark_node)
-	    remove = true;
-	  else if (!processing_template_decl)
-	    t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
-	  OMP_CLAUSE_VECTOR_LENGTH_EXPR (c) = t;
 	  break;
 
 	case OMP_CLAUSE_WAIT:
@@ -6547,35 +6590,6 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	    }
 	  goto check_dup_generic;
 
-	case OMP_CLAUSE_NUM_TASKS:
-	  t = OMP_CLAUSE_NUM_TASKS_EXPR (c);
-	  if (t == error_mark_node)
-	    remove = true;
-	  else if (!type_dependent_expression_p (t)
-		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
-	    {
-	      error ("%<num_tasks%> expression must be integral");
-	      remove = true;
-	    }
-	  else
-	    {
-	      t = mark_rvalue_use (t);
-	      if (!processing_template_decl)
-		{
-		  t = maybe_constant_value (t);
-		  if (TREE_CODE (t) == INTEGER_CST
-		      && tree_int_cst_sgn (t) != 1)
-		    {
-		      warning_at (OMP_CLAUSE_LOCATION (c), 0,
-				  "%<num_tasks%> value must be positive");
-		      t = integer_one_node;
-		    }
-		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
-		}
-	      OMP_CLAUSE_NUM_TASKS_EXPR (c) = t;
-	    }
-	  break;
-
 	case OMP_CLAUSE_GRAINSIZE:
 	  t = OMP_CLAUSE_GRAINSIZE_EXPR (c);
 	  if (t == error_mark_node)
@@ -6694,6 +6708,8 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE__CILK_FOR_COUNT_:
+	case OMP_CLAUSE_AUTO:
+	case OMP_CLAUSE_SEQ:
 	  break;
 
 	case OMP_CLAUSE_INBRANCH:

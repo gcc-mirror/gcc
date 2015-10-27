@@ -1,3 +1,9 @@
+2015-10-27  Nathan Sidwell <nathan@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* g++.dg/g++.dg/gomp/pr33372-1.C: Adjust diagnostic.
+	* gcc/testsuite/g++.dg/gomp/pr33372-3.C: Likewise.
+
 2015-10-27  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/67609
@@ -24,7 +30,7 @@
 	* gfortran.dg/goacc/cray.f95: Likewise.
 	* gfortran.dg/goacc/parameter.f95: Likewise.
 
- 2015-10-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+2015-10-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68108
 	* gfortran.dg/pr67805_2.f90: New test.

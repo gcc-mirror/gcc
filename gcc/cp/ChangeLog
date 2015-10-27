@@ -1,3 +1,21 @@
+2015-10-27  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Nathan Sidwell <nathan@codesourcery.com>
+	    Bernd Schmidt  <bschmidt@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Add auto, gang, seq,
+	vector, worker.
+	(cp_parser_oacc_simple_clause): New.
+	(cp_parser_oacc_shape_clause): New.
+	(cp_parser_oacc_all_clauses): Add auto, gang, seq, vector, worker.
+	(OACC_LOOP_CLAUSE_MASK): Likewise.
+	* semantics.c (finish_omp_clauses): Add auto, gang, seq, vector,
+	worker. Unify the handling of teams, tasks and vector_length with
+	the other loop shape clauses.
+
 2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
