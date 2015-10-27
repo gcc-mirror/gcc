@@ -8073,49 +8073,6 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
   return NULL_TREE;
 }
 
-/* Fold a binary expression of code CODE and type TYPE with operands
-   OP0 and OP1, containing either a MIN-MAX or a MAX-MIN combination.
-   Return the folded expression if folding is successful.  Otherwise,
-   return NULL_TREE.  */
-
-static tree
-fold_minmax (location_t loc, enum tree_code code, tree type, tree op0, tree op1)
-{
-  enum tree_code compl_code;
-
-  if (code == MIN_EXPR)
-    compl_code = MAX_EXPR;
-  else if (code == MAX_EXPR)
-    compl_code = MIN_EXPR;
-  else
-    gcc_unreachable ();
-
-  /* MIN (MAX (a, b), b) == b.  */
-  if (TREE_CODE (op0) == compl_code
-      && operand_equal_p (TREE_OPERAND (op0, 1), op1, 0))
-    return omit_one_operand_loc (loc, type, op1, TREE_OPERAND (op0, 0));
-
-  /* MIN (MAX (b, a), b) == b.  */
-  if (TREE_CODE (op0) == compl_code
-      && operand_equal_p (TREE_OPERAND (op0, 0), op1, 0)
-      && reorder_operands_p (TREE_OPERAND (op0, 1), op1))
-    return omit_one_operand_loc (loc, type, op1, TREE_OPERAND (op0, 1));
-
-  /* MIN (a, MAX (a, b)) == a.  */
-  if (TREE_CODE (op1) == compl_code
-      && operand_equal_p (op0, TREE_OPERAND (op1, 0), 0)
-      && reorder_operands_p (op0, TREE_OPERAND (op1, 1)))
-    return omit_one_operand_loc (loc, type, op0, TREE_OPERAND (op1, 1));
-
-  /* MIN (a, MAX (b, a)) == a.  */
-  if (TREE_CODE (op1) == compl_code
-      && operand_equal_p (op0, TREE_OPERAND (op1, 1), 0)
-      && reorder_operands_p (op0, TREE_OPERAND (op1, 0)))
-    return omit_one_operand_loc (loc, type, op0, TREE_OPERAND (op1, 0));
-
-  return NULL_TREE;
-}
-
 /* Helper that tries to canonicalize the comparison ARG0 CODE ARG1
    by changing CODE to reduce the magnitude of constants involved in
    ARG0 of the comparison.
@@ -10426,15 +10383,7 @@ fold_binary_loc (location_t loc,
       return NULL_TREE;
 
     case MIN_EXPR:
-      tem = fold_minmax (loc, MIN_EXPR, type, arg0, arg1);
-      if (tem)
-	return tem;
-      goto associate;
-
     case MAX_EXPR:
-      tem = fold_minmax (loc, MAX_EXPR, type, arg0, arg1);
-      if (tem)
-	return tem;
       goto associate;
 
     case TRUTH_ANDIF_EXPR:
