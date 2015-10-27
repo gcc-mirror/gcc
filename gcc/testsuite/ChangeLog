@@ -1,3 +1,8 @@
+2015-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68104
+	* gcc.dg/torture/pr68104.c: New testcase.
+
 2015-10-27  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.dg/vect/vect-strided-shift-1.c: New.
