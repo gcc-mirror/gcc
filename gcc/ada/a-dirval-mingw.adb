@@ -40,8 +40,11 @@ package body Ada.Directories.Validity is
      (NUL .. US | '\'       => True,
       '/' | ':' | '*' | '?' => True,
       '"' | '<' | '>' | '|' => True,
-      DEL .. NBSP           => True,
+      DEL                   => True,
       others                => False);
+   --  Note that a valid file-name or path-name is implementation defined.
+   --  To support UTF-8 file and directory names, we do not want to be too
+   --  restrictive here.
 
    ---------------------------------
    -- Is_Path_Name_Case_Sensitive --
