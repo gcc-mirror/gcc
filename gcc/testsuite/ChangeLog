@@ -1,3 +1,8 @@
+2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/67929
+	* gcc.target/arm/pr67929_1.c: New test.
+
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/torture/builtin-ldexp-1.c: Skip at -O9,
