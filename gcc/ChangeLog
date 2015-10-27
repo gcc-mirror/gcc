@@ -1,5 +1,15 @@
 2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* target-insns.def (oacc_fork, oacc_join): Define.
+	* target.def (goacc.validate_dims): Adjust doc to avoid warning.
+	(goacc.fork_join): New GOACC hook.
+	* targhooks.h (default_goacc_fork_join): Declare.
+	* omp-low.c (default_goacc_forkjoin): New.
+	* doc/tm.texi.in (TARGET_GOACC_FORK_JOIN): Add.
+	* doc/tm.texi: Regenerate.
+
+2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* omp-low.c (oacc_init_rediction_array): New.
 	(oacc_initialize_reduction_data): Initialize array.
 

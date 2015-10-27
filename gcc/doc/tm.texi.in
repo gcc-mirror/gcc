@@ -4262,6 +4262,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_GOACC_VALIDATE_DIMS
 
+@hook TARGET_GOACC_FORK_JOIN
+
 @node Anchored Addresses
 @section Anchored Addresses
 @cindex anchored addresses

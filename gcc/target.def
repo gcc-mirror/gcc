@@ -1655,8 +1655,18 @@ should fill in anything that needs to default to non-unity and verify\n\
 non-defaults.  Diagnostics should be issued as appropriate.  Return\n\
 true, if changes have been made.  You must override this hook to\n\
 provide dimensions larger than 1.",
-bool, (tree decl, int dims[], int fn_level),
+bool, (tree decl, int *dims, int fn_level),
 default_goacc_validate_dims)
+
+DEFHOOK
+(fork_join,
+"This hook should convert IFN_GOACC_FORK and IFN_GOACC_JOIN function\n\
+calls to target-specific gimple.  It is executed during the\n\
+oacc_device_lower pass.  It should return true, if the functions\n\
+should be deleted.  The default hook returns true, if there are no\n\
+RTL expanders for them.",
+bool, (gcall *call, const int *dims, bool is_fork),
+default_goacc_fork_join)
 
 HOOK_VECTOR_END (goacc)
 
