@@ -309,35 +309,23 @@ package Namet is
    -- Subprograms --
    -----------------
 
+   procedure Add_Char_To_Name_Buffer (C : Character);
+   pragma Inline (Add_Char_To_Name_Buffer);
+   --  Add given character to the end of the string currently stored in the
+   --  Name_Buffer, incrementing Name_Len.
+
+   procedure Add_Nat_To_Name_Buffer (V : Nat);
+   --  Add decimal representation of given value to the end of the string
+   --  currently stored in Name_Buffer, incrementing Name_Len as required.
+
+   procedure Add_Str_To_Name_Buffer (S : String);
+   --  Add characters of string S to the end of the string currently stored in
+   --  the Name_Buffer, incrementing Name_Len by the length of the string.
+
    procedure Finalize;
    --  Called at the end of a use of the Namet package (before a subsequent
    --  call to Initialize). Currently this routine is only used to generate
    --  debugging output.
-
-   procedure Get_Name_String (Id : Name_Id);
-   --  Get_Name_String is used to retrieve the string associated with an entry
-   --  in the names table. The resulting string is stored in Name_Buffer and
-   --  Name_Len is set. It is an error to call Get_Name_String with one of the
-   --  special name Id values (No_Name or Error_Name).
-
-   function Get_Name_String (Id : Name_Id) return String;
-   --  This functional form returns the result as a string without affecting
-   --  the contents of either Name_Buffer or Name_Len. The lower bound is 1.
-
-   procedure Get_Unqualified_Name_String (Id : Name_Id);
-   --  Similar to the above except that qualification (as defined in unit
-   --  Exp_Dbug) is removed (including both preceding __ delimited names, and
-   --  also the suffixes used to indicate package body entities and to
-   --  distinguish between overloaded entities). Note that names are not
-   --  qualified until just before the call to gigi, so this routine is only
-   --  needed by processing that occurs after gigi has been called. This
-   --  includes all ASIS processing, since ASIS works on the tree written
-   --  after gigi has been called.
-
-   procedure Get_Name_String_And_Append (Id : Name_Id);
-   --  Like Get_Name_String but the resulting characters are appended to the
-   --  current contents of the entry stored in Name_Buffer, and Name_Len is
-   --  incremented to include the added characters.
 
    procedure Get_Decoded_Name_String (Id : Name_Id);
    --  Same calling sequence an interface as Get_Name_String, except that the
@@ -345,15 +333,6 @@ package Namet is
    --  appear as originally found in the source program text, operators have
    --  their source forms (special characters and enclosed in quotes), and
    --  character literals appear surrounded by apostrophes.
-
-   procedure Get_Unqualified_Decoded_Name_String (Id : Name_Id);
-   --  Similar to the above except that qualification (as defined in unit
-   --  Exp_Dbug) is removed (including both preceding __ delimited names, and
-   --  also the suffix used to indicate package body entities). Note that
-   --  names are not qualified until just before the call to gigi, so this
-   --  routine is only needed by processing that occurs after gigi has been
-   --  called. This includes all ASIS processing, since ASIS works on the tree
-   --  written after gigi has been called.
 
    procedure Get_Decoded_Name_String_With_Brackets (Id : Name_Id);
    --  This routine is similar to Decoded_Name, except that the brackets
@@ -366,6 +345,34 @@ package Namet is
    --  by the character set options (e.g. in the binder generation of
    --  symbols).
 
+   procedure Get_Last_Two_Chars
+     (N  : Name_Id;
+      C1 : out Character;
+      C2 : out Character);
+   --  Obtains last two characters of a name. C1 is last but one character and
+   --  C2 is last character. If name is less than two characters long then both
+   --  C1 and C2 are set to ASCII.NUL on return.
+
+   procedure Get_Name_String (Id : Name_Id);
+   --  Get_Name_String is used to retrieve the string associated with an entry
+   --  in the names table. The resulting string is stored in Name_Buffer and
+   --  Name_Len is set. It is an error to call Get_Name_String with one of the
+   --  special name Id values (No_Name or Error_Name).
+
+   function Get_Name_String (Id : Name_Id) return String;
+   --  This functional form returns the result as a string without affecting
+   --  the contents of either Name_Buffer or Name_Len. The lower bound is 1.
+
+   procedure Get_Name_String_And_Append (Id : Name_Id);
+   --  Like Get_Name_String but the resulting characters are appended to the
+   --  current contents of the entry stored in Name_Buffer, and Name_Len is
+   --  incremented to include the added characters.
+
+   function Get_Name_Table_Boolean1 (Id : Name_Id) return Boolean;
+   function Get_Name_Table_Boolean2 (Id : Name_Id) return Boolean;
+   function Get_Name_Table_Boolean3 (Id : Name_Id) return Boolean;
+   --  Fetches the Boolean values associated with the given name
+
    function Get_Name_Table_Byte (Id : Name_Id) return Byte;
    pragma Inline (Get_Name_Table_Byte);
    --  Fetches the Byte value associated with the given name
@@ -374,14 +381,24 @@ package Namet is
    pragma Inline (Get_Name_Table_Int);
    --  Fetches the Int value associated with the given name
 
-   function Get_Name_Table_Boolean1 (Id : Name_Id) return Boolean;
-   function Get_Name_Table_Boolean2 (Id : Name_Id) return Boolean;
-   function Get_Name_Table_Boolean3 (Id : Name_Id) return Boolean;
-   --  Fetches the Boolean values associated with the given name
+   procedure Get_Unqualified_Decoded_Name_String (Id : Name_Id);
+   --  Similar to the above except that qualification (as defined in unit
+   --  Exp_Dbug) is removed (including both preceding __ delimited names, and
+   --  also the suffix used to indicate package body entities). Note that
+   --  names are not qualified until just before the call to gigi, so this
+   --  routine is only needed by processing that occurs after gigi has been
+   --  called. This includes all ASIS processing, since ASIS works on the tree
+   --  written after gigi has been called.
 
-   function Is_Operator_Name (Id : Name_Id) return Boolean;
-   --  Returns True if name given is of the form of an operator (that
-   --  is, it starts with an upper case O).
+   procedure Get_Unqualified_Name_String (Id : Name_Id);
+   --  Similar to the above except that qualification (as defined in unit
+   --  Exp_Dbug) is removed (including both preceding __ delimited names, and
+   --  also the suffixes used to indicate package body entities and to
+   --  distinguish between overloaded entities). Note that names are not
+   --  qualified until just before the call to gigi, so this routine is only
+   --  needed by processing that occurs after gigi has been called. This
+   --  includes all ASIS processing, since ASIS works on the tree written
+   --  after gigi has been called.
 
    procedure Initialize;
    --  This is a dummy procedure. It is retained for easy compatibility with
@@ -391,67 +408,15 @@ package Namet is
    --  of Initialize being called more than once. See also Reinitialize which
    --  allows reinitialization of the tables.
 
-   procedure Lock;
-   --  Lock name tables before calling back end. We reserve some extra space
-   --  before locking to avoid unnecessary inefficiencies when we unlock.
+   procedure Insert_Str_In_Name_Buffer (S : String; Index : Positive);
+   --  Inserts given string in name buffer, starting at Index. Any existing
+   --  characters at or past this location get moved beyond the inserted string
+   --  and Name_Len is incremented by the length of the string.
 
-   procedure Reinitialize;
-   --  Clears the name tables and removes all existing entries from the table.
-
-   procedure Unlock;
-   --  Unlocks the name table to allow use of the extra space reserved by the
-   --  call to Lock. See gnat1drv for details of the need for this.
-
-   function Length_Of_Name (Id : Name_Id) return Nat;
-   pragma Inline (Length_Of_Name);
-   --  Returns length of given name in characters. This is the length of the
-   --  encoded name, as stored in the names table, the result is equivalent to
-   --  calling Get_Name_String and reading Name_Len, except that a call to
-   --  Length_Of_Name does not affect the contents of Name_Len and Name_Buffer.
-
-   function Name_Chars_Address return System.Address;
-   --  Return starting address of name characters table (used in Back_End call
-   --  to Gigi).
-
-   function Name_Find return Name_Id;
-   --  Name_Find is called with a string stored in Name_Buffer whose length is
-   --  in Name_Len (i.e. the characters of the name are in subscript positions
-   --  1 to Name_Len in Name_Buffer). It searches the names table to see if the
-   --  string has already been stored. If so the Id of the existing entry is
-   --  returned. Otherwise a new entry is created with its Name_Table_Int
-   --  fields set to zero/false. The contents of Name_Buffer and Name_Len are
-   --  not modified by this call. Note that it is permissible for Name_Len to
-   --  be set to zero to lookup the null name string.
-
-   function Name_Find_Str (S : String) return Name_Id;
-   --  Similar to Name_Find, except that the string is provided as an argument.
-   --  This call destroys the contents of Name_Buffer and Name_Len (by storing
-   --  the given string there.
-
-   function Name_Enter return Name_Id;
-   --  Name_Enter has the same calling interface as Name_Find. The difference
-   --  is that it does not search the table for an existing match, and also
-   --  subsequent Name_Find calls using the same name will not locate the
-   --  entry created by this call. Thus multiple calls to Name_Enter with the
-   --  same name will create multiple entries in the name table with different
-   --  Name_Id values. This is useful in the case of created names, which are
-   --  never expected to be looked up. Note: Name_Enter should never be used
-   --  for one character names, since these are efficiently located without
-   --  hashing by Name_Find in any case.
-
-   function Name_Entries_Address return System.Address;
-   --  Return starting address of Names table (used in Back_End call to Gigi)
-
-   function Name_Entries_Count return Nat;
-   --  Return current number of entries in the names table
-
-   function Is_OK_Internal_Letter (C : Character) return Boolean;
-   pragma Inline (Is_OK_Internal_Letter);
-   --  Returns true if C is a suitable character for using as a prefix or a
-   --  suffix of an internally generated name, i.e. it is an upper case letter
-   --  other than one of the ones used for encoding source names (currently
-   --  the set of reserved letters is O, Q, U, W) and also returns False for
-   --  the letter X, which is reserved for debug output (see Exp_Dbug).
+   function Is_Internal_Name return Boolean;
+   --  Like the form with an Id argument, except that the name to be tested is
+   --  passed in Name_Buffer and Name_Len (which are not affected by the call).
+   --  Name_Buffer (it loads these as for Get_Name_String).
 
    function Is_Internal_Name (Id : Name_Id) return Boolean;
    --  Returns True if the name is an internal name (i.e. contains a character
@@ -470,53 +435,94 @@ package Namet is
    --  identifier called "xyz" within this block and there is nothing internal
    --  about that name.
 
-   function Is_Internal_Name return Boolean;
-   --  Like the form with an Id argument, except that the name to be tested is
-   --  passed in Name_Buffer and Name_Len (which are not affected by the call).
-   --  Name_Buffer (it loads these as for Get_Name_String).
+   function Is_OK_Internal_Letter (C : Character) return Boolean;
+   pragma Inline (Is_OK_Internal_Letter);
+   --  Returns true if C is a suitable character for using as a prefix or a
+   --  suffix of an internally generated name, i.e. it is an upper case letter
+   --  other than one of the ones used for encoding source names (currently the
+   --  set of reserved letters is O, Q, U, W) and also returns False for the
+   --  letter X, which is reserved for debug output (see Exp_Dbug).
+
+   function Is_Operator_Name (Id : Name_Id) return Boolean;
+   --  Returns True if name given is of the form of an operator (that is, it
+   --  starts with an upper case O).
 
    function Is_Valid_Name (Id : Name_Id) return Boolean;
-   --  True if Id is a valid name -- points to a valid entry in the
-   --  Name_Entries table.
+   --  True if Id is a valid name - points to a valid entry in the Name_Entries
+   --  table.
+
+   function Length_Of_Name (Id : Name_Id) return Nat;
+   pragma Inline (Length_Of_Name);
+   --  Returns length of given name in characters. This is the length of the
+   --  encoded name, as stored in the names table, the result is equivalent to
+   --  calling Get_Name_String and reading Name_Len, except that a call to
+   --  Length_Of_Name does not affect the contents of Name_Len and Name_Buffer.
+
+   procedure Lock;
+   --  Lock name tables before calling back end. We reserve some extra space
+   --  before locking to avoid unnecessary inefficiencies when we unlock.
+
+   function Name_Chars_Address return System.Address;
+   --  Return starting address of name characters table (used in Back_End call
+   --  to Gigi).
+
+   function Name_Enter return Name_Id;
+   --  Name_Enter has the same calling interface as Name_Find. The difference
+   --  is that it does not search the table for an existing match, and also
+   --  subsequent Name_Find calls using the same name will not locate the
+   --  entry created by this call. Thus multiple calls to Name_Enter with the
+   --  same name will create multiple entries in the name table with different
+   --  Name_Id values. This is useful in the case of created names, which are
+   --  never expected to be looked up. Note: Name_Enter should never be used
+   --  for one character names, since these are efficiently located without
+   --  hashing by Name_Find in any case.
+
+   function Name_Entries_Address return System.Address;
+   --  Return starting address of Names table (used in Back_End call to Gigi)
+
+   function Name_Entries_Count return Nat;
+   --  Return current number of entries in the names table
+
+   function Name_Equals (N1 : Name_Id; N2 : Name_Id) return Boolean;
+   --  Return whether N1 and N2 denote the same character sequence
+
+   function Name_Find return Name_Id;
+   --  Name_Find is called with a string stored in Name_Buffer whose length is
+   --  in Name_Len (i.e. the characters of the name are in subscript positions
+   --  1 to Name_Len in Name_Buffer). It searches the names table to see if the
+   --  string has already been stored. If so the Id of the existing entry is
+   --  returned. Otherwise a new entry is created with its Name_Table_Int
+   --  fields set to zero/false. The contents of Name_Buffer and Name_Len are
+   --  not modified by this call. Note that it is permissible for Name_Len to
+   --  be set to zero to lookup the null name string.
+
+   function Name_Find_Str (S : String) return Name_Id;
+   --  Similar to Name_Find, except that the string is provided as an argument.
+   --  This call destroys the contents of Name_Buffer and Name_Len (by storing
+   --  the given string there.
+
+   procedure Reinitialize;
+   --  Clears the name tables and removes all existing entries from the table.
 
    procedure Reset_Name_Table;
-   --  This procedure is used when there are multiple source files to reset
-   --  the name table info entries associated with current entries in the
-   --  names table. There is no harm in keeping the names entries themselves
-   --  from one compilation to another, but we can't keep the entity info,
-   --  since this refers to tree nodes, which are destroyed between each main
-   --  source file.
-
-   procedure Add_Char_To_Name_Buffer (C : Character);
-   pragma Inline (Add_Char_To_Name_Buffer);
-   --  Add given character to the end of the string currently stored in the
-   --  Name_Buffer, incrementing Name_Len.
-
-   procedure Add_Nat_To_Name_Buffer (V : Nat);
-   --  Add decimal representation of given value to the end of the string
-   --  currently stored in Name_Buffer, incrementing Name_Len as required.
-
-   procedure Add_Str_To_Name_Buffer (S : String);
-   --  Add characters of string S to the end of the string currently stored
-   --  in the Name_Buffer, incrementing Name_Len by the length of the string.
-
-   procedure Insert_Str_In_Name_Buffer (S : String; Index : Positive);
-   --  Inserts given string in name buffer, starting at Index. Any existing
-   --  characters at or past this location get moved beyond the inserted string
-   --  and Name_Len is incremented by the length of the string.
+   --  This procedure is used when there are multiple source files to reset the
+   --  name table info entries associated with current entries in the names
+   --  table. There is no harm in keeping the names entries themselves from one
+   --  compilation to another, but we can't keep the entity info, since this
+   --  refers to tree nodes, which are destroyed between each main source file.
 
    procedure Set_Character_Literal_Name (C : Char_Code);
    --  This procedure sets the proper encoded name for the character literal
    --  for the given character code. On return Name_Buffer and Name_Len are
    --  set to reflect the stored name.
 
-   procedure Set_Name_Table_Int (Id : Name_Id; Val : Int);
-   pragma Inline (Set_Name_Table_Int);
-   --  Sets the Int value associated with the given name
-
    procedure Set_Name_Table_Byte (Id : Name_Id; Val : Byte);
    pragma Inline (Set_Name_Table_Byte);
    --  Sets the Byte value associated with the given name
+
+   procedure Set_Name_Table_Int (Id : Name_Id; Val : Int);
+   pragma Inline (Set_Name_Table_Int);
+   --  Sets the Int value associated with the given name
 
    procedure Set_Name_Table_Boolean1 (Id : Name_Id; Val : Boolean);
    procedure Set_Name_Table_Boolean2 (Id : Name_Id; Val : Boolean);
@@ -543,10 +549,9 @@ package Namet is
    --  Writes out internal tables to current tree file using the relevant
    --  Table.Tree_Write routines.
 
-   procedure Get_Last_Two_Chars (N : Name_Id; C1, C2 : out Character);
-   --  Obtains last two characters of a name. C1 is last but one character
-   --  and C2 is last character. If name is less than two characters long,
-   --  then both C1 and C2 are set to ASCII.NUL on return.
+   procedure Unlock;
+   --  Unlocks the name table to allow use of the extra space reserved by the
+   --  call to Lock. See gnat1drv for details of the need for this.
 
    procedure Write_Name (Id : Name_Id);
    --  Write_Name writes the characters of the specified name using the
@@ -560,9 +565,6 @@ package Namet is
    --  Like Write_Name, except that the name written is the decoded name, as
    --  described for Get_Decoded_Name_String, and the resulting value stored
    --  in Name_Len and Name_Buffer is the decoded name.
-
-   function Name_Equals (N1, N2 : Name_Id) return Boolean;
-   --  Return whether N1 and N2 denote the same character sequence
 
    ------------------------------
    -- File and Unit Name Types --

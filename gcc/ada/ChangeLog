@@ -1,3 +1,7 @@
+2015-10-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* namet.adb, namet.ads: Minor reformatting.
+
 2015-10-27  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Analyze_Allocator): Do not perform legality check
