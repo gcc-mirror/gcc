@@ -5313,13 +5313,14 @@ push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
       {
 	bool push = false;
 	HOST_WIDE_INT foff = bitpos_of_field (field);
+	tree field_type = TREE_TYPE (field);
 
 	if (!var_can_have_subvars (field)
-	    || TREE_CODE (TREE_TYPE (field)) == QUAL_UNION_TYPE
-	    || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
+	    || TREE_CODE (field_type) == QUAL_UNION_TYPE
+	    || TREE_CODE (field_type) == UNION_TYPE)
 	  push = true;
 	else if (!push_fields_onto_fieldstack
-		    (TREE_TYPE (field), fieldstack, offset + foff)
+		    (field_type, fieldstack, offset + foff)
 		 && (DECL_SIZE (field)
 		     && !integer_zerop (DECL_SIZE (field))))
 	  /* Empty structures may have actual size, like in C++.  So
@@ -5372,8 +5373,8 @@ push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
 		e.may_have_pointers = true;
 		e.only_restrict_pointers
 		  = (!has_unknown_size
-		     && POINTER_TYPE_P (TREE_TYPE (field))
-		     && TYPE_RESTRICT (TREE_TYPE (field)));
+		     && POINTER_TYPE_P (field_type)
+		     && TYPE_RESTRICT (field_type));
 		fieldstack->safe_push (e);
 	      }
 	  }

@@ -1,3 +1,8 @@
+2015-10-27  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Add and use var
+	field_type.
+
 2015-10-27  Bin Cheng  <bin.cheng@arm.com>
 
 	* loop-invariant.c (struct def): New field can_prop_to_addr_uses.
