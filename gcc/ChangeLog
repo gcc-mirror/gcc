@@ -1,3 +1,10 @@
+2015-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68104
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Move
+	strided access check ...
+	(vect_compute_data_refs_alignment): ... here.
+
 2015-10-27  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 	    Mark Shinwell  <shinwell@codesourcery.com>
