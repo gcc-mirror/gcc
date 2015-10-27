@@ -1349,7 +1349,7 @@ int_cst_hasher::hash (tree x)
   int i;
 
   for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
-    code ^= TREE_INT_CST_ELT (t, i);
+    code = iterative_hash_host_wide_int (TREE_INT_CST_ELT(t, i), code);
 
   return code;
 }
