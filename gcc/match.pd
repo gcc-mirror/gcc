@@ -2407,12 +2407,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (rdiv @0 (exps:s @1))
     (mult @0 (exps (negate @1)))))
 
- /* Special case, optimize logN(expN(x)) = x.  */
  (for logs (LOG LOG2 LOG10 LOG10)
       exps (EXP EXP2 EXP10 POW10)
+  /* logN(expN(x)) -> x.  */
   (simplify
    (logs (exps @0))
-    @0))
+   @0)
+  /* expN(logN(x)) -> x.  */
+  (simplify
+   (exps (logs @0))
+   @0))
 
  /* Optimize logN(func()) for various exponential functions.  We
     want to determine the value "x" and the power "exponent" in

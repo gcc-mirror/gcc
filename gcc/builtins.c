@@ -7516,47 +7516,6 @@ fold_const_builtin_pow (tree arg0, tree arg1, tree type)
   return NULL_TREE;
 }
 
-/* A subroutine of fold_builtin to fold the various exponent
-   functions.  Return NULL_TREE if no simplification can be made.
-   FUNC is the corresponding MPFR exponent function.  */
-
-static tree
-fold_builtin_exponent (location_t loc, tree fndecl, tree arg,
-		       int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t))
-{
-  if (validate_arg (arg, REAL_TYPE))
-    {
-      tree type = TREE_TYPE (TREE_TYPE (fndecl));
-      tree res;
-
-      /* Calculate the result when the argument is a constant.  */
-      if ((res = do_mpfr_arg1 (arg, type, func, NULL, NULL, 0)))
-	return res;
-
-      /* Optimize expN(logN(x)) = x.  */
-      if (flag_unsafe_math_optimizations)
-	{
-	  const enum built_in_function fcode = builtin_mathfn_code (arg);
-
-	  if ((func == mpfr_exp
-	       && (fcode == BUILT_IN_LOG
-		   || fcode == BUILT_IN_LOGF
-		   || fcode == BUILT_IN_LOGL))
-	      || (func == mpfr_exp2
-		  && (fcode == BUILT_IN_LOG2
-		      || fcode == BUILT_IN_LOG2F
-		      || fcode == BUILT_IN_LOG2L))
-	      || (func == mpfr_exp10
-		  && (fcode == BUILT_IN_LOG10
-		      || fcode == BUILT_IN_LOG10F
-		      || fcode == BUILT_IN_LOG10L)))
-	    return fold_convert_loc (loc, type, CALL_EXPR_ARG (arg, 0));
-	}
-    }
-
-  return NULL_TREE;
-}
-
 /* Fold function call to builtin memchr.  ARG1, ARG2 and LEN are the
    arguments to the call, and TYPE is its return type.
    Return NULL_TREE if no simplification can be made.  */
@@ -9004,14 +8963,20 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
     break;
 
     CASE_FLT_FN (BUILT_IN_EXP):
-      return fold_builtin_exponent (loc, fndecl, arg0, mpfr_exp);
+      if (validate_arg (arg0, REAL_TYPE))
+	return do_mpfr_arg1 (arg0, type, mpfr_exp, NULL, NULL, 0);
+      break;
 
     CASE_FLT_FN (BUILT_IN_EXP2):
-      return fold_builtin_exponent (loc, fndecl, arg0, mpfr_exp2);
+      if (validate_arg (arg0, REAL_TYPE))
+	return do_mpfr_arg1 (arg0, type, mpfr_exp2, NULL, NULL, 0);
+      break;
 
     CASE_FLT_FN (BUILT_IN_EXP10):
     CASE_FLT_FN (BUILT_IN_POW10):
-      return fold_builtin_exponent (loc, fndecl, arg0, mpfr_exp10);
+      if (validate_arg (arg0, REAL_TYPE))
+	return do_mpfr_arg1 (arg0, type, mpfr_exp10, NULL, NULL, 0);
+      break;
 
     CASE_FLT_FN (BUILT_IN_EXPM1):
       if (validate_arg (arg0, REAL_TYPE))
