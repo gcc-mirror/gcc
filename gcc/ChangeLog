@@ -1,3 +1,11 @@
+2015-10-27  Bin Cheng  <bin.cheng@arm.com>
+
+	* loop-invariant.c (struct def): New field can_prop_to_addr_uses.
+	(inv_can_prop_to_addr_use): New function.
+	(record_use): Call can_prop_to_addr_uses, set the new field.
+	(get_inv_cost): Count cost if inv can't be propagated into its
+	address uses.
+
 2015-10-26  Doug Evans  <dje@google.com>
 
 	* config/linux.h (INCLUDE_DEFAULTS): Add INCLUDE_DEFAULTS_MUSL_LOCAL.
