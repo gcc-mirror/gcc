@@ -1,3 +1,9 @@
+2015-10-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libffi/65441
+	* testsuite/lib/libffi.exp: Load target-supports-dg.exp.
+	* testsuite/libffi.call/float2.c: Don't run on hppa*-*-hpux*.
+
 2015-07-16  Release Manager
 
 	* GCC 5.2.0 released.
