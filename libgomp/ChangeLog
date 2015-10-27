@@ -1,3 +1,8 @@
+2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/68063
+	* testsuite/libgomp.c++/member-1.C (A::m1): Add missing private clause.
+
 2015-10-27  James Norris  <jnorris@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/combdir-1.c: New file.
