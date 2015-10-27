@@ -1,3 +1,9 @@
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* builtins.c (fold_builtin_fmin_fmax): Delete.
+	(fold_builtin_2): Handle constant fmin and fmax arguments here.
+	* match.pd: Add rules previously handled by fold_builtin_fmin_fmax.
+
 2015-10-27  Evandro Menezes  <e.menezes@samsung.com>
 
 	* config/aarch64/aarch64-protos.h (cpu_addrcost_table): Split member
