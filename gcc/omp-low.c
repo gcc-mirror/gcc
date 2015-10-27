@@ -12239,6 +12239,71 @@ oacc_gimple_assign (tree dest, tree_code op, tree src, gimple_seq *seq)
   gimplify_assign (dest, result, seq);
 }
 
+/* Initialize the reduction array with default values.  */
+
+static void
+oacc_init_reduction_array (tree array, tree init, tree nthreads,
+			   gimple_seq *stmt_seqp)
+{
+  tree type = TREE_TYPE (TREE_TYPE (array));
+  tree x, loop_header, loop_body, loop_exit;
+  gimple *stmt;
+
+  /* Create for loop.
+
+     let var = the original reduction variable
+     let array = reduction variable array
+
+     for (i = 0; i < nthreads; i++)
+       var op= array[i]
+ */
+
+  loop_header = create_artificial_label (UNKNOWN_LOCATION);
+  loop_body = create_artificial_label (UNKNOWN_LOCATION);
+  loop_exit = create_artificial_label (UNKNOWN_LOCATION);
+
+  /* Create and initialize an index variable.  */
+  tree ix = create_tmp_var (sizetype);
+  gimplify_assign (ix, fold_build1 (NOP_EXPR, sizetype, integer_zero_node),
+		   stmt_seqp);
+
+  /* Insert the loop header label here.  */
+  gimple_seq_add_stmt (stmt_seqp, gimple_build_label (loop_header));
+
+  /* Exit loop if ix >= nthreads.  */
+  x = create_tmp_var (sizetype);
+  gimplify_assign (x, fold_build1 (NOP_EXPR, sizetype, nthreads), stmt_seqp);
+  stmt = gimple_build_cond (GE_EXPR, ix, x, loop_exit, loop_body);
+  gimple_seq_add_stmt (stmt_seqp, stmt);
+
+  /* Insert the loop body label here.  */
+  gimple_seq_add_stmt (stmt_seqp, gimple_build_label (loop_body));
+
+  /* Calculate the array offset.  */
+  tree offset = create_tmp_var (sizetype);
+  gimplify_assign (offset, TYPE_SIZE_UNIT (type), stmt_seqp);
+  stmt = gimple_build_assign (offset, MULT_EXPR, offset, ix);
+  gimple_seq_add_stmt (stmt_seqp, stmt);
+
+  tree ptr = create_tmp_var (TREE_TYPE (array));
+  stmt = gimple_build_assign (ptr, POINTER_PLUS_EXPR, array, offset);
+  gimple_seq_add_stmt (stmt_seqp, stmt);
+
+  /* Assign init.  */
+  gimplify_assign (build_simple_mem_ref (ptr), init, stmt_seqp);
+
+  /* Increment the induction variable.  */
+  tree one = fold_build1 (NOP_EXPR, sizetype, integer_one_node);
+  stmt = gimple_build_assign (ix, PLUS_EXPR, ix, one);
+  gimple_seq_add_stmt (stmt_seqp, stmt);
+
+  /* Go back to the top of the loop.  */
+  gimple_seq_add_stmt (stmt_seqp, gimple_build_goto (loop_header));
+
+  /* Place the loop exit label here.  */
+  gimple_seq_add_stmt (stmt_seqp, gimple_build_label (loop_exit));
+}
+
 /* Helper function to initialize local data for the reduction arrays.
    The reduction arrays need to be placed inside the calling function
    for accelerators, or else the host won't be able to preform the final
@@ -12298,12 +12363,18 @@ oacc_initialize_reduction_data (tree clauses, tree nthreads,
       gimple_call_set_lhs (stmt, array);
       gimple_seq_add_stmt (stmt_seqp, stmt);
 
+      /* Initialize array. */
+      tree init = omp_reduction_init_op (OMP_CLAUSE_LOCATION (c),
+					 OMP_CLAUSE_REDUCTION_CODE (c),
+					 type);
+      oacc_init_reduction_array (array, init, nthreads, stmt_seqp);
+
       /* Map this array into the accelerator.  */
 
       /* Add the reduction array to the list of clauses.  */
       tree x = array;
       t = build_omp_clause (gimple_location (ctx->stmt), OMP_CLAUSE_MAP);
-      OMP_CLAUSE_SET_MAP_KIND (t, GOMP_MAP_FORCE_FROM);
+      OMP_CLAUSE_SET_MAP_KIND (t, GOMP_MAP_FORCE_TOFROM);
       OMP_CLAUSE_DECL (t) = x;
       OMP_CLAUSE_CHAIN (t) = NULL;
       if (oc)
