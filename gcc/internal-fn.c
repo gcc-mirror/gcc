@@ -1976,10 +1976,82 @@ expand_UNIQUE (gcall *stmt)
       if (targetm.have_unique ())
 	pattern = targetm.gen_unique ();
       break;
+
+    case IFN_UNIQUE_OACC_FORK:
+    case IFN_UNIQUE_OACC_JOIN:
+      if (targetm.have_oacc_fork () && targetm.have_oacc_join ())
+	{
+	  tree lhs = gimple_call_lhs (stmt);
+	  rtx target = const0_rtx;
+
+	  if (lhs)
+	    target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+
+	  rtx data_dep = expand_normal (gimple_call_arg (stmt, 1));
+	  rtx axis = expand_normal (gimple_call_arg (stmt, 2));
+
+	  if (kind == IFN_UNIQUE_OACC_FORK)
+	    pattern = targetm.gen_oacc_fork (target, data_dep, axis);
+	  else
+	    pattern = targetm.gen_oacc_join (target, data_dep, axis);
+	}
+      else
+	gcc_unreachable ();
+      break;
     }
 
   if (pattern)
     emit_insn (pattern);
+}
+
+/* The size of an OpenACC compute dimension.  */
+
+static void
+expand_GOACC_DIM_SIZE (gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  if (targetm.have_oacc_dim_size ())
+    {
+      rtx dim = expand_expr (gimple_call_arg (stmt, 0), NULL_RTX,
+			     VOIDmode, EXPAND_NORMAL);
+      emit_insn (targetm.gen_oacc_dim_size (target, dim));
+    }
+  else
+    emit_move_insn (target, GEN_INT (1));
+}
+
+/* The position of an OpenACC execution engine along one compute axis.  */
+
+static void
+expand_GOACC_DIM_POS (gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  if (targetm.have_oacc_dim_pos ())
+    {
+      rtx dim = expand_expr (gimple_call_arg (stmt, 0), NULL_RTX,
+			     VOIDmode, EXPAND_NORMAL);
+      emit_insn (targetm.gen_oacc_dim_pos (target, dim));
+    }
+  else
+    emit_move_insn (target, const0_rtx);
+}
+
+/* This is expanded by oacc_device_lower pass.  */
+
+static void
+expand_GOACC_LOOP (gcall *stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
 }
 
 /* Routines to expand each internal function, indexed by function number.
