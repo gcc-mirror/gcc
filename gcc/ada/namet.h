@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *            Copyright (C) 1992-2014, Free Software Foundation, Inc.       *
+ *            Copyright (C) 1992-2015, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -87,6 +87,9 @@ Get_Decoded_Name_String (Name_Id Id)
   Name_Buffer[Name_Len] = 0;
   return Name_Buffer;
 }
+
+#define Name_Equals namet__name_equals
+extern Boolean Name_Equals (Name_Id, Name_Id);
 
 /* Like Get_Decoded_Name_String, but the result has all qualification and
    package body entity suffixes stripped, and also all letters are upper

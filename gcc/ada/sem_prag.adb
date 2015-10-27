@@ -527,7 +527,7 @@ package body Sem_Prag is
       --    E_Constant                 - "constant"
       --    E_Discriminant             - "discriminant"
       --    E_Generic_In_Out_Parameter - "generic parameter"
-      --    E_Generic_Out_Parameter    - "generic parameter"
+      --    E_Generic_In_Parameter     - "generic parameter"
       --    E_In_Parameter             - "parameter"
       --    E_In_Out_Parameter         - "parameter"
       --    E_Loop_Parameter           - "loop parameter"
@@ -24057,6 +24057,9 @@ package body Sem_Prag is
       Spec_Id : Entity_Id;
       --  The entity of the subprogram subject to pragma Refined_Global
 
+      States : Elist_Id := No_Elist;
+      --  A list of all states with visible refinement found in pragma Global
+
       procedure Check_In_Out_States;
       --  Determine whether the corresponding Global pragma mentions In_Out
       --  states with visible refinement and if so, ensure that one of the
@@ -24566,11 +24569,14 @@ package body Sem_Prag is
          begin
             --  When the state or object acts as a constituent of another
             --  state with a visible refinement, collect it for the state
-            --  completeness checks performed later on.
+            --  completeness checks performed later on. Note that the item
+            --  acts as a constituent only when the encapsulating state is
+            --  present in pragma Global.
 
             if Ekind_In (Item_Id, E_Abstract_State, E_Constant, E_Variable)
              and then Present (Encapsulating_State (Item_Id))
              and then Has_Visible_Refinement (Encapsulating_State (Item_Id))
+             and then Contains (States, Encapsulating_State (Item_Id))
             then
                if Global_Mode = Name_Input then
                   Append_New_Elmt (Item_Id, In_Constits);
@@ -24715,6 +24721,8 @@ package body Sem_Prag is
                   Has_Null_State := True;
 
                elsif Has_Non_Null_Refinement (Item_Id) then
+                  Append_New_Elmt (Item_Id, States);
+
                   if Item_Mode = Name_Input then
                      Has_In_State := True;
                   elsif Item_Mode = Name_In_Out then

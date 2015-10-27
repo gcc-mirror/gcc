@@ -1639,6 +1639,36 @@ package body Namet is
       end if;
    end Write_Name_Decoded;
 
+   -----------------
+   -- Name_Equals --
+   -----------------
+
+   function Name_Equals (N1, N2 : Name_Id) return Boolean is
+   begin
+      if N1 = N2 then
+         return True;
+      end if;
+
+      declare
+         L1 : constant Int := Int (Name_Entries.Table (N1).Name_Len);
+         L2 : constant Int := Int (Name_Entries.Table (N2).Name_Len);
+      begin
+         if L1 /= L2 then
+            return False;
+         end if;
+
+         declare
+            use Name_Chars;
+
+            I1 : constant Int := Name_Entries.Table (N1).Name_Chars_Index;
+            I2 : constant Int := Name_Entries.Table (N2).Name_Chars_Index;
+         begin
+            return (Name_Chars.Table (1 + I1 .. I1 + L1)
+                    = Name_Chars.Table (1 + I2 .. I2 + L2));
+         end;
+      end;
+   end Name_Equals;
+
 --  Package initialization, initialize tables
 
 begin
