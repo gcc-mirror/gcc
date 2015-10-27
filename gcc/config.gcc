@@ -2628,6 +2628,9 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 	tm_file="${tm_file} dbxelf.h elfos.h sh/elf.h"
 	case ${target} in
 	sh*-*-linux*)	tmake_file="${tmake_file} sh/t-linux"
+			if test x$enable_fdpic = xyes; then
+				tm_defines="$tm_defines FDPIC_DEFAULT=1"
+			fi
 			tm_file="${tm_file} gnu-user.h linux.h glibc-stdint.h sh/linux.h" ;;
 	sh*-*-netbsd*)
 			tm_file="${tm_file} netbsd.h netbsd-elf.h sh/netbsd-elf.h"

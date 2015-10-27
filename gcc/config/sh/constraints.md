@@ -25,6 +25,7 @@
 ;;  Bsc: SCRATCH - for the scratch register in movsi_ie in the
 ;;       fldi0 / fldi0 cases
 ;; Cxx: Constants other than only CONST_INT
+;;  Ccl: call site label
 ;;  Css: signed 16-bit constant, literal or symbolic
 ;;  Csu: unsigned 16-bit constant, literal or symbolic
 ;;  Csy: label or symbol
@@ -232,6 +233,11 @@
    operand is not SCRATCH (i.e. REG) then R0 is probably being used,
    hence mova is being used, hence do not select this pattern."
   (match_code "scratch"))
+
+(define_constraint "Ccl"
+  "A call site label, for bsrf."
+  (and (match_code "unspec")
+       (match_test "XINT (op, 1) == UNSPEC_CALLER")))
 
 (define_constraint "Css"
   "A signed 16-bit constant, literal or symbolic."

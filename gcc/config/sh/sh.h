@@ -316,7 +316,7 @@ extern int code_for_indirect_jump_scratch;
 #endif
 
 #ifndef SUBTARGET_ASM_SPEC
-#define SUBTARGET_ASM_SPEC ""
+#define SUBTARGET_ASM_SPEC "%{mfdpic:--fdpic}"
 #endif
 
 #if TARGET_ENDIAN_DEFAULT == MASK_LITTLE_ENDIAN
@@ -344,7 +344,7 @@ extern int code_for_indirect_jump_scratch;
 #define ASM_ISA_DEFAULT_SPEC ""
 #endif /* MASK_SH5 */
 
-#define SUBTARGET_LINK_EMUL_SUFFIX ""
+#define SUBTARGET_LINK_EMUL_SUFFIX "%{mfdpic:_fd}"
 #define SUBTARGET_LINK_SPEC ""
 
 /* Go via SH_LINK_SPEC to avoid code replication.  */
@@ -378,8 +378,18 @@ extern int code_for_indirect_jump_scratch;
 "%{m2a*:%eSH2a does not support little-endian}}"
 #endif
 
+#ifdef FDPIC_DEFAULT
+#define FDPIC_SELF_SPECS "%{!mno-fdpic:-mfdpic}"
+#else
+#define FDPIC_SELF_SPECS
+#endif
+
 #undef DRIVER_SELF_SPECS
-#define DRIVER_SELF_SPECS UNSUPPORTED_SH2A
+#define DRIVER_SELF_SPECS UNSUPPORTED_SH2A SUBTARGET_DRIVER_SELF_SPECS \
+  FDPIC_SELF_SPECS
+
+#undef SUBTARGET_DRIVER_SELF_SPECS
+#define SUBTARGET_DRIVER_SELF_SPECS
 
 #define ASSEMBLER_DIALECT assembler_dialect
 
@@ -936,6 +946,10 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 /* Register to hold the addressing base for position independent
    code access to data items.  */
 #define PIC_OFFSET_TABLE_REGNUM	(flag_pic ? PIC_REG : INVALID_REGNUM)
+
+/* For FDPIC, the FDPIC register is call-clobbered (otherwise PLT
+   entries would need to handle saving and restoring it).  */
+#define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED TARGET_FDPIC
 
 #define GOT_SYMBOL_NAME "*_GLOBAL_OFFSET_TABLE_"
 
@@ -1561,7 +1575,8 @@ struct sh_args {
    6 000c 00000000 	l2:	.long   function  */
 
 /* Length in units of the trampoline for entering a nested function.  */
-#define TRAMPOLINE_SIZE  (TARGET_SHMEDIA64 ? 40 : TARGET_SH5 ? 24 : 16)
+#define TRAMPOLINE_SIZE \
+  (TARGET_SHMEDIA64 ? 40 : TARGET_SH5 ? 24 : TARGET_FDPIC ? 32 : 16)
 
 /* Alignment required for a trampoline in bits.  */
 #define TRAMPOLINE_ALIGNMENT \
@@ -1616,6 +1631,10 @@ struct sh_args {
    ? (GENERAL_REGISTER_P (REGNO) \
       || GENERAL_REGISTER_P ((unsigned) reg_renumber[(REGNO)])) \
    : (REGNO) == R0_REG || (unsigned) reg_renumber[(REGNO)] == R0_REG)
+
+/* True if SYMBOL + OFFSET constants must refer to something within
+   SYMBOL's section.  */
+#define SH_OFFSETS_MUST_BE_WITHIN_SECTIONS_P TARGET_FDPIC
 
 /* Maximum number of registers that can appear in a valid memory
    address.  */
@@ -2257,9 +2276,11 @@ extern int current_function_interrupt;
 /* We have to distinguish between code and data, so that we apply
    datalabel where and only where appropriate.  Use sdataN for data.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
- ((flag_pic && (GLOBAL) ? DW_EH_PE_indirect : 0) \
-  | (flag_pic ? DW_EH_PE_pcrel : DW_EH_PE_absptr) \
-  | ((CODE) ? 0 : (TARGET_SHMEDIA64 ? DW_EH_PE_sdata8 : DW_EH_PE_sdata4)))
+  ((TARGET_FDPIC \
+    ? ((GLOBAL) ? DW_EH_PE_indirect | DW_EH_PE_datarel : DW_EH_PE_pcrel) \
+    : ((flag_pic && (GLOBAL) ? DW_EH_PE_indirect : 0) \
+       | (flag_pic ? DW_EH_PE_pcrel : DW_EH_PE_absptr))) \
+   | ((CODE) ? 0 : (TARGET_SHMEDIA64 ? DW_EH_PE_sdata8 : DW_EH_PE_sdata4)))
 
 /* Handle special EH pointer encodings.  Absolute, pc-relative, and
    indirect are handled automatically.  */
@@ -2271,6 +2292,17 @@ extern int current_function_interrupt;
 	gcc_assert (GET_CODE (ADDR) == SYMBOL_REF); \
 	SYMBOL_REF_FLAGS (ADDR) |= SYMBOL_FLAG_FUNCTION; \
 	if (0) goto DONE; \
+      } \
+    if (TARGET_FDPIC \
+	&& ((ENCODING) & 0xf0) == (DW_EH_PE_indirect | DW_EH_PE_datarel)) \
+      { \
+	fputs ("\t.ualong ", FILE); \
+	output_addr_const (FILE, ADDR); \
+	if (GET_CODE (ADDR) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (ADDR)) \
+	  fputs ("@GOTFUNCDESC", FILE); \
+	else \
+	  fputs ("@GOT", FILE); \
+	goto DONE; \
       } \
   } while (0)
 

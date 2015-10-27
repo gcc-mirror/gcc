@@ -377,7 +377,19 @@ extern void fpscr_set_from_mem (int, HARD_REG_SET);
 extern void sh_pr_interrupt (struct cpp_reader *);
 extern void sh_pr_trapa (struct cpp_reader *);
 extern void sh_pr_nosave_low_regs (struct cpp_reader *);
-extern rtx function_symbol (rtx, const char *, enum sh_function_kind);
+
+struct function_symbol_result
+{
+  function_symbol_result (void) : sym (NULL), lab (NULL) { }
+  function_symbol_result (rtx s, rtx l) : sym (s), lab (l) { }
+
+  rtx sym;
+  rtx lab;
+};
+
+extern function_symbol_result function_symbol (rtx, const char *,
+					       sh_function_kind);
+extern rtx sh_get_fdpic_reg_initial_val (void);
 extern rtx sh_get_pr_initial_val (void);
 
 extern void sh_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree,
@@ -396,4 +408,5 @@ extern bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
 extern machine_mode sh_hard_regno_caller_save_mode (unsigned int, unsigned int,
 						    machine_mode);
 extern bool sh_can_use_simple_return_p (void);
+extern rtx sh_load_function_descriptor (rtx);
 #endif /* ! GCC_SH_PROTOS_H */

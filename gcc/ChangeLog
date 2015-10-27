@@ -1,3 +1,83 @@
+2015-10-27  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Mark Shinwell  <shinwell@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+	    Rich Felker <dalias@libc.org>
+
+	* config.gcc: Handle --enable-fdpic.
+	* config/sh/constraints.md (Ccl): New constraint.
+	* config/sh/linux.h (SUBTARGET_LINK_EMUL_SUFFIX): Handle -mfdpic.
+	* config/sh/sh-c.c (sh_cpu_cpp_builtins): Add __FDPIC__ and
+	__SH_FDPIC__.
+	* config/sh/sh-mem.cc (expand_block_move): Support FDPIC for calls to
+	library functions.
+	* config/sh/sh-protos.h (function_symbol_result): New struct.
+	(function_symbol): Return function_symbol_result.
+	(sh_get_fdpic_reg_initial_val, sh_load_function_descriptor): New
+	declarations.
+	* config/sh/sh.c (TARGET_ASM_INTEGER, sh_assemble_integer): Implement
+	target hook.
+	(TARGET_CANNOT_FORCE_CONST_MEM, sh_cannot_force_const_mem_p): Likewise.
+	(sh_option_override): Force -fPIC if FDPIC is in effect.
+	(sh_asm_output_addr_const_extra): Add UNSPEC_GOTFUNCDESC and
+	UNSPEC_GOTOFFFUNCDESC cases.
+	(prepare_move_operands): Use FDPIC initial GOT register for
+	TLS-related GOT access; inhibit cross-section address offset constants
+	for FDPIC.
+	(sh_assemble_integer): New function.
+	(sh_cannot_copy_insn_p): Inhibit copying insns that are FDPIC
+	PC-relative call sites.
+	(expand_ashiftrt): Adapt invocation of function_symbol.
+	(sh_expand_prologue): Inhibit PC-relative GOT address load for FDPIC.
+	(nonpic_symbol_mentioned_p): Add cases for UNSPEC_GOTFUNCDESC and
+	UNSPEC_GOTOFFFUNCDESC.
+	(legitimize_pic_address): Resolve function symbols to function
+	descriptors for FDPIC.  Do not use GOT-relative addressing for local
+	data that may be read-only on FDPIC.
+	(sh_emit_storesi, sh_emit_storehi): New functions.
+	(sh_trampoline_init): Generate FDPIC trampolines.
+	(sh_function_ok_for_sibcall): Add TARGET_FDPIC check.
+	(sh_expand_sym_label2reg): Don't assume sibcalls are local.
+	(sh_output_mi_thunk): Generate FDPIC call.
+	(function_symbol): Return function_symbol_result.  For SFUNC_STATIC on
+	FDPIC, generate call site labels to use PC-relative addressing rather
+	than GOT-relative addressing.
+	(sh_conditional_register_usage): Make PIC register fixed and call used
+	when FDPIC is in effect.
+	(sh_legitimate_constant_p): Impose FDPIC constant constraints.
+	(sh_cannot_force_const_mem_p, sh_load_function_descriptor,
+	sh_get_fdpic_reg_initial_val): New functions.
+	* config/sh/sh.h (SUBTARGET_ASM_SPEC, SUBTARGET_LINK_EMUL_SUFFIX):
+	Handle -mfdpic.
+	(FDPIC_SELF_SPECS, SUBTARGET_DRIVER_SELF_SPECS,
+	PIC_OFFSET_TABLE_REG_CALL_CLOBBERED,
+	SH_OFFSETS_MUST_BE_WITHIN_SECTIONS_P): New macros.
+	(DRIVER_SELF_SPECS): Add SUBTARGET_DRIVER_SELF_SPECS and
+	FDPIC_SELF_SPECS.
+	(TRAMPOLINE_SIZE): Select trampoline size for FDPIC.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Add EH format constraints for FDPIC.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Handle FDPIC case.
+	* config/sh/sh.md (UNSPEC_GOTFUNCDESC, UNSPEC_GOTOFFFUNCDESC): New
+	constants.
+	(calli_fdpic, call_valuei_fdpic, sibcalli_fdpic, sibcalli_pcrel_fdpic,
+	sibcall_pcrel_fdpic, sibcall_valuei_fdpic, sibcall_valuei_pcrel_fdpic,
+	sibcall_value_pcrel_fdpic, sym2GOTFUNCDESC, symGOTFUNCDESC2reg,
+	sym2GOTOFFFUNCDESC, symGOTOFFFUNCDESC2reg): New patterns.
+	(udivsi3_i1, udivsi3_i4, udivsi3_i4_single, udivsi3,
+	*divsi_inv_call_combine, divsi3_i4, divsi3_i4_single, divsi3, ashlsi3,
+	ashlsi3_d_call, ashrsi3_n, lshrsi3, lshrsi3_d_call, calli, call_valuei,
+	call, call_value, sibcalli, sibcalli_pcrel, sibcall_pcrel, sibcall,
+	sibcall_valuei, sibcall_valuei_pcrel, sibcall_value_pcrel,
+	sibcall_value, GOTaddr2picreg, symGOT_load, symGOTOFF2reg,
+	block_move_real, block_lump_real, block_move_real_i4,
+	block_lump_real_i4): Add support for FDPIC calls.
+	(mulsi3, ic_invalidate_line, initialize_trampoline, call_pop,
+	call_value_pop): Adjust for new function_symbol signature.
+	* config/sh/sh.opt (-mfdpic): New option.
+	* doc/install.texi (Options specification): Document --enable-fdpic.
+	* doc/invoke.texi (SH Options): Document -mfdpic.
+
+
 2015-10-27  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR tree-optimization/65963
