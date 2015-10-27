@@ -1,3 +1,14 @@
+2015-10-27  Pascal Obry  <obry@adacore.com>
+
+	* a-dirval-mingw.adb: Remove some characters from Invalid_Character set.
+
+2015-10-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Rewrite_Function_Call_For_C): Use a named
+	associaion for the added actual in the call because previous
+	actuals may also have been given by explicit associations.
+	* lib-xref.adb: Minor style fixes.
+
 2015-10-27  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat1drv.adb: Remove hard coded restrictions.
