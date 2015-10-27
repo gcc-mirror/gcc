@@ -3493,15 +3493,40 @@ package body Sem_Ch6 is
          Generate_Reference_To_Formals (Body_Id);
       end if;
 
-      --  Set the SPARK_Mode from the current context (may be overwritten later
-      --  with explicit pragma). This is not done for entry barrier functions
-      --  because they are generated outside the protected type and should not
-      --  carry the mode of the enclosing context.
+      --  Entry barrier functions are generated outside the protected type and
+      --  should not carry the SPARK_Mode of the enclosing context.
 
       if Nkind (N) = N_Subprogram_Body
         and then Is_Entry_Barrier_Function (N)
       then
          null;
+
+      --  The body is generated as part of expression function expansion. When
+      --  the expression function appears in the visible declarations of a
+      --  package, the body is added to the private declarations. Since both
+      --  declarative lists may be subject to a different SPARK_Mode, inherit
+      --  the mode of the spec.
+
+      --    package P with SPARK_Mode is
+      --       function Expr_Func ... is (...);         --  original
+      --       [function Expr_Func ...;]                --  generated spec
+      --                                                --    mode is ON
+      --    private
+      --       pragma SPARK_Mode (Off);
+      --       [function Expr_Func ... is return ...;]  --  generated body
+      --    end P;                                      --    mode is ON
+
+      elsif not Comes_From_Source (N)
+        and then Present (Prev_Id)
+        and then Is_Expression_Function (Prev_Id)
+      then
+         Set_SPARK_Pragma (Body_Id, SPARK_Pragma (Prev_Id));
+         Set_SPARK_Pragma_Inherited
+           (Body_Id, SPARK_Pragma_Inherited (Prev_Id));
+
+      --  Set the SPARK_Mode from the current context (may be overwritten later
+      --  with explicit pragma).
+
       else
          Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Body_Id);

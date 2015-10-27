@@ -5081,7 +5081,6 @@ package body Sem_Util is
               (Is_Concurrent_Type (Scope (Discriminal_Link (E)))
                 or else
                   Is_Concurrent_Record_Type (Scope (Discriminal_Link (E)))));
-
    end Denotes_Discriminant;
 
    -------------------------
@@ -11677,26 +11676,46 @@ package body Sem_Util is
    ----------------------------
 
    function Is_Expression_Function (Subp : Entity_Id) return Boolean is
-      Decl : Node_Id;
-
    begin
-      if Ekind (Subp) /= E_Function then
-         return False;
-
+      if Ekind_In (Subp, E_Function, E_Subprogram_Body) then
+         return
+           Nkind (Original_Node (Unit_Declaration_Node (Subp))) =
+             N_Expression_Function;
       else
-         Decl := Unit_Declaration_Node (Subp);
-         return Nkind (Decl) = N_Subprogram_Declaration
-           and then
-             (Nkind (Original_Node (Decl)) = N_Expression_Function
-               or else
-                 (Present (Corresponding_Body (Decl))
-                   and then
-                     Nkind (Original_Node
-                             (Unit_Declaration_Node
-                               (Corresponding_Body (Decl)))) =
-                                  N_Expression_Function));
+         return False;
       end if;
    end Is_Expression_Function;
+
+   ------------------------------------------
+   -- Is_Expression_Function_Or_Completion --
+   ------------------------------------------
+
+   function Is_Expression_Function_Or_Completion
+     (Subp : Entity_Id) return Boolean
+   is
+      Subp_Decl : Node_Id;
+
+   begin
+      if Ekind (Subp) = E_Function then
+         Subp_Decl := Unit_Declaration_Node (Subp);
+
+         --  The function declaration is either an expression function or is
+         --  completed by an expression function body.
+
+         return
+           Is_Expression_Function (Subp)
+             or else (Nkind (Subp_Decl) = N_Subprogram_Declaration
+                       and then Present (Corresponding_Body (Subp_Decl))
+                       and then Is_Expression_Function
+                                  (Corresponding_Body (Subp_Decl)));
+
+      elsif Ekind (Subp) = E_Subprogram_Body then
+         return Is_Expression_Function (Subp);
+
+      else
+         return False;
+      end if;
+   end Is_Expression_Function_Or_Completion;
 
    -----------------------
    -- Is_EVF_Expression --

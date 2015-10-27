@@ -1,5 +1,16 @@
 2015-10-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* inline.adb (Is_Expression_Function): Removed.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): An internally
+	generated subprogram body that completes an expression function
+	inherits the SPARK_Mode from the spec.
+	* sem_res.adb (Resolve_Call): Update all calls to
+	Is_Expression_Function.
+	* sem_util.ads, sem_util.adb (Is_Expression_Function): Reimplemented.
+	(Is_Expression_Function_Or_Completion): New routine.
+
+2015-10-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* lib-xref-spark_specific.adb, a-dirval-mingw.adb, exp_ch6.adb,
 	sem_ch8.adb, s-os_lib.adb: Minor reformatting.
 
