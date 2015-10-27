@@ -138,7 +138,7 @@ package SPARK_Xrefs is
    --      entity-number and identity identify a scope entity in FS lines for
    --      the file previously identified.
 
-   --    line typ col entity ref*
+   --    F line typ col entity ref*
 
    --      line is the line number of the referenced entity
 
