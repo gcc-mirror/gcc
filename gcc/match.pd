@@ -102,6 +102,7 @@ DEFINE_MATH_FN (COPYSIGN)
 DEFINE_MATH_FN (CABS)
 DEFINE_MATH_FN (TRUNC)
 DEFINE_MATH_FN (NEARBYINT)
+DEFINE_MATH_FN (SIGNBIT)
 
 DEFINE_INT_AND_FLOAT_ROUND_FN (FLOOR)
 DEFINE_INT_AND_FLOAT_ROUND_FN (CEIL)
@@ -2942,3 +2943,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))
    (op @0 (ext @1 @2)))))
 
+(simplify
+ /* signbit(x) -> 0 if x is nonnegative.  */
+ (SIGNBIT tree_expr_nonnegative_p@0)
+ { integer_zero_node; })
+
+(simplify
+ /* signbit(x) -> x<0 if x doesn't have signed zeros.  */
+ (SIGNBIT @0)
+ (if (!HONOR_SIGNED_ZEROS (@0))
+  (convert (lt @0 { build_real (TREE_TYPE (@0), dconst0); }))))

@@ -162,7 +162,6 @@ static tree fold_builtin_memchr (location_t, tree, tree, tree, tree);
 static tree fold_builtin_memcmp (location_t, tree, tree, tree);
 static tree fold_builtin_strcmp (location_t, tree, tree);
 static tree fold_builtin_strncmp (location_t, tree, tree, tree);
-static tree fold_builtin_signbit (location_t, tree, tree);
 static tree fold_builtin_isascii (location_t, tree);
 static tree fold_builtin_toascii (location_t, tree);
 static tree fold_builtin_isdigit (location_t, tree);
@@ -7782,40 +7781,6 @@ fold_builtin_strncmp (location_t loc, tree arg1, tree arg2, tree len)
   return NULL_TREE;
 }
 
-/* Fold function call to builtin signbit, signbitf or signbitl with argument
-   ARG.  Return NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_signbit (location_t loc, tree arg, tree type)
-{
-  if (!validate_arg (arg, REAL_TYPE))
-    return NULL_TREE;
-
-  /* If ARG is a compile-time constant, determine the result.  */
-  if (TREE_CODE (arg) == REAL_CST
-      && !TREE_OVERFLOW (arg))
-    {
-      REAL_VALUE_TYPE c;
-
-      c = TREE_REAL_CST (arg);
-      return (REAL_VALUE_NEGATIVE (c)
-	      ? build_one_cst (type)
-	      : build_zero_cst (type));
-    }
-
-  /* If ARG is non-negative, the result is always zero.  */
-  if (tree_expr_nonnegative_p (arg))
-    return omit_one_operand_loc (loc, type, integer_zero_node, arg);
-
-  /* If ARG's format doesn't have signed zeros, return "arg < 0.0".  */
-  if (!HONOR_SIGNED_ZEROS (arg))
-    return fold_convert (type,
-			 fold_build2_loc (loc, LT_EXPR, boolean_type_node, arg,
-			build_real (TREE_TYPE (arg), dconst0)));
-
-  return NULL_TREE;
-}
-
 /* Fold function call to builtin copysign, copysignf or copysignl with
    arguments ARG1 and ARG2.  Return NULL_TREE if no simplification can
    be made.  */
@@ -9124,7 +9089,11 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
       return fold_builtin_bitop (fndecl, arg0);
 
     CASE_FLT_FN (BUILT_IN_SIGNBIT):
-      return fold_builtin_signbit (loc, arg0, type);
+      if (TREE_CODE (arg0) == REAL_CST && !TREE_OVERFLOW (arg0))
+	return (REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg0))
+		? build_one_cst (type)
+		: build_zero_cst (type));
+      break;
 
     CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
       return fold_builtin_significand (loc, arg0, type);
