@@ -691,13 +691,47 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
     }
 }
 
-/* Right now we have 21 different combined/composite constructs, this
-   function attempts to split or duplicate clauses for combined
+/* This function splits clauses for OpenACC combined loop
+   constructs.  OpenACC combined loop constructs are:
+   #pragma acc kernels loop
+   #pragma acc parallel loop
+*/
+
+tree
+c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses)
+{
+  tree next, loop_clauses;
+
+  loop_clauses = *not_loop_clauses = NULL_TREE;
+  for (; clauses ; clauses = next)
+    {
+      next = OMP_CLAUSE_CHAIN (clauses);
+
+      switch (OMP_CLAUSE_CODE (clauses))
+        {
+	case OMP_CLAUSE_COLLAPSE:
+	case OMP_CLAUSE_REDUCTION:
+	  OMP_CLAUSE_CHAIN (clauses) = loop_clauses;
+	  loop_clauses = clauses;
+	  break;
+
+	default:
+	  OMP_CLAUSE_CHAIN (clauses) = *not_loop_clauses;
+	  *not_loop_clauses = clauses;
+	  break;
+	}
+    }
+
+  return loop_clauses;
+}
+
+/* This function attempts to split or duplicate clauses for OpenMP
+   combined/composite constructs.  Right now there are 21 different
    constructs.  CODE is the innermost construct in the combined construct,
    and MASK allows to determine which constructs are combined together,
    as every construct has at least one clause that no other construct
    has (except for OMP_SECTIONS, but that can be only combined with parallel).
-   Combined/composite constructs are:
+   OpenMP combined/composite constructs are:
    #pragma omp distribute parallel for
    #pragma omp distribute parallel for simd
    #pragma omp distribute simd

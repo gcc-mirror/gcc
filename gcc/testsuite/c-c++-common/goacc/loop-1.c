@@ -1,5 +1,3 @@
-/* { dg-skip-if "not yet" { c++ } } */
-
 int test1()
 {
   int i, j, k, b[10];
@@ -69,4 +67,10 @@ int test1()
     }
   return 0;
 }
-/* { dg-prune-output "sorry, unimplemented: directive not yet implemented" } */
+
+// PR64765
+void PR64765(float *f, double *r) {
+  int i;
+  #pragma acc kernels loop create(f) copy(r)
+  for(i = 64; i < 76; i += 5) {}
+}

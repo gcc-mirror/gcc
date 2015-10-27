@@ -1,4 +1,3 @@
-
 /* Definitions for the ubiquitous 'tree' type for GNU compilers.
    Copyright (C) 1989-2015 Free Software Foundation, Inc.
 
@@ -1218,16 +1217,6 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_STANDALONE_CLAUSES(NODE) \
   TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_CACHE, OMP_TARGET_EXIT_DATA), 0)
 
-#define OACC_PARALLEL_BODY(NODE) \
-  TREE_OPERAND (OACC_PARALLEL_CHECK (NODE), 0)
-#define OACC_PARALLEL_CLAUSES(NODE) \
-  TREE_OPERAND (OACC_PARALLEL_CHECK (NODE), 1)
-
-#define OACC_KERNELS_BODY(NODE) \
-  TREE_OPERAND (OACC_KERNELS_CHECK(NODE), 0)
-#define OACC_KERNELS_CLAUSES(NODE) \
-  TREE_OPERAND (OACC_KERNELS_CHECK(NODE), 1)
-
 #define OACC_DATA_BODY(NODE) \
   TREE_OPERAND (OACC_DATA_CHECK (NODE), 0)
 #define OACC_DATA_CLAUSES(NODE) \
@@ -1331,15 +1320,6 @@ extern void protected_set_expr_location (tree, location_t);
    This status is meaningful in the implementation of lastprivate.  */
 #define OMP_SECTION_LAST(NODE) \
   (OMP_SECTION_CHECK (NODE)->base.private_flag)
-
-/* True on an OACC_KERNELS statement if is represents combined kernels loop
-   directive.  */
-#define OACC_KERNELS_COMBINED(NODE) \
-  (OACC_KERNELS_CHECK (NODE)->base.private_flag)
-
-/* Like OACC_KERNELS_COMBINED, but for parallel loop directive.  */
-#define OACC_PARALLEL_COMBINED(NODE) \
-  (OACC_PARALLEL_CHECK (NODE)->base.private_flag)
 
 /* True on an OMP_PARALLEL statement if it represents an explicit
    combined parallel work-sharing constructs.  */

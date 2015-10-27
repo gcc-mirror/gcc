@@ -1,3 +1,9 @@
+2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree.h (OACC_PARALLEL_BODY, OACC_PARALLEL_CLAUSES)
+	(OACC_KERNELS_BODY, OACC_KERNELS_CLAUSES, OACC_KERNELS_COMBINED)
+	(OACC_PARALLEL_COMBINED): Don't define macros.  Adjust all users.
+
 2015-10-27  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Add and use var

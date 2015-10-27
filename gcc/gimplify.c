@@ -9600,23 +9600,9 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  ret = GS_ALL_DONE;
 	  break;
 
-	case OACC_KERNELS:
-	  if (OACC_KERNELS_COMBINED (*expr_p))
-	    sorry ("directive not yet implemented");
-	  else
-	    gimplify_omp_workshare (expr_p, pre_p);
-	  ret = GS_ALL_DONE;
-	  break;
-
-	case OACC_PARALLEL:
-	  if (OACC_PARALLEL_COMBINED (*expr_p))
-	    sorry ("directive not yet implemented");
-	  else
-	    gimplify_omp_workshare (expr_p, pre_p);
-	  ret = GS_ALL_DONE;
-	  break;
-
 	case OACC_DATA:
+	case OACC_KERNELS:
+	case OACC_PARALLEL:
 	case OMP_SECTIONS:
 	case OMP_SINGLE:
 	case OMP_TARGET:
