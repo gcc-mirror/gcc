@@ -150,17 +150,6 @@ procedure Gnat1drv is
          Unnest_Subprogram_Mode := True;
          Back_Annotate_Rep_Info := True;
 
-         --  Enable some restrictions systematically to simplify the generated
-         --  code. Note that restriction checks are also disabled in C mode,
-         --  see Restrict.Check_Restriction.
-
-         Restrict.Restrictions.Set   (No_Exception_Registration)       := True;
-         Restrict.Restrictions.Set   (No_Initialize_Scalars)           := True;
-         Restrict.Restrictions.Set   (No_Task_Hierarchy)               := True;
-         Restrict.Restrictions.Set   (No_Abort_Statements)             := True;
-         Restrict.Restrictions.Set   (Max_Asynchronous_Select_Nesting) := True;
-         Restrict.Restrictions.Value (Max_Asynchronous_Select_Nesting) := 0;
-
          --  Set operating mode to Generate_Code to benefit from full front-end
          --  expansion (e.g. generics).
 
