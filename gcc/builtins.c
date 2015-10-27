@@ -7881,18 +7881,13 @@ fold_fma (location_t loc ATTRIBUTE_UNUSED,
 static tree
 fold_builtin_fma (location_t loc, tree arg0, tree arg1, tree arg2, tree type)
 {
+  /* ??? Only expand to FMA_EXPR if it's directly supported.  */
   if (validate_arg (arg0, REAL_TYPE)
       && validate_arg (arg1, REAL_TYPE)
-      && validate_arg (arg2, REAL_TYPE))
-    {
-      tree tem = fold_fma (loc, type, arg0, arg1, arg2);
-      if (tem)
-	return tem;
+      && validate_arg (arg2, REAL_TYPE)
+      && optab_handler (fma_optab, TYPE_MODE (type)) != CODE_FOR_nothing)
+    return fold_build3_loc (loc, FMA_EXPR, type, arg0, arg1, arg2);
 
-      /* ??? Only expand to FMA_EXPR if it's directly supported.  */
-      if (optab_handler (fma_optab, TYPE_MODE (type)) != CODE_FOR_nothing)
-        return fold_build3_loc (loc, FMA_EXPR, type, arg0, arg1, arg2);
-    }
   return NULL_TREE;
 }
 
@@ -9307,8 +9302,9 @@ fold_builtin_3 (location_t loc, tree fndecl,
       return fold_builtin_sincos (loc, arg0, arg1, arg2);
 
     CASE_FLT_FN (BUILT_IN_FMA):
+      if (tree tem = fold_fma (loc, type, arg0, arg1, arg2))
+	return tem;
       return fold_builtin_fma (loc, arg0, arg1, arg2, type);
-    break;
 
     CASE_FLT_FN (BUILT_IN_REMQUO):
       if (validate_arg (arg0, REAL_TYPE)

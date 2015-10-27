@@ -1,5 +1,10 @@
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_fma): Remove constant handling.
+	(fold_builtin_3): Handle constant fma arguments here.
+
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_fabs): Remove constant handling.
 	(fold_builtin_abs): Likewise.
 
