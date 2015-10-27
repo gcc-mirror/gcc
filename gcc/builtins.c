@@ -7781,46 +7781,6 @@ fold_builtin_strncmp (location_t loc, tree arg1, tree arg2, tree len)
   return NULL_TREE;
 }
 
-/* Fold function call to builtin copysign, copysignf or copysignl with
-   arguments ARG1 and ARG2.  Return NULL_TREE if no simplification can
-   be made.  */
-
-static tree
-fold_builtin_copysign (location_t loc, tree arg1, tree arg2, tree type)
-{
-  if (!validate_arg (arg1, REAL_TYPE)
-      || !validate_arg (arg2, REAL_TYPE))
-    return NULL_TREE;
-
-  /* copysign(X,X) is X.  */
-  if (operand_equal_p (arg1, arg2, 0))
-    return fold_convert_loc (loc, type, arg1);
-
-  /* If ARG1 and ARG2 are compile-time constants, determine the result.  */
-  if (TREE_CODE (arg1) == REAL_CST
-      && TREE_CODE (arg2) == REAL_CST
-      && !TREE_OVERFLOW (arg1)
-      && !TREE_OVERFLOW (arg2))
-    {
-      REAL_VALUE_TYPE c1, c2;
-
-      c1 = TREE_REAL_CST (arg1);
-      c2 = TREE_REAL_CST (arg2);
-      /* c1.sign := c2.sign.  */
-      real_copysign (&c1, &c2);
-      return build_real (type, c1);
-    }
-
-  /* copysign(X, Y) is fabs(X) when Y is always non-negative.
-     Remember to evaluate Y for side-effects.  */
-  if (tree_expr_nonnegative_p (arg2))
-    return omit_one_operand_loc (loc, type,
-			     fold_build1_loc (loc, ABS_EXPR, type, arg1),
-			     arg2);
-
-  return NULL_TREE;
-}
-
 /* Fold a call to builtin isascii with argument ARG.  */
 
 static tree
@@ -9278,7 +9238,16 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
       break;
 
     CASE_FLT_FN (BUILT_IN_COPYSIGN):
-      return fold_builtin_copysign (loc, arg0, arg1, type);
+      if (TREE_CODE (arg0) == REAL_CST
+	  && TREE_CODE (arg1) == REAL_CST
+	  && !TREE_OVERFLOW (arg0)
+	  && !TREE_OVERFLOW (arg1))
+	{
+	  REAL_VALUE_TYPE c1 = TREE_REAL_CST (arg0);
+	  real_copysign (&c1, TREE_REAL_CST_PTR (arg1));
+	  return build_real (type, c1);
+	}
+      break;
 
     CASE_FLT_FN (BUILT_IN_FMIN):
       return fold_builtin_fmin_fmax (loc, arg0, arg1, type, /*max=*/false);
