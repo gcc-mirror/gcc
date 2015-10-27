@@ -251,6 +251,7 @@ static rtx sh_expand_builtin (tree, rtx, rtx, machine_mode, int);
 static void sh_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				HOST_WIDE_INT, tree);
 static void sh_file_start (void);
+static bool sh_assemble_integer (rtx, unsigned int, int);
 static bool flow_dependent_p (rtx, rtx);
 static void flow_dependent_p_1 (rtx, const_rtx, void *);
 static int shiftcosts (rtx);
@@ -259,6 +260,7 @@ static int addsubcosts (rtx);
 static int multcosts (rtx);
 static bool unspec_caller_rtx_p (rtx);
 static bool sh_cannot_copy_insn_p (rtx_insn *);
+static bool sh_cannot_force_const_mem_p (machine_mode, rtx);
 static bool sh_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int sh_address_cost (rtx, machine_mode, addr_space_t, bool);
 static int sh_pr_n_sets (void);
@@ -403,6 +405,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #define TARGET_ASM_FILE_START sh_file_start
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER sh_assemble_integer
 
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST sh_register_move_cost
@@ -661,6 +666,9 @@ static const struct attribute_spec sh_attribute_table[] =
    is used by optabs.c atomic op expansion code as well as in sync.md.  */
 #undef TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
 #define TARGET_ATOMIC_TEST_AND_SET_TRUEVAL 0x80
+
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM sh_cannot_force_const_mem_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -978,6 +986,13 @@ sh_option_override (void)
   /* Set -mzdcbranch for SH4 / SH4A if not otherwise specified by the user.  */
   if (! global_options_set.x_TARGET_ZDCBRANCH && TARGET_HARD_SH4)
     TARGET_ZDCBRANCH = 1;
+
+  /* FDPIC code is a special form of PIC, and the vast majority of code
+     generation constraints that apply to PIC also apply to FDPIC, so we
+     set flag_pic to avoid the need to check TARGET_FDPIC everywhere
+     flag_pic is checked. */
+  if (TARGET_FDPIC && !flag_pic)
+    flag_pic = 2;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (! VALID_REGISTER_P (regno))
@@ -1670,6 +1685,14 @@ sh_asm_output_addr_const_extra (FILE *file, rtx x)
 	  output_addr_const (file, XVECEXP (x, 0, 1));
 	  fputs ("-.)", file);
 	  break;
+	case UNSPEC_GOTFUNCDESC:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOTFUNCDESC", file);
+	  break;
+	case UNSPEC_GOTOFFFUNCDESC:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOTOFFFUNCDESC", file);
+	  break;
 	default:
 	  return false;
 	}
@@ -1854,6 +1877,9 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	    {
 	    case TLS_MODEL_GLOBAL_DYNAMIC:
 	      tga_ret = gen_rtx_REG (Pmode, R0_REG);
+	      if (TARGET_FDPIC)
+		emit_move_insn (gen_rtx_REG (Pmode, PIC_REG),
+				sh_get_fdpic_reg_initial_val ());
 	      emit_call_insn (gen_tls_global_dynamic (tga_ret, op1));
 	      tmp = gen_reg_rtx (Pmode);
 	      emit_move_insn (tmp, tga_ret);
@@ -1862,6 +1888,9 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 
 	    case TLS_MODEL_LOCAL_DYNAMIC:
 	      tga_ret = gen_rtx_REG (Pmode, R0_REG);
+	      if (TARGET_FDPIC)
+		emit_move_insn (gen_rtx_REG (Pmode, PIC_REG),
+				sh_get_fdpic_reg_initial_val ());
 	      emit_call_insn (gen_tls_local_dynamic (tga_ret, op1));
 
 	      tmp = gen_reg_rtx (Pmode);
@@ -1879,6 +1908,9 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	    case TLS_MODEL_INITIAL_EXEC:
 	      tga_op1 = !can_create_pseudo_p () ? op0 : gen_reg_rtx (Pmode);
 	      tmp = gen_sym2GOTTPOFF (op1);
+	      if (TARGET_FDPIC)
+		emit_move_insn (gen_rtx_REG (Pmode, PIC_REG),
+				sh_get_fdpic_reg_initial_val ());
 	      emit_insn (gen_tls_initial_exec (tga_op1, tmp));
 	      op1 = tga_op1;
 	      break;
@@ -1903,6 +1935,22 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	  if (opc)
 	    emit_insn (gen_addsi3 (op1, op1, force_reg (SImode, opc)));
 	  operands[1] = op1;
+	}
+    }
+
+  if (SH_OFFSETS_MUST_BE_WITHIN_SECTIONS_P)
+    {
+      rtx base, offset;
+      split_const (operands[1], &base, &offset);
+
+      if (GET_CODE (base) == SYMBOL_REF
+	  && !offset_within_block_p (base, INTVAL (offset)))
+	{
+	  rtx tmp = can_create_pseudo_p () ? gen_reg_rtx (mode) : operands[0];
+	  emit_move_insn (tmp, base);
+	  if (!arith_operand (offset, mode))
+	    offset = force_reg (mode, offset);
+	  emit_insn (gen_add3_insn (operands[0], tmp, offset));
 	}
     }
 }
@@ -3009,6 +3057,24 @@ sh_file_start (void)
     }
 }
 
+/* Implementation of TARGET_ASM_INTEGER for SH.  Pointers to functions
+   need to be output as pointers to function descriptors for
+   FDPIC.  */
+
+static bool
+sh_assemble_integer (rtx value, unsigned int size, int aligned_p)
+{
+  if (TARGET_FDPIC && size == UNITS_PER_WORD
+      && GET_CODE (value) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (value))
+    {
+      fputs ("\t.long\t", asm_out_file);
+      output_addr_const (asm_out_file, value);
+      fputs ("@FUNCDESC\n", asm_out_file);
+      return true;
+    }
+  return default_assemble_integer (value, size, aligned_p);
+}
+
 /* Check if PAT includes UNSPEC_CALLER unspec pattern.  */
 static bool
 unspec_caller_rtx_p (rtx pat)
@@ -3044,6 +3110,17 @@ sh_cannot_copy_insn_p (rtx_insn *insn)
     return false;
 
   pat = PATTERN (insn);
+
+  if (GET_CODE (pat) == CLOBBER || GET_CODE (pat) == USE)
+    return false;
+
+  if (TARGET_FDPIC && GET_CODE (pat) == PARALLEL)
+    {
+      rtx t = XVECEXP (pat, 0, XVECLEN (pat, 0) - 1);
+      if (GET_CODE (t) == USE && unspec_caller_rtx_p (XEXP (t, 0)))
+	return true;
+    }
+
   if (GET_CODE (pat) != SET)
     return false;
   pat = SET_SRC (pat);
@@ -4085,8 +4162,8 @@ expand_ashiftrt (rtx *operands)
   /* Load the value into an arg reg and call a helper.  */
   emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
   sprintf (func, "__ashiftrt_r4_%d", value);
-  function_symbol (wrk, func, SFUNC_STATIC);
-  emit_insn (gen_ashrsi3_n (GEN_INT (value), wrk));
+  rtx lab = function_symbol (wrk, func, SFUNC_STATIC).lab;
+  emit_insn (gen_ashrsi3_n (GEN_INT (value), wrk, lab));
   emit_move_insn (operands[0], gen_rtx_REG (SImode, 4));
   return true;
 }
@@ -7937,7 +8014,8 @@ sh_expand_prologue (void)
       stack_usage += d;
     }
 
-  if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
+  if (flag_pic && !TARGET_FDPIC
+      && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
     emit_insn (gen_GOTaddr2picreg (const0_rtx));
 
   if (SHMEDIA_REGS_STACK_ADJUST ())
@@ -10438,7 +10516,9 @@ nonpic_symbol_mentioned_p (rtx x)
 	  || XINT (x, 1) == UNSPEC_PLT
 	  || XINT (x, 1) == UNSPEC_PCREL
 	  || XINT (x, 1) == UNSPEC_SYMOFF
-	  || XINT (x, 1) == UNSPEC_PCREL_SYMOFF))
+	  || XINT (x, 1) == UNSPEC_PCREL_SYMOFF
+	  || XINT (x, 1) == UNSPEC_GOTFUNCDESC
+	  || XINT (x, 1) == UNSPEC_GOTOFFFUNCDESC))
     return false;
 
   fmt = GET_RTX_FORMAT (GET_CODE (x));
@@ -10473,7 +10553,26 @@ legitimize_pic_address (rtx orig, machine_mode mode ATTRIBUTE_UNUSED,
       if (reg == NULL_RTX)
 	reg = gen_reg_rtx (Pmode);
 
-      emit_insn (gen_symGOTOFF2reg (reg, orig));
+      if (TARGET_FDPIC
+	  && GET_CODE (orig) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (orig))
+	{
+	  /* Weak functions may be NULL which doesn't work with
+	     GOTOFFFUNCDESC because the runtime offset is not known.  */
+	  if (SYMBOL_REF_WEAK (orig))
+	    emit_insn (gen_symGOTFUNCDESC2reg (reg, orig));
+	  else
+	    emit_insn (gen_symGOTOFFFUNCDESC2reg (reg, orig));
+	}
+      else if (TARGET_FDPIC
+	       && (GET_CODE (orig) == LABEL_REF
+		   || (GET_CODE (orig) == SYMBOL_REF && SYMBOL_REF_DECL (orig)
+		       && (TREE_READONLY (SYMBOL_REF_DECL (orig))
+			   || SYMBOL_REF_EXTERNAL_P (orig)
+			   || DECL_SECTION_NAME(SYMBOL_REF_DECL (orig))))))
+	/* In FDPIC, GOTOFF can only be used for writable data.  */
+	emit_insn (gen_symGOT2reg (reg, orig));
+      else
+	emit_insn (gen_symGOTOFF2reg (reg, orig));
       return reg;
     }
   else if (GET_CODE (orig) == SYMBOL_REF)
@@ -10481,7 +10580,10 @@ legitimize_pic_address (rtx orig, machine_mode mode ATTRIBUTE_UNUSED,
       if (reg == NULL_RTX)
 	reg = gen_reg_rtx (Pmode);
 
-      emit_insn (gen_symGOT2reg (reg, orig));
+      if (TARGET_FDPIC && SYMBOL_REF_FUNCTION_P (orig))
+	emit_insn (gen_symGOTFUNCDESC2reg (reg, orig));
+      else
+	emit_insn (gen_symGOT2reg (reg, orig));
       return reg;
     }
   return orig;
@@ -11519,8 +11621,39 @@ sh_ms_bitfield_layout_p (const_tree record_type ATTRIBUTE_UNUSED)
    5 0008 00000000 	l1:  	.long   area
    6 000c 00000000 	l2:	.long   function
 
+   FDPIC needs a form that includes a function descriptor and
+   code to load the GOT register:
+   0 0000 00000000		.long	l0
+   1 0004 00000000		.long	gotval
+   2 0008 D302    	l0:	mov.l	l1,r3
+   3 000a D203    		mov.l	l2,r2
+   4 000c 6122    		mov.l	@r2,r1
+   5 000e 5C21    		mov.l	@(4,r2),r12
+   6 0010 412B    		jmp	@r1
+   7 0012 0009    		nop
+   8 0014 00000000	l1:	.long	area
+   9 0018 00000000	l2:	.long	function
+
    SH5 (compact) uses r1 instead of r3 for the static chain.  */
 
+/* Emit insns to store a value at memory address + offset.  */
+static void
+sh_emit_storesi (rtx addr, HOST_WIDE_INT offset, rtx value)
+{
+  gcc_assert ((offset & 3) == 0);
+  emit_move_insn (offset == 0
+		  ? change_address (addr, SImode, NULL_RTX)
+		  : adjust_address (addr, SImode, offset), value);
+}
+
+/* Emit insns to store w0 at addr + offset and w1 at addr + offset + 2.  */
+static void
+sh_emit_storehi (rtx addr, HOST_WIDE_INT offset, uint16_t w0, uint16_t w1)
+{
+  sh_emit_storesi (addr, offset, gen_int_mode (TARGET_LITTLE_ENDIAN
+					       ? (w0 | (w1 << 16))
+					       : (w1 | (w0 << 16)), SImode));
+}
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
@@ -11655,20 +11788,34 @@ sh_trampoline_init (rtx tramp_mem, tree fndecl, rtx cxt)
       emit_insn (gen_initialize_trampoline (tramp, cxt, fnaddr));
       return;
     }
-  emit_move_insn (change_address (tramp_mem, SImode, NULL_RTX),
-		  gen_int_mode (TARGET_LITTLE_ENDIAN ? 0xd301d202 : 0xd202d301,
-				SImode));
-  emit_move_insn (adjust_address (tramp_mem, SImode, 4),
-		  gen_int_mode (TARGET_LITTLE_ENDIAN ? 0x0009422b : 0x422b0009,
-				SImode));
-  emit_move_insn (adjust_address (tramp_mem, SImode, 8), cxt);
-  emit_move_insn (adjust_address (tramp_mem, SImode, 12), fnaddr);
+  if (TARGET_FDPIC)
+    {
+      rtx a = force_reg (Pmode, plus_constant (Pmode, XEXP (tramp_mem, 0), 8));
+
+      sh_emit_storesi (tramp_mem, 0, a);
+      sh_emit_storesi (tramp_mem, 4, sh_get_fdpic_reg_initial_val ());
+
+      sh_emit_storehi (tramp_mem,  8, 0xd302, 0xd203);
+      sh_emit_storehi (tramp_mem, 12, 0x6122, 0x5c21);
+      sh_emit_storehi (tramp_mem, 16, 0x412b, 0x0009);
+
+      sh_emit_storesi (tramp_mem, 20, cxt);
+      sh_emit_storesi (tramp_mem, 24, fnaddr);
+    }
+  else
+    {
+      sh_emit_storehi (tramp_mem, 0, 0xd202, 0xd301);
+      sh_emit_storehi (tramp_mem, 4, 0x422b, 0x0009);
+
+      sh_emit_storesi (tramp_mem,  8, cxt);
+      sh_emit_storesi (tramp_mem, 12, fnaddr);
+    }
   if (TARGET_HARD_SH4 || TARGET_SH5)
     {
       if (!TARGET_INLINE_IC_INVALIDATE
 	  || (!(TARGET_SH4A || TARGET_SH4_300) && TARGET_USERMODE))
 	emit_library_call (function_symbol (NULL, "__ic_invalidate",
-					    FUNCTION_ORDINARY),
+					    FUNCTION_ORDINARY).sym,
 			   LCT_NORMAL, VOIDmode, 1, tramp, SImode);
       else
 	emit_insn (gen_ic_invalidate_line (tramp));
@@ -11698,7 +11845,7 @@ sh_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 	  && (! TARGET_SHCOMPACT
 	      || crtl->args.info.stack_regs == 0)
 	  && ! sh_cfun_interrupt_handler_p ()
-	  && (! flag_pic
+	  && (! flag_pic || TARGET_FDPIC
 	      || (decl && ! (TREE_PUBLIC (decl) || DECL_WEAK (decl)))
 	      || (decl && DECL_VISIBILITY (decl) != VISIBILITY_DEFAULT)));
 }
@@ -11712,7 +11859,7 @@ sh_expand_sym_label2reg (rtx reg, rtx sym, rtx lab, bool sibcall_p)
 
   if (!is_weak && SYMBOL_REF_LOCAL_P (sym))
     emit_insn (gen_sym_label2reg (reg, sym, lab));
-  else if (sibcall_p)
+  else if (sibcall_p && SYMBOL_REF_LOCAL_P (sym))
     emit_insn (gen_symPCREL_label2reg (reg, sym, lab));
   else
     emit_insn (gen_symPLT_label2reg (reg, sym, lab));
@@ -12715,8 +12862,16 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 #endif
   if (TARGET_SH2 && flag_pic)
     {
-      sibcall = gen_sibcall_pcrel (funexp, const0_rtx);
-      XEXP (XVECEXP (sibcall, 0, 2), 0) = scratch2;
+      if (TARGET_FDPIC)
+	{
+	  sibcall = gen_sibcall_pcrel_fdpic (funexp, const0_rtx);
+	  XEXP (XVECEXP (sibcall, 0, 3), 0) = scratch2;
+	}
+      else
+	{
+	  sibcall = gen_sibcall_pcrel (funexp, const0_rtx);
+	  XEXP (XVECEXP (sibcall, 0, 2), 0) = scratch2;
+	}
     }
   else
     {
@@ -12757,17 +12912,25 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   epilogue_completed = 0;
 }
 
-rtx
-function_symbol (rtx target, const char *name, enum sh_function_kind kind)
-{
-  rtx sym;
+/* Return an RTX pair for the address and call site label of a function
+   NAME of kind KIND, placing the result in TARGET if not NULL.  For
+   SFUNC_STATIC, if FDPIC, the LAB member of result will be set to
+   (const_int 0) if jsr should be used, or a label_ref if bsrf should
+   be used.  For FDPIC, both SFUNC_GOT and SFUNC_STATIC will return the
+   address of the function itself, not a function descriptor, so they
+   can only be used with functions not using the FDPIC register that
+   are known to be called directory without a PLT entry.  */
 
+function_symbol_result
+function_symbol (rtx target, const char *name, sh_function_kind kind)
+{
   /* If this is not an ordinary function, the name usually comes from a
      string literal or an sprintf buffer.  Make sure we use the same
      string consistently, so that cse will be able to unify address loads.  */
   if (kind != FUNCTION_ORDINARY)
     name = IDENTIFIER_POINTER (get_identifier (name));
-  sym = gen_rtx_SYMBOL_REF (Pmode, name);
+  rtx sym = gen_rtx_SYMBOL_REF (Pmode, name);
+  rtx lab = const0_rtx;
   SYMBOL_REF_FLAGS (sym) = SYMBOL_FLAG_FUNCTION;
   if (flag_pic)
     switch (kind)
@@ -12784,14 +12947,25 @@ function_symbol (rtx target, const char *name, enum sh_function_kind kind)
 	}
       case SFUNC_STATIC:
 	{
-	  /* ??? To allow cse to work, we use GOTOFF relocations.
-	     We could add combiner patterns to transform this into
-	     straight pc-relative calls with sym2PIC / bsrf when
-	     label load and function call are still 1:1 and in the
-	     same basic block during combine.  */
 	  rtx reg = target ? target : gen_reg_rtx (Pmode);
 
-	  emit_insn (gen_symGOTOFF2reg (reg, sym));
+	  if (TARGET_FDPIC)
+	    {
+	      /* We use PC-relative calls, since GOTOFF can only refer
+		 to writable data.  This works along with sh_sfunc_call.  */
+ 	      lab = PATTERN (gen_call_site ());
+	      emit_insn (gen_sym_label2reg (reg, sym, lab));
+	    }
+	  else
+	    {
+	      /* ??? To allow cse to work, we use GOTOFF relocations.
+		 we could add combiner patterns to transform this into
+		 straight pc-relative calls with sym2PIC / bsrf when
+		 label load and function call are still 1:1 and in the
+		 same basic block during combine.  */
+	      emit_insn (gen_symGOTOFF2reg (reg, sym));
+	    }
+
 	  sym = reg;
 	  break;
 	}
@@ -12799,9 +12973,9 @@ function_symbol (rtx target, const char *name, enum sh_function_kind kind)
   if (target && sym != target)
     {
       emit_move_insn (target, sym);
-      return target;
+      return function_symbol_result (target, lab);
     }
-  return sym;
+  return function_symbol_result (sym, lab);
 }
 
 /* Find the number of a general purpose register in S.  */
@@ -13414,6 +13588,12 @@ sh_conditional_register_usage (void)
       fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
       call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
     }
+  if (TARGET_FDPIC)
+    {
+      fixed_regs[PIC_REG] = 1;
+      call_used_regs[PIC_REG] = 1;
+      call_really_used_regs[PIC_REG] = 1;
+    }
   /* Renesas saves and restores mac registers on call.  */
   if (TARGET_HITACHI && ! TARGET_NOMACSAVE)
     {
@@ -13442,14 +13622,32 @@ sh_conditional_register_usage (void)
 static bool
 sh_legitimate_constant_p (machine_mode mode, rtx x)
 {
-  return (TARGET_SHMEDIA
-	  ? ((mode != DFmode && GET_MODE_CLASS (mode) != MODE_VECTOR_FLOAT)
-	     || x == CONST0_RTX (mode)
-	     || !TARGET_SHMEDIA_FPU
-	     || TARGET_SHMEDIA64)
-	  : (GET_CODE (x) != CONST_DOUBLE
-	     || mode == DFmode || mode == SFmode
-	     || mode == DImode || GET_MODE (x) == VOIDmode));
+  if (SH_OFFSETS_MUST_BE_WITHIN_SECTIONS_P)
+    {
+      rtx base, offset;
+      split_const (x, &base, &offset);
+
+      if (GET_CODE (base) == SYMBOL_REF
+	  && !offset_within_block_p (base, INTVAL (offset)))
+       return false;
+    }
+
+  if (TARGET_FDPIC
+      && (SYMBOLIC_CONST_P (x)
+	  || (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
+	      && SYMBOLIC_CONST_P (XEXP (XEXP (x, 0), 0)))))
+    return false;
+
+  if (TARGET_SHMEDIA
+      && ((mode != DFmode && GET_MODE_CLASS (mode) != MODE_VECTOR_FLOAT)
+	  || x == CONST0_RTX (mode)
+	  || !TARGET_SHMEDIA_FPU
+	  || TARGET_SHMEDIA64))
+    return false;
+
+  return GET_CODE (x) != CONST_DOUBLE
+	 || mode == DFmode || mode == SFmode
+	 || mode == DImode || GET_MODE (x) == VOIDmode;
 }
 
 enum sh_divide_strategy_e sh_div_strategy = SH_DIV_STRATEGY_DEFAULT;
@@ -14538,6 +14736,43 @@ sh_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 	return default_use_by_pieces_infrastructure_p (size, align,
 						       op, speed_p);
     }
+}
+
+bool
+sh_cannot_force_const_mem_p (machine_mode mode ATTRIBUTE_UNUSED,
+			     rtx x ATTRIBUTE_UNUSED)
+{
+  return TARGET_FDPIC;
+}
+
+/* Emit insns to load the function address from FUNCDESC (an FDPIC
+   function descriptor) into r1 and the GOT address into r12,
+   returning an rtx for r1.  */
+
+rtx
+sh_load_function_descriptor (rtx funcdesc)
+{
+  rtx r1 = gen_rtx_REG (Pmode, R1_REG);
+  rtx pic_reg = gen_rtx_REG (Pmode, PIC_REG);
+  rtx fnaddr = gen_rtx_MEM (Pmode, funcdesc);
+  rtx gotaddr = gen_rtx_MEM (Pmode, plus_constant (Pmode, funcdesc, 4));
+
+  emit_move_insn (r1, fnaddr);
+  /* The ABI requires the entry point address to be loaded first, so
+     prevent the load from being moved after that of the GOT
+     address.  */
+  emit_insn (gen_blockage ());
+  emit_move_insn (pic_reg, gotaddr);
+  return r1;
+}
+
+/* Return an rtx holding the initial value of the FDPIC register (the
+   FDPIC pointer passed in from the caller).  */
+
+rtx
+sh_get_fdpic_reg_initial_val (void)
+{
+  return get_hard_reg_initial_val (Pmode, PIC_REG);
 }
 
 #include "gt-sh.h"

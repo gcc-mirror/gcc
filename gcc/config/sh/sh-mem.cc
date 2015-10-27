@@ -108,29 +108,30 @@ expand_block_move (rtx *operands)
 	  rtx r4 = gen_rtx_REG (SImode, 4);
 	  rtx r5 = gen_rtx_REG (SImode, 5);
 
-	  function_symbol (func_addr_rtx, "__movmemSI12_i4", SFUNC_STATIC);
+	  rtx lab = function_symbol (func_addr_rtx, "__movmemSI12_i4",
+				     SFUNC_STATIC).lab;
 	  force_into (XEXP (operands[0], 0), r4);
 	  force_into (XEXP (operands[1], 0), r5);
-	  emit_insn (gen_block_move_real_i4 (func_addr_rtx));
+	  emit_insn (gen_block_move_real_i4 (func_addr_rtx, lab));
 	  return true;
 	}
       else if (! optimize_size)
 	{
-	  const char *entry_name;
 	  rtx func_addr_rtx = gen_reg_rtx (Pmode);
-	  int dwords;
 	  rtx r4 = gen_rtx_REG (SImode, 4);
 	  rtx r5 = gen_rtx_REG (SImode, 5);
 	  rtx r6 = gen_rtx_REG (SImode, 6);
 
-	  entry_name = (bytes & 4 ? "__movmem_i4_odd" : "__movmem_i4_even");
-	  function_symbol (func_addr_rtx, entry_name, SFUNC_STATIC);
+	  rtx lab = function_symbol (func_addr_rtx, bytes & 4
+						    ? "__movmem_i4_odd"
+						    : "__movmem_i4_even",
+				     SFUNC_STATIC).lab;
 	  force_into (XEXP (operands[0], 0), r4);
 	  force_into (XEXP (operands[1], 0), r5);
 
-	  dwords = bytes >> 3;
+	  int dwords = bytes >> 3;
 	  emit_insn (gen_move_insn (r6, GEN_INT (dwords - 1)));
-	  emit_insn (gen_block_lump_real_i4 (func_addr_rtx));
+	  emit_insn (gen_block_lump_real_i4 (func_addr_rtx, lab));
 	  return true;
 	}
       else
@@ -144,10 +145,10 @@ expand_block_move (rtx *operands)
       rtx r5 = gen_rtx_REG (SImode, 5);
 
       sprintf (entry, "__movmemSI%d", bytes);
-      function_symbol (func_addr_rtx, entry, SFUNC_STATIC);
+      rtx lab = function_symbol (func_addr_rtx, entry, SFUNC_STATIC).lab;
       force_into (XEXP (operands[0], 0), r4);
       force_into (XEXP (operands[1], 0), r5);
-      emit_insn (gen_block_move_real (func_addr_rtx));
+      emit_insn (gen_block_move_real (func_addr_rtx, lab));
       return true;
     }
 
@@ -161,7 +162,7 @@ expand_block_move (rtx *operands)
       rtx r5 = gen_rtx_REG (SImode, 5);
       rtx r6 = gen_rtx_REG (SImode, 6);
 
-      function_symbol (func_addr_rtx, "__movmem", SFUNC_STATIC);
+      rtx lab = function_symbol (func_addr_rtx, "__movmem", SFUNC_STATIC).lab;
       force_into (XEXP (operands[0], 0), r4);
       force_into (XEXP (operands[1], 0), r5);
 
@@ -174,7 +175,7 @@ expand_block_move (rtx *operands)
       final_switch = 16 - ((bytes / 4) % 16);
       while_loop = ((bytes / 4) / 16 - 1) * 16;
       emit_insn (gen_move_insn (r6, GEN_INT (while_loop + final_switch)));
-      emit_insn (gen_block_lump_real (func_addr_rtx));
+      emit_insn (gen_block_lump_real (func_addr_rtx, lab));
       return true;
     }
 

@@ -260,6 +260,10 @@ mdivsi3_libfunc=
 Target RejectNegative Joined Var(sh_divsi3_libfunc) Init("")
 Specify name for 32 bit signed division function.
 
+mfdpic
+Target Report Var(TARGET_FDPIC) Init(0)
+Generate ELF FDPIC code
+
 mfmovd
 Target RejectNegative Mask(FMOVD)
 Enable the use of 64-bit floating point registers in fmov instructions.  See -mdalign if 64-bit alignment is required.

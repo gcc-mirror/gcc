@@ -1102,6 +1102,33 @@ extern UDItype __umulsidi3 (USItype, USItype);
 /* This is the same algorithm as __udiv_qrnnd_c.  */
 #define UDIV_NEEDS_NORMALIZATION 1
 
+#ifdef __FDPIC__
+/* FDPIC needs a special version of the asm fragment to extract the
+   code address from the function descriptor. __udiv_qrnnd_16 is
+   assumed to be local and not to use the GOT, so loading r12 is
+   not needed. */
+#define udiv_qrnnd(q, r, n1, n0, d) \
+  do {									\
+    extern UWtype __udiv_qrnnd_16 (UWtype, UWtype)			\
+			__attribute__ ((visibility ("hidden")));	\
+    /* r0: rn r1: qn */ /* r0: n1 r4: n0 r5: d r6: d1 */ /* r2: __m */	\
+    __asm__ (								\
+	"mov%M4	%4,r5\n"						\
+"	swap.w	%3,r4\n"						\
+"	swap.w	r5,r6\n"						\
+"	mov.l	@%5,r2\n"						\
+"	jsr	@r2\n"							\
+"	shll16	r6\n"							\
+"	swap.w	r4,r4\n"						\
+"	mov.l	@%5,r2\n"						\
+"	jsr	@r2\n"							\
+"	swap.w	r1,%0\n"						\
+"	or	r1,%0"							\
+	: "=r" (q), "=&z" (r)						\
+	: "1" (n1), "r" (n0), "rm" (d), "r" (&__udiv_qrnnd_16)		\
+	: "r1", "r2", "r4", "r5", "r6", "pr", "t");			\
+  } while (0)
+#else
 #define udiv_qrnnd(q, r, n1, n0, d) \
   do {									\
     extern UWtype __udiv_qrnnd_16 (UWtype, UWtype)			\
@@ -1121,6 +1148,7 @@ extern UDItype __umulsidi3 (USItype, USItype);
 	: "1" (n1), "r" (n0), "rm" (d), "r" (&__udiv_qrnnd_16)		\
 	: "r1", "r2", "r4", "r5", "r6", "pr", "t");			\
   } while (0)
+#endif /* __FDPIC__  */
 
 #define UDIV_TIME 80
 

@@ -67,7 +67,8 @@ along with GCC; see the file COPYING3.  If not see
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
 
 #undef SUBTARGET_LINK_EMUL_SUFFIX
-#define SUBTARGET_LINK_EMUL_SUFFIX "_linux"
+#define SUBTARGET_LINK_EMUL_SUFFIX "%{mfdpic:_fd;:_linux}"
+
 #undef SUBTARGET_LINK_SPEC
 #define SUBTARGET_LINK_SPEC \
   "%{shared:-shared} \

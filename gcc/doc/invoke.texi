@@ -21244,6 +21244,10 @@ in effect.
 Prefer zero-displacement conditional branches for conditional move instruction
 patterns.  This can result in faster code on the SH4 processor.
 
+@item -mfdpic
+@opindex fdpic
+Generate code using the FDPIC ABI.
+
 @end table
 
 @node Solaris 2 Options

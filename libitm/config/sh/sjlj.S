@@ -58,9 +58,6 @@ _ITM_beginTransaction:
 	jsr	@r1
 	 mov	r15, r5
 #else
-	mova	.Lgot, r0
-	mov.l	.Lgot, r12
-	add	r0, r12
 	mov.l	.Lbegin, r1
 	bsrf	r1
 	 mov	r15, r5
@@ -79,14 +76,12 @@ _ITM_beginTransaction:
 	 nop
 	cfi_endproc
 
-        .align  2
-.Lgot:
-	.long	_GLOBAL_OFFSET_TABLE_
+	.align  2
 .Lbegin:
 #if defined HAVE_ATTRIBUTE_VISIBILITY || !defined __PIC__
 	.long	GTM_begin_transaction
 #else
-	.long	GTM_begin_transaction@PLT-(.Lbegin0-.)
+	.long	GTM_begin_transaction@PCREL-(.Lbegin0-.)
 #endif
 	.size	_ITM_beginTransaction, . - _ITM_beginTransaction
 

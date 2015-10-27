@@ -1810,6 +1810,9 @@ When neither of these configure options are used, the default will be
 128-bit @code{long double} when built against GNU C Library 2.4 and later,
 64-bit @code{long double} otherwise.
 
+@item --enable-fdpic
+On SH Linux systems, generate ELF FDPIC code.
+
 @item --with-gmp=@var{pathname}
 @itemx --with-gmp-include=@var{pathname}
 @itemx --with-gmp-lib=@var{pathname}
