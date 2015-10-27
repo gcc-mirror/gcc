@@ -1,5 +1,11 @@
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* fold-const.c (fold_minmax): Delete.
+	(fold_binary_loc): Don't call it.
+	* match.pd: Add rules previously handled by fold_minmax.
+
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_fma): Remove constant handling.
 	(fold_builtin_3): Handle constant fma arguments here.
 
