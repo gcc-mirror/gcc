@@ -203,18 +203,6 @@ prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
 	       && targetm.small_register_classes_for_mode_p (FUNCTION_MODE))
 	      ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
 	      : memory_address (FUNCTION_MODE, funexp));
-  else if (flag_pic
-	   && fndecl_or_type
-	   && TREE_CODE (fndecl_or_type) == FUNCTION_DECL
-	   && (!flag_plt
-	       || lookup_attribute ("noplt", DECL_ATTRIBUTES (fndecl_or_type)))
-	   && !targetm.binds_local_p (fndecl_or_type))
-    {
-      /* This is done only for PIC code.  There is no easy interface to force the
-	 function address into GOT for non-PIC case.  non-PIC case needs to be
-	 handled specially by the backend.  */
-      funexp = force_reg (Pmode, funexp);
-    }
   else if (! sibcallp)
     {
       if (!NO_FUNCTION_CSE && optimize && ! flag_no_function_cse)
