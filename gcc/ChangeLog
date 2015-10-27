@@ -1,5 +1,13 @@
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_logb): Rename to...
+	(fold_const_builtin_logb): ...this and remove STRIP_NOPS call.
+	(fold_builtin_significand): Rename to...
+	(fold_const_builtin_significand): ...this and remove STRIP_NOPS call.
+	(fold_builtin_1): Update accordingly.
+
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_fmin_fmax): Delete.
 	(fold_builtin_2): Handle constant fmin and fmax arguments here.
 	* match.pd: Add rules previously handled by fold_builtin_fmin_fmax.

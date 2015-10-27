@@ -7916,12 +7916,10 @@ fold_builtin_carg (location_t loc, tree arg, tree type)
 /* Fold a call to builtin logb/ilogb.  */
 
 static tree
-fold_builtin_logb (location_t loc, tree arg, tree rettype)
+fold_const_builtin_logb (location_t loc, tree arg, tree rettype)
 {
   if (! validate_arg (arg, REAL_TYPE))
     return NULL_TREE;
-
-  STRIP_NOPS (arg);
 
   if (TREE_CODE (arg) == REAL_CST && ! TREE_OVERFLOW (arg))
     {
@@ -7967,12 +7965,10 @@ fold_builtin_logb (location_t loc, tree arg, tree rettype)
 /* Fold a call to builtin significand, if radix == 2.  */
 
 static tree
-fold_builtin_significand (location_t loc, tree arg, tree rettype)
+fold_const_builtin_significand (location_t loc, tree arg, tree rettype)
 {
   if (! validate_arg (arg, REAL_TYPE))
     return NULL_TREE;
-
-  STRIP_NOPS (arg);
 
   if (TREE_CODE (arg) == REAL_CST && ! TREE_OVERFLOW (arg))
     {
@@ -9002,11 +8998,11 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
       break;
 
     CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
-      return fold_builtin_significand (loc, arg0, type);
+      return fold_const_builtin_significand (loc, arg0, type);
 
     CASE_FLT_FN (BUILT_IN_ILOGB):
     CASE_FLT_FN (BUILT_IN_LOGB):
-      return fold_builtin_logb (loc, arg0, type);
+      return fold_const_builtin_logb (loc, arg0, type);
 
     case BUILT_IN_ISASCII:
       return fold_builtin_isascii (loc, arg0);
