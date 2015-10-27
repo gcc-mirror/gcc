@@ -1,3 +1,21 @@
+2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR c/64765
+	PR c/64880
+	* cp-tree.h (finish_oacc_kernels, finish_oacc_parallel): Don't
+	declare functions.
+	(finish_omp_construct): Declare function.
+	* parser.c (cp_parser_oacc_loop): Add p_name, mask, cclauses
+	formal parameters, and handle these.  Adjust all users.
+	(cp_parser_oacc_kernels, cp_parser_oacc_parallel): Merge functions
+	into...
+	(cp_parser_oacc_kernels_parallel): ... this new function.  Adjust
+	all users.
+	* semantics.c (finish_oacc_kernels, finish_oacc_parallel): Merge functions into...
+	(finish_omp_construct): ... this new function.
+
 2015-10-25  Jason Merrill  <jason@redhat.com>
 
 	DR 2179

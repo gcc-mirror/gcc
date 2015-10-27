@@ -34298,8 +34298,49 @@ cp_parser_oacc_enter_exit_data (cp_parser *parser, cp_token *pragma_tok,
 }
 
 /* OpenACC 2.0:
-   # pragma acc kernels oacc-kernels-clause[optseq] new-line
+   # pragma acc loop oacc-loop-clause[optseq] new-line
      structured-block  */
+
+#define OACC_LOOP_CLAUSE_MASK						\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COLLAPSE)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION) )
+
+static tree
+cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
+		     omp_clause_mask mask, tree *cclauses)
+{
+  strcat (p_name, " loop");
+  mask |= OACC_LOOP_CLAUSE_MASK;
+
+  tree clauses = cp_parser_oacc_all_clauses (parser, mask, p_name, pragma_tok,
+					     cclauses == NULL);
+  if (cclauses)
+    {
+      clauses = c_oacc_split_loop_clauses (clauses, cclauses);
+      if (*cclauses)
+	finish_omp_clauses (*cclauses, false);
+      if (clauses)
+	finish_omp_clauses (clauses, false);
+    }
+
+  tree block = begin_omp_structured_block ();
+  int save = cp_parser_begin_omp_structured_block (parser);
+  tree stmt = cp_parser_omp_for_loop (parser, OACC_LOOP, clauses, NULL);
+  cp_parser_end_omp_structured_block (parser, save);
+  add_stmt (finish_omp_structured_block (block));
+
+  return stmt;
+}
+
+/* OpenACC 2.0:
+   # pragma acc kernels oacc-kernels-clause[optseq] new-line
+     structured-block
+
+   or
+
+   # pragma acc parallel oacc-parallel-clause[optseq] new-line
+     structured-block
+*/
 
 #define OACC_KERNELS_CLAUSE_MASK					\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
@@ -34314,53 +34355,7 @@ cp_parser_oacc_enter_exit_data (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYIN)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYOUT)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_CREATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT))
-
-static tree
-cp_parser_oacc_kernels (cp_parser *parser, cp_token *pragma_tok)
-{
-  tree stmt, clauses, block;
-  unsigned int save;
-
-  clauses = cp_parser_oacc_all_clauses (parser, OACC_KERNELS_CLAUSE_MASK,
-					"#pragma acc kernels", pragma_tok);
-
-  block = begin_omp_parallel ();
-  save = cp_parser_begin_omp_structured_block (parser);
-  cp_parser_statement (parser, NULL_TREE, false, NULL);
-  cp_parser_end_omp_structured_block (parser, save);
-  stmt = finish_oacc_kernels (clauses, block);
-  return stmt;
-}
-
-/* OpenACC 2.0:
-   # pragma acc loop oacc-loop-clause[optseq] new-line
-     structured-block  */
-
-#define OACC_LOOP_CLAUSE_MASK						\
-	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COLLAPSE)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION))
-
-static tree
-cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok)
-{
-  tree stmt, clauses, block;
-  int save;
-
-  clauses = cp_parser_oacc_all_clauses (parser, OACC_LOOP_CLAUSE_MASK,
-					"#pragma acc loop", pragma_tok);
-
-  block = begin_omp_structured_block ();
-  save = cp_parser_begin_omp_structured_block (parser);
-  stmt = cp_parser_omp_for_loop (parser, OACC_LOOP, clauses, NULL);
-  cp_parser_end_omp_structured_block (parser, save);
-  add_stmt (finish_omp_structured_block (block));
-  return stmt;
-}
-
-/* OpenACC 2.0:
-   # pragma acc parallel oacc-parallel-clause[optseq] new-line
-     structured-block  */
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
 #define OACC_PARALLEL_CLAUSE_MASK					\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
@@ -34379,23 +34374,53 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_CREATE)   \
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)       \
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
 static tree
-cp_parser_oacc_parallel (cp_parser *parser, cp_token *pragma_tok)
+cp_parser_oacc_kernels_parallel (cp_parser *parser, cp_token *pragma_tok,
+				 char *p_name)
 {
-  tree stmt, clauses, block;
-  unsigned int save;
+  omp_clause_mask mask;
+  enum tree_code code;
+  switch (pragma_tok->pragma_kind)
+    {
+    case PRAGMA_OACC_KERNELS:
+      strcat (p_name, " kernels");
+      mask = OACC_KERNELS_CLAUSE_MASK;
+      code = OACC_KERNELS;
+      break;
+    case PRAGMA_OACC_PARALLEL:
+      strcat (p_name, " parallel");
+      mask = OACC_PARALLEL_CLAUSE_MASK;
+      code = OACC_PARALLEL;
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
-  clauses = cp_parser_oacc_all_clauses (parser, OACC_PARALLEL_CLAUSE_MASK,
-					 "#pragma acc parallel", pragma_tok);
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      const char *p
+	= IDENTIFIER_POINTER (cp_lexer_peek_token (parser->lexer)->u.value);
+      if (strcmp (p, "loop") == 0)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  mask |= OACC_LOOP_CLAUSE_MASK;
 
-  block = begin_omp_parallel ();
-  save = cp_parser_begin_omp_structured_block (parser);
+	  tree block = begin_omp_parallel ();
+	  tree clauses;
+	  cp_parser_oacc_loop (parser, pragma_tok, p_name, mask, &clauses);
+	  return finish_omp_construct (code, block, clauses);
+	}
+    }
+
+  tree clauses = cp_parser_oacc_all_clauses (parser, mask, p_name, pragma_tok);
+
+  tree block = begin_omp_parallel ();
+  unsigned int save = cp_parser_begin_omp_structured_block (parser);
   cp_parser_statement (parser, NULL_TREE, false, NULL);
   cp_parser_end_omp_structured_block (parser, save);
-  stmt = finish_oacc_parallel (clauses, block);
-  return stmt;
+  return finish_omp_construct (code, block, clauses);
 }
 
 /* OpenACC 2.0:
@@ -35290,13 +35315,13 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
       stmt = cp_parser_oacc_enter_exit_data (parser, pragma_tok, false);
       break;
     case PRAGMA_OACC_KERNELS:
-      stmt = cp_parser_oacc_kernels (parser, pragma_tok);
+    case PRAGMA_OACC_PARALLEL:
+      strcpy (p_name, "#pragma acc");
+      stmt = cp_parser_oacc_kernels_parallel (parser, pragma_tok, p_name);
       break;
     case PRAGMA_OACC_LOOP:
-      stmt = cp_parser_oacc_loop (parser, pragma_tok);
-      break;
-    case PRAGMA_OACC_PARALLEL:
-      stmt = cp_parser_oacc_parallel (parser, pragma_tok);
+      strcpy (p_name, "#pragma acc");
+      stmt = cp_parser_oacc_loop (parser, pragma_tok, p_name, mask, NULL);
       break;
     case PRAGMA_OACC_UPDATE:
       stmt = cp_parser_oacc_update (parser, pragma_tok);

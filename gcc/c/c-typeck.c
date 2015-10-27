@@ -11481,39 +11481,19 @@ c_expr_to_decl (tree expr, bool *tc ATTRIBUTE_UNUSED, bool *se)
     return expr;
 }
 
-/* Generate OACC_PARALLEL, with CLAUSES and BLOCK as its compound
-   statement.  LOC is the location of the OACC_PARALLEL.  */
+/* Generate OMP construct CODE, with BODY and CLAUSES as its compound
+   statement.  LOC is the location of the construct.  */
 
 tree
-c_finish_oacc_parallel (location_t loc, tree clauses, tree block)
+c_finish_omp_construct (location_t loc, enum tree_code code, tree body,
+			tree clauses)
 {
-  tree stmt;
+  body = c_end_compound_stmt (loc, body, true);
 
-  block = c_end_compound_stmt (loc, block, true);
-
-  stmt = make_node (OACC_PARALLEL);
+  tree stmt = make_node (code);
   TREE_TYPE (stmt) = void_type_node;
-  OACC_PARALLEL_CLAUSES (stmt) = clauses;
-  OACC_PARALLEL_BODY (stmt) = block;
-  SET_EXPR_LOCATION (stmt, loc);
-
-  return add_stmt (stmt);
-}
-
-/* Generate OACC_KERNELS, with CLAUSES and BLOCK as its compound
-   statement.  LOC is the location of the OACC_KERNELS.  */
-
-tree
-c_finish_oacc_kernels (location_t loc, tree clauses, tree block)
-{
-  tree stmt;
-
-  block = c_end_compound_stmt (loc, block, true);
-
-  stmt = make_node (OACC_KERNELS);
-  TREE_TYPE (stmt) = void_type_node;
-  OACC_KERNELS_CLAUSES (stmt) = clauses;
-  OACC_KERNELS_BODY (stmt) = block;
+  OMP_BODY (stmt) = body;
+  OMP_CLAUSES (stmt) = clauses;
   SET_EXPR_LOCATION (stmt, loc);
 
   return add_stmt (stmt);

@@ -3463,10 +3463,6 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
     poplevel (0, 0);
   stmt = build2_loc (input_location, construct_code, void_type_node, stmt,
 		     oacc_clauses);
-  if (code->op == EXEC_OACC_KERNELS_LOOP)
-    OACC_KERNELS_COMBINED (stmt) = 1;
-  else
-    OACC_PARALLEL_COMBINED (stmt) = 1;
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
 }

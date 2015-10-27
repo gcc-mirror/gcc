@@ -1047,14 +1047,14 @@ DEFTREECODE (MEM_REF, "mem_ref", tcc_reference, 2)
    not change the ordering of these codes.  */
 
 /* OpenACC - #pragma acc parallel [clause1 ... clauseN]
-   Operand 0: OACC_PARALLEL_BODY: Code to be executed in parallel.
-   Operand 1: OACC_PARALLEL_CLAUSES: List of clauses.  */
+   Operand 0: OMP_BODY: Code to be executed in parallel.
+   Operand 1: OMP_CLAUSES: List of clauses.  */
 
 DEFTREECODE (OACC_PARALLEL, "oacc_parallel", tcc_statement, 2)
 
 /* OpenACC - #pragma acc kernels [clause1 ... clauseN]
-   Operand 0: OACC_KERNELS_BODY: Sequence of kernels.
-   Operand 1: OACC_KERNELS_CLAUSES: List of clauses.  */
+   Operand 0: OMP_BODY: Sequence of kernels.
+   Operand 1: OMP_CLAUSES: List of clauses.  */
 
 DEFTREECODE (OACC_KERNELS, "oacc_kernels", tcc_statement, 2)
 

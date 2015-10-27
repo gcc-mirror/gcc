@@ -7106,8 +7106,17 @@ finish_omp_structured_block (tree block)
   return do_poplevel (block);
 }
 
+/* Similarly, except force the retention of the BLOCK.  */
+
+tree
+begin_omp_parallel (void)
+{
+  keep_next_level (true);
+  return begin_omp_structured_block ();
+}
+
 /* Generate OACC_DATA, with CLAUSES and BLOCK as its compound
-   statement.  LOC is the location of the OACC_DATA.  */
+   statement.  */
 
 tree
 finish_oacc_data (tree clauses, tree block)
@@ -7124,49 +7133,20 @@ finish_oacc_data (tree clauses, tree block)
   return add_stmt (stmt);
 }
 
-/* Generate OACC_KERNELS, with CLAUSES and BLOCK as its compound
-   statement.  LOC is the location of the OACC_KERNELS.  */
+/* Generate OMP construct CODE, with BODY and CLAUSES as its compound
+   statement.  */
 
 tree
-finish_oacc_kernels (tree clauses, tree block)
+finish_omp_construct (enum tree_code code, tree body, tree clauses)
 {
-  tree stmt;
+  body = finish_omp_structured_block (body);
 
-  block = finish_omp_structured_block (block);
-
-  stmt = make_node (OACC_KERNELS);
+  tree stmt = make_node (code);
   TREE_TYPE (stmt) = void_type_node;
-  OACC_KERNELS_CLAUSES (stmt) = clauses;
-  OACC_KERNELS_BODY (stmt) = block;
+  OMP_BODY (stmt) = body;
+  OMP_CLAUSES (stmt) = clauses;
 
   return add_stmt (stmt);
-}
-
-/* Generate OACC_PARALLEL, with CLAUSES and BLOCK as its compound
-   statement.  LOC is the location of the OACC_PARALLEL.  */
-
-tree
-finish_oacc_parallel (tree clauses, tree block)
-{
-  tree stmt;
-
-  block = finish_omp_structured_block (block);
-
-  stmt = make_node (OACC_PARALLEL);
-  TREE_TYPE (stmt) = void_type_node;
-  OACC_PARALLEL_CLAUSES (stmt) = clauses;
-  OACC_PARALLEL_BODY (stmt) = block;
-
-  return add_stmt (stmt);
-}
-
-/* Similarly, except force the retention of the BLOCK.  */
-
-tree
-begin_omp_parallel (void)
-{
-  keep_next_level (true);
-  return begin_omp_structured_block ();
 }
 
 tree

@@ -2676,13 +2676,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
 
     case OACC_PARALLEL:
       pp_string (pp, "#pragma acc parallel");
-      dump_omp_clauses (pp, OACC_PARALLEL_CLAUSES (node), spc, flags);
-      goto dump_omp_body;
+      goto dump_omp_clauses_body;
 
     case OACC_KERNELS:
       pp_string (pp, "#pragma acc kernels");
-      dump_omp_clauses (pp, OACC_KERNELS_CLAUSES (node), spc, flags);
-      goto dump_omp_body;
+      goto dump_omp_clauses_body;
 
     case OACC_DATA:
       pp_string (pp, "#pragma acc data");
@@ -2722,6 +2720,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
     case OMP_PARALLEL:
       pp_string (pp, "#pragma omp parallel");
       dump_omp_clauses (pp, OMP_PARALLEL_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
+
+    dump_omp_clauses_body:
+      dump_omp_clauses (pp, OMP_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
 
     dump_omp_body:
       if (!(flags & TDF_SLIM) && OMP_BODY (node))

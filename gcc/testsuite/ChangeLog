@@ -1,3 +1,16 @@
+2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c/64765
+	PR c/64880
+	* c-c++-common/goacc/loop-1.c: Don't skip for C++.  Don't prune
+	sorry message.
+	(PR64765): New function.
+	* gfortran.dg/goacc/coarray_2.f90: XFAIL.
+	* gfortran.dg/goacc/combined_loop.f90: Extend.  Don't prune
+	sorry message.
+	* gfortran.dg/goacc/cray.f95: Refine prune directive.
+	* gfortran.dg/goacc/parameter.f95: Likewise.
+
 2015-10-26  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/66056
