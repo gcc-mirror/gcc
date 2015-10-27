@@ -2902,6 +2902,8 @@ char __gnat_environment_char = '$';
    mode = 1  : In this mode, time stamps and read/write/execute attributes are
                copied.
 
+   mode = 2  : In this mode, only read/write/execute attributes are copied
+
    Returns 0 if operation was successful and -1 in case of error. */
 
 int
@@ -2921,39 +2923,46 @@ __gnat_copy_attribs (char *from ATTRIBUTE_UNUSED, char *to ATTRIBUTE_UNUSED,
   S2WSC (wfrom, from, GNAT_MAX_PATH_LEN + 2);
   S2WSC (wto, to, GNAT_MAX_PATH_LEN + 2);
 
-  /* retrieve from times */
+  /*  Do we need to copy the timestamp ? */
 
-  hfrom = CreateFile
-    (wfrom, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (mode != 2) {
+     /* retrieve from times */
 
-  if (hfrom == INVALID_HANDLE_VALUE)
-    return -1;
+     hfrom = CreateFile
+       (wfrom, GENERIC_READ, 0, NULL, OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL, NULL);
 
-  res = GetFileTime (hfrom, &fct, &flat, &flwt);
+     if (hfrom == INVALID_HANDLE_VALUE)
+       return -1;
 
-  CloseHandle (hfrom);
+     res = GetFileTime (hfrom, &fct, &flat, &flwt);
 
-  if (res == 0)
-    return -1;
+     CloseHandle (hfrom);
 
-  /* retrieve from times */
+     if (res == 0)
+       return -1;
 
-  hto = CreateFile
-    (wto, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+     /* retrieve from times */
 
-  if (hto == INVALID_HANDLE_VALUE)
-    return -1;
+     hto = CreateFile
+       (wto, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL, NULL);
 
-  res = SetFileTime (hto, NULL, &flat, &flwt);
+     if (hto == INVALID_HANDLE_VALUE)
+       return -1;
 
-  CloseHandle (hto);
+     res = SetFileTime (hto, NULL, &flat, &flwt);
 
-  if (res == 0)
-    return -1;
+     CloseHandle (hto);
 
+     if (res == 0)
+       return -1;
+  }
+
+  /* Do we need to copy the permissions ? */
   /* Set file attributes in full mode. */
 
-  if (mode == 1)
+  if (mode != 0)
     {
       DWORD attribs = GetFileAttributes (wfrom);
 
@@ -2971,26 +2980,24 @@ __gnat_copy_attribs (char *from ATTRIBUTE_UNUSED, char *to ATTRIBUTE_UNUSED,
   GNAT_STRUCT_STAT fbuf;
   struct utimbuf tbuf;
 
-  if (GNAT_STAT (from, &fbuf) == -1)
-    {
-      return -1;
-    }
+  if (GNAT_STAT (from, &fbuf) == -1) {
+     return -1;
+  }
 
-  tbuf.actime = fbuf.st_atime;
-  tbuf.modtime = fbuf.st_mtime;
+  /* Do we need to copy timestamp ? */
+  if (mode != 2) {
+     tbuf.actime = fbuf.st_atime;
+     tbuf.modtime = fbuf.st_mtime;
 
-  if (utime (to, &tbuf) == -1)
-    {
-      return -1;
-    }
+     if (utime (to, &tbuf) == -1) {
+        return -1;
+     }
+  }
 
-  if (mode == 1)
-    {
-      if (chmod (to, fbuf.st_mode) == -1)
-	{
+  /* Do we need to copy file permissions ? */
+  if (mode != 0 && (chmod (to, fbuf.st_mode) == -1)) {
 	  return -1;
-	}
-    }
+  }
 
   return 0;
 #endif

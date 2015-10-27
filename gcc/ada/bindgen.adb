@@ -88,6 +88,12 @@ package body Bindgen is
    --  attach interrupt handlers at the end of the elaboration when partition
    --  elaboration policy is sequential.
 
+   System_BB_CPU_Primitives_Multiprocessors_Used : Boolean := False;
+   --  Flag indicating wether the unit System.BB.CPU_Primitives.Multiprocessors
+   --  is in the closure of the partiation. This is set by procedure
+   --  Resolve_Binder_Options, and it is used to call a procedure that starts
+   --  slave processors.
+
    Lib_Final_Built : Boolean := False;
    --  Flag indicating whether the finalize_library rountine has been built
 
@@ -536,6 +542,13 @@ package body Bindgen is
             WBI ("      procedure Activate_All_Tasks_Sequential;");
             WBI ("      pragma Import (C, Activate_All_Tasks_Sequential," &
                  " ""__gnat_activate_all_tasks"");");
+            WBI ("");
+         end if;
+
+         if System_BB_CPU_Primitives_Multiprocessors_Used then
+            WBI ("      procedure Start_Slave_CPUs;");
+            WBI ("      pragma Import (C, Start_Slave_CPUs," &
+                 " ""__gnat_start_slave_cpus"");");
          end if;
 
          WBI ("   begin");
@@ -942,6 +955,10 @@ package body Bindgen is
          if System_Tasking_Restricted_Stages_Used then
             WBI ("      Activate_All_Tasks_Sequential;");
          end if;
+      end if;
+
+      if System_BB_CPU_Primitives_Multiprocessors_Used then
+         WBI ("      Start_Slave_CPUs;");
       end if;
 
       WBI ("   end " & Ada_Init_Name.all & ";");
@@ -2872,6 +2889,12 @@ package body Bindgen is
          --  Ditto for the use of restrictions
 
          Check_Package (System_Restrictions_Used, "system.restrictions%s");
+
+         --  Ditto for use of an SMP bareboard runtime
+
+         Check_Package (System_BB_CPU_Primitives_Multiprocessors_Used,
+                        "system.bb.cpu_primitives.multiprocessors%s");
+
       end loop;
    end Resolve_Binder_Options;
 

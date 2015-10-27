@@ -1,3 +1,15 @@
+2015-10-27  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb (System_BB_CPU_Primitives_Multiprocessors_Used):
+	New variable.
+	(Gen_Adainit): Call Start_All_CPUs if the above
+	variable is set to true.
+
+2015-10-27  Emmanuel Briot  <briot@adacore.com>
+
+	* adaint.c, s-os_lib.adb, s-os_lib.ads (Copy_File_Attributes): New
+	subprogram.
+
 2015-10-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* namet.adb, namet.ads: Minor reformatting.
