@@ -55,11 +55,13 @@ package body System.OS_Lib is
    pragma Import (C, Dup2, "__gnat_dup2");
 
    function Copy_Attributes
-     (From, To : System.Address;
-      Mode     : Integer) return Integer;
+     (From : System.Address;
+      To   : System.Address;
+      Mode : Integer) return Integer;
    pragma Import (C, Copy_Attributes, "__gnat_copy_attribs");
    --  Mode = 0 - copy only time stamps.
    --  Mode = 1 - copy time stamps and read/write/execute attributes
+   --  Mode = 2 - copy read/write/execute attributes
 
    On_Windows : constant Boolean := Directory_Separator = '\';
    --  An indication that we are on Windows. Used in Normalize_Pathname, to
@@ -324,7 +326,7 @@ package body System.OS_Lib is
       --  Returns pathname Dir concatenated with File adding the directory
       --  separator only if needed.
 
-      procedure Copy (From, To : File_Descriptor);
+      procedure Copy (From : File_Descriptor; To : File_Descriptor);
       --  Read data from From and place them into To. In both cases the
       --  operations uses the current file position. Raises Constraint_Error
       --  if a problem occurs during the copy.
@@ -337,11 +339,6 @@ package body System.OS_Lib is
       ----------------
 
       function Build_Path (Dir : String; File : String) return String is
-         Res : String (1 .. Dir'Length + File'Length + 1);
-
-         Base_File_Ptr : Integer;
-         --  The base file name is File (Base_File_Ptr + 1 .. File'Last)
-
          function Is_Dirsep (C : Character) return Boolean;
          pragma Inline (Is_Dirsep);
          --  Returns True if C is a directory separator. On Windows we
@@ -355,6 +352,13 @@ package body System.OS_Lib is
          begin
             return C = Directory_Separator or else C = '/';
          end Is_Dirsep;
+
+         --  Local variables
+
+         Base_File_Ptr : Integer;
+         --  The base file name is File (Base_File_Ptr + 1 .. File'Last)
+
+         Res : String (1 .. Dir'Length + File'Length + 1);
 
       --  Start of processing for Build_Path
 
@@ -392,7 +396,7 @@ package body System.OS_Lib is
       -- Copy --
       ----------
 
-      procedure Copy (From, To : File_Descriptor) is
+      procedure Copy (From : File_Descriptor; To : File_Descriptor) is
          Buf_Size : constant := 200_000;
          type Buf is array (1 .. Buf_Size) of Character;
          type Buf_Ptr is access Buf;
@@ -490,7 +494,6 @@ package body System.OS_Lib is
          C_To (C_To'Last) := ASCII.NUL;
 
          case Preserve is
-
             when Time_Stamps =>
                if Copy_Attributes (C_From'Address, C_To'Address, 0) = -1 then
                   raise Copy_Error;
@@ -621,11 +624,55 @@ package body System.OS_Lib is
       Free (Ada_Pathname);
    end Copy_File;
 
+   --------------------------
+   -- Copy_File_Attributes --
+   --------------------------
+
+   procedure Copy_File_Attributes
+     (From             : String;
+      To               : String;
+      Success          : out Boolean;
+      Copy_Timestamp   : Boolean := True;
+      Copy_Permissions : Boolean := True)
+   is
+      F    : aliased String (1 .. From'Length + 1);
+      Mode : Integer;
+      T    : aliased String (1 .. To'Length + 1);
+
+   begin
+      if Copy_Timestamp then
+         if Copy_Permissions then
+            Mode := 1;
+         else
+            Mode := 0;
+         end if;
+      else
+         if Copy_Permissions then
+            Mode := 2;
+         else
+            Success := True;
+            return;  --  nothing to do
+         end if;
+      end if;
+
+      F (1 .. From'Length) := From;
+      F (F'Last) := ASCII.NUL;
+
+      T (1 .. To'Length) := To;
+      T (T'Last) := ASCII.NUL;
+
+      Success := Copy_Attributes (F'Address, T'Address, Mode) /= -1;
+   end Copy_File_Attributes;
+
    ----------------------
    -- Copy_Time_Stamps --
    ----------------------
 
-   procedure Copy_Time_Stamps (Source, Dest : String; Success : out Boolean) is
+   procedure Copy_Time_Stamps
+     (Source  : String;
+      Dest    : String;
+      Success : out Boolean)
+   is
    begin
       if Is_Regular_File (Source) and then Is_Writable_File (Dest) then
          declare
@@ -652,8 +699,9 @@ package body System.OS_Lib is
    end Copy_Time_Stamps;
 
    procedure Copy_Time_Stamps
-     (Source, Dest : C_File_Name;
-      Success      : out Boolean)
+     (Source  : C_File_Name;
+      Dest    : C_File_Name;
+      Success : out Boolean)
    is
       Ada_Source : String_Access :=
                      To_Path_String_Access
@@ -726,10 +774,11 @@ package body System.OS_Lib is
    -----------------------------
 
    function Create_Output_Text_File (Name : String) return File_Descriptor is
-      function C_Create_File
-        (Name : C_File_Name) return File_Descriptor;
+      function C_Create_File (Name : C_File_Name) return File_Descriptor;
       pragma Import (C, C_Create_File, "__gnat_create_output_file");
+
       C_Name : String (1 .. Name'Length + 1);
+
    begin
       C_Name (1 .. Name'Length) := Name;
       C_Name (C_Name'Last)      := ASCII.NUL;
@@ -801,10 +850,11 @@ package body System.OS_Lib is
       function Create_New_Output_Text_File
         (Name : String) return File_Descriptor
       is
-         function C_Create_File
-           (Name : C_File_Name) return File_Descriptor;
+         function C_Create_File (Name : C_File_Name) return File_Descriptor;
          pragma Import (C, C_Create_File, "__gnat_create_output_file_new");
+
          C_Name : String (1 .. Name'Length + 1);
+
       begin
          C_Name (1 .. Name'Length) := Name;
          C_Name (C_Name'Last)      := ASCII.NUL;
@@ -1036,9 +1086,9 @@ package body System.OS_Lib is
       procedure Get_Suffix_Ptr (Length, Ptr : Address);
       pragma Import (C, Get_Suffix_Ptr, "__gnat_get_debuggable_suffix_ptr");
 
-      Suffix_Ptr    : Address;
-      Suffix_Length : Integer;
       Result        : String_Access;
+      Suffix_Length : Integer;
+      Suffix_Ptr    : Address;
 
    begin
       Get_Suffix_Ptr (Suffix_Length'Address, Suffix_Ptr'Address);
@@ -1059,9 +1109,9 @@ package body System.OS_Lib is
       procedure Get_Suffix_Ptr (Length, Ptr : Address);
       pragma Import (C, Get_Suffix_Ptr, "__gnat_get_executable_suffix_ptr");
 
-      Suffix_Ptr    : Address;
-      Suffix_Length : Integer;
       Result        : String_Access;
+      Suffix_Length : Integer;
+      Suffix_Ptr    : Address;
 
    begin
       Get_Suffix_Ptr (Suffix_Length'Address, Suffix_Ptr'Address);
@@ -1082,9 +1132,9 @@ package body System.OS_Lib is
       procedure Get_Suffix_Ptr (Length, Ptr : Address);
       pragma Import (C, Get_Suffix_Ptr, "__gnat_get_object_suffix_ptr");
 
-      Suffix_Ptr    : Address;
-      Suffix_Length : Integer;
       Result        : String_Access;
+      Suffix_Length : Integer;
+      Suffix_Ptr    : Address;
 
    begin
       Get_Suffix_Ptr (Suffix_Length'Address, Suffix_Ptr'Address);
@@ -1106,8 +1156,8 @@ package body System.OS_Lib is
       pragma Import
         (C, Target_Exec_Ext_Ptr, "__gnat_target_debuggable_extension");
 
-      Suffix_Length : Integer;
       Result        : String_Access;
+      Suffix_Length : Integer;
 
    begin
       Suffix_Length := Integer (CRTL.strlen (Target_Exec_Ext_Ptr));
@@ -1130,8 +1180,8 @@ package body System.OS_Lib is
       pragma Import
         (C, Target_Exec_Ext_Ptr, "__gnat_target_executable_extension");
 
-      Suffix_Length : Integer;
       Result        : String_Access;
+      Suffix_Length : Integer;
 
    begin
       Suffix_Length := Integer (CRTL.strlen (Target_Exec_Ext_Ptr));
@@ -1154,8 +1204,8 @@ package body System.OS_Lib is
       pragma Import
         (C, Target_Object_Ext_Ptr, "__gnat_target_object_extension");
 
-      Suffix_Length : Integer;
       Result        : String_Access;
+      Suffix_Length : Integer;
 
    begin
       Suffix_Length := Integer (CRTL.strlen (Target_Object_Ext_Ptr));
@@ -1308,7 +1358,13 @@ package body System.OS_Lib is
       Second : out Second_Type)
    is
       procedure To_GM_Time
-        (P_Time_T, P_Year, P_Month, P_Day, P_Hours, P_Mins, P_Secs : Address);
+        (P_Time_T : Address;
+         P_Year   : Address;
+         P_Month  : Address;
+         P_Day    : Address;
+         P_Hours  : Address;
+         P_Mins   : Address;
+         P_Secs   : Address);
       pragma Import (C, To_GM_Time, "__gnat_to_gm_time");
 
       T  : OS_Time := Date;
@@ -1325,8 +1381,13 @@ package body System.OS_Lib is
       Locked_Processing : begin
          SSL.Lock_Task.all;
          To_GM_Time
-           (T'Address, Y'Address, Mo'Address, D'Address,
-            H'Address, Mn'Address, S'Address);
+           (P_Time_T => T'Address,
+            P_Year   => Y'Address,
+            P_Month  => Mo'Address,
+            P_Day    => D'Address,
+            P_Hours  => H'Address,
+            P_Mins   => Mn'Address,
+            P_Secs   => S'Address);
          SSL.Unlock_Task.all;
 
       exception
@@ -1356,12 +1417,26 @@ package body System.OS_Lib is
       Second : Second_Type) return OS_Time
    is
       procedure To_OS_Time
-        (P_Time_T : Address; Year, Month, Day, Hours, Mins, Secs : Integer);
+        (P_Time_T : Address;
+         P_Year   : Integer;
+         P_Month  : Integer;
+         P_Day    : Integer;
+         P_Hours  : Integer;
+         P_Mins   : Integer;
+         P_Secs   : Integer);
       pragma Import (C, To_OS_Time, "__gnat_to_os_time");
+
       Result : OS_Time;
+
    begin
       To_OS_Time
-        (Result'Address, Year - 1900, Month - 1, Day, Hour, Minute, Second);
+        (P_Time_T => Result'Address,
+         P_Year   => Year - 1900,
+         P_Month  => Month - 1,
+         P_Day    => Day,
+         P_Hours  => Hour,
+         P_Mins   => Minute,
+         P_Secs   => Second);
       return Result;
    end GM_Time_Of;
 
@@ -1644,9 +1719,10 @@ package body System.OS_Lib is
      (Program_Name : String;
       Args         : Argument_List) return Process_Id
    is
-      Pid  : Process_Id;
       Junk : Integer;
       pragma Warnings (Off, Junk);
+      Pid  : Process_Id;
+
    begin
       Spawn_Internal (Program_Name, Args, Junk, Pid, Blocking => False);
       return Pid;
@@ -1658,9 +1734,9 @@ package body System.OS_Lib is
       Output_File_Descriptor : File_Descriptor;
       Err_To_Out             : Boolean := True) return Process_Id
    is
-      Saved_Output : File_Descriptor;
-      Saved_Error  : File_Descriptor := Invalid_FD; -- prevent warning
       Pid          : Process_Id;
+      Saved_Error  : File_Descriptor := Invalid_FD; -- prevent warning
+      Saved_Output : File_Descriptor;
 
    begin
       if Output_File_Descriptor = Invalid_FD then
@@ -1717,8 +1793,9 @@ package body System.OS_Lib is
          return Invalid_Pid;
 
       else
-         Result := Non_Blocking_Spawn
-                     (Program_Name, Args, Output_File_Descriptor, Err_To_Out);
+         Result :=
+          Non_Blocking_Spawn
+            (Program_Name, Args, Output_File_Descriptor, Err_To_Out);
 
          --  Close the file just created for the output, as the file descriptor
          --  cannot be used anywhere, being a local value. It is safe to do
@@ -1737,15 +1814,14 @@ package body System.OS_Lib is
       Stdout_File  : String;
       Stderr_File  : String) return Process_Id
    is
-      Stdout_FD : constant File_Descriptor :=
-                     Create_Output_Text_File (Stdout_File);
       Stderr_FD : constant File_Descriptor :=
-                     Create_Output_Text_File (Stderr_File);
+                    Create_Output_Text_File (Stderr_File);
+      Stdout_FD : constant File_Descriptor :=
+                    Create_Output_Text_File (Stdout_File);
 
-      Saved_Output : File_Descriptor;
+      Result       : Process_Id;
       Saved_Error  : File_Descriptor;
-
-      Result : Process_Id;
+      Saved_Output : File_Descriptor;
 
    begin
       --  Do not attempt to spawn if the output files could not be created
@@ -1784,7 +1860,6 @@ package body System.OS_Lib is
    -------------------------
 
    procedure Normalize_Arguments (Args : in out Argument_List) is
-
       procedure Quote_Argument (Arg : in out String_Access);
       --  Add quote around argument if it contains spaces (or HT characters)
 
@@ -1797,9 +1872,9 @@ package body System.OS_Lib is
       --------------------
 
       procedure Quote_Argument (Arg : in out String_Access) is
-         Res          : String (1 .. Arg'Length * 2);
          J            : Positive := 1;
          Quote_Needed : Boolean  := False;
+         Res          : String (1 .. Arg'Length * 2);
 
       begin
          if Arg (Arg'First) /= '"' or else Arg (Arg'Last) /= '"' then
@@ -1896,33 +1971,19 @@ package body System.OS_Lib is
       Resolve_Links  : Boolean := True;
       Case_Sensitive : Boolean := True) return String
    is
-      Max_Path : Integer;
-      pragma Import (C, Max_Path, "__gnat_max_path_len");
-      --  Maximum length of a path name
-
       procedure Get_Current_Dir
         (Dir    : System.Address;
          Length : System.Address);
       pragma Import (C, Get_Current_Dir, "__gnat_get_current_dir");
-
-      Path_Buffer : String (1 .. Max_Path + Max_Path + 2);
-      End_Path    : Natural := 0;
-      Link_Buffer : String (1 .. Max_Path + 2);
-      Status      : Integer;
-      Last        : Positive;
-      Start       : Natural;
-      Finish      : Positive;
-
-      Max_Iterations : constant := 500;
 
       function Get_File_Names_Case_Sensitive return Integer;
       pragma Import
         (C, Get_File_Names_Case_Sensitive,
          "__gnat_get_file_names_case_sensitive");
 
-      Fold_To_Lower_Case : constant Boolean :=
-                             not Case_Sensitive
-                               and then Get_File_Names_Case_Sensitive = 0;
+      Max_Path : Integer;
+      pragma Import (C, Max_Path, "__gnat_max_path_len");
+      --  Maximum length of a path name
 
       function Readlink
         (Path   : System.Address;
@@ -1936,9 +1997,9 @@ package body System.OS_Lib is
         (C, To_Canonical_File_Spec, "__gnat_to_canonical_file_spec");
       --  Convert possible foreign file syntax to canonical form
 
-      The_Name : String (1 .. Name'Length + 1);
-      Canonical_File_Addr : System.Address;
-      Canonical_File_Len  : Integer;
+      Fold_To_Lower_Case : constant Boolean :=
+                             not Case_Sensitive
+                               and then Get_File_Names_Case_Sensitive = 0;
 
       function Final_Value (S : String) return String;
       --  Make final adjustment to the returned string. This function strips
@@ -2051,6 +2112,22 @@ package body System.OS_Lib is
             end;
          end if;
       end Get_Directory;
+
+      --  Local variables
+
+      Max_Iterations : constant := 500;
+
+      Canonical_File_Addr : System.Address;
+      Canonical_File_Len  : Integer;
+
+      End_Path    : Natural := 0;
+      Finish      : Positive;
+      Last        : Positive;
+      Link_Buffer : String (1 .. Max_Path + 2);
+      Path_Buffer : String (1 .. Max_Path + Max_Path + 2);
+      Start       : Natural;
+      Status      : Integer;
+      The_Name    : String (1 .. Name'Length + 1);
 
    --  Start of processing for Normalize_Pathname
 
@@ -2236,15 +2313,12 @@ package body System.OS_Lib is
                if Last = 1 then
                   return (1 => Directory_Separator);
                else
-
                   if Fold_To_Lower_Case then
                      System.Case_Util.To_Lower (Path_Buffer (1 .. Last - 1));
                   end if;
 
                   return Path_Buffer (1 .. Last - 1);
-
                end if;
-
             else
                Path_Buffer (Last + 1 .. End_Path - 2) :=
                  Path_Buffer (Last + 3 .. End_Path);
@@ -2294,9 +2368,11 @@ package body System.OS_Lib is
 
             begin
                Path_Buffer (Finish + 1) := ASCII.NUL;
-               Status := Readlink (Path_Buffer'Address,
-                                   Link_Buffer'Address,
-                                   Link_Buffer'Length);
+               Status :=
+                 Readlink
+                   (Path   => Path_Buffer'Address,
+                    Buf    => Link_Buffer'Address,
+                    Bufsiz => Link_Buffer'Length);
                Path_Buffer (Finish + 1) := Saved;
             end;
 
@@ -2631,9 +2707,10 @@ package body System.OS_Lib is
      (Program_Name : String;
       Args         : Argument_List) return Integer
    is
-      Result : Integer;
       Junk   : Process_Id;
       pragma Warnings (Off, Junk);
+      Result : Integer;
+
    begin
       Spawn_Internal (Program_Name, Args, Result, Junk, Blocking => True);
       return Result;
@@ -2655,8 +2732,8 @@ package body System.OS_Lib is
       Return_Code            : out Integer;
       Err_To_Out             : Boolean := True)
    is
-      Saved_Output : File_Descriptor;
       Saved_Error  : File_Descriptor := Invalid_FD; -- prevent compiler warning
+      Saved_Output : File_Descriptor;
 
    begin
       --  Set standard output and error to the temporary file
@@ -2727,7 +2804,6 @@ package body System.OS_Lib is
       Pid          : out Process_Id;
       Blocking     : Boolean)
    is
-
       procedure Spawn (Args : Argument_List);
       --  Call Spawn with given argument list
 
@@ -2742,8 +2818,8 @@ package body System.OS_Lib is
          type Chars is array (Positive range <>) of aliased Character;
          type Char_Ptr is access constant Character;
 
-         Command_Len  : constant Positive := Program_Name'Length + 1
-                                               + Args_Length (Args);
+         Command_Len  : constant Positive := Program_Name'Length + 1 +
+                                               Args_Length (Args);
          Command_Last : Natural := 0;
          Command      : aliased Chars (1 .. Command_Len);
          --  Command contains all characters of the Program_Name and Args, all
