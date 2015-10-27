@@ -29833,25 +29833,36 @@ vfp3_const_double_for_fract_bits (rtx operand)
   return 0;
 }
 
+/* If X is a CONST_DOUBLE with a value that is a power of 2 whose
+   log2 is in [1, 32], return that log2.  Otherwise return -1.
+   This is used in the patterns for vcvt.s32.f32 floating-point to
+   fixed-point conversions.  */
+
 int
-vfp3_const_double_for_bits (rtx operand)
+vfp3_const_double_for_bits (rtx x)
 {
-  REAL_VALUE_TYPE r0;
+  if (!CONST_DOUBLE_P (x))
+    return -1;
 
-  if (!CONST_DOUBLE_P (operand))
-    return 0;
+  REAL_VALUE_TYPE r;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r0, operand);
-  if (exact_real_truncate (DFmode, &r0))
-    {
-      HOST_WIDE_INT value = real_to_integer (&r0);
-      value = value & 0xffffffff;
-      if ((value != 0) && ( (value & (value - 1)) == 0))
-	return int_log2 (value);
-    }
+  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+  if (REAL_VALUE_NEGATIVE (r)
+      || REAL_VALUE_ISNAN (r)
+      || REAL_VALUE_ISINF (r)
+      || !real_isinteger (&r, SFmode))
+    return -1;
 
-  return 0;
+  HOST_WIDE_INT hwint = exact_log2 (real_to_integer (&r));
+
+  /* The exact_log2 above will have returned -1 if this is
+     not an exact log2.  */
+  if (!IN_RANGE (hwint, 1, 32))
+    return -1;
+
+  return hwint;
 }
+
 
 /* Emit a memory barrier around an atomic sequence according to MODEL.  */
 

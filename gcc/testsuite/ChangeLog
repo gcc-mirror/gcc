@@ -3,6 +3,11 @@
 	PR fortran/58754
 	* gfortran.dg/pr58754.f90: New test
 
+2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/67929
+	* gcc.target/arm/pr67929_1.c: New test.
+
 2013-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
