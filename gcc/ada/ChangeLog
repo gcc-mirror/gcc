@@ -1,3 +1,7 @@
+2015-10-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* sinput.ads, spark_xrefs.ads, lib-xref.adb: Fix typos.
+
 2015-10-27  Pascal Obry  <obry@adacore.com>
 
 	* a-dirval-mingw.adb: Remove some characters from Invalid_Character set.
