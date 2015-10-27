@@ -1,3 +1,8 @@
+2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_output_simd_mov_immediate):
+	Handle floating point inner modes properly.
+
 2015-10-27  Alan Hayward  <alan.hayward@arm.com>
 
 	* tree-vect-looop.c

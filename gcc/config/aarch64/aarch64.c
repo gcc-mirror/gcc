@@ -11450,9 +11450,11 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
   lane_count = width / info.element_width;
 
   mode = GET_MODE_INNER (mode);
-  if (mode == SFmode || mode == DFmode)
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
     {
       gcc_assert (info.shift == 0 && ! info.mvn);
+      /* For FP zero change it to a CONST_INT 0 and use the integer SIMD
+	 move immediate path.  */
       if (aarch64_float_const_zero_rtx_p (info.value))
         info.value = GEN_INT (0);
       else
@@ -11476,6 +11478,7 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
   mnemonic = info.mvn ? "mvni" : "movi";
   shift_op = info.msl ? "msl" : "lsl";
 
+  gcc_assert (CONST_INT_P (info.value));
   if (lane_count == 1)
     snprintf (templ, sizeof (templ), "%s\t%%d0, " HOST_WIDE_INT_PRINT_HEX,
 	      mnemonic, UINTVAL (info.value));
