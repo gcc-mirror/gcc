@@ -261,6 +261,29 @@ package Snames is
    Name_Wide_Text_IO                   : constant Name_Id := N + $;
    Name_Wide_Wide_Text_IO              : constant Name_Id := N + $;
 
+   --  Names for detecting predefined potentially blocking subprograms
+
+   Name_Abort_Task                     : constant Name_Id := N + $;
+   Name_Bounded_IO                     : constant Name_Id := N + $;
+   Name_C_Streams                      : constant Name_Id := N + $;
+   Name_Complex_IO                     : constant Name_Id := N + $;
+   Name_Directories                    : constant Name_Id := N + $;
+   Name_Direct_IO                      : constant Name_Id := N + $;
+   Name_Dispatching                    : constant Name_Id := N + $;
+   Name_Editing                        : constant Name_Id := N + $;
+   Name_EDF                            : constant Name_Id := N + $;
+   Name_Reset_Standard_Files           : constant Name_Id := N + $;
+   Name_Sequential_IO                  : constant Name_Id := N + $;
+   Name_Streams                        : constant Name_Id := N + $;
+   Name_Suspend_Until_True             : constant Name_Id := N + $;
+   Name_Suspend_Until_True_And_Set_Deadline : constant Name_Id := N + $;
+   Name_Synchronous_Barriers           : constant Name_Id := N + $;
+   Name_Task_Identification            : constant Name_Id := N + $;
+   Name_Text_Streams                   : constant Name_Id := N + $;
+   Name_Unbounded_IO                   : constant Name_Id := N + $;
+   Name_Wait_For_Release               : constant Name_Id := N + $;
+   Name_Yield                          : constant Name_Id := N + $;
+
    --  Names of implementations of the distributed systems annex
 
    First_PCS_Name                      : constant Name_Id := N + $;
