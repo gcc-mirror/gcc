@@ -1,5 +1,11 @@
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_signbit): Delete.
+	(fold_builtin_2): Handle constant signbit arguments here.
+	* match.pd: Add rules previously handled by fold_builtin_signbit.
+
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* match.pd: Handle sqrt(x) cmp 0 specially.
 
 2015-10-27  Ilya Enkovich  <enkovich.gnu@gmail.com>

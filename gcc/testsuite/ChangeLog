@@ -1,5 +1,11 @@
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/68097
+	* gcc.dg/torture/builtin-nonneg-1.c: Skip at -O0.  Add
+	--param max-ssa-name-query-depth=3 to dg-options.
+
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/torture/builtin-sqrt-cmp-1.c: New test.
 
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
