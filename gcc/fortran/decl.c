@@ -748,13 +748,15 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
 
       /* This catches the invalid code "[character(m(2:3)) :: 'x', 'y']",
 	 which causes an ICE if gfc_reduce_init_expr() is called.  */
-      if (e->ref && e->ref->u.ar.type == AR_UNKNOWN
+      if (e->ref && e->ref->type == REF_ARRAY
+	  && e->ref->u.ar.type == AR_UNKNOWN
 	  && e->ref->u.ar.dimen_type[0] == DIMEN_RANGE)
 	goto syntax;
 
       gfc_reduce_init_expr (e);
 
-      if ((e->ref && e->ref->u.ar.type != AR_ELEMENT) 
+      if ((e->ref && e->ref->type == REF_ARRAY
+	   && e->ref->u.ar.type != AR_ELEMENT) 
 	  || (!e->ref && e->expr_type == EXPR_ARRAY))
 	{
 	  gfc_free_expr (e);
