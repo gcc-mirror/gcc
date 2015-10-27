@@ -1,3 +1,13 @@
+2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	PR fortran/63865
+	* openmp.c (resolve_oacc_cache): Remove function.
+	(gfc_match_oacc_cache): Enable array sections.
+	(resolve_omp_clauses, gfc_resolve_oacc_directive): Change
+	accordingly.
+	* trans-openmp.c (gfc_trans_omp_clauses): Likewise.
+
 2015-10-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68108

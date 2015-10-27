@@ -1,3 +1,14 @@
+2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	PR fortran/63865
+	* gfortran.dg/goacc/coarray.f95: Expect the OpenACC cache
+	directive to work.
+	* gfortran.dg/goacc/loop-1.f95: Likewise.
+	* gfortran.dg/goacc/cache-1.f95: Likewise, and extend testing.
+	* gfortran.dg/goacc/cray.f95: Likewise.
+	* gfortran.dg/goacc/parameter.f95: Likewise.
+
  2015-10-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68108
