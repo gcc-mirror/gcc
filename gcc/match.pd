@@ -84,6 +84,7 @@ DEFINE_MATH_FN (LOG10)
 DEFINE_MATH_FN (EXP10)
 DEFINE_MATH_FN (POW)
 DEFINE_MATH_FN (POW10)
+DEFINE_MATH_FN (POWI)
 DEFINE_MATH_FN (SQRT)
 DEFINE_MATH_FN (CBRT)
 DEFINE_MATH_FN (SIN)
@@ -2819,6 +2820,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && (tmp = real_value_truncate (TYPE_MODE (type), dconst_third ()),
 	     real_equal (value, &tmp)))
      (cbrts @0))))))
+
+/* powi(1,x) -> 1.  */
+(simplify
+ (POWI real_onep@0 @1)
+ @0)
+
+(simplify
+ (POWI @0 INTEGER_CST@1)
+ (switch
+  /* powi(x,0) -> 1.  */
+  (if (wi::eq_p (@1, 0))
+   { build_real (type, dconst1); })
+  /* powi(x,1) -> x.  */
+  (if (wi::eq_p (@1, 1))
+   @0)
+  /* powi(x,-1) -> 1/x.  */
+  (if (wi::eq_p (@1, -1))
+   (rdiv { build_real (type, dconst1); } @0))))
 
 /* Narrowing of arithmetic and logical operations. 
 
