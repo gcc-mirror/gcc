@@ -26753,21 +26753,54 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       /* Static functions and indirect calls don't need the pic register.  Also,
 	 check if PLT was explicitly avoided via no-plt or "noplt" attribute, making
 	 it an indirect call.  */
+      rtx addr = XEXP (fnaddr, 0);
       if (flag_pic
-	  && (!TARGET_64BIT
-	      || (ix86_cmodel == CM_LARGE_PIC
-		  && DEFAULT_ABI != MS_ABI))
-	  && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
-	  && !SYMBOL_REF_LOCAL_P (XEXP (fnaddr, 0))
-	  && flag_plt
-	  && (SYMBOL_REF_DECL ((XEXP (fnaddr, 0))) == NULL_TREE
-	      || !lookup_attribute ("noplt",
-		     DECL_ATTRIBUTES (SYMBOL_REF_DECL (XEXP (fnaddr, 0))))))
+	  && GET_CODE (addr) == SYMBOL_REF
+	  && !SYMBOL_REF_LOCAL_P (addr))
 	{
-	  use_reg (&use, gen_rtx_REG (Pmode, REAL_PIC_OFFSET_TABLE_REGNUM));
-	  if (ix86_use_pseudo_pic_reg ())
-	    emit_move_insn (gen_rtx_REG (Pmode, REAL_PIC_OFFSET_TABLE_REGNUM),
-			    pic_offset_table_rtx);
+	  if (flag_plt
+	      && (SYMBOL_REF_DECL (addr) == NULL_TREE
+		  || !lookup_attribute ("noplt",
+					DECL_ATTRIBUTES (SYMBOL_REF_DECL (addr)))))
+	    {
+	      if (!TARGET_64BIT
+		  || (ix86_cmodel == CM_LARGE_PIC
+		      && DEFAULT_ABI != MS_ABI))
+		{
+		  use_reg (&use, gen_rtx_REG (Pmode,
+					      REAL_PIC_OFFSET_TABLE_REGNUM));
+		  if (ix86_use_pseudo_pic_reg ())
+		    emit_move_insn (gen_rtx_REG (Pmode,
+						 REAL_PIC_OFFSET_TABLE_REGNUM),
+				    pic_offset_table_rtx);
+		}
+	    }
+	  else if (!TARGET_PECOFF && !TARGET_MACHO)
+	    {
+	      if (TARGET_64BIT)
+		{
+		  fnaddr = gen_rtx_UNSPEC (Pmode,
+					   gen_rtvec (1, addr),
+					   UNSPEC_GOTPCREL);
+		  fnaddr = gen_rtx_CONST (Pmode, fnaddr);
+		}
+	      else
+		{
+		  fnaddr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
+					   UNSPEC_GOT);
+		  fnaddr = gen_rtx_CONST (Pmode, fnaddr);
+		  fnaddr = gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
+					 fnaddr);
+		}
+	      fnaddr = gen_const_mem (Pmode, fnaddr);
+	      /* Pmode may not be the same as word_mode for x32, which
+		 doesn't support indirect branch via 32-bit memory slot.
+		 Since x32 GOT slot is 64 bit with zero upper 32 bits,
+		 indirect branch via x32 GOT slot is OK.  */
+	      if (GET_MODE (fnaddr) != word_mode)
+		fnaddr = gen_rtx_ZERO_EXTEND (word_mode, fnaddr);
+	      fnaddr = gen_rtx_MEM (QImode, fnaddr);
+	    }
 	}
     }
 
@@ -26789,9 +26822,15 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
       && !local_symbolic_operand (XEXP (fnaddr, 0), VOIDmode))
     fnaddr = gen_rtx_MEM (QImode, construct_plt_address (XEXP (fnaddr, 0)));
-  else if (sibcall
-	   ? !sibcall_insn_operand (XEXP (fnaddr, 0), word_mode)
-	   : !call_insn_operand (XEXP (fnaddr, 0), word_mode))
+  /* Since x32 GOT slot is 64 bit with zero upper 32 bits, indirect
+     branch via x32 GOT slot is OK.  */
+  else if (!(TARGET_X32
+	     && MEM_P (fnaddr)
+	     && GET_CODE (XEXP (fnaddr, 0)) == ZERO_EXTEND
+	     && GOT_memory_operand (XEXP (XEXP (fnaddr, 0), 0), Pmode))
+	   && (sibcall
+	       ? !sibcall_insn_operand (XEXP (fnaddr, 0), word_mode)
+	       : !call_insn_operand (XEXP (fnaddr, 0), word_mode)))
     {
       fnaddr = convert_to_mode (word_mode, XEXP (fnaddr, 0), 1);
       fnaddr = gen_rtx_MEM (QImode, copy_to_mode_reg (word_mode, fnaddr));

@@ -1,3 +1,12 @@
+2015-10-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/67215
+	* calls.c (prepare_call_address): Don't handle -fno-plt here.
+	* config/i386/i386.c (ix86_expand_call): Generate indirect call
+	via GOT for -fno-plt.  Support indirect call via GOT for x32.
+	* config/i386/predicates.md (sibcall_memory_operand): Allow
+	GOT memory operand.
+
 2015-10-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68104
