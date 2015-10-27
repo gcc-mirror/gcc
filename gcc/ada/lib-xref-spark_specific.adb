@@ -1032,6 +1032,12 @@ package body SPARK_Specific is
         and then Nkind (Parent (N)) in N_Subprogram_Specification
       then
          Result := Parent (Parent (Parent (N)));
+
+         --  If this was a library-level subprogram then replace Result with
+         --  its Unit, which points to N_Subprogram_* node.
+         if Nkind (Result) = N_Compilation_Unit then
+            Result := Unit (Result);
+         end if;
       else
          Result := N;
       end if;
@@ -1089,6 +1095,10 @@ package body SPARK_Specific is
                if Nkind (Result) = N_Pragma then
                   Result := Parent (Result);
                end if;
+
+            when N_Entry_Body =>
+               Result := Defining_Identifier (Result);
+               exit;
 
             when others =>
                Result := Parent (Result);
@@ -1431,6 +1441,8 @@ package body SPARK_Specific is
          if Nkind (N) in N_Declaration
               or else
             Nkind (N) in N_Later_Decl_Item
+              or else
+            Nkind (N) = N_Entry_Body
          then
             Process (N);
          end if;

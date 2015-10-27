@@ -597,8 +597,10 @@ package body Sem_Ch8 is
    begin
       --  If the entity pointer is already set, this is an internal node, or a
       --  node that is analyzed more than once, after a tree modification. In
-      --  such a case there is no resolution to perform, just set the type. For
-      --  completeness, analyze prefix as well.
+      --  such a case there is no resolution to perform, just set the type.
+      --  In either case, start by analyzing the prefix.
+
+      Analyze (Prefix (N));
 
       if Present (Entity (N)) then
          if Is_Type (Entity (N)) then
@@ -607,7 +609,6 @@ package body Sem_Ch8 is
             Set_Etype (N, Etype (Entity (N)));
          end if;
 
-         Analyze (Prefix (N));
          return;
       else
          Find_Expanded_Name (N);
@@ -5615,12 +5616,14 @@ package body Sem_Ch8 is
             Set_Entity_Or_Discriminal (N, E);
 
             --  The name may designate a generalized reference, in which case
-            --  the dereference interpretation will be included.
+            --  the dereference interpretation will be included. Context is
+            --  one in which a name is legal.
 
             if Ada_Version >= Ada_2012
               and then
                 (Nkind (Parent (N)) in N_Subexpr
                   or else Nkind_In (Parent (N), N_Object_Declaration,
+                                                N_Parameter_Association,
                                                 N_Assignment_Statement))
             then
                Check_Implicit_Dereference (N, Etype (E));

@@ -624,10 +624,9 @@ package Lib.Xref is
 
       function Enclosing_Subprogram_Or_Library_Package
         (N : Node_Id) return Entity_Id;
-      --  Return the closest enclosing subprogram of package. Only return a
-      --  library level package. If the package is enclosed in a subprogram,
-      --  return the subprogram. This ensures that GNATprove can distinguish
-      --  local variables from global variables.
+      --  Return the closest enclosing subprogram or library-level package.
+      --  This ensures that GNATprove can distinguish local variables from
+      --  global variables.
 
       procedure Generate_Dereference
         (N   : Node_Id;

@@ -1,3 +1,25 @@
+2015-10-27  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb
+	(Enclosing_Subprogram_Or_Library_Package): detect library-level
+	subprograms and handle entries as subprograms, i.e. now both
+	library-level subprograms and entry bodies act as enclosing
+	scopes.
+	(Traverse_Declarations_Or_Statements): process entry bodies just
+	like subprogram bodies.
+	* lib-xref.ads (Enclosing_Subprogram_Or_Library_Package): comment
+	simplified while keeping its the meaning and minor typo fixed
+	("of" -> "or").
+	* spark_xrefs.ads (Xref Section): fix in description of the ALI
+	line for subprogram calls; such lines start with captial "F"
+	followed by a space.
+
+2015-10-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name): A parameter association is
+	a legal context for applying an implicit dereference.
+	(Analyze_Expanded_Name): Minor code cleanup.
+
 2015-10-27  Arnaud Charlet  <charlet@adacore.com>
 
 	* sinput.ads, spark_xrefs.ads, lib-xref.adb: Fix typos.
