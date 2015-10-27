@@ -2480,6 +2480,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
  (for sqrts (SQRT)
       cbrts (CBRT)
+      pows (POW)
       exps (EXP EXP2 EXP10 POW10)
   /* sqrt(expN(x)) -> expN(x*0.5).  */
   (simplify
@@ -2488,7 +2489,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* cbrt(expN(x)) -> expN(x/3).  */
   (simplify
    (cbrts (exps @0))
-   (exps (mult @0 { build_real_truncate (type, dconst_third ()); }))))
+   (exps (mult @0 { build_real_truncate (type, dconst_third ()); })))
+  /* pow(expN(x), y) -> expN(x*y).  */
+  (simplify
+   (pows (exps @0) @1)
+   (exps (mult @0 @1))))
 
  /* tan(atan(x)) -> x.  */
  (for tans (TAN)
@@ -2523,6 +2528,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (hypot:c @0 real_zerop@1)
  (abs @0))
+
+/* pow(1,x) -> 1.  */
+(simplify
+ (POW real_onep@0 @1)
+ @0)
 
 /* Canonicalization of sequences of math builtins.  These rules represent
    IL simplifications but are not necessarily optimizations.
@@ -2615,7 +2625,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* cbrt(pow(x,y)) -> pow(x,y/3), iff x is nonnegative.  */
   (simplify
    (cbrts (pows tree_expr_nonnegative_p@0 @1))
-   (pows @0 (mult @1 { build_real_truncate (type, dconst_third ()); }))))
+   (pows @0 (mult @1 { build_real_truncate (type, dconst_third ()); })))
+  /* pow(sqrt(x),y) -> pow(x,y*0.5).  */
+  (simplify
+   (pows (sqrts @0) @1)
+   (pows @0 (mult @1 { build_real (type, dconsthalf); })))
+  /* pow(cbrt(x),y) -> pow(x,y/3) iff x is nonnegative.  */
+  (simplify
+   (pows (cbrts tree_expr_nonnegative_p@0) @1)
+   (pows @0 (mult @1 { build_real_truncate (type, dconst_third ()); })))
+  /* pow(pow(x,y),z) -> pow(x,y*z) iff x is nonnegative.  */
+  (simplify
+   (pows (pows tree_expr_nonnegative_p@0 @1) @2)
+   (pows @0 (mult @1 @2))))
 
  /* cabs(x+xi) -> fabs(x)*sqrt(2).  */
  (simplify
@@ -2767,6 +2789,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (real_isinf (TREE_REAL_CST_PTR (@1)))
   { build_complex_inf (type, TREE_REAL_CST_PTR (@1)->sign); }))
 
+(for pows (POW)
+     sqrts (SQRT)
+     cbrts (CBRT)
+ (simplify
+  (pows @0 REAL_CST@1)
+  (with {
+    const REAL_VALUE_TYPE *value = TREE_REAL_CST_PTR (@1);
+    REAL_VALUE_TYPE tmp;
+   }
+   (switch
+    /* pow(x,0) -> 1.  */
+    (if (real_equal (value, &dconst0))
+     { build_real (type, dconst1); })
+    /* pow(x,1) -> x.  */
+    (if (real_equal (value, &dconst1))
+     @0)
+    /* pow(x,-1) -> 1/x.  */
+    (if (real_equal (value, &dconstm1))
+     (rdiv { build_real (type, dconst1); } @0))
+    /* pow(x,0.5) -> sqrt(x).  */
+    (if (flag_unsafe_math_optimizations
+	 && canonicalize_math_p ()
+	 && real_equal (value, &dconsthalf))
+     (sqrts @0))
+    /* pow(x,1/3) -> cbrt(x).  */
+    (if (flag_unsafe_math_optimizations
+	 && canonicalize_math_p ()
+	 && (tmp = real_value_truncate (TYPE_MODE (type), dconst_third ()),
+	     real_equal (value, &tmp)))
+     (cbrts @0))))))
 
 /* Narrowing of arithmetic and logical operations. 
 
