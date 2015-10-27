@@ -1,5 +1,14 @@
 2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	Backport from mainline
+	2015-10-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/67989
+	* optabs.c (expand_atomic_compare_and_swap): Handle case when
+	ptarget_oval or ptarget_bool are const0_rtx.
+
+2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR target/67929
 	* config/arm/arm.c (vfp3_const_double_for_bits): Rewrite.
 	* config/arm/constraints.md (Dp): Update callsite.
