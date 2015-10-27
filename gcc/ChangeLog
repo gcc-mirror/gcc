@@ -1,3 +1,9 @@
+2015-10-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR tree-optimization/65963
+	* tree-scalar-evolution.c (interpret_rhs_expr): Handle some LSHIFT_EXPRs
+	as equivalent MULT_EXPRs.
+
 2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/67929
