@@ -1,3 +1,30 @@
+2015-10-27  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Improve previous patch.
+
+2015-10-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Analyze_Formal_Package_Declaration): Code cleanup. Set
+	and restore the value of global flag Ignore_Pragma_SPARK_Mode. A
+	formal package declaration acts as a package instantation with
+	respect to SPARK_Mode legality.
+
+2015-10-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Constituent_Usage): Use
+	logical operators rather than short circuit operators. Emit an
+	error when a state with visible refinement is not refined.
+	* snames.ads-tmpl: Add names for detecting
+	predefined potentially blocking subprograms.
+
+2015-10-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Revert previous
+	change.
+	(Expand_Array_Aggregate): Rewrite previous change here
+	as done for other non GCC back-ends.
+	(Build_Record_Aggr_Code): Add special case.
+
 2015-10-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Add_Item_To_Name_Buffer): Update the comment on usage.

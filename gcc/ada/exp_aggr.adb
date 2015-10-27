@@ -2924,13 +2924,33 @@ package body Exp_Aggr is
                   end if;
                end if;
 
-               Instr :=
-                 Make_OK_Assignment_Statement (Loc,
-                   Name       => Comp_Expr,
-                   Expression => Expr_Q);
+               if Generate_C_Code
+                 and then Nkind (Expr_Q) = N_Aggregate
+                 and then Is_Array_Type (Etype (Expr_Q))
+                 and then Present (First_Index (Etype (Expr_Q)))
+               then
+                  declare
+                     Expr_Q_Type : constant Node_Id := Etype (Expr_Q);
+                  begin
+                     Append_List_To (L,
+                       Build_Array_Aggr_Code
+                         (N           => Expr_Q,
+                          Ctype       => Component_Type (Expr_Q_Type),
+                          Index       => First_Index (Expr_Q_Type),
+                          Into        => Comp_Expr,
+                          Scalar_Comp => Is_Scalar_Type
+                                           (Component_Type (Expr_Q_Type))));
+                  end;
 
-               Set_No_Ctrl_Actions (Instr);
-               Append_To (L, Instr);
+               else
+                  Instr :=
+                    Make_OK_Assignment_Statement (Loc,
+                      Name       => Comp_Expr,
+                      Expression => Expr_Q);
+
+                  Set_No_Ctrl_Actions (Instr);
+                  Append_To (L, Instr);
+               end if;
 
                --  Adjust the tag if tagged (because of possible view
                --  conversions), unless compiling for a VM where tags are
@@ -4105,8 +4125,6 @@ package body Exp_Aggr is
       --  Backend processing by Gigi/gcc is possible only if all the following
       --  conditions are met:
 
-      --    0. We are not generating C code
-
       --    1. N consists of a single OTHERS choice, possibly recursively
 
       --    2. The array type is not packed
@@ -4137,10 +4155,6 @@ package body Exp_Aggr is
          Nunits    : Nat;
 
       begin
-         if Generate_C_Code then
-            return False;
-         end if;
-
          --  Recurse as far as possible to find the innermost component type
 
          Ctyp := Etype (N);
@@ -5476,7 +5490,8 @@ package body Exp_Aggr is
 
          if (In_Place_Assign_OK_For_Declaration or else Maybe_In_Place_OK)
            and then not AAMP_On_Target
-           and then not Generate_SCIL
+           and then not CodePeer_Mode
+           and then not Generate_C_Code
            and then not Possible_Bit_Aligned_Component (Target)
            and then not Is_Possibly_Unaligned_Slice (Target)
            and then Aggr_Assignment_OK_For_Backend (N)

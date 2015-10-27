@@ -24184,14 +24184,23 @@ package body Sem_Prag is
             --  A pair of one Input and one Output constituent is a valid
             --  completion.
 
-            elsif In_Seen and then Out_Seen then
+            elsif In_Seen and Out_Seen then
                null;
 
             --  A single Output constituent is a valid completion only when
             --  some of the other constituents are missing (SPARK RM 7.2.4(5)).
 
-            elsif Has_Missing and then Out_Seen then
+            elsif Out_Seen and Has_Missing then
                null;
+
+            --  The state lacks a completion
+
+            elsif not In_Seen and not In_Out_Seen and not Out_Seen then
+               SPARK_Msg_NE
+                 ("missing global refinement of state &", N, State_Id);
+
+            --  Otherwise the state has a malformed completion where at least
+            --  one of the constituents has a different mode.
 
             else
                SPARK_Msg_NE

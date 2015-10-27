@@ -2379,22 +2379,17 @@ package body Sem_Ch12 is
    ----------------------------------------
 
    procedure Analyze_Formal_Package_Declaration (N : Node_Id) is
-      Loc              : constant Source_Ptr := Sloc (N);
-      Pack_Id          : constant Entity_Id  := Defining_Identifier (N);
-      Formal           : Entity_Id;
-      Gen_Id           : constant Node_Id    := Name (N);
-      Gen_Decl         : Node_Id;
-      Gen_Unit         : Entity_Id;
-      New_N            : Node_Id;
-      Parent_Installed : Boolean := False;
-      Renaming         : Node_Id;
-      Parent_Instance  : Entity_Id;
-      Renaming_In_Par  : Entity_Id;
-      Associations     : Boolean := True;
+      Gen_Id   : constant Node_Id    := Name (N);
+      Loc      : constant Source_Ptr := Sloc (N);
+      Pack_Id  : constant Entity_Id  := Defining_Identifier (N);
+      Formal   : Entity_Id;
+      Gen_Decl : Node_Id;
+      Gen_Unit : Entity_Id;
+      Renaming : Node_Id;
 
       Vis_Prims_List : Elist_Id := No_Elist;
       --  List of primitives made temporarily visible in the instantiation
-      --  to match the visibility of the formal type
+      --  to match the visibility of the formal type.
 
       function Build_Local_Package return Node_Id;
       --  The formal package is rewritten so that its parameters are replaced
@@ -2506,6 +2501,17 @@ package body Sem_Ch12 is
          return Pack_Decl;
       end Build_Local_Package;
 
+      --  Local variables
+
+      Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
+      --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
+
+      Associations     : Boolean := True;
+      New_N            : Node_Id;
+      Parent_Installed : Boolean := False;
+      Parent_Instance  : Entity_Id;
+      Renaming_In_Par  : Entity_Id;
+
    --  Start of processing for Analyze_Formal_Package_Declaration
 
    begin
@@ -2605,19 +2611,18 @@ package body Sem_Ch12 is
       Formal := New_Copy (Pack_Id);
       Create_Instantiation_Source (N, Gen_Unit, False, S_Adjustment);
 
-      begin
-         --  Make local generic without formals. The formals will be replaced
-         --  with internal declarations.
+      --  Make local generic without formals. The formals will be replaced with
+      --  internal declarations.
 
+      begin
          New_N := Build_Local_Package;
 
-         --  If there are errors in the parameter list, Analyze_Associations
-         --  raises Instantiation_Error. Patch the declaration to prevent
-         --  further exception propagation.
+      --  If there are errors in the parameter list, Analyze_Associations
+      --  raises Instantiation_Error. Patch the declaration to prevent further
+      --  exception propagation.
 
       exception
          when Instantiation_Error =>
-
             Enter_Name (Formal);
             Set_Ekind  (Formal, E_Variable);
             Set_Etype  (Formal, Any_Type);
@@ -2669,6 +2674,15 @@ package body Sem_Ch12 is
          Append_Entity (Renaming_In_Par, Parent_Instance);
       end if;
 
+      --  A formal package declaration behaves as a package instantiation with
+      --  respect to SPARK_Mode "off". If the annotation is "off" or altogether
+      --  missing, set the global flag which signals Analyze_Pragma to ingnore
+      --  all SPARK_Mode pragmas within the generic_package_name.
+
+      if SPARK_Mode /= On then
+         Ignore_Pragma_SPARK_Mode := True;
+      end if;
+
       Analyze (Specification (N));
 
       --  The formals for which associations are provided are not visible
@@ -2714,8 +2728,8 @@ package body Sem_Ch12 is
 
       Set_Has_Completion (Formal, True);
 
-      --  Add semantic information to the original defining identifier.
-      --  for ASIS use.
+      --  Add semantic information to the original defining identifier for ASIS
+      --  use.
 
       Set_Ekind (Pack_Id, E_Package);
       Set_Etype (Pack_Id, Standard_Void_Type);
@@ -2726,6 +2740,8 @@ package body Sem_Ch12 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Pack_Id);
       end if;
+
+      Ignore_Pragma_SPARK_Mode := Save_IPSM;
    end Analyze_Formal_Package_Declaration;
 
    ---------------------------------

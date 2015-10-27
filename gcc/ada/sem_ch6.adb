@@ -4062,7 +4062,7 @@ package body Sem_Ch6 is
       --  that carries the return value.
 
       if Present (Cloned_Body_For_C) then
-         Replace (N,
+         Rewrite (N,
            Build_Procedure_Body_Form (Spec_Id, Cloned_Body_For_C));
          Analyze (N);
       end if;
