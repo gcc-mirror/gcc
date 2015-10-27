@@ -247,6 +247,13 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	  && gimple_asm_volatile_p (as_a <gasm *> (stmt)))
 	return NULL;
 
+      /* If the statement is a unique builtin, we can not thread
+	 through here.  */
+      if (gimple_code (stmt) == GIMPLE_CALL
+	  && gimple_call_internal_p (stmt)
+	  && gimple_call_internal_unique_p (stmt))
+	return NULL;
+
       /* If duplicating this block is going to cause too much code
 	 expansion, then do not thread through this block.  */
       stmt_count++;

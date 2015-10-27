@@ -1958,6 +1958,30 @@ expand_VA_ARG (gcall *stmt ATTRIBUTE_UNUSED)
   gcc_unreachable ();
 }
 
+/* Expand the IFN_UNIQUE function according to its first argument.  */
+
+static void
+expand_UNIQUE (gcall *stmt)
+{
+  rtx pattern = NULL_RTX;
+  enum ifn_unique_kind kind
+    = (enum ifn_unique_kind) TREE_INT_CST_LOW (gimple_call_arg (stmt, 0));
+
+  switch (kind)
+    {
+    default:
+      gcc_unreachable ();
+
+    case IFN_UNIQUE_UNSPEC:
+      if (targetm.have_unique ())
+	pattern = targetm.gen_unique ();
+      break;
+    }
+
+  if (pattern)
+    emit_insn (pattern);
+}
+
 /* Routines to expand each internal function, indexed by function number.
    Each routine has the prototype:
 

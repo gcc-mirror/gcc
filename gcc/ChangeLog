@@ -1,3 +1,17 @@
+2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
+	
+	* internal-fn.c (expand_UNIQUE): New.
+	* internal-fn.h (enum ifn_unique_kind): New.
+	* internal-fn.def (IFN_UNIQUE): New.
+	* target-insns.def (unique): Define.
+	* gimple.h (gimple_call_internal_unique_p): New.
+	* gimple.c (gimple_call_same_target_p): Check internal fn
+	uniqueness.
+	* tracer.c (ignore_bb_p): Check for IFN_UNIQUE call.
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts): Likewise.
+	* tree-cfg.c (gmple_call_initialize_ctrl_altering): Likewise.
+
 2015-10-27  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/67609
@@ -29,8 +43,10 @@
 
 	* graphite-optimize-isl.c (get_schedule_for_node_st): New callback
 	  function to schedule based on isl_schedule_node.
-	(get_schedule_map_st): New schedule optimizer based on isl_schedule_node.
-	(scop_get_domains): New. Return the isl_union_set containing the domains of all the pbbs.
+	(get_schedule_map_st): New schedule optimizer based on
+	isl_schedule_node.
+	(scop_get_domains): New. Return the isl_union_set containing the
+	domains of all the pbbs.
 	(optimize_isl): Call the new function get_schedule_map_st for isl-0.15
 
 2015-10-27  H.J. Lu  <hongjiu.lu@intel.com>
