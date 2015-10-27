@@ -99,6 +99,8 @@ struct def
   unsigned n_uses;		/* Number of such uses.  */
   unsigned n_addr_uses;		/* Number of uses in addresses.  */
   unsigned invno;		/* The corresponding invariant.  */
+  bool can_prop_to_addr_uses;	/* True if the corresponding inv can be
+				   propagated into its address uses.  */
 };
 
 /* The data stored for each invariant.  */
@@ -762,6 +764,34 @@ create_new_invariant (struct def *def, rtx_insn *insn, bitmap depends_on,
   return inv;
 }
 
+/* Given invariant DEF and its address USE, check if the corresponding
+   invariant expr can be propagated into the use or not.  */
+
+static bool
+inv_can_prop_to_addr_use (struct def *def, df_ref use)
+{
+  struct invariant *inv;
+  rtx *pos = DF_REF_REAL_LOC (use), def_set;
+  rtx_insn *use_insn = DF_REF_INSN (use);
+  rtx_insn *def_insn;
+  bool ok;
+
+  inv = invariants[def->invno];
+  /* No need to check if address expression is expensive.  */
+  if (!inv->cheap_address)
+    return false;
+
+  def_insn = inv->insn;
+  def_set = single_set (def_insn);
+  if (!def_set)
+    return false;
+
+  validate_unshare_change (use_insn, pos, SET_SRC (def_set), true);
+  ok = verify_changes (0);
+  cancel_changes (0);
+  return ok;
+}
+
 /* Record USE at DEF.  */
 
 static void
@@ -777,7 +807,16 @@ record_use (struct def *def, df_ref use)
   def->uses = u;
   def->n_uses++;
   if (u->addr_use_p)
-    def->n_addr_uses++;
+    {
+      /* Initialize propagation information if this is the first addr
+	 use of the inv def.  */
+      if (def->n_addr_uses == 0)
+	def->can_prop_to_addr_uses = true;
+
+      def->n_addr_uses++;
+      if (def->can_prop_to_addr_uses && !inv_can_prop_to_addr_use (def, use))
+	def->can_prop_to_addr_uses = false;
+    }
 }
 
 /* Finds the invariants USE depends on and store them to the DEPENDS_ON
@@ -1158,7 +1197,9 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed,
 
   if (!inv->cheap_address
       || inv->def->n_uses == 0
-      || inv->def->n_addr_uses < inv->def->n_uses)
+      || inv->def->n_addr_uses < inv->def->n_uses
+      /* Count cost if the inv can't be propagated into address uses.  */
+      || !inv->def->can_prop_to_addr_uses)
     (*comp_cost) += inv->cost * inv->eqno;
 
 #ifdef STACK_REGS
