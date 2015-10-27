@@ -1,3 +1,18 @@
+2015-10-27  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
+	    Aditya Kumar  <aditya.k7@samsung.com>
+
+	* gcc.dg/graphite/block-0.c: Changed to match pattern.
+	* gcc.dg/graphite/interchange-1.c: Same.
+	* gcc.dg/graphite/interchange-10.c: Same.
+	* gcc.dg/graphite/interchange-11.c: Same.
+	* gcc.dg/graphite/interchange-13.c: Same.
+	* gcc.dg/graphite/interchange-3.c: Same.
+	* gcc.dg/graphite/interchange-4.c: Same.
+	* gcc.dg/graphite/interchange-7.c: Same.
+	* gcc.dg/graphite/interchange-9.c: Same.
+	* gcc.dg/graphite/uns-interchange-9.c: Same.
+	* gfortran.dg/graphite/interchange-3.f90: Same.
+
 2015-10-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/67215

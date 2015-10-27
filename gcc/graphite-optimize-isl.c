@@ -34,6 +34,9 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/aff.h>
 #include <isl/options.h>
 #include <isl/ctx.h>
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+#include <isl/schedule_node.h>
+#endif
 
 #include "system.h"
 #include "coretypes.h"
@@ -50,19 +53,77 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "dumpfile.h"
 
-static isl_union_set *
-scop_get_domains (scop_p scop ATTRIBUTE_UNUSED)
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+
+/* get_schedule_for_node_st - Improve schedule for the schedule node.
+   Only Simple loop tiling is considered.  */
+
+static __isl_give isl_schedule_node *
+get_schedule_for_node_st (__isl_take isl_schedule_node *node, void *user)
 {
-  int i;
-  poly_bb_p pbb;
-  isl_space *space = isl_set_get_space (scop->param_context);
-  isl_union_set *res = isl_union_set_empty (space);
+  if (user)
+    return node;
 
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    res = isl_union_set_add_set (res, isl_set_copy (pbb->domain));
+  if (isl_schedule_node_get_type (node) != isl_schedule_node_band
+      || isl_schedule_node_n_children (node) != 1)
+    return node;
 
-  return res;
+  isl_space *space = isl_schedule_node_band_get_space (node);
+  unsigned dims = isl_space_dim (space, isl_dim_set);
+  isl_schedule_node *child = isl_schedule_node_get_child (node, 0);
+  isl_schedule_node_type type = isl_schedule_node_get_type (child);
+  isl_space_free (space);
+  isl_schedule_node_free (child);
+
+  if (type != isl_schedule_node_leaf)
+    return node;
+
+  if (dims <= 1 || !isl_schedule_node_band_get_permutable (node))
+    {
+      if (dump_file && dump_flags)
+	fprintf (dump_file, "not tiled\n");
+      return node;
+    }
+
+  /* Tile loops.  */
+  space = isl_schedule_node_band_get_space (node);
+  isl_multi_val *sizes = isl_multi_val_zero (space);
+  long tile_size = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
+  isl_ctx *ctx = isl_schedule_node_get_ctx (node);
+
+  for (unsigned i = 0; i < dims; i++)
+    {
+      sizes = isl_multi_val_set_val (sizes, i,
+				     isl_val_int_from_si (ctx, tile_size));
+      if (dump_file && dump_flags)
+	fprintf (dump_file, "tiled by %ld\n", tile_size);
+    }
+
+  node = isl_schedule_node_band_tile (node, sizes);
+  node = isl_schedule_node_child (node, 0);
+
+  return node;
 }
+
+/* get_schedule_map_st - Improve the schedule by performing other loop
+   optimizations. _st ending is for schedule tree version of this
+   function (see get_schedule_map below for the band forest version).
+
+   Do a depth-first post-order traversal of the nodes in a schedule
+   tree and apply get_schedule_for_node_st on them to improve the schedule.
+  */
+
+static __isl_give isl_union_map *
+get_schedule_map_st (__isl_keep isl_schedule *schedule)
+{
+
+  schedule = isl_schedule_map_schedule_node_bottom_up (schedule,
+						       get_schedule_for_node_st,
+						       NULL);
+  isl_union_map *schedule_map = isl_schedule_get_map (schedule);
+  return schedule_map;
+}
+#else
 
 /* get_tile_map - Create a map that describes a n-dimensonal tiling.
 
@@ -255,6 +316,7 @@ get_schedule_map (isl_schedule *schedule)
   isl_band_list_free (bandList);
   return schedule_map;
 }
+#endif
 
 static isl_stat
 get_single_map (__isl_take isl_map *map, void *user)
@@ -283,6 +345,20 @@ apply_schedule_map_to_scop (scop_p scop, isl_union_map *schedule_map)
       pbb->transformed = stmt_schedule;
       isl_union_map_free (stmt_band);
     }
+}
+
+static isl_union_set *
+scop_get_domains (scop_p scop ATTRIBUTE_UNUSED)
+{
+  int i;
+  poly_bb_p pbb;
+  isl_space *space = isl_set_get_space (scop->param_context);
+  isl_union_set *res = isl_union_set_empty (space);
+
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+    res = isl_union_set_add_set (res, isl_set_copy (pbb->domain));
+
+    return res;
 }
 
 static const int CONSTANT_BOUND = 20;
@@ -360,7 +436,11 @@ optimize_isl (scop_p scop)
     return false;
 #endif
 
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  isl_union_map *schedule_map = get_schedule_map_st (schedule);
+#else
   isl_union_map *schedule_map = get_schedule_map (schedule);
+#endif
   apply_schedule_map_to_scop (scop, schedule_map);
 
   isl_schedule_free (schedule);

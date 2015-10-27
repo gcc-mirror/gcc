@@ -1,3 +1,12 @@
+2015-10-27  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
+	    Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-optimize-isl.c (get_schedule_for_node_st): New callback
+	  function to schedule based on isl_schedule_node.
+	(get_schedule_map_st): New schedule optimizer based on isl_schedule_node.
+	(scop_get_domains): New. Return the isl_union_set containing the domains of all the pbbs.
+	(optimize_isl): Call the new function get_schedule_map_st for isl-0.15
+
 2015-10-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/67215
