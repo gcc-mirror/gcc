@@ -77,8 +77,7 @@ package body Ada.Directories.Validity is
          if Name'Length >= 2
            and then  Name (Start + 1) = ':'
            and then
-            (Name (Start) in 'A' .. 'Z'
-             or else Name (Start) in 'a' .. 'z')
+             (Name (Start) in 'A' .. 'Z' or else Name (Start) in 'a' .. 'z')
          then
             Start := Start + 2;
 

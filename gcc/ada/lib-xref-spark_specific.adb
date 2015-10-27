@@ -1035,6 +1035,7 @@ package body SPARK_Specific is
 
          --  If this was a library-level subprogram then replace Result with
          --  its Unit, which points to N_Subprogram_* node.
+
          if Nkind (Result) = N_Compilation_Unit then
             Result := Unit (Result);
          end if;

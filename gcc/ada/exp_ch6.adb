@@ -8332,16 +8332,16 @@ package body Exp_Ch6 is
       Func_Id     : constant Entity_Id  := Entity (Name (N));
       Func_Decl   : constant Node_Id    := Unit_Declaration_Node (Func_Id);
       Par         : constant Node_Id    := Parent (N);
-      Loc         : constant Source_Ptr := Sloc (Par);
       Proc_Id     : constant Entity_Id  := Defining_Entity (Next (Func_Decl));
+      Loc         : constant Source_Ptr := Sloc (Par);
       Actuals     : List_Id;
       Last_Formal : Entity_Id;
 
    begin
-      --  The actuals may be given by named associations, so the added
-      --  actual that is the target of the return value of the call must
-      --  be a named association as well, so we retrieve the name of the
-      --  generated out_formal.
+      --  The actuals may be given by named associations, so the added actual
+      --  that is the target of the return value of the call must be a named
+      --  association as well, so we retrieve the name of the generated
+      --  out_formal.
 
       Last_Formal := First_Formal (Proc_Id);
       while Present (Next_Formal (Last_Formal)) loop
@@ -8366,8 +8366,10 @@ package body Exp_Ch6 is
       if Nkind (Par) = N_Assignment_Statement then
          Append_To (Actuals,
            Make_Parameter_Association (Loc,
-              Selector_Name => Make_Identifier (Loc, Chars (Last_Formal)),
-               Explicit_Actual_Parameter => Name (Par)));
+             Selector_Name             =>
+               Make_Identifier (Loc, Chars (Last_Formal)),
+             Explicit_Actual_Parameter => Name (Par)));
+
          Rewrite (Par,
            Make_Procedure_Call_Statement (Loc,
              Name                   => New_Occurrence_Of (Proc_Id, Loc),
@@ -8404,9 +8406,11 @@ package body Exp_Ch6 is
 
             Append_To (Actuals,
               Make_Parameter_Association (Loc,
-                 Selector_Name => Make_Identifier (Loc, Chars (Last_Formal)),
-               Explicit_Actual_Parameter =>
-                 New_Occurrence_Of (Temp_Id, Loc)));
+                Selector_Name             =>
+                  Make_Identifier (Loc, Chars (Last_Formal)),
+                Explicit_Actual_Parameter =>
+                  New_Occurrence_Of (Temp_Id, Loc)));
+
             Call :=
               Make_Procedure_Call_Statement (Loc,
                 Name                   => New_Occurrence_Of (Proc_Id, Loc),

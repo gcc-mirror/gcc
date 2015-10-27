@@ -186,8 +186,8 @@ package body System.OS_Lib is
    is
       Max_Args : constant Integer := Arg_String'Length;
       New_Argv : Argument_List (1 .. Max_Args);
-      New_Argc : Natural := 0;
       Idx      : Integer;
+      New_Argc : Natural := 0;
 
       Cleaned     : String (1 .. Arg_String'Length);
       Cleaned_Idx : Natural;
@@ -202,8 +202,8 @@ package body System.OS_Lib is
          exit when Idx > Arg_String'Last;
 
          declare
-            Quoted  : Boolean := False;
             Backqd  : Boolean := False;
+            Quoted  : Boolean := False;
 
          begin
             Cleaned_Idx := Cleaned'First;
