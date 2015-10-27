@@ -7891,51 +7891,6 @@ fold_builtin_fma (location_t loc, tree arg0, tree arg1, tree arg2, tree type)
   return NULL_TREE;
 }
 
-/* Fold a call to builtin fmin or fmax.  */
-
-static tree
-fold_builtin_fmin_fmax (location_t loc, tree arg0, tree arg1,
-			tree type, bool max)
-{
-  if (validate_arg (arg0, REAL_TYPE) && validate_arg (arg1, REAL_TYPE))
-    {
-      /* Calculate the result when the argument is a constant.  */
-      tree res = do_mpfr_arg2 (arg0, arg1, type, (max ? mpfr_max : mpfr_min));
-
-      if (res)
-	return res;
-
-      /* If either argument is NaN, return the other one.  Avoid the
-	 transformation if we get (and honor) a signalling NaN.  Using
-	 omit_one_operand() ensures we create a non-lvalue.  */
-      if (TREE_CODE (arg0) == REAL_CST
-	  && real_isnan (&TREE_REAL_CST (arg0))
-	  && (! HONOR_SNANS (arg0)
-	      || ! TREE_REAL_CST (arg0).signalling))
-	return omit_one_operand_loc (loc, type, arg1, arg0);
-      if (TREE_CODE (arg1) == REAL_CST
-	  && real_isnan (&TREE_REAL_CST (arg1))
-	  && (! HONOR_SNANS (arg1)
-	      || ! TREE_REAL_CST (arg1).signalling))
-	return omit_one_operand_loc (loc, type, arg0, arg1);
-
-      /* Transform fmin/fmax(x,x) -> x.  */
-      if (operand_equal_p (arg0, arg1, OEP_PURE_SAME))
-	return omit_one_operand_loc (loc, type, arg0, arg1);
-
-      /* Convert fmin/fmax to MIN_EXPR/MAX_EXPR.  C99 requires these
-	 functions to return the numeric arg if the other one is NaN.
-	 These tree codes don't honor that, so only transform if
-	 -ffinite-math-only is set.  C99 doesn't require -0.0 to be
-	 handled, so we don't have to worry about it either.  */
-      if (flag_finite_math_only)
-	return fold_build2_loc (loc, (max ? MAX_EXPR : MIN_EXPR), type,
-			    fold_convert_loc (loc, type, arg0),
-			    fold_convert_loc (loc, type, arg1));
-    }
-  return NULL_TREE;
-}
-
 /* Fold a call to builtin carg(a+bi) -> atan2(b,a).  */
 
 static tree
@@ -9241,10 +9196,14 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
       break;
 
     CASE_FLT_FN (BUILT_IN_FMIN):
-      return fold_builtin_fmin_fmax (loc, arg0, arg1, type, /*max=*/false);
+      if (validate_arg (arg0, REAL_TYPE) && validate_arg (arg1, REAL_TYPE))
+	return do_mpfr_arg2 (arg0, arg1, type, mpfr_min);
+      break;
 
     CASE_FLT_FN (BUILT_IN_FMAX):
-      return fold_builtin_fmin_fmax (loc, arg0, arg1, type, /*max=*/true);
+      if (validate_arg (arg0, REAL_TYPE) && validate_arg (arg1, REAL_TYPE))
+	return do_mpfr_arg2 (arg0, arg1, type, mpfr_max);
+      break;
 
     case BUILT_IN_ISGREATER:
       return fold_builtin_unordered_cmp (loc, fndecl,

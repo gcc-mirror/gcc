@@ -103,6 +103,8 @@ DEFINE_MATH_FN (CABS)
 DEFINE_MATH_FN (TRUNC)
 DEFINE_MATH_FN (NEARBYINT)
 DEFINE_MATH_FN (SIGNBIT)
+DEFINE_MATH_FN (FMIN)
+DEFINE_MATH_FN (FMAX)
 
 DEFINE_INT_AND_FLOAT_ROUND_FN (FLOOR)
 DEFINE_INT_AND_FLOAT_ROUND_FN (CEIL)
@@ -1170,9 +1172,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (minus (convert @1) (convert @2)))))))
 
 
-/* Simplifications of MIN_EXPR and MAX_EXPR.  */
+/* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
 
-(for minmax (min max)
+(for minmax (min max FMIN FMAX)
  (simplify
   (minmax @0 @0)
   @0))
@@ -1196,7 +1198,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && TYPE_MAX_VALUE (type)
       && operand_equal_p (@1, TYPE_MAX_VALUE (type), OEP_ONLY_CONST))
   @1))
-
+(for minmax (FMIN FMAX)
+ /* If either argument is NaN, return the other one.  Avoid the
+    transformation if we get (and honor) a signalling NaN.  */
+ (simplify
+  (minmax:c @0 REAL_CST@1)
+  (if (real_isnan (TREE_REAL_CST_PTR (@1))
+       && (!HONOR_SNANS (@1) || !TREE_REAL_CST (@1).signalling))
+   @0)))
+/* Convert fmin/fmax to MIN_EXPR/MAX_EXPR.  C99 requires these
+   functions to return the numeric arg if the other one is NaN.
+   MIN and MAX don't honor that, so only transform if -ffinite-math-only
+   is set.  C99 doesn't require -0.0 to be handled, so we don't have to
+   worry about it either.  */
+(if (flag_finite_math_only)
+ (simplify
+  (FMIN @0 @1)
+  (min @0 @1))
+ (simplify
+  (FMAX @0 @1)
+  (max @0 @1)))
 
 /* Simplifications of shift and rotates.  */
 
