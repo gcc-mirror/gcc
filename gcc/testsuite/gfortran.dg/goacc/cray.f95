@@ -24,8 +24,7 @@ contains
     !$acc end parallel loop
     !$acc parallel loop
     do i = 1,5
-      ! Subarrays are not implemented yet
-      !$acc cache (pointee) ! TODO: This must fail, as in openacc-1_0-branch
+      !$acc cache (pointee) ! { dg-error "Cray pointee" }
     enddo
     !$acc end parallel loop
     !$acc update device (pointee) ! { dg-error "Cray pointee" }
@@ -53,4 +52,3 @@ contains
     !$acc update self (ptr)
   end subroutine oacc1
 end module test
-! { dg-prune-output "ACC cache unimplemented" }

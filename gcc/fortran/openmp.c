@@ -1387,7 +1387,8 @@ gfc_match_oacc_cache (void)
 {
   gfc_omp_clauses *c = gfc_get_omp_clauses ();
   match m = gfc_match_omp_variable_list (" (",
-					 &c->lists[OMP_LIST_CACHE], true);
+					 &c->lists[OMP_LIST_CACHE], true,
+					 NULL, NULL, true);
   if (m != MATCH_YES)
     {
       gfc_free_omp_clauses(c);
@@ -3107,6 +3108,7 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 	  case OMP_LIST_MAP:
 	  case OMP_LIST_TO:
 	  case OMP_LIST_FROM:
+	  case OMP_LIST_CACHE:
 	    for (; n != NULL; n = n->next)
 	      {
 		if (n->expr)
@@ -3380,7 +3382,6 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 				   n->sym->name, name, where);
 		      /* FALLTHRU */
 		  case OMP_LIST_DEVICE_RESIDENT:
-		  case OMP_LIST_CACHE:
 		    check_symbol_not_pointer (n->sym, *where, name);
 		    check_array_not_assumed (n->sym, *where, name);
 		    break;
@@ -4597,13 +4598,6 @@ resolve_oacc_loop (gfc_code *code)
 }
 
 
-static void
-resolve_oacc_cache (gfc_code *code ATTRIBUTE_UNUSED)
-{
-  sorry ("Sorry, !$ACC cache unimplemented yet");
-}
-
-
 void
 gfc_resolve_oacc_declare (gfc_namespace *ns)
 {
@@ -4657,6 +4651,7 @@ gfc_resolve_oacc_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
     case EXEC_OACC_WAIT:
+    case EXEC_OACC_CACHE:
       resolve_omp_clauses (code, &code->loc, code->ext.omp_clauses, NULL,
 			   true);
       break;
@@ -4664,9 +4659,6 @@ gfc_resolve_oacc_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
     case EXEC_OACC_KERNELS_LOOP:
     case EXEC_OACC_LOOP:
       resolve_oacc_loop (code);
-      break;
-    case EXEC_OACC_CACHE:
-      resolve_oacc_cache (code);
       break;
     default:
       break;

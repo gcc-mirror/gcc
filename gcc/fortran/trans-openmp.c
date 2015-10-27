@@ -1778,9 +1778,6 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	case OMP_LIST_DEVICE_RESIDENT:
 	  clause_code = OMP_CLAUSE_DEVICE_RESIDENT;
 	  goto add_clause;
-	case OMP_LIST_CACHE:
-	  clause_code = OMP_CLAUSE__CACHE_;
-	  goto add_clause;
 
 	add_clause:
 	  omp_clauses
@@ -2159,14 +2156,27 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	  break;
 	case OMP_LIST_TO:
 	case OMP_LIST_FROM:
+	case OMP_LIST_CACHE:
 	  for (; n != NULL; n = n->next)
 	    {
 	      if (!n->sym->attr.referenced)
 		continue;
 
-	      tree node = build_omp_clause (input_location,
-					    list == OMP_LIST_TO
-					    ? OMP_CLAUSE_TO : OMP_CLAUSE_FROM);
+	      switch (list)
+		{
+		case OMP_LIST_TO:
+		  clause_code = OMP_CLAUSE_TO;
+		  break;
+		case OMP_LIST_FROM:
+		  clause_code = OMP_CLAUSE_FROM;
+		  break;
+		case OMP_LIST_CACHE:
+		  clause_code = OMP_CLAUSE__CACHE_;
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+	      tree node = build_omp_clause (input_location, clause_code);
 	      if (n->expr == NULL || n->expr->ref->u.ar.type == AR_FULL)
 		{
 		  tree decl = gfc_get_symbol_decl (n->sym);
