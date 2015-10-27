@@ -1,3 +1,19 @@
+2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(struct tune_params): Add autoprefetcher_model field.
+	* config/aarch64/aarch64.c: Include params.h
+	(generic_tunings): Specify autoprefetcher_model value.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(cortexa72_tunings): Likewise.
+	(thunderx_tunings): Likewise.
+	(xgene1_tunings): Likewise.
+	(aarch64_first_cycle_multipass_dfa_lookahead_guard): New function.
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD): Define.
+	(aarch64_override_options_internal): Set
+	PARAM_SCHED_AUTOPREF_QUEUE_DEPTH param.
+
 2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* builtins.c (fold_builtin_exponent): Delete.

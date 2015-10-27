@@ -49,6 +49,7 @@
 #include "reload.h"
 #include "langhooks.h"
 #include "opts.h"
+#include "params.h"
 #include "gimplify.h"
 #include "dwarf2.h"
 #include "tree-vectorizer.h"
@@ -351,6 +352,7 @@ static const struct tune_params generic_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -373,6 +375,7 @@ static const struct tune_params cortexa53_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -395,6 +398,7 @@ static const struct tune_params cortexa57_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_RENAME_FMA_REGS)	/* tune_flags.  */
 };
 
@@ -417,6 +421,7 @@ static const struct tune_params cortexa72_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -438,6 +443,7 @@ static const struct tune_params thunderx_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -459,6 +465,7 @@ static const struct tune_params xgene1_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -7032,6 +7039,19 @@ aarch64_sched_first_cycle_multipass_dfa_lookahead (void)
   return issue_rate > 1 && !sched_fusion ? issue_rate : 0;
 }
 
+
+/* Implement TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD as
+   autopref_multipass_dfa_lookahead_guard from haifa-sched.c.  It only
+   has an effect if PARAM_SCHED_AUTOPREF_QUEUE_DEPTH > 0.  */
+
+static int
+aarch64_first_cycle_multipass_dfa_lookahead_guard (rtx_insn *insn,
+						    int ready_index)
+{
+  return autopref_multipass_dfa_lookahead_guard (insn, ready_index);
+}
+
+
 /* Vectorizer cost model target hooks.  */
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
@@ -7622,6 +7642,29 @@ aarch64_override_options_internal (struct gcc_options *opts)
 
   initialize_aarch64_code_model (opts);
   initialize_aarch64_tls_size (opts);
+
+  int queue_depth = 0;
+  switch (aarch64_tune_params.autoprefetcher_model)
+    {
+      case tune_params::AUTOPREFETCHER_OFF:
+	queue_depth = -1;
+	break;
+      case tune_params::AUTOPREFETCHER_WEAK:
+	queue_depth = 0;
+	break;
+      case tune_params::AUTOPREFETCHER_STRONG:
+	queue_depth = max_insn_queue_index + 1;
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  /* We don't mind passing in global_options_set here as we don't use
+     the *options_set structs anyway.  */
+  maybe_set_param_value (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
+			 queue_depth,
+			 opts->x_param_values,
+			 global_options_set.x_param_values);
 
   aarch64_override_options_after_change_1 (opts);
 }
@@ -13535,6 +13578,10 @@ aarch64_promoted_type (const_tree t)
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   aarch64_sched_first_cycle_multipass_dfa_lookahead
+
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD \
+  aarch64_first_cycle_multipass_dfa_lookahead_guard
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT aarch64_trampoline_init

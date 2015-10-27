@@ -194,6 +194,23 @@ struct tune_params
   int vec_reassoc_width;
   int min_div_recip_mul_sf;
   int min_div_recip_mul_df;
+
+/* An enum specifying how to take into account CPU autoprefetch capabilities
+   during instruction scheduling:
+   - AUTOPREFETCHER_OFF: Do not take autoprefetch capabilities into account.
+   - AUTOPREFETCHER_WEAK: Attempt to sort sequences of loads/store in order of
+   offsets but allow the pipeline hazard recognizer to alter that order to
+   maximize multi-issue opportunities.
+   - AUTOPREFETCHER_STRONG: Attempt to sort sequences of loads/store in order of
+   offsets and prefer this even if it restricts multi-issue opportunities.  */
+
+  enum aarch64_autoprefetch_model
+  {
+    AUTOPREFETCHER_OFF,
+    AUTOPREFETCHER_WEAK,
+    AUTOPREFETCHER_STRONG
+  } autoprefetcher_model;
+
   unsigned int extra_tuning_flags;
 };
 
