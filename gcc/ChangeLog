@@ -1,3 +1,8 @@
+2015-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gimple-match-head.c (maybe_push_res_to_seq): Use create_tmp_reg
+	instead of make_ssa_name if not yet in SSA form.
+
 2015-10-27  Richard Biener  <rguenther@suse.de>
 
 	* cfg.c (free_edge): Add function argument and use it instead of cfun.
