@@ -5778,11 +5778,13 @@ provide dimensions larger than 1.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_GOACC_FORK_JOIN (gcall *@var{call}, const int *@var{dims}, bool @var{is_fork})
-This hook should convert IFN_GOACC_FORK and IFN_GOACC_JOIN function
-calls to target-specific gimple.  It is executed during the
-oacc_device_lower pass.  It should return true, if the functions
-should be deleted.  The default hook returns true, if there are no
-RTL expanders for them.
+This hook can be used to convert IFN_GOACC_FORK and IFN_GOACC_JOIN
+function calls to target-specific gimple, or indicate whether they
+should be retained.  It is executed during the oacc_device_lower pass.
+It should return true, if the call should be retained.  It should
+return false, if it is to be deleted (either because target-specific
+gimple has been inserted before it, or there is no need for it).
+The default hook returns false, if there are no RTL expanders for them.
 @end deftypefn
 
 @node Anchored Addresses

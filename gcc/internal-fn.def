@@ -72,3 +72,14 @@ DEF_INTERNAL_FN (VA_ARG, ECF_NOTHROW | ECF_LEAF, NULL)
    between uses.  See internal-fn.h for usage.  */
 DEF_INTERNAL_FN (UNIQUE, ECF_NOTHROW, NULL)
 
+/* DIM_SIZE and DIM_POS return the size of a particular compute
+   dimension and the executing thread's position within that
+   dimension.  DIM_POS is pure (and not const) so that it isn't
+   thought to clobber memory and can be gcse'd within a single
+   parallel region, but not across FORK/JOIN boundaries.  They take a
+   single INTEGER_CST argument.  */
+DEF_INTERNAL_FN (GOACC_DIM_SIZE, ECF_CONST | ECF_NOTHROW | ECF_LEAF, ".")
+DEF_INTERNAL_FN (GOACC_DIM_POS, ECF_PURE | ECF_NOTHROW | ECF_LEAF, ".")
+
+/* OpenACC looping abstraction.  See internal-fn.h for usage.  */
+DEF_INTERNAL_FN (GOACC_LOOP, ECF_PURE | ECF_NOTHROW, NULL)

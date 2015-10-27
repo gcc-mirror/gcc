@@ -1,5 +1,37 @@
 2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* internal-fn.def (IFN_GOACC_DIM_SIZE, IFN_GOACC_DIM_POS,
+	IFN_GOACC_LOOP): New.
+	* internal-fn.h (enum ifn_unique_kind): Add IFN_UNIQUE_OACC_FORK,
+	IFN_UNIQUE_OACC_JOIN, IFN_UNIQUE_OACC_HEAD_MARK,
+	IFN_UNIQUE_OACC_TAIL_MARK.
+	(enum ifn_goacc_loop_kind): New.
+	* internal-fn.c (expand_UNIQUE): Add IFN_UNIQUE_OACC_FORK,
+	IFN_UNIQUE_OACC_JOIN cases.
+	(expand_GOACC_DIM_SIZE, expand_GOACC_DIM_POS): New.
+	(expand_GOACC_LOOP): New.
+	* target-insns.def (oacc_dim_pos, oacc_dim_size): New.
+	* omp-low.c: Include gimple-pretty-print.h.
+	(struct oacc_loop): New.
+	(enum oacc_loop_flags): New.
+	(oacc_thread_numbers): New.
+	(oacc_xform_loop): New.
+	(new_oacc_loop_raw, new_oacc_loop_outer, new_oacc_loop,
+	new_oacc_loop_routine, finish_oacc_loop, free_oacc_loop): New,
+	(dump_oacc_loop_part, dump_oacc_loop, debug_oacc_loop): New,
+	(oacc_loop_discover_walk, oacc_loop_sibling_nrevers,
+	oacc_loop_discovery): New.
+	(oacc_loop_xform_head_tail, oacc_loop_xform_loop,
+	oacc_loop_process): New.
+	(oacc_loop_fixed_partitions, oacc_loop_partition): New.
+	(execute_oacc_device_lower): Discover & process loops.  Process
+	internal fns.
+	* target.def (goacc.fork_join): Change sense of hook, clarify
+	documentation.
+	* doc/tm.texi: Regenerated.
+
+2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* target-insns.def (oacc_fork, oacc_join): Define.
 	* target.def (goacc.validate_dims): Adjust doc to avoid warning.
 	(goacc.fork_join): New GOACC hook.
