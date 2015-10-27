@@ -603,13 +603,13 @@ free_hist (void **slot, void *data ATTRIBUTE_UNUSED)
 }
 
 void
-free_histograms (void)
+free_histograms (struct function *fn)
 {
-  if (VALUE_HISTOGRAMS (cfun))
+  if (VALUE_HISTOGRAMS (fn))
     {
-      htab_traverse (VALUE_HISTOGRAMS (cfun), free_hist, NULL);
-      htab_delete (VALUE_HISTOGRAMS (cfun));
-      VALUE_HISTOGRAMS (cfun) = NULL;
+      htab_traverse (VALUE_HISTOGRAMS (fn), free_hist, NULL);
+      htab_delete (VALUE_HISTOGRAMS (fn));
+      VALUE_HISTOGRAMS (fn) = NULL;
     }
 }
 

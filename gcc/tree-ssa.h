@@ -45,8 +45,8 @@ extern void insert_debug_temps_for_defs (gimple_stmt_iterator *);
 extern void reset_debug_uses (gimple *);
 extern void release_defs_bitset (bitmap toremove);
 extern void verify_ssa (bool, bool);
-extern void init_tree_ssa (struct function *);
-extern void delete_tree_ssa (void);
+extern void init_tree_ssa (function *);
+extern void delete_tree_ssa (function *);
 extern bool tree_ssa_useless_type_conversion (tree);
 extern tree tree_ssa_strip_useless_type_conversions (tree);
 

@@ -561,7 +561,7 @@ fini_copy_prop (void)
   bool changed = substitute_and_fold (get_value, NULL, true);
   if (changed)
     {
-      free_numbers_of_iterations_estimates ();
+      free_numbers_of_iterations_estimates (cfun);
       if (scev_initialized_p ())
 	scev_reset ();
     }

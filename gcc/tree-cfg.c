@@ -2570,9 +2570,9 @@ stmt_ends_bb_p (gimple *t)
 /* Remove block annotations and other data structures.  */
 
 void
-delete_tree_cfg_annotations (void)
+delete_tree_cfg_annotations (struct function *fn)
 {
-  vec_free (label_to_block_map_for_fn (cfun));
+  vec_free (label_to_block_map_for_fn (fn));
 }
 
 /* Return the virtual phi in BB.  */
