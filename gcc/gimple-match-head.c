@@ -708,7 +708,8 @@ gimple_simplify (gimple *stmt,
 			    rhs1 = build2 (rcode2, TREE_TYPE (rhs1),
 					   ops2[0], ops2[1]);
 			  else if (rcode2 == SSA_NAME
-				   || rcode2 == INTEGER_CST)
+				   || rcode2 == INTEGER_CST
+				   || rcode2 == VECTOR_CST)
 			    rhs1 = ops2[0];
 			  else
 			    valueized = false;
