@@ -1,5 +1,11 @@
 2015-10-28  Richard Biener  <rguenther@suse.de>
 
+	PR ipa/67600
+	* g++.dg/torture/pr67600.C: Remove preprocessed headers in favor
+	of #includes.
+
+2015-10-28  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/65962
 	* gcc.dg/vect/vect-62.c: Adjust.
 
