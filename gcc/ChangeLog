@@ -1,3 +1,25 @@
+2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* omp-low.c (struct omp_context): Remove gwv_below, gwv_this
+	fields.
+	(is_oacc_parallel, is_oacc_kernels): New.
+	(enclosing_target_ctx): May return NULL.
+	(ctx_in_oacc_kernels_region): New.
+	(check_oacc_kernel_gwv): New.
+	(oacc_loop_or_target_p): Delete.
+	(scan_omp_for): Don't calculate gwv mask.  Check parallel clause
+	operands.  Strip reductions fro kernels.
+	(scan_omp_target): Don't calculate gwv mask.
+	(lower_oacc_head_mark, lower_oacc_loop_marker,
+	lower_oacc_head_tail): New.
+	(struct oacc_collapse): New.
+	(expand_oacc_collapse_init, expand_oacc_collapse_vars): New.
+	(expand_omp_for_static_nochunk, expand_omp_for_static_chunk):
+	Remove OpenACC handling.
+	(expand_oacc_for): New.
+	(expand_omp_for): Call expand_oacc_for.
+	(lower_omp_for): Call lower_oacc_head_tail.
+
 2015-10-27  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* attribs.c (check_attribute_tables): New function, broken out from...
