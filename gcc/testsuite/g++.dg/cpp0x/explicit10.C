@@ -28,12 +28,12 @@ template<typename T> void g() {
 
 int main()
 {
-  f<A>();			// { dg-bogus "required from here" }
+  f<A>();			// { dg-message "required from here" }
   f<B>();			// { dg-message "required from here" }
   f<C>();			// { dg-message "required from here" }
   f<D>();			// { dg-message "required from here" }
 
-  g<A>();			// { dg-bogus "required from here" }
+  g<A>();			// { dg-message "required from here" }
   g<B>();			// { dg-message "required from here" }
   g<C>();			// { dg-message "required from here" }
   g<D>();			// { dg-message "required from here" }
