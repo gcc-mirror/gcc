@@ -1,3 +1,10 @@
+2015-10-05  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/67839
+	* config/avr/predicates.md (low_io_address_operand): Don't
+	consider MODE when computing upper bound.
+	(io_address_operand): Likewise.
+
 2015-10-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* fold-const.c (operand_equal_p): Do not verify that types are
