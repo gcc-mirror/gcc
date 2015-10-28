@@ -1,3 +1,11 @@
+2015-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68067
+	* fold-const.c (negate_expr_p): We cannot negate plus or minus
+	if overflow is not wrapping.  Likewise multiplication unless
+	one operand is constant and not power of two.
+	(fold_negate_expr): Adjust accordingly.
+
 2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* omp-low.c (struct omp_context): Remove gwv_below, gwv_this

@@ -443,7 +443,9 @@ negate_expr_p (tree t)
 
     case PLUS_EXPR:
       if (HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
-	  || HONOR_SIGNED_ZEROS (element_mode (type)))
+	  || HONOR_SIGNED_ZEROS (element_mode (type))
+	  || (INTEGRAL_TYPE_P (type)
+	      && ! TYPE_OVERFLOW_WRAPS (type)))
 	return false;
       /* -(A + B) -> (-B) - A.  */
       if (negate_expr_p (TREE_OPERAND (t, 1))
@@ -457,12 +459,23 @@ negate_expr_p (tree t)
       /* We can't turn -(A-B) into B-A when we honor signed zeros.  */
       return !HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
 	     && !HONOR_SIGNED_ZEROS (element_mode (type))
+	     && (! INTEGRAL_TYPE_P (type)
+		 || TYPE_OVERFLOW_WRAPS (type))
 	     && reorder_operands_p (TREE_OPERAND (t, 0),
 				    TREE_OPERAND (t, 1));
 
     case MULT_EXPR:
-      if (TYPE_UNSIGNED (TREE_TYPE (t)))
-        break;
+      if (TYPE_UNSIGNED (type))
+	break;
+      /* INT_MIN/n * n doesn't overflow while negating one operand it does
+         if n is a power of two.  */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (t))
+	  && ! TYPE_OVERFLOW_WRAPS (TREE_TYPE (t))
+	  && ! ((TREE_CODE (TREE_OPERAND (t, 0)) == INTEGER_CST
+		 && ! integer_pow2p (TREE_OPERAND (t, 0)))
+		|| (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST
+		    && ! integer_pow2p (TREE_OPERAND (t, 1)))))
+	break;
 
       /* Fall through.  */
 
