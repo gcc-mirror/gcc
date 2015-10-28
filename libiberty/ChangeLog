@@ -1,3 +1,7 @@
+2015-10-28  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (TAGS): Fix for separate build directory.
+
 2015-10-18  Roland McGrath  <roland@gnu.org>
 	    Iain Sandoe  <iain@codesourcery.com>
 
