@@ -1,3 +1,8 @@
+2015-10-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* fold-const.c (operand_equal_p): Do not verify that types are
+	compatible for MEM_REFs.
+
 2015-10-28  Richard Biener  <rguenther@suse.de>
 
 	* gimple-match-head.c (gimple_simplify): Allow VECTOR_CSTs
