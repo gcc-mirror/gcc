@@ -1,3 +1,24 @@
+2015-10-28  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-structalias.c (new_var_info, make_heapvar)
+	(make_constraint_from_restrict, make_constraint_from_global_restrict)
+	(create_function_info_for, create_variable_info_for_1)
+	(create_variable_info_for): Add and handle add_id parameter.
+	(get_call_vi, new_scalar_tmp_constraint_exp, handle_rhs_call)
+	(init_base_vars): Add extra argument to calls to new_var_info.
+	(get_vi_for_tree): Add extra argument to call to
+	create_variable_info_for.
+	(process_constraint, do_deref, process_all_all_constraints): Add extra
+	argument to calls to new_scalar_tmp_constraint_exp.
+	(handle_lhs_call, find_func_aliases_for_builtin_call): Add extra
+	argument to calls to make_heapvar.
+	(make_restrict_var_constraints): Add extra argument to call to
+	make_constraint_from_global_restrict.
+	(intra_create_variable_infos): Add extra argument to call to
+	create_variable_info_for_1.
+	(ipa_pta_execute): Add extra argument to call to
+	create_function_info_for.
+
 2015-10-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/aarch64.md (call, call_value, sibcall): Handle noplt.
