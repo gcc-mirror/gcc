@@ -230,9 +230,8 @@ gimple_remove_histogram_value (struct function *fun, gimple *stmt,
       hist2->hvalue.next = hist->hvalue.next;
     }
   free (hist->hvalue.counters);
-#ifdef ENABLE_CHECKING
-  memset (hist, 0xab, sizeof (*hist));
-#endif
+  if (flag_checking)
+    memset (hist, 0xab, sizeof (*hist));
   free (hist);
 }
 
@@ -595,9 +594,8 @@ free_hist (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   histogram_value hist = *(histogram_value *) slot;
   free (hist->hvalue.counters);
-#ifdef ENABLE_CHECKING
-  memset (hist, 0xab, sizeof (*hist));
-#endif
+  if (flag_checking)
+    memset (hist, 0xab, sizeof (*hist));
   free (hist);
   return 1;
 }

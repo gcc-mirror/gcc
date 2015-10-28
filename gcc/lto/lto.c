@@ -1586,19 +1586,18 @@ unify_scc (struct data_in *data_in, unsigned from,
 	  num_sccs_merged++;
 	  total_scc_size_merged += len;
 
-#ifdef ENABLE_CHECKING
-	  for (unsigned i = 0; i < len; ++i)
-	    {
-	      tree t = map[2*i+1];
-	      enum tree_code code = TREE_CODE (t);
-	      /* IDENTIFIER_NODEs should be singletons and are merged by the
-		 streamer.  The others should be singletons, too, and we
-		 should not merge them in any way.  */
-	      gcc_assert (code != TRANSLATION_UNIT_DECL
-			  && code != IDENTIFIER_NODE
-			  && !streamer_handle_as_builtin_p (t));
-	    }
-#endif
+	  if (flag_checking)
+	    for (unsigned i = 0; i < len; ++i)
+	      {
+		tree t = map[2*i+1];
+		enum tree_code code = TREE_CODE (t);
+		/* IDENTIFIER_NODEs should be singletons and are merged by the
+		   streamer.  The others should be singletons, too, and we
+		   should not merge them in any way.  */
+		gcc_assert (code != TRANSLATION_UNIT_DECL
+			    && code != IDENTIFIER_NODE
+			    && !streamer_handle_as_builtin_p (t));
+	      }
 
 	  /* Fixup the streamer cache with the prevailing nodes according
 	     to the tree node mapping computed by compare_tree_sccs.  */
@@ -2636,10 +2635,8 @@ lto_fixup_state (struct lto_in_decl_state *state)
       for (i = 0; i < vec_safe_length (trees); i++)
 	{
 	  tree t = (*trees)[i];
-#ifdef ENABLE_CHECKING
-	  if (TYPE_P (t))
+	  if (flag_checking && TYPE_P (t))
 	    verify_type (t);
-#endif
 	  if (VAR_OR_FUNCTION_DECL_P (t)
 	      && (TREE_PUBLIC (t) || DECL_EXTERNAL (t)))
 	    (*trees)[i] = lto_symtab_prevailing_decl (t);
@@ -3101,9 +3098,8 @@ do_whole_program_analysis (void)
       fprintf (symtab->dump_file, "Optimized ");
       symtab_node::dump_table (symtab->dump_file);
     }
-#ifdef ENABLE_CHECKING
-  symtab_node::verify_symtab_nodes ();
-#endif
+
+  symtab_node::checking_verify_symtab_nodes ();
   bitmap_obstack_release (NULL);
 
   /* We are about to launch the final LTRANS phase, stop the WPA timer.  */

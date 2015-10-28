@@ -2873,11 +2873,8 @@ try_optimize_cfg (int mode)
                  to detect and fix during edge forwarding, and in some cases
                  is only visible after newly unreachable blocks are deleted,
                  which will be done in fixup_partitions.  */
-              fixup_partitions ();
-
-#ifdef ENABLE_CHECKING
-              verify_flow_info ();
-#endif
+	      fixup_partitions ();
+	      checking_verify_flow_info ();
             }
 
 	  changed_overall |= changed;

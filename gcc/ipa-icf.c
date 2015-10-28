@@ -2599,7 +2599,7 @@ sem_item_optimizer::execute (void)
   dump_cong_classes ();
 
   process_cong_reduction ();
-  verify_classes ();
+  checking_verify_classes ();
 
   if (dump_file)
     fprintf (dump_file, "Dump after callgraph-based congruence reduction\n");
@@ -2618,7 +2618,7 @@ sem_item_optimizer::execute (void)
 
   process_cong_reduction ();
   dump_cong_classes ();
-  verify_classes ();
+  checking_verify_classes ();
   bool merged_p = merge_classes (prev_class_count);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2883,7 +2883,7 @@ sem_item_optimizer::subdivide_classes_by_equality (bool in_wpa)
 	}
     }
 
-  verify_classes ();
+  checking_verify_classes ();
 }
 
 /* Subdivide classes by address references that members of the class
@@ -2977,12 +2977,20 @@ sem_item_optimizer::subdivide_classes_by_sensitive_refs ()
   return newly_created_classes;
 }
 
-/* Verify congruence classes if checking is enabled.  */
+/* Verify congruence classes, if checking is enabled.  */
+
+void
+sem_item_optimizer::checking_verify_classes (void)
+{
+  if (flag_checking)
+    verify_classes ();
+}
+
+/* Verify congruence classes.  */
 
 void
 sem_item_optimizer::verify_classes (void)
 {
-#if ENABLE_CHECKING
   for (hash_table <congruence_class_group_hash>::iterator it = m_classes.begin ();
        it != m_classes.end (); ++it)
     {
@@ -2990,26 +2998,25 @@ sem_item_optimizer::verify_classes (void)
 	{
 	  congruence_class *cls = (*it)->classes[i];
 
-	  gcc_checking_assert (cls);
-	  gcc_checking_assert (cls->members.length () > 0);
+	  gcc_assert (cls);
+	  gcc_assert (cls->members.length () > 0);
 
 	  for (unsigned int j = 0; j < cls->members.length (); j++)
 	    {
 	      sem_item *item = cls->members[j];
 
-	      gcc_checking_assert (item);
-	      gcc_checking_assert (item->cls == cls);
+	      gcc_assert (item);
+	      gcc_assert (item->cls == cls);
 
 	      for (unsigned k = 0; k < item->usages.length (); k++)
 		{
 		  sem_usage_pair *usage = item->usages[k];
-		  gcc_checking_assert (usage->item->index_in_class <
-				       usage->item->cls->members.length ());
+		  gcc_assert (usage->item->index_in_class <
+			      usage->item->cls->members.length ());
 		}
 	    }
 	}
     }
-#endif
 }
 
 /* Disposes split map traverse function. CLS_PTR is pointer to congruence
@@ -3054,10 +3061,11 @@ sem_item_optimizer::traverse_congruence_split (congruence_class * const &cls,
 	  add_item_to_class (tc, cls->members[i]);
 	}
 
-#ifdef ENABLE_CHECKING
-      for (unsigned int i = 0; i < 2; i++)
-	gcc_checking_assert (newclasses[i]->members.length ());
-#endif
+      if (flag_checking)
+	{
+	  for (unsigned int i = 0; i < 2; i++)
+	    gcc_assert (newclasses[i]->members.length ());
+	}
 
       if (splitter_cls == cls)
 	optimizer->splitter_class_removed = true;
@@ -3152,11 +3160,9 @@ sem_item_optimizer::do_congruence_step_for_index (congruence_class *cls,
 	  else
 	    b = *slot;
 
-#if ENABLE_CHECKING
 	  gcc_checking_assert (usage->item->cls);
 	  gcc_checking_assert (usage->item->index_in_class <
 			       usage->item->cls->members.length ());
-#endif
 
 	  bitmap_set_bit (b, usage->item->index_in_class);
 	}

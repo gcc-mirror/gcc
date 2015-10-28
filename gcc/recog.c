@@ -2975,9 +2975,7 @@ split_all_insns (void)
   if (changed)
     find_many_sub_basic_blocks (blocks);
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
+  checking_verify_flow_info ();
 
   sbitmap_free (blocks);
 }

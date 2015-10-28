@@ -4481,10 +4481,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   fn = cg_edge->callee->decl;
   cg_edge->callee->get_untransformed_body ();
 
-#ifdef ENABLE_CHECKING
-  if (cg_edge->callee->decl != id->dst_node->decl)
+  if (flag_checking && cg_edge->callee->decl != id->dst_node->decl)
     cg_edge->callee->verify ();
-#endif
 
   /* We will be inlining this callee.  */
   id->eh_lp_nr = lookup_stmt_eh_lp (stmt);
@@ -4973,7 +4971,7 @@ optimize_inline_calls (tree fn)
 
   pop_gimplify_context (NULL);
 
-#ifdef ENABLE_CHECKING
+  if (flag_checking)
     {
       struct cgraph_edge *e;
 
@@ -4983,7 +4981,6 @@ optimize_inline_calls (tree fn)
       for (e = id.dst_node->callees; e; e = e->next_callee)
 	gcc_assert (e->inline_failed);
     }
-#endif
 
   /* Fold queued statements.  */
   fold_marked_statements (last, id.statements_to_fold);
@@ -4999,9 +4996,8 @@ optimize_inline_calls (tree fn)
   number_blocks (fn);
 
   delete_unreachable_blocks_update_callgraph (&id);
-#ifdef ENABLE_CHECKING
-  id.dst_node->verify ();
-#endif
+  if (flag_checking)
+    id.dst_node->verify ();
 
   /* It would be nice to check SSA/CFG/statement consistency here, but it is
      not possible yet - the IPA passes might make various functions to not

@@ -278,21 +278,21 @@ add_exit_phi (basic_block exit, tree var)
   edge e;
   edge_iterator ei;
 
-#ifdef ENABLE_CHECKING
   /* Check that at least one of the edges entering the EXIT block exits
      the loop, or a superloop of that loop, that VAR is defined in.  */
-  gimple *def_stmt = SSA_NAME_DEF_STMT (var);
-  basic_block def_bb = gimple_bb (def_stmt);
-  FOR_EACH_EDGE (e, ei, exit->preds)
+  if (flag_checking)
     {
-      struct loop *aloop = find_common_loop (def_bb->loop_father,
-					     e->src->loop_father);
-      if (!flow_bb_inside_loop_p (aloop, e->dest))
-	break;
+      gimple *def_stmt = SSA_NAME_DEF_STMT (var);
+      basic_block def_bb = gimple_bb (def_stmt);
+      FOR_EACH_EDGE (e, ei, exit->preds)
+	{
+	  struct loop *aloop = find_common_loop (def_bb->loop_father,
+						 e->src->loop_father);
+	  if (!flow_bb_inside_loop_p (aloop, e->dest))
+	    break;
+	}
+      gcc_assert (e);
     }
-
-  gcc_checking_assert (e);
-#endif
 
   phi = create_phi_node (NULL_TREE, exit);
   create_new_def_for (var, phi, gimple_phi_result_ptr (phi));
@@ -1368,11 +1368,9 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   gimple_cond_set_rhs (exit_if, exit_bound);
   update_stmt (exit_if);
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-  verify_loop_structure ();
-  verify_loop_closed_ssa (true);
-#endif
+  checking_verify_flow_info ();
+  checking_verify_loop_structure ();
+  checking_verify_loop_closed_ssa (true);
 }
 
 /* Wrapper over tree_transform_and_unroll_loop for case we do not

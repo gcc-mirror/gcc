@@ -703,7 +703,7 @@ maybe_record_in_goto_queue (struct leh_state *state, gimple *stmt)
 }
 
 
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
 /* We do not process GIMPLE_SWITCHes for now.  As long as the original source
    was in fact structured, and we've not yet done jump threading, then none
    of the labels will leave outer GIMPLE_TRY_FINALLY nodes. Verify this.  */
@@ -3921,9 +3921,8 @@ remove_unreachable_handlers (void)
   sbitmap_free (r_reachable);
   sbitmap_free (lp_reachable);
 
-#ifdef ENABLE_CHECKING
-  verify_eh_tree (cfun);
-#endif
+  if (flag_checking)
+    verify_eh_tree (cfun);
 }
 
 /* Remove unreachable handlers if any landing pads have been removed after

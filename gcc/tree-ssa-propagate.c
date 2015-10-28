@@ -1501,14 +1501,14 @@ static void
 replace_exp_1 (use_operand_p op_p, tree val,
     	       bool for_propagation ATTRIBUTE_UNUSED)
 {
-#if defined ENABLE_CHECKING
-  tree op = USE_FROM_PTR (op_p);
-
-  gcc_assert (!(for_propagation
-		&& TREE_CODE (op) == SSA_NAME
-		&& TREE_CODE (val) == SSA_NAME
-		&& !may_propagate_copy (op, val)));
-#endif
+  if (flag_checking)
+    {
+      tree op = USE_FROM_PTR (op_p);
+      gcc_assert (!(for_propagation
+		  && TREE_CODE (op) == SSA_NAME
+		  && TREE_CODE (val) == SSA_NAME
+		  && !may_propagate_copy (op, val)));
+    }
 
   if (TREE_CODE (val) == SSA_NAME)
     SET_USE (op_p, val);

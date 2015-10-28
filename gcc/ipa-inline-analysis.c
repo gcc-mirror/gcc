@@ -2964,10 +2964,12 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   info->size = info->self_size;
   info->stack_frame_offset = 0;
   info->estimated_stack_size = info->estimated_self_stack_size;
-#ifdef ENABLE_CHECKING
-  inline_update_overall_summary (node);
-  gcc_assert (info->time == info->self_time && info->size == info->self_size);
-#endif
+  if (flag_checking)
+    {
+      inline_update_overall_summary (node);
+      gcc_assert (info->time == info->self_time
+		  && info->size == info->self_size);
+    }
 
   pop_cfun ();
 }

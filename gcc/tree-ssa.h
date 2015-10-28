@@ -77,5 +77,13 @@ redirect_edge_var_map_location (edge_var_map *v)
   return v->locus;
 }
 
+/* Verify SSA invariants, if internal consistency checks are enabled.  */
+
+static inline void
+checking_verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
+{
+  if (flag_checking)
+    verify_ssa (check_modified_stmt, check_ssa_operands);
+}
 
 #endif /* GCC_TREE_SSA_H */

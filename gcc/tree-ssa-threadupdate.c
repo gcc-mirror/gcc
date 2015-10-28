@@ -2510,9 +2510,8 @@ duplicate_thread_path (edge entry, edge exit,
       scale_bbs_frequencies_int (region_copy, n_region, entry_freq, total_freq);
     }
 
-#ifdef ENABLE_CHECKING
-  verify_jump_thread (region_copy, n_region);
-#endif
+  if (flag_checking)
+    verify_jump_thread (region_copy, n_region);
 
   /* Remove the last branch in the jump thread path.  */
   remove_ctrl_stmt_and_useless_edges (region_copy[n_region - 1], exit->dest);

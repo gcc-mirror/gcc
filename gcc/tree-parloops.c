@@ -2784,9 +2784,7 @@ pass_parallelize_loops::execute (function *fun)
     {
       fun->curr_properties &= ~(PROP_gimple_eomp);
 
-#ifdef ENABLE_CHECKING
-      verify_loop_structure ();
-#endif
+      checking_verify_loop_structure ();
 
       return TODO_update_ssa;
     }

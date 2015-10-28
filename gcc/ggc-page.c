@@ -2201,12 +2201,11 @@ ggc_collect (void)
 void
 ggc_grow (void)
 {
-#ifndef ENABLE_CHECKING
-  G.allocated_last_gc = MAX (G.allocated_last_gc,
-			     G.allocated);
-#else
-  ggc_collect ();
-#endif
+  if (!flag_checking)
+    G.allocated_last_gc = MAX (G.allocated_last_gc,
+			       G.allocated);
+  else
+    ggc_collect ();
   if (!quiet_flag)
     fprintf (stderr, " {GC start %luk} ", (unsigned long) G.allocated / 1024);
 }

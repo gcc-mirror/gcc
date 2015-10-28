@@ -464,16 +464,15 @@ function_and_variable_visibility (bool whole_program)
 	 what comdat group they are in when they won't be emitted in this TU.  */
       if (node->same_comdat_group && DECL_EXTERNAL (node->decl))
 	{
-#ifdef ENABLE_CHECKING
-	  symtab_node *n;
-
-	  for (n = node->same_comdat_group;
-	       n != node;
-	       n = n->same_comdat_group)
-	      /* If at least one of same comdat group functions is external,
-		 all of them have to be, otherwise it is a front-end bug.  */
-	      gcc_assert (DECL_EXTERNAL (n->decl));
-#endif
+	  if (flag_checking)
+	    {
+	      for (symtab_node *n = node->same_comdat_group;
+		   n != node;
+		   n = n->same_comdat_group)
+		/* If at least one of same comdat group functions is external,
+		   all of them have to be, otherwise it is a front-end bug.  */
+		gcc_assert (DECL_EXTERNAL (n->decl));
+	    }
 	  node->dissolve_same_comdat_group_list ();
 	}
       gcc_assert ((!DECL_WEAK (node->decl)

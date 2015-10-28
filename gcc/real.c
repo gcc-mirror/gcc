@@ -1808,15 +1808,13 @@ real_to_decimal_for_mode (char *str, const REAL_VALUE_TYPE *r_orig,
   /* Append the exponent.  */
   sprintf (last, "e%+d", dec_exp);
 
-#ifdef ENABLE_CHECKING
   /* Verify that we can read the original value back in.  */
-  if (mode != VOIDmode)
+  if (flag_checking && mode != VOIDmode)
     {
       real_from_string (&r, str);
       real_convert (&r, mode, &r);
       gcc_assert (real_identical (&r, r_orig));
     }
-#endif
 }
 
 /* Likewise, except always uses round-to-nearest.  */

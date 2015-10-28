@@ -634,9 +634,7 @@ calculate_dominance_info (cdi_direction dir)
 
   if (dom_computed[dir_index] == DOM_OK)
     {
-#if ENABLE_CHECKING
-      verify_dominators (dir);
-#endif
+      checking_verify_dominators (dir);
       return;
     }
 
@@ -665,11 +663,7 @@ calculate_dominance_info (cdi_direction dir)
       dom_computed[dir_index] = DOM_NO_FAST_QUERY;
     }
   else
-    {
-#if ENABLE_CHECKING
-      verify_dominators (dir);
-#endif
-    }
+    checking_verify_dominators (dir);
 
   compute_dom_fast_query (dir);
 

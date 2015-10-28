@@ -174,8 +174,58 @@ find_attribute_namespace (const char* ns)
   return NULL;
 }
 
-/* Initialize attribute tables, and make some sanity checks
-   if --enable-checking.  */
+/* Make some sanity checks on the attribute tables.  */
+
+static void
+check_attribute_tables (void)
+{
+  for (size_t i = 0; i < ARRAY_SIZE (attribute_tables); i++)
+    for (size_t j = 0; attribute_tables[i][j].name != NULL; j++)
+      {
+	/* The name must not begin and end with __.  */
+	const char *name = attribute_tables[i][j].name;
+	int len = strlen (name);
+
+	gcc_assert (!(name[0] == '_' && name[1] == '_'
+		      && name[len - 1] == '_' && name[len - 2] == '_'));
+
+	/* The minimum and maximum lengths must be consistent.  */
+	gcc_assert (attribute_tables[i][j].min_length >= 0);
+
+	gcc_assert (attribute_tables[i][j].max_length == -1
+		    || (attribute_tables[i][j].max_length
+			>= attribute_tables[i][j].min_length));
+
+	/* An attribute cannot require both a DECL and a TYPE.  */
+	gcc_assert (!attribute_tables[i][j].decl_required
+		    || !attribute_tables[i][j].type_required);
+
+	  /* If an attribute requires a function type, in particular
+	     it requires a type.  */
+	gcc_assert (!attribute_tables[i][j].function_type_required
+		    || attribute_tables[i][j].type_required);
+      }
+
+  /* Check that each name occurs just once in each table.  */
+  for (size_t i = 0; i < ARRAY_SIZE (attribute_tables); i++)
+    for (size_t j = 0; attribute_tables[i][j].name != NULL; j++)
+      for (size_t k = j + 1; attribute_tables[i][k].name != NULL; k++)
+	gcc_assert (strcmp (attribute_tables[i][j].name,
+			    attribute_tables[i][k].name));
+
+  /* Check that no name occurs in more than one table.  Names that
+     begin with '*' are exempt, and may be overridden.  */
+  for (size_t i = 0; i < ARRAY_SIZE (attribute_tables); i++)
+    for (size_t j = i + 1; j < ARRAY_SIZE (attribute_tables); j++)
+      for (size_t k = 0; attribute_tables[i][k].name != NULL; k++)
+	for (size_t l = 0; attribute_tables[j][l].name != NULL; l++)
+	  gcc_assert (attribute_tables[i][k].name[0] == '*'
+		      || strcmp (attribute_tables[i][k].name,
+				 attribute_tables[j][l].name));
+}
+
+/* Initialize attribute tables, and make some sanity checks if checking is
+   enabled.  */
 
 void
 init_attributes (void)
@@ -195,62 +245,8 @@ init_attributes (void)
     if (attribute_tables[i] == NULL)
       attribute_tables[i] = empty_attribute_table;
 
-#ifdef ENABLE_CHECKING
-  /* Make some sanity checks on the attribute tables.  */
-  for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
-    {
-      int j;
-
-      for (j = 0; attribute_tables[i][j].name != NULL; j++)
-	{
-	  /* The name must not begin and end with __.  */
-	  const char *name = attribute_tables[i][j].name;
-	  int len = strlen (name);
-
-	  gcc_assert (!(name[0] == '_' && name[1] == '_'
-			&& name[len - 1] == '_' && name[len - 2] == '_'));
-
-	  /* The minimum and maximum lengths must be consistent.  */
-	  gcc_assert (attribute_tables[i][j].min_length >= 0);
-
-	  gcc_assert (attribute_tables[i][j].max_length == -1
-		      || (attribute_tables[i][j].max_length
-			  >= attribute_tables[i][j].min_length));
-
-	  /* An attribute cannot require both a DECL and a TYPE.  */
-	  gcc_assert (!attribute_tables[i][j].decl_required
-		      || !attribute_tables[i][j].type_required);
-
-	  /* If an attribute requires a function type, in particular
-	     it requires a type.  */
-	  gcc_assert (!attribute_tables[i][j].function_type_required
-		      || attribute_tables[i][j].type_required);
-	}
-    }
-
-  /* Check that each name occurs just once in each table.  */
-  for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
-    {
-      int j, k;
-      for (j = 0; attribute_tables[i][j].name != NULL; j++)
-	for (k = j + 1; attribute_tables[i][k].name != NULL; k++)
-	  gcc_assert (strcmp (attribute_tables[i][j].name,
-			      attribute_tables[i][k].name));
-    }
-  /* Check that no name occurs in more than one table.  Names that
-     begin with '*' are exempt, and may be overridden.  */
-  for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
-    {
-      size_t j, k, l;
-
-      for (j = i + 1; j < ARRAY_SIZE (attribute_tables); j++)
-	for (k = 0; attribute_tables[i][k].name != NULL; k++)
-	  for (l = 0; attribute_tables[j][l].name != NULL; l++)
-	    gcc_assert (attribute_tables[i][k].name[0] == '*'
-			|| strcmp (attribute_tables[i][k].name,
-				   attribute_tables[j][l].name));
-    }
-#endif
+  if (flag_checking)
+    check_attribute_tables ();
 
   for (i = 0; i < ARRAY_SIZE (attribute_tables); ++i)
     /* Put all the GNU attributes into the "gnu" namespace.  */

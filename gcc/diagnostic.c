@@ -736,12 +736,12 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
   if (diagnostic->kind == DK_ICE || diagnostic->kind == DK_ICE_NOBT)
     {
-#ifndef ENABLE_CHECKING
       /* When not checking, ICEs are converted to fatal errors when an
 	 error has already occurred.  This is counteracted by
 	 abort_on_error.  */
-      if ((diagnostic_kind_count (context, DK_ERROR) > 0
-	   || diagnostic_kind_count (context, DK_SORRY) > 0)
+      if (!CHECKING_P
+	  && (diagnostic_kind_count (context, DK_ERROR) > 0
+	      || diagnostic_kind_count (context, DK_SORRY) > 0)
 	  && !context->abort_on_error)
 	{
 	  expanded_location s 
@@ -750,7 +750,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 		   s.file, s.line);
 	  exit (ICE_EXIT_CODE);
 	}
-#endif
       if (context->internal_error)
 	(*context->internal_error) (context,
 				    diagnostic->message.format_spec,

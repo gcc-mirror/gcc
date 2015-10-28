@@ -2733,8 +2733,7 @@ verify_rtx_sharing (rtx orig, rtx insn)
 
   /* This rtx may not be shared.  If it has already been seen,
      replace it with a copy of itself.  */
-#ifdef ENABLE_CHECKING
-  if (RTX_FLAG (x, used))
+  if (flag_checking && RTX_FLAG (x, used))
     {
       error ("invalid rtl sharing found in the insn");
       debug_rtx (insn);
@@ -2742,7 +2741,6 @@ verify_rtx_sharing (rtx orig, rtx insn)
       debug_rtx (x);
       internal_error ("internal consistency failure");
     }
-#endif
   gcc_assert (!RTX_FLAG (x, used));
 
   RTX_FLAG (x, used) = 1;
@@ -4259,12 +4257,12 @@ delete_insns_since (rtx_insn *from)
 void
 reorder_insns_nobb (rtx_insn *from, rtx_insn *to, rtx_insn *after)
 {
-#ifdef ENABLE_CHECKING
-  rtx_insn *x;
-  for (x = from; x != to; x = NEXT_INSN (x))
-    gcc_assert (after != x);
-  gcc_assert (after != to);
-#endif
+  if (flag_checking)
+    {
+      for (rtx_insn *x = from; x != to; x = NEXT_INSN (x))
+	gcc_assert (after != x);
+      gcc_assert (after != to);
+    }
 
   /* Splice this bunch out of where it is now.  */
   if (PREV_INSN (from))

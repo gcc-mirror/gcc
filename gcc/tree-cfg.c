@@ -6469,14 +6469,12 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
 	  || (p->orig_block == NULL_TREE
 	      && block != NULL_TREE))
 	TREE_SET_BLOCK (t, p->new_block);
-#ifdef ENABLE_CHECKING
-      else if (block != NULL_TREE)
+      else if (flag_checking && block != NULL_TREE)
 	{
 	  while (block && TREE_CODE (block) == BLOCK && block != p->orig_block)
 	    block = BLOCK_SUPERCONTEXT (block);
 	  gcc_assert (block == p->orig_block);
 	}
-#endif
     }
   else if (DECL_P (t) || TREE_CODE (t) == SSA_NAME)
     {
@@ -7061,9 +7059,9 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   bbs.create (0);
   bbs.safe_push (entry_bb);
   gather_blocks_in_sese_region (entry_bb, exit_bb, &bbs);
-#ifdef ENABLE_CHECKING
-  verify_sese (entry_bb, exit_bb, &bbs);
-#endif
+
+  if (flag_checking)
+    verify_sese (entry_bb, exit_bb, &bbs);
 
   /* The blocks that used to be dominated by something in BBS will now be
      dominated by the new block.  */
@@ -7905,13 +7903,11 @@ gimple_flow_call_edges_add (sbitmap blocks)
 		     no edge to the exit block in CFG already.
 		     Calling make_edge in such case would cause us to
 		     mark that edge as fake and remove it later.  */
-#ifdef ENABLE_CHECKING
-		  if (stmt == last_stmt)
+		  if (flag_checking && stmt == last_stmt)
 		    {
 		      e = find_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun));
 		      gcc_assert (e == NULL);
 		    }
-#endif
 
 		  /* Note that the following may create a new basic block
 		     and renumber the existing basic blocks.  */

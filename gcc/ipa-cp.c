@@ -2920,9 +2920,8 @@ ipcp_propagate_stage (struct ipa_topo_info *topo)
 	     overall_size, max_new_size);
 
   propagate_constants_topo (topo);
-#ifdef ENABLE_CHECKING
-  ipcp_verify_propagated_values ();
-#endif
+  if (flag_checking)
+    ipcp_verify_propagated_values ();
   topo->constants.propagate_effects ();
   topo->contexts.propagate_effects ();
 

@@ -3127,14 +3127,14 @@ scan_omp_target (gomp_target *stmt, omp_context *outer_ctx)
     {
       TYPE_FIELDS (ctx->record_type)
 	= nreverse (TYPE_FIELDS (ctx->record_type));
-#ifdef ENABLE_CHECKING
-      tree field;
-      unsigned int align = DECL_ALIGN (TYPE_FIELDS (ctx->record_type));
-      for (field = TYPE_FIELDS (ctx->record_type);
-	   field;
-	   field = DECL_CHAIN (field))
-	gcc_assert (DECL_ALIGN (field) == align);
-#endif
+      if (flag_checking)
+	{
+	  unsigned int align = DECL_ALIGN (TYPE_FIELDS (ctx->record_type));
+	  for (tree field = TYPE_FIELDS (ctx->record_type);
+	       field;
+	       field = DECL_CHAIN (field))
+	    gcc_assert (DECL_ALIGN (field) == align);
+	}
       layout_type (ctx->record_type);
       if (offloaded)
 	fixup_child_record_type (ctx);
@@ -6742,10 +6742,8 @@ expand_omp_taskreg (struct omp_region *region)
 	}
       if (gimple_in_ssa_p (cfun))
 	update_ssa (TODO_update_ssa);
-#ifdef ENABLE_CHECKING
-      if (!loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+      if (flag_checking && !loops_state_satisfies_p (LOOPS_NEED_FIXUP))
 	verify_loop_structure ();
-#endif
       pop_cfun ();
     }
 
@@ -11562,10 +11560,8 @@ expand_omp_target (struct omp_region *region)
 	  if (changed)
 	    cleanup_tree_cfg ();
 	}
-#ifdef ENABLE_CHECKING
-      if (!loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+      if (flag_checking && !loops_state_satisfies_p (LOOPS_NEED_FIXUP))
 	verify_loop_structure ();
-#endif
       pop_cfun ();
     }
 
@@ -12102,10 +12098,8 @@ execute_expand_omp (void)
 
   expand_omp (root_omp_region);
 
-#ifdef ENABLE_CHECKING
-  if (!loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+  if (flag_checking && !loops_state_satisfies_p (LOOPS_NEED_FIXUP))
     verify_loop_structure ();
-#endif
   cleanup_tree_cfg ();
 
   free_omp_regions ();
@@ -14260,7 +14254,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       default:
 	break;
       case OMP_CLAUSE_MAP:
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
 	/* First check what we're prepared to handle in the following.  */
 	switch (OMP_CLAUSE_MAP_KIND (c))
 	  {

@@ -5153,9 +5153,9 @@ ira (FILE *f)
     df_remove_problem (df_live);
   gcc_checking_assert (df_live == NULL);
 
-#ifdef ENABLE_CHECKING
-  df->changeable_flags |= DF_VERIFY_SCHEDULED;
-#endif
+  if (flag_checking)
+    df->changeable_flags |= DF_VERIFY_SCHEDULED;
+
   df_analyze ();
 
   init_reg_equiv ();

@@ -491,10 +491,9 @@ save_inline_function_body (struct cgraph_node *node)
       first_clone->remove_symbol_and_inline_clones ();
       first_clone = NULL;
     }
-#ifdef ENABLE_CHECKING
-  else
+  else if (flag_checking)
     first_clone->verify ();
-#endif
+
   return first_clone;
 }
 

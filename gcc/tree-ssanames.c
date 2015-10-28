@@ -336,9 +336,8 @@ release_ssa_name_fn (struct function *fn, tree var)
       if (MAY_HAVE_DEBUG_STMTS)
 	insert_debug_temp_for_var_def (NULL, var);
 
-#ifdef ENABLE_CHECKING
-      verify_imm_links (stderr, var);
-#endif
+      if (flag_checking)
+	verify_imm_links (stderr, var);
       while (imm->next != imm)
 	delink_imm_use (imm->next);
 

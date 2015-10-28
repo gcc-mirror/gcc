@@ -1376,10 +1376,8 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	  /* Clean up the information about numbers of iterations, since
 	     complete unrolling might have invalidated it.  */
 	  scev_reset ();
-#ifdef ENABLE_CHECKING
-	  if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
+	  if (flag_checking && loops_state_satisfies_p (LOOP_CLOSED_SSA))
 	    verify_loop_closed_ssa (true);
-#endif
 	}
       if (loop_closed_ssa_invalidated)
         BITMAP_FREE (loop_closed_ssa_invalidated);

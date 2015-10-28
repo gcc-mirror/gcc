@@ -344,9 +344,7 @@ first_readonly_imm_use (imm_use_iterator *imm, tree var)
 {
   imm->end_p = &(SSA_NAME_IMM_USE_NODE (var));
   imm->imm_use = imm->end_p->next;
-#ifdef ENABLE_CHECKING
   imm->iter_node.next = imm->imm_use->next;
-#endif
   if (end_readonly_imm_use_p (imm))
     return NULL_USE_OPERAND_P;
   return imm->imm_use;
@@ -358,14 +356,15 @@ next_readonly_imm_use (imm_use_iterator *imm)
 {
   use_operand_p old = imm->imm_use;
 
-#ifdef ENABLE_CHECKING
   /* If this assertion fails, it indicates the 'next' pointer has changed
      since the last bump.  This indicates that the list is being modified
      via stmt changes, or SET_USE, or somesuch thing, and you need to be
      using the SAFE version of the iterator.  */
-  gcc_assert (imm->iter_node.next == old->next);
-  imm->iter_node.next = old->next->next;
-#endif
+  if (flag_checking)
+    {
+      gcc_assert (imm->iter_node.next == old->next);
+      imm->iter_node.next = old->next->next;
+    }
 
   imm->imm_use = old->next;
   if (end_readonly_imm_use_p (imm))

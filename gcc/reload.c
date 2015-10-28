@@ -85,7 +85,7 @@ a register with any other reload.  */
 
 #define REG_OK_STRICT
 
-/* We do not enable this with ENABLE_CHECKING, since it is awfully slow.  */
+/* We do not enable this with CHECKING_P, since it is awfully slow.  */
 #undef DEBUG_RELOAD
 
 #include "config.h"

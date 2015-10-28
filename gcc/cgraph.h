@@ -362,7 +362,6 @@ public:
      and NULL otherwise.  */
   static inline symtab_node *get (const_tree decl)
   {
-#ifdef ENABLE_CHECKING
     /* Check that we are called for sane type of object - functions
        and static or external variables.  */
     gcc_checking_assert (TREE_CODE (decl) == FUNCTION_DECL
@@ -374,7 +373,6 @@ public:
        memcpy/memset on the tree nodes.  */
     gcc_checking_assert (!decl->decl_with_vis.symtab_node
 			 || decl->decl_with_vis.symtab_node->decl == decl);
-#endif
     return decl->decl_with_vis.symtab_node;
   }
 
@@ -397,6 +395,9 @@ public:
 
   /* Verify symbol table for internal consistency.  */
   static DEBUG_FUNCTION void verify_symtab_nodes (void);
+
+  /* Perform internal consistency checks, if they are enabled.  */
+  static inline void checking_verify_symtab_nodes (void);
 
   /* Type of the symbol.  */
   ENUM_BITFIELD (symtab_type) type : 8;
@@ -557,6 +558,13 @@ private:
   /* Worker for ultimate_alias_target.  */
   symtab_node *ultimate_alias_target_1 (enum availability *avail = NULL);
 };
+
+inline void
+symtab_node::checking_verify_symtab_nodes (void)
+{
+  if (flag_checking)
+    symtab_node::verify_symtab_nodes ();
+}
 
 /* Walk all aliases for NODE.  */
 #define FOR_EACH_ALIAS(node, alias) \
@@ -1204,6 +1212,9 @@ public:
 
   /* Verify whole cgraph structure.  */
   static void DEBUG_FUNCTION verify_cgraph_nodes (void);
+
+  /* Verify cgraph, if consistency checking is enabled.  */
+  static inline void checking_verify_cgraph_nodes (void);
 
   /* Worker to bring NODE local.  */
   static bool make_local (cgraph_node *node, void *);
@@ -2751,6 +2762,15 @@ cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
 	  || used_from_object_file_p ()))
     return false;
   return true;
+}
+
+/* Verify cgraph, if consistency checking is enabled.  */
+
+inline void
+cgraph_node::checking_verify_cgraph_nodes (void)
+{
+  if (flag_checking)
+    cgraph_node::verify_cgraph_nodes ();
 }
 
 /* Return true when variable can be removed from variable pool

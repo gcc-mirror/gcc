@@ -832,11 +832,9 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
     {
       /* This is a rather expensive check possibly triggering
 	 construction of call stmt hashtable.  */
-#ifdef ENABLE_CHECKING
       cgraph_edge *e;
-      gcc_checking_assert (
-	!(e = caller->get_edge (call_stmt)) || e->speculative);
-#endif
+      gcc_checking_assert (!(e = caller->get_edge (call_stmt))
+			   || e->speculative);
 
       gcc_assert (is_gimple_call (call_stmt));
     }
@@ -1282,9 +1280,6 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
   gcall *new_stmt;
   gimple_stmt_iterator gsi;
   bool skip_bounds = false;
-#ifdef ENABLE_CHECKING
-  cgraph_node *node;
-#endif
 
   if (e->speculative)
     {
@@ -1402,13 +1397,11 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	  && !skip_bounds))
     return e->call_stmt;
 
-#ifdef ENABLE_CHECKING
-  if (decl)
+  if (flag_checking && decl)
     {
-      node = cgraph_node::get (decl);
+      cgraph_node *node = cgraph_node::get (decl);
       gcc_assert (!node || !node->clone.combined_args_to_skip);
     }
-#endif
 
   if (symtab->dump_file)
     {

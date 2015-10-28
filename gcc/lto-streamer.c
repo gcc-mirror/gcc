@@ -297,13 +297,12 @@ static hash_table<tree_hash_entry> *tree_htab;
 void
 lto_streamer_init (void)
 {
-#ifdef ENABLE_CHECKING
   /* Check that all the TS_* handled by the reader and writer routines
      match exactly the structures defined in treestruct.def.  When a
      new TS_* astructure is added, the streamer should be updated to
      handle it.  */
-  streamer_check_handled_ts_structures ();
-#endif
+  if (flag_checking)
+    streamer_check_handled_ts_structures ();
 
 #ifdef LTO_STREAMER_DEBUG
   tree_htab = new hash_table<tree_hash_entry> (31);

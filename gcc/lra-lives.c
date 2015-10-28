@@ -590,9 +590,7 @@ check_pseudos_live_through_calls (int regno)
   for (hr = 0; hr < FIRST_PSEUDO_REGISTER; hr++)
     if (HARD_REGNO_CALL_PART_CLOBBERED (hr, PSEUDO_REGNO_MODE (regno)))
       SET_HARD_REG_BIT (lra_reg_info[regno].conflict_hard_regs, hr);
-#ifdef ENABLE_CHECKING
   lra_reg_info[regno].call_p = true;
-#endif
   if (! sparseset_bit_p (pseudos_live_through_setjumps, regno))
     return;
   sparseset_clear_bit (pseudos_live_through_setjumps, regno);
@@ -1229,9 +1227,7 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
 	lra_reg_info[i].biggest_mode = GET_MODE (regno_reg_rtx[i]);
       else
 	lra_reg_info[i].biggest_mode = VOIDmode;
-#ifdef ENABLE_CHECKING
       lra_reg_info[i].call_p = false;
-#endif
       if (i >= FIRST_PSEUDO_REGISTER
 	  && lra_reg_info[i].nrefs != 0)
 	{

@@ -638,9 +638,7 @@ hash_table<Descriptor, Allocator>::find_empty_slot_for_expand (hashval_t hash)
 
   if (is_empty (*slot))
     return slot;
-#ifdef ENABLE_CHECKING
   gcc_checking_assert (!is_deleted (*slot));
-#endif
 
   hash2 = hash_table_mod2 (hash, m_size_prime_index);
   for (;;)
@@ -652,9 +650,7 @@ hash_table<Descriptor, Allocator>::find_empty_slot_for_expand (hashval_t hash)
       slot = m_entries + index;
       if (is_empty (*slot))
         return slot;
-#ifdef ENABLE_CHECKING
       gcc_checking_assert (!is_deleted (*slot));
-#endif
     }
 }
 

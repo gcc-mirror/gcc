@@ -479,6 +479,9 @@ public:
   void dump (void);
 
   /* Verify congruence classes if checking is enabled.  */
+  void checking_verify_classes (void);
+
+  /* Verify congruence classes.  */
   void verify_classes (void);
 
   /* Write IPA ICF summary for symbols.  */

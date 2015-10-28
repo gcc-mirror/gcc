@@ -186,6 +186,18 @@ struct cfg_hooks
 };
 
 extern void verify_flow_info (void);
+
+/* Check control flow invariants, if internal consistency checks are
+   enabled.  */
+
+static inline void
+checking_verify_flow_info (void)
+{
+  /* TODO: Add a separate option for -fchecking=cfg.  */
+  if (flag_checking)
+    verify_flow_info ();
+}
+
 extern void dump_bb (FILE *, basic_block, int, int);
 extern void dump_bb_for_graph (pretty_printer *, basic_block);
 extern void dump_flow_info (FILE *, int);

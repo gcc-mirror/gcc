@@ -1442,12 +1442,7 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 				      ao_ref_alias_set (ref2), -1,
 				      tbaa_p);
 
-  /* We really do not want to end up here, but returning true is safe.  */
-#ifdef ENABLE_CHECKING
   gcc_unreachable ();
-#else
-  return true;
-#endif
 }
 
 static bool

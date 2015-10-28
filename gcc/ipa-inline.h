@@ -299,10 +299,8 @@ estimate_edge_size (struct cgraph_edge *edge)
 static inline int
 estimate_edge_growth (struct cgraph_edge *edge)
 {
-#ifdef ENABLE_CHECKING
   gcc_checking_assert (inline_edge_summary (edge)->call_stmt_size
 		       || !edge->callee->analyzed);
-#endif
   return (estimate_edge_size (edge)
 	  - inline_edge_summary (edge)->call_stmt_size);
 }

@@ -106,10 +106,8 @@ gmp_cst_to_tree (tree type, mpz_t val)
 static inline void
 graphite_verify (void)
 {
-#ifdef ENABLE_CHECKING
-  verify_loop_structure ();
-  verify_loop_closed_ssa (true);
-#endif
+  checking_verify_loop_structure ();
+  checking_verify_loop_closed_ssa (true);
 }
 
 /* IVS_PARAMS maps ISL's scattering and parameter identifiers

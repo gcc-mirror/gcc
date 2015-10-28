@@ -881,12 +881,13 @@ get_expr_operands (struct function *fn, gimple *stmt, tree *expr_p, int flags)
     }
 
   /* If we get here, something has gone wrong.  */
-#ifdef ENABLE_CHECKING
-  fprintf (stderr, "unhandled expression in get_expr_operands():\n");
-  debug_tree (expr);
-  fputs ("\n", stderr);
-#endif
-  gcc_unreachable ();
+  if (flag_checking)
+    {
+      fprintf (stderr, "unhandled expression in get_expr_operands():\n");
+      debug_tree (expr);
+      fputs ("\n", stderr);
+      gcc_unreachable ();
+    }
 }
 
 

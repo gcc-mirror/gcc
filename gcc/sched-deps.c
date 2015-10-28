@@ -47,12 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef INSN_SCHEDULING
 
-#ifdef ENABLE_CHECKING
-#define CHECK (true)
-#else
-#define CHECK (false)
-#endif
-
 /* Holds current parameters for the dependency analyzer.  */
 struct sched_deps_info_def *sched_deps_info;
 
@@ -505,9 +499,8 @@ static enum DEPS_ADJUST_RESULT maybe_add_or_update_dep_1 (dep_t, bool,
 							  rtx, rtx);
 static enum DEPS_ADJUST_RESULT add_or_update_dep_1 (dep_t, bool, rtx, rtx);
 
-#ifdef ENABLE_CHECKING
 static void check_dep (dep_t, bool);
-#endif
+
 
 /* Return nonzero if a load of the memory reference MEM can cause a trap.  */
 
@@ -1228,9 +1221,8 @@ add_or_update_dep_1 (dep_t new_dep, bool resolved_p,
   gcc_assert (INSN_P (DEP_PRO (new_dep)) && INSN_P (DEP_CON (new_dep))
 	      && DEP_PRO (new_dep) != DEP_CON (new_dep));
 
-#ifdef ENABLE_CHECKING
-  check_dep (new_dep, mem1 != NULL);
-#endif
+  if (flag_checking)
+    check_dep (new_dep, mem1 != NULL);
 
   if (true_dependency_cache != NULL)
     {
@@ -1348,9 +1340,8 @@ sd_add_dep (dep_t dep, bool resolved_p)
 
   add_to_deps_list (DEP_NODE_BACK (n), con_back_deps);
 
-#ifdef ENABLE_CHECKING
-  check_dep (dep, false);
-#endif
+  if (flag_checking)
+    check_dep (dep, false);
 
   add_to_deps_list (DEP_NODE_FORW (n), pro_forw_deps);
 
@@ -4515,7 +4506,6 @@ debug_ds (ds_t s)
   fprintf (stderr, "\n");
 }
 
-#ifdef ENABLE_CHECKING
 /* Verify that dependence type and status are consistent.
    If RELAXED_P is true, then skip dep_weakness checks.  */
 static void
@@ -4600,7 +4590,6 @@ check_dep (dep_t dep, bool relaxed_p)
 	gcc_assert (ds & BEGIN_CONTROL);
     }
 }
-#endif /* ENABLE_CHECKING */
 
 /* The following code discovers opportunities to switch a memory reference
    and an increment by modifying the address.  We ensure that this is done

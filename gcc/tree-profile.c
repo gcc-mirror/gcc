@@ -461,9 +461,8 @@ gimple_gen_const_delta_profiler (histogram_value value ATTRIBUTE_UNUSED,
 			       unsigned base ATTRIBUTE_UNUSED)
 {
   /* FIXME implement this.  */
-#ifdef ENABLE_CHECKING
-  internal_error ("unimplemented functionality");
-#endif
+  if (flag_checking)
+    internal_error ("unimplemented functionality");
   gcc_unreachable ();
 }
 

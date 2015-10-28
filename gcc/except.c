@@ -612,9 +612,8 @@ duplicate_eh_regions (struct function *ifun,
   struct duplicate_eh_regions_data data;
   eh_region outer_region;
 
-#ifdef ENABLE_CHECKING
-  verify_eh_tree (ifun);
-#endif
+  if (flag_checking)
+    verify_eh_tree (ifun);
 
   data.label_map = map;
   data.label_map_data = map_data;
@@ -632,9 +631,8 @@ duplicate_eh_regions (struct function *ifun,
 	duplicate_eh_regions_1 (&data, r, outer_region);
     }
 
-#ifdef ENABLE_CHECKING
-  verify_eh_tree (cfun);
-#endif
+  if (flag_checking)
+    verify_eh_tree (cfun);
 
   return data.eh_map;
 }

@@ -2544,10 +2544,11 @@ rewrite_constraints (constraint_graph_t graph,
   int i;
   constraint_t c;
 
-#ifdef ENABLE_CHECKING
-  for (unsigned int j = 0; j < graph->size; j++)
-    gcc_assert (find (j) == j);
-#endif
+  if (flag_checking)
+    {
+      for (unsigned int j = 0; j < graph->size; j++)
+	gcc_assert (find (j) == j);
+    }
 
   FOR_EACH_VEC_ELT (constraints, i, c)
     {

@@ -644,9 +644,6 @@ compute_store_table (void)
 {
   int ret;
   basic_block bb;
-#ifdef ENABLE_CHECKING
-  unsigned regno;
-#endif
   rtx_insn *insn;
   rtx_insn *tmp;
   df_ref def;
@@ -692,11 +689,12 @@ compute_store_table (void)
 	      last_set_in[DF_REF_REGNO (def)] = 0;
 	}
 
-#ifdef ENABLE_CHECKING
-      /* last_set_in should now be all-zero.  */
-      for (regno = 0; regno < max_gcse_regno; regno++)
-	gcc_assert (!last_set_in[regno]);
-#endif
+      if (flag_checking)
+	{
+	  /* last_set_in should now be all-zero.  */
+	  for (unsigned regno = 0; regno < max_gcse_regno; regno++)
+	    gcc_assert (!last_set_in[regno]);
+	}
 
       /* Clear temporary marks.  */
       for (ptr = first_st_expr (); ptr != NULL; ptr = next_st_expr (ptr))

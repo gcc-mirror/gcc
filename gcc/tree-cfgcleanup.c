@@ -729,9 +729,7 @@ cleanup_tree_cfg_noloop (void)
     }
   else
     {
-#ifdef ENABLE_CHECKING
-      verify_dominators (CDI_DOMINATORS);
-#endif
+      checking_verify_dominators (CDI_DOMINATORS);
       changed = false;
     }
 
@@ -740,9 +738,7 @@ cleanup_tree_cfg_noloop (void)
   gcc_assert (dom_info_available_p (CDI_DOMINATORS));
   compact_blocks ();
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
+  checking_verify_flow_info ();
 
   timevar_pop (TV_TREE_CLEANUP_CFG);
 
@@ -777,9 +773,7 @@ repair_loop_structures (void)
 
   BITMAP_FREE (changed_bbs);
 
-#ifdef ENABLE_CHECKING
-  verify_loop_structure ();
-#endif
+  checking_verify_loop_structure ();
   scev_reset ();
 
   timevar_pop (TV_REPAIR_LOOPS);

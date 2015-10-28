@@ -311,6 +311,16 @@ extern void delete_loop (struct loop *);
 
 extern void verify_loop_structure (void);
 
+/* Check loop structure invariants, if internal consistency checks are
+   enabled.  */
+
+static inline void
+checking_verify_loop_structure (void)
+{
+  if (flag_checking)
+    verify_loop_structure ();
+}
+
 /* Loop analysis.  */
 extern bool just_once_each_iteration_p (const struct loop *, const_basic_block);
 gcov_type expected_loop_iterations_unbounded (const struct loop *);

@@ -100,9 +100,7 @@ static bool replace_oldest_value_addr (rtx *, enum reg_class,
 static bool replace_oldest_value_mem (rtx, rtx_insn *, struct value_data *);
 static bool copyprop_hardreg_forward_1 (basic_block, struct value_data *);
 extern void debug_value_data (struct value_data *);
-#ifdef ENABLE_CHECKING
 static void validate_value_data (struct value_data *);
-#endif
 
 /* Free all queued updates for DEBUG_INSNs that change some reg to
    register REGNO.  */
@@ -150,9 +148,8 @@ kill_value_one_regno (unsigned int regno, struct value_data *vd)
   if (vd->e[regno].debug_insn_changes)
     free_debug_insn_changes (vd, regno);
 
-#ifdef ENABLE_CHECKING
-  validate_value_data (vd);
-#endif
+  if (flag_checking)
+    validate_value_data (vd);
 }
 
 /* Kill the value in register REGNO for NREGS, and any other registers
@@ -365,9 +362,8 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
     continue;
   vd->e[i].next_regno = dr;
 
-#ifdef ENABLE_CHECKING
-  validate_value_data (vd);
-#endif
+  if (flag_checking)
+    validate_value_data (vd);
 }
 
 /* Return true if a mode change from ORIG to NEW is allowed for REGNO.  */
@@ -1141,7 +1137,6 @@ copyprop_hardreg_forward_bb_without_debug_insn (basic_block bb)
   skip_debug_insn_p = false;
 }
 
-#ifdef ENABLE_CHECKING
 static void
 validate_value_data (struct value_data *vd)
 {
@@ -1187,7 +1182,7 @@ validate_value_data (struct value_data *vd)
 		      i, GET_MODE_NAME (vd->e[i].mode), vd->e[i].oldest_regno,
 		      vd->e[i].next_regno);
 }
-#endif
+
 
 namespace {
 
