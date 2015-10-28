@@ -2,7 +2,7 @@
 /* { dg-skip-if "needs asm output" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 /* { dg-options "-mabi=32 -mno-odd-spreg -mhard-float" } */
 
-void
+NOMIPS16 void
 foo ()
 {
   register float foo asm ("$f1"); /* { dg-error "isn't suitable for" } */
