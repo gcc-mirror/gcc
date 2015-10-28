@@ -310,7 +310,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsanitize=@var{style} -fsanitize-recover -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number} -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error @gol
--fcheck-pointer-bounds -fchkp-check-incomplete-type @gol
+-fcheck-pointer-bounds -fchecking -fchkp-check-incomplete-type @gol
 -fchkp-first-field-has-own-bounds -fchkp-narrow-bounds @gol
 -fchkp-narrow-to-innermost-array -fchkp-optimize @gol
 -fchkp-use-fast-string-functions -fchkp-use-nochk-string-functions @gol
@@ -6144,6 +6144,12 @@ structure field attribute (@pxref{Type Attributes}) and
 (@pxref{Function Attributes}).  GCC also provides a number of built-in
 functions for controlling the Pointer Bounds Checker.  @xref{Pointer
 Bounds Checker builtins}, for more information.
+
+@item -fchecking
+@opindex fchecking
+@opindex fno-checking
+Enable internal consistency checking.  The default depends on
+the compiler configuration.
 
 @item -fchkp-check-incomplete-type
 @opindex fchkp-check-incomplete-type

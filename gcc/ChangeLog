@@ -1,5 +1,12 @@
 2015-10-28  Richard Biener  <rguenther@suse.de>
 
+	* common.opt (fchecking): New flag controlling flag_checking.
+	* passes.c (verify_curr_properties): Drop DEBUG_FUNCTION.
+	* timevar.c (timer::print): Adjust output.
+	* doc/invoke.texi (fchecking): Document.
+
+2015-10-28  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/68067
 	* fold-const.c (negate_expr_p): We cannot negate plus or minus
 	if overflow is not wrapping.  Likewise multiplication unless

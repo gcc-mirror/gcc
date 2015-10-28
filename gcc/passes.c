@@ -2073,7 +2073,7 @@ clear_last_verified (function *fn, void *data ATTRIBUTE_UNUSED)
 /* Helper function. Verify that the properties has been turn into the
    properties expected by the pass.  */
 
-static void DEBUG_FUNCTION
+static void
 verify_curr_properties (function *fn, void *data)
 {
   unsigned int props = (size_t)data;
