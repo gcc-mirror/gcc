@@ -5925,6 +5925,8 @@ intra_create_variable_infos (struct function *fn)
 		make_constraint_from_global_restrict (p, "PARM_RESTRICT", true);
 	      else if (p->may_have_pointers)
 		make_constraint_from (p, nonlocal_id);
+	      if (p->is_full_var)
+		break;
 	    }
 	}
     }
