@@ -4849,9 +4849,8 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
      for the pointer operation and disregard an overflow that occurred only
      because of the sign-extension change in the latter conversion.  */
   {
-    tree t = build_binary_op (loc,
-			      MULT_EXPR, intop,
-			      convert (TREE_TYPE (intop), size_exp), 1);
+    tree t = fold_build2_loc (loc, MULT_EXPR, TREE_TYPE (intop), intop,
+			      convert (TREE_TYPE (intop), size_exp));
     intop = convert (sizetype, t);
     if (TREE_OVERFLOW_P (intop) && !TREE_OVERFLOW (t))
       intop = wide_int_to_tree (TREE_TYPE (intop), intop);
