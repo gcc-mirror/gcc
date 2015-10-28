@@ -1,3 +1,8 @@
+2015-10-28  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match-head.c (gimple_simplify): Allow VECTOR_CSTs
+	in simplifying VEC_COND_EXPR conditions.
+
 2015-10-28  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-structalias.c (intra_create_variable_infos): Don't iterate
