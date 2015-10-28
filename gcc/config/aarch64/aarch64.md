@@ -696,7 +696,8 @@
        the branch-and-link.  */
     callee = XEXP (operands[0], 0);
     if (GET_CODE (callee) == SYMBOL_REF
-	? aarch64_is_long_call_p (callee)
+	? (aarch64_is_long_call_p (callee)
+	   || aarch64_is_noplt_call_p (callee))
 	: !REG_P (callee))
       XEXP (operands[0], 0) = force_reg (Pmode, callee);
 
@@ -755,7 +756,8 @@
        the branch-and-link.  */
     callee = XEXP (operands[1], 0);
     if (GET_CODE (callee) == SYMBOL_REF
-	? aarch64_is_long_call_p (callee)
+	? (aarch64_is_long_call_p (callee)
+	   || aarch64_is_noplt_call_p (callee))
 	: !REG_P (callee))
       XEXP (operands[1], 0) = force_reg (Pmode, callee);
 
@@ -805,10 +807,11 @@
   ""
   {
     rtx pat;
-
-    if (!REG_P (XEXP (operands[0], 0))
-       && (GET_CODE (XEXP (operands[0], 0)) != SYMBOL_REF))
-     XEXP (operands[0], 0) = force_reg (Pmode, XEXP (operands[0], 0));
+    rtx callee = XEXP (operands[0], 0);
+    if (!REG_P (callee)
+       && ((GET_CODE (callee) != SYMBOL_REF)
+	   || aarch64_is_noplt_call_p (callee)))
+      XEXP (operands[0], 0) = force_reg (Pmode, callee);
 
     if (operands[2] == NULL_RTX)
       operands[2] = const0_rtx;
@@ -835,10 +838,11 @@
   ""
   {
     rtx pat;
-
-    if (!REG_P (XEXP (operands[1], 0))
-       && (GET_CODE (XEXP (operands[1], 0)) != SYMBOL_REF))
-     XEXP (operands[1], 0) = force_reg (Pmode, XEXP (operands[1], 0));
+    rtx callee = XEXP (operands[1], 0);
+    if (!REG_P (callee)
+       && ((GET_CODE (callee) != SYMBOL_REF)
+	   || aarch64_is_noplt_call_p (callee)))
+      XEXP (operands[1], 0) = force_reg (Pmode, callee);
 
     if (operands[3] == NULL_RTX)
       operands[3] = const0_rtx;
