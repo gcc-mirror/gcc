@@ -1,5 +1,9 @@
 2015-10-28  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* omp-low.c (MASK_GANG, MASK_WORKER, MASK_VECTOR): Delete.
+	(extract_omp_for_data): Remove OpenACC special handling of
+	chunking.
+
 	* config/nvptx/nvptx.c (nvptx_print_operand): Remove 'd' case.
 	(struct parallel): Update comment.
 	(nvptx_reorg): Likewise.
