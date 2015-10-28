@@ -1,5 +1,12 @@
 2015-10-28  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/65962
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Avoid creating loop carried dependences also for outer loops
+	of the loop a use to replace is in.
+
+2015-10-28  Richard Biener  <rguenther@suse.de>
+
 	* common.opt (fchecking): New flag controlling flag_checking.
 	* passes.c (verify_curr_properties): Drop DEBUG_FUNCTION.
 	* timevar.c (timer::print): Adjust output.
