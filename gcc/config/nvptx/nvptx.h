@@ -230,6 +230,7 @@ struct GTY(()) machine_function
   HOST_WIDE_INT outgoing_stdarg_size;
   int ret_reg_mode; /* machine_mode not defined yet. */
   int punning_buffer_size;
+  rtx axis_predicate[2];
 };
 #endif
 

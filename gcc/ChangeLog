@@ -1,3 +1,58 @@
+2015-10-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.h (struct machine_function): Add
+	axis_predicate.
+	* config/nvptx/nvptx-protos.h (nvptx_expand_oacc_fork,
+	nvptx_expand_oacc_join): Declare.
+	* config/nvptx/nvptx.md (UNSPEC_NTID, UNSPEC_TID): Delete.
+	(UNSPEC_DIM_SIZE, UNSPEC_SHARED_DATA, UNSPEC_BIT_CONV,
+	UNSPEC_SHUFFLE, UNSPEC_BR_UNIFIED): New.
+	(UNSPECV_BARSYNC, UNSPECV_DIM_POS, UNSPECV_FORK, UNSPECV_FORKED,
+	UNSPECV_JOINING, UNSPECV_JOIN): New.
+	(BITS, BITD): New mode iterators.
+	(br_true_uni, br_false_uni): New.
+	(*oacc_ntid_insn, oacc_ntid, *oacc_tid_insn, oacc_tid): Delete.
+	(oacc_dim_size, oacc_dim_pos): New.
+	(nvptx_fork, nvptx_forked, nvptx_joining, nvptx_join): New.
+	(oacc_fork, oacc_join): New.
+	(nvptx_shuffle<mode>, unpack<mode>si2, packsi<mode>2): New.
+	(worker_load<mode>, worker_store<mode>): New.
+	(nvptx_barsync): New.
+	* config/nvptx/nvptx.c: Include gimple.h & dumpfile.h.
+	(SHUFFLE_UP, SHUFFLE_DOWN, SHUFFLE_BFLY, SHUFFLE_IDX): Define.
+	(worker_bcast_hwm, worker_bcast_align, worker_bcast_name,
+	worker_bcast_sym): New.
+	(nvptx_option_override): Initialize worker broadcast buffer.
+	(nvptx_emit_forking, nvptx_emit_joining): New.
+	(nvptx_init_axis_predicate): New.
+	(nvptx_declare_function_name): Init axis predicates.
+	(nvptx_expand_call): Add fork/join markers around routine call.
+	(nvptx_expand_oacc_fork, nvptx_expand_oacc_join): New.
+	(nvptx_gen_unpack, nvptx_gen_pack, nvptx_gen_shuffle): New.
+	(nvptx_gen_vcast): New.
+	(struct wcast_data_t): New.
+	(enum propagate_mask): New.
+	(nvptx_gen_wcast): New.
+	(nvptx_print_operand): Add 'S' case.
+	(struct parallel): New.
+	(parallel::parallel, parallel::~parallel): New.
+	(bb_insn_map_t, insn_bb_t, insn_bb_vec_t): New typedefs.
+	(nvptx_split_blocks, nvptx_discover_pre, nvptx_dump_pars,
+	nvptx_find_par, nvptx_discover_pars): New.
+	(nvptx_propagate): New.
+	(vprop_gen, nvptx_vpropagate): New.
+	(wprop_gen, nvptx_wpropagate): New.
+	(nvptx_wsync): New.
+	(nvptx_single, nvptx_skip_par): New.
+	(nvptx_process_pars, nvptx_neuter_pars): New.
+	(ntptx_reorg): Split blocks, generate parallel structure, apply
+	neutering.
+	(nvptx_cannot_copy_insn_p): New.
+	(nvptx_file_end): Emit worker broadcast decl.
+	(nvptx_goacc_fork_join): New.
+	(TARGET_CANNOT_COPY_INSN_P): Override.
+	(TARGET_GOACC_FORK_JOIN): Override.
+
 2015-10-28  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (negate_expr_p): Adjust the division case to
