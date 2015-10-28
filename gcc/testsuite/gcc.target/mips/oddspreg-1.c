@@ -5,7 +5,7 @@
 #error "Incorrect number of single-precision registers reported"
 #endif
 
-void
+NOMIPS16 void
 foo ()
 {
   register float foo asm ("$f1");
