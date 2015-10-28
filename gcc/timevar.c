@@ -728,13 +728,10 @@ timer::print (FILE *fp)
 #endif
   fprintf (fp, "%8u kB\n", (unsigned) (total->ggc_mem >> 10));
 
-  if (flag_checking)
-    {
-      fprintf (fp, "Extra diagnostic checks enabled; "
-		   "compiler may run slowly.\n");
-      fprintf (fp, "Configure with --enable-checking=release "
-		   "to disable checks.\n");
-    }
+  if (CHECKING_P || flag_checking)
+    fprintf (fp, "Extra diagnostic checks enabled; compiler may run slowly.\n");
+  if (CHECKING_P)
+    fprintf (fp, "Configure with --enable-checking=release to disable checks.\n");
 #ifndef ENABLE_ASSERT_CHECKING
   fprintf (fp, "Internal checks disabled; compiler is not suited for release.\n");
   fprintf (fp, "Configure with --enable-checking=release to enable checks.\n");
