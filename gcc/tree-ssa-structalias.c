@@ -5915,19 +5915,14 @@ intra_create_variable_infos (struct function *fn)
 	  continue;
 	}
 
-      if (restrict_pointer_p)
-	make_constraint_from_global_restrict (p, "PARM_RESTRICT", true);
-      else
+      for (; p; p = vi_next (p))
 	{
-	  for (; p; p = vi_next (p))
-	    {
-	      if (p->only_restrict_pointers)
-		make_constraint_from_global_restrict (p, "PARM_RESTRICT", true);
-	      else if (p->may_have_pointers)
-		make_constraint_from (p, nonlocal_id);
-	      if (p->is_full_var)
-		break;
-	    }
+	  if (p->only_restrict_pointers)
+	    make_constraint_from_global_restrict (p, "PARM_RESTRICT", true);
+	  else if (p->may_have_pointers)
+	    make_constraint_from (p, nonlocal_id);
+	  if (p->is_full_var)
+	    break;
 	}
     }
 
