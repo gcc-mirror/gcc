@@ -13126,7 +13126,13 @@ c_build_qualified_type (tree type, int type_quals)
       type_quals &= ~TYPE_QUAL_RESTRICT;
     }
 
-  return build_qualified_type (type, type_quals);
+  tree var_type = build_qualified_type (type, type_quals);
+  /* A variant type does not inherit the list of incomplete vars from the
+     type main variant.  */
+  if (TREE_CODE (var_type) == RECORD_TYPE
+      || TREE_CODE (var_type) == UNION_TYPE)
+    C_TYPE_INCOMPLETE_VARS (var_type) = 0;
+  return var_type;
 }
 
 /* Build a VA_ARG_EXPR for the C parser.  */

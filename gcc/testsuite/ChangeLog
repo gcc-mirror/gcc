@@ -1,3 +1,8 @@
+2015-10-26  Jim Wilson  <jim.wilson@linaro.org>
+
+	PR debug/66068
+	* gcc.dg/debug/pr66068.c: New test.
+
 2015-01-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/67933
