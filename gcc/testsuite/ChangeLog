@@ -1,3 +1,9 @@
+2015-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68067
+	* gcc.dg/torture/pr68067-1.c: New testcase.
+	* gcc.dg/torture/pr68067-2.c: Likewise.
+
 2015-10-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/p8vector-builtin-8.c: Add "target int128".
