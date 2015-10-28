@@ -1,5 +1,9 @@
 2015-10-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* gcc.target/powerpc/p8vector-builtin-8.c: Add "target int128".
+
+2015-10-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* gcc.target/powerpc/vsx-builtin-2.c: Allow vmadd and vnmsub as well
 	as xvmadd and xvnmsub.
 	* gcc.target/powerpc/vsx-vector-2.c: Allow vmadd as well as xvmadd.
