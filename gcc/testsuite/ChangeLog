@@ -1,3 +1,7 @@
+2015-10-28  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/pta-callused.c: Update to scan for CALLUSED(id).
+
 2015-10-28  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/67600
