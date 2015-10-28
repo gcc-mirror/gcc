@@ -3857,7 +3857,7 @@ mark_reachable_handlers (sbitmap *r_reachablep, sbitmap *lp_reachablep)
 		    tree rt = gimple_call_arg (stmt, i);
 		    HOST_WIDE_INT ri = tree_to_shwi (rt);
 
-		    gcc_assert (ri = (int)ri);
+		    gcc_assert (ri == (int)ri);
 		    bitmap_set_bit (r_reachable, ri);
 		  }
 	      break;
