@@ -4082,8 +4082,9 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      gimple *def_stmt = SSA_NAME_DEF_STMT (sprime);
 	      basic_block def_bb = gimple_bb (def_stmt);
 	      if (gimple_code (def_stmt) == GIMPLE_PHI
-		  && b->loop_father->header == def_bb)
+		  && def_bb->loop_father->header == def_bb)
 		{
+		  loop_p loop = def_bb->loop_father;
 		  ssa_op_iter iter;
 		  tree op;
 		  bool found = false;
@@ -4092,9 +4093,8 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		      affine_iv iv;
 		      def_bb = gimple_bb (SSA_NAME_DEF_STMT (op));
 		      if (def_bb
-			  && flow_bb_inside_loop_p (b->loop_father, def_bb)
-			  && simple_iv (b->loop_father,
-					b->loop_father, op, &iv, true))
+			  && flow_bb_inside_loop_p (loop, def_bb)
+			  && simple_iv (loop, loop, op, &iv, true))
 			{
 			  found = true;
 			  break;
@@ -4110,7 +4110,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 			  print_generic_expr (dump_file, sprime, 0);
 			  fprintf (dump_file, " which would add a loop"
 				   " carried dependence to loop %d\n",
-				   b->loop_father->num);
+				   loop->num);
 			}
 		      /* Don't keep sprime available.  */
 		      sprime = NULL_TREE;

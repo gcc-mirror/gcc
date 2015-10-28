@@ -1,5 +1,10 @@
 2015-10-28  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/65962
+	* gcc.dg/vect/vect-62.c: Adjust.
+
+2015-10-28  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/68067
 	* gcc.dg/torture/pr68067-1.c: New testcase.
 	* gcc.dg/torture/pr68067-2.c: Likewise.
