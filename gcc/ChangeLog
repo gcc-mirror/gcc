@@ -1,3 +1,13 @@
+2015-10-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/68102
+	* config/aarch64/aarch64.md (*movsi_aarch64): Check that
+	operands[0] is a reg before taking its REGNO in split condition.
+	(*movdi_aarch64): Likewise.
+
 2015-10-27  Caroline Tice  <cmtice@google.com.
 
 	(from Richard Biener)
