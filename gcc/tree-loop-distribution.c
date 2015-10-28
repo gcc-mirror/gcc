@@ -1821,9 +1821,7 @@ out:
       rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
     }
 
-#ifdef ENABLE_CHECKING
-  verify_loop_structure ();
-#endif
+  checking_verify_loop_structure ();
 
   return 0;
 }

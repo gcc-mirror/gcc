@@ -5093,9 +5093,7 @@ if_convert (bool after_combine)
   if (optimize == 1)
     df_remove_problem (df_live);
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
+  checking_verify_flow_info ();
 }
 
 /* If-conversion and CFG cleanup.  */

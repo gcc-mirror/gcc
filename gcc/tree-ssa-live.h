@@ -80,9 +80,7 @@ extern void remove_unused_locals (void);
 extern void dump_var_map (FILE *, var_map);
 extern void debug (_var_map &ref);
 extern void debug (_var_map *ptr);
-#ifdef ENABLE_CHECKING
 extern void register_ssa_partition_check (tree ssa_var);
-#endif
 
 
 /* Return number of partitions in MAP.  */
@@ -181,12 +179,10 @@ num_basevars (var_map map)
    partitions may be filtered out by a view later.  */
 
 static inline void
-register_ssa_partition (var_map map ATTRIBUTE_UNUSED,
-			tree ssa_var ATTRIBUTE_UNUSED)
+register_ssa_partition (var_map map ATTRIBUTE_UNUSED, tree ssa_var)
 {
-#if defined ENABLE_CHECKING
-  register_ssa_partition_check (ssa_var);
-#endif
+  if (flag_checking)
+    register_ssa_partition_check (ssa_var);
 }
 
 

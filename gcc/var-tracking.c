@@ -399,7 +399,7 @@ struct variable
 /* Macro to access MEM_OFFSET as an HOST_WIDE_INT.  Evaluates MEM twice.  */
 #define INT_MEM_OFFSET(mem) (MEM_OFFSET_KNOWN_P (mem) ? MEM_OFFSET (mem) : 0)
 
-#if ENABLE_CHECKING && (GCC_VERSION >= 2007)
+#if CHECKING_P && (GCC_VERSION >= 2007)
 
 /* Access VAR's Ith part's offset, checking that it's not a one-part
    variable.  */
@@ -3571,7 +3571,6 @@ loc_cmp (rtx x, rtx y)
   return 0;
 }
 
-#if ENABLE_CHECKING
 /* Check the order of entries in one-part variables.   */
 
 int
@@ -3603,7 +3602,6 @@ canonicalize_loc_order_check (variable **slot,
 
   return 1;
 }
-#endif
 
 /* Mark with VALUE_RECURSED_INTO values that have neighbors that are
    more likely to be chosen as canonical for an equivalence set.
@@ -3832,17 +3830,16 @@ canonicalize_values_star (variable **slot, dataflow_set *set)
 	    else
 	      gcc_unreachable ();
 
-#if ENABLE_CHECKING
-	    while (list)
-	      {
-		if (list->offset == 0
-		    && (dv_as_opaque (list->dv) == dv_as_opaque (dv)
-			|| dv_as_opaque (list->dv) == dv_as_opaque (cdv)))
-		  gcc_unreachable ();
+	    if (flag_checking)
+	      while (list)
+		{
+		  if (list->offset == 0
+		      && (dv_as_opaque (list->dv) == dv_as_opaque (dv)
+			  || dv_as_opaque (list->dv) == dv_as_opaque (cdv)))
+		    gcc_unreachable ();
 
-		list = list->next;
-	      }
-#endif
+		  list = list->next;
+		}
 	  }
       }
 
@@ -6930,10 +6927,9 @@ compute_bb_dataflow (basic_block bb)
 	->traverse <dataflow_set *, canonicalize_values_mark> (out);
       shared_hash_htab (out->vars)
 	->traverse <dataflow_set *, canonicalize_values_star> (out);
-#if ENABLE_CHECKING
-      shared_hash_htab (out->vars)
-	->traverse <dataflow_set *, canonicalize_loc_order_check> (out);
-#endif
+      if (flag_checking)
+	shared_hash_htab (out->vars)
+	  ->traverse <dataflow_set *, canonicalize_loc_order_check> (out);
     }
   changed = dataflow_set_different (&old_out, out);
   dataflow_set_destroy (&old_out);
@@ -7038,13 +7034,14 @@ vt_find_locations (void)
 		  if (adjust)
 		    {
 		      dataflow_post_merge_adjust (in, &VTI (bb)->permp);
-#if ENABLE_CHECKING
-		      /* Merge and merge_adjust should keep entries in
-			 canonical order.  */
-		      shared_hash_htab (in->vars)
-			->traverse <dataflow_set *,
-				    canonicalize_loc_order_check> (in);
-#endif
+
+		      if (flag_checking)
+			/* Merge and merge_adjust should keep entries in
+			   canonical order.  */
+			shared_hash_htab (in->vars)
+			  ->traverse <dataflow_set *,
+				      canonicalize_loc_order_check> (in);
+
 		      if (dst_can_be_shared)
 			{
 			  shared_hash_destroy (in->vars);
@@ -9465,11 +9462,12 @@ vt_emit_notes (void)
 	 again.  */
       dataflow_set_clear (&VTI (bb)->in);
     }
-#ifdef ENABLE_CHECKING
-  shared_hash_htab (cur.vars)
-    ->traverse <variable_table_type *, emit_notes_for_differences_1>
-      (shared_hash_htab (empty_shared_hash));
-#endif
+
+  if (flag_checking)
+    shared_hash_htab (cur.vars)
+      ->traverse <variable_table_type *, emit_notes_for_differences_1>
+	(shared_hash_htab (empty_shared_hash));
+
   dataflow_set_destroy (&cur);
 
   if (MAY_HAVE_DEBUG_INSNS)

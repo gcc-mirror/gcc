@@ -2137,7 +2137,5 @@ move_loop_invariants (void)
   invariant_table = NULL;
   invariant_table_size = 0;
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
+  checking_verify_flow_info ();
 }

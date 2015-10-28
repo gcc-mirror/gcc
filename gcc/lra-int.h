@@ -91,12 +91,10 @@ struct lra_reg
   /* True if the pseudo should not be assigned to a stack register.  */
   bool no_stack_p;
 #endif
-#ifdef ENABLE_CHECKING
   /* True if the pseudo crosses a call.	 It is setup in lra-lives.c
      and used to check that the pseudo crossing a call did not get a
      call used hard register.  */
   bool call_p;
-#endif
   /* Number of references and execution frequencies of the register in
      *non-debug* insns.	 */
   int nrefs, freq;

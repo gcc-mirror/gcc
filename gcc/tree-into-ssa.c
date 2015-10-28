@@ -3169,44 +3169,45 @@ update_ssa (unsigned update_flags)
   if (!need_ssa_update_p (cfun))
     return;
 
-#ifdef ENABLE_CHECKING
-  timevar_push (TV_TREE_STMT_VERIFY);
-
-  bool err = false;
-
-  FOR_EACH_BB_FN (bb, cfun)
+  if (flag_checking)
     {
-      gimple_stmt_iterator gsi;
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      timevar_push (TV_TREE_STMT_VERIFY);
+
+      bool err = false;
+
+      FOR_EACH_BB_FN (bb, cfun)
 	{
-	  gimple *stmt = gsi_stmt (gsi);
-
-	  ssa_op_iter i;
-	  use_operand_p use_p;
-	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, i, SSA_OP_ALL_USES)
+	  gimple_stmt_iterator gsi;
+	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
-	      tree use = USE_FROM_PTR (use_p);
-	      if (TREE_CODE (use) != SSA_NAME)
-		continue;
+	      gimple *stmt = gsi_stmt (gsi);
 
-	      if (SSA_NAME_IN_FREE_LIST (use))
+	      ssa_op_iter i;
+	      use_operand_p use_p;
+	      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, i, SSA_OP_ALL_USES)
 		{
-		  error ("statement uses released SSA name:");
-		  debug_gimple_stmt (stmt);
-		  fprintf (stderr, "The use of ");
-		  print_generic_expr (stderr, use, 0);
-		  fprintf (stderr," should have been replaced\n");
-		  err = true;
+		  tree use = USE_FROM_PTR (use_p);
+		  if (TREE_CODE (use) != SSA_NAME)
+		    continue;
+
+		  if (SSA_NAME_IN_FREE_LIST (use))
+		    {
+		      error ("statement uses released SSA name:");
+		      debug_gimple_stmt (stmt);
+		      fprintf (stderr, "The use of ");
+		      print_generic_expr (stderr, use, 0);
+		      fprintf (stderr," should have been replaced\n");
+		      err = true;
+		    }
 		}
 	    }
 	}
+
+      if (err)
+	internal_error ("cannot update SSA form");
+
+      timevar_pop (TV_TREE_STMT_VERIFY);
     }
-
-  if (err)
-    internal_error ("cannot update SSA form");
-
-  timevar_pop (TV_TREE_STMT_VERIFY);
-#endif
 
   timevar_push (TV_TREE_SSA_INCREMENTAL);
 
@@ -3271,29 +3272,28 @@ update_ssa (unsigned update_flags)
 	 placement heuristics.  */
       prepare_block_for_update (start_bb, insert_phi_p);
 
-#ifdef ENABLE_CHECKING
-      for (i = 1; i < num_ssa_names; ++i)
-	{
-	  tree name = ssa_name (i);
-	  if (!name
-	      || virtual_operand_p (name))
-	    continue;
+      if (flag_checking)
+	for (i = 1; i < num_ssa_names; ++i)
+	  {
+	    tree name = ssa_name (i);
+	    if (!name
+		|| virtual_operand_p (name))
+	      continue;
 
-	  /* For all but virtual operands, which do not have SSA names
-	     with overlapping life ranges, ensure that symbols marked
-	     for renaming do not have existing SSA names associated with
-	     them as we do not re-write them out-of-SSA before going
-	     into SSA for the remaining symbol uses.  */
-	  if (marked_for_renaming (SSA_NAME_VAR (name)))
-	    {
-	      fprintf (stderr, "Existing SSA name for symbol marked for "
-		       "renaming: ");
-	      print_generic_expr (stderr, name, TDF_SLIM);
-	      fprintf (stderr, "\n");
-	      internal_error ("SSA corruption");
-	    }
-	}
-#endif
+	    /* For all but virtual operands, which do not have SSA names
+	       with overlapping life ranges, ensure that symbols marked
+	       for renaming do not have existing SSA names associated with
+	       them as we do not re-write them out-of-SSA before going
+	       into SSA for the remaining symbol uses.  */
+	    if (marked_for_renaming (SSA_NAME_VAR (name)))
+	      {
+		fprintf (stderr, "Existing SSA name for symbol marked for "
+			 "renaming: ");
+		print_generic_expr (stderr, name, TDF_SLIM);
+		fprintf (stderr, "\n");
+		internal_error ("SSA corruption");
+	      }
+	  }
     }
   else
     {

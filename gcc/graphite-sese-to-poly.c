@@ -1522,9 +1522,7 @@ rewrite_reductions_out_of_ssa (scop_p scop)
       }
 
   update_ssa (TODO_update_ssa);
-#ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa (true);
-#endif
+  checking_verify_loop_closed_ssa (true);
 }
 
 /* Rewrite the scalar dependence of DEF used in USE_STMT with a memory
@@ -1699,9 +1697,7 @@ rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
     {
       scev_reset_htab ();
       update_ssa (TODO_update_ssa);
-#ifdef ENABLE_CHECKING
-      verify_loop_closed_ssa (true);
-#endif
+      checking_verify_loop_closed_ssa (true);
     }
 }
 

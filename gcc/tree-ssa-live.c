@@ -52,9 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "cfgloop.h"
 
-#ifdef ENABLE_CHECKING
-static void  verify_live_on_entry (tree_live_info_p);
-#endif
+static void verify_live_on_entry (tree_live_info_p);
 
 
 /* VARMAP maintains a mapping from SSA version number to real variables.
@@ -1153,9 +1151,8 @@ calculate_live_ranges (var_map map, bool want_livein)
 
   live_worklist (live);
 
-#ifdef ENABLE_CHECKING
-  verify_live_on_entry (live);
-#endif
+  if (flag_checking)
+    verify_live_on_entry (live);
 
   calculate_live_on_exit (live);
 
@@ -1292,7 +1289,6 @@ debug (tree_live_info_d *ptr)
 }
 
 
-#ifdef ENABLE_CHECKING
 /* Verify that SSA_VAR is a non-virtual SSA_NAME.  */
 
 void
@@ -1422,4 +1418,3 @@ verify_live_on_entry (tree_live_info_p live)
     }
   gcc_assert (num <= 0);
 }
-#endif

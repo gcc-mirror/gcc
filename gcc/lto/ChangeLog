@@ -1,3 +1,12 @@
+2015-10-27  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* lto.c (unify_scc): Use flag_checking and remove ENABLE_CHECKING
+	conditionals.
+	(lto_fixup_state): Likewise.
+	(do_whole_program_analysis): Use
+	symtab_node::checking_verify_symtab_nodes and remove ENABLE_CHECKING
+	conditionals.
+
 2015-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* lto-lang.c (DEF_FUNCTION_TYPE_9, DEF_FUNCTION_TYPE_10,

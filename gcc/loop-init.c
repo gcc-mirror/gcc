@@ -104,10 +104,8 @@ loop_optimizer_init (unsigned flags)
       /* Ensure that the dominators are computed, like flow_loops_find does.  */
       calculate_dominance_info (CDI_DOMINATORS);
 
-#ifdef ENABLE_CHECKING
       if (!needs_fixup)
-	verify_loop_structure ();
-#endif
+	checking_verify_loop_structure ();
 
       /* Clear all flags.  */
       if (recorded_exits)
@@ -129,9 +127,7 @@ loop_optimizer_init (unsigned flags)
   /* Dump loops.  */
   flow_loops_dump (dump_file, NULL, 1);
 
-#ifdef ENABLE_CHECKING
-  verify_loop_structure ();
-#endif
+  checking_verify_loop_structure ();
 
   timevar_pop (TV_LOOP_INIT);
 }
@@ -323,9 +319,7 @@ fix_loop_structure (bitmap changed_bbs)
   /* Apply flags to loops.  */
   apply_loop_flags (current_loops->state | record_exits);
 
-#ifdef ENABLE_CHECKING
-  verify_loop_structure ();
-#endif
+  checking_verify_loop_structure ();
 
   timevar_pop (TV_LOOP_INIT);
 

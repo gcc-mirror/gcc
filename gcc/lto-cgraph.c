@@ -1560,10 +1560,11 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   lto_input_toplevel_asms (file_data, order_base);
 
   /* AUX pointers should be all non-zero for function nodes read from the stream.  */
-#ifdef ENABLE_CHECKING
-  FOR_EACH_VEC_ELT (nodes, i, node)
-    gcc_assert (node->aux || !is_a <cgraph_node *> (node));
-#endif
+  if (flag_checking)
+    {
+      FOR_EACH_VEC_ELT (nodes, i, node)
+	gcc_assert (node->aux || !is_a <cgraph_node *> (node));
+    }
   FOR_EACH_VEC_ELT (nodes, i, node)
     {
       int ref;

@@ -1,3 +1,175 @@
+2015-10-27  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* attribs.c (check_attribute_tables): New function, broken out from...
+	(init_attributes): Use it.
+	* cfgcleanup.c (try_optimize_cfg): Use flag_checking, CHECKING_P
+	gcc_checking_assert and checking_* functions to eliminate
+	ENABLE_CHECKING conditionals.
+	* cfgexpand.c (expand_goto, expand_debug_expr): Likewise.
+	(pass_expand::execute): Likewise.
+	* cgraphclones.c (symbol_table::materialize_all_clones): Likewise.
+	* cgraphunit.c (mark_functions_to_output): Likewise.
+	(cgraph_node::expand_thunk): Likewise.
+	(symbol_table::compile): Likewise.
+	* ddg.c (add_cross_iteration_register_deps): Likewise.
+	(create_ddg_all_sccs): Likewise.
+	* df-core.c (df_finish_pass, df_analyze): Likewise.
+	* diagnostic-core.h: Likewise.
+	* diagnostic.c (diagnostic_report_diagnostic): Likewise.
+	* dominance.c (calculate_dominance_info): Likewise.
+	* dwarf2out.c (add_AT_die_ref): Likewise.
+	(const_ok_for_output_1, mem_loc_descriptor): Likewise.
+	(loc_list_from_tree, gen_lexical_block_die): Likewise.
+	gen_type_die_with_usage, gen_type_die): Likewise.
+	(dwarf2out_decl): Likewise.
+	* emit-rtl.c (verify_rtx_sharing, reorder_insns_nobb): Likewise.
+	* except.c (duplicate_eh_regions): Likewise.
+	* fwprop.c (register_active_defs, update_df_init): Likewise.
+	(fwprop_init, fwprop_done): Likewise.
+	(update_uses): Likewise.
+	* ggc-page.c (ggc_grow): Likewise.
+	* gimplify.c (gimplify_body): Likewise.
+	(gimplify_hasher::equal): Likewise.
+	* graphite-isl-ast-to-gimple.c (graphite_verify): Likewise.
+	* graphite-scop-detection.c (canonicalize_loop_closed_ssa_form):
+	Likewise.
+	* graphite-sese-to-poly.c (rewrite_reductions_out_of_ssa): Likewise.
+	(rewrite_cross_bb_scalar_deps_out_of_ssa): Likwise.
+	* hash-table.h (::find_empty_slot_for_expand): Likewise.
+	* ifcvt.c (if_convert): Likewise.
+	* ipa-cp.c (ipcp_propagate_stage): Likewise.
+	* ipa-devirt.c (type_in_anonymous_namespace_p): Likewise.
+	(odr_type_p, odr_types_equivalent_p): Likewise.
+	(add_type_duplicate, get_odr_type): Likewise.
+	* ipa-icf.c (sem_item_optimizer::execute): Likewise.
+	(sem_item_optimizer::subdivide_classes_by_equality): Likewise.
+	(sem_item_optimizer::verify_classes): Likewise.
+	(sem_item_optimizer::traverse_congruence_split): Likewise.
+	(sem_item_optimizer::checking_verify_classes): New.
+	* ipa-icf.h (sem_item_optimizer::checking_verify_classes): Add new
+	method.
+	* cfgrtl.c (commit_edge_insertions): Likewise.
+	(fixup_reorder_chain, cfg_layout_finalize): Likewise.
+	(rtl_flow_call_edges_add): Likewise.
+	* cgraph.c (symbol_table::create_edge): Likewise.
+	(cgraph_edge::redirect_call_stmt_to_callee): Likewise.
+	* cgraph.h (symtab_node): Likewise.
+	(symtab_node::checking_verify_symtab_nodes): Define.
+	(cgraph_node::checking_verify_cgraph_nodes): Define.
+	* cfghooks.h (checking_verify_flow_info): Define.
+	* cfgloop.h (checking_verify_loop_structure): Define.
+	* dominance.h (checking_verify_dominators): Define.
+	* et-forest.c: Fix comment.
+	* ipa-inline-analysis.c (compute_inline_parameters): Use flag_checking,
+	CHECKING_P gcc_checking_assert and checking_* functions to eliminate
+	ENABLE_CHECKING conditionals.
+	* ipa-inline-transform.c (save_inline_function_body): Likewise.
+	* ipa-inline.c (inline_small_functions): Likewise.
+	(early_inliner): Likewise.
+	* ipa-inline.h (estimate_edge_growth): Likewise.
+	* ipa-visibility.c (function_and_variable_visibility): Likewise.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Likewise.
+	(ipa_single_use): Likewise.
+	* ira-int.h: Likewise.
+	* ira.c (ira): Likewise.
+	* loop-doloop.c (doloop_optimize_loops): Likewise.
+	* loop-init.c (loop_optimizer_init, fix_loop_structure): Likewise.
+	* loop-invariant.c (move_loop_invariants): Likewise.
+	* lra-assigns.c (lra_assign): Likewise.
+	* lra-constraints.c (lra_constraints): Likewise.
+	* lra-eliminations.c (lra_eliminate): Likewise.
+	* lra-int.h (struct lra_reg): Likewise.
+	* lra-lives.c (check_pseudos_live_through_calls): Likewise.
+	(lra_create_live_ranges_1): Likewise.
+	* lra-remat.c (create_remat_bb_data): Likewise.
+	* lra.c (lra_update_insn_recog_data, restore_scratches): Likewise.
+	(lra): Likewise.
+	(check_rtl): Always define. Remove incorrect guard around
+	extract_constrain_insn call.
+	* lto-cgraph.c (input_cgraph_1: Use flag_checking,
+	CHECKING_P gcc_checking_assert and checking_* functions to eliminate
+	ENABLE_CHECKING conditionals.
+	* lto-streamer-out.c (DFS::DFS): Likewise.
+	(lto_output): Likewise.
+	* lto-streamer.c (lto_streamer_init): Likewise.
+	* omp-low.c (scan_omp_target, expand_omp_taskreg): Likewise.
+	expand_omp_target, execute_expand_omp): Likewise.
+	(lower_omp_target): Likewise.
+	* passes.c (execute_function_todo): Likewise.
+	(execute_todo, execute_one_pass): Likewise.
+	(verify_curr_properties): Always define.
+	* predict.c (tree_estimate_probability: Use flag_checking,
+	CHECKING_P gcc_checking_assert and checking_* functions to eliminate
+	ENABLE_CHECKING conditionals.
+	(propagate_freq): Likewise.
+	* pretty-print.c (pp_format): Likewise.
+	* real.c (real_to_decimal_for_mode): Likewise.
+	* recog.c (split_all_insns): Likewise.
+	* regcprop.c (kill_value_one_regno): Likewise.
+	(copy_value): Likewise.
+	(validate_value_data): Define unconditionally.
+	* reload.c: Fix comment.
+	* timevar.c: Include options.h
+	* tree-ssa.h (checking_verify_ssa): Define.
+	* tree-ssa-loop-manip.h (checking_verify_loop_closed_ssa): Define.
+	* sched-deps.c (CHECK): Remove unused macro.
+	(add_or_update_dep_1, sd_add_dep: Use flag_checking, CHECKING_P
+	gcc_checking_assert and checking_* functions to eliminate
+	ENABLE_CHECKING conditionals.
+	* sel-sched-ir.c (free_regset_pool, tidy_control_flow): Likewise.
+	* sel-sched.c (struct moveop_static_params): Likewise.
+	(find_best_reg_for_expr, move_cond_jump): Likewise.
+	(move_op_orig_expr_not_found): Likewise.
+	(code_motion_process_successors, move_op): Likewise.
+	* ssa-iterators.h (first_readonly_imm_use): Likewise.
+	(next_readonly_imm_use): Likewise.
+	* store-motion.c (compute_store_table): Likewise.
+	* symbol-summary.h (function_summary::function_summary): Likewise.
+	* target.h (cumulative_args_t): Likewise.
+	(get_cumulative_args, pack_cumulative_args): Likewise.
+	* timevar.c: (timer::print): Likewise.
+	* trans-mem.c (ipa_tm_execute): Likewise.
+	* tree-cfg.c (move_stmt_op): Likewise.
+	(move_sese_region_to_fn): Likewise.
+	(gimple_flow_call_edges_add): Likewise.
+	* tree-cfgcleanup.c (cleanup_tree_cfg_noloop, repair_loop_structures):
+	Likewise.
+	* tree-eh.c (remove_unreachable_handlers): Likewise.
+	* tree-if-conv.c (pass_if_conversion::execute): Likewise.
+	* tree-inline.c (expand_call_inline, optimize_inline_calls): Likewise.
+	* tree-into-ssa.c (update_ssa): Likewise.
+	* tree-loop-distribution.c (pass_loop_distribution::execute): Likewise.
+	* tree-outof-ssa.c (eliminate_useless_phis, rewrite_trees): Likewise.
+	* tree-parloops.c (pass_parallelize_loops::execute): Likewise.
+	* tree-predcom.c (suitable_component_p): Likewise.
+	* tree-profile.c (gimple_gen_const_delta_profiler): Likewise.
+	* tree-ssa-alias.c (refs_may_alias_p_1): Likewise.
+	* tree-ssa-live.c (verify_live_on_entry): Likewise.
+	* tree-ssa-live.h (register_ssa_partition): Likewise.
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely): Likewise.
+	* tree-ssa-loop-manip.c (add_exit_phi): Likewise.
+	(tree_transform_and_unroll_loop): Likewise.
+	* tree-ssa-math-opts.c (pass_cse_reciprocals::execute): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree-ssa-propagate.c (replace_exp_1): Likewise.
+	* tree-ssa-structalias.c (rewrite_constraints): Likewise.
+	* tree-ssa-ter.c (free_temp_expr_table): Likewise.
+	* tree-ssa-threadupdate.c (duplicate_thread_path): Likewise.
+	* tree-ssanames.c (release_ssa_name_fn): Likewise.
+	* tree-stdarg.c (expand_ifn_va_arg): Likewise.
+	* tree-vect-loop-manip.c
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Likewise.
+	(slpeel_checking_verify_cfg_after_peeling): Likewise.
+	(vect_do_peeling_for_loop_bound): Likewise.
+	(vect_do_peeling_for_alignment): Likewise.
+	* tree-vrp.c (supports_overflow_infinity): Likewise.
+	(set_value_range): Likewise.
+	* tree.c (free_lang_data_in_cgraph): Likewise.
+	* value-prof.c (gimple_remove_histogram_value): Likewise.
+	(free_hist): Likewise.
+	* var-tracking.c (canonicalize_values_star): Likewise.
+	(compute_bb_dataflow, vt_find_locations, vt_emit_notes): Likewise.
+
 2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* internal-fn.def (IFN_GOACC_DIM_SIZE, IFN_GOACC_DIM_POS,

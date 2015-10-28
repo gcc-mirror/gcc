@@ -2787,13 +2787,12 @@ pass_if_conversion::execute (function *fun)
 	    && !loop->dont_vectorize))
       todo |= tree_if_conversion (loop);
 
-#ifdef ENABLE_CHECKING
-  {
-    basic_block bb;
-    FOR_EACH_BB_FN (bb, fun)
-      gcc_assert (!bb->aux);
-  }
-#endif
+  if (flag_checking)
+    {
+      basic_block bb;
+      FOR_EACH_BB_FN (bb, fun)
+	gcc_assert (!bb->aux);
+    }
 
   return todo;
 }

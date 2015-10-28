@@ -578,10 +578,8 @@ create_remat_bb_data (void)
 			   last_basic_block_for_fn (cfun));
   FOR_ALL_BB_FN (bb, cfun)
     {
-#ifdef ENABLE_CHECKING
-      if (bb->index < 0 || bb->index >= last_basic_block_for_fn (cfun))
-	abort ();
-#endif
+      gcc_checking_assert (bb->index >= 0
+			   && bb->index < last_basic_block_for_fn (cfun));
       bb_info = get_remat_bb_data (bb);
       bb_info->bb = bb;
       bitmap_initialize (&bb_info->changed_regs, &reg_obstack);

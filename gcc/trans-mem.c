@@ -5341,9 +5341,7 @@ ipa_tm_execute (void)
   enum availability a;
   unsigned int i;
 
-#ifdef ENABLE_CHECKING
-  cgraph_node::verify_cgraph_nodes ();
-#endif
+  cgraph_node::checking_verify_cgraph_nodes ();
 
   bitmap_obstack_initialize (&tm_obstack);
   initialize_original_copy_tables ();
@@ -5589,9 +5587,7 @@ ipa_tm_execute (void)
   FOR_EACH_FUNCTION (node)
     node->aux = NULL;
 
-#ifdef ENABLE_CHECKING
-  cgraph_node::verify_cgraph_nodes ();
-#endif
+  cgraph_node::checking_verify_cgraph_nodes ();
 
   return 0;
 }

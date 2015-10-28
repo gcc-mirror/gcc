@@ -259,21 +259,16 @@ canonicalize_loop_closed_ssa (loop_p loop)
 static void
 canonicalize_loop_closed_ssa_form (void)
 {
+  checking_verify_loop_closed_ssa (true);
+
   loop_p loop;
-
-#ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa (true);
-#endif
-
   FOR_EACH_LOOP (loop, 0)
     canonicalize_loop_closed_ssa (loop);
 
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
   update_ssa (TODO_update_ssa);
 
-#ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa (true);
-#endif
+  checking_verify_loop_closed_ssa (true);
 }
 
 /* Can all ivs be represented by a signed integer?

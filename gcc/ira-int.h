@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 /* To provide consistency in naming, all IRA external variables,
    functions, common typedefs start with prefix ira_.  */
 
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
 #define ENABLE_IRA_CHECKING
 #endif
 

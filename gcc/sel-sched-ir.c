@@ -954,7 +954,6 @@ return_regset_to_pool (regset rs)
   regset_pool.v[regset_pool.n++] = rs;
 }
 
-#ifdef ENABLE_CHECKING
 /* This is used as a qsort callback for sorting regset pool stacks.
    X and XX are addresses of two regsets.  They are never equal.  */
 static int
@@ -968,44 +967,42 @@ cmp_v_in_regset_pool (const void *x, const void *xx)
     return -1;
   gcc_unreachable ();
 }
-#endif
 
-/*  Free the regset pool possibly checking for memory leaks.  */
+/* Free the regset pool possibly checking for memory leaks.  */
 void
 free_regset_pool (void)
 {
-#ifdef ENABLE_CHECKING
-  {
-    regset *v = regset_pool.v;
-    int i = 0;
-    int n = regset_pool.n;
+  if (flag_checking)
+    {
+      regset *v = regset_pool.v;
+      int i = 0;
+      int n = regset_pool.n;
 
-    regset *vv = regset_pool.vv;
-    int ii = 0;
-    int nn = regset_pool.nn;
+      regset *vv = regset_pool.vv;
+      int ii = 0;
+      int nn = regset_pool.nn;
 
-    int diff = 0;
+      int diff = 0;
 
-    gcc_assert (n <= nn);
+      gcc_assert (n <= nn);
 
-    /* Sort both vectors so it will be possible to compare them.  */
-    qsort (v, n, sizeof (*v), cmp_v_in_regset_pool);
-    qsort (vv, nn, sizeof (*vv), cmp_v_in_regset_pool);
+      /* Sort both vectors so it will be possible to compare them.  */
+      qsort (v, n, sizeof (*v), cmp_v_in_regset_pool);
+      qsort (vv, nn, sizeof (*vv), cmp_v_in_regset_pool);
 
-    while (ii < nn)
-      {
-        if (v[i] == vv[ii])
-          i++;
-        else
-          /* VV[II] was lost.  */
-          diff++;
+      while (ii < nn)
+	{
+	  if (v[i] == vv[ii])
+	    i++;
+	  else
+	    /* VV[II] was lost.  */
+	    diff++;
 
-        ii++;
-      }
+	  ii++;
+	}
 
-    gcc_assert (diff == regset_pool.diff);
-  }
-#endif
+      gcc_assert (diff == regset_pool.diff);
+    }
 
   /* If not true - we have a memory leak.  */
   gcc_assert (regset_pool.diff == 0);
@@ -3623,7 +3620,6 @@ insn_is_the_only_one_in_bb_p (insn_t insn)
   return sel_bb_head_p (insn) && sel_bb_end_p (insn);
 }
 
-#ifdef ENABLE_CHECKING
 /* Check that the region we're scheduling still has at most one
    backedge.  */
 static void
@@ -3644,7 +3640,6 @@ verify_backedges (void)
       gcc_assert (n <= 1);
     }
 }
-#endif
 
 
 /* Functions to work with control flow.  */
@@ -3889,10 +3884,12 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
 	sel_recompute_toporder ();
     }
 
-#ifdef ENABLE_CHECKING
-  verify_backedges ();
-  verify_dominators (CDI_DOMINATORS);
-#endif
+  /* TODO: use separate flag for CFG checking.  */
+  if (flag_checking)
+    {
+      verify_backedges ();
+      verify_dominators (CDI_DOMINATORS);
+    }
 
   return changed;
 }

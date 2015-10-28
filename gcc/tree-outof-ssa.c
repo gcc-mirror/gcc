@@ -841,24 +841,23 @@ eliminate_useless_phis (void)
 	  result = gimple_phi_result (phi);
 	  if (virtual_operand_p (result))
 	    {
-#ifdef ENABLE_CHECKING
-	      size_t i;
 	      /* There should be no arguments which are not virtual, or the
 	         results will be incorrect.  */
-	      for (i = 0; i < gimple_phi_num_args (phi); i++)
-	        {
-		  tree arg = PHI_ARG_DEF (phi, i);
-		  if (TREE_CODE (arg) == SSA_NAME
-		      && !virtual_operand_p (arg))
-		    {
-		      fprintf (stderr, "Argument of PHI is not virtual (");
-		      print_generic_expr (stderr, arg, TDF_SLIM);
-		      fprintf (stderr, "), but the result is :");
-		      print_gimple_stmt (stderr, phi, 0, TDF_SLIM);
-		      internal_error ("SSA corruption");
-		    }
-		}
-#endif
+	      if (flag_checking)
+		for (size_t i = 0; i < gimple_phi_num_args (phi); i++)
+		  {
+		    tree arg = PHI_ARG_DEF (phi, i);
+		    if (TREE_CODE (arg) == SSA_NAME
+			&& !virtual_operand_p (arg))
+		      {
+			fprintf (stderr, "Argument of PHI is not virtual (");
+			print_generic_expr (stderr, arg, TDF_SLIM);
+			fprintf (stderr, "), but the result is :");
+			print_gimple_stmt (stderr, phi, 0, TDF_SLIM);
+			internal_error ("SSA corruption");
+		      }
+		  }
+
 	      remove_phi_node (&gsi, true);
 	    }
           else
@@ -884,9 +883,11 @@ eliminate_useless_phis (void)
    variable.  */
 
 static void
-rewrite_trees (var_map map ATTRIBUTE_UNUSED)
+rewrite_trees (var_map map)
 {
-#ifdef ENABLE_CHECKING
+  if (!flag_checking)
+    return;
+
   basic_block bb;
   /* Search for PHIs where the destination has no partition, but one
      or more arguments has a partition.  This should not happen and can
@@ -918,7 +919,6 @@ rewrite_trees (var_map map ATTRIBUTE_UNUSED)
 	    }
 	}
     }
-#endif
 }
 
 /* Given the out-of-ssa info object SA (with prepared partitions)

@@ -1878,7 +1878,7 @@ inline_small_functions (void)
       if (!edge->inline_failed || !edge->callee->analyzed)
 	continue;
 
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
       /* Be sure that caches are maintained consistent.  */
       sreal cached_badness = edge_badness (edge, false);
  
@@ -2632,9 +2632,8 @@ early_inliner (function *fun)
   if (ipa_node_params_sum)
     return 0;
 
-#ifdef ENABLE_CHECKING
-  node->verify ();
-#endif
+  if (flag_checking)
+    node->verify ();
   node->remove_all_references ();
 
   /* Rebuild this reference because it dosn't depend on

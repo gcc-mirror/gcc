@@ -896,13 +896,9 @@ suitable_component_p (struct loop *loop, struct component *comp)
       if (!determine_offset (first->ref, a->ref, &a->offset))
 	return false;
 
-#ifdef ENABLE_CHECKING
-      {
-	enum ref_step_type a_step;
-	ok = suitable_reference_p (a->ref, &a_step);
-	gcc_assert (ok && a_step == comp->comp_step);
-      }
-#endif
+      enum ref_step_type a_step;
+      gcc_checking_assert (suitable_reference_p (a->ref, &a_step)
+			   && a_step == comp->comp_step);
     }
 
   /* If there is a write inside the component, we must know whether the

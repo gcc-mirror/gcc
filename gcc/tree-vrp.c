@@ -242,9 +242,7 @@ static inline bool
 supports_overflow_infinity (const_tree type)
 {
   tree min = vrp_val_min (type), max = vrp_val_max (type);
-#ifdef ENABLE_CHECKING
-  gcc_assert (needs_overflow_infinity (type));
-#endif
+  gcc_checking_assert (needs_overflow_infinity (type));
   return (min != NULL_TREE
 	  && CONSTANT_CLASS_P (min)
 	  && max != NULL_TREE
@@ -373,9 +371,9 @@ static void
 set_value_range (value_range *vr, enum value_range_type t, tree min,
 		 tree max, bitmap equiv)
 {
-#if defined ENABLE_CHECKING
   /* Check the validity of the range.  */
-  if (t == VR_RANGE || t == VR_ANTI_RANGE)
+  if (flag_checking
+      && (t == VR_RANGE || t == VR_ANTI_RANGE))
     {
       int cmp;
 
@@ -395,12 +393,12 @@ set_value_range (value_range *vr, enum value_range_type t, tree min,
 		    || !is_overflow_infinity (max));
     }
 
-  if (t == VR_UNDEFINED || t == VR_VARYING)
-    gcc_assert (min == NULL_TREE && max == NULL_TREE);
-
-  if (t == VR_UNDEFINED || t == VR_VARYING)
-    gcc_assert (equiv == NULL || bitmap_empty_p (equiv));
-#endif
+  if (flag_checking
+      && (t == VR_UNDEFINED || t == VR_VARYING))
+    {
+      gcc_assert (min == NULL_TREE && max == NULL_TREE);
+      gcc_assert (equiv == NULL || bitmap_empty_p (equiv));
+    }
 
   vr->type = t;
   vr->min = min;

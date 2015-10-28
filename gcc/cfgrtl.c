@@ -2096,9 +2096,7 @@ commit_edge_insertions (void)
      which will be done by fixup_partitions.  */
   fixup_partitions ();
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
+  checking_verify_flow_info ();
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
 		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
@@ -3722,9 +3720,8 @@ fixup_reorder_chain (void)
     insn = NEXT_INSN (insn);
 
   set_last_insn (insn);
-#ifdef ENABLE_CHECKING
-  verify_insn_chain ();
-#endif
+  if (flag_checking)
+    verify_insn_chain ();
 
   /* Now add jumps and labels as needed to match the blocks new
      outgoing edges.  */
@@ -4312,9 +4309,7 @@ break_superblocks (void)
 void
 cfg_layout_finalize (void)
 {
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
+  checking_verify_flow_info ();
   force_one_exit_fallthru ();
   rtl_register_cfg_hooks ();
   if (reload_completed && !targetm.have_epilogue ())
@@ -4324,10 +4319,9 @@ cfg_layout_finalize (void)
   rebuild_jump_labels (get_insns ());
   delete_dead_jumptables ();
 
-#ifdef ENABLE_CHECKING
-  verify_insn_chain ();
-  verify_flow_info ();
-#endif
+  if (flag_checking)
+    verify_insn_chain ();
+  checking_verify_flow_info ();
 }
 
 
@@ -4892,13 +4886,11 @@ rtl_flow_call_edges_add (sbitmap blocks)
 		 block in CFG already.  Calling make_edge in such case would
 		 cause us to mark that edge as fake and remove it later.  */
 
-#ifdef ENABLE_CHECKING
-	      if (split_at_insn == BB_END (bb))
+	      if (flag_checking && split_at_insn == BB_END (bb))
 		{
 		  e = find_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun));
 		  gcc_assert (e == NULL);
 		}
-#endif
 
 	      /* Note that the following may create a new basic block
 		 and renumber the existing basic blocks.  */

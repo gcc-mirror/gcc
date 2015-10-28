@@ -5952,10 +5952,11 @@ free_lang_data_in_cgraph (void)
   /* Traverse every type found freeing its language data.  */
   FOR_EACH_VEC_ELT (fld.types, i, t)
     free_lang_data_in_type (t);
-#ifdef ENABLE_CHECKING
-  FOR_EACH_VEC_ELT (fld.types, i, t)
-    verify_type (t);
-#endif
+  if (flag_checking)
+    {
+      FOR_EACH_VEC_ELT (fld.types, i, t)
+	verify_type (t);
+    }
 
   delete fld.pset;
   fld.worklist.release ();

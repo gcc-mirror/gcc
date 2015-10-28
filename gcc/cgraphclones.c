@@ -1074,9 +1074,8 @@ symbol_table::materialize_all_clones (void)
 
   if (symtab->dump_file)
     fprintf (symtab->dump_file, "Materializing clones\n");
-#ifdef ENABLE_CHECKING
-  cgraph_node::verify_cgraph_nodes ();
-#endif
+
+  cgraph_node::checking_verify_cgraph_nodes ();
 
   /* We can also do topological order, but number of iterations should be
      bounded by number of IPA passes since single IPA pass is probably not
@@ -1145,9 +1144,9 @@ symbol_table::materialize_all_clones (void)
       node->clear_stmts_in_references ();
   if (symtab->dump_file)
     fprintf (symtab->dump_file, "Materialization Call site updates done.\n");
-#ifdef ENABLE_CHECKING
-  cgraph_node::verify_cgraph_nodes ();
-#endif
+
+  cgraph_node::checking_verify_cgraph_nodes ();
+
   symtab->remove_unreachable_nodes (symtab->dump_file);
 }
 
