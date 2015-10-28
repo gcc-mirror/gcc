@@ -22,7 +22,7 @@ module test_mod
   end type wrapper_t
 
   type :: list_t
-    type(wrapper_t) :: classes(10)
+    type(wrapper_t) :: classes(20)
   contains
     procedure :: Method
     procedure :: Typeme

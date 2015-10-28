@@ -1,3 +1,9 @@
+2015-01-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67933
+	* gfortran.dg/allocate_with_source_15.f03: Correct trivial
+	array bounds error at line 25.
+
 2015-10-28  Catherine Moore  <clm@codesourcery.com>
 
 	* gcc.target/mips/oddspreg-3.c: Disable for MIPS16.
