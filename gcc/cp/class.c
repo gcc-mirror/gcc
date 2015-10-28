@@ -5150,6 +5150,33 @@ type_has_user_provided_constructor (tree t)
   return false;
 }
 
+/* Returns true iff class T has a user-provided or explicit constructor.  */
+
+bool
+type_has_user_provided_or_explicit_constructor (tree t)
+{
+  tree fns;
+
+  if (!CLASS_TYPE_P (t))
+    return false;
+
+  if (!TYPE_HAS_USER_CONSTRUCTOR (t))
+    return false;
+
+  /* This can happen in error cases; avoid crashing.  */
+  if (!CLASSTYPE_METHOD_VEC (t))
+    return false;
+
+  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+    {
+      tree fn = OVL_CURRENT (fns);
+      if (user_provided_p (fn) || DECL_NONCONVERTING_P (fn))
+	return true;
+    }
+
+  return false;
+}
+
 /* Returns true iff class T has a non-user-provided (i.e. implicitly
    declared or explicitly defaulted in the class body) default
    constructor.  */
@@ -5735,7 +5762,8 @@ check_bases_and_members (tree t)
      Again, other conditions for being an aggregate are checked
      elsewhere.  */
   CLASSTYPE_NON_AGGREGATE (t)
-    |= (type_has_user_provided_constructor (t) || TYPE_POLYMORPHIC_P (t));
+    |= (type_has_user_provided_or_explicit_constructor (t)
+	|| TYPE_POLYMORPHIC_P (t));
   /* This is the C++98/03 definition of POD; it changed in C++0x, but we
      retain the old definition internally for ABI reasons.  */
   CLASSTYPE_NON_LAYOUT_POD_P (t)
