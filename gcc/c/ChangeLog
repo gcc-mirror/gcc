@@ -1,3 +1,9 @@
+2015-10-26  Jim Wilson  <jim.wilson@linaro.org>
+
+	PR debug/66068
+	* c-typeck.c (c_build_qualified_type): Clear C_TYPE_INCOMPLETE_VARS
+	after calling build_qualified_type.
+
 2015-10-27  Cesar Philippidis  <cesar@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
