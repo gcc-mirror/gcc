@@ -1,3 +1,12 @@
+2015-10-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-2.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/loop-v-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c: New.
+
 2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (nvptx_exec): Remove check on compute
