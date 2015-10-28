@@ -1,5 +1,10 @@
 2015-10-28  Tom de Vries  <tom@codesourcery.com>
 
+	* tree-ssa-structalias.c (intra_create_variable_infos): Don't iterate
+	into vi_next of a full_var.
+
+2015-10-28  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-ssa-structalias.c (new_var_info, make_heapvar)
 	(make_constraint_from_restrict, make_constraint_from_global_restrict)
 	(create_function_info_for, create_variable_info_for_1)
