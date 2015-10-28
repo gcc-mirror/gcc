@@ -902,13 +902,6 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
     if (targ_fn->launch->dim[i])
       dims[i] = targ_fn->launch->dim[i];
 
-  if (dims[GOMP_DIM_GANG] != 1)
-    GOMP_PLUGIN_fatal ("non-unity num_gangs (%d) not supported",
-		       dims[GOMP_DIM_GANG]);
-  if (dims[GOMP_DIM_WORKER] != 1)
-    GOMP_PLUGIN_fatal ("non-unity num_workers (%d) not supported",
-		       dims[GOMP_DIM_WORKER]);
-
   /* This reserves a chunk of a pre-allocated page of memory mapped on both
      the host and the device. HP is a host pointer to the new chunk, and DP is
      the corresponding device pointer.  */

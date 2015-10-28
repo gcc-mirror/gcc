@@ -1,3 +1,8 @@
+2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Remove check on compute
+	dimensions.
+
 2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR testsuite/68063
