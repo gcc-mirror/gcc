@@ -1969,7 +1969,6 @@ nvptx_print_operand_address (FILE *file, rtx addr)
 
    A -- print an address space identifier for a MEM
    c -- print an opcode suffix for a comparison operator, including a type code
-   d -- print a CONST_INT as a vector dimension (x, y, or z)
    f -- print a full reg even for something that must always be split
    S -- print a shuffle kind specified by CONST_INT
    t -- print a type opcode suffix, promoting QImode to 32 bits
@@ -2011,18 +2010,6 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 	addr_space_t as = nvptx_addr_space_from_address (XEXP (x, 0));
 	fputs (nvptx_section_from_addr_space (as), file);
       }
-      break;
-
-    case 'd':
-      gcc_assert (x_code == CONST_INT);
-      if (INTVAL (x) == 0)
-	fputs (".x", file);
-      else if (INTVAL (x) == 1)
-	fputs (".y", file);
-      else if (INTVAL (x) == 2)
-	fputs (".z", file);
-      else
-	gcc_unreachable ();
       break;
 
     case 't':
@@ -2294,9 +2281,8 @@ nvptx_reorg_subreg (void)
     }
 }
 
-/* Loop structure of the function. The entire function is described as
-   a NULL loop.  We should be able to extend this to represent
-   superblocks.  */
+/* Loop structure of the function.  The entire function is described as
+   a NULL loop.  */
 
 struct parallel
 {
@@ -3028,7 +3014,6 @@ nvptx_neuter_pars (parallel *par, unsigned modes, unsigned outer)
 }
 
 /* PTX-specific reorganization
-   - Scan and release reduction buffers
    - Split blocks at fork and join instructions
    - Compute live registers
    - Mark now-unused registers, so function begin doesn't declare
@@ -3214,11 +3199,11 @@ nvptx_record_offload_symbol (tree decl)
 	    
 	    fprintf (asm_out_file, ", %#x", size);
 	  }
-	
+
 	fprintf (asm_out_file, "\n");
       }
       break;
-  
+
     default:
       gcc_unreachable ();
     }

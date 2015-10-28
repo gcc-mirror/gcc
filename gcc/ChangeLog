@@ -1,3 +1,10 @@
+2015-10-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_print_operand): Remove 'd' case.
+	(struct parallel): Update comment.
+	(nvptx_reorg): Likewise.
+	(nvptx_neuter): Cleanup whitespace.
+
 2015-10-28  Richard Henderson  <rth@redhat.com>
 
 	* tree-eh.c (mark_reachable_handlers): Fix typo in assert.
