@@ -1,3 +1,61 @@
+2015-10-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.h (ALTIVEC_VECTOR_MODE): Add IEEE 128-bit
+	floating point modes that can go in vector registers.
+	(MODES_TIEABLE_P): Move tests for vector modes before tests for
+	scalar floating point, so that IEEE 128-bit floating point that
+	can go in vector registers bind with vectors and not FP.
+	(struct rs6000_args): Add libcall field.
+
+	* config/rs6000/rs6000.opt (-mfloat128-*): Delete -mfloat128-none
+	and -mfloat128-software switches.  Replace them with a binary
+	-mfloat128 switch.
+	(-mfloat128): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Allow
+	128-bit floating point types in GPRs, even if the appropriate
+	option enabling the type was not used.
+	(rs6000_debug_reg_global): Remove -mfloat128-{software,none}
+	debugging.
+	(rs6000_setup_reg_addr_masks): Do not allow pre-increment and
+	pre-decrement on IEEE 128-bit floating point values.
+	(rs6000_init_hard_regno_mode_ok): Change test for whether TFmode
+	is IEEE 128-bit floating point.
+	(rs6000_init_hard_regno_mode_ok): Add reload handlers for IEEE
+	128-bit floating point types that can go in vector registers.
+	(rs6000_option_override_internal): Change -mfloat128-none and
+	-mfloat128-software to -mfloat128, and move code to be near other
+	VSX option handling.
+	(rs6000_option_override_internal): Disable -mfloat128 if we don't
+	have the Altivec ABI.
+	(rs6000_init_builtins): Don't make TFmode use either IFmode or
+	KFmode floating point nodes. Instead, have three separate nodes.
+	(rs6000_scalar_mode_supported_p): Add support for IFmode to allow
+	eventually moving the long double default to IEEE 128-bit floating
+	point.
+	(rs6000_opt_masks): Add -mfloat128.
+	(struct rs6000_opt_var): Fix typo in comment.
+	(init_cumulative_args): Initialize libcall field in
+	CUMULATIVE_ARGS.
+	(rs6000_function_arg): Treat library functions as if they had
+	prototypes to prevent IEEE 128-bit support functions from passing
+	arguments in both GPRs and vector registers.
+	(rs6000_arg_partial_bytes): Likewise.
+
+	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Add -mfloat128 as
+	an option that can be turned on via -mcpu=<xxx>.
+
+	* config/rs6000/rs6000-opts.h (enum float128_type_t): Delete, no
+	longer used.
+
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	__FLOAT128__ if -mfloat128. Define __LONG_DOUBLE_IEEE128__ if long
+	double is IEEE 128-bit. Define __LONG_DOUBLE_IBM128__ if long
+	double is IBM extended double.
+
+	* config/rs6000/predicates.md (reg_or_indexed_operand): Allow
+	SUBREGs.
+
 2015-10-29  Mikhail Maltsev  <maltsevm@gmail.com>
 
         * genautomata.c: Use CHECKING_P instead of ENABLE_CHECKING.
