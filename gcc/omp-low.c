@@ -15929,14 +15929,12 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      }
 	    break;
 	  }
+
       gimple_seq_add_seq (&new_body, tgt_body);
+
       if (offloaded)
 	new_body = maybe_catch_exception (new_body);
-    }
-  else if (data_region)
-    new_body = tgt_body;
-  if (offloaded || data_region)
-    {
+
       gimple_seq_add_stmt (&new_body, gimple_build_omp_return (false));
       gimple_omp_set_body (stmt, new_body);
     }
