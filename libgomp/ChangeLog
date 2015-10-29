@@ -1,3 +1,13 @@
+2015-10-29  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/combdir-1.c: Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/combined-directives-1.c:
+	... this.  Add a description of the test at the top of the file.
+	* testsuite/libgomp.oacc-fortran/combdir-1.f90: Rename file to...
+	* testsuite/libgomp.oacc-fortran/combined-directives-1.f90:
+	... this.  Add a description of the test at the top of the file.
+
 2015-10-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-g-1.c: New.
