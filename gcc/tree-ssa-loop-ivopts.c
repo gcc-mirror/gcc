@@ -4328,7 +4328,9 @@ split_address_cost (struct ivopts_data *data,
       *symbol_present = false;
       *var_present = true;
       fd_ivopts_data = data;
-      walk_tree (&addr, find_depends, depends_on, NULL);
+      if (depends_on)
+	walk_tree (&addr, find_depends, depends_on, NULL);
+
       return new_cost (target_spill_cost[data->speed], 0);
     }
 
@@ -4616,7 +4618,8 @@ get_computation_cost_at (struct ivopts_data *data,
 				? TYPE_MODE (TREE_TYPE (*use->op_p))
 				: VOIDmode);
 
-  *depends_on = NULL;
+  if (depends_on)
+    *depends_on = NULL;
 
   /* Only consider real candidates.  */
   if (!cand->iv)
@@ -4908,9 +4911,9 @@ determine_use_iv_cost_address (struct ivopts_data *data,
        sub_use && !infinite_cost_p (cost);
        sub_use = sub_use->next)
     {
-       sub_cost = get_computation_cost (data, sub_use, cand, true, &depends_on,
-					&can_autoinc, &inv_expr_id);
-       cost = add_costs (cost, sub_cost);
+      sub_cost = get_computation_cost (data, sub_use, cand, true, NULL,
+				       &can_autoinc, NULL);
+      cost = add_costs (cost, sub_cost);
     }
 
   set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE, ERROR_MARK,
