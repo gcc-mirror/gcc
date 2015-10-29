@@ -2874,6 +2874,11 @@ process_address_1 (int nop, bool check_only_p,
   enum constraint_num cn = lookup_constraint (constraint);
   bool change_p = false;
 
+  if (MEM_P (op)
+      && GET_MODE (op) == BLKmode
+      && GET_CODE (XEXP (op, 0)) == SCRATCH)
+    return false;
+
   if (insn_extra_address_constraint (cn))
     decompose_lea_address (&ad, curr_id->operand_loc[nop]);
   else if (MEM_P (op))
