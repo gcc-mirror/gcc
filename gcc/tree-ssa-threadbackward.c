@@ -37,19 +37,22 @@ along with GCC; see the file COPYING3.  If not see
 static int max_threaded_paths;
 
 /* Simple helper to get the last statement from BB, which is assumed
-   to be a control statement.  */
+   to be a control statement.   Return NULL if the last statement is
+   not a control statement.  */
+
 static gimple *
 get_gimple_control_stmt (basic_block bb)
 {
-  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
 
   if (gsi_end_p (gsi))
     return NULL;
 
   gimple *stmt = gsi_stmt (gsi);
   enum gimple_code code = gimple_code (stmt);
-  gcc_assert (code == GIMPLE_COND || code == GIMPLE_SWITCH || code == GIMPLE_GOTO);
-  return stmt;
+  if (code == GIMPLE_COND || code == GIMPLE_SWITCH || code == GIMPLE_GOTO)
+    return stmt;
+  return NULL;
 }
 
 /* Return true if the CFG contains at least one path from START_BB to END_BB.
@@ -340,11 +343,39 @@ fsm_find_control_statement_thread_paths (tree name,
    finding a path where NAME is a constant, we can thread the path.  */
 
 void  
-find_jump_threads_backwards (tree name, basic_block bb)
+find_jump_threads_backwards (edge e)
 {     
+  if (!flag_expensive_optimizations
+      || optimize_function_for_size_p (cfun)
+      || e->dest->loop_father != e->src->loop_father
+      || loop_depth (e->dest->loop_father) == 0)
+    return;
+
+  gimple *stmt = get_gimple_control_stmt (e->dest);
+  if (!stmt)
+    return;
+
+  enum gimple_code code = gimple_code (stmt);
+  tree name = NULL;
+  if (code == GIMPLE_SWITCH)
+    name = gimple_switch_index (as_a <gswitch *> (stmt));
+  else if (code == GIMPLE_GOTO)
+    name = gimple_goto_dest (stmt);
+  else if (code == GIMPLE_COND)
+    {
+      if (TREE_CODE (gimple_cond_lhs (stmt)) == SSA_NAME
+	  && TREE_CODE (gimple_cond_rhs (stmt)) == INTEGER_CST
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt)))
+	      || POINTER_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt)))))
+	name = gimple_cond_lhs (stmt);
+    }
+
+  if (!name || TREE_CODE (name) != SSA_NAME)
+    return;
+
   vec<basic_block, va_gc> *bb_path;
   vec_alloc (bb_path, n_basic_blocks_for_fn (cfun));
-  vec_safe_push (bb_path, bb);           
+  vec_safe_push (bb_path, e->dest);
   hash_set<basic_block> *visited_bbs = new hash_set<basic_block>;
 
   max_threaded_paths = PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATHS);
@@ -352,4 +383,4 @@ find_jump_threads_backwards (tree name, basic_block bb)
 
   delete visited_bbs;
   vec_free (bb_path);
-}         
+}

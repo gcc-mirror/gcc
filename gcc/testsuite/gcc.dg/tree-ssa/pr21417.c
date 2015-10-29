@@ -49,5 +49,5 @@ L23:
 /* We should thread the backedge to the top of the loop; ie we only
    execute the if (expr->common.code != 142) test once per loop
    iteration.  */
-/* { dg-final { scan-tree-dump-times "Threaded jump" 1 "dom2" } } */
+/* { dg-final { scan-tree-dump-times "FSM jump thread" 1 "dom2" } } */
 
