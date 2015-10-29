@@ -43031,22 +43031,28 @@ ix86_cannot_change_mode_class (machine_mode from, machine_mode to,
   if (MAYBE_FLOAT_CLASS_P (regclass))
     return true;
 
-  /* Vector registers do not support QI or HImode loads.  If we don't
-     disallow a change to these modes, reload will assume it's ok to
-     drop the subreg from (subreg:SI (reg:HI 100) 0).  This affects
-     the vec_dupv4hi pattern.
-
-     Further, we cannot allow word_mode subregs of full vector modes.
-     Otherwise the middle-end will assume it's ok to store to
-     (subreg:DI (reg:TI 100) 0) in order to modify only the low 64 bits
-     of the 128-bit register.  However, after reload the subreg will
-     be dropped leaving a plain DImode store.  This is indistinguishable
-     from a "normal" DImode move, and so we're justified to use movsd,
-     which modifies the entire 128-bit register.
-
-     Combining these two conditions, disallow all narrowing mode changes.  */
   if (MAYBE_SSE_CLASS_P (regclass) || MAYBE_MMX_CLASS_P (regclass))
-    return GET_MODE_SIZE (to) < GET_MODE_SIZE (from);
+    {
+      int from_size = GET_MODE_SIZE (from);
+      int to_size = GET_MODE_SIZE (to);
+
+      /* Vector registers do not support QI or HImode loads.  If we don't
+	 disallow a change to these modes, reload will assume it's ok to
+	 drop the subreg from (subreg:SI (reg:HI 100) 0).  This affects
+	 the vec_dupv4hi pattern.  */
+      if (from_size < 4)
+	return true;
+
+      /* Further, we cannot allow word_mode subregs of full vector modes.
+         Otherwise the middle-end will assume it's ok to store to
+         (subreg:DI (reg:TI 100) 0) in order to modify only the low 64 bits
+         of the 128-bit register.  However, after reload the subreg will
+         be dropped leaving a plain DImode store.  This is indistinguishable
+         from a "normal" DImode move, and so we're justified to use movsd,
+         which modifies the entire 128-bit register.  */
+      if (to_size == UNITS_PER_WORD && from_size > UNITS_PER_WORD)
+	return true;
+    }
 
   return false;
 }
