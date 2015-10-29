@@ -24,14 +24,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
 #include "cp-tree.h"
+#include "alias.h"
 #include "intl.h"
 #include "flags.h"
 #include "toplev.h"
-#include "target.h"
 
 static int is_subobject_of_p (tree, tree);
 static tree dfs_lookup_base (tree, void *);

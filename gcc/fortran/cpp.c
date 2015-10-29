@@ -19,19 +19,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
+#include "gfortran.h"
+#include "tm_p.h"		/* Target prototypes.  */
+#include "diagnostic.h"
+#include "alias.h"
 #include "version.h"
 #include "flags.h"
 
 
-#include "options.h"
-#include "gfortran.h"
-#include "tm_p.h"		/* Target prototypes.  */
-#include "target.h"
 #include "toplev.h"
-#include "diagnostic.h"
 
 #include "../../libcpp/internal.h"
 #include "cpp.h"

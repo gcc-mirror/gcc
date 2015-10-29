@@ -21,11 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
-#include "stringpool.h"
-#include "stor-layout.h"
 #include "c-common.h"
+#include "stringpool.h"
+#include "alias.h"
+#include "stor-layout.h"
 #include "c-indentation.h"
 
 extern cpp_options *cpp_opts;

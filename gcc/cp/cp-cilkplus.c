@@ -24,7 +24,6 @@
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
-#include "diagnostic-core.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"  /* for copy_tree_body_r.  */
 #include "cilk.h"

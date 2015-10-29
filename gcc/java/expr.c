@@ -26,11 +26,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
-#include "fold-const.h"
 #include "stringpool.h"
+#include "diagnostic-core.h"
+#include "alias.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "flags.h"
 #include "java-tree.h"
@@ -39,9 +40,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "java-except.h"
 #include "parse.h"
-#include "diagnostic-core.h"
 #include "tree-iterator.h"
-#include "target.h"
 
 static void flush_quick_stack (void);
 static void push_value (tree);

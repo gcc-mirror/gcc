@@ -22,9 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "options.h"
-#include "gfortran.h"
-#include "obstack.h"
 #include "bitmap.h"
+#include "gfortran.h"
 #include "arith.h"  /* For gfc_compare_expr().  */
 #include "dependency.h"
 #include "data.h"

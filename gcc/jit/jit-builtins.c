@@ -20,14 +20,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "vec.h"
 #include "target.h"
+#include "jit-common.h"
+#include "jit-playback.h"
 #include "stringpool.h"
 
-#include "jit-common.h"
 #include "jit-builtins.h"
 #include "jit-recording.h"
-#include "jit-playback.h"
 
 namespace gcc {
 

@@ -27,12 +27,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
-#include "options.h"
+#include "diagnostic-core.h"
+#include "alias.h"
 #include "java-tree.h"
 #include "parse.h"
-#include "diagnostic-core.h"
 
 static void mark_reference_fields (tree, wide_int *, unsigned int,
 				   int *, int *, int *, HOST_WIDE_INT *);

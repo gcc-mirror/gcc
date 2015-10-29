@@ -27,16 +27,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
+#include "cp-tree.h"
+#include "alias.h"
 #include "stor-layout.h"
 #include "flags.h"
-#include "cp-tree.h"
 #include "intl.h"
 #include "convert.h"
 #include "decl.h"
-#include "target.h"
 
 static tree cp_convert_to_pointer (tree, tree, tsubst_flags_t);
 static tree convert_to_pointer_force (tree, tree, tsubst_flags_t);

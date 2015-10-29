@@ -21,14 +21,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "options.h"
+#include "tree.h"
 #include "gfortran.h"
+#include "stringpool.h"
 #include "match.h"
 #include "parse.h"
-#include "options.h"
 #include "constructor.h"
 #include "alias.h"
-#include "tree.h"
-#include "stringpool.h"
 
 /* Macros to access allocate memory for gfc_data_variable,
    gfc_data_value and gfc_data.  */
