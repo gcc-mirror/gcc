@@ -1,3 +1,14 @@
+2015-10-29  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-scopedtables.h (const_and_copies): Remove invalidate
+	method.
+	* tree-ssa-scopedtables.h (const_and_copies::invalidate): Remove.
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Remove
+	backedge_seen argument and associated code which invalidated
+	equivalences based on the value of that argument.
+	(thread_through_normal_block): Corresponding changes.
+
 2015-10-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p): Move this

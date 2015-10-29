@@ -215,8 +215,7 @@ static gimple *
 record_temporary_equivalences_from_stmts_at_dest (edge e,
     const_and_copies *const_and_copies,
     avail_exprs_stack *avail_exprs_stack,
-    pfn_simplify simplify,
-    bool backedge_seen)
+    pfn_simplify simplify)
 {
   gimple *stmt = NULL;
   gimple_stmt_iterator gsi;
@@ -268,22 +267,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
           && (gimple_code (stmt) != GIMPLE_CALL
               || gimple_call_lhs (stmt) == NULL_TREE
               || TREE_CODE (gimple_call_lhs (stmt)) != SSA_NAME))
-	{
-	  /* STMT might still have DEFS and we need to invalidate any known
-	     equivalences for them.
-
-	     Consider if STMT is a GIMPLE_ASM with one or more outputs that
-	     feeds a conditional inside a loop.  We might derive an equivalence
-	     due to the conditional.  */
-	  tree op;
-	  ssa_op_iter iter;
-
-	  if (backedge_seen)
-	    FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
-	      const_and_copies->invalidate (op);
-
-	  continue;
-	}
+	continue;
 
       /* The result of __builtin_object_size depends on all the arguments
 	 of a phi node. Temporarily using only one edge produces invalid
@@ -316,14 +300,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	  if (fndecl
 	      && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_OBJECT_SIZE
 		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CONSTANT_P))
-	    {
-	      if (backedge_seen)
-		{
-		  tree lhs = gimple_get_lhs (stmt);
-		  const_and_copies->invalidate (lhs);
-		}
-	      continue;
-	    }
+	    continue;
 	}
 
       /* At this point we have a statement which assigns an RHS to an
@@ -389,19 +366,12 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	}
 
       /* Record the context sensitive equivalence if we were able
-	 to simplify this statement.
-
-	 If we have traversed a backedge at some point during threading,
-	 then always enter something here.  Either a real equivalence,
-	 or a NULL_TREE equivalence which is effectively invalidation of
-	 prior equivalences.  */
+	 to simplify this statement.  */
       if (cached_lhs
 	  && (TREE_CODE (cached_lhs) == SSA_NAME
 	      || is_gimple_min_invariant (cached_lhs)))
 	const_and_copies->record_const_or_copy (gimple_get_lhs (stmt),
 						cached_lhs);
-      else if (backedge_seen)
-	const_and_copies->invalidate (gimple_get_lhs (stmt));
     }
   return stmt;
 }
@@ -925,8 +895,7 @@ thread_through_normal_block (edge e,
   gimple *stmt
     = record_temporary_equivalences_from_stmts_at_dest (e, const_and_copies,
 							avail_exprs_stack,
-							simplify,
-							*backedge_seen_p);
+							simplify);
 
   /* There's two reasons STMT might be null, and distinguishing
      between them is important.
