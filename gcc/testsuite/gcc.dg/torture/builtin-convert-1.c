@@ -8,6 +8,7 @@
 /* { dg-do link } */
 /* { dg-options "-ffast-math" } */
 /* { dg-add-options c99_runtime } */
+/* { dg-require-effective-target c99_runtime } */
 
 #include "../builtins-config.h"
 
