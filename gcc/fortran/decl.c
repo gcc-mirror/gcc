@@ -723,36 +723,61 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
 
   if ((*expr)->expr_type == EXPR_FUNCTION)
     {
-      if ((*expr)->value.function.actual
-	  && (*expr)->value.function.actual->expr->symtree)
-	{
-	  gfc_expr *e;
-	  e = (*expr)->value.function.actual->expr;
-	  if (e->symtree->n.sym->attr.flavor == FL_PROCEDURE
-	      && e->expr_type == EXPR_VARIABLE)
-	    {
-	      if (e->symtree->n.sym->ts.type == BT_UNKNOWN)
-		goto syntax;
-	      if (e->symtree->n.sym->ts.type == BT_CHARACTER
-		  && e->symtree->n.sym->ts.u.cl
-		  && e->symtree->n.sym->ts.u.cl->length->ts.type == BT_UNKNOWN)
-	        goto syntax;
-	    }
-	}
-    }
+      if ((*expr)->ts.type == BT_INTEGER
+	  || ((*expr)->ts.type == BT_UNKNOWN
+	      && strcmp((*expr)->symtree->name, "null") != 0))
+	return MATCH_YES;
 
-  /* F2008, 4.4.3.1:  The length is a type parameter; its kind is processor
-     dependent and its value is greater than or equal to zero.
-     F2008, 4.4.3.2:  If the character length parameter value evaluates to
-     a negative value, the length of character entities declared is zero.  */
-  if ((*expr)->expr_type == EXPR_CONSTANT
-      && mpz_cmp_si ((*expr)->value.integer, 0) < 0)
-    mpz_set_si ((*expr)->value.integer, 0);
+      goto syntax;
+    }
+  else if ((*expr)->expr_type == EXPR_CONSTANT)
+    {
+      /* F2008, 4.4.3.1:  The length is a type parameter; its kind is
+	 processor dependent and its value is greater than or equal to zero.
+	 F2008, 4.4.3.2:  If the character length parameter value evaluates
+	 to a negative value, the length of character entities declared
+	 is zero.  */
+
+      if ((*expr)->ts.type == BT_INTEGER)
+	{
+	  if (mpz_cmp_si ((*expr)->value.integer, 0) < 0)
+	    mpz_set_si ((*expr)->value.integer, 0);
+	}
+      else
+	goto syntax;
+    }
+  else if ((*expr)->expr_type == EXPR_ARRAY)
+    goto syntax;
+  else if ((*expr)->expr_type == EXPR_VARIABLE)
+    {
+      gfc_expr *e;
+
+      e = gfc_copy_expr (*expr);
+
+      /* This catches the invalid code "[character(m(2:3)) :: 'x', 'y']",
+	 which causes an ICE if gfc_reduce_init_expr() is called.  */
+      if (e->ref && e->ref->type == REF_ARRAY
+	  && e->ref->u.ar.type == AR_UNKNOWN
+	  && e->ref->u.ar.dimen_type[0] == DIMEN_RANGE)
+	goto syntax;
+
+      gfc_reduce_init_expr (e);
+
+      if ((e->ref && e->ref->type == REF_ARRAY
+	   && e->ref->u.ar.type != AR_ELEMENT) 
+	  || (!e->ref && e->expr_type == EXPR_ARRAY))
+	{
+	  gfc_free_expr (e);
+	  goto syntax;
+	}
+
+      gfc_free_expr (e);
+    }
 
   return m;
 
 syntax:
-  gfc_error ("Conflict in attributes of function argument at %C");
+  gfc_error ("Scalar INTEGER expression expected at %L", &(*expr)->where);
   return MATCH_ERROR;
 }
 

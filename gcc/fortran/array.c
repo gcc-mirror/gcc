@@ -1074,7 +1074,8 @@ gfc_match_array_constructor (gfc_expr **result)
   /* Try to match an optional "type-spec ::"  */
   gfc_clear_ts (&ts);
   gfc_new_undo_checkpoint (changed_syms);
-  if (gfc_match_type_spec (&ts) == MATCH_YES)
+  m = gfc_match_type_spec (&ts);
+  if (m == MATCH_YES)
     {
       seen_ts = (gfc_match (" ::") == MATCH_YES);
 
@@ -1095,6 +1096,11 @@ gfc_match_array_constructor (gfc_expr **result)
 	      goto cleanup;
 	    }
 	}
+    }
+  else if (m == MATCH_ERROR)
+    {
+      gfc_restore_last_undo_checkpoint ();
+      goto cleanup;
     }
 
   if (seen_ts)
