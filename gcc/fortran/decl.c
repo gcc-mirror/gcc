@@ -3909,7 +3909,9 @@ match_attr_spec (void)
 	  break;
 
 	case DECL_PROTECTED:
-	  if (gfc_current_ns->proc_name->attr.flavor != FL_MODULE)
+	  if (gfc_current_state () != COMP_MODULE
+	      || (gfc_current_ns->proc_name
+		  && gfc_current_ns->proc_name->attr.flavor != FL_MODULE))
 	    {
 	       gfc_error ("PROTECTED at %C only allowed in specification "
 			  "part of a module");
