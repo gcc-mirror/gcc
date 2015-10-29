@@ -724,8 +724,6 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
   unsigned ci;
   gimple *cond_expr = NULL;
   gimple *cond_expr_start;
-  tree bi_call_label_decl;
-  gimple *bi_call_label;
 
   auto_vec<gimple *, 12> conds;
   gen_shrink_wrap_conditions (bi_call, conds, &nconds);
@@ -773,11 +771,6 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
   nconds--;
   ci++;
   gcc_assert (cond_expr && gimple_code (cond_expr) == GIMPLE_COND);
-
-  /* Now the label.  */
-  bi_call_label_decl = create_artificial_label (gimple_location (bi_call));
-  bi_call_label = gimple_build_label (bi_call_label_decl);
-  gsi_insert_before (&bi_call_bsi, bi_call_label, GSI_SAME_STMT);
 
   bi_call_in_edge0 = split_block (bi_call_bb, cond_expr);
   bi_call_in_edge0->flags &= ~EDGE_FALLTHRU;
