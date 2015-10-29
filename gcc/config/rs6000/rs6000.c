@@ -22016,6 +22016,27 @@ save_reg_p (int r)
   return !call_used_regs[r] && df_regs_ever_live_p (r);
 }
 
+/* Determine whether the gp REG is really used.  */
+
+static bool
+rs6000_reg_live_or_pic_offset_p (int reg)
+{
+  /* If the function calls eh_return, claim used all the registers that would
+     be checked for liveness otherwise.  This is required for the PIC offset
+     register with -mminimal-toc on AIX, as it is advertised as "fixed" for
+     register allocation purposes in this case.  */
+
+  return (((crtl->calls_eh_return || df_regs_ever_live_p (reg))
+           && (!call_used_regs[reg]
+               || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
+		   && !TARGET_SINGLE_PIC_BASE
+                   && TARGET_TOC && TARGET_MINIMAL_TOC)))
+          || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
+	      && !TARGET_SINGLE_PIC_BASE
+              && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
+                  || (DEFAULT_ABI == ABI_DARWIN && flag_pic))));
+}
+
 /* Return the first fixed-point register that is required to be
    saved. 32 if none.  */
 
@@ -22033,7 +22054,7 @@ first_reg_to_save (void)
       && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
 	  || (DEFAULT_ABI == ABI_DARWIN && flag_pic)
 	  || (TARGET_TOC && TARGET_MINIMAL_TOC))
-      && df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM))
+      && rs6000_reg_live_or_pic_offset_p (RS6000_PIC_OFFSET_TABLE_REGNUM))
     first_reg = RS6000_PIC_OFFSET_TABLE_REGNUM;
 
 #if TARGET_MACHO
@@ -24230,27 +24251,6 @@ rs6000_emit_move_from_cr (rtx reg)
     }
 
   emit_insn (gen_movesi_from_cr (reg));
-}
-
-/* Determine whether the gp REG is really used.  */
-
-static bool
-rs6000_reg_live_or_pic_offset_p (int reg)
-{
-  /* If the function calls eh_return, claim used all the registers that would
-     be checked for liveness otherwise.  This is required for the PIC offset
-     register with -mminimal-toc on AIX, as it is advertised as "fixed" for
-     register allocation purposes in this case.  */
-
-  return (((crtl->calls_eh_return || df_regs_ever_live_p (reg))
-           && (!call_used_regs[reg]
-               || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
-		   && !TARGET_SINGLE_PIC_BASE
-                   && TARGET_TOC && TARGET_MINIMAL_TOC)))
-          || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
-	      && !TARGET_SINGLE_PIC_BASE
-              && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
-                  || (DEFAULT_ABI == ABI_DARWIN && flag_pic))));
 }
 
 /* Return whether the split-stack arg pointer (r12) is used.  */

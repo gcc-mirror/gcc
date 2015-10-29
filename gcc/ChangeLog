@@ -1,5 +1,12 @@
 2015-10-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p): Move this
+	function earlier in the file.
+	(first_reg_to_save): Use rs6000_reg_live_or_pic_offset_p instead of
+	df_regs_ever_live_p.
+
+2015-10-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* lra-constraints.c (process_address_1): Handle (mem:BLK (scratch))
 	by ignoring it.
 
