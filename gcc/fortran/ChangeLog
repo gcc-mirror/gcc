@@ -1,5 +1,10 @@
 2015-10-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/68054
+	* decl.c (match_attr_spec): PROTECTED can only be a module.
+
+2015-10-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/67885
 	* trans-decl.c (generate_local_decl): Mark PARAMETER entities in
 	BLOCK construct.
