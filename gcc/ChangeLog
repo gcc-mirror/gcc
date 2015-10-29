@@ -1,3 +1,13 @@
+2015-08-29  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mcore/mcore.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P,
+	BASE_REGISTER_RTX_P, INDEX_REGISTER_RTX_P,
+	GO_IF_LEGITIMATE_ADDRESS): Remove macros.
+	* config/mcore/mcore.c (mcore_reg_ok_for_base_p,
+	mcore_base_register_rtx_p, mcore_legitimate_index_p,
+	mcore_legitimate_address_p): New functions.
+	(TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): Define. 
+
 2015-10-29  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-scopedtables.h (const_and_copies): Remove invalidate
