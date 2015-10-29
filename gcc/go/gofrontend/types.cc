@@ -1474,6 +1474,27 @@ Type::make_type_descriptor_type()
       Type* void_type = Type::make_void_type();
       Type* unsafe_pointer_type = Type::make_pointer_type(void_type);
 
+      Typed_identifier_list *params = new Typed_identifier_list();
+      params->push_back(Typed_identifier("key", unsafe_pointer_type, bloc));
+      params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
+
+      Typed_identifier_list* results = new Typed_identifier_list();
+      results->push_back(Typed_identifier("", uintptr_type, bloc));
+
+      Type* hash_fntype = Type::make_function_type(NULL, params, results,
+						   bloc);
+
+      params = new Typed_identifier_list();
+      params->push_back(Typed_identifier("key1", unsafe_pointer_type, bloc));
+      params->push_back(Typed_identifier("key2", unsafe_pointer_type, bloc));
+      params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
+
+      results = new Typed_identifier_list();
+      results->push_back(Typed_identifier("", Type::lookup_bool_type(), bloc));
+
+      Type* equal_fntype = Type::make_function_type(NULL, params, results,
+						    bloc);
+
       // Forward declaration for the type descriptor type.
       Named_object* named_type_descriptor_type =
 	Named_object::make_type_declaration("commonType", NULL, bloc);
@@ -1514,8 +1535,8 @@ Type::make_type_descriptor_type()
 				       "fieldAlign", uint8_type,
 				       "size", uintptr_type,
 				       "hash", uint32_type,
-				       "hashfn", uintptr_type,
-				       "equalfn", uintptr_type,
+				       "hashfn", hash_fntype,
+				       "equalfn", equal_fntype,
 				       "gc", uintptr_type,
 				       "string", pointer_string_type,
 				       "", pointer_uncommon_type,
@@ -1852,6 +1873,10 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
   gogo->add_block(b, bloc);
   gogo->lower_block(equal_fn, b);
   gogo->finish_function(bloc);
+
+  // Build the function descriptors for the type descriptor to refer to.
+  hash_fn->func_value()->descriptor(gogo, hash_fn);
+  equal_fn->func_value()->descriptor(gogo, equal_fn);
 }
 
 // Write a hash function that simply calls the hash function for a
@@ -2009,8 +2034,8 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   Named_object* equal_fn;
   this->type_functions(gogo, name, hash_fntype, equal_fntype, &hash_fn,
 		       &equal_fn);
-  vals->push_back(Expression::make_func_code_reference(hash_fn, bloc));
-  vals->push_back(Expression::make_func_code_reference(equal_fn, bloc));
+  vals->push_back(Expression::make_func_reference(hash_fn, NULL, bloc));
+  vals->push_back(Expression::make_func_reference(equal_fn, NULL, bloc));
 
   ++p;
   go_assert(p->is_field_name("gc"));

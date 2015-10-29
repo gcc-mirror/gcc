@@ -54,9 +54,9 @@ const struct __go_type_descriptor unsafe_Pointer =
   /* __hash */
   78501163U,
   /* __hashfn */
-  __go_type_hash_identity,
+  &__go_type_hash_identity_descriptor,
   /* __equalfn */
-  __go_type_equal_identity,
+  &__go_type_equal_identity_descriptor,
   /* __gc */
   unsafe_Pointer_gc,
   /* __reflection */
@@ -99,9 +99,9 @@ const struct __go_ptr_type pointer_unsafe_Pointer =
     /* __hash */
     1256018616U,
     /* __hashfn */
-    __go_type_hash_identity,
+    &__go_type_hash_identity_descriptor,
     /* __equalfn */
-    __go_type_equal_identity,
+    &__go_type_equal_identity_descriptor,
     /* __gc */
     unsafe_Pointer_gc,
     /* __reflection */
