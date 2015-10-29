@@ -5158,6 +5158,16 @@ generate_local_decl (gfc_symbol * sym)
 			  "Unused parameter %qs which has been explicitly "
 			  "imported at %L", sym->name, &sym->declared_at);
 	}
+
+      if (sym->ns
+	  && sym->ns->parent
+	  && sym->ns->parent->code
+	  && sym->ns->parent->code->op == EXEC_BLOCK)
+	{
+	  if (sym->attr.referenced)
+	    gfc_get_symbol_decl (sym);
+	  sym->mark = 1;
+	}
     }
   else if (sym->attr.flavor == FL_PROCEDURE)
     {

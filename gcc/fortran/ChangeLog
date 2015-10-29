@@ -1,5 +1,11 @@
 2015-10-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/67885
+	* trans-decl.c (generate_local_decl): Mark PARAMETER entities in
+	BLOCK construct.
+
+2015-10-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/67805
 	PR fortran/68108
 	* array.c (gfc_match_array_constructor): Check for error from type
