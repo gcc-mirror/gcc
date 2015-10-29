@@ -717,7 +717,7 @@ static bool
 shrink_wrap_one_built_in_call (gcall *bi_call)
 {
   gimple_stmt_iterator bi_call_bsi;
-  basic_block bi_call_bb, join_tgt_bb, guard_bb, guard_bb0;
+  basic_block bi_call_bb, join_tgt_bb, guard_bb;
   edge join_tgt_in_edge_from_call, join_tgt_in_edge_fall_thru;
   edge bi_call_in_edge0, guard_bb_in_edge;
   unsigned tn_cond_stmts, nconds;
@@ -775,22 +775,21 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
   bi_call_in_edge0 = split_block (bi_call_bb, cond_expr);
   bi_call_in_edge0->flags &= ~EDGE_FALLTHRU;
   bi_call_in_edge0->flags |= EDGE_TRUE_VALUE;
-  guard_bb0 = bi_call_bb;
+  guard_bb = bi_call_bb;
   bi_call_bb = bi_call_in_edge0->dest;
-  join_tgt_in_edge_fall_thru = make_edge (guard_bb0, join_tgt_bb,
+  join_tgt_in_edge_fall_thru = make_edge (guard_bb, join_tgt_bb,
                                           EDGE_FALSE_VALUE);
 
   bi_call_in_edge0->probability = REG_BR_PROB_BASE * ERR_PROB;
   bi_call_in_edge0->count =
-      apply_probability (guard_bb0->count,
+      apply_probability (guard_bb->count,
 			 bi_call_in_edge0->probability);
   join_tgt_in_edge_fall_thru->probability =
       inverse_probability (bi_call_in_edge0->probability);
   join_tgt_in_edge_fall_thru->count =
-      guard_bb0->count - bi_call_in_edge0->count;
+      guard_bb->count - bi_call_in_edge0->count;
 
   /* Code generation for the rest of the conditions  */
-  guard_bb = guard_bb0;
   while (nconds > 0)
     {
       unsigned ci0;

@@ -1,6 +1,11 @@
 2015-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-call-cdce.c (shrink_wrap_one_built_in_call): Remove
+	guard_bb0 and use guard_bb throughout.
+
+2015-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-call-cdce.c (shrink_wrap_one_built_in_call): Remove
 	unnecessary label.
 
 2015-10-29  Richard Biener  <rguenther@suse.de>
