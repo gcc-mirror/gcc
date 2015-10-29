@@ -26,11 +26,16 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "insn-codes.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
+#include "optabs-tree.h"
+#include "cgraph.h"
+#include "gimple-pretty-print.h"
 #include "params.h"
 #include "flags.h"
 #include "alias.h"
@@ -42,18 +47,13 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
-#include "cgraph.h"
 #include "tree-cfg.h"
-#include "tree-pass.h"
-#include "gimple-pretty-print.h"
 #include "cfgloop.h"
 
 /* ??? For lang_hooks.types.type_for_mode, but is there a word_mode
    type in the GIMPLE type system that is language-independent?  */
 #include "langhooks.h"
 
-#include "insn-codes.h"
-#include "optabs-tree.h"
 
 /* Maximum number of case bit tests.
    FIXME: This should be derived from PARAM_CASE_VALUES_THRESHOLD and

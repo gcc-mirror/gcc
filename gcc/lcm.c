@@ -53,13 +53,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "backend.h"
 #include "rtl.h"
-#include "regs.h"
-#include "flags.h"
+#include "tm_p.h"
 #include "insn-config.h"
+#include "regs.h"
 #include "recog.h"
+#include "flags.h"
 #include "cfganal.h"
 #include "lcm.h"
-#include "tm_p.h"
 #include "dumpfile.h"
 
 /* Edge based LCM routines.  */

@@ -23,14 +23,13 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
-#include "tree.h"
-#include "diagnostic-core.h"
-#include "realmpfr.h"
-#include "tm_p.h"
-#include "dfp.h"
 #include "rtl.h"
-#include "options.h"
+#include "tree.h"
+#include "tm_p.h"
+#include "diagnostic-core.h"
+#include "alias.h"
+#include "realmpfr.h"
+#include "dfp.h"
 
 /* The floating point model used internally is not exactly IEEE 754
    compliant, and close to the description in the ISO C99 standard,

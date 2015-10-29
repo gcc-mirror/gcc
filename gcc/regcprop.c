@@ -26,14 +26,14 @@
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "diagnostic-core.h"
 #include "addresses.h"
 #include "reload.h"
-#include "recog.h"
 #include "flags.h"
-#include "diagnostic-core.h"
 #include "tree-pass.h"
 #include "rtl-iter.h"
-#include "emit-rtl.h"
 
 /* The following code does forward propagation of hard register copies.
    The object is to eliminate as many dependencies as possible, so that

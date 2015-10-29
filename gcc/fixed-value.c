@@ -21,9 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
 #include "diagnostic-core.h"
+#include "alias.h"
 
 /* Compare two fixed objects for bitwise identity.  */
 

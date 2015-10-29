@@ -21,12 +21,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cfghooks.h"
 #include "df.h"
-#include "alias.h"
 #include "regs.h"
+#include "alias.h"
 #include "cfgcleanup.h"
 #include "cfgloop.h"
 #include "tree-pass.h"
@@ -34,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-niter.h"
 #include "loop-unroll.h"
 #include "tree-scalar-evolution.h"
-#include "target.h"
 
 
 /* Apply FLAGS to the loop state.  */

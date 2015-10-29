@@ -21,24 +21,23 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "backend.h"
+#include "hard-reg-set.h"
+#include "tree.h"
+#include "gimple.h"
+#include "cgraph.h"
+#include "lto-streamer.h"
+#include "diagnostic-core.h"
 /* zlib.h includes other system headers.  Those headers may test feature
    test macros.  config.h may define feature test macros.  For this reason,
    zlib.h needs to be included after, rather than before, config.h and
    system.h.  */
 #include <zlib.h>
-#include "coretypes.h"
 #include "alias.h"
-#include "backend.h"
-#include "tree.h"
-#include "gimple.h"
-#include "hard-reg-set.h"
-#include "options.h"
 #include "fold-const.h"
 #include "internal-fn.h"
-#include "diagnostic-core.h"
 #include "langhooks.h"
-#include "cgraph.h"
-#include "lto-streamer.h"
 #include "lto-compress.h"
 
 /* Compression stream structure, holds the flush callback and opaque token,

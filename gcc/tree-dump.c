@@ -22,16 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
+#include "tree-pretty-print.h"
+#include "alias.h"
 #include "splay-tree.h"
-#include "filenames.h"
 #include "tree-dump.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
-#include "tree-pretty-print.h"
 #include "tree-cfg.h"
-#include "wide-int-print.h"
 
 static unsigned int queue (dump_info_p, const_tree, int);
 static void dump_index (dump_info_p, unsigned int);
