@@ -1,3 +1,8 @@
+2015-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67845
+	* g++.dg/other/cv_func4.C: New.
+
 2015-10-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/56956
