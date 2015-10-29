@@ -1,5 +1,130 @@
 2015-10-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
+	* config/rs6000/rs6000.c (rs6000_init_libfuncs): Split libfunc
+	setup into 3 functions: init_float128_ibm, init_float128_ieee, and
+	rs6000_init_libfuncs. If -mfloat128, add IFmode functions for all
+	of the traditional names that TFmode uses for handling IEEE
+	extended double. If -mfloat128, add KFmode functions for all of
+	the emulation functions. If -mabi=ieeelongdouble and -mfloat128,
+	make TFmode use the same emulation functions as KFmode.
+	(init_float128_ibm): Likewise.
+	(init_float128_ieee): Likewise.
+	(rs6000_generate_compare): For IEEE 128-bit floating point
+	comparisons, call the unordered comparison function instead of the
+	ordered comparison function.
+	(rs6000_expand_float128_convert): Deal with operands that are
+	memory operands. Restructure the code to use a switch statement on
+	the mode. Add support for TFmode defaulting to either IBM extended
+	double or IEEE 128-bit floating point. If the underlying types are
+	the same, use a move instead of a conversion function.
+	(TARGET_C_MODE_FOR_SUFFIX): Define 'q' and 'Q' as the suffix to
+	use for IEEE 128-bit floating point constants with -mfloat128.
+	(rs6000_c_mode_for_suffix): Likewise.
+	(TARGET_INVALID_BINARY_OP): Do not allow inter-mixing of IEEE
+	128-bit floating point with IBM extended double floating point.
+	(rs6000_invalid_binary_op): Likewise.
+	(rs6000_gen_le_vsx_permute): On little endian systems generate a
+	ROTATE insn instead of VEC_SELECT for IEEE 128-bit floating point
+	types that can go in vector registers.
+	(chain_contains_only_swaps): Properly swap IEEE 128-bit floating
+	point types that can go in vector registers on little endian
+	PowerPC systems.
+	(mark_swaps_for_removal): Likewise.
+	(rs6000_analyze_swaps): Likewise.
+	(rs6000_mangle_type): Use U10__float128 for IEEE 128-bit floating point.
+
+	* config/rs6000/rs6000.md (FLOAT128_SFDFTF): Delete iterator,
+	rework IEEE 128-bit floating point insns to deal with TFmode being
+	either IBM extended double or IEEE 128-bit floating point.
+	(IFKF): Likewise.
+	(IBM128): Update iterator to add condition that the mode is IBM
+	extended double.
+	(IEEE128): New iterator for IEEE 128-bit floating point.
+	(TFIFKF): Rename TFIFKF iterator to FLOAT128.
+	(FLOAT128): Likewise.
+	(signbit<mode>2): FLOAT128_IBM_P condition test moved into IBM128
+	iterator.
+	(neg<mode>2): Replace TFIFKF iterator with FLOAT128. Add support
+	for TFmode being IEEE 128-bit floating point. Use IEEE128 iterator
+	instead of hard coding TFmode or KFmode.
+	(negtf2_internal): Likewise.
+	(neg<mode>2_internal): Likewise.
+	(abs<mode>2): Likewise.
+	(abstf2_internal): Likewise.
+	(abs<mode>2_internal): Likewise.
+	(ieee_128bit_neg<mode>2): Likewise.
+	(ieee_128bit_neg<mode>2_internal): Likewise.
+	(ieee_128bit_abs<mode>2): Likewise.
+	(ieee_128bit_abs<mode>2_internal): Likewise.
+	(ieee_128bit_nabs<mode>2): Likewise.
+	(ieee_128bit_nabs<mode>2_internal): Likewise.
+	(extendiftf2): Add explicit conversions between 128-bit floating
+	point types. Drop the old conversions that had become unwieldy.
+	(extend<FLOAT128_SFDFTF:mode><IFKF:mode>2): Likewise.
+	(extendifkf2): Likewise.
+	(trunc<IFKF:mode><FLOAT128_SFDFTF:mode>2): Likewise.
+	(extendtfkf2): Likewise.
+	(fix_trunc<IFKF:mode><SDI:mode>2): Likewise.
+	(trunciftf2): Likewise.
+	(fixuns_trunc<IFKF:mode><SDI:mode>2): Likewise.
+	(truncifkf2): Likewise.
+	(float<SDI:mode><IFKF:mode>2): Likewise.
+	(trunckftf2): Likewise.
+	(floatuns<SDI:mode><IFKF:mode>2): Likewise.
+	(trunctfif2): Likewise.
+	(FP iterator): Allow TFmode to be IEEE 128-bit floating point.
+	(extenddftf2): Rework 128-bit floating point conversions to
+	properly handle -mabi=ieeelongdouble. Merge IFmode, TFmode, and
+	KFmode expanders into one function.
+	(extenddf<mode>2): Likewise.
+	(extenddftf2_fprs): Likewise.
+	(extenddf<mode>2_fprs): Likewise.
+	(extenddftf2_vsx): Likewise.
+	(extenddf<mode>2_vsx): Likewise.
+	(extendsftf2): Likewise.
+	(extendsf<mode>2): Likewise.
+	(trunctfdf2): Likewise.
+	(trunc<mode>df2): Likewise.
+	(trunctfdf2_internal1): Likewise.
+	(trunc<mode>df2_internal1): Likewise.
+	(trunctfdf2_internal2): Likewise.
+	(trunc<mode>df2_internal2): Likewise.
+	(trunctfsf2): Likewise.
+	(trunc<mode>sf2): Likewise.
+	(trunctfsf2_fprs): Likewise.
+	(trunc<mode>sf2_fprs): Likewise.
+	(floatsit2f): Likewise.
+	(floatsi<mode>2): Likewise.
+	(fix_trunc_helper): Likewise.
+	(fix_trunc_helper<mode>): Likewise.
+	(fix_trunctfsi2): Likewise.
+	(fix_trunc<mode>si2): Likewise.
+	(fix_trunctfsi2_fprs): Likewise.
+	(fix_trunc<mode>si2_fprs): Likewise.
+	(fix_trunctfsi2_internal): Likewise.
+	(fix_trunc<mode>si2_internal): Likewise.
+	(fix_trunctfdi2): Likewise.
+	(fix_trunc<mode>di2): Likewise.
+	(fixuns_trunctf<mode>2): Likewise.
+	(fixuns_trunc<IEEE128:mode><SDI:mode>2): Likewise.
+	(floatditf2): Likewise.
+	(floatdi<mode>2): Likewise.
+	(floatuns<mode>tf2): Likewise.
+	(floatuns<SDI:mode><IEEE128:mode>): Likewise.
+	(cmptf_internal1): Use a mode iterator to add support for both
+	types (IFmode, TFmode) that support IBM extended double.
+	(cmp<mode>_internal1): Likewise.
+	(cmptf_internal2): Likewise.
+	(cmp<mode>_internal2): Likewise.
+
+	* doc/extend.texi (Floating Types): Document __ibm128 and
+	__float128 on PowerPC.
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mfloat128 and -mno-float128.
+
+2015-10-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
 	* config/rs6000/rs6000.h (ALTIVEC_VECTOR_MODE): Add IEEE 128-bit
 	floating point modes that can go in vector registers.
 	(MODES_TIEABLE_P): Move tests for vector modes before tests for

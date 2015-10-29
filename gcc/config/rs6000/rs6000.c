@@ -1674,6 +1674,12 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_OFFLOAD_OPTIONS
 #define TARGET_OFFLOAD_OPTIONS rs6000_offload_options
+
+#undef TARGET_C_MODE_FOR_SUFFIX
+#define TARGET_C_MODE_FOR_SUFFIX rs6000_c_mode_for_suffix
+
+#undef TARGET_INVALID_BINARY_OP
+#define TARGET_INVALID_BINARY_OP rs6000_invalid_binary_op
 
 
 /* Processor table.  */
@@ -8461,8 +8467,14 @@ rs6000_const_vec (machine_mode mode)
 rtx
 rs6000_gen_le_vsx_permute (rtx source, machine_mode mode)
 {
-  rtx par = gen_rtx_PARALLEL (VOIDmode, rs6000_const_vec (mode));
-  return gen_rtx_VEC_SELECT (mode, source, par);
+  /* Use ROTATE instead of VEC_SELECT on IEEE 128-bit floating point.  */
+  if (FLOAT128_VECTOR_P (mode))
+    return gen_rtx_ROTATE (mode, source, GEN_INT (64));
+  else
+    {
+      rtx par = gen_rtx_PARALLEL (VOIDmode, rs6000_const_vec (mode));
+      return gen_rtx_VEC_SELECT (mode, source, par);
+    }
 }
 
 /* Emit a little-endian load from vector memory location SOURCE to VSX
@@ -16036,75 +16048,184 @@ rs6000_common_init_builtins (void)
     }
 }
 
+/* Set up AIX/Darwin/64-bit Linux quad floating point routines.  */
+static void
+init_float128_ibm (machine_mode mode)
+{
+  if (!TARGET_XL_COMPAT)
+    {
+      set_optab_libfunc (add_optab, mode, "__gcc_qadd");
+      set_optab_libfunc (sub_optab, mode, "__gcc_qsub");
+      set_optab_libfunc (smul_optab, mode, "__gcc_qmul");
+      set_optab_libfunc (sdiv_optab, mode, "__gcc_qdiv");
+
+      if (!(TARGET_HARD_FLOAT && (TARGET_FPRS || TARGET_E500_DOUBLE)))
+	{
+	  set_optab_libfunc (neg_optab, mode, "__gcc_qneg");
+	  set_optab_libfunc (eq_optab, mode, "__gcc_qeq");
+	  set_optab_libfunc (ne_optab, mode, "__gcc_qne");
+	  set_optab_libfunc (gt_optab, mode, "__gcc_qgt");
+	  set_optab_libfunc (ge_optab, mode, "__gcc_qge");
+	  set_optab_libfunc (lt_optab, mode, "__gcc_qlt");
+	  set_optab_libfunc (le_optab, mode, "__gcc_qle");
+
+	  set_conv_libfunc (sext_optab, mode, SFmode, "__gcc_stoq");
+	  set_conv_libfunc (sext_optab, mode, DFmode, "__gcc_dtoq");
+	  set_conv_libfunc (trunc_optab, SFmode, mode, "__gcc_qtos");
+	  set_conv_libfunc (trunc_optab, DFmode, mode, "__gcc_qtod");
+	  set_conv_libfunc (sfix_optab, SImode, mode, "__gcc_qtoi");
+	  set_conv_libfunc (ufix_optab, SImode, mode, "__gcc_qtou");
+	  set_conv_libfunc (sfloat_optab, mode, SImode, "__gcc_itoq");
+	  set_conv_libfunc (ufloat_optab, mode, SImode, "__gcc_utoq");
+	}
+
+      if (!(TARGET_HARD_FLOAT && TARGET_FPRS))
+	set_optab_libfunc (unord_optab, mode, "__gcc_qunord");
+    }
+  else
+    {
+      set_optab_libfunc (add_optab, mode, "_xlqadd");
+      set_optab_libfunc (sub_optab, mode, "_xlqsub");
+      set_optab_libfunc (smul_optab, mode, "_xlqmul");
+      set_optab_libfunc (sdiv_optab, mode, "_xlqdiv");
+    }
+
+  /* Add various conversions for IFmode to use the traditional TFmode
+     names.  */
+  if (mode == IFmode)
+    {
+      set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdtf2");
+      set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddtf2");
+      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunctftd2");
+      set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunctfsd2");
+      set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunctfdd2");
+      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtdtf2");
+
+      if (TARGET_POWERPC64)
+	{
+	  set_conv_libfunc (sfix_optab, TImode, mode, "__fixtfti");
+	  set_conv_libfunc (ufix_optab, TImode, mode, "__fixunstfti");
+	  set_conv_libfunc (sfloat_optab, mode, TImode, "__floattitf");
+	  set_conv_libfunc (ufloat_optab, mode, TImode, "__floatuntitf");
+	}
+    }
+}
+
+/* Set up IEEE 128-bit floating point routines.  Use different names if the
+   arguments can be passed in a vector register.  The historical PowerPC
+   implementation of IEEE 128-bit floating point used _q_<op> for the names, so
+   continue to use that if we aren't using vector registers to pass IEEE
+   128-bit floating point.  */
+
+static void
+init_float128_ieee (machine_mode mode)
+{
+  if (FLOAT128_VECTOR_P (mode))
+    {
+      set_optab_libfunc (add_optab, mode, "__addkf3");
+      set_optab_libfunc (sub_optab, mode, "__subkf3");
+      set_optab_libfunc (neg_optab, mode, "__negkf2");
+      set_optab_libfunc (smul_optab, mode, "__mulkf3");
+      set_optab_libfunc (sdiv_optab, mode, "__divkf3");
+      set_optab_libfunc (sqrt_optab, mode, "__sqrtkf2");
+      set_optab_libfunc (abs_optab, mode, "__abstkf2");
+
+      set_optab_libfunc (eq_optab, mode, "__eqkf2");
+      set_optab_libfunc (ne_optab, mode, "__nekf2");
+      set_optab_libfunc (gt_optab, mode, "__gtkf2");
+      set_optab_libfunc (ge_optab, mode, "__gekf2");
+      set_optab_libfunc (lt_optab, mode, "__ltkf2");
+      set_optab_libfunc (le_optab, mode, "__lekf2");
+      set_optab_libfunc (unord_optab, mode, "__unordkf2");
+      set_optab_libfunc (cmp_optab, mode, "__cmpokf2");		/* fcmpo */
+      set_optab_libfunc (ucmp_optab, mode, "__cmpukf2");	/* fcmpu */
+
+      set_conv_libfunc (sext_optab, mode, SFmode, "__extendsfkf2");
+      set_conv_libfunc (sext_optab, mode, DFmode, "__extenddfkf2");
+      set_conv_libfunc (trunc_optab, SFmode, mode, "__trunckfsf2");
+      set_conv_libfunc (trunc_optab, DFmode, mode, "__trunckfdf2");
+
+      set_conv_libfunc (sext_optab, mode, IFmode, "__extendtfkf2");
+      if (mode != TFmode && FLOAT128_IBM_P (TFmode))
+	set_conv_libfunc (sext_optab, mode, TFmode, "__extendtfkf2");
+
+      set_conv_libfunc (trunc_optab, IFmode, mode, "__trunckftf2");
+      if (mode != TFmode && FLOAT128_IBM_P (TFmode))
+	set_conv_libfunc (trunc_optab, TFmode, mode, "__trunckftf2");
+
+      set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdkf2");
+      set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddkf2");
+      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunckftd2");
+      set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunckfsd2");
+      set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunckfdd2");
+      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtdkf2");
+
+      set_conv_libfunc (sfix_optab, SImode, mode, "__fixkfsi");
+      set_conv_libfunc (ufix_optab, SImode, mode, "__fixunskfsi");
+      set_conv_libfunc (sfix_optab, DImode, mode, "__fixkfdi");
+      set_conv_libfunc (ufix_optab, DImode, mode, "__fixunskfdi");
+
+      set_conv_libfunc (sfloat_optab, mode, SImode, "__floatsikf");
+      set_conv_libfunc (ufloat_optab, mode, SImode, "__floatunsikf");
+      set_conv_libfunc (sfloat_optab, mode, DImode, "__floatdikf");
+      set_conv_libfunc (ufloat_optab, mode, DImode, "__floatundikf");
+
+      if (TARGET_POWERPC64)
+	{
+	  set_conv_libfunc (sfix_optab, TImode, mode, "__fixkfti");
+	  set_conv_libfunc (ufix_optab, TImode, mode, "__fixunskfti");
+	  set_conv_libfunc (sfloat_optab, mode, TImode, "__floattikf");
+	  set_conv_libfunc (ufloat_optab, mode, TImode, "__floatuntikf");
+	}
+    }
+
+  else
+    {
+      set_optab_libfunc (add_optab, mode, "_q_add");
+      set_optab_libfunc (sub_optab, mode, "_q_sub");
+      set_optab_libfunc (neg_optab, mode, "_q_neg");
+      set_optab_libfunc (smul_optab, mode, "_q_mul");
+      set_optab_libfunc (sdiv_optab, mode, "_q_div");
+      if (TARGET_PPC_GPOPT)
+	set_optab_libfunc (sqrt_optab, mode, "_q_sqrt");
+
+      set_optab_libfunc (eq_optab, mode, "_q_feq");
+      set_optab_libfunc (ne_optab, mode, "_q_fne");
+      set_optab_libfunc (gt_optab, mode, "_q_fgt");
+      set_optab_libfunc (ge_optab, mode, "_q_fge");
+      set_optab_libfunc (lt_optab, mode, "_q_flt");
+      set_optab_libfunc (le_optab, mode, "_q_fle");
+
+      set_conv_libfunc (sext_optab, mode, SFmode, "_q_stoq");
+      set_conv_libfunc (sext_optab, mode, DFmode, "_q_dtoq");
+      set_conv_libfunc (trunc_optab, SFmode, mode, "_q_qtos");
+      set_conv_libfunc (trunc_optab, DFmode, mode, "_q_qtod");
+      set_conv_libfunc (sfix_optab, SImode, mode, "_q_qtoi");
+      set_conv_libfunc (ufix_optab, SImode, mode, "_q_qtou");
+      set_conv_libfunc (sfloat_optab, mode, SImode, "_q_itoq");
+      set_conv_libfunc (ufloat_optab, mode, SImode, "_q_utoq");
+    }
+}
+
 static void
 rs6000_init_libfuncs (void)
 {
-  if (!TARGET_IEEEQUAD)
-      /* AIX/Darwin/64-bit Linux quad floating point routines.  */
-    if (!TARGET_XL_COMPAT)
-      {
-	set_optab_libfunc (add_optab, TFmode, "__gcc_qadd");
-	set_optab_libfunc (sub_optab, TFmode, "__gcc_qsub");
-	set_optab_libfunc (smul_optab, TFmode, "__gcc_qmul");
-	set_optab_libfunc (sdiv_optab, TFmode, "__gcc_qdiv");
-
-	if (!(TARGET_HARD_FLOAT && (TARGET_FPRS || TARGET_E500_DOUBLE)))
-	  {
-	    set_optab_libfunc (neg_optab, TFmode, "__gcc_qneg");
-	    set_optab_libfunc (eq_optab, TFmode, "__gcc_qeq");
-	    set_optab_libfunc (ne_optab, TFmode, "__gcc_qne");
-	    set_optab_libfunc (gt_optab, TFmode, "__gcc_qgt");
-	    set_optab_libfunc (ge_optab, TFmode, "__gcc_qge");
-	    set_optab_libfunc (lt_optab, TFmode, "__gcc_qlt");
-	    set_optab_libfunc (le_optab, TFmode, "__gcc_qle");
-
-	    set_conv_libfunc (sext_optab, TFmode, SFmode, "__gcc_stoq");
-	    set_conv_libfunc (sext_optab, TFmode, DFmode, "__gcc_dtoq");
-	    set_conv_libfunc (trunc_optab, SFmode, TFmode, "__gcc_qtos");
-	    set_conv_libfunc (trunc_optab, DFmode, TFmode, "__gcc_qtod");
-	    set_conv_libfunc (sfix_optab, SImode, TFmode, "__gcc_qtoi");
-	    set_conv_libfunc (ufix_optab, SImode, TFmode, "__gcc_qtou");
-	    set_conv_libfunc (sfloat_optab, TFmode, SImode, "__gcc_itoq");
-	    set_conv_libfunc (ufloat_optab, TFmode, SImode, "__gcc_utoq");
-	  }
-
-	if (!(TARGET_HARD_FLOAT && TARGET_FPRS))
-	  set_optab_libfunc (unord_optab, TFmode, "__gcc_qunord");
-      }
-    else
-      {
-	set_optab_libfunc (add_optab, TFmode, "_xlqadd");
-	set_optab_libfunc (sub_optab, TFmode, "_xlqsub");
-	set_optab_libfunc (smul_optab, TFmode, "_xlqmul");
-	set_optab_libfunc (sdiv_optab, TFmode, "_xlqdiv");
-      }
-  else
+  /* __float128 support.  */
+  if (TARGET_FLOAT128)
     {
-      /* 32-bit SVR4 quad floating point routines.  */
+      init_float128_ibm (IFmode);
+      init_float128_ieee (KFmode);
+    }
 
-      set_optab_libfunc (add_optab, TFmode, "_q_add");
-      set_optab_libfunc (sub_optab, TFmode, "_q_sub");
-      set_optab_libfunc (neg_optab, TFmode, "_q_neg");
-      set_optab_libfunc (smul_optab, TFmode, "_q_mul");
-      set_optab_libfunc (sdiv_optab, TFmode, "_q_div");
-      if (TARGET_PPC_GPOPT)
-	set_optab_libfunc (sqrt_optab, TFmode, "_q_sqrt");
+  /* AIX/Darwin/64-bit Linux quad floating point routines.  */
+  if (TARGET_LONG_DOUBLE_128)
+    {
+      if (!TARGET_IEEEQUAD)
+	init_float128_ibm (TFmode);
 
-      set_optab_libfunc (eq_optab, TFmode, "_q_feq");
-      set_optab_libfunc (ne_optab, TFmode, "_q_fne");
-      set_optab_libfunc (gt_optab, TFmode, "_q_fgt");
-      set_optab_libfunc (ge_optab, TFmode, "_q_fge");
-      set_optab_libfunc (lt_optab, TFmode, "_q_flt");
-      set_optab_libfunc (le_optab, TFmode, "_q_fle");
-
-      set_conv_libfunc (sext_optab, TFmode, SFmode, "_q_stoq");
-      set_conv_libfunc (sext_optab, TFmode, DFmode, "_q_dtoq");
-      set_conv_libfunc (trunc_optab, SFmode, TFmode, "_q_qtos");
-      set_conv_libfunc (trunc_optab, DFmode, TFmode, "_q_qtod");
-      set_conv_libfunc (sfix_optab, SImode, TFmode, "_q_qtoi");
-      set_conv_libfunc (ufix_optab, SImode, TFmode, "_q_qtou");
-      set_conv_libfunc (sfloat_optab, TFmode, SImode, "_q_itoq");
-      set_conv_libfunc (ufloat_optab, TFmode, SImode, "_q_utoq");
+      /* IEEE 128-bit including 32-bit SVR4 quad floating point routines.  */
+      else
+	init_float128_ieee (TFmode);
     }
 }
 
@@ -19989,17 +20110,18 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
       emit_insn (cmp);
     }
 
-  /* IEEE 128-bit support in VSX registers.  The comparison function (__cmpkf2)
-     returns 0..15 that is laid out the same way as the PowerPC CR register
-     would for a normal floating point comparison.  */
+  /* IEEE 128-bit support in VSX registers.  The comparison functions
+     (__cmpokf2 and __cmpukf2) returns 0..15 that is laid out the same way as
+     the PowerPC CR register would for a normal floating point comparison from
+     the fcmpo and fcmpu instructions.  */
   else if (FLOAT128_IEEE_P (mode))
     {
       rtx and_reg = gen_reg_rtx (SImode);
       rtx dest = gen_reg_rtx (SImode);
-      rtx libfunc = optab_libfunc (cmp_optab, mode);
+      rtx libfunc = optab_libfunc (ucmp_optab, mode);
       HOST_WIDE_INT mask_value = 0;
 
-      /* Values that __cmpkf2 returns.  */
+      /* Values that __cmpokf2/__cmpukf2 returns.  */
 #define PPC_CMP_UNORDERED	0x1		/* isnan (a) || isnan (b).  */
 #define PPC_CMP_EQUAL		0x2		/* a == b.  */
 #define PPC_CMP_GREATER_THEN	0x4		/* a > b.  */
@@ -20170,7 +20292,49 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
   return gen_rtx_fmt_ee (code, VOIDmode, compare_result, const0_rtx);
 }
 
+
+/* Return the diagnostic message string if the binary operation OP is
+   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
 
+static const char*
+rs6000_invalid_binary_op (int op ATTRIBUTE_UNUSED,
+			  const_tree type1,
+			  const_tree type2)
+{
+  enum machine_mode mode1 = TYPE_MODE (type1);
+  enum machine_mode mode2 = TYPE_MODE (type2);
+
+  /* For complex modes, use the inner type.  */
+  if (COMPLEX_MODE_P (mode1))
+    mode1 = GET_MODE_INNER (mode1);
+
+  if (COMPLEX_MODE_P (mode2))
+    mode2 = GET_MODE_INNER (mode2);
+
+  /* Don't allow IEEE 754R 128-bit binary floating point and IBM extended
+     double to intermix.  */
+  if (mode1 == mode2)
+    return NULL;
+
+  if ((mode1 == KFmode && mode2 == IFmode)
+      || (mode1 == IFmode && mode2 == KFmode))
+    return N_("__float128 and __ibm128 cannot be used in the same expression");
+
+  if (TARGET_IEEEQUAD
+      && ((mode1 == IFmode && mode2 == TFmode)
+	  || (mode1 == TFmode && mode2 == IFmode)))
+    return N_("__ibm128 and long double cannot be used in the same expression");
+
+  if (!TARGET_IEEEQUAD
+      && ((mode1 == KFmode && mode2 == TFmode)
+	  || (mode1 == TFmode && mode2 == KFmode)))
+    return N_("__float128 and long double cannot be used in the same "
+	      "expression");
+
+  return NULL;
+}
+
+
 /* Expand floating point conversion to/from __float128 and __ibm128.  */
 
 void
@@ -20179,60 +20343,121 @@ rs6000_expand_float128_convert (rtx dest, rtx src, bool unsigned_p)
   machine_mode dest_mode = GET_MODE (dest);
   machine_mode src_mode = GET_MODE (src);
   convert_optab cvt = unknown_optab;
+  bool do_move = false;
   rtx libfunc = NULL_RTX;
   rtx dest2;
 
   if (dest_mode == src_mode)
     gcc_unreachable ();
 
-  if (FLOAT128_IEEE_P (dest_mode))
+  /* Eliminate memory operations.  */
+  if (MEM_P (src))
+    src = force_reg (src_mode, src);
+
+  if (MEM_P (dest))
     {
-      if (src_mode == SFmode
-	  || src_mode == DFmode
-	  || FLOAT128_IBM_P (src_mode))
-	cvt = sext_optab;
-
-      else if (GET_MODE_CLASS (src_mode) == MODE_INT)
-	cvt = (unsigned_p) ? ufloat_optab : sfloat_optab;
-
-      else if (FLOAT128_IEEE_P (src_mode))
-	emit_move_insn (dest, gen_lowpart (dest_mode, src));
-
-      else
-	gcc_unreachable ();
+      rtx tmp = gen_reg_rtx (dest_mode);
+      rs6000_expand_float128_convert (tmp, src, unsigned_p);
+      rs6000_emit_move (dest, tmp, dest_mode);
+      return;
     }
 
+  /* Convert to IEEE 128-bit floating point.  */
+  if (FLOAT128_IEEE_P (dest_mode))
+    {
+      switch (src_mode)
+	{
+	case DFmode:
+	  cvt = sext_optab;
+	  break;
+
+	case SFmode:
+	  cvt = sext_optab;
+	  break;
+
+	case KFmode:
+	case IFmode:
+	case TFmode:
+	  if (FLOAT128_IBM_P (src_mode))
+	    cvt = sext_optab;
+	  else
+	    do_move = true;
+	  break;
+
+	case SImode:
+	case DImode:
+	  cvt = (unsigned_p) ? ufloat_optab : sfloat_optab;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  /* Convert from IEEE 128-bit floating point.  */
   else if (FLOAT128_IEEE_P (src_mode))
     {
-      if (dest_mode == SFmode
-	  || dest_mode == DFmode
-	  || FLOAT128_IBM_P (dest_mode))
-	cvt = trunc_optab;
+      switch (dest_mode)
+	{
+	case DFmode:
+	  cvt = trunc_optab;
+	  break;
 
-      else if (GET_MODE_CLASS (dest_mode) == MODE_INT)
-	cvt = (unsigned_p) ? ufix_optab : sfix_optab;
+	case SFmode:
+	  cvt = trunc_optab;
+	  break;
 
-      else
-	gcc_unreachable ();
+	case KFmode:
+	case IFmode:
+	case TFmode:
+	  if (FLOAT128_IBM_P (dest_mode))
+	    cvt = trunc_optab;
+	  else
+	    do_move = true;
+	  break;
+
+	case SImode:
+	case DImode:
+	  cvt = (unsigned_p) ? ufix_optab : sfix_optab;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  /* Both IBM format.  */
+  else if (FLOAT128_IBM_P (dest_mode) && FLOAT128_IBM_P (src_mode))
+    do_move = true;
+
+  else
+    gcc_unreachable ();
+
+  /* Handle conversion between TFmode/KFmode.  */
+  if (do_move)
+    emit_move_insn (dest, gen_lowpart (dest_mode, src));
+
+  /* Call an external function to do the conversion.  */
+  else if (cvt != unknown_optab)
+    {
+      libfunc = convert_optab_libfunc (cvt, dest_mode, src_mode);
+      gcc_assert (libfunc != NULL_RTX);
+
+      dest2 = emit_library_call_value (libfunc, dest, LCT_CONST, dest_mode, 1, src,
+				       src_mode);
+
+      gcc_assert (dest2 != NULL_RTX);
+      if (!rtx_equal_p (dest, dest2))
+	emit_move_insn (dest, dest2);
     }
 
   else
     gcc_unreachable ();
 
-  gcc_assert (cvt != unknown_optab);
-  libfunc = convert_optab_libfunc (cvt, dest_mode, src_mode);
-  gcc_assert (libfunc != NULL_RTX);
-
-  dest2 = emit_library_call_value (libfunc, dest, LCT_CONST, dest_mode, 1, src,
-				   src_mode);
-
-  gcc_assert (dest != NULL_RTX);
-  if (!rtx_equal_p (dest, dest2))
-    emit_move_insn (dest, dest2);
-
   return;
 }
 
+
 /* Emit the RTL for an sISEL pattern.  */
 
 void
@@ -29827,6 +30052,21 @@ rs6000_mangle_type (const_tree type)
   if (type == bool_int_type_node) return "U6__booli";
   if (type == bool_long_type_node) return "U6__booll";
 
+  /* Use a unique name for __float128 rather than trying to use "e" or "g". Use
+     "g" for IBM extended double, no matter whether it is long double (using
+     -mabi=ibmlongdouble) or the distinct __ibm128 type.  */
+  if (TARGET_FLOAT128)
+    {
+      if (type == ieee128_float_type_node)
+	return "U10__float128";
+
+      if (type == ibm128_float_type_node)
+	return "g";
+
+      if (type == long_double_type_node && TARGET_LONG_DOUBLE_128)
+	return (TARGET_IEEEQUAD) ? "U10__float128" : "g";
+    }
+
   /* Mangle IBM extended float long double as `g' (__float128) on
      powerpc*-linux where long-double-64 previously was the default.  */
   if (TYPE_MAIN_VARIANT (type) == long_double_type_node
@@ -33136,6 +33376,26 @@ rs6000_vector_mode_supported_p (machine_mode mode)
     return false;
 }
 
+/* Target hook for c_mode_for_suffix.  */
+static machine_mode
+rs6000_c_mode_for_suffix (char suffix)
+{
+  if (TARGET_FLOAT128)
+    {
+      if (suffix == 'q' || suffix == 'Q')
+	return (FLOAT128_IEEE_P (TFmode)) ? TFmode : KFmode;
+
+      /* At the moment, we are not defining a suffix for IBM extended double.
+	 If/when the default for -mabi=ieeelongdouble is changed, and we want
+	 to support __ibm128 constants in legacy library code, we may need to
+	 re-evalaute this decision.  Currently, c-lex.c only supports 'w' and
+	 'q' as machine dependent suffixes.  The x86_64 port uses 'w' for
+	 __float80 constants.  */
+    }
+
+  return VOIDmode;
+}
+
 /* Target hook for invalid_arg_for_unprototyped_fn. */
 static const char *
 invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, const_tree val)
@@ -35605,7 +35865,7 @@ chain_contains_only_swaps (swap_web_entry *insn_entry, struct df_link *link,
 
   for (; link; link = link->next)
     {
-      if (!VECTOR_MODE_P (GET_MODE (DF_REF_REG (link->ref))))
+      if (!ALTIVEC_OR_VSX_VECTOR_MODE (GET_MODE (DF_REF_REG (link->ref))))
 	continue;
 
       if (DF_REF_IS_ARTIFICIAL (link->ref))
@@ -35704,7 +35964,7 @@ mark_swaps_for_removal (swap_web_entry *insn_entry, unsigned int i)
 	{
 	  /* Ignore uses for addressability.  */
 	  machine_mode mode = GET_MODE (DF_REF_REG (use));
-	  if (!VECTOR_MODE_P (mode))
+	  if (!ALTIVEC_OR_VSX_VECTOR_MODE (mode))
 	    continue;
 
 	  struct df_link *link = DF_REF_CHAIN (use);
@@ -36218,10 +36478,11 @@ rs6000_analyze_swaps (function *fun)
 		    mode = V4SImode;
 		}
 
-	      if (VECTOR_MODE_P (mode) || mode == TImode)
+	      if (ALTIVEC_OR_VSX_VECTOR_MODE (mode) || mode == TImode)
 		{
 		  insn_entry[uid].is_relevant = 1;
-		  if (mode == TImode || mode == V1TImode)
+		  if (mode == TImode || mode == V1TImode
+		      || FLOAT128_VECTOR_P (mode))
 		    insn_entry[uid].is_128_int = 1;
 		  if (DF_REF_INSN_INFO (mention))
 		    insn_entry[uid].contains_subreg
@@ -36242,13 +36503,14 @@ rs6000_analyze_swaps (function *fun)
 		 isn't sufficient to ensure we union the call into the
 		 web with the parameter setup code.  */
 	      if (mode == DImode && GET_CODE (insn) == SET
-		  && VECTOR_MODE_P (GET_MODE (SET_DEST (insn))))
+		  && ALTIVEC_OR_VSX_VECTOR_MODE (GET_MODE (SET_DEST (insn))))
 		mode = GET_MODE (SET_DEST (insn));
 
-	      if (VECTOR_MODE_P (mode) || mode == TImode)
+	      if (ALTIVEC_OR_VSX_VECTOR_MODE (mode) || mode == TImode)
 		{
 		  insn_entry[uid].is_relevant = 1;
-		  if (mode == TImode || mode == V1TImode)
+		  if (mode == TImode || mode == V1TImode
+		      || FLOAT128_VECTOR_P (mode))
 		    insn_entry[uid].is_128_int = 1;
 		  if (DF_REF_INSN_INFO (mention))
 		    insn_entry[uid].contains_subreg
