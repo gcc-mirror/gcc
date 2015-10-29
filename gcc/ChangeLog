@@ -1,3 +1,24 @@
+2015-10-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (NO_PIE_CFLAGS): New.
+	(NO_PIE_FLAG): Likewise.
+	(NO_PIE_CFLAGS_FOR_BUILD): Likewise.
+	(NO_PIE_FLAG_FOR_BUILD): Likewise.
+	(BUILD_NO_PIE_CFLAGS): Likewise.
+	(BUILD_NO_PIE_FLAG): Likewise.
+	(COMPILER): Replace @NO_PIE_CFLAGS@ with $(NO_PIE_CFLAGS).
+	(LINKER): Replace @NO_PIE_FLAG@ with $(NO_PIE_FLAG).
+	(BUILD_CFLAGS): Replace @NO_PIE_CFLAGS@ with
+	$(BUILD_NO_PIE_CFLAGS).
+	(BUILD_CXXFLAGS): Likewise.
+	(BUILD_LDFLAGS ): Replace @NO_PIE_FLAG@ with
+	$(BUILD_NO_PIE_FLAG).
+	* configure.ac (BUILD_NO_PIE_CFLAGS): New.  AC_SUBST.
+	(BUILD_NO_PIE_FLAG): Likewise.
+	(NO_PIE_CFLAGS_FOR_BUILD): Likewise.
+	(NO_PIE_FLAG_FOR_BUILD): Likewise.
+	* configure: Regenerated.
+
 2015-10-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/56956
