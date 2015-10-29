@@ -1,3 +1,10 @@
+2015-10-29  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (split_address_cost): Check depends_on.
+	(get_computation_cost_at): Ditto.
+	(determine_use_iv_cost_address): Pass NULL for arguments depends_on
+	and inv_expr_id.
+
 2015-10-28  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-structalias.c (intra_create_variable_infos): Remove
