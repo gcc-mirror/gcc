@@ -60,6 +60,8 @@ write_header (void)
 \n\
 /* Do not allow checking to confuse the issue.  */\n\
 #undef ENABLE_CHECKING\n\
+#undef CHECKING_P\n\
+#define CHECKING_P 0\n\
 #undef ENABLE_TREE_CHECKING\n\
 #undef ENABLE_RTL_CHECKING\n\
 #undef ENABLE_RTL_FLAG_CHECKING\n\
