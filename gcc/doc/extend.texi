@@ -929,6 +929,7 @@ examine and set these two fictitious variables with your debugger.
 @cindex additional floating types
 @cindex @code{__float80} data type
 @cindex @code{__float128} data type
+@cindex @code{__ibm128} data type
 @cindex @code{w} floating point suffix
 @cindex @code{q} floating point suffix
 @cindex @code{W} floating point suffix
@@ -941,19 +942,39 @@ Support for additional types includes the arithmetic operators:
 add, subtract, multiply, divide; unary arithmetic operators;
 relational operators; equality operators; and conversions to and from
 integer and other floating types.  Use a suffix @samp{w} or @samp{W}
-in a literal constant of type @code{__float80} and @samp{q} or @samp{Q}
-for @code{_float128}.  You can declare complex types using the
-corresponding internal complex type, @code{XCmode} for @code{__float80}
-type and @code{TCmode} for @code{__float128} type:
+in a literal constant of type @code{__float80} or type
+@code{__ibm128}.  Use a suffix @samp{q} or @samp{Q} for @code{_float128}.
+
+On the i386, x86_64, IA-64, and HP-UX targets, you can declare complex
+types using the corresponding internal complex type, @code{XCmode} for
+@code{__float80} type and @code{TCmode} for @code{__float128} type:
 
 @smallexample
 typedef _Complex float __attribute__((mode(TC))) _Complex128;
 typedef _Complex float __attribute__((mode(XC))) _Complex80;
 @end smallexample
 
+On PowerPC Linux, Freebsd and Darwin systems, the default for
+@code{long double} is to use the IBM extended floating point format
+that uses a pair of @code{double} values to extend the precision.
+This means that the mode @code{TCmode} was already used by the
+traditional IBM long double format, and you would need to use the mode
+@code{KCmode}:
+
+@smallexample
+typedef _Complex float __attribute__((mode(KC))) _Complex128;
+@end smallexample
+
 Not all targets support additional floating-point types.  @code{__float80}
 and @code{__float128} types are supported on x86 and IA-64 targets.
-The @code{__float128} type is supported on hppa HP-UX targets.
+The @code{__float128} type is supported on hppa HP-UX.
+The @code{__float128} type is supported on PowerPC systems by default
+if the vector scalar instruction set (VSX) is enabled.
+
+On the PowerPC, @code{__ibm128} provides access to the IBM extended
+double format, and it is intended to be used by the library functions
+that handle conversions if/when long double is changed to be IEEE
+128-bit floating point.
 
 @node Half-Precision
 @section Half-Precision Floating Point
