@@ -7770,7 +7770,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	 that this happens when X or Y is NOP_EXPR or Y is INTEGER_CST. */
       if (POINTER_TYPE_P (type)
 	  && TREE_CODE (arg0) == POINTER_PLUS_EXPR
-	  && (!TYPE_RESTRICT (type) || TYPE_RESTRICT (TREE_TYPE (arg0)))
 	  && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	      || TREE_CODE (TREE_OPERAND (arg0, 0)) == NOP_EXPR
 	      || TREE_CODE (TREE_OPERAND (arg0, 1)) == NOP_EXPR))
