@@ -20,6 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_SSA_THREADFSM_H
 #define GCC_TREE_SSA_THREADFSM_H
 
-extern void find_jump_threads_backwards (tree, basic_block);
+extern void find_jump_threads_backwards (edge);
 
 #endif /* GCC_TREE_SSA_THREADFSM_H */

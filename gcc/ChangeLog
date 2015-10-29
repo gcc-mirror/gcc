@@ -1,3 +1,21 @@
+2015-10-29  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/67892
+	* tree-ssa-threadedge.c (simplify_controL_stmt_condition): Fix typo
+	in comment.
+	(thread_through_normal_block): If we have seen a backedge, then
+	do nothing.  No longer call find_jump_threads_backwards here.
+	(thread_across_edge): Use find_jump_threads_backwards to find
+	jump threads if the old style threader was not successful.
+	* tree-ssa-threadbackward.c (get_gimple_control_stmt): Use
+	gsi_last_nondebug_bb.  Return NULL if the block does not end
+	with a control statement.
+	(find_jump_threads_backwards): Setup code moved here from
+	tree-ssa-threadedge.c::thread_through_normal_block.  Accept
+	single edge argument instead of name & block.
+	* tree-ssa-threadbackward.h (find_jump_threads_backwards): Update
+	prototype.
+
 2015-10-29  Tom de Vries  <tom@codesourcery.com>
 
 	* fold-const.c (fold_unary_loc): Remove folding inhibition for restrict

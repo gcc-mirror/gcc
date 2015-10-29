@@ -566,7 +566,7 @@ simplify_control_stmt_condition (edge e,
 
 	 It is possible to get loops in the SSA_NAME_VALUE chains
 	 (consider threading the backedge of a loop where we have
-	 a loop invariant SSA_NAME used in the condition.  */
+	 a loop invariant SSA_NAME used in the condition).  */
       if (cached_lhs)
 	{
 	  for (int i = 0; i < 2; i++)
@@ -904,12 +904,10 @@ thread_through_normal_block (edge e,
 			     bitmap visited,
 			     bool *backedge_seen_p)
 {
-  /* If we have traversed a backedge, then we do not want to look
-     at certain expressions in the table that can not be relied upon.
-     Luckily the only code that looked at those expressions is the
-     SIMPLIFY callback, which we replace if we can no longer use it.  */
+  /* If we have seen a backedge, then we rely solely on the FSM threader
+     to find jump threads.  */
   if (*backedge_seen_p)
-    simplify = dummy_simplify;
+    return 0;
 
   /* We want to record any equivalences created by traversing E.  */
   if (!handle_dominating_asserts)
@@ -1019,26 +1017,6 @@ thread_through_normal_block (edge e,
 				      backedge_seen_p);
 	  return 1;
 	}
-
-      if (!flag_expensive_optimizations
-	  || optimize_function_for_size_p (cfun)
-	  || !(TREE_CODE (cond) == SSA_NAME
-	       || (TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison
-		   && TREE_CODE (TREE_OPERAND (cond, 0)) == SSA_NAME
-		   && TREE_CODE (TREE_OPERAND (cond, 1)) == INTEGER_CST))
-	  || e->dest->loop_father != e->src->loop_father
-	  || loop_depth (e->dest->loop_father) == 0)
-	return 0;
-
-      /* Extract the SSA_NAME we want to trace backwards if COND is not
-	 already a bare SSA_NAME.  */
-      if (TREE_CODE (cond) != SSA_NAME)
-	cond = TREE_OPERAND (cond, 0);
-
-      /* When COND cannot be simplified, try to find paths from a control
-	 statement back through the PHI nodes which would affect that control
-	 statement.  */
-      find_jump_threads_backwards (cond, e->dest);
     }
   return 0;
 }
@@ -1117,6 +1095,8 @@ thread_across_edge (gcond *dummy_cond,
       gcc_assert (path->length () == 0);
       path->release ();
       delete path;
+
+      find_jump_threads_backwards (e);
 
       /* A negative status indicates the target block was deemed too big to
 	 duplicate.  Just quit now rather than trying to use the block as
@@ -1217,6 +1197,7 @@ thread_across_edge (gcond *dummy_cond,
 	  }
 	else
 	  {
+	    find_jump_threads_backwards (path->last ()->e);
 	    delete_jump_thread_path (path);
 	  }
 
