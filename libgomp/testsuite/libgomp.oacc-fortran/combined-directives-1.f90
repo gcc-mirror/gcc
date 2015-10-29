@@ -1,3 +1,5 @@
+! This test exercises combined directives.
+
 ! { dg-do run }
 
 program main
