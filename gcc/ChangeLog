@@ -1,3 +1,8 @@
+2015-10-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match-head.c (gimple_simplify): Remove premature checking
+	of builtin_decl_implicit of function calls we simplify.
+
 2015-10-29  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (split_address_cost): Check depends_on.

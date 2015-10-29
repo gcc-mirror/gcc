@@ -752,7 +752,6 @@ gimple_simplify (gimple *stmt,
 
 	  tree decl = TREE_OPERAND (fn, 0);
 	  if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL
-	      || !builtin_decl_implicit (DECL_FUNCTION_CODE (decl))
 	      || !gimple_builtin_call_types_compatible_p (stmt, decl))
 	    return false;
 

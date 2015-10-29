@@ -1,3 +1,8 @@
+2015-10-29  Richard Biener  <rguenther@suse.de>
+
+	* f95-lang.c: Properly build variadic types for classification
+	and comparison builtins.
+
 2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 

@@ -988,8 +988,7 @@ gfc_init_builtin_functions (void)
 
   /* Type-generic floating-point classification built-ins.  */
 
-  ftype = build_function_type_list (integer_type_node,
-                                    void_type_node, NULL_TREE);
+  ftype = build_function_type (integer_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_isfinite", ftype, BUILT_IN_ISFINITE,
 		      "__builtin_isfinite", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_isinf", ftype, BUILT_IN_ISINF,
@@ -1003,8 +1002,7 @@ gfc_init_builtin_functions (void)
   gfc_define_builtin ("__builtin_signbit", ftype, BUILT_IN_SIGNBIT,
 		      "__builtin_signbit", ATTR_CONST_NOTHROW_LEAF_LIST);
 
-  ftype = build_function_type_list (integer_type_node, void_type_node,
-				    void_type_node, NULL_TREE);
+  ftype = build_function_type (integer_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_isless", ftype, BUILT_IN_ISLESS,
 		      "__builtin_isless", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_islessequal", ftype, BUILT_IN_ISLESSEQUAL,
