@@ -42,9 +42,6 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     pkgpath_(),
     pkgpath_symbol_(),
     prefix_(),
-    zero_value_(NULL),
-    zero_value_size_(0),
-    zero_value_align_(0),
     pkgpath_set_(false),
     pkgpath_from_option_(false),
     prefix_from_option_(false),
@@ -636,87 +633,6 @@ Gogo::current_bindings() const
     return this->package_->bindings();
   else
     return this->globals_;
-}
-
-// Return the special variable used as the zero value of types.
-
-Named_object*
-Gogo::zero_value(Type *type)
-{
-  if (this->zero_value_ == NULL)
-    {
-      Location bloc = Linemap::predeclared_location();
-
-      // We will change the type later, when we know the size.
-      Type* byte_type = this->lookup_global("byte")->type_value();
-
-      Expression* zero = Expression::make_integer_ul(0, NULL, bloc);
-      Type* array_type = Type::make_array_type(byte_type, zero);
-
-      Variable* var = new Variable(array_type, NULL, true, false, false, bloc);
-      this->zero_value_ = Named_object::make_variable("go$zerovalue", NULL,
-						      var);
-    }
-
-  // The zero value will be the maximum required size.
-  int64_t size;
-  bool ok = type->backend_type_size(this, &size);
-  if (!ok) {
-    go_assert(saw_errors());
-    size = 4;
-  }
-  if (size > this->zero_value_size_)
-    this->zero_value_size_ = size;
-
-  int64_t align;
-  ok = type->backend_type_align(this, &align);
-  if (!ok) {
-    go_assert(saw_errors());
-    align = 4;
-  }
-  if (align > this->zero_value_align_)
-    this->zero_value_align_ = align;
-
-  return this->zero_value_;
-}
-
-// Return whether V is the zero value variable.
-
-bool
-Gogo::is_zero_value(Variable* v) const
-{
-  return this->zero_value_ != NULL && this->zero_value_->var_value() == v;
-}
-
-// Return the backend variable for the special zero value, or NULL if
-// it is not needed.
-
-Bvariable*
-Gogo::backend_zero_value()
-{
-  if (this->zero_value_ == NULL)
-    return NULL;
-
-  Type* byte_type = this->lookup_global("byte")->type_value();
-  Btype* bbtype_type = byte_type->get_backend(this);
-
-  Type* int_type = this->lookup_global("int")->type_value();
-
-  Expression* e = Expression::make_integer_int64(this->zero_value_size_,
-						 int_type,
-						 Linemap::unknown_location());
-  Translate_context context(this, NULL, NULL, NULL);
-  Bexpression* blength = e->get_backend(&context);
-
-  Btype* barray_type = this->backend()->array_type(bbtype_type, blength);
-
-  std::string zname = this->zero_value_->name();
-  Bvariable* zvar =
-    this->backend()->implicit_variable(zname, barray_type, false,
-				       true, true, this->zero_value_align_);
-  this->backend()->implicit_variable_set_init(zvar, zname, barray_type,
-					      false, true, true, NULL);
-  return zvar;
 }
 
 // Add statements to INIT_STMTS which run the initialization
@@ -6534,9 +6450,7 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	  Btype* btype = type->get_backend(gogo);
 
 	  Bvariable* bvar;
-	  if (gogo->is_zero_value(this))
-	    bvar = gogo->backend_zero_value();
-	  else if (this->is_global_)
+	  if (this->is_global_)
 	    bvar = backend->global_variable((package == NULL
 					     ? gogo->package_name()
 					     : package->package_name()),

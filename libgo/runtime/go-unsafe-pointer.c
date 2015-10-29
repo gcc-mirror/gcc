@@ -10,9 +10,6 @@
 #include "go-type.h"
 #include "mgc0.h"
 
-/* A pointer with a zero value.  */
-static void *zero_pointer;
-
 /* This file provides the type descriptor for the unsafe.Pointer type.
    The unsafe package is defined by the compiler itself, which means
    that there is no package to compile to define the type
@@ -64,9 +61,7 @@ const struct __go_type_descriptor unsafe_Pointer =
   /* __uncommon */
   NULL,
   /* __pointer_to_this */
-  NULL,
-  /* __zero */
-  &zero_pointer
+  NULL
 };
 
 /* We also need the type descriptor for the pointer to unsafe.Pointer,
@@ -109,9 +104,7 @@ const struct __go_ptr_type pointer_unsafe_Pointer =
     /* __uncommon */
     NULL,
     /* __pointer_to_this */
-    NULL,
-    /* __zero */
-    &zero_pointer
+    NULL
   },
   /* __element_type */
   &unsafe_Pointer

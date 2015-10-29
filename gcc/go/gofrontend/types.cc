@@ -1529,7 +1529,7 @@ Type::make_type_descriptor_type()
       // The type descriptor type.
 
       Struct_type* type_descriptor_type =
-	Type::make_builtin_struct_type(12,
+	Type::make_builtin_struct_type(11,
 				       "kind", uint8_type,
 				       "align", uint8_type,
 				       "fieldAlign", uint8_type,
@@ -1541,8 +1541,7 @@ Type::make_type_descriptor_type()
 				       "string", pointer_string_type,
 				       "", pointer_uncommon_type,
 				       "ptrToThis",
-				       pointer_type_descriptor_type,
-				       "zero", unsafe_pointer_type);
+				       pointer_type_descriptor_type);
 
       Named_type* named = Type::make_builtin_named_type("commonType",
 							type_descriptor_type);
@@ -2072,15 +2071,6 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
       Type* pt = Type::make_pointer_type(name);
       vals->push_back(Expression::make_type_descriptor(pt, bloc));
     }
-
-  ++p;
-  go_assert(p->is_field_name("zero"));
-  Expression* z = Expression::make_var_reference(gogo->zero_value(this), bloc);
-  z = Expression::make_unary(OPERATOR_AND, z, bloc);
-  Type* void_type = Type::make_void_type();
-  Type* unsafe_pointer_type = Type::make_pointer_type(void_type);
-  z = Expression::make_cast(unsafe_pointer_type, z, bloc);
-  vals->push_back(z);
 
   ++p;
   go_assert(p == fields->end());
