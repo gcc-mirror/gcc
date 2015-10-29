@@ -1,3 +1,11 @@
+2015-10-29  Mikhail Maltsev  <maltsevm@gmail.com>
+
+        * genautomata.c: Use CHECKING_P instead of ENABLE_CHECKING.
+        * genconditions.c: Define CHECKING_P in the generated code.
+        * genextract.c: Use flag_checking in insn_extract.
+        * gengtype.c (main): Remove conditional compilation.
+        * gengtype.h: Likewise.
+
 2015-10-29  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/67892
