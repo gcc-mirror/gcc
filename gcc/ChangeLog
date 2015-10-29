@@ -1,5 +1,11 @@
 2015-10-29  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/56956
+	* fold-const.c (fold_cond_expr_with_comparison): Do not fold
+	unsigned conditonal negation to ABS_EXPR.
+
+2015-10-29  Richard Biener  <rguenther@suse.de>
+
 	* gimple-match-head.c (gimple_simplify): Remove premature checking
 	of builtin_decl_implicit of function calls we simplify.
 
