@@ -255,8 +255,8 @@ type rtype struct {
 	size       uintptr
 	hash       uint32 // hash of type; avoids computation in hash tables
 
-	hashfn  uintptr // hash function code
-	equalfn uintptr // equality function code
+	hashfn  func(unsafe.Pointer, uintptr)                 // hash function
+	equalfn func(unsafe.Pointer, unsafe.Pointer, uintptr) // equality function
 
 	gc            unsafe.Pointer // garbage collection data
 	string        *string        // string form; unnecessary  but undeniably useful
