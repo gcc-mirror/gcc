@@ -1,3 +1,8 @@
+2015-10-29  Tom de Vries  <tom@codesourcery.com>
+
+	* fold-const.c (fold_unary_loc): Remove folding inhibition for restrict
+	types.
+
 2015-10-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* omp-low.c (lower_omp_target): Remove unreachable code & merge
