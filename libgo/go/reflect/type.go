@@ -262,7 +262,6 @@ type rtype struct {
 	string        *string        // string form; unnecessary  but undeniably useful
 	*uncommonType                // (relatively) uncommon fields
 	ptrToThis     *rtype         // type for pointer to this type, if used in binary or has methods
-	zero          unsafe.Pointer // pointer to zero value
 }
 
 // Method on non-interface type
@@ -1129,7 +1128,6 @@ func (t *rtype) ptrTo() *rtype {
 
 	p.uncommonType = nil
 	p.ptrToThis = nil
-	p.zero = unsafe.Pointer(&make([]byte, p.size)[0])
 	p.elem = t
 
 	if t.kind&kindNoPointers != 0 {
@@ -1505,7 +1503,6 @@ func ChanOf(dir ChanDir, t Type) Type {
 	ch.elem = typ
 	ch.uncommonType = nil
 	ch.ptrToThis = nil
-	ch.zero = unsafe.Pointer(&make([]byte, ch.size)[0])
 
 	ch.gc = unsafe.Pointer(&chanGC{
 		width: ch.size,
@@ -1561,7 +1558,6 @@ func MapOf(key, elem Type) Type {
 	mt.elem = etyp
 	mt.uncommonType = nil
 	mt.ptrToThis = nil
-	mt.zero = unsafe.Pointer(&make([]byte, mt.size)[0])
 	// mt.gc = unsafe.Pointer(&ptrGC{
 	// 	width:  unsafe.Sizeof(uintptr(0)),
 	// 	op:     _GC_PTR,
@@ -1848,7 +1844,6 @@ func SliceOf(t Type) Type {
 	slice.elem = typ
 	slice.uncommonType = nil
 	slice.ptrToThis = nil
-	slice.zero = unsafe.Pointer(&make([]byte, slice.size)[0])
 
 	if typ.size == 0 {
 		slice.gc = unsafe.Pointer(&sliceEmptyGCProg)
@@ -1920,7 +1915,6 @@ func arrayOf(count int, elem Type) Type {
 	// TODO:
 	array.uncommonType = nil
 	array.ptrToThis = nil
-	array.zero = unsafe.Pointer(&make([]byte, array.size)[0])
 	array.len = uintptr(count)
 	array.slice = slice.(*rtype)
 

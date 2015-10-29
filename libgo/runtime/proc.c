@@ -538,9 +538,7 @@ static struct __go_channel_type chan_bool_type_descriptor =
       /* __uncommon */
       NULL,
       /* __pointer_to_this */
-      NULL,
-      /* __zero */
-      NULL /* This value doesn't matter */
+      NULL
     },
     /* __element_type */
     &bool_type_descriptor,
