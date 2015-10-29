@@ -1,3 +1,7 @@
+2015-10-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (X-(X/Y)*Y): Properly handle conversions and commutativity.
+
 2015-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-call-cdce.c (shrink_wrap_one_built_in_call): Remove
