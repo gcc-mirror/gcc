@@ -1,5 +1,11 @@
 2015-10-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/68055
+	* decl.c (gfc_match_decl_type_spec): Check for valid kind in old-style
+	declarations.
+
+2015-10-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/68054
 	* decl.c (match_attr_spec): PROTECTED can only be a module.
 
