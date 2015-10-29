@@ -1,3 +1,8 @@
+2015-10-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lra-constraints.c (process_address_1): Handle (mem:BLK (scratch))
+	by ignoring it.
+
 2015-10-29  Richard Henderson  <rth@redhat.com>
 
 	PR target/68124
