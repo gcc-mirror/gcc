@@ -1,3 +1,9 @@
+2015-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68142
+	* fold-const.c (extract_muldiv_1): Avoid introducing undefined
+	overflow.
+
 2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* alias.c: Reorder #include statements and remove duplicates.
