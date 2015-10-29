@@ -20,10 +20,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
-#include <setjmp.h>
 #include "coretypes.h"
 #include "options.h"
 #include "gfortran.h"
+#include <setjmp.h>
 #include "match.h"
 #include "parse.h"
 #include "debug.h"

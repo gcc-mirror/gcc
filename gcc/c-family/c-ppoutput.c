@@ -19,12 +19,12 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "options.h"
+#include "tree.h"
+#include "c-common.h"		/* For flags.  */
 #include "cpplib.h"
 #include "../libcpp/internal.h"
 #include "alias.h"
-#include "tree.h"
-#include "options.h"
-#include "c-common.h"		/* For flags.  */
 #include "c-pragma.h"		/* For parse_in.  */
 
 /* Encapsulates state used to convert a stream of tokens into a text

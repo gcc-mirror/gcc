@@ -23,11 +23,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
-#include "flags.h"
 #include "cp-tree.h"
 #include "tm_p.h"
+#include "alias.h"
+#include "flags.h"
 
 /* Expand C++-specific constants.  Currently, this means PTRMEM_CST.  */
 

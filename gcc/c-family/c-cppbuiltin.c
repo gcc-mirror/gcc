@@ -20,19 +20,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
-#include "stor-layout.h"
+#include "c-common.h"
+#include "tm_p.h"		/* For TARGET_CPU_CPP_BUILTINS & friends.  */
 #include "stringpool.h"
+#include "alias.h"
+#include "stor-layout.h"
 #include "version.h"
 #include "flags.h"
-#include "c-common.h"
 #include "c-pragma.h"
 #include "output.h"		/* For user_label_prefix.  */
 #include "debug.h"		/* For dwarf2out_do_cfi_asm.  */
-#include "tm_p.h"		/* For TARGET_CPU_CPP_BUILTINS & friends.  */
-#include "target.h"
 #include "common/common-target.h"
 #include "cpp-id-data.h"
 #include "cppbuiltin.h"

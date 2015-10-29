@@ -23,10 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
-#include "print-tree.h"
 #include "cp-tree.h"
+#include "alias.h"
+#include "print-tree.h"
 
 void
 cxx_print_decl (FILE *file, tree node, int indent)

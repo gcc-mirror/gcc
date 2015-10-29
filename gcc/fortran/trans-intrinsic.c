@@ -25,26 +25,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"		/* For UNITS_PER_WORD.  */
-#include "alias.h"
 #include "tree.h"
-#include "fold-const.h"
+#include "gfortran.h"
+#include "trans.h"
 #include "stringpool.h"
+#include "diagnostic-core.h"	/* For internal_error.  */
+#include "alias.h"
+#include "fold-const.h"
 #include "tree-nested.h"
 #include "stor-layout.h"
-#include "gfortran.h"
-#include "diagnostic-core.h"	/* For internal_error.  */
 #include "toplev.h"	/* For rest_of_decl_compilation.  */
 #include "flags.h"
 #include "arith.h"
 #include "intrinsic.h"
-#include "trans.h"
 #include "trans-const.h"
 #include "trans-types.h"
 #include "trans-array.h"
 #include "dependency.h"	/* For CAF array alias analysis.  */
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
-#include "tree-nested.h"
 
 /* This maps Fortran intrinsic math functions to external library or GCC
    builtin functions.  */

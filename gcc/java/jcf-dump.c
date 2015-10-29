@@ -50,13 +50,13 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "intl.h"
+#include "options.h"
+#include "tree.h"
 #include "diagnostic.h"
+#include "intl.h"
 
 #include "jcf.h"
 #include "alias.h"
-#include "tree.h"
-#include "options.h"
 #include "java-tree.h"
 
 #include "version.h"
@@ -457,7 +457,6 @@ utf8_equal_string (JCF *jcf, int index, const char * value)
   if (flag_print_attributes > 0) \
     fprintf (out, "\nAttributes (count: %d):\n", attributes_count);
 
-#include "javaop.h"
 
 
 

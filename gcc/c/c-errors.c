@@ -23,11 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "alias.h"
 #include "c-tree.h"
 #include "tm_p.h"
+#include "alias.h"
 #include "flags.h"
-#include "diagnostic.h"
 #include "opts.h"
 
 /* Issue an ISO C99 pedantic warning MSGID if -pedantic outside C11 mode,

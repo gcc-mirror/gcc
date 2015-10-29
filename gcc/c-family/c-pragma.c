@@ -20,28 +20,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
+#include "function.h"		/* For cfun.  */
 #include "tree.h"
-#include "options.h"
+#include "c-common.h"
+#include "tm_p.h"		/* For REGISTER_TARGET_PRAGMAS.  */
 #include "stringpool.h"
+#include "cgraph.h"
+#include "diagnostic.h"
+#include "alias.h"
 #include "attribs.h"
 #include "varasm.h"
-#include "hard-reg-set.h"
-#include "function.h"		/* For cfun.  FIXME: Does the parser know
-				   when it is inside a function, so that
-				   we don't have to look at cfun?  */
 #include "cpplib.h"
 #include "c-pragma.h"
 #include "flags.h"
-#include "c-common.h"
-#include "tm_p.h"		/* For REGISTER_TARGET_PRAGMAS (why is
-				   this not a target hook?).  */
-#include "target.h"
-#include "diagnostic.h"
 #include "opts.h"
 #include "plugin.h"
-#include "cgraph.h"
 
 #define GCC_BAD(gmsgid) \
   do { warning (OPT_Wpragmas, gmsgid); return; } while (0)

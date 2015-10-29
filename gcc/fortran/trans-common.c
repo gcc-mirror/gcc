@@ -94,19 +94,19 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
+#include "tree.h"
+#include "gfortran.h"
+#include "trans.h"
+#include "stringpool.h"
 
 #include <map>
 
-#include "coretypes.h"
-#include "tm.h"
 #include "alias.h"
-#include "tree.h"
 #include "fold-const.h"
-#include "stringpool.h"
 #include "stor-layout.h"
 #include "varasm.h"
-#include "gfortran.h"
-#include "trans.h"
 #include "trans-types.h"
 #include "trans-const.h"
 #include "target-memory.h"

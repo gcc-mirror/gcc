@@ -22,17 +22,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
-#include "options.h"
+#include "c-pretty-print.h"
+#include "diagnostic.h"
+#include "alias.h"
 #include "stor-layout.h"
 #include "attribs.h"
 #include "intl.h"
-#include "c-pretty-print.h"
 #include "tree-pretty-print.h"
 #include "tree-iterator.h"
-#include "diagnostic.h"
-#include "wide-int-print.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti

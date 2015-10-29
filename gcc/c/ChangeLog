@@ -1,3 +1,15 @@
+2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-array-notation.c: Reorder #include's and remove duplicates.
+	* c-aux-info.c: Likewise.
+	* c-convert.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-errors.c: Likewise.
+	* c-lang.c: Likewise.
+	* c-objc-common.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-typeck.c: Likewise.
+
 2015-10-26  Jim Wilson  <jim.wilson@linaro.org>
 
 	PR debug/66068

@@ -1,3 +1,26 @@
+2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* array-notation-common.c: Reorder #include's and remove duplicates.
+	* c-ada-spec.c: Likewise.
+	* c-cilkplus.c: Likewise.
+	* c-common.c: Likewise.
+	* c-cppbuiltin.c: Likewise.
+	* c-dump.c: Likewise.
+	* c-format.c: Likewise.
+	* c-gimplify.c: Likewise.
+	* c-indentation.c: Likewise.
+	* c-lex.c: Likewise.
+	* c-omp.c: Likewise.
+	* c-opts.c: Likewise.
+	* c-pch.c: Likewise.
+	* c-ppoutput.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-pretty-print.c: Likewise.
+	* c-semantics.c: Likewise.
+	* c-ubsan.c: Likewise.
+	* cilk.c: Likewise.
+	* stub-objc.c: Likewise.
+
 2015-10-28  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (pointer_int_sum): Fold the MULT_EXPR.

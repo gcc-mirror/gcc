@@ -21,18 +21,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
+#include "c-target.h"
 #include "tree.h"
-#include "stringpool.h"
-#include "flags.h"
 #include "c-common.h"
+#include "alloc-pool.h"
+#include "stringpool.h"
+#include "alias.h"
+#include "flags.h"
 #include "c-objc.h"
 #include "intl.h"
-#include "diagnostic-core.h"
 #include "langhooks.h"
 #include "c-format.h"
-#include "alloc-pool.h"
-#include "c-target.h"
 
 /* Handle attributes associated with format checking.  */
 

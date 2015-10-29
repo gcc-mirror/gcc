@@ -21,12 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "tm.h"		/* For BITS_PER_UNIT.  */
 #include "gfortran.h"
 #include "arith.h"
 #include "intrinsic.h"
 #include "target-memory.h"
 #include "constructor.h"
-#include "tm.h"		/* For BITS_PER_UNIT.  */
 #include "version.h"	/* For version_string.  */
 
 

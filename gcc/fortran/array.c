@@ -22,8 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "options.h"
-#include "flags.h"
 #include "gfortran.h"
+#include "flags.h"
 #include "match.h"
 #include "constructor.h"
 
