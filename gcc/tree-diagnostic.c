@@ -22,10 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
-#include "tree.h"
 #include "options.h"
+#include "tree.h"
 #include "diagnostic.h"
+#include "alias.h"
 #include "tree-pretty-print.h"
 #include "tree-diagnostic.h"
 #include "dumpfile.h" /* TDF_DIAGNOSTIC */

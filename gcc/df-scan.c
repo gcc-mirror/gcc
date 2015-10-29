@@ -25,19 +25,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
 #include "tm_p.h"
 #include "insn-config.h"
+#include "regs.h"
+#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "recog.h"
 #include "alias.h"
-#include "regs.h"
-#include "alloc-pool.h"
 #include "flags.h"
 #include "dumpfile.h"
-#include "target.h"
-#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 
 /* The set of hard registers in eliminables[i].from. */

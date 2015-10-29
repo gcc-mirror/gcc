@@ -20,14 +20,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "options.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "flags.h"
 #include "cfganal.h"
@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "dbgcnt.h"
 #include "tree-cfg.h"
-#include "tree-pass.h"
 
 /* Given a block B, update the CFG and SSA graph to reflect redirecting
    one or more in-edges to B to instead reach the destination of an

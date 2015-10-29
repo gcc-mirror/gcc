@@ -37,11 +37,11 @@
 #include "coretypes.h"
 #include "backend.h"
 #include "rtl.h"
-#include "cfganal.h"
-#include "diagnostic-core.h"
 #include "alloc-pool.h"
-#include "et-forest.h"
 #include "timevar.h"
+#include "diagnostic-core.h"
+#include "cfganal.h"
+#include "et-forest.h"
 #include "graphds.h"
 
 /* We name our nodes with integers, beginning with 1.  Zero is reserved for

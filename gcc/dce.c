@@ -21,12 +21,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
-#include "tree.h"
 #include "rtl.h"
+#include "tree.h"
+#include "predict.h"
 #include "df.h"
-#include "alias.h"
+#include "tm_p.h"
 #include "regs.h"
+#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
+#include "alias.h"
 #include "flags.h"
 #include "except.h"
 #include "cfgrtl.h"
@@ -37,8 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "valtrack.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
-#include "tm_p.h"
-#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 
 /* -------------------------------------------------------------------------

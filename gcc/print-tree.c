@@ -22,22 +22,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
+#include "function.h"
+#include "hard-reg-set.h"
 #include "tree.h"
+#include "cgraph.h"
+#include "diagnostic.h"
+#include "alias.h"
 #include "varasm.h"
 #include "print-rtl.h"
 #include "stor-layout.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
-#include "diagnostic.h"
 #include "gimple-pretty-print.h" /* FIXME */
-#include "hard-reg-set.h"
-#include "function.h"
-#include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-dump.h"
-#include "dumpfile.h"
-#include "wide-int-print.h"
 
 /* Define the hash table of nodes already seen.
    Such nodes are not repeated; brief cross-references are used.  */

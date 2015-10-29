@@ -21,18 +21,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "target.h"
+#include "rtl.h"
+#include "tree.h"
+#include "tm_p.h"
+#include "stringpool.h"
 #include "flags.h"
 #include "alias.h"
-#include "tree.h"
-#include "stringpool.h"
 #include "varasm.h"
-#include "rtl.h"
 #include "output.h"
-#include "target.h"
 #include "dwarf2asm.h"
 #include "dwarf2.h"
-#include "tm_p.h"
 
 #ifndef XCOFF_DEBUGGING_INFO
 #define XCOFF_DEBUGGING_INFO 0
