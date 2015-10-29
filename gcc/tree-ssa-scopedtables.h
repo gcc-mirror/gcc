@@ -168,12 +168,6 @@ class const_and_copies
      value for the first argument.  Try to get rid of this in the future.  */
   void record_const_or_copy (tree, tree, tree);
 
-  /* When threading we need to invalidate certain equivalences after
-     following a loop backedge.  The entries we need to invalidate will
-     always be in this unwindable stack.  This entry point handles
-     finding and invalidating those entries.  */
-  void invalidate (tree);
-
  private:
   vec<tree> m_stack;
   const_and_copies& operator= (const const_and_copies&);
