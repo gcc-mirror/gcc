@@ -414,6 +414,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	  ;;
 	esac
 	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
+	extra_parts="$extra_parts crtfastmath.o"
 	unwind_header=config/arm/unwind-arm.h
 	;;
 avr-*-rtems*)
