@@ -1479,14 +1479,9 @@ enum reg_class
 
 extern enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 
-#if ENABLE_CHECKING
 #define REGNO_REG_CLASS(REGNO) 						\
-  (gcc_assert (IN_RANGE ((REGNO), 0, FIRST_PSEUDO_REGISTER-1)),		\
+  (gcc_checking_assert (IN_RANGE ((REGNO), 0, FIRST_PSEUDO_REGISTER-1)),\
    rs6000_regno_regclass[(REGNO)])
-
-#else
-#define REGNO_REG_CLASS(REGNO) rs6000_regno_regclass[(REGNO)]
-#endif
 
 /* Register classes for various constraints that are based on the target
    switches.  */

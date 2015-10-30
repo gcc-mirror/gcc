@@ -12906,15 +12906,13 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
 	  case HTM_BUILTIN_TENDALL:  /* Alias for: tend. 1  */
 	  case HTM_BUILTIN_TRESUME:  /* Alias for: tsr. 1  */
 	    op[nopnds++] = GEN_INT (1);
-#ifdef ENABLE_CHECKING
-	    attr |= RS6000_BTC_UNARY;
-#endif
+	    if (flag_checking)
+	      attr |= RS6000_BTC_UNARY;
 	    break;
 	  case HTM_BUILTIN_TSUSPEND: /* Alias for: tsr. 0  */
 	    op[nopnds++] = GEN_INT (0);
-#ifdef ENABLE_CHECKING
-	    attr |= RS6000_BTC_UNARY;
-#endif
+	    if (flag_checking)
+	      attr |= RS6000_BTC_UNARY;
 	    break;
 	  default:
 	    break;
@@ -12935,21 +12933,23 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
 	    op[nopnds++] = cr;
 	  }
 
-#ifdef ENABLE_CHECKING
-	int expected_nopnds = 0;
-	if ((attr & RS6000_BTC_TYPE_MASK) == RS6000_BTC_UNARY)
-	  expected_nopnds = 1;
-	else if ((attr & RS6000_BTC_TYPE_MASK) == RS6000_BTC_BINARY)
-	  expected_nopnds = 2;
-	else if ((attr & RS6000_BTC_TYPE_MASK) == RS6000_BTC_TERNARY)
-	  expected_nopnds = 3;
-	if (!(attr & RS6000_BTC_VOID))
-	  expected_nopnds += 1;
-	if (uses_spr)
-	  expected_nopnds += 2;
+	if (flag_checking)
+	  {
+	    int expected_nopnds = 0;
+	    if ((attr & RS6000_BTC_TYPE_MASK) == RS6000_BTC_UNARY)
+	      expected_nopnds = 1;
+	    else if ((attr & RS6000_BTC_TYPE_MASK) == RS6000_BTC_BINARY)
+	      expected_nopnds = 2;
+	    else if ((attr & RS6000_BTC_TYPE_MASK) == RS6000_BTC_TERNARY)
+	      expected_nopnds = 3;
+	    if (!(attr & RS6000_BTC_VOID))
+	      expected_nopnds += 1;
+	    if (uses_spr)
+	      expected_nopnds += 2;
 
-	gcc_assert (nopnds == expected_nopnds && nopnds <= MAX_HTM_OPERANDS);
-#endif
+	    gcc_assert (nopnds == expected_nopnds
+			&& nopnds <= MAX_HTM_OPERANDS);
+	  }
 
 	switch (nopnds)
 	  {
@@ -24325,7 +24325,7 @@ rs6000_emit_prologue (void)
      prior to it, when r12 is not used here for other purposes.  */
   rtx_insn *sp_adjust = 0;
 
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
   /* Track and check usage of r0, r11, r12.  */
   int reg_inuse = using_static_chain_p ? 1 << 11 : 0;
 #define START_USE(R) do \

@@ -6118,28 +6118,27 @@ m68k_sched_md_init_global (FILE *sched_dump ATTRIBUTE_UNUSED,
 			   int sched_verbose ATTRIBUTE_UNUSED,
 			   int n_insns ATTRIBUTE_UNUSED)
 {
-#ifdef ENABLE_CHECKING
   /* Check that all instructions have DFA reservations and
      that all instructions can be issued from a clean state.  */
-  {
-    rtx_insn *insn;
-    state_t state;
+  if (flag_checking)
+    {
+      rtx_insn *insn;
+      state_t state;
 
-    state = alloca (state_size ());
+      state = alloca (state_size ());
 
-    for (insn = get_insns (); insn != NULL; insn = NEXT_INSN (insn))
-      {
- 	if (INSN_P (insn) && recog_memoized (insn) >= 0)
-	  {
- 	    gcc_assert (insn_has_dfa_reservation_p (insn));
+      for (insn = get_insns (); insn != NULL; insn = NEXT_INSN (insn))
+	{
+	  if (INSN_P (insn) && recog_memoized (insn) >= 0)
+	    {
+	      gcc_assert (insn_has_dfa_reservation_p (insn));
 
- 	    state_reset (state);
- 	    if (state_transition (state, insn) >= 0)
- 	      gcc_unreachable ();
- 	  }
-      }
-  }
-#endif
+	      state_reset (state);
+	      if (state_transition (state, insn) >= 0)
+		gcc_unreachable ();
+	    }
+	}
+    }
 
   /* Setup target cpu.  */
 

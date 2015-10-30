@@ -17348,22 +17348,23 @@ ix86_print_operand_address (FILE *file, rtx addr)
       /* Print SImode register names to force addr32 prefix.  */
       if (SImode_address_operand (addr, VOIDmode))
 	{
-#ifdef ENABLE_CHECKING
-	  gcc_assert (TARGET_64BIT);
-	  switch (GET_CODE (addr))
+	  if (flag_checking)
 	    {
-	    case SUBREG:
-	      gcc_assert (GET_MODE (addr) == SImode);
-	      gcc_assert (GET_MODE (SUBREG_REG (addr)) == DImode);
-	      break;
-	    case ZERO_EXTEND:
-	    case AND:
-	      gcc_assert (GET_MODE (addr) == DImode);
-	      break;
-	    default:
-	      gcc_unreachable ();
+	      gcc_assert (TARGET_64BIT);
+	      switch (GET_CODE (addr))
+		{
+		case SUBREG:
+		  gcc_assert (GET_MODE (addr) == SImode);
+		  gcc_assert (GET_MODE (SUBREG_REG (addr)) == DImode);
+		  break;
+		case ZERO_EXTEND:
+		case AND:
+		  gcc_assert (GET_MODE (addr) == DImode);
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
 	    }
-#endif
 	  gcc_assert (!code);
 	  code = 'k';
 	}
@@ -17620,10 +17621,10 @@ output_387_binary_op (rtx insn, rtx *operands)
   const char *ssep;
   int is_sse = SSE_REG_P (operands[0]) || SSE_REG_P (operands[1]) || SSE_REG_P (operands[2]);
 
-#ifdef ENABLE_CHECKING
   /* Even if we do not want to check the inputs, this documents input
      constraints.  Which helps in understanding the following code.  */
-  if (STACK_REG_P (operands[0])
+  if (flag_checking
+      && STACK_REG_P (operands[0])
       && ((REG_P (operands[1])
 	   && REGNO (operands[0]) == REGNO (operands[1])
 	   && (STACK_REG_P (operands[2]) || MEM_P (operands[2])))
@@ -17633,8 +17634,7 @@ output_387_binary_op (rtx insn, rtx *operands)
       && (STACK_TOP_P (operands[1]) || STACK_TOP_P (operands[2])))
     ; /* ok */
   else
-    gcc_assert (is_sse);
-#endif
+    gcc_checking_assert (is_sse);
 
   switch (GET_CODE (operands[3]))
     {

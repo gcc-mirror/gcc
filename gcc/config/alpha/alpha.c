@@ -5558,11 +5558,9 @@ alpha_function_arg (cumulative_args_t cum_v, machine_mode mode,
     basereg = 16;
   else
     {
-#ifdef ENABLE_CHECKING
       /* With alpha_split_complex_arg, we shouldn't see any raw complex
 	 values here.  */
-      gcc_assert (!COMPLEX_MODE_P (mode));
-#endif
+      gcc_checking_assert (!COMPLEX_MODE_P (mode));
 
       /* Set up defaults for FP operands passed in FP registers, and
 	 integral operands passed in integer registers.  */

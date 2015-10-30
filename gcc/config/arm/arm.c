@@ -26857,20 +26857,21 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
       else
 	asm_fprintf (asm_out_file, "%r", reg);
 
-#ifdef ENABLE_CHECKING
-      /* Check that the addresses are consecutive.  */
-      e = XEXP (SET_DEST (e), 0);
-      if (GET_CODE (e) == PLUS)
-	gcc_assert (REG_P (XEXP (e, 0))
-		    && REGNO (XEXP (e, 0)) == SP_REGNUM
-		    && CONST_INT_P (XEXP (e, 1))
-		    && offset == INTVAL (XEXP (e, 1)));
-      else
-	gcc_assert (i == 1
-		    && REG_P (e)
-		    && REGNO (e) == SP_REGNUM);
-      offset += reg_size;
-#endif
+      if (flag_checking)
+	{
+	  /* Check that the addresses are consecutive.  */
+	  e = XEXP (SET_DEST (e), 0);
+	  if (GET_CODE (e) == PLUS)
+	    gcc_assert (REG_P (XEXP (e, 0))
+			&& REGNO (XEXP (e, 0)) == SP_REGNUM
+			&& CONST_INT_P (XEXP (e, 1))
+			&& offset == INTVAL (XEXP (e, 1)));
+	  else
+	    gcc_assert (i == 1
+			&& REG_P (e)
+			&& REGNO (e) == SP_REGNUM);
+	  offset += reg_size;
+	}
     }
   fprintf (asm_out_file, "}\n");
   if (padfirst)
