@@ -2064,11 +2064,15 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
 
   ++p;
   go_assert(p->is_field_name("ptrToThis"));
-  if (name == NULL)
+  if (name == NULL && methods == NULL)
     vals->push_back(Expression::make_nil(bloc));
   else
     {
-      Type* pt = Type::make_pointer_type(name);
+      Type* pt;
+      if (name != NULL)
+	pt = Type::make_pointer_type(name);
+      else
+	pt = Type::make_pointer_type(this);
       vals->push_back(Expression::make_type_descriptor(pt, bloc));
     }
 
