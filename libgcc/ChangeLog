@@ -1,3 +1,9 @@
+2015-10-30  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* config/i386/cpuinfo.c (enum processor_types): Add AMDFAM17H.
+	(processor_subtypes): Add znver1.
+	(get_amd_cpu): Detect znver1.
+
 2015-10-29  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config.host (arm*-*-eabi*, arm*-*-symbianelf*, arm*-*-rtems*):

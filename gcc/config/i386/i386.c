@@ -35898,6 +35898,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      arg_str = "bdver4";
 	      priority = P_PROC_AVX2;
 	      break;
+	    case PROCESSOR_ZNVER1:
+	      arg_str = "znver1";
+	      priority = P_PROC_AVX2;
+	      break;
 	    }
 	}
 
@@ -36808,6 +36812,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_AMDFAM15H_BDVER2,
     M_AMDFAM15H_BDVER3,
     M_AMDFAM15H_BDVER4,
+    M_AMDFAM17H_ZNVER1,
     M_INTEL_COREI7_IVYBRIDGE,
     M_INTEL_COREI7_HASWELL,
     M_INTEL_COREI7_BROADWELL,
@@ -36850,6 +36855,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"bdver3", M_AMDFAM15H_BDVER3},
       {"bdver4", M_AMDFAM15H_BDVER4},
       {"btver2", M_AMD_BTVER2},
+      {"znver1", M_AMDFAM17H_ZNVER1},
     };
 
   static struct _isa_names_table
