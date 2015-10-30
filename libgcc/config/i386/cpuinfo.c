@@ -59,6 +59,7 @@ enum processor_types
   INTEL_KNL,
   AMD_BTVER1,
   AMD_BTVER2,  
+  AMDFAM17H,
   CPU_TYPE_MAX
 };
 
@@ -74,6 +75,7 @@ enum processor_subtypes
   AMDFAM15H_BDVER2,
   AMDFAM15H_BDVER3,
   AMDFAM15H_BDVER4,
+  AMDFAM17H_ZNVER1,
   INTEL_COREI7_IVYBRIDGE,
   INTEL_COREI7_HASWELL,
   INTEL_COREI7_BROADWELL,
@@ -176,6 +178,12 @@ get_amd_cpu (unsigned int family, unsigned int model)
     /* AMD Family 16h "btver2" */
     case 0x16:
       __cpu_model.__cpu_type = AMD_BTVER2;
+      break;
+    case 0x17:
+      __cpu_model.__cpu_type = AMDFAM17H;
+      /* AMD family 17h version 1.  */
+      if (model <= 0x1f)
+	__cpu_model.__cpu_subtype = AMDFAM17H_ZNVER1;
       break;
     default:
       break;

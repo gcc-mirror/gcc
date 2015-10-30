@@ -17016,6 +17016,9 @@ AMD Family 15h Bulldozer version 4.
 
 @item btver2
 AMD Family 16h CPU.
+
+@item znver1
+AMD Family 17h CPU.
 @end table
 
 Here is an example:
