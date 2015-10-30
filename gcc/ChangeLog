@@ -1,3 +1,12 @@
+2015-10-30  Evandro Menezes  <e.menezes@samsung.com>
+
+	* config/aarch64/aarch64.md (*movhf_aarch64): Change the type of
+	"mov %0.h[0], %1.h[0] to "neon_move".
+	(*movtf_aarch64): Change the type of "fmov %s0, wzr" to "f_mcr".
+	(*cmov<mode>_insn): Change the types of "mov %<w>0, {-1,1}" to
+	"mov_imm".
+	(*cmovsi_insn_uxtw): Likewise.
+
 2015-10-30  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-structalias.c (ipa_pta_execute): Declare variable from as

@@ -1134,7 +1134,7 @@
    ldrh\\t%w0, %1
    strh\\t%w1, %0
    mov\\t%w0, %w1"
-  [(set_attr "type" "neon_from_gp,neon_to_gp,fmov,\
+  [(set_attr "type" "neon_from_gp,neon_to_gp,neon_move,\
                      f_loads,f_stores,load1,store1,mov_reg")
    (set_attr "simd" "yes,yes,yes,*,*,*,*,*")
    (set_attr "fp"   "*,*,*,yes,yes,*,*,*")]
@@ -1197,7 +1197,7 @@
    ldp\\t%0, %H0, %1
    stp\\t%1, %H1, %0
    stp\\txzr, xzr, %0"
-  [(set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,neon_move_q,fconstd,\
+  [(set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,neon_move_q,f_mcr,\
                      f_loadd,f_stored,load2,store2,store2")
    (set_attr "length" "4,8,8,8,4,4,4,4,4,4,4")
    (set_attr "fp" "*,*,yes,yes,*,yes,yes,yes,*,*,*")
@@ -2988,7 +2988,7 @@
    csinc\\t%<w>0, %<w>4, <w>zr, %M1
    mov\\t%<w>0, -1
    mov\\t%<w>0, 1"
-  [(set_attr "type" "csel")]
+  [(set_attr "type" "csel, csel, csel, csel, csel, mov_imm, mov_imm")]
 )
 
 ;; zero_extend version of above
@@ -3011,7 +3011,7 @@
    csinc\\t%w0, %w4, wzr, %M1
    mov\\t%w0, -1
    mov\\t%w0, 1"
-  [(set_attr "type" "csel")]
+  [(set_attr "type" "csel, csel, csel, csel, csel, mov_imm, mov_imm")]
 )
 
 (define_insn "*cmovdi_insn_uxtw"
