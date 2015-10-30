@@ -167,7 +167,9 @@ extern const struct real_format *
   (real_format_for_mode[DECIMAL_FLOAT_MODE_P (MODE)			\
 			? (((MODE) - MIN_MODE_DECIMAL_FLOAT)		\
 			   + (MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1))	\
-			: ((MODE) - MIN_MODE_FLOAT)])
+			: GET_MODE_CLASS (MODE) == MODE_FLOAT		\
+			? ((MODE) - MIN_MODE_FLOAT)			\
+			: (gcc_unreachable (), 0)])
 
 #define FLOAT_MODE_FORMAT(MODE) \
   (REAL_MODE_FORMAT (SCALAR_FLOAT_MODE_P (MODE)? (MODE) \
