@@ -1857,7 +1857,6 @@ pass_cse_sincos::execute (function *fun)
   statistics_counter_event (fun, "sincos statements inserted",
 			    sincos_stats.inserted);
 
-  free_dominance_info (CDI_DOMINATORS);
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
