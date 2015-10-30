@@ -26,8 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "stringpool.h"
-#include "flags.h"
-#include "alias.h"
 #include "varasm.h"
 #include "output.h"
 #include "dwarf2asm.h"

@@ -27,8 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "cfganal.h"
 #include "cfgloop.h"
-#include "fold-const.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "tree-ssa-loop-manip.h"

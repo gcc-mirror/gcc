@@ -36,8 +36,6 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "rtl.h"
-#include "alloc-pool.h"
 #include "timevar.h"
 #include "diagnostic-core.h"
 #include "cfganal.h"

@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "target.h"
 #include "tree.h"
 #include "gimple.h"
 #include "ssa.h"
@@ -32,17 +31,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "fold-const.h"
 #include "calls.h"
-#include "stmt.h"
 #include "stor-layout.h"
 #include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "gimplify.h"
-#include "value-prof.h"
-#include "flags.h"
-#include "demangle.h"
-#include "langhooks.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom

@@ -22,18 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "tm_p.h"
-#include "alias.h"
 #include "dfp.h"
 
 /* The order of the following headers is important for making sure
    decNumber structure is large enough to hold decimal128 digits.  */
 
 #include "decimal128.h"
-#include "decimal128Local.h"
 #include "decimal64.h"
 #include "decimal32.h"
-#include "decNumber.h"
 
 #ifndef WORDS_BIGENDIAN
 #define WORDS_BIGENDIAN 0

@@ -18,9 +18,7 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "tree.h"
-#include "alias.h"
 #include "debug.h"
 
 /* The do-nothing debug hooks.  */

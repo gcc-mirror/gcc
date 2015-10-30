@@ -30,15 +30,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "options.h"
-#include "obstack.h"
 #include "tree.h"
 #include "wide-int-print.h"
 #include "diagnostic-core.h"
-#include "alias.h"
 #include "debug.h"
 #include "stor-layout.h"
-#include "defaults.h"
 
 /* We dump this information from the debug hooks.  This gives us a
    stable and maintainable API to hook into.  In order to work

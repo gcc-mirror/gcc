@@ -21,22 +21,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
 #include "timevar.h"
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "diagnostic-core.h"
-#include "alias.h"
-#include "fold-const.h"
 #include "stmt.h"
 #include "print-tree.h"
-#include "flags.h"
-#include "internal-fn.h"
-#include "tree-inline.h"
 #include "dumpfile.h"
-#include "langhooks.h"
 
 
 /* This file contains the code required to manage the operands cache of the

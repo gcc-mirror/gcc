@@ -32,9 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "recog.h"
-#include "diagnostic-core.h"
-#include "output.h"
-#include "flags.h"
 #include "addresses.h"
 #include "rtl-iter.h"
 

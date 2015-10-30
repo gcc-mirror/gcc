@@ -52,15 +52,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "rtl.h"
-#include "tm_p.h"
-#include "insn-config.h"
-#include "regs.h"
-#include "recog.h"
-#include "flags.h"
 #include "cfganal.h"
 #include "lcm.h"
-#include "dumpfile.h"
 
 /* Edge based LCM routines.  */
 static void compute_antinout_edge (sbitmap *, sbitmap *, sbitmap *, sbitmap *);

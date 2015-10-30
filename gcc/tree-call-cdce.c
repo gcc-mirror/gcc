@@ -22,21 +22,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
 #include "cfghooks.h"
 #include "tree-pass.h"
 #include "ssa.h"
 #include "gimple-pretty-print.h"
-#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
-#include "flags.h"
 
 
 /* Conditional dead call elimination

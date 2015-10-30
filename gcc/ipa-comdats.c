@@ -52,12 +52,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "function.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "tree-pass.h"
 #include "cgraph.h"
-#include "alias.h"
 
 /* Main dataflow loop propagating comdat groups across
    the symbol table.  All references to SYMBOL are examined

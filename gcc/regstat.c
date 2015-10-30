@@ -26,10 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "predict.h"
 #include "df.h"
-#include "tm_p.h"
 #include "regs.h"
-#include "flags.h"
-#include "except.h"
 
 
 struct regstat_n_sets_and_refs_t *regstat_n_sets_and_refs;

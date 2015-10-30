@@ -21,14 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "internal-fn.h"
 
 
 /* Return the expression type to use based on the CODE and type of

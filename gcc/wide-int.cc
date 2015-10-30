@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "alias.h"
-#include "dumpfile.h"
 
 
 #define HOST_BITS_PER_HALF_WIDE_INT 32

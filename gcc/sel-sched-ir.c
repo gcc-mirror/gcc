@@ -25,22 +25,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "rtl.h"
 #include "df.h"
-#include "diagnostic-core.h"
 #include "tm_p.h"
-#include "regs.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "cfgbuild.h"
-#include "flags.h"
 #include "insn-config.h"
 #include "insn-attr.h"
-#include "except.h"
 #include "recog.h"
 #include "params.h"
 #include "target.h"
 #include "sched-int.h"
-#include "langhooks.h"
-#include "rtlhooks-def.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 #ifdef INSN_SCHEDULING

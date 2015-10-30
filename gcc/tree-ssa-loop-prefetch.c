@@ -27,19 +27,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "predict.h"
 #include "tree-pass.h"
-#include "tm_p.h"
 #include "gimple-ssa.h"
-#include "expmed.h"
 #include "optabs-query.h"
-#include "insn-config.h"
-#include "emit-rtl.h"
-#include "recog.h"
 #include "tree-pretty-print.h"
-#include "diagnostic-core.h"
-#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "internal-fn.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
@@ -49,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
 #include "cfgloop.h"
-#include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "params.h"
 #include "langhooks.h"
@@ -59,13 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* FIXME: Needed for optabs, but this should all be moved to a TBD interface
    between the GIMPLE and RTL worlds.  */
-#include "flags.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 
 /* This pass inserts prefetch instructions to optimize cache usage during
    accesses to arrays in loops.  It processes loops sequentially and:

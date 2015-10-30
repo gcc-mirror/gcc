@@ -30,10 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "emit-rtl.h"
 #include "recog.h"
-#include "diagnostic-core.h"
 
 #include "sparseset.h"
-#include "flags.h"
 #include "cfgrtl.h"
 #include "cfgcleanup.h"
 #include "cfgloop.h"

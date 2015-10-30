@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
 #include "predict.h"
@@ -37,20 +36,14 @@ along with GCC; see the file COPYING3.  If not see
 #include <map>
 #include <set>
 
-#include "alias.h"
-#include "fold-const.h"
-#include "flags.h"
 #include "profile.h"
 #include "langhooks.h"
-#include "opts.h"
 #include "cfgloop.h"
 #include "tree-cfg.h"
 #include "tree-cfgcleanup.h"
 #include "tree-into-ssa.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "value-prof.h"
-#include "coverage.h"
 #include "params.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"

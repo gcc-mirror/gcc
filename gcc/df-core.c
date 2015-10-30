@@ -380,15 +380,9 @@ are write-only operations.
 #include "backend.h"
 #include "rtl.h"
 #include "df.h"
-#include "tm_p.h"
-#include "insn-config.h"
-#include "regs.h"
 #include "emit-rtl.h"
-#include "recog.h"
-#include "flags.h"
 #include "cfganal.h"
 #include "tree-pass.h"
-#include "params.h"
 #include "cfgloop.h"
 
 static void *df_get_bb_info (struct dataflow *, unsigned int);

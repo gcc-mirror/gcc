@@ -24,14 +24,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
 #include "cgraph.h"
 #include "data-streamer.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "internal-fn.h"
 
 
 /* Adds a new block to output stream OBS.  */

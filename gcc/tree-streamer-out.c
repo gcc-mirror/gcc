@@ -28,11 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-streamer.h"
 #include "cgraph.h"
-#include "diagnostic.h"
 #include "alias.h"
-#include "fold-const.h"
 #include "stor-layout.h"
-#include "internal-fn.h"
 #include "gomp-constants.h"
 
 

@@ -26,11 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "regs.h"
 #include "emit-rtl.h"
-#include "diagnostic-core.h"
-#include "flags.h"
-#include "output.h"
 #include "resource.h"
-#include "except.h"
 #include "insn-attr.h"
 #include "params.h"
 

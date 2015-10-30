@@ -29,9 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "diagnostic-core.h"
-#include "alias.h"
 #include "varasm.h"
-#include "flags.h"
 #include "output.h"
 #include "debug.h"
 
