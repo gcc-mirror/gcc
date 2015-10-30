@@ -22,21 +22,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
 #include "tree-pass.h"
-#include "tm_p.h"
 #include "ssa.h"
 #include "gimple-pretty-print.h"
-#include "alias.h"
 #include "fold-const.h"
-#include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
-#include "langhooks.h"
-#include "flags.h"
 
 /* This pass propagates indirect loads through the PHI node for its
    address to make the load source possibly non-addressable and to

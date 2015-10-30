@@ -28,16 +28,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "cgraph.h"
 #include "lto-streamer.h"
-#include "diagnostic-core.h"
-#include "alias.h"
-#include "fold-const.h"
 #include "varasm.h"
-#include "langhooks.h"
 #include "debug.h"
 #include "output.h"
-#include "flags.h"
-#include "context.h"
-#include "omp-low.h"
 
 const char * const tls_model_names[]={"none", "emulated",
 				      "global-dynamic", "local-dynamic",

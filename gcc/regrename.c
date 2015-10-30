@@ -29,12 +29,8 @@
 #include "regs.h"
 #include "emit-rtl.h"
 #include "recog.h"
-#include "rtl-error.h"
 #include "addresses.h"
 #include "cfganal.h"
-#include "reload.h"
-#include "output.h"
-#include "flags.h"
 #include "tree-pass.h"
 #include "regrename.h"
 

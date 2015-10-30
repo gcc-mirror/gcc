@@ -40,22 +40,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
 #include "tree-pass.h"
 #include "cgraph.h"
 #include "data-streamer.h"
-#include "diagnostic.h"
-#include "alias.h"
-#include "fold-const.h"
 #include "calls.h"
-#include "internal-fn.h"
-#include "tree-inline.h"
 #include "splay-tree.h"
 #include "ipa-utils.h"
 #include "ipa-reference.h"
-#include "flags.h"
 
 static void remove_node_data (struct cgraph_node *node,
 			      void *data ATTRIBUTE_UNUSED);

@@ -25,9 +25,6 @@
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
-#include "tm_p.h"
-#include "diagnostic-core.h"
-#include "alias.h"
 #include "realmpfr.h"
 #include "dfp.h"
 

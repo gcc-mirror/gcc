@@ -28,13 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "cgraph.h"
 #include "lto-streamer.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "internal-fn.h"
-#include "flags.h"
 #include "opts.h"
-#include "common/common-target.h"
-#include "lto-section-names.h"
 #include "toplev.h"
 
 /* Append the option piece OPT to the COLLECT_GCC_OPTIONS string

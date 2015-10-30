@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "tree.h"
-#include "alias.h"
 #include "version.h"
 #include "flags.h"
 #include "cpp-id-data.h"

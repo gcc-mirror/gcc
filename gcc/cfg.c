@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cfghooks.h"
 #include "df.h"
-#include "alias.h"
 #include "cfganal.h"
 #include "cfgloop.h" /* FIXME: For struct loop.  */
 #include "dumpfile.h"

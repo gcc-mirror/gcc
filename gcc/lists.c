@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
-#include "diagnostic-core.h"
 
 static void free_list (rtx *, rtx *);
 

@@ -77,12 +77,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "function.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple-expr.h"
 #include "tree-pass.h"
 #include "cgraph.h"
-#include "alias.h"
 #include "calls.h"
 #include "varasm.h"
 

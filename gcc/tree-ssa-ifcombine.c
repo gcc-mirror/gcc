@@ -32,11 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 /* rtl is needed only because arm back-end requires it for
    BRANCH_COST.  */
-#include "alias.h"
 #include "fold-const.h"
-#include "stor-layout.h"
 #include "cfganal.h"
-#include "internal-fn.h"
 #include "gimple-fold.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"

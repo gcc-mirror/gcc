@@ -29,9 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "cfganal.h"
 #include "cfgloop.h"
-#include "flags.h"
-#include "fold-const.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "dumpfile.h"
 

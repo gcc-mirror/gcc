@@ -26,22 +26,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "predict.h"
-#include "tm_p.h"
-#include "expmed.h"
 #include "optabs.h"
-#include "regs.h"
 #include "emit-rtl.h"
 #include "recog.h"
 #include "diagnostic-core.h"
-#include "alias.h"
-#include "fold-const.h"
 #include "varasm.h"
 #include "flags.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "stmt.h"
-#include "expr.h"
 
 /* Simplification and canonicalization of RTL.  */
 

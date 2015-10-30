@@ -30,8 +30,6 @@
 #include "recog.h"
 #include "diagnostic-core.h"
 #include "addresses.h"
-#include "reload.h"
-#include "flags.h"
 #include "tree-pass.h"
 #include "rtl-iter.h"
 

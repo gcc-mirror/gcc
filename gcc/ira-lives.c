@@ -31,12 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "ira.h"
 #include "ira-int.h"
-#include "diagnostic-core.h"
-#include "flags.h"
-#include "except.h"
-#include "params.h"
 #include "sparseset.h"
-#include "cfgloop.h"
 
 /* The code in this file is similar to one in global but the code
    works on the allocno basis and creates live ranges instead of

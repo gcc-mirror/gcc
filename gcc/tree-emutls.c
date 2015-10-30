@@ -27,15 +27,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "ssa.h"
 #include "cgraph.h"
-#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "langhooks.h"
-#include "targhooks.h"
 #include "tree-iterator.h"
 
 /* Whenever a target does not support thread-local storage (TLS) natively,

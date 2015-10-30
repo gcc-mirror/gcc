@@ -22,12 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
-#include "function.h"
 #include "tree.h"
 #include "cgraph.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "ipa-utils.h"
 
 /* Remove reference.  */
 

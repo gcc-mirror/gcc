@@ -23,19 +23,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
 #include "cfghooks.h"
 #include "tree-pass.h"
 #include "ssa.h"
-#include "gimple-pretty-print.h"
-#include "diagnostic-core.h"
-#include "dumpfile.h"
-#include "alias.h"
 #include "fold-const.h"
 #include "cfganal.h"
-#include "internal-fn.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
@@ -46,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
-#include "langhooks.h"
 
 /*************************************************************************
   Simple Loop Peeling Utilities

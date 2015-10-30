@@ -23,14 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "hard-reg-set.h"
 #include "cfghooks.h"
 #include "pretty-print.h"
 #include "diagnostic-core.h" /* for fatal_error */
 #include "cfganal.h"
 #include "cfgloop.h"
 #include "graph.h"
-#include "dumpfile.h"
 
 /* DOT files with the .dot extension are recognized as document templates
    by a well-known piece of word processing software out of Redmond, WA.

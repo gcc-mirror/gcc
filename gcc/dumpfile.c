@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "diagnostic-core.h"
 #include "dumpfile.h"
-#include "alias.h"
 #include "context.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of

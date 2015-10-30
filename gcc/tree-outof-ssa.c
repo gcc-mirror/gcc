@@ -27,17 +27,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "cfghooks.h"
 #include "ssa.h"
-#include "expmed.h"
-#include "insn-config.h"
 #include "emit-rtl.h"
 #include "gimple-pretty-print.h"
 #include "diagnostic-core.h"
-#include "alias.h"
-#include "fold-const.h"
 #include "stor-layout.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
-#include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
@@ -49,12 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* FIXME: A lot of code here deals with expanding to RTL.  All that code
    should be in cfgexpand.c.  */
-#include "flags.h"
-#include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
 
 /* Return TRUE if expression STMT is suitable for replacement.  */

@@ -25,17 +25,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "predict.h"
-#include "df.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
 #include "ira.h"
 #include "ira-int.h"
-#include "diagnostic-core.h"
-#include "flags.h"
 #include "params.h"
 #include "sparseset.h"
-#include "cfgloop.h"
 #include "addresses.h"
 
 /* This file contains code responsible for allocno conflict creation,

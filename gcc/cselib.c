@@ -26,16 +26,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "df.h"
 #include "tm_p.h"
-#include "insn-config.h"
 #include "regs.h"
 #include "emit-rtl.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "alias.h"
-#include "flags.h"
 #include "dumpfile.h"
 #include "cselib.h"
-#include "valtrack.h"
 #include "params.h"
 
 /* A list of cselib_val structures.  */

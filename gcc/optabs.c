@@ -35,19 +35,13 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Include insn-config.h before expr.h so that HAVE_conditional_move
    is properly defined.  */
-#include "alias.h"
-#include "tree-hasher.h"
 #include "stor-layout.h"
-#include "flags.h"
 #include "except.h"
 #include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "stmt.h"
 #include "expr.h"
 #include "optabs-tree.h"
 #include "libfuncs.h"
-#include "reload.h"
 
 static void prepare_float_lib_cmp (rtx, rtx, enum rtx_code, rtx *,
 				   machine_mode *);

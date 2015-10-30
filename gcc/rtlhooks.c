@@ -24,19 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "rtl.h"
 #include "tree.h"
-#include "expmed.h"
 #include "insn-config.h"
 #include "emit-rtl.h"
 #include "recog.h"
 #include "rtlhooks-def.h"
-#include "flags.h"
-#include "alias.h"
-#include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 
 
 /* For speed, we will copy the RTX hooks struct member-by-member

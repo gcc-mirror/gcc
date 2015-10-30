@@ -21,19 +21,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
 #include "tree-pass.h"
 #include "ssa.h"
 #include "tree-pretty-print.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
-#include "langhooks.h"
-#include "flags.h"	/* For "optimize" in gate_pass_return_slot.  */
 
 /* This file implements return value optimizations for functions which
    return aggregate types.
