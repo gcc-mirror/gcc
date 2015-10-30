@@ -49,6 +49,7 @@ LIST = aarch64-elf aarch64-linux-gnu \
   msp430-elf \
   nds32le-elf nds32be-elf \
   nios2-elf nios2-linux-gnu nios2-rtems \
+  nvptx-none \
   pdp11-aout \
   powerpc-darwin8 \
   powerpc-darwin7 powerpc64-darwin powerpc-freebsd6 powerpc-netbsd \

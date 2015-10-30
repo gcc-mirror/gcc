@@ -1,3 +1,7 @@
+2015-10-30  Nathan Sidwell  <nathan@acm.org>
+
+	* config-list.mk (nvptx-none): Add it.
+
 2015-09-11  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* download_prerequisites: Make sure that script is run from
