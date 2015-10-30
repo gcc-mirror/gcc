@@ -1729,13 +1729,19 @@ tree
 build_vector_from_ctor (tree type, vec<constructor_elt, va_gc> *v)
 {
   tree *vec = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (type));
-  unsigned HOST_WIDE_INT idx;
+  unsigned HOST_WIDE_INT idx, pos = 0;
   tree value;
 
   FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
-    vec[idx] = value;
+    {
+      if (TREE_CODE (value) == VECTOR_CST)
+	for (unsigned i = 0; i < VECTOR_CST_NELTS (value); ++i)
+	  vec[pos++] = VECTOR_CST_ELT (value, i);
+      else
+	vec[pos++] = value;
+    }
   for (; idx < TYPE_VECTOR_SUBPARTS (type); ++idx)
-    vec[idx] = build_zero_cst (TREE_TYPE (type));
+    vec[pos++] = build_zero_cst (TREE_TYPE (type));
 
   return build_vector (type, vec);
 }
