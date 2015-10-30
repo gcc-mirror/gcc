@@ -1,3 +1,9 @@
+2015-10-30  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* tree-sra.c (scalarizable_type_p): Comment variable-length arrays.
+	(completely_scalarize): Comment zero-length arrays.
+	(get_access_replacement): Correct comment re. precondition.
+
 2015-10-30  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* config/i386/i386.c (get_builtin_code_for_version): Set priority

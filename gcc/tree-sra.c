@@ -956,6 +956,7 @@ scalarizable_type_p (tree type)
 	;
       else if ((tree_to_shwi (TYPE_SIZE (type)) <= 0)
 	       || !tree_fits_shwi_p (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+	/* Variable-length array, do not allow scalarization.  */
 	return false;
 
       tree elem = TREE_TYPE (type);
@@ -1005,6 +1006,7 @@ completely_scalarize (tree base, tree decl_type, HOST_WIDE_INT offset, tree ref)
 	tree minidx = TYPE_MIN_VALUE (TYPE_DOMAIN (decl_type));
 	gcc_assert (TREE_CODE (minidx) == INTEGER_CST);
 	tree maxidx = TYPE_MAX_VALUE (TYPE_DOMAIN (decl_type));
+	/* Skip (some) zero-length arrays; others have MAXIDX == MINIDX - 1.  */
 	if (maxidx)
 	  {
 	    gcc_assert (TREE_CODE (maxidx) == INTEGER_CST);
@@ -2146,7 +2148,7 @@ create_access_replacement (struct access *access)
   return repl;
 }
 
-/* Return ACCESS scalar replacement, create it if it does not exist yet.  */
+/* Return ACCESS scalar replacement, which must exist.  */
 
 static inline tree
 get_access_replacement (struct access *access)
