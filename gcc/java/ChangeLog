@@ -1,3 +1,8 @@
+2015-10-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* jcf-parse.c (get_constant): Use real_from_target rather than
+	real_from_target_fmt.
+
 2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* boehm.c: Reorder #include's and remove duplicates.

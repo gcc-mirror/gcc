@@ -1266,11 +1266,11 @@ real_identical (const REAL_VALUE_TYPE *a, const REAL_VALUE_TYPE *b)
   return true;
 }
 
-/* Try to change R into its exact multiplicative inverse in machine
-   mode MODE.  Return true if successful.  */
+/* Try to change R into its exact multiplicative inverse in format FMT.
+   Return true if successful.  */
 
 bool
-exact_real_inverse (machine_mode mode, REAL_VALUE_TYPE *r)
+exact_real_inverse (format_helper fmt, REAL_VALUE_TYPE *r)
 {
   const REAL_VALUE_TYPE *one = real_digit (1);
   REAL_VALUE_TYPE u;
@@ -1286,9 +1286,9 @@ exact_real_inverse (machine_mode mode, REAL_VALUE_TYPE *r)
   if (r->sig[SIGSZ-1] != SIG_MSB)
     return false;
 
-  /* Find the inverse and truncate to the required mode.  */
+  /* Find the inverse and truncate to the required format.  */
   do_divide (&u, one, r);
-  real_convert (&u, mode, &u);
+  real_convert (&u, fmt, &u);
 
   /* The rounding may have overflowed.  */
   if (u.cl != rvc_normal)
@@ -2104,35 +2104,36 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 /* Legacy.  Similar, but return the result directly.  */
 
 REAL_VALUE_TYPE
-real_from_string2 (const char *s, machine_mode mode)
+real_from_string2 (const char *s, format_helper fmt)
 {
   REAL_VALUE_TYPE r;
 
   real_from_string (&r, s);
-  if (mode != VOIDmode)
-    real_convert (&r, mode, &r);
+  if (fmt)
+    real_convert (&r, fmt, &r);
 
   return r;
 }
 
-/* Initialize R from string S and desired MODE. */
+/* Initialize R from string S and desired format FMT. */
 
 void
-real_from_string3 (REAL_VALUE_TYPE *r, const char *s, machine_mode mode)
+real_from_string3 (REAL_VALUE_TYPE *r, const char *s, format_helper fmt)
 {
-  if (DECIMAL_FLOAT_MODE_P (mode))
+  if (fmt.decimal_p ())
     decimal_real_from_string (r, s);
   else
     real_from_string (r, s);
 
-  if (mode != VOIDmode)
-    real_convert (r, mode, r);
+  if (fmt)
+    real_convert (r, fmt, r);
 }
 
-/* Initialize R from the wide_int VAL_IN.  The MODE is not VOIDmode,*/
+/* Initialize R from the wide_int VAL_IN.  Round it to format FMT if
+   FMT is nonnull.  */
 
 void
-real_from_integer (REAL_VALUE_TYPE *r, machine_mode mode,
+real_from_integer (REAL_VALUE_TYPE *r, format_helper fmt,
 		   const wide_int_ref &val_in, signop sgn)
 {
   if (val_in == 0)
@@ -2216,10 +2217,10 @@ real_from_integer (REAL_VALUE_TYPE *r, machine_mode mode,
       normalize (r);
     }
 
-  if (DECIMAL_FLOAT_MODE_P (mode))
+  if (fmt.decimal_p ())
     decimal_from_integer (r);
-  else if (mode != VOIDmode)
-    real_convert (r, mode, r);
+  else if (fmt)
+    real_convert (r, fmt, r);
 }
 
 /* Render R, an integral value, as a floating point constant with no
@@ -2448,13 +2449,8 @@ real_inf (REAL_VALUE_TYPE *r)
 
 bool
 real_nan (REAL_VALUE_TYPE *r, const char *str, int quiet,
-	  machine_mode mode)
+	  format_helper fmt)
 {
-  const struct real_format *fmt;
-
-  fmt = REAL_MODE_FORMAT (mode);
-  gcc_assert (fmt);
-
   if (*str == 0)
     {
       if (quiet)
@@ -2574,7 +2570,7 @@ real_maxval (REAL_VALUE_TYPE *r, int sign, machine_mode mode)
 /* Fills R with 2**N.  */
 
 void
-real_2expN (REAL_VALUE_TYPE *r, int n, machine_mode fmode)
+real_2expN (REAL_VALUE_TYPE *r, int n, format_helper fmt)
 {
   memset (r, 0, sizeof (*r));
 
@@ -2589,8 +2585,8 @@ real_2expN (REAL_VALUE_TYPE *r, int n, machine_mode fmode)
       SET_REAL_EXP (r, n);
       r->sig[SIGSZ-1] = SIG_MSB;
     }
-  if (DECIMAL_FLOAT_MODE_P (fmode))
-    decimal_real_convert (r, fmode, r);
+  if (fmt.decimal_p ())
+    decimal_real_convert (r, fmt, r);
 }
 
 
@@ -2612,7 +2608,7 @@ round_for_format (const struct real_format *fmt, REAL_VALUE_TYPE *r)
 	 (e.g. -O0 on '_Decimal32 x = 1.0 + 2.0dd'), but have not
 	 investigated whether this convert needs to be here, or
 	 something else is missing. */
-      decimal_real_convert (r, DFmode, r);
+      decimal_real_convert (r, REAL_MODE_FORMAT (DFmode), r);
     }
 
   p2 = fmt->p;
@@ -2718,21 +2714,16 @@ round_for_format (const struct real_format *fmt, REAL_VALUE_TYPE *r)
   clear_significand_below (r, np2);
 }
 
-/* Extend or truncate to a new mode.  */
+/* Extend or truncate to a new format.  */
 
 void
-real_convert (REAL_VALUE_TYPE *r, machine_mode mode,
+real_convert (REAL_VALUE_TYPE *r, format_helper fmt,
 	      const REAL_VALUE_TYPE *a)
 {
-  const struct real_format *fmt;
-
-  fmt = REAL_MODE_FORMAT (mode);
-  gcc_assert (fmt);
-
   *r = *a;
 
   if (a->decimal || fmt->b == 10)
-    decimal_real_convert (r, mode, a);
+    decimal_real_convert (r, fmt, a);
 
   round_for_format (fmt, r);
 
@@ -2744,32 +2735,28 @@ real_convert (REAL_VALUE_TYPE *r, machine_mode mode,
 /* Legacy.  Likewise, except return the struct directly.  */
 
 REAL_VALUE_TYPE
-real_value_truncate (machine_mode mode, REAL_VALUE_TYPE a)
+real_value_truncate (format_helper fmt, REAL_VALUE_TYPE a)
 {
   REAL_VALUE_TYPE r;
-  real_convert (&r, mode, &a);
+  real_convert (&r, fmt, &a);
   return r;
 }
 
-/* Return true if truncating to MODE is exact.  */
+/* Return true if truncating to FMT is exact.  */
 
 bool
-exact_real_truncate (machine_mode mode, const REAL_VALUE_TYPE *a)
+exact_real_truncate (format_helper fmt, const REAL_VALUE_TYPE *a)
 {
-  const struct real_format *fmt;
   REAL_VALUE_TYPE t;
   int emin2m1;
-
-  fmt = REAL_MODE_FORMAT (mode);
-  gcc_assert (fmt);
 
   /* Don't allow conversion to denormals.  */
   emin2m1 = fmt->emin - 1;
   if (REAL_EXP (a) <= emin2m1)
     return false;
 
-  /* After conversion to the new mode, the value must be identical.  */
-  real_convert (&t, mode, a);
+  /* After conversion to the new format, the value must be identical.  */
+  real_convert (&t, fmt, a);
   return real_identical (&t, a);
 }
 
@@ -2780,8 +2767,8 @@ exact_real_truncate (machine_mode mode, const REAL_VALUE_TYPE *a)
    Legacy: return word 0 for implementing REAL_VALUE_TO_TARGET_SINGLE.  */
 
 long
-real_to_target_fmt (long *buf, const REAL_VALUE_TYPE *r_orig,
-		    const struct real_format *fmt)
+real_to_target (long *buf, const REAL_VALUE_TYPE *r_orig,
+		format_helper fmt)
 {
   REAL_VALUE_TYPE r;
   long buf1;
@@ -2796,62 +2783,32 @@ real_to_target_fmt (long *buf, const REAL_VALUE_TYPE *r_orig,
   return *buf;
 }
 
-/* Similar, but look up the format from MODE.  */
-
-long
-real_to_target (long *buf, const REAL_VALUE_TYPE *r, machine_mode mode)
-{
-  const struct real_format *fmt;
-
-  fmt = REAL_MODE_FORMAT (mode);
-  gcc_assert (fmt);
-
-  return real_to_target_fmt (buf, r, fmt);
-}
-
 /* Read R from the given target format.  Read the words of the result
    in target word order in BUF.  There are always 32 bits in each
    long, no matter the size of the host long.  */
 
 void
-real_from_target_fmt (REAL_VALUE_TYPE *r, const long *buf,
-		      const struct real_format *fmt)
+real_from_target (REAL_VALUE_TYPE *r, const long *buf, format_helper fmt)
 {
-  (*fmt->decode) (fmt, r, buf);
-}
-
-/* Similar, but look up the format from MODE.  */
-
-void
-real_from_target (REAL_VALUE_TYPE *r, const long *buf, machine_mode mode)
-{
-  const struct real_format *fmt;
-
-  fmt = REAL_MODE_FORMAT (mode);
-  gcc_assert (fmt);
-
   (*fmt->decode) (fmt, r, buf);
 }
 
 /* Return the number of bits of the largest binary value that the
-   significand of MODE will hold.  */
+   significand of FMT will hold.  */
 /* ??? Legacy.  Should get access to real_format directly.  */
 
 int
-significand_size (machine_mode mode)
+significand_size (format_helper fmt)
 {
-  const struct real_format *fmt;
-
-  fmt = REAL_MODE_FORMAT (mode);
   if (fmt == NULL)
     return 0;
 
   if (fmt->b == 10)
     {
       /* Return the size in bits of the largest binary value that can be
-	 held by the decimal coefficient for this mode.  This is one more
+	 held by the decimal coefficient for this format.  This is one more
 	 than the number of bits required to hold the largest coefficient
-	 of this mode.  */
+	 of this format.  */
       double log2_10 = 3.3219281;
       return fmt->p * log2_10;
     }
@@ -4861,14 +4818,14 @@ const struct real_format real_internal_format =
     "real_internal"
   };
 
-/* Calculate X raised to the integer exponent N in mode MODE and store
+/* Calculate X raised to the integer exponent N in format FMT and store
    the result in R.  Return true if the result may be inexact due to
    loss of precision.  The algorithm is the classic "left-to-right binary
    method" described in section 4.6.3 of Donald Knuth's "Seminumerical
    Algorithms", "The Art of Computer Programming", Volume 2.  */
 
 bool
-real_powi (REAL_VALUE_TYPE *r, machine_mode mode,
+real_powi (REAL_VALUE_TYPE *r, format_helper fmt,
 	   const REAL_VALUE_TYPE *x, HOST_WIDE_INT n)
 {
   unsigned HOST_WIDE_INT bit;
@@ -4910,27 +4867,27 @@ real_powi (REAL_VALUE_TYPE *r, machine_mode mode,
   if (neg)
     inexact |= do_divide (&t, &dconst1, &t);
 
-  real_convert (r, mode, &t);
+  real_convert (r, fmt, &t);
   return inexact;
 }
 
 /* Round X to the nearest integer not larger in absolute value, i.e.
-   towards zero, placing the result in R in mode MODE.  */
+   towards zero, placing the result in R in format FMT.  */
 
 void
-real_trunc (REAL_VALUE_TYPE *r, machine_mode mode,
+real_trunc (REAL_VALUE_TYPE *r, format_helper fmt,
 	    const REAL_VALUE_TYPE *x)
 {
   do_fix_trunc (r, x);
-  if (mode != VOIDmode)
-    real_convert (r, mode, r);
+  if (fmt)
+    real_convert (r, fmt, r);
 }
 
 /* Round X to the largest integer not greater in value, i.e. round
-   down, placing the result in R in mode MODE.  */
+   down, placing the result in R in format FMT.  */
 
 void
-real_floor (REAL_VALUE_TYPE *r, machine_mode mode,
+real_floor (REAL_VALUE_TYPE *r, format_helper fmt,
 	    const REAL_VALUE_TYPE *x)
 {
   REAL_VALUE_TYPE t;
@@ -4938,17 +4895,17 @@ real_floor (REAL_VALUE_TYPE *r, machine_mode mode,
   do_fix_trunc (&t, x);
   if (! real_identical (&t, x) && x->sign)
     do_add (&t, &t, &dconstm1, 0);
-  if (mode != VOIDmode)
-    real_convert (r, mode, &t);
+  if (fmt)
+    real_convert (r, fmt, &t);
   else
     *r = t;
 }
 
 /* Round X to the smallest integer not less then argument, i.e. round
-   up, placing the result in R in mode MODE.  */
+   up, placing the result in R in format FMT.  */
 
 void
-real_ceil (REAL_VALUE_TYPE *r, machine_mode mode,
+real_ceil (REAL_VALUE_TYPE *r, format_helper fmt,
 	   const REAL_VALUE_TYPE *x)
 {
   REAL_VALUE_TYPE t;
@@ -4956,8 +4913,8 @@ real_ceil (REAL_VALUE_TYPE *r, machine_mode mode,
   do_fix_trunc (&t, x);
   if (! real_identical (&t, x) && ! x->sign)
     do_add (&t, &t, &dconst1, 0);
-  if (mode != VOIDmode)
-    real_convert (r, mode, &t);
+  if (fmt)
+    real_convert (r, fmt, &t);
   else
     *r = t;
 }
@@ -4966,13 +4923,13 @@ real_ceil (REAL_VALUE_TYPE *r, machine_mode mode,
    zero.  */
 
 void
-real_round (REAL_VALUE_TYPE *r, machine_mode mode,
+real_round (REAL_VALUE_TYPE *r, format_helper fmt,
 	    const REAL_VALUE_TYPE *x)
 {
   do_add (r, x, &dconsthalf, x->sign);
   do_fix_trunc (r, r);
-  if (mode != VOIDmode)
-    real_convert (r, mode, r);
+  if (fmt)
+    real_convert (r, fmt, r);
 }
 
 /* Set the sign of R to the sign of X.  */
@@ -4986,11 +4943,11 @@ real_copysign (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *x)
 /* Check whether the real constant value given is an integer.  */
 
 bool
-real_isinteger (const REAL_VALUE_TYPE *c, machine_mode mode)
+real_isinteger (const REAL_VALUE_TYPE *c, format_helper fmt)
 {
   REAL_VALUE_TYPE cint;
 
-  real_trunc (&cint, mode, c);
+  real_trunc (&cint, fmt, c);
   return real_identical (c, &cint);
 }
 

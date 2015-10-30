@@ -1058,7 +1058,7 @@ get_constant (JCF *jcf, int index)
 	long buf = num;
 	REAL_VALUE_TYPE d;
 
-	real_from_target_fmt (&d, &buf, &ieee_single_format);
+	real_from_target (&d, &buf, &ieee_single_format);
 	value = build_real (float_type_node, d);
 	break;
       }
@@ -1076,7 +1076,7 @@ get_constant (JCF *jcf, int index)
 	else
 	  buf[0] = lo, buf[1] = hi;
 
-	real_from_target_fmt (&d, buf, &ieee_double_format);
+	real_from_target (&d, buf, &ieee_double_format);
 	value = build_real (double_type_node, d);
 	break;
       }

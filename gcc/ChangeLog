@@ -1,5 +1,26 @@
 2015-10-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* real.h (format_helper): New.
+	(real_convert, exact_real_truncate, real_from_string3, real_to_target)
+	(real_from_target, real_nan, real_2expN, real_value_truncate)
+	(significand_size, real_from_string2, exact_real_inverse)
+	(exact_real_inverse, real_powi, real_trunc, real_floor, real_ceil)
+	(real_round, real_isinteger, real_from_integer): Replace
+	machine_mode arguments with format_helper arguments.
+	* real.c (exact_real_inverse, real_from_string2, real_from_string3)
+	(real_from_integer, real_nan, real_2expN, real_convert)
+	(real_value_truncate, exact_real_truncate, real_to_target)
+	(real_from_target, significand_size, real_powi, real_trunc)
+	(real_floor, real_ceil, real_round, real_isinteger): Replace
+	machine_mode arguments with format_helper arguments.
+	(real_to_target_fmt, real_from_target_fmt): Delete.
+	* dfp.h (decimal_real_convert): Replace mode argument with real_format.
+	* dfp.c (decimal_to_binary, decimal_real_convert): Replace mode
+	argument with real_format.
+	* builtins.c (do_real_to_int_conversion): Update type of fn argument.
+
+2015-10-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* fixed-value.c (check_real_for_fixed_mode, fixed_from_string)
 	(fixed_to_decimal, fixed_convert_from_real)
 	(real_convert_from_fixed): Fix mode arguments to real_2expN.
