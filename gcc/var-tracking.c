@@ -664,7 +664,6 @@ static bool variable_different_p (variable *, variable *);
 static bool dataflow_set_different (dataflow_set *, dataflow_set *);
 static void dataflow_set_destroy (dataflow_set *);
 
-static bool contains_symbol_ref (rtx);
 static bool track_expr_p (tree, bool);
 static bool same_variable_part_p (rtx, tree, HOST_WIDE_INT);
 static void add_uses_1 (rtx *, void *);
@@ -5021,42 +5020,6 @@ dataflow_set_destroy (dataflow_set *set)
   set->vars = NULL;
 }
 
-/* Return true if RTL X contains a SYMBOL_REF.  */
-
-static bool
-contains_symbol_ref (rtx x)
-{
-  const char *fmt;
-  RTX_CODE code;
-  int i;
-
-  if (!x)
-    return false;
-
-  code = GET_CODE (x);
-  if (code == SYMBOL_REF)
-    return true;
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if (contains_symbol_ref (XEXP (x, i)))
-	    return true;
-	}
-      else if (fmt[i] == 'E')
-	{
-	  int j;
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    if (contains_symbol_ref (XVECEXP (x, i, j)))
-	      return true;
-	}
-    }
-
-  return false;
-}
-
 /* Shall EXPR be tracked?  */
 
 static bool
@@ -5137,7 +5100,7 @@ track_expr_p (tree expr, bool need_rtl)
      char **_dl_argv;
   */
   if (decl_rtl && MEM_P (decl_rtl)
-      && contains_symbol_ref (XEXP (decl_rtl, 0)))
+      && contains_symbol_ref_p (XEXP (decl_rtl, 0)))
     return 0;
 
   /* If RTX is a memory it should not be very large (because it would be

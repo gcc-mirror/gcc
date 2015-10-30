@@ -829,6 +829,9 @@ struct GTY(()) rtvec_def {
 /* Predicate yielding nonzero iff RTX is a subreg.  */
 #define SUBREG_P(RTX) (GET_CODE (RTX) == SUBREG)
 
+/* Predicate yielding true iff RTX is a symbol ref.  */
+#define SYMBOL_REF_P(RTX) (GET_CODE (RTX) == SYMBOL_REF)
+
 template <>
 template <>
 inline bool
@@ -2926,6 +2929,7 @@ extern void set_insn_deleted (rtx);
 /* Functions in rtlanal.c */
 
 extern rtx single_set_2 (const rtx_insn *, const_rtx);
+extern bool contains_symbol_ref_p (const_rtx);
 
 /* Handle the cheap and common cases inline for performance.  */
 

@@ -1,3 +1,13 @@
+2015-10-30  Anatoly Sokolov  <aesok@post.ru>
+
+	* rtl.h (contains_symbol_ref_p): Declare.
+	(SYMBOL_REF_P): Define.
+	* rtlanal.c (contains_symbol_ref_p: New function.
+	* lra-constraints.c (contains_symbol_ref_p): Remove.
+	* var-tracking.c (contains_symbol_ref): Remove.
+	(track_expr_p): Use contains_symbol_ref_p instead of
+	contains_symbol_ref.
+
 2015-10-30  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gimple-fold.c (fold_array_ctor_reference): Move searching code to:
