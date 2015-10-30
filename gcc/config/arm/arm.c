@@ -11610,9 +11610,7 @@ cortex_a9_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost
 		       case. However this gets modeled as an true
 		       dependency and hence all these checks.  */
 		    if (REG_P (SET_DEST (PATTERN (insn)))
-			&& REG_P (SET_DEST (PATTERN (dep)))
-			&& reg_overlap_mentioned_p (SET_DEST (PATTERN (insn)),
-						    SET_DEST (PATTERN (dep))))
+			&& reg_set_p (SET_DEST (PATTERN (insn)), dep))
 		      {
 			/* FMACS is a special case where the dependent
 			   instruction can be issued 3 cycles before
