@@ -1,5 +1,11 @@
 2015-10-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* fixed-value.c (check_real_for_fixed_mode, fixed_from_string)
+	(fixed_to_decimal, fixed_convert_from_real)
+	(real_convert_from_fixed): Fix mode arguments to real_2expN.
+
+2015-10-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* real.h (REAL_MODE_FORMAT): Abort if the mode isn't a
 	SCALAR_FLOAT_MODE_P.
 
