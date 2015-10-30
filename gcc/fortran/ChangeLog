@@ -1,3 +1,9 @@
+2015-10-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/51993
+	* decl.c (gfc_set_constant_character_len): Convert gcc_assert into an
+	if-statement causing an early return leads to valid error message.
+
 2015-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/36192

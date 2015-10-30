@@ -1293,7 +1293,9 @@ gfc_set_constant_character_len (int len, gfc_expr *expr, int check_len)
   int slen;
 
   gcc_assert (expr->expr_type == EXPR_CONSTANT);
-  gcc_assert (expr->ts.type == BT_CHARACTER);
+
+  if (expr->ts.type != BT_CHARACTER)
+    return;
 
   slen = expr->value.character.length;
   if (len != slen)
