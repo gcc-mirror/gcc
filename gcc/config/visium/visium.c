@@ -1338,7 +1338,7 @@ visium_setup_incoming_varargs (cumulative_args_t pcum_v,
   local_args_so_far.p = &local_copy;
   locargs = get_cumulative_args (pcum_v);
 
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
   local_args_so_far.magic = CUMULATIVE_ARGS_MAGIC;
 #endif
 

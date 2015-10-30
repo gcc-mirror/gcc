@@ -3792,8 +3792,7 @@ hwloop_optimize (hwloop_info loop)
       edge e;
       edge_iterator ei;
 
-#ifdef ENABLE_CHECKING
-      if (loop->head != loop->incoming_dest)
+      if (flag_checking && loop->head != loop->incoming_dest)
 	{
 	  /* We aren't entering the loop at the top.  Since we've established
 	     that the loop is entered only at one point, this means there
@@ -3803,7 +3802,6 @@ hwloop_optimize (hwloop_info loop)
 	  FOR_EACH_EDGE (e, ei, loop->head->preds)
 	    gcc_assert (!(e->flags & EDGE_FALLTHRU));
 	}
-#endif
 
       emit_insn_before (seq, BB_HEAD (loop->head));
       seq = emit_label_before (gen_label_rtx (), seq);

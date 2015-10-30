@@ -1,3 +1,19 @@
+2015-10-29  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* config/alpha/alpha.c (alpha_function_arg): Use gcc_checking_assert,
+	flag_checking and/or CHECKING_P to eliminate conditional compilation
+	on ENABLE_CHECKING.
+	* config/arm/arm.c (arm_unwind_emit_sequence): Likewise.
+	* config/bfin/bfin.c (hwloop_optimize): Likewise.
+	* config/i386/i386.c (ix86_print_operand_address): Likewise.
+	(output_387_binary_op): Likewise.
+	* config/ia64/ia64.c (ia64_sched_init, bundling): Likewise.
+	* config/m68k/m68k.c (m68k_sched_md_init_global): Likewise.
+	* config/rs6000/rs6000.c (htm_expand_builtin, rs6000_emit_prologue):
+	Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/visium/visium.c (visium_setup_incoming_varargs): Likewise.
+
 2015-10-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.opt (mfdpic): Add missing period.
