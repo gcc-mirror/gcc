@@ -1,5 +1,11 @@
 2015-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/51993
+	* decl.c (gfc_set_constant_character_len): Convert gcc_assert into an
+	if-statement causing an early return leads to valid error message.
+
+2015-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/68154
 	* decl.c (add_init_expr_to_sym): if the char length in the typespec
 	is NULL, check for and use a constructor. 
