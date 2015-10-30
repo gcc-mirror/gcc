@@ -1204,7 +1204,8 @@ reg_set_between_p (const_rtx reg, const rtx_insn *from_insn,
   return 0;
 }
 
-/* Internals of reg_set_between_p.  */
+/* Return true if REG is set or clobbered inside INSN.  */
+
 int
 reg_set_p (const_rtx reg, const_rtx insn)
 {
