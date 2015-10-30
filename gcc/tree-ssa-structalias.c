@@ -7284,7 +7284,7 @@ ipa_pta_execute (void)
 {
   struct cgraph_node *node;
   varpool_node *var;
-  int from;
+  unsigned int from = 0;
 
   in_ipa_mode = 1;
 
@@ -7294,6 +7294,14 @@ ipa_pta_execute (void)
     {
       symtab_node::dump_table (dump_file);
       fprintf (dump_file, "\n");
+    }
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Generating generic constraints\n\n");
+      dump_constraints (dump_file, from);
+      fprintf (dump_file, "\n");
+      from = constraints.length ();
     }
 
   /* Build the constraints.  */
@@ -7324,14 +7332,15 @@ ipa_pta_execute (void)
       get_vi_for_tree (var->decl);
     }
 
-  if (dump_file)
+  if (dump_file
+      && from != constraints.length ())
     {
       fprintf (dump_file,
 	       "Generating constraints for global initializers\n\n");
-      dump_constraints (dump_file, 0);
+      dump_constraints (dump_file, from);
       fprintf (dump_file, "\n");
+      from = constraints.length ();
     }
-  from = constraints.length ();
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {
@@ -7416,8 +7425,8 @@ ipa_pta_execute (void)
 	  fprintf (dump_file, "\n");
 	  dump_constraints (dump_file, from);
 	  fprintf (dump_file, "\n");
+	  from = constraints.length ();
 	}
-      from = constraints.length ();
     }
 
   /* From the constraints compute the points-to sets.  */
