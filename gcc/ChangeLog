@@ -1,3 +1,7 @@
+2015-10-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.opt (mfdpic): Add missing period.
+
 2015-08-29  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/mcore/mcore.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P,
