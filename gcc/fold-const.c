@@ -11968,26 +11968,13 @@ fold (tree expr)
 	if (TREE_CODE (type) != VECTOR_TYPE)
 	  return t;
 
-	tree *vec = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (type));
-	unsigned HOST_WIDE_INT idx, pos = 0;
-	tree value;
+	unsigned i;
+	tree val;
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), i, val)
+	  if (! CONSTANT_CLASS_P (val))
+	    return t;
 
-	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), idx, value)
-	  {
-	    if (!CONSTANT_CLASS_P (value))
-	      return t;
-	    if (TREE_CODE (value) == VECTOR_CST)
-	      {
-		for (unsigned i = 0; i < VECTOR_CST_NELTS (value); ++i)
-		  vec[pos++] = VECTOR_CST_ELT (value, i);
-	      }
-	    else
-	      vec[pos++] = value;
-	  }
-	for (; pos < TYPE_VECTOR_SUBPARTS (type); ++pos)
-	  vec[pos] = build_zero_cst (TREE_TYPE (type));
-
-	return build_vector (type, vec);
+	return build_vector_from_ctor (type, CONSTRUCTOR_ELTS (t));
       }
 
     case CONST_DECL:

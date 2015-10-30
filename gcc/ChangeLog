@@ -1,3 +1,11 @@
+2015-10-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (fold_gimple_assign): Do not dispatch to
+	fold () on single RHSs.  Allow CONSTRUCTORS with trailing
+	zeros to be folded to VECTOR_CSTs.
+	* tree.c (build_vector_from_ctor): Handle VECTOR_CST elements.
+	* fold-const.c (fold): Use build_vector_from_ctor.
+
 2015-10-30  Evandro Menezes  <e.menezes@samsung.com>
 
 	* config/aarch64/aarch64.md (*movhf_aarch64): Change the type of
