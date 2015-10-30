@@ -7273,7 +7273,7 @@ fold_builtin_strlen (location_t loc, tree type, tree arg)
 
 static tree
 do_real_to_int_conversion (tree itype, tree arg,
-			   void (*fn) (REAL_VALUE_TYPE *, machine_mode,
+			   void (*fn) (REAL_VALUE_TYPE *, format_helper,
 				       const REAL_VALUE_TYPE *))
 {
   if (TREE_CODE (arg) != REAL_CST || TREE_OVERFLOW (arg))
