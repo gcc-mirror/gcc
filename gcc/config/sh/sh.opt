@@ -262,7 +262,7 @@ Specify name for 32 bit signed division function.
 
 mfdpic
 Target Report Var(TARGET_FDPIC) Init(0)
-Generate ELF FDPIC code
+Generate ELF FDPIC code.
 
 mfmovd
 Target RejectNegative Mask(FMOVD)
