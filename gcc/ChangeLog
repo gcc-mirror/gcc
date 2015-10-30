@@ -1,5 +1,10 @@
 2015-10-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-ssa-math-opts.c (pass_cse_sincos::execute): Don't free
+	CDI_DOMINATORS.
+
+2015-10-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* real.h (format_helper): New.
 	(real_convert, exact_real_truncate, real_from_string3, real_to_target)
 	(real_from_target, real_nan, real_2expN, real_value_truncate)
