@@ -1,3 +1,11 @@
+2015-10-30  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gimple-fold.c (fold_array_ctor_reference): Move searching code to:
+	* fold-const.c (get_array_ctor_element_at_index): New.
+	(fold): Remove binary-search through CONSTRUCTOR, call previous.
+
+	* fold-const.h (get_array_ctor_element_at_index): New.
+
 2015-10-30  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* Makefile.in (OBJS): Add multiple_target.o.

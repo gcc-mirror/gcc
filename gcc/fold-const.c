@@ -11845,6 +11845,73 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
     } /* switch (code) */
 }
 
+/* Gets the element ACCESS_INDEX from CTOR, which must be a CONSTRUCTOR
+   of an array (or vector).  */
+
+tree
+get_array_ctor_element_at_index (tree ctor, offset_int access_index)
+{
+  tree index_type = NULL_TREE;
+  offset_int low_bound = 0;
+
+  if (TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE)
+  {
+    tree domain_type = TYPE_DOMAIN (TREE_TYPE (ctor));
+    if (domain_type && TYPE_MIN_VALUE (domain_type))
+    {
+      /* Static constructors for variably sized objects makes no sense.  */
+      gcc_assert (TREE_CODE (TYPE_MIN_VALUE (domain_type)) == INTEGER_CST);
+      index_type = TREE_TYPE (TYPE_MIN_VALUE (domain_type));
+      low_bound = wi::to_offset (TYPE_MIN_VALUE (domain_type));
+    }
+  }
+
+  if (index_type)
+    access_index = wi::ext (access_index, TYPE_PRECISION (index_type),
+			    TYPE_SIGN (index_type));
+
+  offset_int index = low_bound - 1;
+  if (index_type)
+    index = wi::ext (index, TYPE_PRECISION (index_type),
+		     TYPE_SIGN (index_type));
+
+  offset_int max_index;
+  unsigned HOST_WIDE_INT cnt;
+  tree cfield, cval;
+
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
+  {
+    /* Array constructor might explicitely set index, or specify range
+     * or leave index NULL meaning that it is next index after previous
+     * one.  */
+    if (cfield)
+    {
+      if (TREE_CODE (cfield) == INTEGER_CST)
+	max_index = index = wi::to_offset (cfield);
+      else
+      {
+	gcc_assert (TREE_CODE (cfield) == RANGE_EXPR);
+	index = wi::to_offset (TREE_OPERAND (cfield, 0));
+	max_index = wi::to_offset (TREE_OPERAND (cfield, 1));
+      }
+    }
+    else
+    {
+      index += 1;
+      if (index_type)
+	index = wi::ext (index, TYPE_PRECISION (index_type),
+			 TYPE_SIGN (index_type));
+	max_index = index;
+    }
+
+    /* Do we have match?  */
+    if (wi::cmpu (access_index, index) >= 0
+	&& wi::cmpu (access_index, max_index) <= 0)
+      return cval;
+  }
+  return NULL_TREE;
+}
+
 /* Perform constant folding and related simplification of EXPR.
    The related simplifications include x*1 => x, x*0 => 0, etc.,
    and application of the associative law.
@@ -11921,31 +11988,10 @@ fold (tree expr)
 	    && TREE_CODE (op0) == CONSTRUCTOR
 	    && ! type_contains_placeholder_p (TREE_TYPE (op0)))
 	  {
-	    vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (op0);
-	    unsigned HOST_WIDE_INT end = vec_safe_length (elts);
-	    unsigned HOST_WIDE_INT begin = 0;
-
-	    /* Find a matching index by means of a binary search.  */
-	    while (begin != end)
-	      {
-		unsigned HOST_WIDE_INT middle = (begin + end) / 2;
-		tree index = (*elts)[middle].index;
-
-		if (TREE_CODE (index) == INTEGER_CST
-		    && tree_int_cst_lt (index, op1))
-		  begin = middle + 1;
-		else if (TREE_CODE (index) == INTEGER_CST
-			 && tree_int_cst_lt (op1, index))
-		  end = middle;
-		else if (TREE_CODE (index) == RANGE_EXPR
-			 && tree_int_cst_lt (TREE_OPERAND (index, 1), op1))
-		  begin = middle + 1;
-		else if (TREE_CODE (index) == RANGE_EXPR
-			 && tree_int_cst_lt (op1, TREE_OPERAND (index, 0)))
-		  end = middle;
-		else
-		  return (*elts)[middle].value;
-	      }
+	    tree val = get_array_ctor_element_at_index (op0,
+							wi::to_offset (op1));
+	    if (val)
+	      return val;
 	  }
 
 	return t;

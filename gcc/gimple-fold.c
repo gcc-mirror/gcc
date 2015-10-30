@@ -5301,13 +5301,10 @@ fold_array_ctor_reference (tree type, tree ctor,
 			   unsigned HOST_WIDE_INT size,
 			   tree from_decl)
 {
-  unsigned HOST_WIDE_INT cnt;
-  tree cfield, cval;
   offset_int low_bound;
   offset_int elt_size;
-  offset_int index, max_index;
   offset_int access_index;
-  tree domain_type = NULL_TREE, index_type = NULL_TREE;
+  tree domain_type = NULL_TREE;
   HOST_WIDE_INT inner_offset;
 
   /* Compute low bound and elt size.  */
@@ -5317,7 +5314,6 @@ fold_array_ctor_reference (tree type, tree ctor,
     {
       /* Static constructors for variably sized objects makes no sense.  */
       gcc_assert (TREE_CODE (TYPE_MIN_VALUE (domain_type)) == INTEGER_CST);
-      index_type = TREE_TYPE (TYPE_MIN_VALUE (domain_type));
       low_bound = wi::to_offset (TYPE_MIN_VALUE (domain_type));
     }
   else
@@ -5339,9 +5335,6 @@ fold_array_ctor_reference (tree type, tree ctor,
   access_index = wi::udiv_trunc (offset_int (offset / BITS_PER_UNIT),
 				 elt_size);
   access_index += low_bound;
-  if (index_type)
-    access_index = wi::ext (access_index, TYPE_PRECISION (index_type),
-			    TYPE_SIGN (index_type));
 
   /* And offset within the access.  */
   inner_offset = offset % (elt_size.to_uhwi () * BITS_PER_UNIT);
@@ -5350,43 +5343,9 @@ fold_array_ctor_reference (tree type, tree ctor,
      care to fold accesses spanning multiple array indexes.  */
   if (inner_offset + size > elt_size.to_uhwi () * BITS_PER_UNIT)
     return NULL_TREE;
+  if (tree val = get_array_ctor_element_at_index (ctor, access_index))
+    return fold_ctor_reference (type, val, inner_offset, size, from_decl);
 
-  index = low_bound - 1;
-  if (index_type)
-    index = wi::ext (index, TYPE_PRECISION (index_type),
-		     TYPE_SIGN (index_type));
-
-  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
-    {
-      /* Array constructor might explicitely set index, or specify range
-	 or leave index NULL meaning that it is next index after previous
-	 one.  */
-      if (cfield)
-	{
-	  if (TREE_CODE (cfield) == INTEGER_CST)
-	    max_index = index = wi::to_offset (cfield);
-	  else
-	    {
-	      gcc_assert (TREE_CODE (cfield) == RANGE_EXPR);
-	      index = wi::to_offset (TREE_OPERAND (cfield, 0));
-	      max_index = wi::to_offset (TREE_OPERAND (cfield, 1));
-	    }
-	}
-      else
-	{
-	  index += 1;
-	  if (index_type)
-	    index = wi::ext (index, TYPE_PRECISION (index_type),
-			     TYPE_SIGN (index_type));
-	  max_index = index;
-	}
-
-      /* Do we have match?  */
-      if (wi::cmpu (access_index, index) >= 0
-	  && wi::cmpu (access_index, max_index) <= 0)
-	return fold_ctor_reference (type, cval, inner_offset, size,
-				    from_decl);
-    }
   /* When memory is not explicitely mentioned in constructor,
      it is 0 (or out of range).  */
   return build_zero_cst (type);
