@@ -1,5 +1,10 @@
 2015-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/68154
+	*gfortran.dg/pr68154.f90
+
+2015-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/36192
 	* gfortran.dg/pr36192_1.f90: New test.
 
