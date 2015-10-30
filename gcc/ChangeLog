@@ -1,3 +1,8 @@
+2015-10-30  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* cgraph.c: Include context.h for offloading.
+	* varpool.c: Include context.h and omp-low.h.
+
 2015-10-30  Anatoly Sokolov  <aesok@post.ru>
 
 	* rtl.h (contains_symbol_ref_p): Declare.
