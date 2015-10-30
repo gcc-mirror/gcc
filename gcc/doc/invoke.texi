@@ -6666,17 +6666,19 @@ Says to make debugging dumps during compilation at times specified by
 @var{letters}.  This is used for debugging the RTL-based passes of the
 compiler.  The file names for most of the dumps are made by appending
 a pass number and a word to the @var{dumpname}, and the files are
-created in the directory of the output file. In case of
+created in the directory of the output file.  In case of
 @option{=@var{filename}} option, the dump is output on the given file
-instead of the pass numbered dump files. Note that the pass number is
-computed statically as passes get registered into the pass manager.
-Thus the numbering is not related to the dynamic order of execution of
-passes.  In particular, a pass installed by a plugin could have a
-number over 200 even if it executed quite early.  @var{dumpname} is
-generated from the name of the output file, if explicitly specified
-and it is not an executable, otherwise it is the basename of the
-source file. These switches may have different effects when
-@option{-E} is used for preprocessing.
+instead of the pass numbered dump files.  Note that the pass number is
+assigned as passes are registered into the pass manager.  Most passes
+are registered in the order that they will execute and for these passes
+the number corresponds to the pass execution order.  However, passes
+registered by plugins, passes specific to compilation targets, or
+passes that are otherwise registered after all the other passes are
+numbered higher than a pass named "final", even if they are executed
+earlier.  @var{dumpname} is generated from the name of the output
+file if explicitly specified and not an executable, otherwise it is
+the basename of the source file.  These switches may have different
+effects when @option{-E} is used for preprocessing.
 
 Debug dumps can be enabled with a @option{-fdump-rtl} switch or some
 @option{-d} option @var{letters}.  Here are the possible
