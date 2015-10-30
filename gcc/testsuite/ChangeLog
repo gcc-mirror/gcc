@@ -1,3 +1,17 @@
+2015-10-30  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* gcc.dg/mvc1.c: New test for multiple targets cloning.
+	* gcc.dg/mvc2.c: Ditto.
+	* gcc.dg/mvc3.c: Ditto.
+	* gcc.dg/mvc4.c: Ditto.
+	* gcc.dg/mvc5.c: Ditto.
+	* gcc.dg/mvc6.c: Ditto.
+	* gcc.dg/mvc7.c: Ditto.
+	* g++.dg/ext/mvc1.C: Ditto.
+	* g++.dg/ext/mvc2.C: Ditto.
+	* g++.dg/ext/mvc3.C: Ditto.
+	* g++.dg/ext/mvc4.C: Ditto.
+
 2015-10-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/51993

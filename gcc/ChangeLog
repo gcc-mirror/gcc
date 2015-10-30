@@ -1,3 +1,22 @@
+2015-10-30  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* Makefile.in (OBJS): Add multiple_target.o.
+	* attrib.c (make_attribute): Moved from config/i386/i386.c
+	* config/i386/i386.c (make_attribute): Deleted.
+	* multiple_target.c (create_dispatcher_calls): New.
+	(get_attr_len): Ditto.
+	(get_attr_str): Ditto.
+	(separate_attrs): Ditto.
+	(is_valid_asm_symbol): Ditto.
+	(create_new_asm_name): Ditto.
+	(create_target_clone): Ditto.
+	(expand_target_clones): Ditto.
+	(ipa_target_clone): Ditto.
+	(ipa_dispatcher_calls): Ditto.
+	* passes.def (pass_target_clone): Two new ipa passes.
+	* tree-pass.h (make_pass_target_clone): Ditto.
+	* doc/extend.texi (target_clones): New attribute description.
+
 2015-10-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/68106

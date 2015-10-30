@@ -1356,6 +1356,7 @@ OBJS = \
 	mcf.o \
 	mode-switching.o \
 	modulo-sched.o \
+	multiple_target.o \
 	omp-low.o \
 	optabs.o \
 	optabs-libfuncs.o \

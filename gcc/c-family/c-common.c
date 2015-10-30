@@ -379,6 +379,7 @@ static tree handle_alloc_size_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alloc_align_attribute (tree *, tree, tree, int, bool *);
 static tree handle_assume_aligned_attribute (tree *, tree, tree, int, bool *);
 static tree handle_target_attribute (tree *, tree, tree, int, bool *);
+static tree handle_target_clones_attribute (tree *, tree, tree, int, bool *);
 static tree handle_optimize_attribute (tree *, tree, tree, int, bool *);
 static tree ignore_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_split_stack_attribute (tree *, tree, tree, int, bool *);
@@ -793,6 +794,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_error_attribute, false },
   { "target",                 1, -1, true, false, false,
 			      handle_target_attribute, false },
+  { "target_clones",          1, -1, true, false, false,
+			      handle_target_clones_attribute, false },
   { "optimize",               1, -1, true, false, false,
 			      handle_optimize_attribute, false },
   /* For internal use only.  The leading '*' both prevents its usage in
@@ -7390,6 +7393,12 @@ handle_always_inline_attribute (tree *node, tree name,
 		   "with %qs attribute", name, "noinline");
 	  *no_add_attrs = true;
 	}
+      else if (lookup_attribute ("target_clones", DECL_ATTRIBUTES (*node)))
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with %qs attribute", name, "target_clones");
+	  *no_add_attrs = true;
+	}
       else
 	/* Set the attribute and mark it for disregarding inline
 	   limits.  */
@@ -9818,10 +9827,49 @@ handle_target_attribute (tree *node, tree name, tree args, int flags,
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
+  else if (lookup_attribute ("target_clones", DECL_ATTRIBUTES (*node)))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with %qs attribute", name, "target_clones");
+      *no_add_attrs = true;
+    }
   else if (! targetm.target_option.valid_attribute_p (*node, name, args,
 						      flags))
     *no_add_attrs = true;
 
+  return NULL_TREE;
+}
+
+/* Handle a "target_clones" attribute.  */
+
+static tree
+handle_target_clones_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			  int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  /* Ensure we have a function type.  */
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (*node)))
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with %qs attribute", name, "always_inline");
+	  *no_add_attrs = true;
+	}
+      else if (lookup_attribute ("target", DECL_ATTRIBUTES (*node)))
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with %qs attribute", name, "target");
+	  *no_add_attrs = true;
+	}
+      else
+      /* Do not inline functions with multiple clone targets.  */
+	DECL_UNINLINABLE (*node) = 1;
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
   return NULL_TREE;
 }
 
