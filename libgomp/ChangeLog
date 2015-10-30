@@ -1,3 +1,12 @@
+2015-10-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* openacc.h (enum acc_device_t): Reformat. Ensure layout
+	compatibility.
+	(enum acc_async_t): Reformat.
+	(acc_on_device): Declare compatible with builtin and provide C++
+	wrapper.
+	* testsuite/libgomp.oacc-c-c++-common/acc-on-device.c: New.
+
 2015-10-29  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
