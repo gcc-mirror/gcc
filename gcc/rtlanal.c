@@ -6230,6 +6230,19 @@ get_index_code (const struct address_info *info)
   return SCRATCH;
 }
 
+/* Return true if RTL X contains a SYMBOL_REF.  */
+
+bool
+contains_symbol_ref_p (const_rtx x)
+{
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    if (SYMBOL_REF_P (*iter))
+      return true;
+
+  return false;
+}
+
 /* Return true if X contains a thread-local symbol.  */
 
 bool
