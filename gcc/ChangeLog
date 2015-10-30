@@ -1,3 +1,12 @@
+2015-10-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/68106
+	* lra-remat.c (input_regno_present_p): Process hard regs
+	explicitly present in machine description insns.
+	(call_used_input_regno_present_p): Ditto.
+	(calculate_gen_cands): Ditto.
+	(do_remat): Ditto.
+
 2015-10-30  Jim Wilson  <jim.wilson@linaro.org>
 
 	* config/arm/neon-testgen.ml: Fix comment typo.
