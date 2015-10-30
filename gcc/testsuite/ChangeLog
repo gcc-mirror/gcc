@@ -1,3 +1,7 @@
+2015-10-30  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/gomp/intentin1.f90: Adjust copyprivate warning.
+
 2015-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/46588

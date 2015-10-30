@@ -11,6 +11,6 @@ subroutine foo (x)
 !$omp simd linear (x)			! { dg-error "INTENT.IN. POINTER" }
   do i = 1, 10
   end do
-!$omp single				! { dg-error "INTENT.IN. POINTER" }
-!$omp end single copyprivate (x)
+!$omp single
+!$omp end single copyprivate (x)        ! { dg-error "INTENT.IN. POINTER" }
 end
