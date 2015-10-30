@@ -1,3 +1,8 @@
+2015-10-30  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/invoke.texi (fdump-rtl-@var{pass}): Clarify relationship
+	between pass numbering and execution order.
+
 2015-10-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (cortex_a9_sched_adjust_cost): Use reg_set_p to
