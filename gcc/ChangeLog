@@ -1,3 +1,7 @@
+2015-10-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* rtlanal.c (reg_set_p): Expand function comment.
+
 2015-10-30  Andrew MacLeod  <amacleod@redhat.com>
 	
 	* alias.c: Remove unused headers.
