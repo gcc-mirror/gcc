@@ -1,3 +1,8 @@
+2015-10-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-c++-common/goacc/acc_on_device-2-off.c: Delete.
+	* c-c++-common/goacc/acc_on_device-2.c: Delete.
+
 2015-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/torture/builtin-convert-1.c: Require c99_runtime.
