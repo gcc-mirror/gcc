@@ -1,3 +1,8 @@
+2015-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68154
+	*gfortran.dg/pr68154.f90
+
 2015-10-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-c++-common/goacc/acc_on_device-2-off.c: Delete.
