@@ -1,3 +1,10 @@
+2015-10-30  Jeff Law <jeff@redhat.com>
+	    Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.h (HARD_REGNO_NREGS): Avoid warning on unused
+	args.
+	(MOVE_MAX): Set to 8.
+
 2015-10-30  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* cgraph.c: Include context.h for offloading.
