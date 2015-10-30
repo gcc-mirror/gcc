@@ -1,3 +1,10 @@
+2015-10-30  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* c-common.c (handle_target_clones_attribute): New.
+	(c_common_attribute_table): Add handle_target_clones_attribute.
+	(handle_always_inline_attribute): Add check on target_clones attribute.
+	(handle_target_attribute): Ditto.
+
 2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* array-notation-common.c: Reorder #include's and remove duplicates.

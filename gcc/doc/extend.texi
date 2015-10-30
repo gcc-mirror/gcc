@@ -3087,6 +3087,19 @@ This function attribute make a stack protection of the function if
 flags @option{fstack-protector} or @option{fstack-protector-strong}
 or @option{fstack-protector-explicit} are set.
 
+@item target_clones (@var{options})
+@cindex @code{target_clones} function attribute
+The @code{target_clones} attribute is used to specify that a function is to
+be cloned into multiple versions compiled with different target options
+than specified on the command line.  The supported options and restrictions
+are the same as for @code{target} attribute.
+
+For instance on an x86, you could compile a function with
+@code{target_clones("sse4.1,avx")}. It will create 2 function clones,
+one compiled with @option{-msse4.1} and another with @option{-mavx}.
+At the function call it will create resolver @code{ifunc}, that will
+dynamically call a clone suitable for current architecture.
+
 @item target (@var{options})
 @cindex @code{target} function attribute
 Multiple target back ends implement the @code{target} attribute
