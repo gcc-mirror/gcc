@@ -1,3 +1,8 @@
+2015-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/46588
+	* gfortran.dg/pr46588.f90: New test.
+
 2015-10-30  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* gcc.dg/mvc1.c: New test for multiple targets cloning.
@@ -12,7 +17,7 @@
 	* g++.dg/ext/mvc3.C: Ditto.
 	* g++.dg/ext/mvc4.C: Ditto.
 
-2015-10-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+2015-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/51993
 	* gfortran.dg/pr51993.f90: New test.
