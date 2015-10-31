@@ -1,6 +1,12 @@
+2015-10-31  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p): Use the
+	same condition for testing whether RS6000_PIC_OFFSET_TABLE_REGNUM is
+	live as for using it elsewhere, for TARGET_MINIMAL_TOC.
+
 2015-10-31  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
-	*ggc-common.c : Restore needed header for checking=release.
+	* ggc-common.c: Restore needed header for checking=release.
 
 2015-10-31  Tom de Vries  <tom@codesourcery.com>
 
