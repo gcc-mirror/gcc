@@ -1,3 +1,7 @@
+2015-10-31  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	*ggc-common.c : Restore needed header for checking=release.
+
 2015-10-31  Tom de Vries  <tom@codesourcery.com>
 
 	* fold-const.c (fold_unary_loc): Tune POINTER_PLUS_EXPR folding.
