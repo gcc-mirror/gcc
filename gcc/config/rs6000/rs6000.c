@@ -22021,22 +22021,27 @@ save_reg_p (int r)
 static bool
 rs6000_reg_live_or_pic_offset_p (int reg)
 {
-  /* If the function calls eh_return, claim used all the registers that would
-     be checked for liveness otherwise.  This is required for the PIC offset
-     register with -mminimal-toc on AIX, as it is advertised as "fixed" for
-     register allocation purposes in this case.  */
+  /* We need to mark the PIC offset register live for the same conditions
+     as it is set up, or otherwise it won't be saved before we clobber it.  */
 
-  return (((crtl->calls_eh_return || df_regs_ever_live_p (reg))
-           && (!call_used_regs[reg]
-               || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
-		   && !TARGET_SINGLE_PIC_BASE
-                   && TARGET_TOC && TARGET_MINIMAL_TOC)))
-          || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
-	      && !TARGET_SINGLE_PIC_BASE
-              && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
-                  || (DEFAULT_ABI == ABI_DARWIN && flag_pic)
-		  || (TARGET_TOC && TARGET_MINIMAL_TOC
-		      && get_pool_size () != 0))));
+  if (reg == RS6000_PIC_OFFSET_TABLE_REGNUM && !TARGET_SINGLE_PIC_BASE)
+    {
+      if (TARGET_TOC && TARGET_MINIMAL_TOC
+	  && (crtl->calls_eh_return
+	      || df_regs_ever_live_p (reg)
+	      || get_pool_size ()))
+	return true;
+
+      if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN)
+	  && flag_pic)
+	return true;
+    }
+
+  /* If the function calls eh_return, claim used all the registers that would
+     be checked for liveness otherwise.  */
+
+  return ((crtl->calls_eh_return || df_regs_ever_live_p (reg))
+	  && !call_used_regs[reg]);
 }
 
 /* Return the first fixed-point register that is required to be
