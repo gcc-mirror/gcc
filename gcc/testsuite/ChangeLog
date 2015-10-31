@@ -1,3 +1,7 @@
+2015-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr45.adb: New test.
+
 2015-10-31  Tom de Vries  <tom@codesourcery.com>
 
 	* gfortran.dg/assumed_type_2.f90: Update test.
