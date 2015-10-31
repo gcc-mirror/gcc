@@ -443,6 +443,7 @@ void
 runtime_schedinit(void)
 {
 	int32 n, procs;
+	String s;
 	const byte *p;
 	Eface i;
 
@@ -477,8 +478,9 @@ runtime_schedinit(void)
 
 	runtime_sched.lastpoll = runtime_nanotime();
 	procs = 1;
-	p = runtime_getenv("GOMAXPROCS");
-	if(p != nil && (n = runtime_atoi(p)) > 0) {
+	s = runtime_getenv("GOMAXPROCS");
+	p = s.str;
+	if(p != nil && (n = runtime_atoi(p, s.len)) > 0) {
 		if(n > MaxGomaxprocs)
 			n = MaxGomaxprocs;
 		procs = n;
@@ -2268,19 +2270,19 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 // are available sequentially after &fn; they would not be
 // copied if a stack split occurred.  It's OK for this to call
 // functions that split the stack.
-void runtime_testing_entersyscall(void)
+void runtime_testing_entersyscall(int32)
   __asm__ (GOSYM_PREFIX "runtime.entersyscall");
 void
-runtime_testing_entersyscall()
+runtime_testing_entersyscall(int32 dummy __attribute__ ((unused)))
 {
 	runtime_entersyscall();
 }
 
-void runtime_testing_exitsyscall(void)
+void runtime_testing_exitsyscall(int32)
   __asm__ (GOSYM_PREFIX "runtime.exitsyscall");
 
 void
-runtime_testing_exitsyscall()
+runtime_testing_exitsyscall(int32 dummy __attribute__ ((unused)))
 {
 	runtime_exitsyscall();
 }
@@ -3428,4 +3430,55 @@ bool
 runtime_gcwaiting(void)
 {
 	return runtime_sched.gcwaiting;
+}
+
+// os_beforeExit is called from os.Exit(0).
+//go:linkname os_beforeExit os.runtime_beforeExit
+
+extern void os_beforeExit() __asm__ (GOSYM_PREFIX "os.runtime_beforeExit");
+
+void
+os_beforeExit()
+{
+}
+
+// Active spinning for sync.Mutex.
+//go:linkname sync_runtime_canSpin sync.runtime_canSpin
+
+enum
+{
+	ACTIVE_SPIN = 4,
+	ACTIVE_SPIN_CNT = 30,
+};
+
+extern _Bool sync_runtime_canSpin(intgo i)
+  __asm__ (GOSYM_PREFIX "sync.runtime_canSpin");
+
+_Bool
+sync_runtime_canSpin(intgo i)
+{
+	P *p;
+
+	// sync.Mutex is cooperative, so we are conservative with spinning.
+	// Spin only few times and only if running on a multicore machine and
+	// GOMAXPROCS>1 and there is at least one other running P and local runq is empty.
+	// As opposed to runtime mutex we don't do passive spinning here,
+	// because there can be work on global runq on on other Ps.
+	if (i >= ACTIVE_SPIN || runtime_ncpu <= 1 || runtime_gomaxprocs <= (int32)(runtime_sched.npidle+runtime_sched.nmspinning)+1) {
+		return false;
+	}
+	p = m->p;
+	return p != nil && p->runqhead == p->runqtail;
+}
+
+//go:linkname sync_runtime_doSpin sync.runtime_doSpin
+//go:nosplit
+
+extern void sync_runtime_doSpin(void)
+  __asm__ (GOSYM_PREFIX "sync.runtime_doSpin");
+
+void
+sync_runtime_doSpin()
+{
+	runtime_procyield(ACTIVE_SPIN_CNT);
 }
