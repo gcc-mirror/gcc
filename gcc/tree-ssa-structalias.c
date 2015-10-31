@@ -5409,10 +5409,12 @@ count_num_arguments (tree decl, bool *is_varargs)
 }
 
 /* Creation function node for DECL, using NAME, and return the index
-   of the variable we've created for the function.  */
+   of the variable we've created for the function.  If NONLOCAL_p, create
+   initial constraints.  */
 
 static varinfo_t
-create_function_info_for (tree decl, const char *name, bool add_id)
+create_function_info_for (tree decl, const char *name, bool add_id,
+			  bool nonlocal_p)
 {
   struct function *fn = DECL_STRUCT_FUNCTION (decl);
   varinfo_t vi, prev_vi;
@@ -5493,6 +5495,10 @@ create_function_info_for (tree decl, const char *name, bool add_id)
 
       insert_vi_for_tree (fn->static_chain_decl, chainvi);
 
+      if (nonlocal_p
+	  && chainvi->may_have_pointers)
+	make_constraint_from (chainvi, nonlocal_id);
+
       gcc_assert (prev_vi->offset < chainvi->offset);
       prev_vi->next = chainvi->id;
       prev_vi = chainvi;
@@ -5530,6 +5536,18 @@ create_function_info_for (tree decl, const char *name, bool add_id)
       prev_vi = resultvi;
     }
 
+  /* We also need to make function return values escape.  Nothing
+     escapes by returning from main though.  */
+  if (nonlocal_p
+      && !MAIN_NAME_P (DECL_NAME (decl)))
+    {
+      varinfo_t fi, rvi;
+      fi = lookup_vi_for_tree (decl);
+      rvi = first_vi_for_offset (fi, fi_result);
+      if (rvi && rvi->offset == fi_result)
+	make_copy_constraint (get_varinfo (escaped_id), rvi->id);
+    }
+
   /* Set up variables for each argument.  */
   arg = DECL_ARGUMENTS (decl);
   for (i = 0; i < num_args; i++)
@@ -5556,6 +5574,10 @@ create_function_info_for (tree decl, const char *name, bool add_id)
 
       if (arg)
 	insert_vi_for_tree (arg, argvi);
+
+      if (nonlocal_p
+	  && argvi->may_have_pointers)
+	make_constraint_from (argvi, nonlocal_id);
 
       gcc_assert (prev_vi->offset < argvi->offset);
       prev_vi->next = argvi->id;
@@ -5585,6 +5607,10 @@ create_function_info_for (tree decl, const char *name, bool add_id)
       argvi->is_full_var = true;
       argvi->is_heap_var = true;
       argvi->fullsize = vi->fullsize;
+
+      if (nonlocal_p
+	  && argvi->may_have_pointers)
+	make_constraint_from (argvi, nonlocal_id);
 
       gcc_assert (prev_vi->offset < argvi->offset);
       prev_vi->next = argvi->id;
@@ -7312,8 +7338,34 @@ ipa_pta_execute (void)
 
       gcc_assert (!node->clone_of);
 
+      /* For externally visible or attribute used annotated functions use
+	 local constraints for their arguments.
+	 For local functions we see all callers and thus do not need initial
+	 constraints for parameters.  */
+      bool nonlocal_p = (node->used_from_other_partition
+			 || node->externally_visible
+			 || node->force_output
+			 || node->address_taken);
+
       vi = create_function_info_for (node->decl,
-				     alias_get_name (node->decl), false);
+				     alias_get_name (node->decl), false,
+				     nonlocal_p);
+      if (dump_file
+	  && from != constraints.length ())
+	{
+	  fprintf (dump_file,
+		   "Generating intial constraints for %s", node->name ());
+	  if (DECL_ASSEMBLER_NAME_SET_P (node->decl))
+	    fprintf (dump_file, " (%s)",
+		     IDENTIFIER_POINTER
+		       (DECL_ASSEMBLER_NAME (node->decl)));
+	  fprintf (dump_file, "\n\n");
+	  dump_constraints (dump_file, from);
+	  fprintf (dump_file, "\n");
+
+	  from = constraints.length ();
+	}
+
       node->call_for_symbol_thunks_and_aliases
 	(associate_varinfo_to_alias, vi, true);
     }
@@ -7359,29 +7411,6 @@ ipa_pta_execute (void)
 
       func = DECL_STRUCT_FUNCTION (node->decl);
       gcc_assert (cfun == NULL);
-
-      /* For externally visible or attribute used annotated functions use
-	 local constraints for their arguments.
-	 For local functions we see all callers and thus do not need initial
-	 constraints for parameters.  */
-      if (node->used_from_other_partition
-	  || node->externally_visible
-	  || node->force_output
-	  || node->address_taken)
-	{
-	  intra_create_variable_infos (func);
-
-	  /* We also need to make function return values escape.  Nothing
-	     escapes by returning from main though.  */
-	  if (!MAIN_NAME_P (DECL_NAME (node->decl)))
-	    {
-	      varinfo_t fi, rvi;
-	      fi = lookup_vi_for_tree (node->decl);
-	      rvi = first_vi_for_offset (fi, fi_result);
-	      if (rvi && rvi->offset == fi_result)
-		make_copy_constraint (get_varinfo (escaped_id), rvi->id);
-	    }
-	}
 
       /* Build constriants for the function body.  */
       FOR_EACH_BB_FN (bb, func)
