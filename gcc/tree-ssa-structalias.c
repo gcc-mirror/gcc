@@ -5912,12 +5912,8 @@ intra_create_variable_infos (struct function *fn)
       bool recursive_restrict_p
 	= (restrict_pointer_p
 	   && !type_contains_placeholder_p (TREE_TYPE (TREE_TYPE (t))));
-      varinfo_t p = lookup_vi_for_tree (t);
-      if (p == NULL)
-	{
-	  p = create_variable_info_for_1 (t, alias_get_name (t), false);
-	  insert_vi_for_tree (t, p);
-	}
+      varinfo_t p = create_variable_info_for_1 (t, alias_get_name (t), false);
+      insert_vi_for_tree (t, p);
 
       /* For restrict qualified pointers build a representative for
 	 the pointed-to object.  Note that this ends up handling

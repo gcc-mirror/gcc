@@ -1,5 +1,10 @@
 2015-10-31  Tom de Vries  <tom@codesourcery.com>
 
+	* tree-ssa-structalias.c (intra_create_variable_infos): Don't expect
+	existing varinfo for arguments.
+
+2015-10-31  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-ssa-structalias.c (ipa_pta_execute): Add extra arg to call to
 	create_function_info_for.  Dump constraints generated during
 	create_function_info_for. Move intra_create_variable_infos call and
