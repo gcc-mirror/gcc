@@ -22034,7 +22034,9 @@ rs6000_reg_live_or_pic_offset_p (int reg)
           || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
 	      && !TARGET_SINGLE_PIC_BASE
               && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
-                  || (DEFAULT_ABI == ABI_DARWIN && flag_pic))));
+                  || (DEFAULT_ABI == ABI_DARWIN && flag_pic)
+		  || (TARGET_TOC && TARGET_MINIMAL_TOC
+		      && get_pool_size () != 0))));
 }
 
 /* Return the first fixed-point register that is required to be
