@@ -7371,17 +7371,7 @@ ipa_pta_execute (void)
 	      fi = lookup_vi_for_tree (node->decl);
 	      rvi = first_vi_for_offset (fi, fi_result);
 	      if (rvi && rvi->offset == fi_result)
-		{
-		  struct constraint_expr includes;
-		  struct constraint_expr var;
-		  includes.var = escaped_id;
-		  includes.offset = 0;
-		  includes.type = SCALAR;
-		  var.var = rvi->id;
-		  var.offset = 0;
-		  var.type = SCALAR;
-		  process_constraint (new_constraint (includes, var));
-		}
+		make_copy_constraint (get_varinfo (escaped_id), rvi->id);
 	    }
 	}
 
