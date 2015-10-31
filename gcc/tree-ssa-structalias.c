@@ -5452,6 +5452,7 @@ create_function_info_for (tree decl, const char *name, bool add_id)
       clobbervi->fullsize = vi->fullsize;
       clobbervi->is_full_var = true;
       clobbervi->is_global_var = false;
+
       gcc_assert (prev_vi->offset < clobbervi->offset);
       prev_vi->next = clobbervi->id;
       prev_vi = clobbervi;
@@ -5466,6 +5467,7 @@ create_function_info_for (tree decl, const char *name, bool add_id)
       usevi->fullsize = vi->fullsize;
       usevi->is_full_var = true;
       usevi->is_global_var = false;
+
       gcc_assert (prev_vi->offset < usevi->offset);
       prev_vi->next = usevi->id;
       prev_vi = usevi;
@@ -5488,10 +5490,12 @@ create_function_info_for (tree decl, const char *name, bool add_id)
       chainvi->fullsize = vi->fullsize;
       chainvi->is_full_var = true;
       chainvi->is_global_var = false;
+
+      insert_vi_for_tree (fn->static_chain_decl, chainvi);
+
       gcc_assert (prev_vi->offset < chainvi->offset);
       prev_vi->next = chainvi->id;
       prev_vi = chainvi;
-      insert_vi_for_tree (fn->static_chain_decl, chainvi);
     }
 
   /* Create a variable for the return var.  */
@@ -5517,11 +5521,13 @@ create_function_info_for (tree decl, const char *name, bool add_id)
       resultvi->is_full_var = true;
       if (DECL_RESULT (decl))
 	resultvi->may_have_pointers = true;
+
+      if (DECL_RESULT (decl))
+	insert_vi_for_tree (DECL_RESULT (decl), resultvi);
+
       gcc_assert (prev_vi->offset < resultvi->offset);
       prev_vi->next = resultvi->id;
       prev_vi = resultvi;
-      if (DECL_RESULT (decl))
-	insert_vi_for_tree (DECL_RESULT (decl), resultvi);
     }
 
   /* Set up variables for each argument.  */
@@ -5547,14 +5553,15 @@ create_function_info_for (tree decl, const char *name, bool add_id)
       argvi->fullsize = vi->fullsize;
       if (arg)
 	argvi->may_have_pointers = true;
+
+      if (arg)
+	insert_vi_for_tree (arg, argvi);
+
       gcc_assert (prev_vi->offset < argvi->offset);
       prev_vi->next = argvi->id;
       prev_vi = argvi;
       if (arg)
-	{
-	  insert_vi_for_tree (arg, argvi);
-	  arg = DECL_CHAIN (arg);
-	}
+	arg = DECL_CHAIN (arg);
     }
 
   /* Add one representative for all further args.  */
@@ -5578,6 +5585,7 @@ create_function_info_for (tree decl, const char *name, bool add_id)
       argvi->is_full_var = true;
       argvi->is_heap_var = true;
       argvi->fullsize = vi->fullsize;
+
       gcc_assert (prev_vi->offset < argvi->offset);
       prev_vi->next = argvi->id;
       prev_vi = argvi;
