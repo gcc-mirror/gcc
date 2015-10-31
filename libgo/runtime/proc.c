@@ -2250,11 +2250,24 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 		__splitstack_block_signals_context(&newg->stack_context[0],
 						   &dont_block_signals, nil);
 #else
-		*ret_stack = runtime_mallocgc(stacksize, 0, FlagNoProfiling|FlagNoGC);
+                // In 64-bit mode, the maximum Go allocation space is
+                // 128G.  Our stack size is 4M, which only permits 32K
+                // goroutines.  In order to not limit ourselves,
+                // allocate the stacks out of separate memory.  In
+                // 32-bit mode, the Go allocation space is all of
+                // memory anyhow.
+		if(sizeof(void*) == 8) {
+			void *p = runtime_SysAlloc(stacksize, &mstats.other_sys);
+			if(p == nil)
+				runtime_throw("runtime: cannot allocate memory for goroutine stack");
+			*ret_stack = (byte*)p;
+		} else {
+			*ret_stack = runtime_mallocgc(stacksize, 0, FlagNoProfiling|FlagNoGC);
+			runtime_xadd(&runtime_stacks_sys, stacksize);
+		}
 		*ret_stacksize = stacksize;
 		newg->gcinitial_sp = *ret_stack;
 		newg->gcstack_size = stacksize;
-		runtime_xadd(&runtime_stacks_sys, stacksize);
 #endif
 	}
 	return newg;
