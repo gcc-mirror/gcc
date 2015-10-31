@@ -11279,22 +11279,6 @@ cp_parser_for_init_statement (cp_parser* parser, tree *decl)
       bool is_range_for = false;
       bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
 
-      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
-	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON))
-	{
-	  /* N3994 -- for (id : init) ... */
-	  if (cxx_dialect < cxx1z)
-	    pedwarn (input_location, 0, "range-based for loop without a "
-		     "type-specifier only available with "
-		     "-std=c++1z or -std=gnu++1z");
-	  tree name = cp_parser_identifier (parser);
-	  tree type = cp_build_reference_type (make_auto (), /*rval*/true);
-	  *decl = build_decl (input_location, VAR_DECL, name, type);
-	  pushdecl (*decl);
-	  cp_lexer_consume_token (parser->lexer);
-	  return true;
-	}
-
       /* A colon is used in range-based for.  */
       parser->colon_corrects_to_scope_p = false;
 
