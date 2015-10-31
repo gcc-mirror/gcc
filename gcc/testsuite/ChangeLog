@@ -1,3 +1,8 @@
+2015-10-31  Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/assumed_type_2.f90: Update test.
+	* gfortran.dg/no_arg_check_2.f90: Same.
+
 2015-10-30  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* gfortran.dg/gomp/intentin1.f90: Adjust copyprivate warning.
