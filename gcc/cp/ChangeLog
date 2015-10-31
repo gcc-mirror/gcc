@@ -1,5 +1,9 @@
 2015-10-31  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (unify): Don't diagnose no common base if we already have
+	the same template.
+	(do_auto_deduction): Explain deduction failure.
+
 	* pt.c (hash_tmpl_and_args): Use iterative_hash_object on template
 	uid.
 
