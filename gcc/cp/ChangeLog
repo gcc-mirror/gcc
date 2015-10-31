@@ -1,5 +1,11 @@
 2015-10-31  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (for_each_template_parm_r): Use WALK_SUBTREE.
+	Return a meaningful value rather than error_mark_node.
+	(for_each_template_parm): Return a tree.
+	(uses_template_parms_level): Return bool.
+	* cp-tree.h: Adjust.
+
 	* pt.c (unify): Don't diagnose no common base if we already have
 	the same template.
 	(do_auto_deduction): Explain deduction failure.
