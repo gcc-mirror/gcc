@@ -1,3 +1,8 @@
+2015-10-31  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (synthesize_implicit_template_parm)
+	(finish_fully_implicit_template): Make static.
+
 2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* call.c: Reorder #include's and remove duplicates.

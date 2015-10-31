@@ -19469,12 +19469,14 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
 		       is_template_arg);
 }
 
-static tree cp_parser_type_id (cp_parser *parser)
+static tree
+cp_parser_type_id (cp_parser *parser)
 {
   return cp_parser_type_id_1 (parser, false, false);
 }
 
-static tree cp_parser_template_type_arg (cp_parser *parser)
+static tree
+cp_parser_template_type_arg (cp_parser *parser)
 {
   tree r;
   const char *saved_message = parser->type_definition_forbidden_message;
@@ -36578,7 +36580,7 @@ get_concept_from_constraint (tree t)
    (creating a new template parameter list if necessary).  Returns the newly
    created template type parm.  */
 
-tree
+static tree
 synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
 {
   gcc_assert (current_binding_level->kind == sk_function_parms);
@@ -36771,7 +36773,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
    declaration can be completed.  If MEMBER_DECL_OPT is provided the finished
    form is returned.  Otherwise NULL_TREE is returned. */
 
-tree
+static tree
 finish_fully_implicit_template (cp_parser *parser, tree member_decl_opt)
 {
   gcc_assert (parser->fully_implicit_function_template_p);
