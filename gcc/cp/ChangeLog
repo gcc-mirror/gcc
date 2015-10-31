@@ -1,5 +1,20 @@
 2015-10-31  Jason Merrill  <jason@redhat.com>
 
+	Implement multiple 'auto' feature from Concepts TS.
+	* parser.c (cp_parser_type_id_1): Allow 'auto' if -fconcepts.
+	(cp_parser_template_type_arg): Likewise.
+	(get_concept_from_constraint): Split out most logic to...
+	* constraint.cc (placeholder_extract_concept_and_args): ...here.
+	(equivalent_placeholder_constraints, hash_placeholder_constraint): New.
+	* cxx-pretty-print.c (pp_cxx_constrained_type_spec): New.
+	* cxx-pretty-print.h: Declare it.
+	* error.c (dump_type) [TEMPLATE_TYPE_PARM]: Call it.
+	* pt.c (is_auto_r, extract_autos_r, extract_autos, auto_hash): New.
+	(type_uses_auto): Use is_auto_r.
+	(do_auto_deduction): Handle multiple 'auto's if -fconcepts.
+	* typeck.c (structural_comptypes) [TEMPLATE_TYPE_PARM]: Compare
+	constraints.
+
 	* pt.c (for_each_template_parm_r): Use WALK_SUBTREE.
 	Return a meaningful value rather than error_mark_node.
 	(for_each_template_parm): Return a tree.

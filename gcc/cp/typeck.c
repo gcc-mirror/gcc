@@ -1333,6 +1333,10 @@ structural_comptypes (tree t1, tree t2, int strict)
 	 template parameters set, they can't be equal.  */
       if (!comp_template_parms_position (t1, t2))
 	return false;
+      /* Constrained 'auto's are distinct from parms that don't have the same
+	 constraints.  */
+      if (!equivalent_placeholder_constraints (t1, t2))
+	return false;
       break;
 
     case TYPENAME_TYPE:

@@ -23394,6 +23394,100 @@ listify_autos (tree type, tree auto_node)
   return tsubst (type, argvec, tf_warning_or_error, NULL_TREE);
 }
 
+/* Hash traits for hashing possibly constrained 'auto'
+   TEMPLATE_TYPE_PARMs for use by do_auto_deduction.  */
+
+struct auto_hash : default_hash_traits<tree>
+{
+  static inline hashval_t hash (tree);
+  static inline bool equal (tree, tree);
+};
+
+/* Hash the 'auto' T.  */
+
+inline hashval_t
+auto_hash::hash (tree t)
+{
+  if (tree c = PLACEHOLDER_TYPE_CONSTRAINTS (t))
+    /* Matching constrained-type-specifiers denote the same template
+       parameter, so hash the constraint.  */
+    return hash_placeholder_constraint (c);
+  else
+    /* But unconstrained autos are all separate, so just hash the pointer.  */
+    return iterative_hash_object (t, 0);
+}
+
+/* Compare two 'auto's.  */
+
+inline bool
+auto_hash::equal (tree t1, tree t2)
+{
+  if (t1 == t2)
+    return true;
+
+  tree c1 = PLACEHOLDER_TYPE_CONSTRAINTS (t1);
+  tree c2 = PLACEHOLDER_TYPE_CONSTRAINTS (t2);
+
+  /* Two unconstrained autos are distinct.  */
+  if (!c1 || !c2)
+    return false;
+
+  return equivalent_placeholder_constraints (c1, c2);
+}
+
+/* for_each_template_parm callback for extract_autos: if t is a (possibly
+   constrained) auto, add it to the vector.  */
+
+static int
+extract_autos_r (tree t, void *data)
+{
+  hash_table<auto_hash> &hash = *(hash_table<auto_hash>*)data;
+  if (is_auto_or_concept (t))
+    {
+      /* All the autos were built with index 0; fix that up now.  */
+      tree *p = hash.find_slot (t, INSERT);
+      unsigned idx;
+      if (*p)
+	/* If this is a repeated constrained-type-specifier, use the index we
+	   chose before.  */
+	idx = TEMPLATE_PARM_IDX (TEMPLATE_TYPE_PARM_INDEX (*p));
+      else
+	{
+	  /* Otherwise this is new, so use the current count.  */
+	  *p = t;
+	  idx = hash.elements () - 1;
+	}
+      TEMPLATE_PARM_IDX (TEMPLATE_TYPE_PARM_INDEX (t)) = idx;
+    }
+
+  /* Always keep walking.  */
+  return 0;
+}
+
+/* Return a TREE_VEC of the 'auto's used in type under the Concepts TS, which
+   says they can appear anywhere in the type.  */
+
+static tree
+extract_autos (tree type)
+{
+  hash_set<tree> visited;
+  hash_table<auto_hash> hash (2);
+
+  for_each_template_parm (type, extract_autos_r, &hash, &visited, true);
+
+  tree tree_vec = make_tree_vec (hash.elements());
+  for (hash_table<auto_hash>::iterator iter = hash.begin();
+       iter != hash.end(); ++iter)
+    {
+      tree elt = *iter;
+      unsigned i = TEMPLATE_PARM_IDX (TEMPLATE_TYPE_PARM_INDEX (elt));
+      TREE_VEC_ELT (tree_vec, i)
+	= build_tree_list (NULL_TREE, TYPE_NAME (elt));
+    }
+
+  return tree_vec;
+}
+
 /* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
    from INIT.  AUTO_NODE is the TEMPLATE_TYPE_PARM used for 'auto' in TYPE.  */
 
@@ -23450,11 +23544,11 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 
   init = resolve_nondeduced_context (init);
 
-  targs = make_tree_vec (1);
   if (AUTO_IS_DECLTYPE (auto_node))
     {
       bool id = (DECL_P (init) || (TREE_CODE (init) == COMPONENT_REF
 				   && !REF_PARENTHESIZED_P (init)));
+      targs = make_tree_vec (1);
       TREE_VEC_ELT (targs, 0)
 	= finish_decltype_type (init, id, tf_warning_or_error);
       if (type != auto_node)
@@ -23467,14 +23561,21 @@ do_auto_deduction (tree type, tree init, tree auto_node,
   else
     {
       tree parms = build_tree_list (NULL_TREE, type);
-      tree tparms = make_tree_vec (1);
-      int val;
+      tree tparms;
 
-      TREE_VEC_ELT (tparms, 0)
-	= build_tree_list (NULL_TREE, TYPE_NAME (auto_node));
-      val = type_unification_real (tparms, targs, parms, &init, 1, 0,
-				   DEDUCE_CALL, LOOKUP_NORMAL,
-				   NULL, /*explain_p=*/false);
+      if (flag_concepts)
+	tparms = extract_autos (type);
+      else
+	{
+	  tparms = make_tree_vec (1);
+	  TREE_VEC_ELT (tparms, 0)
+	    = build_tree_list (NULL_TREE, TYPE_NAME (auto_node));
+	}
+
+      targs = make_tree_vec (TREE_VEC_LENGTH (tparms));
+      int val = type_unification_real (tparms, targs, parms, &init, 1, 0,
+				       DEDUCE_CALL, LOOKUP_NORMAL,
+				       NULL, /*explain_p=*/false);
       if (val > 0)
 	{
 	  if (processing_template_decl)
@@ -23503,7 +23604,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
      of each declared variable is determined as described above. If the
      type deduced for the template parameter U is not the same in each
      deduction, the program is ill-formed.  */
-  if (TREE_TYPE (auto_node)
+  if (!flag_concepts && TREE_TYPE (auto_node)
       && !same_type_p (TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0)))
     {
       if (cfun && auto_node == current_function_auto_return_pattern
@@ -23516,7 +23617,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	       auto_node, TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0));
       return error_mark_node;
     }
-  if (context != adc_requirement)
+  if (!flag_concepts)
     TREE_TYPE (auto_node) = TREE_VEC_ELT (targs, 0);
 
   /* Check any placeholder constraints against the deduced type. */
@@ -23592,13 +23693,33 @@ is_auto (const_tree type)
     return false;
 }
 
+/* for_each_template_parm callback for type_uses_auto.  */
+
+int
+is_auto_r (tree tp, void */*data*/)
+{
+  return is_auto_or_concept (tp);
+}
+
 /* Returns the TEMPLATE_TYPE_PARM in TYPE representing `auto' iff TYPE contains
    a use of `auto'.  Returns NULL_TREE otherwise.  */
 
 tree
 type_uses_auto (tree type)
 {
-  return find_type_usage (type, is_auto);
+  if (flag_concepts)
+    {
+      /* The Concepts TS allows multiple autos in one type-specifier; just
+	 return the first one we find, do_auto_deduction will collect all of
+	 them.  */
+      if (uses_template_parms (type))
+	return for_each_template_parm (type, is_auto_r, /*data*/NULL,
+				       /*visited*/NULL, /*nondeduced*/true);
+      else
+	return NULL_TREE;
+    }
+  else
+    return find_type_usage (type, is_auto);
 }
 
 /* Returns true iff TYPE is a TEMPLATE_TYPE_PARM representing 'auto',

@@ -19442,6 +19442,8 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
     abstract_declarator = NULL;
 
   if (type_specifier_seq.type
+      /* The concepts TS allows 'auto' as a type-id.  */
+      && !flag_concepts
       /* None of the valid uses of 'auto' in C++14 involve the type-id
 	 nonterminal, but it is valid in a trailing-return-type.  */
       && !(cxx_dialect >= cxx14 && is_trailing_return)
@@ -19484,7 +19486,7 @@ cp_parser_template_type_arg (cp_parser *parser)
     = G_("types may not be defined in template arguments");
   r = cp_parser_type_id_1 (parser, true, false);
   parser->type_definition_forbidden_message = saved_message;
-  if (cxx_dialect >= cxx14 && type_uses_auto (r))
+  if (cxx_dialect >= cxx14 && !flag_concepts && type_uses_auto (r))
     {
       error ("invalid use of %<auto%> in template argument");
       r = error_mark_node;
@@ -36557,23 +36559,9 @@ tree_type_is_auto_or_concept (const_tree t)
 static tree
 get_concept_from_constraint (tree t)
 {
-  gcc_assert (TREE_CODE (t) == PRED_CONSTR);
-  t = PRED_CONSTR_EXPR (t);
-  gcc_assert (TREE_CODE (t) == CALL_EXPR
-              || TREE_CODE (t) == TEMPLATE_ID_EXPR
-              || VAR_P (t));
-
-  if (TREE_CODE (t) == TEMPLATE_ID_EXPR)
-    return DECL_TEMPLATE_RESULT (TREE_OPERAND (t, 0));
-  if (VAR_P (t))
-    return DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (t));
-  else
-    {
-      tree fn = CALL_EXPR_FN (t);
-      tree ovl = TREE_OPERAND (fn, 0);
-      tree tmpl = OVL_FUNCTION (ovl);
-      return DECL_TEMPLATE_RESULT (tmpl);
-    }
+  tree tmpl, args;
+  placeholder_extract_concept_and_args (t, tmpl, args);
+  return DECL_TEMPLATE_RESULT (tmpl);
 }
 
 /* Add an implicit template type parameter to the CURRENT_TEMPLATE_PARMS
