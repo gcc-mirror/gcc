@@ -1,3 +1,10 @@
+2015-10-31  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR Bootstrap/68168
+
+	* openmp.c (resolve_omp_clauses): Pass &n->where when calling
+	gfc_error.
+
 2015-10-30  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* gfortran.h (gfc_omp_namespace): Add locus where member.
