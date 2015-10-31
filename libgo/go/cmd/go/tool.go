@@ -50,6 +50,9 @@ func tool(toolName string) string {
 	if toolIsWindows {
 		toolPath += toolWindowsExtension
 	}
+	if len(buildToolExec) > 0 {
+		return toolPath
+	}
 	// Give a nice message if there is no tool with that name.
 	if _, err := os.Stat(toolPath); err != nil {
 		if isInGoToolsRepo(toolName) {
@@ -64,10 +67,6 @@ func tool(toolName string) string {
 }
 
 func isInGoToolsRepo(toolName string) bool {
-	switch toolName {
-	case "cover", "vet":
-		return true
-	}
 	return false
 }
 
@@ -92,7 +91,11 @@ func runTool(cmd *Command, args []string) {
 		return
 	}
 	if toolN {
-		fmt.Printf("%s %s\n", toolPath, strings.Join(args[1:], " "))
+		cmd := toolPath
+		if len(args) > 1 {
+			cmd += " " + strings.Join(args[1:], " ")
+		}
+		fmt.Printf("%s\n", cmd)
 		return
 	}
 	toolCmd := &exec.Cmd{
@@ -101,6 +104,8 @@ func runTool(cmd *Command, args []string) {
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
+		// Set $GOROOT, mainly for go tool dist.
+		Env: mergeEnvLists([]string{"GOROOT=" + goroot}, os.Environ()),
 	}
 	err := toolCmd.Run()
 	if err != nil {

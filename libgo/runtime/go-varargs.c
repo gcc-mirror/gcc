@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 
 /* The syscall package calls C functions.  The Go compiler can not
    represent a C varargs functions.  On some systems it's important
@@ -54,6 +55,18 @@ __go_fcntl_uintptr (uintptr_t fd, uintptr_t cmd, uintptr_t arg)
   else
     ret.err = 0;
   return ret;
+}
+
+int
+__go_ioctl (int d, int request, int arg)
+{
+  return ioctl (d, request, arg);
+}
+
+int
+__go_ioctl_ptr (int d, int request, void *arg)
+{
+  return ioctl (d, request, arg);
 }
 
 #ifdef HAVE_OPEN64
