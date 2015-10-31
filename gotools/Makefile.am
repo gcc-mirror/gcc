@@ -44,10 +44,12 @@ GOLINK = $(GOCOMPILER) $(GOCFLAGS) $(AM_GOCFLAGS) $(LDFLAGS) $(AM_LDFLAGS) -o $@
 cmdsrcdir = $(srcdir)/../libgo/go/cmd
 
 go_cmd_go_files = \
+	$(cmdsrcdir)/go/alldocs.go \
 	$(cmdsrcdir)/go/build.go \
 	$(cmdsrcdir)/go/clean.go \
 	$(cmdsrcdir)/go/context.go \
 	$(cmdsrcdir)/go/discovery.go \
+	$(cmdsrcdir)/go/doc.go \
 	$(cmdsrcdir)/go/env.go \
 	$(cmdsrcdir)/go/fix.go \
 	$(cmdsrcdir)/go/fmt.go \
@@ -58,6 +60,7 @@ go_cmd_go_files = \
 	$(cmdsrcdir)/go/http.go \
 	$(cmdsrcdir)/go/list.go \
 	$(cmdsrcdir)/go/main.go \
+	$(cmdsrcdir)/go/note.go \
 	$(cmdsrcdir)/go/pkg.go \
 	$(cmdsrcdir)/go/run.go \
 	$(cmdsrcdir)/go/signal.go \
