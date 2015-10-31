@@ -1,5 +1,8 @@
 2015-10-31  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (hash_tmpl_and_args): Use iterative_hash_object on template
+	uid.
+
 	* parser.c (synthesize_implicit_template_parm)
 	(finish_fully_implicit_template): Make static.
 
