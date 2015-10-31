@@ -1,3 +1,9 @@
+2015-10-31  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Remove the implementation of N3994, terse range-for loops.
+	* parser.c (cp_parser_for_init_statement): Remove the parsing
+	of a terse range-for.
+
 2015-10-31  Jason Merrill  <jason@redhat.com>
 
 	Implement multiple 'auto' feature from Concepts TS.

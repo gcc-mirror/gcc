@@ -1,3 +1,8 @@
+2015-10-31  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Remove the implementation of N3994, terse range-for loops.
+	* g++.dg/cpp1z/range-for1.C: Remove.
+
 2015-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr45.adb: New test.
