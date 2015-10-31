@@ -1,5 +1,15 @@
 2015-10-31  Tom de Vries  <tom@codesourcery.com>
 
+	* tree-ssa-structalias.c (ipa_pta_execute): Add extra arg to call to
+	create_function_info_for.  Dump constraints generated during
+	create_function_info_for. Move intra_create_variable_infos call and
+	function-return-values-escape bit to ...
+	(create_function_info_for): ... here, and merge
+	intra_create_variable_infos call with argument loop.  Add and handle
+	nonlocal_p parameter.
+
+2015-10-31  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-ssa-structalias.c (create_function_info_for): Make sure prev_vi
 	updating is alap, and seperated from preceding code.  Make sure
 	insert_vi_for_tree is seperated from surrounding code.
