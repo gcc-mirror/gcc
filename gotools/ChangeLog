@@ -1,3 +1,9 @@
+2015-10-31  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.am (go_cmd_go_files): Update to Go 1.5.1 library by
+	adding alldocs.go, doc.go, note.go.
+	* Makefile.in: Rebuild.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in: Regenerated with automake-1.11.6.
