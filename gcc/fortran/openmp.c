@@ -2922,7 +2922,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	  {
 	    if (!code && (!n->sym->attr.dummy || n->sym->ns != ns))
 	      gfc_error ("Variable %qs is not a dummy argument at %L",
-			 n->sym->name, n->where);
+			 n->sym->name, &n->where);
 	    continue;
 	  }
 	if (n->sym->attr.flavor == FL_PROCEDURE
