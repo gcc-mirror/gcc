@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "diagnostic-core.h"
 #include "ggc-internal.h"
+#include "params.h"
 #include "hosthooks.h"
 #include "plugin.h"
 
