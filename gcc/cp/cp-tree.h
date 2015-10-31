@@ -5984,7 +5984,7 @@ extern tree lookup_template_class		(tree, tree, tree, tree,
 extern tree lookup_template_function		(tree, tree);
 extern tree lookup_template_variable		(tree, tree);
 extern int uses_template_parms			(tree);
-extern int uses_template_parms_level		(tree, int);
+extern bool uses_template_parms_level		(tree, int);
 extern bool in_template_function		(void);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);
