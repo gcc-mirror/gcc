@@ -8585,6 +8585,16 @@ Builtin_call_expression::do_export(Export* exp) const
 int
 Call_expression::do_traverse(Traverse* traverse)
 {
+  // If we are calling a function in a different package that returns
+  // an unnamed type, this may be the only chance we get to traverse
+  // that type.  We don't traverse this->type_ because it may be a
+  // Call_multiple_result_type that will just lead back here.
+  if (this->type_ != NULL && !this->type_->is_error_type())
+    {
+      Function_type *fntype = this->get_function_type();
+      if (fntype != NULL && Type::traverse(fntype, traverse) == TRAVERSE_EXIT)
+	return TRAVERSE_EXIT;
+    }
   if (Expression::traverse(&this->fn_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   if (this->args_ != NULL)
