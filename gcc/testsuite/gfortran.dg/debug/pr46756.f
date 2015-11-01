@@ -1,7 +1,6 @@
 C PR debug/46756, reduced from ../20010519-1.f
 C { dg-do compile }
 C { dg-options "-O -fcompare-debug" }
-C { dg-xfail-if "compare-debug" { powerpc-ibm-aix* } { "*" } { "" } }
 
       LOGICAL QDISK,QDW,QCMPCT
       LOGICAL LNOMA,LRAISE,LSCI,LBIG
