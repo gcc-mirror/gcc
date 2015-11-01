@@ -1,3 +1,8 @@
+2015-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr67609-2.c: Include sse2-check.h.
+	(sse2_test): Rename from main.  Do not return 0.
+
 2015-11-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/debug/pr46756.f: Remove XFAIL for AIX.
