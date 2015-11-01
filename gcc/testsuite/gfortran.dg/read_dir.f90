@@ -1,4 +1,4 @@
-! { dg-do run { xfail *-*-freebsd* *-*-dragonfly* } }
+! { dg-do run { xfail *-*-freebsd* *-*-dragonfly* powerpc-ibm-aix* } }
 ! PR67367
 program bug
    implicit none

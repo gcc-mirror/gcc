@@ -1,3 +1,9 @@
+2015-11-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/debug/pr46756.f: Remove XFAIL for AIX.
+	* gfortran.dg/proc_ptr_39.f90: Require visibility.
+	* gfortran.dg/read_dir.f90: XFAIL AIX.
+
 2015-10-31  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Remove the implementation of N3994, terse range-for loops.
