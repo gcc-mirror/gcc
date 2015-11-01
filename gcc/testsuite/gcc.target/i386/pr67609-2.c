@@ -2,7 +2,8 @@
 /* { dg-options "-O2 -msse2" } */
 /* { dg-require-effective-target sse2 } */
 
-#include <stdlib.h>
+#include "sse2-check.h"
+
 #include <emmintrin.h>
 
 __m128d reg = { 2.0, 4.0 };
@@ -17,13 +18,11 @@ set_lower (double b)
   reg = _mm_load_pd(v);
 }
 
-int
-main ()
+static void
+sse2_test (void)
 {
   set_lower (6.0);
 
   if (reg[1] != 4.0)
-    abort ();
-
-  return 0;
+    __builtin_abort ();
 }
