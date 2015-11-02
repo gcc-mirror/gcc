@@ -1,3 +1,7 @@
+2015-11-01  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-thread-11.c: Update target selector.
+
 2015-11-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr67609-2.c: Include sse2-check.h.
