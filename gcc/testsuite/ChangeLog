@@ -1,3 +1,12 @@
+2015-11-02  Steve Ellcey  <sellcey@imgtec.com>
+
+	2015-10-23  Steve Ellcey  <sellcey@imgtec.com>
+		    Andrew Pinski  <apinski@cavium.com>
+
+	PR rtl-optimization/67736
+	* gcc.dg/torture/pr67736.c: New test.
+	* gcc.dg/combine-subregs.c: New test.
+
 2015-11-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/67929
