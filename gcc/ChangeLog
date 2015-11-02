@@ -1,5 +1,7 @@
 2015-11-01  Jeff Law <jeff@redhat.com>
 
+	* vmsdbgout.c: Revert unused header file reduction patch.
+
 	* config/mcore/mcore.c: Include regs.h.
 
 2015-10-31  Segher Boessenkool  <segher@kernel.crashing.org>
