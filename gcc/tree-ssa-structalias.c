@@ -5890,7 +5890,7 @@ make_restrict_var_constraints (varinfo_t vi)
 	if (vi->only_restrict_pointers)
 	  make_constraint_from_global_restrict (vi, "GLOBAL_RESTRICT", true);
 	else
-	  make_copy_constraint (vi, nonlocal_id);
+	  make_constraint_from (vi, nonlocal_id);
       }
 }
 
