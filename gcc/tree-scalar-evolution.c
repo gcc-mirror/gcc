@@ -1827,20 +1827,6 @@ interpret_rhs_expr (struct loop *loop, gimple *at_stmt,
       res = chrec_fold_multiply (type, chrec1, chrec2);
       break;
 
-    case LSHIFT_EXPR:
-      /* Handle A<<B as A * (1<<B).  */
-      chrec1 = analyze_scalar_evolution (loop, rhs1);
-      chrec2 = analyze_scalar_evolution (loop, rhs2);
-      chrec1 = chrec_convert (type, chrec1, at_stmt);
-      chrec1 = instantiate_parameters (loop, chrec1);
-      chrec2 = instantiate_parameters (loop, chrec2);
-
-      chrec2 = fold_build2 (LSHIFT_EXPR, type,
-			    build_int_cst (TREE_TYPE (rhs1), 1),
-			    chrec2);
-      res = chrec_fold_multiply (type, chrec1, chrec2);
-      break;
-
     CASE_CONVERT:
       /* In case we have a truncation of a widened operation that in
          the truncated type has undefined overflow behavior analyze
