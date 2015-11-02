@@ -41,10 +41,10 @@ import (
 //sysnb	raw_close(fd int) (err Errno)
 //close(fd _C_int) _C_int
 
-//sysnb	raw_ioctl(fd int, cmd int, val int) (rval int, err Errno)
+//sysnb	raw_ioctl(fd int, cmd uintptr, val int) (rval int, err Errno)
 //__go_ioctl(fd _C_int, cmd _C_int, val _C_int) _C_int
 
-//sysnb raw_ioctl_ptr(fd int, cmd int, val unsafe.Pointer) (rval int, err Errno)
+//sysnb raw_ioctl_ptr(fd int, cmd uintptr, val unsafe.Pointer) (rval int, err Errno)
 //__go_ioctl_ptr(fd _C_int, cmd _C_int, val unsafe.Pointer) _C_int
 
 //sysnb	raw_execve(argv0 *byte, argv **byte, envv **byte) (err Errno)
