@@ -183,6 +183,9 @@ enum {
 #ifdef TIOCSCTTY
   TIOCSCTTY_val = TIOCSCTTY,
 #endif
+#ifdef TIOCGPGRP
+  TIOCGPGRP_val = TIOCGPGRP,
+#endif
 #ifdef TIOCSPGRP
   TIOCSPGRP_val = TIOCSPGRP,
 #endif
@@ -918,6 +921,11 @@ fi
 if ! grep '^const TIOCSCTTY' ${OUT} >/dev/null 2>&1; then
   if grep '^const _TIOCSCTTY_val' ${OUT} >/dev/null 2>&1; then
     echo 'const TIOCSCTTY = _TIOCSCTTY_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCGPGRP' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCGPGRP_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCGPGRP = _TIOCGPGRP_val' >> ${OUT}
   fi
 fi
 if ! grep '^const TIOCSPGRP' ${OUT} >/dev/null 2>&1; then
