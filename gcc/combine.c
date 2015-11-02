@@ -11432,8 +11432,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		 tmode != GET_MODE (op0); tmode = GET_MODE_WIDER_MODE (tmode))
 	      if ((unsigned HOST_WIDE_INT) c0 == GET_MODE_MASK (tmode))
 		{
-		  op0 = gen_lowpart (tmode, inner_op0);
-		  op1 = gen_lowpart (tmode, inner_op1);
+		  op0 = gen_lowpart_or_truncate (tmode, inner_op0);
+		  op1 = gen_lowpart_or_truncate (tmode, inner_op1);
 		  code = unsigned_condition (code);
 		  changed = 1;
 		  break;
@@ -11951,12 +11951,9 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 				   & GET_MODE_MASK (mode))
 				  + 1)) >= 0
 	      && const_op >> i == 0
-	      && (tmode = mode_for_size (i, MODE_INT, 1)) != BLKmode
-	      && (TRULY_NOOP_TRUNCATION_MODES_P (tmode, GET_MODE (op0))
-		  || (REG_P (XEXP (op0, 0))
-		      && reg_truncated_to_mode (tmode, XEXP (op0, 0)))))
+	      && (tmode = mode_for_size (i, MODE_INT, 1)) != BLKmode)
 	    {
-	      op0 = gen_lowpart (tmode, XEXP (op0, 0));
+	      op0 = gen_lowpart_or_truncate (tmode, XEXP (op0, 0));
 	      continue;
 	    }
 

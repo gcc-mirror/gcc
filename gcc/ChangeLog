@@ -1,3 +1,13 @@
+2015-11-02  Steve Ellcey  <sellcey@imgtec.com>
+
+	Backport from mainline
+	2015-10-23  Steve Ellcey  <sellcey@imgtec.com>
+	            Andrew Pinski  <apinski@cavium.com>
+
+	PR rtl-optimization/67736
+	* combine.c (simplify_comparison): Use gen_lowpart_or_truncate instead
+	of gen_lowpart.
+
 2015-10-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
