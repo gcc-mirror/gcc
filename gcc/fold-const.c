@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "params.h"
 #include "tree-into-ssa.h"
+#include "md5.h"
 
 #ifndef LOAD_EXTEND_OP
 #define LOAD_EXTEND_OP(M) UNKNOWN
