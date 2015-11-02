@@ -1,3 +1,8 @@
+2015-11-02  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/neon-testgen.ml (emit_epilogue): Remove extraneous
+	brackets and semicolon.  
+
 2015-11-02  Alan Lawrence  <alan.lawrence@arm.com>
 
 	Revert:
