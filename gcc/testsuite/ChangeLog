@@ -1,3 +1,8 @@
+2015-11-02  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-thread-11.c: Verify that we do not have
+	irreducible loops in the CFG.
+
 2015-11-02  Alan Lawrence  <alan.lawrence@arm.com>
 
 	Revert:

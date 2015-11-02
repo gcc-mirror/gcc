@@ -1,3 +1,9 @@
+2015-11-02  Jeff Law <jeff@redhat.com>
+
+	* tree-ssa-threadupdate.c (valid_jump_thread_path): Also detect
+	cases where the loop latch edge is in the middle of an FSM
+	path.
+
 2015-11-03  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-structalias.c (make_restrict_var_constraints): Rename to ...
