@@ -5879,19 +5879,22 @@ debug_solution_for_var (unsigned int var)
   dump_solution_for_var (stderr, var);
 }
 
-/* Register the constraints for restrict var VI.  */
+/* Register the constraints for function parameter related VI.  Use RESTRICT_NAME
+   as the base name of created restrict vars.  */
 
 static void
-make_restrict_var_constraints (varinfo_t vi)
+make_param_constraints (varinfo_t vi, const char *restrict_name)
 {
   for (; vi; vi = vi_next (vi))
-    if (vi->may_have_pointers)
-      {
-	if (vi->only_restrict_pointers)
-	  make_constraint_from_global_restrict (vi, "GLOBAL_RESTRICT", true);
-	else
-	  make_constraint_from (vi, nonlocal_id);
-      }
+    {
+      if (vi->only_restrict_pointers)
+	make_constraint_from_global_restrict (vi, restrict_name, true);
+      else if (vi->may_have_pointers)
+	make_constraint_from (vi, nonlocal_id);
+
+      if (vi->is_full_var)
+	break;
+    }
 }
 
 /* Create varinfo structures for all of the variables in the
@@ -5928,19 +5931,11 @@ intra_create_variable_infos (struct function *fn)
 	  vi->is_restrict_var = 1;
 	  insert_vi_for_tree (heapvar, vi);
 	  make_constraint_from (p, vi->id);
-	  make_restrict_var_constraints (vi);
+	  make_param_constraints (vi, "GLOBAL_RESTRICT");
 	  continue;
 	}
 
-      for (; p; p = vi_next (p))
-	{
-	  if (p->only_restrict_pointers)
-	    make_constraint_from_global_restrict (p, "PARM_RESTRICT", true);
-	  else if (p->may_have_pointers)
-	    make_constraint_from (p, nonlocal_id);
-	  if (p->is_full_var)
-	    break;
-	}
+      make_param_constraints (p, "PARM_RESTRICT");
     }
 
   /* Add a constraint for a result decl that is passed by reference.  */
