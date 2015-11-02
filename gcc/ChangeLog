@@ -1,3 +1,8 @@
+2015-11-03  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-structalias.c (make_restrict_var_constraints): Replace
+	make_copy_constraint call with make_constraint_from call.
+
 2015-11-02  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/rs6000/freebsd64.h (ASM_SPEC32): Adust spec to handle
