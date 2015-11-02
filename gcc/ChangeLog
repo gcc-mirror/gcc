@@ -1,3 +1,7 @@
+2015-11-01  Jeff Law <jeff@redhat.com>
+
+	* config/mcore/mcore.c: Include regs.h.
+
 2015-10-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p): Rewrite.
