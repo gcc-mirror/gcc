@@ -1,3 +1,8 @@
+2015-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/68166
+	* fold-const.c: Include "md5.h".
+
 2015-11-01  Jeff Law <jeff@redhat.com>
 
 	* vmsdbgout.c: Revert unused header file reduction patch.
