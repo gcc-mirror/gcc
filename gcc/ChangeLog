@@ -1,3 +1,26 @@
+2015-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* builtins.h (fold_fma): Move to fold-const-call.h.
+	* builtins.c: Include fold-const-call.h.
+	(mathfn_built_in_2): New function, split out from...
+	(mathfn_built_in_1): ...here.
+	(do_real_to_int_conversion, fold_const_builtin_pow)
+	(fold_const_builtin_logb, fold_const_builtin_significand)
+	(fold_const_builtin_load_exponent, do_mpfr_arg1, do_mpfr_arg2)
+	(do_mpfr_arg3, do_mpfr_sincos, do_mpfr_bessel_n, do_mpc_arg1): Delete.
+	(fold_builtin_sincos): Use fold_const_call to handle constants.
+	(fold_builtin_1, fold_builtin_2, fold_builtin_3): Add explicit
+	checks for ERROR_MARK.  Use fold_const_call to handle constant
+	folds for math functions.
+	(fold_fma): Move to fold-const-call.c.
+	* fold-const.c: Include fold-const-call.h.
+	* Makefile.in (OBJS): Add fold-const-call.o.
+	(PLUGIN_HEADERS): Add fold-const-call.h.
+	* realmpfr.h (real_from_mpfr): Allow the format to be specified
+	directly.
+	* realmpfr.c (real_from_mpfr): Likewise.
+	* fold-const-call.h, fold-const-call.c: New files.
+
 2015-11-02  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/neon-testgen.ml (emit_epilogue): Remove extraneous
