@@ -1,3 +1,10 @@
+2015-11-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (source_location): In the table in the
+	descriptive comment, show UNKNOWN_LOCATION, BUILTINS_LOCATION,
+	LINE_MAP_MAX_LOCATION_WITH_COLS, LINE_MAP_MAX_SOURCE_LOCATION.
+	Add notes about ad-hoc values.
+
 2015-10-21  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* include/line-map.h: Use CHECKING_P instead of ENABLE_CHECKING.
