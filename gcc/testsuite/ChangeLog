@@ -1,3 +1,11 @@
+2015-11-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/67929
+	* gcc.target/arm/pr67929_1.c: Move to...
+	* gcc.c-torture/execute/pr67929_1.c: ... Here.
+	Remove arm-specific directives.  Add noclone, noinline
+	attributes.
+
 2015-11-01  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-thread-11.c: Update target selector.
