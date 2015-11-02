@@ -1,3 +1,8 @@
+2015-11-02  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/rs6000/freebsd64.h (ASM_SPEC32): Adapt spec to handle PIE
+	executables.
+
 2015-11-02  Steve Ellcey  <sellcey@imgtec.com>
 
 	Backport from mainline
