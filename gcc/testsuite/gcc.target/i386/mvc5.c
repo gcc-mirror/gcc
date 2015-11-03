@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-ifunc "" } */
 /* { dg-options "-fno-inline" } */
 /* { dg-final { scan-assembler-times "foo.ifunc" 6 } } */
 
