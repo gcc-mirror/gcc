@@ -1,3 +1,8 @@
+2015-11-03  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/67982
+	* gfortran.dg/warn_unused_function_3.f90: New test.
+
 2015-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr45.adb: Only compile the test.
