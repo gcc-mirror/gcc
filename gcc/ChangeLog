@@ -2717,7 +2717,7 @@
 	* target.def (get_mask_mode): New.
 	* targhooks.c (default_get_mask_mode): New.
 	* targhooks.h (default_get_mask_mode): New.
-	* gcc/tree-vect-stmts.c (get_same_sized_vectype): Add special case
+	* tree-vect-stmts.c (get_same_sized_vectype): Add special case
 	for boolean vector.
 	* tree.c (MAX_BOOL_CACHED_PREC): New.
 	(nonstandard_boolean_type_cache): New.
@@ -3239,10 +3239,10 @@
 	New hook.
 	* doc/tm.texi.in (TARGET_RELAYOUT_FUNCTION): Document.
 	* doc/tm.texi (TARGET_RELAYOUT_FUNCTION): New hook.
-	* gcc/target.def (TARGET_RELAYOUT_FUNCTION): Likewise.
-	* gcc/function.c (allocate_struct_function): Call
+	* target.def (TARGET_RELAYOUT_FUNCTION): Likewise.
+	* function.c (allocate_struct_function): Call
 	relayout_function hook.
-	* gcc/passes.c (rest_of_decl_compilation): Likewise.
+	* passes.c (rest_of_decl_compilation): Likewise.
 
 2015-10-16  Christian Bruel  <christian.bruel@st.com>
 
@@ -3877,7 +3877,7 @@
 
 2015-10-13  Nikolai Bozhenov  <n.bozhenov@samsung.com>
 
-	* gcc/rtl.h (print_insn): Fix prototype.
+	* rtl.h (print_insn): Fix prototype.
 
 2015-10-13  Tom de Vries  <tom@codesourcery.com>
 
@@ -4084,7 +4084,7 @@
 2015-10-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/67864
-	* gcc/bb-reorder (reorder_basic_blocks_simple): Prefer existing
+	* bb-reorder (reorder_basic_blocks_simple): Prefer existing
 	fallthrough edges for conditional jumps.  Don't sort candidate
 	edges if not optimizing for speed.
 
@@ -4913,7 +4913,7 @@
 	* config/i386/sse.md (set_attr znver1_decode): Likewise.
 	* config/i386/x86-tune.def:  Add znver1 tunings.
 	* config/i386/znver1.md: Introduce znver1 cpu and include new md file.
-	* gcc/doc/invoke.texi: Add details about znver1
+	* doc/invoke.texi: Add details about znver1
 
 2015-10-06  Richard Biener  <rguenther@suse.de>
 
@@ -6805,14 +6805,14 @@
 
 2015-09-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* gcc/config/i386/i386.md (define_insn "kunpckhi"): Fix
+	* config/i386/i386.md (define_insn "kunpckhi"): Fix
 	operand in pattern.
 	(define_insn "kunpcksi"): Ditto.
 	(define_insn "kunpckdi"): Ditto.
 
 2015-09-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* gcc/config/i386/i386.md (define_split not/xor SWI1248x): Use
+	* config/i386/i386.md (define_split not/xor SWI1248x): Use
 	iterator instead of fixed modes.
 
 2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
@@ -7647,7 +7647,7 @@
 	(TARGET_ARM_SAT, TARGET_IDIV, TARGET_HAVE_LDREX)
 	(TARGET_HAVE_LDREXBH, TARGET_HAVE_LDREXD, TARGET_ARM_FEATURE_LDREX)
 	(TARGET_DSP_MULTIPLY, TARGET_INT_SIMD): Redefined macros.
-	* gcc/config/arm/arm-protos.h (arm_cpu_builtins): Remove declaration.
+	* config/arm/arm-protos.h (arm_cpu_builtins): Remove declaration.
 
 2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
 
@@ -8870,7 +8870,7 @@
 	* config/mips/mips-opts.h (mips_cb_setting): New enum.
 	* config/mips/mips-protos.h: Add definitions for
 	mips_output_jump and mips_output_equal_conditional_branch
-	* gcc/config/mips/mips.c (MIPS_JR): Change to support the
+	* config/mips/mips.c (MIPS_JR): Change to support the
 	JIC instruction.
 	(mips_emit_compare): Add support for the MIPS R6 conditional
 	compact branches.
@@ -8895,7 +8895,7 @@
 	(mips_trampoline_init): Add compact branch support.
 	(mips_mult_zero_zero_cost): Allow zero initialisation of
 	accumulators with TARGET_DSP.
-	* gcc/config/mips/mips.h (TARGET_CB_NEVER): New define.
+	* config/mips/mips.h (TARGET_CB_NEVER): New define.
 	(TARGET_CB_MAYBE): New define.
 	(TARGET_CB_ALWAYS): New define.
 	(ISA_HAS_DELAY_SLOTS): New define.
@@ -9640,9 +9640,9 @@
 
 2015-08-26  Matthew Wahab  <matthew.wahab@arm.com>
 
-	* gcc/config/arm/arm-cores.def: Add FL_FOR_ARCH flag for each
+	* config/arm/arm-cores.def: Add FL_FOR_ARCH flag for each
 	ARM_CORE entry.  Fix some white-space.
-	* gcc/config/arm/arm.c: Remove FL_FOR_ARCH derivation from
+	* config/arm/arm.c: Remove FL_FOR_ARCH derivation from
 	ARM_CORE definition.
 
 2015-08-26  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
@@ -11128,7 +11128,7 @@
 2015-08-05  Lynn Boger  <laboger@linux.vnet.ibm.com>
 
 	PR target/66870
-	* gcc/config/rs6000/rs6000.c (rs6000_emit_prologue): Check
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Check
 	for no_split_stack function attribute along with
 	flag_split_stack.
 	(rs6000_expand_split_stack_prologue): Likewise.
@@ -11759,7 +11759,7 @@
 2015-08-01  Michael Collison  <michael.collison@linaro.org
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-	* gcc/config/arm/arm.md (*arm_smin_cmp): New pattern.
+	* config/arm/arm.md (*arm_smin_cmp): New pattern.
 	(*arm_umin_cmp): Likewise.
 
 2015-08-01  Caroline Tice  <cmtice@google.com>
@@ -12670,7 +12670,7 @@
 
 2015-07-27  Wilco Dijkstra  <wdijkstr@arm.com>
 
-	* gcc/config/aarch64/aarch64.md (aarch64_lshr_sisd_or_int_<mode>3):
+	* config/aarch64/aarch64.md (aarch64_lshr_sisd_or_int_<mode>3):
 	Place integer variant first.
 	(aarch64_ashr_sisd_or_int_<mode>3): Likewise.
 
@@ -19159,7 +19159,7 @@
 	* config/aarch64/aarch64-arches.def: Add "armv8.1-a".
 	* config/aarch64/aarch64-options-extensions.def: Update "fP",
 	"simd" and "crypto".  Add "lse", "pan", "lor" and "rdma".
-	* gcc/config/aarch64/aarch64.h (AARCH64_FL_LSE): New.
+	* config/aarch64/aarch64.h (AARCH64_FL_LSE): New.
 	(AARCH64_FL_PAN): New.
 	(AARCH64_FL_LOR): New.
 	(AARCH64_FL_RDMA): New.
@@ -21828,9 +21828,9 @@
 
 2015-06-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
-	* gcc/config/arm/arm-protos.h (tune_params): Rename fuseable_ops
+	* config/arm/arm-protos.h (tune_params): Rename fuseable_ops
 	to fusible_ops.
-	* gcc/config/arm/arm.c (arm_print_tune_info): Likewise.
+	* config/arm/arm.c (arm_print_tune_info): Likewise.
 	(arm_macro_fusion_p): Likewise.
 	(arm_macro_fusion_pair_p): Likewise.
 
@@ -21911,7 +21911,7 @@
 
 2015-05-30  Mike Frysinger  <vapier@gentoo.org>
 
-	* gcc/config/alpha/elf.h (ASM_SPEC): Add %{mcpu=*:-m%*}.
+	* config/alpha/elf.h (ASM_SPEC): Add %{mcpu=*:-m%*}.
 
 2015-05-28  DJ Delorie  <dj@redhat.com>
 
@@ -22116,7 +22116,7 @@
 	FPIE2_OR_FPIC2_SPEC.
 	* config/m68k/netbsd-elf.h (ASM_SPEC): Likewise.
 	* config/m68k/openbsd.h (ASM_SPEC): Likewise.
-	* gcc/config/sol2.h (ASM_PIC_SPEC): Likewise.
+	* config/sol2.h (ASM_PIC_SPEC): Likewise.
 	* config/arm/freebsd.h (SUBTARGET_EXTRA_ASM_SPEC): Likewise.
 	* config/arm/netbsd-elf.h (SUBTARGET_EXTRA_ASM_SPEC): Likewise.
 	* config/arm/semi.h (SUBTARGET_EXTRA_ASM_SPEC): Likewise.
@@ -23191,7 +23191,7 @@
 	* common/config/rs6000/rs6000-common.c (TARGET_SUPPORTS_SPLIT_STACK):
 	Define.
 	(rs6000_supports_split_stack): New function.
-	* gcc/config/rs6000/rs6000.c (machine_function): Add
+	* config/rs6000/rs6000.c (machine_function): Add
 	split_stack_arg_pointer.
 	(TARGET_EXTRA_LIVE_ON_ENTRY, TARGET_INTERNAL_ARG_POINTER): Define.
 	(setup_incoming_varargs): Use crtl->args.internal_arg_pointer
@@ -23204,12 +23204,12 @@
 	rs6000_internal_arg_pointer, rs6000_live_on_entry,
 	rs6000_split_stack_space_check): New functions.
 	(rs6000_elf_file_end): Call file_end_indicate_split_stack.
-	* gcc/config/rs6000/rs6000.md (UNSPEC_STACK_CHECK): Define.
+	* config/rs6000/rs6000.md (UNSPEC_STACK_CHECK): Define.
 	(UNSPECV_SPLIT_STACK_RETURN): Define.
 	(split_stack_prologue, load_split_stack_limit,
 	load_split_stack_limit_di, load_split_stack_limit_si,
 	split_stack_return, split_stack_space_check): New expands and insns.
-	* gcc/config/rs6000/rs6000-protos.h
+	* config/rs6000/rs6000-protos.h
 	(rs6000_expand_split_stack_prologue): Declare.
 	(rs6000_split_stack_space_check): Declare.
 
@@ -25317,17 +25317,17 @@
 
 2015-05-05  Matthew Wahab  <matthew.wahab@arm.com>
 
-	* gcc/config/aarch64-protos.h (struct cpu_branch_cost): New.
+	* config/aarch64-protos.h (struct cpu_branch_cost): New.
 	(tune_params): Add field branch_costs.
 	(aarch64_branch_cost): Declare.
-	* gcc/config/aarch64.c (generic_branch_cost): New.
+	* config/aarch64.c (generic_branch_cost): New.
 	(generic_tunings): Set field cpu_branch_cost to generic_branch_cost.
 	(cortexa53_tunings): Likewise.
 	(cortexa57_tunings): Likewise.
 	(thunderx_tunings): Likewise.
 	(xgene1_tunings): Likewise.
 	(aarch64_branch_cost): Define.
-	* gcc/config/aarch64/aarch64.h (BRANCH_COST): Redefine.
+	* config/aarch64/aarch64.h (BRANCH_COST): Redefine.
 
 2015-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -25636,9 +25636,9 @@
 
 2015-05-01  Wilco Dijkstra  <wdijkstr@arm.com>
 
-	* gcc/config/aarch64/aarch64-protos.h (tune_params):
+	* config/aarch64/aarch64-protos.h (tune_params):
 	Add min_div_recip_mul_sf and min_div_recip_mul_df fields.
-	* gcc/config/aarch64/aarch64.c (aarch64_min_divisions_for_recip_mul):
+	* config/aarch64/aarch64.c (aarch64_min_divisions_for_recip_mul):
 	Return value depending on target.
 	(generic_tunings): Initialize new target settings.
 	(cortexa53_tunings): Likewise.
@@ -25648,7 +25648,7 @@
 
 2015-05-01  Wilco Dijkstra  <wdijkstr@arm.com>
 
-	* gcc/config/arm/aarch-cost-tables.h (cortexa53_extra_costs):
+	* config/arm/aarch-cost-tables.h (cortexa53_extra_costs):
 	Make Cortex-A53 shift costs more accurate.
 
 2015-05-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
@@ -25658,7 +25658,7 @@
 
 2015-05-01  Wilco Dijkstra  <wdijkstr@arm.com>
 
-	* gcc/config/aarch64/aarch64.c (aarch64_rtx_costs):
+	* config/aarch64/aarch64.c (aarch64_rtx_costs):
 	Calculate cost of op0 and op1 in PLUS and MINUS cases.
 
 2015-05-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
@@ -30166,8 +30166,8 @@
 2015-03-02  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/65184
-	* gcc/config/i386/i386.c (ix86_pass_by_reference) Bounds
-	are never passed by reference.
+	* config/i386/i386.c (ix86_pass_by_reference): Bounds are never
+	passed by reference.
 
 2015-03-02  Ilya Enkovich  <ilya.enkovich@intel.com>
 
@@ -30571,7 +30571,7 @@
 2015-02-25  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/65167
-	* gcc/config/i386/i386.c (ix86_function_arg_regno_p): Support
+	* config/i386/i386.c (ix86_function_arg_regno_p): Support
 	bounds registers.
 	(avoid_func_arg_motion): Add dependencies for BNDSTX insns.
 
@@ -34330,7 +34330,7 @@
 
 	* config/aarch64/aarch64-cores.def (xgene1): Update/add the
 	xgene1 (APM XGene-1) core definition.
-	* gcc/config/aarch64/aarch64.c: Add cost tables for APM XGene-1
+	* config/aarch64/aarch64.c: Add cost tables for APM XGene-1
 	* config/arm/aarch-cost-tables.h: Add cost tables for APM XGene-1
 	* doc/invoke.texi: Document -mcpu=xgene1.
 
@@ -35315,7 +35315,7 @@
 	* ipa-icf.c (sem_function::equals_private): Use '&&' instead of
 	'||' to fix typo issue.
 
-	* gcc/tree.h (target_opts_for_fn): Check NULL_TREE since it can
+	* tree.h (target_opts_for_fn): Check NULL_TREE since it can
 	accept and return NULL.
 
 2015-01-12  Martin Liska  <mliska@suse.cz>
