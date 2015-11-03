@@ -141,7 +141,7 @@
 
 2015-10-29  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/67892
+	PR tree-optimization/67892
 	* gcc.dg/tree-ssa/pr21417: Update expected output.
 	* gcc.dg/tree-ssa/ssa-dom-thread-2b.c: Likewise.
 
@@ -229,8 +229,8 @@
 2015-10-27  Nathan Sidwell <nathan@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
-	* g++.dg/g++.dg/gomp/pr33372-1.C: Adjust diagnostic.
-	* gcc/testsuite/g++.dg/gomp/pr33372-3.C: Likewise.
+	* g++.dg/gomp/pr33372-1.C: Adjust diagnostic.
+	* g++.dg/gomp/pr33372-3.C: Likewise.
 
 2015-10-27  Richard Henderson  <rth@redhat.com>
 
@@ -427,8 +427,8 @@
 
 2015-10-25  Andre Vehreschild  <vehre@gmx.de>
 
-        PR fortran/66927
-        PR fortran/67044
+	PR fortran/66927
+	PR fortran/67044
 	* gfortran.dg/allocate_with_source_10.f08: New test.
 	* gfortran.dg/allocate_with_source_11.f08: New test.
 	* gfortran.dg/class_array_15.f03: Changed count of expected
@@ -964,7 +964,7 @@
 
 2015-10-13  Christophe Lyon  <christophe.lyon@linaro.org>
 
-	* gcc/testsuite/gcc.target/aarch64/table-intrinsics.c: Fix regexp
+	* gcc.target/aarch64/table-intrinsics.c: Fix regexp
 	after r228716 (Fix vtbl[34] and vtbx4).
 
 2015-10-13  Yuri Rumyantsev  <ysrumyan@gmail.com>
@@ -9794,7 +9794,7 @@
 
 2015-03-05  Martin Sebor  <msebor@redhat.com>
 
-	* PR testsuite/63175
+	PR testsuite/63175
 	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a.c (main1): Move
 	checking of results into main to prevent it from getting optimized
 	away.
