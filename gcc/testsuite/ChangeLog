@@ -1,3 +1,10 @@
+2015-11-03  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* g++.dg/ext/mvc4.C: Add dg-require-ifunc condition.
+	* gcc.target/i386/mvc5.c: Ditto.
+	* gcc.target/i386/mvc7.c: Add dg-require-ifunc condition and checks on
+	resolver.
+
 2015-11-03  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/goacc-gomp/nesting-fail-1.c: Move "atomic" tests

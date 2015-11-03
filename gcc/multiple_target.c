@@ -61,12 +61,20 @@ create_dispatcher_calls (struct cgraph_node *node)
 	  || !DECL_FUNCTION_VERSIONED (decl))
 	continue;
 
+      if (!targetm.has_ifunc_p ())
+	{
+	  error_at (gimple_location (call),
+		    "the call requires ifunc, which is not"
+		    " supported by this target");
+	  break;
+	}
       e_next = e->next_caller;
       idecl = targetm.get_function_versions_dispatcher (decl);
       if (!idecl)
 	{
 	  error_at (gimple_location (call),
 		    "default target_clones attribute was not set");
+	  break;
 	}
       inode = cgraph_node::get (idecl);
       gcc_assert (inode);
@@ -215,6 +223,10 @@ create_target_clone (cgraph_node *node, bool definition, char *name)
     {
       tree new_decl = copy_node (node->decl);
       new_node = cgraph_node::get_create (new_decl);
+      /* Generate a new name for the new version.  */
+      symtab->change_decl_assembler_name (new_node->decl,
+					  clone_function_name (node->decl,
+							       name));
     }
   return new_node;
 }
