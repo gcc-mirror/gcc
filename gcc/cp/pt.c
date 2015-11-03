@@ -3407,6 +3407,9 @@ struct find_parameter_pack_data
 
   /* Set of AST nodes that have been visited by the traversal.  */
   hash_set<tree> *visited;
+
+  /* True iff we're making a type pack expansion.  */
+  bool type_pack_expansion_p;
 };
 
 /* Identifies all of the argument packs that occur in a template
@@ -3443,6 +3446,12 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
     case TEMPLATE_TYPE_PARM:
       t = TYPE_MAIN_VARIANT (t);
     case TEMPLATE_TEMPLATE_PARM:
+      /* If the placeholder appears in the decl-specifier-seq of a function
+	 parameter pack (14.6.3), or the type-specifier-seq of a type-id that
+	 is a pack expansion, the invented template parameter is a template
+	 parameter pack.  */
+      if (ppd->type_pack_expansion_p && is_auto_or_concept (t))
+	TEMPLATE_TYPE_PARAMETER_PACK (t) = true;
       if (TEMPLATE_TYPE_PARAMETER_PACK (t))
         parameter_pack_p = true;
       break;
@@ -3577,6 +3586,7 @@ uses_parameter_packs (tree t)
   struct find_parameter_pack_data ppd;
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = new hash_set<tree>;
+  ppd.type_pack_expansion_p = false;
   cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
   delete ppd.visited;
   return parameter_packs != NULL_TREE;
@@ -3686,6 +3696,7 @@ make_pack_expansion (tree arg)
   /* Determine which parameter packs will be expanded.  */
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = new hash_set<tree>;
+  ppd.type_pack_expansion_p = TYPE_P (arg);
   cp_walk_tree (&arg, &find_parameter_packs_r, &ppd, ppd.visited);
   delete ppd.visited;
 
@@ -3733,6 +3744,7 @@ check_for_bare_parameter_packs (tree t)
 
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = new hash_set<tree>;
+  ppd.type_pack_expansion_p = false;
   cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
   delete ppd.visited;
 
@@ -4772,6 +4784,7 @@ fixed_parameter_pack_p (tree parm)
   struct find_parameter_pack_data ppd;
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = new hash_set<tree>;
+  ppd.type_pack_expansion_p = false;
 
   fixed_parameter_pack_p_1 (parm, &ppd);
 
