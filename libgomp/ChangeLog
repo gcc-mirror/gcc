@@ -1,3 +1,11 @@
+2015-11-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libgomp.h (struct acc_dispatch_t): Remove args from exec_func.
+	* plugin/plugin-nvptx.c (nvptx_exec): Remove sizes & kinds arg.
+	(GOMP_OFFLOAD_openacc_parallel): Likewise.
+	* oacc-host.c (host_openacc_exec): Likewise.
+	* oacc-parallel.c (GOACC_parallel_keyed): Adjust exec_func call.
+
 2015-11-03  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

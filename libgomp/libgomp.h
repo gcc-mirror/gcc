@@ -812,8 +812,8 @@ typedef struct acc_dispatch_t
   struct target_mem_desc *data_environ;
 
   /* Execute.  */
-  void (*exec_func) (void (*) (void *), size_t, void **, void **, size_t *,
-		     unsigned short *, int, unsigned *, void *);
+  void (*exec_func) (void (*) (void *), size_t, void **, void **, int,
+		     unsigned *, void *);
 
   /* Async cleanup callback registration.  */
   void (*register_async_cleanup_func) (void *);

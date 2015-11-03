@@ -175,8 +175,8 @@ GOACC_parallel_keyed (int device, void (*fn) (void *),
     devaddrs[i] = (void *) (tgt->list[i].key->tgt->tgt_start
 			    + tgt->list[i].key->tgt_offset);
 
-  acc_dev->openacc.exec_func (tgt_fn, mapnum, hostaddrs, devaddrs, sizes,
-			      kinds, async, dims, tgt);
+  acc_dev->openacc.exec_func (tgt_fn, mapnum, hostaddrs, devaddrs,
+			      async, dims, tgt);
 
   /* If running synchronously, unmap immediately.  */
   if (async < acc_async_noval)
