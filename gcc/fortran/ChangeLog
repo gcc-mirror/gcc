@@ -1,3 +1,30 @@
+2015-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gfortran.h (gfc_statement): Add ST_OACC_ATOMIC,
+	ST_OACC_END_ATOMIC.
+	(gfc_exec_op): Add EXEC_OACC_ATOMIC.
+	* match.h (gfc_match_oacc_atomic): New prototype.
+	* openmp.c (gfc_match_omp_atomic, gfc_match_oacc_atomic): New
+	wrapper functions around...
+	(gfc_match_omp_oacc_atomic): ... this new function.
+	(oacc_code_to_statement, gfc_resolve_oacc_directive): Handle
+	EXEC_OACC_ATOMIC.
+	* parse.c (decode_oacc_directive): Handle "atomic", "end atomic".
+	(case_exec_markers): Add ST_OACC_ATOMIC.
+	(gfc_ascii_statement): Handle ST_OACC_ATOMIC, ST_OACC_END_ATOMIC.
+	(parse_omp_atomic): Rename to...
+	(parse_omp_oacc_atomic): ... this new function.  Add omp_p formal
+	parameter.  Adjust all users.
+	(parse_executable): Handle ST_OACC_ATOMIC.
+	(is_oacc): Handle EXEC_OACC_ATOMIC.
+	* resolve.c (gfc_resolve_blocks, gfc_resolve_code): Handle
+	EXEC_OACC_ATOMIC.
+	* st.c (gfc_free_statement): Handle EXEC_OACC_ATOMIC.
+	* trans-openmp.c (gfc_trans_oacc_directive): Handle
+	EXEC_OACC_ATOMIC.
+	* trans.c (trans_code): Handle EXEC_OACC_ATOMIC.
+
 2015-10-31  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR Bootstrap/68168

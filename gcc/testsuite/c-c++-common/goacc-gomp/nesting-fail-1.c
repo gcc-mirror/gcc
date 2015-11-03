@@ -216,12 +216,6 @@ f_acc_parallel (void)
 
 #pragma acc parallel
   {
-#pragma omp atomic write
-    i = 0; /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
-  }
-
-#pragma acc parallel
-  {
 #pragma omp ordered /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
   }
@@ -286,12 +280,6 @@ f_acc_kernels (void)
 
 #pragma acc kernels
   {
-#pragma omp atomic write
-    i = 0; /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
-  }
-
-#pragma acc kernels
-  {
 #pragma omp ordered /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
   }
@@ -352,12 +340,6 @@ f_acc_data (void)
   {
 #pragma omp critical /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
-  }
-
-#pragma acc data
-  {
-#pragma omp atomic write
-    i = 0; /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
   }
 
 #pragma acc data
@@ -436,14 +418,6 @@ f_acc_loop (void)
     {
 #pragma omp critical /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
       ;
-    }
-
-#pragma acc parallel
-#pragma acc loop
-  for (i = 0; i < 2; ++i)
-    {
-#pragma omp atomic write
-      i = 0; /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     }
 
 #pragma acc parallel

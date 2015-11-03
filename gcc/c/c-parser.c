@@ -16243,6 +16243,9 @@ c_parser_omp_construct (c_parser *parser)
 
   switch (p_kind)
     {
+    case PRAGMA_OACC_ATOMIC:
+      c_parser_omp_atomic (loc, parser);
+      return;
     case PRAGMA_OACC_CACHE:
       strcpy (p_name, "#pragma acc");
       stmt = c_parser_oacc_cache (loc, parser);

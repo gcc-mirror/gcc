@@ -1,3 +1,25 @@
+2015-11-03  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/par-reduction-1.c: New file.
+	* testsuite/libgomp.oacc-c-c++-common/par-reduction-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/worker-single-1a.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/worker-single-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/worker-single-6.c: Likewise.
+
+2015-11-03  James Norris  <jnorris@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/atomic_capture-1.c: New
+	file.
+	* testsuite/libgomp.oacc-c-c++-common/atomic_capture-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/atomic_rw-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/atomic_update-1.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/atomic_capture-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/atomic_rw-1.f90: New file.
+	* testsuite/libgomp.oacc-fortran/atomic_update-1.f90: Likewise.
+
 2015-10-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* openacc.h (enum acc_device_t): Reformat. Ensure layout

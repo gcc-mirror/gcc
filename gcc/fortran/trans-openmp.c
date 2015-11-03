@@ -4409,6 +4409,8 @@ gfc_trans_oacc_directive (gfc_code *code)
       return gfc_trans_oacc_executable_directive (code);
     case EXEC_OACC_WAIT:
       return gfc_trans_oacc_wait_directive (code);
+    case EXEC_OACC_ATOMIC:
+      return gfc_trans_omp_atomic (code);
     default:
       gcc_unreachable ();
     }

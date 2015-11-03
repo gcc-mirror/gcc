@@ -35464,6 +35464,9 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
 
   switch (pragma_tok->pragma_kind)
     {
+    case PRAGMA_OACC_ATOMIC:
+      cp_parser_omp_atomic (parser, pragma_tok);
+      return;
     case PRAGMA_OACC_CACHE:
       stmt = cp_parser_oacc_cache (parser, pragma_tok);
       break;
@@ -36040,6 +36043,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context)
       cp_parser_omp_declare (parser, pragma_tok, context);
       return false;
 
+    case PRAGMA_OACC_ATOMIC:
     case PRAGMA_OACC_CACHE:
     case PRAGMA_OACC_DATA:
     case PRAGMA_OACC_ENTER_DATA:
