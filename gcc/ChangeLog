@@ -1,3 +1,17 @@
+2015-11-03  Bilyan Borisov  <bilyan.borisov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (fmulx): New.
+	* config/aarch64/aarch64-simd.md (aarch64_fmulx<mode>): New.
+	* config/aarch64/arm_neon.h (vmulx_f32): Rewrite to call fmulx
+	builtin.
+	(vmulxq_f32): Likewise.
+	(vmulx_f64): New.
+	(vmulxq_f64): Rewrite to call fmulx builtin.
+	(vmulxs_f32): Likewise.
+	(vmulxd_f64): Likewise.
+	(vmulx_lane_f32): Remove.
+	* config/aarch64/iterators.md (UNSPEC): Add fmulx.
+
 2015-11-03  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.md (*movhf_aarch64): Use

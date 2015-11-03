@@ -2868,6 +2868,18 @@
   [(set_attr "type" "neon_mul_<Vetype><q>")]
 )
 
+;; fmulx.
+
+(define_insn "aarch64_fmulx<mode>"
+  [(set (match_operand:VALLF 0 "register_operand" "=w")
+	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")
+		       (match_operand:VALLF 2 "register_operand" "w")]
+		      UNSPEC_FMULX))]
+ "TARGET_SIMD"
+ "fmulx\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
+ [(set_attr "type" "neon_fp_mul_<Vetype>")]
+)
+
 ;; <su>q<addsub>
 
 (define_insn "aarch64_<su_optab><optab><mode>"

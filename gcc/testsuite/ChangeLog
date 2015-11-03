@@ -1,3 +1,12 @@
+2015-11-03  Bilyan Borisov  <bilyan.borisov@arm.com>
+
+	* gcc/testsuite/gcc.target/aarch64/simd/vmulx_f32_1.c: New.
+	* gcc/testsuite/gcc.target/aarch64/simd/vmulx_f64_1.c: New.
+	* gcc/testsuite/gcc.target/aarch64/simd/vmulxq_f32_1.c: New.
+	* gcc/testsuite/gcc.target/aarch64/simd/vmulxq_f64_1.c: New.
+	* gcc/testsuite/gcc.target/aarch64/simd/vmulxs_f32_1.c: New.
+	* gcc/testsuite/gcc.target/aarch64/simd/vmulxd_f64_1.c: New.
+
 2015-11-03  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/fp16/set_zero_1.c: New.

@@ -41,6 +41,7 @@
 
   BUILTIN_VDC (COMBINE, combine, 0)
   BUILTIN_VB (BINOP, pmul, 0)
+  BUILTIN_VALLF (BINOP, fmulx, 0)
   BUILTIN_VDQF_DF (UNOP, sqrt, 2)
   BUILTIN_VD_BHSI (BINOP, addp, 0)
   VAR1 (UNOP, addp, 0, di)

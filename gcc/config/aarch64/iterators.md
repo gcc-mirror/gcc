@@ -239,6 +239,7 @@
     UNSPEC_SQDMULH	; Used in aarch64-simd.md.
     UNSPEC_SQRDMULH	; Used in aarch64-simd.md.
     UNSPEC_PMUL		; Used in aarch64-simd.md.
+    UNSPEC_FMULX	; Used in aarch64-simd.md.
     UNSPEC_USQADD	; Used in aarch64-simd.md.
     UNSPEC_SUQADD	; Used in aarch64-simd.md.
     UNSPEC_SQXTUN	; Used in aarch64-simd.md.

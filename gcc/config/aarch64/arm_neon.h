@@ -8509,63 +8509,6 @@ vmulq_n_u32 (uint32x4_t a, uint32_t b)
   return result;
 }
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vmulx_f32 (float32x2_t a, float32x2_t b)
-{
-  float32x2_t result;
-  __asm__ ("fmulx %0.2s,%1.2s,%2.2s"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-#define vmulx_lane_f32(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x4_t b_ = (b);                                            \
-       float32x2_t a_ = (a);                                            \
-       float32x2_t result;                                              \
-       __asm__ ("fmulx %0.2s,%1.2s,%2.s[%3]"                            \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-__extension__ static __inline float64_t __attribute__ ((__always_inline__))
-vmulxd_f64 (float64_t a, float64_t b)
-{
-  float64_t result;
-  __asm__ ("fmulx %d0, %d1, %d2"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vmulxq_f32 (float32x4_t a, float32x4_t b)
-{
-  float32x4_t result;
-  __asm__ ("fmulx %0.4s,%1.4s,%2.4s"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vmulxq_f64 (float64x2_t a, float64x2_t b)
-{
-  float64x2_t result;
-  __asm__ ("fmulx %0.2d,%1.2d,%2.2d"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
 #define vmulxq_lane_f32(a, b, c)                                        \
   __extension__                                                         \
     ({                                                                  \
@@ -8591,17 +8534,6 @@ vmulxq_f64 (float64x2_t a, float64x2_t b)
                 : /* No clobbers */);                                   \
        result;                                                          \
      })
-
-__extension__ static __inline float32_t __attribute__ ((__always_inline__))
-vmulxs_f32 (float32_t a, float32_t b)
-{
-  float32_t result;
-  __asm__ ("fmulx %s0, %s1, %s2"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
 
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
 vmvn_p8 (poly8x8_t a)
@@ -17738,6 +17670,43 @@ vmaxq_u32 (uint32x4_t __a, uint32x4_t __b)
 {
   return (uint32x4_t) __builtin_aarch64_umaxv4si ((int32x4_t) __a,
 						  (int32x4_t) __b);
+}
+/* vmulx */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vmulx_f32 (float32x2_t __a, float32x2_t __b)
+{
+  return __builtin_aarch64_fmulxv2sf (__a, __b);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vmulxq_f32 (float32x4_t __a, float32x4_t __b)
+{
+  return __builtin_aarch64_fmulxv4sf (__a, __b);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vmulx_f64 (float64x1_t __a, float64x1_t __b)
+{
+  return (float64x1_t) {__builtin_aarch64_fmulxdf (__a[0], __b[0])};
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vmulxq_f64 (float64x2_t __a, float64x2_t __b)
+{
+  return __builtin_aarch64_fmulxv2df (__a, __b);
+}
+
+__extension__ static __inline float32_t __attribute__ ((__always_inline__))
+vmulxs_f32 (float32_t __a, float32_t __b)
+{
+  return __builtin_aarch64_fmulxsf (__a, __b);
+}
+
+__extension__ static __inline float64_t __attribute__ ((__always_inline__))
+vmulxd_f64 (float64_t __a, float64_t __b)
+{
+  return __builtin_aarch64_fmulxdf (__a, __b);
 }
 
 /* vpmax  */
