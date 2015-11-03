@@ -25,8 +25,7 @@
 2015-11-02  Jeff Law <jeff@redhat.com>
 
 	* tree-ssa-threadupdate.c (valid_jump_thread_path): Also detect
-	cases where the loop latch edge is in the middle of an FSM
-	path.
+	cases where the loop latch edge is in the middle of an FSM path.
 
 2015-11-03  Tom de Vries  <tom@codesourcery.com>
 
@@ -71,7 +70,7 @@
 2015-11-02  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/neon-testgen.ml (emit_epilogue): Remove extraneous
-	brackets and semicolon.  
+	brackets and semicolon.
 
 2015-11-02  Alan Lawrence  <alan.lawrence@arm.com>
 
@@ -79,8 +78,8 @@
 	2015-10-27  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR tree-optimization/65963
-	* tree-scalar-evolution.c (interpret_rhs_expr): Handle some LSHIFT_EXPRs
-	as equivalent MULT_EXPRs.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Handle some
+	LSHIFT_EXPRs as equivalent MULT_EXPRs.
 
 2015-11-02  Thomas Schwinge  <thomas@codesourcery.com>
 
@@ -610,7 +609,7 @@
 	* config/mcore/mcore.c (mcore_reg_ok_for_base_p,
 	mcore_base_register_rtx_p, mcore_legitimate_index_p,
 	mcore_legitimate_address_p): New functions.
-	(TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): Define. 
+	(TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): Define.
 
 2015-10-29  Jeff Law  <law@redhat.com>
 
@@ -827,11 +826,11 @@
 
 2015-10-29  Mikhail Maltsev  <maltsevm@gmail.com>
 
-        * genautomata.c: Use CHECKING_P instead of ENABLE_CHECKING.
-        * genconditions.c: Define CHECKING_P in the generated code.
-        * genextract.c: Use flag_checking in insn_extract.
-        * gengtype.c (main): Remove conditional compilation.
-        * gengtype.h: Likewise.
+	* genautomata.c: Use CHECKING_P instead of ENABLE_CHECKING.
+	* genconditions.c: Define CHECKING_P in the generated code.
+	* genextract.c: Use flag_checking in insn_extract.
+	* gengtype.c (main): Remove conditional compilation.
+	* gengtype.h: Likewise.
 
 2015-10-29  Jeff Law  <law@redhat.com>
 
@@ -1612,7 +1611,7 @@
 	* omp-low.c (pass_oacc_device_lower::execute): Ignore errors.
 
 2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
-	
+
 	* internal-fn.c (expand_UNIQUE): New.
 	* internal-fn.h (enum ifn_unique_kind): New.
 	* internal-fn.def (IFN_UNIQUE): New.
@@ -1761,8 +1760,8 @@
 2015-10-27  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR tree-optimization/65963
-	* tree-scalar-evolution.c (interpret_rhs_expr): Handle some LSHIFT_EXPRs
-	as equivalent MULT_EXPRs.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Handle some
+	LSHIFT_EXPRs as equivalent MULT_EXPRs.
 
 2015-10-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
