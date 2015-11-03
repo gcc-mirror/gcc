@@ -1,6 +1,7 @@
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-do run } */
+/* { dg-require-ifunc "" } */
 
-__attribute__((target_clones("avx","arch=slm","arch=core-avx2","default")))
+__attribute__((target_clones("default","avx","default")))
 int
 foo ()
 {

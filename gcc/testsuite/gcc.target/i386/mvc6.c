@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O3" } */
 /* { dg-final { scan-assembler "vpshufb" } } */
 /* { dg-final { scan-assembler "punpcklbw" } } */
