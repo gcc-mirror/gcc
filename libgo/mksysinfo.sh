@@ -1444,6 +1444,11 @@ grep '^type _inotify_event ' gen-sysinfo.go | \
 # The GNU/Linux CLONE flags.
 grep '^const _CLONE_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(CLONE_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+# We need some CLONE constants that are not defined in older versions
+# of glibc.
+if ! grep '^const CLONE_NEWUSER ' ${OUT} > /dev/null 2>&1; then
+  echo "const CLONE_NEWUSER = 0x10000000" >> ${OUT}
+fi
 
 # Struct sizes.
 set cmsghdr Cmsghdr ip_mreq IPMreq ip_mreqn IPMreqn ipv6_mreq IPv6Mreq \
