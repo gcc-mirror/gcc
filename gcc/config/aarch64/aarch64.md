@@ -1124,7 +1124,7 @@
   [(set (match_operand:HF 0 "nonimmediate_operand" "=w, ?r,w,w,m,r,m ,r")
 	(match_operand:HF 1 "general_operand"      "?rY, w,w,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], HFmode)
-    || register_operand (operands[1], HFmode))"
+    || aarch64_reg_or_fp_zero (operands[1], HFmode))"
   "@
    mov\\t%0.h[0], %w1
    umov\\t%w0, %1.h[0]

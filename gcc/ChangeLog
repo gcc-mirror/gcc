@@ -1,3 +1,8 @@
+2015-11-03  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.md (*movhf_aarch64): Use
+	aarch64_reg_or_fp_zero for second operand.
+
 2015-11-03  Alexandre Oliva <aoliva@redhat.com>
 
 	* gimple-expr.c: Include hash-set.h and rtl.h.
