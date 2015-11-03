@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
 #include "gimple-fold.h"
+#include "cgraph.h"
 
 /* Loop Vectorization Pass.
 
@@ -1584,13 +1585,74 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
   unsigned int n_stmts = 0;
 
   /* Find all data references in the loop (which correspond to vdefs/vuses)
-     and analyze their evolution in the loop.  Also adjust the minimal
-     vectorization factor according to the loads and stores.
+     and analyze their evolution in the loop.  */
 
-     FORNOW: Handle only simple, array references, which
-     alignment can be forced, and aligned pointer-references.  */
+  basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
 
-  ok = vect_analyze_data_refs (loop_vinfo, &min_vf, &n_stmts);
+  loop_p loop = LOOP_VINFO_LOOP (loop_vinfo);
+  if (!find_loop_nest (loop, &LOOP_VINFO_LOOP_NEST (loop_vinfo)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: loop contains function calls"
+			 " or data references that cannot be analyzed\n");
+      return false;
+    }
+
+  for (unsigned i = 0; i < loop->num_nodes; i++)
+    for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]);
+	 !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gimple *stmt = gsi_stmt (gsi);
+	if (is_gimple_debug (stmt))
+	  continue;
+	++n_stmts;
+	if (!find_data_references_in_stmt (loop, stmt,
+					   &LOOP_VINFO_DATAREFS (loop_vinfo)))
+	  {
+	    if (is_gimple_call (stmt) && loop->safelen)
+	      {
+		tree fndecl = gimple_call_fndecl (stmt), op;
+		if (fndecl != NULL_TREE)
+		  {
+		    cgraph_node *node = cgraph_node::get (fndecl);
+		    if (node != NULL && node->simd_clones != NULL)
+		      {
+			unsigned int j, n = gimple_call_num_args (stmt);
+			for (j = 0; j < n; j++)
+			  {
+			    op = gimple_call_arg (stmt, j);
+			    if (DECL_P (op)
+				|| (REFERENCE_CLASS_P (op)
+				    && get_base_address (op)))
+			      break;
+			  }
+			op = gimple_call_lhs (stmt);
+			/* Ignore #pragma omp declare simd functions
+			   if they don't have data references in the
+			   call stmt itself.  */
+			if (j == n
+			    && !(op
+				 && (DECL_P (op)
+				     || (REFERENCE_CLASS_P (op)
+					 && get_base_address (op)))))
+			  continue;
+		      }
+		  }
+	      }
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "not vectorized: loop contains function "
+			       "calls or data references that cannot "
+			       "be analyzed\n");
+	    return false;
+	  }
+      }
+
+  /* Analyze the data references and also adjust the minimal
+     vectorization factor according to the loads and stores.  */
+
+  ok = vect_analyze_data_refs (loop_vinfo, &min_vf);
   if (!ok)
     {
       if (dump_enabled_p ())
