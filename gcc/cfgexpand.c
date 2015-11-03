@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimple-iterator.h"
+#include "gimple-expr.h"
 #include "gimple-walk.h"
 #include "tree-cfg.h"
 #include "tree-dfa.h"
@@ -6367,6 +6368,8 @@ pass_expand::execute (function *fun)
 
   /* We're done expanding trees to RTL.  */
   currently_expanding_to_rtl = 0;
+
+  flush_mark_addressable_queue ();
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (fun)->next_bb,
 		  EXIT_BLOCK_PTR_FOR_FN (fun), next_bb)

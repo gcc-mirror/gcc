@@ -52,6 +52,7 @@ extern bool is_gimple_asm_val (tree);
 extern bool is_gimple_min_lval (tree);
 extern bool is_gimple_call_addr (tree);
 extern bool is_gimple_mem_ref_addr (tree);
+extern void flush_mark_addressable_queue (void);
 extern void mark_addressable (tree);
 extern bool is_gimple_reg_rhs (tree);
 

@@ -1,3 +1,15 @@
+2015-11-03  Alexandre Oliva <aoliva@redhat.com>
+
+	* gimple-expr.c: Include hash-set.h and rtl.h.
+	(mark_addressable_queue): New var.
+	(mark_addressable): Factor actual marking into...
+	(mark_addressable_1): ... this.  Queue it up during expand.
+	(mark_addressable_2): New.
+	(flush_mark_addressable_queue): New.
+	* gimple-expr.h (flush_mark_addressable_queue): Declare.
+	* cfgexpand.c: Include gimple-expr.h.
+	(pass_expand::execute): Flush mark_addressable queue.
+
 2015-11-02  Alexandre Oliva <aoliva@redhat.com>
 
 	* tree-ssa-ifcombine.c (tree_ssa_ifcombine_bb_1): Factor out
