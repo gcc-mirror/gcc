@@ -1,3 +1,8 @@
+2015-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-expr.c (useless_type_conversion_p): Reinstate type canonical
+	check for aggregate types and beef up comment for mode check.
+
 2015-11-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_analyze_data_refs): Do not collect
