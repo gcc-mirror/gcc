@@ -1245,14 +1245,8 @@ void objc_layout_finish_structure (struct objc_struct_layout *layout,
       layout->record_align = MAX (1, layout->record_align);
 #endif
 
-#ifdef ROUND_TYPE_SIZE
-      layout->record_size = ROUND_TYPE_SIZE (layout->original_type,
-                                             layout->record_size,
-                                             layout->record_align);
-#else
       /* Round the size up to be a multiple of the required alignment */
       layout->record_size = ROUND (layout->record_size, layout->record_align);
-#endif
 
       layout->type = NULL;
     }
