@@ -1,3 +1,8 @@
+2015-11-02  Alexandre Oliva <aoliva@redhat.com>
+
+	PR tree-optimization/68083
+	* gcc.dg/torture/pr68083.c: New.  From Zhendong Su.
+
 2015-11-02  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-thread-11.c: Verify that we do not have

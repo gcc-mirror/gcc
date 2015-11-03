@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "tree-cfg.h"
+#include "tree-ssa.h"
 
 #ifndef LOGICAL_OP_NON_SHORT_CIRCUIT
 #define LOGICAL_OP_NON_SHORT_CIRCUIT \
@@ -122,6 +123,7 @@ bb_no_side_effects_p (basic_block bb)
 	continue;
 
       if (gimple_has_side_effects (stmt)
+	  || gimple_uses_undefined_value_p (stmt)
 	  || gimple_could_trap_p (stmt)
 	  || gimple_vuse (stmt))
 	return false;
