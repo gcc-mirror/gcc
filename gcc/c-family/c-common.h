@@ -1029,7 +1029,7 @@ extern bool c_dump_tree (void *, tree);
 
 extern void verify_sequence_points (tree);
 
-extern tree fold_offsetof_1 (tree);
+extern tree fold_offsetof_1 (tree, tree_code ctx = ERROR_MARK);
 extern tree fold_offsetof (tree);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.

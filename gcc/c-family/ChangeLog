@@ -1,3 +1,11 @@
+2015-11-03  Bernd Schmidt <bschmidt@redhat.com>
+
+	PR c++-common/67882
+	* c-family/c-common.h (fold_offsetof_1): Add argument.
+	* c-family/c-common.c (fold_offsetof_1): Diagnose more invalid
+	offsetof expressions that reference elements past the end of
+	an array.
+
 2015-11-03  Thomas Schwinge  <thomas@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

@@ -1,3 +1,8 @@
+2015-11-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c++-common/67882
+	* c-c++-common/builtin-offsetof-2.c: New test.
+
 2015-11-03  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/67982

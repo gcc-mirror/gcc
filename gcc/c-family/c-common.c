@@ -10631,11 +10631,11 @@ c_common_to_target_charset (HOST_WIDE_INT c)
    traditional rendering of offsetof as a macro.  Return the folded result.  */
 
 tree
-fold_offsetof_1 (tree expr)
+fold_offsetof_1 (tree expr, enum tree_code ctx)
 {
   tree base, off, t;
-
-  switch (TREE_CODE (expr))
+  tree_code code = TREE_CODE (expr);
+  switch (code)
     {
     case ERROR_MARK:
       return expr;
@@ -10659,7 +10659,7 @@ fold_offsetof_1 (tree expr)
       return TREE_OPERAND (expr, 0);
 
     case COMPONENT_REF:
-      base = fold_offsetof_1 (TREE_OPERAND (expr, 0));
+      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), code);
       if (base == error_mark_node)
 	return base;
 
@@ -10676,7 +10676,7 @@ fold_offsetof_1 (tree expr)
       break;
 
     case ARRAY_REF:
-      base = fold_offsetof_1 (TREE_OPERAND (expr, 0));
+      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), code);
       if (base == error_mark_node)
 	return base;
 
@@ -10691,8 +10691,9 @@ fold_offsetof_1 (tree expr)
 	      && !tree_int_cst_equal (upbound,
 				      TYPE_MAX_VALUE (TREE_TYPE (upbound))))
 	    {
-	      upbound = size_binop (PLUS_EXPR, upbound,
-				    build_int_cst (TREE_TYPE (upbound), 1));
+	      if (ctx != ARRAY_REF && ctx != COMPONENT_REF)
+	        upbound = size_binop (PLUS_EXPR, upbound,
+				      build_int_cst (TREE_TYPE (upbound), 1));
 	      if (tree_int_cst_lt (upbound, t))
 		{
 		  tree v;
