@@ -1203,6 +1203,24 @@ ssa_undefined_value_p (tree t, bool partial)
 }
 
 
+/* Return TRUE iff STMT, a gimple statement, references an undefined
+   SSA name.  */
+
+bool
+gimple_uses_undefined_value_p (gimple *stmt)
+{
+  ssa_op_iter iter;
+  tree op;
+
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+    if (ssa_undefined_value_p (op))
+      return true;
+
+  return false;
+}
+
+
+
 /* If necessary, rewrite the base of the reference tree *TP from
    a MEM_REF to a plain or converted symbol.  */
 
