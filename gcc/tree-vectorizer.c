@@ -696,18 +696,9 @@ pass_slp_vectorize::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      vect_location = find_bb_location (bb);
-
-      if (vect_slp_analyze_bb (bb))
-        {
-          if (!dbg_cnt (vect_slp))
-            break;
-
-          vect_slp_transform_bb (bb);
-          if (dump_enabled_p ())
-            dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-			     "basic block vectorized\n");
-        }
+      if (vect_slp_bb (bb))
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			 "basic block vectorized\n");
     }
 
   free_stmt_vec_info_vec ();

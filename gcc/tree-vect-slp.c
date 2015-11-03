@@ -40,28 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "langhooks.h"
 #include "gimple-walk.h"
-
-/* Extract the location of the basic block in the source code.
-   Return the basic block location if succeed and NULL if not.  */
-
-source_location
-find_bb_location (basic_block bb)
-{
-  gimple *stmt = NULL;
-  gimple_stmt_iterator si;
-
-  if (!bb)
-    return UNKNOWN_LOCATION;
-
-  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-    {
-      stmt = gsi_stmt (si);
-      if (gimple_location (stmt) != UNKNOWN_LOCATION)
-        return gimple_location (stmt);
-    }
-
-  return UNKNOWN_LOCATION;
-}
+#include "dbgcnt.h"
 
 
 /* Recursively free the memory allocated for the SLP tree rooted at NODE.  */
@@ -2361,7 +2340,31 @@ vect_slp_analyze_bb_1 (basic_block bb)
   if (!bb_vinfo)
     return NULL;
 
-  if (!vect_analyze_data_refs (bb_vinfo, &min_vf, &n_stmts))
+  /* Gather all data references in the basic-block.  */
+
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	continue;
+      ++n_stmts;
+      if (!find_data_references_in_stmt (NULL, stmt,
+					 &BB_VINFO_DATAREFS (bb_vinfo)))
+	{
+	  /* Mark the rest of the basic-block as unvectorizable.  */
+	  for (; !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      stmt = gsi_stmt (gsi);
+	      STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)) = false;
+	    }
+	  break;
+	}
+    }
+
+  /* Analyze the data references.  */
+
+  if (!vect_analyze_data_refs (bb_vinfo, &min_vf))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2499,8 +2502,11 @@ vect_slp_analyze_bb_1 (basic_block bb)
 }
 
 
-bb_vec_info
-vect_slp_analyze_bb (basic_block bb)
+/* Main entry for the BB vectorizer.  Analyze and transform BB, returns
+   true if anything in the basic-block was vectorized.  */
+
+bool
+vect_slp_bb (basic_block bb)
 {
   bb_vec_info bb_vinfo;
   int insns = 0;
@@ -2517,6 +2523,8 @@ vect_slp_analyze_bb (basic_block bb)
           && !gimple_nop_p (stmt)
           && gimple_code (stmt) != GIMPLE_LABEL)
         insns++;
+      if (gimple_location (stmt) != UNKNOWN_LOCATION)
+	vect_location = gimple_location (stmt);
     }
 
   if (insns > PARAM_VALUE (PARAM_SLP_MAX_INSNS_IN_BB))
@@ -2526,7 +2534,7 @@ vect_slp_analyze_bb (basic_block bb)
 			 "not vectorized: too many instructions in "
 			 "basic block.\n");
 
-      return NULL;
+      return false;
     }
 
   /* Autodetect first vector size we try.  */
@@ -2537,14 +2545,33 @@ vect_slp_analyze_bb (basic_block bb)
     {
       bb_vinfo = vect_slp_analyze_bb_1 (bb);
       if (bb_vinfo)
-        return bb_vinfo;
+	{
+	  if (!dbg_cnt (vect_slp))
+	    {
+	      destroy_bb_vec_info (bb_vinfo);
+	      return false;
+	    }
+
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location, "SLPing BB\n");
+
+	  vect_schedule_slp (bb_vinfo);
+
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "BASIC BLOCK VECTORIZED\n");
+
+	  destroy_bb_vec_info (bb_vinfo);
+
+	  return true;
+	}
 
       destroy_bb_vec_info (bb_vinfo);
 
       vector_sizes &= ~current_vector_size;
       if (vector_sizes == 0
           || current_vector_size == 0)
-        return NULL;
+        return false;
 
       /* Try the next biggest vector size.  */
       current_vector_size = 1 << floor_log2 (vector_sizes);
@@ -3532,49 +3559,4 @@ vect_schedule_slp (vec_info *vinfo)
     }
 
   return is_store;
-}
-
-
-/* Vectorize the basic block.  */
-
-void
-vect_slp_transform_bb (basic_block bb)
-{
-  bb_vec_info bb_vinfo = vec_info_for_bb (bb);
-  gimple_stmt_iterator si;
-
-  gcc_assert (bb_vinfo);
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "SLPing BB\n");
-
-  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-    {
-      gimple *stmt = gsi_stmt (si);
-      stmt_vec_info stmt_info;
-
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_NOTE, vect_location,
-                           "------>SLPing statement: ");
-          dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-          dump_printf (MSG_NOTE, "\n");
-        }
-
-      stmt_info = vinfo_for_stmt (stmt);
-      gcc_assert (stmt_info);
-
-      /* Schedule all the SLP instances when the first SLP stmt is reached.  */
-      if (STMT_SLP_TYPE (stmt_info))
-        {
-          vect_schedule_slp (bb_vinfo);
-          break;
-        }
-    }
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "BASIC BLOCK VECTORIZED\n");
-
-  destroy_bb_vec_info (bb_vinfo);
 }

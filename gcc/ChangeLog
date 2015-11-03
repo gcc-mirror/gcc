@@ -1,3 +1,22 @@
+2015-11-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Do not collect
+	data references here.
+	* tree-vect-loop.c: Include cgraph.h.
+	(vect_analyze_loop_2): Collect data references here.
+	* tree-vect-slp.c (find_bb_location): Inline ...
+	(vect_slp_bb): ... here.  Renamed from vect_slp_analyze_bb.
+	Factor in vect_slp_transform_bb.
+	(vect_slp_transform_bb): Removed.
+	(vect_slp_analyze_bb_1): Collect data references here.
+	* tree-vectorizer.c (pass_slp_vectorize::execute): Call
+	vect_slp_bb.
+	* tree-vectorizer.h (vect_slp_bb): Declare.
+	(vect_slp_analyze_bb): Remove.
+	(vect_slp_transform_bb): Remove.
+	(find_bb_location): Remove.
+	(vect_analyze_data_refs): Remove stmt count reference parameter.
+
 2015-11-03  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* multiple_target.c (create_dispatcher_calls): Add target check

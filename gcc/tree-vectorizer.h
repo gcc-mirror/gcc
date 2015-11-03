@@ -1010,7 +1010,7 @@ extern bool vect_analyze_data_ref_accesses (vec_info *);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern tree vect_check_gather_scatter (gimple *, loop_vec_info, tree *, tree *,
 				       int *);
-extern bool vect_analyze_data_refs (vec_info *, int *, unsigned *);
+extern bool vect_analyze_data_refs (vec_info *, int *);
 extern tree vect_create_data_ref_ptr (gimple *, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
 				      gimple **, bool, bool *,
@@ -1072,10 +1072,7 @@ extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_get_slp_defs (vec<tree> , slp_tree,
 			       vec<vec<tree> > *, int);
-
-extern source_location find_bb_location (basic_block);
-extern bb_vec_info vect_slp_analyze_bb (basic_block);
-extern void vect_slp_transform_bb (basic_block);
+extern bool vect_slp_bb (basic_block);
 
 /* In tree-vect-patterns.c.  */
 /* Pattern recognition functions.
