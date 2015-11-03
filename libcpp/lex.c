@@ -447,7 +447,7 @@ search_line_sse42 (const uchar *s, const uchar *end)
       /* Advance the pointer to an aligned address.  We will re-scan a
 	 few bytes, but we no longer need care for reading past the
 	 end of a page, since we're guaranteed a match.  */
-      s = (const uchar *)((si + 16) & -16);
+      s = (const uchar *)((si + 15) & -16);
     }
 
   /* Main loop, processing 16 bytes at a time.  */
