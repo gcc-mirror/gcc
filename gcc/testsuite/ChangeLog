@@ -1,3 +1,7 @@
+2015-11-03  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/fp16/set_zero_1.c: New.
+
 2015-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/mvc1.c: Move to ...
