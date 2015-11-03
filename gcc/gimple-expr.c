@@ -86,7 +86,8 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   if (inner_type == outer_type)
     return true;
 
-  /* Changes in machine mode are never useless conversions unless.  */
+  /* Changes in machine mode are never useless conversions because the RTL
+     middle-end expects explicit conversions between modes.  */
   if (TYPE_MODE (inner_type) != TYPE_MODE (outer_type))
     return false;
 
@@ -262,14 +263,13 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
       return true;
     }
 
-  /* For aggregates compare only the size.  Accesses to fields do have
-     a type information by themselves and thus we only care if we can i.e.
-     use the types in move operations.  */
+  /* For aggregates we rely on TYPE_CANONICAL exclusively and require
+     explicit conversions for types involving to be structurally
+     compared types.  */
   else if (AGGREGATE_TYPE_P (inner_type)
 	   && TREE_CODE (inner_type) == TREE_CODE (outer_type))
-    return (TYPE_MODE (outer_type) != BLKmode
-	    || operand_equal_p (TYPE_SIZE (inner_type),
-			        TYPE_SIZE (outer_type), 0));
+    return TYPE_CANONICAL (inner_type)
+	   && TYPE_CANONICAL (inner_type) == TYPE_CANONICAL (outer_type);
 
   else if (TREE_CODE (inner_type) == OFFSET_TYPE
 	   && TREE_CODE (outer_type) == OFFSET_TYPE)

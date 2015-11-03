@@ -1,4 +1,4 @@
--- { dg-do run }
+-- { dg-do compile }
 -- { dg-options "-O2 -gnatws" }
 
 procedure Discr45 is

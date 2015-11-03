@@ -1,3 +1,7 @@
+2015-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr45.adb: Only compile the test.
+
 2015-11-03  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* g++.dg/ext/mvc4.C: Add dg-require-ifunc condition.
