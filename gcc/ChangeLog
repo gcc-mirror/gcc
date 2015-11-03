@@ -1,3 +1,7 @@
+2015-11-03  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config/arm/coff.h: Remove.
+
 2015-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-expr.c (useless_type_conversion_p): Reinstate type canonical
