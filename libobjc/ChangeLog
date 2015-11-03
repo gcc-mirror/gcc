@@ -1,3 +1,9 @@
+2015-11-03  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	PR libobjc/24775
+	* encoding.c (objc_layout_finish_structure): Remove usage of
+	ROUND_TYPE_SIZE.
+
 2015-09-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	PR libobjc/24775
