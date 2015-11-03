@@ -141,12 +141,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template <typename _U1 = _T1,
                 typename _U2 = _T2,
                 typename enable_if<__and_<
-                                     is_default_constructible<_U1>,
-                                     is_default_constructible<_U2>>
+                                     __is_implicitly_default_constructible<_U1>,
+                                     __is_implicitly_default_constructible<_U2>>
                                    ::value, bool>::type = true>
 #endif
       _GLIBCXX_CONSTEXPR pair()
       : first(), second() { }
+
+#if __cplusplus >= 201103L
+      template <typename _U1 = _T1,
+                typename _U2 = _T2,
+                typename enable_if<__and_<
+                       is_default_constructible<_U1>,
+                       is_default_constructible<_U2>,
+                       __not_<
+                         __and_<__is_implicitly_default_constructible<_U1>,
+                                __is_implicitly_default_constructible<_U2>>>>
+                                   ::value, bool>::type = false>
+      explicit constexpr pair()
+      : first(), second() { }
+#endif
 
       /** Two objects may be passed to a @c pair constructor to be copied.  */
 #if __cplusplus < 201103L

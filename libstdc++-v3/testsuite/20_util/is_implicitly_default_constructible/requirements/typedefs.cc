@@ -1,8 +1,7 @@
 // { dg-options "-std=gnu++11" }
 // { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
-//
-// Copyright (C) 2009-2015 Free Software Foundation, Inc.
+
+// Copyright (C) 2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +18,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 2239 }
+#include <type_traits>
 
-#include <utility>
 
 void test01()
 {
-  std::declval<int>();		// { dg-error "required from here" }
+  // Check for required typedefs
+  typedef std::__is_implicitly_default_constructible<int>          test_type;
+  typedef test_type::value_type                     value_type;
+  typedef test_type::type                           type;
+  typedef test_type::type::value_type               type_value_type;
+  typedef test_type::type::type                     type_type;
 }

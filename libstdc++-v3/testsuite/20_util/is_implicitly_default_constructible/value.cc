@@ -1,8 +1,7 @@
 // { dg-options "-std=gnu++11" }
 // { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
-//
-// Copyright (C) 2009-2015 Free Software Foundation, Inc.
+
+// Copyright (C) 2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +18,27 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 2239 }
+#include <type_traits>
 
-#include <utility>
+struct ExplicitDefault
+{
+  explicit ExplicitDefault() {}
+};
+
+struct ExplicitDefaultDefault
+{
+  explicit ExplicitDefaultDefault() = default;
+};
 
 void test01()
 {
-  std::declval<int>();		// { dg-error "required from here" }
+  using std::__is_implicitly_default_constructible;
+  // Positive tests.
+  static_assert(__is_implicitly_default_constructible<int>::value, "");
+  // Negative tests.
+  static_assert(!__is_implicitly_default_constructible<int&>::value, "");
+  static_assert(!__is_implicitly_default_constructible<
+                ExplicitDefault>::value, "");
+  static_assert(!__is_implicitly_default_constructible<
+                ExplicitDefaultDefault>::value, "");
 }
