@@ -20,7 +20,7 @@ fn3 (long int x)
 }
 
 int
-fn4 (int a, int b)
+fn4 (unsigned int a, int b)
 {
   return a - (unsigned) ((a / b) * b);
 }

@@ -24,5 +24,4 @@ SUBROUTINE mult(A,B,C,N)
   ENDDO
 END SUBROUTINE mult
 
-! { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" { xfail *-*-* } } }
-! { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" { xfail *-*-* } } }
+! { dg-final { scan-tree-dump "tiled by" "graphite" } }

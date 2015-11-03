@@ -1546,6 +1546,7 @@
   ;; @@@ check ordering of operands in intel/nonintel syntax
   "maskmovq\t{%2, %1|%1, %2}"
   [(set_attr "type" "mmxcvt")
+   (set_attr "znver1_decode" "vector")
    (set_attr "mode" "DI")])
 
 (define_expand "mmx_emms"

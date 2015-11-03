@@ -36,12 +36,10 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "rtl.h"
-#include "cfganal.h"
-#include "diagnostic-core.h"
-#include "alloc-pool.h"
-#include "et-forest.h"
 #include "timevar.h"
+#include "diagnostic-core.h"
+#include "cfganal.h"
+#include "et-forest.h"
 #include "graphds.h"
 
 /* We name our nodes with integers, beginning with 1.  Zero is reserved for
@@ -634,9 +632,7 @@ calculate_dominance_info (cdi_direction dir)
 
   if (dom_computed[dir_index] == DOM_OK)
     {
-#if ENABLE_CHECKING
-      verify_dominators (dir);
-#endif
+      checking_verify_dominators (dir);
       return;
     }
 
@@ -665,11 +661,7 @@ calculate_dominance_info (cdi_direction dir)
       dom_computed[dir_index] = DOM_NO_FAST_QUERY;
     }
   else
-    {
-#if ENABLE_CHECKING
-      verify_dominators (dir);
-#endif
-    }
+    checking_verify_dominators (dir);
 
   compute_dom_fast_query (dir);
 

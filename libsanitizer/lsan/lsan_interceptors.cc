@@ -10,11 +10,11 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "interception/interception.h"
 #include "sanitizer_common/sanitizer_allocator.h"
 #include "sanitizer_common/sanitizer_atomic.h"
 #include "sanitizer_common/sanitizer_common.h"
 #include "sanitizer_common/sanitizer_flags.h"
-#include "sanitizer_common/sanitizer_interception.h"
 #include "sanitizer_common/sanitizer_internal_defs.h"
 #include "sanitizer_common/sanitizer_linux.h"
 #include "sanitizer_common/sanitizer_platform_limits_posix.h"
@@ -69,7 +69,7 @@ INTERCEPTOR(void*, calloc, uptr nmemb, uptr size) {
     CHECK(allocated < kCallocPoolSize);
     return mem;
   }
-  if (CallocShouldReturnNullDueToOverflow(size, nmemb)) return 0;
+  if (CallocShouldReturnNullDueToOverflow(size, nmemb)) return nullptr;
   ENSURE_LSAN_INITED;
   GET_STACK_TRACE_MALLOC;
   size *= nmemb;
@@ -162,9 +162,9 @@ void *operator new[](uptr size, std::nothrow_t const&) { OPERATOR_NEW_BODY; }
   Deallocate(ptr);
 
 INTERCEPTOR_ATTRIBUTE
-void operator delete(void *ptr) throw() { OPERATOR_DELETE_BODY; }
+void operator delete(void *ptr) NOEXCEPT { OPERATOR_DELETE_BODY; }
 INTERCEPTOR_ATTRIBUTE
-void operator delete[](void *ptr) throw() { OPERATOR_DELETE_BODY; }
+void operator delete[](void *ptr) NOEXCEPT { OPERATOR_DELETE_BODY; }
 INTERCEPTOR_ATTRIBUTE
 void operator delete(void *ptr, std::nothrow_t const&) { OPERATOR_DELETE_BODY; }
 INTERCEPTOR_ATTRIBUTE
@@ -206,16 +206,16 @@ extern "C" void *__lsan_thread_start_func(void *arg) {
   // Wait until the last iteration to maximize the chance that we are the last
   // destructor to run.
   if (pthread_setspecific(g_thread_finalize_key,
-                          (void*)kPthreadDestructorIterations)) {
+                          (void*)GetPthreadDestructorIterations())) {
     Report("LeakSanitizer: failed to set thread key.\n");
     Die();
   }
   int tid = 0;
   while ((tid = atomic_load(&p->tid, memory_order_acquire)) == 0)
     internal_sched_yield();
-  atomic_store(&p->tid, 0, memory_order_release);
   SetCurrentThread(tid);
   ThreadStart(tid, GetTid());
+  atomic_store(&p->tid, 0, memory_order_release);
   return callback(param);
 }
 
@@ -224,7 +224,7 @@ INTERCEPTOR(int, pthread_create, void *th, void *attr,
   ENSURE_LSAN_INITED;
   EnsureMainThreadIDIsCorrect();
   __sanitizer_pthread_attr_t myattr;
-  if (attr == 0) {
+  if (!attr) {
     pthread_attr_init(&myattr);
     attr = &myattr;
   }
@@ -282,4 +282,4 @@ void InitializeInterceptors() {
   }
 }
 
-}  // namespace __lsan
+} // namespace __lsan

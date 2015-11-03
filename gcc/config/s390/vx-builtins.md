@@ -1669,7 +1669,7 @@
   rtx c;
 
   real_2expN (&f, -INTVAL (operands[2]), DFmode);
-  c = CONST_DOUBLE_FROM_REAL_VALUE (f, DFmode);
+  c = const_double_from_real_value (f, DFmode);
 
   operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
   operands[3] = force_reg (V2DFmode, operands[3]);
@@ -1699,7 +1699,7 @@
   rtx c;
 
   real_2expN (&f, -INTVAL (operands[2]), DFmode);
-  c = CONST_DOUBLE_FROM_REAL_VALUE (f, DFmode);
+  c = const_double_from_real_value (f, DFmode);
 
   operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
   operands[3] = force_reg (V2DFmode, operands[3]);
@@ -1730,7 +1730,7 @@
   rtx c;
 
   real_2expN (&f, INTVAL (operands[2]), DFmode);
-  c = CONST_DOUBLE_FROM_REAL_VALUE (f, DFmode);
+  c = const_double_from_real_value (f, DFmode);
 
   operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
   operands[3] = force_reg (V2DFmode, operands[3]);
@@ -1761,7 +1761,7 @@
   rtx c;
 
   real_2expN (&f, INTVAL (operands[2]), DFmode);
-  c = CONST_DOUBLE_FROM_REAL_VALUE (f, DFmode);
+  c = const_double_from_real_value (f, DFmode);
 
   operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
   operands[3] = force_reg (V2DFmode, operands[3]);

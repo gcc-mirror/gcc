@@ -42,9 +42,6 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     pkgpath_(),
     pkgpath_symbol_(),
     prefix_(),
-    zero_value_(NULL),
-    zero_value_size_(0),
-    zero_value_align_(0),
     pkgpath_set_(false),
     pkgpath_from_option_(false),
     prefix_from_option_(false),
@@ -516,7 +513,6 @@ Gogo::import_package(const std::string& filename,
     {
       Package* package = p->second;
       package->set_location(location);
-      package->set_is_imported();
       std::string ln = local_name;
       bool is_ln_exported = is_local_name_exported;
       if (ln.empty())
@@ -525,7 +521,9 @@ Gogo::import_package(const std::string& filename,
 	  go_assert(!ln.empty());
 	  is_ln_exported = Lex::is_exported_name(ln);
 	}
-      if (ln == ".")
+      if (ln == "_")
+        ;
+      else if (ln == ".")
 	{
 	  Bindings* bindings = package->bindings();
 	  for (Bindings::const_declarations_iterator p =
@@ -533,11 +531,12 @@ Gogo::import_package(const std::string& filename,
 	       p != bindings->end_declarations();
 	       ++p)
 	    this->add_dot_import_object(p->second);
+          std::string dot_alias = "." + package->package_name();
+          package->add_alias(dot_alias, location);
 	}
-      else if (ln == "_")
-	package->set_uses_sink_alias();
       else
 	{
+          package->add_alias(ln, location);
 	  ln = this->pack_hidden_name(ln, is_ln_exported);
 	  this->package_->bindings()->add_package(ln, package);
 	}
@@ -563,7 +562,6 @@ Gogo::import_package(const std::string& filename,
 		  "being compiled (see -fgo-pkgpath option)"));
 
       this->imports_.insert(std::make_pair(filename, package));
-      package->set_is_imported();
     }
 
   delete stream;
@@ -635,87 +633,6 @@ Gogo::current_bindings() const
     return this->package_->bindings();
   else
     return this->globals_;
-}
-
-// Return the special variable used as the zero value of types.
-
-Named_object*
-Gogo::zero_value(Type *type)
-{
-  if (this->zero_value_ == NULL)
-    {
-      Location bloc = Linemap::predeclared_location();
-
-      // We will change the type later, when we know the size.
-      Type* byte_type = this->lookup_global("byte")->type_value();
-
-      Expression* zero = Expression::make_integer_ul(0, NULL, bloc);
-      Type* array_type = Type::make_array_type(byte_type, zero);
-
-      Variable* var = new Variable(array_type, NULL, true, false, false, bloc);
-      this->zero_value_ = Named_object::make_variable("go$zerovalue", NULL,
-						      var);
-    }
-
-  // The zero value will be the maximum required size.
-  int64_t size;
-  bool ok = type->backend_type_size(this, &size);
-  if (!ok) {
-    go_assert(saw_errors());
-    size = 4;
-  }
-  if (size > this->zero_value_size_)
-    this->zero_value_size_ = size;
-
-  int64_t align;
-  ok = type->backend_type_align(this, &align);
-  if (!ok) {
-    go_assert(saw_errors());
-    align = 4;
-  }
-  if (align > this->zero_value_align_)
-    this->zero_value_align_ = align;
-
-  return this->zero_value_;
-}
-
-// Return whether V is the zero value variable.
-
-bool
-Gogo::is_zero_value(Variable* v) const
-{
-  return this->zero_value_ != NULL && this->zero_value_->var_value() == v;
-}
-
-// Return the backend variable for the special zero value, or NULL if
-// it is not needed.
-
-Bvariable*
-Gogo::backend_zero_value()
-{
-  if (this->zero_value_ == NULL)
-    return NULL;
-
-  Type* byte_type = this->lookup_global("byte")->type_value();
-  Btype* bbtype_type = byte_type->get_backend(this);
-
-  Type* int_type = this->lookup_global("int")->type_value();
-
-  Expression* e = Expression::make_integer_int64(this->zero_value_size_,
-						 int_type,
-						 Linemap::unknown_location());
-  Translate_context context(this, NULL, NULL, NULL);
-  Bexpression* blength = e->get_backend(&context);
-
-  Btype* barray_type = this->backend()->array_type(bbtype_type, blength);
-
-  std::string zname = this->zero_value_->name();
-  Bvariable* zvar =
-    this->backend()->implicit_variable(zname, barray_type, false,
-				       true, true, this->zero_value_align_);
-  this->backend()->implicit_variable_set_init(zvar, zname, barray_type,
-					      false, true, true, NULL);
-  return zvar;
 }
 
 // Add statements to INIT_STMTS which run the initialization
@@ -1544,7 +1461,10 @@ Gogo::lookup(const std::string& name, Named_object** pfunction) const
       if (ret != NULL)
 	{
 	  if (ret->package() != NULL)
-	    ret->package()->note_usage();
+            {
+              std::string dot_alias = "." + ret->package()->package_name();
+              ret->package()->note_usage(dot_alias);
+            }
 	  return ret;
 	}
     }
@@ -1594,10 +1514,14 @@ Gogo::add_imported_package(const std::string& real_name,
 
   *padd_to_globals = false;
 
-  if (alias_arg == ".")
-    *padd_to_globals = true;
-  else if (alias_arg == "_")
-    ret->set_uses_sink_alias();
+  if (alias_arg == "_")
+    ;
+  else if (alias_arg == ".")
+    {
+      *padd_to_globals = true;
+      std::string dot_alias = "." + real_name;
+      ret->add_alias(dot_alias, location);
+    }
   else
     {
       std::string alias = alias_arg;
@@ -1606,6 +1530,7 @@ Gogo::add_imported_package(const std::string& real_name,
 	  alias = real_name;
 	  is_alias_exported = Lex::is_exported_name(alias);
 	}
+      ret->add_alias(alias, location);
       alias = this->pack_hidden_name(alias, is_alias_exported);
       Named_object* no = this->package_->bindings()->add_package(alias, ret);
       if (!no->is_package())
@@ -2356,15 +2281,30 @@ Gogo::clear_file_scope()
        ++p)
     {
       Package* package = p->second;
-      if (package != this->package_
-	  && package->is_imported()
-	  && !package->used()
-	  && !package->uses_sink_alias()
-	  && !quiet)
-	error_at(package->location(), "imported and not used: %s",
-		 Gogo::message_name(package->package_name()).c_str());
-      package->clear_is_imported();
-      package->clear_uses_sink_alias();
+      if (package != this->package_ && !quiet)
+        {
+          for (Package::Aliases::const_iterator p1 = package->aliases().begin();
+               p1 != package->aliases().end();
+               ++p1)
+            {
+              if (!p1->second->used())
+                {
+                  // Give a more refined error message if the alias name is known.
+                  std::string pkg_name = package->package_name();
+                  if (p1->first != pkg_name && p1->first[0] != '.')
+                    {
+                      error_at(p1->second->location(),
+                               "imported and not used: %s as %s",
+                               Gogo::message_name(pkg_name).c_str(),
+                               Gogo::message_name(p1->first).c_str());
+                    }
+                  else
+                    error_at(p1->second->location(),
+                             "imported and not used: %s",
+                             Gogo::message_name(pkg_name).c_str());
+                }
+            }
+        }
       package->clear_used();
     }
 }
@@ -6510,9 +6450,7 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	  Btype* btype = type->get_backend(gogo);
 
 	  Bvariable* bvar;
-	  if (gogo->is_zero_value(this))
-	    bvar = gogo->backend_zero_value();
-	  else if (this->is_global_)
+	  if (this->is_global_)
 	    bvar = backend->global_variable((package == NULL
 					     ? gogo->package_name()
 					     : package->package_name()),
@@ -7741,8 +7679,7 @@ Package::Package(const std::string& pkgpath,
 		 const std::string& pkgpath_symbol, Location location)
   : pkgpath_(pkgpath), pkgpath_symbol_(pkgpath_symbol),
     package_name_(), bindings_(new Bindings(NULL)), priority_(0),
-    location_(location), used_(false), is_imported_(false),
-    uses_sink_alias_(false)
+    location_(location)
 {
   go_assert(!pkgpath.empty());
   
@@ -7796,6 +7733,16 @@ Package::set_priority(int priority)
     this->priority_ = priority;
 }
 
+// Note that symbol from this package was and qualified by ALIAS.
+
+void
+Package::note_usage(const std::string& alias) const
+{
+  Aliases::const_iterator p = this->aliases_.find(alias);
+  go_assert(p != this->aliases_.end());
+  p->second->note_usage();
+}
+
 // Forget a given usage.  If forgetting this usage means this package becomes
 // unused, report that error.
 
@@ -7811,7 +7758,7 @@ Package::forget_usage(Expression* usage) const
 
   if (this->fake_uses_.empty())
     error_at(this->location(), "imported and not used: %s",
-	     Gogo::message_name(this->package_name()).c_str());
+             Gogo::message_name(this->package_name()).c_str());
 }
 
 // Clear the used field for the next file.  If the only usages of this package
@@ -7820,10 +7767,26 @@ Package::forget_usage(Expression* usage) const
 void
 Package::clear_used()
 {
-  if (this->used_ > this->fake_uses_.size())
+  std::string dot_alias = "." + this->package_name();
+  Aliases::const_iterator p = this->aliases_.find(dot_alias);
+  if (p != this->aliases_.end() && p->second->used() > this->fake_uses_.size())
     this->fake_uses_.clear();
 
-  this->used_ = 0;
+  this->aliases_.clear();
+}
+
+Package_alias*
+Package::add_alias(const std::string& alias, Location location)
+{
+  Aliases::const_iterator p = this->aliases_.find(alias);
+  if (p == this->aliases_.end())
+    {
+      std::pair<Aliases::iterator, bool> ret;
+      ret = this->aliases_.insert(std::make_pair(alias,
+                                                 new Package_alias(location)));
+      p = ret.first;
+    }
+  return p->second;
 }
 
 // Determine types of constants.  Everything else in a package

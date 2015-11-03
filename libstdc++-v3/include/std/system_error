@@ -181,7 +181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return category().message(value()); }
 
     explicit operator bool() const noexcept
-    { return _M_value != 0 ? true : false; }
+    { return _M_value != 0; }
 
     // DR 804.
   private:
@@ -257,7 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return category().message(value()); }
 
     explicit operator bool() const noexcept
-    { return _M_value != 0 ? true : false; }
+    { return _M_value != 0; }
 
     // DR 804.
   private:

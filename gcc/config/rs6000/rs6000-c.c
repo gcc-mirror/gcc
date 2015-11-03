@@ -23,18 +23,12 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "cpplib.h"
-#include "alias.h"
-#include "tree.h"
-#include "fold-const.h"
-#include "stor-layout.h"
-#include "stringpool.h"
-#include "c-family/c-common.h"
-#include "c-family/c-pragma.h"
-#include "diagnostic-core.h"
-#include "tm_p.h"
 #include "target.h"
+#include "c-family/c-common.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "c-family/c-pragma.h"
 #include "langhooks.h"
 
 
@@ -372,7 +366,11 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
   if ((flags & OPTION_MASK_VSX) != 0)
     rs6000_define_or_undefine_macro (define_p, "__VSX__");
   if ((flags & OPTION_MASK_HTM) != 0)
-    rs6000_define_or_undefine_macro (define_p, "__HTM__");
+    {
+      rs6000_define_or_undefine_macro (define_p, "__HTM__");
+      /* Tell the user that our HTM insn patterns act as memory barriers.  */
+      rs6000_define_or_undefine_macro (define_p, "__TM_FENCE__");
+    }
   if ((flags & OPTION_MASK_P8_VECTOR) != 0)
     rs6000_define_or_undefine_macro (define_p, "__POWER8_VECTOR__");
   if ((flags & OPTION_MASK_QUAD_MEMORY) != 0)
@@ -410,6 +408,8 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("__RSQRTE__");
   if (TARGET_FRSQRTES)
     builtin_define ("__RSQRTEF__");
+  if (TARGET_FLOAT128)
+    builtin_define ("__FLOAT128__");
 
   if (TARGET_EXTRA_BUILTINS && cpp_get_options (pfile)->lang != CLK_ASM)
     {
@@ -483,6 +483,11 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     {
       builtin_define ("__LONG_DOUBLE_128__");
       builtin_define ("__LONGDOUBLE128");
+
+      if (TARGET_IEEEQUAD)
+	builtin_define ("__LONG_DOUBLE_IEEE128__");
+      else
+	builtin_define ("__LONG_DOUBLE_IBM128__");
     }
 
   switch (TARGET_CMODEL)

@@ -1,0 +1,39 @@
+In general, merging process should not be very difficult, but we need to
+track various ABI changes and GCC-specific patches carefully.  Here is a
+general list of actions required to perform the merge:
+
+* Checkout recent GCC tree.
+* Run merge.sh script from libsanitizer directory.
+* Modify Makefile.am files into asan/tsan/lsan/ubsan/sanitizer_common/interception
+  directories if needed.  In particular, you may need to add new source files
+  and remove old ones in source files list, add new flags to {C, CXX}FLAGS if
+  needed and update DEFS with new defined variables.  You can find these changes
+  in corresponding CMakeLists.txt and config-ix.cmake files from compiler-rt source
+  directory.
+* Apply all needed GCC-specific patches to libsanitizer (note that some of
+  them might be already included to upstream).
+* Apply all necessary compiler changes.  Be especially careful here, you must
+  not break ABI between compiler and library.  You can reveal these changes by
+  inspecting the history of AddressSanitizer.cpp and ThreadSanitizer.cpp files
+  from LLVM source tree.
+* Update ASan testsuite with corresponding tests from lib/asan/tests directory.
+  Not all tests can be migrated easily, so you don't need them all to be adapted.
+* Modify configure.ac file if needed (e.g. if you need to add link against new
+  library for sanitizer lilbs).
+* Add new target platforms in configure.tgt script if needed.
+* Bump SONAME for sanitizer libraries in asan/tsan/ubsan libtool-version files
+  if ABI has changed.
+* Regenerate configure script and all Makefiles by autoreconf.  You should use
+  exactly the same autoconf and automake versions as for other GCC directories (current
+  versions are written in Makefile.in and configure files).
+* Run regression testing on at least three platforms (e.g. x86-linux-gnu, x86_64-linux-gnu,
+  aarch64-linux-gnu, arm-linux-gnueabi).
+* Run {A, UB}San bootstrap on at least three platforms.
+* Compare ABI of corresponding libclang_rt-asan and newly build libasan libraries.
+  You can use a pretty good libabigail tool (https://sourceware.org/libabigail/index.html)
+  to perform such a comparision.  Note, that the list of exported symbols may differ,
+  e.g. because libasan currently does not include UBSan runtime.
+* Split your changes into logical parts (e.g. raw merge, compiler changes, GCC-specific changes
+  in libasan, configure/Makefile changes). The review process has O(N^2) complexity, so you
+  would simplify and probably speed up the review process by doing this.
+* Send your patches for review to GCC Patches Mailing List (gcc-patches@gcc.gnu.org).

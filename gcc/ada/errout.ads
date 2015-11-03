@@ -111,9 +111,6 @@ package Errout is
    --  This normal suppression action may be overridden in cases 2-5 (but not
    --  in case 1 or 7 by setting All_Errors mode, or by setting the special
    --  unconditional message insertion character (!) as described below.
-   --  This normal suppression action may be overridden in cases 2-5 (but
-   --  not in case 1) by setting All_Errors mode, or by setting the special
-   --  unconditional message insertion character (!) as described below.
 
    ---------------------------------------------------------
    -- Error Message Text and Message Insertion Characters --
@@ -477,7 +474,7 @@ package Errout is
    Error_Msg_Node_2 : Node_Id renames Err_Vars.Error_Msg_Node_2;
    --  Node_Id values for & insertion characters in message
 
-   Error_Msg_Qual_Level : Int renames Err_Vars.Error_Msg_Qual_Level;
+   Error_Msg_Qual_Level : Nat renames Err_Vars.Error_Msg_Qual_Level;
    --  Number of levels of qualification required for type name (see the
    --  description of the } insertion character). Note that this value does
    --  not get reset by any Error_Msg call, so the caller is responsible

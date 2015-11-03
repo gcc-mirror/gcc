@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2014, AdaCore                     --
+--                     Copyright (C) 2000-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,10 @@
 --  may return any string output in association with a provided call chain.
 --  The decorator replaces the default backtrace mentioned above.
 
+--  On systems that use DWARF debugging output, then if the "-g" compiler
+--  switch and the "-Es" binder switch are used, the decorator is automatically
+--  set to Symbolic_Traceback.
+
 with System.Traceback_Entries;
 
 package System.Exception_Traces is
@@ -61,10 +65,14 @@ package System.Exception_Traces is
       --  explicit or due to a specific language rule, within the context of a
       --  task or not.
 
-      Unhandled_Raise
+      Unhandled_Raise,
       --  Denotes the raise events corresponding to exceptions for which there
-      --  is no user defined handler, in particular, when a task dies due to an
-      --  unhandled exception.
+      --  is no user defined handler. This includes unhandled exceptions in
+      --  task bodies.
+
+      Unhandled_Raise_In_Main
+      --  Same as Unhandled_Raise, except exceptions in task bodies are not
+      --  included.
      );
 
    --  The following procedures can be used to activate and deactivate
@@ -85,12 +93,15 @@ package System.Exception_Traces is
    --  output for a call chain provided by way of a tracebacks array.
 
    procedure Set_Trace_Decorator (Decorator : Traceback_Decorator);
-   --  Set the decorator to be used for future automatic outputs. Restore
-   --  the default behavior (output of raw addresses) if the provided
-   --  access value is null.
+   --  Set the decorator to be used for future automatic outputs. Restore the
+   --  default behavior if the provided access value is null.
    --
    --  Note: System.Traceback.Symbolic.Symbolic_Traceback may be used as the
    --  Decorator, to get a symbolic traceback. This will cause a significant
-   --  cpu and memory overhead.
+   --  cpu and memory overhead on some platforms.
+   --
+   --  Note: The Decorator is called when constructing the
+   --  Exception_Information; that needs to be taken into account
+   --  if the Decorator has any side effects.
 
 end System.Exception_Traces;

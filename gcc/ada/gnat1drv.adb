@@ -136,17 +136,24 @@ procedure Gnat1drv is
          Unnest_Subprogram_Mode := True;
       end if;
 
-      --  -gnatd.V or -gnatd.u enables special C expansion mode
+      --  -gnatd.u enables special C expansion mode
 
-      if Debug_Flag_Dot_VV or Debug_Flag_Dot_U then
+      if Debug_Flag_Dot_U then
          Modify_Tree_For_C := True;
       end if;
 
-      --  Other flags set if we are generating C code
+      --  Set all flags required when generating C code (-gnatd.V)
 
       if Debug_Flag_Dot_VV then
          Generate_C_Code := True;
+         Modify_Tree_For_C := True;
          Unnest_Subprogram_Mode := True;
+         Back_Annotate_Rep_Info := True;
+
+         --  Set operating mode to Generate_Code to benefit from full front-end
+         --  expansion (e.g. generics).
+
+         Operating_Mode := Generate_Code;
       end if;
 
       --  -gnatd.E sets Error_To_Warning mode, causing selected error messages
@@ -229,6 +236,7 @@ procedure Gnat1drv is
          --  user specified Restrictions pragmas are ignored, see
          --  Sem_Prag.Process_Restrictions_Or_Restriction_Warnings.
 
+         Restrict.Restrictions.Set   (No_Exception_Registration)       := True;
          Restrict.Restrictions.Set   (No_Initialize_Scalars)           := True;
          Restrict.Restrictions.Set   (No_Task_Hierarchy)               := True;
          Restrict.Restrictions.Set   (No_Abort_Statements)             := True;
@@ -378,10 +386,7 @@ procedure Gnat1drv is
          Optimization_Level := 0;
 
          --  Enable some restrictions systematically to simplify the generated
-         --  code (and ease analysis). Note that restriction checks are also
-         --  disabled in SPARK mode, see Restrict.Check_Restriction, and user
-         --  specified Restrictions pragmas are ignored, see
-         --  Sem_Prag.Process_Restrictions_Or_Restriction_Warnings.
+         --  code (and ease analysis).
 
          Restrict.Restrictions.Set (No_Initialize_Scalars) := True;
 
@@ -599,10 +604,9 @@ procedure Gnat1drv is
       if Debug_Flag_Dot_LL then
          Back_End_Handles_Limited_Types := True;
 
-      --  If no debug flag, usage off for AAMP, VM, SCIL cases
+      --  If no debug flag, usage off for AAMP, SCIL cases
 
       elsif AAMP_On_Target
-        or else VM_Target /= No_VM
         or else Generate_SCIL
       then
          Back_End_Handles_Limited_Types := False;
@@ -633,20 +637,20 @@ procedure Gnat1drv is
          --  back end some day, it would not be true for this test, but it
          --  would be non-GCC, so this is a bit troublesome ???
 
-         Front_End_Inlining := VM_Target /= No_VM or else AAMP_On_Target;
+         Front_End_Inlining := AAMP_On_Target or Generate_C_Code;
       end if;
 
       --  Set back end inlining indication
 
       Back_End_Inlining :=
 
-        --  No back end inlining available for VM targets
-
-        VM_Target = No_VM
-
         --  No back end inlining available on AAMP
 
-        and then not AAMP_On_Target
+        not AAMP_On_Target
+
+        --  No back end inlining available on C generation
+
+        and then not Generate_C_Code
 
         --  No back end inlining in GNATprove mode, since it just confuses
         --  the formal verification process.
@@ -868,7 +872,7 @@ procedure Gnat1drv is
       --  back end for component layout where possible) but only for non-GCC
       --  back ends, as this is done a priori for GCC back ends.
 
-      if VM_Target /= No_VM or else AAMP_On_Target then
+      if AAMP_On_Target then
          Sem_Ch13.Validate_Independence;
       end if;
 
@@ -1021,7 +1025,7 @@ begin
       Original_Operating_Mode := Operating_Mode;
       Frontend;
 
-      --  Exit with errors if the main source could not be parsed.
+      --  Exit with errors if the main source could not be parsed
 
       if Sinput.Main_Source_File = No_Source_File then
          Errout.Finalize (Last_Call => True);
@@ -1165,8 +1169,9 @@ begin
 
       --  It is not an error to analyze in CodePeer mode a spec which requires
       --  a body, in order to generate SCIL for this spec.
+      --  Ditto for Generate_C_Code mode and generate a C header for a spec.
 
-      elsif CodePeer_Mode then
+      elsif CodePeer_Mode or Generate_C_Code then
          Back_End_Mode := Generate_Object;
 
       --  It is not an error to analyze in GNATprove mode a spec which requires
@@ -1273,15 +1278,11 @@ begin
       --  Annotation is suppressed for targets where front-end layout is
       --  enabled, because the front end determines representations.
 
-      --  Annotation is also suppressed in the case of compiling for a VM,
-      --  since representations are largely symbolic there.
-
       if Back_End_Mode = Declarations_Only
         and then
           (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
             or else Main_Kind = N_Subunit
-            or else Frontend_Layout_On_Target
-            or else VM_Target /= No_VM)
+            or else Frontend_Layout_On_Target)
       then
          Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);
@@ -1430,6 +1431,12 @@ begin
          --  say Storage_Error, giving a strong hint.
 
          Comperr.Compiler_Abort ("Storage_Error");
+
+      when Unrecoverable_Error =>
+         raise;
+
+      when others =>
+         Comperr.Compiler_Abort ("exception");
    end;
 
    <<End_Of_Program>>

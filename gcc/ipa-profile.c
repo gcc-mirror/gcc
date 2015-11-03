@@ -48,26 +48,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "cgraph.h"
+#include "predict.h"
+#include "alloc-pool.h"
 #include "tree-pass.h"
-#include "internal-fn.h"
+#include "cgraph.h"
+#include "data-streamer.h"
 #include "gimple-iterator.h"
-#include "flags.h"
-#include "target.h"
-#include "tree-iterator.h"
 #include "ipa-utils.h"
 #include "profile.h"
 #include "params.h"
 #include "value-prof.h"
-#include "alloc-pool.h"
 #include "tree-inline.h"
-#include "data-streamer.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
@@ -87,8 +80,7 @@ struct histogram_entry
    duplicate entries.  */
 
 vec<histogram_entry *> histogram;
-static object_allocator<histogram_entry> histogram_pool
-  ("IPA histogram", 10);
+static object_allocator<histogram_entry> histogram_pool ("IPA histogram");
 
 /* Hashtable support for storing SSA names hashed by their SSA_NAME_VAR.  */
 
@@ -192,7 +184,7 @@ ipa_profile_generate_summary (void)
 	int size = 0;
         for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	  {
-	    gimple stmt = gsi_stmt (gsi);
+	    gimple *stmt = gsi_stmt (gsi);
 	    if (gimple_code (stmt) == GIMPLE_CALL
 		&& !gimple_call_fndecl (stmt))
 	      {

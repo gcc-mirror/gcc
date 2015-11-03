@@ -1,5 +1,5 @@
 /* Software floating-point emulation.
-   Copyright (C) 1997-2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -30,10 +30,14 @@
    <http://www.gnu.org/licenses/>.  */
 
 #ifndef SOFT_FP_H
-#define SOFT_FP_H
+#define SOFT_FP_H	1
 
 #ifdef _LIBC
 # include <sfp-machine.h>
+#elif defined __KERNEL__
+/* The Linux kernel uses asm/ names for architecture-specific
+   files.  */
+# include <asm/sfp-machine.h>
 #else
 # include "sfp-machine.h"
 #endif
@@ -45,6 +49,37 @@
 # else
 #  error "endianness not defined by sfp-machine.h"
 # endif
+#endif
+
+/* For unreachable default cases in switch statements over bitwise OR
+   of FP_CLS_* values.  */
+#if (defined __GNUC__							\
+     && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)))
+# define _FP_UNREACHABLE	__builtin_unreachable ()
+#else
+# define _FP_UNREACHABLE	abort ()
+#endif
+
+#if ((defined __GNUC__							\
+      && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)))	\
+     || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 201112L))
+# define _FP_STATIC_ASSERT(expr, msg)		\
+  _Static_assert ((expr), msg)
+#else
+# define _FP_STATIC_ASSERT(expr, msg)					\
+  extern int (*__Static_assert_function (void))				\
+    [!!sizeof (struct { int __error_if_negative: (expr) ? 2 : -1; })]
+#endif
+
+/* In the Linux kernel, some architectures have a single function that
+   uses different kinds of unpacking and packing depending on the
+   instruction being emulated, meaning it is not readily visible to
+   the compiler that variables from _FP_DECL and _FP_FRAC_DECL_*
+   macros are only used in cases where they were initialized.  */
+#ifdef __KERNEL__
+# define _FP_ZERO_INIT		= 0
+#else
+# define _FP_ZERO_INIT
 #endif
 
 #define _FP_WORKBITS		3
@@ -316,10 +351,4 @@ typedef USItype UHWtype;
 # endif
 #endif
 
-#ifdef _LIBC
-# include <stdlib.h>
-#else
-extern void abort (void);
-#endif
-
-#endif
+#endif /* !SOFT_FP_H */

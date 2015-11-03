@@ -87,10 +87,6 @@ package body Make is
    --  Every program depends on this package, that must then be checked,
    --  especially when -f and -a are used.
 
-   procedure Kill (Pid : Process_Id; Sig_Num : Integer; Close : Integer);
-   pragma Import (C, Kill, "__gnat_kill");
-   --  Called by Sigint_Intercepted to kill all spawned compilation processes
-
    type Sigint_Handler is access procedure;
    pragma Convention (C, Sigint_Handler);
 
@@ -671,12 +667,7 @@ package body Make is
    -- Compiler, Binder & Linker Data and Subprograms --
    ----------------------------------------------------
 
-   Gcc          : String_Access := Program_Name ("gcc", "gnatmake");
-   Original_Gcc : constant String_Access := Gcc;
-   --  Original_Gcc is used to check if Gcc has been modified by a switch
-   --  --GCC=, so that for VM platforms, it is not modified again, as it can
-   --  result in incorrect error messages if the compiler cannot be found.
-
+   Gcc      : String_Access := Program_Name ("gcc", "gnatmake");
    Gnatbind : String_Access := Program_Name ("gnatbind", "gnatmake");
    Gnatlink : String_Access := Program_Name ("gnatlink", "gnatmake");
    --  Default compiler, binder, linker programs
@@ -1577,11 +1568,20 @@ package body Make is
       Source_Name : File_Name_Type;
       Text        : Text_Buffer_Ptr;
 
-      Prev_Switch : String_Access;
-      --  Previous switch processed
+      First_Arg : Arg_Id;
+      --  Index of the first argument in Args.Table for a given unit
+
+      Last_Arg  : Arg_Id;
+      --  Index of the last argument in Args.Table for a given unit
 
       Arg : Arg_Id := Arg_Id'First;
       --  Current index in Args.Table for a given unit (init to stop warning)
+
+      Number_Of_Switches : Natural;
+      --  Number of switches recorded for a given unit
+
+      Prev_Switch : String_Access;
+      --  Previous switch processed
 
       Switch_Found : Boolean;
       --  True if a given switch has been found
@@ -1725,7 +1725,7 @@ package body Make is
 
             for J in 1 .. Last_Argument loop
 
-               --  Skip non switches -c, -I and -o switches
+               --  Skip -c, -I and -o switches
 
                if Arguments (J) (1) = '-'
                  and then Arguments (J) (2) /= 'c'
@@ -1745,6 +1745,9 @@ package body Make is
                end if;
             end loop;
 
+            First_Arg := Units.Table (ALIs.Table (ALI).First_Unit).First_Arg;
+            Last_Arg  := Units.Table (ALIs.Table (ALI).First_Unit).Last_Arg;
+
             for J in 1 .. Switches_To_Check.Last loop
 
                --  Comparing switches is delicate because gcc reorders a number
@@ -1762,15 +1765,12 @@ package body Make is
                     Prev_Switch (6) /= Switches_To_Check.Table (J) (6))
                then
                   Prev_Switch := Switches_To_Check.Table (J);
-                  Arg :=
-                    Units.Table (ALIs.Table (ALI).First_Unit).First_Arg;
+                  Arg := First_Arg;
                end if;
 
                Switch_Found := False;
 
-               for K in Arg ..
-                 Units.Table (ALIs.Table (ALI).First_Unit).Last_Arg
-               loop
+               for K in Arg .. Last_Arg loop
                   if
                     Switches_To_Check.Table (J).all = Args.Table (K).all
                   then
@@ -1792,17 +1792,25 @@ package body Make is
                end if;
             end loop;
 
-            if Switches_To_Check.Last /=
-              Integer (Units.Table (ALIs.Table (ALI).First_Unit).Last_Arg -
-                       Units.Table (ALIs.Table (ALI).First_Unit).First_Arg + 1)
-            then
+            Number_Of_Switches := Natural (Last_Arg - First_Arg + 1);
+
+            --  Do not count the multilib switches reinstated by the compiler
+            --  according to the lang-specs.h.settings.
+
+            for K in First_Arg .. Last_Arg loop
+               if Args.Table (K).all = "-mrtp"
+                  or else Args.Table (K).all = "-fsjlj"
+               then
+                  Number_Of_Switches := Number_Of_Switches - 1;
+               end if;
+            end loop;
+
+            if Switches_To_Check.Last /= Number_Of_Switches then
                if Verbose_Mode then
                   Verbose_Msg (ALIs.Table (ALI).Sfile,
                                "different number of switches");
 
-                  for K in Units.Table (ALIs.Table (ALI).First_Unit).First_Arg
-                    .. Units.Table (ALIs.Table (ALI).First_Unit).Last_Arg
-                  loop
+                  for K in First_Arg .. Last_Arg loop
                      Write_Str (Args.Table (K).all);
                      Write_Char (' ');
                   end loop;
@@ -4107,7 +4115,7 @@ package body Make is
       procedure Globalize_Dirs is new
         Prj.Env.For_All_Object_Dirs (Globalize_Dir);
 
-   --  Start of procedure Globalize
+   --  Start of processing for Globalize
 
    begin
       Success := True;
@@ -4861,12 +4869,10 @@ package body Make is
       end if;
 
       --  If the objects were up-to-date check if the executable file is also
-      --  up-to-date. For now always bind and link on the JVM since there is
-      --  currently no simple way to check whether objects are up to date wrt
-      --  the executable. Same in CodePeer mode where there is no executable.
+      --  up-to-date. For now always bind and link in CodePeer mode where there
+      --  is no executable.
 
-      if Targparm.VM_Target /= JVM_Target
-        and then not CodePeer_Mode
+      if not CodePeer_Mode
         and then First_Compiled_File = No_File
       then
          Executable_Stamp := File_Stamp (Executable);
@@ -5812,8 +5818,8 @@ package body Make is
             Finish_Program (Project_Tree, E_Success);
 
          else
-            --  Call Get_Target_Parameters to ensure that VM_Target and
-            --  AAMP_On_Target get set before calling Usage.
+            --  Call Get_Target_Parameters to ensure that AAMP_On_Target gets
+            --  set before calling Usage.
 
             Targparm.Get_Target_Parameters;
 
@@ -6026,39 +6032,6 @@ package body Make is
                when Unrecoverable_Error =>
                   Make_Failed ("*** make failed.");
             end;
-
-            --  Special processing for VM targets
-
-            if Targparm.VM_Target /= No_VM then
-
-               --  Set proper processing commands
-
-               case Targparm.VM_Target is
-                  when Targparm.JVM_Target =>
-
-                     --  Do not check for an object file (".o") when compiling
-                     --  to JVM machine since ".class" files are generated
-                     --  instead.
-
-                     Check_Object_Consistency := False;
-
-                     --  Do not modify Gcc is --GCC= was specified
-
-                     if Gcc = Original_Gcc then
-                        Gcc := new String'("jvm-gnatcompile");
-                     end if;
-
-                  when Targparm.CLI_Target =>
-                     --  Do not modify Gcc is --GCC= was specified
-
-                     if Gcc = Original_Gcc then
-                        Gcc := new String'("dotnet-gnatcompile");
-                     end if;
-
-                  when Targparm.No_VM =>
-                     raise Program_Error;
-               end case;
-            end if;
 
             Gcc_Path       := GNAT.OS_Lib.Locate_Exec_On_Path (Gcc.all);
             Gnatbind_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatbind.all);
@@ -6976,7 +6949,7 @@ package body Make is
       Get_Name_String (ALI_File);
       Link_Args (1) := new String'(Name_Buffer (1 .. Name_Len));
 
-      Link_Args (2 .. Args'Length + 1) :=  Args;
+      Link_Args (2 .. Args'Length + 1) := Args;
 
       GNAT.OS_Lib.Normalize_Arguments (Link_Args);
 
@@ -7329,8 +7302,6 @@ package body Make is
    ------------------------
 
    procedure Sigint_Intercepted is
-      SIGINT  : constant := 2;
-
    begin
       Set_Standard_Error;
       Write_Line ("*** Interrupted ***");
@@ -7338,7 +7309,7 @@ package body Make is
       --  Send SIGINT to all outstanding compilation processes spawned
 
       for J in 1 .. Outstanding_Compiles loop
-         Kill (Running_Compile (J).Pid, SIGINT, 1);
+         Kill (Running_Compile (J).Pid, Hard_Kill => False);
       end loop;
 
       Finish_Program (Project_Tree, E_No_Compile);
@@ -7607,29 +7578,28 @@ package body Make is
                   elsif Src_Path_Name = null
                     and then Lib_Path_Name = null
                   then
-                     Make_Failed ("RTS path not valid: missing "
-                                  & "adainclude and adalib directories");
+                     Make_Failed
+                       ("RTS path not valid: missing adainclude and adalib "
+                        & "directories");
 
                   elsif Src_Path_Name = null then
-                     Make_Failed ("RTS path not valid: missing adainclude "
-                                  & "directory");
+                     Make_Failed
+                       ("RTS path not valid: missing adainclude directory");
 
-                  elsif  Lib_Path_Name = null then
-                     Make_Failed ("RTS path not valid: missing adalib "
-                                  & "directory");
+                  elsif Lib_Path_Name = null then
+                     Make_Failed
+                       ("RTS path not valid: missing adalib directory");
                   end if;
                end;
             end if;
 
-         elsif Argv'Length > Source_Info_Option'Length and then
-           Argv (1 .. Source_Info_Option'Length) = Source_Info_Option
+         elsif Argv'Length > Source_Info_Option'Length
+           and then Argv (1 .. Source_Info_Option'Length) = Source_Info_Option
          then
             Project_Tree.Source_Info_File_Name :=
               new String'(Argv (Source_Info_Option'Length + 1 .. Argv'Last));
 
-         elsif Argv'Length >= 8 and then
-           Argv (1 .. 8) = "--param="
-         then
+         elsif Argv'Length >= 8 and then Argv (1 .. 8) = "--param=" then
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Linker,   And_Save => And_Save);
 

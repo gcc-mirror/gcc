@@ -21,16 +21,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "cfghooks.h"
+#include "tree-pass.h"	/* ??? for TODO_update_ssa but this isn't a pass.  */
 #include "ssa.h"
-#include "alias.h"
+#include "gimple-pretty-print.h"
 #include "fold-const.h"
-#include "tm_p.h"
 #include "cfganal.h"
-#include "internal-fn.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
@@ -41,14 +39,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
 #include "tree-ssa.h"
-#include "dumpfile.h"
-#include "gimple-pretty-print.h"
 #include "cfgloop.h"
-#include "tree-pass.h"	/* ??? for TODO_update_ssa but this isn't a pass.  */
 #include "tree-scalar-evolution.h"
 #include "params.h"
 #include "tree-inline.h"
-#include "langhooks.h"
 
 /* All bitmaps for rewriting into loop-closed SSA go on this obstack,
    so that we can free them all at once.  */
@@ -278,21 +272,21 @@ add_exit_phi (basic_block exit, tree var)
   edge e;
   edge_iterator ei;
 
-#ifdef ENABLE_CHECKING
   /* Check that at least one of the edges entering the EXIT block exits
      the loop, or a superloop of that loop, that VAR is defined in.  */
-  gimple def_stmt = SSA_NAME_DEF_STMT (var);
-  basic_block def_bb = gimple_bb (def_stmt);
-  FOR_EACH_EDGE (e, ei, exit->preds)
+  if (flag_checking)
     {
-      struct loop *aloop = find_common_loop (def_bb->loop_father,
-					     e->src->loop_father);
-      if (!flow_bb_inside_loop_p (aloop, e->dest))
-	break;
+      gimple *def_stmt = SSA_NAME_DEF_STMT (var);
+      basic_block def_bb = gimple_bb (def_stmt);
+      FOR_EACH_EDGE (e, ei, exit->preds)
+	{
+	  struct loop *aloop = find_common_loop (def_bb->loop_father,
+						 e->src->loop_father);
+	  if (!flow_bb_inside_loop_p (aloop, e->dest))
+	    break;
+	}
+      gcc_assert (e);
     }
-
-  gcc_checking_assert (e);
-#endif
 
   phi = create_phi_node (NULL_TREE, exit);
   create_new_def_for (var, phi, gimple_phi_result_ptr (phi));
@@ -408,7 +402,7 @@ find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks,
    names are used to USE_BLOCKS, and the ssa names themselves to NEED_PHIS.  */
 
 static void
-find_uses_to_rename_stmt (gimple stmt, bitmap *use_blocks, bitmap need_phis,
+find_uses_to_rename_stmt (gimple *stmt, bitmap *use_blocks, bitmap need_phis,
 			  int use_flags)
 {
   ssa_op_iter iter;
@@ -492,7 +486,7 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis,
 static void
 find_uses_to_rename_def (tree def, bitmap *use_blocks, bitmap need_phis)
 {
-  gimple use_stmt;
+  gimple *use_stmt;
   imm_use_iterator imm_iter;
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
@@ -548,7 +542,7 @@ find_uses_to_rename_in_loop (struct loop *loop, bitmap *use_blocks,
       for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
 	   gsi_next (&bsi))
 	{
-	  gimple stmt = gsi_stmt (bsi);
+	  gimple *stmt = gsi_stmt (bsi);
 	  /* FOR_EACH_SSA_TREE_OPERAND iterator does not allows
 	     SSA_OP_VIRTUAL_DEFS only.  */
 	  if (def_flags == SSA_OP_VIRTUAL_DEFS)
@@ -699,7 +693,7 @@ rewrite_virtuals_into_loop_closed_ssa (struct loop *loop)
 static void
 check_loop_closed_ssa_use (basic_block bb, tree use)
 {
-  gimple def;
+  gimple *def;
   basic_block def_bb;
 
   if (TREE_CODE (use) != SSA_NAME || virtual_operand_p (use))
@@ -714,7 +708,7 @@ check_loop_closed_ssa_use (basic_block bb, tree use)
 /* Checks invariants of loop closed ssa form in statement STMT in BB.  */
 
 static void
-check_loop_closed_ssa_stmt (basic_block bb, gimple stmt)
+check_loop_closed_ssa_stmt (basic_block bb, gimple *stmt)
 {
   ssa_op_iter iter;
   tree var;
@@ -816,7 +810,7 @@ ip_end_pos (struct loop *loop)
 basic_block
 ip_normal_pos (struct loop *loop)
 {
-  gimple last;
+  gimple *last;
   basic_block bb;
   edge exit;
 
@@ -849,7 +843,7 @@ standard_iv_increment_position (struct loop *loop, gimple_stmt_iterator *bsi,
 				bool *insert_after)
 {
   basic_block bb = ip_normal_pos (loop), latch = ip_end_pos (loop);
-  gimple last = last_stmt (latch);
+  gimple *last = last_stmt (latch);
 
   if (!bb
       || (last && gimple_code (last) != GIMPLE_LABEL))
@@ -1368,11 +1362,9 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   gimple_cond_set_rhs (exit_if, exit_bound);
   update_stmt (exit_if);
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-  verify_loop_structure ();
-  verify_loop_closed_ssa (true);
-#endif
+  checking_verify_flow_info ();
+  checking_verify_loop_structure ();
+  checking_verify_loop_closed_ssa (true);
 }
 
 /* Wrapper over tree_transform_and_unroll_loop for case we do not

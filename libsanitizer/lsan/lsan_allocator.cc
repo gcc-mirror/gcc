@@ -23,19 +23,29 @@ extern "C" void *memset(void *ptr, int value, uptr num);
 
 namespace __lsan {
 
-static const uptr kMaxAllowedMallocSize = 8UL << 30;
-static const uptr kAllocatorSpace = 0x600000000000ULL;
-static const uptr kAllocatorSize  =  0x40000000000ULL;  // 4T.
-
 struct ChunkMetadata {
-  bool allocated : 8;  // Must be first.
+  u8 allocated : 8;  // Must be first.
   ChunkTag tag : 2;
   uptr requested_size : 54;
   u32 stack_trace_id;
 };
 
+#if defined(__mips64)
+static const uptr kMaxAllowedMallocSize = 4UL << 30;
+static const uptr kRegionSizeLog = 20;
+static const uptr kNumRegions = SANITIZER_MMAP_RANGE_SIZE >> kRegionSizeLog;
+typedef TwoLevelByteMap<(kNumRegions >> 12), 1 << 12> ByteMap;
+typedef CompactSizeClassMap SizeClassMap;
+typedef SizeClassAllocator32<0, SANITIZER_MMAP_RANGE_SIZE,
+    sizeof(ChunkMetadata), SizeClassMap, kRegionSizeLog, ByteMap>
+    PrimaryAllocator;
+#else
+static const uptr kMaxAllowedMallocSize = 8UL << 30;
+static const uptr kAllocatorSpace = 0x600000000000ULL;
+static const uptr kAllocatorSize = 0x40000000000ULL; // 4T.
 typedef SizeClassAllocator64<kAllocatorSpace, kAllocatorSize,
         sizeof(ChunkMetadata), DefaultSizeClassMap> PrimaryAllocator;
+#endif
 typedef SizeClassAllocatorLocalCache<PrimaryAllocator> AllocatorCache;
 typedef LargeMmapAllocator<> SecondaryAllocator;
 typedef CombinedAllocator<PrimaryAllocator, AllocatorCache,
@@ -45,7 +55,7 @@ static Allocator allocator;
 static THREADLOCAL AllocatorCache cache;
 
 void InitializeAllocator() {
-  allocator.Init();
+  allocator.InitLinkerInitialized(common_flags()->allocator_may_return_null);
 }
 
 void AllocatorThreadFinish() {
@@ -79,7 +89,7 @@ void *Allocate(const StackTrace &stack, uptr size, uptr alignment,
     size = 1;
   if (size > kMaxAllowedMallocSize) {
     Report("WARNING: LeakSanitizer failed to allocate %zu bytes\n", size);
-    return 0;
+    return nullptr;
   }
   void *p = allocator.Allocate(&cache, size, alignment, false);
   // Do not rely on the allocator to clear the memory (it's slow).
@@ -102,7 +112,7 @@ void *Reallocate(const StackTrace &stack, void *p, uptr new_size,
   if (new_size > kMaxAllowedMallocSize) {
     Report("WARNING: LeakSanitizer failed to allocate %zu bytes\n", new_size);
     allocator.Deallocate(&cache, p);
-    return 0;
+    return nullptr;
   }
   p = allocator.Reallocate(&cache, p, new_size, alignment);
   RegisterAllocation(stack, p, new_size);
@@ -200,7 +210,7 @@ IgnoreObjectResult IgnoreObjectLocked(const void *p) {
     return kIgnoreObjectInvalid;
   }
 }
-}  // namespace __lsan
+} // namespace __lsan
 
 using namespace __lsan;
 
@@ -229,10 +239,10 @@ SANITIZER_INTERFACE_ATTRIBUTE
 uptr __sanitizer_get_estimated_allocated_size(uptr size) { return size; }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-int __sanitizer_get_ownership(const void *p) { return Metadata(p) != 0; }
+int __sanitizer_get_ownership(const void *p) { return Metadata(p) != nullptr; }
 
 SANITIZER_INTERFACE_ATTRIBUTE
 uptr __sanitizer_get_allocated_size(const void *p) {
   return GetMallocUsableSize(p);
 }
-}  // extern "C"
+} // extern "C"

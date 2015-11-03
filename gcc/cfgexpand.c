@@ -21,59 +21,53 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
+#include "tm_p.h"
 #include "ssa.h"
-#include "alias.h"
+#include "optabs.h"
+#include "regs.h" /* For reg_renumber.  */
+#include "emit-rtl.h"
+#include "recog.h"
+#include "cgraph.h"
+#include "diagnostic.h"
 #include "fold-const.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "stmt.h"
 #include "print-tree.h"
-#include "tm_p.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
 #include "calls.h"
-#include "emit-rtl.h"
 #include "expr.h"
-#include "langhooks.h"
 #include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
-#include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
-#include "tree-pass.h"
 #include "except.h"
-#include "diagnostic.h"
 #include "gimple-pretty-print.h"
 #include "toplev.h"
 #include "debug.h"
 #include "params.h"
 #include "tree-inline.h"
 #include "value-prof.h"
-#include "target.h"
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
 #include "cfgloop.h"
-#include "regs.h" /* For reg_renumber.  */
 #include "insn-attr.h" /* For INSN_SCHEDULING.  */
 #include "asan.h"
 #include "tree-ssa-address.h"
-#include "recog.h"
 #include "output.h"
 #include "builtins.h"
 #include "tree-chkp.h"
@@ -93,17 +87,19 @@ struct ssaexpand SA;
 
 /* This variable holds the currently expanded gimple statement for purposes
    of comminucating the profile info to the builtin expanders.  */
-gimple currently_expanding_gimple_stmt;
+gimple *currently_expanding_gimple_stmt;
 
 static rtx expand_debug_expr (tree);
 
 static bool defer_stack_allocation (tree, bool);
 
+static void record_alignment_for_reg_var (unsigned int);
+
 /* Return an expression tree corresponding to the RHS of GIMPLE
    statement STMT.  */
 
 tree
-gimple_assign_rhs_to_tree (gimple stmt)
+gimple_assign_rhs_to_tree (gimple *stmt)
 {
   tree t;
   enum gimple_rhs_class grhs_class;
@@ -172,111 +168,86 @@ leader_merge (tree cur, tree next)
   return cur;
 }
 
-/* Return true if VAR is a PARM_DECL or a RESULT_DECL that ought to be
-   assigned to a stack slot.  We can't have expand_one_ssa_partition
-   choose their address: the pseudo holding the address would be set
-   up too late for assign_params to copy the parameter if needed.
-
-   Such parameters are likely passed as a pointer to the value, rather
-   than as a value, and so we must not coalesce them, nor allocate
-   stack space for them before determining the calling conventions for
-   them.
-
-   For their SSA_NAMEs, expand_one_ssa_partition emits RTL as MEMs
-   with pc_rtx as the address, and then it replaces the pc_rtx with
-   NULL so as to make sure the MEM is not used before it is adjusted
-   in assign_parm_setup_reg.  */
-
-bool
-parm_in_stack_slot_p (tree var)
-{
-  if (!var || VAR_P (var))
-    return false;
-
-  gcc_assert (TREE_CODE (var) == PARM_DECL
-	      || TREE_CODE (var) == RESULT_DECL);
-
-  return !use_register_for_decl (var);
-}
-
-/* Return the partition of the default SSA_DEF for decl VAR.  */
-
-static int
-ssa_default_def_partition (tree var)
-{
-  tree name = ssa_default_def (cfun, var);
-
-  if (!name)
-    return NO_PARTITION;
-
-  return var_to_partition (SA.map, name);
-}
-
-/* Return the RTL for the default SSA def of a PARM or RESULT, if
-   there is one.  */
-
-rtx
-get_rtl_for_parm_ssa_default_def (tree var)
-{
-  gcc_assert (TREE_CODE (var) == PARM_DECL || TREE_CODE (var) == RESULT_DECL);
-
-  if (!is_gimple_reg (var))
-    return NULL_RTX;
-
-  /* If we've already determined RTL for the decl, use it.  This is
-     not just an optimization: if VAR is a PARM whose incoming value
-     is unused, we won't find a default def to use its partition, but
-     we still want to use the location of the parm, if it was used at
-     all.  During assign_parms, until a location is assigned for the
-     VAR, RTL can only for a parm or result if we're not coalescing
-     across variables, when we know we're coalescing all SSA_NAMEs of
-     each parm or result, and we're not coalescing them with names
-     pertaining to other variables, such as other parms' default
-     defs.  */
-  if (DECL_RTL_SET_P (var))
-    {
-      gcc_assert (DECL_RTL (var) != pc_rtx);
-      return DECL_RTL (var);
-    }
-
-  int part = ssa_default_def_partition (var);
-  if (part == NO_PARTITION)
-    return NULL_RTX;
-
-  return SA.partition_to_pseudo[part];
-}
-
 /* Associate declaration T with storage space X.  If T is no
    SSA name this is exactly SET_DECL_RTL, otherwise make the
    partition of T associated with X.  */
 static inline void
 set_rtl (tree t, rtx x)
 {
-  if (x && SSAVAR (t))
+  gcc_checking_assert (!x
+		       || !(TREE_CODE (t) == SSA_NAME || is_gimple_reg (t))
+		       || (use_register_for_decl (t)
+			   ? (REG_P (x)
+			      || (GET_CODE (x) == CONCAT
+				  && (REG_P (XEXP (x, 0))
+				      || SUBREG_P (XEXP (x, 0)))
+				  && (REG_P (XEXP (x, 1))
+				      || SUBREG_P (XEXP (x, 1))))
+			      || (GET_CODE (x) == PARALLEL
+				  && SSAVAR (t)
+				  && TREE_CODE (SSAVAR (t)) == RESULT_DECL
+				  && !flag_tree_coalesce_vars))
+			   : (MEM_P (x) || x == pc_rtx
+			      || (GET_CODE (x) == CONCAT
+				  && MEM_P (XEXP (x, 0))
+				  && MEM_P (XEXP (x, 1))))));
+  /* Check that the RTL for SSA_NAMEs and gimple-reg PARM_DECLs and
+     RESULT_DECLs has the expected mode.  For memory, we accept
+     unpromoted modes, since that's what we're likely to get.  For
+     PARM_DECLs and RESULT_DECLs, we'll have been called by
+     set_parm_rtl, which will give us the default def, so we don't
+     have to compute it ourselves.  For RESULT_DECLs, we accept mode
+     mismatches too, as long as we're not coalescing across variables,
+     so that we don't reject BLKmode PARALLELs or unpromoted REGs.  */
+  gcc_checking_assert (!x || x == pc_rtx || TREE_CODE (t) != SSA_NAME
+		       || (SSAVAR (t) && TREE_CODE (SSAVAR (t)) == RESULT_DECL
+			   && !flag_tree_coalesce_vars)
+		       || !use_register_for_decl (t)
+		       || GET_MODE (x) == promote_ssa_mode (t, NULL));
+
+  if (x)
     {
       bool skip = false;
       tree cur = NULL_TREE;
+      rtx xm = x;
 
-      if (MEM_P (x))
-	cur = MEM_EXPR (x);
-      else if (REG_P (x))
-	cur = REG_EXPR (x);
-      else if (GET_CODE (x) == CONCAT
-	       && REG_P (XEXP (x, 0)))
-	cur = REG_EXPR (XEXP (x, 0));
-      else if (GET_CODE (x) == PARALLEL)
-	cur = REG_EXPR (XVECEXP (x, 0, 0));
-      else if (x == pc_rtx)
+    retry:
+      if (MEM_P (xm))
+	cur = MEM_EXPR (xm);
+      else if (REG_P (xm))
+	cur = REG_EXPR (xm);
+      else if (SUBREG_P (xm))
+	{
+	  gcc_assert (subreg_lowpart_p (xm));
+	  xm = SUBREG_REG (xm);
+	  goto retry;
+	}
+      else if (GET_CODE (xm) == CONCAT)
+	{
+	  xm = XEXP (xm, 0);
+	  goto retry;
+	}
+      else if (GET_CODE (xm) == PARALLEL)
+	{
+	  xm = XVECEXP (xm, 0, 0);
+	  gcc_assert (GET_CODE (xm) == EXPR_LIST);
+	  xm = XEXP (xm, 0);
+	  goto retry;
+	}
+      else if (xm == pc_rtx)
 	skip = true;
       else
 	gcc_unreachable ();
 
-      tree next = skip ? cur : leader_merge (cur, SSAVAR (t));
+      tree next = skip ? cur : leader_merge (cur, SSAVAR (t) ? SSAVAR (t) : t);
 
       if (cur != next)
 	{
 	  if (MEM_P (x))
-	    set_mem_attributes (x, next, true);
+	    set_mem_attributes (x,
+				next && TREE_CODE (next) == SSA_NAME
+				? TREE_TYPE (next)
+				: next, true);
 	  else
 	    set_reg_attrs_for_decl_rtl (next, x);
 	}
@@ -294,13 +265,11 @@ set_rtl (tree t, rtx x)
 	}
       /* For the benefit of debug information at -O0 (where
          vartracking doesn't run) record the place also in the base
-         DECL.  For PARMs and RESULTs, we may end up resetting these
-         in function.c:maybe_reset_rtl_for_parm, but in some rare
-         cases we may need them (unused and overwritten incoming
-         value, that at -O0 must share the location with the other
-         uses in spite of the missing default def), and this may be
-         the only chance to preserve them.  */
-      if (x && x != pc_rtx && SSA_NAME_VAR (t))
+         DECL.  For PARMs and RESULTs, do so only when setting the
+         default def.  */
+      if (x && x != pc_rtx && SSA_NAME_VAR (t)
+	  && (VAR_P (SSA_NAME_VAR (t))
+	      || SSA_NAME_IS_DEFAULT_DEF (t)))
 	{
 	  tree var = SSA_NAME_VAR (t);
 	  /* If we don't yet have something recorded, just record it now.  */
@@ -522,7 +491,7 @@ stack_var_conflict_p (size_t x, size_t y)
    enter its partition number into bitmap DATA.  */
 
 static bool
-visit_op (gimple, tree op, tree, void *data)
+visit_op (gimple *, tree op, tree, void *data)
 {
   bitmap active = (bitmap)data;
   op = get_base_address (op);
@@ -542,7 +511,7 @@ visit_op (gimple, tree op, tree, void *data)
    from bitmap DATA.  */
 
 static bool
-visit_conflict (gimple, tree op, tree, void *data)
+visit_conflict (gimple *, tree op, tree, void *data)
 {
   bitmap active = (bitmap)data;
   op = get_base_address (op);
@@ -585,12 +554,12 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       walk_stmt_load_store_addr_ops (stmt, work, NULL, NULL, visit);
     }
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
 
       if (gimple_clobber_p (stmt))
 	{
@@ -1242,6 +1211,46 @@ account_stack_vars (void)
   return size;
 }
 
+/* Record the RTL assignment X for the default def of PARM.  */
+
+extern void
+set_parm_rtl (tree parm, rtx x)
+{
+  gcc_assert (TREE_CODE (parm) == PARM_DECL
+	      || TREE_CODE (parm) == RESULT_DECL);
+
+  if (x && !MEM_P (x))
+    {
+      unsigned int align = MINIMUM_ALIGNMENT (TREE_TYPE (parm),
+					      TYPE_MODE (TREE_TYPE (parm)),
+					      TYPE_ALIGN (TREE_TYPE (parm)));
+
+      /* If the variable alignment is very large we'll dynamicaly
+	 allocate it, which means that in-frame portion is just a
+	 pointer.  ??? We've got a pseudo for sure here, do we
+	 actually dynamically allocate its spilling area if needed?
+	 ??? Isn't it a problem when POINTER_SIZE also exceeds
+	 MAX_SUPPORTED_STACK_ALIGNMENT, as on cris and lm32?  */
+      if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
+	align = POINTER_SIZE;
+
+      record_alignment_for_reg_var (align);
+    }
+
+  tree ssa = ssa_default_def (cfun, parm);
+  if (!ssa)
+    return set_rtl (parm, x);
+
+  int part = var_to_partition (SA.map, ssa);
+  gcc_assert (part != NO_PARTITION);
+
+  bool changed = bitmap_bit_p (SA.partitions_for_parm_default_defs, part);
+  gcc_assert (changed);
+
+  set_rtl (ssa, x);
+  gcc_assert (DECL_RTL (parm) == x);
+}
+
 /* A subroutine of expand_one_var.  Called to immediately assign rtl
    to a variable to be allocated in the stack frame.  */
 
@@ -1349,37 +1358,7 @@ expand_one_ssa_partition (tree var)
 
   if (!use_register_for_decl (var))
     {
-      /* We can't risk having the parm assigned to a MEM location
-	 whose address references a pseudo, for the pseudo will only
-	 be set up after arguments are copied to the stack slot.
-
-	 If the parm doesn't have a default def (e.g., because its
-	 incoming value is unused), then we want to let assign_params
-	 do the allocation, too.  In this case we want to make sure
-	 SSA_NAMEs associated with the parm don't get assigned to more
-	 than one partition, lest we'd create two unassigned stac
-	 slots for the same parm, thus the assert at the end of the
-	 block.  */
-      if (parm_in_stack_slot_p (SSA_NAME_VAR (var))
-	  && (ssa_default_def_partition (SSA_NAME_VAR (var)) == part
-	      || !ssa_default_def (cfun, SSA_NAME_VAR (var))))
-	{
-	  expand_one_stack_var_at (var, pc_rtx, 0, 0);
-	  rtx x = SA.partition_to_pseudo[part];
-	  gcc_assert (GET_CODE (x) == MEM);
-	  gcc_assert (XEXP (x, 0) == pc_rtx);
-	  /* Reset the address, so that any attempt to use it will
-	     ICE.  It will be adjusted in assign_parm_setup_reg.  */
-	  XEXP (x, 0) = NULL_RTX;
-	  /* If the RTL associated with the parm is not what we have
-	     just created, the parm has been split over multiple
-	     partitions.  In order for this to work, we must have a
-	     default def for the parm, otherwise assign_params won't
-	     know what to do.  */
-	  gcc_assert (DECL_RTL_IF_SET (SSA_NAME_VAR (var)) == x
-		      || ssa_default_def (cfun, SSA_NAME_VAR (var)));
-	}
-      else if (defer_stack_allocation (var, true))
+      if (defer_stack_allocation (var, true))
 	add_stack_var (var);
       else
 	expand_one_stack_var_1 (var);
@@ -1393,8 +1372,8 @@ expand_one_ssa_partition (tree var)
   set_rtl (var, x);
 }
 
-/* Record the association between the RTL generated for a partition
-   and the underlying variable of the SSA_NAME.  */
+/* Record the association between the RTL generated for partition PART
+   and the underlying variable of the SSA_NAME VAR.  */
 
 static void
 adjust_one_expanded_partition_var (tree var)
@@ -1410,12 +1389,7 @@ adjust_one_expanded_partition_var (tree var)
 
   rtx x = SA.partition_to_pseudo[part];
 
-  if (!x)
-    {
-      /* This var will get a stack slot later.  */
-      gcc_assert (defer_stack_allocation (var, true));
-      return;
-    }
+  gcc_assert (x);
 
   set_rtl (var, x);
 
@@ -1996,7 +1970,7 @@ stack_protect_return_slot_p ()
     for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
 	 !gsi_end_p (gsi); gsi_next (&gsi))
       {
-	gimple stmt = gsi_stmt (gsi);
+	gimple *stmt = gsi_stmt (gsi);
 	/* This assumes that calls to internal-only functions never
 	   use a return slot.  */
 	if (is_gimple_call (stmt)
@@ -2040,15 +2014,15 @@ expand_used_vars (void)
 
   for (i = 0; i < SA.map->num_partitions; i++)
     {
+      if (bitmap_bit_p (SA.partitions_for_parm_default_defs, i))
+	continue;
+
       tree var = partition_to_var (SA.map, i);
 
       gcc_assert (!virtual_operand_p (var));
 
       expand_one_ssa_partition (var);
     }
-
-  for (i = 1; i < num_ssa_names; i++)
-    adjust_one_expanded_partition_var (ssa_name (i));
 
   if (flag_stack_protect == SPCT_FLAG_STRONG)
       gen_stack_protect_signal
@@ -2280,7 +2254,7 @@ expand_used_vars (void)
    generated for STMT should have been appended.  */
 
 static void
-maybe_dump_rtl_for_gimple_stmt (gimple stmt, rtx_insn *since)
+maybe_dump_rtl_for_gimple_stmt (gimple *stmt, rtx_insn *since)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2423,7 +2397,7 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
 	      && integer_onep (op1)))
       && bitmap_bit_p (SA.values, SSA_NAME_VERSION (op0)))
     {
-      gimple second = SSA_NAME_DEF_STMT (op0);
+      gimple *second = SSA_NAME_DEF_STMT (op0);
       if (gimple_code (second) == GIMPLE_ASSIGN)
 	{
 	  enum tree_code code2 = gimple_assign_rhs_code (second);
@@ -2531,7 +2505,7 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
 /* Mark all calls that can have a transaction restart.  */
 
 static void
-mark_transaction_restart_calls (gimple stmt)
+mark_transaction_restart_calls (gimple *stmt)
 {
   struct tm_restart_node dummy;
   tm_restart_node **slot;
@@ -2595,7 +2569,7 @@ expand_call_stmt (gcall *stmt)
   for (i = 0; i < gimple_call_num_args (stmt); i++)
     {
       tree arg = gimple_call_arg (stmt, i);
-      gimple def;
+      gimple *def;
       /* TER addresses into arguments of builtin functions so we have a
 	 chance to infer more correct alignment information.  See PR39954.  */
       if (builtin_p
@@ -3289,12 +3263,13 @@ expand_computed_goto (tree exp)
 static void
 expand_goto (tree label)
 {
-#ifdef ENABLE_CHECKING
-  /* Check for a nonlocal goto to a containing function.  Should have
-     gotten translated to __builtin_nonlocal_goto.  */
-  tree context = decl_function_context (label);
-  gcc_assert (!context || context == current_function_decl);
-#endif
+  if (flag_checking)
+    {
+      /* Check for a nonlocal goto to a containing function.  Should have
+	 gotten translated to __builtin_nonlocal_goto.  */
+      tree context = decl_function_context (label);
+      gcc_assert (!context || context == current_function_decl);
+    }
 
   emit_jump (jump_target_rtx (label));
 }
@@ -3503,7 +3478,7 @@ expand_return (tree retval, tree bounds)
    is no tailcalls and no GIMPLE_COND.  */
 
 static void
-expand_gimple_stmt_1 (gimple stmt)
+expand_gimple_stmt_1 (gimple *stmt)
 {
   tree op0;
 
@@ -3587,7 +3562,9 @@ expand_gimple_stmt_1 (gimple stmt)
 	    tree rhs = gimple_assign_rhs1 (assign_stmt);
 	    gcc_assert (get_gimple_rhs_class (gimple_expr_code (stmt))
 			== GIMPLE_SINGLE_RHS);
-	    if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (rhs))
+	    if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (rhs)
+		/* Do not put locations on possibly shared trees.  */
+		&& !is_gimple_min_invariant (rhs))
 	      SET_EXPR_LOCATION (rhs, gimple_location (stmt));
 	    if (TREE_CLOBBER_P (rhs))
 	      /* This is a clobber to mark the going out of scope for
@@ -3677,7 +3654,7 @@ expand_gimple_stmt_1 (gimple stmt)
    location for diagnostics.  */
 
 static rtx_insn *
-expand_gimple_stmt (gimple stmt)
+expand_gimple_stmt (gimple *stmt)
 {
   location_t saved_location = input_location;
   rtx_insn *last = get_last_insn ();
@@ -3987,7 +3964,7 @@ static hash_map<tree, tree> *deep_ter_debug_map;
 /* Split too deep TER chains for debug stmts using debug temporaries.  */
 
 static void
-avoid_deep_ter_for_debug (gimple stmt, int depth)
+avoid_deep_ter_for_debug (gimple *stmt, int depth)
 {
   use_operand_p use_p;
   ssa_op_iter iter;
@@ -3996,7 +3973,7 @@ avoid_deep_ter_for_debug (gimple stmt, int depth)
       tree use = USE_FROM_PTR (use_p);
       if (TREE_CODE (use) != SSA_NAME || SSA_NAME_IS_DEFAULT_DEF (use))
 	continue;
-      gimple g = get_gimple_for_ssa_name (use);
+      gimple *g = get_gimple_for_ssa_name (use);
       if (g == NULL)
 	continue;
       if (depth > 6 && !stmt_ends_bb_p (g))
@@ -4008,7 +3985,7 @@ avoid_deep_ter_for_debug (gimple stmt, int depth)
 	  if (vexpr != NULL)
 	    continue;
 	  vexpr = make_node (DEBUG_EXPR_DECL);
-	  gimple def_temp = gimple_build_debug_bind (vexpr, use, g);
+	  gimple *def_temp = gimple_build_debug_bind (vexpr, use, g);
 	  DECL_ARTIFICIAL (vexpr) = 1;
 	  TREE_TYPE (vexpr) = TREE_TYPE (use);
 	  DECL_MODE (vexpr) = TYPE_MODE (TREE_TYPE (use));
@@ -4927,7 +4904,7 @@ expand_debug_expr (tree exp)
 
     case SSA_NAME:
       {
-	gimple g = get_gimple_for_ssa_name (exp);
+	gimple *g = get_gimple_for_ssa_name (exp);
 	if (g)
 	  {
 	    tree t = NULL_TREE;
@@ -4945,26 +4922,27 @@ expand_debug_expr (tree exp)
 	  }
 	else
 	  {
+	    /* If this is a reference to an incoming value of
+	       parameter that is never used in the code or where the
+	       incoming value is never used in the code, use
+	       PARM_DECL's DECL_RTL if set.  */
+	    if (SSA_NAME_IS_DEFAULT_DEF (exp)
+		&& SSA_NAME_VAR (exp)
+		&& TREE_CODE (SSA_NAME_VAR (exp)) == PARM_DECL
+		&& has_zero_uses (exp))
+	      {
+		op0 = expand_debug_parm_decl (SSA_NAME_VAR (exp));
+		if (op0)
+		  goto adjust_mode;
+		op0 = expand_debug_expr (SSA_NAME_VAR (exp));
+		if (op0)
+		  goto adjust_mode;
+	      }
+
 	    int part = var_to_partition (SA.map, exp);
 
 	    if (part == NO_PARTITION)
-	      {
-		/* If this is a reference to an incoming value of parameter
-		   that is never used in the code or where the incoming
-		   value is never used in the code, use PARM_DECL's
-		   DECL_RTL if set.  */
-		if (SSA_NAME_IS_DEFAULT_DEF (exp)
-		    && TREE_CODE (SSA_NAME_VAR (exp)) == PARM_DECL)
-		  {
-		    op0 = expand_debug_parm_decl (SSA_NAME_VAR (exp));
-		    if (op0)
-		      goto adjust_mode;
-		    op0 = expand_debug_expr (SSA_NAME_VAR (exp));
-		    if (op0)
-		      goto adjust_mode;
-		  }
-		return NULL;
-	      }
+	      return NULL;
 
 	    gcc_assert (part >= 0 && (unsigned)part < SA.map->num_partitions);
 
@@ -5073,12 +5051,12 @@ expand_debug_expr (tree exp)
 
     default:
     flag_unsupported:
-#ifdef ENABLE_CHECKING
-      debug_tree (exp);
-      gcc_unreachable ();
-#else
+      if (flag_checking)
+	{
+	  debug_tree (exp);
+	  gcc_unreachable ();
+	}
       return NULL;
-#endif
     }
 }
 
@@ -5301,12 +5279,12 @@ reorder_operands (basic_block bb)
   unsigned int i = 0, n = 0;
   gimple_stmt_iterator gsi;
   gimple_seq stmts;
-  gimple stmt;
+  gimple *stmt;
   bool swap;
   tree op0, op1;
   ssa_op_iter iter;
   use_operand_p use_p;
-  gimple def0, def1;
+  gimple *def0, *def1;
 
   /* Compute cost of each statement using estimate_num_insns.  */
   stmts = bb_seq (bb);
@@ -5328,7 +5306,7 @@ reorder_operands (basic_block bb)
       FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
 	{
 	  tree use = USE_FROM_PTR (use_p);
-	  gimple def_stmt;
+	  gimple *def_stmt;
 	  if (TREE_CODE (use) != SSA_NAME)
 	    continue;
 	  def_stmt = get_gimple_for_ssa_name (use);
@@ -5377,7 +5355,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 {
   gimple_stmt_iterator gsi;
   gimple_seq stmts;
-  gimple stmt = NULL;
+  gimple *stmt = NULL;
   rtx_note *note;
   rtx_insn *last;
   edge e;
@@ -5492,7 +5470,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	{
 	  ssa_op_iter iter;
 	  tree op;
-	  gimple def;
+	  gimple *def;
 
 	  location_t sloc = curr_insn_location ();
 
@@ -5521,7 +5499,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 		       instructions.  Generate a debug temporary, and
 		       replace all uses of OP in debug insns with that
 		       temporary.  */
-		    gimple debugstmt;
+		    gimple *debugstmt;
 		    tree value = gimple_assign_rhs_to_tree (def);
 		    tree vexpr = make_node (DEBUG_EXPR_DECL);
 		    rtx val;
@@ -5944,7 +5922,7 @@ discover_nonconstant_array_refs (void)
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
-	gimple stmt = gsi_stmt (gsi);
+	gimple *stmt = gsi_stmt (gsi);
 	if (!is_gimple_debug (stmt))
 	  walk_gimple_op (stmt, discover_nonconstant_array_refs_r, NULL);
       }
@@ -6214,9 +6192,26 @@ pass_expand::execute (function *fun)
       parm_birth_insn = var_seq;
     }
 
-  /* If we have a class containing differently aligned pointers
-     we need to merge those into the corresponding RTL pointer
-     alignment.  */
+  /* Now propagate the RTL assignment of each partition to the
+     underlying var of each SSA_NAME.  */
+  for (i = 1; i < num_ssa_names; i++)
+    {
+      tree name = ssa_name (i);
+
+      if (!name
+	  /* We might have generated new SSA names in
+	     update_alias_info_with_stack_vars.  They will have a NULL
+	     defining statements, and won't be part of the partitioning,
+	     so ignore those.  */
+	  || !SSA_NAME_DEF_STMT (name))
+	continue;
+
+      adjust_one_expanded_partition_var (name);
+    }
+
+  /* Clean up RTL of variables that straddle across multiple
+     partitions, and check that the rtl of any PARM_DECLs that are not
+     cleaned up is that of their default defs.  */
   for (i = 1; i < num_ssa_names; i++)
     {
       tree name = ssa_name (i);
@@ -6233,9 +6228,6 @@ pass_expand::execute (function *fun)
       if (part == NO_PARTITION)
 	continue;
 
-      gcc_assert (SA.partition_to_pseudo[part]
-		  || defer_stack_allocation (name, true));
-
       /* If this decl was marked as living in multiple places, reset
 	 this now to NULL.  */
       tree var = SSA_NAME_VAR (name);
@@ -6250,7 +6242,19 @@ pass_expand::execute (function *fun)
 	  rtx in = DECL_RTL_IF_SET (var);
 	  gcc_assert (in);
 	  rtx out = SA.partition_to_pseudo[part];
-	  gcc_assert (in == out || rtx_equal_p (in, out));
+	  gcc_assert (in == out);
+
+	  /* Now reset VAR's RTL to IN, so that the _EXPR attrs match
+	     those expected by debug backends for each parm and for
+	     the result.  This is particularly important for stabs,
+	     whose register elimination from parm's DECL_RTL may cause
+	     -fcompare-debug differences as SET_DECL_RTL changes reg's
+	     attrs.  So, make sure the RTL already has the parm as the
+	     EXPR, so that it won't change.  */
+	  SET_DECL_RTL (var, NULL_RTX);
+	  if (MEM_P (in))
+	    set_mem_attributes (in, var, true);
+	  SET_DECL_RTL (var, in);
 	}
     }
 
@@ -6295,7 +6299,7 @@ pass_expand::execute (function *fun)
   /* Free stuff we no longer need after GIMPLE optimizations.  */
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
-  delete_tree_cfg_annotations ();
+  delete_tree_cfg_annotations (fun);
 
   timevar_push (TV_OUT_OF_SSA);
   finish_out_of_ssa (&SA);
@@ -6309,7 +6313,7 @@ pass_expand::execute (function *fun)
   /* Expansion is used by optimization passes too, set maybe_hot_insn_p
      conservatively to true until they are all profile aware.  */
   delete lab_rtx_for_bb;
-  free_histograms ();
+  free_histograms (fun);
 
   construct_exit_block ();
   insn_locations_finalize ();
@@ -6413,9 +6417,7 @@ pass_expand::execute (function *fun)
      gcc.c-torture/execute/ipa-sra-2.c execution, -Os -m32 fails otherwise.  */
   cleanup_cfg (CLEANUP_NO_INSN_DEL);
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
+  checking_verify_flow_info ();
 
   /* Initialize pseudos allocated for hard registers.  */
   emit_initial_value_sets ();

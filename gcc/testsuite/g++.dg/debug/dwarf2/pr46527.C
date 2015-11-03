@@ -9,7 +9,7 @@ struct WrapperStruct {
   Struct<double> ClassInstantiated;
 };
 template <typename T> double
-Struct<T>::defined_later()  // { dg-function-on-line {_ZN6StructIdE13defined_laterEv} }
+Struct<T>::defined_later()  // { dg-function-on-line {_ZN6StructIdE13defined_laterEv} { xfail { powerpc-ibm-aix* } } }
 {
   return 1;
 }

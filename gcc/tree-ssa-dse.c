@@ -21,31 +21,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "tm_p.h"
 #include "gimple-pretty-print.h"
-#include "internal-fn.h"
+#include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-dfa.h"
-#include "tree-pass.h"
 #include "domwalk.h"
-#include "langhooks.h"
 #include "tree-cfgcleanup.h"
 
 /* This file implements dead store elimination.
@@ -89,9 +75,9 @@ static bitmap need_eh_cleanup;
    Return TRUE if the above conditions are met, otherwise FALSE.  */
 
 static bool
-dse_possible_dead_store_p (ao_ref *ref, gimple stmt, gimple *use_stmt)
+dse_possible_dead_store_p (ao_ref *ref, gimple *stmt, gimple **use_stmt)
 {
-  gimple temp;
+  gimple *temp;
   unsigned cnt = 0;
 
   *use_stmt = NULL;
@@ -103,7 +89,7 @@ dse_possible_dead_store_p (ao_ref *ref, gimple stmt, gimple *use_stmt)
   temp = stmt;
   do
     {
-      gimple use_stmt, defvar_def;
+      gimple *use_stmt, *defvar_def;
       imm_use_iterator ui;
       bool fail = false;
       tree defvar;
@@ -215,7 +201,7 @@ dse_possible_dead_store_p (ao_ref *ref, gimple stmt, gimple *use_stmt)
 static void
 dse_optimize_stmt (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
 
   /* If this statement has no virtual defs, then there is nothing
      to do.  */
@@ -238,7 +224,7 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	  case BUILT_IN_MEMMOVE:
 	  case BUILT_IN_MEMSET:
 	    {
-	      gimple use_stmt;
+	      gimple *use_stmt;
 	      ao_ref ref;
 	      tree size = NULL_TREE;
 	      if (gimple_call_num_args (stmt) == 3)
@@ -258,7 +244,7 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	      tree lhs = gimple_call_lhs (stmt);
 	      if (lhs)
 		{
-		  gimple new_stmt = gimple_build_assign (lhs, ptr);
+		  gimple *new_stmt = gimple_build_assign (lhs, ptr);
 		  unlink_stmt_vdef (stmt);
 		  if (gsi_replace (gsi, new_stmt, true))
 		    bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
@@ -271,6 +257,7 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
 		  /* Remove the dead store.  */
 		  if (gsi_remove (gsi, true))
 		    bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
+		  release_defs (stmt);
 		}
 	      break;
 	    }
@@ -281,7 +268,7 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
 
   if (is_gimple_assign (stmt))
     {
-      gimple use_stmt;
+      gimple *use_stmt;
 
       /* Self-assignments are zombies.  */
       if (operand_equal_p (gimple_assign_rhs1 (stmt),

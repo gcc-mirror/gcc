@@ -13,7 +13,7 @@ program main
   if (newline_length < 1 .or. newline_length > 2) call abort
   close(20)
 
-  open(20,file="foo.txt",form="formatted",access="stream")
+  open(20,file="foo_streamio_15.txt",form="formatted",access="stream")
   write(20,'(A)') '123456'
   write(20,'(A)') 'abcdef'
   write(20,'(A)') 'qwerty'

@@ -23,40 +23,20 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "function.h"
-#include "cfghooks.h"
 #include "basic-block.h"
-#include "cfg.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "alias.h"
+#include "tm_p.h"
+#include "expmed.h"
+#include "optabs.h"
+#include "recog.h"
+#include "diagnostic-core.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "stringpool.h"
-#include "calls.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
-#include "tm_p.h"
-#include "recog.h"
 #include "langhooks.h"
-#include "diagnostic-core.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "internal-fn.h"
-#include "gimple-fold.h"
-#include "tree-eh.h"
 #include "gimple-iterator.h"
 
 #define v8qi_UP  V8QImode
@@ -1171,7 +1151,7 @@ aarch64_expand_builtin (tree exp,
 	  icode = (fcode == AARCH64_BUILTIN_SET_FPSR) ?
 	    CODE_FOR_set_fpsr : CODE_FOR_set_fpcr;
 	  arg0 = CALL_EXPR_ARG (exp, 0);
-	  op0 = expand_normal (arg0);
+	  op0 = force_reg (SImode, expand_normal (arg0));
 	  pat = GEN_FCN (icode) (op0);
 	}
       emit_insn (pat);
@@ -1371,10 +1351,10 @@ bool
 aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 {
   bool changed = false;
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   tree call = gimple_call_fn (stmt);
   tree fndecl;
-  gimple new_stmt = NULL;
+  gimple *new_stmt = NULL;
 
   if (call)
     {
@@ -1462,8 +1442,8 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
        __builtin_aarch64_set_cr (masked_cr);
        __builtin_aarch64_set_sr (masked_sr);  */
 
-  fenv_cr = create_tmp_var (unsigned_type_node);
-  fenv_sr = create_tmp_var (unsigned_type_node);
+  fenv_cr = create_tmp_var_raw (unsigned_type_node);
+  fenv_sr = create_tmp_var_raw (unsigned_type_node);
 
   get_fpcr = aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPCR];
   set_fpcr = aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPCR];
@@ -1476,9 +1456,9 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 			   ~(AARCH64_FE_ALL_EXCEPT));
 
   ld_fenv_cr = build2 (MODIFY_EXPR, unsigned_type_node,
-		    fenv_cr, build_call_expr (get_fpcr, 0));
+		       fenv_cr, build_call_expr (get_fpcr, 0));
   ld_fenv_sr = build2 (MODIFY_EXPR, unsigned_type_node,
-		    fenv_sr, build_call_expr (get_fpsr, 0));
+		       fenv_sr, build_call_expr (get_fpsr, 0));
 
   masked_fenv_cr = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_cr, mask_cr);
   masked_fenv_sr = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_sr, mask_sr);
@@ -1509,7 +1489,7 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
        __atomic_feraiseexcept (new_fenv_var);  */
 
-  new_fenv_var = create_tmp_var (unsigned_type_node);
+  new_fenv_var = create_tmp_var_raw (unsigned_type_node);
   reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node,
 			new_fenv_var, build_call_expr (get_fpsr, 0));
   restore_fnenv = build_call_expr (set_fpsr, 1, fenv_sr);

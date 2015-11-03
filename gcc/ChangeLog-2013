@@ -6078,8 +6078,8 @@
 
 2013-11-19  Teresa Johnson  <tejohnson@google.com>
 
-	* common/config/i386/i386-common.c: Enable
-	-freorder-blocks-and-partition at -O2 and up for x86.
+	* common/config/i386/i386-common.c (ix86_option_optimization_table):
+	Enable -freorder-blocks-and-partition at -O2 and up for x86.
 	* doc/invoke.texi: Update -freorder-blocks-and-partition default.
 	* opts.c (finish_options): Only warn if
 	-freorder-blocks-and-partition was set on command line.

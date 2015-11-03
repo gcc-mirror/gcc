@@ -1,3 +1,28 @@
+2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-backend.c: Reorder #include's and remove duplicates.
+	* go-lang.c: Likewise.
+
+2015-10-20  Alan Modra  <amodra@gmail.com>
+
+	PR go/66870
+	* gospec.c (saw_opt_m32): Rename to..
+	(is_m64): ..this, initialised by TARGET_CAN_SPLIT_STACK_64BIT.
+	Update uses.
+	(lang_specific_driver): Set is_m64 if OPT_m64, clear if OPT_m32.
+
+2015-10-01  Ian Lance Taylor  <iant@google.com>
+
+	PR go/66870
+	* gospec.c (lang_specific_driver): Only look for OPT_m32 if
+	TARGET_CAN_SPLIT_STACK_64BIT is defined.
+
+2015-10-01  Lynn Boger  <laboger@linux.vnet.ibm.com>
+
+	PR target/66870
+	* gospec.c (lang_specific_driver): Set appropriate split stack
+	options for 64 bit compiles based on TARGET_CAN_SPLIT_STACK_64BIT.
+
 2015-09-10  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc (Gcc_backend::type_size): Return -1 for

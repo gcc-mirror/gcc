@@ -27,15 +27,15 @@ enum processor_type pa_cpu = TARGET_SCHED_DEFAULT
 
 march=1.0
 Target RejectNegative
-Generate PA1.0 code
+Generate PA1.0 code.
 
 march=1.1
 Target RejectNegative
-Generate PA1.1 code
+Generate PA1.1 code.
 
 march=2.0
 Target RejectNegative
-Generate PA2.0 code (requires binutils 2.10 or later)
+Generate PA2.0 code (requires binutils 2.10 or later).
 
 mbig-switch
 Target Ignore
@@ -43,23 +43,23 @@ Does nothing.  Preserved for backward compatibility.
 
 mdisable-fpregs
 Target Report Mask(DISABLE_FPREGS)
-Disable FP regs
+Disable FP regs.
 
 mdisable-indexing
 Target Report Mask(DISABLE_INDEXING)
-Disable indexed addressing
+Disable indexed addressing.
 
 mfast-indirect-calls
 Target Report Mask(FAST_INDIRECT_CALLS)
-Generate fast indirect calls
+Generate fast indirect calls.
 
 mfixed-range=
 Target RejectNegative Joined Var(pa_deferred_options) Defer
-Specify range of registers to make fixed
+Specify range of registers to make fixed.
 
 mgas
 Target Report Mask(GAS)
-Assume code will be assembled by GAS
+Assume code will be assembled by GAS.
 
 mjump-in-delay
 Target Ignore
@@ -68,43 +68,43 @@ Does nothing.  Preserved for backward compatibility.
 ;; Not used by gcc
 mlinker-opt
 Target RejectNegative
-Enable linker optimizations
+Enable linker optimizations.
 
 mlong-calls
 Target Report Mask(LONG_CALLS)
-Always generate long calls
+Always generate long calls.
 
 mlong-load-store
 Target Report Mask(LONG_LOAD_STORE)
-Emit long load/store sequences
+Emit long load/store sequences.
 
 mnosnake
 Target RejectNegative
-Generate PA1.0 code
+Generate PA1.0 code.
 
 mno-space-regs
 Target RejectNegative Report Mask(NO_SPACE_REGS)
-Disable space regs
+Disable space regs.
 
 mpa-risc-1-0
 Target RejectNegative
-Generate PA1.0 code
+Generate PA1.0 code.
 
 mpa-risc-1-1
 Target RejectNegative Mask(PA_11)
-Generate PA1.1 code
+Generate PA1.1 code.
 
 mpa-risc-2-0
 Target RejectNegative Mask(PA_20)
-Generate PA2.0 code (requires binutils 2.10 or later)
+Generate PA2.0 code (requires binutils 2.10 or later).
 
 mportable-runtime
 Target Report Mask(PORTABLE_RUNTIME)
-Use portable calling conventions
+Use portable calling conventions.
 
 mschedule=
 Target RejectNegative Joined Enum(pa_schedule) Var(pa_cpu)
-Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000
+Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000.
 
 Enum
 Name(pa_schedule) Type(enum processor_type)
@@ -129,12 +129,12 @@ Enum(pa_schedule) String(7300) Value(PROCESSOR_7300)
 
 msoft-float
 Target Report Mask(SOFT_FLOAT)
-Use software floating point
+Use software floating point.
 
 msnake
 Target RejectNegative
-Generate PA1.1 code
+Generate PA1.1 code.
 
 mspace-regs
 Target RejectNegative Report InverseMask(NO_SPACE_REGS)
-Do not disable space regs
+Do not disable space regs.

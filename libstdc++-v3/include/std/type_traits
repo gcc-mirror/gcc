@@ -93,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __bool_constant = integral_constant<bool, __v>;
 
 #if __cplusplus > 201402L
-// TODO: #define __cpp_lib_bool_constant 201505
+# define __cpp_lib_bool_constant 201505
   template<bool __v>
     using bool_constant = integral_constant<bool, __v>;
 #endif
@@ -2219,13 +2219,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_result_of_sfinae 201210
 
+  struct __invoke_memfun_ref { };
+  struct __invoke_memfun_deref { };
+  struct __invoke_memobj_ref { };
+  struct __invoke_memobj_deref { };
+  struct __invoke_other { };
+
+  // Associate a tag type with a specialization of __success_type.
+  template<typename _Tp, typename _Tag>
+    struct __result_of_success : __success_type<_Tp>
+    { using __invoke_type = _Tag; };
+
   // [func.require] paragraph 1 bullet 1:
   struct __result_of_memfun_ref_impl
   {
     template<typename _Fp, typename _Tp1, typename... _Args>
-      static __success_type<decltype(
+      static __result_of_success<decltype(
       (std::declval<_Tp1>().*std::declval<_Fp>())(std::declval<_Args>()...)
-      )> _S_test(int);
+      ), __invoke_memfun_ref> _S_test(int);
 
     template<typename...>
       static __failure_type _S_test(...);
@@ -2242,9 +2253,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __result_of_memfun_deref_impl
   {
     template<typename _Fp, typename _Tp1, typename... _Args>
-      static __success_type<decltype(
+      static __result_of_success<decltype(
       ((*std::declval<_Tp1>()).*std::declval<_Fp>())(std::declval<_Args>()...)
-      )> _S_test(int);
+      ), __invoke_memfun_deref> _S_test(int);
 
     template<typename...>
       static __failure_type _S_test(...);
@@ -2261,9 +2272,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __result_of_memobj_ref_impl
   {
     template<typename _Fp, typename _Tp1>
-      static __success_type<decltype(
+      static __result_of_success<decltype(
       std::declval<_Tp1>().*std::declval<_Fp>()
-      )> _S_test(int);
+      ), __invoke_memobj_ref> _S_test(int);
 
     template<typename, typename>
       static __failure_type _S_test(...);
@@ -2280,9 +2291,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __result_of_memobj_deref_impl
   {
     template<typename _Fp, typename _Tp1>
-      static __success_type<decltype(
+      static __result_of_success<decltype(
       (*std::declval<_Tp1>()).*std::declval<_Fp>()
-      )> _S_test(int);
+      ), __invoke_memobj_deref> _S_test(int);
 
     template<typename, typename>
       static __failure_type _S_test(...);
@@ -2327,6 +2338,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       >::type::type type;
     };
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2219.  INVOKE-ing a pointer to member with a reference_wrapper
+  //        as the object expression
+  template<typename> struct reference_wrapper;
+
+  template<typename _Res, typename _Class, typename _Arg>
+    struct __result_of_memobj<_Res _Class::*, reference_wrapper<_Arg>>
+    : __result_of_memobj<_Res _Class::*, _Arg>
+    {
+      typedef typename
+	__result_of_memobj_ref<_Res _Class::*, _Arg&>::type type;
+    };
+
+  template<typename _Res, typename _Class, typename _Arg>
+    struct __result_of_memobj<_Res _Class::*, reference_wrapper<_Arg>&>
+    : __result_of_memobj<_Res _Class::*, reference_wrapper<_Arg>>
+    { };
+
+  template<typename _Res, typename _Class, typename _Arg>
+    struct __result_of_memobj<_Res _Class::*, reference_wrapper<_Arg>&&>
+    : __result_of_memobj<_Res _Class::*, reference_wrapper<_Arg>>
+    { };
+
+  template<typename _Res, typename _Class, typename _Arg, typename... _Args>
+    struct __result_of_memfun<_Res _Class::*, reference_wrapper<_Arg>, _Args...>
+    : __result_of_memfun<_Res _Class::*, _Arg&, _Args...>
+    {
+      typedef typename
+	__result_of_memfun_ref<_Res _Class::*, _Arg&, _Args...>::type type;
+    };
+
+  template<typename _Res, typename _Class, typename _Arg, typename... _Args>
+    struct __result_of_memfun<_Res _Class::*, reference_wrapper<_Arg>&,
+			      _Args...>
+    : __result_of_memfun<_Res _Class::*, reference_wrapper<_Arg>, _Args...>
+    { };
+
+  template<typename _Res, typename _Class, typename _Arg, typename... _Args>
+    struct __result_of_memfun<_Res _Class::*, reference_wrapper<_Arg>&&,
+			      _Args...>
+    : __result_of_memfun<_Res _Class::*, reference_wrapper<_Arg>, _Args...>
+    { };
+
   template<bool, bool, typename _Functor, typename... _ArgTypes>
     struct __result_of_impl
     {
@@ -2347,9 +2401,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __result_of_other_impl
   {
     template<typename _Fn, typename... _Args>
-      static __success_type<decltype(
+      static __result_of_success<decltype(
       std::declval<_Fn>()(std::declval<_Args>()...)
-      )> _S_test(int);
+      ), __invoke_other> _S_test(int);
 
     template<typename...>
       static __failure_type _S_test(...);

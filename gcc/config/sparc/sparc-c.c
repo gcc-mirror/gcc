@@ -21,13 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
-#include "tree.h"
-#include "tm_p.h"
-#include "flags.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
-#include "cpplib.h"
 
 void
 sparc_target_macros (void)

@@ -1,4 +1,5 @@
-! { dg-do run }
+! { dg-do compile }
+! { dg-options -Wno-error=tabs }
 ! PR fortran/32987
       program TestFormat
         write (*, 10)

@@ -23,13 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "ggc-internal.h"
+#include "timevar.h"
 #include "diagnostic-core.h"
+#include "ggc-internal.h"
 #include "params.h"
 #include "hosthooks.h"
-#include "hosthooks-def.h"
 #include "plugin.h"
-#include "timevar.h"
 
 /* When set, ggc_collect will do collection.  */
 bool ggc_force_collect;

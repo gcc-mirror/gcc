@@ -35,9 +35,12 @@ __gnu_f2h_internal(unsigned int a, int ieee)
     {
       if (!ieee)
 	return sign;
+      if (mantissa == 0)
+	return sign | 0x7c00;	/* Infinity.  */
+      /* Remaining cases are NaNs.  Convert SNaN to QNaN.  */
       return sign | 0x7e00 | (mantissa >> 13);
     }
-  
+
   if (aexp == 0 && mantissa == 0)
     return sign;
 
@@ -49,7 +52,7 @@ __gnu_f2h_internal(unsigned int a, int ieee)
     {
       mask = 0x00ffffff;
       if (aexp >= -25)
-        mask >>= 25 + aexp;
+	mask >>= 25 + aexp;
     }
   else
     mask = 0x00001fff;

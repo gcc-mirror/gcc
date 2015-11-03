@@ -22,51 +22,36 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
+#include "cfgloop.h"
 #include "df.h"
-#include "insn-codes.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "optabs.h"
+#include "regs.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "diagnostic.h"
 #include "insn-attr.h"
 #include "alias.h"
 #include "fold-const.h"
-#include "stringpool.h"
 #include "stor-layout.h"
 #include "calls.h"
 #include "varasm.h"
-#include "regs.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
 #include "output.h"
 #include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
 #include "reload.h"
-#include "toplev.h"
-#include "target.h"
-#include "targhooks.h"
-#include "tm_p.h"
-#include "recog.h"
 #include "langhooks.h"
 #include "opts.h"
-#include "diagnostic.h"
-#include "diagnostic-core.h"
-#include "internal-fn.h"
-#include "gimple-fold.h"
-#include "tree-eh.h"
+#include "params.h"
 #include "gimplify.h"
-#include "optabs.h"
 #include "dwarf2.h"
-#include "cfgloop.h"
 #include "tree-vectorizer.h"
 #include "aarch64-cost-tables.h"
 #include "dumpfile.h"
@@ -163,6 +148,9 @@ enum aarch64_processor aarch64_tune = cortexa53;
 /* Mask to specify which instruction scheduling options should be used.  */
 unsigned long aarch64_tune_flags = 0;
 
+/* Global flag for PC relative loads.  */
+bool aarch64_nopcrelative_literal_loads;
+
 /* Support for command line parsing of boolean flags in the tuning
    structures.  */
 struct aarch64_flag_desc
@@ -206,7 +194,8 @@ static const struct cpu_addrcost_table generic_addrcost_table =
   0, /* pre_modify  */
   0, /* post_modify  */
   0, /* register_offset  */
-  0, /* register_extend  */
+  0, /* register_sextend  */
+  0, /* register_zextend  */
   0 /* imm_offset  */
 };
 
@@ -221,7 +210,8 @@ static const struct cpu_addrcost_table cortexa57_addrcost_table =
   0, /* pre_modify  */
   0, /* post_modify  */
   0, /* register_offset  */
-  0, /* register_extend  */
+  0, /* register_sextend  */
+  0, /* register_zextend  */
   0, /* imm_offset  */
 };
 
@@ -236,7 +226,8 @@ static const struct cpu_addrcost_table xgene1_addrcost_table =
   1, /* pre_modify  */
   0, /* post_modify  */
   0, /* register_offset  */
-  1, /* register_extend  */
+  1, /* register_sextend  */
+  1, /* register_zextend  */
   0, /* imm_offset  */
 };
 
@@ -364,6 +355,7 @@ static const struct tune_params generic_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -386,6 +378,7 @@ static const struct tune_params cortexa53_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -408,6 +401,7 @@ static const struct tune_params cortexa57_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_RENAME_FMA_REGS)	/* tune_flags.  */
 };
 
@@ -430,6 +424,7 @@ static const struct tune_params cortexa72_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -451,6 +446,7 @@ static const struct tune_params thunderx_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -472,6 +468,7 @@ static const struct tune_params xgene1_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -562,12 +559,6 @@ static const struct aarch64_option_extension all_extensions[] =
 /* Used to track the size of an address when generating a pre/post
    increment address.  */
 static machine_mode aarch64_memory_reference_mode;
-
-/* A table of valid AArch64 "bitmask immediate" values for
-   logical instructions.  */
-
-#define AARCH64_NUM_BITMASKS  5334
-static unsigned HOST_WIDE_INT aarch64_bitmasks[AARCH64_NUM_BITMASKS];
 
 typedef enum aarch64_cond_code
 {
@@ -1067,39 +1058,22 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
       {
 	machine_mode mode = GET_MODE (dest);
 	rtx x0 = gen_rtx_REG (mode, R0_REGNUM);
-	rtx offset;
 	rtx tp;
 
 	gcc_assert (mode == Pmode || mode == ptr_mode);
 
-	if (can_create_pseudo_p ())
-	  {
-	    rtx reg = gen_reg_rtx (mode);
-
-	    if (TARGET_ILP32)
-	      emit_insn (gen_tlsdesc_small_pseudo_si (reg, imm));
-	    else
-	      emit_insn (gen_tlsdesc_small_pseudo_di (reg, imm));
-
-	    offset = reg;
-	  }
+	/* In ILP32, the got entry is always of SImode size.  Unlike
+	   small GOT, the dest is fixed at reg 0.  */
+	if (TARGET_ILP32)
+	  emit_insn (gen_tlsdesc_small_si (imm));
 	else
-	  {
-	    /* In ILP32, the got entry is always of SImode size.  Unlike
-	       small GOT, the dest is fixed at reg 0.  */
-	    if (TARGET_ILP32)
-	      emit_insn (gen_tlsdesc_small_si (imm));
-	    else
-	      emit_insn (gen_tlsdesc_small_di (imm));
-
-	    offset = x0;
-	  }
+	  emit_insn (gen_tlsdesc_small_di (imm));
 	tp = aarch64_load_tp (NULL);
 
 	if (mode != Pmode)
 	  tp = gen_lowpart (mode, tp);
 
-	emit_insn (gen_rtx_SET (dest, gen_rtx_PLUS (mode, tp, offset)));
+	emit_insn (gen_rtx_SET (dest, gen_rtx_PLUS (mode, tp, x0)));
 	set_unique_reg_note (get_last_insn (), REG_EQUIV, imm);
 	return;
       }
@@ -1439,264 +1413,95 @@ static int
 aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 				machine_mode mode)
 {
-  unsigned HOST_WIDE_INT mask;
   int i;
-  bool first;
-  unsigned HOST_WIDE_INT val;
-  bool subtargets;
-  rtx subtarget;
-  int one_match, zero_match, first_not_ffff_match;
-  int num_insns = 0;
+  unsigned HOST_WIDE_INT val, val2, mask;
+  int one_match, zero_match;
+  int num_insns;
 
-  if (CONST_INT_P (imm) && aarch64_move_imm (INTVAL (imm), mode))
+  val = INTVAL (imm);
+
+  if (aarch64_move_imm (val, mode))
     {
       if (generate)
 	emit_insn (gen_rtx_SET (dest, imm));
-      num_insns++;
-      return num_insns;
+      return 1;
     }
 
-  if (mode == SImode)
+  if ((val >> 32) == 0 || mode == SImode)
     {
-      /* We know we can't do this in 1 insn, and we must be able to do it
-	 in two; so don't mess around looking for sequences that don't buy
-	 us anything.  */
       if (generate)
 	{
-	  emit_insn (gen_rtx_SET (dest, GEN_INT (INTVAL (imm) & 0xffff)));
-	  emit_insn (gen_insv_immsi (dest, GEN_INT (16),
-				     GEN_INT ((INTVAL (imm) >> 16) & 0xffff)));
+	  emit_insn (gen_rtx_SET (dest, GEN_INT (val & 0xffff)));
+	  if (mode == SImode)
+	    emit_insn (gen_insv_immsi (dest, GEN_INT (16),
+				       GEN_INT ((val >> 16) & 0xffff)));
+	  else
+	    emit_insn (gen_insv_immdi (dest, GEN_INT (16),
+				       GEN_INT ((val >> 16) & 0xffff)));
 	}
-      num_insns += 2;
-      return num_insns;
+      return 2;
     }
 
   /* Remaining cases are all for DImode.  */
 
-  val = INTVAL (imm);
-  subtargets = optimize && can_create_pseudo_p ();
-
-  one_match = 0;
-  zero_match = 0;
   mask = 0xffff;
-  first_not_ffff_match = -1;
+  zero_match = ((val & mask) == 0) + ((val & (mask << 16)) == 0) +
+    ((val & (mask << 32)) == 0) + ((val & (mask << 48)) == 0);
+  one_match = ((~val & mask) == 0) + ((~val & (mask << 16)) == 0) +
+    ((~val & (mask << 32)) == 0) + ((~val & (mask << 48)) == 0);
 
-  for (i = 0; i < 64; i += 16, mask <<= 16)
+  if (zero_match != 2 && one_match != 2)
     {
-      if ((val & mask) == mask)
-	one_match++;
-      else
+      /* Try emitting a bitmask immediate with a movk replacing 16 bits.
+	 For a 64-bit bitmask try whether changing 16 bits to all ones or
+	 zeroes creates a valid bitmask.  To check any repeated bitmask,
+	 try using 16 bits from the other 32-bit half of val.  */
+
+      for (i = 0; i < 64; i += 16, mask <<= 16)
 	{
-	  if (first_not_ffff_match < 0)
-	    first_not_ffff_match = i;
-	  if ((val & mask) == 0)
-	    zero_match++;
+	  val2 = val & ~mask;
+	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
+	    break;
+	  val2 = val | mask;
+	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
+	    break;
+	  val2 = val2 & ~mask;
+	  val2 = val2 | (((val2 >> 32) | (val2 << 32)) & mask);
+	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
+	    break;
+	}
+      if (i != 64)
+	{
+	  if (generate)
+	    {
+	      emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
+	      emit_insn (gen_insv_immdi (dest, GEN_INT (i),
+					 GEN_INT ((val >> i) & 0xffff)));
+	    }
 	}
     }
 
-  if (one_match == 2)
+  /* Generate 2-4 instructions, skipping 16 bits of all zeroes or ones which
+     are emitted by the initial mov.  If one_match > zero_match, skip set bits,
+     otherwise skip zero bits.  */
+
+  num_insns = 1;
+  mask = 0xffff;
+  val2 = one_match > zero_match ? ~val : val;
+  i = (val2 & mask) != 0 ? 0 : (val2 & (mask << 16)) != 0 ? 16 : 32;
+
+  if (generate)
+    emit_insn (gen_rtx_SET (dest, GEN_INT (one_match > zero_match
+					   ? (val | ~(mask << i))
+					   : (val & (mask << i)))));
+  for (i += 16; i < 64; i += 16)
     {
-      /* Set one of the quarters and then insert back into result.  */
-      mask = 0xffffll << first_not_ffff_match;
+      if ((val2 & (mask << i)) == 0)
+	continue;
       if (generate)
-	{
-	  emit_insn (gen_rtx_SET (dest, GEN_INT (val | mask)));
-	  emit_insn (gen_insv_immdi (dest, GEN_INT (first_not_ffff_match),
-				     GEN_INT ((val >> first_not_ffff_match)
-					      & 0xffff)));
-	}
-      num_insns += 2;
-      return num_insns;
-    }
-
-  if (zero_match == 2)
-    goto simple_sequence;
-
-  mask = 0x0ffff0000UL;
-  for (i = 16; i < 64; i += 16, mask <<= 16)
-    {
-      HOST_WIDE_INT comp = mask & ~(mask - 1);
-
-      if (aarch64_uimm12_shift (val - (val & mask)))
-	{
-	  if (generate)
-	    {
-	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (subtarget, GEN_INT (val & mask)));
-	      emit_insn (gen_adddi3 (dest, subtarget,
-				     GEN_INT (val - (val & mask))));
-	    }
-	  num_insns += 2;
-	  return num_insns;
-	}
-      else if (aarch64_uimm12_shift (-(val - ((val + comp) & mask))))
-	{
-	  if (generate)
-	    {
-	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (subtarget,
-				      GEN_INT ((val + comp) & mask)));
-	      emit_insn (gen_adddi3 (dest, subtarget,
-				     GEN_INT (val - ((val + comp) & mask))));
-	    }
-	  num_insns += 2;
-	  return num_insns;
-	}
-      else if (aarch64_uimm12_shift (val - ((val - comp) | ~mask)))
-	{
-	  if (generate)
-	    {
-	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (subtarget,
-				      GEN_INT ((val - comp) | ~mask)));
-	      emit_insn (gen_adddi3 (dest, subtarget,
-				     GEN_INT (val - ((val - comp) | ~mask))));
-	    }
-	  num_insns += 2;
-	  return num_insns;
-	}
-      else if (aarch64_uimm12_shift (-(val - (val | ~mask))))
-	{
-	  if (generate)
-	    {
-	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (subtarget, GEN_INT (val | ~mask)));
-	      emit_insn (gen_adddi3 (dest, subtarget,
-				     GEN_INT (val - (val | ~mask))));
-	    }
-	  num_insns += 2;
-	  return num_insns;
-	}
-    }
-
-  /* See if we can do it by arithmetically combining two
-     immediates.  */
-  for (i = 0; i < AARCH64_NUM_BITMASKS; i++)
-    {
-      int j;
-      mask = 0xffff;
-
-      if (aarch64_uimm12_shift (val - aarch64_bitmasks[i])
-	  || aarch64_uimm12_shift (-val + aarch64_bitmasks[i]))
-	{
-	  if (generate)
-	    {
-	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (subtarget,
-				      GEN_INT (aarch64_bitmasks[i])));
-	      emit_insn (gen_adddi3 (dest, subtarget,
-				     GEN_INT (val - aarch64_bitmasks[i])));
-	    }
-	  num_insns += 2;
-	  return num_insns;
-	}
-
-      for (j = 0; j < 64; j += 16, mask <<= 16)
-	{
-	  if ((aarch64_bitmasks[i] & ~mask) == (val & ~mask))
-	    {
-	      if (generate)
-		{
-		  emit_insn (gen_rtx_SET (dest,
-					  GEN_INT (aarch64_bitmasks[i])));
-		  emit_insn (gen_insv_immdi (dest, GEN_INT (j),
-					     GEN_INT ((val >> j) & 0xffff)));
-		}
-	      num_insns += 2;
-	      return num_insns;
-	    }
-	}
-    }
-
-  /* See if we can do it by logically combining two immediates.  */
-  for (i = 0; i < AARCH64_NUM_BITMASKS; i++)
-    {
-      if ((aarch64_bitmasks[i] & val) == aarch64_bitmasks[i])
-	{
-	  int j;
-
-	  for (j = i + 1; j < AARCH64_NUM_BITMASKS; j++)
-	    if (val == (aarch64_bitmasks[i] | aarch64_bitmasks[j]))
-	      {
-		if (generate)
-		  {
-		    subtarget = subtargets ? gen_reg_rtx (mode) : dest;
-		    emit_insn (gen_rtx_SET (subtarget,
-					    GEN_INT (aarch64_bitmasks[i])));
-		    emit_insn (gen_iordi3 (dest, subtarget,
-					   GEN_INT (aarch64_bitmasks[j])));
-		  }
-		num_insns += 2;
-		return num_insns;
-	      }
-	}
-      else if ((val & aarch64_bitmasks[i]) == val)
-	{
-	  int j;
-
-	  for (j = i + 1; j < AARCH64_NUM_BITMASKS; j++)
-	    if (val == (aarch64_bitmasks[j] & aarch64_bitmasks[i]))
-	      {
-		if (generate)
-		  {
-		    subtarget = subtargets ? gen_reg_rtx (mode) : dest;
-		    emit_insn (gen_rtx_SET (subtarget,
-					    GEN_INT (aarch64_bitmasks[j])));
-		    emit_insn (gen_anddi3 (dest, subtarget,
-					   GEN_INT (aarch64_bitmasks[i])));
-		  }
-		num_insns += 2;
-		return num_insns;
-	      }
-	}
-    }
-
-  if (one_match > zero_match)
-    {
-      /* Set either first three quarters or all but the third.	 */
-      mask = 0xffffll << (16 - first_not_ffff_match);
-      if (generate)
-	emit_insn (gen_rtx_SET (dest,
-				GEN_INT (val | mask | 0xffffffff00000000ull)));
+	emit_insn (gen_insv_immdi (dest, GEN_INT (i),
+				   GEN_INT ((val >> i) & 0xffff)));
       num_insns ++;
-
-      /* Now insert other two quarters.	 */
-      for (i = first_not_ffff_match + 16, mask <<= (first_not_ffff_match << 1);
-	   i < 64; i += 16, mask <<= 16)
-	{
-	  if ((val & mask) != mask)
-	    {
-	      if (generate)
-		emit_insn (gen_insv_immdi (dest, GEN_INT (i),
-					   GEN_INT ((val >> i) & 0xffff)));
-	      num_insns ++;
-	    }
-	}
-      return num_insns;
-    }
-
- simple_sequence:
-  first = true;
-  mask = 0xffff;
-  for (i = 0; i < 64; i += 16, mask <<= 16)
-    {
-      if ((val & mask) != 0)
-	{
-	  if (first)
-	    {
-	      if (generate)
-		emit_insn (gen_rtx_SET (dest, GEN_INT (val & mask)));
-	      num_insns ++;
-	      first = false;
-	    }
-	  else
-	    {
-	      if (generate)
-		emit_insn (gen_insv_immdi (dest, GEN_INT (i),
-					   GEN_INT ((val >> i) & 0xffff)));
-	      num_insns ++;
-	    }
-	}
     }
 
   return num_insns;
@@ -1722,7 +1527,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	 before we start classifying the symbol.  */
       split_const (imm, &base, &offset);
 
-      sty = aarch64_classify_symbol (base, offset, SYMBOL_CONTEXT_ADR);
+      sty = aarch64_classify_symbol (base, offset);
       switch (sty)
 	{
 	case SYMBOL_FORCE_TO_MEM:
@@ -1743,7 +1548,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	     we need to expand the literal pool access carefully.
 	     This is something that needs to be done in a number
 	     of places, so could well live as a separate function.  */
-	  if (nopcrelative_literal_loads)
+	  if (aarch64_nopcrelative_literal_loads)
 	    {
 	      gcc_assert (can_create_pseudo_p ());
 	      base = gen_reg_rtx (ptr_mode);
@@ -2052,8 +1857,8 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
 
   /* Size in bytes, rounded to the nearest multiple of 8 bytes.  */
   size
-    = AARCH64_ROUND_UP (type ? int_size_in_bytes (type) : GET_MODE_SIZE (mode),
-			UNITS_PER_WORD);
+    = ROUND_UP (type ? int_size_in_bytes (type) : GET_MODE_SIZE (mode),
+		UNITS_PER_WORD);
 
   allocate_ncrn = (type) ? !(FLOAT_TYPE_P (type)) : !FLOAT_MODE_P (mode);
   allocate_nvrn = aarch64_vfp_is_call_candidate (pcum_v,
@@ -2161,8 +1966,8 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
 on_stack:
   pcum->aapcs_stack_words = size / UNITS_PER_WORD;
   if (aarch64_function_arg_alignment (mode, type) == 16 * BITS_PER_UNIT)
-    pcum->aapcs_stack_size = AARCH64_ROUND_UP (pcum->aapcs_stack_size,
-					       16 / UNITS_PER_WORD);
+    pcum->aapcs_stack_size = ROUND_UP (pcum->aapcs_stack_size,
+				       16 / UNITS_PER_WORD);
   return;
 }
 
@@ -2429,21 +2234,21 @@ aarch64_layout_frame (void)
       }
 
   cfun->machine->frame.padding0 =
-    (AARCH64_ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT) - offset);
-  offset = AARCH64_ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT);
+    (ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT) - offset);
+  offset = ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT);
 
   cfun->machine->frame.saved_regs_size = offset;
 
   cfun->machine->frame.hard_fp_offset
-    = AARCH64_ROUND_UP (cfun->machine->frame.saved_varargs_size
-			+ get_frame_size ()
-			+ cfun->machine->frame.saved_regs_size,
-			STACK_BOUNDARY / BITS_PER_UNIT);
+    = ROUND_UP (cfun->machine->frame.saved_varargs_size
+		+ get_frame_size ()
+		+ cfun->machine->frame.saved_regs_size,
+		STACK_BOUNDARY / BITS_PER_UNIT);
 
   cfun->machine->frame.frame_size
-    = AARCH64_ROUND_UP (cfun->machine->frame.hard_fp_offset
-			+ crtl->outgoing_args_size,
-			STACK_BOUNDARY / BITS_PER_UNIT);
+    = ROUND_UP (cfun->machine->frame.hard_fp_offset
+		+ crtl->outgoing_args_size,
+		STACK_BOUNDARY / BITS_PER_UNIT);
 
   cfun->machine->frame.laid_out = true;
 }
@@ -3313,67 +3118,6 @@ aarch64_tls_referenced_p (rtx x)
 }
 
 
-static int
-aarch64_bitmasks_cmp (const void *i1, const void *i2)
-{
-  const unsigned HOST_WIDE_INT *imm1 = (const unsigned HOST_WIDE_INT *) i1;
-  const unsigned HOST_WIDE_INT *imm2 = (const unsigned HOST_WIDE_INT *) i2;
-
-  if (*imm1 < *imm2)
-    return -1;
-  if (*imm1 > *imm2)
-    return +1;
-  return 0;
-}
-
-
-static void
-aarch64_build_bitmask_table (void)
-{
-  unsigned HOST_WIDE_INT mask, imm;
-  unsigned int log_e, e, s, r;
-  unsigned int nimms = 0;
-
-  for (log_e = 1; log_e <= 6; log_e++)
-    {
-      e = 1 << log_e;
-      if (e == 64)
-	mask = ~(HOST_WIDE_INT) 0;
-      else
-	mask = ((HOST_WIDE_INT) 1 << e) - 1;
-      for (s = 1; s < e; s++)
-	{
-	  for (r = 0; r < e; r++)
-	    {
-	      /* set s consecutive bits to 1 (s < 64) */
-	      imm = ((unsigned HOST_WIDE_INT)1 << s) - 1;
-	      /* rotate right by r */
-	      if (r != 0)
-		imm = ((imm >> r) | (imm << (e - r))) & mask;
-	      /* replicate the constant depending on SIMD size */
-	      switch (log_e) {
-	      case 1: imm |= (imm <<  2);
-	      case 2: imm |= (imm <<  4);
-	      case 3: imm |= (imm <<  8);
-	      case 4: imm |= (imm << 16);
-	      case 5: imm |= (imm << 32);
-	      case 6:
-		break;
-	      default:
-		gcc_unreachable ();
-	      }
-	      gcc_assert (nimms < AARCH64_NUM_BITMASKS);
-	      aarch64_bitmasks[nimms++] = imm;
-	    }
-	}
-    }
-
-  gcc_assert (nimms == AARCH64_NUM_BITMASKS);
-  qsort (aarch64_bitmasks, nimms, sizeof (aarch64_bitmasks[0]),
-	 aarch64_bitmasks_cmp);
-}
-
-
 /* Return true if val can be encoded as a 12-bit unsigned immediate with
    a left shift of 0 or 12 bits.  */
 bool
@@ -3405,19 +3149,63 @@ aarch64_movw_imm (HOST_WIDE_INT val, machine_mode mode)
 	  || (val & (((HOST_WIDE_INT) 0xffff) << 16)) == val);
 }
 
+/* Multipliers for repeating bitmasks of width 32, 16, 8, 4, and 2.  */
+
+static const unsigned HOST_WIDE_INT bitmask_imm_mul[] =
+  {
+    0x0000000100000001ull,
+    0x0001000100010001ull,
+    0x0101010101010101ull,
+    0x1111111111111111ull,
+    0x5555555555555555ull,
+  };
+
 
 /* Return true if val is a valid bitmask immediate.  */
+
 bool
-aarch64_bitmask_imm (HOST_WIDE_INT val, machine_mode mode)
+aarch64_bitmask_imm (HOST_WIDE_INT val_in, machine_mode mode)
 {
-  if (GET_MODE_SIZE (mode) < 8)
-    {
-      /* Replicate bit pattern.  */
-      val &= (HOST_WIDE_INT) 0xffffffff;
-      val |= val << 32;
-    }
-  return bsearch (&val, aarch64_bitmasks, AARCH64_NUM_BITMASKS,
-		  sizeof (aarch64_bitmasks[0]), aarch64_bitmasks_cmp) != NULL;
+  unsigned HOST_WIDE_INT val, tmp, mask, first_one, next_one;
+  int bits;
+
+  /* Check for a single sequence of one bits and return quickly if so.
+     The special cases of all ones and all zeroes returns false.  */
+  val = (unsigned HOST_WIDE_INT) val_in;
+  tmp = val + (val & -val);
+
+  if (tmp == (tmp & -tmp))
+    return (val + 1) > 1;
+
+  /* Replicate 32-bit immediates so we can treat them as 64-bit.  */
+  if (mode == SImode)
+    val = (val << 32) | (val & 0xffffffff);
+
+  /* Invert if the immediate doesn't start with a zero bit - this means we
+     only need to search for sequences of one bits.  */
+  if (val & 1)
+    val = ~val;
+
+  /* Find the first set bit and set tmp to val with the first sequence of one
+     bits removed.  Return success if there is a single sequence of ones.  */
+  first_one = val & -val;
+  tmp = val & (val + first_one);
+
+  if (tmp == 0)
+    return true;
+
+  /* Find the next set bit and compute the difference in bit position.  */
+  next_one = tmp & -tmp;
+  bits = clz_hwi (first_one) - clz_hwi (next_one);
+  mask = val ^ tmp;
+
+  /* Check the bit position difference is a power of 2, and that the first
+     sequence of one bits fits within 'bits' bits.  */
+  if ((mask >> bits) != 0 || bits != (bits & -bits))
+    return false;
+
+  /* Check the sequence of one bits is repeated 64/bits times.  */
+  return val == mask * bitmask_imm_mul[__builtin_clz (bits) - 26];
 }
 
 
@@ -3442,7 +3230,7 @@ aarch64_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
   split_const (x, &base, &offset);
   if (GET_CODE (base) == SYMBOL_REF || GET_CODE (base) == LABEL_REF)
     {
-      if (aarch64_classify_symbol (base, offset, SYMBOL_CONTEXT_ADR)
+      if (aarch64_classify_symbol (base, offset)
 	  != SYMBOL_FORCE_TO_MEM)
 	return true;
       else
@@ -3693,6 +3481,18 @@ offset_12bit_unsigned_scaled_p (machine_mode mode, HOST_WIDE_INT offset)
 	  && offset % GET_MODE_SIZE (mode) == 0);
 }
 
+/* Return true if MODE is one of the modes for which we
+   support LDP/STP operations.  */
+
+static bool
+aarch64_mode_valid_for_sched_fusion_p (machine_mode mode)
+{
+  return mode == SImode || mode == DImode
+	 || mode == SFmode || mode == DFmode
+	 || (aarch64_vector_mode_supported_p (mode)
+	     && GET_MODE_SIZE (mode) == 8);
+}
+
 /* Return true if X is a valid address for machine mode MODE.  If it is,
    fill in INFO appropriately.  STRICT_P is true if REG_OK_STRICT is in
    effect.  OUTER_CODE is PARALLEL for a load/store pair.  */
@@ -3874,7 +3674,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  return ((GET_CODE (sym) == LABEL_REF
 		   || (GET_CODE (sym) == SYMBOL_REF
 		       && CONSTANT_POOL_ADDRESS_P (sym)
-		       && !nopcrelative_literal_loads)));
+		       && !aarch64_nopcrelative_literal_loads)));
 	}
       return false;
 
@@ -3888,8 +3688,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  rtx sym, offs;
 	  split_const (info->offset, &sym, &offs);
 	  if (GET_CODE (sym) == SYMBOL_REF
-	      && (aarch64_classify_symbol (sym, offs, SYMBOL_CONTEXT_MEM)
-		  == SYMBOL_SMALL_ABSOLUTE))
+	      && (aarch64_classify_symbol (sym, offs) == SYMBOL_SMALL_ABSOLUTE))
 	    {
 	      /* The symbol and offset must be aligned to the access size.  */
 	      unsigned int align;
@@ -3935,17 +3734,15 @@ aarch64_symbolic_address_p (rtx x)
   return GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF;
 }
 
-/* Classify the base of symbolic expression X, given that X appears in
-   context CONTEXT.  */
+/* Classify the base of symbolic expression X.  */
 
 enum aarch64_symbol_type
-aarch64_classify_symbolic_expression (rtx x,
-				      enum aarch64_symbol_context context)
+aarch64_classify_symbolic_expression (rtx x)
 {
   rtx offset;
 
   split_const (x, &x, &offset);
-  return aarch64_classify_symbol (x, offset, context);
+  return aarch64_classify_symbol (x, offset);
 }
 
 
@@ -3975,15 +3772,12 @@ aarch64_legitimate_address_p (machine_mode mode, rtx x,
 bool
 aarch64_float_const_zero_rtx_p (rtx x)
 {
-  REAL_VALUE_TYPE r;
-
   if (GET_MODE (x) == VOIDmode)
     return false;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-  if (REAL_VALUE_MINUS_ZERO (r))
+  if (REAL_VALUE_MINUS_ZERO (*CONST_DOUBLE_REAL_VALUE (x)))
     return !HONOR_SIGNED_ZEROS (GET_MODE (x));
-  return REAL_VALUES_EQUAL (r, dconst0);
+  return real_equal (CONST_DOUBLE_REAL_VALUE (x), &dconst0);
 }
 
 /* Return the fixed registers used for condition codes.  */
@@ -4572,6 +4366,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  output_address (XEXP (x, 0));
 	  break;
 
+	case CONST:
 	case LABEL_REF:
 	case SYMBOL_REF:
 	  output_addr_const (asm_out_file, x);
@@ -4612,9 +4407,8 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	    {
 #define buf_size 20
 	      char float_buf[buf_size] = {'\0'};
-	      REAL_VALUE_TYPE r;
-	      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	      real_to_decimal_for_mode (float_buf, &r,
+	      real_to_decimal_for_mode (float_buf,
+					CONST_DOUBLE_REAL_VALUE (x),
 					buf_size, buf_size,
 					1, GET_MODE (x));
 	      asm_fprintf (asm_out_file, "%s", float_buf);
@@ -4633,7 +4427,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
       if (GET_CODE (x) == HIGH)
 	x = XEXP (x, 0);
 
-      switch (aarch64_classify_symbolic_expression (x, SYMBOL_CONTEXT_ADR))
+      switch (aarch64_classify_symbolic_expression (x))
 	{
 	case SYMBOL_SMALL_GOT_4G:
 	  asm_fprintf (asm_out_file, ":got:");
@@ -4666,7 +4460,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
       break;
 
     case 'L':
-      switch (aarch64_classify_symbolic_expression (x, SYMBOL_CONTEXT_ADR))
+      switch (aarch64_classify_symbolic_expression (x))
 	{
 	case SYMBOL_SMALL_GOT_4G:
 	  asm_fprintf (asm_out_file, ":lo12:");
@@ -4708,7 +4502,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 
     case 'G':
 
-      switch (aarch64_classify_symbolic_expression (x, SYMBOL_CONTEXT_ADR))
+      switch (aarch64_classify_symbolic_expression (x))
 	{
 	case SYMBOL_TLSLE24:
 	  asm_fprintf (asm_out_file, ":tprel_hi12:");
@@ -5114,7 +4908,7 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
   if (MEM_P (x) && GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x)
       && (SCALAR_FLOAT_MODE_P (GET_MODE (x))
 	  || targetm.vector_mode_supported_p (GET_MODE (x)))
-      && nopcrelative_literal_loads)
+      && aarch64_nopcrelative_literal_loads)
     {
       sri->icode = aarch64_constant_pool_reload_icode (mode);
       return NO_REGS;
@@ -5278,7 +5072,6 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
 	aarch64_vector_mode_p (mode)
 	  ? (GET_MODE_SIZE (mode) + UNITS_PER_VREG - 1) / UNITS_PER_VREG
 	  : (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-    case FIXED_REG0:
     case STACK_REG:
       return 1;
 
@@ -5740,9 +5533,12 @@ aarch64_address_cost (rtx x,
 	cost += addr_cost->register_offset;
 	break;
 
-      case ADDRESS_REG_UXTW:
       case ADDRESS_REG_SXTW:
-	cost += addr_cost->register_extend;
+	cost += addr_cost->register_sextend;
+	break;
+
+      case ADDRESS_REG_UXTW:
+	cost += addr_cost->register_zextend;
 	break;
 
       default:
@@ -7018,6 +6814,19 @@ cost_plus:
 	  else
 	    *cost += extra_cost->fp[GET_MODE (x) == DFmode].toint;
 	}
+
+      /* We can combine fmul by a power of 2 followed by a fcvt into a single
+	 fixed-point fcvt.  */
+      if (GET_CODE (x) == MULT
+	  && ((VECTOR_MODE_P (mode)
+	       && aarch64_vec_fpconst_pow_of_2 (XEXP (x, 1)) > 0)
+	      || aarch64_fpconst_pow_of_2 (XEXP (x, 1)) > 0))
+	{
+	  *cost += rtx_cost (XEXP (x, 0), VOIDmode, (rtx_code) code,
+			     0, speed);
+	  return true;
+	}
+
       *cost += rtx_cost (x, VOIDmode, (enum rtx_code) code, 0, speed);
       return true;
 
@@ -7166,10 +6975,10 @@ aarch64_register_move_cost (machine_mode mode,
     = aarch64_tune_params.regmove_cost;
 
   /* Caller save and pointer regs are equivalent to GENERAL_REGS.  */
-  if (to == CALLER_SAVE_REGS || to == POINTER_REGS || to == FIXED_REG0)
+  if (to == CALLER_SAVE_REGS || to == POINTER_REGS)
     to = GENERAL_REGS;
 
-  if (from == CALLER_SAVE_REGS || from == POINTER_REGS || from == FIXED_REG0)
+  if (from == CALLER_SAVE_REGS || from == POINTER_REGS)
     from = GENERAL_REGS;
 
   /* Moving between GPR and stack cost is the same as GP2GP.  */
@@ -7235,6 +7044,19 @@ aarch64_sched_first_cycle_multipass_dfa_lookahead (void)
 
   return issue_rate > 1 && !sched_fusion ? issue_rate : 0;
 }
+
+
+/* Implement TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD as
+   autopref_multipass_dfa_lookahead_guard from haifa-sched.c.  It only
+   has an effect if PARAM_SCHED_AUTOPREF_QUEUE_DEPTH > 0.  */
+
+static int
+aarch64_first_cycle_multipass_dfa_lookahead_guard (rtx_insn *insn,
+						    int ready_index)
+{
+  return autopref_multipass_dfa_lookahead_guard (insn, ready_index);
+}
+
 
 /* Vectorizer cost model target hooks.  */
 
@@ -7757,7 +7579,7 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
   else if (opts->x_flag_omit_leaf_frame_pointer)
     opts->x_flag_omit_frame_pointer = true;
 
-  /* If not opzimizing for size, set the default
+  /* If not optimizing for size, set the default
      alignment to what the target wants.  */
   if (!opts->x_optimize_size)
     {
@@ -7771,21 +7593,21 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
 
   /* If nopcrelative_literal_loads is set on the command line, this
      implies that the user asked for PC relative literal loads.  */
-  if (nopcrelative_literal_loads == 1)
-    nopcrelative_literal_loads = 0;
+  if (opts->x_nopcrelative_literal_loads == 1)
+    aarch64_nopcrelative_literal_loads = false;
 
   /* If it is not set on the command line, we default to no
      pc relative literal loads.  */
-  if (nopcrelative_literal_loads == 2)
-    nopcrelative_literal_loads = 1;
+  if (opts->x_nopcrelative_literal_loads == 2)
+    aarch64_nopcrelative_literal_loads = true;
 
   /* In the tiny memory model it makes no sense
      to disallow non PC relative literal pool loads
      as many other things will break anyway.  */
-  if (nopcrelative_literal_loads
+  if (opts->x_nopcrelative_literal_loads
       && (aarch64_cmodel == AARCH64_CMODEL_TINY
 	  || aarch64_cmodel == AARCH64_CMODEL_TINY_PIC))
-    nopcrelative_literal_loads = 0;
+    aarch64_nopcrelative_literal_loads = false;
 }
 
 /* 'Unpack' up the internal tuning structs and update the options
@@ -7826,6 +7648,29 @@ aarch64_override_options_internal (struct gcc_options *opts)
 
   initialize_aarch64_code_model (opts);
   initialize_aarch64_tls_size (opts);
+
+  int queue_depth = 0;
+  switch (aarch64_tune_params.autoprefetcher_model)
+    {
+      case tune_params::AUTOPREFETCHER_OFF:
+	queue_depth = -1;
+	break;
+      case tune_params::AUTOPREFETCHER_WEAK:
+	queue_depth = 0;
+	break;
+      case tune_params::AUTOPREFETCHER_STRONG:
+	queue_depth = max_insn_queue_index + 1;
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  /* We don't mind passing in global_options_set here as we don't use
+     the *options_set structs anyway.  */
+  maybe_set_param_value (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
+			 queue_depth,
+			 opts->x_param_values,
+			 global_options_set.x_param_values);
 
   aarch64_override_options_after_change_1 (opts);
 }
@@ -8064,8 +7909,6 @@ aarch64_override_options (void)
   if ((aarch64_cpu_string && valid_cpu)
        || (aarch64_arch_string && valid_arch))
     gcc_assert (explicit_arch != aarch64_no_arch);
-
-  aarch64_build_bitmask_table ();
 
   aarch64_override_options_internal (&global_options);
 
@@ -8947,11 +8790,10 @@ aarch64_classify_tls_symbol (rtx x)
 }
 
 /* Return the method that should be used to access SYMBOL_REF or
-   LABEL_REF X in context CONTEXT.  */
+   LABEL_REF X.  */
 
 enum aarch64_symbol_type
-aarch64_classify_symbol (rtx x, rtx offset,
-			 enum aarch64_symbol_context context ATTRIBUTE_UNUSED)
+aarch64_classify_symbol (rtx x, rtx offset)
 {
   if (GET_CODE (x) == LABEL_REF)
     {
@@ -9243,8 +9085,8 @@ aarch64_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
      This address is gr_save_area_bytes below GRTOP, rounded
      down to the next 16-byte boundary.  */
   t = make_tree (TREE_TYPE (vrtop), virtual_incoming_args_rtx);
-  vr_offset = AARCH64_ROUND_UP (gr_save_area_size,
-			     STACK_BOUNDARY / BITS_PER_UNIT);
+  vr_offset = ROUND_UP (gr_save_area_size,
+			STACK_BOUNDARY / BITS_PER_UNIT);
 
   if (vr_offset)
     t = fold_build_pointer_plus_hwi (t, -vr_offset);
@@ -9337,7 +9179,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 		      unshare_expr (valist), f_grtop, NULL_TREE);
       f_off = build3 (COMPONENT_REF, TREE_TYPE (f_groff),
 		      unshare_expr (valist), f_groff, NULL_TREE);
-      rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+      rsize = ROUND_UP (size, UNITS_PER_WORD);
       nregs = rsize / UNITS_PER_WORD;
 
       if (align > 8)
@@ -9576,8 +9418,8 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
 	  /* Set OFF to the offset from virtual_incoming_args_rtx of
 	     the first vector register.  The VR save area lies below
 	     the GR one, and is aligned to 16 bytes.  */
-	  off = -AARCH64_ROUND_UP (gr_saved * UNITS_PER_WORD,
-				   STACK_BOUNDARY / BITS_PER_UNIT);
+	  off = -ROUND_UP (gr_saved * UNITS_PER_WORD,
+			   STACK_BOUNDARY / BITS_PER_UNIT);
 	  off -= vr_saved * UNITS_PER_VREG;
 
 	  for (i = local_cum.aapcs_nvrn; i < NUM_FP_ARG_REGS; ++i)
@@ -9596,8 +9438,8 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
   /* We don't save the size into *PRETEND_SIZE because we want to avoid
      any complication of having crtl->args.pretend_args_size changed.  */
   cfun->machine->frame.saved_varargs_size
-    = (AARCH64_ROUND_UP (gr_saved * UNITS_PER_WORD,
-		      STACK_BOUNDARY / BITS_PER_UNIT)
+    = (ROUND_UP (gr_saved * UNITS_PER_WORD,
+		 STACK_BOUNDARY / BITS_PER_UNIT)
        + vr_saved * UNITS_PER_VREG);
 }
 
@@ -10379,9 +10221,7 @@ aarch64_simd_imm_scalar_p (rtx x, machine_mode mode ATTRIBUTE_UNUSED)
 }
 
 bool
-aarch64_mov_operand_p (rtx x,
-		       enum aarch64_symbol_context context,
-		       machine_mode mode)
+aarch64_mov_operand_p (rtx x, machine_mode mode)
 {
   if (GET_CODE (x) == HIGH
       && aarch64_valid_symref (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
@@ -10393,7 +10233,7 @@ aarch64_mov_operand_p (rtx x,
   if (GET_CODE (x) == SYMBOL_REF && mode == DImode && CONSTANT_ADDRESS_P (x))
     return true;
 
-  return aarch64_classify_symbolic_expression (x, context)
+  return aarch64_classify_symbolic_expression (x)
     == SYMBOL_TINY_ABSOLUTE;
 }
 
@@ -10785,80 +10625,6 @@ aarch64_shift_truncation_mask (machine_mode mode)
      || aarch64_vect_struct_mode_p (mode)) ? 0 : (GET_MODE_BITSIZE (mode) - 1);
 }
 
-#ifndef TLS_SECTION_ASM_FLAG
-#define TLS_SECTION_ASM_FLAG 'T'
-#endif
-
-void
-aarch64_elf_asm_named_section (const char *name, unsigned int flags,
-			       tree decl ATTRIBUTE_UNUSED)
-{
-  char flagchars[10], *f = flagchars;
-
-  /* If we have already declared this section, we can use an
-     abbreviated form to switch back to it -- unless this section is
-     part of a COMDAT groups, in which case GAS requires the full
-     declaration every time.  */
-  if (!(HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
-      && (flags & SECTION_DECLARED))
-    {
-      fprintf (asm_out_file, "\t.section\t%s\n", name);
-      return;
-    }
-
-  if (!(flags & SECTION_DEBUG))
-    *f++ = 'a';
-  if (flags & SECTION_WRITE)
-    *f++ = 'w';
-  if (flags & SECTION_CODE)
-    *f++ = 'x';
-  if (flags & SECTION_SMALL)
-    *f++ = 's';
-  if (flags & SECTION_MERGE)
-    *f++ = 'M';
-  if (flags & SECTION_STRINGS)
-    *f++ = 'S';
-  if (flags & SECTION_TLS)
-    *f++ = TLS_SECTION_ASM_FLAG;
-  if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
-    *f++ = 'G';
-  *f = '\0';
-
-  fprintf (asm_out_file, "\t.section\t%s,\"%s\"", name, flagchars);
-
-  if (!(flags & SECTION_NOTYPE))
-    {
-      const char *type;
-      const char *format;
-
-      if (flags & SECTION_BSS)
-	type = "nobits";
-      else
-	type = "progbits";
-
-#ifdef TYPE_OPERAND_FMT
-      format = "," TYPE_OPERAND_FMT;
-#else
-      format = ",@%s";
-#endif
-
-      fprintf (asm_out_file, format, type);
-
-      if (flags & SECTION_ENTSIZE)
-	fprintf (asm_out_file, ",%d", flags & SECTION_ENTSIZE);
-      if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
-	{
-	  if (TREE_CODE (decl) == IDENTIFIER_NODE)
-	    fprintf (asm_out_file, ",%s,comdat", IDENTIFIER_POINTER (decl));
-	  else
-	    fprintf (asm_out_file, ",%s,comdat",
-		     IDENTIFIER_POINTER (DECL_COMDAT_GROUP (decl)));
-	}
-    }
-
-  putc ('\n', asm_out_file);
-}
-
 /* Select a format to encode pointers in exception handling data.  */
 int
 aarch64_asm_preferred_eh_data_format (int code ATTRIBUTE_UNUSED, int global)
@@ -11065,6 +10831,32 @@ aarch64_expand_compare_and_swap (rtx operands[])
   emit_insn (gen_rtx_SET (bval, x));
 }
 
+/* Test whether the target supports using a atomic load-operate instruction.
+   CODE is the operation and AFTER is TRUE if the data in memory after the
+   operation should be returned and FALSE if the data before the operation
+   should be returned.  Returns FALSE if the operation isn't supported by the
+   architecture.  */
+
+bool
+aarch64_atomic_ldop_supported_p (enum rtx_code code)
+{
+  if (!TARGET_LSE)
+    return false;
+
+  switch (code)
+    {
+    case SET:
+    case AND:
+    case IOR:
+    case XOR:
+    case MINUS:
+    case PLUS:
+      return true;
+    default:
+      return false;
+    }
+}
+
 /* Emit a barrier, that is appropriate for memory model MODEL, at the end of a
    sequence implementing an atomic operation.  */
 
@@ -11186,11 +10978,257 @@ aarch64_split_compare_and_swap (rtx operands[])
     aarch64_emit_post_barrier (model);
 }
 
+/* Emit a BIC instruction.  */
+
+static void
+aarch64_emit_bic (machine_mode mode, rtx dst, rtx s1, rtx s2, int shift)
+{
+  rtx shift_rtx = GEN_INT (shift);
+  rtx (*gen) (rtx, rtx, rtx, rtx);
+
+  switch (mode)
+    {
+    case SImode: gen = gen_and_one_cmpl_lshrsi3; break;
+    case DImode: gen = gen_and_one_cmpl_lshrdi3; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (dst, s2, shift_rtx, s1));
+}
+
+/* Emit an atomic swap.  */
+
+static void
+aarch64_emit_atomic_swap (machine_mode mode, rtx dst, rtx value,
+			  rtx mem, rtx model)
+{
+  rtx (*gen) (rtx, rtx, rtx, rtx);
+
+  switch (mode)
+    {
+    case QImode: gen = gen_aarch64_atomic_swpqi; break;
+    case HImode: gen = gen_aarch64_atomic_swphi; break;
+    case SImode: gen = gen_aarch64_atomic_swpsi; break;
+    case DImode: gen = gen_aarch64_atomic_swpdi; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (dst, mem, value, model));
+}
+
+/* Operations supported by aarch64_emit_atomic_load_op.  */
+
+enum aarch64_atomic_load_op_code
+{
+  AARCH64_LDOP_PLUS,	/* A + B  */
+  AARCH64_LDOP_XOR,	/* A ^ B  */
+  AARCH64_LDOP_OR,	/* A | B  */
+  AARCH64_LDOP_BIC	/* A & ~B  */
+};
+
+/* Emit an atomic load-operate.  */
+
+static void
+aarch64_emit_atomic_load_op (enum aarch64_atomic_load_op_code code,
+			     machine_mode mode, rtx dst, rtx src,
+			     rtx mem, rtx model)
+{
+  typedef rtx (*aarch64_atomic_load_op_fn) (rtx, rtx, rtx, rtx);
+  const aarch64_atomic_load_op_fn plus[] =
+  {
+    gen_aarch64_atomic_loadaddqi,
+    gen_aarch64_atomic_loadaddhi,
+    gen_aarch64_atomic_loadaddsi,
+    gen_aarch64_atomic_loadadddi
+  };
+  const aarch64_atomic_load_op_fn eor[] =
+  {
+    gen_aarch64_atomic_loadeorqi,
+    gen_aarch64_atomic_loadeorhi,
+    gen_aarch64_atomic_loadeorsi,
+    gen_aarch64_atomic_loadeordi
+  };
+  const aarch64_atomic_load_op_fn ior[] =
+  {
+    gen_aarch64_atomic_loadsetqi,
+    gen_aarch64_atomic_loadsethi,
+    gen_aarch64_atomic_loadsetsi,
+    gen_aarch64_atomic_loadsetdi
+  };
+  const aarch64_atomic_load_op_fn bic[] =
+  {
+    gen_aarch64_atomic_loadclrqi,
+    gen_aarch64_atomic_loadclrhi,
+    gen_aarch64_atomic_loadclrsi,
+    gen_aarch64_atomic_loadclrdi
+  };
+  aarch64_atomic_load_op_fn gen;
+  int idx = 0;
+
+  switch (mode)
+    {
+    case QImode: idx = 0; break;
+    case HImode: idx = 1; break;
+    case SImode: idx = 2; break;
+    case DImode: idx = 3; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (code)
+    {
+    case AARCH64_LDOP_PLUS: gen = plus[idx]; break;
+    case AARCH64_LDOP_XOR: gen = eor[idx]; break;
+    case AARCH64_LDOP_OR: gen = ior[idx]; break;
+    case AARCH64_LDOP_BIC: gen = bic[idx]; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (dst, mem, src, model));
+}
+
+/* Emit an atomic load+operate.  CODE is the operation.  OUT_DATA is the
+   location to store the data read from memory.  OUT_RESULT is the location to
+   store the result of the operation.  MEM is the memory location to read and
+   modify.  MODEL_RTX is the memory ordering to use.  VALUE is the second
+   operand for the operation.  Either OUT_DATA or OUT_RESULT, but not both, can
+   be NULL.  */
+
+void
+aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data, rtx out_result,
+			 rtx mem, rtx value, rtx model_rtx)
+{
+  machine_mode mode = GET_MODE (mem);
+  machine_mode wmode = (mode == DImode ? DImode : SImode);
+  const bool short_mode = (mode < SImode);
+  aarch64_atomic_load_op_code ldop_code;
+  rtx src;
+  rtx x;
+
+  if (out_data)
+    out_data = gen_lowpart (mode, out_data);
+
+  if (out_result)
+    out_result = gen_lowpart (mode, out_result);
+
+  /* Make sure the value is in a register, putting it into a destination
+     register if it needs to be manipulated.  */
+  if (!register_operand (value, mode)
+      || code == AND || code == MINUS)
+    {
+      src = out_result ? out_result : out_data;
+      emit_move_insn (src, gen_lowpart (mode, value));
+    }
+  else
+    src = value;
+  gcc_assert (register_operand (src, mode));
+
+  /* Preprocess the data for the operation as necessary.  If the operation is
+     a SET then emit a swap instruction and finish.  */
+  switch (code)
+    {
+    case SET:
+      aarch64_emit_atomic_swap (mode, out_data, src, mem, model_rtx);
+      return;
+
+    case MINUS:
+      /* Negate the value and treat it as a PLUS.  */
+      {
+	rtx neg_src;
+
+	/* Resize the value if necessary.  */
+	if (short_mode)
+	  src = gen_lowpart (wmode, src);
+
+	neg_src = gen_rtx_NEG (wmode, src);
+	emit_insn (gen_rtx_SET (src, neg_src));
+
+	if (short_mode)
+	  src = gen_lowpart (mode, src);
+      }
+      /* Fall-through.  */
+    case PLUS:
+      ldop_code = AARCH64_LDOP_PLUS;
+      break;
+
+    case IOR:
+      ldop_code = AARCH64_LDOP_OR;
+      break;
+
+    case XOR:
+      ldop_code = AARCH64_LDOP_XOR;
+      break;
+
+    case AND:
+      {
+	rtx not_src;
+
+	/* Resize the value if necessary.  */
+	if (short_mode)
+	  src = gen_lowpart (wmode, src);
+
+	not_src = gen_rtx_NOT (wmode, src);
+	emit_insn (gen_rtx_SET (src, not_src));
+
+	if (short_mode)
+	  src = gen_lowpart (mode, src);
+      }
+      ldop_code = AARCH64_LDOP_BIC;
+      break;
+
+    default:
+      /* The operation can't be done with atomic instructions.  */
+      gcc_unreachable ();
+    }
+
+  aarch64_emit_atomic_load_op (ldop_code, mode, out_data, src, mem, model_rtx);
+
+  /* If necessary, calculate the data in memory after the update by redoing the
+     operation from values in registers.  */
+  if (!out_result)
+    return;
+
+  if (short_mode)
+    {
+      src = gen_lowpart (wmode, src);
+      out_data = gen_lowpart (wmode, out_data);
+      out_result = gen_lowpart (wmode, out_result);
+    }
+
+  x = NULL_RTX;
+
+  switch (code)
+    {
+    case MINUS:
+    case PLUS:
+      x = gen_rtx_PLUS (wmode, out_data, src);
+      break;
+    case IOR:
+      x = gen_rtx_IOR (wmode, out_data, src);
+      break;
+    case XOR:
+      x = gen_rtx_XOR (wmode, out_data, src);
+      break;
+    case AND:
+      aarch64_emit_bic (wmode, out_result, out_data, src, 0);
+      return;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_set_insn (out_result, x);
+
+  return;
+}
+
 /* Split an atomic operation.  */
 
 void
 aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
-		     rtx value, rtx model_rtx, rtx cond)
+			 rtx value, rtx model_rtx, rtx cond)
 {
   machine_mode mode = GET_MODE (mem);
   machine_mode wmode = (mode == DImode ? DImode : SImode);
@@ -11199,6 +11237,7 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   rtx_code_label *label;
   rtx x;
 
+  /* Split the atomic operation into a sequence.  */
   label = gen_label_rtx ();
   emit_label (label);
 
@@ -11327,7 +11366,7 @@ aarch64_float_const_representable_p (rtx x)
   if (GET_MODE (x) == VOIDmode || GET_MODE (x) == HFmode)
     return false;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+  r = *CONST_DOUBLE_REAL_VALUE (x);
 
   /* We cannot represent infinities, NaNs or +/-zero.  We won't
      know if we have +zero until we analyse the mantissa, but we
@@ -11411,18 +11450,20 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
   lane_count = width / info.element_width;
 
   mode = GET_MODE_INNER (mode);
-  if (mode == SFmode || mode == DFmode)
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
     {
       gcc_assert (info.shift == 0 && ! info.mvn);
+      /* For FP zero change it to a CONST_INT 0 and use the integer SIMD
+	 move immediate path.  */
       if (aarch64_float_const_zero_rtx_p (info.value))
         info.value = GEN_INT (0);
       else
 	{
 #define buf_size 20
-	  REAL_VALUE_TYPE r;
-	  REAL_VALUE_FROM_CONST_DOUBLE (r, info.value);
 	  char float_buf[buf_size] = {'\0'};
-	  real_to_decimal_for_mode (float_buf, &r, buf_size, buf_size, 1, mode);
+	  real_to_decimal_for_mode (float_buf,
+				    CONST_DOUBLE_REAL_VALUE (info.value),
+				    buf_size, buf_size, 1, mode);
 #undef buf_size
 
 	  if (lane_count == 1)
@@ -11437,6 +11478,7 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
   mnemonic = info.mvn ? "mvni" : "movi";
   shift_op = info.msl ? "msl" : "lsl";
 
+  gcc_assert (CONST_INT_P (info.value));
   if (lane_count == 1)
     snprintf (templ, sizeof (templ), "%s\t%%d0, " HOST_WIDE_INT_PRINT_HEX,
 	      mnemonic, UINTVAL (info.value));
@@ -12838,8 +12880,9 @@ fusion_load_store (rtx_insn *insn, rtx *base, rtx *offset)
   src = SET_SRC (x);
   dest = SET_DEST (x);
 
-  if (GET_MODE (dest) != SImode && GET_MODE (dest) != DImode
-      && GET_MODE (dest) != SFmode && GET_MODE (dest) != DFmode)
+  machine_mode dest_mode = GET_MODE (dest);
+
+  if (!aarch64_mode_valid_for_sched_fusion_p (dest_mode))
     return SCHED_FUSION_NONE;
 
   if (GET_CODE (src) == SIGN_EXTEND)
@@ -13288,6 +13331,52 @@ aarch64_unspec_may_trap_p (const_rtx x, unsigned flags)
   return default_unspec_may_trap_p (x, flags);
 }
 
+
+/* If X is a positive CONST_DOUBLE with a value that is a power of 2
+   return the log2 of that value.  Otherwise return -1.  */
+
+int
+aarch64_fpconst_pow_of_2 (rtx x)
+{
+  const REAL_VALUE_TYPE *r;
+
+  if (!CONST_DOUBLE_P (x))
+    return -1;
+
+  r = CONST_DOUBLE_REAL_VALUE (x);
+
+  if (REAL_VALUE_NEGATIVE (*r)
+      || REAL_VALUE_ISNAN (*r)
+      || REAL_VALUE_ISINF (*r)
+      || !real_isinteger (r, DFmode))
+    return -1;
+
+  return exact_log2 (real_to_integer (r));
+}
+
+/* If X is a vector of equal CONST_DOUBLE values and that value is
+   Y, return the aarch64_fpconst_pow_of_2 of Y.  Otherwise return -1.  */
+
+int
+aarch64_vec_fpconst_pow_of_2 (rtx x)
+{
+  if (GET_CODE (x) != CONST_VECTOR)
+    return -1;
+
+  if (GET_MODE_CLASS (GET_MODE (x)) != MODE_VECTOR_FLOAT)
+    return -1;
+
+  int firstval = aarch64_fpconst_pow_of_2 (CONST_VECTOR_ELT (x, 0));
+  if (firstval <= 0)
+    return -1;
+
+  for (int i = 1; i < CONST_VECTOR_NUNITS (x); i++)
+    if (aarch64_fpconst_pow_of_2 (CONST_VECTOR_ELT (x, i)) != firstval)
+      return -1;
+
+  return firstval;
+}
+
 /* Implement TARGET_PROMOTED_TYPE to promote __fp16 to float.  */
 static tree
 aarch64_promoted_type (const_tree t)
@@ -13498,6 +13587,10 @@ aarch64_promoted_type (const_tree t)
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   aarch64_sched_first_cycle_multipass_dfa_lookahead
+
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD \
+  aarch64_first_cycle_multipass_dfa_lookahead_guard
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT aarch64_trampoline_init

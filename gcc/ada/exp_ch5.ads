@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,4 +35,8 @@ package Exp_Ch5 is
    procedure Expand_N_Goto_Statement            (N : Node_Id);
    procedure Expand_N_If_Statement              (N : Node_Id);
    procedure Expand_N_Loop_Statement            (N : Node_Id);
+
+   procedure Expand_Iterator_Loop_Over_Array (N : Node_Id);
+   --  Expand loop over arrays that uses the form "for X of C"
+
 end Exp_Ch5;

@@ -1477,7 +1477,7 @@ as found in RM 13.1(22):
    a constant declared before the entity."
 
 In practice this is applicable only to address clauses, since this is the
-only case in which a non-static expression is permitted by the syntax.  As
+only case in which a nonstatic expression is permitted by the syntax.  As
 the AARM notes in sections 13.1 (22.a-22.h):
 
    22.a   Reason: This is to avoid the following sort of thing:
@@ -1509,7 +1509,7 @@ the AARM notes in sections 13.1 (22.a-22.h):
    might be known at compile time anyway in many
    cases.
 
-GNAT does indeed permit many additional cases of non-static expressions.  In
+GNAT does indeed permit many additional cases of nonstatic expressions.  In
 particular, if the type involved is elementary there are no restrictions
 (since in this case, holding a temporary copy of the initialization value,
 if one is present, is inexpensive).  In addition, if there is no implicit or
@@ -1524,7 +1524,7 @@ only the case where all three of these conditions hold:
   Note that access values are always implicitly initialized.
 
 *
-  The address value is non-static.  Here GNAT is more permissive than the
+  The address value is nonstatic.  Here GNAT is more permissive than the
   RM, and allows the address value to be the address of a previously declared
   stand-alone variable, as long as it does not itself have an address clause.
 
@@ -1537,9 +1537,9 @@ only the case where all three of these conditions hold:
   However, the prefix of the address clause cannot be an array component, or
   a component of a discriminated record.
 
-As noted above in section 22.h, address values are typically non-static.  In
+As noted above in section 22.h, address values are typically nonstatic.  In
 particular the To_Address function, even if applied to a literal value, is
-a non-static function call.  To avoid this minor annoyance, GNAT provides
+a nonstatic function call.  To avoid this minor annoyance, GNAT provides
 the implementation defined attribute 'To_Address.  The following two
 expressions have identical values:
 

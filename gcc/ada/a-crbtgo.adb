@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,10 @@
 with System;  use type System.Address;
 
 package body Ada.Containers.Red_Black_Trees.Generic_Operations is
+
+   pragma Warnings (Off, "variable ""Busy*"" is not referenced");
+   pragma Warnings (Off, "variable ""Lock*"" is not referenced");
+   --  See comment in Ada.Containers.Helpers
 
    -----------------------
    -- Local Subprograms --
@@ -153,7 +157,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
         and then Color (X) = Black
       loop
          if X = Left (Parent (X)) then
-            W :=  Right (Parent (X));
+            W := Right (Parent (X));
 
             if Color (W) = Red then
                Set_Color (W, Black);
@@ -197,7 +201,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
          else
             pragma Assert (X = Right (Parent (X)));
 
-            W :=  Left (Parent (X));
+            W := Left (Parent (X));
 
             if Color (W) = Red then
                Set_Color (W, Black);
@@ -258,10 +262,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
       pragma Assert (Z /= null);
 
    begin
-      if Tree.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (Tree.TC);
 
       --  Why are these all commented out ???
 
@@ -511,12 +512,16 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
    procedure Generic_Adjust (Tree : in out Tree_Type) is
       N    : constant Count_Type := Tree.Length;
       Root : constant Node_Access := Tree.Root;
-
+      use type Helpers.Tamper_Counts;
    begin
+      --  If the counts are nonzero, execution is technically erroneous, but
+      --  it seems friendly to allow things like concurrent "=" on shared
+      --  constants.
+
+      Zero_Counts (Tree.TC);
+
       if N = 0 then
          pragma Assert (Root = null);
-         pragma Assert (Tree.Busy = 0);
-         pragma Assert (Tree.Lock = 0);
          return;
       end if;
 
@@ -538,17 +543,13 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
    procedure Generic_Clear (Tree : in out Tree_Type) is
       Root : Node_Access := Tree.Root;
    begin
-      if Tree.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (Tree.TC);
 
       Tree := (First  => null,
                Last   => null,
                Root   => null,
                Length => 0,
-               Busy   => 0,
-               Lock   => 0);
+               TC     => <>);
 
       Delete_Tree (Root);
    end Generic_Clear;
@@ -627,22 +628,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
    -------------------
 
    function Generic_Equal (Left, Right : Tree_Type) return Boolean is
-      BL : Natural renames Left'Unrestricted_Access.Busy;
-      LL : Natural renames Left'Unrestricted_Access.Lock;
-
-      BR : Natural renames Right'Unrestricted_Access.Busy;
-      LR : Natural renames Right'Unrestricted_Access.Lock;
-
-      L_Node : Node_Access;
-      R_Node : Node_Access;
-
-      Result : Boolean;
-
    begin
-      if Left'Address = Right'Address then
-         return True;
-      end if;
-
       if Left.Length /= Right.Length then
          return False;
       end if;
@@ -654,45 +640,24 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
          return True;
       end if;
 
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
+      declare
+         Lock_Left : With_Lock (Left.TC'Unrestricted_Access);
+         Lock_Right : With_Lock (Right.TC'Unrestricted_Access);
 
-      BL := BL + 1;
-      LL := LL + 1;
+         L_Node : Node_Access := Left.First;
+         R_Node : Node_Access := Right.First;
+      begin
+         while L_Node /= null loop
+            if not Is_Equal (L_Node, R_Node) then
+               return False;
+            end if;
 
-      BR := BR + 1;
-      LR := LR + 1;
+            L_Node := Next (L_Node);
+            R_Node := Next (R_Node);
+         end loop;
+      end;
 
-      L_Node := Left.First;
-      R_Node := Right.First;
-      Result := True;
-      while L_Node /= null loop
-         if not Is_Equal (L_Node, R_Node) then
-            Result := False;
-            exit;
-         end if;
-
-         L_Node := Next (L_Node);
-         R_Node := Next (R_Node);
-      end loop;
-
-      BL := BL - 1;
-      LL := LL - 1;
-
-      BR := BR - 1;
-      LR := LR - 1;
-
-      return Result;
-
-   exception
-      when others =>
-         BL := BL - 1;
-         LL := LL - 1;
-
-         BR := BR - 1;
-         LR := LR - 1;
-
-         raise;
+      return True;
    end Generic_Equal;
 
    -----------------------
@@ -732,10 +697,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
          return;
       end if;
 
-      if Source.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (Source.TC);
 
       Clear (Target);
 
@@ -745,8 +707,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
                  Last   => null,
                  Root   => null,
                  Length => 0,
-                 Busy   => 0,
-                 Lock   => 0);
+                 TC     => <>);
    end Generic_Move;
 
    ------------------

@@ -76,7 +76,7 @@ let emit_variables chan c_types features spaces =
     match c_types with
       (_, return_ty) :: tys ->
         if return_ty <> "void" then begin
-          (* The intrinsic returns a value.  We need to do explict register
+          (* The intrinsic returns a value.  We need to do explicit register
              allocation for vget_low tests or they fail because of copy
              elimination.  *)
           ((if List.mem Fixed_vector_reg features then
@@ -130,14 +130,14 @@ let emit_call chan const_valuator c_types name elt_ty =
 let emit_epilogue chan features regexps =
   let no_op = List.exists (fun feature -> feature = No_op) features in
     Printf.fprintf chan "}\n\n";
-    (if not no_op then
-       List.iter (fun regexp ->
-                   Printf.fprintf chan
-                     "/* { dg-final { scan-assembler \"%s\" } } */\n" regexp)
+    if not no_op then
+      List.iter (fun regexp ->
+                  Printf.fprintf chan
+                    "/* { dg-final { scan-assembler \"%s\" } } */\n" regexp)
                 regexps
-     else
-       ()
-    );
+    else
+      ()
+    
 
 (* Check a list of C types to determine which ones are pointers and which
    ones are const.  *)

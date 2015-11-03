@@ -299,6 +299,29 @@ __offload_target_tgt2host_p2 (OFFLOAD ofldt)
   __offload_target_leave (ofldt);
 }
 
+/* Copy SIZE bytes from SRC_PTR to DST_PTR.  */
+static void
+__offload_target_tgt2tgt (OFFLOAD ofldt)
+{
+  void *src_ptr = NULL;
+  void *dst_ptr = NULL;
+  size_t size = 0;
+
+  VarDesc vd1[3] = { vd_host2tgt, vd_host2tgt, vd_host2tgt };
+  vd1[0].ptr = &dst_ptr;
+  vd1[0].size = sizeof (void *);
+  vd1[1].ptr = &src_ptr;
+  vd1[1].size = sizeof (void *);
+  vd1[2].ptr = &size;
+  vd1[2].size = sizeof (size);
+  VarDesc2 vd1g[3] = { { "dst_ptr", 0 }, { "src_ptr", 0 }, { "size", 0 } };
+
+  __offload_target_enter (ofldt, 3, vd1, vd1g);
+  TRACE ("(dst_ptr = %p, src_ptr = %p, size = %d)", dst_ptr, src_ptr, size);
+  memcpy (dst_ptr, src_ptr, size);
+  __offload_target_leave (ofldt);
+}
+
 /* Call offload function by the address fn_ptr and pass vars_ptr to it.  */
 static void
 __offload_target_run (OFFLOAD ofldt)
@@ -363,5 +386,6 @@ REGISTER (host2tgt_p1);
 REGISTER (host2tgt_p2);
 REGISTER (tgt2host_p1);
 REGISTER (tgt2host_p2);
+REGISTER (tgt2tgt);
 REGISTER (run);
 #undef REGISTER

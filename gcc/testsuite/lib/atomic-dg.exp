@@ -48,7 +48,6 @@ proc atomic_link_flags { paths } {
 
     set_ld_library_path_env_vars
 
-    append flags " -latomic "
     return "$flags"
 }
 
@@ -61,6 +60,7 @@ proc atomic_init { args } {
     global ALWAYS_CXXFLAGS
     global TOOL_OPTIONS
     global atomic_saved_TEST_ALWAYS_FLAGS
+    global atomic_saved_ALWAYS_CXXFLAGS
 
     set link_flags ""
     if ![is_remote host] {
@@ -71,10 +71,13 @@ proc atomic_init { args } {
 	}
     }
 
+    append link_flags " -latomic "
+
     if [info exists TEST_ALWAYS_FLAGS] {
 	set atomic_saved_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
     }
     if [info exists ALWAYS_CXXFLAGS] {
+	set atomic_saved_ALWAYS_CXXFLAGS $ALWAYS_CXXFLAGS
 	set ALWAYS_CXXFLAGS [concat "{ldflags=$link_flags}" $ALWAYS_CXXFLAGS]
     } else {
 	if [info exists TEST_ALWAYS_FLAGS] {
@@ -95,11 +98,16 @@ proc atomic_init { args } {
 proc atomic_finish { args } {
     global TEST_ALWAYS_FLAGS
     global atomic_saved_TEST_ALWAYS_FLAGS
+    global atomic_saved_ALWAYS_CXXFLAGS
 
-    if [info exists atomic_saved_TEST_ALWAYS_FLAGS] {
-	set TEST_ALWAYS_FLAGS $atomic_saved_TEST_ALWAYS_FLAGS
+    if [info exists atomic_saved_ALWAYS_CXXFLAGS] {
+	set ALWAYS_CXXFLAGS $atomic_saved_ALWAYS_CXXFLAGS
     } else {
-	unset TEST_ALWAYS_FLAGS
+	if [info exists atomic_saved_TEST_ALWAYS_FLAGS] {
+	  set TEST_ALWAYS_FLAGS $atomic_saved_TEST_ALWAYS_FLAGS
+	} else {
+	  unset TEST_ALWAYS_FLAGS
+	}
     }
     clear_effective_target_cache
 }

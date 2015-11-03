@@ -2953,7 +2953,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: -gnatw.e  (gcc)
 
 :samp:`-gnatw.e`
-  *Activate every optional warning*
+  *Activate every optional warning.*
 
   .. index:: Warnings, activate every optional warning
 
@@ -3016,7 +3016,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: -gnatw.g  (gcc)
 
 :samp:`-gnatw.g`
-  *Warnings used for GNAT sources*
+  *Warnings used for GNAT sources.*
 
   This switch sets the warning categories that are used by the standard
   GNAT style. Currently this is equivalent to
@@ -3143,16 +3143,18 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   Second, the restriction does flag uses of package `ASCII`.
 
 
+.. index:: -gnatwJ  (gcc)
+
 :samp:`-gnatwJ`
   *Suppress warnings on obsolescent features (Annex J).*
-  .. index:: -gnatwJ  (gcc)
 
   This switch disables warnings on use of obsolescent features.
 
 
+.. index:: -gnatwk  (gcc)
+
 :samp:`-gnatwk`
   *Activate warnings on variables that could be constants.*
-  .. index:: -gnatwk  (gcc)
 
   This switch activates warnings for variables that are initialized but
   never modified, and then could be declared constants. The default is that
@@ -3724,7 +3726,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: Warnings Off control
 
 :samp:`-gnatw.w`
-  *Activate warnings on Warnings Off pragmas*
+  *Activate warnings on Warnings Off pragmas.*
 
   This switch activates warnings for use of `pragma Warnings (Off, entity)`
   where either the pragma is entirely useless (because it suppresses no
@@ -3739,7 +3741,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: -gnatw.W  (gcc)
 
 :samp:`-gnatw.W`
-  *Suppress warnings on unnecessary Warnings Off pragmas*
+  *Suppress warnings on unnecessary Warnings Off pragmas.*
 
   This switch suppresses warnings for use of `pragma Warnings (Off, ...)`.
 
@@ -3820,7 +3822,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: Package spec needing body
 
 :samp:`-gnatw.y`
-  *Activate information messages for why package spec needs body*
+  *Activate information messages for why package spec needs body.*
 
   There are a number of cases in which a package spec needs a body.
   For example, the use of pragma Elaborate_Body, or the declaration
@@ -3835,7 +3837,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: No information messages for why package spec needs body
 
 :samp:`-gnatw.Y`
-  *Disable information messages for why package spec needs body*
+  *Disable information messages for why package spec needs body.*
 
   This switch suppresses the output of information messages showing why
   a package specification needs a body.
@@ -4188,7 +4190,7 @@ to the default checks required by Ada as described above.
 .. index:: -gnatVi  (gcc)
 
 :samp:`-gnatVi`
-  *Validity checks for `in* mode parameters`
+  *Validity checks for `in` mode parameters.*
 
   Arguments for parameters of mode `in` are validity checked in function
   and procedure calls at the point of call.
@@ -4197,7 +4199,7 @@ to the default checks required by Ada as described above.
 .. index:: -gnatVm  (gcc)
 
 :samp:`-gnatVm`
-  *Validity checks for `in out* mode parameters.`
+  *Validity checks for `in out` mode parameters.*
 
   Arguments for parameters of mode `in out` are validity checked in
   procedure calls at the point of call. The `'m'` here stands for
@@ -4220,9 +4222,10 @@ to the default checks required by Ada as described above.
   is used, it cancels any other *-gnatV* previously issued.
 
 
+.. index:: -gnatVo  (gcc)
+
 :samp:`-gnatVo`
   *Validity checks for operator and attribute operands.*
-  .. index:: -gnatVo  (gcc)
 
   Arguments for predefined operators and attributes are validity checked.
   This includes all operators in package `Standard`,
@@ -4796,7 +4799,7 @@ checks to be performed. The following checks are defined:
 .. index:: -gnatyy (gcc)
 
 :samp:`-gnatyy`
-  *Set all standard style check options*
+  *Set all standard style check options.*
 
   This is equivalent to `gnaty3aAbcefhiklmnprst`, that is all checking
   options enabled with the exception of *-gnatyB*, *-gnatyd*,
@@ -4807,7 +4810,7 @@ checks to be performed. The following checks are defined:
 .. index:: -gnaty- (gcc)
 
 :samp:`-gnaty-`
-  *Remove style check options*
+  *Remove style check options.*
 
   This causes any subsequent options in the string to act as canceling the
   corresponding style check option. To cancel maximum nesting level control,
@@ -4821,7 +4824,7 @@ checks to be performed. The following checks are defined:
 .. index:: -gnaty+ (gcc)
 
 :samp:`-gnaty+`
-  *Enable style check options*
+  *Enable style check options.*
 
   This causes any subsequent options in the string to enable the corresponding
   style check option. That is, it cancels the effect of a previous -,
@@ -4911,13 +4914,12 @@ following *gcc* switches refine this default behavior.
   the condition being checked is true, which can result in erroneous
   execution if that assumption is wrong.
 
-  The checks subject to suppression include all the checks defined by
-  the Ada standard, the additional implementation defined checks
-  `Alignment_Check`,
-  `Duplicated_Tag_Check`, `Predicate_Check`, and
-  `Validity_Check`, as well as any checks introduced using
-  `pragma Check_Name`. Note that `Atomic_Synchronization`
-  is not automatically suppressed by use of this option.
+  The checks subject to suppression include all the checks defined by the Ada
+  standard, the additional implementation defined checks `Alignment_Check`,
+  `Duplicated_Tag_Check`, `Predicate_Check`, Container_Checks, Tampering_Check,
+  and `Validity_Check`, as well as any checks introduced using `pragma
+  Check_Name`. Note that `Atomic_Synchronization` is not automatically
+  suppressed by use of this option.
 
   If the code depends on certain checks being active, you can use
   pragma `Unsuppress` either as a configuration pragma or as
@@ -5146,7 +5148,7 @@ indicate Ada 83 compatibility mode.
 .. index:: ACVC, Ada 83 tests
 .. index:: Ada 83 mode
 
-:samp:`-gnat83 (Ada 83 Compatibility Mode)`
+:samp:`-gnat83` (Ada 83 Compatibility Mode)
   Although GNAT is primarily an Ada 95 / Ada 2005 compiler, this switch
   specifies that the program is to be compiled in Ada 83 mode. With
   *-gnat83*, GNAT rejects most post-Ada 83 extensions and applies Ada 83
@@ -5160,9 +5162,8 @@ indicate Ada 83 compatibility mode.
   using only Ada 83 features.
 
   With few exceptions (most notably the need to use `<>` on
-  .. index:: Generic formal parameters
-
-  unconstrained generic formal parameters, the use of the new Ada 95 / Ada 2005
+  unconstrained :index:`generic formal parameters <Generic formal parameters>`,
+  the use of the new Ada 95 / Ada 2005
   reserved words, and the use of packages
   with optional bodies), it is not necessary to specify the
   *-gnat83* switch when compiling Ada 83 programs, because, with rare
@@ -6059,15 +6060,30 @@ be presented in subsequent sections.
   Output complete list of elaboration-order dependencies.
 
 
-.. index:: -E  (gnatbind)
+.. index:: -Ea  (gnatbind)
 
-:samp:`-E`
+:samp:`-Ea`
   Store tracebacks in exception occurrences when the target supports it.
+  The "a" is for "address"; tracebacks will contain hexadecimal addresses,
+  unless symbolic tracebacks are enabled.
 
   See also the packages `GNAT.Traceback` and
   `GNAT.Traceback.Symbolic` for more information.
   Note that on x86 ports, you must not use *-fomit-frame-pointer*
   *gcc* option.
+
+
+.. index:: -Es  (gnatbind)
+
+:samp:`-Es`
+  Store tracebacks in exception occurrences when the target supports it.
+  The "s" is for "symbolic"; symbolic tracebacks are enabled.
+
+
+.. index:: -E  (gnatbind)
+
+:samp:`-E`
+  Currently the same as `-Ea`.
 
 
 .. index:: -F  (gnatbind)
@@ -6085,7 +6101,7 @@ be presented in subsequent sections.
 .. index:: -h  (gnatbind)
 
 :samp:`-h`
-  Output usage (help) information
+  Output usage (help) information.
 
 
   .. index:: -H32  (gnatbind)
@@ -6195,7 +6211,7 @@ be presented in subsequent sections.
   .. index:: -p  (gnatbind)
 
 :samp:`-p`
-  Pessimistic (worst-case) elaboration order
+  Pessimistic (worst-case) elaboration order.
 
 
   .. index:: -P  (gnatbind)
@@ -6230,7 +6246,7 @@ be presented in subsequent sections.
   objects with pragma Initialize_Scalars.
   The `xxx` string specified with the switch is one of:
 
-  * ``in`` for an invalid value*.
+  * ``in`` for an invalid value.
 
     If zero is invalid for the discrete type in question,
     then the scalar value is set to all zero bits.
@@ -6290,7 +6306,7 @@ be presented in subsequent sections.
   .. index:: -t  (gnatbind)
 
 :samp:`-t`
-  Tolerate time stamp and other consistency errors
+  Tolerate time stamp and other consistency errors.
 
 
   .. index:: -T  (gnatbind)
@@ -6326,10 +6342,18 @@ be presented in subsequent sections.
   :file:`stdout`.
 
 
+  .. index:: -V  (gnatbind)
+
+:samp:`-V{key}={value}`
+  Store the given association of `key` to `value` in the bind environment.
+  Values stored this way can be retrieved at run time using
+  `GNAT.Bind_Environment`.
+
+
   .. index:: -w  (gnatbind)
 
 :samp:`-w{x}`
-  Warning mode; `x` = s/e for suppress/treat as error
+  Warning mode; `x` = s/e for suppress/treat as error.
 
 
   .. index:: -Wx  (gnatbind)

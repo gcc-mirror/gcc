@@ -2823,8 +2823,8 @@ in the reload pass.
 If defined, a C expression that returns nonzero for a @var{class} for which
 a change from mode @var{from} to mode @var{to} is invalid.
 
-For the example, loading 32-bit integer or floating-point objects into
-floating-point registers on the Alpha extends them to 64 bits.
+For example, loading 32-bit integer or floating-point objects into
+floating-point registers on Alpha extends them to 64 bits.
 Therefore loading a 64-bit object and then storing it as a 32-bit object
 does not store the low-order 32 bits, as would be the case for a normal
 register.  Therefore, @file{alpha.h} defines @code{CANNOT_CHANGE_MODE_CLASS}
@@ -2835,6 +2835,17 @@ as below:
   (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) \
    ? reg_classes_intersect_p (FLOAT_REGS, (CLASS)) : 0)
 @end smallexample
+
+Even if storing from a register in mode @var{to} would be valid,
+if both @var{from} and @code{raw_reg_mode} for @var{class} are wider
+than @code{word_mode}, then we must prevent @var{to} narrowing the
+mode.  This happens when the middle-end assumes that it can load
+or store pieces of an @var{N}-word pseudo, and that the pseudo will
+eventually be allocated to @var{N} @code{word_mode} hard registers.
+Failure to prevent this kind of mode change will result in the
+entire @code{raw_reg_mode} being modified instead of the partial
+value that the middle-end intended.
+
 @end defmac
 
 @deftypefn {Target Hook} reg_class_t TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS (int, @var{reg_class_t})
@@ -3020,11 +3031,11 @@ address of the stack word that points to the previous frame.
 @end defmac
 
 @defmac SETUP_FRAME_ADDRESSES
-If defined, a C expression that produces the machine-specific code to
+A C expression that produces the machine-specific code to
 setup the stack so that arbitrary frames can be accessed.  For example,
 on the SPARC, we must flush all of the register windows to the stack
 before we can access arbitrary stack frames.  You will seldom need to
-define this macro.
+define this macro.  The default is to do nothing.
 @end defmac
 
 @deftypefn {Target Hook} rtx TARGET_BUILTIN_SETJMP_FRAME_VALUE (void)
@@ -5688,6 +5699,12 @@ mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
 The default is zero which means to not iterate over other vector sizes.
 @end deftypefn
 
+@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_GET_MASK_MODE (unsigned @var{nunits}, unsigned @var{length})
+This hook returns mode to be used for a mask to be used for a vector
+of specified @var{length} with @var{nunits} elements.  By default an integer
+vector mode of a proper size is returned.
+@end deftypefn
+
 @deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (struct loop *@var{loop_info})
 This hook should initialize target-specific data structures in preparation for modeling the costs of vectorizing a loop or basic block.  The default allocates three unsigned integers for accumulating costs for the prologue, body, and epilogue of the loop or basic block.  If @var{loop_info} is non-NULL, it identifies the loop being vectorized; otherwise a single block is being vectorized.
 @end deftypefn
@@ -5746,6 +5763,28 @@ This hook should return -1 if SIMD clone @var{node} shouldn't be used
 in vectorized loops in current function, or non-negative number if it is
 usable.  In that case, the smaller the number is, the more desirable it is
 to use it.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_GOACC_VALIDATE_DIMS (tree @var{decl}, int *@var{dims}, int @var{fn_level})
+This hook should check the launch dimensions provided for an OpenACC
+compute region, or routine.  Defaulted values are represented as -1
+and non-constant values as 0. The @var{fn_level} is negative for the
+function corresponding to the compute region.  For a routine is is the
+outermost level at which partitioned execution may be spawned.  It
+should fill in anything that needs to default to non-unity and verify
+non-defaults.  Diagnostics should be issued as appropriate.  Return
+true, if changes have been made.  You must override this hook to
+provide dimensions larger than 1.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_GOACC_FORK_JOIN (gcall *@var{call}, const int *@var{dims}, bool @var{is_fork})
+This hook can be used to convert IFN_GOACC_FORK and IFN_GOACC_JOIN
+function calls to target-specific gimple, or indicate whether they
+should be retained.  It is executed during the oacc_device_lower pass.
+It should return true, if the call should be retained.  It should
+return false, if it is to be deleted (either because target-specific
+gimple has been inserted before it, or there is no need for it).
+The default hook returns false, if there are no RTL expanders for them.
 @end deftypefn
 
 @node Anchored Addresses
@@ -6430,6 +6469,16 @@ be live over a region of code where only one would have been if
 should be considered in the definition of this macro.  Equivalent costs
 should probably only be given to addresses with different numbers of
 registers on machines with lots of registers.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P (void)
+This predicate controls the use of the eager delay slot filler to disallow
+speculatively executed instructions being placed in delay slots.  Targets
+such as certain MIPS architectures possess both branches with and without
+delay slots.  As the eager delay slot filler can decrease performance,
+disabling it is beneficial when ordinary branches are available.  Use of
+delay slot branches filled using the basic filler is often still desirable
+as the delay slot can hide a pipeline bubble.
 @end deftypefn
 
 @node Scheduling
@@ -8962,14 +9011,15 @@ You should define this symbol if your target supports DWARF 2 frame
 unwind information and the default definition does not work.
 @end defmac
 
-@defmac EH_FRAME_IN_DATA_SECTION
-If defined, DWARF 2 frame unwind information will be placed in the
-data section even though the target supports named sections.  This
-might be necessary, for instance, if the system linker does garbage
-collection and sections cannot be marked as not to be collected.
+@defmac EH_FRAME_THROUGH_COLLECT2
+If defined, DWARF 2 frame unwind information will identified by
+specially named labels.  The collect2 process will locate these
+labels and generate code to register the frames.
 
-Do not define this macro unless @code{TARGET_ASM_NAMED_SECTION} is
-also defined.
+This might be necessary, for instance, if the system linker will not
+place the eh_frames in-between the sentinals from @file{crtstuff.c},
+or if the system linker does garbage collection and sections cannot
+be marked as not to be collected.
 @end defmac
 
 @defmac EH_TABLES_CAN_BE_READ_ONLY
@@ -9597,6 +9647,11 @@ A C statement to issue assembly directives that create a self-relative
 reference to the given @var{label}, using an integer of the given @var{size}.
 @end defmac
 
+@defmac ASM_OUTPUT_DWARF_DATAREL (@var{stream}, @var{size}, @var{label})
+A C statement to issue assembly directives that create a reference to the
+given @var{label} relative to the dbase, using an integer of the given @var{size}.
+@end defmac
+
 @defmac ASM_OUTPUT_DWARF_TABLE_REF (@var{label})
 A C statement to issue assembly directives that create a reference to
 the DWARF table identifier @var{label} from the current section.  This
@@ -9690,17 +9745,6 @@ array of @code{HOST_WIDE_INT}, but all code should treat it as an opaque
 quantity.
 @end defmac
 
-@deftypefn Macro int REAL_VALUES_EQUAL (REAL_VALUE_TYPE @var{x}, REAL_VALUE_TYPE @var{y})
-Compares for equality the two values, @var{x} and @var{y}.  If the target
-floating point format supports negative zeroes and/or NaNs,
-@samp{REAL_VALUES_EQUAL (-0.0, 0.0)} is true, and
-@samp{REAL_VALUES_EQUAL (NaN, NaN)} is false.
-@end deftypefn
-
-@deftypefn Macro int REAL_VALUES_LESS (REAL_VALUE_TYPE @var{x}, REAL_VALUE_TYPE @var{y})
-Tests whether @var{x} is less than @var{y}.
-@end deftypefn
-
 @deftypefn Macro HOST_WIDE_INT REAL_VALUE_FIX (REAL_VALUE_TYPE @var{x})
 Truncates @var{x} to a signed integer, rounding toward zero.
 @end deftypefn
@@ -9727,21 +9771,6 @@ Determines whether @var{x} represents infinity (positive or negative).
 
 @deftypefn Macro int REAL_VALUE_ISNAN (REAL_VALUE_TYPE @var{x})
 Determines whether @var{x} represents a ``NaN'' (not-a-number).
-@end deftypefn
-
-@deftypefn Macro void REAL_ARITHMETIC (REAL_VALUE_TYPE @var{output}, enum tree_code @var{code}, REAL_VALUE_TYPE @var{x}, REAL_VALUE_TYPE @var{y})
-Calculates an arithmetic operation on the two floating point values
-@var{x} and @var{y}, storing the result in @var{output} (which must be a
-variable).
-
-The operation to be performed is specified by @var{code}.  Only the
-following codes are supported: @code{PLUS_EXPR}, @code{MINUS_EXPR},
-@code{MULT_EXPR}, @code{RDIV_EXPR}, @code{MAX_EXPR}, @code{MIN_EXPR}.
-
-If @code{REAL_ARITHMETIC} is asked to evaluate division by zero and the
-target's floating point format cannot represent infinity, it will call
-@code{abort}.  Callers should check for this situation first, using
-@code{MODE_HAS_INFINITIES}.  @xref{Storage Layout}.
 @end deftypefn
 
 @deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_NEGATE (REAL_VALUE_TYPE @var{x})
@@ -9991,6 +10020,10 @@ This target hook returns @code{false} if the @var{caller} function
 cannot inline @var{callee}, based on target specific information.  By
 default, inlining is not allowed if the callee function has function
 specific target options and the caller does not use the same options.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_RELAYOUT_FUNCTION (tree @var{fndecl})
+This target hook fixes function @var{fndecl} after attributes are processed. Default does nothing. On ARM, the default function's alignment is updated with the attribute target.
 @end deftypefn
 
 @node Emulated TLS
@@ -10274,15 +10307,13 @@ c_register_addr_space ("__ea", ADDR_SPACE_EA);
 @deftypefn {Target Hook} machine_mode TARGET_ADDR_SPACE_POINTER_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for pointers to
 @var{address_space} if the target supports named address spaces.
-The default version of this hook returns @code{ptr_mode} for the
-generic address space only.
+The default version of this hook returns @code{ptr_mode}.
 @end deftypefn
 
 @deftypefn {Target Hook} machine_mode TARGET_ADDR_SPACE_ADDRESS_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for addresses in
 @var{address_space} if the target supports named address spaces.
-The default version of this hook returns @code{Pmode} for the
-generic address space only.
+The default version of this hook returns @code{Pmode}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_ADDR_SPACE_VALID_POINTER_MODE (machine_mode @var{mode}, addr_space_t @var{as})

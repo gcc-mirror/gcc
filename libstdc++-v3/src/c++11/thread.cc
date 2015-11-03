@@ -23,6 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 
+#define _GLIBCXX_THREAD_ABI_COMPAT 1
 #include <thread>
 #include <system_error>
 #include <cerrno>
@@ -75,8 +76,33 @@ namespace std _GLIBCXX_VISIBILITY(default)
     extern "C" void*
     execute_native_thread_routine(void* __p)
     {
+      thread::_State_ptr __t{ static_cast<thread::_State*>(__p) };
+
+      __try
+	{
+	  __t->_M_run();
+	}
+      __catch(const __cxxabiv1::__forced_unwind&)
+	{
+	  __throw_exception_again;
+	}
+      __catch(...)
+	{
+	  std::terminate();
+	}
+
+      return nullptr;
+    }
+
+#if _GLIBCXX_THREAD_ABI_COMPAT
+    extern "C" void*
+    execute_native_thread_routine_compat(void* __p)
+    {
       thread::_Impl_base* __t = static_cast<thread::_Impl_base*>(__p);
       thread::__shared_base_type __local;
+      // Now that a new thread has been created we can transfer ownership of
+      // the thread state to a local object, breaking the reference cycle
+      // created in thread::_M_start_thread.
       __local.swap(__t->_M_this_ptr);
 
       __try
@@ -94,9 +120,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
       return nullptr;
     }
+#endif
   }
 
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  thread::_State::~_State() = default;
 
   void
   thread::join()
@@ -127,6 +156,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   void
+  thread::_M_start_thread(_State_ptr state, void (*)())
+  {
+    const int err = __gthread_create(&_M_id._M_thread,
+				     &execute_native_thread_routine,
+				     state.get());
+    if (err)
+      __throw_system_error(err);
+    state.release();
+  }
+
+#if _GLIBCXX_THREAD_ABI_COMPAT
+  void
   thread::_M_start_thread(__shared_base_type __b)
   {
     if (!__gthread_active_p())
@@ -144,15 +185,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   thread::_M_start_thread(__shared_base_type __b, void (*)())
   {
     auto ptr = __b.get();
+    // Create a reference cycle that will be broken in the new thread.
     ptr->_M_this_ptr = std::move(__b);
     int __e = __gthread_create(&_M_id._M_thread,
-			       &execute_native_thread_routine, ptr);
+			       &execute_native_thread_routine_compat, ptr);
     if (__e)
     {
-      ptr->_M_this_ptr.reset();
+      ptr->_M_this_ptr.reset();  // break reference cycle, destroying *ptr.
       __throw_system_error(__e);
     }
   }
+#endif
 
   unsigned int
   thread::hardware_concurrency() noexcept

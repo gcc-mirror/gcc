@@ -20,48 +20,33 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "alloc-pool.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "options.h"
+#include "tree-streamer.h"
+#include "cgraph.h"
+#include "diagnostic.h"
 #include "fold-const.h"
-#include "internal-fn.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
 #include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "stor-layout.h"
 #include "print-tree.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-walk.h"
-#include "langhooks.h"
-#include "target.h"
-#include "cgraph.h"
-#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "tree-cfg.h"
-#include "tree-into-ssa.h"
 #include "tree-dfa.h"
-#include "tree-pass.h"
 #include "tree-inline.h"
 #include "ipa-inline.h"
-#include "diagnostic.h"
 #include "gimple-pretty-print.h"
-#include "tree-streamer.h"
 #include "params.h"
 #include "ipa-utils.h"
 #include "dbgcnt.h"
@@ -95,7 +80,7 @@ struct ipa_cst_ref_desc
 /* Allocation pool for reference descriptions.  */
 
 static object_allocator<ipa_cst_ref_desc> ipa_refdesc_pool
-  ("IPA-PROP ref descriptions", 32);
+  ("IPA-PROP ref descriptions");
 
 /* Return true if DECL_FUNCTION_SPECIFIC_OPTIMIZATION of the decl associated
    with NODE should prevent us from analyzing it for the purposes of IPA-CP.  */
@@ -538,7 +523,7 @@ struct prop_type_change_info
   */
 
 static bool
-stmt_may_be_vtbl_ptr_store (gimple stmt)
+stmt_may_be_vtbl_ptr_store (gimple *stmt)
 {
   if (is_gimple_call (stmt))
     return false;
@@ -573,7 +558,7 @@ stmt_may_be_vtbl_ptr_store (gimple stmt)
 static bool
 check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 {
-  gimple stmt = SSA_NAME_DEF_STMT (vdef);
+  gimple *stmt = SSA_NAME_DEF_STMT (vdef);
   struct prop_type_change_info *tci = (struct prop_type_change_info *) data;
 
   if (stmt_may_be_vtbl_ptr_store (stmt))
@@ -595,7 +580,7 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
    type of the THIS pointer.  */
 
 static bool
-param_type_may_change_p (tree function, tree arg, gimple call)
+param_type_may_change_p (tree function, tree arg, gimple *call)
 {
   /* Pure functions can not do any changes on the dynamic type;
      that require writting to memory.  */
@@ -815,7 +800,7 @@ parm_bb_aa_status_for_bb (struct ipa_func_body_info *fbi, basic_block bb,
 
 static bool
 parm_preserved_before_stmt_p (struct ipa_func_body_info *fbi, int index,
-			      gimple stmt, tree parm_load)
+			      gimple *stmt, tree parm_load)
 {
   struct ipa_param_aa_status *paa;
   bool modified = false;
@@ -855,7 +840,7 @@ parm_preserved_before_stmt_p (struct ipa_func_body_info *fbi, int index,
 static int
 load_from_unmodified_param (struct ipa_func_body_info *fbi,
 			    vec<ipa_param_descriptor> descriptors,
-			    gimple stmt)
+			    gimple *stmt)
 {
   int index;
   tree op1;
@@ -881,7 +866,7 @@ load_from_unmodified_param (struct ipa_func_body_info *fbi,
 
 static bool
 parm_ref_data_preserved_p (struct ipa_func_body_info *fbi,
-			   int index, gimple stmt, tree ref)
+			   int index, gimple *stmt, tree ref)
 {
   struct ipa_param_aa_status *paa;
   bool modified = false;
@@ -920,7 +905,7 @@ parm_ref_data_preserved_p (struct ipa_func_body_info *fbi,
 
 static bool
 parm_ref_data_pass_through_p (struct ipa_func_body_info *fbi, int index,
-			      gimple call, tree parm)
+			      gimple *call, tree parm)
 {
   bool modified = false;
   ao_ref refd;
@@ -961,7 +946,7 @@ parm_ref_data_pass_through_p (struct ipa_func_body_info *fbi, int index,
 bool
 ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
 			vec<ipa_param_descriptor> descriptors,
-			gimple stmt, tree op, int *index_p,
+			gimple *stmt, tree op, int *index_p,
 			HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
 			bool *by_ref_p)
 {
@@ -1014,7 +999,7 @@ ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
 	 gdp = &p;
       */
 
-      gimple def = SSA_NAME_DEF_STMT (TREE_OPERAND (base, 0));
+      gimple *def = SSA_NAME_DEF_STMT (TREE_OPERAND (base, 0));
       index = load_from_unmodified_param (fbi, descriptors, def);
     }
 
@@ -1087,7 +1072,7 @@ static void
 compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 				  struct ipa_node_params *info,
 				  struct ipa_jump_func *jfunc,
-				  gcall *call, gimple stmt, tree name,
+				  gcall *call, gimple *stmt, tree name,
 				  tree param_type)
 {
   HOST_WIDE_INT offset, size, max_size;
@@ -1171,7 +1156,7 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
    RHS stripped off the ADDR_EXPR is stored into *OBJ_P.  */
 
 static tree
-get_ancestor_addr_info (gimple assign, tree *obj_p, HOST_WIDE_INT *offset)
+get_ancestor_addr_info (gimple *assign, tree *obj_p, HOST_WIDE_INT *offset)
 {
   HOST_WIDE_INT size, max_size;
   tree expr, parm, obj;
@@ -1232,7 +1217,7 @@ compute_complex_ancestor_jump_func (struct ipa_func_body_info *fbi,
 				    gcall *call, gphi *phi)
 {
   HOST_WIDE_INT offset;
-  gimple assign, cond;
+  gimple *assign, *cond;
   basic_block phi_bb, assign_bb, cond_bb;
   tree tmp, parm, expr, obj;
   int index, i;
@@ -1329,7 +1314,7 @@ get_ssa_def_if_simple_copy (tree rhs)
 {
   while (TREE_CODE (rhs) == SSA_NAME && !SSA_NAME_IS_DEFAULT_DEF (rhs))
     {
-      gimple def_stmt = SSA_NAME_DEF_STMT (rhs);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (rhs);
 
       if (gimple_assign_single_p (def_stmt))
 	rhs = gimple_assign_rhs1 (def_stmt);
@@ -1496,7 +1481,7 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
   for (; !gsi_end_p (gsi); gsi_prev (&gsi))
     {
       struct ipa_known_agg_contents_list *n, **p;
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       HOST_WIDE_INT lhs_offset, lhs_size, lhs_max_size;
       tree lhs, rhs, lhs_base;
 
@@ -1695,7 +1680,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	    }
 	  else
 	    {
-	      gimple stmt = SSA_NAME_DEF_STMT (arg);
+	      gimple *stmt = SSA_NAME_DEF_STMT (arg);
 	      if (is_gimple_assign (stmt))
 		compute_complex_assign_jump_func (fbi, info, jfunc,
 						  call, stmt, arg, param_type);
@@ -1760,7 +1745,7 @@ ipa_compute_jump_functions_for_bb (struct ipa_func_body_info *fbi, basic_block b
    field rather than the pfn.  */
 
 static tree
-ipa_get_stmt_member_ptr_load_param (gimple stmt, bool use_delta,
+ipa_get_stmt_member_ptr_load_param (gimple *stmt, bool use_delta,
 				    HOST_WIDE_INT *offset_p)
 {
   tree rhs, rec, ref_field, ref_offset, fld, ptr_field, delta_field;
@@ -1911,7 +1896,7 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
     }
 
   int index;
-  gimple def = SSA_NAME_DEF_STMT (target);
+  gimple *def = SSA_NAME_DEF_STMT (target);
   if (gimple_assign_single_p (def)
       && ipa_load_from_parm_agg (fbi, info->descriptors, def,
 				 gimple_assign_rhs1 (def), &index, &offset,
@@ -1938,8 +1923,8 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
   tree n2 = PHI_ARG_DEF (def, 1);
   if (!ipa_is_ssa_with_stmt_def (n1) || !ipa_is_ssa_with_stmt_def (n2))
     return;
-  gimple d1 = SSA_NAME_DEF_STMT (n1);
-  gimple d2 = SSA_NAME_DEF_STMT (n2);
+  gimple *d1 = SSA_NAME_DEF_STMT (n1);
+  gimple *d2 = SSA_NAME_DEF_STMT (n2);
 
   tree rec;
   basic_block bb, virt_bb;
@@ -1971,7 +1956,7 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
   /* Third, let's see that the branching is done depending on the least
      significant bit of the pfn. */
 
-  gimple branch = last_stmt (bb);
+  gimple *branch = last_stmt (bb);
   if (!branch || gimple_code (branch) != GIMPLE_COND)
     return;
 
@@ -2062,7 +2047,7 @@ ipa_analyze_virtual_call_uses (struct ipa_func_body_info *fbi,
   else
     {
       struct ipa_jump_func jfunc;
-      gimple stmt = SSA_NAME_DEF_STMT (obj);
+      gimple *stmt = SSA_NAME_DEF_STMT (obj);
       tree expr;
 
       expr = get_ancestor_addr_info (stmt, &obj, &anc_offset);
@@ -2135,7 +2120,7 @@ ipa_analyze_call_uses (struct ipa_func_body_info *fbi, gcall *call)
    formal parameters are called.  */
 
 static void
-ipa_analyze_stmt_uses (struct ipa_func_body_info *fbi, gimple stmt)
+ipa_analyze_stmt_uses (struct ipa_func_body_info *fbi, gimple *stmt)
 {
   if (is_gimple_call (stmt))
     ipa_analyze_call_uses (fbi, as_a <gcall *> (stmt));
@@ -2146,7 +2131,7 @@ ipa_analyze_stmt_uses (struct ipa_func_body_info *fbi, gimple stmt)
    passed in DATA.  */
 
 static bool
-visit_ref_for_mod_analysis (gimple, tree op, tree, void *data)
+visit_ref_for_mod_analysis (gimple *, tree op, tree, void *data)
 {
   struct ipa_node_params *info = (struct ipa_node_params *) data;
 
@@ -2173,7 +2158,7 @@ ipa_analyze_params_uses_in_bb (struct ipa_func_body_info *fbi, basic_block bb)
   gimple_stmt_iterator gsi;
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
 
       if (is_gimple_debug (stmt))
 	continue;
@@ -3507,6 +3492,7 @@ ipa_node_params_t::duplicate(cgraph_node *src, cgraph_node *dst,
 
   new_info->analysis_done = old_info->analysis_done;
   new_info->node_enqueued = old_info->node_enqueued;
+  new_info->versionable = old_info->versionable;
 
   old_av = ipa_get_agg_replacements_for_node (src);
   if (old_av)
@@ -3986,7 +3972,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	         a load into a temporary.  */
 	      if (is_gimple_reg_type (TREE_TYPE (expr)))
 		{
-		  gimple tem = gimple_build_assign (NULL_TREE, expr);
+		  gimple *tem = gimple_build_assign (NULL_TREE, expr);
 		  if (gimple_in_ssa_p (cfun))
 		    {
 		      gimple_set_vuse (tem, gimple_vuse (stmt));
@@ -4011,7 +3997,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	{
 	  unsigned int ix;
 	  tree ddecl = NULL_TREE, origin = DECL_ORIGIN (adj->base), arg;
-	  gimple def_temp;
+	  gimple *def_temp;
 
 	  arg = gimple_call_arg (stmt, adj->base_index);
 	  if (!useless_type_conversion_p (TREE_TYPE (origin), TREE_TYPE (arg)))
@@ -5104,7 +5090,7 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       struct ipa_agg_replacement_value *v;
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       tree rhs, val, t;
       HOST_WIDE_INT offset, size;
       int index;

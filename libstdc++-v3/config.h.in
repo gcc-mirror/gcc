@@ -378,6 +378,9 @@
 /* Define to 1 if you have the `strtold' function. */
 #undef HAVE_STRTOLD
 
+/* Define to 1 if `d_type' is a member of `struct dirent'. */
+#undef HAVE_STRUCT_DIRENT_D_TYPE
+
 /* Define if strxfrm_l is available in <string.h>. */
 #undef HAVE_STRXFRM_L
 
@@ -741,9 +744,6 @@
 /* Define if gthreads library is available. */
 #undef _GLIBCXX_HAS_GTHREADS
 
-/* Define to 1 if `d_type' is a member of `struct dirent'. */
-#undef _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE
-
 /* Define to 1 if a full hosted library is built, or 0 if freestanding. */
 #undef _GLIBCXX_HOSTED
 
@@ -883,7 +883,7 @@
    of TR1 (Chapter 5.1). */
 #undef _GLIBCXX_USE_RANDOM_TR1
 
-/* Define if realpath is available in <stdlib.h>. */
+/* Define if usable realpath is available in <stdlib.h>. */
 #undef _GLIBCXX_USE_REALPATH
 
 /* Defined if sched_yield is available. */

@@ -1,3 +1,35 @@
+2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c: Reorder #include's and remove duplicates.
+	* lto-object.c: Likewise.
+	* lto-partition.c: Likewise.
+	* lto-symtab.c: Likewise.
+	* lto.c: Likewise.
+
+2015-10-27  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* lto.c (unify_scc): Use flag_checking and remove ENABLE_CHECKING
+	conditionals.
+	(lto_fixup_state): Likewise.
+	(do_whole_program_analysis): Use
+	symtab_node::checking_verify_symtab_nodes and remove ENABLE_CHECKING
+	conditionals.
+
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-lang.c (DEF_FUNCTION_TYPE_9, DEF_FUNCTION_TYPE_10,
+	DEF_FUNCTION_TYPE_11): Define.
+
+2015-10-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (hash_canonical_type): Honor
+	type_with_interoperable_signedness.
+
+2015-09-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lto-lang.c (DEF_FUNCTION_TYPE_VAR_6): New.
+	(DEF_FUNCTION_TYPE_VAR_11): Delete.
+
 2015-08-31  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (compare_tree_sccs_1): Compare DECL_ABSTRACT_ORIGIN.

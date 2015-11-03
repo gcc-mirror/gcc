@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,11 +34,11 @@ with GNAT.Table;
 
 package SPARK_Xrefs is
 
-   --  SPARK cross-reference information can exist in one of two forms. In the
-   --  ALI file, it is represented using a text format that is described in
-   --  this specification.  Internally it is stored using three tables
-   --  SPARK_Xref_Table, SPARK_Scope_Table and SPARK_File_Table, which are also
-   --  defined in this unit.
+   --  SPARK cross-reference information can exist in one of two forms. In
+   --  the ALI file, it is represented using a text format that is described
+   --  in this specification. Internally it is stored using three tables
+   --  SPARK_Xref_Table, SPARK_Scope_Table and SPARK_File_Table, which are
+   --  also defined in this unit.
 
    --  Lib.Xref.SPARK_Specific is part of the compiler. It extracts SPARK
    --  cross-reference information from the complete set of cross-references
@@ -111,9 +111,10 @@ package SPARK_Xrefs is
    --      type is a single letter identifying the type of the entity, using
    --      the same code as in cross-references:
 
-   --        K = package
-   --        V = function
-   --        U = procedure
+   --        K = package (k = generic package)
+   --        V = function (v = generic function)
+   --        U = procedure (u = generic procedure)
+   --        Y = entry
 
    --      col is the column number of the scope entity
 
@@ -137,7 +138,7 @@ package SPARK_Xrefs is
    --      entity-number and identity identify a scope entity in FS lines for
    --      the file previously identified.
 
-   --    line typ col entity ref*
+   --    F line typ col entity ref*
 
    --      line is the line number of the referenced entity
 

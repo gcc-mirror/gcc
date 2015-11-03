@@ -62,7 +62,6 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
 with SCIL_LL;  use SCIL_LL;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 
 package body Exp_Disp is
@@ -291,7 +290,6 @@ package body Exp_Disp is
 
       return Static_Dispatch_Tables
         and then Is_Library_Level_Tagged_Type (Typ)
-        and then VM_Target = No_VM
 
          --  If the type is derived from a CPP class we cannot statically
          --  build the dispatch tables because we must inherit primitives
@@ -1174,35 +1172,6 @@ package body Exp_Disp is
       end;
 
       if not Tagged_Type_Expansion then
-         if VM_Target /= No_VM then
-            if Is_Access_Type (Operand_Typ) then
-               Operand_Typ := Designated_Type (Operand_Typ);
-            end if;
-
-            if Is_Class_Wide_Type (Operand_Typ) then
-               Operand_Typ := Root_Type (Operand_Typ);
-            end if;
-
-            if not Is_Static and then Operand_Typ /= Iface_Typ then
-               Insert_Action (N,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name => New_Occurrence_Of
-                            (RTE (RE_Check_Interface_Conversion), Loc),
-                   Parameter_Associations => New_List (
-                     Make_Attribute_Reference (Loc,
-                       Prefix         => Duplicate_Subexpr (Expression (N)),
-                       Attribute_Name => Name_Tag),
-                     Make_Attribute_Reference (Loc,
-                       Prefix         => New_Occurrence_Of (Iface_Typ, Loc),
-                       Attribute_Name => Name_Tag))));
-            end if;
-
-            --  Just do a conversion ???
-
-            Rewrite (N, Unchecked_Convert_To (Etype (N), N));
-            Analyze (N);
-         end if;
-
          return;
 
       --  A static conversion to an interface type that is not classwide is
@@ -3645,10 +3614,6 @@ package body Exp_Disp is
    --     end;
 
    function Make_DT (Typ : Entity_Id; N : Node_Id := Empty) return List_Id is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the current Ghost mode in effect in case the tagged type sets a
-      --  different mode.
-
       Loc : constant Source_Ptr := Sloc (Typ);
 
       Max_Predef_Prims : constant Int :=
@@ -3710,9 +3675,6 @@ package body Exp_Disp is
       --  value of Suffix_Index must match the Suffix_Index value assigned to
       --  this secondary dispatch table by Make_Tags when its unique external
       --  name was generated.
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
 
       ------------------------------
       -- Check_Premature_Freezing --
@@ -3941,6 +3903,10 @@ package body Exp_Disp is
             end loop;
          end if;
 
+         if Generate_SCIL then
+            Nb_Predef_Prims := 0;
+         end if;
+
          --  Stage 2: Create the thunks associated with the predefined
          --  primitives and save their entity to fill the aggregate.
 
@@ -3962,6 +3928,7 @@ package body Exp_Disp is
                   if Is_Predefined_Dispatching_Operation (Prim)
                     and then not Is_Abstract_Subprogram (Prim)
                     and then not Is_Eliminated (Prim)
+                    and then not Generate_SCIL
                     and then not Present (Prim_Table
                                            (UI_To_Int (DT_Position (Prim))))
                   then
@@ -4398,15 +4365,6 @@ package body Exp_Disp is
          Append_Elmt (Iface_DT, DT_Decl);
       end Make_Secondary_DT;
 
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
       --  Local variables
 
       Elab_Code          : constant List_Id := New_List;
@@ -4435,6 +4393,8 @@ package body Exp_Disp is
       Typ_Ifaces         : Elist_Id;
       TSD_Aggr_List      : List_Id;
       TSD_Tags_List      : List_Id;
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
       --  The following name entries are used by Make_DT to generate a number
       --  of entities related to a tagged type. These entities may be generated
@@ -4477,9 +4437,9 @@ package body Exp_Disp is
    begin
       pragma Assert (Is_Frozen (Typ));
 
-      --  The tagged type being processed may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during dispatch table creation are properly flagged as ignored Ghost.
+      --  The tagged type being processed may be subject to pragma Ghost. Set
+      --  the mode now to ensure that any nodes generated during dispatch table
+      --  creation are properly marked as Ghost.
 
       Set_Ghost_Mode (Declaration_Node (Typ), Typ);
 
@@ -4488,15 +4448,13 @@ package body Exp_Disp is
       if Has_Dispatch_Table (Typ)
         or else No (Access_Disp_Table (Typ))
         or else Is_CPP_Class (Typ)
-        or else Convention (Typ) = Convention_CIL
-        or else Convention (Typ) = Convention_Java
       then
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return Result;
 
       elsif No_Run_Time_Mode then
          Error_Msg_CRT ("tagged types", Typ);
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return Result;
 
       elsif not RTE_Available (RE_Tag) then
@@ -4512,7 +4470,7 @@ package body Exp_Disp is
 
          Analyze_List (Result, Suppress => All_Checks);
          Error_Msg_CRT ("tagged types", Typ);
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return Result;
       end if;
 
@@ -4523,14 +4481,14 @@ package body Exp_Disp is
       if RTE_Available (RE_Interface_Data) then
          if Max_Predef_Prims /= 15 then
             Error_Msg_N ("run-time library configuration error", Typ);
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return Result;
          end if;
       else
          if Max_Predef_Prims /= 9 then
             Error_Msg_N ("run-time library configuration error", Typ);
             Error_Msg_CRT ("tagged types", Typ);
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return Result;
          end if;
       end if;
@@ -4667,6 +4625,10 @@ package body Exp_Disp is
       DT_Ptr  := Node (First_Elmt (Access_Disp_Table (Typ)));
       Nb_Prim := UI_To_Int (DT_Entry_Count (First_Tag_Component (Typ)));
 
+      if Generate_SCIL then
+         Nb_Prim := 0;
+      end if;
+
       Set_Is_Statically_Allocated (DT,  Is_Library_Level_Tagged_Type (Typ));
       Set_Is_Statically_Allocated (SSD, Is_Library_Level_Tagged_Type (Typ));
       Set_Is_Statically_Allocated (TSD, Is_Library_Level_Tagged_Type (Typ));
@@ -4732,6 +4694,14 @@ package body Exp_Disp is
                  Make_SCIL_Dispatch_Table_Tag_Init (Sloc (Last (Result)));
                Set_SCIL_Entity (New_Node, Typ);
                Set_SCIL_Node (Last (Result), New_Node);
+
+               goto Early_Exit_For_SCIL;
+
+               --  Gnat2scil has its own implementation of dispatch tables,
+               --  different than what is being implemented here. Generating
+               --  further dispatch table initialization code would just
+               --  cause gnat2scil to generate useless Scil which CodePeer
+               --  would waste time and space analyzing, so we skip it.
             end if;
 
          --  Generate:
@@ -4801,6 +4771,14 @@ package body Exp_Disp is
                  Make_SCIL_Dispatch_Table_Tag_Init (Sloc (Last (Result)));
                Set_SCIL_Entity (New_Node, Typ);
                Set_SCIL_Node (Last (Result), New_Node);
+
+               goto Early_Exit_For_SCIL;
+
+               --  Gnat2scil has its own implementation of dispatch tables,
+               --  different than what is being implemented here. Generating
+               --  further dispatch table initialization code would just
+               --  cause gnat2scil to generate useless Scil which CodePeer
+               --  would waste time and space analyzing, so we skip it.
             end if;
 
             Append_To (Result,
@@ -6260,544 +6238,15 @@ package body Exp_Disp is
          end;
       end if;
 
+      <<Early_Exit_For_SCIL>>
+
       --  Register the tagged type in the call graph nodes table
 
       Register_CG_Node (Typ);
 
-      Restore_Globals;
+      Ghost_Mode := Save_Ghost_Mode;
       return Result;
    end Make_DT;
-
-   -----------------
-   -- Make_VM_TSD --
-   -----------------
-
-   function Make_VM_TSD (Typ : Entity_Id) return List_Id is
-      Loc    : constant Source_Ptr := Sloc (Typ);
-      Result : constant List_Id := New_List;
-
-      function Count_Primitives (Typ : Entity_Id) return Nat;
-      --  Count the non-predefined primitive operations of Typ
-
-      ----------------------
-      -- Count_Primitives --
-      ----------------------
-
-      function Count_Primitives (Typ : Entity_Id) return Nat is
-         Nb_Prim   : Nat;
-         Prim_Elmt : Elmt_Id;
-         Prim      : Entity_Id;
-
-      begin
-         Nb_Prim := 0;
-
-         Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
-         while Present (Prim_Elmt) loop
-            Prim := Node (Prim_Elmt);
-
-            if Is_Predefined_Dispatching_Operation (Prim)
-              or else Is_Predefined_Dispatching_Alias (Prim)
-            then
-               null;
-
-            elsif Present (Interface_Alias (Prim)) then
-               null;
-
-            else
-               Nb_Prim := Nb_Prim + 1;
-            end if;
-
-            Next_Elmt (Prim_Elmt);
-         end loop;
-
-         return Nb_Prim;
-      end Count_Primitives;
-
-      --------------
-      -- Make_OSD --
-      --------------
-
-      function Make_OSD (Iface : Entity_Id) return Node_Id;
-      --  Generate the Object Specific Data table required to dispatch calls
-      --  through synchronized interfaces. Returns a node that references the
-      --  generated OSD object.
-
-      function Make_OSD (Iface : Entity_Id) return Node_Id is
-         Nb_Prim       : constant Nat := Count_Primitives (Iface);
-         OSD           : Entity_Id;
-         OSD_Aggr_List : List_Id;
-
-      begin
-         --  Generate
-         --   OSD : Ada.Tags.Object_Specific_Data (Nb_Prims) :=
-         --          (OSD_Table => (1 => <value>,
-         --                           ...
-         --                         N => <value>));
-
-         if Nb_Prim = 0
-           or else Is_Abstract_Type (Typ)
-           or else Is_Controlled (Typ)
-           or else Restriction_Active (No_Dispatching_Calls)
-           or else not Is_Limited_Type (Typ)
-           or else not Has_Interfaces (Typ)
-           or else not RTE_Record_Component_Available (RE_OSD_Table)
-         then
-            --  No OSD table required
-
-            return Make_Null (Loc);
-
-         else
-            OSD_Aggr_List := New_List;
-
-            declare
-               Prim_Table : array (Nat range 1 .. Nb_Prim) of Entity_Id;
-               Prim       : Entity_Id;
-               Prim_Alias : Entity_Id;
-               Prim_Elmt  : Elmt_Id;
-               E          : Entity_Id;
-               Count      : Nat := 0;
-               Pos        : Nat;
-
-            begin
-               Prim_Table := (others => Empty);
-               Prim_Alias := Empty;
-
-               Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
-               while Present (Prim_Elmt) loop
-                  Prim := Node (Prim_Elmt);
-
-                  if Present (Interface_Alias (Prim))
-                    and then Find_Dispatching_Type
-                               (Interface_Alias (Prim)) = Iface
-                  then
-                     Prim_Alias := Interface_Alias (Prim);
-                     E   := Ultimate_Alias (Prim);
-                     Pos := UI_To_Int (DT_Position (Prim_Alias));
-
-                     if Present (Prim_Table (Pos)) then
-                        pragma Assert (Prim_Table (Pos) = E);
-                        null;
-
-                     else
-                        Prim_Table (Pos) := E;
-
-                        Append_To (OSD_Aggr_List,
-                          Make_Component_Association (Loc,
-                            Choices    => New_List (
-                              Make_Integer_Literal (Loc,
-                                DT_Position (Prim_Alias))),
-                            Expression =>
-                              Make_Integer_Literal (Loc,
-                                DT_Position (Alias (Prim)))));
-
-                        Count := Count + 1;
-                     end if;
-                  end if;
-
-                  Next_Elmt (Prim_Elmt);
-               end loop;
-
-               pragma Assert (Count = Nb_Prim);
-            end;
-
-            OSD := Make_Temporary (Loc, 'I');
-
-            Append_To (Result,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => OSD,
-                Aliased_Present     => True,
-                Constant_Present    => True,
-                Object_Definition   =>
-                  Make_Subtype_Indication (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (RTE (RE_Object_Specific_Data), Loc),
-                    Constraint   =>
-                      Make_Index_Or_Discriminant_Constraint (Loc,
-                        Constraints => New_List (
-                          Make_Integer_Literal (Loc, Nb_Prim)))),
-
-                Expression          =>
-                  Make_Aggregate (Loc,
-                    Component_Associations => New_List (
-                      Make_Component_Association (Loc,
-                        Choices    => New_List (
-                          New_Occurrence_Of
-                            (RTE_Record_Component (RE_OSD_Num_Prims), Loc)),
-                        Expression =>
-                          Make_Integer_Literal (Loc, Nb_Prim)),
-
-                      Make_Component_Association (Loc,
-                        Choices    => New_List (
-                          New_Occurrence_Of
-                            (RTE_Record_Component (RE_OSD_Table), Loc)),
-                        Expression => Make_Aggregate (Loc,
-                          Component_Associations => OSD_Aggr_List))))));
-
-            return
-              Make_Attribute_Reference (Loc,
-                Prefix => New_Occurrence_Of (OSD, Loc),
-                Attribute_Name => Name_Unchecked_Access);
-         end if;
-      end Make_OSD;
-
-      --  Local variables
-
-      Nb_Prim          : constant Nat := Count_Primitives (Typ);
-      AI               : Elmt_Id;
-      I_Depth          : Nat;
-      Iface_Table_Node : Node_Id;
-      Num_Ifaces       : Nat;
-      TSD_Aggr_List    : List_Id;
-      Typ_Ifaces       : Elist_Id;
-      TSD_Tags_List    : List_Id;
-
-      Tname    : constant Name_Id := Chars (Typ);
-      Name_SSD : constant Name_Id :=
-                   New_External_Name (Tname, 'S', Suffix_Index => -1);
-      Name_TSD : constant Name_Id :=
-                   New_External_Name (Tname, 'B', Suffix_Index => -1);
-      SSD      : constant Entity_Id :=
-                   Make_Defining_Identifier (Loc, Name_SSD);
-      TSD      : constant Entity_Id :=
-                   Make_Defining_Identifier (Loc, Name_TSD);
-   begin
-      --  Generate code to create the storage for the type specific data object
-      --  with enough space to store the tags of the ancestors plus the tags
-      --  of all the implemented interfaces (as described in a-tags.ads).
-
-      --   TSD : Type_Specific_Data (I_Depth) :=
-      --           (Idepth                => I_Depth,
-      --            Tag_Kind              => <tag_kind-value>,
-      --            Access_Level          => Type_Access_Level (Typ),
-      --            Alignment             => Typ'Alignment,
-      --            HT_Link               => null,
-      --            Type_Is_Abstract      => <<boolean-value>>,
-      --            Type_Is_Library_Level => <<boolean-value>>,
-      --            Interfaces_Table      => <<access-value>>
-      --            SSD                   => SSD_Table'Address
-      --            Tags_Table            => (0 => Typ'Tag,
-      --                                      1 => Parent'Tag
-      --                                      ...));
-
-      TSD_Aggr_List := New_List;
-
-      --  Idepth: Count ancestors to compute the inheritance depth. For private
-      --  extensions, always go to the full view in order to compute the real
-      --  inheritance depth.
-
-      declare
-         Current_Typ : Entity_Id;
-         Parent_Typ  : Entity_Id;
-
-      begin
-         I_Depth     := 0;
-         Current_Typ := Typ;
-         loop
-            Parent_Typ := Etype (Current_Typ);
-
-            if Is_Private_Type (Parent_Typ) then
-               Parent_Typ := Full_View (Base_Type (Parent_Typ));
-            end if;
-
-            exit when Parent_Typ = Current_Typ;
-
-            I_Depth := I_Depth + 1;
-            Current_Typ := Parent_Typ;
-         end loop;
-      end;
-
-      --  I_Depth
-
-      Append_To (TSD_Aggr_List,
-        Make_Integer_Literal (Loc, I_Depth));
-
-      --  Tag_Kind
-
-      Append_To (TSD_Aggr_List, Tagged_Kind (Typ));
-
-      --  Access_Level
-
-      Append_To (TSD_Aggr_List,
-        Make_Integer_Literal (Loc, Type_Access_Level (Typ)));
-
-      --  Alignment
-
-      --  For CPP types we cannot rely on the value of 'Alignment provided
-      --  by the backend to initialize this TSD field. Why not???
-
-      if Convention (Typ) = Convention_CPP
-        or else Is_CPP_Class (Root_Type (Typ))
-      then
-         Append_To (TSD_Aggr_List,
-           Make_Integer_Literal (Loc, 0));
-      else
-         Append_To (TSD_Aggr_List,
-           Make_Attribute_Reference (Loc,
-             Prefix         => New_Occurrence_Of (Typ, Loc),
-             Attribute_Name => Name_Alignment));
-      end if;
-
-      --  HT_Link
-
-      Append_To (TSD_Aggr_List,
-        Make_Null (Loc));
-
-      --  Type_Is_Abstract (Ada 2012: AI05-0173)
-
-      declare
-         Type_Is_Abstract : Entity_Id;
-
-      begin
-         Type_Is_Abstract :=
-           Boolean_Literals (Is_Abstract_Type (Typ));
-
-         Append_To (TSD_Aggr_List,
-            New_Occurrence_Of (Type_Is_Abstract, Loc));
-      end;
-
-      --  Type_Is_Library_Level
-
-      declare
-         Type_Is_Library_Level : Entity_Id;
-      begin
-         Type_Is_Library_Level :=
-           Boolean_Literals (Is_Library_Level_Entity (Typ));
-         Append_To (TSD_Aggr_List,
-            New_Occurrence_Of (Type_Is_Library_Level, Loc));
-      end;
-
-      --  Interfaces_Table (required for AI-405)
-
-      if RTE_Record_Component_Available (RE_Interfaces_Table) then
-
-         --  Count the number of interface types implemented by Typ
-
-         Collect_Interfaces (Typ, Typ_Ifaces);
-
-         Num_Ifaces := 0;
-         AI := First_Elmt (Typ_Ifaces);
-         while Present (AI) loop
-            Num_Ifaces := Num_Ifaces + 1;
-            Next_Elmt (AI);
-         end loop;
-
-         if Num_Ifaces = 0 then
-            Iface_Table_Node := Make_Null (Loc);
-
-         --  Generate the Interface_Table object
-
-         else
-            declare
-               TSD_Ifaces_List : constant List_Id := New_List;
-               Iface           : Entity_Id;
-               ITable          : Node_Id;
-
-            begin
-               AI := First_Elmt (Typ_Ifaces);
-               while Present (AI) loop
-                  Iface := Node (AI);
-
-                  Append_To (TSD_Ifaces_List,
-                     Make_Aggregate (Loc,
-                       Expressions => New_List (
-
-                         --  Iface_Tag
-
-                         Make_Attribute_Reference (Loc,
-                           Prefix         => New_Occurrence_Of (Iface, Loc),
-                           Attribute_Name => Name_Tag),
-
-                         --  OSD
-
-                         Make_OSD (Iface))));
-
-                  Next_Elmt (AI);
-               end loop;
-
-               ITable := Make_Temporary (Loc, 'I');
-
-               Append_To (Result,
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => ITable,
-                   Aliased_Present     => True,
-                   Constant_Present    => True,
-                   Object_Definition   =>
-                     Make_Subtype_Indication (Loc,
-                       Subtype_Mark =>
-                         New_Occurrence_Of (RTE (RE_Interface_Data), Loc),
-                       Constraint   => Make_Index_Or_Discriminant_Constraint
-                         (Loc,
-                          Constraints => New_List (
-                            Make_Integer_Literal (Loc, Num_Ifaces)))),
-
-                   Expression => Make_Aggregate (Loc,
-                     Expressions => New_List (
-                       Make_Integer_Literal (Loc, Num_Ifaces),
-                       Make_Aggregate (Loc,
-                         Expressions => TSD_Ifaces_List)))));
-
-               Iface_Table_Node :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix         => New_Occurrence_Of (ITable, Loc),
-                   Attribute_Name => Name_Unchecked_Access);
-            end;
-         end if;
-
-         Append_To (TSD_Aggr_List, Iface_Table_Node);
-      end if;
-
-      --  Generate the Select Specific Data table for synchronized types that
-      --  implement synchronized interfaces. The size of the table is
-      --  constrained by the number of non-predefined primitive operations.
-
-      if RTE_Record_Component_Available (RE_SSD) then
-         if Ada_Version >= Ada_2005
-           and then Has_DT (Typ)
-           and then Is_Concurrent_Record_Type (Typ)
-           and then Has_Interfaces (Typ)
-           and then Nb_Prim > 0
-           and then not Is_Abstract_Type (Typ)
-           and then not Is_Controlled (Typ)
-           and then not Restriction_Active (No_Dispatching_Calls)
-           and then not Restriction_Active (No_Select_Statements)
-         then
-            Append_To (Result,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => SSD,
-                Aliased_Present     => True,
-                Object_Definition   =>
-                  Make_Subtype_Indication (Loc,
-                    Subtype_Mark => New_Occurrence_Of (
-                      RTE (RE_Select_Specific_Data), Loc),
-                    Constraint   =>
-                      Make_Index_Or_Discriminant_Constraint (Loc,
-                        Constraints => New_List (
-                          Make_Integer_Literal (Loc, Nb_Prim))))));
-
-            --  This table is initialized by Make_Select_Specific_Data_Table,
-            --  which calls Set_Entry_Index and Set_Prim_Op_Kind.
-
-            Append_To (TSD_Aggr_List,
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Occurrence_Of (SSD, Loc),
-                Attribute_Name => Name_Unchecked_Access));
-         else
-            Append_To (TSD_Aggr_List, Make_Null (Loc));
-         end if;
-      end if;
-
-      --  Initialize the table of ancestor tags. In case of interface types
-      --  this table is not needed.
-
-      TSD_Tags_List := New_List;
-
-      --  Fill position 0 with Typ'Tag
-
-      Append_To (TSD_Tags_List,
-        Make_Attribute_Reference (Loc,
-          Prefix         => New_Occurrence_Of (Typ, Loc),
-          Attribute_Name => Name_Tag));
-
-      --  Fill the rest of the table with the tags of the ancestors
-
-      declare
-         Current_Typ : Entity_Id;
-         Parent_Typ  : Entity_Id;
-         Pos         : Nat;
-
-      begin
-         Pos := 1;
-         Current_Typ := Typ;
-
-         loop
-            Parent_Typ := Etype (Current_Typ);
-
-            if Is_Private_Type (Parent_Typ) then
-               Parent_Typ := Full_View (Base_Type (Parent_Typ));
-            end if;
-
-            exit when Parent_Typ = Current_Typ;
-
-            Append_To (TSD_Tags_List,
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Occurrence_Of (Parent_Typ, Loc),
-                Attribute_Name => Name_Tag));
-
-            Pos := Pos + 1;
-            Current_Typ := Parent_Typ;
-         end loop;
-
-         pragma Assert (Pos = I_Depth + 1);
-      end;
-
-      Append_To (TSD_Aggr_List,
-        Make_Aggregate (Loc,
-          Expressions => TSD_Tags_List));
-
-      --  Build the TSD object
-
-      Append_To (Result,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => TSD,
-          Aliased_Present     => True,
-          Constant_Present    => True,
-          Object_Definition   =>
-            Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Occurrence_Of (
-                RTE (RE_Type_Specific_Data), Loc),
-              Constraint =>
-                Make_Index_Or_Discriminant_Constraint (Loc,
-                  Constraints => New_List (
-                    Make_Integer_Literal (Loc, I_Depth)))),
-
-          Expression => Make_Aggregate (Loc,
-            Expressions => TSD_Aggr_List)));
-
-      --  Generate:
-      --     Check_TSD (TSD => TSD'Unrestricted_Access);
-
-      if Ada_Version >= Ada_2005
-        and then Is_Library_Level_Entity (Typ)
-        and then RTE_Available (RE_Check_TSD)
-        and then not Duplicated_Tag_Checks_Suppressed (Typ)
-      then
-         Append_To (Result,
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Check_TSD), Loc),
-             Parameter_Associations => New_List (
-               Make_Attribute_Reference (Loc,
-                 Prefix         => New_Occurrence_Of (TSD, Loc),
-                 Attribute_Name => Name_Unrestricted_Access))));
-      end if;
-
-      --  Generate:
-      --     Register_TSD (TSD'Unrestricted_Access);
-
-      Append_To (Result,
-        Make_Procedure_Call_Statement (Loc,
-          Name => New_Occurrence_Of (RTE (RE_Register_TSD), Loc),
-          Parameter_Associations => New_List (
-            Make_Attribute_Reference (Loc,
-              Prefix         => New_Occurrence_Of (TSD, Loc),
-              Attribute_Name => Name_Unrestricted_Access))));
-
-      --  Populate the two auxiliary tables used for dispatching asynchronous,
-      --  conditional and timed selects for synchronized types that implement
-      --  a limited interface. Skip this step in Ravenscar profile or when
-      --  general dispatching is forbidden.
-
-      if Ada_Version >= Ada_2005
-        and then Is_Concurrent_Record_Type (Typ)
-        and then Has_Interfaces (Typ)
-        and then not Restriction_Active (No_Dispatching_Calls)
-        and then not Restriction_Active (No_Select_Statements)
-      then
-         Append_List_To (Result,
-           Make_Select_Specific_Data_Table (Typ));
-      end if;
-
-      return Result;
-   end Make_VM_TSD;
 
    -------------------------------------
    -- Make_Select_Specific_Data_Table --
@@ -7660,12 +7109,12 @@ package body Exp_Disp is
 
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
-      pragma Assert (VM_Target = No_VM);
 
       --  Do not register in the dispatch table eliminated primitives
 
       if not RTE_Available (RE_Tag)
         or else Is_Eliminated (Ultimate_Alias (Prim))
+        or else Generate_SCIL
       then
          return L;
       end if;

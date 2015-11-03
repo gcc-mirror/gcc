@@ -35,36 +35,27 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "print-tree.h"
+#include "tree-pass.h"
+#include "tree-streamer.h"
+#include "cgraph.h"
+#include "diagnostic.h"
 #include "calls.h"
 #include "cfganal.h"
-#include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop-niter.h"
-#include "tree-inline.h"
-#include "tree-pass.h"
 #include "langhooks.h"
-#include "cgraph.h"
 #include "ipa-utils.h"
-#include "flags.h"
-#include "diagnostic.h"
 #include "gimple-pretty-print.h"
-#include "langhooks.h"
-#include "target.h"
-#include "tree-streamer.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "intl.h"
 #include "opts.h"
-#include "varasm.h"
 
 /* Lattice values for const and pure functions.  Everything starts out
    being const, then may drop to pure and then neither depending on
@@ -634,7 +625,7 @@ check_call (funct_state local, gcall *call, bool ipa)
 /* Wrapper around check_decl for loads in local more.  */
 
 static bool
-check_load (gimple, tree op, tree, void *data)
+check_load (gimple *, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, false, false);
@@ -646,7 +637,7 @@ check_load (gimple, tree op, tree, void *data)
 /* Wrapper around check_decl for stores in local more.  */
 
 static bool
-check_store (gimple, tree op, tree, void *data)
+check_store (gimple *, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, true, false);
@@ -658,7 +649,7 @@ check_store (gimple, tree op, tree, void *data)
 /* Wrapper around check_decl for loads in ipa mode.  */
 
 static bool
-check_ipa_load (gimple, tree op, tree, void *data)
+check_ipa_load (gimple *, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, false, true);
@@ -670,7 +661,7 @@ check_ipa_load (gimple, tree op, tree, void *data)
 /* Wrapper around check_decl for stores in ipa mode.  */
 
 static bool
-check_ipa_store (gimple, tree op, tree, void *data)
+check_ipa_store (gimple *, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, true, true);
@@ -684,7 +675,7 @@ check_ipa_store (gimple, tree op, tree, void *data)
 static void
 check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 {
-  gimple stmt = gsi_stmt (*gsip);
+  gimple *stmt = gsi_stmt (*gsip);
 
   if (is_gimple_debug (stmt))
     return;

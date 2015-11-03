@@ -58,44 +58,33 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "target.h"
+#include "function.h"
 #include "rtl.h"
-#include "alias.h"
 #include "tree.h"
-#include "fold-const.h"
+#include "tm_p.h"
 #include "stringpool.h"
+#include "insn-config.h"
+#include "ira.h"
+#include "cgraph.h"
+#include "diagnostic.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
-#include "function.h"
-#include "emit-rtl.h"
 #include "version.h"
 #include "flags.h"
-#include "regs.h"
 #include "rtlhash.h"
-#include "insn-config.h"
 #include "reload.h"
 #include "output.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "stmt.h"
 #include "expr.h"
-#include "except.h"
-#include "dwarf2.h"
 #include "dwarf2out.h"
 #include "dwarf2asm.h"
 #include "toplev.h"
 #include "md5.h"
-#include "tm_p.h"
-#include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "debug.h"
-#include "target.h"
 #include "common/common-target.h"
 #include "langhooks.h"
-#include "cgraph.h"
-#include "ira.h"
 #include "lra.h"
 #include "dumpfile.h"
 #include "opts.h"
@@ -107,6 +96,14 @@ static void dwarf2out_source_line (unsigned int, const char *, int, bool);
 static rtx_insn *last_var_location_insn;
 static rtx_insn *cached_next_real_insn;
 static void dwarf2out_decl (tree);
+
+#ifndef XCOFF_DEBUGGING_INFO
+#define XCOFF_DEBUGGING_INFO 0
+#endif
+
+#ifndef HAVE_XCOFF_DWARF_EXTRAS
+#define HAVE_XCOFF_DWARF_EXTRAS 0
+#endif
 
 #ifdef VMS_DEBUGGING_INFO
 int vms_file_stats_name (const char *, long long *, long *, char *, int *);
@@ -434,11 +431,8 @@ stripattributes (const char *s)
    for collect2 the first time around.  */
 
 static void
-switch_to_eh_frame_section (bool back)
+switch_to_eh_frame_section (bool back ATTRIBUTE_UNUSED)
 {
-  tree label;
-
-#ifdef EH_FRAME_SECTION_NAME
   if (eh_frame_section == 0)
     {
       int flags;
@@ -466,27 +460,29 @@ switch_to_eh_frame_section (bool back)
 	}
       else
 	flags = SECTION_WRITE;
+
+#ifdef EH_FRAME_SECTION_NAME
       eh_frame_section = get_section (EH_FRAME_SECTION_NAME, flags, NULL);
-    }
+#else
+      eh_frame_section = ((flags == SECTION_WRITE)
+			  ? data_section : readonly_data_section);
 #endif /* EH_FRAME_SECTION_NAME */
-
-  if (eh_frame_section)
-    switch_to_section (eh_frame_section);
-  else
-    {
-      /* We have no special eh_frame section.  Put the information in
-	 the data section and emit special labels to guide collect2.  */
-      switch_to_section (data_section);
-
-      if (!back)
-	{
-	  label = get_file_function_name ("F");
-	  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
-	  targetm.asm_out.globalize_label (asm_out_file,
-					   IDENTIFIER_POINTER (label));
-	  ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
-	}
     }
+
+  switch_to_section (eh_frame_section);
+
+#ifdef EH_FRAME_THROUGH_COLLECT2
+  /* We have no special eh_frame section.  Emit special labels to guide
+     collect2.  */
+  if (!back)
+    {
+      tree label = get_file_function_name ("F");
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+      targetm.asm_out.globalize_label (asm_out_file,
+					IDENTIFIER_POINTER (label));
+      ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
+    }
+#endif
 }
 
 /* Switch [BACK] to the eh or debug frame table section, depending on
@@ -595,11 +591,14 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
 				  for_eh + j);
   ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + j);
   ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + j);
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
-    dw2_asm_output_data (4, 0xffffffff, "Initial length escape value"
-			 " indicating 64-bit DWARF extension");
-  dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
-			"FDE Length");
+  if (!XCOFF_DEBUGGING_INFO || for_eh)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
+	dw2_asm_output_data (4, 0xffffffff, "Initial length escape value"
+			     " indicating 64-bit DWARF extension");
+      dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
+			    "FDE Length");
+    }
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
   if (for_eh)
@@ -795,11 +794,14 @@ output_call_frame_info (int for_eh)
   /* Output the CIE.  */
   ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
   ASM_GENERATE_INTERNAL_LABEL (l2, CIE_END_LABEL, for_eh);
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
-    dw2_asm_output_data (4, 0xffffffff,
-      "Initial length escape value indicating 64-bit DWARF extension");
-  dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
-			"Length of Common Information Entry");
+  if (!XCOFF_DEBUGGING_INFO || for_eh)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
+	dw2_asm_output_data (4, 0xffffffff,
+	  "Initial length escape value indicating 64-bit DWARF extension");
+      dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
+			    "Length of Common Information Entry");
+    }
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
   /* Now that the CIE pointer is PC-relative for EH,
@@ -2996,7 +2998,8 @@ static GTY (()) vec<macinfo_entry, va_gc> *macinfo_table;
 /* True if .debug_macinfo or .debug_macros section is going to be
    emitted.  */
 #define have_macinfo \
-  (debug_info_level >= DINFO_LEVEL_VERBOSE \
+  ((!XCOFF_DEBUGGING_INFO || HAVE_XCOFF_DWARF_EXTRAS) \
+   && debug_info_level >= DINFO_LEVEL_VERBOSE \
    && !macinfo_table->is_empty ())
 
 /* Array of dies for which we should generate .debug_ranges info.  */
@@ -3203,7 +3206,7 @@ static void add_enumerator_pubname (const char *, dw_die_ref);
 static void add_pubname_string (const char *, dw_die_ref);
 static void add_pubtype (tree, dw_die_ref);
 static void output_pubnames (vec<pubname_entry, va_gc> *);
-static void output_aranges (unsigned long);
+static void output_aranges (void);
 static unsigned int add_ranges_num (int);
 static unsigned int add_ranges (const_tree);
 static void add_ranges_by_labels (dw_die_ref, const char *, const char *,
@@ -3254,8 +3257,7 @@ static void insert_int (HOST_WIDE_INT, unsigned, unsigned char *);
 static void insert_wide_int (const wide_int &, unsigned char *, int);
 static void insert_float (const_rtx, unsigned char *);
 static rtx rtl_for_decl_location (tree);
-static bool add_location_or_const_value_attribute (dw_die_ref, tree, bool,
-						   enum dwarf_attribute);
+static bool add_location_or_const_value_attribute (dw_die_ref, tree, bool);
 static bool tree_add_const_value_attribute (dw_die_ref, tree);
 static bool tree_add_const_value_attribute_for_decl (dw_die_ref, tree);
 static void add_name_attribute (dw_die_ref, const char *);
@@ -4136,15 +4138,12 @@ static inline void
 add_AT_die_ref (dw_die_ref die, enum dwarf_attribute attr_kind, dw_die_ref targ_die)
 {
   dw_attr_node attr;
+  gcc_checking_assert (targ_die != NULL);
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (targ_die != NULL);
-#else
   /* With LTO we can end up trying to reference something we didn't create
      a DIE for.  Avoid crashing later on a NULL referenced DIE.  */
   if (targ_die == NULL)
     return;
-#endif
 
   attr.dw_attr = attr_kind;
   attr.dw_attr_val.val_class = dw_val_class_die_ref;
@@ -4237,6 +4236,9 @@ static inline void
 add_AT_loc_list (dw_die_ref die, enum dwarf_attribute attr_kind, dw_loc_list_ref loc_list)
 {
   dw_attr_node attr;
+
+  if (XCOFF_DEBUGGING_INFO && !HAVE_XCOFF_DWARF_EXTRAS)
+    return;
 
   attr.dw_attr = attr_kind;
   attr.dw_attr_val.val_class = dw_val_class_loc_list;
@@ -5707,7 +5709,6 @@ debug_dwarf (void)
   print_die (comp_unit_die (), stderr);
 }
 
-#ifdef ENABLE_CHECKING
 /* Sanity checks on DIEs.  */
 
 static void
@@ -5770,7 +5771,6 @@ check_die (dw_die_ref die)
 		    && a->dw_attr != DW_AT_GNU_all_call_sites);
     }
 }
-#endif
 
 /* Start a new compilation unit DIE for an include file.  OLD_UNIT is the CU
    for the enclosing include file, if any.  BINCL_DIE is the DW_TAG_GNU_BINCL
@@ -9199,12 +9199,16 @@ output_compilation_unit_header (void)
      DWARFv5 draft DIE tags in DWARFv4 format.  */
   int ver = dwarf_version < 5 ? dwarf_version : 4;
 
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
-    dw2_asm_output_data (4, 0xffffffff,
-      "Initial length escape value indicating 64-bit DWARF extension");
-  dw2_asm_output_data (DWARF_OFFSET_SIZE,
-		       next_die_offset - DWARF_INITIAL_LENGTH_SIZE,
-		       "Length of Compilation Unit Info");
+  if (!XCOFF_DEBUGGING_INFO)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	dw2_asm_output_data (4, 0xffffffff,
+	  "Initial length escape value indicating 64-bit DWARF extension");
+      dw2_asm_output_data (DWARF_OFFSET_SIZE,
+			   next_die_offset - DWARF_INITIAL_LENGTH_SIZE,
+			   "Length of Compilation Unit Info");
+    }
+
   dw2_asm_output_data (2, ver, "DWARF version number");
   dw2_asm_output_offset (DWARF_OFFSET_SIZE, abbrev_section_label,
 			 debug_abbrev_section,
@@ -9634,10 +9638,14 @@ output_pubnames (vec<pubname_entry, va_gc> *names)
   unsigned long pubnames_length = size_of_pubnames (names);
   pubname_entry *pub;
 
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
-    dw2_asm_output_data (4, 0xffffffff,
-      "Initial length escape value indicating 64-bit DWARF extension");
-  dw2_asm_output_data (DWARF_OFFSET_SIZE, pubnames_length, "Pub Info Length");
+  if (!XCOFF_DEBUGGING_INFO)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	dw2_asm_output_data (4, 0xffffffff,
+	  "Initial length escape value indicating 64-bit DWARF extension");
+      dw2_asm_output_data (DWARF_OFFSET_SIZE, pubnames_length,
+			   "Pub Info Length");
+    }
 
   /* Version number for pubnames/pubtypes is independent of dwarf version.  */
   dw2_asm_output_data (2, 2, "DWARF Version");
@@ -9707,15 +9715,20 @@ output_pubtables (void)
    text section generated for this compilation unit.  */
 
 static void
-output_aranges (unsigned long aranges_length)
+output_aranges (void)
 {
   unsigned i;
+  unsigned long aranges_length = size_of_aranges ();
+  
+  if (!XCOFF_DEBUGGING_INFO)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	dw2_asm_output_data (4, 0xffffffff,
+	  "Initial length escape value indicating 64-bit DWARF extension");
+      dw2_asm_output_data (DWARF_OFFSET_SIZE, aranges_length,
+			   "Length of Address Ranges Info");
+    }
 
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
-    dw2_asm_output_data (4, 0xffffffff,
-      "Initial length escape value indicating 64-bit DWARF extension");
-  dw2_asm_output_data (DWARF_OFFSET_SIZE, aranges_length,
-		       "Length of Address Ranges Info");
   /* Version number for aranges is still 2, even up to DWARF5.  */
   dw2_asm_output_data (2, 2, "DWARF Version");
   if (dwarf_split_debug_info)
@@ -10399,11 +10412,15 @@ output_line_info (bool prologue_only)
   ASM_GENERATE_INTERNAL_LABEL (p1, LN_PROLOG_AS_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (p2, LN_PROLOG_END_LABEL, 0);
 
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
-    dw2_asm_output_data (4, 0xffffffff,
-      "Initial length escape value indicating 64-bit DWARF extension");
-  dw2_asm_output_delta (DWARF_OFFSET_SIZE, l2, l1,
-			"Length of Source Line Info");
+  if (!XCOFF_DEBUGGING_INFO)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	dw2_asm_output_data (4, 0xffffffff,
+	  "Initial length escape value indicating 64-bit DWARF extension");
+      dw2_asm_output_delta (DWARF_OFFSET_SIZE, l2, l1,
+			    "Length of Source Line Info");
+    }
+
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
   dw2_asm_output_data (2, ver, "DWARF Version");
@@ -11730,14 +11747,14 @@ const_ok_for_output_1 (rtx rtl)
     {
       /* If delegitimize_address couldn't do anything with the UNSPEC, assume
 	 we can't express it in the debug info.  */
-#ifdef ENABLE_CHECKING
       /* Don't complain about TLS UNSPECs, those are just too hard to
 	 delegitimize.  Note this could be a non-decl SYMBOL_REF such as
 	 one in a constant pool entry, so testing SYMBOL_REF_TLS_MODEL
 	 rather than DECL_THREAD_LOCAL_P is not just an optimization.  */
-      if (XVECLEN (rtl, 0) == 0
-	  || GET_CODE (XVECEXP (rtl, 0, 0)) != SYMBOL_REF
-	  || SYMBOL_REF_TLS_MODEL (XVECEXP (rtl, 0, 0)) == TLS_MODEL_NONE)
+      if (flag_checking
+	  && (XVECLEN (rtl, 0) == 0
+	      || GET_CODE (XVECEXP (rtl, 0, 0)) != SYMBOL_REF
+	      || SYMBOL_REF_TLS_MODEL (XVECEXP (rtl, 0, 0)) == TLS_MODEL_NONE))
 	inform (current_function_decl
 		? DECL_SOURCE_LOCATION (current_function_decl)
 		: UNKNOWN_LOCATION,
@@ -11749,7 +11766,6 @@ const_ok_for_output_1 (rtx rtl)
 #else
 		"non-delegitimized UNSPEC %d found in variable location",
 		XINT (rtl, 1));
-#endif
 #endif
       expansion_failed (NULL_TREE, rtl,
 			"UNSPEC hasn't been delegitimized.\n");
@@ -13537,12 +13553,12 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       goto symref;
 
     default:
-#ifdef ENABLE_CHECKING
-      print_rtl (stderr, rtl);
-      gcc_unreachable ();
-#else
+      if (flag_checking)
+	{
+	  print_rtl (stderr, rtl);
+	  gcc_unreachable ();
+	}
       break;
-#endif
     }
 
   if (mem_loc_result && initialized == VAR_INIT_STATUS_UNINITIALIZED)
@@ -15065,15 +15081,14 @@ loc_list_from_tree (tree loc, int want_address,
 	  return 0;
 	}
 
-#ifdef ENABLE_CHECKING
       /* Otherwise this is a generic code; we should just lists all of
 	 these explicitly.  We forgot one.  */
-      gcc_unreachable ();
-#else
+      if (flag_checking)
+	gcc_unreachable ();
+
       /* In a release build, we want to degrade gracefully: better to
 	 generate incomplete debugging information than to crash.  */
       return NULL;
-#endif
     }
 
   if (!ret && !list_ret)
@@ -15542,12 +15557,10 @@ insert_wide_int (const wide_int &val, unsigned char *dest, int elt_size)
 static void
 insert_float (const_rtx rtl, unsigned char *array)
 {
-  REAL_VALUE_TYPE rv;
   long val[4];
   int i;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (rv, rtl);
-  real_to_target (val, &rv, GET_MODE (rtl));
+  real_to_target (val, CONST_DOUBLE_REAL_VALUE (rtl), GET_MODE (rtl));
 
   /* real_to_target puts 32-bit pieces in each long.  Pack them.  */
   for (i = 0; i < GET_MODE_SIZE (GET_MODE (rtl)) / 4; i++)
@@ -16137,18 +16150,21 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
    since we will need to refer to them each time the function is inlined.  */
 
 static bool
-add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p,
-				       enum dwarf_attribute attr)
+add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
 {
   rtx rtl;
   dw_loc_list_ref list;
   var_loc_list *loc_list;
   cached_dw_loc_list *cache;
 
+  if (early_dwarf)
+    return false;
+
   if (TREE_CODE (decl) == ERROR_MARK)
     return false;
 
-  if (get_AT (die, attr))
+  if (get_AT (die, DW_AT_location)
+      || get_AT (die, DW_AT_const_value))
     return true;
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL
@@ -16214,7 +16230,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p,
     }
   if (list)
     {
-      add_AT_location_description (die, attr, list);
+      add_AT_location_description (die, DW_AT_location, list);
       return true;
     }
   /* None of that worked, so it must not really have a location;
@@ -18114,7 +18130,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
         equate_decl_number_to_die (node, parm_die);
       if (! DECL_ABSTRACT_P (node_or_origin))
 	add_location_or_const_value_attribute (parm_die, node_or_origin,
-					       node == NULL, DW_AT_location);
+					       node == NULL);
 
       break;
 
@@ -19660,7 +19676,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	add_pubname (decl_or_origin, var_die);
       else
 	add_location_or_const_value_attribute (var_die, decl_or_origin,
-					       decl == NULL, DW_AT_location);
+					       decl == NULL);
     }
   else
     tree_add_const_value_attribute_for_decl (var_die, decl_or_origin);
@@ -19874,18 +19890,17 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die)
     {
       if (old_die)
 	{
-#ifdef ENABLE_CHECKING
 	  /* This must have been generated early and it won't even
 	     need location information since it's a DW_AT_inline
 	     function.  */
-	  for (dw_die_ref c = context_die; c; c = c->die_parent)
-	    if (c->die_tag == DW_TAG_inlined_subroutine
-		|| c->die_tag == DW_TAG_subprogram)
-	      {
-		gcc_assert (get_AT (c, DW_AT_inline));
-		break;
-	      }
-#endif
+	  if (flag_checking)
+	    for (dw_die_ref c = context_die; c; c = c->die_parent)
+	      if (c->die_tag == DW_TAG_inlined_subroutine
+		  || c->die_tag == DW_TAG_subprogram)
+		{
+		  gcc_assert (get_AT (c, DW_AT_inline));
+		  break;
+		}
 	  return;
 	}
     }
@@ -20702,10 +20717,8 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
   if (type == NULL_TREE || type == error_mark_node)
     return;
 
-#ifdef ENABLE_CHECKING
-  if (type)
+  if (flag_checking && type)
      verify_type (type);
-#endif
 
   if (TYPE_NAME (type) != NULL_TREE
       && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
@@ -20899,11 +20912,12 @@ gen_type_die (tree type, dw_die_ref context_die)
   if (type != error_mark_node)
     {
       gen_type_die_with_usage (type, context_die, DINFO_USAGE_DIR_USE);
-#ifdef ENABLE_CHECKING
-      dw_die_ref die = lookup_type_die (type);
-      if (die)
-	check_die (die);
-#endif
+      if (flag_checking)
+	{
+	  dw_die_ref die = lookup_type_die (type);
+	  if (die)
+	    check_die (die);
+	}
     }
 }
 
@@ -21626,14 +21640,19 @@ dwarf2out_early_global_decl (tree decl)
 static void
 dwarf2out_late_global_decl (tree decl)
 {
-  /* Output any global decls we missed or fill-in any location
-     information we were unable to determine on the first pass.
+  /* We have to generate early debug late for LTO.  */
+  if (in_lto_p)
+    dwarf2out_early_global_decl (decl);
 
-     Skip over functions because they were handled by the
-     debug_hooks->function_decl() call in rest_of_handle_final.  */
-  if ((TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl))
+    /* Fill-in any location information we were unable to determine
+       on the first pass.  */
+  if (TREE_CODE (decl) == VAR_DECL
       && !POINTER_BOUNDS_P (decl))
-    dwarf2out_decl (decl);
+    {
+      dw_die_ref die = lookup_decl_die (decl);
+      if (die)
+	add_location_or_const_value_attribute (die, decl, false);
+    }
 }
 
 /* Output debug information for type decl DECL.  Called from toplev.c
@@ -21936,11 +21955,12 @@ dwarf2out_decl (tree decl)
 
   gen_decl_die (decl, NULL, context_die);
 
-#ifdef ENABLE_CHECKING
-  dw_die_ref die = lookup_decl_die (decl);
-  if (die)
-    check_die (die);
-#endif
+  if (flag_checking)
+    {
+      dw_die_ref die = lookup_decl_die (decl);
+      if (die)
+	check_die (die);
+    }
 }
 
 /* Write the debugging output for DECL.  */
@@ -22025,7 +22045,7 @@ dwarf_file_hasher::hash (dwarf_file_data *p)
    just a unique number which is associated with only that one filename.  We
    need such numbers for the sake of generating labels (in the .debug_sfnames
    section) and references to those files numbers (in the .debug_srcinfo
-   and.debug_macinfo sections).  If the filename given as an argument is not
+   and .debug_macinfo sections).  If the filename given as an argument is not
    found in our current list, add it to the list and assign it the next
    available unique index number.  */
 
@@ -22091,6 +22111,8 @@ append_entry_to_tmpl_value_parm_die_table (dw_die_ref die, tree arg)
   if (!die || !arg)
     return;
 
+  gcc_assert (early_dwarf);
+
   if (!tmpl_value_parm_die_table)
     vec_alloc (tmpl_value_parm_die_table, 32);
 
@@ -22120,6 +22142,8 @@ schedule_generic_params_dies_gen (tree t)
   if (!generic_type_p (t))
     return;
 
+  gcc_assert (early_dwarf);
+
   if (!generic_type_instances)
     vec_alloc (generic_type_instances, 256);
 
@@ -22135,11 +22159,21 @@ gen_remaining_tmpl_value_param_die_attribute (void)
 {
   if (tmpl_value_parm_die_table)
     {
-      unsigned i;
+      unsigned i, j;
       die_arg_entry *e;
 
+      /* We do this in two phases - first get the cases we can
+	 handle during early-finish, preserving those we cannot
+	 (containing symbolic constants where we don't yet know
+	 whether we are going to output the referenced symbols).
+	 For those we try again at late-finish.  */
+      j = 0;
       FOR_EACH_VEC_ELT (*tmpl_value_parm_die_table, i, e)
-	tree_add_const_value_attribute (e->die, e->arg);
+	{
+	  if (!tree_add_const_value_attribute (e->die, e->arg))
+	    (*tmpl_value_parm_die_table)[j++] = *e;
+	}
+      tmpl_value_parm_die_table->truncate (j);
     }
 }
 
@@ -22157,9 +22191,15 @@ gen_scheduled_generic_parms_dies (void)
   if (!generic_type_instances)
     return;
   
+  /* We end up "recursing" into schedule_generic_params_dies_gen, so
+     pretend this generation is part of "early dwarf" as well.  */
+  set_early_dwarf s;
+
   FOR_EACH_VEC_ELT (*generic_type_instances, i, t)
     if (COMPLETE_TYPE_P (t))
       gen_generic_params_dies (t);
+
+  generic_type_instances = NULL;
 }
 
 
@@ -25193,7 +25233,6 @@ dwarf2out_finish (const char *filename)
   producer->dw_attr_val.v.val_str->refcount--;
   producer->dw_attr_val.v.val_str = find_AT_string (producer_string);
 
-  gen_scheduled_generic_parms_dies ();
   gen_remaining_tmpl_value_param_die_attribute ();
 
   /* Add the name for the main input file now.  We delayed this from
@@ -25477,10 +25516,8 @@ dwarf2out_finish (const char *filename)
      generate a table that would have contained data.  */
   if (info_section_emitted)
     {
-      unsigned long aranges_length = size_of_aranges ();
-
       switch_to_section (debug_aranges_section);
-      output_aranges (aranges_length);
+      output_aranges ();
     }
 
   /* Output ranges section if necessary.  */
@@ -25550,6 +25587,9 @@ dwarf2out_early_finish (void)
   /* The point here is to flush out the limbo list so that it is empty
      and we don't need to stream it for LTO.  */
   flush_limbo_die_list ();
+
+  gen_scheduled_generic_parms_dies ();
+  gen_remaining_tmpl_value_param_die_attribute ();
 }
 
 /* Reset all state within dwarf2out.c so that we can rerun the compiler

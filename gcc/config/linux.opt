@@ -21,16 +21,16 @@
 
 mbionic
 Target Report RejectNegative Var(linux_libc,LIBC_BIONIC) Init(DEFAULT_LIBC) Negative(mglibc)
-Use Bionic C library
+Use Bionic C library.
 
 mglibc
 Target Report RejectNegative Var(linux_libc,LIBC_GLIBC) Negative(muclibc)
-Use GNU C library
+Use GNU C library.
 
 muclibc
 Target Report RejectNegative Var(linux_libc,LIBC_UCLIBC) Negative(mmusl)
-Use uClibc C library
+Use uClibc C library.
 
 mmusl
 Target Report RejectNegative Var(linux_libc,LIBC_MUSL) Negative(mbionic)
-Use musl C library
+Use musl C library.

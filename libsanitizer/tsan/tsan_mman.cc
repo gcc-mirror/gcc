@@ -34,6 +34,23 @@ struct MapUnmapCallback {
     // We are about to unmap a chunk of user memory.
     // Mark the corresponding shadow memory as not needed.
     DontNeedShadowFor(p, size);
+    // Mark the corresponding meta shadow memory as not needed.
+    // Note the block does not contain any meta info at this point
+    // (this happens after free).
+    const uptr kMetaRatio = kMetaShadowCell / kMetaShadowSize;
+    const uptr kPageSize = GetPageSizeCached() * kMetaRatio;
+    // Block came from LargeMmapAllocator, so must be large.
+    // We rely on this in the calculations below.
+    CHECK_GE(size, 2 * kPageSize);
+    uptr diff = RoundUp(p, kPageSize) - p;
+    if (diff != 0) {
+      p += diff;
+      size -= diff;
+    }
+    diff = p + size - RoundDown(p + size, kPageSize);
+    if (diff != 0)
+      size -= diff;
+    FlushUnneededShadowMemory((uptr)MemToMeta(p), size / kMetaRatio);
   }
 };
 
@@ -43,7 +60,7 @@ Allocator *allocator() {
 }
 
 void InitializeAllocator() {
-  allocator()->Init();
+  allocator()->Init(common_flags()->allocator_may_return_null);
 }
 
 void AllocatorThreadStart(ThreadState *thr) {
@@ -61,22 +78,22 @@ void AllocatorPrintStats() {
 }
 
 static void SignalUnsafeCall(ThreadState *thr, uptr pc) {
-  if (atomic_load(&thr->in_signal_handler, memory_order_relaxed) == 0 ||
+  if (atomic_load_relaxed(&thr->in_signal_handler) == 0 ||
       !flags()->report_signal_unsafe)
     return;
   VarSizeStackTrace stack;
   ObtainCurrentStack(thr, pc, &stack);
+  if (IsFiredSuppression(ctx, ReportTypeSignalUnsafe, stack))
+    return;
   ThreadRegistryLock l(ctx->thread_registry);
   ScopedReport rep(ReportTypeSignalUnsafe);
-  if (!IsFiredSuppression(ctx, rep, stack)) {
-    rep.AddStack(stack, true);
-    OutputReport(thr, rep);
-  }
+  rep.AddStack(stack, true);
+  OutputReport(thr, rep);
 }
 
 void *user_alloc(ThreadState *thr, uptr pc, uptr sz, uptr align, bool signal) {
   if ((sz >= (1ull << 40)) || (align >= (1ull << 40)))
-    return AllocatorReturnNull();
+    return allocator()->ReturnNullOrDie();
   void *p = allocator()->Allocate(&thr->alloc_cache, sz, align);
   if (p == 0)
     return 0;
@@ -84,6 +101,15 @@ void *user_alloc(ThreadState *thr, uptr pc, uptr sz, uptr align, bool signal) {
     OnUserAlloc(thr, pc, (uptr)p, sz, true);
   if (signal)
     SignalUnsafeCall(thr, pc);
+  return p;
+}
+
+void *user_calloc(ThreadState *thr, uptr pc, uptr size, uptr n) {
+  if (CallocShouldReturnNullDueToOverflow(size, n))
+    return allocator()->ReturnNullOrDie();
+  void *p = user_alloc(thr, pc, n * size);
+  if (p)
+    internal_memset(p, 0, n * size);
   return p;
 }
 

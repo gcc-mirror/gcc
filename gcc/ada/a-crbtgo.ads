@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@ with Ada.Streams; use Ada.Streams;
 
 generic
    with package Tree_Types is new Generic_Tree_Types (<>);
-   use Tree_Types;
+   use Tree_Types, Tree_Types.Implementation;
 
    with function  Parent (Node : Node_Access) return Node_Access is <>;
    with procedure Set_Parent (Node : Node_Access; Parent : Node_Access) is <>;

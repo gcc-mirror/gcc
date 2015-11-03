@@ -11,6 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "ubsan_platform.h"
+#if CAN_SANITIZE_UB
 #include "ubsan_handlers_cxx.h"
 #include "ubsan_diag.h"
 #include "ubsan_type_hash.h"
@@ -33,16 +35,15 @@ static void HandleDynamicTypeCacheMiss(
     return;
 
   // Check if error report should be suppressed.
-  DynamicTypeInfo DTI = getDynamicTypeInfo((void*)Pointer);
-  if (DTI.isValid() &&
-      MatchSuppression(DTI.getMostDerivedTypeName(), SuppressionVptrCheck))
+  DynamicTypeInfo DTI = getDynamicTypeInfoFromObject((void*)Pointer);
+  if (DTI.isValid() && IsVptrCheckSuppressed(DTI.getMostDerivedTypeName()))
     return;
 
   SourceLocation Loc = Data->Loc.acquire();
   if (Loc.isDisabled())
     return;
 
-  ScopedReport R(Opts, Loc);
+  ScopedReport R(Opts, Loc, ErrorType::DynamicTypeMismatch);
 
   Diag(Loc, DL_Error,
        "%0 address %1 which does not point to an object of type %2")
@@ -51,19 +52,19 @@ static void HandleDynamicTypeCacheMiss(
   // If possible, say what type it actually points to.
   if (!DTI.isValid())
     Diag(Pointer, DL_Note, "object has invalid vptr")
-        << MangledName(DTI.getMostDerivedTypeName())
+        << TypeName(DTI.getMostDerivedTypeName())
         << Range(Pointer, Pointer + sizeof(uptr), "invalid vptr");
   else if (!DTI.getOffset())
     Diag(Pointer, DL_Note, "object is of type %0")
-        << MangledName(DTI.getMostDerivedTypeName())
+        << TypeName(DTI.getMostDerivedTypeName())
         << Range(Pointer, Pointer + sizeof(uptr), "vptr for %0");
   else
     // FIXME: Find the type at the specified offset, and include that
     //        in the note.
     Diag(Pointer - DTI.getOffset(), DL_Note,
          "object is base class subobject at offset %0 within object of type %1")
-        << DTI.getOffset() << MangledName(DTI.getMostDerivedTypeName())
-        << MangledName(DTI.getSubobjectTypeName())
+        << DTI.getOffset() << TypeName(DTI.getMostDerivedTypeName())
+        << TypeName(DTI.getSubobjectTypeName())
         << Range(Pointer, Pointer + sizeof(uptr),
                  "vptr for %2 base class of %1");
 }
@@ -78,3 +79,42 @@ void __ubsan::__ubsan_handle_dynamic_type_cache_miss_abort(
   GET_REPORT_OPTIONS(true);
   HandleDynamicTypeCacheMiss(Data, Pointer, Hash, Opts);
 }
+
+static void HandleCFIBadType(CFIBadTypeData *Data, ValueHandle Vtable,
+                             ReportOptions Opts) {
+  SourceLocation Loc = Data->Loc.acquire();
+  ScopedReport R(Opts, Loc, ErrorType::CFIBadType);
+  DynamicTypeInfo DTI = getDynamicTypeInfoFromVtable((void*)Vtable);
+
+  static const char *TypeCheckKinds[] = {
+    "virtual call",
+    "non-virtual call",
+    "base-to-derived cast",
+    "cast to unrelated type",
+  };
+
+  Diag(Loc, DL_Error, "control flow integrity check for type %0 failed during "
+                      "%1 (vtable address %2)")
+      << Data->Type << TypeCheckKinds[Data->TypeCheckKind] << (void *)Vtable;
+
+  // If possible, say what type it actually points to.
+  if (!DTI.isValid())
+    Diag(Vtable, DL_Note, "invalid vtable");
+  else
+    Diag(Vtable, DL_Note, "vtable is of type %0")
+        << TypeName(DTI.getMostDerivedTypeName());
+}
+
+void __ubsan::__ubsan_handle_cfi_bad_type(CFIBadTypeData *Data,
+                                          ValueHandle Vtable) {
+  GET_REPORT_OPTIONS(false);
+  HandleCFIBadType(Data, Vtable, Opts);
+}
+
+void __ubsan::__ubsan_handle_cfi_bad_type_abort(CFIBadTypeData *Data,
+                                                ValueHandle Vtable) {
+  GET_REPORT_OPTIONS(true);
+  HandleCFIBadType(Data, Vtable, Opts);
+}
+
+#endif  // CAN_SANITIZE_UB

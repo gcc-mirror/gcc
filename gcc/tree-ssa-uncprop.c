@@ -23,24 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
 #include "fold-const.h"
-#include "stor-layout.h"
-#include "flags.h"
-#include "tm_p.h"
 #include "cfganal.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "domwalk.h"
-#include "tree-pass.h"
-#include "tree-ssa-propagate.h"
 #include "tree-hash-traits.h"
-#include "bitmap.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "tree-ssa-live.h"
 #include "tree-ssa-coalesce.h"
 
@@ -70,7 +60,7 @@ associate_equivalences_with_edges (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi = gsi_last_bb (bb);
-      gimple stmt;
+      gimple *stmt;
 
       /* If the block does not end with a COND_EXPR or SWITCH_EXPR
 	 then there is nothing to do.  */
@@ -153,7 +143,7 @@ associate_equivalences_with_edges (void)
 		     this value unless we know that the value is nonzero.  */
 		  if (HONOR_SIGNED_ZEROS (op0)
 		      && (TREE_CODE (op1) != REAL_CST
-			  || REAL_VALUES_EQUAL (dconst0, TREE_REAL_CST (op1))))
+			  || real_equal (&dconst0, &TREE_REAL_CST (op1))))
 		    continue;
 
 		  equivalency = XNEW (struct edge_equivalency);
@@ -388,7 +378,7 @@ uncprop_into_successor_phis (basic_block bb)
       /* Walk over the PHI nodes, unpropagating values.  */
       for (gsi = gsi_start (phis) ; !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple phi = gsi_stmt (gsi);
+	  gimple *phi = gsi_stmt (gsi);
 	  tree arg = PHI_ARG_DEF (phi, e->dest_idx);
 	  tree res = PHI_RESULT (phi);
 

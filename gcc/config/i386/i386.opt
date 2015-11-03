@@ -104,7 +104,7 @@ enum asm_dialect x_ix86_asm_dialect
 TargetSave
 int x_ix86_branch_cost
 
-;; -mdump-tune-features= 
+;; -mdump-tune-features=
 TargetSave
 int x_ix86_dump_tunes
 
@@ -112,7 +112,7 @@ int x_ix86_dump_tunes
 TargetSave
 int x_ix86_force_align_arg_pointer
 
-;; -mforce-drap= 
+;; -mforce-drap=
 TargetSave
 int x_ix86_force_drap
 
@@ -124,7 +124,7 @@ int x_ix86_incoming_stack_boundary_arg
 TargetSave
 enum pmode x_ix86_pmode
 
-;; -mpreferred-stack-boundary= 
+;; -mpreferred-stack-boundary=
 TargetSave
 int x_ix86_preferred_stack_boundary_arg
 
@@ -179,55 +179,55 @@ enum ix86_veclibabi x_ix86_veclibabi_type
 ;; x86 options
 m128bit-long-double
 Target RejectNegative Report Mask(128BIT_LONG_DOUBLE) Save
-sizeof(long double) is 16
+sizeof(long double) is 16.
 
 m80387
 Target Report Mask(80387) Save
-Use hardware fp
+Use hardware fp.
 
 m96bit-long-double
 Target RejectNegative Report InverseMask(128BIT_LONG_DOUBLE) Save
-sizeof(long double) is 12
+sizeof(long double) is 12.
 
 mlong-double-80
 Target Report RejectNegative Negative(mlong-double-64) InverseMask(LONG_DOUBLE_64) Save
-Use 80-bit long double
+Use 80-bit long double.
 
 mlong-double-64
 Target Report RejectNegative Negative(mlong-double-128) Mask(LONG_DOUBLE_64) InverseMask(LONG_DOUBLE_128) Save
-Use 64-bit long double
+Use 64-bit long double.
 
 mlong-double-128
 Target Report RejectNegative Negative(mlong-double-80) Mask(LONG_DOUBLE_128) InverseMask(LONG_DOUBLE_64) Save
-Use 128-bit long double
+Use 128-bit long double.
 
 maccumulate-outgoing-args
 Target Report Mask(ACCUMULATE_OUTGOING_ARGS) Save
-Reserve space for outgoing arguments in the function prologue
+Reserve space for outgoing arguments in the function prologue.
 
 malign-double
 Target Report Mask(ALIGN_DOUBLE) Save
-Align some doubles on dword boundary
+Align some doubles on dword boundary.
 
 malign-functions=
 Target RejectNegative Joined UInteger
-Function starts are aligned to this power of 2
+Function starts are aligned to this power of 2.
 
 malign-jumps=
 Target RejectNegative Joined UInteger
-Jump targets are aligned to this power of 2
+Jump targets are aligned to this power of 2.
 
 malign-loops=
 Target RejectNegative Joined UInteger
-Loop code aligned to this power of 2
+Loop code aligned to this power of 2.
 
 malign-stringops
 Target RejectNegative Report InverseMask(NO_ALIGN_STRINGOPS, ALIGN_STRINGOPS) Save
-Align destination of the string operations
+Align destination of the string operations.
 
 malign-data=
 Target RejectNegative Joined Var(ix86_align_data_type) Enum(ix86_align_data) Init(ix86_align_data_type_compat)
-Use the given data alignment
+Use the given data alignment.
 
 Enum
 Name(ix86_align_data) Type(enum ix86_align_data)
@@ -244,11 +244,11 @@ Enum(ix86_align_data) String(cacheline) Value(ix86_align_data_type_cacheline)
 
 march=
 Target RejectNegative Joined Var(ix86_arch_string)
-Generate code for given CPU
+Generate code for given CPU.
 
 masm=
 Target RejectNegative Joined Enum(asm_dialect) Var(ix86_asm_dialect) Init(ASM_ATT)
-Use given assembler dialect
+Use given assembler dialect.
 
 Enum
 Name(asm_dialect) Type(enum asm_dialect)
@@ -262,15 +262,15 @@ Enum(asm_dialect) String(att) Value(ASM_ATT)
 
 mbranch-cost=
 Target RejectNegative Joined UInteger Var(ix86_branch_cost)
-Branches are this expensive (1-5, arbitrary units)
+Branches are this expensive (1-5, arbitrary units).
 
 mlarge-data-threshold=
 Target RejectNegative Joined UInteger Var(ix86_section_threshold) Init(DEFAULT_LARGE_SECTION_THRESHOLD)
-Data greater than given threshold will go into .ldata section in x86-64 medium model
+Data greater than given threshold will go into .ldata section in x86-64 medium model.
 
 mcmodel=
 Target RejectNegative Joined Enum(cmodel) Var(ix86_cmodel) Init(CM_32)
-Use given x86-64 code model
+Use given x86-64 code model.
 
 Enum
 Name(cmodel) Type(enum cmodel)
@@ -293,7 +293,7 @@ Enum(cmodel) String(kernel) Value(CM_KERNEL)
 
 maddress-mode=
 Target RejectNegative Joined Enum(pmode) Var(ix86_pmode) Init(PMODE_SI)
-Use given address mode
+Use given address mode.
 
 Enum
 Name(pmode) Type(enum pmode)
@@ -310,19 +310,19 @@ Target RejectNegative Joined Undocumented Alias(mtune=) Warn(%<-mcpu=%> is depre
 
 mfancy-math-387
 Target RejectNegative Report InverseMask(NO_FANCY_MATH_387, USE_FANCY_MATH_387) Save
-Generate sin, cos, sqrt for FPU
+Generate sin, cos, sqrt for FPU.
 
 mforce-drap
 Target Report Var(ix86_force_drap)
-Always use Dynamic Realigned Argument Pointer (DRAP) to realign stack
+Always use Dynamic Realigned Argument Pointer (DRAP) to realign stack.
 
 mfp-ret-in-387
 Target Report Mask(FLOAT_RETURNS) Save
-Return values of functions in FPU registers
+Return values of functions in FPU registers.
 
 mfpmath=
 Target RejectNegative Joined Var(ix86_fpmath) Enum(fpmath_unit) Init(FPMATH_387) Save
-Generate floating point mathematics using given instruction set
+Generate floating point mathematics using given instruction set.
 
 Enum
 Name(fpmath_unit) Type(enum fpmath_unit)
@@ -351,19 +351,19 @@ Enum(fpmath_unit) String(both) Value({(enum fpmath_unit) (FPMATH_SSE | FPMATH_38
 
 mhard-float
 Target RejectNegative Mask(80387) Save
-Use hardware fp
+Use hardware fp.
 
 mieee-fp
 Target Report Mask(IEEE_FP) Save
-Use IEEE math for fp comparisons
+Use IEEE math for fp comparisons.
 
 minline-all-stringops
 Target Report Mask(INLINE_ALL_STRINGOPS) Save
-Inline all known string operations
+Inline all known string operations.
 
 minline-stringops-dynamically
 Target Report Mask(INLINE_STRINGOPS_DYNAMICALLY) Save
-Inline memset/memcpy string operations, but perform inline version only for small blocks
+Inline memset/memcpy string operations, but perform inline version only for small blocks.
 
 mintel-syntax
 Target Undocumented Alias(masm=, intel, att) Warn(%<-mintel-syntax%> and %<-mno-intel-syntax%> are deprecated; use %<-masm=intel%> and %<-masm=att%> instead)
@@ -371,7 +371,7 @@ Target Undocumented Alias(masm=, intel, att) Warn(%<-mintel-syntax%> and %<-mno-
 
 mms-bitfields
 Target Report Mask(MS_BITFIELD_LAYOUT) Save
-Use native (MS) bitfield layout
+Use native (MS) bitfield layout.
 
 mno-align-stringops
 Target RejectNegative Report Mask(NO_ALIGN_STRINGOPS) Undocumented Save
@@ -387,71 +387,71 @@ Target RejectNegative Report Mask(NO_RED_ZONE) Undocumented Save
 
 momit-leaf-frame-pointer
 Target Report Mask(OMIT_LEAF_FRAME_POINTER) Save
-Omit the frame pointer in leaf functions
+Omit the frame pointer in leaf functions.
 
 mpc32
 Target RejectNegative Report
-Set 80387 floating-point precision to 32-bit
+Set 80387 floating-point precision to 32-bit.
 
 mpc64
 Target RejectNegative Report
-Set 80387 floating-point precision to 64-bit
+Set 80387 floating-point precision to 64-bit.
 
 mpc80
 Target RejectNegative Report
-Set 80387 floating-point precision to 80-bit
+Set 80387 floating-point precision to 80-bit.
 
 mpreferred-stack-boundary=
 Target RejectNegative Joined UInteger Var(ix86_preferred_stack_boundary_arg)
-Attempt to keep stack aligned to this power of 2
+Attempt to keep stack aligned to this power of 2.
 
 mincoming-stack-boundary=
 Target RejectNegative Joined UInteger Var(ix86_incoming_stack_boundary_arg)
-Assume incoming stack aligned to this power of 2
+Assume incoming stack aligned to this power of 2.
 
 mpush-args
 Target Report InverseMask(NO_PUSH_ARGS, PUSH_ARGS) Save
-Use push instructions to save outgoing arguments
+Use push instructions to save outgoing arguments.
 
 mred-zone
 Target RejectNegative Report InverseMask(NO_RED_ZONE, RED_ZONE) Save
-Use red-zone in the x86-64 code
+Use red-zone in the x86-64 code.
 
 mregparm=
 Target RejectNegative Joined UInteger Var(ix86_regparm)
-Number of registers used to pass integer arguments
+Number of registers used to pass integer arguments.
 
 mrtd
 Target Report Mask(RTD) Save
-Alternate calling convention
+Alternate calling convention.
 
 msoft-float
 Target InverseMask(80387) Save
-Do not use hardware fp
+Do not use hardware fp.
 
 msseregparm
 Target RejectNegative Mask(SSEREGPARM) Save
-Use SSE register passing conventions for SF and DF mode
+Use SSE register passing conventions for SF and DF mode.
 
 mstackrealign
 Target Report Var(ix86_force_align_arg_pointer) Init(-1)
-Realign stack in prologue
+Realign stack in prologue.
 
 mstack-arg-probe
 Target Report Mask(STACK_PROBE) Save
-Enable stack probing
+Enable stack probing.
 
 mmemcpy-strategy=
 Target RejectNegative Joined Var(ix86_tune_memcpy_strategy)
-Specify memcpy expansion strategy when expected size is known
+Specify memcpy expansion strategy when expected size is known.
 
 mmemset-strategy=
 Target RejectNegative Joined Var(ix86_tune_memset_strategy)
-Specify memset expansion strategy when expected size is known
+Specify memset expansion strategy when expected size is known.
 
 mstringop-strategy=
 Target RejectNegative Joined Enum(stringop_alg) Var(ix86_stringop_alg) Init(no_stringop)
-Chose strategy to generate stringop using
+Chose strategy to generate stringop using.
 
 Enum
 Name(stringop_alg) Type(enum stringop_alg)
@@ -483,7 +483,7 @@ Enum(stringop_alg) String(vector_loop) Value(vector_loop)
 
 mtls-dialect=
 Target RejectNegative Joined Var(ix86_tls_dialect) Enum(tls_dialect) Init(TLS_DIALECT_GNU)
-Use given thread-local storage dialect
+Use given thread-local storage dialect.
 
 Enum
 Name(tls_dialect) Type(enum tls_dialect)
@@ -497,30 +497,30 @@ Enum(tls_dialect) String(gnu2) Value(TLS_DIALECT_GNU2)
 
 mtls-direct-seg-refs
 Target Report Mask(TLS_DIRECT_SEG_REFS)
-Use direct references against %gs when accessing tls data
+Use direct references against %gs when accessing tls data.
 
 mtune=
 Target RejectNegative Joined Var(ix86_tune_string)
-Schedule code for given CPU
+Schedule code for given CPU.
 
 mtune-ctrl=
 Target RejectNegative Joined Var(ix86_tune_ctrl_string)
-Fine grain control of tune features
+Fine grain control of tune features.
 
 mno-default
 Target RejectNegative Var(ix86_tune_no_default) Init(0)
-Clear all tune features
+Clear all tune features.
 
 mdump-tune-features
 Target RejectNegative Var(ix86_dump_tunes) Init(0)
 
 miamcu
 Target Report Mask(IAMCU)
-Generate code that conforms to Intel MCU psABI
+Generate code that conforms to Intel MCU psABI.
 
 mabi=
 Target RejectNegative Joined Var(ix86_abi) Enum(calling_abi) Init(SYSV_ABI)
-Generate code that conforms to the given ABI
+Generate code that conforms to the given ABI.
 
 Enum
 Name(calling_abi) Type(enum calling_abi)
@@ -534,7 +534,7 @@ Enum(calling_abi) String(ms) Value(MS_ABI)
 
 mveclibabi=
 Target RejectNegative Joined Var(ix86_veclibabi_type) Enum(ix86_veclibabi) Init(ix86_veclibabi_type_none)
-Vector library ABI to use
+Vector library ABI to use.
 
 Enum
 Name(ix86_veclibabi) Type(enum ix86_veclibabi)
@@ -548,7 +548,7 @@ Enum(ix86_veclibabi) String(acml) Value(ix86_veclibabi_type_acml)
 
 mvect8-ret-in-mem
 Target Report Mask(VECT8_RETURNS) Save
-Return 8-byte vectors in memory
+Return 8-byte vectors in memory.
 
 mrecip
 Target Report Mask(RECIP) Save
@@ -567,10 +567,15 @@ Target Report Mask(VZEROUPPER) Save
 Generate vzeroupper instruction before a transfer of control flow out of
 the function.
 
+mstv
+Target Report Mask(STV) Save
+Disable Scalar to Vector optimization pass transforming 64-bit integer
+computations into a vector ones.
+
 mdispatch-scheduler
 Target RejectNegative Var(flag_dispatch_scheduler)
-Do dispatch scheduling if processor is bdver1 or bdver2 or bdver3 or bdver4 and Haifa scheduling
-is selected.
+Do dispatch scheduling if processor is bdver1, bdver2, bdver3, bdver4
+or znver1 and Haifa scheduling is selected.
 
 mprefer-avx128
 Target Report Mask(PREFER_AVX128) SAVE
@@ -580,63 +585,63 @@ Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vec
 
 m32
 Target RejectNegative Negative(m64) Report InverseMask(ISA_64BIT) Var(ix86_isa_flags) Save
-Generate 32bit i386 code
+Generate 32bit i386 code.
 
 m64
 Target RejectNegative Negative(mx32) Report Mask(ABI_64) Var(ix86_isa_flags) Save
-Generate 64bit x86-64 code
+Generate 64bit x86-64 code.
 
 mx32
 Target RejectNegative Negative(m16) Report Mask(ABI_X32) Var(ix86_isa_flags) Save
-Generate 32bit x86-64 code
+Generate 32bit x86-64 code.
 
 m16
 Target RejectNegative Negative(m32) Report Mask(CODE16) InverseMask(ISA_64BIT) Var(ix86_isa_flags) Save
-Generate 16bit i386 code
+Generate 16bit i386 code.
 
 mmmx
 Target Report Mask(ISA_MMX) Var(ix86_isa_flags) Save
-Support MMX built-in functions
+Support MMX built-in functions.
 
 m3dnow
 Target Report Mask(ISA_3DNOW) Var(ix86_isa_flags) Save
-Support 3DNow! built-in functions
+Support 3DNow! built-in functions.
 
 m3dnowa
 Target Undocumented Mask(ISA_3DNOW_A) Var(ix86_isa_flags) Save
-Support Athlon 3Dnow! built-in functions
+Support Athlon 3Dnow! built-in functions.
 
 msse
 Target Report Mask(ISA_SSE) Var(ix86_isa_flags) Save
-Support MMX and SSE built-in functions and code generation
+Support MMX and SSE built-in functions and code generation.
 
 msse2
 Target Report Mask(ISA_SSE2) Var(ix86_isa_flags) Save
-Support MMX, SSE and SSE2 built-in functions and code generation
+Support MMX, SSE and SSE2 built-in functions and code generation.
 
 msse3
 Target Report Mask(ISA_SSE3) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation
+Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation.
 
 mssse3
 Target Report Mask(ISA_SSSE3) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation.
 
 msse4.1
 Target Report Mask(ISA_SSE4_1) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation.
 
 msse4.2
 Target Report Mask(ISA_SSE4_2) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation.
 
 msse4
 Target RejectNegative Report Mask(ISA_SSE4_2) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation.
 
 mno-sse4
 Target RejectNegative Report InverseMask(ISA_SSE4_1) Var(ix86_isa_flags) Save
-Do not support SSE4.1 and SSE4.2 built-in functions and code generation
+Do not support SSE4.1 and SSE4.2 built-in functions and code generation.
 
 msse5
 Target Undocumented Alias(mavx) Warn(%<-msse5%> was removed)
@@ -644,67 +649,67 @@ Target Undocumented Alias(mavx) Warn(%<-msse5%> was removed)
 
 mavx
 Target Report Mask(ISA_AVX) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation.
 
 mavx2
 Target Report Mask(ISA_AVX2) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation.
 
 mavx512f
 Target Report Mask(ISA_AVX512F) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation.
 
 mavx512pf
 Target Report Mask(ISA_AVX512PF) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation.
 
 mavx512er
 Target Report Mask(ISA_AVX512ER) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation.
 
 mavx512cd
 Target Report Mask(ISA_AVX512CD) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation.
 
 mavx512dq
 Target Report Mask(ISA_AVX512DQ) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512DQ built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512DQ built-in functions and code generation.
 
 mavx512bw
 Target Report Mask(ISA_AVX512BW) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512BW built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512BW built-in functions and code generation.
 
 mavx512vl
 Target Report Mask(ISA_AVX512VL) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VL built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VL built-in functions and code generation.
 
 mavx512ifma
 Target Report Mask(ISA_AVX512IFMA) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation.
 
 mavx512vbmi
 Target Report Mask(ISA_AVX512VBMI) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation.
 
 mfma
 Target Report Mask(ISA_FMA) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation.
 
 msse4a
 Target Report Mask(ISA_SSE4A) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation
+Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation.
 
 mfma4
 Target Report Mask(ISA_FMA4) Var(ix86_isa_flags) Save
-Support FMA4 built-in functions and code generation 
+Support FMA4 built-in functions and code generation.
 
 mxop
 Target Report Mask(ISA_XOP) Var(ix86_isa_flags) Save
-Support XOP built-in functions and code generation 
+Support XOP built-in functions and code generation.
 
 mlwp
 Target Report Mask(ISA_LWP) Var(ix86_isa_flags) Save
-Support LWP built-in functions and code generation 
+Support LWP built-in functions and code generation.
 
 mabm
 Target Report Mask(ISA_ABM) Var(ix86_isa_flags) Save
@@ -716,67 +721,71 @@ Support code generation of popcnt instruction.
 
 mbmi
 Target Report Mask(ISA_BMI) Var(ix86_isa_flags) Save
-Support BMI built-in functions and code generation
+Support BMI built-in functions and code generation.
 
 mbmi2
 Target Report Mask(ISA_BMI2) Var(ix86_isa_flags) Save
-Support BMI2 built-in functions and code generation
+Support BMI2 built-in functions and code generation.
 
 mlzcnt
 Target Report Mask(ISA_LZCNT) Var(ix86_isa_flags) Save
-Support LZCNT built-in function and code generation
+Support LZCNT built-in function and code generation.
 
 mhle
 Target Report Mask(ISA_HLE) Var(ix86_isa_flags) Save
-Support Hardware Lock Elision prefixes
+Support Hardware Lock Elision prefixes.
 
 mrdseed
 Target Report Mask(ISA_RDSEED) Var(ix86_isa_flags) Save
-Support RDSEED instruction
+Support RDSEED instruction.
 
 mprfchw
 Target Report Mask(ISA_PRFCHW) Var(ix86_isa_flags) Save
-Support PREFETCHW instruction
+Support PREFETCHW instruction.
 
 madx
 Target Report Mask(ISA_ADX) Var(ix86_isa_flags) Save
-Support flag-preserving add-carry instructions
+Support flag-preserving add-carry instructions.
 
 mclflushopt
 Target Report Mask(ISA_CLFLUSHOPT) Var(ix86_isa_flags) Save
-Support CLFLUSHOPT instructions
+Support CLFLUSHOPT instructions.
+
+mclzero
+Target Report Mask(ISA_CLZERO) Var(ix86_isa_flags) Save
+Support CLZERO instructions.
 
 mclwb
 Target Report Mask(ISA_CLWB) Var(ix86_isa_flags) Save
-Support CLWB instruction
+Support CLWB instruction.
 
 mpcommit
 Target Report Mask(ISA_PCOMMIT) Var(ix86_isa_flags) Save
-Support PCOMMIT instruction
+Support PCOMMIT instruction.
 
 mfxsr
 Target Report Mask(ISA_FXSR) Var(ix86_isa_flags) Save
-Support FXSAVE and FXRSTOR instructions
+Support FXSAVE and FXRSTOR instructions.
 
 mxsave
 Target Report Mask(ISA_XSAVE) Var(ix86_isa_flags) Save
-Support XSAVE and XRSTOR instructions
+Support XSAVE and XRSTOR instructions.
 
 mxsaveopt
 Target Report Mask(ISA_XSAVEOPT) Var(ix86_isa_flags) Save
-Support XSAVEOPT instruction
+Support XSAVEOPT instruction.
 
 mxsavec
 Target Report Mask(ISA_XSAVEC) Var(ix86_isa_flags) Save
-Support XSAVEC instructions
+Support XSAVEC instructions.
 
 mxsaves
 Target Report Mask(ISA_XSAVES) Var(ix86_isa_flags) Save
-Support XSAVES and XRSTORS instructions
+Support XSAVES and XRSTORS instructions.
 
 mtbm
 Target Report Mask(ISA_TBM) Var(ix86_isa_flags) Save
-Support TBM built-in functions and code generation
+Support TBM built-in functions and code generation.
 
 mcx16
 Target Report Mask(ISA_CX16) Var(ix86_isa_flags) Save
@@ -796,35 +805,35 @@ Support code generation of crc32 instruction.
 
 maes
 Target Report Mask(ISA_AES) Var(ix86_isa_flags) Save
-Support AES built-in functions and code generation
+Support AES built-in functions and code generation.
 
 msha
 Target Report Mask(ISA_SHA) Var(ix86_isa_flags) Save
-Support SHA1 and SHA256 built-in functions and code generation
+Support SHA1 and SHA256 built-in functions and code generation.
 
 mpclmul
 Target Report Mask(ISA_PCLMUL) Var(ix86_isa_flags) Save
-Support PCLMUL built-in functions and code generation
+Support PCLMUL built-in functions and code generation.
 
 msse2avx
 Target Report Var(ix86_sse2avx)
-Encode SSE instructions with VEX prefix
+Encode SSE instructions with VEX prefix.
 
 mfsgsbase
 Target Report Mask(ISA_FSGSBASE) Var(ix86_isa_flags) Save
-Support FSGSBASE built-in functions and code generation
+Support FSGSBASE built-in functions and code generation.
 
 mrdrnd
 Target Report Mask(ISA_RDRND) Var(ix86_isa_flags) Save
-Support RDRND built-in functions and code generation
+Support RDRND built-in functions and code generation.
 
 mf16c
 Target Report Mask(ISA_F16C) Var(ix86_isa_flags) Save
-Support F16C built-in functions and code generation
+Support F16C built-in functions and code generation.
 
 mprefetchwt1
 Target Report Mask(ISA_PREFETCHWT1) Var(ix86_isa_flags) Save
-Support PREFETCHWT1 built-in functions and code generation
+Support PREFETCHWT1 built-in functions and code generation.
 
 mfentry
 Target Report Var(flag_fentry) Init(-1)
@@ -845,31 +854,31 @@ Skip setting up RAX register when passing variable arguments.
 
 m8bit-idiv
 Target Report Mask(USE_8BIT_IDIV) Save
-Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check
+Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check.
 
 mavx256-split-unaligned-load
 Target Report Mask(AVX256_SPLIT_UNALIGNED_LOAD) Save
-Split 32-byte AVX unaligned load
+Split 32-byte AVX unaligned load.
 
 mavx256-split-unaligned-store
 Target Report Mask(AVX256_SPLIT_UNALIGNED_STORE) Save
-Split 32-byte AVX unaligned store
+Split 32-byte AVX unaligned store.
 
 mrtm
 Target Report Mask(ISA_RTM) Var(ix86_isa_flags) Save
-Support RTM built-in functions and code generation
+Support RTM built-in functions and code generation.
 
 mmpx
 Target Report Mask(ISA_MPX) Var(ix86_isa_flags) Save
-Support MPX code generation
+Support MPX code generation.
 
 mmwaitx
 Target Report Mask(ISA_MWAITX) Var(ix86_isa_flags) Save
-Support MWAITX and MONITORX built-in functions and code generation
+Support MWAITX and MONITORX built-in functions and code generation.
 
 mstack-protector-guard=
 Target RejectNegative Joined Enum(stack_protector_guard) Var(ix86_stack_protector_guard) Init(SSP_TLS)
-Use given stack-protector guard
+Use given stack-protector guard.
 
 Enum
 Name(stack_protector_guard) Type(enum stack_protector_guard)

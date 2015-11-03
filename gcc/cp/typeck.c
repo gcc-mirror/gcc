@@ -27,19 +27,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
-#include "fold-const.h"
+#include "cp-tree.h"
+#include "c-family/c-common.h"
 #include "stor-layout.h"
 #include "varasm.h"
-#include "cp-tree.h"
 #include "flags.h"
-#include "diagnostic.h"
 #include "intl.h"
-#include "target.h"
 #include "convert.h"
-#include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-ubsan.h"
 #include "params.h"
@@ -715,6 +711,22 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
           return error_mark_node;
         }
     }
+  else if (TYPE_PTR_P (t1) && TYPE_PTR_P (t2)
+	   && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (t1))
+	   && TREE_CODE (TREE_TYPE (t2)) == TREE_CODE (TREE_TYPE (t1)))
+    {
+      /* ...if T1 is "pointer to transaction_safe function" and T2 is "pointer
+	 to function", where the function types are otherwise the same, T2, and
+	 vice versa.... */
+      tree f1 = TREE_TYPE (t1);
+      tree f2 = TREE_TYPE (t2);
+      bool safe1 = tx_safe_fn_type_p (f1);
+      bool safe2 = tx_safe_fn_type_p (f2);
+      if (safe1 && !safe2)
+	t1 = build_pointer_type (tx_unsafe_fn_variant (f1));
+      else if (safe2 && !safe1)
+	t2 = build_pointer_type (tx_unsafe_fn_variant (f2));
+    }
 
   return composite_pointer_type_r (t1, t2, operation, complain);
 }
@@ -1320,6 +1332,10 @@ structural_comptypes (tree t1, tree t2, int strict)
       /* If T1 and T2 don't have the same relative position in their
 	 template parameters set, they can't be equal.  */
       if (!comp_template_parms_position (t1, t2))
+	return false;
+      /* Constrained 'auto's are distinct from parms that don't have the same
+	 constraints.  */
+      if (!equivalent_placeholder_constraints (t1, t2))
 	return false;
       break;
 
@@ -3900,6 +3916,20 @@ build_binary_op (location_t location, enum tree_code code, tree op0, tree op1,
   return cp_build_binary_op (location, code, op0, op1, tf_warning_or_error);
 }
 
+/* Build a vector comparison of ARG0 and ARG1 using CODE opcode
+   into a value of TYPE type.  Comparison is done via VEC_COND_EXPR.  */
+
+static tree
+build_vec_cmp (tree_code code, tree type,
+	       tree arg0, tree arg1)
+{
+  tree zero_vec = build_zero_cst (type);
+  tree minus_one_vec = build_minus_one_cst (type);
+  tree cmp_type = build_same_sized_truth_vector_type(type);
+  tree cmp = build2 (code, cmp_type, arg0, arg1);
+  cmp = fold_if_not_in_template (cmp);
+  return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
+}
 
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
@@ -4769,7 +4799,7 @@ cp_build_binary_op (location_t location,
 	  result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
 	  converted = 1;
-	  break;
+	  return build_vec_cmp (resultcode, result_type, op0, op1);
 	}
       build_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE

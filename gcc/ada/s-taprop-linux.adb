@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2014, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2015, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,6 @@ pragma Polling (Off);
 --  operations. It causes infinite loops and other problems.
 
 with Interfaces.C;
-with Interfaces.C.Extensions;
 
 with System.Task_Info;
 with System.Tasking.Debug;
@@ -64,7 +63,6 @@ package body System.Task_Primitives.Operations is
    use System.Tasking.Debug;
    use System.Tasking;
    use Interfaces.C;
-   use Interfaces.C.Extensions;
    use System.OS_Interface;
    use System.Parameters;
    use System.OS_Primitives;
@@ -629,30 +627,14 @@ package body System.Task_Primitives.Operations is
    ---------------------
 
    function Monotonic_Clock return Duration is
-      use Interfaces;
-
-      procedure timeval_to_duration
-        (T    : not null access timeval;
-         sec  : not null access C.Extensions.long_long;
-         usec : not null access C.long);
-      pragma Import (C, timeval_to_duration, "__gnat_timeval_to_duration");
-
-      Micro  : constant := 10**6;
-      sec    : aliased C.Extensions.long_long;
-      usec   : aliased C.long;
-      TV     : aliased timeval;
+      TS     : aliased timespec;
       Result : int;
-
-      function gettimeofday
-        (Tv : access timeval;
-         Tz : System.Address := System.Null_Address) return int;
-      pragma Import (C, gettimeofday, "gettimeofday");
-
    begin
-      Result := gettimeofday (TV'Access, System.Null_Address);
+      Result := clock_gettime
+        (clock_id => OSC.CLOCK_RT_Ada, tp => TS'Unchecked_Access);
       pragma Assert (Result = 0);
-      timeval_to_duration (TV'Access, sec'Access, usec'Access);
-      return Duration (sec) + Duration (usec) / Micro;
+
+      return To_Duration (TS);
    end Monotonic_Clock;
 
    -------------------

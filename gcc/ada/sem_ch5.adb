@@ -30,6 +30,7 @@ with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Ch6;  use Exp_Ch6;
+with Exp_Ch7;  use Exp_Ch7;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Ghost;    use Ghost;
@@ -90,9 +91,8 @@ package body Sem_Ch5 is
    ------------------------
 
    procedure Analyze_Assignment (N : Node_Id) is
-      GM   : constant Ghost_Mode_Type := Ghost_Mode;
-      Lhs  : constant Node_Id         := Name (N);
-      Rhs  : constant Node_Id         := Expression (N);
+      Lhs  : constant Node_Id := Name (N);
+      Rhs  : constant Node_Id := Expression (N);
       T1   : Entity_Id;
       T2   : Entity_Id;
       Decl : Node_Id;
@@ -106,9 +106,6 @@ package body Sem_Ch5 is
       --  on the left hand side. We call it if we find any error in analyzing
       --  the assignment, and at the end of processing before setting any new
       --  current values in place.
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
 
       procedure Set_Assignment_Type
         (Opnd      : Node_Id;
@@ -215,15 +212,6 @@ package body Sem_Ch5 is
          end if;
       end Kill_Lhs;
 
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
       -------------------------
       -- Set_Assignment_Type --
       -------------------------
@@ -282,6 +270,10 @@ package body Sem_Ch5 is
          end if;
       end Set_Assignment_Type;
 
+      --  Local variables
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
    --  Start of processing for Analyze_Assignment
 
    begin
@@ -293,10 +285,9 @@ package body Sem_Ch5 is
 
       Analyze (Lhs);
 
-      --  The left hand side of an assignment may reference an entity subject
-      --  to pragma Ghost with policy Ignore. Set the mode now to ensure that
-      --  any nodes generated during analysis and expansion are properly
-      --  flagged as ignored Ghost.
+      --  An assignment statement is Ghost when the left hand side denotes a
+      --  Ghost entity. Set the mode now to ensure that any nodes generated
+      --  during analysis and expansion are properly marked as Ghost.
 
       Set_Ghost_Mode (N);
       Analyze (Rhs);
@@ -325,7 +316,19 @@ package body Sem_Ch5 is
             Get_First_Interp (Lhs, I, It);
 
             while Present (It.Typ) loop
-               if Has_Compatible_Type (Rhs, It.Typ) then
+
+               --  An indexed component with generalized indexing is always
+               --  overloaded with the corresponding dereference. Discard the
+               --  interpretation that yields a reference type, which is not
+               --  assignable.
+
+               if Nkind (Lhs) = N_Indexed_Component
+                 and then Present (Generalized_Indexing (Lhs))
+                 and then Has_Implicit_Dereference (It.Typ)
+               then
+                  null;
+
+               elsif Has_Compatible_Type (Rhs, It.Typ) then
                   if T1 /= Any_Type then
 
                      --  An explicit dereference is overloaded if the prefix
@@ -391,7 +394,7 @@ package body Sem_Ch5 is
             Error_Msg_N
               ("no valid types for left-hand side for assignment", Lhs);
             Kill_Lhs;
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
          end if;
       end if;
@@ -403,7 +406,13 @@ package body Sem_Ch5 is
 
       --  Cases where Lhs is not a variable
 
-      if not Is_Variable (Lhs) then
+      --  Cases where Lhs is not a variable. In an instance or an inlined body
+      --  no need for further check because assignment was legal in template.
+
+      if In_Inlined_Body then
+         null;
+
+      elsif not Is_Variable (Lhs) then
 
          --  Ada 2005 (AI-327): Check assignment to the attribute Priority of a
          --  protected object.
@@ -467,14 +476,14 @@ package body Sem_Ch5 is
                                   "specified??", Lhs);
                   end if;
 
-                  Restore_Globals;
+                  Ghost_Mode := Save_Ghost_Mode;
                   return;
                end if;
             end if;
          end;
 
          Diagnose_Non_Variable_Lhs (Lhs);
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Error of assigning to limited type. We do however allow this in
@@ -483,7 +492,6 @@ package body Sem_Ch5 is
       elsif Is_Limited_Type (T1)
         and then not Assignment_OK (Lhs)
         and then not Assignment_OK (Original_Node (Lhs))
-        and then not Is_Value_Type (T1)
       then
          --  CPP constructors can only be called in declarations
 
@@ -495,7 +503,7 @@ package body Sem_Ch5 is
             Explain_Limited_Type (T1, Lhs);
          end if;
 
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Enforce RM 3.9.3 (8): the target of an assignment operation cannot be
@@ -534,7 +542,7 @@ package body Sem_Ch5 is
       then
          Error_Msg_N ("invalid use of incomplete type", Lhs);
          Kill_Lhs;
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -552,7 +560,7 @@ package body Sem_Ch5 is
 
       if Rhs = Error then
          Kill_Lhs;
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -561,7 +569,7 @@ package body Sem_Ch5 is
       if not Covers (T1, T2) then
          Wrong_Type (Rhs, Etype (Lhs));
          Kill_Lhs;
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -589,7 +597,7 @@ package body Sem_Ch5 is
 
       if T1 = Any_Type or else T2 = Any_Type then
          Kill_Lhs;
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -682,7 +690,7 @@ package body Sem_Ch5 is
             --  to reset Is_True_Constant, and desirable for xref purposes.
 
             Note_Possible_Modification (Lhs, Sure => True);
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
 
          --  If we know the right hand side is non-null, then we convert to the
@@ -889,7 +897,7 @@ package body Sem_Ch5 is
       end;
 
       Analyze_Dimension (N);
-      Restore_Globals;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Assignment;
 
    -----------------------------
@@ -1581,7 +1589,7 @@ package body Sem_Ch5 is
          end if;
       end Analyze_Cond_Then;
 
-   --  Start of Analyze_If_Statement
+   --  Start of processing for Analyze_If_Statement
 
    begin
       --  Initialize exit count for else statements. If there is no else part,
@@ -1798,7 +1806,7 @@ package body Sem_Ch5 is
          return Etype (Ent);
       end Get_Cursor_Type;
 
-   --   Start of processing for  Analyze_iterator_Specification
+   --   Start of processing for Analyze_iterator_Specification
 
    begin
       Enter_Name (Def_Id);
@@ -1969,6 +1977,16 @@ package body Sem_Ch5 is
                 Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
                 Name                =>
                   New_Copy_Tree (Iter_Name, New_Sloc => Loc));
+
+            --  Create a transient scope to ensure that all the temporaries
+            --  generated by Remove_Side_Effects as part of processing this
+            --  renaming declaration (if any) are attached by Insert_Actions
+            --  to it. It has no effect on the generated code if no actions
+            --  are added to it (see Wrap_Transient_Declaration).
+
+            if Expander_Active then
+               Establish_Transient_Scope (Name (Decl), Sec_Stack => True);
+            end if;
 
             Insert_Actions (Parent (Parent (N)), New_List (Decl));
             Rewrite (Name (N), New_Occurrence_Of (Id, Loc));
@@ -2279,9 +2297,9 @@ package body Sem_Ch5 is
          end if;
       end if;
 
-      --  A loop parameter cannot be effectively volatile. This check is
-      --  peformed only when SPARK_Mode is on as it is not a standard Ada
-      --  legality check (SPARK RM 7.1.3(6)).
+      --  A loop parameter cannot be effectively volatile (SPARK RM 7.1.3(4)).
+      --  This check is relevant only when SPARK_Mode is on as it is not a
+      --  standard Ada legality check.
 
       --  Not clear whether this applies to element iterators, where the
       --  cursor is not an explicit entity ???
@@ -3037,9 +3055,9 @@ package body Sem_Ch5 is
          end;
       end if;
 
-      --  A loop parameter cannot be effectively volatile. This check is
-      --  peformed only when SPARK_Mode is on as it is not a standard Ada
-      --  legality check (SPARK RM 7.1.3(6)).
+      --  A loop parameter cannot be effectively volatile (SPARK RM 7.1.3(4)).
+      --  This check is relevant only when SPARK_Mode is on as it is not a
+      --  standard Ada legality check.
 
       if SPARK_Mode = On and then Is_Effectively_Volatile (Id) then
          Error_Msg_N ("loop parameter cannot be volatile", Id);
@@ -3215,12 +3233,18 @@ package body Sem_Ch5 is
             end if;
          end if;
 
-      --  Case of no identifier present
+      --  Case of no identifier present. Create one and attach it to the
+      --  loop statement for use as a scope and as a reference for later
+      --  expansions. Indicate that the label does not come from source,
+      --  and attach it to the loop statement so it is part of the tree,
+      --  even without a full declaration.
 
       else
          Ent := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
          Set_Etype  (Ent, Standard_Void_Type);
+         Set_Identifier (N, New_Occurrence_Of (Ent, Loc));
          Set_Parent (Ent, N);
+         Set_Has_Created_Identifier (N);
       end if;
 
       --  Iteration over a container in Ada 2012 involves the creation of a
@@ -3336,16 +3360,33 @@ package body Sem_Ch5 is
       --  types the actual subtype of the components will only be determined
       --  when the cursor declaration is analyzed.
 
-      --  If the expander is not active, or in SPARK mode, then we want to
-      --  analyze the loop body now even in the Ada 2012 iterator case, since
-      --  the rewriting will not be done. Insert the loop variable in the
-      --  current scope, if not done when analysing the iteration scheme.
-      --  Set its kind properly to detect improper uses in the loop body.
+      --  If the expander is not active then we want to analyze the loop body
+      --  now even in the Ada 2012 iterator case, since the rewriting will not
+      --  be done. Insert the loop variable in the current scope, if not done
+      --  when analysing the iteration scheme.  Set its kind properly to detect
+      --  improper uses in the loop body.
+
+      --  In GNATprove mode, we do one of the above depending on the kind of
+      --  loop. If it is an iterator over an array, then we do not analyze the
+      --  loop now. We will analyze it after it has been rewritten by the
+      --  special SPARK expansion which is activated in GNATprove mode. We need
+      --  to do this so that other expansions that should occur in GNATprove
+      --  mode take into account the specificities of the rewritten loop, in
+      --  particular the introduction of a renaming (which needs to be
+      --  expanded).
+
+      --  In other cases in GNATprove mode then we want to analyze the loop
+      --  body now, since no rewriting will occur.
 
       if Present (Iter)
         and then Present (Iterator_Specification (Iter))
       then
-         if not Expander_Active then
+         if GNATprove_Mode
+           and then Is_Iterator_Over_Array (Iterator_Specification (Iter))
+         then
+            null;
+
+         elsif not Expander_Active then
             declare
                I_Spec : constant Node_Id   := Iterator_Specification (Iter);
                Id     : constant Entity_Id := Defining_Identifier (I_Spec);

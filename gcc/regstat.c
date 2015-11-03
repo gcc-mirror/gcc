@@ -23,14 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
 #include "rtl.h"
+#include "predict.h"
 #include "df.h"
-#include "tm_p.h"
-#include "flags.h"
 #include "regs.h"
-#include "except.h"
-#include "timevar.h"
 
 
 struct regstat_n_sets_and_refs_t *regstat_n_sets_and_refs;

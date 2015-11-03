@@ -865,10 +865,23 @@ __gnat_get_task_options (void)
 
   /* Mask those bits that are not under user control */
 #ifdef VX_USR_TASK_OPTIONS
-  return options & VX_USR_TASK_OPTIONS;
-#else
-  return options;
+  /* O810-007, TSR 00043679:
+     Workaround a bug in Vx-7 where VX_DEALLOC_TCB == VX_PRIVATE_UMASK and:
+     - VX_DEALLOC_TCB is an internal option not to be used by users
+     - VX_PRIVATE_UMASK as a user-definable option
+     This leads to VX_USR_TASK_OPTIONS allowing 0x8000 as VX_PRIVATE_UMASK but
+     taskCreate refusing this option (VX_DEALLOC_TCB is not allowed)
+
+     Note that the same error occurs in both RTP and Kernel mode, but
+     VX_DEALLOC_TCB is not defined in the RTP headers, so we need to
+     explicitely check if VX_PRIVATE_UMASK has value 0x8000
+  */
+# if defined (VX_PRIVATE_UMASK) && (0x8000 == VX_PRIVATE_UMASK)
+  options &= ~VX_PRIVATE_UMASK;
+# endif
+  options &= VX_USR_TASK_OPTIONS;
 #endif
+  return options;
 }
 
 #endif

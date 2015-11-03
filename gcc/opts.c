@@ -181,7 +181,8 @@ base_of_path (const char *path, const char **base_out)
 }
 
 /* What to print when a switch has no documentation.  */
-static const char undocumented_msg[] = N_("This switch lacks documentation");
+static const char undocumented_msg[] = N_("This option lacks documentation.");
+static const char use_diagnosed_msg[] = N_("Uses of this option are diagnosed.");
 
 typedef char *char_p; /* For DEF_VEC_P.  */
 
@@ -429,7 +430,7 @@ static const struct default_options default_options_table[] =
   {
     /* -O1 optimizations.  */
     { OPT_LEVELS_1_PLUS, OPT_fdefer_pop, NULL, 1 },
-#ifdef DELAY_SLOTS
+#if DELAY_SLOTS
     { OPT_LEVELS_1_PLUS, OPT_fdelayed_branch, NULL, 1 },
 #endif
     { OPT_LEVELS_1_PLUS, OPT_fguess_branch_probability, NULL, 1 },
@@ -441,6 +442,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS, OPT_fipa_reference, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fipa_profile, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fmerge_constants, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_freorder_blocks, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fshrink_wrap, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fsplit_wide_types, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_ccp, NULL, 1 },
@@ -483,7 +485,8 @@ static const struct default_options default_options_table[] =
 #endif
     { OPT_LEVELS_2_PLUS, OPT_fstrict_aliasing, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fstrict_overflow, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_freorder_blocks, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_freorder_blocks_algorithm_, NULL,
+      REORDER_BLOCKS_ALGORITHM_STC },
     { OPT_LEVELS_2_PLUS, OPT_freorder_functions, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_vrp, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_builtin_call_dce, NULL, 1 },
@@ -821,6 +824,16 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_reorder_blocks = 1;
     }
 
+  /* Disable -freorder-blocks-and-partition when -fprofile-use is not in
+     effect. Function splitting was not actually being performed in that case,
+     as probably_never_executed_bb_p does not distinguish any basic blocks as
+     being cold vs hot when there is no profile data. Leaving it enabled,
+     however, causes the assembly code generator to create (empty) cold
+     sections and labels, leading to unnecessary size overhead.  */
+  if (opts->x_flag_reorder_blocks_and_partition
+      && !opts_set->x_flag_profile_use)
+    opts->x_flag_reorder_blocks_and_partition = 0;
+
   if (opts->x_flag_reorder_blocks_and_partition
       && !opts_set->x_flag_reorder_functions)
     opts->x_flag_reorder_functions = 1;
@@ -1000,7 +1013,7 @@ print_filtered_help (unsigned int include_flags,
   const char *help;
   bool found = false;
   bool displayed = false;
-  char new_help[128];
+  char new_help[256];
 
   if (include_flags == CL_PARAMS)
     {
@@ -1076,7 +1089,46 @@ print_filtered_help (unsigned int include_flags,
 	{
 	  if (exclude_flags & CL_UNDOCUMENTED)
 	    continue;
+
 	  help = undocumented_msg;
+	}
+
+      if (option->alias_target < N_OPTS
+	  && cl_options [option->alias_target].help)
+	{
+	  if (help == undocumented_msg)
+	    {
+	      /* For undocumented options that are aliases for other options
+		 that are documented, point the reader to the other option in
+		 preference of the former.  */
+	      snprintf (new_help, sizeof new_help,
+			_("Same as %s.  Use the latter option instead."),
+			cl_options [option->alias_target].opt_text);
+	    }
+	  else
+	    {
+	      /* For documented options with aliases, mention the aliased
+		 option's name for reference.  */
+	      snprintf (new_help, sizeof new_help,
+			_("%s  Same as %s."),
+			help, cl_options [option->alias_target].opt_text);
+	    }
+
+	  help = new_help;
+	}
+
+      if (option->warn_message)
+	{
+	  /* Mention that the use of the option will trigger a warning.  */
+	  if (help == new_help)
+	    snprintf (new_help + strlen (new_help),
+		      sizeof new_help - strlen (new_help),
+		      "  %s", _(use_diagnosed_msg));
+	  else
+	    snprintf (new_help, sizeof new_help,
+		      "%s  %s", help, _(use_diagnosed_msg));
+
+	  help = new_help;
 	}
 
       /* Get the translation.  */
@@ -1168,7 +1220,7 @@ print_filtered_help (unsigned int include_flags,
 	     options supported by a specific front end.  */
 	  for (i = 0; (1U << i) < CL_LANG_ALL; i ++)
 	    if ((1U << i) & langs)
-	      printf (_(" None found.  Use --help=%s to show *all* the options supported by the %s front-end\n"),
+	      printf (_(" None found.  Use --help=%s to show *all* the options supported by the %s front-end.\n"),
 		      lang_names[i], lang_names[i]);
 	}
 
@@ -2116,14 +2168,21 @@ handle_param (struct gcc_options *opts, struct gcc_options *opts_set,
 	      arg);
   else
     {
-      value = integral_argument (equal + 1);
-      if (value == -1)
-	error_at (loc, "invalid --param value %qs", equal + 1);
+      *equal = '\0';
+
+      enum compiler_param index;
+      if (!find_param (arg, &index))
+	error_at (loc, "invalid --param name %qs", arg);
       else
 	{
-	  *equal = '\0';
-	  set_param_value (arg, value,
-			   opts->x_param_values, opts_set->x_param_values);
+	  if (!param_string_value_p (index, equal + 1, &value))
+	    value = integral_argument (equal + 1);
+
+	  if (value == -1)
+	    error_at (loc, "invalid --param value %qs", equal + 1);
+	  else
+	    set_param_value (arg, value,
+			     opts->x_param_values, opts_set->x_param_values);
 	}
     }
 
@@ -2359,9 +2418,10 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
   strcpy (new_option + 1, arg);
   option_index = find_opt (new_option, lang_mask);
   if (option_index == OPT_SPECIAL_unknown)
-    {
-      error_at (loc, "-Werror=%s: no option -%s", arg, new_option);
-    }
+    error_at (loc, "-Werror=%s: no option -%s", arg, new_option);
+  else if (!(cl_options[option_index].flags & CL_WARNING))
+    error_at (loc, "-Werror=%s: -%s is not an option that controls warnings",
+	      arg, new_option);
   else
     {
       const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;

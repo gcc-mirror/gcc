@@ -21,39 +21,25 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "insn-config.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "diagnostic-core.h"
 #include "alias.h"
 #include "stor-layout.h"
 #include "varasm.h"
-#include "stringpool.h"
 #include "calls.h"
-#include "regs.h"
-#include "insn-config.h"
-#include "conditions.h"
 #include "output.h"
-#include "dbxout.h"
 #include "insn-attr.h"
-#include "flags.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "tm_p.h"
-#include "target.h"
 #include "tm-constrs.h"
-#include "opts.h"
 #include "builtins.h"
 
 /* This file should be included last.  */
@@ -650,11 +636,9 @@ easy_di_const (rtx op)
 int
 easy_df_const (rtx op)
 {
-  REAL_VALUE_TYPE r;
   long l[2];
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-  REAL_VALUE_TO_TARGET_DOUBLE (r, l);
+  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (op), l);
   if (l[0] == 0 && l[1] == 0)
     return 1;
   if ((l[0] & 0xffff) == 0 && l[1] == 0)
@@ -2280,11 +2264,9 @@ m32r_print_operand (FILE * file, rtx x, int code)
       /* We handle SFmode constants here as output_addr_const doesn't.  */
       if (GET_MODE (x) == SFmode)
 	{
-	  REAL_VALUE_TYPE d;
 	  long l;
 
-	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  REAL_VALUE_TO_TARGET_SINGLE (d, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
 	  fprintf (file, "0x%08lx", l);
 	  break;
 	}

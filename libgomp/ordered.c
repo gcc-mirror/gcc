@@ -26,6 +26,9 @@
 /* This file handles the ORDERED construct.  */
 
 #include "libgomp.h"
+#include <stdarg.h>
+#include <string.h>
+#include "doacross.h"
 
 
 /* This function is called when first allocating an iteration block.  That
@@ -249,4 +252,522 @@ GOMP_ordered_start (void)
 void
 GOMP_ordered_end (void)
 {
+}
+
+/* DOACROSS initialization.  */
+
+#define MAX_COLLAPSED_BITS (__SIZEOF_LONG__ * __CHAR_BIT__)
+
+void
+gomp_doacross_init (unsigned ncounts, long *counts, long chunk_size)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+  struct gomp_work_share *ws = thr->ts.work_share;
+  unsigned int i, bits[MAX_COLLAPSED_BITS], num_bits = 0;
+  unsigned long ent, num_ents, elt_sz, shift_sz;
+  struct gomp_doacross_work_share *doacross;
+
+  if (team == NULL || team->nthreads == 1)
+    return;
+
+  for (i = 0; i < ncounts; i++)
+    {
+      /* If any count is 0, GOMP_doacross_{post,wait} can't be called.  */
+      if (counts[i] == 0)
+	return;
+
+      if (num_bits <= MAX_COLLAPSED_BITS)
+	{
+	  unsigned int this_bits;
+	  if (counts[i] == 1)
+	    this_bits = 1;
+	  else
+	    this_bits = __SIZEOF_LONG__ * __CHAR_BIT__
+			- __builtin_clzl (counts[i] - 1);
+	  if (num_bits + this_bits <= MAX_COLLAPSED_BITS)
+	    {
+	      bits[i] = this_bits;
+	      num_bits += this_bits;
+	    }
+	  else
+	    num_bits = MAX_COLLAPSED_BITS + 1;
+	}
+    }
+
+  if (ws->sched == GFS_STATIC)
+    num_ents = team->nthreads;
+  else
+    num_ents = (counts[0] - 1) / chunk_size + 1;
+  if (num_bits <= MAX_COLLAPSED_BITS)
+    {
+      elt_sz = sizeof (unsigned long);
+      shift_sz = ncounts * sizeof (unsigned int);
+    }
+  else
+    {
+      elt_sz = sizeof (unsigned long) * ncounts;
+      shift_sz = 0;
+    }
+  elt_sz = (elt_sz + 63) & ~63UL;
+
+  doacross = gomp_malloc (sizeof (*doacross) + 63 + num_ents * elt_sz
+			  + shift_sz);
+  doacross->chunk_size = chunk_size;
+  doacross->elt_sz = elt_sz;
+  doacross->ncounts = ncounts;
+  doacross->flattened = false;
+  doacross->array = (unsigned char *)
+		    ((((uintptr_t) (doacross + 1)) + 63 + shift_sz)
+		     & ~(uintptr_t) 63);
+  if (num_bits <= MAX_COLLAPSED_BITS)
+    {
+      unsigned int shift_count = 0;
+      doacross->flattened = true;
+      for (i = ncounts; i > 0; i--)
+	{
+	  doacross->shift_counts[i - 1] = shift_count;
+	  shift_count += bits[i - 1];
+	}
+      for (ent = 0; ent < num_ents; ent++)
+	*(unsigned long *) (doacross->array + ent * elt_sz) = 0;
+    }
+  else
+    for (ent = 0; ent < num_ents; ent++)
+      memset (doacross->array + ent * elt_sz, '\0',
+	      sizeof (unsigned long) * ncounts);
+  if (ws->sched == GFS_STATIC && chunk_size == 0)
+    {
+      unsigned long q = counts[0] / num_ents;
+      unsigned long t = counts[0] % num_ents;
+      doacross->boundary = t * (q + 1);
+      doacross->q = q;
+      doacross->t = t;
+    }
+  ws->doacross = doacross;
+}
+
+/* DOACROSS POST operation.  */
+
+void
+GOMP_doacross_post (long *counts)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_work_share *ws = thr->ts.work_share;
+  struct gomp_doacross_work_share *doacross = ws->doacross;
+  unsigned long ent;
+  unsigned int i;
+
+  if (__builtin_expect (doacross == NULL, 0))
+    {
+      __sync_synchronize ();
+      return;
+    }
+
+  if (__builtin_expect (ws->sched == GFS_STATIC, 1))
+    ent = thr->ts.team_id;
+  else
+    ent = counts[0] / doacross->chunk_size;
+  unsigned long *array = (unsigned long *) (doacross->array
+					    + ent * doacross->elt_sz);
+
+  if (__builtin_expect (doacross->flattened, 1))
+    {
+      unsigned long flattened
+	= (unsigned long) counts[0] << doacross->shift_counts[0];
+
+      for (i = 1; i < doacross->ncounts; i++)
+	flattened |= (unsigned long) counts[i]
+		     << doacross->shift_counts[i];
+      flattened++;
+      if (flattened == __atomic_load_n (array, MEMMODEL_ACQUIRE))
+	__atomic_thread_fence (MEMMODEL_RELEASE);
+      else
+	__atomic_store_n (array, flattened, MEMMODEL_RELEASE);
+      return;
+    }
+
+  __atomic_thread_fence (MEMMODEL_ACQUIRE);
+  for (i = doacross->ncounts; i-- > 0; )
+    {
+      if (counts[i] + 1UL != __atomic_load_n (&array[i], MEMMODEL_RELAXED))
+	__atomic_store_n (&array[i], counts[i] + 1UL, MEMMODEL_RELEASE);
+    }
+}
+
+/* DOACROSS WAIT operation.  */
+
+void
+GOMP_doacross_wait (long first, ...)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_work_share *ws = thr->ts.work_share;
+  struct gomp_doacross_work_share *doacross = ws->doacross;
+  va_list ap;
+  unsigned long ent;
+  unsigned int i;
+
+  if (__builtin_expect (doacross == NULL, 0))
+    {
+      __sync_synchronize ();
+      return;
+    }
+
+  if (__builtin_expect (ws->sched == GFS_STATIC, 1))
+    {
+      if (ws->chunk_size == 0)
+	{
+	  if (first < doacross->boundary)
+	    ent = first / (doacross->q + 1);
+	  else
+	    ent = (first - doacross->boundary) / doacross->q
+		  + doacross->t;
+	}
+      else
+	ent = first / ws->chunk_size % thr->ts.team->nthreads;
+    }
+  else
+    ent = first / doacross->chunk_size;
+  unsigned long *array = (unsigned long *) (doacross->array
+					    + ent * doacross->elt_sz);
+
+  if (__builtin_expect (doacross->flattened, 1))
+    {
+      unsigned long flattened
+	= (unsigned long) first << doacross->shift_counts[0];
+      unsigned long cur;
+
+      va_start (ap, first);
+      for (i = 1; i < doacross->ncounts; i++)
+	flattened |= (unsigned long) va_arg (ap, long)
+		     << doacross->shift_counts[i];
+      cur = __atomic_load_n (array, MEMMODEL_ACQUIRE);
+      if (flattened < cur)
+	{
+	  __atomic_thread_fence (MEMMODEL_RELEASE);
+	  va_end (ap);
+	  return;
+	}
+      doacross_spin (array, flattened, cur);
+      __atomic_thread_fence (MEMMODEL_RELEASE);
+      va_end (ap);
+      return;
+    }
+
+  do
+    {
+      va_start (ap, first);
+      for (i = 0; i < doacross->ncounts; i++)
+	{
+	  unsigned long thisv
+	    = (unsigned long) (i ? va_arg (ap, long) : first) + 1;
+	  unsigned long cur = __atomic_load_n (&array[i], MEMMODEL_RELAXED);
+	  if (thisv < cur)
+	    {
+	      i = doacross->ncounts;
+	      break;
+	    }
+	  if (thisv > cur)
+	    break;
+	}
+      va_end (ap);
+      if (i == doacross->ncounts)
+	break;
+      cpu_relax ();
+    }
+  while (1);
+  __sync_synchronize ();
+}
+
+typedef unsigned long long gomp_ull;
+
+void
+gomp_doacross_ull_init (unsigned ncounts, gomp_ull *counts, gomp_ull chunk_size)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+  struct gomp_work_share *ws = thr->ts.work_share;
+  unsigned int i, bits[MAX_COLLAPSED_BITS], num_bits = 0;
+  unsigned long ent, num_ents, elt_sz, shift_sz;
+  struct gomp_doacross_work_share *doacross;
+
+  if (team == NULL || team->nthreads == 1)
+    return;
+
+  for (i = 0; i < ncounts; i++)
+    {
+      /* If any count is 0, GOMP_doacross_{post,wait} can't be called.  */
+      if (counts[i] == 0)
+	return;
+
+      if (num_bits <= MAX_COLLAPSED_BITS)
+	{
+	  unsigned int this_bits;
+	  if (counts[i] == 1)
+	    this_bits = 1;
+	  else
+	    this_bits = __SIZEOF_LONG_LONG__ * __CHAR_BIT__
+			- __builtin_clzll (counts[i] - 1);
+	  if (num_bits + this_bits <= MAX_COLLAPSED_BITS)
+	    {
+	      bits[i] = this_bits;
+	      num_bits += this_bits;
+	    }
+	  else
+	    num_bits = MAX_COLLAPSED_BITS + 1;
+	}
+    }
+
+  if (ws->sched == GFS_STATIC)
+    num_ents = team->nthreads;
+  else
+    num_ents = (counts[0] - 1) / chunk_size + 1;
+  if (num_bits <= MAX_COLLAPSED_BITS)
+    {
+      elt_sz = sizeof (unsigned long);
+      shift_sz = ncounts * sizeof (unsigned int);
+    }
+  else
+    {
+      if (sizeof (gomp_ull) == sizeof (unsigned long))
+	elt_sz = sizeof (gomp_ull) * ncounts;
+      else if (sizeof (gomp_ull) == 2 * sizeof (unsigned long))
+	elt_sz = sizeof (unsigned long) * 2 * ncounts;
+      else
+	abort ();
+      shift_sz = 0;
+    }
+  elt_sz = (elt_sz + 63) & ~63UL;
+
+  doacross = gomp_malloc (sizeof (*doacross) + 63 + num_ents * elt_sz
+			  + shift_sz);
+  doacross->chunk_size_ull = chunk_size;
+  doacross->elt_sz = elt_sz;
+  doacross->ncounts = ncounts;
+  doacross->flattened = false;
+  doacross->boundary = 0;
+  doacross->array = (unsigned char *)
+		    ((((uintptr_t) (doacross + 1)) + 63 + shift_sz)
+		     & ~(uintptr_t) 63);
+  if (num_bits <= MAX_COLLAPSED_BITS)
+    {
+      unsigned int shift_count = 0;
+      doacross->flattened = true;
+      for (i = ncounts; i > 0; i--)
+	{
+	  doacross->shift_counts[i - 1] = shift_count;
+	  shift_count += bits[i - 1];
+	}
+      for (ent = 0; ent < num_ents; ent++)
+	*(unsigned long *) (doacross->array + ent * elt_sz) = 0;
+    }
+  else
+    for (ent = 0; ent < num_ents; ent++)
+      memset (doacross->array + ent * elt_sz, '\0',
+	      sizeof (unsigned long) * ncounts);
+  if (ws->sched == GFS_STATIC && chunk_size == 0)
+    {
+      gomp_ull q = counts[0] / num_ents;
+      gomp_ull t = counts[0] % num_ents;
+      doacross->boundary_ull = t * (q + 1);
+      doacross->q_ull = q;
+      doacross->t = t;
+    }
+  ws->doacross = doacross;
+}
+
+/* DOACROSS POST operation.  */
+
+void
+GOMP_doacross_ull_post (gomp_ull *counts)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_work_share *ws = thr->ts.work_share;
+  struct gomp_doacross_work_share *doacross = ws->doacross;
+  unsigned long ent;
+  unsigned int i;
+
+  if (__builtin_expect (doacross == NULL, 0))
+    {
+      __sync_synchronize ();
+      return;
+    }
+
+  if (__builtin_expect (ws->sched == GFS_STATIC, 1))
+    ent = thr->ts.team_id;
+  else
+    ent = counts[0] / doacross->chunk_size_ull;
+
+  if (__builtin_expect (doacross->flattened, 1))
+    {
+      unsigned long *array = (unsigned long *) (doacross->array
+			      + ent * doacross->elt_sz);
+      gomp_ull flattened
+	= counts[0] << doacross->shift_counts[0];
+
+      for (i = 1; i < doacross->ncounts; i++)
+	flattened |= counts[i] << doacross->shift_counts[i];
+      flattened++;
+      if (flattened == __atomic_load_n (array, MEMMODEL_ACQUIRE))
+	__atomic_thread_fence (MEMMODEL_RELEASE);
+      else
+	__atomic_store_n (array, flattened, MEMMODEL_RELEASE);
+      return;
+    }
+
+  __atomic_thread_fence (MEMMODEL_ACQUIRE);
+  if (sizeof (gomp_ull) == sizeof (unsigned long))
+    {
+      gomp_ull *array = (gomp_ull *) (doacross->array
+				      + ent * doacross->elt_sz);
+
+      for (i = doacross->ncounts; i-- > 0; )
+	{
+	  if (counts[i] + 1UL != __atomic_load_n (&array[i], MEMMODEL_RELAXED))
+	    __atomic_store_n (&array[i], counts[i] + 1UL, MEMMODEL_RELEASE);
+	}
+    }
+  else
+    {
+      unsigned long *array = (unsigned long *) (doacross->array
+						+ ent * doacross->elt_sz);
+
+      for (i = doacross->ncounts; i-- > 0; )
+	{
+	  gomp_ull cull = counts[i] + 1UL;
+	  unsigned long c = (unsigned long) cull;
+	  if (c != __atomic_load_n (&array[2 * i + 1], MEMMODEL_RELAXED))
+	    __atomic_store_n (&array[2 * i + 1], c, MEMMODEL_RELEASE);
+	  c = cull >> (__SIZEOF_LONG_LONG__ * __CHAR_BIT__ / 2);
+	  if (c != __atomic_load_n (&array[2 * i], MEMMODEL_RELAXED))
+	    __atomic_store_n (&array[2 * i], c, MEMMODEL_RELEASE);
+	}
+    }
+}
+
+/* DOACROSS WAIT operation.  */
+
+void
+GOMP_doacross_ull_wait (gomp_ull first, ...)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_work_share *ws = thr->ts.work_share;
+  struct gomp_doacross_work_share *doacross = ws->doacross;
+  va_list ap;
+  unsigned long ent;
+  unsigned int i;
+
+  if (__builtin_expect (doacross == NULL, 0))
+    {
+      __sync_synchronize ();
+      return;
+    }
+
+  if (__builtin_expect (ws->sched == GFS_STATIC, 1))
+    {
+      if (ws->chunk_size_ull == 0)
+	{
+	  if (first < doacross->boundary_ull)
+	    ent = first / (doacross->q_ull + 1);
+	  else
+	    ent = (first - doacross->boundary_ull) / doacross->q_ull
+		  + doacross->t;
+	}
+      else
+	ent = first / ws->chunk_size_ull % thr->ts.team->nthreads;
+    }
+  else
+    ent = first / doacross->chunk_size_ull;
+
+  if (__builtin_expect (doacross->flattened, 1))
+    {
+      unsigned long *array = (unsigned long *) (doacross->array
+						+ ent * doacross->elt_sz);
+      gomp_ull flattened = first << doacross->shift_counts[0];
+      unsigned long cur;
+
+      va_start (ap, first);
+      for (i = 1; i < doacross->ncounts; i++)
+	flattened |= va_arg (ap, gomp_ull)
+		     << doacross->shift_counts[i];
+      cur = __atomic_load_n (array, MEMMODEL_ACQUIRE);
+      if (flattened < cur)
+	{
+	  __atomic_thread_fence (MEMMODEL_RELEASE);
+	  va_end (ap);
+	  return;
+	}
+      doacross_spin (array, flattened, cur);
+      __atomic_thread_fence (MEMMODEL_RELEASE);
+      va_end (ap);
+      return;
+    }
+
+  if (sizeof (gomp_ull) == sizeof (unsigned long))
+    {
+      gomp_ull *array = (gomp_ull *) (doacross->array
+				      + ent * doacross->elt_sz);
+      do
+	{
+	  va_start (ap, first);
+	  for (i = 0; i < doacross->ncounts; i++)
+	    {
+	      gomp_ull thisv
+		= (i ? va_arg (ap, gomp_ull) : first) + 1;
+	      gomp_ull cur = __atomic_load_n (&array[i], MEMMODEL_RELAXED);
+	      if (thisv < cur)
+		{
+		  i = doacross->ncounts;
+		  break;
+		}
+	      if (thisv > cur)
+		break;
+	    }
+	  va_end (ap);
+	  if (i == doacross->ncounts)
+	    break;
+	  cpu_relax ();
+	}
+      while (1);
+    }
+  else
+    {
+      unsigned long *array = (unsigned long *) (doacross->array
+						+ ent * doacross->elt_sz);
+      do
+	{
+	  va_start (ap, first);
+	  for (i = 0; i < doacross->ncounts; i++)
+	    {
+	      gomp_ull thisv
+		= (i ? va_arg (ap, gomp_ull) : first) + 1;
+	      unsigned long t
+		= thisv >> (__SIZEOF_LONG_LONG__ * __CHAR_BIT__ / 2);
+	      unsigned long cur
+		= __atomic_load_n (&array[2 * i], MEMMODEL_RELAXED);
+	      if (t < cur)
+		{
+		  i = doacross->ncounts;
+		  break;
+		}
+	      if (t > cur)
+		break;
+	      t = thisv;
+	      cur = __atomic_load_n (&array[2 * i + 1], MEMMODEL_RELAXED);
+	      if (t < cur)
+		{
+		  i = doacross->ncounts;
+		  break;
+		}
+	      if (t > cur)
+		break;
+	    }
+	  va_end (ap);
+	  if (i == doacross->ncounts)
+	    break;
+	  cpu_relax ();
+	}
+      while (1);
+    }
+  __sync_synchronize ();
 }

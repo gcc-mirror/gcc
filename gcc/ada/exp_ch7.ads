@@ -100,18 +100,21 @@ package Exp_Ch7 is
    procedure Build_Finalization_Master
      (Typ            : Entity_Id;
       For_Anonymous  : Boolean   := False;
+      For_Lib_Level  : Boolean   := False;
       For_Private    : Boolean   := False;
       Context_Scope  : Entity_Id := Empty;
       Insertion_Node : Node_Id   := Empty);
    --  Build a finalization master for an access type. The designated type may
    --  not necessarely be controlled or need finalization actions depending on
    --  the context. Flag For_Anonymous must be set when creating a master for
-   --  an anonymous access type. Flag For_Private must be set when the
-   --  designated type contains a private component. Parameters Context_Scope
-   --  and Insertion_Node must be used in conjunction with flags For_Anonymous
-   --  and For_Private. Context_Scope is the scope of the context where the
-   --  finalization master must be analyzed. Insertion_Node is the insertion
-   --  point before which the master is inserted.
+   --  an anonymous access type. Flag For_Lib_Level must be set when creating
+   --  a master for a build-in-place function call access result type. Flag
+   --  For_Private must be set when the designated type contains a private
+   --  component. Parameters Context_Scope and Insertion_Node must be used in
+   --  conjunction with flags For_Anonymous and For_Private. Context_Scope is
+   --  the scope of the context where the finalization master must be analyzed.
+   --  Insertion_Node is the insertion point before which the master is to be
+   --  inserted.
 
    procedure Build_Late_Proc (Typ : Entity_Id; Nam : Name_Id);
    --  Build one controlling procedure when a late body overrides one of
@@ -168,18 +171,6 @@ package Exp_Ch7 is
    --  to have been previously analyzed) that references the object to be
    --  adjusted. Typ is the expected type of Obj_Ref. When Skip_Self is set,
    --  only the components (if any) are adjusted.
-
-   function Make_Attach_Call
-     (Obj_Ref : Node_Id;
-      Ptr_Typ : Entity_Id) return Node_Id;
-   --  Create a call to prepend an object to a finalization collection. Obj_Ref
-   --  is the object, Ptr_Typ is the access type that owns the collection. This
-   --  is used only for .NET/JVM, that is, when VM_Target /= No_VM.
-   --  Generate the following:
-   --
-   --    Ada.Finalization.Heap_Management.Attach
-   --      (<Ptr_Typ>FC,
-   --       System.Finalization_Root.Root_Controlled_Ptr (Obj_Ref));
 
    function Make_Detach_Call (Obj_Ref : Node_Id) return Node_Id;
    --  Create a call to unhook an object from an arbitrary list. Obj_Ref is the

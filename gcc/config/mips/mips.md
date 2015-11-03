@@ -3976,7 +3976,7 @@
 
   if (reg1)			/* Turn off complaints about unreached code.  */
     {
-      mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, DFmode));
+      mips_emit_move (reg1, const_double_from_real_value (offset, DFmode));
       do_pending_stack_adjust ();
 
       test = gen_rtx_GE (VOIDmode, operands[1], reg1);
@@ -4020,7 +4020,7 @@
 
   real_2expN (&offset, 63, DFmode);
 
-  mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, DFmode));
+  mips_emit_move (reg1, const_double_from_real_value (offset, DFmode));
   do_pending_stack_adjust ();
 
   test = gen_rtx_GE (VOIDmode, operands[1], reg1);
@@ -4062,7 +4062,7 @@
 
   real_2expN (&offset, 31, SFmode);
 
-  mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
+  mips_emit_move (reg1, const_double_from_real_value (offset, SFmode));
   do_pending_stack_adjust ();
 
   test = gen_rtx_GE (VOIDmode, operands[1], reg1);
@@ -4104,7 +4104,7 @@
 
   real_2expN (&offset, 63, SFmode);
 
-  mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
+  mips_emit_move (reg1, const_double_from_real_value (offset, SFmode));
   do_pending_stack_adjust ();
 
   test = gen_rtx_GE (VOIDmode, operands[1], reg1);
@@ -7304,11 +7304,9 @@
 		    UNSPEC_CONSTTABLE_FLOAT)]
   "TARGET_MIPS16"
 {
-  REAL_VALUE_TYPE d;
-
   gcc_assert (GET_CODE (operands[0]) == CONST_DOUBLE);
-  REAL_VALUE_FROM_CONST_DOUBLE (d, operands[0]);
-  assemble_real (d, GET_MODE (operands[0]),
+  assemble_real (*CONST_DOUBLE_REAL_VALUE (operands[0]),
+		 GET_MODE (operands[0]),
 		 GET_MODE_BITSIZE (GET_MODE (operands[0])));
   return "";
 }

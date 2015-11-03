@@ -23,43 +23,44 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Exp_Ch9;  use Exp_Ch9;
-with Elists;   use Elists;
-with Freeze;   use Freeze;
-with Layout;   use Layout;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch5;  use Sem_Ch5;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
+with Aspects;   use Aspects;
+with Atree;     use Atree;
+with Checks;    use Checks;
+with Contracts; use Contracts;
+with Debug;     use Debug;
+with Einfo;     use Einfo;
+with Errout;    use Errout;
+with Exp_Ch9;   use Exp_Ch9;
+with Elists;    use Elists;
+with Freeze;    use Freeze;
+with Layout;    use Layout;
+with Lib.Xref;  use Lib.Xref;
+with Namet;     use Namet;
+with Nlists;    use Nlists;
+with Nmake;     use Nmake;
+with Opt;       use Opt;
+with Restrict;  use Restrict;
+with Rident;    use Rident;
+with Rtsfind;   use Rtsfind;
+with Sem;       use Sem;
+with Sem_Aux;   use Sem_Aux;
+with Sem_Ch3;   use Sem_Ch3;
+with Sem_Ch5;   use Sem_Ch5;
+with Sem_Ch6;   use Sem_Ch6;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch13;  use Sem_Ch13;
+with Sem_Eval;  use Sem_Eval;
+with Sem_Prag;  use Sem_Prag;
+with Sem_Res;   use Sem_Res;
+with Sem_Type;  use Sem_Type;
+with Sem_Util;  use Sem_Util;
+with Sem_Warn;  use Sem_Warn;
+with Snames;    use Snames;
+with Stand;     use Stand;
+with Sinfo;     use Sinfo;
 with Style;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Tbuild;    use Tbuild;
+with Uintp;     use Uintp;
 
 package body Sem_Ch9 is
 
@@ -782,7 +783,7 @@ package body Sem_Ch9 is
       for J in reverse 0 .. Scope_Stack.Last loop
          Task_Nam := Scope_Stack.Table (J).Entity;
          exit when Ekind (Etype (Task_Nam)) = E_Task_Type;
-         Kind :=  Ekind (Task_Nam);
+         Kind := Ekind (Task_Nam);
 
          if Kind /= E_Block and then Kind /= E_Loop
            and then not Is_Entry (Task_Nam)
@@ -1191,10 +1192,17 @@ package body Sem_Ch9 is
       Entry_Name : Entity_Id;
 
    begin
+      --  An entry body "freezes" the contract of the nearest enclosing
+      --  package body. This ensures that any annotations referenced by the
+      --  contract of an entry or subprogram body declared within the current
+      --  protected body are available.
+
+      Analyze_Enclosing_Package_Body_Contract (N);
+
       Tasking_Used := True;
 
       --  Entry_Name is initialized to Any_Id. It should get reset to the
-      --  matching entry entity. An error is signalled if it is not reset
+      --  matching entry entity. An error is signalled if it is not reset.
 
       Entry_Name := Any_Id;
 
@@ -1206,9 +1214,21 @@ package body Sem_Ch9 is
          Set_Ekind (Id, E_Entry);
       end if;
 
-      Set_Scope          (Id, Current_Scope);
       Set_Etype          (Id, Standard_Void_Type);
+      Set_Scope          (Id, Current_Scope);
       Set_Accept_Address (Id, New_Elmt_List);
+
+      --  Set the SPARK_Mode from the current context (may be overwritten later
+      --  with an explicit pragma).
+
+      Set_SPARK_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Id);
+
+      --  Analyze any aspect specifications that appear on the entry body
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
+      end if;
 
       E := First_Entity (P_Type);
       while Present (E) loop
@@ -1218,7 +1238,7 @@ package body Sem_Ch9 is
          then
             Entry_Name := E;
             Set_Convention (Id, Convention (E));
-            Set_Corresponding_Body (Parent (Entry_Name), Id);
+            Set_Corresponding_Body (Parent (E), Id);
             Check_Fully_Conformant (Id, E, N);
 
             if Ekind (Id) = E_Entry_Family then
@@ -1312,7 +1332,7 @@ package body Sem_Ch9 is
       --  The entity for the protected subprogram corresponding to the entry
       --  has been created. We retain the name of this entity in the entry
       --  body, for use when the corresponding subprogram body is created.
-      --  Note that entry bodies have no corresponding_spec, and there is no
+      --  Note that entry bodies have no Corresponding_Spec, and there is no
       --  easy link back in the tree between the entry body and the entity for
       --  the entry itself, which is why we must propagate some attributes
       --  explicitly from spec to body.
@@ -1334,10 +1354,21 @@ package body Sem_Ch9 is
            (Sloc (N), Entry_Name, P_Type, N, Decls);
       end if;
 
+      --  An entry body "freezes" the contract of its initial declaration. This
+      --  analysis depends on attribute Corresponding_Body being set.
+
+      Analyze_Initial_Declaration_Contract (N);
+
       if Present (Decls) then
          Analyze_Declarations (Decls);
          Inspect_Deferred_Constant_Completion (Decls);
       end if;
+
+      --  Process the contract of the subprogram body after all declarations
+      --  have been analyzed. This ensures that any contract-related pragmas
+      --  are available through the N_Contract node of the body.
+
+      Analyze_Entry_Or_Subprogram_Body_Contract (Id);
 
       if Present (Stats) then
          Analyze (Stats);
@@ -1602,6 +1633,15 @@ package body Sem_Ch9 is
       Set_Convention     (Def_Id, Convention_Entry);
       Set_Accept_Address (Def_Id, New_Elmt_List);
 
+      --  Set the SPARK_Mode from the current context (may be overwritten later
+      --  with an explicit pragma). Task entries are excluded because they are
+      --  not completed by entry bodies.
+
+      if Ekind (Current_Scope) = E_Protected_Type then
+         Set_SPARK_Pragma           (Def_Id, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma_Inherited (Def_Id);
+      end if;
+
       --  Process formals
 
       if Present (Formals) then
@@ -1731,29 +1771,19 @@ package body Sem_Ch9 is
    --  Start of processing for Analyze_Protected_Body
 
    begin
+      --  A protected body "freezes" the contract of the nearest enclosing
+      --  package body. This ensures that any annotations referenced by the
+      --  contract of an entry or subprogram body declared within the current
+      --  protected body are available.
+
+      Analyze_Enclosing_Package_Body_Contract (N);
+
       Tasking_Used := True;
       Set_Ekind (Body_Id, E_Protected_Body);
+      Set_Etype (Body_Id, Standard_Void_Type);
       Spec_Id := Find_Concurrent_Spec (Body_Id);
 
-      --  Protected bodies are currently removed by the expander. Since there
-      --  are no language-defined aspects that apply to a protected body, it is
-      --  not worth changing the whole expansion to accomodate implementation-
-      --  defined aspects. Plus we cannot possibly known the semantics of such
-      --  future implementation defined aspects in order to plan ahead.
-
-      if Has_Aspects (N) then
-         Error_Msg_N
-           ("aspects on protected bodies are not allowed",
-            First (Aspect_Specifications (N)));
-
-         --  Remove illegal aspects to prevent cascaded errors later on
-
-         Remove_Aspects (N);
-      end if;
-
-      if Present (Spec_Id)
-        and then Ekind (Spec_Id) = E_Protected_Type
-      then
+      if Present (Spec_Id) and then Ekind (Spec_Id) = E_Protected_Type then
          null;
 
       elsif Present (Spec_Id)
@@ -1777,15 +1807,22 @@ package body Sem_Ch9 is
          Spec_Id := Etype (Spec_Id);
       end if;
 
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Body_Id);
+      end if;
+
       Push_Scope (Spec_Id);
       Set_Corresponding_Spec (N, Spec_Id);
       Set_Corresponding_Body (Parent (Spec_Id), Body_Id);
       Set_Has_Completion (Spec_Id);
       Install_Declarations (Spec_Id);
-
       Expand_Protected_Body_Declarations (N, Spec_Id);
-
       Last_E := Last_Entity (Spec_Id);
+
+      --  A protected body "freezes" the contract of its initial declaration.
+      --  This analysis depends on attribute Corresponding_Spec being set.
+
+      Analyze_Initial_Declaration_Contract (N);
 
       Analyze_Declarations (Declarations (N));
 
@@ -1968,6 +2005,15 @@ package body Sem_Ch9 is
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);
       Set_Stored_Constraint  (T, No_Elist);
+
+      --  Set the SPARK_Mode from the current context (may be overwritten later
+      --  with an explicit pragma).
+
+      Set_SPARK_Pragma               (T, SPARK_Mode_Pragma);
+      Set_SPARK_Aux_Pragma           (T, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited     (T);
+      Set_SPARK_Aux_Pragma_Inherited (T);
+
       Push_Scope (T);
 
       if Ada_Version >= Ada_2005 then
@@ -2075,20 +2121,23 @@ package body Sem_Ch9 is
                  or else From_Aspect_Specification (Prio_Item)
                then
                   Error_Msg_Name_1 := Chars (Identifier (Prio_Item));
-                  Error_Msg_NE ("aspect% for & has no effect when Lock_Free" &
-                                " given??", Prio_Item, Id);
+                  Error_Msg_NE
+                    ("aspect% for & has no effect when Lock_Free given??",
+                     Prio_Item, Id);
 
                --  Pragma case
 
                else
                   Error_Msg_Name_1 := Pragma_Name (Prio_Item);
-                  Error_Msg_NE ("pragma% for & has no effect when Lock_Free" &
-                                " given??", Prio_Item, Id);
+                  Error_Msg_NE
+                    ("pragma% for & has no effect when Lock_Free given??",
+                     Prio_Item, Id);
                end if;
             end if;
          end;
 
-         if not Allows_Lock_Free_Implementation (N, True) then
+         if not Allows_Lock_Free_Implementation (N, Lock_Free_Given => True)
+         then
             return;
          end if;
       end if;
@@ -2112,16 +2161,18 @@ package body Sem_Ch9 is
                     or else From_Aspect_Specification (Prio_Item))
                  and then Chars (Identifier (Prio_Item)) = Name_Priority
                then
-                  Error_Msg_N ("aspect Interrupt_Priority is preferred "
-                               & "in presence of handlers??", Prio_Item);
+                  Error_Msg_N
+                    ("aspect Interrupt_Priority is preferred in presence of "
+                     & "handlers??", Prio_Item);
 
                --  Pragma case
 
                elsif Nkind (Prio_Item) = N_Pragma
                  and then Pragma_Name (Prio_Item) = Name_Priority
                then
-                  Error_Msg_N ("pragma Interrupt_Priority is preferred "
-                               & "in presence of handlers??", Prio_Item);
+                  Error_Msg_N
+                    ("pragma Interrupt_Priority is preferred in presence of "
+                     & "handlers??", Prio_Item);
                end if;
             end if;
          end;
@@ -2367,12 +2418,6 @@ package body Sem_Ch9 is
          Generate_Reference (Entry_Id, Entry_Name);
 
          if Present (First_Formal (Entry_Id)) then
-            if VM_Target = JVM_Target then
-               Error_Msg_N
-                 ("arguments unsupported in requeue statement",
-                  First_Formal (Entry_Id));
-               return;
-            end if;
 
             --  Ada 2012 (AI05-0030): Perform type conformance after skipping
             --  the first parameter of Entry_Id since it is the interface
@@ -2581,49 +2626,75 @@ package body Sem_Ch9 is
    ------------------------------------------
 
    procedure Analyze_Single_Protected_Declaration (N : Node_Id) is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Id     : constant Node_Id    := Defining_Identifier (N);
-      T      : Entity_Id;
-      T_Decl : Node_Id;
-      O_Decl : Node_Id;
-      O_Name : constant Entity_Id := Id;
+      Loc      : constant Source_Ptr := Sloc (N);
+      Obj_Id   : constant Node_Id    := Defining_Identifier (N);
+      Obj_Decl : Node_Id;
+      Typ      : Entity_Id;
 
    begin
-      Generate_Definition (Id);
+      Generate_Definition (Obj_Id);
       Tasking_Used := True;
 
-      --  The node is rewritten as a protected type declaration, in exact
-      --  analogy with what is done with single tasks.
+      --  A single protected declaration is transformed into a pair of an
+      --  anonymous protected type and an object of that type. Generate:
 
-      T :=
-        Make_Defining_Identifier (Sloc (Id),
-          New_External_Name (Chars (Id), 'T'));
+      --    protected type Typ is ...;
 
-      T_Decl :=
+      Typ :=
+        Make_Defining_Identifier (Sloc (Obj_Id),
+          Chars => New_External_Name (Chars (Obj_Id), 'T'));
+
+      Rewrite (N,
         Make_Protected_Type_Declaration (Loc,
-         Defining_Identifier => T,
+         Defining_Identifier => Typ,
          Protected_Definition => Relocate_Node (Protected_Definition (N)),
-         Interface_List       => Interface_List (N));
+         Interface_List       => Interface_List (N)));
 
-      O_Decl :=
+      --  Use the original defining identifier of the single protected
+      --  declaration in the generated object declaration to allow for debug
+      --  information to be attached to it when compiling with -gnatD. The
+      --  parent of the entity is the new object declaration. The single
+      --  protected declaration is not used in semantics or code generation,
+      --  but is scanned when generating debug information, and therefore needs
+      --  the updated Sloc information from the entity (see Sprint). Generate:
+
+      --    Obj : Typ;
+
+      Obj_Decl :=
         Make_Object_Declaration (Loc,
-          Defining_Identifier => O_Name,
-          Object_Definition   => Make_Identifier (Loc,  Chars (T)));
+          Defining_Identifier => Obj_Id,
+          Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
-      Rewrite (N, T_Decl);
-      Insert_After (N, O_Decl);
-      Mark_Rewrite_Insertion (O_Decl);
+      Insert_After (N, Obj_Decl);
+      Mark_Rewrite_Insertion (Obj_Decl);
 
-      --  Enter names of type and object before analysis, because the name of
-      --  the object may be used in its own body.
+      --  Relocate aspect Part_Of from the the original single protected
+      --  declaration to the anonymous object declaration. This emulates the
+      --  placement of an equivalent source pragma.
 
-      Enter_Name (T);
-      Set_Ekind (T, E_Protected_Type);
-      Set_Etype (T, T);
+      Move_Or_Merge_Aspects (N, To => Obj_Decl);
 
-      Enter_Name (O_Name);
-      Set_Ekind (O_Name, E_Variable);
-      Set_Etype (O_Name, T);
+      --  Relocate pragma Part_Of from the visible declarations of the original
+      --  single protected declaration to the anonymous object declaration. The
+      --  new placement better reflects the role of the pragma.
+
+      Relocate_Pragmas_To_Anonymous_Object (N, Obj_Decl);
+
+      --  Enter the names of the anonymous protected type and the object before
+      --  analysis takes places, because the name of the object may be used in
+      --  its own body.
+
+      Enter_Name (Typ);
+      Set_Ekind            (Typ, E_Protected_Type);
+      Set_Etype            (Typ, Typ);
+      Set_Anonymous_Object (Typ, Obj_Id);
+
+      Enter_Name (Obj_Id);
+      Set_Ekind                  (Obj_Id, E_Variable);
+      Set_Etype                  (Obj_Id, Typ);
+      Set_Part_Of_Constituents   (Obj_Id, New_Elmt_List);
+      Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Obj_Id);
 
       --  Instead of calling Analyze on the new node, call the proper analysis
       --  procedure directly. Otherwise the node would be expanded twice, with
@@ -2632,7 +2703,7 @@ package body Sem_Ch9 is
       Analyze_Protected_Type_Declaration (N);
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
+         Analyze_Aspect_Specifications (N, Obj_Id);
       end if;
    end Analyze_Single_Protected_Declaration;
 
@@ -2641,58 +2712,76 @@ package body Sem_Ch9 is
    -------------------------------------
 
    procedure Analyze_Single_Task_Declaration (N : Node_Id) is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Id     : constant Node_Id    := Defining_Identifier (N);
-      T      : Entity_Id;
-      T_Decl : Node_Id;
-      O_Decl : Node_Id;
-      O_Name : constant Entity_Id := Id;
+      Loc      : constant Source_Ptr := Sloc (N);
+      Obj_Id   : constant Node_Id    := Defining_Identifier (N);
+      Obj_Decl : Node_Id;
+      Typ      : Entity_Id;
 
    begin
-      Generate_Definition (Id);
+      Generate_Definition (Obj_Id);
       Tasking_Used := True;
 
-      --  The node is rewritten as a task type declaration, followed by an
-      --  object declaration of that anonymous task type.
+      --  A single task declaration is transformed into a pait of an anonymous
+      --  task type and an object of that type. Generate:
 
-      T :=
-        Make_Defining_Identifier (Sloc (Id),
-          New_External_Name (Chars (Id), Suffix => "TK"));
+      --    task type Typ is ...;
 
-      T_Decl :=
+      Typ :=
+        Make_Defining_Identifier (Sloc (Obj_Id),
+          Chars => New_External_Name (Chars (Obj_Id), Suffix => "TK"));
+
+      Rewrite (N,
         Make_Task_Type_Declaration (Loc,
-          Defining_Identifier => T,
+          Defining_Identifier => Typ,
           Task_Definition     => Relocate_Node (Task_Definition (N)),
-          Interface_List      => Interface_List (N));
+          Interface_List      => Interface_List (N)));
 
-      --  We use the original defining identifier of the single task in the
-      --  generated object declaration, so that debugging information can
-      --  be attached to it when compiling with -gnatD. The parent of the
-      --  entity is the new object declaration. The single_task_declaration
-      --  is not used further in semantics or code generation, but is scanned
-      --  when generating debug information, and therefore needs the updated
-      --  Sloc information for the entity (see Sprint). Aspect specifications
-      --  are moved from the single task node to the object declaration node.
+      --  Use the original defining identifier of the single task declaration
+      --  in the generated object declaration to allow for debug information
+      --  to be attached to it when compiling with -gnatD. The parent of the
+      --  entity is the new object declaration. The single task declaration
+      --  is not used in semantics or code generation, but is scanned when
+      --  generating debug information, and therefore needs the updated Sloc
+      --  information from the entity (see Sprint). Generate:
 
-      O_Decl :=
+      --    Obj : Typ;
+
+      Obj_Decl :=
         Make_Object_Declaration (Loc,
-          Defining_Identifier => O_Name,
-          Object_Definition   => Make_Identifier (Loc, Chars (T)));
+          Defining_Identifier => Obj_Id,
+          Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
-      Rewrite (N, T_Decl);
-      Insert_After (N, O_Decl);
-      Mark_Rewrite_Insertion (O_Decl);
+      Insert_After (N, Obj_Decl);
+      Mark_Rewrite_Insertion (Obj_Decl);
 
-      --  Enter names of type and object before analysis, because the name of
-      --  the object may be used in its own body.
+      --  Relocate aspects Depends, Global and Part_Of from the original single
+      --  task declaration to the anonymous object declaration. This emulates
+      --  the placement of an equivalent source pragma.
 
-      Enter_Name (T);
-      Set_Ekind (T, E_Task_Type);
-      Set_Etype (T, T);
+      Move_Or_Merge_Aspects (N, To => Obj_Decl);
 
-      Enter_Name (O_Name);
-      Set_Ekind (O_Name, E_Variable);
-      Set_Etype (O_Name, T);
+      --  Relocate pragmas Depends, Global and Part_Of from the visible
+      --  declarations of the original single protected declaration to the
+      --  anonymous object declaration. The new placement better reflects the
+      --  role of the pragmas.
+
+      Relocate_Pragmas_To_Anonymous_Object (N, Obj_Decl);
+
+      --  Enter the names of the anonymous task type and the object before
+      --  analysis takes places, because the name of the object may be used
+      --  in its own body.
+
+      Enter_Name (Typ);
+      Set_Ekind            (Typ, E_Task_Type);
+      Set_Etype            (Typ, Typ);
+      Set_Anonymous_Object (Typ, Obj_Id);
+
+      Enter_Name (Obj_Id);
+      Set_Ekind                  (Obj_Id, E_Variable);
+      Set_Etype                  (Obj_Id, Typ);
+      Set_Part_Of_Constituents   (Obj_Id, New_Elmt_List);
+      Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Obj_Id);
 
       --  Instead of calling Analyze on the new node, call the proper analysis
       --  procedure directly. Otherwise the node would be expanded twice, with
@@ -2701,7 +2790,7 @@ package body Sem_Ch9 is
       Analyze_Task_Type_Declaration (N);
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
+         Analyze_Aspect_Specifications (N, Obj_Id);
       end if;
    end Analyze_Single_Task_Declaration;
 
@@ -2726,33 +2815,23 @@ package body Sem_Ch9 is
       --  a single task, since Spec_Id is set to the task type).
 
    begin
+      --  A task body "freezes" the contract of the nearest enclosing package
+      --  body. This ensures that annotations referenced by the contract of an
+      --  entry or subprogram body declared within the current protected body
+      --  are available.
+
+      Analyze_Enclosing_Package_Body_Contract (N);
+
       Tasking_Used := True;
-      Set_Ekind (Body_Id, E_Task_Body);
       Set_Scope (Body_Id, Current_Scope);
+      Set_Ekind (Body_Id, E_Task_Body);
+      Set_Etype (Body_Id, Standard_Void_Type);
       Spec_Id := Find_Concurrent_Spec (Body_Id);
-
-      --  Task bodies are transformed into a subprogram spec and body pair by
-      --  the expander. Since there are no language-defined aspects that apply
-      --  to a task body, it is not worth changing the whole expansion to
-      --  accomodate implementation-defined aspects. Plus we cannot possibly
-      --  know semantics of such aspects in order to plan ahead.
-
-      if Has_Aspects (N) then
-         Error_Msg_N
-           ("aspects on task bodies are not allowed",
-            First (Aspect_Specifications (N)));
-
-         --  Remove illegal aspects to prevent cascaded errors later on
-
-         Remove_Aspects (N);
-      end if;
 
       --  The spec is either a task type declaration, or a single task
       --  declaration for which we have created an anonymous type.
 
-      if Present (Spec_Id)
-        and then Ekind (Spec_Id) = E_Task_Type
-      then
+      if Present (Spec_Id) and then Ekind (Spec_Id) = E_Task_Type then
          null;
 
       elsif Present (Spec_Id)
@@ -2786,12 +2865,27 @@ package body Sem_Ch9 is
          Spec_Id := Etype (Spec_Id);
       end if;
 
+      --  Set the SPARK_Mode from the current context (may be overwritten later
+      --  with an explicit pragma).
+
+      Set_SPARK_Pragma           (Body_Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Body_Id);
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Body_Id);
+      end if;
+
       Push_Scope (Spec_Id);
       Set_Corresponding_Spec (N, Spec_Id);
       Set_Corresponding_Body (Parent (Spec_Id), Body_Id);
       Set_Has_Completion (Spec_Id);
       Install_Declarations (Spec_Id);
       Last_E := Last_Entity (Spec_Id);
+
+      --  A task body "freezes" the contract of its initial declaration. This
+      --  analysis depends on attribute Corresponding_Spec being set.
+
+      Analyze_Initial_Declaration_Contract (N);
 
       Analyze_Declarations (Decls);
       Inspect_Deferred_Constant_Completion (Decls);
@@ -2946,6 +3040,15 @@ package body Sem_Ch9 is
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);
       Set_Stored_Constraint  (T, No_Elist);
+
+      --  Set the SPARK_Mode from the current context (may be overwritten later
+      --  with an explicit pragma).
+
+      Set_SPARK_Pragma               (T, SPARK_Mode_Pragma);
+      Set_SPARK_Aux_Pragma           (T, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited     (T);
+      Set_SPARK_Aux_Pragma_Inherited (T);
+
       Push_Scope (T);
 
       if Ada_Version >= Ada_2005 then
@@ -3459,4 +3562,5 @@ package body Sem_Ch9 is
          Next_Entity (E);
       end loop;
    end Install_Declarations;
+
 end Sem_Ch9;

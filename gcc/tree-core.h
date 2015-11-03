@@ -232,7 +232,10 @@ enum omp_clause_code {
      Operand 2: OMP_CLAUSE_REDUCTION_MERGE: Stmt-list to merge private var
                 into the shared one.
      Operand 3: OMP_CLAUSE_REDUCTION_PLACEHOLDER: A dummy VAR_DECL
-                placeholder used in OMP_CLAUSE_REDUCTION_{INIT,MERGE}.  */
+                placeholder used in OMP_CLAUSE_REDUCTION_{INIT,MERGE}.
+     Operand 4: OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER: Another dummy
+		VAR_DECL placeholder, used like the above for C/C++ array
+		reductions.  */
   OMP_CLAUSE_REDUCTION,
 
   /* OpenMP clause: copyin (variable_list).  */
@@ -253,6 +256,13 @@ enum omp_clause_code {
   /* OpenMP clause: uniform (argument-list).  */
   OMP_CLAUSE_UNIFORM,
 
+  /* OpenMP clause: to (extended-list).
+     Only when it appears in declare target.  */
+  OMP_CLAUSE_TO_DECLARE,
+
+  /* OpenMP clause: link (variable-list).  */
+  OMP_CLAUSE_LINK,
+
   /* OpenMP clause: from (variable-list).  */
   OMP_CLAUSE_FROM,
 
@@ -266,6 +276,12 @@ enum omp_clause_code {
 
      OpenMP clause: map ({alloc:,to:,from:,tofrom:,}variable-list).  */
   OMP_CLAUSE_MAP,
+
+  /* OpenMP clause: use_device_ptr (variable-list).  */
+  OMP_CLAUSE_USE_DEVICE_PTR,
+
+  /* OpenMP clause: is_device_ptr (variable-list).  */
+  OMP_CLAUSE_IS_DEVICE_PTR,
 
   /* Internal structure to hold OpenACC cache directive's variable-list.
      #pragma acc cache (variable-list).  */
@@ -312,7 +328,7 @@ enum omp_clause_code {
   /* OpenMP clause: nowait.  */
   OMP_CLAUSE_NOWAIT,
 
-  /* OpenMP clause: ordered.  */
+  /* OpenMP clause: ordered [(constant-integer-expression)].  */
   OMP_CLAUSE_ORDERED,
 
   /* OpenMP clause: default.  */
@@ -368,6 +384,30 @@ enum omp_clause_code {
 
   /* OpenMP clause: taskgroup.  */
   OMP_CLAUSE_TASKGROUP,
+
+  /* OpenMP clause: priority (integer-expression).  */
+  OMP_CLAUSE_PRIORITY,
+
+  /* OpenMP clause: grainsize (integer-expression).  */
+  OMP_CLAUSE_GRAINSIZE,
+
+  /* OpenMP clause: num_tasks (integer-expression).  */
+  OMP_CLAUSE_NUM_TASKS,
+
+  /* OpenMP clause: nogroup.  */
+  OMP_CLAUSE_NOGROUP,
+
+  /* OpenMP clause: threads.  */
+  OMP_CLAUSE_THREADS,
+
+  /* OpenMP clause: simd.  */
+  OMP_CLAUSE_SIMD,
+
+  /* OpenMP clause: hint (integer-expression).  */
+  OMP_CLAUSE_HINT,
+
+  /* OpenMP clause: defaultmap (tofrom: scalar).  */
+  OMP_CLAUSE_DEFAULTMAP,
 
   /* Internally used only clause, holding SIMD uid.  */
   OMP_CLAUSE__SIMDUID_,
@@ -1218,6 +1258,8 @@ enum omp_clause_depend_kind
   OMP_CLAUSE_DEPEND_IN,
   OMP_CLAUSE_DEPEND_OUT,
   OMP_CLAUSE_DEPEND_INOUT,
+  OMP_CLAUSE_DEPEND_SOURCE,
+  OMP_CLAUSE_DEPEND_SINK,
   OMP_CLAUSE_DEPEND_LAST
 };
 
@@ -1230,6 +1272,14 @@ enum omp_clause_proc_bind_kind
   OMP_CLAUSE_PROC_BIND_CLOSE = 3,
   OMP_CLAUSE_PROC_BIND_SPREAD = 4,
   OMP_CLAUSE_PROC_BIND_LAST
+};
+
+enum omp_clause_linear_kind
+{
+  OMP_CLAUSE_LINEAR_DEFAULT,
+  OMP_CLAUSE_LINEAR_REF,
+  OMP_CLAUSE_LINEAR_VAL,
+  OMP_CLAUSE_LINEAR_UVAL
 };
 
 struct GTY(()) tree_exp {
@@ -1250,7 +1300,7 @@ struct GTY(()) ssa_use_operand_t {
      needs to point to the original SSA name.  Since statements and
      SSA names are of different data types, we need this union.  See
      the explanation in struct imm_use_iterator.  */
-  union { gimple stmt; tree ssa_name; } GTY((skip(""))) loc;
+  union { gimple *stmt; tree ssa_name; } GTY((skip(""))) loc;
   tree *GTY((skip(""))) use;
 };
 
@@ -1261,7 +1311,7 @@ struct GTY(()) tree_ssa_name {
   tree var;
 
   /* Statement that defines this SSA name.  */
-  gimple def_stmt;
+  gimple *def_stmt;
 
   /* Value range information.  */
   union ssa_name_info_type {
@@ -1293,9 +1343,11 @@ struct GTY(()) tree_omp_clause {
     enum omp_clause_schedule_kind  schedule_kind;
     enum omp_clause_depend_kind    depend_kind;
     /* See include/gomp-constants.h for enum gomp_map_kind's values.  */
-    unsigned char		   map_kind;
+    unsigned int		   map_kind;
     enum omp_clause_proc_bind_kind proc_bind_kind;
     enum tree_code                 reduction_code;
+    enum omp_clause_linear_kind    linear_kind;
+    enum tree_code                 if_modifier;
   } GTY ((skip)) subcode;
 
   /* The gimplification of OMP_CLAUSE_REDUCTION_{INIT,MERGE} for omp-low's

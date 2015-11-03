@@ -641,7 +641,7 @@ package body Scng is
             end loop;
          end Scan_Integer;
 
-      --  Start of Processing for Nlit
+      --  Start of processing for Nlit
 
       begin
          Base := 10;
@@ -1834,14 +1834,19 @@ package body Scng is
 
          --  Apostrophe. This can either be the start of a character literal,
          --  or an isolated apostrophe used in a qualified expression or an
-         --  attribute. We treat it as a character literal if it does not
-         --  follow a right parenthesis, identifier, the keyword ALL or
-         --  a literal. This means that we correctly treat constructs like:
+         --  attribute. In the following:
 
          --    A := CHARACTER'('A');
 
-         --  Note that RM-2.2(7) does not require a separator between
-         --  "CHARACTER" and "'" in the above.
+         --  the first apostrophe is treated as an isolated apostrophe, and the
+         --  second one is treated as the start of the character literal 'A'.
+         --  Note that RM-2.2(7) does not require a separator between "'" and
+         --  "(" in the above, so we cannot use lookahead to distinguish the
+         --  cases; we use look-back instead. Analysis of the grammar shows
+         --  that some tokens can be followed by an apostrophe, and some by a
+         --  character literal, but none by both. Some cannot be followed by
+         --  either, so it doesn't matter what we do in those cases, except to
+         --  get good error behavior.
 
          when ''' => Char_Literal_Case : declare
             Code : Char_Code;
@@ -1851,17 +1856,18 @@ package body Scng is
             Accumulate_Checksum (''');
             Scan_Ptr := Scan_Ptr + 1;
 
-            --  Here is where we make the test to distinguish the cases. Treat
-            --  as apostrophe if previous token is an identifier, right paren
-            --  or the reserved word "all" (latter case as in A.all'Address)
-            --  (or the reserved word "project" in project files). Also treat
-            --  it as apostrophe after a literal (this catches some legitimate
-            --  cases, like A."abs"'Address, and also gives better error
-            --  behavior for impossible cases like 123'xxx).
+            --  Distinguish between apostrophe and character literal. It's an
+            --  apostrophe if the previous token is one of the following.
+            --  Reserved words are included for things like A.all'Address and
+            --  T'Digits'Img. Strings literals are included for things like
+            --  "abs"'Address. Other literals are included to give better error
+            --  behavior for illegal cases like 123'Img.
 
             if Prev_Token = Tok_Identifier
                or else Prev_Token = Tok_Right_Paren
                or else Prev_Token = Tok_All
+               or else Prev_Token = Tok_Delta
+               or else Prev_Token = Tok_Digits
                or else Prev_Token = Tok_Project
                or else Prev_Token in Token_Class_Literal
             then

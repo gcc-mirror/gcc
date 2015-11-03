@@ -23,14 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
 #include "ssa.h"
-#include "alias.h"
 #include "fold-const.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-ssa.h"
-#include "diagnostic-core.h"
 
 /* Rewriting a function into SSA form can create a huge number of PHIs
    many of which may be thrown away shortly after their creation if jumps
@@ -71,7 +67,7 @@ along with GCC; see the file COPYING3.  If not see
    the -2 on all the calculations below.  */
 
 #define NUM_BUCKETS 10
-static GTY ((deletable (""))) vec<gimple, va_gc> *free_phinodes[NUM_BUCKETS - 2];
+static GTY ((deletable (""))) vec<gimple *, va_gc> *free_phinodes[NUM_BUCKETS - 2];
 static unsigned long free_phinode_count;
 
 static int ideal_phi_node_len (int);
@@ -212,7 +208,7 @@ make_phi_node (tree var, int len)
 /* We no longer need PHI, release it so that it may be reused.  */
 
 void
-release_phi_node (gimple phi)
+release_phi_node (gimple *phi)
 {
   size_t bucket;
   size_t len = gimple_phi_capacity (phi);
@@ -442,7 +438,7 @@ remove_phi_args (edge e)
 void
 remove_phi_node (gimple_stmt_iterator *gsi, bool release_lhs_p)
 {
-  gimple phi = gsi_stmt (*gsi);
+  gimple *phi = gsi_stmt (*gsi);
 
   if (release_lhs_p)
     insert_debug_temps_for_defs (gsi);

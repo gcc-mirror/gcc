@@ -3,7 +3,7 @@
    Limitations:	none.
    PR:		none.
    Originator:	From the original ffitest.c  */
-/* { dg-do run } */
+/* { dg-do run { target { ! hppa*-*-hpux* } } } */
 
 #include "ffitest.h"
 #include "float.h"

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1135,20 +1135,23 @@ package System.Tasking is
       --  User-writeable location, for use in debugging tasks; also provides a
       --  simple task specific data.
 
+      Free_On_Termination : Boolean := False;
+      --  Deallocate the ATCB when the task terminates. This flag is normally
+      --  False, and is set True when Unchecked_Deallocation is called on a
+      --  non-terminated task so that the associated storage is automatically
+      --  reclaimed when the task terminates.
+
       Attributes : Attribute_Array := (others => 0);
       --  Task attributes
+
+      --  IMPORTANT Note: the Entry_Queues field is last for efficiency of
+      --  access to other fields, do not put new fields after this one.
 
       Entry_Queues : Task_Entry_Queue_Array (1 .. Entry_Num);
       --  An array of task entry queues
       --
       --  Protection: Self.L. Once a task has set Self.Stage to Completing, it
       --  has exclusive access to this field.
-
-      Free_On_Termination : Boolean := False;
-      --  Deallocate the ATCB when the task terminates. This flag is normally
-      --  False, and is set True when Unchecked_Deallocation is called on a
-      --  non-terminated task so that the associated storage is automatically
-      --  reclaimed when the task terminates.
    end record;
 
    --------------------

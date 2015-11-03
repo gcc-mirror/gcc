@@ -2421,8 +2421,8 @@ bool OffloadDescriptor::setup_misc_data(const char *name)
         }
 
         // initialize function descriptor
-        m_func_desc = (FunctionDescriptor*) malloc(m_func_desc_size +
-                                                   misc_data_size);
+        m_func_desc = (FunctionDescriptor*) calloc(1, m_func_desc_size
+						      + misc_data_size);
         if (m_func_desc == NULL)
           LIBOFFLOAD_ERROR(c_malloc);
         m_func_desc->console_enabled = console_enabled;
@@ -5087,6 +5087,7 @@ static void __offload_fini_library(void)
     OFFLOAD_DEBUG_TRACE(2, "Cleanup offload library ...\n");
     if (mic_engines_total > 0) {
         delete[] mic_engines;
+        mic_engines_total = 0;
 
         if (mic_proxy_fs_root != 0) {
             free(mic_proxy_fs_root);
@@ -5173,6 +5174,8 @@ static void __offload_init_library_once(void)
         if (strcasecmp(env_var, "none") != 0) {
             // value is composed of comma separated physical device indexes
             char *buf = strdup(env_var);
+	    if (buf == NULL)
+	      LIBOFFLOAD_ERROR(c_malloc);
             char *str, *ptr;
             for (str = strtok_r(buf, ",", &ptr); str != 0;
                  str = strtok_r(0, ",", &ptr)) {
@@ -5245,7 +5248,9 @@ static void __offload_init_library_once(void)
     if (env_var != 0) {
         char * new_env_var =
                    (char*) malloc(sizeof("COI_HOST_THREAD_AFFINITY=") +
-                                  sizeof(env_var) + 1);
+                                  strlen(env_var));
+	if (new_env_var == NULL)
+	  LIBOFFLOAD_ERROR(c_malloc);
         sprintf(new_env_var, "COI_HOST_THREAD_AFFINITY=%s", env_var);
         putenv(new_env_var);
     }
@@ -5254,6 +5259,8 @@ static void __offload_init_library_once(void)
     env_var = getenv("MIC_LD_LIBRARY_PATH");
     if (env_var != 0) {
         mic_library_path = strdup(env_var);
+	if (mic_library_path == NULL)
+	  LIBOFFLOAD_ERROR(c_malloc);
     }
 
 
@@ -5262,6 +5269,8 @@ static void __offload_init_library_once(void)
     const char *base_name = "offload_main";
     if (mic_library_path != 0) {
         char *buf = strdup(mic_library_path);
+	if (buf == NULL)
+	  LIBOFFLOAD_ERROR(c_malloc);
         char *try_name = (char*) alloca(strlen(mic_library_path) +
                 strlen(base_name) + 2);
         char *dir, *ptr;
@@ -5275,6 +5284,8 @@ static void __offload_init_library_once(void)
             struct stat st;
             if (stat(try_name, &st) == 0 && S_ISREG(st.st_mode)) {
                 mic_device_main = strdup(try_name);
+		if (mic_device_main == NULL)
+		  LIBOFFLOAD_ERROR(c_malloc);
                 break;
             }
         }
@@ -5345,6 +5356,8 @@ static void __offload_init_library_once(void)
     env_var = getenv("MIC_PROXY_FS_ROOT");
     if (env_var != 0 && *env_var != '\0') {
         mic_proxy_fs_root = strdup(env_var);
+	if (mic_proxy_fs_root == NULL)
+	  LIBOFFLOAD_ERROR(c_malloc);
     }
 
     // Prepare environment for the target process using the following

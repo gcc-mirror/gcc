@@ -22,14 +22,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
+#include "c-target.h"
 #include "tree.h"
 #include "c-common.h"
+#include "tm_p.h"		/* For C_COMMON_OVERRIDE_OPTIONS.  */
+#include "diagnostic.h"
+#include "alias.h"
 #include "c-pragma.h"
 #include "flags.h"
 #include "toplev.h"
 #include "langhooks.h"
-#include "diagnostic.h"
 #include "tree-diagnostic.h" /* for virt_loc_aware_diagnostic_finalizer */
 #include "intl.h"
 #include "cppdefault.h"
@@ -38,8 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "plugin.h"		/* For PLUGIN_INCLUDE_FILE event.  */
 #include "mkdeps.h"
-#include "c-target.h"
-#include "tm_p.h"		/* For C_COMMON_OVERRIDE_OPTIONS.  */
 #include "dumpfile.h"
 
 #ifndef DOLLARS_IN_IDENTIFIERS
@@ -397,7 +397,9 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	  warning (0, "%<-Wabi=1%> is not supported, using =2");
 	  value = 2;
 	}
-      flag_abi_compat_version = value;
+      warn_abi_version = value;
+      if (flag_abi_compat_version == -1)
+	flag_abi_compat_version = value;
       break;
 
     case OPT_fcanonical_system_headers:
@@ -870,6 +872,14 @@ c_common_post_options (const char **pfilename)
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;
 
+  if (warn_abi_version == -1)
+    {
+      if (flag_abi_compat_version != -1)
+	warn_abi_version = flag_abi_compat_version;
+      else
+	warn_abi_version = 0;
+    }
+
   if (flag_abi_compat_version == 1)
     {
       warning (0, "%<-fabi-compat-version=1%> is not supported, using =2");
@@ -877,13 +887,9 @@ c_common_post_options (const char **pfilename)
     }
   else if (flag_abi_compat_version == -1)
     {
-      /* Generate compatibility aliases for ABI v2 (3.4-4.9) by default. */
-      flag_abi_compat_version = (flag_abi_version == 0 ? 2 : 0);
-
-      /* But don't warn about backward compatibility unless explicitly
-	 requested with -Wabi=n.  */
-      if (flag_abi_version == 0)
-	warn_abi = false;
+      /* Generate compatibility aliases for ABI v8 (5.1) by default. */
+      flag_abi_compat_version
+	= (flag_abi_version == 0 ? 8 : 0);
     }
 
   /* Change flag_abi_version to be the actual current ABI level for the

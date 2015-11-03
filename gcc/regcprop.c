@@ -26,14 +26,12 @@
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
-#include "addresses.h"
-#include "reload.h"
+#include "emit-rtl.h"
 #include "recog.h"
-#include "flags.h"
 #include "diagnostic-core.h"
+#include "addresses.h"
 #include "tree-pass.h"
 #include "rtl-iter.h"
-#include "emit-rtl.h"
 
 /* The following code does forward propagation of hard register copies.
    The object is to eliminate as many dependencies as possible, so that
@@ -75,7 +73,7 @@ struct value_data
 };
 
 static object_allocator<queued_debug_insn_change> queued_debug_insn_change_pool
-  ("debug insn changes pool", 256);
+  ("debug insn changes pool");
 
 static bool skip_debug_insn_p;
 
@@ -100,9 +98,7 @@ static bool replace_oldest_value_addr (rtx *, enum reg_class,
 static bool replace_oldest_value_mem (rtx, rtx_insn *, struct value_data *);
 static bool copyprop_hardreg_forward_1 (basic_block, struct value_data *);
 extern void debug_value_data (struct value_data *);
-#ifdef ENABLE_CHECKING
 static void validate_value_data (struct value_data *);
-#endif
 
 /* Free all queued updates for DEBUG_INSNs that change some reg to
    register REGNO.  */
@@ -150,9 +146,8 @@ kill_value_one_regno (unsigned int regno, struct value_data *vd)
   if (vd->e[regno].debug_insn_changes)
     free_debug_insn_changes (vd, regno);
 
-#ifdef ENABLE_CHECKING
-  validate_value_data (vd);
-#endif
+  if (flag_checking)
+    validate_value_data (vd);
 }
 
 /* Kill the value in register REGNO for NREGS, and any other registers
@@ -365,9 +360,8 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
     continue;
   vd->e[i].next_regno = dr;
 
-#ifdef ENABLE_CHECKING
-  validate_value_data (vd);
-#endif
+  if (flag_checking)
+    validate_value_data (vd);
 }
 
 /* Return true if a mode change from ORIG to NEW is allowed for REGNO.  */
@@ -1141,7 +1135,6 @@ copyprop_hardreg_forward_bb_without_debug_insn (basic_block bb)
   skip_debug_insn_p = false;
 }
 
-#ifdef ENABLE_CHECKING
 static void
 validate_value_data (struct value_data *vd)
 {
@@ -1187,7 +1180,7 @@ validate_value_data (struct value_data *vd)
 		      i, GET_MODE_NAME (vd->e[i].mode), vd->e[i].oldest_regno,
 		      vd->e[i].next_regno);
 }
-#endif
+
 
 namespace {
 

@@ -25,9 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "alias.h"
-#include "fold-const.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "stmt.h"
@@ -43,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 
    Otherwise, all the statements are walked and NULL returned.  */
 
-gimple
+gimple *
 walk_gimple_seq_mod (gimple_seq *pseq, walk_stmt_fn callback_stmt,
 		     walk_tree_fn callback_op, struct walk_stmt_info *wi)
 {
@@ -76,12 +73,12 @@ walk_gimple_seq_mod (gimple_seq *pseq, walk_stmt_fn callback_stmt,
 /* Like walk_gimple_seq_mod, but ensure that the head of SEQ isn't
    changed by the callbacks.  */
 
-gimple
+gimple *
 walk_gimple_seq (gimple_seq seq, walk_stmt_fn callback_stmt,
 		 walk_tree_fn callback_op, struct walk_stmt_info *wi)
 {
   gimple_seq seq2 = seq;
-  gimple ret = walk_gimple_seq_mod (&seq2, callback_stmt, callback_op, wi);
+  gimple *ret = walk_gimple_seq_mod (&seq2, callback_stmt, callback_op, wi);
   gcc_assert (seq2 == seq);
   return ret;
 }
@@ -178,7 +175,7 @@ walk_gimple_asm (gasm *stmt, walk_tree_fn callback_op,
    NULL_TREE if no CALLBACK_OP is specified.  */
 
 tree
-walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
+walk_gimple_op (gimple *stmt, walk_tree_fn callback_op,
 		struct walk_stmt_info *wi)
 {
   hash_set<tree> *pset = (wi) ? wi->pset : NULL;
@@ -317,6 +314,20 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
       {
 	gomp_critical *omp_stmt = as_a <gomp_critical *> (stmt);
 	ret = walk_tree (gimple_omp_critical_name_ptr (omp_stmt),
+			 callback_op, wi, pset);
+	if (ret)
+	  return ret;
+	ret = walk_tree (gimple_omp_critical_clauses_ptr (omp_stmt),
+			 callback_op, wi, pset);
+	if (ret)
+	  return ret;
+      }
+      break;
+
+    case GIMPLE_OMP_ORDERED:
+      {
+	gomp_ordered *omp_stmt = as_a <gomp_ordered *> (stmt);
+	ret = walk_tree (gimple_omp_ordered_clauses_ptr (omp_stmt),
 			 callback_op, wi, pset);
 	if (ret)
 	  return ret;
@@ -521,9 +532,9 @@ tree
 walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt,
 		  walk_tree_fn callback_op, struct walk_stmt_info *wi)
 {
-  gimple ret;
+  gimple *ret;
   tree tree_ret;
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
 
   if (wi)
     {
@@ -688,7 +699,7 @@ get_base_loadstore (tree op)
    Returns the results of these callbacks or'ed.  */
 
 bool
-walk_stmt_load_store_addr_ops (gimple stmt, void *data,
+walk_stmt_load_store_addr_ops (gimple *stmt, void *data,
 			       walk_stmt_load_store_addr_fn visit_load,
 			       walk_stmt_load_store_addr_fn visit_store,
 			       walk_stmt_load_store_addr_fn visit_addr)
@@ -906,7 +917,7 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
    should make a faster clone for this case.  */
 
 bool
-walk_stmt_load_store_ops (gimple stmt, void *data,
+walk_stmt_load_store_ops (gimple *stmt, void *data,
 			  walk_stmt_load_store_addr_fn visit_load,
 			  walk_stmt_load_store_addr_fn visit_store)
 {

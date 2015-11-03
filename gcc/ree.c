@@ -219,33 +219,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "tree.h"
-#include "rtl.h"
-#include "df.h"
-#include "alias.h"
-#include "tm_p.h"
-#include "flags.h"
-#include "regs.h"
-#include "cfgrtl.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "insn-attr.h"
-#include "recog.h"
-#include "diagnostic-core.h"
 #include "target.h"
-#include "insn-codes.h"
+#include "rtl.h"
+#include "tree.h"
+#include "df.h"
+#include "tm_p.h"
 #include "optabs.h"
-#include "rtlhooks-def.h"
-#include "params.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "cfgrtl.h"
+#include "expr.h"
 #include "tree-pass.h"
-#include "cgraph.h"
 
 /* This structure represents a candidate for elimination.  */
 
@@ -973,7 +957,8 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 static void
 add_removable_extension (const_rtx expr, rtx_insn *insn,
 			 vec<ext_cand> *insn_list,
-			 unsigned *def_map)
+			 unsigned *def_map,
+			 bitmap init_regs)
 {
   enum rtx_code code;
   machine_mode mode;
@@ -993,11 +978,29 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
       && (code == SIGN_EXTEND || code == ZERO_EXTEND)
       && REG_P (XEXP (src, 0)))
     {
+      rtx reg = XEXP (src, 0);
       struct df_link *defs, *def;
       ext_cand *cand;
 
-      /* First, make sure we can get all the reaching definitions.  */
-      defs = get_defs (insn, XEXP (src, 0), NULL);
+      /* Zero-extension of an undefined value is partly defined (it's
+	 completely undefined for sign-extension, though).  So if there exists
+	 a path from the entry to this zero-extension that leaves this register
+	 uninitialized, removing the extension could change the behavior of
+	 correct programs.  So first, check it is not the case.  */
+      if (code == ZERO_EXTEND && !bitmap_bit_p (init_regs, REGNO (reg)))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Cannot eliminate extension:\n");
+	      print_rtl_single (dump_file, insn);
+	      fprintf (dump_file, " because it can operate on uninitialized"
+			          " data\n");
+	    }
+	  return;
+	}
+
+      /* Second, make sure we can get all the reaching definitions.  */
+      defs = get_defs (insn, reg, NULL);
       if (!defs)
 	{
 	  if (dump_file)
@@ -1009,7 +1012,7 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
 	  return;
 	}
 
-      /* Second, make sure the reaching definitions don't feed another and
+      /* Third, make sure the reaching definitions don't feed another and
 	 different extension.  FIXME: this obviously can be improved.  */
       for (def = defs; def; def = def->next)
 	if ((idx = def_map[INSN_UID (DF_REF_INSN (def->ref))])
@@ -1099,18 +1102,33 @@ find_removable_extensions (void)
   rtx_insn *insn;
   rtx set;
   unsigned *def_map = XCNEWVEC (unsigned, max_insn_uid);
+  bitmap_head init, kill, gen, tmp;
+
+  bitmap_initialize (&init, NULL);
+  bitmap_initialize (&kill, NULL);
+  bitmap_initialize (&gen, NULL);
+  bitmap_initialize (&tmp, NULL);
 
   FOR_EACH_BB_FN (bb, cfun)
-    FOR_BB_INSNS (bb, insn)
-      {
-	if (!NONDEBUG_INSN_P (insn))
-	  continue;
+    {
+      bitmap_copy (&init, DF_MIR_IN (bb));
+      bitmap_clear (&kill);
+      bitmap_clear (&gen);
 
-	set = single_set (insn);
-	if (set == NULL_RTX)
-	  continue;
-	add_removable_extension (set, insn, &insn_list, def_map);
-      }
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (NONDEBUG_INSN_P (insn))
+	    {
+	      set = single_set (insn);
+	      if (set != NULL_RTX)
+		add_removable_extension (set, insn, &insn_list, def_map,
+					 &init);
+	      df_mir_simulate_one_insn (bb, insn, &kill, &gen);
+	      bitmap_ior_and_compl (&tmp, &gen, &init, &kill);
+	      bitmap_copy (&init, &tmp);
+	    }
+	}
+    }
 
   XDELETEVEC (def_map);
 
@@ -1135,6 +1153,7 @@ find_and_remove_re (void)
      extension instruction.  */
   df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
   df_chain_add_problem (DF_UD_CHAIN + DF_DU_CHAIN);
+  df_mir_add_problem ();
   df_analyze ();
   df_set_flags (DF_DEFER_INSN_RESCAN);
 

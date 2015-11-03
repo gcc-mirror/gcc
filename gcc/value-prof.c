@@ -21,43 +21,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
 #include "ssa.h"
-#include "alias.h"
+#include "cgraph.h"
+#include "coverage.h"
+#include "data-streamer.h"
+#include "diagnostic.h"
 #include "fold-const.h"
 #include "tree-nested.h"
 #include "calls.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
 #include "value-prof.h"
-#include "recog.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "regs.h"
-#include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
-#include "diagnostic.h"
 #include "gimple-pretty-print.h"
-#include "coverage.h"
-#include "gcov-io.h"
-#include "timevar.h"
 #include "dumpfile.h"
-#include "profile.h"
-#include "cgraph.h"
-#include "data-streamer.h"
 #include "builtins.h"
 #include "params.h"
 #include "tree-chkp.h"
@@ -142,7 +125,7 @@ static bool gimple_ic_transform (gimple_stmt_iterator *);
 
 histogram_value
 gimple_alloc_histogram_value (struct function *fun ATTRIBUTE_UNUSED,
-			      enum hist_type type, gimple stmt, tree value)
+			      enum hist_type type, gimple *stmt, tree value)
 {
    histogram_value hist = (histogram_value) xcalloc (1, sizeof (*hist));
    hist->hvalue.value = value;
@@ -164,13 +147,13 @@ histogram_hash (const void *x)
 static int
 histogram_eq (const void *x, const void *y)
 {
-  return ((const_histogram_value) x)->hvalue.stmt == (const_gimple) y;
+  return ((const_histogram_value) x)->hvalue.stmt == (const gimple *) y;
 }
 
 /* Set histogram for STMT.  */
 
 static void
-set_histogram_value (struct function *fun, gimple stmt, histogram_value hist)
+set_histogram_value (struct function *fun, gimple *stmt, histogram_value hist)
 {
   void **loc;
   if (!hist && !VALUE_HISTOGRAMS (fun))
@@ -193,7 +176,7 @@ set_histogram_value (struct function *fun, gimple stmt, histogram_value hist)
 /* Get histogram list for STMT.  */
 
 histogram_value
-gimple_histogram_value (struct function *fun, gimple stmt)
+gimple_histogram_value (struct function *fun, gimple *stmt)
 {
   if (!VALUE_HISTOGRAMS (fun))
     return NULL;
@@ -204,7 +187,7 @@ gimple_histogram_value (struct function *fun, gimple stmt)
 /* Add histogram for STMT.  */
 
 void
-gimple_add_histogram_value (struct function *fun, gimple stmt,
+gimple_add_histogram_value (struct function *fun, gimple *stmt,
 			    histogram_value hist)
 {
   hist->hvalue.next = gimple_histogram_value (fun, stmt);
@@ -215,7 +198,7 @@ gimple_add_histogram_value (struct function *fun, gimple stmt,
 /* Remove histogram HIST from STMT's histogram list.  */
 
 void
-gimple_remove_histogram_value (struct function *fun, gimple stmt,
+gimple_remove_histogram_value (struct function *fun, gimple *stmt,
 			       histogram_value hist)
 {
   histogram_value hist2 = gimple_histogram_value (fun, stmt);
@@ -230,16 +213,15 @@ gimple_remove_histogram_value (struct function *fun, gimple stmt,
       hist2->hvalue.next = hist->hvalue.next;
     }
   free (hist->hvalue.counters);
-#ifdef ENABLE_CHECKING
-  memset (hist, 0xab, sizeof (*hist));
-#endif
+  if (flag_checking)
+    memset (hist, 0xab, sizeof (*hist));
   free (hist);
 }
 
 /* Lookup histogram of type TYPE in the STMT.  */
 
 histogram_value
-gimple_histogram_value_of_type (struct function *fun, gimple stmt,
+gimple_histogram_value_of_type (struct function *fun, gimple *stmt,
 				enum hist_type type)
 {
   histogram_value hist;
@@ -410,7 +392,7 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
 /* Dump information about HIST to DUMP_FILE.  */
 
 void
-stream_in_histogram_value (struct lto_input_block *ib, gimple stmt)
+stream_in_histogram_value (struct lto_input_block *ib, gimple *stmt)
 {
   enum hist_type type;
   unsigned int ncounters = 0;
@@ -476,7 +458,7 @@ stream_in_histogram_value (struct lto_input_block *ib, gimple stmt)
 /* Dump all histograms attached to STMT to DUMP_FILE.  */
 
 void
-dump_histograms_for_stmt (struct function *fun, FILE *dump_file, gimple stmt)
+dump_histograms_for_stmt (struct function *fun, FILE *dump_file, gimple *stmt)
 {
   histogram_value hist;
   for (hist = gimple_histogram_value (fun, stmt); hist; hist = hist->hvalue.next)
@@ -486,7 +468,7 @@ dump_histograms_for_stmt (struct function *fun, FILE *dump_file, gimple stmt)
 /* Remove all histograms associated with STMT.  */
 
 void
-gimple_remove_stmt_histograms (struct function *fun, gimple stmt)
+gimple_remove_stmt_histograms (struct function *fun, gimple *stmt)
 {
   histogram_value val;
   while ((val = gimple_histogram_value (fun, stmt)) != NULL)
@@ -496,8 +478,8 @@ gimple_remove_stmt_histograms (struct function *fun, gimple stmt)
 /* Duplicate all histograms associates with OSTMT to STMT.  */
 
 void
-gimple_duplicate_stmt_histograms (struct function *fun, gimple stmt,
-				  struct function *ofun, gimple ostmt)
+gimple_duplicate_stmt_histograms (struct function *fun, gimple *stmt,
+				  struct function *ofun, gimple *ostmt)
 {
   histogram_value val;
   for (val = gimple_histogram_value (ofun, ostmt); val != NULL; val = val->hvalue.next)
@@ -514,7 +496,7 @@ gimple_duplicate_stmt_histograms (struct function *fun, gimple stmt,
 /* Move all histograms associated with OSTMT to STMT.  */
 
 void
-gimple_move_stmt_histograms (struct function *fun, gimple stmt, gimple ostmt)
+gimple_move_stmt_histograms (struct function *fun, gimple *stmt, gimple *ostmt)
 {
   histogram_value val = gimple_histogram_value (fun, ostmt);
   if (val)
@@ -565,7 +547,7 @@ verify_histograms (void)
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
-	gimple stmt = gsi_stmt (gsi);
+	gimple *stmt = gsi_stmt (gsi);
 
 	for (hist = gimple_histogram_value (cfun, stmt); hist;
 	     hist = hist->hvalue.next)
@@ -595,21 +577,20 @@ free_hist (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   histogram_value hist = *(histogram_value *) slot;
   free (hist->hvalue.counters);
-#ifdef ENABLE_CHECKING
-  memset (hist, 0xab, sizeof (*hist));
-#endif
+  if (flag_checking)
+    memset (hist, 0xab, sizeof (*hist));
   free (hist);
   return 1;
 }
 
 void
-free_histograms (void)
+free_histograms (struct function *fn)
 {
-  if (VALUE_HISTOGRAMS (cfun))
+  if (VALUE_HISTOGRAMS (fn))
     {
-      htab_traverse (VALUE_HISTOGRAMS (cfun), free_hist, NULL);
-      htab_delete (VALUE_HISTOGRAMS (cfun));
-      VALUE_HISTOGRAMS (cfun) = NULL;
+      htab_traverse (VALUE_HISTOGRAMS (fn), free_hist, NULL);
+      htab_delete (VALUE_HISTOGRAMS (fn));
+      VALUE_HISTOGRAMS (fn) = NULL;
     }
 }
 
@@ -619,7 +600,7 @@ free_histograms (void)
    somehow.  */
 
 static bool
-check_counter (gimple stmt, const char * name,
+check_counter (gimple *stmt, const char * name,
 	       gcov_type *count, gcov_type *all, gcov_type bb_count)
 {
   if (*all != bb_count || *count > *all)
@@ -668,7 +649,7 @@ gimple_value_profile_transformations (void)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  histogram_value th = gimple_histogram_value (cfun, stmt);
 	  if (!th)
 	    continue;
@@ -726,7 +707,7 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, int prob,
   gassign *stmt1, *stmt2;
   gcond *stmt3;
   tree tmp0, tmp1, tmp2;
-  gimple bb1end, bb2end, bb3end;
+  gimple *bb1end, *bb2end, *bb3end;
   basic_block bb, bb2, bb3, bb4;
   tree optype, op1, op2;
   edge e12, e13, e23, e24, e34;
@@ -887,7 +868,7 @@ gimple_mod_pow2 (gassign *stmt, int prob, gcov_type count, gcov_type all)
   gassign *stmt1, *stmt2, *stmt3;
   gcond *stmt4;
   tree tmp2, tmp3;
-  gimple bb1end, bb2end, bb3end;
+  gimple *bb1end, *bb2end, *bb3end;
   basic_block bb, bb2, bb3, bb4;
   tree optype, op1, op2;
   edge e12, e13, e23, e24, e34;
@@ -1040,10 +1021,10 @@ gimple_mod_subtract (gassign *stmt, int prob1, int prob2, int ncounts,
 		     gcov_type count1, gcov_type count2, gcov_type all)
 {
   gassign *stmt1;
-  gimple stmt2;
+  gimple *stmt2;
   gcond *stmt3;
   tree tmp1;
-  gimple bb1end, bb2end = NULL, bb3end;
+  gimple *bb1end, *bb2end = NULL, *bb3end;
   basic_block bb, bb2, bb3, bb4;
   tree optype, op1, op2;
   edge e12, e23 = 0, e24, e34, e14;
@@ -1376,14 +1357,18 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   load_stmt = gimple_build_assign (tmp0, tmp);
   gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 
-  tmp = fold_convert (optype, build_addr (direct_call->decl,
-					  current_function_decl));
+  tmp = fold_convert (optype, build_addr (direct_call->decl));
   load_stmt = gimple_build_assign (tmp1, tmp);
   gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 
   cond_stmt = gimple_build_cond (EQ_EXPR, tmp1, tmp0, NULL_TREE, NULL_TREE);
   gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
 
+  if (TREE_CODE (gimple_vdef (icall_stmt)) == SSA_NAME)
+    {
+      unlink_stmt_vdef (icall_stmt);
+      release_ssa_name (gimple_vdef (icall_stmt));
+    }
   gimple_set_vdef (icall_stmt, NULL_TREE);
   gimple_set_vuse (icall_stmt, NULL_TREE);
   update_stmt (icall_stmt);
@@ -1470,8 +1455,13 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
 	{
 	  if (gimple_call_lhs (iretbnd_stmt))
 	    {
-	      gimple copy;
+	      gimple *copy;
 
+	      if (TREE_CODE (gimple_vdef (iretbnd_stmt)) == SSA_NAME)
+		{
+	          unlink_stmt_vdef (iretbnd_stmt);
+	          release_ssa_name (gimple_vdef (iretbnd_stmt));
+		}
 	      gimple_set_vdef (iretbnd_stmt, NULL_TREE);
 	      gimple_set_vuse (iretbnd_stmt, NULL_TREE);
 	      update_stmt (iretbnd_stmt);
@@ -1698,6 +1688,11 @@ gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, int prob,
   cond_stmt = gimple_build_cond (EQ_EXPR, tmp1, tmp0, NULL_TREE, NULL_TREE);
   gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
 
+  if (TREE_CODE (gimple_vdef (vcall_stmt)) == SSA_NAME)
+    {
+      unlink_stmt_vdef (vcall_stmt);
+      release_ssa_name (gimple_vdef (vcall_stmt));
+    }
   gimple_set_vdef (vcall_stmt, NULL);
   gimple_set_vuse (vcall_stmt, NULL);
   update_stmt (vcall_stmt);
@@ -1860,7 +1855,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
 }
 
 void
-stringop_block_profile (gimple stmt, unsigned int *expected_align,
+stringop_block_profile (gimple *stmt, unsigned int *expected_align,
 			HOST_WIDE_INT *expected_size)
 {
   histogram_value histogram;
@@ -1916,7 +1911,7 @@ stringop_block_profile (gimple stmt, unsigned int *expected_align,
    division/modulo optimization.  */
 
 static void
-gimple_divmod_values_to_profile (gimple stmt, histogram_values *values)
+gimple_divmod_values_to_profile (gimple *stmt, histogram_values *values)
 {
   tree lhs, divisor, op0, type;
   histogram_value hist;
@@ -1974,7 +1969,7 @@ gimple_divmod_values_to_profile (gimple stmt, histogram_values *values)
    indirect/virtual call optimization. */
 
 static void
-gimple_indirect_call_to_profile (gimple stmt, histogram_values *values)
+gimple_indirect_call_to_profile (gimple *stmt, histogram_values *values)
 {
   tree callee;
 
@@ -2001,7 +1996,7 @@ gimple_indirect_call_to_profile (gimple stmt, histogram_values *values)
    string operations.  */
 
 static void
-gimple_stringops_values_to_profile (gimple gs, histogram_values *values)
+gimple_stringops_values_to_profile (gimple *gs, histogram_values *values)
 {
   gcall *stmt;
   tree blck_size;
@@ -2039,7 +2034,7 @@ gimple_stringops_values_to_profile (gimple gs, histogram_values *values)
    them to list VALUES.  */
 
 static void
-gimple_values_to_profile (gimple stmt, histogram_values *values)
+gimple_values_to_profile (gimple *stmt, histogram_values *values)
 {
   gimple_divmod_values_to_profile (stmt, values);
   gimple_stringops_values_to_profile (stmt, values);

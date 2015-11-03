@@ -39,14 +39,12 @@ public:
   function_summary (symbol_table *symtab, bool ggc = false): m_ggc (ggc),
     m_map (13, ggc), m_insertion_enabled (true), m_symtab (symtab)
   {
-#ifdef ENABLE_CHECKING
-    cgraph_node *node;
-
-    FOR_EACH_FUNCTION (node)
-    {
-      gcc_checking_assert (node->summary_uid > 0);
-    }
-#endif
+    if (flag_checking)
+      {
+	cgraph_node *node;
+	FOR_EACH_FUNCTION (node)
+	  gcc_assert (node->summary_uid > 0);
+      }
 
     m_symtab_insertion_hook =
       symtab->add_cgraph_insertion_hook

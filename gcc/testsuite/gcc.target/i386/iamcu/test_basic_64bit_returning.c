@@ -49,7 +49,7 @@ main (void)
   if (d != test_64.d
       || (test_64.ll & 0xffffffff) != eax
       || ((test_64.ll >> 32) & 0xffffffff) != edx)
-    printf ("fail double\n"), failed++;
+    __builtin_printf ("fail double\n"), failed++;
 
   if (failed)
     abort ();

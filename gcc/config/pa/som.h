@@ -340,6 +340,11 @@ do {						\
    this suffix when generating constructor/destructor names.  */ 
 #define SHLIB_SUFFIX ".sl"
 
+/* We don't have named sections.  */
 #define TARGET_HAVE_NAMED_SECTIONS false
 
 #define TARGET_ASM_TM_CLONE_TABLE_SECTION pa_som_tm_clone_table_section
+
+/* Generate specially named labels to identify DWARF 2 frame unwind
+   information.  */
+#define EH_FRAME_THROUGH_COLLECT2

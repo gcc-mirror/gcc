@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Double Precision
-   Copyright (C) 1997-2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -29,6 +29,9 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
+
+#ifndef SOFT_FP_DOUBLE_H
+#define SOFT_FP_DOUBLE_H	1
 
 #if _FP_W_TYPE_SIZE < 32
 # error "Here's a nickel kid.  Go buy yourself a real computer."
@@ -182,6 +185,8 @@ union _FP_UNION_D
 # define FP_CMP_UNORD_D(r, X, Y, ex)	_FP_CMP_UNORD (D, 2, (r), X, Y, (ex))
 
 # define FP_TO_INT_D(r, X, rsz, rsg)	_FP_TO_INT (D, 2, (r), X, (rsz), (rsg))
+# define FP_TO_INT_ROUND_D(r, X, rsz, rsg)	\
+  _FP_TO_INT_ROUND (D, 2, (r), X, (rsz), (rsg))
 # define FP_FROM_INT_D(X, r, rs, rt)	_FP_FROM_INT (D, 2, X, (r), (rs), rt)
 
 # define _FP_FRAC_HIGH_D(X)	_FP_FRAC_HIGH_2 (X)
@@ -304,6 +309,8 @@ union _FP_UNION_D
 # define FP_CMP_UNORD_D(r, X, Y, ex)	_FP_CMP_UNORD (D, 1, (r), X, Y, (ex))
 
 # define FP_TO_INT_D(r, X, rsz, rsg)	_FP_TO_INT (D, 1, (r), X, (rsz), (rsg))
+# define FP_TO_INT_ROUND_D(r, X, rsz, rsg)	\
+  _FP_TO_INT_ROUND (D, 1, (r), X, (rsz), (rsg))
 # define FP_FROM_INT_D(X, r, rs, rt)	_FP_FROM_INT (D, 1, X, (r), (rs), rt)
 
 # define _FP_FRAC_HIGH_D(X)	_FP_FRAC_HIGH_1 (X)
@@ -312,3 +319,5 @@ union _FP_UNION_D
 # define _FP_FRAC_HIGH_DW_D(X)	_FP_FRAC_HIGH_2 (X)
 
 #endif /* W_TYPE_SIZE < 64 */
+
+#endif /* !SOFT_FP_DOUBLE_H */

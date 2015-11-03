@@ -4395,3 +4395,6 @@ void IndirectExternCall<void ( regparm<3> stdcall*)(int, int), int>(void ( regpa
 _ZNSt8ios_base7failureB5cxx11C1EPKcRKSt10error_code
 std::ios_base::failure[abi:cxx11]::failure(char const*, std::error_code const&)
 std::ios_base::failure[abi:cxx11]::failure
+--format=gnu-v3
+_Z1fPDxFvvES0_
+f(void (*)() transaction_safe, void (*)() transaction_safe)

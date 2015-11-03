@@ -34,6 +34,7 @@
 with Ada.Iterator_Interfaces;
 
 private with Ada.Containers.Hash_Tables;
+with Ada.Containers.Helpers;
 private with Ada.Finalization;
 private with Ada.Streams;
 
@@ -48,6 +49,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Hashed_Sets is
+   pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
    pragma Remote_Types;
 
@@ -451,17 +453,16 @@ package Ada.Containers.Hashed_Sets is
       --  in that case the check that buckets have not changed is performed
       --  at the time of the update, not when the reference is finalized.
 
+      package Impl is new Helpers.Generic_Implementation;
+
       type Reference_Control_Type is
-         new Ada.Finalization.Controlled with
+         new Impl.Reference_Control_Type with
       record
          Container : Set_Access;
          Index     : Hash_Type;
          Old_Pos   : Cursor;
          Old_Hash  : Hash_Type;
       end record;
-
-      overriding procedure Adjust (Control : in out Reference_Control_Type);
-      pragma Inline (Adjust);
 
       overriding procedure Finalize (Control : in out Reference_Control_Type);
       pragma Inline (Finalize);
@@ -505,7 +506,7 @@ private
 
    overriding procedure Finalize (Container : in out Set);
 
-   use HT_Types;
+   use HT_Types, HT_Types.Implementation;
    use Ada.Finalization;
    use Ada.Streams;
 
@@ -529,10 +530,6 @@ private
       Node      : Node_Access;
    end record;
 
-   type Reference_Control_Type is new Ada.Finalization.Controlled with record
-      Container : Set_Access;
-   end record;
-
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;
       Item   : Cursor);
@@ -545,11 +542,8 @@ private
 
    for Cursor'Read use Read;
 
-   overriding procedure Adjust (Control : in out Reference_Control_Type);
-   pragma Inline (Adjust);
-
-   overriding procedure Finalize (Control : in out Reference_Control_Type);
-   pragma Inline (Finalize);
+   subtype Reference_Control_Type is Implementation.Reference_Control_Type;
+   --  It is necessary to rename this here, so that the compiler can find it
 
    type Constant_Reference_Type
      (Element : not null access constant Element_Type) is
@@ -585,21 +579,23 @@ private
    --  container, and increments the Lock. Finalization of this object will
    --  decrement the Lock.
 
-   type Element_Access is access all Element_Type;
+   type Element_Access is access all Element_Type with
+     Storage_Size => 0;
 
    function Get_Element_Access
      (Position : Cursor) return not null Element_Access;
    --  Returns a pointer to the element designated by Position.
 
-   Empty_Set : constant Set := (Controlled with HT => (null, 0, 0, 0));
+   Empty_Set : constant Set := (Controlled with others => <>);
 
    No_Element : constant Cursor := (Container => null, Node => null);
 
-   type Iterator is new Limited_Controlled
-     and Set_Iterator_Interfaces.Forward_Iterator with
+   type Iterator is new Limited_Controlled and
+     Set_Iterator_Interfaces.Forward_Iterator with
    record
       Container : Set_Access;
-   end record;
+   end record
+     with Disable_Controlled => not T_Check;
 
    overriding function First (Object : Iterator) return Cursor;
 

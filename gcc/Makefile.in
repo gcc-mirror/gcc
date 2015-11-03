@@ -258,11 +258,14 @@ LINKER = $(CC)
 LINKER_FLAGS = $(CFLAGS)
 endif
 
+NO_PIE_CFLAGS = @NO_PIE_CFLAGS@
+NO_PIE_FLAG = @NO_PIE_FLAG@
+
 # We don't want to compile the compilers with -fPIE, it make PCH fail.
-COMPILER += @NO_PIE_CFLAGS@
+COMPILER += $(NO_PIE_CFLAGS)
 
 # Link with -no-pie since we compile the compiler with -fno-PIE.
-LINKER += @NO_PIE_FLAG@
+LINKER += $(NO_PIE_FLAG)
 
 # Like LINKER, but use a mutex for serializing front end links.
 ifeq (@DO_LINK_MUTEX@,true)
@@ -755,10 +758,13 @@ DIR = ../gcc
 # Native compiler for the build machine and its switches.
 CC_FOR_BUILD = @CC_FOR_BUILD@
 CXX_FOR_BUILD = @CXX_FOR_BUILD@
+NO_PIE_CFLAGS_FOR_BUILD = @NO_PIE_CFLAGS_FOR_BUILD@
+NO_PIE_FLAG_FOR_BUILD = @NO_PIE_FLAG_FOR_BUILD@
 BUILD_CFLAGS= @BUILD_CFLAGS@ -DGENERATOR_FILE
 BUILD_CXXFLAGS = @BUILD_CXXFLAGS@ -DGENERATOR_FILE
-BUILD_CFLAGS += @NO_PIE_CFLAGS@
-BUILD_CXXFLAGS += @NO_PIE_CFLAGS@
+BUILD_NO_PIE_CFLAGS = @BUILD_NO_PIE_CFLAGS@
+BUILD_CFLAGS += $(BUILD_NO_PIE_CFLAGS)
+BUILD_CXXFLAGS += $(BUILD_NO_PIE_CFLAGS)
 
 # Native compiler that we use.  This may be C++ some day.
 COMPILER_FOR_BUILD = $(CXX_FOR_BUILD)
@@ -770,7 +776,8 @@ BUILD_LINKERFLAGS = $(BUILD_CXXFLAGS)
 
 # Native linker and preprocessor flags.  For x-fragment overrides.
 BUILD_LDFLAGS=@BUILD_LDFLAGS@
-BUILD_LDFLAGS += @NO_PIE_FLAG@
+BUILD_NO_PIE_FLAG = @BUILD_NO_PIE_FLAG@
+BUILD_LDFLAGS += $(BUILD_NO_PIE_FLAG)
 BUILD_CPPFLAGS= -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 		-I$(srcdir)/../include @INCINTL@ $(CPPINC) $(CPPFLAGS)
 
@@ -890,7 +897,7 @@ RTL_BASE_H = coretypes.h rtl.h rtl.def $(MACHMODE_H) reg-notes.def \
 FIXED_VALUE_H = fixed-value.h $(MACHMODE_H) double-int.h
 RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
-PARAMS_H = params.h params.def
+PARAMS_H = params.h params-enum.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
 	gtm-builtins.def sanitizer.def cilkplus.def cilk-builtins.def
 INTERNAL_FN_DEF = internal-fn.def
@@ -1253,6 +1260,7 @@ OBJS = \
 	final.o \
 	fixed-value.o \
 	fold-const.o \
+	fold-const-call.o \
 	function.o \
 	fwprop.o \
 	gcse.o \
@@ -1266,6 +1274,7 @@ OBJS = \
 	gimple-laddress.o \
 	gimple-low.o \
 	gimple-pretty-print.o \
+	gimple-ssa-backprop.o \
 	gimple-ssa-isolate-paths.o \
 	gimple-ssa-strength-reduction.o \
 	gimple-streamer-in.o \
@@ -1348,8 +1357,12 @@ OBJS = \
 	mcf.o \
 	mode-switching.o \
 	modulo-sched.o \
+	multiple_target.o \
 	omp-low.o \
 	optabs.o \
+	optabs-libfuncs.o \
+	optabs-query.o \
+	optabs-tree.o \
 	options-save.o \
 	opts-global.o \
 	passes.o \
@@ -1382,7 +1395,6 @@ OBJS = \
 	sched-deps.o \
 	sched-ebb.o \
 	sched-rgn.o \
-	sched-vis.o \
 	sdbout.o \
 	sel-sched-ir.o \
 	sel-sched-dump.o \
@@ -1462,6 +1474,7 @@ OBJS = \
 	tree-ssa-loop.o \
 	tree-ssa-math-opts.o \
 	tree-ssa-operands.o \
+	tree-ssa-phionlycprop.o \
 	tree-ssa-phiopt.o \
 	tree-ssa-phiprop.o \
 	tree-ssa-pre.o \
@@ -1474,6 +1487,7 @@ OBJS = \
 	tree-ssa-structalias.o \
 	tree-ssa-tail-merge.o \
 	tree-ssa-ter.o \
+	tree-ssa-threadbackward.o \
 	tree-ssa-threadedge.o \
 	tree-ssa-threadupdate.o \
 	tree-ssa-uncprop.o \
@@ -1512,8 +1526,9 @@ OBJS = \
 
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
-OBJS-libcommon = diagnostic.o diagnostic-color.o pretty-print.o intl.o \
-	vec.o input.o version.o hash-table.o ggc-none.o
+OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
+	pretty-print.o intl.o \
+	vec.o input.o version.o hash-table.o ggc-none.o memory-block.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
@@ -2330,7 +2345,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/expr.h \
   $(srcdir)/function.c $(srcdir)/except.c \
   $(srcdir)/gcse.c $(srcdir)/godump.c \
-  $(srcdir)/lists.c $(srcdir)/optabs.c \
+  $(srcdir)/lists.c $(srcdir)/optabs-libfuncs.c \
   $(srcdir)/profile.c $(srcdir)/mcf.c \
   $(srcdir)/reg-stack.c $(srcdir)/cfgrtl.c \
   $(srcdir)/sdbout.c $(srcdir)/stor-layout.c \
@@ -2560,7 +2575,8 @@ build/genhooks.o : genhooks.c $(TARGET_DEF) $(C_TARGET_DEF)		\
 build/genmddump.o : genmddump.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
 build/genmatch.o : genmatch.c $(BCONFIG_H) $(SYSTEM_H) \
-  coretypes.h errors.h $(HASH_TABLE_H) hash-map.h $(GGC_H)
+  coretypes.h errors.h $(HASH_TABLE_H) hash-map.h $(GGC_H) is-a.h \
+  tree.def builtins.def
 
 # Compile the programs that generate insn-* from the machine description.
 # They are compiled with $(COMPILER_FOR_BUILD), and associated libraries,
@@ -3254,14 +3270,14 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   tree-iterator.h $(PLUGIN_H) $(TREE_SSA_H) langhooks.h incpath.h debug.h \
   $(EXCEPT_H) tree-ssa-sccvn.h real.h output.h $(IPA_UTILS_H) \
   $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H) \
-  cppdefault.h flags.h $(MD5_H) params.def params.h prefix.h tree-inline.h \
-  $(GIMPLE_PRETTY_PRINT_H) realmpfr.h \
+  cppdefault.h flags.h $(MD5_H) params.def params.h params-enum.h \
+  prefix.h tree-inline.h $(GIMPLE_PRETTY_PRINT_H) realmpfr.h \
   $(IPA_PROP_H) $(TARGET_H) $(RTL_H) $(TM_P_H) $(CFGLOOP_H) $(EMIT_RTL_H) \
   version.h stringpool.h gimplify.h gimple-iterator.h gimple-ssa.h \
-  fold-const.h tree-cfg.h tree-into-ssa.h tree-ssanames.h print-tree.h \
-  varasm.h context.h tree-phinodes.h stor-layout.h ssa-iterators.h \
-  $(RESOURCE_H) tree-cfgcleanup.h attribs.h calls.h cfgexpand.h \
-  diagnostic-color.h gcc-symtab.h gimple-builder.h gimple-low.h \
+  fold-const.h fold-const-call.h tree-cfg.h tree-into-ssa.h tree-ssanames.h \
+  print-tree.h varasm.h context.h tree-phinodes.h stor-layout.h \
+  ssa-iterators.h $(RESOURCE_H) tree-cfgcleanup.h attribs.h calls.h \
+  cfgexpand.h diagnostic-color.h gcc-symtab.h gimple-builder.h gimple-low.h \
   gimple-walk.h gimplify-me.h pass_manager.h print-rtl.h stmt.h \
   tree-dfa.h tree-hasher.h tree-nested.h tree-object-size.h tree-outof-ssa.h \
   tree-parloops.h tree-ssa-address.h tree-ssa-coalesce.h tree-ssa-dom.h \
@@ -3900,7 +3916,8 @@ TAGS: lang.tags
 	  fi;						\
 	done;						\
 	etags -o TAGS.sub c-family/*.h c-family/*.c *.h *.c *.cc \
-	      ../include/*.h \
+	      ../include/*.h ../libiberty/*.c \
+	      ../libcpp/*.c ../libcpp/include/*.h \
 	      --language=none --regex="/\(char\|unsigned int\|int\|bool\|void\|HOST_WIDE_INT\|enum [A-Za-z_0-9]+\) [*]?\([A-Za-z_0-9]+\)/\2/" common.opt	\
 	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\).*(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def \
 	      --language=none --regex="/DEFTIMEVAR (\([A-Za-z_0-9]+\)/\1/" timevar.def \

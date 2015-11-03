@@ -59,7 +59,7 @@ struct poly_dr
   int nb_refs;
 
   /* A pointer to compiler's data reference description.  */
-  void *compiler_dr;
+  data_reference_p compiler_dr;
 
   /* A pointer to the PBB that contains this data reference.  */
   poly_bb_p pbb;
@@ -182,10 +182,6 @@ struct poly_dr
   isl_map *accesses;
   isl_set *subscript_sizes;
 
-  /* Data reference's base object set number, we must assure 2 pdrs are in the
-     same base object set before dependency checking.  */
-  int dr_base_object_set;
-
   /* The number of subscripts.  */
   graphite_dim_t nb_subscripts;
 };
@@ -196,14 +192,13 @@ struct poly_dr
 #define PDR_PBB(PDR) (PDR->pbb)
 #define PDR_TYPE(PDR) (PDR->type)
 #define PDR_ACCESSES(PDR) (NULL)
-#define PDR_BASE_OBJECT_SET(PDR) (PDR->dr_base_object_set)
 #define PDR_NB_SUBSCRIPTS(PDR) (PDR->nb_subscripts)
 
-void new_poly_dr (poly_bb_p, int, enum poly_dr_type, void *,
+void new_poly_dr (poly_bb_p, enum poly_dr_type, data_reference_p,
 		  graphite_dim_t, isl_map *, isl_set *);
 void free_poly_dr (poly_dr_p);
-void debug_pdr (poly_dr_p, int);
-void print_pdr (FILE *, poly_dr_p, int);
+void debug_pdr (poly_dr_p);
+void print_pdr (FILE *, poly_dr_p);
 
 static inline bool
 pdr_read_p (poly_dr_p pdr)
@@ -232,7 +227,7 @@ pdr_may_write_p (poly_dr_p pdr)
 struct poly_bb
 {
   /* Pointer to a basic block or a statement in the compiler.  */
-  void *black_box;
+  gimple_poly_bb_p black_box;
 
   /* Pointer to the SCOP containing this PBB.  */
   scop_p scop;
@@ -277,36 +272,38 @@ struct poly_bb
   bool is_reduction;
 };
 
-#define PBB_BLACK_BOX(PBB) ((gimple_bb_p) PBB->black_box)
+#define PBB_BLACK_BOX(PBB) ((gimple_poly_bb_p) PBB->black_box)
 #define PBB_SCOP(PBB) (PBB->scop)
 #define PBB_DRS(PBB) (PBB->drs)
 #define PBB_IS_REDUCTION(PBB) (PBB->is_reduction)
 
-extern poly_bb_p new_poly_bb (scop_p, void *);
+extern poly_bb_p new_poly_bb (scop_p, gimple_poly_bb_p);
 extern void free_poly_bb (poly_bb_p);
 extern void debug_loop_vec (poly_bb_p);
-extern void print_pbb_domain (FILE *, poly_bb_p, int);
-extern void print_pbb (FILE *, poly_bb_p, int);
-extern void print_scop_context (FILE *, scop_p, int);
-extern void print_scop (FILE *, scop_p, int);
-extern void debug_pbb_domain (poly_bb_p, int);
-extern void debug_pbb (poly_bb_p, int);
-extern void print_pdrs (FILE *, poly_bb_p, int);
-extern void debug_pdrs (poly_bb_p, int);
-extern void debug_scop_context (scop_p, int);
-extern void debug_scop (scop_p, int);
-extern void print_scop_params (FILE *, scop_p, int);
-extern void debug_scop_params (scop_p, int);
-extern void print_iteration_domain (FILE *, poly_bb_p, int);
-extern void print_iteration_domains (FILE *, scop_p, int);
-extern void debug_iteration_domain (poly_bb_p, int);
-extern void debug_iteration_domains (scop_p, int);
+extern void print_pbb_domain (FILE *, poly_bb_p);
+extern void print_pbb (FILE *, poly_bb_p);
+extern void print_scop_context (FILE *, scop_p);
+extern void print_scop (FILE *, scop_p);
+extern void debug_pbb_domain (poly_bb_p);
+extern void debug_pbb (poly_bb_p);
+extern void print_pdrs (FILE *, poly_bb_p);
+extern void debug_pdrs (poly_bb_p);
+extern void debug_scop_context (scop_p);
+extern void debug_scop (scop_p);
+extern void print_scop_params (FILE *, scop_p);
+extern void debug_scop_params (scop_p);
+extern void print_iteration_domain (FILE *, poly_bb_p);
+extern void print_iteration_domains (FILE *, scop_p);
+extern void debug_iteration_domain (poly_bb_p);
+extern void debug_iteration_domains (scop_p);
 extern void print_isl_set (FILE *, isl_set *);
 extern void print_isl_map (FILE *, isl_map *);
+extern void print_isl_union_map (FILE *, isl_union_map *);
 extern void print_isl_aff (FILE *, isl_aff *);
 extern void print_isl_constraint (FILE *, isl_constraint *);
 extern void debug_isl_set (isl_set *);
 extern void debug_isl_map (isl_map *);
+extern void debug_isl_union_map (isl_union_map *);
 extern void debug_isl_aff (isl_aff *);
 extern void debug_isl_constraint (isl_constraint *);
 extern int scop_do_interchange (scop_p);
@@ -319,10 +316,10 @@ extern void debug_gmp_value (mpz_t);
 
 /* Returns a gimple_bb from BB.  */
 
-static inline gimple_bb_p
+static inline gimple_poly_bb_p
 gbb_from_bb (basic_block bb)
 {
-  return (gimple_bb_p) bb->aux;
+  return (gimple_poly_bb_p) bb->aux;
 }
 
 /* The poly_bb of the BB.  */
@@ -366,17 +363,41 @@ pdr_scop (poly_dr_p pdr)
 /* Set black box of PBB to BLACKBOX.  */
 
 static inline void
-pbb_set_black_box (poly_bb_p pbb, void *black_box)
+pbb_set_black_box (poly_bb_p pbb, gimple_poly_bb_p black_box)
 {
   pbb->black_box = black_box;
 }
+
+/* A helper structure to keep track of data references, polyhedral BBs, and
+   alias sets.  */
+
+struct dr_info
+{
+  enum {
+    invalid_alias_set = -1
+  };
+  /* The data reference.  */
+  data_reference_p dr;
+
+  /* The polyhedral BB containing this DR.  */
+  poly_bb_p pbb;
+
+  /* ALIAS_SET is the SCC number assigned by a graph_dfs of the alias graph.
+     -1 is an invalid alias set.  */
+  int alias_set;
+
+  /* Construct a DR_INFO from a data reference DR, an ALIAS_SET, and a PBB.  */
+  dr_info (data_reference_p dr, poly_bb_p pbb,
+	   int alias_set = invalid_alias_set)
+    : dr (dr), pbb (pbb), alias_set (alias_set) {}
+};
 
 /* A SCOP is a Static Control Part of the program, simple enough to be
    represented in polyhedral form.  */
 struct scop
 {
   /* A SCOP is defined as a SESE region.  */
-  sese region;
+  sese_info_p scop_info;
 
   /* Number of parameters in SCoP.  */
   graphite_dim_t nb_params;
@@ -384,7 +405,10 @@ struct scop
   /* All the basic blocks in this scop that contain memory references
      and that will be represented as statements in the polyhedral
      representation.  */
-  vec<poly_bb_p> bbs;
+  vec<poly_bb_p> pbbs;
+
+  /* All the data references in this scop.  */
+  vec<dr_info> drs;
 
   /* The context describes known restrictions concerning the parameters
      and relations in between the parameters.
@@ -399,10 +423,10 @@ struct scop
   -128 >= a >= 127
      0 >= b >= 65,535
      c = 2a + b  */
-  isl_set *context;
+  isl_set *param_context;
 
   /* The context used internally by ISL.  */
-  isl_ctx *ctx;
+  isl_ctx *isl_context;
 
   /* The original dependence relations:
      RAW are read after write dependences,
@@ -417,26 +441,21 @@ struct scop
   bool poly_scop_p;
 };
 
-#define SCOP_BBS(S) (S->bbs)
-#define SCOP_REGION(S) (S->region)
-#define SCOP_CONTEXT(S) (NULL)
-#define POLY_SCOP_P(S) (S->poly_scop_p)
-
-extern scop_p new_scop (sese);
+extern scop_p new_scop (edge, edge);
 extern void free_scop (scop_p);
-extern void free_scops (vec<scop_p> );
+extern gimple_poly_bb_p new_gimple_poly_bb (basic_block, vec<data_reference_p>);
+extern void free_gimple_poly_bb (gimple_poly_bb_p);
 extern void print_generated_program (FILE *, scop_p);
 extern void debug_generated_program (scop_p);
 extern int unify_scattering_dimensions (scop_p);
 extern bool apply_poly_transforms (scop_p);
-extern bool graphite_legal_transform (scop_p);
 
 /* Set the region of SCOP to REGION.  */
 
 static inline void
-scop_set_region (scop_p scop, sese region)
+scop_set_region (scop_p scop, sese_info_p region)
 {
-  scop->region = region;
+  scop->scop_info = region;
 }
 
 /* Returns the number of parameters for SCOP.  */
@@ -454,24 +473,6 @@ scop_set_nb_params (scop_p scop, graphite_dim_t nb_params)
 {
   scop->nb_params = nb_params;
 }
-
-bool graphite_legal_transform (scop_p);
-__isl_give isl_union_map *extend_schedule (__isl_take isl_union_map *);
-
-void
-compute_deps (scop_p scop, vec<poly_bb_p> pbbs,
-	      isl_union_map **must_raw,
-	      isl_union_map **may_raw,
-	      isl_union_map **must_raw_no_source,
-	      isl_union_map **may_raw_no_source,
-	      isl_union_map **must_war,
-	      isl_union_map **may_war,
-	      isl_union_map **must_war_no_source,
-	      isl_union_map **may_war_no_source,
-	      isl_union_map **must_waw,
-	      isl_union_map **may_waw,
-	      isl_union_map **must_waw_no_source,
-	      isl_union_map **may_waw_no_source);
 
 isl_union_map *
 scop_get_dependences (scop_p scop);

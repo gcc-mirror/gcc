@@ -10,7 +10,7 @@ namelist/naml1/  tracer
 
 tracer(:) = ptracer('XXX', .false.)
 
-open (99, file='nml.dat', status="replace")
+open (99, file='nml_82.dat', status="replace")
 write(99,*) "&naml1"
 !write(99,*) "   tracer(2)   = 'bb' , .true."
 write(99,*) "   tracer(:)   = 'aa' , .true."

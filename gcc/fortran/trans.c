@@ -21,17 +21,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "gfortran.h"
-#include "alias.h"
-#include "tree.h"
 #include "options.h"
-#include "fold-const.h"
+#include "tree.h"
+#include "gfortran.h"
 #include "gimple-expr.h"	/* For create_tmp_var_raw.  */
-#include "stringpool.h"
-#include "tree-iterator.h"
-#include "diagnostic-core.h"  /* For internal_error.  */
-#include "flags.h"
 #include "trans.h"
+#include "stringpool.h"
+#include "diagnostic-core.h"  /* For internal_error.  */
+#include "alias.h"
+#include "fold-const.h"
+#include "tree-iterator.h"
+#include "flags.h"
 #include "trans-stmt.h"
 #include "trans-array.h"
 #include "trans-types.h"
@@ -151,7 +151,6 @@ gfc_add_modify_loc (location_t loc, stmtblock_t * pblock, tree lhs, tree rhs)
 {
   tree tmp;
 
-#ifdef ENABLE_CHECKING
   tree t1, t2;
   t1 = TREE_TYPE (rhs);
   t2 = TREE_TYPE (lhs);
@@ -159,9 +158,8 @@ gfc_add_modify_loc (location_t loc, stmtblock_t * pblock, tree lhs, tree rhs)
      for scalar assignments.  We should probably have something
      similar for aggregates, but right now removing that check just
      breaks everything.  */
-  gcc_assert (t1 == t2
-	      || AGGREGATE_TYPE_P (TREE_TYPE (lhs)));
-#endif
+  gcc_checking_assert (t1 == t2
+		       || AGGREGATE_TYPE_P (TREE_TYPE (lhs)));
 
   tmp = fold_build2_loc (loc, MODIFY_EXPR, void_type_node, lhs,
 			 rhs);

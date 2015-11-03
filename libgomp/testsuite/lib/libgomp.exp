@@ -14,6 +14,7 @@ load_lib dg.exp
 # loaded until ${tool}_target_compile is defined since it uses that
 # to determine default LTO options.
 
+load_gcc_lib multiline.exp
 load_gcc_lib prune.exp
 load_gcc_lib target-libpath.exp
 load_gcc_lib wrapper.exp
@@ -316,6 +317,19 @@ proc check_effective_target_offload_device { } {
 	  #pragma omp target map(from: a)
 	    a = omp_is_initial_device ();
 	  return a;
+	}
+    } ]
+}
+
+# Return 1 if offload device is available and it has non-shared address space.
+proc check_effective_target_offload_device_nonshared_as { } {
+    return [check_runtime_nocache offload_device_nonshared_as {
+      int main ()
+	{
+	  int a = 8;
+	  #pragma omp target map(to: a)
+	    a++;
+	  return a != 8;
 	}
     } ]
 }

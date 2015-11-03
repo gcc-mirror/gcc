@@ -207,12 +207,21 @@ extern GTY(()) int darwin_ms_struct;
 #undef  LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC "%G %L"
 
-#ifdef TARGET_SYSTEM_ROOT
-#define LINK_SYSROOT_SPEC \
-  "%{isysroot*:-syslibroot %*;:-syslibroot " TARGET_SYSTEM_ROOT "}"
-#else
+/* ld64 supports a sysroot, it just has a different name and there's no easy
+   way to check for it at config time.  */
+#undef HAVE_LD_SYSROOT
+#define HAVE_LD_SYSROOT 1
+/* It seems the only (working) way to get a space after %R is to append a
+   dangling '/'.  */
+#define SYSROOT_SPEC "%{!isysroot*:-syslibroot %R/ }"
+
+/* Do the same as clang, for now, and insert the sysroot for ld when an
+   isysroot is specified.  */
 #define LINK_SYSROOT_SPEC "%{isysroot*:-syslibroot %*}"
-#endif
+
+/* Suppress the addition of extra prefix paths when a sysroot is in use.  */
+#define STANDARD_STARTFILE_PREFIX_1 ""
+#define STANDARD_STARTFILE_PREFIX_2 ""
 
 #define DARWIN_PIE_SPEC "%{fpie|pie|fPIE:}"
 
@@ -271,7 +280,6 @@ extern GTY(()) int darwin_ms_struct;
    %{headerpad_max_install_names} \
    %{Zimage_base*:-image_base %*} \
    %{Zinit*:-init %*} \
-   %{!mmacosx-version-min=*:-macosx_version_min %(darwin_minversion)} \
    %{mmacosx-version-min=*:-macosx_version_min %*} \
    %{nomultidefs} \
    %{Zmulti_module:-multi_module} %{Zsingle_module:-single_module} \
@@ -370,8 +378,7 @@ extern GTY(()) int darwin_ms_struct;
 
 #define DARWIN_EXTRA_SPECS						\
   { "darwin_crt1", DARWIN_CRT1_SPEC },					\
-  { "darwin_dylib1", DARWIN_DYLIB1_SPEC },				\
-  { "darwin_minversion", DARWIN_MINVERSION_SPEC },
+  { "darwin_dylib1", DARWIN_DYLIB1_SPEC },
 
 #define DARWIN_DYLIB1_SPEC						\
   "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
@@ -916,7 +923,9 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
 #define SUPPORTS_INIT_PRIORITY 0
 
 /* When building cross-compilers (and native crosses) we shall default to 
-   providing an osx-version-min of this unless overridden by the User.  */
-#define DEF_MIN_OSX_VERSION "10.4"
+   providing an osx-version-min of this unless overridden by the User.
+   10.5 is the only version that fully supports all our archs so that's the
+   fall-back default.  */
+#define DEF_MIN_OSX_VERSION "10.5"
 
 #endif /* CONFIG_DARWIN_H */

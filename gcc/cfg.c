@@ -50,13 +50,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "alloc-pool.h"
-#include "alias.h"
-#include "cfghooks.h"
-#include "tree.h"
 #include "hard-reg-set.h"
+#include "tree.h"
+#include "cfghooks.h"
 #include "df.h"
-#include "options.h"
 #include "cfganal.h"
 #include "cfgloop.h" /* FIXME: For struct loop.  */
 #include "dumpfile.h"
@@ -88,35 +85,35 @@ init_flow (struct function *the_fun)
    without actually removing it from the pred/succ arrays.  */
 
 static void
-free_edge (edge e)
+free_edge (function *fn, edge e)
 {
-  n_edges_for_fn (cfun)--;
+  n_edges_for_fn (fn)--;
   ggc_free (e);
 }
 
 /* Free the memory associated with the edge structures.  */
 
 void
-clear_edges (void)
+clear_edges (struct function *fn)
 {
   basic_block bb;
   edge e;
   edge_iterator ei;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fn)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
-	free_edge (e);
+	free_edge (fn, e);
       vec_safe_truncate (bb->succs, 0);
       vec_safe_truncate (bb->preds, 0);
     }
 
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
-    free_edge (e);
-  vec_safe_truncate (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds, 0);
-  vec_safe_truncate (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs, 0);
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (fn)->succs)
+    free_edge (fn, e);
+  vec_safe_truncate (EXIT_BLOCK_PTR_FOR_FN (fn)->preds, 0);
+  vec_safe_truncate (ENTRY_BLOCK_PTR_FOR_FN (fn)->succs, 0);
 
-  gcc_assert (!n_edges_for_fn (cfun));
+  gcc_assert (!n_edges_for_fn (fn));
 }
 
 /* Allocate memory for basic_block.  */
@@ -350,7 +347,7 @@ remove_edge_raw (edge e)
   disconnect_src (e);
   disconnect_dest (e);
 
-  free_edge (e);
+  free_edge (cfun, e);
 }
 
 /* Redirect an edge's successor from one block to another.  */
@@ -1052,7 +1049,7 @@ void
 initialize_original_copy_tables (void)
 {
   original_copy_bb_pool = new object_allocator<htab_bb_copy_original_entry>
-    ("original_copy", 10);
+    ("original_copy");
   bb_original = new hash_table<bb_copy_hasher> (10);
   bb_copy = new hash_table<bb_copy_hasher> (10);
   loop_copy = new hash_table<bb_copy_hasher> (10);

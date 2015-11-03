@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,20 +31,6 @@ package Sem_Ch7 is
    procedure Analyze_Package_Declaration                (N : Node_Id);
    procedure Analyze_Package_Specification              (N : Node_Id);
    procedure Analyze_Private_Type_Declaration           (N : Node_Id);
-
-   procedure Analyze_Package_Body_Contract (Body_Id : Entity_Id);
-   --  Analyze all delayed aspects chained on the contract of package body
-   --  Body_Id as if they appeared at the end of a declarative region. The
-   --  aspects that are considered are:
-   --    Refined_State
-
-   procedure Analyze_Package_Contract (Pack_Id : Entity_Id);
-   --  Analyze all delayed aspects chained on the contract of package Pack_Id
-   --  as if they appeared at the end of a declarative region. The aspects
-   --  that are considered are:
-   --    Initial_Condition
-   --    Initializes
-   --    Part_Of
 
    procedure End_Package_Scope (P : Entity_Id);
    --  Calls Uninstall_Declarations, and then pops the scope stack

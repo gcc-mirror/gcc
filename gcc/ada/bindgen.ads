@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,5 +36,9 @@ package Bindgen is
 
    procedure Gen_Output_File (Filename : String);
    --  Filename is the full path name of the binder output file
+
+   procedure Set_Bind_Env (Key, Value : String);
+   --  Add (Key, Value) pair to bind environment. These associations
+   --  are made available at run time using System.Bind_Environment.
 
 end Bindgen;

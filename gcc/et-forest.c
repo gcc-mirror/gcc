@@ -28,7 +28,7 @@ License along with libiberty; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "et-forest.h"
 
-/* We do not enable this with ENABLE_CHECKING, since it is awfully slow.  */
+/* We do not enable this with CHECKING_P, since it is awfully slow.  */
 #undef DEBUG_ET
 
 #ifdef DEBUG_ET
@@ -54,8 +54,8 @@ struct et_occ
 				   depth.  */
 };
 
-static object_allocator<et_node> et_nodes ("et_nodes pool", 300);
-static object_allocator<et_occ> et_occurrences ("et_occ pool", 300);
+static object_allocator<et_node> et_nodes ("et_nodes pool");
+static object_allocator<et_occ> et_occurrences ("et_occ pool");
 
 /* Changes depth of OCC to D.  */
 

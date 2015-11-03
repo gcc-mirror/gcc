@@ -59,8 +59,10 @@ typedef unsigned int linenum_type;
 
   Actual     | Value                         | Meaning
   -----------+-------------------------------+-------------------------------
-  0x00000000 |                               | Reserved for use by libcpp
-  0x00000001 | RESERVED_LOCATION_COUNT - 1   | Reserved for use by libcpp
+  0x00000000 | UNKNOWN_LOCATION (gcc/input.h)| Unknown/invalid location.
+  -----------+-------------------------------+-------------------------------
+  0x00000001 | BUILTINS_LOCATION             | The location for declarations
+             |   (gcc/input.h)               | in "<built-in>"
   -----------+-------------------------------+-------------------------------
   0x00000002 | RESERVED_LOCATION_COUNT       | The first location to be
              | (also                         | handed out, and the
@@ -94,6 +96,16 @@ typedef unsigned int linenum_type;
              |
              |                    (unallocated integers)
              |
+  0x60000000 | LINE_MAP_MAX_LOCATION_WITH_COLS
+             |   Beyond this point, ordinary linemaps have 0 bits per column:
+             |   each increment of the value corresponds to a new source line.
+             |
+  0x70000000 | LINE_MAP_MAX_SOURCE_LOCATION
+             |   Beyond the point, we give up on ordinary maps; attempts to
+             |   create locations in them lead to UNKNOWN_LOCATION (0).
+             |
+             |                    (unallocated integers)
+             |
              |                   Macro maps grow this way
              |                   ^^^^^^^^^^^^^^^^^^^^^^^^
              |                               |
@@ -107,10 +119,11 @@ typedef unsigned int linenum_type;
              | macromap[1]->start_location   | Start of macro map 1
   -----------+-------------------------------+-------------------------------
              | macromap[0]->start_location   | Start of macro map 0
-  0x7fffffff | MAX_SOURCE_LOCATION           |
+  0x7fffffff | MAX_SOURCE_LOCATION           | Also used as a mask for
+             |                               | accessing the ad-hoc data table
   -----------+-------------------------------+-------------------------------
-  0x80000000 | Start of ad-hoc values        |
-  ...        |                               |
+  0x80000000 | Start of ad-hoc values; the lower 31 bits are used as an index
+  ...        | into the line_table->location_adhoc_data_map.data array.
   0xffffffff | UINT_MAX                      |
   -----------+-------------------------------+-------------------------------
 
@@ -272,7 +285,7 @@ struct GTY((tag ("2"))) line_map_macro : public line_map {
   source_location expansion;
 };
 
-#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
+#if CHECKING_P && (GCC_VERSION >= 2007)
 
 /* Assertion macro to be used in line-map code.  */
 #define linemap_assert(EXPR)                  \

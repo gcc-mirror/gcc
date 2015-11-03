@@ -1,3 +1,49 @@
+2015-10-23  Steve Ellcey  <sellcey@imgtec.com>
+
+	* MAINTAINERS: Update email address.
+
+2015-10-23  Paulo Matos  <pmatos@linki.tools>
+
+	* MAINTAINERS: Update email address.
+
+2015-10-23  Alan Hayward <alan.hayward@arm.com>
+
+	* MAINTAINERS  (Write After Approval): Add myself.
+
+2015-10-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Sync with binutils-gdb:
+	2015-10-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR gas/19109
+	* configure.ac: Add
+	--enable-compressed-debug-sections={all,gas,gold,ld}.
+	* configure: Regenerated.
+
+2015-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* MAINTAINERS: Update list of Ada maintainers and email addresses.
+
+2015-10-09  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-10-09  Alexander Fomin <alexander.fomin@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-10-02  Florian Weimer  <fweimer@redhat.com>
+
+	* MAINTAINERS: Update email address.
+
+2015-10-02  Louis Krupp <louis.krupp@zoho.com>
+
+	* MAINTAINERS  (Write After Approval): Add myself.
+
+2015-09-20  Kai Tietz  <ktietz70@googlemail.com>
+
+        * MAINTAINERS: Update email.
+
 2015-09-14  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* MAINTAINERS: Update my email address.

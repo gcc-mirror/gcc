@@ -21,19 +21,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
-#include "tm_p.h"
 #include "dfp.h"
 
 /* The order of the following headers is important for making sure
    decNumber structure is large enough to hold decimal128 digits.  */
 
 #include "decimal128.h"
-#include "decimal128Local.h"
 #include "decimal64.h"
 #include "decimal32.h"
-#include "decNumber.h"
 
 #ifndef WORDS_BIGENDIAN
 #define WORDS_BIGENDIAN 0
@@ -343,13 +339,13 @@ decode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
 static void
 decimal_to_binary (REAL_VALUE_TYPE *to, const REAL_VALUE_TYPE *from,
-		   machine_mode mode)
+		   const real_format *fmt)
 {
   char string[256];
   const decimal128 *const d128 = (const decimal128 *) from->sig;
 
   decimal128ToString (d128, string);
-  real_from_string3 (to, string, mode);
+  real_from_string3 (to, string, fmt);
 }
 
 
@@ -459,15 +455,13 @@ decimal_round_for_format (const struct real_format *fmt, REAL_VALUE_TYPE *r)
    binary and decimal types.  */
 
 void
-decimal_real_convert (REAL_VALUE_TYPE *r, machine_mode mode,
+decimal_real_convert (REAL_VALUE_TYPE *r, const real_format *fmt,
 		      const REAL_VALUE_TYPE *a)
 {
-  const struct real_format *fmt = REAL_MODE_FORMAT (mode);
-
   if (a->decimal && fmt->b == 10)
     return;
   if (a->decimal)
-      decimal_to_binary (r, a, mode);
+      decimal_to_binary (r, a, fmt);
   else
       decimal_from_binary (r, a);
 }

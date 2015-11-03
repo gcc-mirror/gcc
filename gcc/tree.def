@@ -685,19 +685,27 @@ DEFTREECODE (MULT_HIGHPART_EXPR, "mult_highpart_expr", tcc_binary, 2)
 /* Division for integer result that rounds the quotient toward zero.  */
 DEFTREECODE (TRUNC_DIV_EXPR, "trunc_div_expr", tcc_binary, 2)
 
-/* Division for integer result that rounds the quotient toward infinity.  */
+/* Division for integer result that rounds it toward plus infinity.  */
 DEFTREECODE (CEIL_DIV_EXPR, "ceil_div_expr", tcc_binary, 2)
 
-/* Division for integer result that rounds toward minus infinity.  */
+/* Division for integer result that rounds it toward minus infinity.  */
 DEFTREECODE (FLOOR_DIV_EXPR, "floor_div_expr", tcc_binary, 2)
 
-/* Division for integer result that rounds toward nearest integer.  */
+/* Division for integer result that rounds it toward nearest integer.  */
 DEFTREECODE (ROUND_DIV_EXPR, "round_div_expr", tcc_binary, 2)
 
-/* Four kinds of remainder that go with the four kinds of division.  */
+/* Four kinds of remainder that go with the four kinds of division:  */
+
+/* The sign of the remainder is that of the dividend.  */
 DEFTREECODE (TRUNC_MOD_EXPR, "trunc_mod_expr", tcc_binary, 2)
+
+/* The sign of the remainder is the opposite of that of the divisor.  */
 DEFTREECODE (CEIL_MOD_EXPR, "ceil_mod_expr", tcc_binary, 2)
+
+/* The sign of the remainder is that of the divisor.  */
 DEFTREECODE (FLOOR_MOD_EXPR, "floor_mod_expr", tcc_binary, 2)
+
+/* The sign of the remainder is not predictable.  */
 DEFTREECODE (ROUND_MOD_EXPR, "round_mod_expr", tcc_binary, 2)
 
 /* Division for real result.  */
@@ -1039,14 +1047,14 @@ DEFTREECODE (MEM_REF, "mem_ref", tcc_reference, 2)
    not change the ordering of these codes.  */
 
 /* OpenACC - #pragma acc parallel [clause1 ... clauseN]
-   Operand 0: OACC_PARALLEL_BODY: Code to be executed in parallel.
-   Operand 1: OACC_PARALLEL_CLAUSES: List of clauses.  */
+   Operand 0: OMP_BODY: Code to be executed in parallel.
+   Operand 1: OMP_CLAUSES: List of clauses.  */
 
 DEFTREECODE (OACC_PARALLEL, "oacc_parallel", tcc_statement, 2)
 
 /* OpenACC - #pragma acc kernels [clause1 ... clauseN]
-   Operand 0: OACC_KERNELS_BODY: Sequence of kernels.
-   Operand 1: OACC_KERNELS_CLAUSES: List of clauses.  */
+   Operand 0: OMP_BODY: Sequence of kernels.
+   Operand 1: OMP_CLAUSES: List of clauses.  */
 
 DEFTREECODE (OACC_KERNELS, "oacc_kernels", tcc_statement, 2)
 
@@ -1087,32 +1095,41 @@ DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 2)
 	from INIT, COND, and INCR that are technically part of the
 	OMP_FOR structured block, but are evaluated before the loop
 	body begins.
+   Operand 6: OMP_FOR_ORIG_DECLS: If non-NULL, list of DECLs initialized
+	in OMP_FOR_INIT.  In some cases, like C++ iterators, the original
+	DECL init has been lost in gimplification and now contains a
+	temporary (D.nnnn).  This list contains the original DECLs in
+	the source.
 
    VAR must be an integer or pointer variable, which is implicitly thread
    private.  N1, N2 and INCR are required to be loop invariant integer
    expressions that are evaluated without any synchronization.
    The evaluation order, frequency of evaluation and side-effects are
    unspecified by the standards.  */
-DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 6)
+DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 7)
 
 /* OpenMP - #pragma omp simd [clause1 ... clauseN]
-   Operands like for OMP_FOR.  */
+   Operands like operands 1-6 of OMP_FOR.  */
 DEFTREECODE (OMP_SIMD, "omp_simd", tcc_statement, 6)
 
 /* Cilk Plus - #pragma simd [clause1 ... clauseN]
-   Operands like for OMP_FOR.  */
+   Operands like operands 1-6 of OMP_FOR.  */
 DEFTREECODE (CILK_SIMD, "cilk_simd", tcc_statement, 6)
 
 /* Cilk Plus - _Cilk_for (..)
-   Operands like for OMP_FOR.  */
+   Operands like operands 1-6 of OMP_FOR.  */
 DEFTREECODE (CILK_FOR, "cilk_for", tcc_statement, 6)
 
 /* OpenMP - #pragma omp distribute [clause1 ... clauseN]
-   Operands like for OMP_FOR.  */
+   Operands like operands 1-6 of OMP_FOR.  */
 DEFTREECODE (OMP_DISTRIBUTE, "omp_distribute", tcc_statement, 6)
 
+/* OpenMP - #pragma omp taskloop [clause1 ... clauseN]
+   Operands like operands 1-6 of OMP_FOR.  */
+DEFTREECODE (OMP_TASKLOOP, "omp_taskloop", tcc_statement, 6)
+
 /* OpenMP - #pragma acc loop [clause1 ... clauseN]
-   Operands like for OMP_FOR.  */
+   Operands like operands 1-6 of OMP_FOR.  */
 DEFTREECODE (OACC_LOOP, "oacc_loop", tcc_statement, 6)
 
 /* OpenMP - #pragma omp teams [clause1 ... clauseN]
@@ -1135,6 +1152,17 @@ DEFTREECODE (OMP_TARGET, "omp_target", tcc_statement, 2)
    Operand 1: OMP_SECTIONS_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_SECTIONS, "omp_sections", tcc_statement, 2)
 
+/* OpenMP - #pragma omp ordered
+   Operand 0: OMP_ORDERED_BODY: Master section body.
+   Operand 1: OMP_ORDERED_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_ORDERED, "omp_ordered", tcc_statement, 2)
+
+/* OpenMP - #pragma omp critical [name]
+   Operand 0: OMP_CRITICAL_BODY: Critical section body.
+   Operand 1: OMP_CRITICAL_CLAUSES: List of clauses.
+   Operand 2: OMP_CRITICAL_NAME: Identifier for critical section.  */
+DEFTREECODE (OMP_CRITICAL, "omp_critical", tcc_statement, 3)
+
 /* OpenMP - #pragma omp single
    Operand 0: OMP_SINGLE_BODY: Single section body.
    Operand 1: OMP_SINGLE_CLAUSES: List of clauses.  */
@@ -1151,15 +1179,6 @@ DEFTREECODE (OMP_MASTER, "omp_master", tcc_statement, 1)
 /* OpenMP - #pragma omp taskgroup
    Operand 0: OMP_TASKGROUP_BODY: Taskgroup body.  */
 DEFTREECODE (OMP_TASKGROUP, "omp_taskgroup", tcc_statement, 1)
-
-/* OpenMP - #pragma omp ordered
-   Operand 0: OMP_ORDERED_BODY: Master section body.  */
-DEFTREECODE (OMP_ORDERED, "omp_ordered", tcc_statement, 1)
-
-/* OpenMP - #pragma omp critical [name]
-   Operand 0: OMP_CRITICAL_BODY: Critical section body.
-   Operand 1: OMP_CRITICAL_NAME: Identifier for critical section.  */
-DEFTREECODE (OMP_CRITICAL, "omp_critical", tcc_statement, 2)
 
 /* OpenACC - #pragma acc cache (variable1 ... variableN)
    Operand 0: OACC_CACHE_CLAUSES: List of variables (transformed into
@@ -1185,6 +1204,14 @@ DEFTREECODE (OACC_UPDATE, "oacc_update", tcc_statement, 1)
 /* OpenMP - #pragma omp target update [clause1 ... clauseN]
    Operand 0: OMP_TARGET_UPDATE_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_TARGET_UPDATE, "omp_target_update", tcc_statement, 1)
+
+/* OpenMP - #pragma omp target enter data [clause1 ... clauseN]
+   Operand 0: OMP_TARGET_ENTER_DATA_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_TARGET_ENTER_DATA, "omp_target_enter_data", tcc_statement, 1)
+
+/* OpenMP - #pragma omp target exit data [clause1 ... clauseN]
+   Operand 0: OMP_TARGET_EXIT_DATA_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_TARGET_EXIT_DATA, "omp_target_exit_data", tcc_statement, 1)
 
 /* OMP_ATOMIC through OMP_ATOMIC_CAPTURE_NEW must be consecutive,
    or OMP_ATOMIC_SEQ_CST needs adjusting.  */

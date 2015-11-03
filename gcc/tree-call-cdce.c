@@ -22,21 +22,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
+#include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "gimple-pretty-print.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
-#include "tree-pass.h"
-#include "flags.h"
 
 
 /* Conditional dead call elimination
@@ -199,19 +195,19 @@ check_pow (gcall *pow_call)
       /* Only handle a fixed range of constant.  */
       REAL_VALUE_TYPE mv;
       REAL_VALUE_TYPE bcv = TREE_REAL_CST (base);
-      if (REAL_VALUES_EQUAL (bcv, dconst1))
+      if (real_equal (&bcv, &dconst1))
         return false;
-      if (REAL_VALUES_LESS (bcv, dconst1))
+      if (real_less (&bcv, &dconst1))
         return false;
       real_from_integer (&mv, TYPE_MODE (TREE_TYPE (base)), 256, UNSIGNED);
-      if (REAL_VALUES_LESS (mv, bcv))
+      if (real_less (&mv, &bcv))
         return false;
       return true;
     }
   else if (bc == SSA_NAME)
     {
       tree base_val0, type;
-      gimple base_def;
+      gimple *base_def;
       int bit_sz;
 
       /* Only handles cases where base value is converted
@@ -325,7 +321,7 @@ gen_one_condition (tree arg, int lbub,
                    enum tree_code tcode,
                    const char *temp_name1,
 		   const char *temp_name2,
-                   vec<gimple> conds,
+		   vec<gimple *> conds,
                    unsigned *nconds)
 {
   tree lbub_real_cst, lbub_cst, float_type;
@@ -369,7 +365,7 @@ gen_one_condition (tree arg, int lbub,
 
 static void
 gen_conditions_for_domain (tree arg, inp_domain domain,
-                           vec<gimple> conds,
+			   vec<gimple *> conds,
                            unsigned *nconds)
 {
   if (domain.has_lb)
@@ -412,7 +408,7 @@ gen_conditions_for_domain (tree arg, inp_domain domain,
 
 static void
 gen_conditions_for_pow_cst_base (tree base, tree expn,
-                                 vec<gimple> conds,
+				 vec<gimple *> conds,
                                  unsigned *nconds)
 {
   inp_domain exp_domain;
@@ -420,10 +416,10 @@ gen_conditions_for_pow_cst_base (tree base, tree expn,
      sure it is consistent with check_pow.  */
   REAL_VALUE_TYPE mv;
   REAL_VALUE_TYPE bcv = TREE_REAL_CST (base);
-  gcc_assert (!REAL_VALUES_EQUAL (bcv, dconst1)
-              && !REAL_VALUES_LESS (bcv, dconst1));
+  gcc_assert (!real_equal (&bcv, &dconst1)
+              && !real_less (&bcv, &dconst1));
   real_from_integer (&mv, TYPE_MODE (TREE_TYPE (base)), 256, UNSIGNED);
-  gcc_assert (!REAL_VALUES_LESS (mv, bcv));
+  gcc_assert (!real_less (&mv, &bcv));
 
   exp_domain = get_domain (0, false, false,
                            127, true, false);
@@ -448,15 +444,15 @@ gen_conditions_for_pow_cst_base (tree base, tree expn,
 
 static void
 gen_conditions_for_pow_int_base (tree base, tree expn,
-                                 vec<gimple> conds,
+				 vec<gimple *> conds,
                                  unsigned *nconds)
 {
-  gimple base_def;
+  gimple *base_def;
   tree base_val0;
   tree int_type;
   tree temp, tempn;
   tree cst0;
-  gimple stmt1, stmt2;
+  gimple *stmt1, *stmt2;
   int bit_sz, max_exp;
   inp_domain exp_domain;
 
@@ -537,7 +533,7 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
    and *NCONDS is the number of logical conditions.  */
 
 static void
-gen_conditions_for_pow (gcall *pow_call, vec<gimple> conds,
+gen_conditions_for_pow (gcall *pow_call, vec<gimple *> conds,
                         unsigned *nconds)
 {
   tree base, expn;
@@ -673,7 +669,7 @@ get_no_error_domain (enum built_in_function fnc)
    condition are separated by NULL tree in the vector.  */
 
 static void
-gen_shrink_wrap_conditions (gcall *bi_call, vec<gimple> conds,
+gen_shrink_wrap_conditions (gcall *bi_call, vec<gimple *> conds,
                             unsigned int *nconds)
 {
   gcall *call;
@@ -717,17 +713,15 @@ static bool
 shrink_wrap_one_built_in_call (gcall *bi_call)
 {
   gimple_stmt_iterator bi_call_bsi;
-  basic_block bi_call_bb, join_tgt_bb, guard_bb, guard_bb0;
+  basic_block bi_call_bb, join_tgt_bb, guard_bb;
   edge join_tgt_in_edge_from_call, join_tgt_in_edge_fall_thru;
   edge bi_call_in_edge0, guard_bb_in_edge;
   unsigned tn_cond_stmts, nconds;
   unsigned ci;
-  gimple cond_expr = NULL;
-  gimple cond_expr_start;
-  tree bi_call_label_decl;
-  gimple bi_call_label;
+  gimple *cond_expr = NULL;
+  gimple *cond_expr_start;
 
-  auto_vec<gimple, 12> conds;
+  auto_vec<gimple *, 12> conds;
   gen_shrink_wrap_conditions (bi_call, conds, &nconds);
 
   /* This can happen if the condition generator decides
@@ -763,7 +757,7 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
   cond_expr_start = conds[0];
   for (ci = 0; ci < tn_cond_stmts; ci++)
     {
-      gimple c = conds[ci];
+      gimple *c = conds[ci];
       gcc_assert (c || ci != 0);
       if (!c)
         break;
@@ -774,30 +768,24 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
   ci++;
   gcc_assert (cond_expr && gimple_code (cond_expr) == GIMPLE_COND);
 
-  /* Now the label.  */
-  bi_call_label_decl = create_artificial_label (gimple_location (bi_call));
-  bi_call_label = gimple_build_label (bi_call_label_decl);
-  gsi_insert_before (&bi_call_bsi, bi_call_label, GSI_SAME_STMT);
-
   bi_call_in_edge0 = split_block (bi_call_bb, cond_expr);
   bi_call_in_edge0->flags &= ~EDGE_FALLTHRU;
   bi_call_in_edge0->flags |= EDGE_TRUE_VALUE;
-  guard_bb0 = bi_call_bb;
+  guard_bb = bi_call_bb;
   bi_call_bb = bi_call_in_edge0->dest;
-  join_tgt_in_edge_fall_thru = make_edge (guard_bb0, join_tgt_bb,
+  join_tgt_in_edge_fall_thru = make_edge (guard_bb, join_tgt_bb,
                                           EDGE_FALSE_VALUE);
 
   bi_call_in_edge0->probability = REG_BR_PROB_BASE * ERR_PROB;
   bi_call_in_edge0->count =
-      apply_probability (guard_bb0->count,
+      apply_probability (guard_bb->count,
 			 bi_call_in_edge0->probability);
   join_tgt_in_edge_fall_thru->probability =
       inverse_probability (bi_call_in_edge0->probability);
   join_tgt_in_edge_fall_thru->count =
-      guard_bb0->count - bi_call_in_edge0->count;
+      guard_bb->count - bi_call_in_edge0->count;
 
   /* Code generation for the rest of the conditions  */
-  guard_bb = guard_bb0;
   while (nconds > 0)
     {
       unsigned ci0;
@@ -807,7 +795,7 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
       cond_expr_start = conds[ci0];
       for (; ci < tn_cond_stmts; ci++)
         {
-          gimple c = conds[ci];
+	  gimple *c = conds[ci];
           gcc_assert (c || ci != ci0);
           if (!c)
             break;

@@ -48,7 +48,7 @@ enum iv_extend_code
 
 struct GTY ((chain_next ("%h.next"))) nb_iter_bound {
   /* The statement STMT is executed at most ...  */
-  gimple stmt;
+  gimple *stmt;
 
   /* ... BOUND + 1 times (BOUND must be an unsigned constant).
      The + 1 is added for the following reasons:
@@ -264,7 +264,7 @@ extern void flow_loop_free (struct loop *);
 int flow_loop_nodes_find (basic_block, struct loop *);
 unsigned fix_loop_structure (bitmap changed_bbs);
 bool mark_irreducible_loops (void);
-void release_recorded_exits (void);
+void release_recorded_exits (function *);
 void record_loop_exits (void);
 void rescan_loop_exit (edge, bool, bool);
 
@@ -310,6 +310,16 @@ extern void delete_loop (struct loop *);
 
 
 extern void verify_loop_structure (void);
+
+/* Check loop structure invariants, if internal consistency checks are
+   enabled.  */
+
+static inline void
+checking_verify_loop_structure (void)
+{
+  if (flag_checking)
+    verify_loop_structure ();
+}
 
 /* Loop analysis.  */
 extern bool just_once_each_iteration_p (const struct loop *, const_basic_block);
@@ -492,27 +502,45 @@ number_of_loops (struct function *fn)
    described by FLAGS.  */
 
 static inline bool
+loops_state_satisfies_p (function *fn, unsigned flags)
+{
+  return (loops_for_fn (fn)->state & flags) == flags;
+}
+
+static inline bool
 loops_state_satisfies_p (unsigned flags)
 {
-  return (current_loops->state & flags) == flags;
+  return loops_state_satisfies_p (cfun, flags);
 }
 
 /* Sets FLAGS to the loops state.  */
 
 static inline void
+loops_state_set (function *fn, unsigned flags)
+{
+  loops_for_fn (fn)->state |= flags;
+}
+
+static inline void
 loops_state_set (unsigned flags)
 {
-  current_loops->state |= flags;
+  loops_state_set (cfun, flags);
 }
 
 /* Clears FLAGS from the loops state.  */
+
+static inline void
+loops_state_clear (function *fn, unsigned flags)
+{
+  loops_for_fn (fn)->state &= ~flags;
+}
 
 static inline void
 loops_state_clear (unsigned flags)
 {
   if (!current_loops)
     return;
-  current_loops->state &= ~flags;
+  loops_state_clear (cfun, flags);
 }
 
 /* Loop iterators.  */
@@ -531,10 +559,13 @@ enum li_flags
 
 struct loop_iterator
 {
-  loop_iterator (loop_p *loop, unsigned flags);
+  loop_iterator (function *fn, loop_p *loop, unsigned flags);
   ~loop_iterator ();
 
   inline loop_p next ();
+
+  /* The function we are visiting.  */
+  function *fn;
 
   /* The list of loops to visit.  */
   vec<int> to_visit;
@@ -551,7 +582,7 @@ loop_iterator::next ()
   while (this->to_visit.iterate (this->idx, &anum))
     {
       this->idx++;
-      loop_p loop = get_loop (cfun, anum);
+      loop_p loop = get_loop (fn, anum);
       if (loop)
 	return loop;
     }
@@ -560,26 +591,27 @@ loop_iterator::next ()
 }
 
 inline
-loop_iterator::loop_iterator (loop_p *loop, unsigned flags)
+loop_iterator::loop_iterator (function *fn, loop_p *loop, unsigned flags)
 {
   struct loop *aloop;
   unsigned i;
   int mn;
 
   this->idx = 0;
-  if (!current_loops)
+  this->fn = fn;
+  if (!loops_for_fn (fn))
     {
       this->to_visit.create (0);
       *loop = NULL;
       return;
     }
 
-  this->to_visit.create (number_of_loops (cfun));
+  this->to_visit.create (number_of_loops (fn));
   mn = (flags & LI_INCLUDE_ROOT) ? 0 : 1;
 
   if (flags & LI_ONLY_INNERMOST)
     {
-      for (i = 0; vec_safe_iterate (current_loops->larray, i, &aloop); i++)
+      for (i = 0; vec_safe_iterate (loops_for_fn (fn)->larray, i, &aloop); i++)
 	if (aloop != NULL
 	    && aloop->inner == NULL
 	    && aloop->num >= mn)
@@ -588,7 +620,7 @@ loop_iterator::loop_iterator (loop_p *loop, unsigned flags)
   else if (flags & LI_FROM_INNERMOST)
     {
       /* Push the loops to LI->TO_VISIT in postorder.  */
-      for (aloop = current_loops->tree_root;
+      for (aloop = loops_for_fn (fn)->tree_root;
 	   aloop->inner != NULL;
 	   aloop = aloop->inner)
 	continue;
@@ -614,7 +646,7 @@ loop_iterator::loop_iterator (loop_p *loop, unsigned flags)
   else
     {
       /* Push the loops to LI->TO_VISIT in preorder.  */
-      aloop = current_loops->tree_root;
+      aloop = loops_for_fn (fn)->tree_root;
       while (1)
 	{
 	  if (aloop->num >= mn)
@@ -643,7 +675,12 @@ loop_iterator::~loop_iterator ()
 }
 
 #define FOR_EACH_LOOP(LOOP, FLAGS) \
-  for (loop_iterator li(&(LOOP), FLAGS); \
+  for (loop_iterator li(cfun, &(LOOP), FLAGS); \
+       (LOOP); \
+       (LOOP) = li.next ())
+
+#define FOR_EACH_LOOP_FN(FN, LOOP, FLAGS) \
+  for (loop_iterator li(fn, &(LOOP), FLAGS); \
        (LOOP); \
        (LOOP) = li.next ())
 
@@ -691,7 +728,12 @@ extern void init_set_costs (void);
 
 /* Loop optimizer initialization.  */
 extern void loop_optimizer_init (unsigned);
-extern void loop_optimizer_finalize (void);
+extern void loop_optimizer_finalize (function *);
+inline void
+loop_optimizer_finalize ()
+{
+  loop_optimizer_finalize (cfun);
+}
 
 /* Optimization passes.  */
 enum

@@ -1,20 +1,21 @@
 # translation of gcc messages to Turkish
 # Copyright (C) 2006 Free Software Foundation, Inc.
 #
+# This file is distributed under the same license as the gcc package.
 # Nilgün Belma Bugüner <nilgun@buguner.name.tr>, 2001, ...,2006.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.1.1\n"
+"Project-Id-Version: gcc 5.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-07-02 12:31+0000\n"
-"PO-Revision-Date: 2006-11-16 10:10+0200\n"
-"Last-Translator: Nilgün Belma Bugüner <nilgun@buguner.name.tr>\n"
+"PO-Revision-Date: 2015-09-11 20:22+0300\n"
+"Last-Translator: Nilgün Belma Bugüner <nilgun@fide.org>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.1\n"
+"X-Generator: Poedit 1.8.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: cfgrtl.c:2698
@@ -39,10 +40,9 @@ msgid "[cannot find %s]"
 msgstr "[%s bulunamıyor]"
 
 #: collect2.c:1557
-#, fuzzy, c-format
-#| msgid "collect2 version %s"
+#, c-format
 msgid "collect2 version %s\n"
-msgstr "collect2 %s sürümü"
+msgstr "collect2 %s sürümü\n"
 
 #: collect2.c:1664
 #, fuzzy, c-format
@@ -594,10 +594,9 @@ msgstr ""
 "Hata raporlama işlemleri için:\n"
 
 #: gcc.c:7536 gcov-tool.c:528
-#, fuzzy, c-format
-#| msgid "(%s %s %s %s"
+#, c-format
 msgid "%s %s%s\n"
-msgstr "(%s %s %s %s"
+msgstr "%s %s%s\n"
 
 #: gcc.c:7539 gcov-tool.c:530 gcov.c:504 fortran/gfortranspec.c:280
 #: java/jcf-dump.c:1240
@@ -763,14 +762,12 @@ msgid ""
 msgstr ""
 
 #: gcov-tool.c:513
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "  -h, --help                            Print this help, then exit\n"
 msgstr "  -h, --help                      Bu yardım iletisini gösterir ve çıkar\n"
 
 #: gcov-tool.c:514
-#, fuzzy, c-format
-#| msgid "  -v, --version                   Print version number, then exit\n"
+#, c-format
 msgid "  -v, --version                         Print version number, then exit\n"
 msgstr "  -v, --version                   Sürüm bilgilerini gösterir ve çıkar\n"
 
@@ -918,28 +915,24 @@ msgid "  -v, --version                   Print version number, then exit\n"
 msgstr "  -v, --version                   Sürüm bilgilerini gösterir ve çıkar\n"
 
 #: gcov.c:502
-#, fuzzy, c-format
-#| msgid "gcov (GCC) %s\n"
+#, c-format
 msgid "gcov %s%s\n"
-msgstr "gcov (GCC) %s\n"
+msgstr "gcov %s%s\n"
 
 #: gcov.c:794
-#, fuzzy, c-format
-#| msgid "%s:creating '%s'\n"
+#, c-format
 msgid "Creating '%s'\n"
-msgstr "%s: '%s' oluşturuluyor\n"
+msgstr "'%s' oluşturuluyor\n"
 
 #: gcov.c:797
-#, fuzzy, c-format
-#| msgid "%s:error writing output file '%s'\n"
+#, c-format
 msgid "Error writing output file '%s'\n"
-msgstr "%s: çıktı dosyası '%s' yazılırken hata.\n"
+msgstr "Çıktı dosyası '%s' yazılırken hata.\n"
 
 #: gcov.c:801
-#, fuzzy, c-format
-#| msgid "%s:could not open output file '%s'\n"
+#, c-format
 msgid "Could not open output file '%s'\n"
-msgstr "%s: çıktı dosyası '%s' açılamadı\n"
+msgstr "Çıktı dosyası '%s' açılamadı\n"
 
 #: gcov.c:806
 #, fuzzy, c-format
@@ -1134,16 +1127,13 @@ msgid "unconditional %2d never executed\n"
 msgstr "%2d. mutlak hiç çalıştırılmadı\n"
 
 #: gcov.c:2424
-#, fuzzy, c-format
-#| msgid "%s:cannot open source file\n"
+#, c-format
 msgid "Cannot open source file %s\n"
-msgstr "%s: kaynak dosyası açılamıyor\n"
+msgstr "%s kaynak dosyası açılamıyor\n"
 
 #: gcse.c:2601
-#, fuzzy
-#| msgid "GCSE disabled"
 msgid "PRE disabled"
-msgstr "GCSE iptal edildi"
+msgstr "PRE iptal edildi"
 
 #: gcse.c:3529
 msgid "GCSE disabled"
@@ -1217,16 +1207,14 @@ msgid "At top level:"
 msgstr "Üst düzeyde:"
 
 #: langhooks.c:422 cp/error.c:3252
-#, fuzzy, c-format
-#| msgid "In member function %qs:"
+#, c-format
 msgid "In member function %qs"
-msgstr "%qs üye işlevinde:"
+msgstr "%qs üye işlevinde"
 
 #: langhooks.c:426 cp/error.c:3255
-#, fuzzy, c-format
-#| msgid "In function %qs:"
+#, c-format
 msgid "In function %qs"
-msgstr "%qs işlevinde:"
+msgstr "%qs işlevinde"
 
 #: langhooks.c:477 cp/error.c:3205
 msgid "    inlined from %qs at %r%s:%d:%d%R"
@@ -1289,10 +1277,8 @@ msgid "[enabled]"
 msgstr ""
 
 #: opts.c:1132
-#, fuzzy
-#| msgid "GCSE disabled"
 msgid "[disabled]"
-msgstr "GCSE iptal edildi"
+msgstr "[iptal edildi]"
 
 #: opts.c:1151
 #, c-format
@@ -1399,8 +1385,6 @@ msgid "VOIDmode on an output"
 msgstr "bir çıktıda VOIDmode"
 
 #: reload1.c:8830
-#, fuzzy
-#| msgid "Failure trying to reload:"
 msgid "failure trying to reload:"
 msgstr "yeniden yükleme denemesi başarısız:"
 
@@ -2611,16 +2595,12 @@ msgid "the 'a' scanf flag"
 msgstr "'a' scanf bayrağı"
 
 #: c-family/c-format.c:544
-#, fuzzy
-#| msgid "' ' flag"
 msgid "'m' flag"
-msgstr "' ' bayrağı"
+msgstr "'m' bayrağı"
 
 #: c-family/c-format.c:544
-#, fuzzy
-#| msgid "the 'a' scanf flag"
 msgid "the 'm' scanf flag"
-msgstr "'a' scanf bayrağı"
+msgstr "'m' scanf bayrağı"
 
 #: c-family/c-format.c:545 config/i386/msformat-c.c:79
 msgid "field width in scanf format"
@@ -2752,10 +2732,8 @@ msgstr "strfmon biçiminde uzunluk değiştirici"
 
 #. Handle deferred options from command-line.
 #: c-family/c-opts.c:1324 fortran/cpp.c:605
-#, fuzzy
-#| msgid "<command line>"
 msgid "<command-line>"
-msgstr "<komut satırı>"
+msgstr "<komut-satırı>"
 
 #: config/aarch64/aarch64.c:4058 config/arm/arm.c:21673 config/arm/arm.c:21686
 #: config/arm/arm.c:21711 config/nios2/nios2.c:2118
@@ -4502,10 +4480,8 @@ msgid "<unknown operator>"
 msgstr "Hatalı işleç"
 
 #: cp/error.c:3024
-#, fuzzy
-#| msgid "Unknown src"
 msgid "{unknown}"
-msgstr "Bilinmeyen kaynak"
+msgstr ""
 
 #: cp/error.c:3136
 msgid "At global scope:"
@@ -5404,10 +5380,8 @@ msgid "internal compiler error"
 msgstr "derleyici iç hatası: "
 
 #: fortran/gfc-diagnostic.def:35
-#, fuzzy
-#| msgid "Error:"
 msgid "Error"
-msgstr "Hata:"
+msgstr "Hata"
 
 #: fortran/gfc-diagnostic.def:36
 #, fuzzy
@@ -5454,10 +5428,8 @@ msgstr "hata: "
 #. This one is just for counting DK_WARNING promoted to DK_ERROR
 #. due to -Werror and -Werror=warning.
 #: fortran/gfc-diagnostic.def:47
-#, fuzzy
-#| msgid "error: "
 msgid "error"
-msgstr "hata: "
+msgstr "hata"
 
 #: go/go-backend.c:182
 msgid "lseek failed while reading export data"
@@ -56528,10 +56500,9 @@ msgid "C interoperable character dummy variable %qs at %L with VALUE attribute m
 msgstr ""
 
 #: fortran/resolve.c:13396 fortran/resolve.c:13563
-#, fuzzy, gcc-internal-format
-#| msgid "The derived type '%s' at %L is of type '%s', which has not been defined."
+#, gcc-internal-format
 msgid "The derived type %qs at %L is of type %qs, which has not been defined"
-msgstr "Türetilmiş '%s' türü (%L'de) tanımlanmamış olan '%s' türündedir."
+msgstr "Türetilmiş %qs türü %L'de tanımlanmamış olan %qs türündedir."
 
 #: fortran/resolve.c:13410
 #, gcc-internal-format, gfc-internal-format
@@ -56598,10 +56569,9 @@ msgid "Variable %s at %L of type LOCK_TYPE or with subcomponent of type LOCK_TYP
 msgstr ""
 
 #: fortran/resolve.c:13622
-#, fuzzy, gcc-internal-format
-#| msgid "The INTENT(OUT) dummy argument '%s' at %L is ASSUMED SIZE and so cannot have a default initializer"
+#, gcc-internal-format
 msgid "The INTENT(OUT) dummy argument %qs at %L is ASSUMED SIZE and so cannot have a default initializer"
-msgstr "INTENT(OUT) sözde argüman '%s' %L'de ASSUMED SIZE olduğundan bir öntanımlı ilklerdiriciye sahip olamaz"
+msgstr "INTENT(OUT) sözde argüman %qs %L'de ASSUMED SIZE olduğundan bir öntanımlı ilklerdiriciye sahip olamaz"
 
 #: fortran/resolve.c:13634
 #, fuzzy, gcc-internal-format
@@ -56679,10 +56649,9 @@ msgid "check_data_variable(): Bad expression"
 msgstr ""
 
 #: fortran/resolve.c:13923
-#, fuzzy, gcc-internal-format
-#| msgid "BLOCK DATA element '%s' at %L must be in COMMON"
+#, gcc-internal-format
 msgid "BLOCK DATA element %qs at %L must be in COMMON"
-msgstr "BLOCK DATA öğesi '%s' %L'de COMMON içinde olmalıdır"
+msgstr "BLOCK DATA öğesi %qs %L'de COMMON içinde olmalıdır"
 
 #: fortran/resolve.c:13929
 #, gcc-internal-format
@@ -56741,10 +56710,9 @@ msgid "Label %d at %L defined but cannot be used"
 msgstr "%d yaftası %L'de tanımlanmış ama kullanılamıyor"
 
 #: fortran/resolve.c:14505
-#, fuzzy, gcc-internal-format
-#| msgid "Derived type variable '%s' at %L must have SEQUENCE attribute to be an EQUIVALENCE object"
+#, gcc-internal-format
 msgid "Derived type variable %qs at %L must have SEQUENCE attribute to be an EQUIVALENCE object"
-msgstr "Türetilmiş tür değişkeni '%s' %L'de bir EQUIVALENCE nesnesi olarak SEQUENCE özniteliğine sahip olmalı"
+msgstr "Türetilmiş tür değişkeni %qs %L'de bir EQUIVALENCE nesnesi olarak SEQUENCE özniteliğine sahip olmalı"
 
 #: fortran/resolve.c:14514
 #, fuzzy, gcc-internal-format
@@ -56759,10 +56727,9 @@ msgid "Derived type variable %qs at %L with default initialization cannot be in 
 msgstr "Türetilmiş tür değişkeni '%s' %L'de öntanımlı ilklendiriciyle bir EQUIVALENCE nesnesi olamaz"
 
 #: fortran/resolve.c:14538
-#, fuzzy, gcc-internal-format
-#| msgid "Derived type variable '%s' at %L with pointer component(s) cannot be an EQUIVALENCE object"
+#, gcc-internal-format
 msgid "Derived type variable %qs at %L with pointer component(s) cannot be an EQUIVALENCE object"
-msgstr "Türetilmiş tür değişkeni '%s' %L'de gösterici bileşen(ler)le bir EQUIVALENCE nesnesi olamaz"
+msgstr "Türetilmiş tür değişkeni %qs %L'de gösterici bileşen(ler)le bir EQUIVALENCE nesnesi olamaz"
 
 #: fortran/resolve.c:14641
 #, gcc-internal-format, gfc-internal-format
@@ -56775,28 +56742,24 @@ msgid "Either all or none of the objects in the EQUIVALENCE set at %L shall have
 msgstr ""
 
 #: fortran/resolve.c:14668
-#, fuzzy, gcc-internal-format
-#| msgid "Common block member '%s' at %L cannot be an EQUIVALENCE object in the pure procedure '%s'"
+#, gcc-internal-format
 msgid "Common block member %qs at %L cannot be an EQUIVALENCE object in the pure procedure %qs"
-msgstr "Ortak blok üyesi '%s' (%L'de), '%s' pure yordamındaki bir EQUIVALENCE nesnesi olamaz"
+msgstr "Ortak blok üyesi %qs %L'de, %qs pure yordamındaki bir EQUIVALENCE nesnesi olamaz"
 
 #: fortran/resolve.c:14677
-#, fuzzy, gcc-internal-format
-#| msgid "Named constant '%s' at %L cannot be an EQUIVALENCE object"
+#, gcc-internal-format
 msgid "Named constant %qs at %L cannot be an EQUIVALENCE object"
-msgstr "'%s' isimli sabiti %L'de bir EQUIVALENCE nesnesi olamaz"
+msgstr "%qs isimli sabiti %L'de bir EQUIVALENCE nesnesi olamaz"
 
 #: fortran/resolve.c:14750
-#, fuzzy, gcc-internal-format
-#| msgid "Array '%s' at %L with non-constant bounds cannot be an EQUIVALENCE object"
+#, gcc-internal-format
 msgid "Array %qs at %L with non-constant bounds cannot be an EQUIVALENCE object"
-msgstr "Sınırları sabit olmayan '%s' dizisi (%L'de) bir EQUIVALENCE nesnesi olamaz"
+msgstr "Sınırları sabit olmayan %qs dizisi %L'de bir EQUIVALENCE nesnesi olamaz"
 
 #: fortran/resolve.c:14761
-#, fuzzy, gcc-internal-format
-#| msgid "Structure component '%s' at %L cannot be an EQUIVALENCE object"
+#, gcc-internal-format
 msgid "Structure component %qs at %L cannot be an EQUIVALENCE object"
-msgstr "Yapı bileşeni '%s' %L'de bir EQUIVALENCE nesnesi olamaz"
+msgstr "Yapı bileşeni %qs %L'de bir EQUIVALENCE nesnesi olamaz"
 
 #: fortran/resolve.c:14772
 #, gcc-internal-format, gfc-internal-format
@@ -56804,34 +56767,29 @@ msgid "Substring at %L has length zero"
 msgstr "%L'deki altdizge sıfır uzunlukta"
 
 #: fortran/resolve.c:14815
-#, fuzzy, gcc-internal-format
-#| msgid "PUBLIC function '%s' at %L cannot be of PRIVATE type '%s'"
+#, gcc-internal-format
 msgid "PUBLIC function %qs at %L of PRIVATE type %qs"
-msgstr "PUBLIC işlev '%s' %L'de PRIVATE '%s' türünde olamaz"
+msgstr ""
 
 #: fortran/resolve.c:14828
-#, fuzzy, gcc-internal-format
-#| msgid "ENTRY '%s' at %L has no IMPLICIT type"
+#, gcc-internal-format
 msgid "ENTRY %qs at %L has no IMPLICIT type"
-msgstr "ENTRY '%s' %L'de hiç IMPLICIT tür içermiyor"
+msgstr "ENTRY %qs %L'de hiç IMPLICIT tür içermiyor"
 
 #: fortran/resolve.c:14845
-#, fuzzy, gcc-internal-format
-#| msgid "User operator procedure '%s' at %L must be a FUNCTION"
+#, gcc-internal-format
 msgid "User operator procedure %qs at %L must be a FUNCTION"
-msgstr "Yerleşik işleç arayüzü '%s' %L'de bir FUNCTION olmalı"
+msgstr "Yerleşik işleç arayüzü %qs %L'de bir FUNCTION olmalı"
 
 #: fortran/resolve.c:14855
-#, fuzzy, gcc-internal-format
-#| msgid "User operator procedure '%s' at %L cannot be assumed character length"
+#, gcc-internal-format
 msgid "User operator procedure %qs at %L cannot be assumed character length"
-msgstr "Kullanıcı işleci yordamı '%s' %L'de tahmini karakter uzunluğunda olamaz"
+msgstr "Kullanıcı işleci yordamı %qs %L'de tahmini karakter uzunluğunda olamaz"
 
 #: fortran/resolve.c:14863
-#, fuzzy, gcc-internal-format
-#| msgid "User operator procedure '%s' at %L must have at least one argument"
+#, gcc-internal-format
 msgid "User operator procedure %qs at %L must have at least one argument"
-msgstr "Kullanıcı işleci yordamı '%s' (%L'de) için en azından bir argüman bulunmalı"
+msgstr "Kullanıcı işleci yordamı %qs %L'de için en azından bir argüman bulunmalı"
 
 #: fortran/resolve.c:14877
 #, gcc-internal-format, gfc-internal-format
@@ -56849,10 +56807,9 @@ msgid "Operator interface at %L must have, at most, two arguments"
 msgstr "%L'deki işleç arayüzünün en fazla iki argümanı olmalı"
 
 #: fortran/resolve.c:14980
-#, fuzzy, gcc-internal-format
-#| msgid "Contained procedure '%s' at %L of a PURE procedure must also be PURE"
+#, gcc-internal-format
 msgid "Contained procedure %qs at %L of a PURE procedure must also be PURE"
-msgstr "Bir PURE yordamında içerilmiş '%s' yordamının kendisi de PURE olmalı"
+msgstr ""
 
 #: fortran/scanner.c:330
 #, fuzzy, gcc-internal-format
@@ -56883,10 +56840,9 @@ msgid "!$OMP at %C starts a commented line as it neither is followed by a space 
 msgstr ""
 
 #: fortran/scanner.c:1255 fortran/scanner.c:1424
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Line truncated at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Line truncated at %L"
-msgstr "%C'deki satır kırpıldı"
+msgstr "%L'deki satır kırpıldı"
 
 #: fortran/scanner.c:1311 fortran/scanner.c:1484
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -57271,10 +57227,9 @@ msgid "IMPLICIT NONE (type) statement at %L following an IMPLICIT statement"
 msgstr "%C'deki SAVE deyiminden önce bir kapsamlı SAVE deyimi var"
 
 #: fortran/symbol.c:168
-#, fuzzy, gcc-internal-format
-#| msgid "Letter '%c' already set in IMPLICIT statement at %C"
+#, gcc-internal-format
 msgid "Letter %<%c%> already set in IMPLICIT statement at %C"
-msgstr "'%c' harfi %C'de IMPLICIT deyiminde zaten atanmış"
+msgstr "%<%c%> harfi %C'de IMPLICIT deyiminde zaten atanmış"
 
 #: fortran/symbol.c:190
 #, gcc-internal-format, gfc-internal-format
@@ -57302,10 +57257,9 @@ msgid "gfc_set_default_type(): symbol already has a type"
 msgstr ""
 
 #: fortran/symbol.c:256
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' at %L has no IMPLICIT type"
+#, gcc-internal-format
 msgid "Symbol %qs at %L has no IMPLICIT type"
-msgstr "'%s' simgesi %C'de hiç IMPLICIT tür içermiyor"
+msgstr ""
 
 #. BIND(C) variables should not be implicitly declared.
 #: fortran/symbol.c:276
@@ -57395,10 +57349,9 @@ msgid "Cannot change attributes of USE-associated symbol %s at %L"
 msgstr "USE ile ilişkili %s simgesinin öznitelikleri %L'de değiştirilemez"
 
 #: fortran/symbol.c:857
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Duplicate %s attribute specified at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Duplicate %s attribute specified at %L"
-msgstr "%L'de yinelenen %s özniteliği belirtilmiş"
+msgstr ""
 
 #: fortran/symbol.c:899
 #, gcc-internal-format, gfc-internal-format
@@ -57499,10 +57452,9 @@ msgid "EXTENDS at %L"
 msgstr ""
 
 #: fortran/symbol.c:1668
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' at %L already has an explicit interface"
+#, gcc-internal-format
 msgid "Symbol %qs at %L already has an explicit interface"
-msgstr "'%s' simgesi %L'de zaten bir aleni arayüze sahip"
+msgstr "%qs simgesi %L'de zaten bir aleni arayüze sahip"
 
 #: fortran/symbol.c:1675
 #, gcc-internal-format
@@ -57527,10 +57479,9 @@ msgid "Procedure %qs at %L may not have basic type of %s"
 msgstr "'%s' simgesi %L'de zaten temel %s türünde"
 
 #: fortran/symbol.c:1732
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' at %L cannot have a type"
+#, gcc-internal-format
 msgid "Symbol %qs at %L cannot have a type"
-msgstr "'%s' simgesi (%L'de) bir türe sahip olamaz"
+msgstr "%qs simgesi (%L'de) bir türe sahip olamaz"
 
 #: fortran/symbol.c:1903
 #, gcc-internal-format, gfc-internal-format
@@ -57544,10 +57495,9 @@ msgid "Component '%s' at %C already in the parent type at %L"
 msgstr "'%s' bileşeni (%C'deki) zaten %L'de bildirilmiş"
 
 #: fortran/symbol.c:1999
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' at %C is ambiguous"
+#, gcc-internal-format
 msgid "Symbol %qs at %C is ambiguous"
-msgstr "'%s' simgesi %C'de belirsiz"
+msgstr "%qs simgesi %C'de belirsiz"
 
 #: fortran/symbol.c:2031
 #, fuzzy, gcc-internal-format
@@ -57615,17 +57565,15 @@ msgid "Name %qs at %C is an ambiguous reference to %qs from module %qs"
 msgstr "'%s' ismi (%C'deki) '%s'e '%s' modülünden belirsiz bir başvurudur"
 
 #: fortran/symbol.c:2639
-#, fuzzy, gcc-internal-format
-#| msgid "Name '%s' at %C is an ambiguous reference to '%s' from current program unit"
+#, gcc-internal-format
 msgid "Name %qs at %C is an ambiguous reference to %qs from current program unit"
-msgstr "'%s' ismi (%C'deki) şu an ki program biriminden '%s'e belirsiz bir başvurudur"
+msgstr "%qs ismi (%C'deki) şu an ki program biriminden %qs'e belirsiz bir başvurudur"
 
 #. Symbol is from another namespace.
 #: fortran/symbol.c:2860
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' at %C has already been host associated"
+#, gcc-internal-format
 msgid "Symbol %qs at %C has already been host associated"
-msgstr "'%s' simgesi (%C'deki) zaten konakla ilişkiliymiş"
+msgstr "%qs simgesi (%C'deki) zaten konakla ilişkiliymiş"
 
 #: fortran/symbol.c:3851
 #, gcc-internal-format
@@ -57761,22 +57709,19 @@ msgstr "Uyumsuz eşdeğerlik kuralları '%s' (%L'deki) ve '%s' (%L'deki) ilişki
 
 #. Aligning this field would misalign a previous field.
 #: fortran/trans-common.c:1054
-#, fuzzy, gcc-internal-format
-#| msgid "The equivalence set for variable '%s' declared at %L violates alignment requirents"
+#, gcc-internal-format
 msgid "The equivalence set for variable %qs declared at %L violates alignment requirements"
-msgstr "'%s' değişkeni için bildirilen eşdeğerlik kümesi hizalama gereksinimleriyle çelişiyor (%L'de)"
+msgstr "%qs değişkeni için bildirilen eşdeğerlik kümesi hizalama gereksinimleriyle çelişiyor (%L'de)"
 
 #: fortran/trans-common.c:1119
-#, fuzzy, gcc-internal-format
-#| msgid "Equivalence for '%s' does not match ordering of COMMON '%s' at %L"
+#, gcc-internal-format
 msgid "Equivalence for %qs does not match ordering of COMMON %qs at %L"
-msgstr "'%s'nin eşdeğerliği ile COMMON '%s'nin mertebesi uyuşmuyor (%L'de)"
+msgstr "%qs'nin eşdeğerliği ile COMMON %qs'nin mertebesi uyuşmuyor (%L'de)"
 
 #: fortran/trans-common.c:1134
-#, fuzzy, gcc-internal-format
-#| msgid "The equivalence set for '%s' cause an invalid extension to COMMON '%s' at %L"
+#, gcc-internal-format
 msgid "The equivalence set for %qs cause an invalid extension to COMMON %qs at %L"
-msgstr "'%s'nin eşdeğerliği COMMON '%s'ye geçersiz eklemeye sebep oluyor (%L'de)"
+msgstr "%qs'nin eşdeğerliği COMMON %qs'ye geçersiz eklemeye sebep oluyor (%L'de)"
 
 #: fortran/trans-common.c:1150
 #, fuzzy, gcc-internal-format
@@ -57850,10 +57795,9 @@ msgid "Deferred type parameter not yet supported"
 msgstr "%L'deki gösterici atamasında parametreler farklı çeşit türlerinde"
 
 #: fortran/trans-decl.c:4489
-#, fuzzy, gcc-internal-format
-#| msgid "backend decl for module variable %s already exists"
+#, gcc-internal-format
 msgid "backend decl for module variable %qs already exists"
-msgstr "modül değişkeni %s için artyüz bildirimi zaten mevcut"
+msgstr "modül değişkeni %qs için artyüz bildirimi zaten mevcut"
 
 #: fortran/trans-decl.c:4502
 #, fuzzy, gcc-internal-format
@@ -57949,10 +57893,9 @@ msgid "Unknown argument list function at %L"
 msgstr "'%s' işlevinde argüman listesi eksik (%C'de)"
 
 #: fortran/trans-intrinsic.c:869
-#, fuzzy, gcc-internal-format
-#| msgid "Intrinsic function %s(%d) not recognized"
+#, gcc-internal-format
 msgid "Intrinsic function %qs (%d) not recognized"
-msgstr "Yerleşik işlev %s(%d) tanınmiyor"
+msgstr "Yerleşik işlev %qs (%d) tanınmiyor"
 
 #: fortran/trans-intrinsic.c:1487 fortran/trans-intrinsic.c:1873
 #: fortran/trans-intrinsic.c:2069
@@ -58100,10 +58043,9 @@ msgid "ConstantValue attribute of field '%s' has wrong type"
 msgstr "Alan '%s' için ConstantValue özniteliği yanlış türde"
 
 #: java/class.c:1651
-#, fuzzy, gcc-internal-format
-#| msgid "%Jabstract method in non-abstract class"
+#, gcc-internal-format
 msgid "abstract method in non-abstract class"
-msgstr "%Jkuramsal olmayan sınıfta kuramsal yöntem"
+msgstr "kuramsal olmayan sınıfta kuramsal yöntem"
 
 #: java/class.c:2714
 #, gcc-internal-format
@@ -58218,8 +58160,7 @@ msgstr "yöntemin sonundaki %d den sonra baytkod ulaşılabilir değil"
 
 #. duplicate code from LOAD macro
 #: java/expr.c:3555
-#, fuzzy, gcc-internal-format
-#| msgid "unrecogized wide sub-instruction"
+#, gcc-internal-format
 msgid "unrecognized wide sub-instruction"
 msgstr "geniş alt komut anlaşılamadı"
 
@@ -58280,10 +58221,9 @@ msgid "error while parsing final attributes"
 msgstr "bitiş öznitelikleri çözümlenirken hata"
 
 #: java/jcf-parse.c:1528
-#, fuzzy, gcc-internal-format
-#| msgid "%Hduplicate class will only be compiled once"
+#, gcc-internal-format
 msgid "duplicate class will only be compiled once"
-msgstr "%Hyinelenmiş sınıf sadece bir kere derlenecek"
+msgstr "yinelenmiş sınıf sadece bir kere derlenecek"
 
 #: java/jcf-parse.c:1625
 #, gcc-internal-format
@@ -58312,16 +58252,14 @@ msgid "error while reading %s from zip file"
 msgstr "zip dosyasından %s okunurken hata"
 
 #: java/jvspec.c:395
-#, fuzzy, gcc-internal-format
-#| msgid "can't specify '-D' without '--main'\n"
+#, gcc-internal-format
 msgid "can%'t specify %<-D%> without %<--main%>"
-msgstr "'--main' olmaksızın '-D' belirtilemez\n"
+msgstr ""
 
 #: java/jvspec.c:399
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' is not a valid class name"
+#, gcc-internal-format
 msgid "%qs is not a valid class name"
-msgstr "'%s' geçerli bir sınıf ismi değil"
+msgstr "%qs geçerli bir sınıf ismi değil"
 
 #: java/jvspec.c:405
 #, gcc-internal-format
@@ -58350,10 +58288,9 @@ msgid "using both @FILE with multiple files not implemented"
 msgstr "çok sayıda dosyayla her iki @FILE kullanımı gerçeklenmedi"
 
 #: java/jvspec.c:539
-#, fuzzy, gcc-internal-format
-#| msgid "cannot specify 'main' class when not linking"
+#, gcc-internal-format
 msgid "cannot specify %<main%> class when not linking"
-msgstr "ilintileme yapılmayacaksa 'main' sınıfı belirtilemez"
+msgstr "ilintileme yapılmayacaksa %<main%> sınıfı belirtilemez"
 
 #: java/lang.c:592
 #, gcc-internal-format
@@ -58445,10 +58382,9 @@ msgid "%s: %s"
 msgstr "%s: %s"
 
 #: lto/lto-object.c:180
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: %s: %s"
-msgstr "%s: %s"
+msgstr "%s: %s: %s"
 
 #: lto/lto-object.c:222
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -58574,8 +58510,7 @@ msgid "cannot read LTO decls from %s"
 msgstr "sınıf %qs bulunamıyor"
 
 #: lto/lto.c:2351
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot open %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot open %s"
 msgstr "%s açılamıyor"
 
@@ -58952,10 +58887,9 @@ msgid "passing argument %d of %qE from distinct Objective-C type"
 msgstr "belirgin Nesnel-C türündeki %2$qE işlevinin %1$d. argümanının aktarımı"
 
 #: objc/objc-act.c:2752
-#, fuzzy, gcc-internal-format
-#| msgid "statically allocated instance of Objective-C class %qs"
+#, gcc-internal-format
 msgid "statically allocated instance of Objective-C class %qE"
-msgstr "%qs Nesnel-C sınıfının durağan olarak ayrılmış gerçeklenimi"
+msgstr "%qE Nesnel-C sınıfının durağan olarak ayrılmış gerçeklenimi"
 
 #: objc/objc-act.c:2761
 #, fuzzy, gcc-internal-format
@@ -58976,41 +58910,35 @@ msgid "only Objective-C object types can be qualified with a protocol"
 msgstr ""
 
 #: objc/objc-act.c:2867
-#, fuzzy, gcc-internal-format
-#| msgid "protocol %qs has circular dependency"
+#, gcc-internal-format
 msgid "protocol %qE has circular dependency"
-msgstr "protokol %qs döngüsel bağımlılık içeriyor"
+msgstr "protokol %qE döngüsel bağımlılık içeriyor"
 
 #: objc/objc-act.c:2900 objc/objc-act.c:5709
-#, fuzzy, gcc-internal-format
-#| msgid "cannot find protocol declaration for %qs"
+#, gcc-internal-format
 msgid "cannot find protocol declaration for %qE"
-msgstr "%qs için protokol bildirimi bulunamıyor"
+msgstr "%qE için protokol bildirimi bulunamıyor"
 
 #: objc/objc-act.c:3201 objc/objc-act.c:3856 objc/objc-act.c:6421
 #: objc/objc-act.c:6896 objc/objc-act.c:6969 objc/objc-act.c:7022
-#, fuzzy, gcc-internal-format
-#| msgid "cannot find interface declaration for %qs"
+#, gcc-internal-format
 msgid "cannot find interface declaration for %qE"
-msgstr "%qs için arayüz bildirimi bulunamıyor"
+msgstr "%qE için arayüz bildirimi bulunamıyor"
 
 #: objc/objc-act.c:3205
-#, fuzzy, gcc-internal-format
-#| msgid "interface %qs does not have valid constant string layout"
+#, gcc-internal-format
 msgid "interface %qE does not have valid constant string layout"
-msgstr "%qs arayüzü geçerli sabit dizge yerleşimi içermiyor"
+msgstr "%qE arayüzü geçerli sabit dizge yerleşimi içermiyor"
 
 #: objc/objc-act.c:3210
-#, fuzzy, gcc-internal-format
-#| msgid "cannot find reference tag for class %qs"
+#, gcc-internal-format
 msgid "cannot find reference tag for class %qE"
-msgstr "sınıf %qs için başvuru etiketi bulunamıyor"
+msgstr "sınıf %qE için başvuru etiketi bulunamıyor"
 
 #: objc/objc-act.c:3355
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is not an Objective-C class name or alias"
+#, gcc-internal-format
 msgid "%qE is not an Objective-C class name or alias"
-msgstr "%qs geçerli bir Nesnel-C sınıf ismi ya da rumuzu değil"
+msgstr "%qE geçerli bir Nesnel-C sınıf ismi ya da rumuzu değil"
 
 #: objc/objc-act.c:3370 objc/objc-act.c:3401 objc/objc-act.c:6802
 #: objc/objc-act.c:8127 objc/objc-act.c:8178
@@ -59019,22 +58947,19 @@ msgid "Objective-C declarations may only appear in global scope"
 msgstr "Objective-C bildirimleri sadece genel etki alanında görünebilir"
 
 #: objc/objc-act.c:3375
-#, fuzzy, gcc-internal-format
-#| msgid "cannot find class %qs"
+#, gcc-internal-format
 msgid "cannot find class %qE"
-msgstr "sınıf %qs bulunamıyor"
+msgstr "sınıf %qE bulunamıyor"
 
 #: objc/objc-act.c:3377
-#, fuzzy, gcc-internal-format
-#| msgid "class %qs already exists"
+#, gcc-internal-format
 msgid "class %qE already exists"
-msgstr "sınıf %qs zaten var"
+msgstr "sınıf %qE zaten var"
 
 #: objc/objc-act.c:3419 objc/objc-act.c:6861
-#, fuzzy, gcc-internal-format
-#| msgid "%qs redeclared as different kind of symbol"
+#, gcc-internal-format
 msgid "%qE redeclared as different kind of symbol"
-msgstr "%qs farklı bir sembol çeşidi olarak tekrar bildirilmiş"
+msgstr "%qE farklı bir sembol çeşidi olarak tekrar bildirilmiş"
 
 #: objc/objc-act.c:3710
 #, gcc-internal-format
@@ -59090,10 +59015,9 @@ msgid "exception of type %<%T%> will be caught"
 msgstr "%<%T%> türünde olağandışılık yakalanacak"
 
 #: objc/objc-act.c:4286
-#, fuzzy, gcc-internal-format
-#| msgid "%H   by earlier handler for %<%T%>"
+#, gcc-internal-format
 msgid "   by earlier handler for %<%T%>"
-msgstr "%H   %<%T%> için erken eylemci tarafından"
+msgstr "   %<%T%> için erken eylemci tarafından"
 
 #: objc/objc-act.c:4333
 #, gcc-internal-format
@@ -59117,10 +59041,9 @@ msgid "%<@synchronized%> argument is not an object"
 msgstr ""
 
 #: objc/objc-act.c:4603
-#, fuzzy, gcc-internal-format
-#| msgid "%J%s %qs"
+#, gcc-internal-format
 msgid "%s %qs"
-msgstr "%J %s %qs"
+msgstr "%s %qs"
 
 #: objc/objc-act.c:4626 objc/objc-act.c:4645
 #, gcc-internal-format
@@ -59197,10 +59120,9 @@ msgid "@interface of class %qE not found"
 msgstr "alan %qs yok"
 
 #: objc/objc-act.c:5436
-#, fuzzy, gcc-internal-format
-#| msgid "no super class declared in @interface for %qs"
+#, gcc-internal-format
 msgid "no super class declared in @interface for %qE"
-msgstr "@interface içinde %qs için super sınıf bildirilmemiş"
+msgstr "@interface içinde %qE için super sınıf bildirilmemiş"
 
 #: objc/objc-act.c:5487
 #, fuzzy, gcc-internal-format
@@ -59214,22 +59136,19 @@ msgid "invalid receiver type %qs"
 msgstr "alıcı tür %qs geçersiz"
 
 #: objc/objc-act.c:5616
-#, fuzzy, gcc-internal-format
-#| msgid "%<%c%s%> not found in protocol(s)"
+#, gcc-internal-format
 msgid "%<%c%E%> not found in protocol(s)"
-msgstr "%<%c%s%> protokol(ler)de yok"
+msgstr "%<%c%E%> protokol(ler)de yok"
 
 #: objc/objc-act.c:5630
-#, fuzzy, gcc-internal-format
-#| msgid "%qs may not respond to %<%c%s%>"
+#, gcc-internal-format
 msgid "%qE may not respond to %<%c%E%>"
-msgstr "%qs %<%c%s%>'e yanıt olmayabilir"
+msgstr "%qE %<%c%E%>'e yanıt olmayabilir"
 
 #: objc/objc-act.c:5638
-#, fuzzy, gcc-internal-format
-#| msgid "no %<%c%s%> method found"
+#, gcc-internal-format
 msgid "no %<%c%E%> method found"
-msgstr "%<%c%s%> diye bir yöntem yok"
+msgstr "%<%c%E%> diye bir yöntem yok"
 
 #: objc/objc-act.c:5645
 #, gcc-internal-format
@@ -59247,10 +59166,9 @@ msgid "%<...%> as arguments.)"
 msgstr "%<...%> kabul edeceği varsayılacak.)"
 
 #: objc/objc-act.c:5758
-#, fuzzy, gcc-internal-format
-#| msgid "undeclared selector %qs"
+#, gcc-internal-format
 msgid "undeclared selector %qE"
-msgstr "bildirilmemiş seçici %qs"
+msgstr "bildirilmemiş seçici %qE"
 
 #. Historically, a class method that produced objects (factory
 #. method) would assign `self' to the instance that it
@@ -59262,10 +59180,9 @@ msgstr "bildirilmemiş seçici %qs"
 #. where this is done unknowingly than to support the above
 #. paradigm.
 #: objc/objc-act.c:5782
-#, fuzzy, gcc-internal-format
-#| msgid "instance variable %qs accessed in class method"
+#, gcc-internal-format
 msgid "instance variable %qE accessed in class method"
-msgstr "gerçeklenim değişkeni %qs sınıf yönteminden erişimli"
+msgstr "gerçeklenim değişkeni %qE sınıf yönteminden erişimli"
 
 #: objc/objc-act.c:6012 objc/objc-act.c:6032
 #, gcc-internal-format
@@ -59291,16 +59208,14 @@ msgid "duplicate declaration of method %<%c%E%> with conflicting types"
 msgstr "yöntem %<%c%s%> birden fazla bildirilmiş"
 
 #: objc/objc-act.c:6100
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration of %qs"
+#, gcc-internal-format
 msgid "previous declaration of %<%c%E%>"
-msgstr "%qs'in önceki bildirimi"
+msgstr "%<%c%E%>'in önceki bildirimi"
 
 #: objc/objc-act.c:6137
-#, fuzzy, gcc-internal-format
-#| msgid "duplicate interface declaration for category %<%s(%s)%>"
+#, gcc-internal-format
 msgid "duplicate interface declaration for category %<%E(%E)%>"
-msgstr "%<%s(%s)%> kategororisi için birden fazla arayüz bildirimi"
+msgstr "%<%E(%E)%> kategororisi için birden fazla arayüz bildirimi"
 
 #: objc/objc-act.c:6225
 #, gcc-internal-format
@@ -59319,10 +59234,9 @@ msgid "instance variable %qs uses flexible array member"
 msgstr "esnek dizi üyesinin kullanımı geçersiz"
 
 #: objc/objc-act.c:6284
-#, fuzzy, gcc-internal-format
-#| msgid "type %qs has no default constructor to call"
+#, gcc-internal-format
 msgid "type %qE has no default constructor to call"
-msgstr "%qs türü için çağrılacak öntanımlı kurucu yok"
+msgstr "%qE türü için çağrılacak öntanımlı kurucu yok"
 
 #: objc/objc-act.c:6290
 #, fuzzy, gcc-internal-format
@@ -59333,10 +59247,9 @@ msgstr "yabancı sınıf %qT için yıkıcı, bir üye olamaz"
 #. Vtable pointers are Real Bad(tm), since Obj-C cannot
 #. initialize them.
 #: objc/objc-act.c:6302
-#, fuzzy, gcc-internal-format
-#| msgid "type %qs has virtual member functions"
+#, gcc-internal-format
 msgid "type %qE has virtual member functions"
-msgstr "%qs türü sanal üye işlevlere sahip"
+msgstr "%qE türü sanal üye işlevlere sahip"
 
 #: objc/objc-act.c:6303
 #, fuzzy, gcc-internal-format
@@ -59345,16 +59258,14 @@ msgid "illegal aggregate type %qE specified for instance variable %qs"
 msgstr "kümeleme türü %qs gerçeklenim değişkeni %qs için kuraldışı"
 
 #: objc/objc-act.c:6313
-#, fuzzy, gcc-internal-format
-#| msgid "type %qs has a user-defined constructor"
+#, gcc-internal-format
 msgid "type %qE has a user-defined constructor"
-msgstr "%qs türü bir kullanıcı tanımlı yapıcıya sahip"
+msgstr "%qE türü bir kullanıcı tanımlı yapıcıya sahip"
 
 #: objc/objc-act.c:6315
-#, fuzzy, gcc-internal-format
-#| msgid "type %qs has a user-defined destructor"
+#, gcc-internal-format
 msgid "type %qE has a user-defined destructor"
-msgstr "%qs türü bir kullanıcı tanımlı yıkıcıya sahip"
+msgstr "%qE türü bir kullanıcı tanımlı yıkıcıya sahip"
 
 #: objc/objc-act.c:6319
 #, gcc-internal-format
@@ -59362,70 +59273,59 @@ msgid "C++ constructors and destructors will not be invoked for Objective-C fiel
 msgstr "C++ yapıcıları ve yıkıcıları Objective-C alanları için çağrılamaz"
 
 #: objc/objc-act.c:6450
-#, fuzzy, gcc-internal-format
-#| msgid "instance variable %qs is declared private"
+#, gcc-internal-format
 msgid "instance variable %qE is declared private"
-msgstr "gerçeklenim değişkeni %qs private olarak bildirilmiş"
+msgstr "gerçeklenim değişkeni %qE private olarak bildirilmiş"
 
 #: objc/objc-act.c:6461
-#, fuzzy, gcc-internal-format
-#| msgid "instance variable %qs is %s; this will be a hard error in the future"
+#, gcc-internal-format
 msgid "instance variable %qE is %s; this will be a hard error in the future"
-msgstr "gerçekleme değişkeni %qs %s; bu ileride kesinlikle bir hata olacak"
+msgstr "gerçekleme değişkeni %qE %s; bu ileride kesinlikle bir hata olacak"
 
 #: objc/objc-act.c:6468
-#, fuzzy, gcc-internal-format
-#| msgid "instance variable %qs is declared %s"
+#, gcc-internal-format
 msgid "instance variable %qE is declared %s"
-msgstr "gerçekleme değişkeni %qs %s olarak bildirilmiş"
+msgstr "gerçekleme değişkeni %qE %s olarak bildirilmiş"
 
 #: objc/objc-act.c:6579 objc/objc-act.c:6694
-#, fuzzy, gcc-internal-format
-#| msgid "incomplete implementation of class %qs"
+#, gcc-internal-format
 msgid "incomplete implementation of class %qE"
-msgstr "%qs sınıfının gerçekleniminin içi boş"
+msgstr "%qE sınıfının gerçekleniminin içi boş"
 
 #: objc/objc-act.c:6583 objc/objc-act.c:6698
-#, fuzzy, gcc-internal-format
-#| msgid "incomplete implementation of category %qs"
+#, gcc-internal-format
 msgid "incomplete implementation of category %qE"
-msgstr "%qs kategorisinin gerçekleniminin içi boş"
+msgstr "%qE kategorisinin gerçekleniminin içi boş"
 
 #: objc/objc-act.c:6592 objc/objc-act.c:6706
-#, fuzzy, gcc-internal-format
-#| msgid "method definition for %<%c%s%> not found"
+#, gcc-internal-format
 msgid "method definition for %<%c%E%> not found"
-msgstr "%<%c%s%> için yöntem tanımı yok"
+msgstr "%<%c%E%> için yöntem tanımı yok"
 
 #: objc/objc-act.c:6747
-#, fuzzy, gcc-internal-format
-#| msgid "%s %qs does not fully implement the %qs protocol"
+#, gcc-internal-format
 msgid "%s %qE does not fully implement the %qE protocol"
-msgstr "%s %qs, %qs protokolunu tamamen gerçeklemiyor"
+msgstr "%s %qE, %qE protokolunu tamamen gerçeklemiyor"
 
 #: objc/objc-act.c:6837
-#, fuzzy, gcc-internal-format
-#| msgid "cannot find interface declaration for %qs, superclass of %qs"
+#, gcc-internal-format
 msgid "cannot find interface declaration for %qE, superclass of %qE"
-msgstr "%qs için arabirim bildirimi ve %qs super sınıfı bulunamıyor"
+msgstr "%qE için arabirim bildirimi ve %qE super sınıfı bulunamıyor"
 
 #: objc/objc-act.c:6876
-#, fuzzy, gcc-internal-format
-#| msgid "reimplementation of class %qs"
+#, gcc-internal-format
 msgid "reimplementation of class %qE"
-msgstr "%qs sınıfının yeniden gerçeklenimi"
+msgstr "%qE sınıfının yeniden gerçeklenimi"
 
 #: objc/objc-act.c:6909
-#, fuzzy, gcc-internal-format
-#| msgid "conflicting super class name %qs"
+#, gcc-internal-format
 msgid "conflicting super class name %qE"
-msgstr "super sınıf ismi %qs çelişiyor"
+msgstr "super sınıf ismi %qE çelişiyor"
 
 #: objc/objc-act.c:6912
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration of %qs"
+#, gcc-internal-format
 msgid "previous declaration of %qE"
-msgstr "%qs'in önceki bildirimi"
+msgstr "%qE'in önceki bildirimi"
 
 #: objc/objc-act.c:6914
 #, fuzzy, gcc-internal-format
@@ -59434,10 +59334,9 @@ msgid "previous declaration"
 msgstr "önceden %q+D bildirimi"
 
 #: objc/objc-act.c:6927 objc/objc-act.c:6929
-#, fuzzy, gcc-internal-format
-#| msgid "duplicate interface declaration for class %qs"
+#, gcc-internal-format
 msgid "duplicate interface declaration for class %qE"
-msgstr "%qs sınıfı için birden fazla arabirim bildirimi"
+msgstr "%qE sınıfı için birden fazla arabirim bildirimi"
 
 #: objc/objc-act.c:7248 objc/objc-act.c:7444
 #, fuzzy, gcc-internal-format
@@ -59557,28 +59456,24 @@ msgid "protocol %qE is deprecated"
 msgstr "%qs önerilmiyor"
 
 #: objc/objc-act.c:8223
-#, fuzzy, gcc-internal-format
-#| msgid "duplicate declaration for protocol %qs"
+#, gcc-internal-format
 msgid "duplicate declaration for protocol %qE"
-msgstr "protokol %qs için birden fazla bildirim"
+msgstr "protokol %qE için birden fazla bildirim"
 
 #: objc/objc-act.c:8734
-#, fuzzy, gcc-internal-format
-#| msgid "conflicting types for %q+D"
+#, gcc-internal-format
 msgid "conflicting types for %<%c%s%>"
-msgstr "%q+D için çelişen türler"
+msgstr "%<%c%s%> için çelişen türler"
 
 #: objc/objc-act.c:8738
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration of %qs"
+#, gcc-internal-format
 msgid "previous declaration of %<%c%s%>"
-msgstr "%qs'in önceki bildirimi"
+msgstr "%<%c%s%>'in önceki bildirimi"
 
 #: objc/objc-act.c:8838
-#, fuzzy, gcc-internal-format
-#| msgid "no super class declared in interface for %qs"
+#, gcc-internal-format
 msgid "no super class declared in interface for %qE"
-msgstr "arabirim içinde %qs icin super sınıf bildirilmemiş"
+msgstr "arabirim içinde %qE icin super sınıf bildirilmemiş"
 
 #: objc/objc-act.c:8865
 #, gcc-internal-format
@@ -59596,10 +59491,9 @@ msgid "instance variable %qs is declared private"
 msgstr "gerçeklenim değişkeni %qs private olarak bildirilmiş"
 
 #: objc/objc-act.c:9422
-#, fuzzy, gcc-internal-format
-#| msgid "local declaration of %qs hides instance variable"
+#, gcc-internal-format
 msgid "local declaration of %qE hides instance variable"
-msgstr "%qs yerel bildirimi gerçekleme değişkenini gizliyor"
+msgstr "%qE yerel bildirimi gerçekleme değişkenini gizliyor"
 
 #. This can happen if DECL_ARTIFICIAL (*expr_p), but
 #. should be impossible for real properties, which always
@@ -59627,10 +59521,9 @@ msgid "collection in fast enumeration is not an object"
 msgstr ""
 
 #: objc/objc-encoding.c:142
-#, fuzzy, gcc-internal-format
-#| msgid "type %q+D does not have a known size"
+#, gcc-internal-format
 msgid "type %qT does not have a known size"
-msgstr "%q+D türü bilinen bir boyuta sahip değil"
+msgstr "%qT türü bilinen bir boyuta sahip değil"
 
 #: objc/objc-encoding.c:730
 #, gcc-internal-format
@@ -59675,2770 +59568,3 @@ msgstr ""
 #| msgid "%Hcreating selector for nonexistent method %qE"
 msgid "creating selector for nonexistent method %qE"
 msgstr "%Holmayan yöntem %qE için seçici oluşturuyor"
-
-#~ msgid "internal gcc abort in %s, at %s:%d"
-#~ msgstr "%2$s dosyasının %3$d. satırındaki %1$s işlevinde dahili gcc çıkışı"
-
-#~ msgid "Attempt to delete prologue/epilogue insn:"
-#~ msgstr "Önbilgi komutlarını silmeye çalışır"
-
-#~ msgid ""
-#~ "Internal error: %s (program %s)\n"
-#~ "Please submit a full bug report.\n"
-#~ "See %s for instructions."
-#~ msgstr ""
-#~ "İç hata: %s (program %s)\n"
-#~ "Lütfen ayrıntılı bir hata raporu hazırlayın.\n"
-#~ "İşlemler için %s adresine bakın."
-
-#~ msgid "  -combine                 Pass multiple source files to compiler at once\n"
-#~ msgstr ""
-#~ "  -combine                 Çok sayıda kaynak dosyasını derleyiciye bir defada\n"
-#~ "                           aktarır\n"
-
-#~ msgid "  -b <machine>             Run gcc for target <machine>, if installed\n"
-#~ msgstr "  -b <makina>              gcc kurulmuşsa hedef <makina> için çalıştırılır\n"
-
-#~ msgid "  -V <version>             Run gcc version number <version>, if installed\n"
-#~ msgstr "  -V <sürüm>               gcc'nin kurulmuşsa <sürüm> sürümü çalıştırılır\n"
-
-#~ msgid "couldn't run '%s': %s"
-#~ msgstr "'%s' çalıştırılamadı: %s"
-
-#~ msgid "%s (GCC) %s\n"
-#~ msgstr "%s (GCC) %s\n"
-
-#~ msgid "argument to '-Xpreprocessor' is missing"
-#~ msgstr "'-Xpreprocessor' için argüman belirtilmemiş"
-
-#~ msgid "argument to '-Xassembler' is missing"
-#~ msgstr "'-Xassembler' için argüman belirtilmemiş"
-
-#~ msgid "argument to '-l' is missing"
-#~ msgstr "'-l' için argüman belirtilmemiş"
-
-#~ msgid "argument to '-specs' is missing"
-#~ msgstr "'-specs' için argüman belirtilmemiş"
-
-#~ msgid "argument to '-specs=' is missing"
-#~ msgstr "'-specs=' için argüman belirtilmemiş"
-
-#~ msgid "'-%c' must come at the start of the command line"
-#~ msgstr "'-%c' komut satırının basında olmalı"
-
-#~ msgid "argument to '-B' is missing"
-#~ msgstr "'-B' için argüman belirtilmemiş"
-
-#~ msgid "argument to '-x' is missing"
-#~ msgstr "'-x' için argüman belirtilmemiş"
-
-#~ msgid "%s:cannot open graph file\n"
-#~ msgstr "%s: graph dosyası açılamıyor\n"
-
-#~ msgid "%s:not a gcov graph file\n"
-#~ msgstr "%s: bir gcov graph dosyası değil\n"
-
-#~ msgid "jump bypassing disabled"
-#~ msgstr "jump kestirmesi iptal edildi"
-
-#~ msgid "call is unlikely"
-#~ msgstr "çağrı olanaksız"
-
-#~ msgid ""
-#~ "The %s front end recognizes the following options:\n"
-#~ "\n"
-#~ msgstr ""
-#~ "%s önalanı bu seçenekleri tanır:\n"
-#~ "\n"
-
-#~ msgid "%s: error writing file '%s': %s\n"
-#~ msgstr "%s: `%s' dosyası yazılırken hata: %s\n"
-
-#~ msgid "%s: usage '%s [ -VqfnkN ] [ -i <istring> ] [ filename ... ]'\n"
-#~ msgstr "%s: kullanımı '%s [ -VqfnkN ] [ -i <Gdizgesi> ] [ dosya ... ]'\n"
-
-#~ msgid "%s: usage '%s [ -VqfnkNlgC ] [ -B <dirname> ] [ filename ... ]'\n"
-#~ msgstr "%s: kullanımı '%s [ -VqfnkNlgC ] [ -B <dizin> ] [ dosya ... ]'\n"
-
-#~ msgid "%s: warning: no write access for file '%s'\n"
-#~ msgstr "%s: UYARI: `%s' dosyası için yazma erişimi yok\n"
-
-#~ msgid "%s: warning: no write access for dir containing '%s'\n"
-#~ msgstr "%s: UYARI: `%s' dosyasını içeren dizine yazma izni yok\n"
-
-#~ msgid "%s: invalid file name: %s\n"
-#~ msgstr "%s: geçersiz dosya ismi: %s\n"
-
-#~ msgid "%s: %s: can't get status: %s\n"
-#~ msgstr "%s: %s: durum alınamıyor: %s\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "%s: fatal error: aux info file corrupted at line %d\n"
-#~ msgstr ""
-#~ "\n"
-#~ "%s: ölümcül hata: yardımcı bilgi dosyası %d. satırda bozulmuş\n"
-
-#~ msgid "%s:%d: declaration of function '%s' takes different forms\n"
-#~ msgstr "%s:%d: `%s' işlevinin bildirimi farklı şekiller alıyor\n"
-
-#~ msgid "%s: compiling '%s'\n"
-#~ msgstr "%s: `%s' derleniyor\n"
-
-#~ msgid "%s: wait: %s\n"
-#~ msgstr "%s: bekliyor: %s\n"
-
-#~ msgid "%s: subprocess got fatal signal %d\n"
-#~ msgstr "%s: altyordam %d ölümcül sinyal aldı\n"
-
-#~ msgid "%s: %s exited with status %d\n"
-#~ msgstr "%s: %s %d durumuyla çıktı\n"
-
-#~ msgid "%s: warning: missing SYSCALLS file '%s'\n"
-#~ msgstr "%s: UYARI: SYSCALLS dosyası `%s' kayıp\n"
-
-#~ msgid "%s: can't read aux info file '%s': %s\n"
-#~ msgstr "%s: yardımcı bilgi dosyası `%s' okunamıyor: %s\n"
-
-#~ msgid "%s: can't get status of aux info file '%s': %s\n"
-#~ msgstr "%s: yardımcı bilgi dosyası `%s' için durum alınamıyor: %s\n"
-
-#~ msgid "%s: can't open aux info file '%s' for reading: %s\n"
-#~ msgstr "%s: yardımcı bilgi dosyası `%s' okumak için açılamıyor: %s\n"
-
-#~ msgid "%s: error reading aux info file '%s': %s\n"
-#~ msgstr "%s: `%s' yardımcı bilgi dosyası okunurken hata: %s\n"
-
-#~ msgid "%s: error closing aux info file '%s': %s\n"
-#~ msgstr "%s: `%s' yardımcı bilgi dosyası kapanırken hata: %s\n"
-
-#~ msgid "%s: warning: can't rename file '%s' to '%s': %s\n"
-#~ msgstr "%s: UYARI: `%s' dosyasının ismi `%s' yapılamıyor: %s\n"
-
-#~ msgid "%s: conflicting extern definitions of '%s'\n"
-#~ msgstr "%s: '%s' extern tanımları çelişiyor\n"
-
-#~ msgid "%s: declarations of '%s' will not be converted\n"
-#~ msgstr "%s: '%s' bildirimleri dönüştürülmeyecek\n"
-
-#~ msgid "%s: conflict list for '%s' follows:\n"
-#~ msgstr "%s: '%s' için çelişki listesi:\n"
-
-#~ msgid "%s: warning: using formals list from %s(%d) for function '%s'\n"
-#~ msgstr "%1$s: UYARI: `%4$s' işlevi için biçimseller listesi %2$s(%3$d) den kullanılıyor\n"
-
-#~ msgid "%s: %d: '%s' used but missing from SYSCALLS\n"
-#~ msgstr "%s: %d: `%s' kullanıldı ama SYSCALLS'dan eksik var\n"
-
-#~ msgid "%s: %d: warning: no extern definition for '%s'\n"
-#~ msgstr "%s: %d: UYARI: `%s' için extern tanımı yok\n"
-
-#~ msgid "%s: warning: no static definition for '%s' in file '%s'\n"
-#~ msgstr "%s: UYARI: `%s' için `%s' dosyasında static tanımı yok\n"
-
-#~ msgid "%s: multiple static defs of '%s' in file '%s'\n"
-#~ msgstr "%s: `%s' için `%s' dosyasında çok sayıda static tanımı\n"
-
-#~ msgid "%s: %d: warning: source too confusing\n"
-#~ msgstr "%s: %d: UYARI: kaynak çok karışık\n"
-
-#~ msgid "%s: %d: warning: varargs function declaration not converted\n"
-#~ msgstr "%s: %d: UYARI: varargs işlev bildirimi dönüştürülmedi\n"
-
-#~ msgid "%s: declaration of function '%s' not converted\n"
-#~ msgstr "%s: `%s' işlevinin bildirimi dönüştürülmedi\n"
-
-#~ msgid "%s: warning: too many parameter lists in declaration of '%s'\n"
-#~ msgstr "%s: UYARI: `%s' bildiriminde parametre listesi sayısı çok fazla\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "%s: warning: too few parameter lists in declaration of '%s'\n"
-#~ msgstr ""
-#~ "\n"
-#~ "%s: UYARI: `%s' bildiriminde parametre listesi sayısı çok az\n"
-
-#~ msgid "%s: %d: warning: found '%s' but expected '%s'\n"
-#~ msgstr "%s: %d: UYARI: `%s' bulundu ama `%s' umuluyordu\n"
-
-#~ msgid "%s: local declaration for function '%s' not inserted\n"
-#~ msgstr "%s: `%s' işlevi için yerel bildirim araya eklenmedi\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "%s: %d: warning: can't add declaration of '%s' into macro call\n"
-#~ msgstr ""
-#~ "\n"
-#~ "%s: %d: UYARI: makro çağrısına `%s' bildirimi eklenemiyor\n"
-
-#~ msgid "%s: global declarations for file '%s' not inserted\n"
-#~ msgstr "%s: `%s' işlevi için genel bildirim araya eklenmedi\n"
-
-#~ msgid "%s: definition of function '%s' not converted\n"
-#~ msgstr "%s: '%s' işlevinin tanımı dönüştürülmedi\n"
-
-#~ msgid "%s: %d: warning: definition of %s not converted\n"
-#~ msgstr "%s: %d: UYARI: %s tanımı dönüştürülmedi\n"
-
-#~ msgid "%s: found definition of '%s' at %s(%d)\n"
-#~ msgstr "%s: `%s' tanımı %s(%d) de bulundu\n"
-
-#~ msgid "%s: %d: warning: '%s' excluded by preprocessing\n"
-#~ msgstr "%s: %d: UYARI: `%s' önişlem tarafından dışlandı\n"
-
-#~ msgid "%s: '%s' not converted\n"
-#~ msgstr "%s: `%s' dönüştürülmedi\n"
-
-#~ msgid "%s: would convert file '%s'\n"
-#~ msgstr "%s: `%s' dönüşüm dosyası olacaktı\n"
-
-#~ msgid "%s: converting file '%s'\n"
-#~ msgstr "%s: `%s' dönüştürüluyor\n"
-
-#~ msgid "%s: can't get status for file '%s': %s\n"
-#~ msgstr "%s: `%s' dosyası için durum bilgileri alınamadı: %s\n"
-
-#~ msgid "%s: can't open file '%s' for reading: %s\n"
-#~ msgstr "%s: `%s' okumak için açılamadı: %s\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "%s: error reading input file '%s': %s\n"
-#~ msgstr ""
-#~ "\n"
-#~ "%s: girdi dosyası `%s' okunurken hata: %s\n"
-
-#~ msgid "%s: can't create/open clean file '%s': %s\n"
-#~ msgstr "%s: temiz dosya `%s' oluşturulamıyor/açılamıyor: %s\n"
-
-#~ msgid "%s: warning: file '%s' already saved in '%s'\n"
-#~ msgstr "%s: UYARI: `%s' zaten `%s' içine kaydedilmiş\n"
-
-#~ msgid "%s: can't link file '%s' to '%s': %s\n"
-#~ msgstr "%s: `%s' -> `%s' bağı oluşturulamıyor: %s\n"
-
-#~ msgid "%s: can't create/open output file '%s': %s\n"
-#~ msgstr "%s: çıktı dosyası `%s' oluşturulamıyor/açılamıyor: %s\n"
-
-#~ msgid "%s: can't change mode of file '%s': %s\n"
-#~ msgstr "%s: `%s' dosyasının kipi değiştirilemiyor: %s\n"
-
-#~ msgid "%s: input file names must have .c suffixes: %s\n"
-#~ msgstr "%s: girdi dosyası isimlerinin soneki .c olmalıdır: %s\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "Execution times (seconds)\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Çalışma süreleri (saniye)\n"
-
-#~ msgid " TOTAL                 :"
-#~ msgstr " TOPLAM                :"
-
-#~ msgid "time in %s: %ld.%06ld (%ld%%)\n"
-#~ msgstr "%s süresi: %ld.%06ld (%%%ld)\n"
-
-#~ msgid "out of memory"
-#~ msgstr "bellek yetersiz"
-
-#~ msgid "The maximum number of fields in a structure variable without direct structure accesses that GCC will attempt to track separately"
-#~ msgstr "Yapıya doğrudan erişim olmaksızın bir yapı değişkeninden GCC'nin ayrı ayrı izlemeye çalışacağı azami alan sayısı"
-
-#~ msgid "The maximum structure size (in bytes) for which GCC will use by-element copies"
-#~ msgstr "GCC'nin elemana göre kopyalarını kullanacağı azami yapı boyutu (bayt cinsinden)"
-
-#~ msgid "The maximum number of structure fields for which GCC will use by-element copies"
-#~ msgstr "GCC'nin elemana göre kopyalarını kullanacağı azami yapı alanı sayısı"
-
-#~ msgid "The threshold ratio between instantiated fields and the total structure size"
-#~ msgstr "Yapının toplam boyutu ile alanları arasındaki eşik oran"
-
-#~ msgid "expense of call operation relative to ordinary arithmetic operations"
-#~ msgstr "çağrı işleminin sıradan aritmetik işlemlere göre maliyeti"
-
-#~ msgid "The maximum number of passes to make when doing GCSE"
-#~ msgstr "Genel ortak alt ifade elemesi uygulanırken yapılacak en çok geçiş sayısı"
-
-#~ msgid "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot"
-#~ msgstr "Temel blokun sıcak olarak düşünülmesi gereğine göre yazılımda temel blokun azami tekrar sayısının kesrini seçer"
-
-#~ msgid "Given N calls and V call-clobbered vars in a function.  Use .GLOBAL_VAR if NxV is larger than this limit"
-#~ msgstr "Bir işlevde N çağrı ve V çağrı taşırmalı değişken verilir. Eğer NxV bu sınırdan daha büyükse .GLOBAL_VAR kullanın"
-
-#~ msgid "The maximum memory locations recorded by flow"
-#~ msgstr "Akış tarafından kaydedilmiş azami bellek konumu sayısı"
-
-#~ msgid "The maximum number of virtual operands allowed to represent aliases before triggering alias grouping"
-#~ msgstr "Takma ad gruplamasının tetiklenmesi öncesi takma adları göstermesine izin verilen sanal terimlerin azami sayısı"
-
-#~ msgid "Minimum number of virtual mappings to consider switching to full virtual renames"
-#~ msgstr "Tam sanal isimlendirmeye geçişte göz önüne alınacak sanal eşlemlerin asgari sayısı"
-
-#~ msgid "Ratio between virtual mappings and virtual symbols to do full virtual renames"
-#~ msgstr "tam sanal isimlendirme yapacak sanal simgeler ile sanal eşlemler arasındaki oran"
-
-#~ msgid "using CONST_DOUBLE for address"
-#~ msgstr "adres için CONST_DOUBLE kullanılıyor"
-
-#~ msgid "c4x_address_cost: Invalid addressing mode"
-#~ msgstr "c4x_address_cost: Adresleme kipi geçersiz"
-
-#~ msgid "c4x_print_operand: %%L inconsistency"
-#~ msgstr "c4x_print_operand: %%L uyumsuzlugu"
-
-#~ msgid "c4x_print_operand: %%N inconsistency"
-#~ msgstr "c4x_print_operand: %%N uyumsuzlugu"
-
-#~ msgid "c4x_print_operand: %%O inconsistency"
-#~ msgstr "c4x_print_operand: %%O uyumsuzlugu"
-
-#~ msgid "c4x_print_operand: Bad operand case"
-#~ msgstr "c4x_print_operand: Hatalı terim case"
-
-#~ msgid "c4x_print_operand_address: Bad post_modify"
-#~ msgstr "c4x_print_operand_address: Hatalı post_modify"
-
-#~ msgid "c4x_print_operand_address: Bad pre_modify"
-#~ msgstr "c4x_print_operand_address: Hatalı pre_modify"
-
-#~ msgid "c4x_print_operand_address: Bad operand case"
-#~ msgstr "c4x_print_operand_address: Hatalı terim case"
-
-#~ msgid "c4x_rptb_insert: Cannot find start label"
-#~ msgstr "c4x_rptb_insert: Başlangic etiketi bulunamıyor"
-
-#~ msgid "invalid indirect (S) memory address"
-#~ msgstr "dolaylı (S) bellek adresi geçersiz"
-
-#~ msgid "c4x_valid_operands: Internal error"
-#~ msgstr "c4x_valid_operands: İç hata"
-
-#~ msgid "c4x_operand_subword: invalid mode"
-#~ msgstr "c4x_operand_subword: geçersiz kip"
-
-#~ msgid "c4x_operand_subword: invalid operand"
-#~ msgstr "c4x_operand_subword: geçersiz terim"
-
-#~ msgid "c4x_operand_subword: invalid autoincrement"
-#~ msgstr "c4x_operand_subword: otomatik arttırma geçersiz"
-
-#~ msgid "c4x_operand_subword: invalid address"
-#~ msgstr "c4x_operand_subword: geçersiz adres"
-
-#~ msgid "c4x_operand_subword: address not offsettable"
-#~ msgstr "c4x_operand_subword: adres konumlanabilir değil"
-
-#~ msgid "c4x_rptb_rpts_p: Repeat block top label moved"
-#~ msgstr "c4x_rptb_rpts_p: Tekrar bloku tepe etiketi taşındı"
-
-#~ msgid " (frv)"
-#~ msgstr " (frv)"
-
-#~ msgid "environment variable DJGPP points to missing file '%s'"
-#~ msgstr "ortam değişkeni DJGPP olmayan '%s' dosyasını gösteriyor"
-
-#~ msgid "environment variable DJGPP points to corrupt file '%s'"
-#~ msgstr "ortam değişkeni DJGPP bozuk '%s' dosyasını gösteriyor"
-
-#~ msgid "move insn not handled"
-#~ msgstr "taşıma komutu elde edilmedi"
-
-#~ msgid "invalid register in the move instruction"
-#~ msgstr "move komutundaki yazmaç geçersiz"
-
-#~ msgid "operand 1 must be a hard register"
-#~ msgstr "1. terim bir donanım yazmacı olmalı"
-
-#~ msgid "registers IX, IY and Z used in the same INSN"
-#~ msgstr "IX, IY ve Z yazmaçları aynı KOMUTta kullanılmış"
-
-#~ msgid "cannot do z-register replacement"
-#~ msgstr "z-yazmaç yer değiştirmesi yapılamaz"
-
-#~ msgid "invalid Z register replacement for insn"
-#~ msgstr "komut için Z yazmaç yer değiştirmesi geçersiz"
-
-#~ msgid "mips_debugger_offset called with non stack/frame/arg pointer"
-#~ msgstr "stack/frame/arg göstericisi olmadan mips_debugger_offset çağrısı"
-
-#~ msgid "PRINT_OPERAND, invalid insn for %%F"
-#~ msgstr "PRINT_OPERAND, %%F için geçersiz komut"
-
-#~ msgid "PRINT_OPERAND, invalid insn for %%W"
-#~ msgstr "PRINT_OPERAND, %%W için geçersiz komut"
-
-#~ msgid "invalid %%Y value"
-#~ msgstr "%%Y değeri geçersiz"
-
-#~ msgid "PRINT_OPERAND, invalid insn for %%q"
-#~ msgstr "PRINT_OPERAND, %%q için geçersiz komut"
-
-#~ msgid "PRINT_OPERAND, invalid operand for relocation"
-#~ msgstr "PRINT_OPERAND, yer değiştirme için terim geçersiz"
-
-#~ msgid "mt_final_prescan_insn, invalid insn #1"
-#~ msgstr "mt_final_prescan_insn, geçersiz komut #1"
-
-#~ msgid "PRINT_OPERAND_ADDRESS, 2 regs"
-#~ msgstr "PRINT_OPERAND_ADDRESS, 2 yazmaç"
-
-#~ msgid "PRINT_OPERAND_ADDRESS, invalid insn #1"
-#~ msgstr "PRINT_OPERAND_ADDRESS, geçersiz komut #1"
-
-#~ msgid "UNKNOWN in print_operand !?"
-#~ msgstr "print_operand da BiLiNMEYEN !?"
-
-#~ msgid "argument to '%s' missing\n"
-#~ msgstr "'%s' için argüman eksik\n"
-
-#~ msgid "Arithmetic overflow converting %s to %s at %L"
-#~ msgstr "%s ile %s arasındaki dönüşümde %L için aritmetik üstten taşma"
-
-#~ msgid "Arithmetic underflow converting %s to %s at %L"
-#~ msgstr "%s ile %s arasındaki dönüşümde %L için aritmetik alttan taşma"
-
-#~ msgid "Arithmetic NaN converting %s to %s at %L"
-#~ msgstr "%s ile %s arasındaki dönüşümde %L için aritmetik NaN"
-
-#~ msgid "duplicated initializer"
-#~ msgstr "yinelenmiş ilklendirici"
-
-#~ msgid "Missing DIM parameter in intrinsic '%s' at %L"
-#~ msgstr "'%s' yerleşiğindeki DIM parametresi eksik (%L'de)"
-
-#~ msgid "Pointer initialization requires a NULL() at %C"
-#~ msgstr "Gösterici ilklendirmesi %C'de bir NULL() gerektirir"
-
-#~ msgid "Kind %d is not a CHARACTER kind at %C"
-#~ msgstr "%d. çeşit bir CHARACTER çeşidi değil (%C'de)"
-
-#~ msgid "DOUBLE COMPLEX at %C does not conform to the Fortran 95 standard"
-#~ msgstr "%C'de DOUBLE COMPLEX Fortran 95 standardına uyumlu değildir"
-
-#~ msgid "Unexpected junk following RESULT variable at %C"
-#~ msgstr "%C'de RESULT değişkeninden sonra umulmadık döküntü"
-
-#~ msgid "Function '%s' at %C already has a type of %s"
-#~ msgstr "'%s' işlevi (%C'de) zaten %s türünde"
-
-#~ msgid "%-5d "
-#~ msgstr "%-5d "
-
-#~ msgid "      "
-#~ msgstr "      "
-
-#~ msgid "(%s "
-#~ msgstr "(%s "
-
-#~ msgid "%d"
-#~ msgstr "%d"
-
-#~ msgid ")"
-#~ msgstr ")"
-
-#~ msgid "("
-#~ msgstr "("
-
-#~ msgid "%s = "
-#~ msgstr "%s = "
-
-#~ msgid "(arg not-present)"
-#~ msgstr "(argüman yok)"
-
-#~ msgid " "
-#~ msgstr " "
-
-#~ msgid "()"
-#~ msgstr "()"
-
-#~ msgid "(%d"
-#~ msgstr "(%d"
-
-#~ msgid " %s "
-#~ msgstr " %s "
-
-#~ msgid "FULL"
-#~ msgstr "FULL"
-
-#~ msgid " , "
-#~ msgstr " , "
-
-#~ msgid "UNKNOWN"
-#~ msgstr "BiLiNMEYEN"
-
-#~ msgid " %% %s"
-#~ msgstr " %% %s"
-
-#~ msgid "''"
-#~ msgstr "''"
-
-#~ msgid "%c"
-#~ msgstr "%c"
-
-#~ msgid "%s("
-#~ msgstr "%s("
-
-#~ msgid "(/ "
-#~ msgstr "(/ "
-
-#~ msgid " /)"
-#~ msgstr " /)"
-
-#~ msgid "NULL()"
-#~ msgstr "NULL()"
-
-#~ msgid "_%d"
-#~ msgstr "_%d"
-
-#~ msgid ".true."
-#~ msgstr ".doğru."
-
-#~ msgid ".false."
-#~ msgstr ".yanlış."
-
-#~ msgid "(complex "
-#~ msgstr "(karmaşık "
-
-#~ msgid "???"
-#~ msgstr "???"
-
-#~ msgid "%s:"
-#~ msgstr "%s:"
-
-#~ msgid "U+ "
-#~ msgstr "U+ "
-
-#~ msgid "U- "
-#~ msgstr "U- "
-
-#~ msgid "+ "
-#~ msgstr "+ "
-
-#~ msgid "- "
-#~ msgstr "- "
-
-#~ msgid "* "
-#~ msgstr "* "
-
-#~ msgid "/ "
-#~ msgstr "/ "
-
-#~ msgid "** "
-#~ msgstr "** "
-
-#~ msgid "// "
-#~ msgstr "// "
-
-#~ msgid "AND "
-#~ msgstr "VE "
-
-#~ msgid "OR "
-#~ msgstr "VEYA "
-
-#~ msgid "EQV "
-#~ msgstr "EŞİT "
-
-#~ msgid "NEQV "
-#~ msgstr "FARKLI "
-
-#~ msgid "= "
-#~ msgstr "= "
-
-#~ msgid "<> "
-#~ msgstr "<> "
-
-#~ msgid "> "
-#~ msgstr "> "
-
-#~ msgid ">= "
-#~ msgstr ">= "
-
-#~ msgid "< "
-#~ msgstr "< "
-
-#~ msgid "<= "
-#~ msgstr "<= "
-
-#~ msgid "NOT "
-#~ msgstr "DEĞİL "
-
-#~ msgid "parens"
-#~ msgstr "parentezler"
-
-#~ msgid "%s["
-#~ msgstr "%s["
-
-#~ msgid "%s[["
-#~ msgstr "%s[["
-
-#~ msgid " ALLOCATABLE"
-#~ msgstr " AYRILABİLİR"
-
-#~ msgid " DIMENSION"
-#~ msgstr " BOYUT"
-
-#~ msgid " EXTERNAL"
-#~ msgstr " HARİCİ"
-
-#~ msgid " INTRINSIC"
-#~ msgstr " YERLEŞİK"
-
-#~ msgid " OPTIONAL"
-#~ msgstr " SEÇİMLİK"
-
-#~ msgid " POINTER"
-#~ msgstr " GÖSTERİCİ"
-
-#~ msgid " SAVE"
-#~ msgstr " SAKLA"
-
-#~ msgid " TARGET"
-#~ msgstr " HEDEF"
-
-#~ msgid " DUMMY"
-#~ msgstr " SÖZDE"
-
-#~ msgid " RESULT"
-#~ msgstr " SONUÇ"
-
-#~ msgid " ENTRY"
-#~ msgstr " GİRDİ"
-
-#~ msgid " DATA"
-#~ msgstr " VERİ"
-
-#~ msgid " USE-ASSOC"
-#~ msgstr " İLİŞKİLİ"
-
-#~ msgid " IN-NAMELIST"
-#~ msgstr " ADLİSTESİNDE"
-
-#~ msgid " IN-COMMON"
-#~ msgstr " ORTAK"
-
-#~ msgid " FUNCTION"
-#~ msgstr " İŞLEV"
-
-#~ msgid " SUBROUTINE"
-#~ msgstr " ALTİŞLEV"
-
-#~ msgid " IMPLICIT-TYPE"
-#~ msgstr " ÖRTÜK-TÜR"
-
-#~ msgid " SEQUENCE"
-#~ msgstr " SIRA"
-
-#~ msgid " ELEMENTAL"
-#~ msgstr " ÖĞESEL"
-
-#~ msgid " PURE"
-#~ msgstr " ARI"
-
-#~ msgid " RECURSIVE"
-#~ msgstr " İÇ_İÇE"
-
-#~ msgid "symbol %s "
-#~ msgstr "sembol %s "
-
-#~ msgid "value: "
-#~ msgstr "değer: "
-
-#~ msgid "Array spec:"
-#~ msgstr "Dizi belirtimi:"
-
-#~ msgid "Generic interfaces:"
-#~ msgstr "Soysal arayüzler:"
-
-#~ msgid " %s"
-#~ msgstr " %s"
-
-#~ msgid "result: %s"
-#~ msgstr "sonuç: %s"
-
-#~ msgid "components: "
-#~ msgstr "bileşenler: "
-
-#~ msgid "Formal arglist:"
-#~ msgstr "Biçimsel arg listesi:"
-
-#~ msgid " [Alt Return]"
-#~ msgstr " [Alt Enter]"
-
-#~ msgid "common: /%s/ "
-#~ msgstr "ortak: /%s/ "
-
-#~ msgid ", "
-#~ msgstr ", "
-
-#~ msgid "symtree: %s  Ambig %d"
-#~ msgstr "symtree: %s  Tuhaf %d"
-
-#~ msgid " from namespace %s"
-#~ msgstr " %s isimalanından"
-
-#~ msgid "NOP"
-#~ msgstr "SORUN-YOK"
-
-#~ msgid "CONTINUE"
-#~ msgstr "DEVAM"
-
-#~ msgid "ENTRY %s"
-#~ msgstr "GiRDi %s"
-
-#~ msgid "ASSIGN "
-#~ msgstr "ATAMA "
-
-#~ msgid "LABEL ASSIGN "
-#~ msgstr "YAFTA ATAMA "
-
-#~ msgid " %d"
-#~ msgstr " %d"
-
-#~ msgid "POINTER ASSIGN "
-#~ msgstr "GÖSERİCİ ATAMA "
-
-#~ msgid "GOTO "
-#~ msgstr "GİT "
-
-#~ msgid ", ("
-#~ msgstr ", ("
-
-#~ msgid "CALL %s "
-#~ msgstr "%s ÇAĞRISI"
-
-#~ msgid "RETURN "
-#~ msgstr "DÖN "
-
-#~ msgid "PAUSE "
-#~ msgstr "BEKLET "
-
-#~ msgid "STOP "
-#~ msgstr "DUR "
-
-#~ msgid "IF "
-#~ msgstr "EĞER "
-
-#~ msgid " %d, %d, %d"
-#~ msgstr " %d, %d, %d"
-
-#~ msgid "ELSE\n"
-#~ msgstr "DEĞİLSE\n"
-
-#~ msgid "ELSE IF "
-#~ msgstr "DEĞİLSE EĞER"
-
-#~ msgid "ENDIF"
-#~ msgstr "EĞERSONU"
-
-#~ msgid "SELECT CASE "
-#~ msgstr "DURUM SEÇİMİ "
-
-#~ msgid "CASE "
-#~ msgstr "DURUM "
-
-#~ msgid "END SELECT"
-#~ msgstr "SEÇİM SONU"
-
-#~ msgid "WHERE "
-#~ msgstr "OLDUĞUNDA"
-
-#~ msgid "ELSE WHERE "
-#~ msgstr "OLMADIĞINDA"
-
-#~ msgid "END WHERE"
-#~ msgstr "OLDUSONU"
-
-#~ msgid "FORALL "
-#~ msgstr "TÜMÜİÇİN "
-
-#~ msgid "END FORALL"
-#~ msgstr "TÜMÜİÇİN SONU"
-
-#~ msgid "DO "
-#~ msgstr "YAP "
-
-#~ msgid "END DO"
-#~ msgstr "YAP SONU"
-
-#~ msgid "DO WHILE "
-#~ msgstr "OLANA KADAR"
-
-#~ msgid "CYCLE"
-#~ msgstr "DONGU"
-
-#~ msgid "EXIT"
-#~ msgstr "ÇIK"
-
-#~ msgid " STAT="
-#~ msgstr " DURUM="
-
-#~ msgid "OPEN"
-#~ msgstr "AÇIK"
-
-#~ msgid " UNIT="
-#~ msgstr " BiRiM="
-
-#~ msgid " IOMSG="
-#~ msgstr " G/Ç iLETiSi="
-
-#~ msgid " IOSTAT="
-#~ msgstr " G/Ç DURUMU="
-
-#~ msgid " FILE="
-#~ msgstr " DOSYA="
-
-#~ msgid " STATUS="
-#~ msgstr " DURUM="
-
-#~ msgid " ACCESS="
-#~ msgstr " ERiŞiM="
-
-#~ msgid " FORM="
-#~ msgstr " BİÇİM="
-
-#~ msgid " RECL="
-#~ msgstr " GERİAL="
-
-#~ msgid " BLANK="
-#~ msgstr " BOŞ="
-
-#~ msgid " POSITION="
-#~ msgstr " KONUM="
-
-#~ msgid " ACTION="
-#~ msgstr " EYLEM="
-
-#~ msgid " DELIM="
-#~ msgstr " AYRAÇ="
-
-#~ msgid " PAD="
-#~ msgstr " ADIM="
-
-#~ msgid " CONVERT="
-#~ msgstr " ÇEViR="
-
-#~ msgid " ERR=%d"
-#~ msgstr " HATA=%d"
-
-#~ msgid "CLOSE"
-#~ msgstr "KAPALI"
-
-#~ msgid "BACKSPACE"
-#~ msgstr "GERiSiL"
-
-#~ msgid "ENDFILE"
-#~ msgstr "DOSYASONU"
-
-#~ msgid "REWIND"
-#~ msgstr "BAŞA_SAR"
-
-#~ msgid "FLUSH"
-#~ msgstr "BOŞALT"
-
-#~ msgid "INQUIRE"
-#~ msgstr "SOR"
-
-#~ msgid " EXIST="
-#~ msgstr " MEVCUT="
-
-#~ msgid " OPENED="
-#~ msgstr " AÇIK="
-
-#~ msgid " NUMBER="
-#~ msgstr " SAYI="
-
-#~ msgid " NAMED="
-#~ msgstr " ADLI="
-
-#~ msgid " NAME="
-#~ msgstr " AD="
-
-#~ msgid " SEQUENTIAL="
-#~ msgstr " SIRALI="
-
-#~ msgid " DIRECT="
-#~ msgstr " DOĞRUDAN="
-
-#~ msgid " FORMATTED"
-#~ msgstr " BiÇiMLi"
-
-#~ msgid " UNFORMATTED="
-#~ msgstr " BiÇiMSiZ="
-
-#~ msgid " NEXTREC="
-#~ msgstr " SONRAKİ="
-
-#~ msgid " READ="
-#~ msgstr " OKU="
-
-#~ msgid " WRITE="
-#~ msgstr " YAZ="
-
-#~ msgid " READWRITE="
-#~ msgstr " OKUYAZ="
-
-#~ msgid "IOLENGTH "
-#~ msgstr "G/Ç-UZUNLUĞU "
-
-#~ msgid "READ"
-#~ msgstr "OKU"
-
-#~ msgid "WRITE"
-#~ msgstr "YAZ"
-
-#~ msgid " FMT="
-#~ msgstr " BÇM="
-
-#~ msgid " FMT=%d"
-#~ msgstr " BÇM=%d"
-
-#~ msgid " NML=%s"
-#~ msgstr " NML=%s"
-
-#~ msgid " SIZE="
-#~ msgstr " BOYUT="
-
-#~ msgid " REC="
-#~ msgstr " KYT="
-
-#~ msgid " ADVANCE="
-#~ msgstr " İLERİ="
-
-#~ msgid "TRANSFER "
-#~ msgstr "AKTARIM "
-
-#~ msgid "DT_END"
-#~ msgstr "DT_SONU"
-
-#~ msgid " END=%d"
-#~ msgstr " SON=%d"
-
-#~ msgid " EOR=%d"
-#~ msgstr " EOR=%d"
-
-#~ msgid "Equivalence: "
-#~ msgstr "Eşdeğeri: "
-
-#~ msgid "Namespace:"
-#~ msgstr "İsimalanı:"
-
-#~ msgid " %c-%c: "
-#~ msgstr " %c-%c: "
-
-#~ msgid " %c: "
-#~ msgstr " %c: "
-
-#~ msgid "Operator interfaces for %s:"
-#~ msgstr "%s için işleç arayüzleri:"
-
-#~ msgid "CONTAINS\n"
-#~ msgstr "İÇEREREK\n"
-
-#~ msgid "In file %s:%d\n"
-#~ msgstr "%s dosyasında:%d\n"
-
-#~ msgid "Internal Error at (1):"
-#~ msgstr "Dahili Hata (1):"
-
-#~ msgid "Exponent at %L must be INTEGER for an initialization expression"
-#~ msgstr "%L'deki ilklendirme ifadesi için üstel değer INTEGER olmalı"
-
-#~ msgid "Initialization expression didn't reduce %C"
-#~ msgstr "İlklendirme ifadesi %C indirgemedi"
-
-#~ msgid "Can't assign to INTENT(IN) variable '%s' at %L"
-#~ msgstr "INTENT(IN) değişkeni '%s' %L'de atanamaz"
-
-#~ msgid "Vector assignment to assumed-size Cray Pointee at %L is illegal."
-#~ msgstr "%L'deki tahmini boyutlu Cray göstericisine vektör ataması kuraldışı."
-
-#~ msgid "Pointer assignment to non-POINTER at %L"
-#~ msgstr "%L'de POINTER olmayana gösterici ataması"
-
-#~ msgid "The upper bound in the last dimension of the assumed_size array on the rhs of the pointer assignment at %L must be set"
-#~ msgstr "%L'deki gösterici atamasının sağ tarafındaki varsayımlı boyutlu dizinin son boyutunda üst sınır atanmış olmalıdır"
-
-#~ msgid "argument to '%s' missing"
-#~ msgstr "'%s' için argüman eksik"
-
-#~ msgid "Procedure argument at %L is INTENT(IN) while interface specifies INTENT(%s)"
-#~ msgstr "%L'deki yordam argümanı arayüz INTENT(%s) belirttiği halde INTENT(IN)'dir"
-
-#~ msgid "Function '%s' called in lieu of an operator at %L must be PURE"
-#~ msgstr "Bir işleç yerine çağrılan '%s' işlevi (%L'de) PURE olmalıdır "
-
-#~ msgid "Ranks of arguments to elemental intrinsic '%s' differ at %L"
-#~ msgstr "Öğesel yerleşik '%s' için argüman sırası farklı (%L'de)"
-
-#~ msgid "Period required"
-#~ msgstr "Aralık gerekli"
-
-#~ msgid "Unexpected element"
-#~ msgstr "Umulmadık eleman"
-
-#~ msgid "Repeat count cannot follow P descriptor"
-#~ msgstr "Yineleme sayısı P tanımlayıcıyı izleyemez"
-
-#~ msgid "Fortran 95 requires default INTEGER in IOSTAT tag at %L"
-#~ msgstr "Fortran 95 %L'de IOSTAT etiketinde öntanımlı INTEGER gerektirir"
-
-#~ msgid "Variable '%s' in input list at %C cannot be INTENT(IN)"
-#~ msgstr "girdi listesindeki '%s' değişkeni INTENT(IN) olamaz (%C'de)"
-
-#~ msgid "Cannot read to variable '%s' in PURE procedure at %C"
-#~ msgstr "PURE yordamı içindeki '%s' değişkeni okunamıyor (%C'de)"
-
-#~ msgid "Loop variable '%s' at %C cannot be INTENT(IN)"
-#~ msgstr "'%s' döngü değişkeni INTENT(IN) olamaz (%C'de)"
-
-#~ msgid "Too many digits in STOP code at %C"
-#~ msgstr "%C'deki STOP kodunda çok fazla rakam"
-
-#~ msgid "STAT variable '%s' of ALLOCATE statement at %C cannot be INTENT(IN)"
-#~ msgstr "ALLOCATE deyiminin '%s' STAT değişkeni INTENT(IN) olamaz (%L'de)"
-
-#~ msgid "Illegal STAT variable in ALLOCATE statement at %C for a PURE procedure"
-#~ msgstr "%C'deki ALLOCATE deyiminde PURE yordamı için kuraldışı STAT değişkeni"
-
-#~ msgid "Illegal variable in NULLIFY at %C for a PURE procedure"
-#~ msgstr "%C'deki NULLIFYda PURE yordamı için kuraldışı değişken"
-
-#~ msgid "STAT variable '%s' of DEALLOCATE statement at %C cannot be INTENT(IN)"
-#~ msgstr "DEALLOCATE deyiminin '%s' STAT değişkeni INTENT(IN) olamaz (%L'de)"
-
-#~ msgid "Illegal STAT variable in DEALLOCATE statement at %C for a PURE procedure"
-#~ msgstr "%C'deki DEALLOCATE deyiminde PURE yordamı için kuraldışı STAT değişkeni"
-
-#~ msgid "Symbol '%s' at %C is already an external symbol that is not COMMON"
-#~ msgstr "'%s' simgesi (%C'deki) zaten bir COMMON olmayan harici simgedir"
-
-#~ msgid "Previously initialized symbol '%s' in blank COMMON block at %C"
-#~ msgstr "Boş COMMON bloku içinde evvelce ilklendirilmiş '%s' simgesi (%C'de)"
-
-#~ msgid "Previously initialized symbol '%s' in COMMON block '%s' at %C"
-#~ msgstr "Evvelce ilklendirilmiş '%s' simgesi '%s' COMMON blokunun içinde (%C'de)"
-
-#~ msgid "Assumed shape array '%s' in namelist '%s' at %C is an extension."
-#~ msgstr "'%s' tahmini biçim dizisi '%s' isim listesinde bir eklentidir (%C'de)."
-
-#~ msgid "Expected case name of '%s' at %C"
-#~ msgstr "'%s' isminde bir case umuluyordu (%C'de)"
-
-#~ msgid "Out of memory-- malloc() failed"
-#~ msgstr "Bellek yetersiz -- malloc() başarısız oldu"
-
-#~ msgid "gfortran: Directory required after -M\n"
-#~ msgstr "gfortran: -M'den sonra dizin gerekiyor\n"
-
-#~ msgid "Argument to -fqkind isn't a valid real kind"
-#~ msgstr "-fqkind seçeneğinin argümanı geçerli bir gerçel sayı çeşidi değil"
-
-#~ msgid "Statement label in blank line will be ignored at %C"
-#~ msgstr "%C'de boş satırdaki deyim yaftası yok sayılacak"
-
-#~ msgid "SUBROUTINE at %C does not belong in a generic function interface"
-#~ msgstr "%C'deki SUBROUTINE bir soysal işlev arayüzüne uygun olmaz"
-
-#~ msgid "FUNCTION at %C does not belong in a generic subroutine interface"
-#~ msgstr "%C'deki FUNCTION bir soysal altyordam arayüzüne uygun olmaz"
-
-#~ msgid "Integer too big for its kind at %C"
-#~ msgstr "%C'deki çeşidi için tamsayı çok büyük"
-
-#~ msgid "Generic function '%s' at %L is not an intrinsic function"
-#~ msgstr "Soysal işlev '%s' (%L'de) bir yerleşik işlev değil"
-
-#~ msgid "Function reference to '%s' at %L is to a non-PURE procedure within a PURE procedure"
-#~ msgstr "'%s' için işlev başvurusu %L'de bir PURE yordam içindeki bir PURE olmayan yordama başvuruyor"
-
-#~ msgid "Obsolete: REAL DO loop iterator at %L"
-#~ msgstr "Atıl: %L'de REAL DO döngü yineleyici"
-
-#~ msgid "Cannot assign to loop variable in PURE procedure at %L"
-#~ msgstr "%L'de PURE yordam içindeki döngü değişkenine atama yapılamaz"
-
-#~ msgid "Expression in DEALLOCATE statement at %L must be ALLOCATABLE or a POINTER"
-#~ msgstr "%L'de DEALLOCATE deyimindeki ifade ya bir POINTER ya da ALLOCATABLE olmalı"
-
-#~ msgid "Obsolete: GOTO at %L jumps to END of construct at %L"
-#~ msgstr "Atıl: %L'deki GOTO %L'deki oluşumun END'ine atlıyor"
-
-#~ msgid "Unsupported statement while finding forall index in expression"
-#~ msgstr "ifadede forall indisi bulunurken desteklenmeyen deyim"
-
-#~ msgid "A FORALL index must not appear in a limit or stride expression in the same FORALL at %L"
-#~ msgstr "Bir FORALL indisi %L'de FORALL'daki ile aynı bir sınır veya adım ifadesinde bulunmamalıdır"
-
-#~ msgid "Subroutine '%s' called instead of assignment at %L must be PURE"
-#~ msgstr "'%s' altyordamı %L'deki atamanın yerine çağrıldığında PURE olmalıdır"
-
-#~ msgid "Cannot assign to variable '%s' in PURE procedure at %L"
-#~ msgstr "'%s' değişkenine %L'deki PURE yordamında atama yapılamaz"
-
-#~ msgid "STAT tag in ALLOCATE statement at %L must be of type INTEGER"
-#~ msgstr "%L'de ALLOCATE deyimindeki STAT etiketi INTEGER türde olmalı"
-
-#~ msgid "STAT tag in DEALLOCATE statement at %L must be of type INTEGER"
-#~ msgstr "%L'de DEALLOCATE deyimindeki STAT etiketi INTEGER türde olmalı"
-
-#~ msgid "CHARACTER(*) function '%s' at %L is obsolescent in fortran 95"
-#~ msgstr "CHARACTER(*) işlevi '%s' (%L'deki) fortran 95'de kullanılmamalıdır (atıl)"
-
-#~ msgid "The array '%s' must have constant shape to be a NAMELIST object at %L"
-#~ msgstr "'%s' dizisi %L'de bir NAMELIST nesnesi olarak sabit biçimde olmalı"
-
-#~ msgid "Initialized objects '%s' and '%s'  cannot both be in the EQUIVALENCE statement at %L"
-#~ msgstr "İlklendirilmiş '%s' ve '%s' nesnelerinin ikisi birden %L'deki EQUIVALENCE deyiminde olamaz"
-
-#~ msgid "File '%s' is being included recursively"
-#~ msgstr "'%s' dosyası iç içe içeriliyor"
-
-#~ msgid "%s:%3d %s\n"
-#~ msgstr "%s:%3d %s\n"
-
-#~ msgid "Extended ASCII not implemented: argument of ACHAR at %L must be between 0 and 127"
-#~ msgstr "Ek ASCII gerçeklenmedi: %L'deki ACHAR argümanı 0 .. 127 arasında olmalı"
-
-#~ msgid "Bad character in CHAR function at %L"
-#~ msgstr "%L'deki CHAR işlevinde hatalı karakter"
-
-#~ msgid "Invalid second argument of IBCLR at %L"
-#~ msgstr "%L'de IBCLR'nin ikinci argümanı geçersiz"
-
-#~ msgid "Invalid second argument of IBITS at %L"
-#~ msgstr "%L'de IBITS'in ikinci argümanı geçersiz"
-
-#~ msgid "Second argument of IBSET exceeds bit size at %L"
-#~ msgstr "%L'de IBSET'in ikinci argümanı bit boyutunu aşıyor"
-
-#~ msgid "Argument of ICHAR at %L out of range of this processor"
-#~ msgstr "%L'de ICHAR'ın argümanı bu işlemcinin kapsamı dışında"
-
-#~ msgid "Invalid second argument of ISHFT at %L"
-#~ msgstr "%L'de ISHFT'in ikinci argümanı geçersiz"
-
-#~ msgid "Invalid second argument of ISHFTC at %L"
-#~ msgstr "%L'de ISHFTC'nin ikinci argümanı geçersiz"
-
-#~ msgid "Invalid third argument of ISHFTC at %L"
-#~ msgstr "%L'de ISHFTC'nin üçüncü argümanı geçersiz"
-
-#~ msgid "Argument of KIND at %L is a DERIVED type"
-#~ msgstr "%L'de KIND'in argümanı bir DERIVED türdür"
-
-#~ msgid "Invalid second argument of REPEAT at %L"
-#~ msgstr "%L'de REPEAT'in ikinci argümanı geçersiz"
-
-#~ msgid "Integer too large in shape specification at %L"
-#~ msgstr "%L'de biçim belirtimindeki tamsayı çok büyük"
-
-#~ msgid "Too many dimensions in shape specification for RESHAPE at %L"
-#~ msgstr "%L'de RESHAPE için biçim belirtiminde boyutlar çok fazla"
-
-#~ msgid "Shape specification at %L cannot be negative"
-#~ msgstr "%L'de biçim belirtimi negatif olamaz"
-
-#~ msgid "Shape specification at %L cannot be the null array"
-#~ msgstr "%L'de biçim belirtimi boş dizi olamaz"
-
-#~ msgid "ORDER parameter of RESHAPE at %L is not the same size as SHAPE parameter"
-#~ msgstr "%L'de RESHAPE'in ORDER parametresi SHAPE parametresi ile aynı boyutta değil"
-
-#~ msgid "Error in ORDER parameter of RESHAPE at %L"
-#~ msgstr "%L'de RESHAPE'in ORDER parametresinde hata"
-
-#~ msgid "ORDER parameter of RESHAPE at %L is out of range"
-#~ msgstr "%L'de RESHAPE'in ORDER parametresi aralık dışında"
-
-#~ msgid "Invalid permutation in ORDER parameter at %L"
-#~ msgstr "%L'de ORDER parametresindeki değiş tokuş geçersiz"
-
-#~ msgid "PAD parameter required for short SOURCE parameter at %L"
-#~ msgstr "%L'de kısa SOURCE parametresi için PAD parametresi gerekli"
-
-#~ msgid "Cannot change attributes of symbol at %L after it has been used"
-#~ msgstr "%L'de simge öznitelikleri kullanıldıktan sonra değiştirilemez"
-
-#~ msgid "Array bound mismatch"
-#~ msgstr "Dizi sınırları çelişiyor"
-
-#~ msgid "storage size not known"
-#~ msgstr "saklama boyutu bilinmiyor"
-
-#~ msgid "Assigned label is not a format label"
-#~ msgstr "Atama yaftası bir biçim yaftası değil"
-
-#~ msgid "INQUIRE statement at %L cannot contain both FILE and UNIT specifiers."
-#~ msgstr "INQUIRE deyimi (%L'de) hem FILE hem de UNIT belirtecini içeremez."
-
-#~ msgid "Assigned label is not in the list"
-#~ msgstr "Atanmış yafta listede değil"
-
-#~ msgid "ignored method '"
-#~ msgstr "yok sayılan '"
-
-#~ msgid "' marked virtual\n"
-#~ msgstr "' yöntemi virtual olarak imli\n"
-
-#~ msgid "Try '"
-#~ msgstr "Dene: '"
-
-#~ msgid " --help' for more information.\n"
-#~ msgstr "daha fazla bilgi için --help kullanın.\n"
-
-#~ msgid "Usage: "
-#~ msgstr "Kullanımı: "
-
-#~ msgid ""
-#~ " [OPTION]... CLASS...\n"
-#~ "\n"
-#~ msgstr ""
-#~ " [SEÇENEK]... SINIF...\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "Generate C or C++ header files from .class files\n"
-#~ "\n"
-#~ msgstr ""
-#~ ".class dosyalarından C veya C++ başlık dosyalarını üretir\n"
-#~ "\n"
-
-#~ msgid "  -stubs                  Generate an implementation stub file\n"
-#~ msgstr "  -stubs                  bir gerçeklenim stub dosyası üretir\n"
-
-#~ msgid "  -force                  Always overwrite output files\n"
-#~ msgstr "  -force                  Daima çıktı dosyalarının üzerine yazılır\n"
-
-#~ msgid "  -old                    Unused compatibility option\n"
-#~ msgstr "  -old                    Kullanılmamış uyumluluk seçeneği\n"
-
-#~ msgid "  -trace                  Unused compatibility option\n"
-#~ msgstr "  -trace                  Kullanılmamış uyumluluk seçeneği\n"
-
-#~ msgid "  -J OPTION               Unused compatibility option\n"
-#~ msgstr "  -J OPTION               Kullanılmamış uyumluluk seçeneği\n"
-
-#~ msgid "  -add TEXT               Insert TEXT into class body\n"
-#~ msgstr "  -add METIN              METIN sınıf gövdesine yerleştirilir\n"
-
-#~ msgid "  -append TEXT            Insert TEXT after class declaration\n"
-#~ msgstr "  -append METIN           METIN sınıf bildiriminin ardına eklenir\n"
-
-#~ msgid "  -friend TEXT            Insert TEXT as 'friend' declaration\n"
-#~ msgstr "  -friend METIN           METIN, 'friend' bildirimi olarak eklenir\n"
-
-#~ msgid "  -prepend TEXT           Insert TEXT before start of class\n"
-#~ msgstr "  -prepend METIN          METIN sınıf başlangıcının öncesine konur\n"
-
-#~ msgid "  -d DIRECTORY            Set output directory name\n"
-#~ msgstr "  -d DIZIN                Çıktı dizini\n"
-
-#~ msgid "  -td DIRECTORY           Set temporary directory name\n"
-#~ msgstr "  -td DIZIN               Geçici dizin ismi belirtilir\n"
-
-#~ msgid ""
-#~ "  -M                      Print all dependencies to stdout;\n"
-#~ "                             suppress ordinary output\n"
-#~ msgstr ""
-#~ "  -M                      Tüm bağımlılıkları stdout'a basar;\n"
-#~ "                             sıradan çıktılama engellenir\n"
-
-#~ msgid ""
-#~ "  -MM                     Print non-system dependencies to stdout;\n"
-#~ "                             suppress ordinary output\n"
-#~ msgstr ""
-#~ "  -MM                     Sistemdışı bağımlılıkları stdout'a basar;\n"
-#~ "                             sıradan çıktılama engellenir\n"
-
-#~ msgid "  -MD                     Print all dependencies to stdout\n"
-#~ msgstr "  -MD                     Tüm bağımlılıkları stdout'a basar\n"
-
-#~ msgid "  -MMD                    Print non-system dependencies to stdout\n"
-#~ msgstr "  -MMD                    Sistemdışı bağımlılıkları stdout'a basar\n"
-
-#~ msgid "Processing %s\n"
-#~ msgstr "%s işleniyor\n"
-
-#~ msgid "Found in %s\n"
-#~ msgstr "%s içinde bulundu\n"
-
-#~ msgid "Try 'jv-scan --help' for more information.\n"
-#~ msgstr "Daha fazla bilgi için 'jv-scan --help' yazın.\n"
-
-#~ msgid ""
-#~ "Usage: jv-scan [OPTION]... FILE...\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Kullanımı: jv-scan [SEÇENEK]... DOSYA ...\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "Print useful information read from Java source files.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Java kaynak dosyalarından okunan yararlı bilgileri basar.\n"
-#~ "\n"
-
-#~ msgid "  --no-assert             Don't recognize the assert keyword\n"
-#~ msgstr "  --no-assert            assert anahtar sözcüğü tanınmaz\n"
-
-#~ msgid "  --complexity            Print cyclomatic complexity of input file\n"
-#~ msgstr ""
-#~ "  --complexity            girdi dosyasını sınamak için gereken asgari\n"
-#~ "                          girdi sayısını basar. \n"
-
-#~ msgid "  --encoding NAME         Specify encoding of input file\n"
-#~ msgstr "  --encoding ISIM         girdi dosyasının karakter kodlaması\n"
-
-#~ msgid "  --print-main            Print name of class containing 'main'\n"
-#~ msgstr "  --print-main            'main' içeren  sınıfın ismini basar\n"
-
-#~ msgid "  --list-class            List all classes defined in file\n"
-#~ msgstr "  --list-class            Dosyada tanımlı tüm sınıfları listeler\n"
-
-#~ msgid "  --list-filename         Print input filename when listing class names\n"
-#~ msgstr "  --list-filename        Sınıf isimlerini listelerken girdi dosyaismini basar\n"
-
-#~ msgid "%s: error: "
-#~ msgstr "%s: hata: "
-
-#~ msgid "%s: warning: "
-#~ msgstr "%s: UYARI: "
-
-#~ msgid "mno-cygwin and mno-win32 are not compatible"
-#~ msgstr "mno-cygwin ve mno-win32 uyumsuz"
-
-#~ msgid "-pg not supported on this platform"
-#~ msgstr "-pg bu platformda desteklenmiyor"
-
-#~ msgid "-p and -pp specified - pick one"
-#~ msgstr "-p ve -pp belirtilmiş - birini seçin"
-
-#~ msgid "Static linking is not supported.\n"
-#~ msgstr "Durağan ilintileme desteklenmiyor.\n"
-
-#~ msgid "Set class path"
-#~ msgstr "Sınıf dosya yolu ayarlanır"
-
-#~ msgid "Add a directory for INCLUDE and MODULE searching"
-#~ msgstr "INCLUDE ve MODULE araması için bir dizin eklenir"
-
-#~ msgid "Warn about usage of non-standard intrinsics"
-#~ msgstr "Standartdışı yerleşiklerin kullanımında uyarır"
-
-#~ msgid "Don't generate code, just do syntax and semantics checking"
-#~ msgstr "Sözdizimsel ve anlambilimsel sınamalardaki gibi kod üretilmez"
-
-#~ msgid "Treat the input file as preprocessed"
-#~ msgstr "Girdi dosyası önişlemden geçirilmiş kabul edilir"
-
-#~ msgid "Set the kind for a real with the 'q' exponent to 'n'"
-#~ msgstr "'q'üssü 'n'li bir gerçel sayı için çeşit belirtir "
-
-#~ msgid "Use little-endian format for unformatted files"
-#~ msgstr "Biçimlenmemiş dosyalar için kıymetsiz baytın başta olduğu bayt sıralaması kullanılır"
-
-#~ msgid "Use big-endian format for unformatted files"
-#~ msgstr "Biçimlenmemiş dosyalar için kıymetli baytın başta olduğu bayt sıralaması kullanılır"
-
-#~ msgid "Use native format for unformatted files"
-#~ msgstr "Biçimlenmemiş dosyalar için yerel bayt sıralaması kullanılır"
-
-#~ msgid "Swap endianness for unformatted files"
-#~ msgstr "Biçimlenmemiş dosyalar için bayt sıralaması takaslanır"
-
-#~ msgid "Trace lexical analysis"
-#~ msgstr "Sözdizimsel çözümleme izlenir"
-
-#~ msgid "Trace the parsing process"
-#~ msgstr "Ayırma işlemi izlenir"
-
-#~ msgid "Assume GAS"
-#~ msgstr "GAS varsayılır"
-
-#~ msgid "Do not assume GAS"
-#~ msgstr "GAS varsayılmaz"
-
-#~ msgid "Don't use hardware fp"
-#~ msgstr "Donanım kayan nokta aritmetigi kullanılmaz"
-
-#~ msgid "Generate code for little-endian"
-#~ msgstr "Kıymetsiz baytın başta olduğu kod üretilir"
-
-#~ msgid "Uninitialized locals in .bss"
-#~ msgstr ".bss içinde ilklendirilmemiş yereller"
-
-#~ msgid "Use the Cygwin interface"
-#~ msgstr "Cygwin arayüzü kullanılır"
-
-#~ msgid "Generate ELF output"
-#~ msgstr "ELF çıktı üretilir"
-
-#~ msgid "Use POWER instruction set"
-#~ msgstr "POWER komut kümesi kullanılır"
-
-#~ msgid "Do not use POWER instruction set"
-#~ msgstr "POWER komut kümesi kullanılmaz"
-
-#~ msgid "Use POWER2 instruction set"
-#~ msgstr "POWER2 komut kümesi kullanılır"
-
-#~ msgid "Use PowerPC instruction set"
-#~ msgstr "PowerPC komut kümesi kullanılır"
-
-#~ msgid "Use new mnemonics for PowerPC architecture"
-#~ msgstr "PowerPC mimarisi için yeni mnemonics kullanılır"
-
-#~ msgid "Use old mnemonics for PowerPC architecture"
-#~ msgstr "PowerPC mimarisi için eski mnemonics kullanılır"
-
-#~ msgid "Use the WindISS simulator"
-#~ msgstr "WindISS benzeticisi kullanılır"
-
-#~ msgid "Use byte loads and stores when generating code."
-#~ msgstr "Bayt yükleme ve saklama işlemleri kod üretilirken yapılır"
-
-#~ msgid "Do not include crt0.o in the startup files"
-#~ msgstr "Başlatma dosyalarında crt0.o içerilmez"
-
-#~ msgid "Internal debug switch"
-#~ msgstr "Dahili hata ayıklama seçeneği"
-
-#~ msgid "Set maximum alignment to 4"
-#~ msgstr "Azami hizalama 4 e ayarlanır"
-
-#~ msgid "Set maximum alignment to 8"
-#~ msgstr "Azami hizalama 8 e ayarlanır"
-
-#~ msgid "Prepend the name of the cpu to all public symbol names"
-#~ msgstr "Tüm genel simge isimlerinin başına işlemci ismi getirilir"
-
-#~ msgid "Put functions in SECTION"
-#~ msgstr "SECTION'daki işlevleri koyar"
-
-#~ msgid "Put data in SECTION"
-#~ msgstr "SECTION'daki veriyi koyar"
-
-#~ msgid "Put read-only data in SECTION"
-#~ msgstr "SECTION'daki salt okunur veriyi koyar"
-
-#~ msgid "Generate SH2a code"
-#~ msgstr "SH2a kodu üretilir"
-
-#~ msgid "Cirrus: Place NOPs to avoid invalid instruction combinations"
-#~ msgstr "Cirrus: Geçersiz komut birleşimlerinden kaçınmak için NOPlar yerleştirilir"
-
-#~ msgid "Alias for -mfloat-abi=soft"
-#~ msgstr "-mfloat-abi=soft için takma isim"
-
-#~ msgid "Assume big endian bytes, little endian words"
-#~ msgstr "Bayt sıralamasında kıymetli baytın başta, word sıralamasında ise sonda olduğu varsayılır"
-
-#~ msgid "Ignore dllimport attribute for functions"
-#~ msgstr "İşlevler için dllimport özniteliği yoksayılır"
-
-#~ msgid "Use STACK as the initial value of the stack pointer"
-#~ msgstr "Yığıt göstericisinin ilk değeri olarak YIĞIT kullanılır"
-
-#~ msgid "Do not generate tablejump insns"
-#~ msgstr "Tablejump komutları üretilmez"
-
-#~ msgid "Use rjmp/rcall (limited range) on >8K devices"
-#~ msgstr ">8k aygıtlarda rjmp/rcall (sınırlı aralık) kullanılır"
-
-#~ msgid "Output instruction sizes to the asm file"
-#~ msgstr "Komut boyutlarını asm dosyasına çıktılar"
-
-#~ msgid "Do not use push to store function arguments"
-#~ msgstr "İşlev argümanlarını saklamak için push kullanılmaz"
-
-#~ msgid "Restrict doloop to the given nesting level"
-#~ msgstr "doloop belirtilen iç içelik seviyesiyle sınırlanır"
-
-#~ msgid "Generate code for C32 CPU"
-#~ msgstr "Kod C32 için üretilir"
-
-#~ msgid "Generate code for C33 CPU"
-#~ msgstr "Kod C33 için üretilir"
-
-#~ msgid "Generate code for C44 CPU"
-#~ msgstr "Kod C44 için üretilir"
-
-#~ msgid "Assume that pointers may be aliased"
-#~ msgstr "Göstericilerin rumuzlu olabilecekleri varsayılır"
-
-#~ msgid "Big memory model"
-#~ msgstr "Büyük bellek modeli"
-
-#~ msgid "Use the BK register as a general purpose register"
-#~ msgstr "BK yazmacı genel amaçlı yazmaç olarak kullanılır"
-
-#~ msgid "Generate code for CPU"
-#~ msgstr "İşlemci için kod üretilir"
-
-#~ msgid "Enable new features under development"
-#~ msgstr "Geliştirilmekte olan yeni özellikler etkin olur"
-
-#~ msgid "Use fast but approximate float to integer conversion"
-#~ msgstr "Kayan noktadan tamsayıya dönüşümler hızlı fakat sonuç yaklaşık olur"
-
-#~ msgid "Force RTL generation to emit valid 3 operand insns"
-#~ msgstr "RTL üretiminde geçerli 3 terimli komut üretmeye zorlar"
-
-#~ msgid "Force constants into registers to improve hoisting"
-#~ msgstr "Kaldırmayı iyileştirmek için sabitleri yazmaçlarda saklar"
-
-#~ msgid "Save DP across ISR in small memory model"
-#~ msgstr "Küçük bellek modelinde DP'yi ISR'da saklar"
-
-#~ msgid "Allow unsigned iteration counts for RPTB/DB"
-#~ msgstr "RPTB/DB için yineleme sayılarının unsigned olmasına izin verir"
-
-#~ msgid "Use MPYI instruction for C3x"
-#~ msgstr "C3x için MPYI komutu kullanılır"
-
-#~ msgid "Preserve all 40 bits of FP reg across call"
-#~ msgstr "Çağrıda FP yazmacının bütün 40 bitini korur"
-
-#~ msgid "Pass arguments in registers"
-#~ msgstr "Yazmaçlardaki argümanlar aktarılır"
-
-#~ msgid "Enable use of RTPS instruction"
-#~ msgstr "RTPS komutunun kullanımı etkin olur"
-
-#~ msgid "Small memory model"
-#~ msgstr "Küçük bellek modeli"
-
-#~ msgid "Put jumps in call delay slots"
-#~ msgstr "jump'lar çağrı geciktirme yuvalarına konur"
-
-#~ msgid "Enable fused multiply/add and multiply/subtract FP instructions"
-#~ msgstr "Birleşik çarpma/toplama ve çarpma/çıkarma FP komutları üretilir"
-
-#~ msgid "Use SVR4-style PIC"
-#~ msgstr "SVR4 tarzı PIC kullanılır"
-
-#~ msgid "Generate mips16 code"
-#~ msgstr "mips16 kodu üretilir"
-
-#~ msgid "Use the mips-tfile postpass"
-#~ msgstr "mips-tfile postpass kullanır"
-
-#~ msgid "Compile for a 68HC11"
-#~ msgstr "68HC11 için derleme yapılır"
-
-#~ msgid "Compile for a 68HC12"
-#~ msgstr "68HC12 için derleme yapılır"
-
-#~ msgid "Compile for a 68HCS12"
-#~ msgstr "68HCS12 için derleme yapılır"
-
-#~ msgid "Auto pre/post decrement increment allowed"
-#~ msgstr "Özdevinimli önce/sonra eksiltme/arttırmaya izin verilir"
-
-#~ msgid "Min/max instructions allowed"
-#~ msgstr "Min/max komutlarına izin verilir"
-
-#~ msgid "Use call and rtc for function calls and returns"
-#~ msgstr "İşlev çağrıları ve dönüşleri için call ve rtc kullanılır"
-
-#~ msgid "Auto pre/post decrement increment not allowed"
-#~ msgstr "Özdevinimli önce/sonra eksiltme/arttırmaya izin verilmez"
-
-#~ msgid "Min/max instructions not allowed"
-#~ msgstr "Min/max komutlarına izin verilmez"
-
-#~ msgid "Use direct addressing mode for soft registers"
-#~ msgstr "Soft yazmaçlar için doğrudan adresleme kipi kullanılır"
-
-#~ msgid "Compile with 32-bit integer mode"
-#~ msgstr "32 bitlik tamsayı kiple derleme yapılır"
-
-#~ msgid "Do not use direct addressing mode for soft registers"
-#~ msgstr "Soft yazmaçlar için doğrudan adresleme kipi kullanılmaz"
-
-#~ msgid "Compile with 16-bit integer mode"
-#~ msgstr "16 bitlik tamsayı kiple derleme yapılır"
-
-#~ msgid "Indicate the number of soft registers available"
-#~ msgstr "Elverişli yazılım bazlı (soft) yazmaçları belirtir"
-
-#~ msgid "Compile for the MMU-less Etrax 100-based elinux system"
-#~ msgstr "MMU-suz Etrax 100-tabanlı elinux sistemi için derler"
-
-#~ msgid "For elinux, request a specified stack-size for this program"
-#~ msgstr "elinux için, bu programa belirli bir yığıt boyutu istenir"
-
-#~ msgid "Support Green Hills ABI"
-#~ msgstr "Green Hills ABI desteklenir"
-
-#~ msgid "Warn about possibly confusing type conversions"
-#~ msgstr "Tür dönüşümlerinin olası karışıklığı hakkında uyarır"
-
-#~ msgid "Warn about deprecated compiler features"
-#~ msgstr "Önerilmeyen derleyici özelliklerinde uyarır"
-
-#~ msgid "Make implicit function declarations an error"
-#~ msgstr "İşlevlerin dolaylı bildirimlerinde hata verir"
-
-#~ msgid "Warn when synthesis behavior differs from Cfront"
-#~ msgstr "Sentezleme davranışı Cfront'dan farklıysa uyarır"
-
-#~ msgid "Give strings the type \"array of char\""
-#~ msgstr "Dizgeler \"char dizileri\" türünde verilir"
-
-#~ msgid "Change when template instances are emitted"
-#~ msgstr "Şablon örneklemeleri çıktılanırken değiştirilir"
-
-#~ msgid "Reduce the size of object files"
-#~ msgstr "Nesne dosyalarını küçültür"
-
-#~ msgid "Make string literals \"const char[]\" not \"char[]\""
-#~ msgstr "Dizge sabitler \"char[]\" değil \"const char[]\" yapılır"
-
-#~ msgid "Inline member functions by default"
-#~ msgstr "Öntanımlı olarak üye işlevler satıriçi yapılır"
-
-#~ msgid "Enable optional diagnostics"
-#~ msgstr "Seçimlik teşhisler etkin olur"
-
-#~ msgid "Discard unused virtual functions"
-#~ msgstr "Kullanılmayan sanal işlevler iptal edilir"
-
-#~ msgid "Implement vtables using thunks"
-#~ msgstr "Sanal tablolar 16/32 bit dönüştürücülerle gerçeklenir"
-
-#~ msgid "Emit cross referencing information"
-#~ msgstr "Çapraz atıflama bilgisi yayınlanır"
-
-#~ msgid "Print a checksum of the executable for PCH validity checking, and stop"
-#~ msgstr "PCH doğrulama sınaması için bir çalıştırılabilir sağlaması basar ve durur"
-
-#~ msgid "Warn about code that will never be executed"
-#~ msgstr "Hiç çalışmayacak kod hakkında uyarır"
-
-#~ msgid "Specify that arguments may alias each other and globals"
-#~ msgstr "Bir diğerinin ya da globallerin takma adı olabilen argümanlar belirtilir"
-
-#~ msgid "Assume arguments may alias globals but not each other"
-#~ msgstr "Argümanların globallerin bir kısmına takma ad olabileceği varsayılır"
-
-#~ msgid "Assume arguments alias neither each other nor globals"
-#~ msgstr "Argümanların ne başkasına ne de globallere takma ad olduğu varsayılır"
-
-#~ msgid "When running CSE, follow conditional jumps"
-#~ msgstr "Ortak alt ifade elemesi sırasında koşullu dallanmalar izlenir"
-
-#~ msgid "Copy memory address constants into registers before use"
-#~ msgstr "Kullanmadan önce bellek adres sabitlerini yazmaçlara kopyalar"
-
-#~ msgid "Copy memory operands into registers before use"
-#~ msgstr "Kullanmadan önce bellek terimlerini yazmaçlara kopyalar"
-
-#~ msgid "Pay attention to the \"inline\" keyword"
-#~ msgstr "\"inline\" anahtar sözcüğüne dikkat edilir"
-
-#~ msgid "Type based escape and alias analysis"
-#~ msgstr "Tür bazlı önceleme ve takma ad çözümlemesi"
-
-#~ msgid "Perform loop optimizations using the new loop optimizer"
-#~ msgstr "Döngü eniyilemeleri yeni döngü eniyileyici kullanılarak uygulanır"
-
-#~ msgid "Add mudflap bounds-checking instrumentation for single-threaded program"
-#~ msgstr "Tek evreli yazılımlar için mudflap sınırları-sınayan araç taksimi eklenir"
-
-#~ msgid "Add mudflap bounds-checking instrumentation for multi-threaded program"
-#~ msgstr "Çok evreli yazılımlar için mudflap sınırları-sınayan araç taksimi eklenir"
-
-#~ msgid "Ignore read operations when inserting mudflap instrumentation"
-#~ msgstr "Mudflap araç taksimi eklenirken okuma işlemleri yoksayılır"
-
-#~ msgid "Do the full register move optimization pass"
-#~ msgstr "Tam yazmaç hareketi eniyilemesi yapar"
-
-#~ msgid "Run the loop optimizer twice"
-#~ msgstr "Döngü eniyilemesi iki kere çalıştırılır"
-
-#~ msgid "If scheduling post reload, do trace scheduling"
-#~ msgstr "Sonradan yeniden yükleme zamanlaması varsa izleme zamanlaması yapılır"
-
-#~ msgid "Mark data as shared rather than private"
-#~ msgstr "Veriyi özelden çok paylaşımlı olarak imler"
-
-#~ msgid "Enable SSA-CCP optimization for stores and loads"
-#~ msgstr "Saklama ve yükleme için SSA-CCP eniyilemesi etkinleştirilir"
-
-#~ msgid "Coalesce memory temporaries in the SSA->normal pass"
-#~ msgstr "SSA->normal geçişinde bellek geçicilerini birleştirir"
-
-#~ msgid "Perform structural alias analysis"
-#~ msgstr "Yapısal takma ad çözümlemesi yapılır"
-
-#~ msgid "Enable loop versioning when doing loop vectorization on trees"
-#~ msgstr "Ağaçlarda döngü vektörleştirimi yapılırken döngü uyarlama etkin olur"
-
-#~ msgid "Set the verbosity level of the vectorizer"
-#~ msgstr "Vektörcünün ayrıntı seviyesi belirtilir"
-
-#~ msgid "Set the default symbol visibility"
-#~ msgstr "Öntanımlı simge görünürlüğü belirtilir"
-
-#~ msgid "argument of %<__builtin_args_info%> must be constant"
-#~ msgstr "%<__builtin_args_info%>'nun argümanı bir sabit olmalıdır"
-
-#~ msgid "argument of %<__builtin_args_info%> out of range"
-#~ msgstr "%<__builtin_args_info%>'nun argümanı aralık dışında"
-
-#~ msgid "missing argument in %<__builtin_args_info%>"
-#~ msgstr "%<__builtin_args_info%>'da argüman eksik"
-
-#~ msgid "second argument to %<__builtin_expect%> must be a constant"
-#~ msgstr "%<__builtin_expect%>'in ikinci argümanı bir sabit olmalı"
-
-#~ msgid "invalid lvalue in decrement"
-#~ msgstr "eksiltmede geçersiz sol taraf"
-
-#~ msgid "invalid lvalue in unary %<&%>"
-#~ msgstr "tek terimli %<&%> için sol taraf geçersiz"
-
-#~ msgid "declaration of %q+D shadows a global declaration"
-#~ msgstr "%q+D bildirimi bir genel bildirimi gölgeliyor"
-
-#~ msgid "%Hfor each function it appears in.)"
-#~ msgstr "%Hiçin sadece bir kez raporlanır.)"
-
-#~ msgid "%Hduplicate label %qD"
-#~ msgstr "%Hyinelenmiş %qD yaftası"
-
-#~ msgid "%Jjump into statement expression"
-#~ msgstr "%Jdeyim ifadesine jump"
-
-#~ msgid "%Jjump into scope of identifier with variably modified type"
-#~ msgstr "%Jdeğişkene göre değişen türde betimleyici etki alanına jump"
-
-#~ msgid "GCC does not yet properly implement %<[*]%> array declarators"
-#~ msgstr "GCC  %<[*]%> dizi bildirimlerini henüz olması gerektiği gibi gerçeklemiyor"
-
-#~ msgid "static or type qualifiers in abstract declarator"
-#~ msgstr "kuramsal bildirimde 'static' ya da tür niteleyiciler"
-
-#~ msgid "function definition declared %<__thread%>"
-#~ msgstr "%<__thread%> bildirimli işlev tanımı"
-
-#~ msgid "variable or field %qs declared void"
-#~ msgstr "%qs değişkeni ya da alanı void bildirimli"
-
-#~ msgid "%<noreturn%> function returns non-void value"
-#~ msgstr "%<noreturn%> işlevinin dönüşü void değil"
-
-#~ msgid "thread-local storage not supported for this target"
-#~ msgstr "bu hedefte yerel evreli saklama desteklenmiyor"
-
-#~ msgid "%Jinvalid use of structure with flexible array member"
-#~ msgstr "%J esnek dizi üyeli yapının geçersiz kullanımı"
-
-#~ msgid "this function may return with or without a value"
-#~ msgstr "bu işlev bir değerle dönebileceği gibi dönmeyebilir de"
-
-#~ msgid "both %<long long%> and %<double%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<long long%> hem de %<double%>"
-
-#~ msgid "both %<long%> and %<short%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<long%> hem de %<short%>"
-
-#~ msgid "both %<long%> and %<void%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<long%> hem de %<void%>"
-
-#~ msgid "both %<long%> and %<_Bool%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<long%> hem de %<_Bool%>"
-
-#~ msgid "both %<long%> and %<char%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<long%> hem de %<char%>"
-
-#~ msgid "both %<long%> and %<float%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<long%> hem de %<float%>"
-
-#~ msgid "both %<short%> and %<void%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<short%> hem de %<void%>"
-
-#~ msgid "both %<short%> and %<_Bool%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<short%> hem de %<_Bool%>"
-
-#~ msgid "both %<short%> and %<float%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<short%> hem de %<float%>"
-
-#~ msgid "both %<short%> and %<double%> in declaration specifiers"
-#~ msgstr "bildirim belirtieçlerinde hem %<short%> hem de %<double%>"
-
-#~ msgid "both %<signed%> and %<unsigned%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<signed%> hem de %<unsigned%>"
-
-#~ msgid "both %<signed%> and %<void%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<signed%> hem de %<void%>"
-
-#~ msgid "both %<signed%> and %<_Bool%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<signed%> hem de %<_Bool%>"
-
-#~ msgid "both %<signed%> and %<float%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<signed%> hem de %<float%>"
-
-#~ msgid "both %<signed%> and %<double%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<signed%> hem de %<double%>"
-
-#~ msgid "both %<unsigned%> and %<void%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<unsigned%> hem de %<void%>"
-
-#~ msgid "both %<unsigned%> and %<_Bool%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<unsigned%> hem de %<_Bool%>"
-
-#~ msgid "both %<unsigned%> and %<float%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<unsigned%> hem de %<float%>"
-
-#~ msgid "both %<unsigned%> and %<double%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<unsigned%> hem de %<double%>"
-
-#~ msgid "both %<complex%> and %<void%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<complex%> hem de %<void%>"
-
-#~ msgid "both %<complex%> and %<_Bool%> in declaration specifiers"
-#~ msgstr "bildirim belirteçlerinde hem %<complex%> hem de %<_Bool%>"
-
-#~ msgid "%s should have type %<%s%s%>, but argument %d has type %qT"
-#~ msgstr "%s %<%s%s%>türünde olmalı, ancak %d. argüman %qT türünde"
-
-#~ msgid "%s should have type %<%T%s%>, but argument %d has type %qT"
-#~ msgstr "%s %<%T%s%> türünde olmalı, ama %d. argüman %qT türünde"
-
-#~ msgid "function %q+F can never be inlined because it might not be bound within this unit of translation"
-#~ msgstr "%q+F işlevi bu dönüşüm birimi içine alınamadığından asla satıriçine alınamaz"
-
-#~ msgid "YYDEBUG was not defined at build time, -dy ignored"
-#~ msgstr "derleme sırasında YYDEBUG tanımlı değildi, -dy yoksayıldı"
-
-#~ msgid "can%'t seek in %s: %m"
-#~ msgstr "%s içinde konumlama yapılamıyor: %m"
-
-#~ msgid "#pragma pack(push[, id], <n>) is not supported on this target"
-#~ msgstr "bu hedefte #pragma pack(push[, id], <n>) desteklenmiyor"
-
-#~ msgid "#pragma pack(pop[, id], <n>) is not supported on this target"
-#~ msgstr "bu hedefte #pragma pack(pop[, id], <n>) desteklenmiyor"
-
-#~ msgid "junk at end of #pragma weak"
-#~ msgstr "#pragma weak sonunda döküntü"
-
-#~ msgid "#pragma redefine_extname not supported on this target"
-#~ msgstr "#pragma redefine_extname bu hedefte desteklenmiyor"
-
-#~ msgid "increment of pointer to unknown structure"
-#~ msgstr "bilinmeyen yapı göstericisinde arttırma"
-
-#~ msgid "decrement of pointer to unknown structure"
-#~ msgstr "bilinmeyen yapı göstericisinde eksiltme"
-
-#~ msgid "signed and unsigned type in conditional expression"
-#~ msgstr "koşullu ifadede signed ve unsigned türler"
-
-#~ msgid "case label in statement expression not containing enclosing switch statement"
-#~ msgstr "deyim ifadesindeki case yaftası bir switch deyimi içinde değil"
-
-#~ msgid "%<default%> label in statement expression not containing enclosing switch statement"
-#~ msgstr "deyim ifadesindeki %<default%> yaftası bir switch deyimi içinde değil"
-
-#~ msgid "case label in scope of identifier with variably modified type not containing enclosing switch statement"
-#~ msgstr "değişkene göre değişen türde betimleyici etki alanındaki case yaftası bir switch deyimi içinde değil"
-
-#~ msgid "%<default%> label in scope of identifier with variably modified type not containing enclosing switch statement"
-#~ msgstr "değişkene göre değişen türde betimleyici etki alanındaki %<default%> yaftası bir switch deyimi içinde değil"
-
-#~ msgid "%Hstatement with no effect"
-#~ msgstr "%Hdeyim etkisiz"
-
-#~ msgid "comparison between signed and unsigned"
-#~ msgstr "signed ile unsigned arasında karşılaştırma"
-
-#, fuzzy
-#~ msgid "wrong single exit %d->%d recorded for loop %d"
-#~ msgstr "%3$d. döngü için yanlış tek çıkış %1$d->%2$d kayıtlı"
-
-#~ msgid "right exit is %d->%d"
-#~ msgstr "doğru çıkış %d->%d"
-
-#~ msgid "loop %d should not have single exit (%d -> %d)"
-#~ msgstr "%d. döngü tek çıkış içermemeli (%d -> %d)"
-
-#~ msgid "insn %d inside basic block %d but block_for_insn is NULL"
-#~ msgstr "komut %d %d. temel blokun içinde ama block_for_insn NULL"
-
-#~ msgid "insn %d inside basic block %d but block_for_insn is %i"
-#~ msgstr "komut %d %d. temel blokun içinde ama block_for_insn %i"
-
-#~ msgid "bb prediction set for block %i, but it is not used in RTL land"
-#~ msgstr "blok %i için bb öngörüsü etkin, ama RTL arazisinde kullanılmamış"
-
-#~ msgid "node not found in DECL_ASSEMBLER_NAME hash"
-#~ msgstr "DECL_ASSEMBLER_NAME çırpısında düğüm yok"
-
-#~ msgid "coverage mismatch for function %u while reading execution counters"
-#~ msgstr "çalıştırma sayaçları okunurken %u. işlev için sarmalama çelişkisi"
-
-#~ msgid "%qs is corrupted"
-#~ msgstr "%qs bozulmuş"
-
-#~ msgid "ENTRY does not dominate bb %d"
-#~ msgstr "ENTRY bb %d için baskın değil"
-
-#~ msgid "DW_LOC_OP %s not implemented"
-#~ msgstr "DW_LOC_OP %s gerçeklenmedi"
-
-#~ msgid "incomplete '%s' option"
-#~ msgstr "tamamlanmamış '%s' seçeneği"
-
-#~ msgid "missing argument to '%s' option"
-#~ msgstr "'%s' seçeneğinin argümanı eksik"
-
-#~ msgid "extraneous argument to '%s' option"
-#~ msgstr "'%s' seçeneğinde fazladan argüman"
-
-#~ msgid "warning: use of obsolete %%[ operator in specs"
-#~ msgstr "UYARI: belirtimlerde %%[ işleci artik kullanılmıyor"
-
-#~ msgid "can't seek PCH file: %m"
-#~ msgstr "PCH dosyasında konumlama yapılamıyor: %m"
-
-#~ msgid "can't write PCH fle: %m"
-#~ msgstr "PCH dosyası yazılamıyor: %m"
-
-#~ msgid "fix_sched_param: unknown param: %s"
-#~ msgstr "fix_sched_param: bilinmeyen parametre: %s"
-
-#~ msgid "-Wuninitialized is not supported without -O"
-#~ msgstr "-Wuninitialized seçeneği -O olmaksızın desteklenmiyor"
-
-#~ msgid "-freorder-blocks-and-partition does not work with exceptions"
-#~ msgstr "-freorder-blocks-and-partition olağandışılıklarla çalışmaz"
-
-#~ msgid "-freorder-blocks-and-partition does not support unwind info"
-#~ msgstr "-freorder-blocks-and-partition birbirlerini etkilemeyenler bilgisini desteklemez"
-
-#~ msgid "-f[no-]force-mem is nop and option will be removed in 4.2"
-#~ msgstr "-f[no-]force-mem işlevsiz olup seçenek 4.2 sürümünde kalkacak"
-
-#~ msgid "corrupted profile info: run_max * runs < sum_max"
-#~ msgstr "bozuk profil bilgisi: run_max * runs < sum_max"
-
-#~ msgid "use of memory input without lvalue in asm operand %d is deprecated"
-#~ msgstr "asm terimi %d içindeki sol değersiz bellek girdisi kullanımı önerilmiyor"
-
-#~ msgid "%Hvalue computed is not used"
-#~ msgstr "%Hhesaplanan değer kullanılmadı"
-
-#~ msgid "type size can%'t be explicitly evaluated"
-#~ msgstr "tür boyutu doğrudan değerlendirilemez"
-
-#~ msgid "variable-size type declared outside of any function"
-#~ msgstr "değişken boyutu türü her işlevin dışında bildirilmiş"
-
-#~ msgid "%qs is deprecated (declared at %s:%d)"
-#~ msgstr "`%qs' önerilmiyor (%s:%d. satırında bildirilmiş)"
-
-#~ msgid "type is deprecated (declared at %s:%d)"
-#~ msgstr "tür önerilmiyor (%s:%d. satırında bildirilmiş)"
-
-#~ msgid "-ffunction-sections disabled; it makes profiling impossible"
-#~ msgstr "-ffunction-sections iptal edildi; ayrımlamayı mümkün kılmıyor"
-
-#~ msgid "-ffunction-sections may affect debugging on some targets"
-#~ msgstr "-ffunction-sections bazı hedeflerde hata ayıklamayı etkileyebilir"
-
-#~ msgid "unwind tables currently requires a frame pointer for correctness"
-#~ msgstr "birbirlerini etkilemeyenler tabloları doğruluk için bir çerçeve göstericisi gerektirmektedir"
-
-#~ msgid "%Hwill never be executed"
-#~ msgstr "%Hasla çalıştırılmayacak"
-
-#~ msgid "GIMPLE register modified with BIT_FIELD_REF"
-#~ msgstr "GIMPLE yazmacı BIT_FIELD_REF ile değiştirilmiş"
-
-#~ msgid "invariant not recomputed when ADDR_EXPR changed"
-#~ msgstr "ADDR_EXPR değişirken değişmez yeniden hesaplanmadı"
-
-#~ msgid "is not a valid GIMPLE statement"
-#~ msgstr "geçerli bir GIMPLE deyimi değil"
-
-#~ msgid "nonlocal label %s is not first in a sequence of labels in bb %d"
-#~ msgstr "yerel olmayan %s yaftası bb %d yafta dizisindeki ilk yafta değil"
-
-#~ msgid "label %s to block does not match in bb %d"
-#~ msgstr "blok yaftası %s bb %d içinde eşleşmiyor"
-
-#~ msgid "label %s has incorrect context in bb %d"
-#~ msgstr "%s yaftası bb %d içinde yanlış bağlama sahip"
-
-#~ msgid "label %s in the middle of basic block %d"
-#~ msgstr "%s yaftası %d. temel blokun ortasında"
-
-#~ msgid "structured COND_EXPR at the end of bb %d"
-#~ msgstr "bb %d sonunda yapılı COND_EXPR"
-
-#~ msgid "%<then%> label does not match edge at end of bb %d"
-#~ msgstr "%<then%> yaftası bb %d sonunda ayrıtla eşleşmiyor"
-
-#~ msgid "%<else%> label does not match edge at end of bb %d"
-#~ msgstr "%<else%> yaftası bb %d sonunda ayrıtla eşleşmiyor"
-
-#~ msgid "no default case found at end of case vector"
-#~ msgstr "case vektörünün sonunda default case yok"
-
-#~ msgid "EH edge %i->%i is missing"
-#~ msgstr "EH ayrıtı %i->%i eksik"
-
-#~ msgid "EH edge %i->%i miss EH flag"
-#~ msgstr "EH ayrıtı %i->%i EH bayrağını bulamıyor"
-
-#~ msgid "EH edge %i->%i has duplicated regions"
-#~ msgstr "EH ayrıtı %i->%i yinelenmiş bölgeler içeriyor"
-
-#~ msgid "mudflap checking not yet implemented for ARRAY_RANGE_REF"
-#~ msgstr "mudflap sinaması ARRAY_RANGE_REF için henüz gerçeklenmedi"
-
-#~ msgid "mudflap cannot track %qs in stub function"
-#~ msgstr "mudflap %qs'i koçan işlevinde izleyemiyor"
-
-#~ msgid "mudflap cannot track unknown size extern %qs"
-#~ msgstr "mudflap bilinmeyen boyutlu harici %qs'i izleyemiyor"
-
-#~ msgid "mudflap: this language is not supported"
-#~ msgstr "mudflap: bu dil desteklenmiyor"
-
-#~ msgid " Pending stmts not issued on PRED edge (%d, %d)\n"
-#~ msgstr " PRED ayrıtı (%d, %d) üzerinde çıktılanmayan deyimler bekletiliyor\n"
-
-#~ msgid " Pending stmts not issued on SUCC edge (%d, %d)\n"
-#~ msgstr " SUCC ayrıtı (%d, %d) üzerinde çıktılanmayan deyimler bekletiliyor\n"
-
-#~ msgid " Pending stmts not issued on ENTRY edge (%d, %d)\n"
-#~ msgstr " ENTRY ayrıtı (%d, %d) üzerinde çıktılanmayan deyimler bekletiliyor\n"
-
-#~ msgid " Pending stmts not issued on EXIT edge (%d, %d)\n"
-#~ msgstr " EXIT ayrıtı (%d, %d) üzerinde çıktılanmayan deyimler bekletiliyor\n"
-
-#~ msgid "%H%s"
-#~ msgstr "%H%s"
-
-#~ msgid "found real variable when subvariables should have appeared"
-#~ msgstr "alt değişkenlerin görünmesi gerekirken gerçek değişken bulundu"
-
-#~ msgid "non-addressable variable inside an alias set"
-#~ msgstr "bir rumuz kümesinde adreslenemeyen değişken"
-
-#~ msgid "addressable variable that is an alias tag but is not in any alias set"
-#~ msgstr "adreslenebilen değişken bir rumuz yaftası ama bir rumuz kümesinde değil"
-
-#~ msgid "verify_flow_insensitive_alias_info failed"
-#~ msgstr "verify_flow_insensitive_alias_info başarısız"
-
-#~ msgid "dereferenced pointers should have a name or a type tag"
-#~ msgstr "ilişkilendirilmiş göstericiler bir isim veya tür etiketine sahip olmalı"
-
-#~ msgid "pointers with a memory tag, should have points-to sets"
-#~ msgstr "bellek etiketli göstericiler, kümeleri göstermeli"
-
-#~ msgid "pointer escapes but its name tag is not call-clobbered"
-#~ msgstr "gösterici öncelemeleri ama isim etiketi çağrı taşırmalı değil"
-
-#~ msgid "verify_flow_sensitive_alias_info failed"
-#~ msgstr "verify_flow_sensitive_alias_info başarısız"
-
-#~ msgid "alias set of a pointer's type tag should be a superset of the corresponding name tag"
-#~ msgstr "bir göstericinin tür etiketinin rumuz kümesi karşı düştüğü isim etiketinin bir üst kümesi olmalı"
-
-#~ msgid "two different pointers with identical points-to sets but different name tags"
-#~ msgstr "özdeş gösterme kümeli iki farklı gösterici ama isim etiketleri farklı"
-
-#~ msgid "verify_name_tags failed"
-#~ msgstr "verify_name_tags başarısız"
-
-#~ msgid "statement makes a memory store, but has no V_MAY_DEFS nor V_MUST_DEFS"
-#~ msgstr "deyim bellekte bir saklama işlemi yapıyor ama ne V_MAY_DEFS ne de V_MUST_DEFS içeriyor"
-
-#~ msgid "statement makes aliased stores, but has no V_MAY_DEFS"
-#~ msgstr "deyim rumuzlu saklamalar yapıyor ama V_MAY_DEFS içermiyor"
-
-#, fuzzy
-#~ msgid "tree check: accessed elt %d of phi_node with %d elts in %s, at %s:%d"
-#~ msgstr "ağaç denetimi: %4$s dosyasının %5$d. satırında %3$s işlevinde %2$d öğelik phi_node'un %1$d. öğesine erişildi"
-
-#~ msgid "no-op convert from %wd to %wd bytes in initializer"
-#~ msgstr "ilklendiricide %wd bayttan %wd bayta no-op dönüşümü"
-
-#~ msgid "weak declaration of %q+D must precede definition"
-#~ msgstr "%q+D zayıf bildirimi tanımından önce olmalı"
-
-#~ msgid "%Jonly weak aliases are supported in this configuration"
-#~ msgstr "%Jbu yapılandırmada sadece zayıf takma adlar destekleniyor"
-
-#, fuzzy
-#~ msgid "virtual array %s[%lu]: element %lu out of bounds in %s, at %s:%d"
-#~ msgstr "sanal dizi %1$s[%2$lu]: %5$s dosyasının %6$d. satırında %4$s içindeki %3$lu. öğe sınırların dışında"
-
-#, fuzzy
-#~ msgid "vector %s %s domain error, in %s at %s:%u"
-#~ msgstr "%4$s:%5$u: %3$s işlevinde %1$s vektörü %2$s alanı hatası"
-
-#~ msgid "internal and protected visibility attributes not supported in this configuration; ignored"
-#~ msgstr "dahili ve korumalı görünürlük öznitelikleri bu yapılanmada desteklenmiyor; yoksayıldı"
-
-#~ msgid "profiler support for WindISS"
-#~ msgstr "WindISS için profilci desteği"
-
-#~ msgid "-f%s ignored for Unicos/Mk (not supported)"
-#~ msgstr "Unicos/Mk için -f%s yoksayıldı (desteklenmiyor)"
-
-#~ msgid "-mieee not supported on Unicos/Mk"
-#~ msgstr "Unicos/Mk üzerinde -mieee desteklenmiyor"
-
-#~ msgid "-mieee-with-inexact not supported on Unicos/Mk"
-#~ msgstr "-mieee-with-inexact Unicos/Mk üzerinde desteklenmiyor"
-
-#~ msgid "trap mode not supported on Unicos/Mk"
-#~ msgstr "Unicos/Mk üzerinde yakalama kipi desteklenmiyor"
-
-#~ msgid "bad value (%s) for %s switch"
-#~ msgstr "%s seçeneği için değer (%s) hatalı"
-
-#~ msgid "enabling caller interworking support is only meaningful when compiling for the Thumb"
-#~ msgstr "çağrıcı ile birlikte çalışma desteğinin etkinleştirilmesi sadece Thumb için derleme esnasında anlamlıdır"
-
-#~ msgid "invalid ABI option: -mabi=%s"
-#~ msgstr "geçersiz ABI seçeneği: -mabi=%s"
-
-#~ msgid "invalid floating point emulation option: -mfpe=%s"
-#~ msgstr "geçersiz gerçel değer öykünüm seçeneği: -mfpe=%s"
-
-#~ msgid "invalid floating point abi: -mfloat-abi=%s"
-#~ msgstr "geçersiz gerçel değer abi: -mfloat-abi=%s"
-
-#~ msgid "iWMMXt and hardware floating point"
-#~ msgstr "Donanım kayan nokta aritmetiği ve iWMMXt"
-
-#~ msgid "static variable %q+D is marked dllimport"
-#~ msgstr "statik değişken %q+D dllimport imli"
-
-#~ msgid "large frame pointer change (%d) with -mtiny-stack"
-#~ msgstr "-mtiny-stack ile büyük çerçeve göstericisi değişikliği (%d)"
-
-#~ msgid "%qs appears to be a misspelled interrupt handler"
-#~ msgstr "%qs imlası bozuk bir kesme eylemcisi gibi görünüyor"
-
-#~ msgid "`%s' attribute only applies to functions"
-#~ msgstr "%s özniteliği sadece işlevlere uygulanır"
-
-#~ msgid "missing '(' after '#pragma %s' - ignored"
-#~ msgstr "'#pragma %s' den sonra '(' eksik - yoksayıldı"
-
-#~ msgid "missing function name in '#pragma %s' - ignored"
-#~ msgstr "'#pragma %s' içinde işlev ismi eksik - yoksayıldı"
-
-#~ msgid "missing section name in '#pragma %s' - ignored"
-#~ msgstr "'#pragma %s' içinde bölüm ismi eksik - yoksayıldı"
-
-#~ msgid "missing ')' for '#pragma %s' - ignored"
-#~ msgstr "'#pragma %s' için ')' eksik - yoksayıldı"
-
-#~ msgid "ISR %s requires %d words of local vars, max is 32767"
-#~ msgstr "ISR %s yerel değişkenlerin %d sözcüğünü gerektiriyor, azamisi 32767"
-
-#~ msgid "that particular -g option is invalid with -maout and -melinux"
-#~ msgstr "-g seçeneği, -maout ve -melinux ile geçersiz"
-
-#~ msgid "Trampoline support for CRX"
-#~ msgstr "CRX için trampoline desteği"
-
-#~ msgid "bad value (%s) for -masm= switch"
-#~ msgstr "-masm= seçeneğinin değeri (%s) hatalı"
-
-#~ msgid "-mlarge-data-threshold=%d is negative"
-#~ msgstr "-mlarge-data-threshold=%d < 0"
-
-#~ msgid "bad value (%s) for -mtls-dialect= switch"
-#~ msgstr "-mtls-dialect= seçeneğinin değeri (%s) hatalı"
-
-#~ msgid "-malign-double makes no sense in the 64bit mode"
-#~ msgstr "-malıgn-double 64 bitlik kipte iş yapmaz"
-
-#~ msgid "-mrtd calling convention not supported in the 64bit mode"
-#~ msgstr "64 bitlik kipte -mrtd çağrı uzlaşımı desteklenmiyor"
-
-#~ msgid "bad value (%s) for -mfpmath= switch"
-#~ msgstr "-mfpmath= seçeneğinin değeri (%s) hatalı"
-
-#~ msgid "key method %q+D of dllimport'd class defined"
-#~ msgstr "dllimport'lu sınıfın %q+D anahtar yöntemi tanımlandı"
-
-#~ msgid "inconsistent dll linkage for %q+D, dllexport assumed"
-#~ msgstr "%q+D için tutarsız dll ilintilemesi: dllexport kabul edildi"
-
-#~ msgid "%qs declared as both exported to and imported from a DLL"
-#~ msgstr "%qs hem bir DLL'den alınan hem de bir DLL'e aktarılan olarak bildirilmiş"
-
-#~ msgid "%q+D causes a section type conflict"
-#~ msgstr "%q+D bir bölüm türü çelişkiye sebep oluyor"
-
-#~ msgid "bad value %<%s%> for -mtune= switch"
-#~ msgstr "-mtune= seçeneğinin değeri %<%s%> hatalı"
-
-#~ msgid "not yet implemented: latency-optimized inline square root"
-#~ msgstr "henüz gerçeklenmedi: gecikme eniyilemeli satıriçi karekök alma"
-
-#~ msgid "-f%s ignored for 68HC11/68HC12 (not supported)"
-#~ msgstr "68HC11/68HC12 için -f%s yoksayıldı (desteklenmiyor)"
-
-#~ msgid "%<trap%> and %<far%> attributes are not compatible, ignoring %<far%>"
-#~ msgstr "%<trap%> ve %<far%> öznitelikleri uyumlu değil, %<far%> yoksayılıyor"
-
-#~ msgid "%<trap%> attribute is already used"
-#~ msgstr "%<trap%> özelliği zaten kullanılmış"
-
-#~ msgid "generation of Branch Likely instructions enabled, but not supported by architecture"
-#~ msgstr "Branch Likely komutlarının üretimi etkin, ama mimari tarafından desteklemiyor"
-
-#~ msgid "-mips3d/-mpaired-single must be used with -mfp64 -mhard-float"
-#~ msgstr "-mips3d/-mpaired-single seçeneği -mfp64 -mhard-float ile kullanılmalı"
-
-#~ msgid "-mips3d/-mpaired-single must be used with -mips64"
-#~ msgstr "-mips3d/-mpaired-single seçeneği -mips64 ile kullanılmalı"
-
-#~ msgid "internal error: %%) found without a %%( in assembler pattern"
-#~ msgstr "iç hata: çevirici maskı içinde %%) için bir %%( bulunamadı"
-
-#~ msgid "internal error: %%] found without a %%[ in assembler pattern"
-#~ msgstr "iç hata: çevirici maskı içinde %%] için bir %%[ bulunamadı"
-
-#~ msgid "internal error: %%> found without a %%< in assembler pattern"
-#~ msgstr "iç hata: çevirici maskı içinde %%> için bir %%< bulunamadı"
-
-#~ msgid "internal error: %%} found without a %%{ in assembler pattern"
-#~ msgstr "iç hata: çevirici maskı içinde %%} için bir %%{ bulunamadı"
-
-#~ msgid "PRINT_OPERAND: unknown punctuation '%c'"
-#~ msgstr "PRINT_OPERAND: '%c' noktalaması bilinmiyor"
-
-#~ msgid "the cpu name must be lower case"
-#~ msgstr "işlemci ismi küçük harflerle yazılmalıdır"
-
-#~ msgid "info pointer NULL"
-#~ msgstr "info göstericisi NULL"
-
-#~ msgid "-munix=98 option required for C89 Amendment 1 features.\n"
-#~ msgstr "-munix=98 seçeneği C89'un 1. Düzeltmesindeki özellikler için gerekli.\n"
-
-#~ msgid "unknown -mtraceback arg %qs; expecting %<full%>, %<partial%> or %<none%>"
-#~ msgstr "-mtraceback ile verilen %qs bilinmiyor; %<full%>, %<partial%> veya %<none%> umuluyor"
-
-#~ msgid "unknown ABI specified: '%s'"
-#~ msgstr "bilinmeyen ABI belirtilmiş: '%s'"
-
-#~ msgid "unknown -malign-XXXXX option specified: '%s'"
-#~ msgstr "bilinmeyen -malign-XXXXX seçeneği belirtilmiş: '%s'"
-
-#~ msgid "-maix64 and POWER architecture are incompatible"
-#~ msgstr "-maix64 ile POWER mimarisi uyumsuz"
-
-#~ msgid "-fpic is not supported; -fPIC assumed"
-#~ msgstr "-fpic desteklenmiyor; -fPIC varsayıldı"
-
-#~ msgid "-m64 not supported in this configuration"
-#~ msgstr "-m64 bu yapılandırmada desteklenmiyor"
-
-#~ msgid "RETURN_ADDRESS_OFFSET not supported"
-#~ msgstr "RETURN_ADDRESS_OFFSET desteklenmiyor"
-
-#~ msgid "-mcall-aixdesc must be big endian"
-#~ msgstr "-mcall-aixdesc kıymetli baytın başta olduğu sıralamaya sahip olmalı"
-
-#~ msgid "-msoft-float and -mlong-double-128 not supported"
-#~ msgstr "-msoft-float ve -mlong-double-128 desteklenmiyor"
-
-#~ msgid "-mstack-size implies use of -mstack-guard"
-#~ msgstr "-mstack-size, -mstack-guard uyguluyor"
-
-#~ msgid " bytes"
-#~ msgstr " bayttır"
-
-#~ msgid "function %q+D is defined after prior declaration as dllimport: attribute ignored"
-#~ msgstr "%q+D işlevi önceki bildiriminden sonra dllimport olarak tanımlanmış: öznitelik yoksayıldı"
-
-#~ msgid "inline function %q+D is declared as dllimport: attribute ignored"
-#~ msgstr "%q+D satıriçi işlevi dllimport olarak bildirilmiş: öznitelik yoksayıldı."
-
-#~ msgid "failure in redeclaration of %q+D: dllimport'd symbol lacks external linkage"
-#~ msgstr "%q+D için yeniden bildirim başarısız: harici ilintileme yokluğunda dllimport'lu simge"
-
-#~ msgid "%s %q+D %s after being referenced with dllimport linkage"
-#~ msgstr "dllimport ilintileme ile ilişkilendirildikten sonra %s %q+D %s"
-
-#~ msgid "constant arithmetic operand out of range"
-#~ msgstr "sabit aritmetik terim aralık dışında"
-
-#~ msgid "missing argument to \"-%s\""
-#~ msgstr "\"-%s\" seçeneğinin argümanı eksik"
-
-#~ msgid "unable to call pointer to member function here"
-#~ msgstr "buradan üye işlev göstericisi çağrılamaz"
-
-#~ msgid "%qE has type %<void%> and is not a throw-expression"
-#~ msgstr "%qE %<void%> türünde ve bir yakalama-ifadesi değil"
-
-#, fuzzy
-#~ msgid "passing %qT for argument %P to %qD"
-#~ msgstr "%3$qD işlevinin %2$P argümanı için %1$qT aktarılması"
-
-#~ msgid "field %q+D in local class cannot be static"
-#~ msgstr "yerel sınıf içindeki %q+D alanı static olamaz"
-
-#~ msgid "offset of empty base %qT may not be ABI-compliant and maychange in a future version of GCC"
-#~ msgstr "boş %qT tabanının göreli konumu ABI-uyumlu olmayabilir ve bu GCC'nin gelecek sürümünde değişebilir"
-
-#~ msgid "class %qT will be considered nearly empty in a future version of GCC"
-#~ msgstr "%qT sınıfı GCC'nin gelecek sürümünde neredeyse boş sayılacak"
-
-#~ msgid "offset of virtual base %qT is not ABI-compliant and may change in a future version of GCC"
-#~ msgstr "sanal %qT tabanının göreli konumu ABI-uyumlu değil ve bu GCC'nin gelecek sürümünde değişebilir"
-
-#~ msgid "size assigned to %qT may not be ABI-compliant and may change in a future version of GCC"
-#~ msgstr "%qT türüne atanan boyut ABI-uyumlu olmayabilir ve bu GCC'nin gelecek sürümünde değişebilir"
-
-#~ msgid "the offset of %qD may not be ABI-compliant and may change in a future version of GCC"
-#~ msgstr "%qD alanının göreli konumu ABI-uyumlu olmayabilir ve bu GCC'nin gelecek sürümünde değişebilir"
-
-#~ msgid "%q+D contains empty classes which may cause base classes to be placed at different locations in a future version of GCC"
-#~ msgstr "%q+D alanı GCC'nin gelecek sürümünde taban sınıfların farklı yere konmasına sebep olabilecek boş sınıfları içeriyor"
-
-#~ msgid "layout of classes derived from empty class %qT may change in a future version of GCC"
-#~ msgstr "boş %qT sınıfından türetilmiş sınıf yerleşimi GCC'nin gelecek sürümünde değişebilir"
-
-#~ msgid "continue statement not within loop or switch"
-#~ msgstr "continue deyimi switch ya da döngü içinde değil"
-
-#~ msgid "pointer to member cast from %qT to %qT is via virtual base"
-#~ msgstr "%qT türünden %qT türüne üye göstericisi tür dönüşümü sanal taban üzerindendir"
-
-#~ msgid "object of incomplete type %qT will not be accessed in %s"
-#~ msgstr "içi boş %qT türünden nesne, %s içinde erişilir olmayacak"
-
-#~ msgid "object of type %qT will not be accessed in %s"
-#~ msgstr "%qT türünden nesne, %s içinde erişilir olmayacak"
-
-#~ msgid "%s has no effect"
-#~ msgstr "%s  bir etkiye sahip değil"
-
-#~ msgid "new declaration %q#D"
-#~ msgstr "yeni %q#D bildirimi"
-
-#~ msgid "%q+D has a previous declaration as %q#D"
-#~ msgstr "%q+D evvelce %q#D olarak bildirilmiş"
-
-#~ msgid "declaration of namespace %qD conflicts with"
-#~ msgstr "isim alanı bildirimi %qD"
-
-#~ msgid "%q#D was used before it was declared inline"
-#~ msgstr "%q#D inline olarak bildirilmeden önce"
-
-#~ msgid "%Jprevious non-inline declaration here"
-#~ msgstr "%Jburada önceki inline olmayan bildirimde kullanılmış"
-
-#~ msgid "%Jconflicts with previous declaration here"
-#~ msgstr "%Jburadaki önceki bildirimiyle çelişiyor"
-
-#~ msgid "%H  from here"
-#~ msgstr "%H  buradan"
-
-#~ msgid "  enters scope of non-POD %q+#D"
-#~ msgstr "  POD olmayan %q+#D etki alanına giriyor"
-
-#~ msgid "%J  enters catch block"
-#~ msgstr "%J  catch blokuna giriliyor"
-
-#~ msgid "%q#D is not a static member of %q#T"
-#~ msgstr "%q#D bildirimi %q#T bağlamının bir static üyesi değildir"
-
-#~ msgid "template header not allowed in member definition of explicitly specialized class"
-#~ msgstr "açıkça özelleştirilmiş sınıfın üye tanımında şablon başlığına izin verilmez"
-
-#~ msgid "ISO C++ forbids use of initializer list to initialize reference %qD"
-#~ msgstr "ISO C++ %qD başvurusunu ilklendirmek için ilklendirici listesi kullanımına izin vermez"
-
-#~ msgid "storage size of %qD isn't known"
-#~ msgstr "%qD bildiriminin saklama boyutu bilinmiyor"
-
-#~ msgid "storage size of %qD isn't constant"
-#~ msgstr "%qD bildiriminin saklama boyutu sabit değil"
-
-#~ msgid "variable-sized object %qD may not be initialized"
-#~ msgstr "değişken-boyutlu nesne %qD ilklendirilmemiş olabilir"
-
-#~ msgid "structure %qD with uninitialized const members"
-#~ msgstr "ilklendirmesiz sabit üyelerle %qD yapısı"
-
-#~ msgid "structure %qD with uninitialized reference members"
-#~ msgstr "ilklendirmesiz referans üyelerle %qD yapısı"
-
-#~ msgid "cannot initialize %qD to namespace %qD"
-#~ msgstr "%qD %qD isim alanına ilklendirilemez"
-
-#~ msgid "%qD is thread-local and so cannot be dynamically initialized"
-#~ msgstr "%qD evreye yerel olup özdevimli ilklendirilemez"
-
-#~ msgid "%qD cannot be initialized by a non-constant expression when being declared"
-#~ msgstr "%qD bildirilirken bir sabit olmayan ifade tarafından ilklendirilemez"
-
-#~ msgid "non-local function %q#D uses anonymous type"
-#~ msgstr "yerel olmayan işlev %q#D anonim tür kullanıyor"
-
-#~ msgid "non-local function %q#D uses local type %qT"
-#~ msgstr "yerel olmayan işlev %q#D yerel %qT türünü kullanıyor"
-
-#~ msgid "non-local variable %q#D uses anonymous type"
-#~ msgstr "yerel olmayan değişken %q#D anonim tür kullanıyor"
-
-#~ msgid "non-local variable %q#D uses local type %qT"
-#~ msgstr "yerel olmayan değişken %q#D yerel %qT türünü kullanıyor"
-
-#~ msgid "creating %s"
-#~ msgstr "%s oluşturuluyor"
-
-#~ msgid "operator %qT declared to return %qT"
-#~ msgstr "%qT işleci %qT döndürecek şekilde bildirilmiş"
-
-#~ msgid "long or short specified with floating type for %qs"
-#~ msgstr "%qs için gerçel sayı türle long veya short belirtilmiş"
-
-#~ msgid "can't make %qD into a method -- not in a class"
-#~ msgstr "bir yönteme %qD yapılamaz -- sınıf içinde değil"
-
-#~ msgid "  in instantiation of template %qT"
-#~ msgstr "  şablon %qT örnekleniminde"
-
-#~ msgid "ISO C++ forbids initialization of member %qD"
-#~ msgstr "ISO C++  %qD üye ilklendirmesine izin vermez"
-
-#~ msgid "making %qD static"
-#~ msgstr "%qD static yapılıyor"
-
-#~ msgid "enumerator value for %qD not integer constant"
-#~ msgstr "%qD için simgesel sabitin değeri tamsayı sabit değil"
-
-#~ msgid "field initializer is not constant"
-#~ msgstr "alan ilklendirici sabit değil"
-
-#~ msgid "%qT is not an aggregate type"
-#~ msgstr "%qT bir küme türü değil"
-
-#~ msgid "qualified type %qT does not match destructor name %<~%T%>"
-#~ msgstr "yetkin tür %qT, yıkıcı ismi %<~%T%> ile eşlesmiyor"
-
-#~ msgid "%qD is not a member of type %qT"
-#~ msgstr "%qD %qT türünde bir üye değil"
-
-#~ msgid "zero size array reserves no space"
-#~ msgstr "sıfır boyutlu dizi için yer ayrılmaz"
-
-#~ msgid "ISO C++ forbids initialization in array new"
-#~ msgstr "ISO C++ array new içinde ilklendirmeye izin vermez"
-
-#~ msgid "call_expr cannot be mangled due to a defect in the C++ ABI"
-#~ msgstr "çağrı ifadesi C++ ABI'deki bir bozukluktan dolayı anlamlandırılamıyor"
-
-#~ msgid "zero-operand casts cannot be mangled due to a defect in the C++ ABI"
-#~ msgstr "terimsiz tür dönüşümleri C++ ABI'deki bir bozukluktan dolayı anlamlandırılamıyor"
-
-#~ msgid "vtable layout for class %qT may not be ABI-compliantand may change in a future version of GCC due to implicit virtual destructor"
-#~ msgstr "sınıf %qT için vtable yerleşimi ABI-uyumlu olmayabilir ve bu GCC'nin gelecek sürümünde örtük sanal yıkıcıdan dolayı değişebilir"
-
-#~ msgid "declaration of %qD shadows a member of 'this'"
-#~ msgstr "%qD bildirimi bir `this' üyesini gölgeliyor"
-
-#~ msgid "using declaration %qD introduced ambiguous type %qT"
-#~ msgstr "using bildirimi %qD belirsiz %qT türünü öne sürüyor"
-
-#~ msgid "%<%T::%D%> names constructor"
-#~ msgstr "%<%T::%D%> kurucu isimlendiriyor"
-
-#~ msgid "%qD denotes an ambiguous type"
-#~ msgstr "%qD bir belirsiz tür gösteriyor"
-
-#~ msgid "%J  first type here"
-#~ msgstr "%J  ilk tür burada"
-
-#~ msgid "%<%D::%D%> is not a template"
-#~ msgstr "%<%D::%D%> bir şablon değil"
-
-#~ msgid "%qD undeclared in namespace %qD"
-#~ msgstr "%qD isim alanı %qD içinde bildirimsiz"
-
-#~ msgid "minimum/maximum operators are deprecated"
-#~ msgstr "minimum/maximum işleçleri önerilmiyor"
-
-#~ msgid "%<%D::%D%> %s"
-#~ msgstr "%<%D::%D%> %s"
-
-#~ msgid "%<::%D%> %s"
-#~ msgstr "%<::%D%> %s"
-
-#~ msgid "%qD %s"
-#~ msgstr "%qD %s"
-
-#~ msgid "using %<typename%> outside of template"
-#~ msgstr "şablon dışında %<typename%> kullanımı"
-
-#~ msgid "%Hextra %<;%>"
-#~ msgstr "%Hfazladan %<;%>"
-
-#, fuzzy
-#~ msgid "used %d template parameter(s) instead of %d"
-#~ msgstr "%2$d yerine %1$d şablon parametresi kullanılmış"
-
-#~ msgid "%qE is not a valid template argument for type %qT because function %qD has not external linkage"
-#~ msgstr "%qE %qT türü için geçerli bir şablon argümanı değil çünkü %qD işlevinin harici ilintilemesi yok"
-
-#~ msgid "%qE is not a valid template argument for type %qT because it is a non-constant expression"
-#~ msgstr "%qE %qT türü için geçerli bir şablon argümanı değil çünkü o bir sabit olmayan ifadedir"
-
-#~ msgid "instantiation of %q+D as type %qT"
-#~ msgstr "%q+D örneklenimi %qT türünde"
-
-#~ msgid "creating array with negative size (%qE)"
-#~ msgstr "negatif boyutlu dizi oluşturma (%qE)"
-
-#~ msgid "%s %+#T"
-#~ msgstr "%s %+#T"
-
-#~ msgid "deprecated covariant return type for %q+#D"
-#~ msgstr "%q+#D için ortak değişen dönüş türü kullanımı artık önerilmiyor"
-
-#~ msgid "object missing in reference to %q+D"
-#~ msgstr "%q+D ile ilişkilendirmede nesne eksik"
-
-#~ msgid "invalid use of %qD as a default value for a template template-parameter"
-#~ msgstr "bir şablonun şablon parametresi için öntanımlı değer olarak %qD kullanımı geçersiz"
-
-#~ msgid "base class %qT has cv qualifiers"
-#~ msgstr "taban sınıf %qT cv niteleyiciler içeriyor"
-
-#~ msgid "  %q+#D declared here"
-#~ msgstr "  %q+#D burada bildirilmiş"
-
-#~ msgid "(perhaps the %<offsetof%> macro was used incorrectly)"
-#~ msgstr "(belkide %<offsetof%> makrosu yanlış kullanıldı)"
-
-#~ msgid "%qD has no member named %qE"
-#~ msgstr "%qD %qE isimli üyeye sahip değil"
-
-#~ msgid "ISO C++ forbids subscripting non-lvalue array"
-#~ msgstr "ISO C++ sol yan olmayan dizi indislemesine izin vermez"
-
-#~ msgid "at this point in file"
-#~ msgstr "dosyanın burasında"
-
-#~ msgid "division by zero in %<%E / 0%>"
-#~ msgstr "%<%E / 0%> sıfırla bölme"
-
-#~ msgid "division by zero in %<%E / 0.%>"
-#~ msgstr "%<%E / 0.%> sıfırla bölme"
-
-#~ msgid "division by zero in %<%E %% 0%>"
-#~ msgstr "%<%E %% 0.%> sıfırla bölme"
-
-#~ msgid "division by zero in %<%E %% 0.%>"
-#~ msgstr "%<%E %% 0.%> sıfırla bölme"
-
-#~ msgid "cast to non-reference type used as lvalue"
-#~ msgstr "sol taraf terimi olarak kullanılmış başvuru olmayan türe dönüşüm"
-
-#~ msgid "invalid use of %<--%> on bool variable %qD"
-#~ msgstr "bool değişken %qD üstünde %<--%> kullanımı geçersiz"
-
-#~ msgid "ISO C++ forbids assignment of arrays"
-#~ msgstr "ISO C++ dizilerin değer atanarak bildirimine izin vermez"
-
-#~ msgid "pointer to member cast via virtual base %qT"
-#~ msgstr "sanal taban %qT üzerinden üye göstericisine dönüşüm"
-
-#~ msgid "%s might be a candidate for a format attribute"
-#~ msgstr "%s biçim özniteliği için bir aday olabilir"
-
-#~ msgid "%J  since type %qT has pure virtual functions"
-#~ msgstr "%J%qT türü pure sanal işlevlere sahip olduğundan"
-
-#~ msgid "cannot initialize arrays using this syntax"
-#~ msgstr "bu sözdizimi kullanilarak diziler ilklendirilemez"
-
-#~ msgid "member %qD with uninitialized const fields"
-#~ msgstr "uye %qD ilklendirilmemiş sabit alanli"
-
-#~ msgid "union %qT with no named members cannot be initialized"
-#~ msgstr "union %qT isimli üyeler yokken ilklendirilemez"
-
-#~ msgid "Unexpected type in truthvalue_conversion"
-#~ msgstr "truthvalue_conversion içinde umulmadık tür"
-
-#~ msgid "global register variable %qs used in nested function"
-#~ msgstr "genel yazmaç değişkeni %qs yuvalanmış işlevde kullanılmış"
-
-#~ msgid "register variable %qs used in nested function"
-#~ msgstr "yazmaç değişkeni %qs yuvalanmış işlevde kullanılmış"
-
-#~ msgid "address of global register variable %qs requested"
-#~ msgstr "%qs genel yazmaç değişkeninin adresi istenmis"
-
-#~ msgid "address of register variable %qs requested"
-#~ msgstr "%qs yazmaç değişkeninin adresi istendi"
-
-#~ msgid "Possible frontend bug: array constructor not expanded"
-#~ msgstr "Olası önyüz hatası: dizi kurucu genişletilmedi"
-
-#~ msgid "module symbol %s in wrong namespace"
-#~ msgstr "modül simgesi %s yanlış isim alanında"
-
-#~ msgid "unused variable %qs"
-#~ msgstr "%qs değişkeni kullanilmadı"
-
-#~ msgid "gfc_todo: Not Implemented: "
-#~ msgstr "gfc_todo: Gerçeklenmedi: "
-
-#~ msgid "Can't reassign a value to the final variable %qs"
-#~ msgstr "Bitiş değişkeni %qs'e yeniden bir değer atanamaz"
-
-#~ msgid "internal error in check-init: tree code not implemented: %s"
-#~ msgstr "check-init içinde hata: ağaç kodu gerçeklenmedi: %s"
-
-#~ msgid "%Jfinal field %qD may not have been initialized"
-#~ msgstr "%J son alan '%qD' ilklendirilmiş olmayabilir"
-
-#~ msgid "declaration of %qs shadows a parameter"
-#~ msgstr "%qs bildirimi bir parametreyi gölgeliyor"
-
-#~ msgid "declaration of %qs shadows a symbol from the parameter list"
-#~ msgstr "%qs bildirimi parametre listesinden bir simgeyi gölgeliyor"
-
-#~ msgid "assignment to final static field %q+D not in class initializer"
-#~ msgstr "bitiş statik alanı %q+D ataması sınıf ilklendiricisi içinde değil"
-
-#~ msgid "assignment to final field %q+D not in constructor"
-#~ msgstr "bitiş alanı %q+D ataması kurucu içinde değil"
-
-#~ msgid "static field has same name as method"
-#~ msgstr "static alan yöntemle aynı isimde"
-
-#~ msgid "parse error while reading %s"
-#~ msgstr "%s okunurken çözümleme hatası"
-
-#~ msgid "unparseable signature: '%s'"
-#~ msgstr "çözümlenebilir olmayan imza: '%s'"
-
-#~ msgid "Not a valid Java .class file."
-#~ msgstr "Geçerli bir Java .class dosyası değil."
-
-#~ msgid "error in constant pool entry #%d"
-#~ msgstr "sabit havuzu girdisi #%d de hata"
-
-#~ msgid "class is of array type\n"
-#~ msgstr "sınıf dizi türünde\n"
-
-#~ msgid "base class is of array type"
-#~ msgstr "temel sınıf dizi türünde"
-
-#~ msgid "no classes specified"
-#~ msgstr "hiç sınıf belirtilmemiş"
-
-#~ msgid "'-MG' option is unimplemented"
-#~ msgstr "'-MG' seçeneği gerçeklenmedi"
-
-#~ msgid "can't specify both -o and -MD"
-#~ msgstr "hem -MD hem de -o belirtilemez"
-
-#~ msgid "%s: no such class"
-#~ msgstr "%s: böyle bir sınıf yok"
-
-#~ msgid "source file for class %qs is newer than its matching class file.  Source file %qs used instead"
-#~ msgstr "sınıf %qs için kaynak dosyası onunla eşleşen sınıf dosyasından daha yeni. Yerine kaynak dosyası %qs kullanıldı"
-
-#~ msgid "can't reopen %s: %m"
-#~ msgstr "%s tekrar açılamıyor: %m"
-
-#~ msgid "can't close %s: %m"
-#~ msgstr "%s kapatılamıyor: %m"
-
-#~ msgid "the %<java.lang.Object%> that was found in %qs didn't have the special zero-length %<gnu.gcj.gcj-compiled%> attribute.  This generally means that your classpath is incorrectly set.  Use %<info gcj \"Input Options\"%> to see the info page describing how to set the classpath"
-#~ msgstr "%qs içinde bulunan %<java.lang.Object%> özel sıfır uzunluklu %<gnu.gcj.gcj-compiled%> özniteliğine sahip değildi. Bu genel olarak sınıf yolunuzun yanlış ayarlandığı anlamına gelir. classpath'ın nasıl ayarlandığını açıklayan bilgi sayfasını görmek için %<info gcj \"Input Options\"%> kullanınız."
-
-#~ msgid "internal error in generate_bytecode_insn - tree code not implemented: %s"
-#~ msgstr "generate_bytecode_insn içinde hata - ağaç kodu oluşturulamadı: %s"
-
-#~ msgid "can't open %s for writing: %m"
-#~ msgstr "%s yazmak için açılamıyor: %m"
-
-#~ msgid "can't create %s: %m"
-#~ msgstr "%s oluşturulamıyor: %m"
-
-#~ msgid "only one of '--print-main', '--list-class', and '--complexity' allowed"
-#~ msgstr "`--print-main', `--list-class' ve `--complexity' seçeneklerinden yalnız biri kullanılabilir"
-
-#~ msgid "can't open output file '%s'"
-#~ msgstr "çıktı dosyası `%s' açılamıyor"
-
-#~ msgid "file not found '%s'"
-#~ msgstr "dosya yok `%s'"
-
-#~ msgid ""
-#~ "unknown encoding: %qs\n"
-#~ "This might mean that your locale's encoding is not supported\n"
-#~ "by your system's iconv(3) implementation.  If you aren't trying\n"
-#~ "to use a particular encoding for your input file, try the\n"
-#~ "%<--encoding=UTF-8%> option"
-#~ msgstr ""
-#~ "bilinmeyen kodlama: %qs\n"
-#~ "Yerelinizin kodlamasının sisteminizdeki iconv(3) tarafından desteklenmediği\n"
-#~ "anlamına gelmektedir. Eğer girdi dosyanızda özellikle bir kodlama kullanmanız\n"
-#~ "gerekiyorsa %<--encoding=UTF-8%> seçeneğini kullanmayı deneyin."
-
-#~ msgid "internal error - bad unget"
-#~ msgstr "iç hata - unget hatalı"
-
-#~ msgid "%s method can't be abstract"
-#~ msgstr "%s yöntemi soyut olmayabilir"
-
-#~ msgid "Incompatible type for %qs. Can't convert %qs to boolean"
-#~ msgstr "%qs için tür uyumsuz. %qs mantıksal türe dönüştürülemez"
-
-#~ msgid "Incompatible type for %qs. Can't convert %qs to numeric type"
-#~ msgstr "%qs için tür uyumsuz. %qs sayısal türe dönüştürülemez"
-
-#~ msgid "Incompatible type for %qs. Explicit cast needed to convert %qs to integral"
-#~ msgstr "%qs için tür uyumsuz. %qs'in tümleyene dönüştürülebilmesi için alenen tür dönüşümü gerekir"
-
-#~ msgid "Incompatible type for %qs. Can't convert %qs to integral"
-#~ msgstr "%qs için tür uyumsuz. %qs tümleyene dönüştürülemez"
-
-#~ msgid "Variable %qs may not have been initialized"
-#~ msgstr "Değişken %qs ilklendirilmiş olmayabilir"
-
-#~ msgid "%HDuplicate name %q.*s."
-#~ msgstr "%H yinelenmiş isim %q.*s"
-
-#~ msgid "Global register variable %qD used in nested function."
-#~ msgstr "Genel yazmaç değişkeni %qD yuvalanmış işlevde kullanılmış."
-
-#~ msgid "Register variable %qD used in nested function."
-#~ msgstr "Yazmaç değişkeni %qD yuvalanmış işlevde kullanılmış."
-
-#~ msgid "Address of global register variable %qD requested."
-#~ msgstr "%qD genel yazmaç değişkeninin adresi istendi."
-
-#~ msgid "Address of register variable %qD requested."
-#~ msgstr "%qD yazmaç değişkeninin adresi istendi."
-
-#~ msgid "%qD attribute ignored"
-#~ msgstr "%qD özniteliği yoksayıldı"

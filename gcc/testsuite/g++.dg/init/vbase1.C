@@ -1,4 +1,5 @@
 // PR c++/50618
+// { dg-options "-fdump-rtl-expand" }
 // { dg-do run }
 
 struct Base
@@ -37,3 +38,8 @@ int main(int, char**)
     Diamond x(2);
     x.printText();
 }
+
+// Verify that the SubB() mem-initializer is storing 0 directly into
+// this->D.whatever rather than into a stack temp that is then copied into the
+// base field.
+// { dg-final { scan-rtl-dump "set \[^\n\]*\n\[^\n\]*this\[^\n\]*\n\[^\n\]*const_int 0" "expand" } }

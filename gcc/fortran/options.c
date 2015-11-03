@@ -21,20 +21,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
-#include "options.h"
+#include "gfortran.h"
+#include "diagnostic.h"	/* For global_dc.  */
+#include "alias.h"
 #include "flags.h"
 #include "intl.h"
 #include "opts.h"
 #include "toplev.h"  /* For save_decoded_options.  */
 #include "params.h"
 #include "tree-inline.h"
-#include "gfortran.h"
-#include "target.h"
 #include "cpp.h"
-#include "diagnostic.h"	/* For global_dc.  */
-#include "tm.h"
 #include "langhooks.h"
 
 gfc_option_t gfc_option;

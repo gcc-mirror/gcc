@@ -20,34 +20,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
 #include "ssa.h"
-#include "options.h"
+#include "cgraph.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "flags.h"
-#include "internal-fn.h"
-#include "gimple-fold.h"
-#include "gimple-iterator.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-dfa.h"
 #include "builtins.h"
 #include "dumpfile.h"
-#include "target.h"
-#include "cgraph.h"
-#include "generic-match.h"
 
 
 /* Routine to determine if the types T1 and T2 are effectively
@@ -70,6 +54,15 @@ types_match (tree t1, tree t2)
 
 static inline bool
 single_use (tree t ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+/* Return true if math operations should be canonicalized,
+   e.g. sqrt(sqrt(x)) -> pow(x, 0.25).  */
+
+static inline bool
+canonicalize_math_p ()
 {
   return true;
 }

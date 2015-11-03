@@ -21,18 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "dumpfile.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "alias.h"
-#include "tree.h"
 #include "rtl.h"
+#include "cfghooks.h"
+#include "timevar.h"
+#include "pretty-print.h"
+#include "diagnostic-core.h"
+#include "dumpfile.h"
 #include "cfganal.h"
 #include "tree-ssa.h"
-#include "timevar.h"
-#include "diagnostic-core.h"
 #include "cfgloop.h"
-#include "pretty-print.h"
 
 /* A pointer to one of the hooks containers.  */
 static struct cfg_hooks *cfg_hooks;
@@ -533,7 +531,7 @@ split_block_1 (basic_block bb, void *i)
 }
 
 edge
-split_block (basic_block bb, gimple i)
+split_block (basic_block bb, gimple *i)
 {
   return split_block_1 (bb, i);
 }

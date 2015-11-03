@@ -1302,9 +1302,9 @@ begin
            Pragma_Check_Float_Overflow           |
            Pragma_Check_Name                     |
            Pragma_Check_Policy                   |
-           Pragma_CIL_Constructor                |
            Pragma_Compile_Time_Error             |
            Pragma_Compile_Time_Warning           |
+           Pragma_Constant_After_Elaboration     |
            Pragma_Contract_Cases                 |
            Pragma_Convention_Identifier          |
            Pragma_CPP_Class                      |
@@ -1376,8 +1376,6 @@ begin
            Pragma_Interrupt_State                |
            Pragma_Interrupt_Priority             |
            Pragma_Invariant                      |
-           Pragma_Java_Constructor               |
-           Pragma_Java_Interface                 |
            Pragma_Keep_Names                     |
            Pragma_License                        |
            Pragma_Link_With                      |
@@ -1423,6 +1421,7 @@ begin
            Pragma_Pre                            |
            Pragma_Precondition                   |
            Pragma_Predicate                      |
+           Pragma_Predicate_Failure              |
            Pragma_Preelaborate                   |
            Pragma_Pre_Class                      |
            Pragma_Priority                       |
@@ -1488,6 +1487,7 @@ begin
            Pragma_Volatile                       |
            Pragma_Volatile_Components            |
            Pragma_Volatile_Full_Access           |
+           Pragma_Volatile_Function              |
            Pragma_Warning_As_Error               |
            Pragma_Weak_External                  |
            Pragma_Validity_Checks                =>

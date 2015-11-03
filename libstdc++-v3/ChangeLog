@@ -1,3 +1,368 @@
+2015-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (__invoke_impl): New overloads.
+	(__invoke): Replace with a single function calling __invoke_impl.
+	(invoke): Add C++17 std::invoke.
+	(reference_wrapper::operator()): Qualify call to __invoke.
+	(_Mem_fn_traits_base, _Mem_fn_traits): Remove unused typedefs.
+	(_Mem_fn_base): Remove unused typedefs and implement call operator in
+	terms of __invoke.
+	* include/std/future (__future_base::_Async_state_commonV2): Do not
+	pass reference_wrapper as object argument to call_once.
+	* include/std/type_traits (result_of): Define nested __invoke_type.
+	Handle reference_wrapper as per LWG 2219.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error directives.
+	* testsuite/20_util/function_objects/mem_fn/55463.cc: Remove tests
+	using member functions of reference_wrapper.
+
+2015-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (async): Use deferred function on exception.
+	* testsuite/30_threads/async/except.cc: New.
+
+2015-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__cpp_lib_bool_constant): Define.
+
+2015-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/configure.xml: Document
+	--enable-libstdcxx-filesystem-ts option.
+	* doc/xml/manual/status_cxx2014.xml: Document libstdc++fs.a.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/html/*: Regenerate.
+
+2015-10-16  Aurelio Remonda  <aurelio.remonda@tallertechnologies.com>
+
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Change variable
+	N from const int N = 200000 to const unsigned int N = 10000.
+	Delete useless fill_ascending function call.
+
+2015-10-15  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++-dg-test): Check for
+	unsupported compiler output.
+
+2015-10-13  Nathan Froyd  <froydnj@gcc.gnu.org>
+
+	* config/cpu/i486/opt/bits/opt_random.h: Include pmmintrin.h instead
+	of x86intrin.h, and only do so when __SSE3__
+	* include/ext/random: Include emmintrin.h instead of x86intrin.h
+
+2015-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* crossconfig.m4 (GLIBCXX_CROSSCONFIG) <*-linux* | *-uclinux* |
+	*-gnu* | *-kfreebsd*-gnu | *-knetbsd*-gnu | *-cygwin*>: Check for
+	__cxa_thread_atexit_impl.
+	* configure: Regenerate.
+
+2015-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/erase_if.h: Move to ...
+	* include/experimental/bits/erase_if.h: New.
+	* include/experimental/fs_dir.h: Move to ...
+	* include/experimental/bits/fs_dir.h: New.
+	* include/experimental/fs_fwd.h: Move to ...
+	* include/experimental/bits/fs_fwd.h: New.
+	* include/experimental/fs_ops.h: Move to ...
+	* include/experimental/bits/fs_ops.h: New.
+	* include/experimental/fs_path.h: Move to ...
+	* include/experimental/bits/fs_path.h: New.
+	* include/experimental/string_view.tcc: Move to ...
+	* include/experimental/bits/string_view.tcc: New.
+	* include/Makefile.am: Add include/experimental/bits sub-directory.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/filesystem: Adjust includes.
+	* include/experimental/map: Likewise.
+	* include/experimental/set: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/experimental/unordered_map: Likewise.
+	* include/experimental/unordered_set: Likewise.
+
+2015-10-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR 67844.
+	* include/std/tuple (_TC::_NonNestedTuple): Eagerly reject
+	conversions from tuple types same as the target tuple.
+	* testsuite/20_util/tuple/67844.cc: New.
+	* testsuite/20_util/tuple/cons/nested_tuple_construct.cc: Add
+	a missing copyright header.
+
+2015-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter): Remove support
+	for _Manager_alloc.
+
+	* src/c++98/locale.cc: Fix comment.
+	* src/c++98/locale_init.cc: Likewise.
+
+	* testsuite/21_strings/basic_string/literals/types.cc: Guard use of
+	wchar_t with _GLIBCXX_USE_WCHAR_T.
+	* testsuite/21_strings/basic_string/literals/values.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/citerators.cc:
+	Likewise.
+	* testsuite/22_locale/messages/13631.cc: Likewise.
+	* testsuite/experimental/string_view/literals/types.cc: Likewise.
+	* testsuite/experimental/string_view/literals/values.cc: Likewise.
+
+	* src/filesystem/Makefile.am: Add cxx11_abi_sources.
+	* src/filesystem/Makefile.in: Regenerate.
+	* src/filesystem/cow-dir.cc: New.
+	* src/filesystem/cow-ops.cc: New.
+	* src/filesystem/cow-path.cc: New.
+	* src/filesystem/dir.cc: Define macro for new ABI.
+	* src/filesystem/ops.cc: Likewise.
+	* src/filesystem/path.cc: Likewise.
+
+2015-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/allocator/wchar_t/minimal.cc:
+	Minor tweaks to match narrow char version.
+
+	* testsuite/21_strings/basic_string/allocator/char/minimal.cc: Guard
+	explicit instantiation with check for new ABI.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/minimal.cc:
+	Likewise. Use wchar_t as char_type.
+
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::front() const, basic_string::back() const): Use
+	noexcept instead of _GLIBCXX_NOEXCEPT macro.
+	(__versa_string::front, __versa_string::back): Likewise.
+
+	* acinclude.m4 (GLIBCXX_ENABLE_DEBUG_FLAGS): Fix comment.
+
+	* include/bits/locale_conv.h [!_GLIBCXX_USE_WCHAR_T]
+	(__do_str_codecvt, __str_codecvt_in, __str_codecvt_out): Enable.
+	* include/experimental/fs_path.h [!_GLIBCXX_USE_WCHAR_T]
+	(path::wstring, path::generic_wstring): Disable.
+	* src/filesystem/path.cc (path::_S_convert_loc)
+	[!_GLIBCXX_USE_WCHAR_T]: Skip conversion.
+	* testsuite/experimental/filesystem/path/assign/assign.cc: Check for
+	wchar_t support.
+	* testsuite/experimental/filesystem/path/concat/strings.cc: Likewise.
+	* testsuite/experimental/filesystem/path/construct/range.cc: Likewise.
+
+	* testsuite/util/testsuite_fs.h (nonexistent_path): Use less generic
+	name for paths. Prefer snprintf to sprintf.
+
+	PR libstdc++/67747
+	* src/filesystem/dir.cc (native_readdir): Remove.
+	(_Dir::advance): Use readdir instead of native_readdir.
+	(recursive_directory_iterator(const path&, directory_options,
+	error_code*)): Use swap instead of reset.
+
+2015-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/manual/errno.html: Add new file.
+
+	* doc/xml/manual/diagnostics.xml: Document use of errno.
+	* doc/html/*: Regenerate.
+	* config/locale/generic/c_locale.cc (_Save_errno): New helper.
+	(__convert_to_v): Use _Save_errno.
+	* include/ext/string_conversions.h (__stoa): Only restore errno when
+	it isn't set to non-zero.
+
+2015-09-30  François Dumont  <fdumont@gcc.gnu.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/gnu/messages_members.cc (Catalog_info, Catalogs):
+	Move...
+	* config/locale/gnu/c++locale_internal.h: ...here in std namespace.
+	* config/locale/gnu/c_locale.cc: Move implementation of latter here.
+	* src/c++98/Makefile.am: Compile c++locale.cc with -fimplicit-templates.
+	* src/c++98/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Adjust.
+
+2015-09-30  Matthias Klose  <doko@ubuntu.com>
+
+	* config/cpu/alpha, config/cpu/ia64: Remove empty directories.
+
+2015-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/string_conversions.h (__stoa): Save and restore errno.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/errno.cc:
+	New.
+
+	PR libstdc++/67583
+	* testsuite/27_io/basic_stringbuf/seekoff/char/1.cc: Fix sputn call
+	with mismatched arguments.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/1.cc: Likewise.
+
+	PR libstdc++/65393
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* include/std/thread (thread::_State, thread::_State_impl): New types.
+	(thread::_M_start_thread): Add overload taking unique_ptr<_State>.
+	(thread::_M_make_routine): Remove.
+	(thread::_S_make_state): Add.
+	(thread::_Impl_base, thread::_Impl, thread::_M_start_thread)
+	[_GLIBCXX_THREAD_ABI_COMPAT] Only declare conditionally.
+	* src/c++11/thread.cc (execute_native_thread_routine): Rename to
+	execute_native_thread_routine_compat and re-define to use _State.
+	(thread::_State::~_State()): Define.
+	(thread::_M_make_thread): Define new overload.
+	(thread::_M_make_thread) [_GLIBCXX_THREAD_ABI_COMPAT]: Only define old
+	overloads conditionally.
+
+2015-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/condition_variable (condition_variable::wait): Add
+	noexcept.
+	* src/c++11/condition_variable.cc (condition_variable::wait): Call
+	std::terminate on error (DR 2135).
+
+2015-09-25  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Avoid creating dangling references in case of nested tuples
+	for tuple constructors that construct from other tuples.
+	* include/std/tuple (_TC::_NonNestedTuple): New.
+	* include/std/tuple (tuple::_TNTC): New.
+	* include/std/tuple (tuple(const tuple<_UElements...>&),
+	tuple(tuple<_UElements...>&&): Use _TNTC.
+	* testsuite/20_util/tuple/cons/nested_tuple_construct.cc: New.
+
+2015-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67707
+	* include/bits/stl_deque.h (_Deque_base::_M_move_impl): Initialize
+	empty object.
+	* testsuite/23_containers/deque/allocator/move.cc: Check moved-from
+	deque.
+
+2015-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops.cc (canonical): Simplify error handling and
+	limit number of symlinks that can be resolved.
+
+2015-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Remove _GLIBCXX_
+	prefix from HAVE_STRUCT_DIRENT_D_TYPE.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/experimental/fs_dir.h (operator==, operator==):
+	Use owner_before instead of pointer equality.
+	(directory_iterator(std::shared_ptr<_Dir>, error_code*)): Remove.
+	* src/filesystem/dir.cc (ErrorCode): Remove.
+	(_Dir::advance): Change ErrorCode parameter to error_code*, add
+	directory_options parameter and check it on error.
+	(opendir): Rename to open_dir to avoid clashing with macro. Change
+	ErrorCode parameter to error_code*.
+	(make_shared_dir): Remove.
+	(native_readdir) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Don't set errno.
+	(directory_iterator(std::shared_ptr<_Dir>, error_code*)): Remove.
+	(directory_iterator(const path&, directory_options, error_code*)):
+	Pass options to _Dir::advance and create non-end iterator on error.
+	(recursive_directory_iterator(const path&, directory_options,
+	error_code*)): Clear error_code on ignored error, create non-end
+	iterator otherwise.
+	(recursive_directory_iterator::increment): Pass _M_options to
+	_Dir::advance.
+	(recursive_directory_iterator::pop): Likewise.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	New.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: New.
+
+	* src/filesystem/ops.cc (is_dot, is_dotdot): Define new helpers.
+	(create_directories): Fix error handling.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	New.
+
+2015-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67647
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::shrink_to_fit): Fix #endif placement.
+
+2015-09-19  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/67361
+	* include/bits/regex_error.h: Add __throw_regex_error that
+	supports string.
+	* include/bits/regex_automaton.h: Add more specific exception
+	messages.
+	* include/bits/regex_automaton.tcc: Likewise.
+	* include/bits/regex_compiler.h: Likewise.
+	* include/bits/regex_compiler.tcc: Likewise.
+	* include/bits/regex_scanner.h: Likewise.
+	* include/bits/regex_scanner.tcc: Likewise.
+
+2015-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/precompiled/extc++.h: Fix bootstrap error due to
+	unconditional inclusion of <ext/enc_filebuf.h>.
+	* include/ext/random: Check for definition of UINT32_C.
+
+2015-09-17  Catherine Moore  <clm@codesourcery.com>
+
+	* src/c++11/debug.cc: Include <cstdio>.
+
+2015-09-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* src/c++11/random.cc: Include <cerrno>.
+
+2015-09-17  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h
+	(_Error_formatter::_Parameter::_M_print_field): Deprecate.
+	(_Error_formatter::_Parameter::_M_print_description): Likewise.
+	(_Error_formatter::_M_format_word): Likewise.
+	(_Error_formatter::_M_print_word): Likewise.
+	(_Error_formatter::_M_print_string): Likewise.
+	(_Error_formatter::_M_get_max_length): Likewise.
+	(_Error_formatter::_M_max_length): Delete.
+	(_Error_formatter::_M_indent): Likewise.
+	(_Error_formatter::_M_column): Likewise.
+	(_Error_formatter::_M_first_line): Likewise.
+	(_Error_formatter::_M_wordwrap): Likewise.
+	* src/c++11/debug.cc: Adapt.
+
+2015-09-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65913
+	* include/bits/atomic_base.h (__atomic_base<_TTp>::is_lock_free(),
+	__atomic_base<_PTp*>::is_lock_free()): Call the built-in with the
+	immediate pointer value, not a variable.
+	* include/std/atomic (atomic<T>::is_lock_free()): Likewise.
+	* testsuite/29_atomics/atomic/65913.cc: New.
+
+	* testsuite/experimental/filesystem/operations/canonical.cc: Remove
+	non-deterministic part of the test.
+
+	PR libstdc++/65142
+	* src/c++11/random.cc (random_device::_M_getval()): Retry after short
+	reads.
+
+	* include/std/system_error (error_code::operator bool(),
+	error_condition::operator bool()): Remove redundant conditional
+	expression.
+
+	* include/bits/allocator.h (__shrink_to_fit_aux<T, true>::_S_do_it):
+	Do nothing if exceptions are disabled.
+	* include/bits/basic_string.h (basic_string::shrink_to_fit): Likewise.
+
+2015-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67173
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check _XOPEN_VERSION
+	and PATH_MAX for _GLIBCXX_USE_REALPATH.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/filesystem/ops.cc: (canonical) [!_GLIBCXX_USE_REALPATH]: Add
+	alternative implementation.
+	* testsuite/experimental/filesystem/operations/canonical.cc: New.
+	* testsuite/experimental/filesystem/operations/exists.cc: Add more
+	tests.
+	* testsuite/experimental/filesystem/operations/absolute.cc: Add test
+	variables.
+	* testsuite/experimental/filesystem/operations/copy.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/current_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/file_size.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/status.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+
 2015-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/67173

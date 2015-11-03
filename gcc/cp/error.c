@@ -21,12 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
-#include "stringpool.h"
 #include "cp-tree.h"
+#include "stringpool.h"
+#include "alias.h"
 #include "flags.h"
-#include "diagnostic.h"
 #include "tree-diagnostic.h"
 #include "langhooks-def.h"
 #include "intl.h"
@@ -495,7 +494,9 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 
     case TEMPLATE_TYPE_PARM:
       pp_cxx_cv_qualifier_seq (pp, t);
-      if (TYPE_IDENTIFIER (t))
+      if (tree c = PLACEHOLDER_TYPE_CONSTRAINTS (t))
+	pp_cxx_constrained_type_spec (pp, c);
+      else if (TYPE_IDENTIFIER (t))
 	pp_cxx_tree_identifier (pp, TYPE_IDENTIFIER (t));
       else
 	pp_cxx_canonical_template_parameter
@@ -868,6 +869,8 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
 			      TREE_CODE (t) == FUNCTION_TYPE
 			      && (flags & TFF_POINTER));
 	dump_ref_qualifier (pp, t, flags);
+	if (tx_safe_fn_type_p (t))
+	  pp_cxx_ws_string (pp, "transaction_safe");
 	dump_exception_spec (pp, TYPE_RAISES_EXCEPTIONS (t), flags);
 	dump_type_suffix (pp, TREE_TYPE (t), flags);
 	break;
@@ -1568,6 +1571,12 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 	  pp->padding = pp_before;
 	  pp_cxx_cv_qualifier_seq (pp, class_of_this_parm (fntype));
 	  dump_ref_qualifier (pp, fntype, flags);
+	}
+
+      if (tx_safe_fn_type_p (fntype))
+	{
+	  pp->padding = pp_before;
+	  pp_cxx_ws_string (pp, "transaction_safe");
 	}
 
       if (flags & TFF_EXCEPTION_SPECIFICATION)

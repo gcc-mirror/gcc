@@ -26,56 +26,30 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
 #include "df.h"
+#include "tm_p.h"
 #include "ssa.h"
-#include "alias.h"
+#include "emit-rtl.h"
+#include "cgraph.h"
+#include "lto-streamer.h"
 #include "fold-const.h"
 #include "varasm.h"
-#include "tm_p.h"
-#include "flags.h"
-#include "insn-attr.h"
-#include "insn-config.h"
-#include "insn-flags.h"
-#include "recog.h"
 #include "output.h"
-#include "except.h"
-#include "toplev.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "stmt.h"
-#include "expr.h"
-#include "intl.h"
 #include "graph.h"
-#include "regs.h"
-#include "diagnostic-core.h"
-#include "params.h"
-#include "reload.h"
 #include "debug.h"
-#include "target.h"
-#include "langhooks.h"
 #include "cfgloop.h"
-#include "hosthooks.h"
-#include "opts.h"
-#include "coverage.h"
 #include "value-prof.h"
-#include "tree-inline.h"
-#include "internal-fn.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "tree-pass.h"
-#include "tree-dump.h"
-#include "cgraph.h"
-#include "lto-streamer.h"
 #include "plugin.h"
 #include "ipa-utils.h"
 #include "tree-pretty-print.h" /* for dump_function_header */
@@ -252,6 +226,11 @@ rest_of_decl_compilation (tree decl,
 	}
 #endif
 
+      /* Now that we have activated any function-specific attributes
+	 that might affect function decl, particularly align, relayout it.  */
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	targetm.target_option.relayout_function (decl);
+
       timevar_pop (TV_VARCONST);
     }
   else if (TREE_CODE (decl) == TYPE_DECL
@@ -318,7 +297,18 @@ rest_of_decl_compilation (tree decl,
       && !decl_function_context (decl)
       && !current_function_decl
       && DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION
-      && !decl_type_context (decl)
+      && (!decl_type_context (decl)
+	  /* If we created a varpool node for the decl make sure to
+	     call early_global_decl.  Otherwise we miss changes
+	     introduced by member definitions like
+		struct A { static int staticdatamember; };
+		int A::staticdatamember;
+	     and thus have incomplete early debug and late debug
+	     called from varpool node removal fails to handle it
+	     properly.  */
+	  || (finalize
+	      && TREE_CODE (decl) == VAR_DECL
+	      && TREE_STATIC (decl) && !DECL_EXTERNAL (decl)))
       /* Avoid confusing the debug information machinery when there are
 	 errors.  */
       && !seen_error ())
@@ -1935,9 +1925,8 @@ execute_function_todo (function *fn, void *data)
 
   gcc_assert (dom_info_state (fn, CDI_POST_DOMINATORS) == DOM_NONE);
   /* If we've seen errors do not bother running any verifiers.  */
-  if (!seen_error ())
+  if (flag_checking && !seen_error ())
     {
-#if defined ENABLE_CHECKING
       dom_state pre_verify_state = dom_info_state (fn, CDI_DOMINATORS);
       dom_state pre_verify_pstate = dom_info_state (fn, CDI_POST_DOMINATORS);
 
@@ -1971,7 +1960,6 @@ execute_function_todo (function *fn, void *data)
       /* Make sure verifiers don't change dominator state.  */
       gcc_assert (dom_info_state (fn, CDI_DOMINATORS) == pre_verify_state);
       gcc_assert (dom_info_state (fn, CDI_POST_DOMINATORS) == pre_verify_pstate);
-#endif
     }
 
   fn->last_verified = flags & TODO_verify_all;
@@ -1991,11 +1979,10 @@ execute_function_todo (function *fn, void *data)
 static void
 execute_todo (unsigned int flags)
 {
-#if defined ENABLE_CHECKING
-  if (cfun
+  if (flag_checking
+      && cfun
       && need_ssa_update_p (cfun))
     gcc_assert (flags & TODO_update_ssa_any);
-#endif
 
   timevar_push (TV_TODO);
 
@@ -2006,6 +1993,11 @@ execute_todo (unsigned int flags)
 
   if (flags)
     do_per_function (execute_function_todo, (void *)(size_t) flags);
+
+  /* At this point we should not have any unreachable code in the
+     CFG, so it is safe to flush the pending freelist for SSA_NAMES.  */
+  if (cfun && cfun->gimple_df)
+    flush_ssaname_freelist ();
 
   /* Always remove functions just as before inlining: IPA passes might be
      interested to see bodies of extern inline functions that are not inlined
@@ -2054,14 +2046,12 @@ clear_last_verified (function *fn, void *data ATTRIBUTE_UNUSED)
 /* Helper function. Verify that the properties has been turn into the
    properties expected by the pass.  */
 
-#ifdef ENABLE_CHECKING
 static void
 verify_curr_properties (function *fn, void *data)
 {
   unsigned int props = (size_t)data;
   gcc_assert ((fn->curr_properties & props) == props);
 }
-#endif
 
 /* Initialize pass dump file.  */
 /* This is non-static so that the plugins can use it.  */
@@ -2309,10 +2299,9 @@ execute_one_pass (opt_pass *pass)
   /* Run pre-pass verification.  */
   execute_todo (pass->todo_flags_start);
 
-#ifdef ENABLE_CHECKING
-  do_per_function (verify_curr_properties,
-		   (void *)(size_t)pass->properties_required);
-#endif
+  if (flag_checking)
+    do_per_function (verify_curr_properties,
+		     (void *)(size_t)pass->properties_required);
 
   /* If a timevar is present, start it.  */
   if (pass->tv_id != TV_NONE)
@@ -2746,7 +2735,7 @@ execute_ipa_pass_list (opt_pass *pass)
 
 static void
 execute_ipa_stmt_fixups (opt_pass *pass,
-			 struct cgraph_node *node, gimple *stmts)
+			 struct cgraph_node *node, gimple **stmts)
 {
   while (pass)
     {
@@ -2781,7 +2770,7 @@ execute_ipa_stmt_fixups (opt_pass *pass,
 /* Execute stmt fixup hooks of all IPA passes for NODE and STMTS.  */
 
 void
-execute_all_ipa_stmt_fixups (struct cgraph_node *node, gimple *stmts)
+execute_all_ipa_stmt_fixups (struct cgraph_node *node, gimple **stmts)
 {
   pass_manager *passes = g->get_passes ();
   execute_ipa_stmt_fixups (passes->all_regular_ipa_passes, node, stmts);

@@ -535,7 +535,7 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
 /* Sanity-checks are dependent on command-line options, so it is
    called as a subroutine of cpp_read_main_file ().  */
-#if ENABLE_CHECKING
+#if CHECKING_P
 static void sanity_checks (cpp_reader *);
 static void sanity_checks (cpp_reader *pfile)
 {

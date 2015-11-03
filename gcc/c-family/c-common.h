@@ -154,6 +154,9 @@ enum rid
   /* C++ concepts */
   RID_CONCEPT, RID_REQUIRES,
 
+  /* C++ transactional memory.  */
+  RID_ATOMIC_NOEXCEPT, RID_ATOMIC_CANCEL, RID_SYNCHRONIZED,
+
   /* Cilk Plus keywords.  */
   RID_CILK_SPAWN, RID_CILK_SYNC, RID_CILK_FOR,
   
@@ -246,7 +249,7 @@ enum rid
    is found elsewhere, it follows the rules of the C/C++ language.
  */
 #define OBJC_IS_CXX_KEYWORD(rid) \
-  (rid == RID_CLASS							\
+  (rid == RID_CLASS || rid == RID_SYNCHRONIZED			\
    || rid == RID_PUBLIC || rid == RID_PROTECTED || rid == RID_PRIVATE	\
    || rid == RID_TRY || rid == RID_THROW || rid == RID_CATCH)
 
@@ -391,6 +394,7 @@ extern machine_mode c_default_pointer_mode;
 #define D_CXX_OBJC	0x100	/* In Objective C, and C++, but not C.  */
 #define D_CXXWARN	0x200	/* In C warn with -Wcxx-compat.  */
 #define D_CXX_CONCEPTS  0x400   /* In C++, only with concepts. */
+#define D_TRANSMEM	0X800   /* C++ transactional memory TS.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 
@@ -648,13 +652,23 @@ extern const char *constant_string_class_name;
 
 /* C++ language option variables.  */
 
+/* The reference version of the ABI for -Wabi.  */
+
+extern int warn_abi_version;
 
 /* Return TRUE if one of {flag_abi_version,flag_abi_compat_version} is
-   less than N and the other is at least N, for use by -Wabi.  */
-#define abi_version_crosses(N)			\
+   less than N and the other is at least N.  */
+#define abi_compat_version_crosses(N)		\
   (abi_version_at_least(N)			\
    != (flag_abi_compat_version == 0		\
        || flag_abi_compat_version >= (N)))
+
+/* Return TRUE if one of {flag_abi_version,warn_abi_version} is
+   less than N and the other is at least N, for use by -Wabi.  */
+#define abi_version_crosses(N)			\
+  (abi_version_at_least(N)			\
+   != (warn_abi_version == 0			\
+       || warn_abi_version >= (N)))
 
 /* Nonzero means generate separate instantiation control files and
    juggle them at link time.  */
@@ -1238,13 +1252,14 @@ enum c_omp_clause_split
   C_OMP_CLAUSE_SPLIT_FOR,
   C_OMP_CLAUSE_SPLIT_SIMD,
   C_OMP_CLAUSE_SPLIT_COUNT,
-  C_OMP_CLAUSE_SPLIT_SECTIONS = C_OMP_CLAUSE_SPLIT_FOR
+  C_OMP_CLAUSE_SPLIT_SECTIONS = C_OMP_CLAUSE_SPLIT_FOR,
+  C_OMP_CLAUSE_SPLIT_TASKLOOP = C_OMP_CLAUSE_SPLIT_FOR
 };
 
 extern tree c_finish_omp_master (location_t, tree);
 extern tree c_finish_omp_taskgroup (location_t, tree);
-extern tree c_finish_omp_critical (location_t, tree, tree);
-extern tree c_finish_omp_ordered (location_t, tree);
+extern tree c_finish_omp_critical (location_t, tree, tree, tree);
+extern tree c_finish_omp_ordered (location_t, tree, tree);
 extern void c_finish_omp_barrier (location_t);
 extern tree c_finish_omp_atomic (location_t, enum tree_code, enum tree_code,
 				 tree, tree, tree, tree, tree, bool, bool);
@@ -1252,8 +1267,9 @@ extern void c_finish_omp_flush (location_t);
 extern void c_finish_omp_taskwait (location_t);
 extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
-			      tree, tree, tree);
+			      tree, tree, tree, tree);
 extern tree c_finish_oacc_wait (location_t, tree, tree);
+extern tree c_oacc_split_loop_clauses (tree, tree *);
 extern void c_omp_split_clauses (location_t, enum tree_code, omp_clause_mask,
 				 tree, tree *);
 extern tree c_omp_declare_simd_clauses_to_numbers (tree, tree);
@@ -1420,6 +1436,7 @@ extern void cilkplus_extract_an_triplets (vec<tree, va_gc> *, size_t, size_t,
 					  vec<vec<an_parts> > *);
 extern vec <tree, va_gc> *fix_sec_implicit_args
   (location_t, vec <tree, va_gc> *, vec<an_loop_parts>, size_t, tree);
+extern bool is_cilkplus_vector_p (tree);
 
 /* In cilk.c.  */
 extern tree insert_cilk_frame (tree);
@@ -1441,5 +1458,6 @@ extern tree cilk_for_number_of_iterations (tree);
 extern bool check_no_cilk (tree, const char *, const char *,
 		           location_t loc = UNKNOWN_LOCATION);
 extern bool reject_gcc_builtin (const_tree, location_t = UNKNOWN_LOCATION);
+extern void warn_duplicated_cond_add_or_warn (location_t, tree, vec<tree> **);
 
 #endif /* ! GCC_C_COMMON_H */

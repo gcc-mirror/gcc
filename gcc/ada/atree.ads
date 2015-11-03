@@ -803,6 +803,33 @@ package Atree is
       V9 : Entity_Kind) return Boolean;
 
    function Ekind_In
+     (E   : Entity_Id;
+      V1  : Entity_Kind;
+      V2  : Entity_Kind;
+      V3  : Entity_Kind;
+      V4  : Entity_Kind;
+      V5  : Entity_Kind;
+      V6  : Entity_Kind;
+      V7  : Entity_Kind;
+      V8  : Entity_Kind;
+      V9  : Entity_Kind;
+      V10 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (E   : Entity_Id;
+      V1  : Entity_Kind;
+      V2  : Entity_Kind;
+      V3  : Entity_Kind;
+      V4  : Entity_Kind;
+      V5  : Entity_Kind;
+      V6  : Entity_Kind;
+      V7  : Entity_Kind;
+      V8  : Entity_Kind;
+      V9  : Entity_Kind;
+      V10 : Entity_Kind;
+      V11 : Entity_Kind) return Boolean;
+
+   function Ekind_In
      (T  : Entity_Kind;
       V1 : Entity_Kind;
       V2 : Entity_Kind) return Boolean;
@@ -869,6 +896,33 @@ package Atree is
       V7 : Entity_Kind;
       V8 : Entity_Kind;
       V9 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (T   : Entity_Kind;
+      V1  : Entity_Kind;
+      V2  : Entity_Kind;
+      V3  : Entity_Kind;
+      V4  : Entity_Kind;
+      V5  : Entity_Kind;
+      V6  : Entity_Kind;
+      V7  : Entity_Kind;
+      V8  : Entity_Kind;
+      V9  : Entity_Kind;
+      V10 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (T   : Entity_Kind;
+      V1  : Entity_Kind;
+      V2  : Entity_Kind;
+      V3  : Entity_Kind;
+      V4  : Entity_Kind;
+      V5  : Entity_Kind;
+      V6  : Entity_Kind;
+      V7  : Entity_Kind;
+      V8  : Entity_Kind;
+      V9  : Entity_Kind;
+      V10 : Entity_Kind;
+      V11 : Entity_Kind) return Boolean;
 
    pragma Inline (Ekind_In);
    --  Inline all above functions
@@ -1355,6 +1409,12 @@ package Atree is
       function List25 (N : Node_Id) return List_Id;
       pragma Inline (List25);
 
+      function List38 (N : Node_Id) return List_Id;
+      pragma Inline (List38);
+
+      function List39 (N : Node_Id) return List_Id;
+      pragma Inline (List39);
+
       function Elist1 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist1);
 
@@ -1405,6 +1465,9 @@ package Atree is
 
       function Elist26 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist26);
+
+      function Elist36 (N : Node_Id) return Elist_Id;
+      pragma Inline (Elist36);
 
       function Name1 (N : Node_Id) return Name_Id;
       pragma Inline (Name1);
@@ -2706,6 +2769,12 @@ package Atree is
       procedure Set_List25 (N : Node_Id; Val : List_Id);
       pragma Inline (Set_List25);
 
+      procedure Set_List38 (N : Node_Id; Val : List_Id);
+      pragma Inline (Set_List38);
+
+      procedure Set_List39 (N : Node_Id; Val : List_Id);
+      pragma Inline (Set_List39);
+
       procedure Set_Elist1 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist1);
 
@@ -2756,6 +2825,9 @@ package Atree is
 
       procedure Set_Elist26 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist26);
+
+      procedure Set_Elist36 (N : Node_Id; Val : Elist_Id);
+      pragma Inline (Set_Elist36);
 
       procedure Set_Name1 (N : Node_Id; Val : Name_Id);
       pragma Inline (Set_Name1);

@@ -70,31 +70,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "alloc-pool.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
+#include "tree-streamer.h"
+#include "cgraph.h"
+#include "diagnostic.h"
 #include "fold-const.h"
-#include "stor-layout.h"
 #include "print-tree.h"
 #include "tree-inline.h"
-#include "langhooks.h"
-#include "flags.h"
-#include "diagnostic.h"
 #include "gimple-pretty-print.h"
 #include "params.h"
-#include "tree-pass.h"
-#include "coverage.h"
 #include "cfganal.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
-#include "cgraph.h"
-#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
-#include "tree-streamer.h"
 #include "ipa-inline.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
@@ -143,7 +136,7 @@ vec<inline_edge_summary_t> inline_edge_summary_vec;
 vec<edge_growth_cache_entry> edge_growth_cache;
 
 /* Edge predicates goes here.  */
-static object_allocator<predicate> edge_predicate_pool ("edge predicates", 10);
+static object_allocator<predicate> edge_predicate_pool ("edge predicates");
 
 /* Return true predicate (tautology).
    We represent it by empty list of clauses.  */
@@ -1524,7 +1517,7 @@ mark_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef ATTRIBUTE_UNUSED,
    parameter.  */
 
 static tree
-unmodified_parm_1 (gimple stmt, tree op)
+unmodified_parm_1 (gimple *stmt, tree op)
 {
   /* SSA_NAME referring to parm default def?  */
   if (TREE_CODE (op) == SSA_NAME
@@ -1550,7 +1543,7 @@ unmodified_parm_1 (gimple stmt, tree op)
    parameter.  Also traverse chains of SSA register assignments.  */
 
 static tree
-unmodified_parm (gimple stmt, tree op)
+unmodified_parm (gimple *stmt, tree op)
 {
   tree res = unmodified_parm_1 (stmt, op);
   if (res)
@@ -1573,7 +1566,7 @@ unmodified_parm (gimple stmt, tree op)
 
 static bool
 unmodified_parm_or_parm_agg_item (struct ipa_func_body_info *fbi,
-				  gimple stmt, tree op, int *index_p,
+				  gimple *stmt, tree op, int *index_p,
 				  struct agg_position_info *aggpos)
 {
   tree res = unmodified_parm_1 (stmt, op);
@@ -1615,7 +1608,7 @@ unmodified_parm_or_parm_agg_item (struct ipa_func_body_info *fbi,
    penalty wrappers.  */
 
 static int
-eliminated_by_inlining_prob (gimple stmt)
+eliminated_by_inlining_prob (gimple *stmt)
 {
   enum gimple_code code = gimple_code (stmt);
   enum tree_code rhs_code;
@@ -1747,14 +1740,14 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				   struct inline_summary *summary,
 				   basic_block bb)
 {
-  gimple last;
+  gimple *last;
   tree op;
   int index;
   struct agg_position_info aggpos;
   enum tree_code code, inverted_code;
   edge e;
   edge_iterator ei;
-  gimple set_stmt;
+  gimple *set_stmt;
   tree op2;
 
   last = last_stmt (bb);
@@ -1829,7 +1822,7 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				     struct inline_summary *summary,
 				     basic_block bb)
 {
-  gimple lastg;
+  gimple *lastg;
   tree op;
   int index;
   struct agg_position_info aggpos;
@@ -2031,7 +2024,7 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
 static struct predicate
 will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 			       struct inline_summary *summary,
-			       gimple stmt,
+			       gimple *stmt,
 			       vec<predicate_t> nonconstant_names)
 {
   struct predicate p = true_predicate ();
@@ -2119,7 +2112,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 struct record_modified_bb_info
 {
   bitmap bb_set;
-  gimple stmt;
+  gimple *stmt;
 };
 
 /* Callback of walk_aliased_vdefs.  Records basic blocks where the value may be
@@ -2147,7 +2140,7 @@ record_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
    ought to be REG_BR_PROB_BASE / estimated_iters.  */
 
 static int
-param_change_prob (gimple stmt, int i)
+param_change_prob (gimple *stmt, int i)
 {
   tree op = gimple_call_arg (stmt, i);
   basic_block bb = gimple_bb (stmt);
@@ -2240,7 +2233,7 @@ phi_result_unknown_predicate (struct ipa_node_params *info,
   edge e;
   edge_iterator ei;
   basic_block first_bb = NULL;
-  gimple stmt;
+  gimple *stmt;
 
   if (single_pred_p (bb))
     {
@@ -2355,14 +2348,14 @@ array_index_predicate (inline_summary *info,
    an impact on the earlier inlining.
    Here find this pattern and fix it up later.  */
 
-static gimple
+static gimple *
 find_foldable_builtin_expect (basic_block bb)
 {
   gimple_stmt_iterator bsi;
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
-      gimple stmt = gsi_stmt (bsi);
+      gimple *stmt = gsi_stmt (bsi);
       if (gimple_call_builtin_p (stmt, BUILT_IN_EXPECT)
 	  || (is_gimple_call (stmt)
 	      && gimple_call_internal_p (stmt)
@@ -2371,7 +2364,7 @@ find_foldable_builtin_expect (basic_block bb)
           tree var = gimple_call_lhs (stmt);
           tree arg = gimple_call_arg (stmt, 0);
           use_operand_p use_p;
-          gimple use_stmt;
+	  gimple *use_stmt;
           bool match = false;
           bool done = false;
 
@@ -2381,7 +2374,7 @@ find_foldable_builtin_expect (basic_block bb)
 
           while (TREE_CODE (arg) == SSA_NAME)
             {
-              gimple stmt_tmp = SSA_NAME_DEF_STMT (arg);
+	      gimple *stmt_tmp = SSA_NAME_DEF_STMT (arg);
               if (!is_gimple_assign (stmt_tmp))
                 break;
               switch (gimple_assign_rhs_code (stmt_tmp))
@@ -2443,7 +2436,7 @@ clobber_only_eh_bb_p (basic_block bb, bool need_eh = true)
 
   for (; !gsi_end_p (gsi); gsi_prev (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       if (is_gimple_debug (stmt))
 	continue;
       if (gimple_clobber_p (stmt))
@@ -2484,7 +2477,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   int nblocks, n;
   int *order;
   predicate array_index = true_predicate ();
-  gimple fix_builtin_expect_stmt;
+  gimple *fix_builtin_expect_stmt;
 
   gcc_assert (my_function && my_function->cfg);
   gcc_assert (cfun == my_function);
@@ -2597,7 +2590,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
       for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
 	   gsi_next (&bsi))
 	{
-	  gimple stmt = gsi_stmt (bsi);
+	  gimple *stmt = gsi_stmt (bsi);
 	  int this_size = estimate_num_insns (stmt, &eni_size_weights);
 	  int this_time = estimate_num_insns (stmt, &eni_time_weights);
 	  int prob;
@@ -2760,9 +2753,8 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	{
 	  vec<edge> exits;
 	  edge ex;
-	  unsigned int j, i;
+	  unsigned int j;
 	  struct tree_niter_desc niter_desc;
-	  basic_block *body = get_loop_body (loop);
 	  bb_predicate = *(struct predicate *) loop->header->aux;
 
 	  exits = get_loop_exit_edges (loop);
@@ -2787,51 +2779,60 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 				  &will_be_nonconstant);
 	    }
 	  exits.release ();
+	}
 
-	  for (i = 0; i < loop->num_nodes; i++)
+      /* To avoid quadratic behavior we analyze stride predicates only
+         with respect to the containing loop.  Thus we simply iterate
+	 over all defs in the outermost loop body.  */
+      for (loop = loops_for_fn (cfun)->tree_root->inner;
+	   loop != NULL; loop = loop->next)
+	{
+	  basic_block *body = get_loop_body (loop);
+	  for (unsigned i = 0; i < loop->num_nodes; i++)
 	    {
 	      gimple_stmt_iterator gsi;
 	      bb_predicate = *(struct predicate *) body[i]->aux;
 	      for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi);
 		   gsi_next (&gsi))
 		{
-		  gimple stmt = gsi_stmt (gsi);
+		  gimple *stmt = gsi_stmt (gsi);
+
+		  if (!is_gimple_assign (stmt))
+		    continue;
+
+		  tree def = gimple_assign_lhs (stmt);
+		  if (TREE_CODE (def) != SSA_NAME)
+		    continue;
+
 		  affine_iv iv;
-		  ssa_op_iter iter;
-		  tree use;
+		  if (!simple_iv (loop_containing_stmt (stmt),
+				  loop_containing_stmt (stmt),
+				  def, &iv, true)
+		      || is_gimple_min_invariant (iv.step))
+		    continue;
 
-		  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
-		  {
-		    predicate will_be_nonconstant;
-
-		    if (!simple_iv
-			(loop, loop_containing_stmt (stmt), use, &iv, true)
-			|| is_gimple_min_invariant (iv.step))
-		      continue;
+		  predicate will_be_nonconstant
+		    = will_be_nonconstant_expr_predicate (fbi.info, info,
+							  iv.step,
+							  nonconstant_names);
+		  if (!true_predicate_p (&will_be_nonconstant))
 		    will_be_nonconstant
-		      = will_be_nonconstant_expr_predicate (fbi.info, info,
-							    iv.step,
-							    nonconstant_names);
-		    if (!true_predicate_p (&will_be_nonconstant))
-		      will_be_nonconstant
-			 = and_predicates (info->conds,
-					   &bb_predicate,
-					   &will_be_nonconstant);
-		    if (!true_predicate_p (&will_be_nonconstant)
-			&& !false_predicate_p (&will_be_nonconstant))
-		      /* This is slightly inprecise.  We may want to represent
-			 each loop with independent predicate.  */
-		      loop_stride =
-			and_predicates (info->conds, &loop_stride,
+		      = and_predicates (info->conds, &bb_predicate,
 					&will_be_nonconstant);
-		  }
+		  if (!true_predicate_p (&will_be_nonconstant)
+		      && !false_predicate_p (&will_be_nonconstant))
+		    /* This is slightly inprecise.  We may want to represent
+		       each loop with independent predicate.  */
+		    loop_stride = and_predicates (info->conds, &loop_stride,
+						  &will_be_nonconstant);
 		}
 	    }
 	  free (body);
 	}
       set_hint_predicate (&inline_summaries->get (node)->loop_iterations,
 			  loop_iterations);
-      set_hint_predicate (&inline_summaries->get (node)->loop_stride, loop_stride);
+      set_hint_predicate (&inline_summaries->get (node)->loop_stride,
+			  loop_stride);
       scev_finalize ();
     }
   FOR_ALL_BB_FN (bb, my_function)
@@ -2956,10 +2957,12 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   info->size = info->self_size;
   info->stack_frame_offset = 0;
   info->estimated_stack_size = info->estimated_self_stack_size;
-#ifdef ENABLE_CHECKING
-  inline_update_overall_summary (node);
-  gcc_assert (info->time == info->self_time && info->size == info->self_size);
-#endif
+  if (flag_checking)
+    {
+      inline_update_overall_summary (node);
+      gcc_assert (info->time == info->self_time
+		  && info->size == info->self_size);
+    }
 
   pop_cfun ();
 }
@@ -4103,6 +4106,10 @@ void
 inline_generate_summary (void)
 {
   struct cgraph_node *node;
+
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (DECL_STRUCT_FUNCTION (node->decl))
+      node->local.versionable = tree_versionable_function_p (node->decl);
 
   /* When not optimizing, do not bother to analyze.  Inlining is still done
      because edge redirection needs to happen there.  */

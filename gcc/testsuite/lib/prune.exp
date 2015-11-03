@@ -16,6 +16,8 @@
 
 # Prune messages from gcc that aren't useful.
 
+load_lib multiline.exp
+
 if ![info exists TEST_ALWAYS_FLAGS] {
     set TEST_ALWAYS_FLAGS ""
 }
@@ -67,6 +69,9 @@ proc prune_gcc_output { text } {
 
     # Ignore harmless warnings from Xcode 4.0.
     regsub -all "(^|\n)\[^\n\]*ld: warning: could not create compact unwind for\[^\n\]*" $text "" text
+
+    # Call into multiline.exp to handle any multiline output directives.
+    set text [handle-multiline-outputs $text]
 
     #send_user "After:$text\n"
 

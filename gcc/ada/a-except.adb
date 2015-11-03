@@ -117,8 +117,8 @@ package body Ada.Exceptions is
       --
       --  The format of the string is as follows:
       --
-      --    Exception_Name: <exception name> (as in Exception_Name)
-      --    Message: <message> (only if Exception_Message is empty)
+      --    raised <exception name> : <message>
+      --    (" : <message>" is present only if Exception_Message is not empty)
       --    PID=nnnn (only if nonzero)
       --    Call stack traceback locations:  (only if at least one location)
       --    <0xyyyyyyyy 0xyyyyyyyy ...>      (is recorded)
@@ -727,15 +727,6 @@ package body Ada.Exceptions is
    --  The actual polling routine is separate, so that it can easily be
    --  replaced with a target dependent version.
 
-   ------------------------------
-   -- Current_Target_Exception --
-   ------------------------------
-
-   function Current_Target_Exception return Exception_Occurrence is
-   begin
-      return Null_Occurrence;
-   end Current_Target_Exception;
-
    -------------------
    -- EId_To_String --
    -------------------
@@ -958,7 +949,7 @@ package body Ada.Exceptions is
       --  pragma Volatile is peculiar.
 
    begin
-      Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
+      Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E), Message => "");
       Process_Raise_Exception (E);
    end Raise_Current_Excep;
 

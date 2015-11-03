@@ -28,48 +28,48 @@ Generate code for the M*Core M340
 
 m4byte-functions
 Target Report Mask(OVERALIGN_FUNC)
-Force functions to be aligned to a 4 byte boundary
+Force functions to be aligned to a 4 byte boundary.
 
 mbig-endian
 Target RejectNegative Report InverseMask(LITTLE_END)
-Generate big-endian code
+Generate big-endian code.
 
 mcallgraph-data
 Target Report Mask(CG_DATA)
-Emit call graph information
+Emit call graph information.
 
 mdiv
 Target Report Mask(DIV)
-Use the divide instruction
+Use the divide instruction.
 
 mhardlit
 Target Report Mask(HARDLIT)
-Inline constants if it can be done in 2 insns or less
+Inline constants if it can be done in 2 insns or less.
 
 mlittle-endian
 Target RejectNegative Report Mask(LITTLE_END)
-Generate little-endian code
+Generate little-endian code.
 
 ; Not used by the compiler proper.
 mno-lsim
 Target RejectNegative
-Assume that run-time support has been provided, so omit -lsim from the linker command line
+Assume that run-time support has been provided, so omit -lsim from the linker command line.
 
 mrelax-immediates
 Target Report Mask(RELAX_IMM)
-Use arbitrary sized immediates in bit operations
+Use arbitrary sized immediates in bit operations.
 
 mslow-bytes
 Target Report Mask(SLOW_BYTES)
-Prefer word accesses over byte accesses
+Prefer word accesses over byte accesses.
 
 ; Maximum size we are allowed to grow the stack in a single operation.
 ; If we want more, we must do it in increments of at most this size.
 ; If this value is 0, we don't check at all.
 mstack-increment=
 Target RejectNegative Joined UInteger Var(mcore_stack_increment) Init(STACK_UNITS_MAXSTEP)
-Set the maximum amount for a single stack increment operation
+Set the maximum amount for a single stack increment operation.
 
 mwide-bitfields
 Target Report Mask(W_FIELD)
-Always treat bitfields as int-sized
+Always treat bitfields as int-sized.

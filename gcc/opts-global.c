@@ -21,26 +21,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "backend.h"
+#include "rtl.h"
+#include "tree.h"
+#include "tree-pass.h"
 #include "diagnostic.h"
 #include "opts.h"
-#include "options.h"
 #include "flags.h"
-#include "alias.h"
-#include "backend.h"
-#include "tree.h"
-#include "gimple.h"
-#include "rtl.h"
-#include "fold-const.h"
-#include "internal-fn.h"
 #include "langhooks.h"
 #include "dbgcnt.h"
 #include "debug.h"
-#include "cgraph.h"
-#include "target.h"
 #include "output.h"
 #include "plugin.h"
 #include "toplev.h"
-#include "tree-pass.h"
 #include "context.h"
 #include "asan.h"
 
@@ -54,7 +47,7 @@ unsigned num_in_fnames;
 
 /* Return a malloced slash-separated list of languages in MASK.  */
 
-static char *
+char *
 write_langs (unsigned int mask)
 {
   unsigned int n = 0, len = 0;

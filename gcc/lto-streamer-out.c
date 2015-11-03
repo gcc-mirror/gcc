@@ -24,33 +24,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "ssa.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "stor-layout.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "params.h"
-#include "internal-fn.h"
-#include "gimple-iterator.h"
 #include "tree-pass.h"
-#include "diagnostic-core.h"
+#include "ssa.h"
+#include "gimple-streamer.h"
+#include "alias.h"
+#include "stor-layout.h"
+#include "gimple-iterator.h"
 #include "except.h"
 #include "lto-symtab.h"
 #include "cgraph.h"
-#include "target.h"
-#include "gimple-streamer.h"
 #include "cfgloop.h"
 #include "builtins.h"
 #include "gomp-constants.h"
@@ -607,17 +593,12 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 		std::swap (sccstack[first + i],
 			   sccstack[first + entry_start + i]);
 
-	      if (scc_entry_len == 1)
-		; /* We already sorted SCC deterministically in hash_scc.  */
-	      else
-		/* Check that we have only one SCC.
-		   Naturally we may have conflicts if hash function is not
- 		   strong enough.  Lets see how far this gets.  */
-		{
-#ifdef ENABLE_CHECKING
-		  gcc_unreachable ();
-#endif
-		}
+	      /* We already sorted SCC deterministically in hash_scc.  */
+
+	      /* Check that we have only one SCC.
+		 Naturally we may have conflicts if hash function is not
+		 strong enough.  Lets see how far this gets.  */
+	      gcc_checking_assert (scc_entry_len == 1);
 	    }
 
 	  /* Write LTO_tree_scc.  */
@@ -2077,7 +2058,7 @@ output_function (struct cgraph_node *node)
 	  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	       gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gimple *stmt = gsi_stmt (gsi);
 	      gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
 	    }
 	}
@@ -2277,11 +2258,12 @@ void
 lto_output (void)
 {
   struct lto_out_decl_state *decl_state;
-#ifdef ENABLE_CHECKING
-  bitmap output = lto_bitmap_alloc ();
-#endif
+  bitmap output = NULL;
   int i, n_nodes;
   lto_symtab_encoder_t encoder = lto_get_out_decl_state ()->symtab_node_encoder;
+
+  if (flag_checking)
+    output = lto_bitmap_alloc ();
 
   /* Initialize the streamer.  */
   lto_streamer_init ();
@@ -2296,10 +2278,11 @@ lto_output (void)
 	  if (lto_symtab_encoder_encode_body_p (encoder, node)
 	      && !node->alias)
 	    {
-#ifdef ENABLE_CHECKING
-	      gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
-	      bitmap_set_bit (output, DECL_UID (node->decl));
-#endif
+	      if (flag_checking)
+		{
+		  gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
+		  bitmap_set_bit (output, DECL_UID (node->decl));
+		}
 	      decl_state = lto_new_out_decl_state ();
 	      lto_push_out_decl_state (decl_state);
 	      if (gimple_has_body_p (node->decl) || !flag_wpa
@@ -2326,10 +2309,11 @@ lto_output (void)
 	      && !node->alias)
 	    {
 	      timevar_push (TV_IPA_LTO_CTORS_OUT);
-#ifdef ENABLE_CHECKING
-	      gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
-	      bitmap_set_bit (output, DECL_UID (node->decl));
-#endif
+	      if (flag_checking)
+		{
+		  gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
+		  bitmap_set_bit (output, DECL_UID (node->decl));
+		}
 	      decl_state = lto_new_out_decl_state ();
 	      lto_push_out_decl_state (decl_state);
 	      if (DECL_INITIAL (node->decl) != error_mark_node
@@ -2353,7 +2337,7 @@ lto_output (void)
 
   output_offload_tables ();
 
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
   lto_bitmap_free (output);
 #endif
 }

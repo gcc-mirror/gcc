@@ -36,12 +36,12 @@
     %{nostdinc*} %{nostdlib*}\
     -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
     %{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}%{!c:%{!S:-auxbase %b}} \
-    %{O*} %{W*} %{w} %{p} %{pg:-p} %{d*} %{f*}\
+    %{O*} %{W*} %{w} %{p} %{pg:-p} %{d*} \
     %{coverage:-fprofile-arcs -ftest-coverage} "
 #if defined(TARGET_VXWORKS_RTP)
    "%{fRTS=rtp|fRTS=rtp-smp|fRTS=ravenscar-cert-rtp:-mrtp} "
 #endif
-   "%{gnatea:-gnatez} %{g*&m*} "
+   "%{gnatea:-gnatez} %{g*&m*&f*} "
    "%1 %{!S:%{o*:%w%*-gnatO}} \
     %i %{S:%W{o*}%{!o*:-o %b.s}} \
     %{gnatc*|gnats*: -o %j} %{-param*} \
@@ -54,8 +54,8 @@
     %{nostdinc*} %{nostdlib*}\
     -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
     %{o*:-auxbase-strip %*}%{!o*:-auxbase %b} \
-    %{a} %{d*} %{f*} \
-    %{gnatea:-gnatez} %{g*&m*} \
+    %{a} %{d*} \
+    %{gnatea:-gnatez} %{g*&m*&f*} \
     %1 %{o*:%w%*-gnatO} \
     %i \
     %{gnatc*|gnats*: -o %j} %{-param*} ", 0, 0, 0},
@@ -67,8 +67,8 @@
     %{nostdinc*} %{nostdlib*}\
     -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
     %{o*:-auxbase-strip %*}%{!o*:-auxbase %b} \
-    %{a} %{d*} %{f*} \
-    %{gnatea:-gnatez} %{g*&m*} \
+    %{a} %{d*} \
+    %{gnatea:-gnatez} %{g*&m*&f*} \
     %1 %{o*:%w%*-gnatO} \
     %i \
     %{gnatc*|gnats*: -o %j} %{-param*} ", 0, 0, 0},

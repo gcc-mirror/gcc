@@ -26,32 +26,26 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "vec.h"
-#include "alias.h"
+#include "ggc.h"
+#include "target.h"
+#include "function.h"
 #include "tree.h"
-#include "inchash.h"
-#include "fold-const.h"
+#include "timevar.h"
 #include "stringpool.h"
+#include "cgraph.h"
+#include "diagnostic.h"
+#include "alias.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "attribs.h"
 #include "varasm.h"
 #include "flags.h"
 #include "toplev.h"
-#include "diagnostic-core.h"
 #include "output.h"
-#include "ggc.h"
 #include "debug.h"
 #include "convert.h"
-#include "target.h"
 #include "common/common-target.h"
 #include "langhooks.h"
-#include "hash-map.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "cgraph.h"
-#include "diagnostic.h"
-#include "timevar.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
 #include "tree-iterator.h"
@@ -1499,9 +1493,7 @@ relate_alias_sets (tree gnu_new_type, tree gnu_old_type, enum alias_set_op op)
       /* The alias set shouldn't be copied between array types with different
 	 aliasing settings because this can break the aliasing relationship
 	 between the array type and its element type.  */
-#ifndef ENABLE_CHECKING
-      if (flag_strict_aliasing)
-#endif
+      if (flag_checking || flag_strict_aliasing)
 	gcc_assert (!(TREE_CODE (gnu_new_type) == ARRAY_TYPE
 		      && TREE_CODE (gnu_old_type) == ARRAY_TYPE
 		      && TYPE_NONALIASED_COMPONENT (gnu_new_type)
@@ -5369,6 +5361,12 @@ enum c_builtin_type
 			    ARG6, ARG7) NAME,
 #define DEF_FUNCTION_TYPE_8(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 			    ARG6, ARG7, ARG8) NAME,
+#define DEF_FUNCTION_TYPE_9(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			    ARG6, ARG7, ARG8, ARG9) NAME,
+#define DEF_FUNCTION_TYPE_10(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			     ARG6, ARG7, ARG8, ARG9, ARG10) NAME,
+#define DEF_FUNCTION_TYPE_11(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			     ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) NAME,
 #define DEF_FUNCTION_TYPE_VAR_0(NAME, RETURN) NAME,
 #define DEF_FUNCTION_TYPE_VAR_1(NAME, RETURN, ARG1) NAME,
 #define DEF_FUNCTION_TYPE_VAR_2(NAME, RETURN, ARG1, ARG2) NAME,
@@ -5376,10 +5374,10 @@ enum c_builtin_type
 #define DEF_FUNCTION_TYPE_VAR_4(NAME, RETURN, ARG1, ARG2, ARG3, ARG4) NAME,
 #define DEF_FUNCTION_TYPE_VAR_5(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) \
 				NAME,
+#define DEF_FUNCTION_TYPE_VAR_6(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				ARG6) NAME,
 #define DEF_FUNCTION_TYPE_VAR_7(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 				ARG6, ARG7) NAME,
-#define DEF_FUNCTION_TYPE_VAR_11(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
-				 ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) NAME,
 #define DEF_POINTER_TYPE(NAME, TYPE) NAME,
 #include "builtin-types.def"
 #undef DEF_PRIMITIVE_TYPE
@@ -5392,14 +5390,17 @@ enum c_builtin_type
 #undef DEF_FUNCTION_TYPE_6
 #undef DEF_FUNCTION_TYPE_7
 #undef DEF_FUNCTION_TYPE_8
+#undef DEF_FUNCTION_TYPE_9
+#undef DEF_FUNCTION_TYPE_10
+#undef DEF_FUNCTION_TYPE_11
 #undef DEF_FUNCTION_TYPE_VAR_0
 #undef DEF_FUNCTION_TYPE_VAR_1
 #undef DEF_FUNCTION_TYPE_VAR_2
 #undef DEF_FUNCTION_TYPE_VAR_3
 #undef DEF_FUNCTION_TYPE_VAR_4
 #undef DEF_FUNCTION_TYPE_VAR_5
+#undef DEF_FUNCTION_TYPE_VAR_6
 #undef DEF_FUNCTION_TYPE_VAR_7
-#undef DEF_FUNCTION_TYPE_VAR_11
 #undef DEF_POINTER_TYPE
   BT_LAST
 };
@@ -5493,6 +5494,18 @@ install_builtin_function_types (void)
 			    ARG6, ARG7, ARG8)				\
   def_fn_type (ENUM, RETURN, 0, 8, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6,	\
 	       ARG7, ARG8);
+#define DEF_FUNCTION_TYPE_9(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			    ARG6, ARG7, ARG8, ARG9)			\
+  def_fn_type (ENUM, RETURN, 0, 9, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6,	\
+	       ARG7, ARG8, ARG9);
+#define DEF_FUNCTION_TYPE_10(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5,\
+			     ARG6, ARG7, ARG8, ARG9, ARG10)		\
+  def_fn_type (ENUM, RETURN, 0, 10, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6,	\
+	       ARG7, ARG8, ARG9, ARG10);
+#define DEF_FUNCTION_TYPE_11(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5,\
+			     ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)	\
+  def_fn_type (ENUM, RETURN, 0, 11, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6,	\
+	       ARG7, ARG8, ARG9, ARG10, ARG11);
 #define DEF_FUNCTION_TYPE_VAR_0(ENUM, RETURN) \
   def_fn_type (ENUM, RETURN, 1, 0);
 #define DEF_FUNCTION_TYPE_VAR_1(ENUM, RETURN, ARG1) \
@@ -5505,13 +5518,12 @@ install_builtin_function_types (void)
   def_fn_type (ENUM, RETURN, 1, 4, ARG1, ARG2, ARG3, ARG4);
 #define DEF_FUNCTION_TYPE_VAR_5(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) \
   def_fn_type (ENUM, RETURN, 1, 5, ARG1, ARG2, ARG3, ARG4, ARG5);
+#define DEF_FUNCTION_TYPE_VAR_6(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				ARG6)				\
+  def_fn_type (ENUM, RETURN, 1, 6, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6);
 #define DEF_FUNCTION_TYPE_VAR_7(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 				ARG6, ARG7)				\
   def_fn_type (ENUM, RETURN, 1, 7, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
-#define DEF_FUNCTION_TYPE_VAR_11(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
-				 ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) \
-  def_fn_type (ENUM, RETURN, 1, 11, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6,	\
-	       ARG7, ARG8, ARG9, ARG10, ARG11);
 #define DEF_POINTER_TYPE(ENUM, TYPE) \
   builtin_types[(int) ENUM] = build_pointer_type (builtin_types[(int) TYPE]);
 
@@ -5527,14 +5539,17 @@ install_builtin_function_types (void)
 #undef DEF_FUNCTION_TYPE_6
 #undef DEF_FUNCTION_TYPE_7
 #undef DEF_FUNCTION_TYPE_8
+#undef DEF_FUNCTION_TYPE_9
+#undef DEF_FUNCTION_TYPE_10
+#undef DEF_FUNCTION_TYPE_11
 #undef DEF_FUNCTION_TYPE_VAR_0
 #undef DEF_FUNCTION_TYPE_VAR_1
 #undef DEF_FUNCTION_TYPE_VAR_2
 #undef DEF_FUNCTION_TYPE_VAR_3
 #undef DEF_FUNCTION_TYPE_VAR_4
 #undef DEF_FUNCTION_TYPE_VAR_5
+#undef DEF_FUNCTION_TYPE_VAR_6
 #undef DEF_FUNCTION_TYPE_VAR_7
-#undef DEF_FUNCTION_TYPE_VAR_11
 #undef DEF_POINTER_TYPE
   builtin_types[(int) BT_LAST] = NULL_TREE;
 }

@@ -69,6 +69,7 @@ package Ada.Containers.Formal_Ordered_Sets with
   SPARK_Mode
 is
    pragma Annotate (GNATprove, External_Axiomatization);
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean
    with
@@ -288,7 +289,7 @@ is
 
       with function "<" (Left, Right : Key_Type) return Boolean is <>;
 
-   package Generic_Keys is
+   package Generic_Keys with SPARK_Mode is
 
       function Equivalent_Keys (Left, Right : Key_Type) return Boolean with
         Global => null;

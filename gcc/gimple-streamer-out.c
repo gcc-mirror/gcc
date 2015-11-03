@@ -22,19 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "options.h"
-#include "fold-const.h"
-#include "internal-fn.h"
+#include "gimple-ssa.h"
+#include "gimple-streamer.h"
 #include "tree-eh.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
 #include "cgraph.h"
-#include "gimple-streamer.h"
 #include "value-prof.h"
 
 /* Output PHI function PHI to the main stream in OB.  */
@@ -61,7 +56,7 @@ output_phi (struct output_block *ob, gphi *phi)
 /* Emit statement STMT on the main stream of output block OB.  */
 
 static void
-output_gimple_stmt (struct output_block *ob, gimple stmt)
+output_gimple_stmt (struct output_block *ob, gimple *stmt)
 {
   unsigned i;
   enum gimple_code code;
@@ -223,7 +218,7 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
 	  int region;
-	  gimple stmt = gsi_stmt (bsi);
+	  gimple *stmt = gsi_stmt (bsi);
 
 	  output_gimple_stmt (ob, stmt);
 

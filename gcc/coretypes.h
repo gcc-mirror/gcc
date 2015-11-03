@@ -82,9 +82,8 @@ typedef const struct hwivec_def *const_hwivec;
 union tree_node;
 typedef union tree_node *tree;
 typedef const union tree_node *const_tree;
-typedef struct gimple_statement_base *gimple;
-typedef const struct gimple_statement_base *const_gimple;
-typedef gimple gimple_seq;
+struct gimple;
+typedef gimple *gimple_seq;
 struct gimple_stmt_iterator;
 
 /* Forward decls for leaf gimple subclasses (for individual gimple codes).
@@ -113,6 +112,7 @@ struct gomp_atomic_load;
 struct gomp_atomic_store;
 struct gomp_continue;
 struct gomp_critical;
+struct gomp_ordered;
 struct gomp_for;
 struct gomp_parallel;
 struct gomp_task;
@@ -225,9 +225,16 @@ struct basic_block_def;
 typedef struct basic_block_def *basic_block;
 typedef const struct basic_block_def *const_basic_block;
 
-#define obstack_chunk_alloc	xmalloc
-#define obstack_chunk_free	free
-#define OBSTACK_CHUNK_SIZE	0
+#if !defined (GENERATOR_FILE)
+# define OBSTACK_CHUNK_SIZE     memory_block_pool::block_size
+# define obstack_chunk_alloc    mempool_obstack_chunk_alloc
+# define obstack_chunk_free     mempool_obstack_chunk_free
+#else
+# define OBSTACK_CHUNK_SIZE     0
+# define obstack_chunk_alloc    xmalloc
+# define obstack_chunk_free     free
+#endif
+
 #define gcc_obstack_init(OBSTACK)				\
   obstack_specify_allocation ((OBSTACK), OBSTACK_CHUNK_SIZE, 0,	\
 			      obstack_chunk_alloc,		\
@@ -328,6 +335,7 @@ typedef unsigned char uchar;
 #include "hash-set.h"
 #include "input.h"
 #include "is-a.h"
+#include "memory-block.h"
 #endif /* GENERATOR_FILE && !USED_FOR_TARGET */
 
 #endif /* coretypes.h */

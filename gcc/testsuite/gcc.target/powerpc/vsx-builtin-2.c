@@ -6,10 +6,10 @@
 /* { dg-final { scan-assembler "xvaddsp" } } */
 /* { dg-final { scan-assembler "xvsubsp" } } */
 /* { dg-final { scan-assembler "xvmulsp" } } */
-/* { dg-final { scan-assembler "xvmadd" } } */
+/* { dg-final { scan-assembler "vmadd" } } */
 /* { dg-final { scan-assembler "xvmsub" } } */
 /* { dg-final { scan-assembler "xvnmadd" } } */
-/* { dg-final { scan-assembler "xvnmsub" } } */
+/* { dg-final { scan-assembler "vnmsub" } } */
 /* { dg-final { scan-assembler "xvdivsp" } } */
 /* { dg-final { scan-assembler "xvmaxsp" } } */
 /* { dg-final { scan-assembler "xvminsp" } } */

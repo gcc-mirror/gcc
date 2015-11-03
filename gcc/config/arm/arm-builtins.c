@@ -20,31 +20,21 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "target.h"
+#include "function.h"
 #include "rtl.h"
-#include "alias.h"
 #include "tree.h"
+#include "gimple-expr.h"
+#include "tm_p.h"
+#include "optabs.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "diagnostic-core.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "function.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
-#include "tm_p.h"
-#include "recog.h"
 #include "langhooks.h"
-#include "diagnostic-core.h"
-#include "optabs.h"
-#include "gimple-expr.h"
-#include "target.h"
-#include "arm-protos.h"
 
 #define SIMD_MAX_BUILTIN_ARGS 5
 
@@ -2974,7 +2964,7 @@ arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
        __builtin_arm_set_fpscr (masked_fenv);  */
 
-  fenv_var = create_tmp_var (unsigned_type_node);
+  fenv_var = create_tmp_var_raw (unsigned_type_node);
   get_fpscr = arm_builtin_decls[ARM_BUILTIN_GET_FPSCR];
   set_fpscr = arm_builtin_decls[ARM_BUILTIN_SET_FPSCR];
   mask = build_int_cst (unsigned_type_node,
@@ -3001,7 +2991,7 @@ arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
        __atomic_feraiseexcept (new_fenv_var);  */
 
-  new_fenv_var = create_tmp_var (unsigned_type_node);
+  new_fenv_var = create_tmp_var_raw (unsigned_type_node);
   reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node, new_fenv_var,
 			build_call_expr (get_fpscr, 0));
   restore_fnenv = build_call_expr (set_fpscr, 1, fenv_var);

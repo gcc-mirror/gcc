@@ -37,63 +37,63 @@ foo (int f)
     abort ();
   #pragma omp target data device (d) map (to: h)
   {
-    #pragma omp target device (d)
+    #pragma omp target device (d) map (h)
     if (omp_get_level () != 0 || (f && !omp_is_initial_device ()) || h++ != 5)
       abort ();
     #pragma omp target update device (d) from (h)
   }
   #pragma omp target data if (v > 1) map (to: h)
   {
-    #pragma omp target if (v > 1)
+    #pragma omp target if (v > 1) map(h)
     if (omp_get_level () != 0 || !omp_is_initial_device () || h++ != 6)
       abort ();
     #pragma omp target update if (v > 1) from (h)
   }
   #pragma omp target data device (d) if (v > 1) map (to: h)
   {
-    #pragma omp target device (d) if (v > 1)
+    #pragma omp target device (d) if (v > 1) map(h)
     if (omp_get_level () != 0 || !omp_is_initial_device () || h++ != 7)
       abort ();
     #pragma omp target update device (d) if (v > 1) from (h)
   }
   #pragma omp target data if (v <= 1) map (to: h)
   {
-    #pragma omp target if (v <= 1)
+    #pragma omp target if (v <= 1) map (tofrom: h)
     if (omp_get_level () != 0 || h++ != 8)
       abort ();
     #pragma omp target update if (v <= 1) from (h)
   }
   #pragma omp target data device (d) if (v <= 1) map (to: h)
   {
-    #pragma omp target device (d) if (v <= 1)
+    #pragma omp target device (d) if (v <= 1) map (h)
     if (omp_get_level () != 0 || (f && !omp_is_initial_device ()) || h++ != 9)
       abort ();
     #pragma omp target update device (d) if (v <= 1) from (h)
   }
   #pragma omp target data if (0) map (to: h)
   {
-    #pragma omp target if (0)
+    #pragma omp target if (0) map (h)
     if (omp_get_level () != 0 || !omp_is_initial_device () || h++ != 10)
       abort ();
     #pragma omp target update if (0) from (h)
   }
   #pragma omp target data device (d) if (0) map (to: h)
   {
-    #pragma omp target device (d) if (0)
+    #pragma omp target device (d) if (0) map (h)
     if (omp_get_level () != 0 || !omp_is_initial_device () || h++ != 11)
       abort ();
     #pragma omp target update device (d) if (0) from (h)
   }
   #pragma omp target data if (1) map (to: h)
   {
-    #pragma omp target if (1)
+    #pragma omp target if (1) map (tofrom: h)
     if (omp_get_level () != 0 || h++ != 12)
       abort ();
     #pragma omp target update if (1) from (h)
   }
   #pragma omp target data device (d) if (1) map (to: h)
   {
-    #pragma omp target device (d) if (1)
+    #pragma omp target device (d) if (1) map (tofrom: h)
     if (omp_get_level () != 0 || (f && !omp_is_initial_device ()) || h++ != 13)
       abort ();
     #pragma omp target update device (d) if (1) from (h)

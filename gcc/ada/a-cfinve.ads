@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2014, Free Software Foundation, Inc.           --
+--          Copyright (C) 2014-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -41,8 +41,12 @@ generic
    type Element_Type (<>) is private;
    Max_Size_In_Storage_Elements : Natural :=
                                     Element_Type'Max_Size_In_Storage_Elements;
-   --  This has the same meaning as in Ada.Containers.Bounded_Holders, with the
-   --  same restrictions.
+   --  Maximum size of Vector elements in bytes. This has the same meaning as
+   --  in Ada.Containers.Bounded_Holders, with the same restrictions. Note that
+   --  setting this too small can lead to erroneous execution; see comments in
+   --  Ada.Containers.Bounded_Holders. If Element_Type is class-wide, it is the
+   --  responsibility of clients to calculate the maximum size of all types in
+   --  the class.
 
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
@@ -55,6 +59,7 @@ package Ada.Containers.Formal_Indefinite_Vectors with
   SPARK_Mode => On
 is
    pragma Annotate (GNATprove, External_Axiomatization);
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    subtype Extended_Index is Index_Type'Base
    range Index_Type'First - 1 ..
@@ -198,7 +203,7 @@ is
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
-   package Generic_Sorting is
+   package Generic_Sorting with SPARK_Mode is
 
       function Is_Sorted (Container : Vector) return Boolean with
         Global => null;

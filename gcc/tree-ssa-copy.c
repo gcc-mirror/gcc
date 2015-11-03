@@ -23,22 +23,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "flags.h"
-#include "tm_p.h"
 #include "gimple-pretty-print.h"
-#include "internal-fn.h"
+#include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
-#include "tree-pass.h"
 #include "tree-ssa-propagate.h"
-#include "langhooks.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
-#include "tree-ssa-dom.h"
 #include "tree-ssa-loop-niter.h"
 
 
@@ -82,7 +75,7 @@ static unsigned n_copy_of;
 /* Return true if this statement may generate a useful copy.  */
 
 static bool
-stmt_may_generate_copy (gimple stmt)
+stmt_may_generate_copy (gimple *stmt)
 {
   if (gimple_code (stmt) == GIMPLE_PHI)
     return !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (stmt));
@@ -195,7 +188,7 @@ dump_copy_of (FILE *file, tree var)
    value and store the LHS into *RESULT_P.  */
 
 static enum ssa_prop_result
-copy_prop_visit_assignment (gimple stmt, tree *result_p)
+copy_prop_visit_assignment (gimple *stmt, tree *result_p)
 {
   tree lhs, rhs;
 
@@ -225,7 +218,7 @@ copy_prop_visit_assignment (gimple stmt, tree *result_p)
    SSA_PROP_VARYING.  */
 
 static enum ssa_prop_result
-copy_prop_visit_cond_stmt (gimple stmt, edge *taken_edge_p)
+copy_prop_visit_cond_stmt (gimple *stmt, edge *taken_edge_p)
 {
   enum ssa_prop_result retval = SSA_PROP_VARYING;
   location_t loc = gimple_location (stmt);
@@ -271,7 +264,7 @@ copy_prop_visit_cond_stmt (gimple stmt, edge *taken_edge_p)
    SSA_PROP_VARYING.  */
 
 static enum ssa_prop_result
-copy_prop_visit_stmt (gimple stmt, edge *taken_edge_p, tree *result_p)
+copy_prop_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *result_p)
 {
   enum ssa_prop_result retval;
 
@@ -449,7 +442,7 @@ init_copy_prop (void)
       for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
 	   gsi_next (&si))
 	{
-	  gimple stmt = gsi_stmt (si);
+	  gimple *stmt = gsi_stmt (si);
 	  ssa_op_iter iter;
           tree def;
 
@@ -561,7 +554,7 @@ fini_copy_prop (void)
   bool changed = substitute_and_fold (get_value, NULL, true);
   if (changed)
     {
-      free_numbers_of_iterations_estimates ();
+      free_numbers_of_iterations_estimates (cfun);
       if (scev_initialized_p ())
 	scev_reset ();
     }

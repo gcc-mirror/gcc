@@ -90,6 +90,14 @@ package body System.OS_Primitives is
    Signature : Signature_Type := 0;
    pragma Atomic (Signature);
 
+   function Monotonic_Clock return Duration;
+   pragma Export (Ada, Monotonic_Clock, "__gnat_monotonic_clock");
+   --  Return "absolute" time, represented as an offset relative to "the Unix
+   --  Epoch", which is Jan 1, 1970 00:00:00 UTC. This clock implementation is
+   --  immune to the system's clock changes. Export this function so that it
+   --  can be imported from s-taprop-mingw.adb without changing the shared
+   --  spec (s-osprim.ads).
+
    procedure Get_Base_Time (Data : in out Clock_Data);
    --  Retrieve the base time and base ticks. These values will be used by
    --  clock to compute the current time by adding to it a fraction of the

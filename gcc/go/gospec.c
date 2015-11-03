@@ -106,6 +106,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* The total number of arguments with the new stuff.  */
   int num_args = 1;
 
+  /* Supports split stack */
+  int supports_split_stack = 0;
+
   /* Whether the -o option was used.  */
   bool saw_opt_o = false;
 
@@ -116,6 +119,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   /* Whether the -S option was used.  */
   bool saw_opt_S = false;
+
+#ifdef TARGET_CAN_SPLIT_STACK_64BIT
+  /* Whether the -m64 option is in force. */
+  bool is_m64 = TARGET_CAN_SPLIT_STACK_64BIT;
+#endif
 
   /* The first input file with an extension of .go.  */
   const char *first_go_file = NULL;  
@@ -151,6 +159,16 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	    /* Unrecognized libraries (e.g. -lfoo) may require libgo.  */
 	    library = (library == 0) ? 1 : library;
 	  break;
+
+#ifdef TARGET_CAN_SPLIT_STACK_64BIT
+	case OPT_m32:
+	  is_m64 = false;
+	  break;
+
+	case OPT_m64:
+	  is_m64 = true;
+	  break;
+#endif
 
 	case OPT_pg:
 	case OPT_p:
@@ -236,15 +254,22 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* Copy the 0th argument, i.e., the name of the program itself.  */
   new_decoded_options[j++] = decoded_options[i++];
 
-  /* If we are linking, pass -fsplit-stack if it is supported.  */
 #ifdef TARGET_CAN_SPLIT_STACK
-  if (library >= 0)
+  supports_split_stack = 1;
+#endif
+
+#ifdef TARGET_CAN_SPLIT_STACK_64BIT
+  if (is_m64)
+    supports_split_stack = 1;
+#endif
+
+  /* If we are linking, pass -fsplit-stack if it is supported.  */
+  if ((library >= 0) && supports_split_stack)
     {
       generate_option (OPT_fsplit_stack, NULL, 1, CL_DRIVER,
 		       &new_decoded_options[j]);
       j++;
     }
-#endif
 
   /* NOTE: We start at 1 now, not 0.  */
   while (i < argc)
@@ -381,19 +406,17 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     generate_option (OPT_shared_libgcc, NULL, 1, CL_DRIVER,
 		     &new_decoded_options[j++]);
 
-#ifdef TARGET_CAN_SPLIT_STACK
   /* libgcc wraps pthread_create to support split stack, however, due to
      relative ordering of -lpthread and -lgcc, we can't just mark
      __real_pthread_create in libgcc as non-weak.  But we need to link in
      pthread_create from pthread if we are statically linking, so we work-
      around by passing -u pthread_create to the linker. */
-  if (static_link)
+  if (static_link && supports_split_stack)
     {
       generate_option (OPT_Wl_, "-u,pthread_create", 1, CL_DRIVER,
 		       &new_decoded_options[j]);
       j++;
     }
-#endif
 
 #if defined(TARGET_SOLARIS) && !defined(USE_GLD)
   /* We use a common symbol for go$zerovalue.  On Solaris, when not

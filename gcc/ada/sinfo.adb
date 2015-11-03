@@ -1760,6 +1760,14 @@ package body Sinfo is
       return Flag13 (N);
    end Is_Accessibility_Actual;
 
+   function Is_Analyzed_Pragma
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      return Flag5 (N);
+   end Is_Analyzed_Pragma;
+
    function Is_Asynchronous_Call_Block
       (N : Node_Id) return Boolean is
    begin
@@ -1848,7 +1856,8 @@ package body Sinfo is
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Subprogram_Body);
+        or else NT (N).Nkind = N_Subprogram_Body
+        or else NT (N).Nkind = N_Subprogram_Declaration);
       return Flag8 (N);
    end Is_Entry_Barrier_Function;
 
@@ -1859,6 +1868,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Function_Call);
       return Flag11 (N);
    end Is_Expanded_Build_In_Place_Call;
+
+   function Is_Expanded_Contract
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Contract);
+      return Flag1 (N);
+   end Is_Expanded_Contract;
 
    function Is_Finalization_Wrapper
       (N : Node_Id) return Boolean is
@@ -1909,13 +1926,13 @@ package body Sinfo is
       return Flag11 (N);
    end Is_In_Discriminant_Check;
 
-   function Is_Inherited
+   function Is_Inherited_Pragma
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Pragma);
       return Flag4 (N);
-   end Is_Inherited;
+   end Is_Inherited_Pragma;
 
    function Is_Machine_Number
       (N : Node_Id) return Boolean is
@@ -1996,6 +2013,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Block_Statement);
       return Flag6 (N);
    end Is_Task_Allocation_Block;
+
+   function Is_Task_Body_Procedure
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Subprogram_Body
+        or else NT (N).Nkind = N_Subprogram_Declaration);
+      return Flag1 (N);
+   end Is_Task_Body_Procedure;
 
    function Is_Task_Master
       (N : Node_Id) return Boolean is
@@ -4973,6 +4999,14 @@ package body Sinfo is
       Set_Flag13 (N, Val);
    end Set_Is_Accessibility_Actual;
 
+   procedure Set_Is_Analyzed_Pragma
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag5 (N, Val);
+   end Set_Is_Analyzed_Pragma;
+
    procedure Set_Is_Asynchronous_Call_Block
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5061,7 +5095,8 @@ package body Sinfo is
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Subprogram_Body);
+        or else NT (N).Nkind = N_Subprogram_Body
+        or else NT (N).Nkind = N_Subprogram_Declaration);
       Set_Flag8 (N, Val);
    end Set_Is_Entry_Barrier_Function;
 
@@ -5072,6 +5107,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Function_Call);
       Set_Flag11 (N, Val);
    end Set_Is_Expanded_Build_In_Place_Call;
+
+   procedure Set_Is_Expanded_Contract
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Contract);
+      Set_Flag1 (N, Val);
+   end Set_Is_Expanded_Contract;
 
    procedure Set_Is_Finalization_Wrapper
       (N : Node_Id; Val : Boolean := True) is
@@ -5122,13 +5165,13 @@ package body Sinfo is
       Set_Flag11 (N, Val);
    end Set_Is_In_Discriminant_Check;
 
-   procedure Set_Is_Inherited
+   procedure Set_Is_Inherited_Pragma
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Pragma);
       Set_Flag4 (N, Val);
-   end Set_Is_Inherited;
+   end Set_Is_Inherited_Pragma;
 
    procedure Set_Is_Machine_Number
       (N : Node_Id; Val : Boolean := True) is
@@ -5209,6 +5252,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Block_Statement);
       Set_Flag6 (N, Val);
    end Set_Is_Task_Allocation_Block;
+
+   procedure Set_Is_Task_Body_Procedure
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Subprogram_Body
+        or else NT (N).Nkind = N_Subprogram_Declaration);
+      Set_Flag1 (N, Val);
+   end Set_Is_Task_Body_Procedure;
 
    procedure Set_Is_Task_Master
       (N : Node_Id; Val : Boolean := True) is

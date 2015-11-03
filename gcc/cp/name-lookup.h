@@ -88,6 +88,7 @@ struct GTY(()) cxx_saved_binding {
 
 extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
+extern void push_binding (tree, tree, cp_binding_level*);
 extern void pop_binding (tree, tree);
 extern void pop_bindings_and_leave_scope (void);
 extern tree constructor_name (tree);
@@ -120,6 +121,7 @@ enum scope_kind {
 			specialization.  Since, by definition, an
 			explicit specialization is introduced by
 			"template <>", this scope is always empty.  */
+  sk_transaction,    /* A synchronized or atomic statement.  */
   sk_omp	     /* An OpenMP structured block.  */
 };
 

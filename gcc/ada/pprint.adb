@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,13 +43,16 @@ package body Pprint is
    -- Expression_Image --
    ----------------------
 
-   function Expression_Image (Expr : Node_Id; Default : String)
-      return String is
+   function Expression_Image
+     (Expr    : Node_Id;
+      Default : String) return String
+   is
+      From_Source  : constant Boolean :=
+                       Comes_From_Source (Expr)
+                         and then not Opt.Debug_Generated_Code;
+      Append_Paren : Boolean := False;
       Left         : Node_Id := Original_Node (Expr);
       Right        : Node_Id := Original_Node (Expr);
-      From_Source  : constant Boolean :=
-        Comes_From_Source (Expr) and then not Opt.Debug_Generated_Code;
-      Append_Paren : Boolean := False;
 
       function Expr_Name
         (Expr        : Node_Id;
@@ -76,6 +79,10 @@ package body Pprint is
          Add_Paren : Boolean := True) return String;
       --  Return a string corresponding to List
 
+      ---------------
+      -- List_Name --
+      ---------------
+
       function List_Name
         (List      : Node_Id;
          Add_Space : Boolean := True;
@@ -87,6 +94,7 @@ package body Pprint is
             Add_Space : Boolean := True;
             Add_Paren : Boolean := True;
             Num       : Natural := 1) return String;
+         --  ??? what does this do
 
          ------------------------
          -- Internal_List_Name --
@@ -100,6 +108,7 @@ package body Pprint is
             Num       : Natural := 1) return String
          is
             function Prepend (S : String) return String;
+            --  ??? what does this do
 
             -------------
             -- Prepend --
@@ -137,20 +146,22 @@ package body Pprint is
                end if;
             end if;
 
+            --  ??? the Internal_List_Name calls can be factored out
+
             if First then
-               return Prepend
-                 (Expr_Name (List)
-                  & Internal_List_Name (Next (List),
-                    First     => False,
-                    Add_Paren => Add_Paren,
-                    Num       => Num + 1));
+               return Prepend (Expr_Name (List)
+                 & Internal_List_Name
+                     (List      => Next (List),
+                      First     => False,
+                      Add_Paren => Add_Paren,
+                      Num       => Num + 1));
             else
-               return ", " & Expr_Name (List) &
-                 Internal_List_Name
-                 (Next (List),
-                  First     => False,
-                  Add_Paren => Add_Paren,
-                  Num       => Num + 1);
+               return ", " & Expr_Name (List)
+                 & Internal_List_Name
+                     (List      => Next (List),
+                      First     => False,
+                      Add_Paren => Add_Paren,
+                      Num       => Num + 1);
             end if;
          end Internal_List_Name;
 
@@ -164,10 +175,13 @@ package body Pprint is
          end if;
 
          List_Name_Count := List_Name_Count + 1;
+
          declare
             Result : constant String :=
-              Internal_List_Name
-                (List, Add_Space => Add_Space, Add_Paren => Add_Paren);
+                       Internal_List_Name
+                         (List      => List,
+                          Add_Space => Add_Space,
+                          Add_Paren => Add_Paren);
          begin
             List_Name_Count := List_Name_Count - 1;
             return Result;
@@ -197,14 +211,14 @@ package body Pprint is
             when N_Character_Literal =>
                declare
                   Char : constant Int :=
-                    UI_To_Int (Char_Literal_Value (Expr));
+                           UI_To_Int (Char_Literal_Value (Expr));
                begin
                   if Char in 32 .. 127 then
                      return "'" & Character'Val (Char) & "'";
                   else
                      UI_Image (Char_Literal_Value (Expr));
-                     return "'\" & UI_Image_Buffer (1 .. UI_Image_Length)
-                       & "'";
+                     return
+                       "'\" & UI_Image_Buffer (1 .. UI_Image_Length) & "'";
                   end if;
                end;
 
@@ -223,8 +237,10 @@ package body Pprint is
 
             when N_Aggregate =>
                if Present (Sinfo.Expressions (Expr)) then
-                  return List_Name
-                    (First (Sinfo.Expressions (Expr)), Add_Space => False);
+                  return
+                    List_Name
+                      (List      => First (Sinfo.Expressions (Expr)),
+                       Add_Space => False);
 
                --  Do not return empty string for (others => <>) aggregate
                --  of a componentless record type. At least one caller (the
@@ -237,27 +253,30 @@ package body Pprint is
                   return ("(null record)");
 
                else
-                  return List_Name
-                    (First (Component_Associations (Expr)),
-                     Add_Space => False, Add_Paren => False);
+                  return
+                    List_Name
+                      (List      => First (Component_Associations (Expr)),
+                       Add_Space => False,
+                       Add_Paren => False);
                end if;
 
             when N_Extension_Aggregate =>
-               return "(" & Expr_Name (Ancestor_Part (Expr)) &
-                 " with " &
-                 List_Name (First (Sinfo.Expressions (Expr)),
-                            Add_Space => False, Add_Paren => False) &
-                 ")";
+               return "(" & Expr_Name (Ancestor_Part (Expr)) & " with "
+                 & List_Name
+                     (List      => First (Sinfo.Expressions (Expr)),
+                      Add_Space => False,
+                      Add_Paren => False) & ")";
 
             when N_Attribute_Reference =>
                if Take_Prefix then
                   declare
-                     Str    : constant String := Expr_Name (Prefix (Expr))
-                       & "'" & Get_Name_String (Attribute_Name (Expr));
                      Id     : constant Attribute_Id :=
-                       Get_Attribute_Id (Attribute_Name (Expr));
-                     Ranges : List_Id;
+                                Get_Attribute_Id (Attribute_Name (Expr));
+                     Str    : constant String :=
+                                Expr_Name (Prefix (Expr)) & "'"
+                                  & Get_Name_String (Attribute_Name (Expr));
                      N      : Node_Id;
+                     Ranges : List_Id;
 
                   begin
                      if (Id = Attribute_First or else Id = Attribute_Last)
@@ -271,22 +290,26 @@ package body Pprint is
                            end if;
 
                            if Nkind (N) = N_Subtype_Declaration then
-                              Ranges := Constraints (Constraint
-                                                     (Subtype_Indication (N)));
+                              Ranges :=
+                                Constraints
+                                  (Constraint (Subtype_Indication (N)));
 
                               if List_Length (Ranges) = 1
-                                and then Nkind_In
-                                  (First (Ranges),
-                                   N_Range,
-                                   N_Real_Range_Specification,
-                                   N_Signed_Integer_Type_Definition)
+                                and then
+                                  Nkind_In
+                                    (First (Ranges),
+                                     N_Range,
+                                     N_Real_Range_Specification,
+                                     N_Signed_Integer_Type_Definition)
                               then
                                  if Id = Attribute_First then
-                                    return Expression_Image
-                                      (Low_Bound (First (Ranges)), Str);
+                                    return
+                                      Expression_Image
+                                        (Low_Bound (First (Ranges)), Str);
                                  else
-                                    return Expression_Image
-                                      (High_Bound (First (Ranges)), Str);
+                                    return
+                                      Expression_Image
+                                        (High_Bound (First (Ranges)), Str);
                                  end if;
                               end if;
                            end if;
@@ -300,7 +323,18 @@ package body Pprint is
                end if;
 
             when N_Explicit_Dereference =>
-               if Take_Prefix then
+
+               --  Return "Foo" instead of "Parameter_Block.Foo.all"
+
+               if Hide_Parameter_Blocks
+                 and then Nkind (Prefix (Expr)) = N_Selected_Component
+                 and then Present (Etype (Prefix (Expr)))
+                 and then Is_Access_Type (Etype (Prefix (Expr)))
+                 and then Is_Param_Block_Component_Type (Etype (Prefix (Expr)))
+               then
+                  return Expr_Name (Selector_Name (Prefix (Expr)));
+
+               elsif Take_Prefix then
                   return Expr_Name (Prefix (Expr)) & ".all";
                else
                   return ".all";
@@ -308,31 +342,36 @@ package body Pprint is
 
             when N_Expanded_Name | N_Selected_Component =>
                if Take_Prefix then
-                  return Expr_Name (Prefix (Expr))
-                    & "." & Expr_Name (Selector_Name (Expr));
+                  return
+                    Expr_Name (Prefix (Expr)) & "." &
+                    Expr_Name (Selector_Name (Expr));
                else
                   return "." & Expr_Name (Selector_Name (Expr));
                end if;
 
             when N_Component_Association =>
                return "("
-                 & List_Name (First (Choices (Expr)),
-                              Add_Space => False, Add_Paren => False)
+                 & List_Name
+                     (List      => First (Choices (Expr)),
+                      Add_Space => False,
+                      Add_Paren => False)
                  & " => " & Expr_Name (Expression (Expr)) & ")";
 
             when N_If_Expression =>
                declare
                   N : constant Node_Id := First (Sinfo.Expressions (Expr));
                begin
-                  return "if " & Expr_Name (N) & " then " &
-                    Expr_Name (Next (N)) & " else " &
-                    Expr_Name (Next (Next (N)));
+                  return
+                    "if " & Expr_Name (N) & " then "
+                      & Expr_Name (Next (N)) & " else "
+                      & Expr_Name (Next (Next (N)));
                end;
 
             when N_Qualified_Expression =>
                declare
                   Mark : constant String :=
-                    Expr_Name (Subtype_Mark (Expr), Expand_Type => False);
+                           Expr_Name
+                             (Subtype_Mark (Expr), Expand_Type => False);
                   Str  : constant String := Expr_Name (Expression (Expr));
                begin
                   if Str (Str'First) = '(' and then Str (Str'Last) = ')' then
@@ -347,118 +386,145 @@ package body Pprint is
 
             when N_Raise_Constraint_Error =>
                if Present (Condition (Expr)) then
-                  return "[constraint_error when " &
-                    Expr_Name (Condition (Expr)) & "]";
+                  return
+                    "[constraint_error when "
+                      & Expr_Name (Condition (Expr)) & "]";
                else
                   return "[constraint_error]";
                end if;
 
             when N_Raise_Program_Error =>
                if Present (Condition (Expr)) then
-                  return "[program_error when " &
-                    Expr_Name (Condition (Expr)) & "]";
+                  return
+                    "[program_error when "
+                      & Expr_Name (Condition (Expr)) & "]";
                else
                   return "[program_error]";
                end if;
 
             when N_Range =>
-               return Expr_Name (Low_Bound (Expr)) & ".." &
+               return
+                 Expr_Name (Low_Bound (Expr)) & ".." &
                  Expr_Name (High_Bound (Expr));
 
             when N_Slice =>
-               return Expr_Name (Prefix (Expr)) & " (" &
+               return
+                 Expr_Name (Prefix (Expr)) & " (" &
                  Expr_Name (Discrete_Range (Expr)) & ")";
 
             when N_And_Then =>
-               return Expr_Name (Left_Opnd (Expr)) & " and then " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " and then " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_In =>
-               return Expr_Name (Left_Opnd (Expr)) & " in " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " in " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Not_In =>
-               return Expr_Name (Left_Opnd (Expr)) & " not in " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " not in " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Or_Else =>
-               return Expr_Name (Left_Opnd (Expr)) & " or else " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " or else " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_And =>
-               return Expr_Name (Left_Opnd (Expr)) & " and " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " and " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Or =>
-               return Expr_Name (Left_Opnd (Expr)) & " or " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " or " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Xor =>
-               return Expr_Name (Left_Opnd (Expr)) & " xor " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " xor " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Eq =>
-               return Expr_Name (Left_Opnd (Expr)) & " = " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " = " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Ne =>
-               return Expr_Name (Left_Opnd (Expr)) & " /= " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " /= " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Lt =>
-               return Expr_Name (Left_Opnd (Expr)) & " < " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " < " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Le =>
-               return Expr_Name (Left_Opnd (Expr)) & " <= " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " <= " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Gt =>
-               return Expr_Name (Left_Opnd (Expr)) & " > " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " > " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Ge =>
-               return Expr_Name (Left_Opnd (Expr)) & " >= " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " >= " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Add =>
-               return Expr_Name (Left_Opnd (Expr)) & " + " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " + " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Subtract =>
-               return Expr_Name (Left_Opnd (Expr)) & " - " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " - " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Multiply =>
-               return Expr_Name (Left_Opnd (Expr)) & " * " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " * " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Divide =>
-               return Expr_Name (Left_Opnd (Expr)) & " / " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " / " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Mod =>
-               return Expr_Name (Left_Opnd (Expr)) & " mod " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " mod " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Rem =>
-               return Expr_Name (Left_Opnd (Expr)) & " rem " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " rem " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Expon =>
-               return Expr_Name (Left_Opnd (Expr)) & " ** " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " ** " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Shift_Left =>
-               return Expr_Name (Left_Opnd (Expr)) & " << " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " << " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Shift_Right | N_Op_Shift_Right_Arithmetic =>
-               return Expr_Name (Left_Opnd (Expr)) & " >> " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " >> " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Concat =>
-               return Expr_Name (Left_Opnd (Expr)) & " & " &
+               return
+                 Expr_Name (Left_Opnd (Expr)) & " & " &
                  Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Plus =>
@@ -485,8 +551,9 @@ package body Pprint is
 
             when N_Indexed_Component =>
                if Take_Prefix then
-                  return Expr_Name (Prefix (Expr)) &
-                    List_Name (First (Sinfo.Expressions (Expr)));
+                  return
+                    Expr_Name (Prefix (Expr))
+                      & List_Name (First (Sinfo.Expressions (Expr)));
                else
                   return List_Name (First (Sinfo.Expressions (Expr)));
                end if;
@@ -498,12 +565,15 @@ package body Pprint is
                --  parentheses around function call to mark it specially.
 
                if Default = "" then
-                  return '(' & Expr_Name (Name (Expr)) &
-                    List_Name (First (Sinfo.Parameter_Associations (Expr))) &
-                      ')';
+                  return '('
+                    & Expr_Name (Name (Expr))
+                    & List_Name (First (Sinfo.Parameter_Associations (Expr)))
+                    & ')';
                else
-                  return Expr_Name (Name (Expr)) &
-                    List_Name (First (Sinfo.Parameter_Associations (Expr)));
+                  return
+                    Expr_Name (Name (Expr))
+                      & List_Name
+                          (First (Sinfo.Parameter_Associations (Expr)));
                end if;
 
             when N_Null =>
@@ -538,18 +608,24 @@ package body Pprint is
 
       loop
          case Nkind (Left) is
-            when N_Binary_Op | N_Membership_Test |
-                 N_And_Then  | N_Or_Else         =>
+            when N_And_Then                   |
+                 N_Binary_Op                  |
+                 N_Membership_Test            |
+                 N_Or_Else                    =>
                Left := Original_Node (Left_Opnd (Left));
 
-            when N_Attribute_Reference  | N_Expanded_Name      |
-                 N_Explicit_Dereference | N_Indexed_Component  |
-                 N_Reference            | N_Selected_Component |
-                 N_Slice                                       =>
+            when N_Attribute_Reference        |
+                 N_Expanded_Name              |
+                 N_Explicit_Dereference       |
+                 N_Indexed_Component          |
+                 N_Reference                  |
+                 N_Selected_Component         |
+                 N_Slice                      =>
                Left := Original_Node (Prefix (Left));
 
-            when N_Designator | N_Defining_Program_Unit_Name |
-                 N_Function_Call                             =>
+            when N_Defining_Program_Unit_Name |
+                 N_Designator                 |
+                 N_Function_Call              =>
                Left := Original_Node (Name (Left));
 
             when N_Range =>
@@ -567,11 +643,14 @@ package body Pprint is
 
       loop
          case Nkind (Right) is
-            when N_Op       | N_Membership_Test |
-                 N_And_Then | N_Or_Else         =>
+            when N_And_Then           |
+                 N_Membership_Test    |
+                 N_Op                 |
+                 N_Or_Else            =>
                Right := Original_Node (Right_Opnd (Right));
 
-            when N_Selected_Component | N_Expanded_Name =>
+            when N_Expanded_Name      |
+                 N_Selected_Component =>
                Right := Original_Node (Selector_Name (Right));
 
             when N_Designator =>
@@ -635,10 +714,10 @@ package body Pprint is
 
       declare
          Scn      : Source_Ptr := Original_Location (Sloc (Left));
-         Src      : constant Source_Buffer_Ptr :=
-           Source_Text (Get_Source_File_Index (Scn));
          End_Sloc : constant Source_Ptr :=
-           Original_Location (Sloc (Right));
+                      Original_Location (Sloc (Right));
+         Src      : constant Source_Buffer_Ptr :=
+                      Source_Text (Get_Source_File_Index (Scn));
 
       begin
          if Scn > End_Sloc then
@@ -647,9 +726,9 @@ package body Pprint is
 
          declare
             Buffer           : String (1 .. Natural (End_Sloc - Scn));
+            Index            : Natural := 0;
             Skipping_Comment : Boolean := False;
             Underscore       : Boolean := False;
-            Index            : Natural := 0;
 
          begin
             if Right /= Expr then

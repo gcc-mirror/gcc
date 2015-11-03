@@ -216,13 +216,9 @@ static const size_t extra_order_size_table[] = {
 
 #define ROUND_UP_VALUE(x, f) ((f) - 1 - ((f) - 1 + (x)) % (f))
 
-/* Compute the smallest multiple of F that is >= X.  */
-
-#define ROUND_UP(x, f) (CEIL (x, f) * (f))
-
 /* Round X to next multiple of the page size */
 
-#define PAGE_ALIGN(x) (((x) + G.pagesize - 1) & ~(G.pagesize - 1))
+#define PAGE_ALIGN(x) ROUND_UP ((x), G.pagesize)
 
 /* The Ith entry is the number of objects on a page or order I.  */
 
@@ -2205,12 +2201,11 @@ ggc_collect (void)
 void
 ggc_grow (void)
 {
-#ifndef ENABLE_CHECKING
-  G.allocated_last_gc = MAX (G.allocated_last_gc,
-			     G.allocated);
-#else
-  ggc_collect ();
-#endif
+  if (!flag_checking)
+    G.allocated_last_gc = MAX (G.allocated_last_gc,
+			       G.allocated);
+  else
+    ggc_collect ();
   if (!quiet_flag)
     fprintf (stderr, " {GC start %luk} ", (unsigned long) G.allocated / 1024);
 }

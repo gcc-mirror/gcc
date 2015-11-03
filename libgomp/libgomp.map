@@ -134,6 +134,36 @@ OMP_4.0 {
 	omp_is_initial_device_;
 } OMP_3.1;
 
+OMP_4.5 {
+  global:
+	omp_get_max_task_priority;
+	omp_get_max_task_priority_;
+	omp_get_num_places;
+	omp_get_num_places_;
+	omp_get_place_num_procs;
+	omp_get_place_num_procs_;
+	omp_get_place_num_procs_8_;
+	omp_get_place_proc_ids;
+	omp_get_place_proc_ids_;
+	omp_get_place_proc_ids_8_;
+	omp_get_place_num;
+	omp_get_place_num_;
+	omp_get_partition_num_places;
+	omp_get_partition_num_places_;
+	omp_get_partition_place_nums;
+	omp_get_partition_place_nums_;
+	omp_get_partition_place_nums_8_;
+	omp_get_initial_device;
+	omp_get_initial_device_;
+	omp_target_alloc;
+	omp_target_free;
+	omp_target_is_present;
+	omp_target_memcpy;
+	omp_target_memcpy_rect;
+	omp_target_associate_ptr;
+	omp_target_disassociate_ptr;
+} OMP_4.0;
+
 GOMP_1.0 {
   global:
 	GOMP_atomic_end;
@@ -234,10 +264,28 @@ GOMP_4.0.1 {
 	GOMP_offload_unregister;
 } GOMP_4.0;
 
-GOMP_4.0.2 {
+GOMP_4.5 {
   global:
+	GOMP_target_41;
+	GOMP_target_data_41;
+	GOMP_target_update_41;
+	GOMP_target_enter_exit_data;
+	GOMP_taskloop;
+	GOMP_taskloop_ull;
 	GOMP_offload_register_ver;
 	GOMP_offload_unregister_ver;
+	GOMP_loop_doacross_dynamic_start;
+	GOMP_loop_doacross_guided_start;
+	GOMP_loop_doacross_runtime_start;
+	GOMP_loop_doacross_static_start;
+	GOMP_doacross_post;
+	GOMP_doacross_wait;
+	GOMP_loop_ull_doacross_dynamic_start;
+	GOMP_loop_ull_doacross_guided_start;
+	GOMP_loop_ull_doacross_runtime_start;
+	GOMP_loop_ull_doacross_static_start;
+	GOMP_doacross_ull_post;
+	GOMP_doacross_ull_wait;
 } GOMP_4.0.1;
 
 OACC_2.0 {
@@ -331,6 +379,11 @@ GOACC_2.0 {
 	GOACC_get_thread_num;
 	GOACC_get_num_threads;
 };
+
+GOACC_2.0.1 {
+  global:
+	GOACC_parallel_keyed;
+} GOACC_2.0;
 
 GOMP_PLUGIN_1.0 {
   global:

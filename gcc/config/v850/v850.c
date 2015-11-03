@@ -22,37 +22,25 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
-#include "alias.h"
+#include "tm_p.h"
 #include "stringpool.h"
+#include "insn-config.h"
+#include "regs.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "diagnostic-core.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "calls.h"
-#include "regs.h"
-#include "insn-config.h"
 #include "conditions.h"
 #include "output.h"
 #include "insn-attr.h"
-#include "flags.h"
-#include "recog.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "diagnostic-core.h"
-#include "tm_p.h"
-#include "target.h"
 #include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "opts.h"
 #include "builtins.h"
 
 /* This file should be included last.  */
@@ -277,20 +265,17 @@ const_double_split (rtx x, HOST_WIDE_INT * p_high, HOST_WIDE_INT * p_low)
   if (GET_CODE (x) == CONST_DOUBLE)
     {
       long t[2];
-      REAL_VALUE_TYPE rv;
 
       switch (GET_MODE (x))
 	{
 	case DFmode:
-	  REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-	  REAL_VALUE_TO_TARGET_DOUBLE (rv, t);
+	  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), t);
 	  *p_high = t[1];	/* since v850 is little endian */
 	  *p_low = t[0];	/* high is second word */
 	  return;
 
 	case SFmode:
-	  REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-	  REAL_VALUE_TO_TARGET_SINGLE (rv, *p_high);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), *p_high);
 	  *p_low = 0;
 	  return;
 

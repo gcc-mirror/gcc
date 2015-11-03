@@ -548,6 +548,12 @@ package body Sem_Elab is
                if Msg_D /= "" and then Elab_Warnings then
                   Error_Msg_NE (Msg_D, N, Ent);
                end if;
+
+            --  In the access case emit first warning message as well,
+            --  otherwise list of calls will appear as errors.
+
+            elsif Elab_Warnings then
+               Error_Msg_NE (Msg_S, N, Ent);
             end if;
 
          --  Static elaboration checks, info message
@@ -561,15 +567,38 @@ package body Sem_Elab is
 
       --  Local variables
 
-      Loc  : constant Source_Ptr := Sloc (N);
-      Ent  : Entity_Id;
-      Decl : Node_Id;
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Inst_Case : constant Boolean := Nkind (N) in N_Generic_Instantiation;
+      --  Indicates if we have instantiation case
+
+      Ent                  : Entity_Id;
+      Callee_Unit_Internal : Boolean;
+      Caller_Unit_Internal : Boolean;
+      Decl                 : Node_Id;
+      Inst_Callee          : Source_Ptr;
+      Inst_Caller          : Source_Ptr;
+      Unit_Callee          : Unit_Number_Type;
+      Unit_Caller          : Unit_Number_Type;
+
+      Body_Acts_As_Spec : Boolean;
+      --  Set to true if call is to body acting as spec (no separate spec)
+
+      Cunit_SC : Boolean := False;
+      --  Set to suppress dynamic elaboration checks where one of the
+      --  enclosing scopes has Elaboration_Checks_Suppressed set, or else
+      --  if a pragma Elaborate[_All] applies to that scope, in which case
+      --  warnings on the scope are also suppressed. For the internal case,
+      --  we ignore this flag.
 
       E_Scope : Entity_Id;
       --  Top level scope of entity for called subprogram. This value includes
       --  following renamings and derivations, so this scope can be in a
       --  non-visible unit. This is the scope that is to be investigated to
       --  see whether an elaboration check is required.
+
+      Issue_In_SPARK : Boolean;
+      --  Flag set when a source entity is called during elaboration in SPARK
 
       W_Scope : Entity_Id;
       --  Top level scope of directly called entity for subprogram. This
@@ -582,28 +611,6 @@ package body Sem_Elab is
       --  package that is, in which case the Elaborate_All has to be placed
       --  on this intermediate package. These special cases are handled in
       --  Set_Elaboration_Constraint.
-
-      Body_Acts_As_Spec : Boolean;
-      --  Set to true if call is to body acting as spec (no separate spec)
-
-      Inst_Case : constant Boolean := Nkind (N) in N_Generic_Instantiation;
-      --  Indicates if we have instantiation case
-
-      Caller_Unit_Internal : Boolean;
-      Callee_Unit_Internal : Boolean;
-
-      Inst_Caller : Source_Ptr;
-      Inst_Callee : Source_Ptr;
-
-      Unit_Caller : Unit_Number_Type;
-      Unit_Callee : Unit_Number_Type;
-
-      Cunit_SC : Boolean := False;
-      --  Set to suppress dynamic elaboration checks where one of the
-      --  enclosing scopes has Elaboration_Checks_Suppressed set, or else
-      --  if a pragma Elaborate[_All] applies to that scope, in which case
-      --  warnings on the scope are also suppressed. For the internal case,
-      --  we ignore this flag.
 
    --  Start of processing for Check_A_Call
 
@@ -746,9 +753,7 @@ package body Sem_Elab is
       declare
          Ent : constant Entity_Id := Get_Referenced_Ent (N);
       begin
-         if Is_Init_Proc (Ent)
-           and then not In_Same_Extended_Unit (N, Ent)
-         then
+         if Is_Init_Proc (Ent) and then not In_Same_Extended_Unit (N, Ent) then
             W_Scope := Scope (Ent);
          else
             W_Scope := E;
@@ -961,6 +966,8 @@ package body Sem_Elab is
          return;
       end if;
 
+      Issue_In_SPARK := SPARK_Mode = On and Comes_From_Source (Ent);
+
       --  Now check if an Elaborate_All (or dynamic check) is needed
 
       if not Suppress_Elaboration_Warnings (Ent)
@@ -974,10 +981,9 @@ package body Sem_Elab is
          --  Instantiation case
 
          if Inst_Case then
-            if SPARK_Mode = On then
+            if Issue_In_SPARK then
                Error_Msg_NE
                  ("instantiation of & during elaboration in SPARK", N, Ent);
-
             else
                Elab_Warning
                  ("instantiation of & may raise Program_Error?l?",
@@ -993,7 +999,7 @@ package body Sem_Elab is
 
          --  Variable reference in SPARK mode
 
-         elsif Variable_Case then
+         elsif Variable_Case and Issue_In_SPARK then
             Error_Msg_NE
               ("reference to & during elaboration in SPARK", N, Ent);
 
@@ -1009,7 +1015,7 @@ package body Sem_Elab is
                   "info: implicit call to & during elaboration?$?",
                   Ent);
 
-            elsif SPARK_Mode = On then
+            elsif Issue_In_SPARK then
                Error_Msg_NE ("call to & during elaboration in SPARK", N, Ent);
 
             else
@@ -1025,7 +1031,7 @@ package body Sem_Elab is
          --  Case of Elaborate_All not present and required, for SPARK this
          --  is an error, so give an error message.
 
-         if SPARK_Mode = On then
+         if Issue_In_SPARK then
             Error_Msg_NE ("\Elaborate_All pragma required for&", N, W_Scope);
 
          --  Otherwise we generate an implicit pragma. For a subprogram
@@ -1506,7 +1512,9 @@ package body Sem_Elab is
                           or else Elaboration_Checks_Suppressed (Ent)
                           or else Elaboration_Checks_Suppressed (Scope (Ent))
                         then
-                           Set_No_Elaboration_Check (N);
+                           if Nkind (N) in N_Subprogram_Call then
+                              Set_No_Elaboration_Check (N);
+                           end if;
                         end if;
 
                         return;

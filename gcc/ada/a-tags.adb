@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,11 @@ with System.Storage_Elements; use System.Storage_Elements;
 with System.WCh_Con;          use System.WCh_Con;
 with System.WCh_StW;          use System.WCh_StW;
 
-pragma Elaborate_All (System.HTable);
+pragma Elaborate (System.HTable);
+--  Elaborate needed instead of Elaborate_All to avoid elaboration cycles
+--  when polling is turned on. This is safe because HTable doesn't do anything
+--  at elaboration time; it just contains a generic package we want to
+--  instantiate.
 
 package body Ada.Tags is
 

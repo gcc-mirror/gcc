@@ -66,6 +66,7 @@ package Ada.Containers.Formal_Doubly_Linked_Lists with
   SPARK_Mode
 is
    pragma Annotate (GNATprove, External_Axiomatization);
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    type List (Capacity : Count_Type) is private with
      Iterable => (First       => First,
@@ -299,7 +300,7 @@ is
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
-   package Generic_Sorting is
+   package Generic_Sorting with SPARK_Mode is
 
       function Is_Sorted (Container : List) return Boolean with
         Global => null;

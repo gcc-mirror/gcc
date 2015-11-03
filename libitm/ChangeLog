@@ -1,3 +1,17 @@
+2015-10-27  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Mark Shinwell  <shinwell@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+	    Rich Felker <dalias@libc.org>
+
+	* config/sh/sjlj.S (_ITM_beginTransaction): Bypass PLT calling
+	GTM_begin_transaction for compatibility with FDPIC.
+
+2015-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libitm.exp: Load multiline.exp before prune.exp,
+	using load_gcc_lib.
+
 2015-08-20  Gleb Fotengauer-Malinovskiy  <glebfm@altlinux.org>  (tiny change)
 
 	PR libitm/61164

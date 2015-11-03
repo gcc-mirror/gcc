@@ -22,26 +22,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "target.h"
 #include "rtl.h"
-#include "flags.h"
 #include "tree.h"
-#include "alias.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
+#include "cfghooks.h"
 #include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
+#include "dojump.h"
 #include "expr.h"
-#include "diagnostic-core.h"
-#include "tm_p.h"
 #include "cfgloop.h"
 #include "cfgrtl.h"
 #include "params.h"
-#include "target.h"
 #include "dumpfile.h"
 #include "loop-unroll.h"
 
@@ -734,7 +724,5 @@ doloop_optimize_loops (void)
 
   iv_analysis_done ();
 
-#ifdef ENABLE_CHECKING
-  verify_loop_structure ();
-#endif
+  checking_verify_loop_structure ();
 }

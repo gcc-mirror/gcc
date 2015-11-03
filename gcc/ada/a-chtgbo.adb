@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,10 @@ with System;  use type System.Address;
 
 package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
 
+   pragma Warnings (Off, "variable ""Busy*"" is not referenced");
+   pragma Warnings (Off, "variable ""Lock*"" is not referenced");
+   --  See comment in Ada.Containers.Helpers
+
    -------------------
    -- Checked_Index --
    -------------------
@@ -39,28 +43,9 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
      (Hash_Table : aliased in out Hash_Table_Type'Class;
       Node       : Count_Type) return Hash_Type
    is
-      Result : Hash_Type;
-
-      B : Natural renames Hash_Table.Busy;
-      L : Natural renames Hash_Table.Lock;
-
+      Lock : With_Lock (Hash_Table.TC'Unrestricted_Access);
    begin
-      B := B + 1;
-      L := L + 1;
-
-      Result := Index (Hash_Table, Hash_Table.Nodes (Node));
-
-      B := B - 1;
-      L := L - 1;
-
-      return Result;
-
-   exception
-      when others =>
-         B := B - 1;
-         L := L - 1;
-
-         raise;
+      return Index (Hash_Table, Hash_Table.Nodes (Node));
    end Checked_Index;
 
    -----------
@@ -69,10 +54,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
 
    procedure Clear (HT : in out Hash_Table_Type'Class) is
    begin
-      if HT.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (HT.TC);
 
       HT.Length := 0;
       --  HT.Busy := 0;
@@ -96,7 +78,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
    begin
       Prev := HT.Buckets (Indx);
 
-      if Prev = 0 then
+      if Checks and then Prev = 0 then
          raise Program_Error with
            "attempt to delete node from empty hash bucket";
       end if;
@@ -107,7 +89,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
          return;
       end if;
 
-      if HT.Length = 1 then
+      if Checks and then HT.Length = 1 then
          raise Program_Error with
            "attempt to delete node not in its proper hash bucket";
       end if;
@@ -115,7 +97,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
       loop
          Curr := Next (HT.Nodes (Prev));
 
-         if Curr = 0 then
+         if Checks and then Curr = 0 then
             raise Program_Error with
               "attempt to delete node not in its proper hash bucket";
          end if;
@@ -139,7 +121,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
       Curr : Count_Type;
 
    begin
-      if HT.Length = 0 then
+      if Checks and then HT.Length = 0 then
          raise Program_Error with
            "attempt to delete node from empty hashed container";
       end if;
@@ -147,7 +129,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
       Indx := Checked_Index (HT, X);
       Prev := HT.Buckets (Indx);
 
-      if Prev = 0 then
+      if Checks and then Prev = 0 then
          raise Program_Error with
            "attempt to delete node from empty hash bucket";
       end if;
@@ -158,7 +140,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
          return;
       end if;
 
-      if HT.Length = 1 then
+      if Checks and then HT.Length = 1 then
          raise Program_Error with
            "attempt to delete node not in its proper hash bucket";
       end if;
@@ -166,7 +148,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
       loop
          Curr := Next (HT.Nodes (Prev));
 
-         if Curr = 0 then
+         if Checks and then Curr = 0 then
             raise Program_Error with
               "attempt to delete node not in its proper hash bucket";
          end if;
@@ -363,13 +345,11 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
    function Generic_Equal
      (L, R : Hash_Table_Type'Class) return Boolean
    is
-      BL : Natural renames L'Unrestricted_Access.Busy;
-      LL : Natural renames L'Unrestricted_Access.Lock;
+      --  Per AI05-0022, the container implementation is required to detect
+      --  element tampering by a generic actual subprogram.
 
-      BR : Natural renames R'Unrestricted_Access.Busy;
-      LR : Natural renames R'Unrestricted_Access.Lock;
-
-      Result : Boolean;
+      Lock_L : With_Lock (L.TC'Unrestricted_Access);
+      Lock_R : With_Lock (R.TC'Unrestricted_Access);
 
       L_Index : Hash_Type;
       L_Node  : Count_Type;
@@ -398,23 +378,13 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
          L_Index := L_Index + 1;
       end loop;
 
-      --  Per AI05-0022, the container implementation is required to detect
-      --  element tampering by a generic actual subprogram.
-
-      BL := BL + 1;
-      LL := LL + 1;
-
-      BR := BR + 1;
-      LR := LR + 1;
-
       --  For each node of hash table L, search for an equivalent node in hash
       --  table R.
 
       N := L.Length;
       loop
          if not Find (HT => R, Key => L.Nodes (L_Node)) then
-            Result := False;
-            exit;
+            return False;
          end if;
 
          N := N - 1;
@@ -426,8 +396,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
             --  We have exhausted the nodes in this bucket
 
             if N = 0 then
-               Result := True;
-               exit;
+               return True;
             end if;
 
             --  Find the next bucket
@@ -439,24 +408,6 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
             end loop;
          end if;
       end loop;
-
-      BL := BL - 1;
-      LL := LL - 1;
-
-      BR := BR - 1;
-      LR := LR - 1;
-
-      return Result;
-
-   exception
-      when others =>
-         BL := BL - 1;
-         LL := LL - 1;
-
-         BR := BR - 1;
-         LR := LR - 1;
-
-         raise;
    end Generic_Equal;
 
    -----------------------
@@ -495,7 +446,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
 
       Count_Type'Base'Read (Stream, N);
 
-      if N < 0 then
+      if Checks and then N < 0 then
          raise Program_Error with "stream appears to be corrupt";
       end if;
 
@@ -503,7 +454,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
          return;
       end if;
 
-      if N > HT.Capacity then
+      if Checks and then N > HT.Capacity then
          raise Capacity_Error with "too many elements in stream";
       end if;
 

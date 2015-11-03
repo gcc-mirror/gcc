@@ -162,7 +162,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  auto __neg = _M_value[0] == 'n';
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
-	    __throw_regex_error(regex_constants::error_paren);
+	    __throw_regex_error(regex_constants::error_paren,
+				"Parenthesis is not closed.");
 	  auto __tmp = _M_pop();
 	  __tmp._M_append(_M_nfa->_M_insert_accept());
 	  _M_stack.push(
@@ -184,7 +185,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto __init = [this, &__neg]()
 	{
 	  if (_M_stack.empty())
-	    __throw_regex_error(regex_constants::error_badrepeat);
+	    __throw_regex_error(regex_constants::error_badrepeat,
+				"Nothing to repeat before a quantifier.");
 	  __neg = __neg && _M_match_token(_ScannerT::_S_token_opt);
 	};
       if (_M_match_token(_ScannerT::_S_token_closure0))
@@ -220,9 +222,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else if (_M_match_token(_ScannerT::_S_token_interval_begin))
 	{
 	  if (_M_stack.empty())
-	    __throw_regex_error(regex_constants::error_badrepeat);
+	    __throw_regex_error(regex_constants::error_badrepeat,
+				"Nothing to repeat before a quantifier.");
 	  if (!_M_match_token(_ScannerT::_S_token_dup_count))
-	    __throw_regex_error(regex_constants::error_badbrace);
+	    __throw_regex_error(regex_constants::error_badbrace,
+				"Unexpected token in brace expression.");
 	  _StateSeqT __r(_M_pop());
 	  _StateSeqT __e(*_M_nfa, _M_nfa->_M_insert_dummy());
 	  long __min_rep = _M_cur_int_value(10);
@@ -238,7 +242,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  else
 	    __n = 0;
 	  if (!_M_match_token(_ScannerT::_S_token_interval_end))
-	    __throw_regex_error(regex_constants::error_brace);
+	    __throw_regex_error(regex_constants::error_brace,
+				"Unexpected end of brace expression.");
 
 	  __neg = __neg && _M_match_token(_ScannerT::_S_token_opt);
 
@@ -257,7 +262,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  else
 	    {
 	      if (__n < 0)
-		__throw_regex_error(regex_constants::error_badbrace);
+		__throw_regex_error(regex_constants::error_badbrace,
+				    "Invalid range in brace expression.");
 	      auto __end = _M_nfa->_M_insert_dummy();
 	      // _M_alt is the "match more" branch, and _M_next is the
 	      // "match less" one. Switch _M_alt and _M_next of all created
@@ -324,7 +330,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _StateSeqT __r(*_M_nfa, _M_nfa->_M_insert_dummy());
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
-	    __throw_regex_error(regex_constants::error_paren);
+	    __throw_regex_error(regex_constants::error_paren,
+				"Parenthesis is not closed.");
 	  __r._M_append(_M_pop());
 	  _M_stack.push(__r);
 	}
@@ -333,7 +340,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _StateSeqT __r(*_M_nfa, _M_nfa->_M_insert_subexpr_begin());
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
-	    __throw_regex_error(regex_constants::error_paren);
+	    __throw_regex_error(regex_constants::error_paren,
+				"Parenthesis is not closed.");
 	  __r._M_append(_M_pop());
 	  __r._M_append(_M_nfa->_M_insert_subexpr_end());
 	  _M_stack.push(__r);
@@ -474,7 +482,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		{
 		  if (_M_match_token(_ScannerT::_S_token_bracket_end))
 		    return false;
-		  __throw_regex_error(regex_constants::error_range);
+		  __throw_regex_error(
+		    regex_constants::error_range,
+		    "Unexpected dash in bracket expression. For POSIX syntax, "
+		    "a dash is not treated literally only when it is at "
+		    "beginning or end.");
 		}
 	      __last_char.first = true;
 	      __last_char.second = _M_value[0];
@@ -492,7 +504,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    {
 		      if (_M_scanner._M_get_token()
 			  != _ScannerT::_S_token_bracket_end)
-			__throw_regex_error(regex_constants::error_range);
+			__throw_regex_error(
+			  regex_constants::error_range,
+			  "Unexpected end of bracket expression.");
 		      __matcher._M_add_char(_M_value[0]);
 		    }
 		}
@@ -508,7 +522,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					 _M_ctype.is(_CtypeT::upper,
 						     _M_value[0]));
       else
-	__throw_regex_error(regex_constants::error_brack);
+	__throw_regex_error(regex_constants::error_brack,
+			    "Unexpected character in bracket expression.");
 
       return true;
     }

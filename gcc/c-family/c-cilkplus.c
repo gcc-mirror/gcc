@@ -23,10 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
-#include "tree.h"
 #include "options.h"
+#include "tree.h"
 #include "c-common.h"
+#include "alias.h"
 
 /* Validate the body of a _Cilk_for construct or a <#pragma simd> for
    loop.

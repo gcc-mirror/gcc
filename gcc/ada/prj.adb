@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -143,7 +143,7 @@ package body Prj is
 
       while Last + S'Length > To'Last loop
          declare
-            New_Buffer : constant  String_Access :=
+            New_Buffer : constant String_Access :=
                            new String (1 .. 2 * To'Length);
          begin
             New_Buffer (1 .. Last) := To (1 .. Last);
@@ -592,9 +592,14 @@ package body Prj is
          In_Aggregate_Lib      : Boolean;
          From_Encapsulated_Lib : Boolean)
       is
+         package Name_Id_Set is
+           new Ada.Containers.Ordered_Sets (Element_Type => Path_Name_Type);
+
          Seen_Name : Name_Id_Set.Set;
          --  This set is needed to ensure that we do not handle the same
          --  project twice in the context of aggregate libraries.
+         --  Since duplicate project names are possible in the context of
+         --  aggregated projects, we need to check the full paths.
 
          procedure Recursive_Check
            (Project               : Project_Id;
@@ -673,12 +678,12 @@ package body Prj is
          --  Start of processing for Recursive_Check
 
          begin
-            if not Seen_Name.Contains (Project.Name) then
+            if not Seen_Name.Contains (Project.Path.Name) then
 
                --  Even if a project is aggregated multiple times in an
                --  aggregated library, we will only return it once.
 
-               Seen_Name.Include (Project.Name);
+               Seen_Name.Include (Project.Path.Name);
 
                if not Imported_First then
                   Action

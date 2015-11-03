@@ -24,14 +24,14 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "tree.h"
+#include "stringpool.h"
+#include "diagnostic-core.h"
 #include "jcf.h"
 #include "alias.h"
-#include "tree.h"
 #include "fold-const.h"
-#include "stringpool.h"
 #include "stor-layout.h"
 #include "java-tree.h"
-#include "diagnostic-core.h"
 #include "toplev.h"
 
 static void set_constant_entry (CPool *, int, int, jword);

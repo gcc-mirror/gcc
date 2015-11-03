@@ -369,6 +369,12 @@ extern int errno;
 /* Returns the least number N such that N * Y >= X.  */
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
+/* This macro rounds x up to the y boundary.  */
+#define ROUND_UP(x,y) (((x) + (y) - 1) & ~((y) - 1))
+
+/* This macro rounds x down to the y boundary.  */
+#define ROUND_DOWN(x,y) ((x) & ~((y) - 1))
+ 	
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
@@ -479,18 +485,6 @@ extern char *stpcpy (char *, const char *);
 
 #if defined (HAVE_DECL_UNSETENV) && !HAVE_DECL_UNSETENV
 int unsetenv(const char *);
-#endif
-
-#ifdef __cplusplus
-}
-#endif
-
-#ifdef HAVE_MALLOC_H
-#include <malloc.h>
-#endif
-
-#ifdef __cplusplus
-extern "C" {
 #endif
 
 #if defined (HAVE_DECL_MALLOC) && !HAVE_DECL_MALLOC
@@ -720,9 +714,10 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define gcc_assert(EXPR) ((void)(0 && (EXPR)))
 #endif
 
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
 #define gcc_checking_assert(EXPR) gcc_assert (EXPR)
 #else
+/* N.B.: in release build EXPR is not evaluated.  */
 #define gcc_checking_assert(EXPR) ((void)(0 && (EXPR)))
 #endif
 
@@ -956,7 +951,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	EXTRA_ADDRESS_CONSTRAINT CONST_DOUBLE_OK_FOR_CONSTRAINT_P	   \
 	CALLER_SAVE_PROFITABLE LARGEST_EXPONENT_IS_NORMAL		   \
 	ROUND_TOWARDS_ZERO SF_SIZE DF_SIZE XF_SIZE TF_SIZE LIBGCC2_TF_CEXT \
-	LIBGCC2_LONG_DOUBLE_TYPE_SIZE STRUCT_VALUE
+	LIBGCC2_LONG_DOUBLE_TYPE_SIZE STRUCT_VALUE EH_FRAME_IN_DATA_SECTION
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\
@@ -1059,7 +1054,7 @@ helper_const_non_const_cast (const char *p)
 #define CONST_CAST_RTX(X) CONST_CAST (struct rtx_def *, (X))
 #define CONST_CAST_RTX_INSN(X) CONST_CAST (struct rtx_insn *, (X))
 #define CONST_CAST_BB(X) CONST_CAST (struct basic_block_def *, (X))
-#define CONST_CAST_GIMPLE(X) CONST_CAST (struct gimple_statement_base *, (X))
+#define CONST_CAST_GIMPLE(X) CONST_CAST (gimple *, (X))
 
 /* Activate certain diagnostics as warnings (not errors via the
    -Werror flag).  */

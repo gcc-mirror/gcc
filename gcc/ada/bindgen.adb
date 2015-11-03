@@ -35,6 +35,7 @@ with Osint;    use Osint;
 with Osint.B;  use Osint.B;
 with Output;   use Output;
 with Rident;   use Rident;
+with Stringt;  use Stringt;
 with Table;    use Table;
 with Targparm; use Targparm;
 with Types;    use Types;
@@ -43,6 +44,7 @@ with System.OS_Lib;  use System.OS_Lib;
 with System.WCh_Con; use System.WCh_Con;
 
 with GNAT.Heap_Sort_A; use GNAT.Heap_Sort_A;
+with GNAT.HTable;
 
 package body Bindgen is
 
@@ -86,8 +88,17 @@ package body Bindgen is
    --  attach interrupt handlers at the end of the elaboration when partition
    --  elaboration policy is sequential.
 
+   System_BB_CPU_Primitives_Multiprocessors_Used : Boolean := False;
+   --  Flag indicating wether the unit System.BB.CPU_Primitives.Multiprocessors
+   --  is in the closure of the partiation. This is set by procedure
+   --  Resolve_Binder_Options, and it is used to call a procedure that starts
+   --  slave processors.
+
    Lib_Final_Built : Boolean := False;
    --  Flag indicating whether the finalize_library rountine has been built
+
+   Bind_Env_String_Built : Boolean := False;
+   --  Flag indicating whether a bind environment string has been built
 
    CodePeer_Wrapper_Name : constant String := "call_main_subprogram";
    --  For CodePeer, introduce a wrapper subprogram which calls the
@@ -124,6 +135,22 @@ package body Bindgen is
      Table_Increment      => 200,
      Table_Name           => "PSD_Pragma_Settings");
 
+   ----------------------------
+   -- Bind_Environment Table --
+   ----------------------------
+
+   subtype Header_Num is Int range 0 .. 36;
+
+   function Hash (Nam : Name_Id) return Header_Num;
+
+   package Bind_Environment is new GNAT.HTable.Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Name_Id,
+      No_Element => No_Name,
+      Key        => Name_Id,
+      Hash       => Hash,
+      Equal      => "=");
+
    ----------------------
    -- Run-Time Globals --
    ----------------------
@@ -145,6 +172,7 @@ package body Bindgen is
    --     Num_Interrupt_States          : Integer;
    --     Unreserve_All_Interrupts      : Integer;
    --     Exception_Tracebacks          : Integer;
+   --     Exception_Tracebacks_Symbolic : Integer;
    --     Detect_Blocking               : Integer;
    --     Default_Stack_Size            : Integer;
    --     Leap_Seconds_Support          : Integer;
@@ -214,10 +242,13 @@ package body Bindgen is
    --  Unreserve_All_Interrupts is set to one if at least one unit in the
    --  partition had a pragma Unreserve_All_Interrupts, and zero otherwise.
 
-   --  Exception_Tracebacks is set to one if the -E parameter was present
-   --  in the bind and to zero otherwise. Note that on some targets exception
-   --  tracebacks are provided by default, so a value of zero for this
-   --  parameter does not necessarily mean no trace backs are available.
+   --  Exception_Tracebacks is set to one if the -Ea or -E parameter was
+   --  present in the bind and to zero otherwise. Note that on some targets
+   --  exception tracebacks are provided by default, so a value of zero for
+   --  this parameter does not necessarily mean no trace backs are available.
+
+   --  Exception_Tracebacks_Symbolic is set to one if the -Es parameter was
+   --  present in the bind and to zero otherwise.
 
    --  Detect_Blocking indicates whether pragma Detect_Blocking is active or
    --  not. A value of zero indicates that the pragma is not present, while a
@@ -245,6 +276,9 @@ package body Bindgen is
 
    procedure Gen_Adafinal;
    --  Generate the Adafinal procedure
+
+   procedure Gen_Bind_Env_String;
+   --  Generate the bind environment buffer
 
    procedure Gen_CodePeer_Wrapper;
    --  For CodePeer, generate wrapper which calls user-defined main subprogram
@@ -352,13 +386,10 @@ package body Bindgen is
    --  characters of S. The caller must ensure that these characters do in fact
    --  exist in the Statement_Buffer.
 
-   type Qualification_Mode is (Dollar_Sign, Dot, Double_Underscores);
-
-   procedure Set_Unit_Name (Mode : Qualification_Mode := Double_Underscores);
+   procedure Set_Unit_Name;
    --  Given a unit name in the Name_Buffer, copy it into Statement_Buffer,
    --  starting at the Last + 1 position and update Last past the value.
-   --  Depending on parameter Mode, a dot (.) can be qualified into double
-   --  underscores (__), a dollar sign ($) or left as is.
+   --  Each dot (.) will be qualified into double underscores (__).
 
    procedure Set_Unit_Number (U : Unit_Id);
    --  Sets unit number (first unit is 1, leading zeroes output to line up all
@@ -372,6 +403,10 @@ package body Bindgen is
    --  First writes its argument (using Set_String (S)), then writes out the
    --  contents of statement buffer up to Last, and reset Last to 0
 
+   procedure Write_Bind_Line (S : String);
+   --  Write S (an LF-terminated string) to the binder file (for use with
+   --  Set_Special_Output).
+
    ------------------
    -- Gen_Adafinal --
    ------------------
@@ -380,10 +415,7 @@ package body Bindgen is
    begin
       WBI ("   procedure " & Ada_Final_Name.all & " is");
 
-      if VM_Target = No_VM
-        and Bind_Main_Program
-        and not CodePeer_Mode
-      then
+      if Bind_Main_Program and not CodePeer_Mode then
          WBI ("      procedure s_stalib_adafinal;");
          Set_String ("      pragma Import (C, s_stalib_adafinal, ");
          Set_String ("""system__standard_library__adafinal"");");
@@ -406,10 +438,10 @@ package body Bindgen is
 
       WBI ("      Runtime_Finalize;");
 
-      --  On non-virtual machine targets, finalization is done differently
-      --  depending on whether this is the main program or a library.
+      --  By default (real targets), finalization is done differently depending
+      --  on whether this is the main program or a library.
 
-      if VM_Target = No_VM and then not CodePeer_Mode then
+      if not CodePeer_Mode then
          if Bind_Main_Program then
             WBI ("      s_stalib_adafinal;");
          elsif Lib_Final_Built then
@@ -418,9 +450,9 @@ package body Bindgen is
             WBI ("      null;");
          end if;
 
-      --  Pragma Import C cannot be used on virtual machine targets, therefore
-      --  call the runtime finalization routine directly. Similarly in CodePeer
-      --  mode, where imported functions are ignored.
+      --  Pragma Import C cannot be used on virtual targets, therefore call the
+      --  runtime finalization routine directly in CodePeer mode, where
+      --  imported functions are ignored.
 
       else
          WBI ("      System.Standard_Library.Adafinal;");
@@ -443,12 +475,11 @@ package body Bindgen is
       --  of __gnat_finalize_library_objects. This is declared at library
       --  level for compatibility with the type used in System.Soft_Links.
       --  The import of the soft link which performs library-level object
-      --  finalization is not needed for VM targets; regular Ada is used in
+      --  finalization does not work for CodePeer, so regular Ada is used in
       --  that case. For restricted run-time libraries (ZFP and Ravenscar)
       --  tasks are non-terminating, so we do not want finalization.
 
       if not Suppress_Standard_Library_On_Target
-        and then VM_Target = No_VM
         and then not CodePeer_Mode
         and then not Configurable_Run_Time_On_Target
       then
@@ -511,6 +542,13 @@ package body Bindgen is
             WBI ("      procedure Activate_All_Tasks_Sequential;");
             WBI ("      pragma Import (C, Activate_All_Tasks_Sequential," &
                  " ""__gnat_activate_all_tasks"");");
+            WBI ("");
+         end if;
+
+         if System_BB_CPU_Primitives_Multiprocessors_Used then
+            WBI ("      procedure Start_Slave_CPUs;");
+            WBI ("      pragma Import (C, Start_Slave_CPUs," &
+                 " ""__gnat_start_slave_cpus"");");
          end if;
 
          WBI ("   begin");
@@ -586,10 +624,16 @@ package body Bindgen is
          WBI ("      pragma Import (C, Unreserve_All_Interrupts, " &
               """__gl_unreserve_all_interrupts"");");
 
-         if Exception_Tracebacks then
+         if Exception_Tracebacks or Exception_Tracebacks_Symbolic then
             WBI ("      Exception_Tracebacks : Integer;");
             WBI ("      pragma Import (C, Exception_Tracebacks, " &
                  """__gl_exception_tracebacks"");");
+
+            if Exception_Tracebacks_Symbolic then
+               WBI ("      Exception_Tracebacks_Symbolic : Integer;");
+               WBI ("      pragma Import (C, Exception_Tracebacks_Symbolic, " &
+                    """__gl_exception_tracebacks_symbolic"");");
+            end if;
          end if;
 
          WBI ("      Detect_Blocking : Integer;");
@@ -601,6 +645,9 @@ package body Bindgen is
          WBI ("      Leap_Seconds_Support : Integer;");
          WBI ("      pragma Import (C, Leap_Seconds_Support, " &
               """__gl_leap_seconds_support"");");
+         WBI ("      Bind_Env_Addr : System.Address;");
+         WBI ("      pragma Import (C, Bind_Env_Addr, " &
+              """__gl_bind_env_addr"");");
 
          --  Import entry point for elaboration time signal handler
          --  installation, and indication of if it's been called previously.
@@ -638,12 +685,10 @@ package body Bindgen is
                  " ""__gnat_activate_all_tasks"");");
          end if;
 
-         --  The import of the soft link which performs library-level object
-         --  finalization is not needed for VM targets; regular Ada is used in
-         --  that case. For restricted run-time libraries (ZFP and Ravenscar)
+         --  For restricted run-time libraries (ZFP and Ravenscar)
          --  tasks are non-terminating, so we do not want finalization.
 
-         if VM_Target = No_VM and then not Configurable_Run_Time_On_Target then
+         if not Configurable_Run_Time_On_Target then
             WBI ("");
             WBI ("      Finalize_Library_Objects : No_Param_Proc;");
             WBI ("      pragma Import (C, Finalize_Library_Objects, " &
@@ -662,38 +707,6 @@ package body Bindgen is
                  """__gnat_initialize_stack_limit"");");
          end if;
 
-         --  Special processing when main program is CIL function/procedure
-
-         if VM_Target = CLI_Target
-           and then Bind_Main_Program
-           and then not No_Main_Subprogram
-         then
-            WBI ("");
-
-            --  Function case, use Set_Exit_Status to report the returned
-            --  status code, since that is the only mechanism available.
-
-            if ALIs.Table (ALIs.First).Main_Program = Func then
-               WBI ("      Result : Integer;");
-               WBI ("      procedure Set_Exit_Status (Code : Integer);");
-               WBI ("      pragma Import (C, Set_Exit_Status, " &
-                    """__gnat_set_exit_status"");");
-               WBI ("");
-               WBI ("      function Ada_Main_Program return Integer;");
-
-            --  Procedure case
-
-            else
-               WBI ("      procedure Ada_Main_Program;");
-            end if;
-
-            Get_Name_String (Units.Table (First_Unit_Entry).Uname);
-            Name_Len := Name_Len - 2;
-            WBI ("      pragma Import (CIL, Ada_Main_Program, """
-                 & Name_Buffer (1 .. Name_Len) & "."
-                 & Get_Main_Unit_Name (Name_Buffer (1 .. Name_Len)) & """);");
-         end if;
-
          --  When dispatching domains are used then we need to signal it
          --  before calling the main procedure.
 
@@ -703,6 +716,8 @@ package body Bindgen is
             WBI ("        (Ada, Freeze_Dispatching_Domains, "
                  & """__gnat_freeze_dispatching_domains"");");
          end if;
+
+         --  Start of processing for Adainit
 
          WBI ("   begin");
          WBI ("      if Is_Elaborated then");
@@ -803,8 +818,12 @@ package body Bindgen is
          Set_Char (';');
          Write_Statement_Buffer;
 
-         if Exception_Tracebacks then
+         if Exception_Tracebacks or Exception_Tracebacks_Symbolic then
             WBI ("      Exception_Tracebacks := 1;");
+
+            if Exception_Tracebacks_Symbolic then
+               WBI ("      Exception_Tracebacks_Symbolic := 1;");
+            end if;
          end if;
 
          Set_String ("      Detect_Blocking := ");
@@ -834,20 +853,14 @@ package body Bindgen is
          Set_String (";");
          Write_Statement_Buffer;
 
+         if Bind_Env_String_Built then
+            WBI ("      Bind_Env_Addr := Bind_Env'Address;");
+         end if;
+
          --  Generate call to Install_Handler
 
-         --  In .NET, when binding with -z, we don't install the signal handler
-         --  to let the caller handle the last exception handler.
-
          WBI ("");
-
-         if VM_Target /= CLI_Target
-           or else Bind_Main_Program
-         then
-            WBI ("      Runtime_Initialize (1);");
-         else
-            WBI ("      Runtime_Initialize (0);");
-         end if;
+         WBI ("      Runtime_Initialize (1);");
       end if;
 
       --  Generate call to set Initialize_Scalar values if active
@@ -888,37 +901,22 @@ package body Bindgen is
       if CodePeer_Mode then
          null;
 
-      --  On virtual machine targets, or on non-virtual machine ones if this
-      --  is the main program case, attach finalize_library to the soft link.
-      --  Do it only when not using a restricted run time, in which case tasks
-      --  are non-terminating, so we do not want library-level finalization.
+      --  If this is the main program case, attach finalize_library to the soft
+      --  link. Do it only when not using a restricted run time, in which case
+      --  tasks are non-terminating, so we do not want library-level
+      --  finalization.
 
-      elsif (VM_Target /= No_VM or else Bind_Main_Program)
+      elsif Bind_Main_Program
         and then not Configurable_Run_Time_On_Target
         and then not Suppress_Standard_Library_On_Target
       then
          WBI ("");
 
-         if VM_Target = No_VM then
-            if Lib_Final_Built then
-               Set_String ("      Finalize_Library_Objects := ");
-               Set_String ("finalize_library'access;");
-            else
-               Set_String ("      Finalize_Library_Objects := null;");
-            end if;
-
-         --  On VM targets use regular Ada to set the soft link
-
+         if Lib_Final_Built then
+            Set_String ("      Finalize_Library_Objects := ");
+            Set_String ("finalize_library'access;");
          else
-            if Lib_Final_Built then
-               Set_String
-                 ("      System.Soft_Links.Finalize_Library_Objects");
-               Set_String (" := finalize_library'access;");
-            else
-               Set_String
-                 ("      System.Soft_Links.Finalize_Library_Objects");
-               Set_String (" := null;");
-            end if;
+            Set_String ("      Finalize_Library_Objects := null;");
          end if;
 
          Write_Statement_Buffer;
@@ -959,28 +957,69 @@ package body Bindgen is
          end if;
       end if;
 
-      --  Case of main program is CIL function or procedure
-
-      if VM_Target = CLI_Target
-        and then Bind_Main_Program
-        and then not No_Main_Subprogram
-      then
-         --  For function case, use Set_Exit_Status to set result
-
-         if ALIs.Table (ALIs.First).Main_Program = Func then
-            WBI ("      Result := Ada_Main_Program;");
-            WBI ("      Set_Exit_Status (Result);");
-
-         --  Procedure case
-
-         else
-            WBI ("      Ada_Main_Program;");
-         end if;
+      if System_BB_CPU_Primitives_Multiprocessors_Used then
+         WBI ("      Start_Slave_CPUs;");
       end if;
 
       WBI ("   end " & Ada_Init_Name.all & ";");
       WBI ("");
    end Gen_Adainit;
+
+   -------------------------
+   -- Gen_Bind_Env_String --
+   -------------------------
+
+   procedure Gen_Bind_Env_String is
+      KN, VN : Name_Id := No_Name;
+      Amp    : Character;
+
+      procedure Write_Name_With_Len (Nam : Name_Id);
+      --  Write Nam as a string literal, prefixed with one
+      --  character encoding Nam's length.
+
+      -------------------------
+      -- Write_Name_With_Len --
+      -------------------------
+
+      procedure Write_Name_With_Len (Nam : Name_Id) is
+      begin
+         Get_Name_String (Nam);
+
+         Start_String;
+         Store_String_Char (Character'Val (Name_Len));
+         Store_String_Chars (Name_Buffer (1 .. Name_Len));
+
+         Write_String_Table_Entry (End_String);
+      end Write_Name_With_Len;
+
+   --  Start of processing for Gen_Bind_Env_String
+
+   begin
+      Bind_Environment.Get_First (KN, VN);
+      if VN = No_Name then
+         return;
+      end if;
+
+      Set_Special_Output (Write_Bind_Line'Access);
+
+      WBI ("   Bind_Env : aliased constant String :=");
+      Amp := ' ';
+      while VN /= No_Name loop
+         Write_Str ("     " & Amp & ' ');
+         Write_Name_With_Len (KN);
+         Write_Str (" & ");
+         Write_Name_With_Len (VN);
+         Write_Eol;
+
+         Bind_Environment.Get_Next (KN, VN);
+         Amp := '&';
+      end loop;
+      WBI ("     & ASCII.NUL;");
+
+      Set_Special_Output (null);
+
+      Bind_Env_String_Built := True;
+   end Gen_Bind_Env_String;
 
    --------------------------
    -- Gen_CodePeer_Wrapper --
@@ -1188,37 +1227,24 @@ package body Bindgen is
                Set_String ("      ");
                Get_Decoded_Name_String_With_Brackets (U.Uname);
 
-               if VM_Target = CLI_Target and then U.Unit_Kind /= 's' then
-                  if Name_Buffer (Name_Len) = 's' then
-                     Name_Buffer (Name_Len - 1 .. Name_Len + 12) :=
-                       "_pkg'elab_spec";
-                  else
-                     Name_Buffer (Name_Len - 1 .. Name_Len + 12) :=
-                       "_pkg'elab_body";
-                  end if;
+               if Name_Buffer (Name_Len) = 's' then
+                  Name_Buffer (Name_Len - 1 .. Name_Len + 8) :=
+                    "'elab_spec";
+                  Name_Len := Name_Len + 8;
 
-                  Name_Len := Name_Len + 12;
+               --  Special case in CodePeer mode for subprogram bodies
+               --  which correspond to CodePeer 'Elab_Subp_Body special
+               --  init procedure.
+
+               elsif U.Unit_Kind = 's' and CodePeer_Mode then
+                  Name_Buffer (Name_Len - 1 .. Name_Len + 13) :=
+                    "'elab_subp_body";
+                  Name_Len := Name_Len + 13;
 
                else
-                  if Name_Buffer (Name_Len) = 's' then
-                     Name_Buffer (Name_Len - 1 .. Name_Len + 8) :=
-                       "'elab_spec";
-                     Name_Len := Name_Len + 8;
-
-                  --  Special case in CodePeer mode for subprogram bodies
-                  --  which correspond to CodePeer 'Elab_Subp_Body special
-                  --  init procedure.
-
-                  elsif U.Unit_Kind = 's' and CodePeer_Mode then
-                     Name_Buffer (Name_Len - 1 .. Name_Len + 13) :=
-                       "'elab_subp_body";
-                     Name_Len := Name_Len + 13;
-
-                  else
-                     Name_Buffer (Name_Len - 1 .. Name_Len + 8) :=
-                       "'elab_body";
-                     Name_Len := Name_Len + 8;
-                  end if;
+                  Name_Buffer (Name_Len - 1 .. Name_Len + 8) :=
+                    "'elab_body";
+                  Name_Len := Name_Len + 8;
                end if;
 
                Set_Casing (U.Icasing);
@@ -1294,51 +1320,10 @@ package body Bindgen is
                Set_String ("   ");
                Set_String ("E");
                Set_Unit_Number (Unum);
-
-               case VM_Target is
-                  when No_VM | JVM_Target =>
-                     Set_String (" : Short_Integer; pragma Import (Ada, ");
-                  when CLI_Target =>
-                     Set_String (" : Short_Integer; pragma Import (CIL, ");
-               end case;
-
-               Set_String ("E");
+               Set_String (" : Short_Integer; pragma Import (Ada, E");
                Set_Unit_Number (Unum);
                Set_String (", """);
                Get_Name_String (U.Uname);
-
-               --  In the case of JGNAT we need to emit an Import name that
-               --  includes the class name (using '$' separators in the case
-               --  of a child unit name).
-
-               if VM_Target /= No_VM then
-                  for J in 1 .. Name_Len - 2 loop
-                     if VM_Target = CLI_Target
-                       or else Name_Buffer (J) /= '.'
-                     then
-                        Set_Char (Name_Buffer (J));
-                     else
-                        Set_String ("$");
-                     end if;
-                  end loop;
-
-                  if VM_Target /= CLI_Target or else U.Unit_Kind = 's' then
-                     Set_String (".");
-                  else
-                     Set_String ("_pkg.");
-                  end if;
-
-                  --  If the unit name is very long, then split the
-                  --  Import link name across lines using "&" (occurs
-                  --  in some C2 tests).
-
-                  if 2 * Name_Len + 60 > Hostparm.Max_Line_Length then
-                     Set_String (""" &");
-                     Write_Statement_Buffer;
-                     Set_String ("         """);
-                  end if;
-               end if;
-
                Set_Unit_Name;
                Set_String ("_E"");");
                Write_Statement_Buffer;
@@ -1467,45 +1452,14 @@ package body Bindgen is
             Write_Statement_Buffer;
 
             --  Generate:
-            --    pragma Import (CIL, F<Count>,
-            --                   "xx.yy_pkg.xx__yy__finalize_[body|spec]");
-            --    --  for .NET targets
-
-            --    pragma Import (Java, F<Count>,
-            --                   "xx$yy.xx__yy__finalize_[body|spec]");
-            --    --  for JVM targets
-
             --    pragma Import (Ada, F<Count>,
             --                  "xx__yy__finalize_[body|spec]");
-            --    --  for default targets
 
-            if VM_Target = CLI_Target then
-               Set_String ("         pragma Import (CIL, F");
-            elsif VM_Target = JVM_Target then
-               Set_String ("         pragma Import (Java, F");
-            else
-               Set_String ("         pragma Import (Ada, F");
-            end if;
-
+            Set_String ("         pragma Import (Ada, F");
             Set_Int (Count);
             Set_String (", """);
 
             --  Perform name construction
-
-            --  .NET   xx.yy_pkg.xx__yy__finalize
-
-            if VM_Target = CLI_Target then
-               Set_Unit_Name (Mode => Dot);
-               Set_String ("_pkg.");
-
-            --  JVM   xx$yy.xx__yy__finalize
-
-            elsif VM_Target = JVM_Target then
-               Set_Unit_Name (Mode => Dollar_Sign);
-               Set_Char ('.');
-            end if;
-
-            --  Default   xx__yy__finalize
 
             Set_Unit_Name;
             Set_String ("__finalize_");
@@ -1586,31 +1540,17 @@ package body Bindgen is
          --  raised an exception. In that case import the actual exception
          --  and the routine necessary to raise it.
 
-         if VM_Target = No_VM then
-            WBI ("      declare");
-            WBI ("         procedure Reraise_Library_Exception_If_Any;");
+         WBI ("      declare");
+         WBI ("         procedure Reraise_Library_Exception_If_Any;");
 
-            Set_String ("            pragma Import (Ada, ");
-            Set_String ("Reraise_Library_Exception_If_Any, ");
-            Set_String ("""__gnat_reraise_library_exception_if_any"");");
-            Write_Statement_Buffer;
+         Set_String ("            pragma Import (Ada, ");
+         Set_String ("Reraise_Library_Exception_If_Any, ");
+         Set_String ("""__gnat_reraise_library_exception_if_any"");");
+         Write_Statement_Buffer;
 
-            WBI ("      begin");
-            WBI ("         Reraise_Library_Exception_If_Any;");
-            WBI ("      end;");
-
-         --  VM-specific code, use regular Ada to produce the desired behavior
-
-         else
-            WBI ("      if System.Soft_Links.Library_Exception_Set then");
-
-            Set_String ("         Ada.Exceptions.Reraise_Occurrence (");
-            Set_String ("System.Soft_Links.Library_Exception);");
-            Write_Statement_Buffer;
-
-            WBI ("      end if;");
-         end if;
-
+         WBI ("      begin");
+         WBI ("         Reraise_Library_Exception_If_Any;");
+         WBI ("      end;");
          WBI ("   end finalize_library;");
          WBI ("");
       end if;
@@ -1980,18 +1920,16 @@ package body Bindgen is
 
       --  Add a "-Ldir" for each directory in the object path
 
-      if VM_Target /= CLI_Target then
-         for J in 1 .. Nb_Dir_In_Obj_Search_Path loop
-            declare
-               Dir : constant String_Ptr := Dir_In_Obj_Search_Path (J);
-            begin
-               Name_Len := 0;
-               Add_Str_To_Name_Buffer ("-L");
-               Add_Str_To_Name_Buffer (Dir.all);
-               Write_Linker_Option;
-            end;
-         end loop;
-      end if;
+      for J in 1 .. Nb_Dir_In_Obj_Search_Path loop
+         declare
+            Dir : constant String_Ptr := Dir_In_Obj_Search_Path (J);
+         begin
+            Name_Len := 0;
+            Add_Str_To_Name_Buffer ("-L");
+            Add_Str_To_Name_Buffer (Dir.all);
+            Write_Linker_Option;
+         end;
+      end loop;
 
       if not (Opt.No_Run_Time_Mode or Opt.No_Stdlib) then
          Name_Len := 0;
@@ -2117,12 +2055,6 @@ package body Bindgen is
 
       Set_PSD_Pragma_Table;
 
-      --  For JGNAT the main program is already generated by the compiler
-
-      if VM_Target = JVM_Target then
-         Bind_Main_Program := False;
-      end if;
-
       --  Override time slice value if -T switch is set
 
       if Time_Slice_Set then
@@ -2175,6 +2107,7 @@ package body Bindgen is
       --  of the Ada 2005 or Ada 2012 constructs are needed by the binder file.
 
       WBI ("pragma Ada_95;");
+      WBI ("pragma Warnings (Off);");
 
       --  If we are operating in Restrictions (No_Exception_Handlers) mode,
       --  then we need to make sure that the binder program is compiled with
@@ -2219,57 +2152,50 @@ package body Bindgen is
       if not Suppress_Standard_Library_On_Target then
          if CodePeer_Mode then
             WBI ("with System.Standard_Library;");
-         elsif VM_Target /= No_VM then
-            WBI ("with System.Soft_Links;");
-            WBI ("with System.Standard_Library;");
          end if;
       end if;
 
       WBI ("package " & Ada_Main & " is");
-      WBI ("   pragma Warnings (Off);");
 
       --  Main program case
 
       if Bind_Main_Program then
-         if VM_Target = No_VM then
+         --  Generate argc/argv stuff unless suppressed
 
-            --  Generate argc/argv stuff unless suppressed
-
-            if Command_Line_Args_On_Target
-              or not Configurable_Run_Time_On_Target
-            then
-               WBI ("");
-               WBI ("   gnat_argc : Integer;");
-               WBI ("   gnat_argv : System.Address;");
-               WBI ("   gnat_envp : System.Address;");
-
-               --  If the standard library is not suppressed, these variables
-               --  are in the run-time data area for easy run time access.
-
-               if not Suppress_Standard_Library_On_Target then
-                  WBI ("");
-                  WBI ("   pragma Import (C, gnat_argc);");
-                  WBI ("   pragma Import (C, gnat_argv);");
-                  WBI ("   pragma Import (C, gnat_envp);");
-               end if;
-            end if;
-
-            --  Define exit status. Again in normal mode, this is in the
-            --  run-time library, and is initialized there, but in the
-            --  configurable runtime case, the variable is declared and
-            --  initialized in this file.
-
+         if Command_Line_Args_On_Target
+           or not Configurable_Run_Time_On_Target
+         then
             WBI ("");
+            WBI ("   gnat_argc : Integer;");
+            WBI ("   gnat_argv : System.Address;");
+            WBI ("   gnat_envp : System.Address;");
 
-            if Configurable_Run_Time_Mode then
-               if Exit_Status_Supported_On_Target then
-                  WBI ("   gnat_exit_status : Integer := 0;");
-               end if;
+            --  If the standard library is not suppressed, these variables
+            --  are in the run-time data area for easy run time access.
 
-            else
-               WBI ("   gnat_exit_status : Integer;");
-               WBI ("   pragma Import (C, gnat_exit_status);");
+            if not Suppress_Standard_Library_On_Target then
+               WBI ("");
+               WBI ("   pragma Import (C, gnat_argc);");
+               WBI ("   pragma Import (C, gnat_argv);");
+               WBI ("   pragma Import (C, gnat_envp);");
             end if;
+         end if;
+
+         --  Define exit status. Again in normal mode, this is in the
+         --  run-time library, and is initialized there, but in the
+         --  configurable runtime case, the variable is declared and
+         --  initialized in this file.
+
+         WBI ("");
+
+         if Configurable_Run_Time_Mode then
+            if Exit_Status_Supported_On_Target then
+               WBI ("   gnat_exit_status : Integer := 0;");
+            end if;
+
+         else
+            WBI ("   gnat_exit_status : Integer;");
+            WBI ("   pragma Import (C, gnat_exit_status);");
          end if;
 
          --  Generate the GNAT_Version and Ada_Main_Program_Name info only for
@@ -2289,12 +2215,8 @@ package body Bindgen is
          Set_String ("   Ada_Main_Program_Name : constant String := """);
          Get_Name_String (Units.Table (First_Unit_Entry).Uname);
 
-         if VM_Target = No_VM then
-            Set_Main_Program_Name;
-            Set_String (""" & ASCII.NUL;");
-         else
-            Set_String (Name_Buffer (1 .. Name_Len - 2) & """;");
-         end if;
+         Set_Main_Program_Name;
+         Set_String (""" & ASCII.NUL;");
 
          Write_Statement_Buffer;
 
@@ -2326,7 +2248,7 @@ package body Bindgen is
          end if;
       end if;
 
-      if Bind_Main_Program and then VM_Target = No_VM then
+      if Bind_Main_Program then
 
          WBI ("");
 
@@ -2384,6 +2306,7 @@ package body Bindgen is
       --  of the Ada 2005/2012 constructs are needed by the binder file.
 
       WBI ("pragma Ada_95;");
+      WBI ("pragma Warnings (Off);");
 
       --  Output Source_File_Name pragmas which look like
 
@@ -2445,7 +2368,6 @@ package body Bindgen is
 
       WBI ("");
       WBI ("package body " & Ada_Main & " is");
-      WBI ("   pragma Warnings (Off);");
       WBI ("");
 
       --  Generate externals for elaboration entities
@@ -2481,13 +2403,18 @@ package body Bindgen is
             WBI ("");
          end if;
 
-         --  The B.1 (39) implementation advice says that the adainit/adafinal
-         --  routines should be idempotent. Generate a flag to ensure that.
-         --  This is not needed if we are suppressing the standard library
-         --  since it would never be referenced.
-
          if not Suppress_Standard_Library_On_Target then
+
+            --  The B.1(39) implementation advice says that the adainit
+            --  and adafinal routines should be idempotent. Generate a flag to
+            --  ensure that. This is not needed if we are suppressing the
+            --  standard library since it would never be referenced.
+
             WBI ("   Is_Elaborated : Boolean := False;");
+
+            --  Generate bind environment string
+
+            Gen_Bind_Env_String;
          end if;
 
          WBI ("");
@@ -2505,7 +2432,7 @@ package body Bindgen is
 
       Gen_Adainit;
 
-      if Bind_Main_Program and then VM_Target = No_VM then
+      if Bind_Main_Program then
          Gen_Main;
       end if;
 
@@ -2706,17 +2633,11 @@ package body Bindgen is
       Nlen   : Natural;
 
    begin
-      --  The main program generated by JGNAT expects a package called
-      --  ada_<main procedure>.
-      if VM_Target /= No_VM then
-         Get_Name_String (Units.Table (First_Unit_Entry).Uname);
-         return "ada_" & Get_Main_Unit_Name (Name_Buffer (1 .. Name_Len - 2));
-      end if;
-
       --  For CodePeer, we want reproducible names (independent of other
       --  mains that may or may not be present) that don't collide
       --  when analyzing multiple mains and which are easily recognizable
       --  as "ada_main" names.
+
       if CodePeer_Mode then
          Get_Name_String (Units.Table (First_Unit_Entry).Uname);
          return "ada_main_for_" &
@@ -2864,6 +2785,15 @@ package body Bindgen is
       return False;
    end Has_Finalizer;
 
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (Nam : Name_Id) return Header_Num is
+   begin
+      return Int (Nam - Names_Low_Bound) rem Header_Num'Last;
+   end Hash;
+
    ----------------------
    -- Lt_Linker_Option --
    ----------------------
@@ -2911,8 +2841,8 @@ package body Bindgen is
 
       procedure Check_Package (Var : in out Boolean; Name : String);
       --  Set Var to true iff the current identifier in Namet is Name. Do
-      --  nothing if it doesn't match. This procedure is just an helper to
-      --  avoid to explicitely deal with length.
+      --  nothing if it doesn't match. This procedure is just a helper to
+      --  avoid explicitly dealing with length.
 
       -------------------
       -- Check_Package --
@@ -2959,8 +2889,33 @@ package body Bindgen is
          --  Ditto for the use of restrictions
 
          Check_Package (System_Restrictions_Used, "system.restrictions%s");
+
+         --  Ditto for use of an SMP bareboard runtime
+
+         Check_Package (System_BB_CPU_Primitives_Multiprocessors_Used,
+                        "system.bb.cpu_primitives.multiprocessors%s");
+
       end loop;
    end Resolve_Binder_Options;
+
+   ------------------
+   -- Set_Bind_Env --
+   ------------------
+
+   procedure Set_Bind_Env (Key, Value : String) is
+   begin
+      --  The lengths of Key and Value are stored as single bytes
+
+      if Key'Length > 255 then
+         Osint.Fail ("bind environment key """ & Key & """ too long");
+      end if;
+
+      if Value'Length > 255 then
+         Osint.Fail ("bind environment value """ & Value & """ too long");
+      end if;
+
+      Bind_Environment.Set (Name_Find_Str (Key), Name_Find_Str (Value));
+   end Set_Bind_Env;
 
    -----------------
    -- Set_Boolean --
@@ -3122,17 +3077,11 @@ package body Bindgen is
    -- Set_Unit_Name --
    -------------------
 
-   procedure Set_Unit_Name (Mode : Qualification_Mode := Double_Underscores) is
+   procedure Set_Unit_Name is
    begin
       for J in 1 .. Name_Len - 2 loop
          if Name_Buffer (J) = '.' then
-            if Mode = Double_Underscores then
-               Set_String ("__");
-            elsif Mode = Dot then
-               Set_Char ('.');
-            else
-               Set_Char ('$');
-            end if;
+            Set_String ("__");
          else
             Set_Char (Name_Buffer (J));
          end if;
@@ -3158,6 +3107,17 @@ package body Bindgen is
 
       Set_Int (Unum);
    end Set_Unit_Number;
+
+   ---------------------
+   -- Write_Bind_Line --
+   ---------------------
+
+   procedure Write_Bind_Line (S : String) is
+   begin
+      --  Need to strip trailing LF from S
+
+      WBI (S (S'First .. S'Last - 1));
+   end Write_Bind_Line;
 
    ----------------------------
    -- Write_Statement_Buffer --

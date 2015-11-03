@@ -24,7 +24,7 @@ GLIBCXX_3.4 {
     # Names inside the 'extern' block are demangled names.
     extern "C++"
     {
-      std::[A-Z]*;
+      std::[ABD-Z]*;
       std::a[a-c]*;
       std::ad[a-n]*;
       std::ad[p-z]*;
@@ -106,7 +106,7 @@ GLIBCXX_3.4 {
 #     std::istringstream*;
       std::istrstream*;
       std::i[t-z]*;
-      std::[A-Zj-k]*;
+      std::[j-k]*;
 #     std::length_error::l*;
 #     std::length_error::~l*;
       std::locale::[A-Za-e]*;
@@ -132,9 +132,8 @@ GLIBCXX_3.4 {
 #     std::logic_error::l*;
       std::logic_error::what*;
 #     std::logic_error::~l*;
-#     std::[A-Zm-r]*;
-#     std::[A-Zm]*;
-      std::[A-Z]*;
+#     std::[m-r]*;
+#     std::[m]*;
       std::messages[^_]*;
 #     std::messages_byname*;
       std::money_*;
@@ -175,11 +174,13 @@ GLIBCXX_3.4 {
 #     std::t[i-n]*;
       std::tr1::h[^a]*;
       std::t[s-z]*;
-#     std::[A-Zu-z]*;
+#     std::[u-z]*;
 #     std::underflow_error::u*;
 #     std::underflow_error::~u*;
       std::unexpected*;
-      std::[A-Zv-z]*;
+      std::valarray*;
+      # std::vector*
+      std::[w-z]*;
       std::_List_node_base::hook*;
       std::_List_node_base::swap*;
       std::_List_node_base::unhook*;
@@ -1869,6 +1870,11 @@ GLIBCXX_3.4.22 {
 
     # std::uncaught_exceptions()
     _ZSt19uncaught_exceptionsv;
+
+    # std::thread::_State::~_State()
+    _ZT[ISV]NSt6thread6_StateE;
+    _ZNSt6thread6_StateD[012]Ev;
+    _ZNSt6thread15_M_start_threadESt10unique_ptrINS_6_StateESt14default_deleteIS1_EEPFvvE;
 
 } GLIBCXX_3.4.21;
 

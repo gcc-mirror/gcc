@@ -28,7 +28,7 @@ enum processor_type iq2000_tune = PROCESSOR_DEFAULT
 ; This option has no effect at the moment.
 march=
 Target RejectNegative Joined Enum(iq2000_arch)
-Specify CPU for code generation purposes
+Specify CPU for code generation purposes.
 
 Enum
 Name(iq2000_arch) Type(int)
@@ -44,7 +44,7 @@ Enum(iq2000_arch) String(iq2000) Value(0)
 
 mcpu=
 Target RejectNegative Joined Enum(iq2000_tune) Var(iq2000_tune)
-Specify CPU for scheduling purposes
+Specify CPU for scheduling purposes.
 
 Enum
 Name(iq2000_tune) Type(enum processor_type)
@@ -58,17 +58,17 @@ Enum(iq2000_tune) String(iq2000) Value(PROCESSOR_IQ2000)
 
 membedded-data
 Target Mask(EMBEDDED_DATA)
-Use ROM instead of RAM
+Use ROM instead of RAM.
 
 mgpopt
 Target Mask(GPOPT)
-Use GP relative sdata/sbss sections
+Use GP relative sdata/sbss sections.
 
 ; Not used by the compiler proper.
 mno-crt0
 Target RejectNegative
-No default crt0.o
+No default crt0.o.
 
 muninit-const-in-rodata
 Target Mask(UNINIT_CONST_IN_RODATA)
-Put uninitialized constants in ROM (needs -membedded-data)
+Put uninitialized constants in ROM (needs -membedded-data).

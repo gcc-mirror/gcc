@@ -21,7 +21,7 @@ contains
     !$acc end parallel loop
     !$acc parallel loop
     do i = 1,5
-      !$acc cache (a) ! TODO: This must fail, as in openacc-1_0-branch
+      !$acc cache (a) ! { dg-error "not a variable" }
     enddo
     !$acc end parallel loop
     !$acc update device (a) ! { dg-error "not a variable" }
@@ -29,4 +29,3 @@ contains
     !$acc update self (a) ! { dg-error "not a variable" }
   end subroutine oacc1
 end module test
-! { dg-prune-output "unimplemented" }

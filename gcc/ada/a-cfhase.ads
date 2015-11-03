@@ -72,6 +72,7 @@ package Ada.Containers.Formal_Hashed_Sets with
   SPARK_Mode
 is
    pragma Annotate (GNATprove, External_Axiomatization);
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is private with
      Iterable => (First       => First,
@@ -279,7 +280,7 @@ is
 
       with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
-   package Generic_Keys is
+   package Generic_Keys with SPARK_Mode is
 
       function Key (Container : Set; Position : Cursor) return Key_Type with
         Global => null;

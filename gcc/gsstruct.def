@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    Each enum value should correspond with a single member of the union
    gimple_statement_d.  */
 
-DEFGSSTRUCT(GSS_BASE, gimple_statement_base, false)
+DEFGSSTRUCT(GSS_BASE, gimple, false)
 DEFGSSTRUCT(GSS_WITH_OPS, gimple_statement_with_ops, true)
 DEFGSSTRUCT(GSS_WITH_MEM_OPS_BASE, gimple_statement_with_memory_ops_base, false)
 DEFGSSTRUCT(GSS_WITH_MEM_OPS, gimple_statement_with_memory_ops, true)

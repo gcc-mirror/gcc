@@ -23,30 +23,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
-#include "df.h"
+#include "tree.h"
+#include "predict.h"
+#include "tm_p.h"
+#include "expmed.h"
+#include "optabs.h"
+#include "emit-rtl.h"
 #include "diagnostic-core.h"
-#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "tm_p.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "recog.h"
 #include "langhooks.h"
-#include "target.h"
 
 struct target_expmed default_target_expmed;
 #if SWITCHABLE_TARGET
@@ -3234,17 +3225,12 @@ expand_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
  skip_synth:
 
   /* Expand x*2.0 as x+x.  */
-  if (CONST_DOUBLE_AS_FLOAT_P (scalar_op1))
+  if (CONST_DOUBLE_AS_FLOAT_P (scalar_op1)
+      && real_equal (CONST_DOUBLE_REAL_VALUE (scalar_op1), &dconst2))
     {
-      REAL_VALUE_TYPE d;
-      REAL_VALUE_FROM_CONST_DOUBLE (d, scalar_op1);
-
-      if (REAL_VALUES_EQUAL (d, dconst2))
-	{
-	  op0 = force_reg (GET_MODE (op0), op0);
-	  return expand_binop (mode, add_optab, op0, op0,
-			       target, unsignedp, OPTAB_LIB_WIDEN);
-	}
+      op0 = force_reg (GET_MODE (op0), op0);
+      return expand_binop (mode, add_optab, op0, op0,
+			   target, unsignedp, OPTAB_LIB_WIDEN);
     }
 
   /* This used to use umul_optab if unsigned, but for non-widening multiply
@@ -4997,12 +4983,7 @@ make_tree (tree type, rtx x)
 			      wide_int::from_array (&CONST_DOUBLE_LOW (x), 2,
 						    HOST_BITS_PER_WIDE_INT * 2));
       else
-	{
-	  REAL_VALUE_TYPE d;
-
-	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  t = build_real (type, d);
-	}
+	t = build_real (type, *CONST_DOUBLE_REAL_VALUE (x));
 
       return t;
 

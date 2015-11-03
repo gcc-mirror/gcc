@@ -22,17 +22,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
-#include "options.h"
+#include "c-pretty-print.h"
+#include "diagnostic.h"
+#include "alias.h"
 #include "stor-layout.h"
 #include "attribs.h"
 #include "intl.h"
-#include "c-pretty-print.h"
 #include "tree-pretty-print.h"
 #include "tree-iterator.h"
-#include "diagnostic.h"
-#include "wide-int-print.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -802,6 +800,10 @@ pp_c_attributes_display (c_pretty_printer *pp, tree a)
       as = lookup_attribute_spec (TREE_PURPOSE (a));
       if (!as || as->affects_type_identity == false)
         continue;
+      if (c_dialect_cxx ()
+	  && !strcmp ("transaction_safe", as->name))
+	/* In C++ transaction_safe is printed at the end of the declarator.  */
+	continue;
       if (is_first)
        {
          pp_c_ws_string (pp, "__attribute__");

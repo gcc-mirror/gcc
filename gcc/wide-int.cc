@@ -22,12 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hwint.h"
-#include "vec.h"
-#include "alias.h"
 #include "tree.h"
-#include "inchash.h"
-#include "dumpfile.h"
 
 
 #define HOST_BITS_PER_HALF_WIDE_INT 32

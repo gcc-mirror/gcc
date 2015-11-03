@@ -879,7 +879,7 @@ struct state_ainsn_table
 /* Macros to access members of unions.  Use only them for access to
    union members of declarations and regexps.  */
 
-#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
+#if CHECKING_P && (GCC_VERSION >= 2007)
 
 #define DECL_UNIT(d) __extension__					\
 (({ __typeof (d) const _decl = (d);					\
@@ -1070,7 +1070,7 @@ regexp_mode_check_failed (enum regexp_mode mode,
   exit (1);
 }
 
-#else /* #if defined ENABLE_RTL_CHECKING && (GCC_VERSION >= 2007) */
+#else /* #if CHECKING_P && (GCC_VERSION >= 2007) */
 
 #define DECL_UNIT(d) (&(d)->decl.unit)
 #define DECL_BYPASS(d) (&(d)->decl.bypass)
@@ -1088,7 +1088,7 @@ regexp_mode_check_failed (enum regexp_mode mode,
 #define REGEXP_ALLOF(r) (&(r)->regexp.allof)
 #define REGEXP_ONEOF(r) (&(r)->regexp.oneof)
 
-#endif /* #if defined ENABLE_RTL_CHECKING && (GCC_VERSION >= 2007) */
+#endif /* #if CHECKING_P && (GCC_VERSION >= 2007) */
 
 #define XCREATENODE(T) ((T *) create_node (sizeof (T)))
 #define XCREATENODEVEC(T, N) ((T *) create_node (sizeof (T) * (N)))

@@ -158,7 +158,6 @@ package body Inline is
       Name        : Entity_Id  := Empty;
       Next        : Subp_Index := No_Subp;
       First_Succ  : Succ_Index := No_Succ;
-      Listed      : Boolean    := False;
       Main_Call   : Boolean    := False;
       Processed   : Boolean    := False;
    end record;
@@ -180,8 +179,8 @@ package body Inline is
    --  called, and for the inlined subprogram that contains the call. If
    --  the call is in the main compilation unit, Caller is Empty.
 
-   procedure Add_Inlined_Subprogram (Index : Subp_Index);
-   --  Add the subprogram to the list of inlined subprogram for the unit
+   procedure Add_Inlined_Subprogram (E : Entity_Id);
+   --  Add subprogram E to the list of inlined subprogram for the unit
 
    function Add_Subp (E : Entity_Id) return Subp_Index;
    --  Make entry in Inlined table for subprogram E, or return table index
@@ -347,15 +346,19 @@ package body Inline is
             return Inline_Package;
          end if;
 
-         --  The call is not in the main unit. See if it is in some inlined
-         --  subprogram. If so, inline the call and, if the inlining level is
-         --  set to 1, stop there; otherwise also compile the package as above.
+         --  The call is not in the main unit. See if it is in some subprogram
+         --  that can be inlined outside its unit. If so, inline the call and,
+         --  if the inlining level is set to 1, stop there; otherwise also
+         --  compile the package as above.
 
          Scop := Current_Scope;
          while Scope (Scop) /= Standard_Standard
            and then not Is_Child_Unit (Scop)
          loop
-            if Is_Overloadable (Scop) and then Is_Inlined (Scop) then
+            if Is_Overloadable (Scop)
+              and then Is_Inlined (Scop)
+              and then not Is_Nested (Scop)
+            then
                Add_Call (E, Scop);
 
                if Inline_Level = 1 then
@@ -378,6 +381,15 @@ package body Inline is
    begin
       Append_New_Elmt (N, To => Backend_Calls);
 
+      --  Skip subprograms that cannot be inlined outside their unit
+
+      if Is_Abstract_Subprogram (E)
+        or else Convention (E) = Convention_Protected
+        or else Is_Nested (E)
+      then
+         return;
+      end if;
+
       --  Find unit containing E, and add to list of inlined bodies if needed.
       --  If the body is already present, no need to load any other unit. This
       --  is the case for an initialization procedure, which appears in the
@@ -391,13 +403,6 @@ package body Inline is
       --  no enclosing package to retrieve. In this case, it is the body of
       --  the function that will have to be loaded.
 
-      if Is_Abstract_Subprogram (E)
-        or else Is_Nested (E)
-        or else Convention (E) = Convention_Protected
-      then
-         return;
-      end if;
-
       Level := Must_Inline;
 
       if Level /= Dont_Inline then
@@ -405,6 +410,11 @@ package body Inline is
             Pack : constant Entity_Id := Get_Code_Unit_Entity (E);
 
          begin
+            --  Ensure that Analyze_Inlined_Bodies will be invoked after
+            --  completing the analysis of the current unit.
+
+            Inline_Processing_Required := True;
+
             if Pack = E then
 
                --  Library-level inlined function. Add function itself to
@@ -470,8 +480,7 @@ package body Inline is
    -- Add_Inlined_Subprogram --
    ----------------------------
 
-   procedure Add_Inlined_Subprogram (Index : Subp_Index) is
-      E    : constant Entity_Id := Inlined.Table (Index).Name;
+   procedure Add_Inlined_Subprogram (E : Entity_Id) is
       Decl : constant Node_Id   := Parent (Declaration_Node (E));
       Pack : constant Entity_Id := Get_Code_Unit_Entity (E);
 
@@ -533,8 +542,6 @@ package body Inline is
       else
          Register_Backend_Not_Inlined_Subprogram (E);
       end if;
-
-      Inlined.Table (Index).Listed := True;
    end Add_Inlined_Subprogram;
 
    ------------------------
@@ -601,7 +608,6 @@ package body Inline is
          Inlined.Table (Inlined.Last).Name        := E;
          Inlined.Table (Inlined.Last).Next        := No_Subp;
          Inlined.Table (Inlined.Last).First_Succ  := No_Succ;
-         Inlined.Table (Inlined.Last).Listed      := False;
          Inlined.Table (Inlined.Last).Main_Call   := False;
          Inlined.Table (Inlined.Last).Processed   := False;
       end New_Entry;
@@ -827,7 +833,7 @@ package body Inline is
          --  as part of an inlined package, but are not themselves called. An
          --  accurate computation of just those subprograms that are needed
          --  requires that we perform a transitive closure over the call graph,
-         --  starting from calls in the main program.
+         --  starting from calls in the main compilation unit.
 
          for Index in Inlined.First .. Inlined.Last loop
             if not Is_Called (Inlined.Table (Index).Name) then
@@ -874,10 +880,8 @@ package body Inline is
          --  subprograms for the unit.
 
          for Index in Inlined.First .. Inlined.Last loop
-            if Is_Called (Inlined.Table (Index).Name)
-              and then not Inlined.Table (Index).Listed
-            then
-               Add_Inlined_Subprogram (Index);
+            if Is_Called (Inlined.Table (Index).Name) then
+               Add_Inlined_Subprogram (Inlined.Table (Index).Name);
             end if;
          end loop;
 
@@ -1353,10 +1357,6 @@ package body Inline is
       --  Returns True if subprogram Id is defined in the visible part of a
       --  package specification.
 
-      function Is_Expression_Function (Id : Entity_Id) return Boolean;
-      --  Returns True if subprogram Id was defined originally as an expression
-      --  function.
-
       ---------------------------------------------------
       -- Has_Formal_With_Discriminant_Dependent_Fields --
       ---------------------------------------------------
@@ -1468,20 +1468,6 @@ package body Inline is
            and then List_Containing (Decl) = Visible_Declarations (P);
       end In_Package_Visible_Spec;
 
-      ----------------------------
-      -- Is_Expression_Function --
-      ----------------------------
-
-      function Is_Expression_Function (Id : Entity_Id) return Boolean is
-         Decl : Node_Id := Parent (Parent (Id));
-      begin
-         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
-            Decl := Parent (Decl);
-         end if;
-
-         return Nkind (Original_Node (Decl)) = N_Expression_Function;
-      end Is_Expression_Function;
-
       ------------------------
       -- Is_Unit_Subprogram --
       ------------------------
@@ -1500,7 +1486,7 @@ package body Inline is
 
       Id : Entity_Id;  --  Procedure or function entity for the subprogram
 
-   --  Start of Can_Be_Inlined_In_GNATprove_Mode
+   --  Start of processing for Can_Be_Inlined_In_GNATprove_Mode
 
    begin
       pragma Assert (Present (Spec_Id) or else Present (Body_Id));
@@ -1528,6 +1514,12 @@ package body Inline is
       --  Do not inline subprograms declared in the visible part of a package
 
       elsif In_Package_Visible_Spec (Id) then
+         return False;
+
+      --  Do not inline subprograms marked No_Return, possibly used for
+      --  signaling errors, which GNATprove handles specially.
+
+      elsif No_Return (Id) then
          return False;
 
       --  Do not inline subprograms that have a contract on the spec or the
@@ -3452,14 +3444,12 @@ package body Inline is
 
          if Nkind (D) = N_Package_Declaration then
             Cannot_Inline
-              ("cannot inline & (nested package declaration)?",
-               D, Subp);
+              ("cannot inline & (nested package declaration)?", D, Subp);
             return True;
 
          elsif Nkind (D) = N_Package_Instantiation then
             Cannot_Inline
-              ("cannot inline & (nested package instantiation)?",
-               D, Subp);
+              ("cannot inline & (nested package instantiation)?", D, Subp);
             return True;
          end if;
 
@@ -3472,8 +3462,7 @@ package body Inline is
            or else Nkind (D) = N_Single_Task_Declaration
          then
             Cannot_Inline
-              ("cannot inline & (nested task type declaration)?",
-               D, Subp);
+              ("cannot inline & (nested task type declaration)?", D, Subp);
             return True;
 
          elsif Nkind (D) = N_Protected_Type_Declaration
@@ -3486,23 +3475,50 @@ package body Inline is
 
          elsif Nkind (D) = N_Subprogram_Body then
             Cannot_Inline
-              ("cannot inline & (nested subprogram)?",
-               D, Subp);
+              ("cannot inline & (nested subprogram)?", D, Subp);
             return True;
 
          elsif Nkind (D) = N_Function_Instantiation
            and then not Is_Unchecked_Conversion (D)
          then
             Cannot_Inline
-              ("cannot inline & (nested function instantiation)?",
-               D, Subp);
+              ("cannot inline & (nested function instantiation)?", D, Subp);
             return True;
 
          elsif Nkind (D) = N_Procedure_Instantiation then
             Cannot_Inline
-              ("cannot inline & (nested procedure instantiation)?",
-               D, Subp);
+              ("cannot inline & (nested procedure instantiation)?", D, Subp);
             return True;
+
+         --  Subtype declarations with predicates will generate predicate
+         --  functions, i.e. nested subprogram bodies, so inlining is not
+         --  possible.
+
+         elsif Nkind (D) = N_Subtype_Declaration
+           and then Present (Aspect_Specifications (D))
+         then
+            declare
+               A    : Node_Id;
+               A_Id : Aspect_Id;
+
+            begin
+               A := First (Aspect_Specifications (D));
+               while Present (A) loop
+                  A_Id := Get_Aspect_Id (Chars (Identifier (A)));
+
+                  if A_Id = Aspect_Predicate
+                    or else A_Id = Aspect_Static_Predicate
+                    or else A_Id = Aspect_Dynamic_Predicate
+                  then
+                     Cannot_Inline
+                       ("cannot inline & (subtype declaration with "
+                        & "predicate)?", D, Subp);
+                     return True;
+                  end if;
+
+                  Next (A);
+               end loop;
+            end;
          end if;
 
          Next (D);

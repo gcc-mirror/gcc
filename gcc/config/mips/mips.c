@@ -25,56 +25,40 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
 #include "df.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "optabs.h"
 #include "regs.h"
-#include "insn-config.h"
-#include "conditions.h"
-#include "insn-attr.h"
+#include "emit-rtl.h"
 #include "recog.h"
+#include "cgraph.h"
+#include "diagnostic.h"
+#include "insn-attr.h"
 #include "output.h"
 #include "alias.h"
 #include "fold-const.h"
 #include "varasm.h"
-#include "stringpool.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "flags.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
 #include "libfuncs.h"
 #include "reload.h"
-#include "tm_p.h"
-#include "gstab.h"
-#include "debug.h"
-#include "target.h"
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
 #include "sched-int.h"
-#include "internal-fn.h"
-#include "gimple-fold.h"
-#include "tree-eh.h"
 #include "gimplify.h"
-#include "diagnostic.h"
 #include "target-globals.h"
-#include "opts.h"
 #include "tree-pass.h"
 #include "context.h"
-#include "cgraph.h"
 #include "builtins.h"
 #include "rtl-iter.h"
 
@@ -327,153 +311,6 @@ static struct {
      when optimizing for speed.  */
   bool fast_mult_zero_zero_p;
 } mips_tuning_info;
-
-/* Information about a function's frame layout.  */
-struct GTY(())  mips_frame_info {
-  /* The size of the frame in bytes.  */
-  HOST_WIDE_INT total_size;
-
-  /* The number of bytes allocated to variables.  */
-  HOST_WIDE_INT var_size;
-
-  /* The number of bytes allocated to outgoing function arguments.  */
-  HOST_WIDE_INT args_size;
-
-  /* The number of bytes allocated to the .cprestore slot, or 0 if there
-     is no such slot.  */
-  HOST_WIDE_INT cprestore_size;
-
-  /* Bit X is set if the function saves or restores GPR X.  */
-  unsigned int mask;
-
-  /* Likewise FPR X.  */
-  unsigned int fmask;
-
-  /* Likewise doubleword accumulator X ($acX).  */
-  unsigned int acc_mask;
-
-  /* The number of GPRs, FPRs, doubleword accumulators and COP0
-     registers saved.  */
-  unsigned int num_gp;
-  unsigned int num_fp;
-  unsigned int num_acc;
-  unsigned int num_cop0_regs;
-
-  /* The offset of the topmost GPR, FPR, accumulator and COP0-register
-     save slots from the top of the frame, or zero if no such slots are
-     needed.  */
-  HOST_WIDE_INT gp_save_offset;
-  HOST_WIDE_INT fp_save_offset;
-  HOST_WIDE_INT acc_save_offset;
-  HOST_WIDE_INT cop0_save_offset;
-
-  /* Likewise, but giving offsets from the bottom of the frame.  */
-  HOST_WIDE_INT gp_sp_offset;
-  HOST_WIDE_INT fp_sp_offset;
-  HOST_WIDE_INT acc_sp_offset;
-  HOST_WIDE_INT cop0_sp_offset;
-
-  /* Similar, but the value passed to _mcount.  */
-  HOST_WIDE_INT ra_fp_offset;
-
-  /* The offset of arg_pointer_rtx from the bottom of the frame.  */
-  HOST_WIDE_INT arg_pointer_offset;
-
-  /* The offset of hard_frame_pointer_rtx from the bottom of the frame.  */
-  HOST_WIDE_INT hard_frame_pointer_offset;
-};
-
-/* Enumeration for masked vectored (VI) and non-masked (EIC) interrupts.  */
-enum mips_int_mask
-{
-  INT_MASK_EIC = -1,
-  INT_MASK_SW0 = 0,
-  INT_MASK_SW1 = 1,
-  INT_MASK_HW0 = 2,
-  INT_MASK_HW1 = 3,
-  INT_MASK_HW2 = 4,
-  INT_MASK_HW3 = 5,
-  INT_MASK_HW4 = 6,
-  INT_MASK_HW5 = 7
-};
-
-/* Enumeration to mark the existence of the shadow register set.
-   SHADOW_SET_INTSTACK indicates a shadow register set with a valid stack
-   pointer.  */
-enum mips_shadow_set
-{
-  SHADOW_SET_NO,
-  SHADOW_SET_YES,
-  SHADOW_SET_INTSTACK
-};
-
-struct GTY(())  machine_function {
-  /* The next floating-point condition-code register to allocate
-     for ISA_HAS_8CC targets, relative to ST_REG_FIRST.  */
-  unsigned int next_fcc;
-
-  /* The register returned by mips16_gp_pseudo_reg; see there for details.  */
-  rtx mips16_gp_pseudo_rtx;
-
-  /* The number of extra stack bytes taken up by register varargs.
-     This area is allocated by the callee at the very top of the frame.  */
-  int varargs_size;
-
-  /* The current frame information, calculated by mips_compute_frame_info.  */
-  struct mips_frame_info frame;
-
-  /* The register to use as the function's global pointer, or INVALID_REGNUM
-     if the function doesn't need one.  */
-  unsigned int global_pointer;
-
-  /* How many instructions it takes to load a label into $AT, or 0 if
-     this property hasn't yet been calculated.  */
-  unsigned int load_label_num_insns;
-
-  /* True if mips_adjust_insn_length should ignore an instruction's
-     hazard attribute.  */
-  bool ignore_hazard_length_p;
-
-  /* True if the whole function is suitable for .set noreorder and
-     .set nomacro.  */
-  bool all_noreorder_p;
-
-  /* True if the function has "inflexible" and "flexible" references
-     to the global pointer.  See mips_cfun_has_inflexible_gp_ref_p
-     and mips_cfun_has_flexible_gp_ref_p for details.  */
-  bool has_inflexible_gp_insn_p;
-  bool has_flexible_gp_insn_p;
-
-  /* True if the function's prologue must load the global pointer
-     value into pic_offset_table_rtx and store the same value in
-     the function's cprestore slot (if any).  Even if this value
-     is currently false, we may decide to set it to true later;
-     see mips_must_initialize_gp_p () for details.  */
-  bool must_initialize_gp_p;
-
-  /* True if the current function must restore $gp after any potential
-     clobber.  This value is only meaningful during the first post-epilogue
-     split_insns pass; see mips_must_initialize_gp_p () for details.  */
-  bool must_restore_gp_when_clobbered_p;
-
-  /* True if this is an interrupt handler.  */
-  bool interrupt_handler_p;
-
-  /* Records the way in which interrupts should be masked.  Only used if
-     interrupts are not kept masked.  */
-  enum mips_int_mask int_mask;
-
-  /* Records if this is an interrupt handler that uses shadow registers.  */
-  enum mips_shadow_set use_shadow_register_set;
-
-  /* True if this is an interrupt handler that should keep interrupts
-     masked.  */
-  bool keep_interrupts_masked_p;
-
-  /* True if this is an interrupt handler that should use DERET
-     instead of ERET.  */
-  bool use_debug_exception_return_p;
-};
 
 /* Information about a single argument.  */
 struct mips_arg_info {
@@ -4475,6 +4312,14 @@ mips_address_cost (rtx addr, machine_mode mode,
 {
   return mips_address_insns (addr, mode, false);
 }
+
+/* Implement TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P.  */
+
+static bool
+mips_no_speculation_in_delay_slots_p ()
+{
+  return TARGET_CB_MAYBE;
+}
 
 /* Information about a single instruction in a multi-instruction
    asm sequence.  */
@@ -6227,7 +6072,7 @@ mips_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 	  /* Set OFF to the offset from virtual_incoming_args_rtx of
 	     the first float register.  The FP save area lies below
 	     the integer one, and is aligned to UNITS_PER_FPVALUE bytes.  */
-	  off = (-gp_saved * UNITS_PER_WORD) & -UNITS_PER_FPVALUE;
+	  off = ROUND_DOWN (-gp_saved * UNITS_PER_WORD, UNITS_PER_FPVALUE);
 	  off -= fp_saved * UNITS_PER_FPREG;
 
 	  mode = TARGET_SINGLE_FLOAT ? SFmode : DFmode;
@@ -6591,7 +6436,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 			unshare_expr (valist), f_gtop, NULL_TREE);
 	  off = build3 (COMPONENT_REF, TREE_TYPE (f_goff),
 			unshare_expr (valist), f_goff, NULL_TREE);
-	  rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+	  rsize = ROUND_UP (size, UNITS_PER_WORD);
 	  if (rsize > UNITS_PER_WORD)
 	    {
 	      /* [1] Emit code for: off &= -rsize.	*/
@@ -10504,10 +10349,15 @@ mips_compute_frame_info (void)
   cfun->machine->global_pointer = mips_global_pointer ();
 
   /* The first two blocks contain the outgoing argument area and the $gp save
-     slot.  This area isn't needed in leaf functions, but if the
-     target-independent frame size is nonzero, we have already committed to
-     allocating these in STARTING_FRAME_OFFSET for !FRAME_GROWS_DOWNWARD.  */
-  if ((size == 0 || FRAME_GROWS_DOWNWARD) && crtl->is_leaf)
+     slot.  This area isn't needed in leaf functions.  We can also skip it
+     if we know that none of the called functions will use this space.
+
+     But if the target-independent frame size is nonzero, we have already
+     committed to allocating these in STARTING_FRAME_OFFSET for
+     !FRAME_GROWS_DOWNWARD.  */
+
+  if ((size == 0 || FRAME_GROWS_DOWNWARD)
+      && (crtl->is_leaf || (cfun->machine->optimize_call_stack && !flag_pic)))
     {
       /* The MIPS 3.0 linker does not like functions that dynamically
 	 allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it
@@ -10572,7 +10422,7 @@ mips_compute_frame_info (void)
       if (mips_save_reg_p (regno))
 	{
 	  frame->num_fp += MAX_FPRS_PER_FMT;
-	  frame->fmask |= ~(~0 << MAX_FPRS_PER_FMT) << (regno - FP_REG_FIRST);
+	  frame->fmask |= ~(~0U << MAX_FPRS_PER_FMT) << (regno - FP_REG_FIRST);
 	}
 
   /* Move above the FPR save area.  */
@@ -11462,7 +11312,7 @@ mips_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 
       /* Step 1: round SIZE to the previous multiple of the interval.  */
 
-      rounded_size = size & -PROBE_INTERVAL;
+      rounded_size = ROUND_DOWN (size, PROBE_INTERVAL);
 
 
       /* Step 2: compute initial and final value of the loop counter.  */
@@ -18269,6 +18119,8 @@ mips_option_override (void)
 
   if (TARGET_HARD_FLOAT_ABI && TARGET_MIPS5900)
     REAL_MODE_FORMAT (SFmode) = &spu_single_format;
+
+  mips_register_frame_header_opt ();
 }
 
 /* Swap the register information for registers I and I + 1, which
@@ -19978,6 +19830,9 @@ mips_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class)
 #define TARGET_RTX_COSTS mips_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST mips_address_cost
+
+#undef TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
+#define TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P mips_no_speculation_in_delay_slots_p
 
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P mips_in_small_data_p

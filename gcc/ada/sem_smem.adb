@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,6 +92,8 @@ package body Sem_Smem is
 
       elsif Is_Record_Type (T)
         and then not Is_Constrained (T)
+        and then (Nkind (N) /= N_Object_Declaration
+                   or else No (Expression (N)))
       then
          Error_Msg_N
            ("unconstrained variant records " &
@@ -116,9 +118,12 @@ package body Sem_Smem is
 
       elsif Is_Record_Type (T) then
          if Has_Discriminants (T) then
+
+            --  Check for access discriminants.
+
             C := First_Discriminant (T);
             while Present (C) loop
-               if Comes_From_Source (C) then
+               if Is_Access_Type (Etype (C)) then
                   return True;
                else
                   C := Next_Discriminant (C);

@@ -1,6 +1,6 @@
 /* Check that fpchg is used to switch FPSCR.PR mode on SH4A.  */
+/* { dg-do compile { target { has_fpchg } } }  */
 /* { dg-additional-options "-O" }  */
-/* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m4a" "-m4a-single" } }  */
 /* { dg-final { scan-assembler "fpchg" } }  */
 /* { dg-final { scan-assembler-not "fpscr" } }  */
 

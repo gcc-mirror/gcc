@@ -46,6 +46,7 @@
    that the __vxworks header appear before any other include.  */
 #ifdef __vxworks
 #include "vxWorks.h"
+#include "version.h" /* for _WRS_VXWORKS_MAJOR */
 #endif
 
 #ifdef __ANDROID__
@@ -93,7 +94,9 @@ extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 #endif
 
-/* Global values computed by the binder.  */
+/* Global values computed by the binder.  Note that these variables are
+   declared here, not in the binder file, to avoid having unresolved
+   references in the shared libgnat.  */
 int   __gl_main_priority                 = -1;
 int   __gl_main_cpu                      = -1;
 int   __gl_time_slice_val                = -1;
@@ -107,10 +110,12 @@ char *__gl_interrupt_states              = 0;
 int   __gl_num_interrupt_states          = 0;
 int   __gl_unreserve_all_interrupts      = 0;
 int   __gl_exception_tracebacks          = 0;
+int   __gl_exception_tracebacks_symbolic = 0;
 int   __gl_detect_blocking               = 0;
 int   __gl_default_stack_size            = -1;
 int   __gl_leap_seconds_support          = 0;
 int   __gl_canonical_streams             = 0;
+char *__gl_bind_env_addr                 = NULL;
 
 /* This value is not used anymore, but kept for bootstrapping purpose.  */
 int   __gl_zero_cost_exceptions          = 0;
@@ -1711,7 +1716,7 @@ __gnat_install_handler (void)
 #include <iv.h>
 #endif
 
-#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6)
+#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) && !defined(__RTP__)
 #include <vmLib.h>
 #endif
 
@@ -1858,7 +1863,7 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
      page if there's a match.  Additionally we're are assured this is a
      genuine stack overflow condition and and set the message and exception
      to that effect.  */
-#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6)
+#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) && !defined(__RTP__)
 
   /* We re-arm the guard page by marking it invalid */
 
@@ -1892,13 +1897,14 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
 	  }
        }
     }
-#endif /* defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) */
+#endif /* defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) && !defined(__RTP__) */
 
   __gnat_clear_exception_count ();
   Raise_From_Signal_Handler (exception, msg);
 }
 
-#if defined (__i386__) && !defined (VTHREADS)
+#if defined (__i386__) && !defined (VTHREADS) && _WRS_VXWORKS_MAJOR < 7
+
 extern void
 __gnat_vxsim_error_handler (int sig, siginfo_t *si, void *sc);
 
@@ -1913,6 +1919,20 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
 {
   sigset_t mask;
 
+  /* VxWorks 7 on e500v2 clears the SPE bit of the MSR when entering CPU
+     exception state. To allow the handler and exception to work properly
+     when they contain SPE instructions, we need to set it back before doing
+     anything else. */
+#if (CPU == PPCE500V2) && (_WRS_VXWORKS_MAJOR == 7)
+  register unsigned msr;
+  /* Read the MSR value */
+  asm volatile ("mfmsr %0" : "=r" (msr));
+  /* Force the SPE bit */
+  msr |= 0x02000000;
+  /* Store to MSR */
+  asm volatile ("mtmsr %0" : : "r" (msr));
+#endif
+
   /* VxWorks will always mask out the signal during the signal handler and
      will reenable it on a longjmp.  GNAT does not generate a longjmp to
      return from a signal handler so the signal will still be masked unless
@@ -1921,7 +1941,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-#if defined (__ARMEL__) || defined (__PPC__) || defined (__i386__)
+#if defined (__ARMEL__) || defined (__PPC__) || (defined (__i386__) && _WRS_VXWORKS_MAJOR < 7)
   /* On certain targets, kernel mode, we process signals through a Call Frame
      Info trampoline, voiding the need for myriads of fallback_frame_state
      variants in the ZCX runtime.  We have no simple way to distinguish ZCX
@@ -2021,7 +2041,7 @@ __gnat_install_handler (void)
   trap_0_entry->inst_fourth = 0xa1480000;
 #endif
 
-#if defined (__i386__) && !defined (VTHREADS)
+#if defined (__i386__) && !defined (VTHREADS) && _WRS_VXWORKS_MAJOR != 7
   /*  By experiment, found that sysModel () returns the following string
       prefix for vxsim when running on Linux and Windows.  */
   model = sysModel ();
@@ -2231,17 +2251,58 @@ char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
    Tell the kernel to re-use alt stack when delivering a signal.  */
 #define	UC_RESET_ALT_STACK	0x80000000
 
-#ifndef __arm__
+#if !(defined (__arm__) || defined (__arm64__))
 #include <mach/mach_vm.h>
 #include <mach/mach_init.h>
 #include <mach/vm_statistics.h>
+#endif
+
+#ifdef __arm64__
+#include <sys/ucontext.h>
+
+/* Trampoline inserted before raising the exception.  It modifies the
+   stack so that PROC (D, M) looks to be called from the fault point.  Note
+   that LR may be incorrectly set.  */
+void __gnat_sigtramp (struct Exception_Data *d, const char *m,
+		      mcontext_t ctxt,
+		      void (*proc)(struct Exception_Data *, const char *));
+
+asm("\n"
+"	.section	__TEXT,__text,regular,pure_instructions\n"
+"	.align  2\n"
+"___gnat_sigtramp:\n"
+"	.cfi_startproc\n"
+	/* Restore callee saved registers.  */
+"	ldp	x19, x20, [x2, #168]\n"
+"	ldp	x21, x22, [x2, #184]\n"
+"	ldp	x23, x24, [x2, #200]\n"
+"	ldp	x25, x26, [x2, #216]\n"
+"	ldp	x27, x28, [x2, #232]\n"
+"	ldp	q8, q9, [x2, #416]\n"
+"	ldp	q10, q11, [x2, #448]\n"
+"	ldp	q12, q13, [x2, #480]\n"
+"	ldp	q14, q15, [x2, #512]\n"
+	/* Read FP from mcontext.  */
+"	ldp	fp, lr, [x2, #248]\n"
+	/* Read SP and PC from mcontext.  */
+"	ldp	x6, x7, [x2, #264]\n"
+"	add	lr, x7, #1\n"
+"	mov	sp, x6\n"
+	/* Create a standard frame.  */
+"	stp	fp, lr, [sp, #-16]!\n"
+"	.cfi_def_cfa	w29, 16\n"
+"	.cfi_offset	w30, -8\n"
+"	.cfi_offset	w29, -16\n"
+"	br	x3\n"
+"	.cfi_endproc\n"
+);
 #endif
 
 /* Return true if ADDR is within a stack guard area.  */
 static int
 __gnat_is_stack_guard (mach_vm_address_t addr)
 {
-#ifndef __arm__
+#if !(defined (__arm__) || defined (__arm64__))
   kern_return_t kret;
   vm_region_submap_info_data_64_t info;
   mach_vm_address_t start;
@@ -2344,6 +2405,15 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 	 for the next signal delivery.
          The stack can't be used in case of stack checking.  */
       syscall (SYS_sigreturn, NULL, UC_RESET_ALT_STACK);
+
+#ifdef __arm64__
+      /* On arm64, use a trampoline so that the unwinder won't see the
+	 signal frame.  */
+      __gnat_sigtramp (exception, msg,
+		       ((ucontext_t *)ucontext)->uc_mcontext,
+		       Raise_From_Signal_Handler);
+      return;
+#endif
       break;
 
     case SIGFPE:

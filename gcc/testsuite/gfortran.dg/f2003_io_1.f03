@@ -8,7 +8,7 @@ character(25) :: msg
 
 a = 23.45
 b = 0.0
-open(10, file='mydata', asynchronous="yes", blank="null")
+open(10, file='mydata_f2003_io_1', asynchronous="yes", blank="null")
 
 write(10,'(10f8.3)', asynchronous="yes", decimal="comma", id=j) a
 rewind(10)

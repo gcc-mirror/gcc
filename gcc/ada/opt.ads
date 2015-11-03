@@ -595,7 +595,12 @@ package Opt is
 
    Exception_Tracebacks : Boolean := False;
    --  GNATBIND
-   --  Set to True to store tracebacks in exception occurrences (-E)
+   --  Set to True to store tracebacks in exception occurrences (-Ea or -E)
+
+   Exception_Tracebacks_Symbolic : Boolean := False;
+   --  GNATBIND
+   --  Set to True to store tracebacks in exception occurrences and enable
+   --  symbolic tracebacks (-Es).
 
    Extensions_Allowed : Boolean := False;
    --  GNAT
@@ -745,9 +750,8 @@ package Opt is
    GNAT_Encodings : Int;
    pragma Import (C, GNAT_Encodings, "gnat_encodings");
    --  Constant controlling the balance between GNAT encodings and standard
-   --  DWARF to emit in the debug information. See jmissing.c and aamissing.c
-   --  for definitions for dotnet/jgnat and GNAAMP back ends. It accepts the
-   --  following values.
+   --  DWARF to emit in the debug information. See aamissing.c for definitions
+   --  for the GNAAMP back end. It accepts the following values.
 
    DWARF_GNAT_Encodings_All     : constant Int := 0;
    DWARF_GNAT_Encodings_GDB     : constant Int := 1;
@@ -819,7 +823,7 @@ package Opt is
    --  be inlined in GNATprove mode.
 
    Init_Or_Norm_Scalars : Boolean := False;
-   --  GNAT, GANTBIND
+   --  GNAT, GNATBIND
    --  Set True if a pragma Initialize_Scalars applies to the current unit.
    --  Also set True if a pragma Restriction (Normalize_Scalars) applies.
 
@@ -1158,14 +1162,13 @@ package Opt is
    Optimization_Level : Int;
    pragma Import (C, Optimization_Level, "optimize");
    --  Constant reflecting the optimization level (0,1,2,3 for -O0,-O1,-O2,-O3)
-   --  See jmissing.c and aamissing.c for definitions for dotnet/jgnat and
-   --  GNAAMP back ends.
+   --  See e.g. aamissing.c for definitions for the GNAAMP back end.
 
    Optimize_Size : Int;
    pragma Import (C, Optimize_Size, "optimize_size");
    --  Constant reflecting setting of -Os (optimize for size). Set to nonzero
-   --  in -Os mode and set to zero otherwise. See jmissing.c and aamissing.c
-   --  for definitions of "optimize_size" for dotnet/jgnat and GNAAMP backends
+   --  in -Os mode and set to zero otherwise. See aamissing.c for definition
+   --  of "optimize_size" for the GNAAMP backend.
 
    Output_File_Name_Present : Boolean := False;
    --  GNATBIND, GNAT, GNATMAKE
@@ -1431,8 +1434,7 @@ package Opt is
    --  GNAT
    --  Set True if tagged types and interfaces should be expanded by the
    --  front-end. If False, the original tree is left unexpanded for tagged
-   --  types and dispatching calls, assuming the underlying target supports
-   --  it (e.g. in the JVM case).
+   --  types and dispatching calls, assuming the underlying target supports it.
 
    Target_Dependent_Info_Read_Name : String_Ptr := null;
    --  GNAT

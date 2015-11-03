@@ -14,13 +14,21 @@
 ------------------------------------------------------------------------------
 
 with Ada.Interrupts;
+with Ada.Real_Time;
 
-package Ada.Execution_Time.Interrupts is
+package Ada.Execution_Time.Interrupts with
+  SPARK_Mode
+is
 
    pragma Unimplemented_Unit;
 
-   function Clock (Interrupt : Ada.Interrupts.Interrupt_Id) return CPU_Time;
+   function Clock (Interrupt : Ada.Interrupts.Interrupt_ID) return CPU_Time
+   with
+     Volatile_Function,
+     Global => Ada.Real_Time.Clock_Time;
 
-   function Supported (Interrupt : Ada.Interrupts.Interrupt_Id) return Boolean;
+   function Supported (Interrupt : Ada.Interrupts.Interrupt_ID) return Boolean
+   with
+     Global => null;
 
 end Ada.Execution_Time.Interrupts;

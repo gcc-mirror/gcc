@@ -109,40 +109,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "alias.h"
+#include "alloc-pool.h"
+#include "tree-pass.h"
+#include "cgraph.h"
+#include "lto-streamer.h"
 #include "fold-const.h"
 #include "print-tree.h"
 #include "calls.h"
-#include "cgraph.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "tree-pass.h"
-#include "target.h"
 #include "ipa-utils.h"
-#include "internal-fn.h"
 #include "gimple-fold.h"
-#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
-#include "diagnostic.h"
-#include "tree-dfa.h"
 #include "demangle.h"
 #include "dbgcnt.h"
 #include "gimple-pretty-print.h"
-#include "stor-layout.h"
 #include "intl.h"
-#include "lto-streamer.h"
 
 /* Hash based set of pairs of types.  */
 struct type_pair
@@ -272,11 +257,10 @@ type_in_anonymous_namespace_p (const_tree t)
     {
       /* C++ FE uses magic <anon> as assembler names of anonymous types.
  	 verify that this match with type_in_anonymous_namespace_p.  */
-#ifdef ENABLE_CHECKING
       if (in_lto_p)
-	gcc_assert (!strcmp ("<anon>",
-		    IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (TYPE_NAME (t)))));
-#endif
+	gcc_checking_assert (!strcmp ("<anon>",
+				      IDENTIFIER_POINTER
+					(DECL_ASSEMBLER_NAME (TYPE_NAME (t)))));
       return true;
     }
   return false;
@@ -300,15 +284,13 @@ odr_type_p (const_tree t)
   if (TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
       && (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t))))
     {
-#ifdef ENABLE_CHECKING
       /* C++ FE uses magic <anon> as assembler names of anonymous types.
  	 verify that this match with type_in_anonymous_namespace_p.  */
-      gcc_assert (!type_with_linkage_p (t)
-		  || strcmp ("<anon>",
-			     IDENTIFIER_POINTER
-			        (DECL_ASSEMBLER_NAME (TYPE_NAME (t))))
-		  || type_in_anonymous_namespace_p (t));
-#endif
+      gcc_checking_assert (!type_with_linkage_p (t)
+			   || strcmp ("<anon>",
+				      IDENTIFIER_POINTER
+					(DECL_ASSEMBLER_NAME (TYPE_NAME (t))))
+			   || type_in_anonymous_namespace_p (t));
       return true;
     }
   return false;
@@ -1777,11 +1759,10 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 bool
 odr_types_equivalent_p (tree type1, tree type2)
 {
-  hash_set<type_pair> visited;
+  gcc_checking_assert (odr_or_derived_type_p (type1)
+		       && odr_or_derived_type_p (type2));
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (odr_or_derived_type_p (type1) && odr_or_derived_type_p (type2));
-#endif
+  hash_set<type_pair> visited;
   return odr_types_equivalent_p (type1, type2, false, NULL,
 			         &visited, UNKNOWN_LOCATION, UNKNOWN_LOCATION);
 }
@@ -2000,8 +1981,8 @@ add_type_duplicate (odr_type val, tree type)
     }
   gcc_assert (val->odr_violated || !odr_must_violate);
   /* Sanity check that all bases will be build same way again.  */
-#ifdef ENABLE_CHECKING
-  if (COMPLETE_TYPE_P (type) && COMPLETE_TYPE_P (val->type)
+  if (flag_checking
+      && COMPLETE_TYPE_P (type) && COMPLETE_TYPE_P (val->type)
       && TREE_CODE (val->type) == RECORD_TYPE
       && TREE_CODE (type) == RECORD_TYPE
       && TYPE_BINFO (val->type) && TYPE_BINFO (type)
@@ -2030,7 +2011,6 @@ add_type_duplicate (odr_type val, tree type)
 	    j++;
 	  }
     }
-#endif
 
 
   /* Regularize things a little.  During LTO same types may come with
@@ -2136,8 +2116,8 @@ get_odr_type (tree type, bool insert)
       if (slot && *slot)
 	{
 	  val = *slot;
-#ifdef ENABLE_CHECKING
-	  if (in_lto_p && can_be_vtable_hashed_p (type))
+	  if (flag_checking
+	      && in_lto_p && can_be_vtable_hashed_p (type))
 	    {
 	      hash = hash_odr_vtable (type);
 	      vtable_slot = odr_vtable_hash->find_slot_with_hash (type, hash,
@@ -2145,7 +2125,6 @@ get_odr_type (tree type, bool insert)
 	      gcc_assert (!vtable_slot || *vtable_slot == *slot);
 	      vtable_slot = NULL;
 	    }
-#endif
 	}
       else if (*vtable_slot)
 	val = *vtable_slot;
@@ -3466,7 +3445,7 @@ possible_polymorphic_call_target_p (tree otr_type,
 
 bool
 possible_polymorphic_call_target_p (tree ref,
-				    gimple stmt,
+				    gimple *stmt,
 				    struct cgraph_node *n)
 {
   ipa_polymorphic_call_context context (current_function_decl, ref, stmt);

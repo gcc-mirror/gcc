@@ -1,3 +1,551 @@
+2015-10-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* openacc.h (enum acc_device_t): Reformat. Ensure layout
+	compatibility.
+	(enum acc_async_t): Reformat.
+	(acc_on_device): Declare compatible with builtin and provide C++
+	wrapper.
+	* testsuite/libgomp.oacc-c-c++-common/acc-on-device.c: New.
+
+2015-10-29  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/combdir-1.c: Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/combined-directives-1.c:
+	... this.  Add a description of the test at the top of the file.
+	* testsuite/libgomp.oacc-fortran/combdir-1.f90: Rename file to...
+	* testsuite/libgomp.oacc-fortran/combined-directives-1.f90:
+	... this.  Add a description of the test at the top of the file.
+
+2015-10-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-2.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/loop-v-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c: New.
+
+2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Remove check on compute
+	dimensions.
+
+2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/68063
+	* testsuite/libgomp.c++/member-1.C (A::m1): Add missing private clause.
+
+2015-10-27  James Norris  <jnorris@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/combdir-1.c: New file.
+	* testsuite/libgomp.oacc-fortran/combdir-1.f90: Likewise.
+
+2015-10-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/abort-1.c: Print to stderr.
+	* testsuite/libgomp.oacc-c-c++-common/abort-3.c: Likewise.
+
+	* testsuite/libgomp.oacc-c-c++-common/lib-1.c: Remove explicit
+	acc_device_nvidia usage.
+	* testsuite/libgomp.oacc-c-c++-common/lib-10.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-9.c: Likewise.
+
+	* oacc-init.c (acc_shutdown): Call gomp_init_targets_once.
+	* testsuite/libgomp.oacc-c-c++-common/lib-8.c: New file.
+
+	PR libgomp/66518
+	* testsuite/libgomp.oacc-c-c++-common/lib-3.c: Resolve XFAIL.
+
+	PR libgomp/65437
+	PR libgomp/66518
+	* oacc-mem.c (update_dev_host): Call goacc_lazy_initialize.
+	* testsuite/libgomp.oacc-c-c++-common/lib-42.c: Remove XFAIL.
+
+2015-10-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/68063
+	* testsuite/libgomp.c++/member-2.C (A::m1): Add missing private clause.
+
+2015-10-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Set sane
+	vector_length.
+	* testsuite/libgomp.oacc-fortran/reduction-6.f90: Likewise.
+
+2015-10-14  Ilya Verbin  <ilya.verbin@intel.com>
+	    Aleksander Ivanushenko  <aleksander.ivanushenko@intel.com>
+
+	* target.c (gomp_map_vars): Initialize tgt->tgt_start and tgt->tgt_end
+	to 0 when mapnum is 0.
+
+2015-10-14  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* fortran.c (omp_get_place_proc_ids_, omp_get_partition_place_nums_):
+	Cast to int from int32_t.
+
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* config/linux/affinity.c (omp_get_place_num_procs,
+	omp_get_place_proc_ids, gomp_get_place_proc_ids_8): New functions.
+	* config/linux/doacross.h: New file.
+	* config/posix/affinity.c (omp_get_place_num_procs,
+	omp_get_place_proc_ids, gomp_get_place_proc_ids_8): New functions.
+	* config/posix/doacross.h: New file.
+	* env.c: Include gomp-constants.h.
+	(struct gomp_task_icv): Rename run_sched_modifier to
+	run_sched_chunk_size.
+	(gomp_max_task_priority_var): New variable.
+	(parse_schedule): Rename run_sched_modifier to run_sched_chunk_size.
+	(handle_omp_display_env): Change _OPENMP value from 201307 to
+	201511.  Print OMP_MAX_TASK_PRIORITY.
+	(initialize_env): Parse OMP_MAX_TASK_PRIORITY.
+	(omp_set_schedule, omp_get_schedule): Rename modifier argument to
+	chunk_size and run_sched_modifier to run_sched_chunk_size.
+	(omp_get_max_task_priority, omp_get_initial_device,
+	omp_get_num_places, omp_get_place_num, omp_get_partition_num_places,
+	omp_get_partition_place_nums): New functions.
+	* fortran.c (omp_set_schedule_, omp_set_schedule_8_,
+	omp_get_schedule_, omp_get_schedule_8_): Rename modifier argument
+	to chunk_size.
+	(omp_get_num_places_, omp_get_place_num_procs_,
+	omp_get_place_num_procs_8_, omp_get_place_proc_ids_,
+	omp_get_place_proc_ids_8_, omp_get_place_num_,
+	omp_get_partition_num_places_, omp_get_partition_place_nums_,
+	omp_get_partition_place_nums_8_, omp_get_initial_device_,
+	omp_get_max_task_priority_): New functions.
+	* libgomp_g.h (GOMP_loop_doacross_static_start,
+	GOMP_loop_doacross_dynamic_start, GOMP_loop_doacross_guided_start,
+	GOMP_loop_doacross_runtime_start, GOMP_loop_ull_doacross_static_start,
+	GOMP_loop_ull_doacross_dynamic_start,
+	GOMP_loop_ull_doacross_guided_start,
+	GOMP_loop_ull_doacross_runtime_start, GOMP_doacross_post,
+	GOMP_doacross_wait, GOMP_doacross_ull_post, GOMP_doacross_wait,
+	GOMP_taskloop, GOMP_taskloop_ull, GOMP_target_41,
+	GOMP_target_data_41, GOMP_target_update_41,
+	GOMP_target_enter_exit_data): New prototypes.
+	(GOMP_task): Add prototype argument.
+	* libgomp.h (_LIBGOMP_CHECKING_): Define to 0 if not yet defined.
+	(struct gomp_doacross_work_share): New type.
+	(struct gomp_work_share): Add doacross field.
+	(struct gomp_task_icv): Rename run_sched_modifier to
+	run_sched_chunk_size.
+	(enum gomp_task_kind): Rename GOMP_TASK_IFFALSE to
+	GOMP_TASK_UNDEFERRED.  Add comments.
+	(struct gomp_task_depend_entry): Add comments.
+	(struct gomp_task): Likewise.
+	(struct gomp_taskgroup): Likewise.
+	(struct gomp_target_task): New type.
+	(struct gomp_team): Add comment.
+	(gomp_get_place_proc_ids_8, gomp_doacross_init,
+	gomp_doacross_ull_init, gomp_task_maybe_wait_for_dependencies,
+	gomp_create_target_task, gomp_target_task_fn): New prototypes.
+	(struct target_var_desc): New type.
+	(struct target_mem_desc): Adjust comment.  Use struct
+	target_var_desc instead of splay_tree_key for list.
+	(REFCOUNT_INFINITY): Define.
+	(struct splay_tree_key_s): Remove copy_from field.
+	(struct gomp_device_descr): Add dev2dev_func field.
+	(enum gomp_map_vars_kind): New enum.
+	(gomp_map_vars): Add one argument.
+	* libgomp.map (OMP_4.5): Export omp_get_max_task_priority,
+	omp_get_max_task_priority_, omp_get_num_places, omp_get_num_places_,
+	omp_get_place_num_procs, omp_get_place_num_procs_,
+	omp_get_place_num_procs_8_, omp_get_place_proc_ids,
+	omp_get_place_proc_ids_, omp_get_place_proc_ids_8_, omp_get_place_num,
+	omp_get_place_num_, omp_get_partition_num_places,
+	omp_get_partition_num_places_, omp_get_partition_place_nums,
+	omp_get_partition_place_nums_, omp_get_partition_place_nums_8_,
+	omp_get_initial_device, omp_get_initial_device_, omp_target_alloc,
+	omp_target_free, omp_target_is_present, omp_target_memcpy,
+	omp_target_memcpy_rect, omp_target_associate_ptr and
+	omp_target_disassociate_ptr.
+	(GOMP_4.0.2): Renamed to ...
+	(GOMP_4.5): ... this.  Export GOMP_target_41, GOMP_target_data_41,
+	GOMP_target_update_41, GOMP_target_enter_exit_data, GOMP_taskloop,
+	GOMP_taskloop_ull, GOMP_loop_doacross_dynamic_start,
+	GOMP_loop_doacross_guided_start, GOMP_loop_doacross_runtime_start,
+	GOMP_loop_doacross_static_start, GOMP_doacross_post,
+	GOMP_doacross_wait, GOMP_loop_ull_doacross_dynamic_start,
+	GOMP_loop_ull_doacross_guided_start,
+	GOMP_loop_ull_doacross_runtime_start,
+	GOMP_loop_ull_doacross_static_start, GOMP_doacross_ull_post and
+	GOMP_doacross_ull_wait.
+	* libgomp.texi: Document omp_get_max_task_priority.
+	Rename modifier argument to chunk_size for omp_set_schedule and
+	omp_get_schedule.  Document OMP_MAX_TASK_PRIORITY env var.
+	* loop.c (GOMP_loop_runtime_start): Adjust for run_sched_modifier
+	to run_sched_chunk_size renaming.
+	(GOMP_loop_ordered_runtime_start): Likewise.
+	(gomp_loop_doacross_static_start, gomp_loop_doacross_dynamic_start,
+	gomp_loop_doacross_guided_start, GOMP_loop_doacross_runtime_start,
+	GOMP_parallel_loop_runtime_start): New functions.
+	(GOMP_parallel_loop_runtime): Adjust for run_sched_modifier
+	to run_sched_chunk_size renaming.
+	(GOMP_loop_doacross_static_start, GOMP_loop_doacross_dynamic_start,
+	GOMP_loop_doacross_guided_start): New functions or aliases.
+	* loop_ull.c (GOMP_loop_ull_runtime_start): Adjust for
+	run_sched_modifier to run_sched_chunk_size renaming.
+	(GOMP_loop_ull_ordered_runtime_start): Likewise.
+	(gomp_loop_ull_doacross_static_start,
+	gomp_loop_ull_doacross_dynamic_start,
+	gomp_loop_ull_doacross_guided_start,
+	GOMP_loop_ull_doacross_runtime_start): New functions.
+	(GOMP_loop_ull_doacross_static_start,
+	GOMP_loop_ull_doacross_dynamic_start,
+	GOMP_loop_ull_doacross_guided_start): New functions or aliases.
+	* oacc-mem.c (acc_map_data, present_create_copy,
+	gomp_acc_insert_pointer): Pass GOMP_MAP_VARS_OPENACC instead of false
+	to gomp_map_vars.
+	(gomp_acc_remove_pointer): Use copy_from from target_var_desc.
+	* oacc-parallel.c (GOACC_data_start): Pass GOMP_MAP_VARS_OPENACC
+	instead of false to gomp_map_vars.
+	(GOACC_parallel_keyed): Likewise.  Use copy_from from target_var_desc.
+	* omp.h.in (omp_lock_hint_t): New type.
+	(omp_init_lock_with_hint, omp_init_nest_lock_with_hint,
+	omp_get_num_places, omp_get_place_num_procs, omp_get_place_proc_ids,
+	omp_get_place_num, omp_get_partition_num_places,
+	omp_get_partition_place_nums, omp_get_initial_device,
+	omp_get_max_task_priority, omp_target_alloc, omp_target_free,
+	omp_target_is_present, omp_target_memcpy, omp_target_memcpy_rect,
+	omp_target_associate_ptr, omp_target_disassociate_ptr): New
+	prototypes.
+	* omp_lib.f90.in (omp_lock_hint_kind): New parameter.
+	(omp_lock_hint_none, omp_lock_hint_uncontended,
+	omp_lock_hint_contended, omp_lock_hint_nonspeculative,
+	omp_lock_hint_speculative): New parameters.
+	(omp_init_lock_with_hint, omp_init_nest_lock_with_hint,
+	omp_get_num_places, omp_get_place_num_procs, omp_get_place_proc_ids,
+	omp_get_place_num, omp_get_partition_num_places,
+	omp_get_partition_place_nums, omp_get_initial_device,
+	omp_get_max_task_priority): New interfaces.
+	(omp_set_schedule, omp_get_schedule): Rename modifier argument
+	to chunk_size.
+	* omp_lib.h.in (omp_lock_hint_kind): New parameter.
+	(omp_lock_hint_none, omp_lock_hint_uncontended,
+	omp_lock_hint_contended, omp_lock_hint_nonspeculative,
+	omp_lock_hint_speculative): New parameters.
+	(omp_init_lock_with_hint, omp_init_nest_lock_with_hint,
+	omp_get_num_places, omp_get_place_num_procs, omp_get_place_proc_ids,
+	omp_get_place_num, omp_get_partition_num_places,
+	omp_get_partition_place_nums, omp_get_initial_device,
+	omp_get_max_task_priority): New functions and subroutines.
+	* ordered.c: Include stdarg.h and string.h.
+	(MAX_COLLAPSED_BITS): Define.
+	(gomp_doacross_init, GOMP_doacross_post, GOMP_doacross_wait,
+	gomp_doacross_ull_init, GOMP_doacross_ull_post,
+	GOMP_doacross_ull_wait): New functions.
+	* target.c: Include errno.h.
+	(resolve_device): If device is not initialized, call
+	gomp_init_device on it.
+	(gomp_map_lookup): New function.
+	(gomp_map_vars_existing): Add tgt_var argument, fill it in.
+	Don't bump refcount if REFCOUNT_INFINITY.  Handle
+	GOMP_MAP_ALWAYS_TO_P.
+	(get_kind): Rename is_openacc argument to short_mapkind.
+	(gomp_map_pointer): Use gomp_map_lookup.
+	(gomp_map_fields_existing): New function.
+	(gomp_map_vars): Rename is_openacc argument to short_mapkind
+	and is_target to pragma_kind.  Handle GOMP_MAP_VARS_ENTER_DATA,
+	handle GOMP_MAP_FIRSTPRIVATE_INT, GOMP_MAP_STRUCT,
+	GOMP_MAP_USE_DEVICE_PTR, GOMP_MAP_ZERO_LEN_ARRAY_SECTION.
+	Adjust for tgt->list changed type and copy_from living in there.
+	(gomp_copy_from_async): Adjust for tgt->list changed type and
+	copy_from living in there.
+	(gomp_unmap_vars): Likewise.
+	(gomp_update): Likewise.  Rename is_openacc argument to
+	short_mapkind.  Don't fail if object is not mapped.
+	(gomp_load_image_to_device): Initialize refcount to
+	REFCOUNT_INFINITY.
+	(gomp_target_fallback): New function.
+	(gomp_get_target_fn_addr): Likewise.
+	(GOMP_target): Adjust gomp_map_vars caller, use
+	gomp_get_target_fn_addr and gomp_target_fallback.
+	(GOMP_target_41): New function.
+	(gomp_target_data_fallback): New function.
+	(GOMP_target_data): Use it, adjust gomp_map_vars caller.
+	(GOMP_target_data_41): New function.
+	(GOMP_target_update): Adjust gomp_update caller.
+	(GOMP_target_update_41): New function.
+	(gomp_exit_data, GOMP_target_enter_exit_data,
+	gomp_target_task_fn, omp_target_alloc, omp_target_free,
+	omp_target_is_present, omp_target_memcpy,
+	omp_target_memcpy_rect_worker, omp_target_memcpy_rect,
+	omp_target_associate_ptr, omp_target_disassociate_ptr,
+	gomp_load_plugin_for_device): New functions.
+	* task.c: Include gomp-constants.h.  Include taskloop.c
+	twice to get GOMP_taskloop and GOMP_taskloop_ull definitions.
+	(gomp_task_handle_depend): New function.
+	(GOMP_task): Use it.  Add priority argument.  Use
+	gomp-constant.h constants instead of hardcoded numbers.
+	Rename GOMP_TASK_IFFALSE to GOMP_TASK_UNDEFERRED.
+	(gomp_create_target_task): New function.
+	(verify_children_queue, verify_taskgroup_queue,
+	verify_task_queue): New functions.
+	(gomp_task_run_pre): Call verify_*_queue functions.
+	If an upcoming tied task is about to leave the sibling or
+	taskgroup queues in an invalid state, adjust appropriately.
+	Remove taskgroup argument.  Add comments.
+	(gomp_task_run_post_handle_dependers): Add comments.
+	(gomp_task_run_post_remove_parent): Likewise.
+	(gomp_barrier_handle_tasks): Adjust gomp_task_run_pre caller.
+	(GOMP_taskwait): Likewise.  Add comments.
+	(gomp_task_maybe_wait_for_dependencies): Fix scheduling
+	problem such that the first non parent_depends_on task does not
+	end up at the end of the children queue.
+	(GOMP_taskgroup_start): Rename GOMP_TASK_IFFALSE to
+	GOMP_TASK_UNDEFERRED.
+	(GOMP_taskgroup_end): Adjust gomp_task_run_pre caller.
+	* taskloop.c: New file.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_device_nonshared_as): New proc.
+	* testsuite/libgomp.c/affinity-2.c: New test.
+	* testsuite/libgomp.c/doacross-1.c: New test.
+	* testsuite/libgomp.c/doacross-2.c: New test.
+	* testsuite/libgomp.c/examples-4/declare_target-1.c (fib_wrapper):
+	Add map clause to target.
+	* testsuite/libgomp.c/examples-4/declare_target-4.c (accum): Likewise.
+	* testsuite/libgomp.c/examples-4/declare_target-5.c (accum): Likewise.
+	* testsuite/libgomp.c/examples-4/device-1.c (main): Likewise.
+	* testsuite/libgomp.c/examples-4/device-3.c (main): Likewise.
+	* testsuite/libgomp.c/examples-4/target_data-3.c (gramSchmidt):
+	Likewise.
+	* testsuite/libgomp.c/examples-4/teams-2.c (dotprod): Likewise.
+	* testsuite/libgomp.c/examples-4/teams-3.c (dotprod): Likewise.
+	* testsuite/libgomp.c/examples-4/teams-4.c (dotprod): Likewise.
+	* testsuite/libgomp.c/for-2.h (OMPTGT, OMPTO, OMPFROM): Define if
+	not defined.  Use those where needed.
+	* testsuite/libgomp.c/for-4.c: New test.
+	* testsuite/libgomp.c/for-5.c: New test.
+	* testsuite/libgomp.c/for-6.c: New test.
+	* testsuite/libgomp.c/linear-1.c: New test.
+	* testsuite/libgomp.c/ordered-4.c: New test.
+	* testsuite/libgomp.c/pr66199-2.c (f2): Adjust for linear clause
+	only allowed on the loop iterator.
+	* testsuite/libgomp.c/pr66199-3.c: New test.
+	* testsuite/libgomp.c/pr66199-4.c: New test.
+	* testsuite/libgomp.c/reduction-7.c: New test.
+	* testsuite/libgomp.c/reduction-8.c: New test.
+	* testsuite/libgomp.c/reduction-9.c: New test.
+	* testsuite/libgomp.c/reduction-10.c: New test.
+	* testsuite/libgomp.c/target-1.c (fn2, fn3, fn4): Add
+	map(tofrom:s).
+	* testsuite/libgomp.c/target-2.c (fn2, fn3, fn4): Likewise.
+	* testsuite/libgomp.c/target-7.c (foo): Add map(h) where needed.
+	* testsuite/libgomp.c/target-11.c: New test.
+	* testsuite/libgomp.c/target-12.c: New test.
+	* testsuite/libgomp.c/target-13.c: New test.
+	* testsuite/libgomp.c/target-14.c: New test.
+	* testsuite/libgomp.c/target-15.c: New test.
+	* testsuite/libgomp.c/target-16.c: New test.
+	* testsuite/libgomp.c/target-17.c: New test.
+	* testsuite/libgomp.c/target-18.c: New test.
+	* testsuite/libgomp.c/target-19.c: New test.
+	* testsuite/libgomp.c/target-20.c: New test.
+	* testsuite/libgomp.c/target-21.c: New test.
+	* testsuite/libgomp.c/target-22.c: New test.
+	* testsuite/libgomp.c/target-23.c: New test.
+	* testsuite/libgomp.c/target-24.c: New test.
+	* testsuite/libgomp.c/target-25.c: New test.
+	* testsuite/libgomp.c/target-26.c: New test.
+	* testsuite/libgomp.c/target-27.c: New test.
+	* testsuite/libgomp.c/taskloop-1.c: New test.
+	* testsuite/libgomp.c/taskloop-2.c: New test.
+	* testsuite/libgomp.c/taskloop-3.c: New test.
+	* testsuite/libgomp.c/taskloop-4.c: New test.
+	* testsuite/libgomp.c++/ctor-13.C: New test.
+	* testsuite/libgomp.c++/doacross-1.C: New test.
+	* testsuite/libgomp.c++/examples-4/declare_target-2.C:
+	Replace offload_device with offload_device_nonshared_as.
+	* testsuite/libgomp.c++/for-12.C: New test.
+	* testsuite/libgomp.c++/for-13.C: New test.
+	* testsuite/libgomp.c++/for-14.C: New test.
+	* testsuite/libgomp.c++/linear-1.C: New test.
+	* testsuite/libgomp.c++/member-1.C: New test.
+	* testsuite/libgomp.c++/member-2.C: New test.
+	* testsuite/libgomp.c++/member-3.C: New test.
+	* testsuite/libgomp.c++/member-4.C: New test.
+	* testsuite/libgomp.c++/member-5.C: New test.
+	* testsuite/libgomp.c++/ordered-1.C: New test.
+	* testsuite/libgomp.c++/reduction-5.C: New test.
+	* testsuite/libgomp.c++/reduction-6.C: New test.
+	* testsuite/libgomp.c++/reduction-7.C: New test.
+	* testsuite/libgomp.c++/reduction-8.C: New test.
+	* testsuite/libgomp.c++/reduction-9.C: New test.
+	* testsuite/libgomp.c++/reduction-10.C: New test.
+	* testsuite/libgomp.c++/reference-1.C: New test.
+	* testsuite/libgomp.c++/simd14.C: New test.
+	* testsuite/libgomp.c++/target-2.C (fn2): Add map(tofrom: s) clause.
+	* testsuite/libgomp.c++/target-5.C: New test.
+	* testsuite/libgomp.c++/target-6.C: New test.
+	* testsuite/libgomp.c++/target-7.C: New test.
+	* testsuite/libgomp.c++/target-8.C: New test.
+	* testsuite/libgomp.c++/target-9.C: New test.
+	* testsuite/libgomp.c++/target-10.C: New test.
+	* testsuite/libgomp.c++/target-11.C: New test.
+	* testsuite/libgomp.c++/target-12.C: New test.
+	* testsuite/libgomp.c++/taskloop-1.C: New test.
+	* testsuite/libgomp.c++/taskloop-2.C: New test.
+	* testsuite/libgomp.c++/taskloop-3.C: New test.
+	* testsuite/libgomp.c++/taskloop-4.C: New test.
+	* testsuite/libgomp.c++/taskloop-5.C: New test.
+	* testsuite/libgomp.c++/taskloop-6.C: New test.
+	* testsuite/libgomp.c++/taskloop-7.C: New test.
+	* testsuite/libgomp.c++/taskloop-8.C: New test.
+	* testsuite/libgomp.c++/taskloop-9.C: New test.
+	* testsuite/libgomp.fortran/affinity1.f90: New test.
+	* testsuite/libgomp.fortran/affinity2.f90: New test.
+
+2015-10-13  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/67476
+	* testsuite/libgomp.c/autopar-3.c: New test.
+	* testsuite/libgomp.c/autopar-4.c: New test.
+	* testsuite/libgomp.c/autopar-5.c: New test.
+	* testsuite/libgomp.c/autopar-6.c: New test.
+	* testsuite/libgomp.c/autopar-7.c: New test.
+	* testsuite/libgomp.c/autopar-8.c: New test.
+
+2015-10-12  James Norris  <jnorris@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-loop.c: Fix loop
+	initializer.
+
+2015-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libgomp.exp: Load multiline.exp before prune.exp,
+	using load_gcc_lib.
+
+2015-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-ptx.h: Remove file, moving its content into...
+	* config/nvptx/fortran.c: ... here...
+	* config/nvptx/oacc-init.c: ..., here...
+	* config/nvptx/oacc-parallel.c: ..., and here.
+	* config/nvptx/openacc.f90: New file.
+	* plugin/plugin-nvptx.c: Don't include "oacc-ptx.h".
+	(link_ptx): Don't link in predefined bits of PTX code.
+
+2015-09-30  Nathan Sidwell  <nathan@codesourcery.com>
+	    Bernd Schmidt <bernds@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (targ_fn_launch): Use GOMP_DIM_MAX.
+	(struct targ_ptx_obj): New.
+	(nvptx_tdata): Move earlier, change data format.
+	(link_ptx): Take targ_ptx_obj ptr and count.  Allow multiple
+	objects.
+	(GOMP_OFFLOAD_load_image): Adjust.
+
+2015-09-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/abort-1.c: Add checkpoint.
+	* testsuite/libgomp.oacc-c-c++-common/abort-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/clauses-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-6.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-7.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-8.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-11.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-16.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-17.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-18.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-20.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-21.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-22.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-23.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-25.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-26.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-27.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-28.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-29.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-30.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-34.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-35.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-36.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-39.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-40.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-42.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-43.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-44.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-47.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-48.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-52.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-53.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-54.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-57.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-58.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-62.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-63.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-64.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-65.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-67.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-68.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-71.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-77.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-80.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/present-1.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/abort-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-4.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-5.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-6.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-7.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-8.f: Likewise.
+
+2015-09-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* oacc-init.c (acc_on_device): Force optimization level.
+
+2015-09-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (ARRAYSIZE): Delete.
+	(cuda_errlist): Delete.
+	(cuda_error): Reimplement.
+
+2015-09-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libgomp.h (acc_dispatch_t): Replace separate geometry args with
+	array.
+	* libgomp.map (GOACC_parallel_keyed): New.
+	* oacc-parallel.c (goacc_wait): Take pointer to va_list.  Adjust
+	all callers.
+	(GOACC_parallel_keyed): New interface.  Lose geometry arguments
+	and take keyed varargs list.  Adjust call to exec_func.
+	(GOACC_parallel): Force host fallback.
+	* libgomp_g.h (GOACC_parallel): Remove.
+	(GOACC_parallel_keyed): Declare.
+	* plugin/plugin-nvptx.c (struct targ_fn_launch): New struct.
+	(stuct targ_gn_descriptor): Replace name field with launch field.
+	(nvptx_exec): Lose separate geometry args, take array.  Process
+	dynamic dimensions and adjust.
+	(struct nvptx_tdata): Replace fn_names field with fn_descs.
+	(GOMP_OFFLOAD_load_image): Adjust for change in function table
+	data.
+	(GOMP_OFFLOAD_openacc_parallel): Adjust for change in dimension
+	passing.
+	* oacc-host.c (host_openacc_exec): Adjust for change in dimension
+	passing.
+
+2015-09-22  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR libgomp/67141
+	* oacc-int.h (goacc_host_init): Add declaration.
+	* oacc-host.c (goacc_host_init): Remove static and constructor attribute.
+	* oacc-init.c (goacc_runtime_initialize): Call goacc_host_init() at end.
+
 2015-09-08  Aditya Kumar  <hiraditya@msn.com>
             Sebastian Pop  <s.pop@samsung.com>
 

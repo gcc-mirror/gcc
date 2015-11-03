@@ -21,38 +21,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
 #include "rtl.h"
+#include "cfghooks.h"
 #include "df.h"
+#include "insn-config.h"
+#include "emit-rtl.h"
+#include "recog.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
-#include "alias.h"
-#include "tm_p.h"
-#include "regs.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "recog.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgcleanup.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "except.h"
 #include "params.h"
-#include "alloc-pool.h"
 #include "cselib.h"
 #include "intl.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
-#include "target.h"
 #include "cfgloop.h"
 
 
@@ -70,8 +55,6 @@ struct cprop_occr
   /* The insn that computes the expression.  */
   rtx_insn *insn;
 };
-
-typedef struct cprop_occr *occr_t;
 
 /* Hash table entry for assignment expressions.  */
 
@@ -1353,13 +1336,9 @@ implicit_set_cond_p (const_rtx cond)
 	 the optimization can't be performed.  */
       /* ??? The complex and vector checks are not implemented yet.  We just
 	 always return zero for them.  */
-      if (CONST_DOUBLE_AS_FLOAT_P (cst))
-	{
-	  REAL_VALUE_TYPE d;
-	  REAL_VALUE_FROM_CONST_DOUBLE (d, cst);
-	  if (REAL_VALUES_EQUAL (d, dconst0))
-	    return 0;
-	}
+      if (CONST_DOUBLE_AS_FLOAT_P (cst)
+	  && real_equal (CONST_DOUBLE_REAL_VALUE (cst), &dconst0))
+	return 0;
       else
 	return 0;
     }

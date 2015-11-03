@@ -21,29 +21,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "alias.h"
-#include "options.h"
-#include "fold-const.h"
-#include "calls.h"
+#include "alloc-pool.h"
+#include "tree-pass.h"
 #include "stringpool.h"
 #include "cgraph.h"
-#include "tree-pass.h"
 #include "gimplify.h"
-#include "flags.h"
-#include "target.h"
 #include "tree-iterator.h"
 #include "ipa-utils.h"
-#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
-#include "tree-inline.h"
-#include "profile.h"
-#include "params.h"
-#include "internal-fn.h"
 #include "dbgcnt.h"
 
 
@@ -319,12 +309,13 @@ symbol_table::remove_unreachable_nodes (FILE *file)
   build_type_inheritance_graph ();
   if (file)
     fprintf (file, "\nReclaiming functions:");
-#ifdef ENABLE_CHECKING
-  FOR_EACH_FUNCTION (node)
-    gcc_assert (!node->aux);
-  FOR_EACH_VARIABLE (vnode)
-    gcc_assert (!vnode->aux);
-#endif
+  if (flag_checking)
+    {
+      FOR_EACH_FUNCTION (node)
+	gcc_assert (!node->aux);
+      FOR_EACH_VARIABLE (vnode)
+	gcc_assert (!vnode->aux);
+    }
   /* Mark functions whose bodies are obviously needed.
      This is mostly when they can be referenced externally.  Inline clones
      are special since their declarations are shared with master clone and thus
@@ -678,9 +669,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
   if (file)
     fprintf (file, "\n");
 
-#ifdef ENABLE_CHECKING
-  symtab_node::verify_symtab_nodes ();
-#endif
+  symtab_node::checking_verify_symtab_nodes ();
 
   /* If we removed something, perhaps profile could be improved.  */
   if (changed && optimize && inline_edge_summary_vec.exists ())
@@ -1370,13 +1359,12 @@ ipa_single_use (void)
     {
       if (var->aux != BOTTOM)
 	{
-#ifdef ENABLE_CHECKING
 	  /* Not having the single user known means that the VAR is
 	     unreachable.  Either someone forgot to remove unreachable
 	     variables or the reachability here is wrong.  */
 
-          gcc_assert (single_user_map.get (var));
-#endif
+	  gcc_checking_assert (single_user_map.get (var));
+
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Variable %s/%i is used by single function\n",

@@ -1425,8 +1425,8 @@ package body CStand is
             Dhi := Intval (Type_High_Bound (Standard_Integer_32));
             Delta_Val := UR_From_Components (UI_From_Int (20), Uint_3, 10);
 
-         --  In standard 64-bit mode, the size is 64-bits and the delta and
-         --  small values are set to nanoseconds (1.0*(10.0**(-9))
+         --  In 64-bit mode, the size is 64-bits and the delta and
+         --  small values are set to nanoseconds (1.0*(10.0**(-9)).
 
          else
             Dlo := Intval (Type_Low_Bound (Standard_Integer_64));

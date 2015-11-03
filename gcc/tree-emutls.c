@@ -20,24 +20,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
+#include "target.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "options.h"
+#include "cgraph.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
-#include "tree-pass.h"
-#include "cgraph.h"
 #include "langhooks.h"
-#include "target.h"
-#include "targhooks.h"
 #include "tree-iterator.h"
 
 /* Whenever a target does not support thread-local storage (TLS) natively,
@@ -479,7 +474,7 @@ lower_emutls_1 (tree *ptr, int *walk_subtrees, void *cb_data)
 	     new assignment statement, and substitute yet another SSA_NAME.  */
 	  if (wi->changed)
 	    {
-	      gimple x;
+	      gimple *x;
 
 	      addr = create_tmp_var (TREE_TYPE (t));
 	      x = gimple_build_assign (addr, t);
@@ -539,7 +534,7 @@ lower_emutls_1 (tree *ptr, int *walk_subtrees, void *cb_data)
 /* Lower all of the operands of STMT.  */
 
 static void
-lower_emutls_stmt (gimple stmt, struct lower_emutls_data *d)
+lower_emutls_stmt (gimple *stmt, struct lower_emutls_data *d)
 {
   struct walk_stmt_info wi;
 

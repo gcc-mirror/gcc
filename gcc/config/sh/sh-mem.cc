@@ -21,29 +21,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h"
-#include "alias.h"
-#include "tree.h"
 #include "function.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "tm_p.h"
-#include "cfghooks.h"
-#include "cfg.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
 #include "basic-block.h"
+#include "rtl.h"
+#include "tree.h"
+#include "tm_p.h"
+#include "emit-rtl.h"
+#include "explow.h"
+#include "expr.h"
 
 /* Like force_operand, but guarantees that VALUE ends up in TARGET.  */
 static void
@@ -123,29 +108,30 @@ expand_block_move (rtx *operands)
 	  rtx r4 = gen_rtx_REG (SImode, 4);
 	  rtx r5 = gen_rtx_REG (SImode, 5);
 
-	  function_symbol (func_addr_rtx, "__movmemSI12_i4", SFUNC_STATIC);
+	  rtx lab = function_symbol (func_addr_rtx, "__movmemSI12_i4",
+				     SFUNC_STATIC).lab;
 	  force_into (XEXP (operands[0], 0), r4);
 	  force_into (XEXP (operands[1], 0), r5);
-	  emit_insn (gen_block_move_real_i4 (func_addr_rtx));
+	  emit_insn (gen_block_move_real_i4 (func_addr_rtx, lab));
 	  return true;
 	}
       else if (! optimize_size)
 	{
-	  const char *entry_name;
 	  rtx func_addr_rtx = gen_reg_rtx (Pmode);
-	  int dwords;
 	  rtx r4 = gen_rtx_REG (SImode, 4);
 	  rtx r5 = gen_rtx_REG (SImode, 5);
 	  rtx r6 = gen_rtx_REG (SImode, 6);
 
-	  entry_name = (bytes & 4 ? "__movmem_i4_odd" : "__movmem_i4_even");
-	  function_symbol (func_addr_rtx, entry_name, SFUNC_STATIC);
+	  rtx lab = function_symbol (func_addr_rtx, bytes & 4
+						    ? "__movmem_i4_odd"
+						    : "__movmem_i4_even",
+				     SFUNC_STATIC).lab;
 	  force_into (XEXP (operands[0], 0), r4);
 	  force_into (XEXP (operands[1], 0), r5);
 
-	  dwords = bytes >> 3;
+	  int dwords = bytes >> 3;
 	  emit_insn (gen_move_insn (r6, GEN_INT (dwords - 1)));
-	  emit_insn (gen_block_lump_real_i4 (func_addr_rtx));
+	  emit_insn (gen_block_lump_real_i4 (func_addr_rtx, lab));
 	  return true;
 	}
       else
@@ -159,10 +145,10 @@ expand_block_move (rtx *operands)
       rtx r5 = gen_rtx_REG (SImode, 5);
 
       sprintf (entry, "__movmemSI%d", bytes);
-      function_symbol (func_addr_rtx, entry, SFUNC_STATIC);
+      rtx lab = function_symbol (func_addr_rtx, entry, SFUNC_STATIC).lab;
       force_into (XEXP (operands[0], 0), r4);
       force_into (XEXP (operands[1], 0), r5);
-      emit_insn (gen_block_move_real (func_addr_rtx));
+      emit_insn (gen_block_move_real (func_addr_rtx, lab));
       return true;
     }
 
@@ -176,7 +162,7 @@ expand_block_move (rtx *operands)
       rtx r5 = gen_rtx_REG (SImode, 5);
       rtx r6 = gen_rtx_REG (SImode, 6);
 
-      function_symbol (func_addr_rtx, "__movmem", SFUNC_STATIC);
+      rtx lab = function_symbol (func_addr_rtx, "__movmem", SFUNC_STATIC).lab;
       force_into (XEXP (operands[0], 0), r4);
       force_into (XEXP (operands[1], 0), r5);
 
@@ -189,7 +175,7 @@ expand_block_move (rtx *operands)
       final_switch = 16 - ((bytes / 4) % 16);
       while_loop = ((bytes / 4) / 16 - 1) * 16;
       emit_insn (gen_move_insn (r6, GEN_INT (while_loop + final_switch)));
-      emit_insn (gen_block_lump_real (func_addr_rtx));
+      emit_insn (gen_block_lump_real (func_addr_rtx, lab));
       return true;
     }
 
@@ -224,14 +210,25 @@ sh_expand_cmpstr (rtx *operands)
   rtx_code_label *L_loop_long = gen_label_rtx ();
   rtx_code_label *L_end_loop_long = gen_label_rtx ();
 
-  int align = INTVAL (operands[3]);
+  const unsigned int addr1_alignment = MEM_ALIGN (operands[1]) / BITS_PER_UNIT;
+  const unsigned int addr2_alignment = MEM_ALIGN (operands[2]) / BITS_PER_UNIT;
 
-  emit_move_insn (tmp0, const0_rtx);
-
-  if (align < 4)
+  if (addr1_alignment < 4 && addr2_alignment < 4)
     {
       emit_insn (gen_iorsi3 (tmp1, s1_addr, s2_addr));
       emit_insn (gen_tstsi_t (tmp1, GEN_INT (3)));
+      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+    }
+  else if (addr1_alignment < 4 && addr2_alignment >= 4)
+    {
+      emit_insn (gen_tstsi_t (s1_addr, GEN_INT (3)));
+      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+    }
+  else if (addr1_alignment >= 4 && addr2_alignment < 4)
+    {
+      emit_insn (gen_tstsi_t (s2_addr, GEN_INT (3)));
       jump = emit_jump_insn (gen_branch_false (L_loop_byte));
       add_int_reg_note (jump, REG_BR_PROB, prob_likely);
     }
@@ -352,6 +349,9 @@ sh_expand_cmpnstr (rtx *operands)
   rtx len = force_reg (SImode, operands[3]);
   int constp = CONST_INT_P (operands[3]);
 
+  const unsigned int addr1_alignment = MEM_ALIGN (operands[1]) / BITS_PER_UNIT;
+  const unsigned int addr2_alignment = MEM_ALIGN (operands[2]) / BITS_PER_UNIT;
+
   /* Loop on a register count.  */
   if (constp)
     {
@@ -362,7 +362,6 @@ sh_expand_cmpnstr (rtx *operands)
       rtx_code_label *L_loop_long = gen_label_rtx ();
       rtx_code_label *L_end_loop_long = gen_label_rtx ();
 
-      int align = INTVAL (operands[4]);
       int bytes = INTVAL (operands[3]);
       int witers = bytes / 4;
 
@@ -373,10 +372,22 @@ sh_expand_cmpnstr (rtx *operands)
 
 	  emit_move_insn (tmp0, const0_rtx);
 
-	  if (align < 4)
+	  if (addr1_alignment < 4 && addr2_alignment < 4)
 	    {
 	      emit_insn (gen_iorsi3 (tmp1, s1_addr, s2_addr));
 	      emit_insn (gen_tstsi_t (tmp1, GEN_INT (3)));
+	      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+	      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+	    }
+	  else if (addr1_alignment < 4 && addr2_alignment >= 4)
+	    {
+	      emit_insn (gen_tstsi_t (s1_addr, GEN_INT (3)));
+	      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+	      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+	    }
+	  else if (addr1_alignment >= 4 && addr2_alignment < 4)
+	    {
+	      emit_insn (gen_tstsi_t (s2_addr, GEN_INT (3)));
 	      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
 	      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
 	    }

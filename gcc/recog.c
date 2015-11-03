@@ -22,34 +22,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cfghooks.h"
 #include "df.h"
-#include "alias.h"
-#include "rtl-error.h"
 #include "tm_p.h"
 #include "insn-config.h"
-#include "insn-attr.h"
-#include "recog.h"
 #include "regs.h"
-#include "addresses.h"
-#include "flags.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
 #include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
+#include "recog.h"
+#include "insn-attr.h"
+#include "addresses.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
 #include "reload.h"
-#include "target.h"
 #include "tree-pass.h"
-#include "insn-codes.h"
 
 #ifndef STACK_POP_CODE
 #if STACK_GROWS_DOWNWARD
@@ -2975,9 +2964,7 @@ split_all_insns (void)
   if (changed)
     find_many_sub_basic_blocks (blocks);
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
+  checking_verify_flow_info ();
 
   sbitmap_free (blocks);
 }

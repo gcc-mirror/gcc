@@ -13,78 +13,83 @@
 
 #include "ubsan_value.h"
 #include "sanitizer_common/sanitizer_stacktrace.h"
-#include "sanitizer_common/sanitizer_suppressions.h"
+#include "sanitizer_common/sanitizer_symbolizer.h"
 
 namespace __ubsan {
 
-/// \brief A location within a loaded module in the program. These are used when
-/// the location can't be resolved to a SourceLocation.
-class ModuleLocation {
-  const char *ModuleName;
-  uptr Offset;
+class SymbolizedStackHolder {
+  SymbolizedStack *Stack;
+
+  void clear() {
+    if (Stack)
+      Stack->ClearAll();
+  }
 
 public:
-  ModuleLocation() : ModuleName(0), Offset(0) {}
-  ModuleLocation(const char *ModuleName, uptr Offset)
-    : ModuleName(ModuleName), Offset(Offset) {}
-  const char *getModuleName() const { return ModuleName; }
-  uptr getOffset() const { return Offset; }
+  explicit SymbolizedStackHolder(SymbolizedStack *Stack = nullptr)
+      : Stack(Stack) {}
+  ~SymbolizedStackHolder() { clear(); }
+  void reset(SymbolizedStack *S) {
+    if (Stack != S)
+      clear();
+    Stack = S;
+  }
+  const SymbolizedStack *get() const { return Stack; }
 };
+
+SymbolizedStack *getSymbolizedLocation(uptr PC);
+
+inline SymbolizedStack *getCallerLocation(uptr CallerPC) {
+  CHECK(CallerPC);
+  uptr PC = StackTrace::GetPreviousInstructionPc(CallerPC);
+  return getSymbolizedLocation(PC);
+}
 
 /// A location of some data within the program's address space.
 typedef uptr MemoryLocation;
 
 /// \brief Location at which a diagnostic can be emitted. Either a
-/// SourceLocation, a ModuleLocation, or a MemoryLocation.
+/// SourceLocation, a MemoryLocation, or a SymbolizedStack.
 class Location {
 public:
-  enum LocationKind { LK_Null, LK_Source, LK_Module, LK_Memory };
+  enum LocationKind { LK_Null, LK_Source, LK_Memory, LK_Symbolized };
 
 private:
   LocationKind Kind;
   // FIXME: In C++11, wrap these in an anonymous union.
   SourceLocation SourceLoc;
-  ModuleLocation ModuleLoc;
   MemoryLocation MemoryLoc;
+  const SymbolizedStack *SymbolizedLoc;  // Not owned.
 
 public:
   Location() : Kind(LK_Null) {}
   Location(SourceLocation Loc) :
     Kind(LK_Source), SourceLoc(Loc) {}
-  Location(ModuleLocation Loc) :
-    Kind(LK_Module), ModuleLoc(Loc) {}
   Location(MemoryLocation Loc) :
     Kind(LK_Memory), MemoryLoc(Loc) {}
+  // SymbolizedStackHolder must outlive Location object.
+  Location(const SymbolizedStackHolder &Stack) :
+    Kind(LK_Symbolized), SymbolizedLoc(Stack.get()) {}
 
   LocationKind getKind() const { return Kind; }
 
   bool isSourceLocation() const { return Kind == LK_Source; }
-  bool isModuleLocation() const { return Kind == LK_Module; }
   bool isMemoryLocation() const { return Kind == LK_Memory; }
+  bool isSymbolizedStack() const { return Kind == LK_Symbolized; }
 
   SourceLocation getSourceLocation() const {
     CHECK(isSourceLocation());
     return SourceLoc;
   }
-  ModuleLocation getModuleLocation() const {
-    CHECK(isModuleLocation());
-    return ModuleLoc;
-  }
   MemoryLocation getMemoryLocation() const {
     CHECK(isMemoryLocation());
     return MemoryLoc;
   }
+  const SymbolizedStack *getSymbolizedStack() const {
+    CHECK(isSymbolizedStack());
+    return SymbolizedLoc;
+  }
 };
-
-/// Try to obtain a location for the caller. This might fail, and produce either
-/// an invalid location or a module location for the caller.
-Location getCallerLocation(uptr CallerLoc = GET_CALLER_PC());
-
-/// Try to obtain a location for the given function pointer. This might fail,
-/// and produce either an invalid location or a module location for the caller.
-/// If FName is non-null and the name of the function is known, set *FName to
-/// the function name, otherwise *FName is unchanged.
-Location getFunctionLocation(uptr Loc, const char **FName);
 
 /// A diagnostic severity level.
 enum DiagLevel {
@@ -106,11 +111,11 @@ public:
   const char *getText() const { return Text; }
 };
 
-/// \brief A mangled C++ name. Really just a strong typedef for 'const char*'.
-class MangledName {
+/// \brief A C++ type name. Really just a strong typedef for 'const char*'.
+class TypeName {
   const char *Name;
 public:
-  MangledName(const char *Name) : Name(Name) {}
+  TypeName(const char *Name) : Name(Name) {}
   const char *getName() const { return Name; }
 };
 
@@ -134,7 +139,7 @@ public:
   /// Kinds of arguments, corresponding to members of \c Arg's union.
   enum ArgKind {
     AK_String, ///< A string argument, displayed as-is.
-    AK_Mangled,///< A C++ mangled name, demangled before display.
+    AK_TypeName,///< A C++ type name, possibly demangled before display.
     AK_UInt,   ///< An unsigned integer argument.
     AK_SInt,   ///< A signed integer argument.
     AK_Float,  ///< A floating-point argument.
@@ -145,7 +150,7 @@ public:
   struct Arg {
     Arg() {}
     Arg(const char *String) : Kind(AK_String), String(String) {}
-    Arg(MangledName MN) : Kind(AK_Mangled), String(MN.getName()) {}
+    Arg(TypeName TN) : Kind(AK_TypeName), String(TN.getName()) {}
     Arg(UIntMax UInt) : Kind(AK_UInt), UInt(UInt) {}
     Arg(SIntMax SInt) : Kind(AK_SInt), SInt(SInt) {}
     Arg(FloatMax Float) : Kind(AK_Float), Float(Float) {}
@@ -195,7 +200,7 @@ public:
   ~Diag();
 
   Diag &operator<<(const char *Str) { return AddArg(Str); }
-  Diag &operator<<(MangledName MN) { return AddArg(MN); }
+  Diag &operator<<(TypeName TN) { return AddArg(TN); }
   Diag &operator<<(unsigned long long V) { return AddArg(UIntMax(V)); }
   Diag &operator<<(const void *V) { return AddArg(V); }
   Diag &operator<<(const TypeDescriptor &V);
@@ -212,6 +217,12 @@ struct ReportOptions {
   uptr bp;
 };
 
+enum class ErrorType {
+#define UBSAN_CHECK(Name, SummaryKind, FlagName) Name,
+#include "ubsan_checks.inc"
+#undef UBSAN_CHECK
+};
+
 #define GET_REPORT_OPTIONS(die_after_report) \
     GET_CALLER_PC_BP; \
     ReportOptions Opts = {die_after_report, pc, bp}
@@ -222,13 +233,17 @@ struct ReportOptions {
 class ScopedReport {
   ReportOptions Opts;
   Location SummaryLoc;
+  ErrorType Type;
 
 public:
-  ScopedReport(ReportOptions Opts, Location SummaryLoc);
+  ScopedReport(ReportOptions Opts, Location SummaryLoc,
+               ErrorType Type = ErrorType::GenericUB);
+  void setErrorType(ErrorType T) { Type = T; }
   ~ScopedReport();
 };
 
-bool MatchSuppression(const char *Str, SuppressionType Type);
+void InitializeSuppressions();
+bool IsVptrCheckSuppressed(const char *TypeName);
 
 } // namespace __ubsan
 

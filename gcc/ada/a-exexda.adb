@@ -248,11 +248,11 @@ package body Exception_Data is
    -- Append_Info_Basic_Exception_Information --
    ---------------------------------------------
 
-   --  To ease the maximum length computation, we define and pull out a couple
-   --  of string constants:
+   --  To ease the maximum length computation, we define and pull out some
+   --  string constants:
 
-   BEI_Name_Header : constant String := "Exception name: ";
-   BEI_Msg_Header  : constant String := "Message: ";
+   BEI_Name_Header : constant String := "raised ";
+   BEI_Msg_Header  : constant String := " : ";
    BEI_PID_Header  : constant String := "PID: ";
 
    procedure Append_Info_Basic_Exception_Information
@@ -275,13 +275,13 @@ package body Exception_Data is
       if Name (Name'First) /= '_' then
          Append_Info_String (BEI_Name_Header, Info, Ptr);
          Append_Info_String (Name, Info, Ptr);
-         Append_Info_NL (Info, Ptr);
 
          if Exception_Message_Length (X) /= 0 then
             Append_Info_String (BEI_Msg_Header, Info, Ptr);
             Append_Info_Exception_Message  (X, Info, Ptr);
-            Append_Info_NL (Info, Ptr);
          end if;
+
+         Append_Info_NL (Info, Ptr);
       end if;
 
       --  Output PID line if nonzero
@@ -498,7 +498,7 @@ package body Exception_Data is
    is
    begin
       return
-        BEI_Name_Header'Length + Exception_Name_Length (X) + 1
+        BEI_Name_Header'Length + Exception_Name_Length (X)
         + BEI_Msg_Header'Length + Exception_Message_Length (X) + 1
         + BEI_PID_Header'Length + 15;
    end Basic_Exception_Info_Maxlength;

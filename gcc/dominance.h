@@ -60,6 +60,17 @@ extern bool dominated_by_p (enum cdi_direction, const_basic_block,
 unsigned bb_dom_dfs_in (enum cdi_direction, basic_block);
 unsigned bb_dom_dfs_out (enum cdi_direction, basic_block);
 extern void verify_dominators (enum cdi_direction);
+
+/* Verify invariants of computed dominance information, if internal consistency
+   checks are enabled.  */
+
+static inline void
+checking_verify_dominators (cdi_direction dir)
+{
+  if (flag_checking)
+    verify_dominators (dir);
+}
+
 basic_block recompute_dominator (enum cdi_direction, basic_block);
 extern void iterate_fix_dominators (enum cdi_direction,
 				    vec<basic_block> , bool);

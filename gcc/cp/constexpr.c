@@ -23,11 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "tree.h"
-#include "options.h"
-#include "varasm.h"
 #include "cp-tree.h"
+#include "alias.h"
+#include "varasm.h"
 #include "c-family/c-objc.h"
 #include "tree-iterator.h"
 #include "gimplify.h"
@@ -1863,6 +1862,8 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
   tree whole = cxx_eval_constant_expression (ctx, orig_whole,
 					     lval,
 					     non_constant_p, overflow_p);
+  if (TREE_CODE (whole) == PTRMEM_CST)
+    whole = cplus_expand_constant (whole);
   if (whole == orig_whole)
     return t;
   if (lval)
@@ -2505,7 +2506,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 			(TREE_TYPE (field), type)))
 		  {
 		    return fold_build3 (COMPONENT_REF, type, op00,
-				     field, NULL_TREE);
+					field, NULL_TREE);
 		    break;
 		  }
 	    }
@@ -2800,10 +2801,13 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     {
       /* Create a new CONSTRUCTOR in case evaluation of the initializer
 	 wants to modify it.  */
-      new_ctx.ctor = build_constructor (type, NULL);
       if (*valp == NULL_TREE)
-	*valp = new_ctx.ctor;
-      CONSTRUCTOR_NO_IMPLICIT_ZERO (new_ctx.ctor) = no_zero_init;
+	{
+	  *valp = new_ctx.ctor = build_constructor (type, NULL);
+	  CONSTRUCTOR_NO_IMPLICIT_ZERO (new_ctx.ctor) = no_zero_init;
+	}
+      else
+	new_ctx.ctor = *valp;
       new_ctx.object = target;
     }
 
@@ -3129,9 +3133,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     }
   if (CONSTANT_CLASS_P (t))
     {
-      if (TREE_CODE (t) == PTRMEM_CST)
-	t = cplus_expand_constant (t);
-      else if (TREE_OVERFLOW (t) && (!flag_permissive || ctx->quiet))
+      if (TREE_OVERFLOW (t) && (!flag_permissive || ctx->quiet))
 	*overflow_p = true;
       return t;
     }
@@ -3545,7 +3547,11 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 						non_constant_p, overflow_p);
 	if (*non_constant_p)
 	  return t;
-	if (POINTER_TYPE_P (TREE_TYPE (t))
+	tree type = TREE_TYPE (t);
+	if (TREE_CODE (op) == PTRMEM_CST
+	    && !TYPE_PTRMEM_P (type))
+	  op = cplus_expand_constant (op);
+	if (POINTER_TYPE_P (type)
 	    && TREE_CODE (op) == INTEGER_CST
 	    && !integer_zerop (op))
 	  {
@@ -3559,7 +3565,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  /* We didn't fold at the top so we could check for ptr-int
 	     conversion.  */
 	  return fold (t);
-	r = fold_build1 (TREE_CODE (t), TREE_TYPE (t), op);
+	r = fold_build1 (TREE_CODE (t), type, op);
 	/* Conversion of an out-of-range value has implementation-defined
 	   behavior; the language considers it different from arithmetic
 	   overflow, which is undefined.  */
@@ -4385,6 +4391,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case TRUTH_NOT_EXPR:
     case FIXED_CONVERT_EXPR:
     case UNARY_PLUS_EXPR:
+    case UNARY_LEFT_FOLD_EXPR:
+    case UNARY_RIGHT_FOLD_EXPR:
     unary:
       return RECUR (TREE_OPERAND (t, 0), rval);
 
@@ -4565,6 +4573,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case MEMBER_REF:
     case DOTSTAR_EXPR:
     case MEM_REF:
+    case BINARY_LEFT_FOLD_EXPR:
+    case BINARY_RIGHT_FOLD_EXPR:
     binary:
       for (i = 0; i < 2; ++i)
 	if (!RECUR (TREE_OPERAND (t, i), want_rval))

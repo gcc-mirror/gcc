@@ -25,42 +25,10 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
-#include "rtl.h"
-#include "df.h"
-#include "alias.h"
-#include "stor-layout.h"
-#include "varasm.h"
-#include "calls.h"
-#include "regs.h"
-#include "insn-config.h"	/* Required by recog.h.  */
-#include "conditions.h"
-#include "output.h"
-#include "insn-attr.h"		/* For DFA state_t.  */
-#include "insn-codes.h"		/* For CODE_FOR_xxx.  */
-#include "reload.h"		/* For push_reload().  */
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
-#include "expr.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "tm_p.h"
-#include "tm-constrs.h"
-#include "optabs.h"		/* For GEN_FCN.  */
 #include "target.h"
-#include "langhooks.h"		/* For add_builtin_function().  */
-#include "builtins.h"
+#include "rtl.h"
+#include "emit-rtl.h"
+#include "explow.h"
 
 /* ------------------------------------------------------------------------ */
 

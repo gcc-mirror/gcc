@@ -79,39 +79,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "predict.h"
 #include "df.h"
-#include "alias.h"
-#include "stor-layout.h"
 #include "tm_p.h"
-#include "flags.h"
+#include "optabs.h"
 #include "regs.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "cgraph.h"
+#include "stor-layout.h"
 #include "cfgrtl.h"
 #include "cfgcleanup.h"
-#include "insn-config.h"
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "insn-attr.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "target.h"
-#include "insn-codes.h"
-#include "optabs.h"
 #include "rtlhooks-def.h"
 #include "params.h"
 #include "tree-pass.h"
 #include "valtrack.h"
-#include "cgraph.h"
 #include "rtl-iter.h"
+#include "print-rtl.h"
 
 #ifndef LOAD_EXTEND_OP
 #define LOAD_EXTEND_OP(M) UNKNOWN
@@ -11529,8 +11519,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		 tmode != GET_MODE (op0); tmode = GET_MODE_WIDER_MODE (tmode))
 	      if ((unsigned HOST_WIDE_INT) c0 == GET_MODE_MASK (tmode))
 		{
-		  op0 = gen_lowpart (tmode, inner_op0);
-		  op1 = gen_lowpart (tmode, inner_op1);
+		  op0 = gen_lowpart_or_truncate (tmode, inner_op0);
+		  op1 = gen_lowpart_or_truncate (tmode, inner_op1);
 		  code = unsigned_condition (code);
 		  changed = 1;
 		  break;
@@ -12048,12 +12038,9 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 				   & GET_MODE_MASK (mode))
 				  + 1)) >= 0
 	      && const_op >> i == 0
-	      && (tmode = mode_for_size (i, MODE_INT, 1)) != BLKmode
-	      && (TRULY_NOOP_TRUNCATION_MODES_P (tmode, GET_MODE (op0))
-		  || (REG_P (XEXP (op0, 0))
-		      && reg_truncated_to_mode (tmode, XEXP (op0, 0)))))
+	      && (tmode = mode_for_size (i, MODE_INT, 1)) != BLKmode)
 	    {
-	      op0 = gen_lowpart (tmode, XEXP (op0, 0));
+	      op0 = gen_lowpart_or_truncate (tmode, XEXP (op0, 0));
 	      continue;
 	    }
 

@@ -43,10 +43,32 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
+#if TARGET_ENDIAN_DEFAULT == MASK_LITTLE_ENDIAN
+#define MUSL_DYNAMIC_LINKER_E "%{mb:eb}"
+#else
+#define MUSL_DYNAMIC_LINKER_E "%{!ml:eb}"
+#endif
+
+#if TARGET_CPU_DEFAULT & (MASK_HARD_SH2A_DOUBLE | MASK_SH4)
+/* "-nofpu" if any nofpu option is specified.  */
+#define MUSL_DYNAMIC_LINKER_FP \
+  "%{m1|m2|m2a-nofpu|m3|m4-nofpu|m4-100-nofpu|m4-200-nofpu|m4-300-nofpu|" \
+  "m4-340|m4-400|m4-500|m4al:-nofpu}"
+#else
+/* "-nofpu" if none of the hard fpu options are specified.  */
+#define MUSL_DYNAMIC_LINKER_FP "%{m2a|m4|m4-100|m4-200|m4-300|m4a:;:-nofpu}"
+#endif
+
+#undef MUSL_DYNAMIC_LINKER
+#define MUSL_DYNAMIC_LINKER \
+  "/lib/ld-musl-sh" MUSL_DYNAMIC_LINKER_E MUSL_DYNAMIC_LINKER_FP \
+  "%{mfdpic:-fdpic}.so.1"
+
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
 
 #undef SUBTARGET_LINK_EMUL_SUFFIX
-#define SUBTARGET_LINK_EMUL_SUFFIX "_linux"
+#define SUBTARGET_LINK_EMUL_SUFFIX "%{mfdpic:_fd;:_linux}"
+
 #undef SUBTARGET_LINK_SPEC
 #define SUBTARGET_LINK_SPEC \
   "%{shared:-shared} \

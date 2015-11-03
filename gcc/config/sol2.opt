@@ -29,11 +29,11 @@ Driver Joined
 
 mclear-hwcap
 Target Report
-Clear hardware capabilities when linking
+Clear hardware capabilities when linking.
 
 mimpure-text
 Target Report
-Pass -z text to linker
+Pass -z text to linker.
 
 pthread
 Driver

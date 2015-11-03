@@ -152,13 +152,8 @@ xgetbv (uint32_t index)
 static uint64_t
 read_mpx_status_sig (ucontext_t *uctxt)
 {
-  uint8_t __attribute__ ((__aligned__ (64))) buffer[4096];
-  struct xsave_struct *xsave_buf = (struct xsave_struct *)buffer;
-
-  memset (buffer, 0, sizeof (buffer));
-  memcpy (buffer,
-	  (uint8_t *)uctxt->uc_mcontext.fpregs + XSAVE_OFFSET_IN_FPMEM,
-	  sizeof (struct xsave_struct));
+  uint8_t *regs = (uint8_t *)uctxt->uc_mcontext.fpregs + XSAVE_OFFSET_IN_FPMEM;
+  struct xsave_struct *xsave_buf = (struct xsave_struct *)regs;
   return xsave_buf->bndcsr.status_reg;
 }
 

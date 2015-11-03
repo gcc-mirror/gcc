@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,6 +25,7 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Exp_Ch5;  use Exp_Ch5;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Sem_Res;  use Sem_Res;
@@ -72,6 +73,26 @@ package body Exp_SPARK is
 
          when N_Object_Renaming_Declaration =>
             Expand_SPARK_N_Object_Renaming_Declaration (N);
+
+         --  Loop iterations over arrays need to be expanded, to avoid getting
+         --  two names referring to the same object in memory (the array and
+         --  the iterator) in GNATprove, especially since both can be written
+         --  (thus possibly leading to interferences due to aliasing). No such
+         --  problem arises with quantified expressions over arrays, which are
+         --  dealt with specially in GNATprove.
+
+         when N_Loop_Statement =>
+            declare
+               Scheme : constant Node_Id := Iteration_Scheme (N);
+            begin
+               if Present (Scheme)
+                 and then Present (Iterator_Specification (Scheme))
+                 and then
+                   Is_Iterator_Over_Array (Iterator_Specification (Scheme))
+               then
+                  Expand_Iterator_Loop_Over_Array (N);
+               end if;
+            end;
 
          --  In SPARK mode, no other constructs require expansion
 

@@ -39,9 +39,9 @@ struct ssaexpand
      a pseudos REG).  */
   rtx *partition_to_pseudo;
 
-  /* If partition I contains an SSA name that has a default def,
-     bit I will be set in this bitmap.  */
-  bitmap partition_has_default_def;
+  /* If partition I contains an SSA name that has a default def for a
+     parameter, bit I will be set in this bitmap.  */
+  bitmap partitions_for_parm_default_defs;
 };
 
 /* This is the singleton described above.  */
@@ -61,7 +61,7 @@ get_rtx_for_ssa_name (tree exp)
 
 /* If TER decided to forward the definition of SSA name EXP this function
    returns the defining statement, otherwise NULL.  */
-static inline gimple
+static inline gimple *
 get_gimple_for_ssa_name (tree exp)
 {
   int v = SSA_NAME_VERSION (exp);
@@ -70,7 +70,7 @@ get_gimple_for_ssa_name (tree exp)
   return NULL;
 }
 
-extern bool ssa_is_replaceable_p (gimple stmt);
+extern bool ssa_is_replaceable_p (gimple *stmt);
 extern void finish_out_of_ssa (struct ssaexpand *sa);
 extern unsigned int rewrite_out_of_ssa (struct ssaexpand *sa);
 extern void expand_phi_nodes (struct ssaexpand *sa);

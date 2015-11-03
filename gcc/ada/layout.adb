@@ -2430,7 +2430,7 @@ package body Layout is
       --  represents them the same way.
 
       if Is_Access_Type (E) then
-         Desig_Type :=  Underlying_Type (Designated_Type (E));
+         Desig_Type := Underlying_Type (Designated_Type (E));
 
          --  If we only have a limited view of the type, see whether the
          --  non-limited view is available.
@@ -3412,7 +3412,7 @@ package body Layout is
          --  type is the partial or full view, so that types will always
          --  match on calls from one size function to another.
 
-         if  Has_Private_Declaration (Vtype) then
+         if Has_Private_Declaration (Vtype) then
             Vtype_Primary_View := Etype (Vtype);
          else
             Vtype_Primary_View := Vtype;

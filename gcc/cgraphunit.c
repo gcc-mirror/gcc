@@ -161,19 +161,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "alias.h"
+#include "cfghooks.h"
+#include "regset.h"     /* FIXME: For reg_obstack.  */
+#include "alloc-pool.h"
+#include "tree-pass.h"
+#include "stringpool.h"
+#include "gimple-ssa.h"
+#include "cgraph.h"
+#include "coverage.h"
+#include "lto-streamer.h"
 #include "fold-const.h"
 #include "varasm.h"
 #include "stor-layout.h"
-#include "stringpool.h"
-#include "gimple-ssa.h"
 #include "output.h"
 #include "cfgcleanup.h"
-#include "internal-fn.h"
 #include "gimple-fold.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -181,41 +186,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
 #include "tree-ssa.h"
-#include "tree-inline.h"
 #include "langhooks.h"
 #include "toplev.h"
-#include "flags.h"
 #include "debug.h"
-#include "target.h"
-#include "diagnostic.h"
-#include "params.h"
-#include "intl.h"
-#include "cgraph.h"
-#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
-#include "tree-iterator.h"
-#include "tree-pass.h"
-#include "tree-dump.h"
 #include "gimple-pretty-print.h"
-#include "output.h"
-#include "coverage.h"
 #include "plugin.h"
 #include "ipa-inline.h"
 #include "ipa-utils.h"
-#include "lto-streamer.h"
 #include "except.h"
 #include "cfgloop.h"
-#include "regset.h"     /* FIXME: For reg_obstack.  */
 #include "context.h"
 #include "pass_manager.h"
 #include "tree-nested.h"
-#include "gimplify.h"
 #include "dbgcnt.h"
 #include "tree-chkp.h"
 #include "lto-section-names.h"
-#include "omp-low.h"
-#include "print-tree.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -451,7 +438,7 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
      declared inline and nested functions.  These were optimized out
      in the original implementation and it is unclear whether we want
      to change the behavior here.  */
-  if ((!opt_for_fn (decl, optimize)
+  if (((!opt_for_fn (decl, optimize) || flag_keep_static_functions)
        && !node->cpp_implicit_alias
        && !DECL_DISREGARD_INLINE_LIMITS (decl)
        && !DECL_DECLARED_INLINE_P (decl)
@@ -923,6 +910,69 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
     }
 }
 
+/* Issue appropriate warnings for the global declaration DECL.  */
+
+static void
+check_global_declaration (symtab_node *snode)
+{
+  tree decl = snode->decl;
+
+  /* Warn about any function declared static but not defined.  We don't
+     warn about variables, because many programs have static variables
+     that exist only to get some text into the object file.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_INITIAL (decl) == 0
+      && DECL_EXTERNAL (decl)
+      && ! DECL_ARTIFICIAL (decl)
+      && ! TREE_NO_WARNING (decl)
+      && ! TREE_PUBLIC (decl)
+      && (warn_unused_function
+	  || snode->referred_to_p (/*include_self=*/false)))
+    {
+      if (snode->referred_to_p (/*include_self=*/false))
+	pedwarn (input_location, 0, "%q+F used but never defined", decl);
+      else
+	warning (OPT_Wunused_function, "%q+F declared %<static%> but never defined", decl);
+      /* This symbol is effectively an "extern" declaration now.  */
+      TREE_PUBLIC (decl) = 1;
+    }
+
+  /* Warn about static fns or vars defined but not used.  */
+  if (((warn_unused_function && TREE_CODE (decl) == FUNCTION_DECL)
+       || (((warn_unused_variable && ! TREE_READONLY (decl))
+	    || (warn_unused_const_variable && TREE_READONLY (decl)))
+	   && TREE_CODE (decl) == VAR_DECL))
+      && ! DECL_IN_SYSTEM_HEADER (decl)
+      && ! snode->referred_to_p (/*include_self=*/false)
+      /* This TREE_USED check is needed in addition to referred_to_p
+	 above, because the `__unused__' attribute is not being
+	 considered for referred_to_p.  */
+      && ! TREE_USED (decl)
+      /* The TREE_USED bit for file-scope decls is kept in the identifier,
+	 to handle multiple external decls in different scopes.  */
+      && ! (DECL_NAME (decl) && TREE_USED (DECL_NAME (decl)))
+      && ! DECL_EXTERNAL (decl)
+      && ! DECL_ARTIFICIAL (decl)
+      && ! DECL_ABSTRACT_ORIGIN (decl)
+      && ! TREE_PUBLIC (decl)
+      /* A volatile variable might be used in some non-obvious way.  */
+      && ! TREE_THIS_VOLATILE (decl)
+      /* Global register variables must be declared to reserve them.  */
+      && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
+      /* Global ctors and dtors are called by the runtime.  */
+      && (TREE_CODE (decl) != FUNCTION_DECL
+	  || (!DECL_STATIC_CONSTRUCTOR (decl)
+	      && !DECL_STATIC_DESTRUCTOR (decl)))
+      /* Otherwise, ask the language.  */
+      && lang_hooks.decls.warn_unused_global (decl))
+    warning_at (DECL_SOURCE_LOCATION (decl),
+		(TREE_CODE (decl) == FUNCTION_DECL)
+		? OPT_Wunused_function
+		: (TREE_READONLY (decl)
+		   ? OPT_Wunused_const_variable
+		   : OPT_Wunused_variable),
+		"%qD defined but not used", decl);
+}
 
 /* Discover all functions and variables that are trivially needed, analyze
    them as well as all functions and variables referred by them  */
@@ -1110,7 +1160,7 @@ analyze_functions (bool first_time)
     {
       symtab_node *snode;
       FOR_EACH_SYMBOL (snode)
-	check_global_declaration (snode->decl);
+	check_global_declaration (snode);
     }
 
   if (symtab->dump_file)
@@ -1262,13 +1312,12 @@ handle_alias_pairs (void)
 static void
 mark_functions_to_output (void)
 {
-  cgraph_node *node;
-#ifdef ENABLE_CHECKING
   bool check_same_comdat_groups = false;
+  cgraph_node *node;
 
-  FOR_EACH_FUNCTION (node)
-    gcc_assert (!node->process);
-#endif
+  if (flag_checking)
+    FOR_EACH_FUNCTION (node)
+      gcc_assert (!node->process);
 
   FOR_EACH_FUNCTION (node)
     {
@@ -1302,15 +1351,14 @@ mark_functions_to_output (void)
 	}
       else if (node->same_comdat_group)
 	{
-#ifdef ENABLE_CHECKING
-	  check_same_comdat_groups = true;
-#endif
+	  if (flag_checking)
+	    check_same_comdat_groups = true;
 	}
       else
 	{
 	  /* We should've reclaimed all functions that are not needed.  */
-#ifdef ENABLE_CHECKING
-	  if (!node->global.inlined_to
+	  if (flag_checking
+	      && !node->global.inlined_to
 	      && gimple_has_body_p (decl)
 	      /* FIXME: in ltrans unit when offline copy is outside partition but inline copies
 		 are inside partition, we can end up not removing the body since we no longer
@@ -1323,7 +1371,6 @@ mark_functions_to_output (void)
 	      node->debug ();
 	      internal_error ("failed to reclaim unneeded function");
 	    }
-#endif
 	  gcc_assert (node->global.inlined_to
 		      || !gimple_has_body_p (decl)
 		      || node->in_other_partition
@@ -1334,8 +1381,7 @@ mark_functions_to_output (void)
 	}
 
     }
-#ifdef ENABLE_CHECKING
-  if (check_same_comdat_groups)
+  if (flag_checking && check_same_comdat_groups)
     FOR_EACH_FUNCTION (node)
       if (node->same_comdat_group && !node->process)
 	{
@@ -1355,7 +1401,6 @@ mark_functions_to_output (void)
 			      "comdat group");
 	    }
 	}
-#endif
 }
 
 /* DECL is FUNCTION_DECL.  Initialize datastructures so DECL is a function
@@ -1701,7 +1746,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	      {
 		tmp = create_tmp_reg (TYPE_MAIN_VARIANT
 				      (TREE_TYPE (arg)), "arg");
-		gimple stmt = gimple_build_assign (tmp, arg);
+		gimple *stmt = gimple_build_assign (tmp, arg);
 		gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 	      }
 	    vargs.quick_push (tmp);
@@ -1745,7 +1790,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 
 	      if (TREE_CODE (TREE_TYPE (restmp)) == POINTER_TYPE)
 		{
-		  gimple stmt;
+		  gimple *stmt;
 		  edge e;
 		  /* If the return type is a pointer, we need to
 		     protect against NULL.  We know there will be an
@@ -1791,7 +1836,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 				     fixed_offset, virtual_offset);
 	      if (true_label)
 		{
-		  gimple stmt;
+		  gimple *stmt;
 		  bsi = gsi_last_bb (else_bb);
 		  stmt = gimple_build_assign (restmp,
 					      build_zero_cst (TREE_TYPE (restmp)));
@@ -1824,9 +1869,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       TREE_ASM_WRITTEN (thunk_fndecl) = false;
       delete_unreachable_blocks ();
       update_ssa (TODO_update_ssa);
-#ifdef ENABLE_CHECKING
-      verify_flow_info ();
-#endif
+      checking_verify_flow_info ();
       free_dominance_info (CDI_DOMINATORS);
 
       /* Since we want to emit the thunk, we explicitly mark its name as
@@ -2310,9 +2353,7 @@ symbol_table::compile (void)
   if (seen_error ())
     return;
 
-#ifdef ENABLE_CHECKING
-  symtab_node::verify_symtab_nodes ();
-#endif
+  symtab_node::checking_verify_symtab_nodes ();
 
   timevar_push (TV_CGRAPHOPT);
   if (pre_ipa_mem_report)
@@ -2361,9 +2402,7 @@ symbol_table::compile (void)
   (*debug_hooks->assembly_start) ();
   if (!quiet_flag)
     fprintf (stderr, "Assembling functions:\n");
-#ifdef ENABLE_CHECKING
-  symtab_node::verify_symtab_nodes ();
-#endif
+  symtab_node::checking_verify_symtab_nodes ();
 
   materialize_all_clones ();
   bitmap_obstack_initialize (NULL);
@@ -2419,7 +2458,8 @@ symbol_table::compile (void)
       fprintf (dump_file, "\nFinal ");
       symtab_node::dump_table (dump_file);
     }
-#ifdef ENABLE_CHECKING
+  if (!flag_checking)
+    return;
   symtab_node::verify_symtab_nodes ();
   /* Double check that all inline clones are gone and that all
      function bodies have been released from memory.  */
@@ -2438,7 +2478,6 @@ symbol_table::compile (void)
       if (error_found)
 	internal_error ("nodes with unreleased memory found");
     }
-#endif
 }
 
 

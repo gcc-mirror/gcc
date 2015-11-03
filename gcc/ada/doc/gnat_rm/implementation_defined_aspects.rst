@@ -98,6 +98,12 @@ Aspect Async_Writers
 
 This boolean aspect is equivalent to pragma `Async_Writers`.
 
+Aspect Constant_After_Elaboration
+=================================
+.. index:: Constant_After_Elaboration
+
+This aspect is equivalent to pragma `Constant_After_Elaboration`.
+
 Aspect Contract_Cases
 =====================
 .. index:: Contract_Cases
@@ -111,6 +117,12 @@ Aspect Depends
 .. index:: Depends
 
 This aspect is equivalent to pragma `Depends`.
+
+Aspect Default_Initial_Condition
+================================
+.. index:: Default_Initial_Condition
+
+This aspect is equivalent to pragma `Default_Initial_Condition`.
 
 Aspect Dimension
 ================
@@ -223,11 +235,23 @@ Aspect Effective_Writes
 
 This aspect is equivalent to pragma `Effective_Writes`.
 
+Aspect Extensions_Visible
+=========================
+.. index:: Extensions_Visible
+
+This aspect is equivalent to pragma `Extensions_Visible`.
+
 Aspect Favor_Top_Level
 ======================
 .. index:: Favor_Top_Level
 
 This boolean aspect is equivalent to pragma `Favor_Top_Level`.
+
+Aspect Ghost
+=============
+.. index:: Ghost
+
+This aspect is equivalent to pragma `Ghost`.
 
 Aspect Global
 =============
@@ -526,6 +550,12 @@ Aspect Volatile_Full_Access
 .. index:: Volatile_Full_Access
 
 This boolean aspect is equivalent to pragma `Volatile_Full_Access`.
+
+Aspect Volatile_Function
+===========================
+.. index:: Volatile_Function
+
+This boolean aspect is equivalent to pragma `Volatile_Function`.
 
 Aspect Warnings
 ===============

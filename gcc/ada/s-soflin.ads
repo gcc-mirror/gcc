@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -143,12 +143,6 @@ package System.Soft_Links is
    --  Handle task abort (non-tasking case, does nothing). Currently, no port
    --  makes use of this, but we retain the interface for possible future use.
 
-   procedure Update_Exception_NT (X : EO := Current_Target_Exception);
-   --  Handle exception setting. This routine is provided for targets that
-   --  have built-in exception handling such as the Java Virtual Machine.
-   --  Currently, only JGNAT uses this. See 4jexcept.ads for an explanation on
-   --  how this routine is used.
-
    function Check_Abort_Status_NT return Integer;
    --  Returns Boolean'Pos (True) iff abort signal should raise
    --  Standard'Abort_Signal.
@@ -176,9 +170,6 @@ package System.Soft_Links is
 
    Abort_Handler : No_Param_Proc := Abort_Handler_NT'Access;
    --  Handle task abort (task/non-task case as appropriate)
-
-   Update_Exception : Special_EO_Call := Update_Exception_NT'Access;
-   --  Handle exception setting and tasking polling when appropriate
 
    Check_Abort_Status : Get_Integer_Call := Check_Abort_Status_NT'Access;
    --  Called when Abort_Signal is delivered to the process.  Checks to
@@ -263,9 +254,9 @@ package System.Soft_Links is
    procedure Enter_Master_NT;
    procedure Complete_Master_NT;
 
-   Current_Master  : Get_Integer_Call :=  Current_Master_NT'Access;
-   Enter_Master    : No_Param_Proc    :=  Enter_Master_NT'Access;
-   Complete_Master : No_Param_Proc    :=  Complete_Master_NT'Access;
+   Current_Master  : Get_Integer_Call := Current_Master_NT'Access;
+   Enter_Master    : No_Param_Proc    := Enter_Master_NT'Access;
+   Complete_Master : No_Param_Proc    := Complete_Master_NT'Access;
 
    ----------------------
    -- Delay Soft-Links --

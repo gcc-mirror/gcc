@@ -1,12 +1,12 @@
 /* { dg-do run } */
-/* { dg-shouldfail "" { *-*-* } { "*" } { "" } } */
 
+#include <stdio.h>
 #include <stdlib.h>
 
 int
 main (void)
 {
-
+  fprintf (stderr, "CheCKpOInT\n");
 #pragma acc parallel
   {
     abort ();
@@ -15,3 +15,5 @@ main (void)
   return 0;
 }
 
+/* { dg-output "CheCKpOInT" } */
+/* { dg-shouldfail ""  } */

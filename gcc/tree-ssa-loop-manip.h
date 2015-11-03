@@ -27,6 +27,14 @@ extern void create_iv (tree, tree, tree, struct loop *, gimple_stmt_iterator *,
 extern void rewrite_into_loop_closed_ssa (bitmap, unsigned);
 extern void rewrite_virtuals_into_loop_closed_ssa (struct loop *);
 extern void verify_loop_closed_ssa (bool);
+
+static inline void
+checking_verify_loop_closed_ssa (bool verify_ssa_p)
+{
+  if (flag_checking)
+    verify_loop_closed_ssa (verify_ssa_p);
+}
+
 extern basic_block split_loop_exit_edge (edge);
 extern basic_block ip_end_pos (struct loop *);
 extern basic_block ip_normal_pos (struct loop *);

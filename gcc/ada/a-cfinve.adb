@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2014, Free Software Foundation, Inc.           --
+--          Copyright (C) 2014-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,6 @@
 package body Ada.Containers.Formal_Indefinite_Vectors with
   SPARK_Mode => Off
 is
-   pragma Annotate (CodePeer, Skip_Analysis);
 
    function H (New_Item : Element_Type) return Holder renames To_Holder;
    function E (Container : Holder) return Element_Type renames Get;
@@ -174,7 +173,7 @@ is
    -- Generic_Sorting --
    ---------------------
 
-   package body Generic_Sorting is
+   package body Generic_Sorting with SPARK_Mode => Off is
 
       function "<" (X, Y : Holder) return Boolean is (E (X) < E (Y));
       package Def_Sorting is new Def.Generic_Sorting ("<");

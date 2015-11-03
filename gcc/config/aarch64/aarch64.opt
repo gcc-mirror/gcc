@@ -62,39 +62,39 @@ Enum(cmodel) String(large) Value(AARCH64_CMODEL_LARGE)
 
 mbig-endian
 Target Report RejectNegative Mask(BIG_END)
-Assume target CPU is configured as big endian
+Assume target CPU is configured as big endian.
 
 mgeneral-regs-only
 Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Save
-Generate code which uses only the general registers
+Generate code which uses only the general registers.
 
 mfix-cortex-a53-835769
 Target Report Var(aarch64_fix_a53_err835769) Init(2) Save
-Workaround for ARM Cortex-A53 Erratum number 835769
+Workaround for ARM Cortex-A53 Erratum number 835769.
 
 mfix-cortex-a53-843419
 Target Report
-Workaround for ARM Cortex-A53 Erratum number 843419
+Workaround for ARM Cortex-A53 Erratum number 843419.
 
 mlittle-endian
 Target Report RejectNegative InverseMask(BIG_END)
-Assume target CPU is configured as little endian
+Assume target CPU is configured as little endian.
 
 mcmodel=
 Target RejectNegative Joined Enum(cmodel) Var(aarch64_cmodel_var) Init(AARCH64_CMODEL_SMALL) Save
-Specify the code model
+Specify the code model.
 
 mstrict-align
 Target Report RejectNegative Mask(STRICT_ALIGN) Save
-Don't assume that unaligned accesses are handled by the system
+Don't assume that unaligned accesses are handled by the system.
 
 momit-leaf-frame-pointer
 Target Report Var(flag_omit_leaf_frame_pointer) Init(2) Save
-Omit the frame pointer in leaf functions
+Omit the frame pointer in leaf functions.
 
 mtls-dialect=
 Target RejectNegative Joined Enum(tls_type) Var(aarch64_tls_dialect) Init(TLS_DESCRIPTORS) Save
-Specify TLS dialect
+Specify TLS dialect.
 
 mtls-size=
 Target RejectNegative Joined Var(aarch64_tls_size) Enum(aarch64_tls_size)
@@ -117,23 +117,23 @@ Enum(aarch64_tls_size) String(48) Value(48)
 
 march=
 Target RejectNegative ToLower Joined Var(aarch64_arch_string)
--march=ARCH	Use features of architecture ARCH
+-march=ARCH	Use features of architecture ARCH.
 
 mcpu=
 Target RejectNegative ToLower Joined Var(aarch64_cpu_string)
--mcpu=CPU	Use features of and optimize for CPU
+-mcpu=CPU	Use features of and optimize for CPU.
 
 mtune=
 Target RejectNegative ToLower Joined Var(aarch64_tune_string)
--mtune=CPU	Optimize for CPU
+-mtune=CPU	Optimize for CPU.
 
 mabi=
 Target RejectNegative Joined Enum(aarch64_abi) Var(aarch64_abi) Init(AARCH64_ABI_DEFAULT)
--mabi=ABI	Generate code that conforms to the specified ABI
+-mabi=ABI	Generate code that conforms to the specified ABI.
 
 moverride=
 Target RejectNegative ToLower Joined Var(aarch64_override_tune_string)
--moverride=STRING	Power users only! Override CPU optimization parameters
+-moverride=STRING	Power users only! Override CPU optimization parameters.
 
 Enum
 Name(aarch64_abi) Type(int)

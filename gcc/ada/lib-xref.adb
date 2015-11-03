@@ -66,7 +66,7 @@ package body Lib.Xref is
 
       Loc : Source_Ptr;
       --  Location of reference (Original_Location (Sloc field of N parameter
-      --  to Generate_Reference). Set to No_Location for the case of a
+      --  to Generate_Reference)). Set to No_Location for the case of a
       --  defining occurrence.
 
       Typ : Character;
@@ -192,7 +192,7 @@ package body Lib.Xref is
          Set_Has_Xref_Entry (Key.Ent);
 
       --  It was already in Xref_Set, so throw away the tentatively-added
-      --  entry
+      --  entry.
 
       else
          Xrefs.Decrement_Last;
@@ -622,7 +622,7 @@ package body Lib.Xref is
 
       --  Do not generate references if we are within a postcondition sub-
       --  program, because the reference does not comes from source, and the
-      --  pre-analysis of the aspect has already created an entry for the ali
+      --  pre-analysis of the aspect has already created an entry for the ALI
       --  file at the proper source location.
 
       if Chars (Current_Scope) = Name_uPostconditions then
@@ -1073,7 +1073,7 @@ package body Lib.Xref is
             end if;
 
             Add_Entry
-              ((Ent      => Ent,
+              ((Ent       => Ent,
                 Loc       => Ref,
                 Typ       => Actual_Typ,
                 Eun       => Get_Code_Unit (Def),
@@ -1120,7 +1120,7 @@ package body Lib.Xref is
               and then In_Extended_Main_Source_Unit (N)
             then
                --  Handle case in which the full-view and partial-view of the
-               --  first private entity are swapped
+               --  first private entity are swapped.
 
                declare
                   First_Private : Entity_Id := First_Private_Entity (E);
@@ -2491,7 +2491,7 @@ package body Lib.Xref is
                      --  Write out information about generic parent, if entity
                      --  is an instance.
 
-                     if  Is_Generic_Instance (XE.Key.Ent) then
+                     if Is_Generic_Instance (XE.Key.Ent) then
                         declare
                            Gen_Par : constant Entity_Id :=
                                        Generic_Parent

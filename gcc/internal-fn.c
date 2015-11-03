@@ -20,33 +20,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
-#include "predict.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "options.h"
+#include "predict.h"
+#include "stringpool.h"
+#include "tree-ssanames.h"
+#include "expmed.h"
+#include "optabs.h"
+#include "emit-rtl.h"
+#include "diagnostic-core.h"
 #include "fold-const.h"
 #include "internal-fn.h"
 #include "stor-layout.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
 #include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
 #include "ubsan.h"
-#include "target.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
-#include "diagnostic-core.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -175,6 +166,22 @@ expand_GOMP_SIMD_LAST_LANE (gcall *)
   gcc_unreachable ();
 }
 
+/* This should get expanded in adjust_simduid_builtins.  */
+
+static void
+expand_GOMP_SIMD_ORDERED_START (gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* This should get expanded in adjust_simduid_builtins.  */
+
+static void
+expand_GOMP_SIMD_ORDERED_END (gcall *)
+{
+  gcc_unreachable ();
+}
+
 /* This should get expanded in the sanopt pass.  */
 
 static void
@@ -264,7 +271,7 @@ get_range_pos_neg (tree arg)
   wide_int arg_min, arg_max;
   while (get_range_info (arg, &arg_min, &arg_max) != VR_RANGE)
     {
-      gimple g = SSA_NAME_DEF_STMT (arg);
+      gimple *g = SSA_NAME_DEF_STMT (arg);
       if (is_gimple_assign (g)
 	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (g)))
 	{
@@ -346,7 +353,7 @@ get_min_precision (tree arg, signop sign)
   wide_int arg_min, arg_max;
   while (get_range_info (arg, &arg_min, &arg_max) != VR_RANGE)
     {
-      gimple g = SSA_NAME_DEF_STMT (arg);
+      gimple *g = SSA_NAME_DEF_STMT (arg);
       if (is_gimple_assign (g)
 	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (g)))
 	{
@@ -1661,7 +1668,7 @@ expand_UBSAN_CHECK_MUL (gcall *stmt)
 /* Helper function for {ADD,SUB,MUL}_OVERFLOW call stmt expansion.  */
 
 static void
-expand_arith_overflow (enum tree_code code, gimple stmt)
+expand_arith_overflow (enum tree_code code, gimple *stmt)
 {
   tree lhs = gimple_call_lhs (stmt);
   if (lhs == NULL_TREE)
@@ -1938,6 +1945,102 @@ expand_BUILTIN_EXPECT (gcall *stmt)
 
 static void
 expand_VA_ARG (gcall *stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
+/* Expand the IFN_UNIQUE function according to its first argument.  */
+
+static void
+expand_UNIQUE (gcall *stmt)
+{
+  rtx pattern = NULL_RTX;
+  enum ifn_unique_kind kind
+    = (enum ifn_unique_kind) TREE_INT_CST_LOW (gimple_call_arg (stmt, 0));
+
+  switch (kind)
+    {
+    default:
+      gcc_unreachable ();
+
+    case IFN_UNIQUE_UNSPEC:
+      if (targetm.have_unique ())
+	pattern = targetm.gen_unique ();
+      break;
+
+    case IFN_UNIQUE_OACC_FORK:
+    case IFN_UNIQUE_OACC_JOIN:
+      if (targetm.have_oacc_fork () && targetm.have_oacc_join ())
+	{
+	  tree lhs = gimple_call_lhs (stmt);
+	  rtx target = const0_rtx;
+
+	  if (lhs)
+	    target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+
+	  rtx data_dep = expand_normal (gimple_call_arg (stmt, 1));
+	  rtx axis = expand_normal (gimple_call_arg (stmt, 2));
+
+	  if (kind == IFN_UNIQUE_OACC_FORK)
+	    pattern = targetm.gen_oacc_fork (target, data_dep, axis);
+	  else
+	    pattern = targetm.gen_oacc_join (target, data_dep, axis);
+	}
+      else
+	gcc_unreachable ();
+      break;
+    }
+
+  if (pattern)
+    emit_insn (pattern);
+}
+
+/* The size of an OpenACC compute dimension.  */
+
+static void
+expand_GOACC_DIM_SIZE (gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  if (targetm.have_oacc_dim_size ())
+    {
+      rtx dim = expand_expr (gimple_call_arg (stmt, 0), NULL_RTX,
+			     VOIDmode, EXPAND_NORMAL);
+      emit_insn (targetm.gen_oacc_dim_size (target, dim));
+    }
+  else
+    emit_move_insn (target, GEN_INT (1));
+}
+
+/* The position of an OpenACC execution engine along one compute axis.  */
+
+static void
+expand_GOACC_DIM_POS (gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  if (targetm.have_oacc_dim_pos ())
+    {
+      rtx dim = expand_expr (gimple_call_arg (stmt, 0), NULL_RTX,
+			     VOIDmode, EXPAND_NORMAL);
+      emit_insn (targetm.gen_oacc_dim_pos (target, dim));
+    }
+  else
+    emit_move_insn (target, const0_rtx);
+}
+
+/* This is expanded by oacc_device_lower pass.  */
+
+static void
+expand_GOACC_LOOP (gcall *stmt ATTRIBUTE_UNUSED)
 {
   gcc_unreachable ();
 }

@@ -106,91 +106,91 @@ Target RejectNegative Undocumented Ignore
 
 mpowerpc64
 Target Report Mask(POWERPC64) Var(rs6000_isa_flags)
-Use PowerPC-64 instruction set
+Use PowerPC-64 instruction set.
 
 mpowerpc-gpopt
 Target Report Mask(PPC_GPOPT) Var(rs6000_isa_flags)
-Use PowerPC General Purpose group optional instructions
+Use PowerPC General Purpose group optional instructions.
 
 mpowerpc-gfxopt
 Target Report Mask(PPC_GFXOPT) Var(rs6000_isa_flags)
-Use PowerPC Graphics group optional instructions
+Use PowerPC Graphics group optional instructions.
 
 mmfcrf
 Target Report Mask(MFCRF) Var(rs6000_isa_flags)
-Use PowerPC V2.01 single field mfcr instruction
+Use PowerPC V2.01 single field mfcr instruction.
 
 mpopcntb
 Target Report Mask(POPCNTB) Var(rs6000_isa_flags)
-Use PowerPC V2.02 popcntb instruction
+Use PowerPC V2.02 popcntb instruction.
 
 mfprnd
 Target Report Mask(FPRND) Var(rs6000_isa_flags)
-Use PowerPC V2.02 floating point rounding instructions
+Use PowerPC V2.02 floating point rounding instructions.
 
 mcmpb
 Target Report Mask(CMPB) Var(rs6000_isa_flags)
-Use PowerPC V2.05 compare bytes instruction
+Use PowerPC V2.05 compare bytes instruction.
 
 mmfpgpr
 Target Report Mask(MFPGPR) Var(rs6000_isa_flags)
-Use extended PowerPC V2.05 move floating point to/from GPR instructions
+Use extended PowerPC V2.05 move floating point to/from GPR instructions.
 
 maltivec
 Target Report Mask(ALTIVEC) Var(rs6000_isa_flags)
-Use AltiVec instructions
+Use AltiVec instructions.
 
 maltivec=le
 Target Report RejectNegative Var(rs6000_altivec_element_order, 1) Save
-Generate Altivec instructions using little-endian element order
+Generate Altivec instructions using little-endian element order.
 
 maltivec=be
 Target Report RejectNegative Var(rs6000_altivec_element_order, 2)
-Generate Altivec instructions using big-endian element order
+Generate Altivec instructions using big-endian element order.
 
 mhard-dfp
 Target Report Mask(DFP) Var(rs6000_isa_flags)
-Use decimal floating point instructions
+Use decimal floating point instructions.
 
 mmulhw
 Target Report Mask(MULHW) Var(rs6000_isa_flags)
-Use 4xx half-word multiply instructions
+Use 4xx half-word multiply instructions.
 
 mdlmzb
 Target Report Mask(DLMZB) Var(rs6000_isa_flags)
-Use 4xx string-search dlmzb instruction
+Use 4xx string-search dlmzb instruction.
 
 mmultiple
 Target Report Mask(MULTIPLE) Var(rs6000_isa_flags)
-Generate load/store multiple instructions
+Generate load/store multiple instructions.
 
 mstring
 Target Report Mask(STRING) Var(rs6000_isa_flags)
-Generate string instructions for block moves
+Generate string instructions for block moves.
 
 msoft-float
 Target Report RejectNegative Mask(SOFT_FLOAT) Var(rs6000_isa_flags)
-Do not use hardware floating point
+Do not use hardware floating point.
 
 mhard-float
 Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT) Var(rs6000_isa_flags)
-Use hardware floating point
+Use hardware floating point.
 
 mpopcntd
 Target Report Mask(POPCNTD) Var(rs6000_isa_flags)
-Use PowerPC V2.06 popcntd instruction
+Use PowerPC V2.06 popcntd instruction.
 
 mfriz
 Target Report Var(TARGET_FRIZ) Init(-1) Save
-Under -ffast-math, generate a FRIZ instruction for (double)(long long) conversions
+Under -ffast-math, generate a FRIZ instruction for (double)(long long) conversions.
 
 mveclibabi=
 Target RejectNegative Joined Var(rs6000_veclibabi_name)
-Vector library ABI to use
+Vector library ABI to use.
 
 mvsx
 Target Report Mask(VSX) Var(rs6000_isa_flags)
-Use vector/scalar (VSX) instructions
+Use vector/scalar (VSX) instructions.
 
 mvsx-scalar-float
 Target Undocumented Report Var(TARGET_VSX_SCALAR_FLOAT) Init(1)
@@ -237,42 +237,42 @@ Target Undocumented Report Var(TARGET_VECTORIZE_BUILTINS) Init(-1) Save
 
 mno-update
 Target Report RejectNegative Mask(NO_UPDATE) Var(rs6000_isa_flags)
-Do not generate load/store with update instructions
+Do not generate load/store with update instructions.
 
 mupdate
 Target Report RejectNegative InverseMask(NO_UPDATE, UPDATE) Var(rs6000_isa_flags)
-Generate load/store with update instructions
+Generate load/store with update instructions.
 
 msingle-pic-base
 Target Report Var(TARGET_SINGLE_PIC_BASE) Init(0)
-Do not load the PIC register in function prologues
+Do not load the PIC register in function prologues.
 
 mavoid-indexed-addresses
 Target Report Var(TARGET_AVOID_XFORM) Init(-1) Save
-Avoid generation of indexed load/store instructions when possible
+Avoid generation of indexed load/store instructions when possible.
 
 mtls-markers
 Target Report Var(tls_markers) Init(1) Save
-Mark __tls_get_addr calls with argument info
+Mark __tls_get_addr calls with argument info.
 
 msched-epilog
 Target Undocumented Var(TARGET_SCHED_PROLOG) Init(1) Save
 
 msched-prolog
 Target Report Var(TARGET_SCHED_PROLOG) Save
-Schedule the start and end of the procedure
+Schedule the start and end of the procedure.
 
 maix-struct-return
 Target Report RejectNegative Var(aix_struct_return) Save
-Return all structures in memory (AIX default)
+Return all structures in memory (AIX default).
 
 msvr4-struct-return
 Target Report RejectNegative Var(aix_struct_return,0) Save
-Return small structures in registers (SVR4 default)
+Return small structures in registers (SVR4 default).
 
 mxl-compat
 Target Report Var(TARGET_XL_COMPAT) Save
-Conform more closely to IBM XLC semantics
+Conform more closely to IBM XLC semantics.
 
 mrecip
 Target Report
@@ -288,19 +288,19 @@ Assume that the reciprocal estimate instructions provide more accuracy.
 
 mno-fp-in-toc
 Target Report RejectNegative Var(TARGET_NO_FP_IN_TOC) Save
-Do not place floating point constants in TOC
+Do not place floating point constants in TOC.
 
 mfp-in-toc
 Target Report RejectNegative Var(TARGET_NO_FP_IN_TOC,0) Save
-Place floating point constants in TOC
+Place floating point constants in TOC.
 
 mno-sum-in-toc
 Target RejectNegative Var(TARGET_NO_SUM_IN_TOC) Save
-Do not place symbol+offset constants in TOC
+Do not place symbol+offset constants in TOC.
 
 msum-in-toc
 Target RejectNegative Var(TARGET_NO_SUM_IN_TOC,0) Save
-Place symbol+offset constants in TOC
+Place symbol+offset constants in TOC.
 
 ;  Output only one TOC entry per module.  Normally linking fails if
 ;   there are more than 16K unique variables/constants in an executable.  With
@@ -311,83 +311,83 @@ Place symbol+offset constants in TOC
 ;   function, and one less allocable register.
 mminimal-toc
 Target Report Mask(MINIMAL_TOC) Var(rs6000_isa_flags)
-Use only one TOC entry per procedure
+Use only one TOC entry per procedure.
 
 mfull-toc
 Target Report
-Put everything in the regular TOC
+Put everything in the regular TOC.
 
 mvrsave
 Target Report Var(TARGET_ALTIVEC_VRSAVE) Save
-Generate VRSAVE instructions when generating AltiVec code
+Generate VRSAVE instructions when generating AltiVec code.
 
 mvrsave=no
 Target RejectNegative Alias(mvrsave) NegativeAlias
-Deprecated option.  Use -mno-vrsave instead
+Deprecated option.  Use -mno-vrsave instead.
 
 mvrsave=yes
 Target RejectNegative Alias(mvrsave)
-Deprecated option.  Use -mvrsave instead
+Deprecated option.  Use -mvrsave instead.
 
 mblock-move-inline-limit=
 Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined UInteger Save
-Specify how many bytes should be moved inline before calling out to memcpy/memmove
+Specify how many bytes should be moved inline before calling out to memcpy/memmove.
 
 misel
 Target Report Mask(ISEL) Var(rs6000_isa_flags)
-Generate isel instructions
+Generate isel instructions.
 
 misel=no
 Target RejectNegative Alias(misel) NegativeAlias
-Deprecated option.  Use -mno-isel instead
+Deprecated option.  Use -mno-isel instead.
 
 misel=yes
 Target RejectNegative Alias(misel)
-Deprecated option.  Use -misel instead
+Deprecated option.  Use -misel instead.
 
 mspe
 Target Var(rs6000_spe) Save
-Generate SPE SIMD instructions on E500
+Generate SPE SIMD instructions on E500.
 
 mpaired
 Target Var(rs6000_paired_float) Save
-Generate PPC750CL paired-single instructions
+Generate PPC750CL paired-single instructions.
 
 mspe=no
 Target RejectNegative Alias(mspe) NegativeAlias
-Deprecated option.  Use -mno-spe instead
+Deprecated option.  Use -mno-spe instead.
 
 mspe=yes
 Target RejectNegative Alias(mspe)
-Deprecated option.  Use -mspe instead
+Deprecated option.  Use -mspe instead.
 
 mdebug=
 Target RejectNegative Joined
--mdebug=	Enable debug output
+-mdebug=	Enable debug output.
 
 mabi=altivec
 Target RejectNegative Var(rs6000_altivec_abi) Save
-Use the AltiVec ABI extensions
+Use the AltiVec ABI extensions.
 
 mabi=no-altivec
 Target RejectNegative Var(rs6000_altivec_abi, 0)
-Do not use the AltiVec ABI extensions
+Do not use the AltiVec ABI extensions.
 
 mabi=spe
 Target RejectNegative Var(rs6000_spe_abi) Save
-Use the SPE ABI extensions
+Use the SPE ABI extensions.
 
 mabi=no-spe
 Target RejectNegative Var(rs6000_spe_abi, 0)
-Do not use the SPE ABI extensions
+Do not use the SPE ABI extensions.
 
 mabi=elfv1
 Target RejectNegative Var(rs6000_elf_abi, 1) Save
-Use the ELFv1 ABI
+Use the ELFv1 ABI.
 
 mabi=elfv2
 Target RejectNegative Var(rs6000_elf_abi, 2)
-Use the ELFv2 ABI
+Use the ELFv2 ABI.
 
 ; These are here for testing during development only, do not document
 ; in the manual please.
@@ -407,15 +407,15 @@ Target RejectNegative Undocumented Warn(using IBM extended precision long double
 
 mcpu=
 Target RejectNegative Joined Var(rs6000_cpu_index) Init(-1) Enum(rs6000_cpu_opt_value) Save
--mcpu=	Use features of and schedule code for given CPU
+-mcpu=	Use features of and schedule code for given CPU.
 
 mtune=
 Target RejectNegative Joined Var(rs6000_tune_index) Init(-1) Enum(rs6000_cpu_opt_value) Save
--mtune=	Schedule code for given CPU
+-mtune=	Schedule code for given CPU.
 
 mtraceback=
 Target RejectNegative Joined Enum(rs6000_traceback_type) Var(rs6000_traceback)
--mtraceback=	Select full, part, or no traceback table
+-mtraceback=	Select full, part, or no traceback table.
 
 Enum
 Name(rs6000_traceback_type) Type(enum rs6000_traceback_type)
@@ -431,23 +431,23 @@ Enum(rs6000_traceback_type) String(no) Value(traceback_none)
 
 mlongcall
 Target Report Var(rs6000_default_long_calls) Save
-Avoid all range limits on call instructions
+Avoid all range limits on call instructions.
 
 mgen-cell-microcode
 Target Report Var(rs6000_gen_cell_microcode) Init(-1) Save
-Generate Cell microcode
+Generate Cell microcode.
 
 mwarn-cell-microcode
 Target Var(rs6000_warn_cell_microcode) Init(0) Warning Save
-Warn when a Cell microcoded instruction is emitted
+Warn when a Cell microcoded instruction is emitted.
 
 mwarn-altivec-long
 Target Var(rs6000_warn_altivec_long) Init(1) Save
-Warn about deprecated 'vector long ...' AltiVec type usage
+Warn about deprecated 'vector long ...' AltiVec type usage.
 
 mfloat-gprs=
 Target RejectNegative Joined Enum(rs6000_float_gprs) Var(rs6000_float_gprs) Save
--mfloat-gprs=	Select GPR floating point method
+-mfloat-gprs=	Select GPR floating point method.
 
 Enum
 Name(rs6000_float_gprs) Type(unsigned char)
@@ -467,23 +467,23 @@ Enum(rs6000_float_gprs) String(no) Value(0)
 
 mlong-double-
 Target RejectNegative Joined UInteger Var(rs6000_long_double_type_size) Save
--mlong-double-<n>	Specify size of long double (64 or 128 bits)
+-mlong-double-<n>	Specify size of long double (64 or 128 bits).
 
 mlra
 Target Report Var(rs6000_lra_flag) Init(0) Save
-Use LRA instead of reload
+Use LRA instead of reload.
 
 msched-costly-dep=
 Target RejectNegative Joined Var(rs6000_sched_costly_dep_str)
-Determine which dependences between insns are considered costly
+Determine which dependences between insns are considered costly.
 
 minsert-sched-nops=
 Target RejectNegative Joined Var(rs6000_sched_insert_nops_str)
-Specify which post scheduling nop insertion scheme to apply
+Specify which post scheduling nop insertion scheme to apply.
 
 malign-
 Target RejectNegative Joined Enum(rs6000_alignment_flags) Var(rs6000_alignment_flags)
-Specify alignment of structure fields default/natural
+Specify alignment of structure fields default/natural.
 
 Enum
 Name(rs6000_alignment_flags) Type(unsigned char)
@@ -497,23 +497,23 @@ Enum(rs6000_alignment_flags) String(natural) Value(MASK_ALIGN_NATURAL)
 
 mprioritize-restricted-insns=
 Target RejectNegative Joined UInteger Var(rs6000_sched_restricted_insns_priority) Save
-Specify scheduling priority for dispatch slot restricted insns
+Specify scheduling priority for dispatch slot restricted insns.
 
 msingle-float
 Target RejectNegative Var(rs6000_single_float) Save
-Single-precision floating point unit
+Single-precision floating point unit.
 
 mdouble-float
 Target RejectNegative Var(rs6000_double_float) Save
-Double-precision floating point unit
+Double-precision floating point unit.
 
 msimple-fpu
 Target RejectNegative Var(rs6000_simple_fpu) Save
-Floating point unit does not support divide & sqrt
+Floating point unit does not support divide & sqrt.
 
 mfpu=
 Target RejectNegative Joined Enum(fpu_type_t) Var(rs6000_fpu_type) Init(FPU_NONE)
--mfpu=	Specify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu)
+-mfpu=	Specify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu).
 
 Enum
 Name(fpu_type_t) Type(enum fpu_type_t)
@@ -543,19 +543,19 @@ Use/do not use r11 to hold the static link in calls to functions via pointers.
 
 msave-toc-indirect
 Target Report Mask(SAVE_TOC_INDIRECT) Var(rs6000_isa_flags)
-Control whether we save the TOC in the prologue for indirect calls or generate the save inline
+Control whether we save the TOC in the prologue for indirect calls or generate the save inline.
 
 mvsx-timode
 Target Undocumented Mask(VSX_TIMODE) Var(rs6000_isa_flags)
-Allow 128-bit integers in VSX registers
+Allow 128-bit integers in VSX registers.
 
 mpower8-fusion
 Target Report Mask(P8_FUSION) Var(rs6000_isa_flags)
-Fuse certain integer operations together for better performance on power8
+Fuse certain integer operations together for better performance on power8.
 
 mpower8-fusion-sign
 Target Undocumented Mask(P8_FUSION_SIGN) Var(rs6000_isa_flags)
-Allow sign extension in fusion operations
+Allow sign extension in fusion operations.
 
 mpower8-vector
 Target Report Mask(P8_VECTOR) Var(rs6000_isa_flags)
@@ -563,15 +563,15 @@ Use/do not use vector and scalar instructions added in ISA 2.07.
 
 mcrypto
 Target Report Mask(CRYPTO) Var(rs6000_isa_flags)
-Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions
+Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions.
 
 mdirect-move
 Target Report Mask(DIRECT_MOVE) Var(rs6000_isa_flags)
-Use ISA 2.07 direct move between GPR & VSX register instructions
+Use ISA 2.07 direct move between GPR & VSX register instructions.
 
 mhtm
 Target Report Mask(HTM) Var(rs6000_isa_flags)
-Use ISA 2.07 transactional memory (HTM) instructions
+Use ISA 2.07 transactional memory (HTM) instructions.
 
 mquad-memory
 Target Report Mask(QUAD_MEMORY) Var(rs6000_isa_flags)
@@ -587,32 +587,20 @@ Generate aggregate parameter passing code with at most 64-bit alignment.
 
 mupper-regs-df
 Target Report Mask(UPPER_REGS_DF) Var(rs6000_isa_flags)
-Allow double variables in upper registers with -mcpu=power7 or -mvsx
+Allow double variables in upper registers with -mcpu=power7 or -mvsx.
 
 mupper-regs-sf
 Target Report Mask(UPPER_REGS_SF) Var(rs6000_isa_flags)
-Allow float variables in upper registers with -mcpu=power8 or -mpower8-vector
+Allow float variables in upper registers with -mcpu=power8 or -mpower8-vector.
 
 mupper-regs
 Target Report Var(TARGET_UPPER_REGS) Init(-1) Save
-Allow float/double variables in upper registers if cpu allows it
+Allow float/double variables in upper registers if cpu allows it.
 
 moptimize-swaps
 Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
 Analyze and remove doubleword swaps from VSX computations.
 
-mfloat128-
-Target RejectNegative Joined Enum(float128_type_t) Var(TARGET_FLOAT128) Init(FLOAT128_UNSET) Save
--mfloat128-{software,none} - Specify how IEEE 128-bit floating point is used.
-
-Enum
-Name(float128_type_t) Type(enum float128_type_t)
-
-EnumValue
-Enum(float128_type_t) String(none) Value(FLOAT128_NONE)
-
-EnumValue
-Enum(float128_type_t) String(software) Value(FLOAT128_SW)
-
-EnumValue
-Enum(float128_type_t) String(sw) Value(FLOAT128_SW)
+mfloat128
+Target Report Mask(FLOAT128) Var(rs6000_isa_flags)
+Enable/disable IEEE 128-bit floating point via the __float128 keyword.

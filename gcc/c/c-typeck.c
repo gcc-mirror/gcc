@@ -26,31 +26,27 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "target.h"
+#include "function.h"
+#include "bitmap.h"
 #include "tree.h"
-#include "alias.h"
-#include "fold-const.h"
+#include "c-family/c-common.h"
+#include "c-tree.h"
+#include "gimple-expr.h"
+#include "predict.h"
 #include "stor-layout.h"
 #include "trans-mem.h"
 #include "varasm.h"
 #include "stmt.h"
 #include "langhooks.h"
-#include "c-tree.h"
 #include "c-lang.h"
 #include "flags.h"
 #include "intl.h"
-#include "target.h"
 #include "tree-iterator.h"
-#include "bitmap.h"
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "gimple-expr.h"
 #include "gimplify.h"
 #include "tree-inline.h"
 #include "omp-low.h"
 #include "c-family/c-objc.h"
-#include "c-family/c-common.h"
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
 #include "gomp-constants.h"
@@ -4771,6 +4767,18 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 		       && TREE_CODE (orig_op2) == INTEGER_CST
 		       && !TREE_OVERFLOW (orig_op2)));
     }
+
+  /* Need to convert condition operand into a vector mask.  */
+  if (VECTOR_TYPE_P (TREE_TYPE (ifexp)))
+    {
+      tree vectype = TREE_TYPE (ifexp);
+      tree elem_type = TREE_TYPE (vectype);
+      tree zero = build_int_cst (elem_type, 0);
+      tree zero_vec = build_vector_from_val (vectype, zero);
+      tree cmp_type = build_same_sized_truth_vector_type (vectype);
+      ifexp = build2 (NE_EXPR, cmp_type, ifexp, zero_vec);
+    }
+
   if (int_const || (ifexp_bcp && TREE_CODE (ifexp) == INTEGER_CST))
     ret = fold_build3_loc (colon_loc, COND_EXPR, result_type, ifexp, op1, op2);
   else
@@ -5216,8 +5224,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	       || TREE_CODE (expr) == COMPLEX_CST)))
       value = build1 (NOP_EXPR, type, value);
 
-  if (CAN_HAVE_LOCATION_P (value))
-    SET_EXPR_LOCATION (value, loc);
+  protected_set_expr_location (value, loc);
   return value;
 }
 
@@ -5255,8 +5262,8 @@ c_cast_expr (location_t loc, struct c_type_name *type_name, tree expr)
       SET_EXPR_LOCATION (ret, loc);
     }
 
-  if (CAN_HAVE_LOCATION_P (ret) && !EXPR_HAS_LOCATION (ret))
-    SET_EXPR_LOCATION (ret, loc);
+  if (!EXPR_HAS_LOCATION (ret))
+    protected_set_expr_location (ret, loc);
 
   /* C++ does not permits types to be defined in a cast, but it
      allows references to incomplete types.  */
@@ -5690,8 +5697,18 @@ maybe_warn_string_init (location_t loc, tree type, struct c_expr expr)
    ERRTYPE says whether it is argument passing, assignment,
    initialization or return.
 
-   LOCATION is the location of the assignment, EXPR_LOC is the location of
-   the RHS or, for a function, location of an argument.
+   In the following example, '~' denotes where EXPR_LOC and '^' where
+   LOCATION point to:
+
+     f (var);      [ic_argpass]
+     ^  ~~~
+     x = var;      [ic_assign]
+       ^ ~~~;
+     int x = var;  [ic_init]
+	     ^^^
+     return x;     [ic_return]
+	    ^
+
    FUNCTION is a tree for the function being called.
    PARMNUM is the number of the argument, for printing in error messages.  */
 
@@ -5707,6 +5724,10 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   enum tree_code coder;
   tree rname = NULL_TREE;
   bool objc_ok = false;
+
+  /* Use the expansion point location to handle cases such as user's
+     function returning a wrong-type macro defined in a system header.  */
+  location = expansion_point_location_if_in_system_header (location);
 
   if (errtype == ic_argpass)
     {
@@ -9369,8 +9390,12 @@ c_finish_return (location_t loc, tree retval, tree origtype)
   bool npc = false;
   size_t rank = 0;
 
+  /* Use the expansion point to handle cases such as returning NULL
+     in a function returning void.  */
+  source_location xloc = expansion_point_location_if_in_system_header (loc);
+
   if (TREE_THIS_VOLATILE (current_function_decl))
-    warning_at (loc, 0,
+    warning_at (xloc, 0,
 		"function declared %<noreturn%> has a %<return%> statement");
 
   if (flag_cilkplus && contains_array_notation_expr (retval))
@@ -9425,10 +9450,10 @@ c_finish_return (location_t loc, tree retval, tree origtype)
     {
       current_function_returns_null = 1;
       if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
-	pedwarn (loc, 0,
+	pedwarn (xloc, 0,
 		 "%<return%> with a value, in function returning void");
       else
-	pedwarn (loc, OPT_Wpedantic, "ISO C forbids "
+	pedwarn (xloc, OPT_Wpedantic, "ISO C forbids "
 		 "%<return%> with expression, in function returning void");
     }
   else
@@ -10220,6 +10245,20 @@ push_cleanup (tree decl, tree cleanup, bool eh_only)
   STATEMENT_LIST_STMT_EXPR (list) = stmt_expr;
 }
 
+/* Build a vector comparison of ARG0 and ARG1 using CODE opcode
+   into a value of TYPE type.  Comparison is done via VEC_COND_EXPR.  */
+
+static tree
+build_vec_cmp (tree_code code, tree type,
+	       tree arg0, tree arg1)
+{
+  tree zero_vec = build_zero_cst (type);
+  tree minus_one_vec = build_minus_one_cst (type);
+  tree cmp_type = build_same_sized_truth_vector_type (type);
+  tree cmp = build2 (code, cmp_type, arg0, arg1);
+  return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
+}
+
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
    LOCATION is the operator's location.
@@ -10786,7 +10825,8 @@ build_binary_op (location_t location, enum tree_code code,
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;
-          break;
+	  ret = build_vec_cmp (resultcode, result_type, op0, op1);
+	  goto return_build_binary_op;
         }
       if (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1))
 	warning_at (location,
@@ -10938,7 +10978,8 @@ build_binary_op (location_t location, enum tree_code code,
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;
-          break;
+	  ret = build_vec_cmp (resultcode, result_type, op0, op1);
+	  goto return_build_binary_op;
         }
       build_type = integer_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
@@ -11436,39 +11477,19 @@ c_expr_to_decl (tree expr, bool *tc ATTRIBUTE_UNUSED, bool *se)
     return expr;
 }
 
-/* Generate OACC_PARALLEL, with CLAUSES and BLOCK as its compound
-   statement.  LOC is the location of the OACC_PARALLEL.  */
+/* Generate OMP construct CODE, with BODY and CLAUSES as its compound
+   statement.  LOC is the location of the construct.  */
 
 tree
-c_finish_oacc_parallel (location_t loc, tree clauses, tree block)
+c_finish_omp_construct (location_t loc, enum tree_code code, tree body,
+			tree clauses)
 {
-  tree stmt;
+  body = c_end_compound_stmt (loc, body, true);
 
-  block = c_end_compound_stmt (loc, block, true);
-
-  stmt = make_node (OACC_PARALLEL);
+  tree stmt = make_node (code);
   TREE_TYPE (stmt) = void_type_node;
-  OACC_PARALLEL_CLAUSES (stmt) = clauses;
-  OACC_PARALLEL_BODY (stmt) = block;
-  SET_EXPR_LOCATION (stmt, loc);
-
-  return add_stmt (stmt);
-}
-
-/* Generate OACC_KERNELS, with CLAUSES and BLOCK as its compound
-   statement.  LOC is the location of the OACC_KERNELS.  */
-
-tree
-c_finish_oacc_kernels (location_t loc, tree clauses, tree block)
-{
-  tree stmt;
-
-  block = c_end_compound_stmt (loc, block, true);
-
-  stmt = make_node (OACC_KERNELS);
-  TREE_TYPE (stmt) = void_type_node;
-  OACC_KERNELS_CLAUSES (stmt) = clauses;
-  OACC_KERNELS_BODY (stmt) = block;
+  OMP_BODY (stmt) = body;
+  OMP_CLAUSES (stmt) = clauses;
   SET_EXPR_LOCATION (stmt, loc);
 
   return add_stmt (stmt);
@@ -11637,7 +11658,7 @@ c_finish_omp_cancellation_point (location_t loc, tree clauses)
    map(a[:b][2:1][:c][:2][:d][e:f][2:5])
    FIRST_NON_ONE will be 3, array-section-subscript [:b], [2:1] and [:c]
    all are or may have length of 1, array-section-subscript [:2] is the
-   first one knonwn not to have length 1.  For array-section-subscript
+   first one known not to have length 1.  For array-section-subscript
    <= FIRST_NON_ONE we diagnose non-contiguous arrays if low bound isn't
    0 or length isn't the array domain max + 1, for > FIRST_NON_ONE we
    can if MAYBE_ZERO_LEN is false.  MAYBE_ZERO_LEN will be true in the above
@@ -11645,13 +11666,39 @@ c_finish_omp_cancellation_point (location_t loc, tree clauses)
 
 static tree
 handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
-			     bool &maybe_zero_len, unsigned int &first_non_one)
+			     bool &maybe_zero_len, unsigned int &first_non_one,
+			     bool is_omp)
 {
   tree ret, low_bound, length, type;
   if (TREE_CODE (t) != TREE_LIST)
     {
       if (error_operand_p (t))
 	return error_mark_node;
+      ret = t;
+      if (TREE_CODE (t) == COMPONENT_REF
+	  && is_omp
+	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FROM))
+	{
+	  if (DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"bit-field %qE in %qs clause",
+			t, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      return error_mark_node;
+	    }
+	  while (TREE_CODE (t) == COMPONENT_REF)
+	    {
+	      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qE is a member of a union", t);
+		  return error_mark_node;
+		}
+	      t = TREE_OPERAND (t, 0);
+	    }
+	}
       if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	{
 	  if (DECL_P (t))
@@ -11672,11 +11719,11 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	  return error_mark_node;
 	}
-      return t;
+      return ret;
     }
 
   ret = handle_omp_array_sections_1 (c, TREE_CHAIN (t), types,
-				     maybe_zero_len, first_non_one);
+				     maybe_zero_len, first_non_one, is_omp);
   if (ret == error_mark_node || ret == NULL_TREE)
     return ret;
 
@@ -11717,10 +11764,31 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
   if (length != NULL_TREE)
     {
       if (!integer_nonzerop (length))
-	maybe_zero_len = true;
+	{
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+	    {
+	      if (integer_zerop (length))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "zero length array section in %qs clause",
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  return error_mark_node;
+		}
+	    }
+	  else
+	    maybe_zero_len = true;
+	}
       if (first_non_one == types.length ()
 	  && (TREE_CODE (length) != INTEGER_CST || integer_onep (length)))
 	first_non_one++;
+    }
+  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+      && !integer_zerop (low_bound))
+    {
+      error_at (OMP_CLAUSE_LOCATION (c),
+		"%<reduction%> array section has to be zero-based");
+      return error_mark_node;
     }
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
@@ -11769,7 +11837,17 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		  return error_mark_node;
 		}
 	      if (tree_int_cst_equal (size, low_bound))
-		maybe_zero_len = true;
+		{
+		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"zero length array section in %qs clause",
+				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      return error_mark_node;
+		    }
+		  maybe_zero_len = true;
+		}
 	      else if (length == NULL_TREE
 		       && first_non_one == types.length ()
 		       && tree_int_cst_equal
@@ -11779,7 +11857,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	    }
 	  else if (length == NULL_TREE)
 	    {
-	      maybe_zero_len = true;
+	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION)
+		maybe_zero_len = true;
 	      if (first_non_one == types.length ())
 		first_non_one++;
 	    }
@@ -11813,7 +11893,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	}
       else if (length == NULL_TREE)
 	{
-	  maybe_zero_len = true;
+	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION)
+	    maybe_zero_len = true;
 	  if (first_non_one == types.length ())
 	    first_non_one++;
 	}
@@ -11835,6 +11917,15 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "for pointer type length expression must be specified");
+	  return error_mark_node;
+	}
+      if (length != NULL_TREE
+	  && TREE_CODE (length) == INTEGER_CST
+	  && tree_int_cst_sgn (length) == -1)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "negative length in array section in %qs clause",
+		    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	  return error_mark_node;
 	}
       /* If there is a pointer type anywhere but in the very first
@@ -11870,28 +11961,22 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 /* Handle array sections for clause C.  */
 
 static bool
-handle_omp_array_sections (tree c)
+handle_omp_array_sections (tree c, bool is_omp)
 {
   bool maybe_zero_len = false;
   unsigned int first_non_one = 0;
-  vec<tree> types = vNULL;
+  auto_vec<tree, 10> types;
   tree first = handle_omp_array_sections_1 (c, OMP_CLAUSE_DECL (c), types,
-					    maybe_zero_len, first_non_one);
+					    maybe_zero_len, first_non_one,
+					    is_omp);
   if (first == error_mark_node)
-    {
-      types.release ();
-      return true;
-    }
+    return true;
   if (first == NULL_TREE)
-    {
-      types.release ();
-      return false;
-    }
+    return false;
   if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND)
     {
       tree t = OMP_CLAUSE_DECL (c);
       tree tem = NULL_TREE;
-      types.release ();
       /* Need to evaluate side effects in the length expressions
 	 if any.  */
       while (TREE_CODE (t) == TREE_LIST)
@@ -11961,7 +12046,6 @@ handle_omp_array_sections (tree c)
 				"array section is not contiguous in %qs "
 				"clause",
 				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-		      types.release ();
 		      return true;
 		    }
 		}
@@ -11980,7 +12064,9 @@ handle_omp_array_sections (tree c)
 	    {
 	      tree l;
 
-	      if (i > first_non_one && length && integer_nonzerop (length))
+	      if (i > first_non_one
+		  && ((length && integer_nonzerop (length))
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION))
 		continue;
 	      if (length)
 		l = fold_convert (sizetype, length);
@@ -12005,6 +12091,22 @@ handle_omp_array_sections (tree c)
 	      else if (size == NULL_TREE)
 		{
 		  size = size_in_bytes (TREE_TYPE (types[i]));
+		  tree eltype = TREE_TYPE (types[num - 1]);
+		  while (TREE_CODE (eltype) == ARRAY_TYPE)
+		    eltype = TREE_TYPE (eltype);
+		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+		    {
+		      if (integer_zerop (size)
+			  || integer_zerop (size_in_bytes (eltype)))
+			{
+			  error_at (OMP_CLAUSE_LOCATION (c),
+				    "zero length array section in %qs clause",
+				    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+			  return error_mark_node;
+			}
+		      size = size_binop (EXACT_DIV_EXPR, size,
+					 size_in_bytes (eltype));
+		    }
 		  size = size_binop (MULT_EXPR, size, l);
 		  if (condition)
 		    size = fold_build3 (COND_EXPR, sizetype, condition,
@@ -12014,20 +12116,56 @@ handle_omp_array_sections (tree c)
 		size = size_binop (MULT_EXPR, size, l);
 	    }
 	}
-      types.release ();
       if (side_effects)
 	size = build2 (COMPOUND_EXPR, sizetype, side_effects, size);
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+	{
+	  size = size_binop (MINUS_EXPR, size, size_one_node);
+	  size = c_fully_fold (size, false, NULL);
+	  tree index_type = build_index_type (size);
+	  tree eltype = TREE_TYPE (first);
+	  while (TREE_CODE (eltype) == ARRAY_TYPE)
+	    eltype = TREE_TYPE (eltype);
+	  tree type = build_array_type (eltype, index_type);
+	  tree ptype = build_pointer_type (eltype);
+	  if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+	    t = build_fold_addr_expr (t);
+	  t = build2 (MEM_REF, type, t, build_int_cst (ptype, 0));
+	  OMP_CLAUSE_DECL (c) = t;
+	  return false;
+	}
       first = c_fully_fold (first, false, NULL);
       OMP_CLAUSE_DECL (c) = first;
       if (size)
 	size = c_fully_fold (size, false, NULL);
       OMP_CLAUSE_SIZE (c) = size;
-      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
+	  || (TREE_CODE (t) == COMPONENT_REF
+	      && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE))
 	return false;
       gcc_assert (OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FORCE_DEVICEPTR);
+      if (is_omp)
+	switch (OMP_CLAUSE_MAP_KIND (c))
+	  {
+	  case GOMP_MAP_ALLOC:
+	  case GOMP_MAP_TO:
+	  case GOMP_MAP_FROM:
+	  case GOMP_MAP_TOFROM:
+	  case GOMP_MAP_ALWAYS_TO:
+	  case GOMP_MAP_ALWAYS_FROM:
+	  case GOMP_MAP_ALWAYS_TOFROM:
+	  case GOMP_MAP_RELEASE:
+	  case GOMP_MAP_DELETE:
+	    OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
+	    break;
+	  default:
+	    break;
+	  }
       tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
-      OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_POINTER);
-      if (!c_mark_addressable (t))
+      OMP_CLAUSE_SET_MAP_KIND (c2, is_omp
+				   ? GOMP_MAP_FIRSTPRIVATE_POINTER
+				   : GOMP_MAP_POINTER);
+      if (!is_omp && !c_mark_addressable (t))
 	return false;
       OMP_CLAUSE_DECL (c2) = t;
       t = build_fold_addr_expr (first);
@@ -12092,11 +12230,12 @@ c_find_omp_placeholder_r (tree *tp, int *, void *data)
    Remove any elements from the list that are invalid.  */
 
 tree
-c_finish_omp_clauses (tree clauses)
+c_finish_omp_clauses (tree clauses, bool is_omp, bool declare_simd)
 {
   bitmap_head generic_head, firstprivate_head, lastprivate_head;
-  bitmap_head aligned_head;
-  tree c, t, *pc;
+  bitmap_head aligned_head, map_head, map_field_head, generic_field_head;
+  tree c, t, type, *pc;
+  tree simdlen = NULL_TREE, safelen = NULL_TREE;
   bool branch_seen = false;
   bool copyprivate_seen = false;
   tree *nowait_clause = NULL;
@@ -12106,6 +12245,9 @@ c_finish_omp_clauses (tree clauses)
   bitmap_initialize (&firstprivate_head, &bitmap_default_obstack);
   bitmap_initialize (&lastprivate_head, &bitmap_default_obstack);
   bitmap_initialize (&aligned_head, &bitmap_default_obstack);
+  bitmap_initialize (&map_head, &bitmap_default_obstack);
+  bitmap_initialize (&map_field_head, &bitmap_default_obstack);
+  bitmap_initialize (&generic_field_head, &bitmap_default_obstack);
 
   for (pc = &clauses, c = clauses; c ; c = *pc)
     {
@@ -12127,9 +12269,61 @@ c_finish_omp_clauses (tree clauses)
 	case OMP_CLAUSE_REDUCTION:
 	  need_implicitly_determined = true;
 	  t = OMP_CLAUSE_DECL (c);
+	  if (TREE_CODE (t) == TREE_LIST)
+	    {
+	      if (handle_omp_array_sections (c, is_omp))
+		{
+		  remove = true;
+		  break;
+		}
+
+	      t = OMP_CLAUSE_DECL (c);
+	    }
+	  t = require_complete_type (t);
+	  if (t == error_mark_node)
+	    {
+	      remove = true;
+	      break;
+	    }
+	  type = TREE_TYPE (t);
+	  if (TREE_CODE (t) == MEM_REF)
+	    type = TREE_TYPE (type);
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    {
+	      tree oatype = type;
+	      gcc_assert (TREE_CODE (t) != MEM_REF);
+	      while (TREE_CODE (type) == ARRAY_TYPE)
+		type = TREE_TYPE (type);
+	      if (integer_zerop (TYPE_SIZE_UNIT (type)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qD in %<reduction%> clause is a zero size array",
+			    t);
+		  remove = true;
+		  break;
+		}
+	      tree size = size_binop (EXACT_DIV_EXPR, TYPE_SIZE_UNIT (oatype),
+				      TYPE_SIZE_UNIT (type));
+	      if (integer_zerop (size))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qD in %<reduction%> clause is a zero size array",
+			    t);
+		  remove = true;
+		  break;
+		}
+	      size = size_binop (MINUS_EXPR, size, size_one_node);
+	      tree index_type = build_index_type (size);
+	      tree atype = build_array_type (type, index_type);
+	      tree ptype = build_pointer_type (type);
+	      if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+		t = build_fold_addr_expr (t);
+	      t = build2 (MEM_REF, atype, t, build_int_cst (ptype, 0));
+	      OMP_CLAUSE_DECL (c) = t;
+	    }
 	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == NULL_TREE
-	      && (FLOAT_TYPE_P (TREE_TYPE (t))
-		  || TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE))
+	      && (FLOAT_TYPE_P (type)
+		  || TREE_CODE (type) == COMPLEX_TYPE))
 	    {
 	      enum tree_code r_code = OMP_CLAUSE_REDUCTION_CODE (c);
 	      const char *r_name = NULL;
@@ -12141,11 +12335,11 @@ c_finish_omp_clauses (tree clauses)
 		case MINUS_EXPR:
 		  break;
 		case MIN_EXPR:
-		  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
+		  if (TREE_CODE (type) == COMPLEX_TYPE)
 		    r_name = "min";
 		  break;
 		case MAX_EXPR:
-		  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
+		  if (TREE_CODE (type) == COMPLEX_TYPE)
 		    r_name = "max";
 		  break;
 		case BIT_AND_EXPR:
@@ -12158,11 +12352,11 @@ c_finish_omp_clauses (tree clauses)
 		  r_name = "|";
 		  break;
 		case TRUTH_ANDIF_EXPR:
-		  if (FLOAT_TYPE_P (TREE_TYPE (t)))
+		  if (FLOAT_TYPE_P (type))
 		    r_name = "&&";
 		  break;
 		case TRUTH_ORIF_EXPR:
-		  if (FLOAT_TYPE_P (TREE_TYPE (t)))
+		  if (FLOAT_TYPE_P (type))
 		    r_name = "||";
 		  break;
 		default:
@@ -12180,37 +12374,49 @@ c_finish_omp_clauses (tree clauses)
 	  else if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == error_mark_node)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
-			"user defined reduction not found for %qD", t);
+			"user defined reduction not found for %qE", t);
 	      remove = true;
 	      break;
 	    }
 	  else if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
 	    {
 	      tree list = OMP_CLAUSE_REDUCTION_PLACEHOLDER (c);
-	      tree type = TYPE_MAIN_VARIANT (TREE_TYPE (t));
+	      type = TYPE_MAIN_VARIANT (type);
 	      tree placeholder = build_decl (OMP_CLAUSE_LOCATION (c),
 					     VAR_DECL, NULL_TREE, type);
+	      tree decl_placeholder = NULL_TREE;
 	      OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) = placeholder;
 	      DECL_ARTIFICIAL (placeholder) = 1;
 	      DECL_IGNORED_P (placeholder) = 1;
+	      if (TREE_CODE (t) == MEM_REF)
+		{
+		  decl_placeholder = build_decl (OMP_CLAUSE_LOCATION (c),
+						 VAR_DECL, NULL_TREE, type);
+		  OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c) = decl_placeholder;
+		  DECL_ARTIFICIAL (decl_placeholder) = 1;
+		  DECL_IGNORED_P (decl_placeholder) = 1;
+		}
 	      if (TREE_ADDRESSABLE (TREE_VEC_ELT (list, 0)))
 		c_mark_addressable (placeholder);
 	      if (TREE_ADDRESSABLE (TREE_VEC_ELT (list, 1)))
-		c_mark_addressable (OMP_CLAUSE_DECL (c));
+		c_mark_addressable (decl_placeholder ? decl_placeholder
+				    : OMP_CLAUSE_DECL (c));
 	      OMP_CLAUSE_REDUCTION_MERGE (c)
 		= c_clone_omp_udr (TREE_VEC_ELT (list, 2),
 				   TREE_VEC_ELT (list, 0),
 				   TREE_VEC_ELT (list, 1),
-				   OMP_CLAUSE_DECL (c), placeholder);
+				   decl_placeholder ? decl_placeholder
+				   : OMP_CLAUSE_DECL (c), placeholder);
 	      OMP_CLAUSE_REDUCTION_MERGE (c)
 		= build3_loc (OMP_CLAUSE_LOCATION (c), BIND_EXPR,
 			      void_type_node, NULL_TREE,
-			       OMP_CLAUSE_REDUCTION_MERGE (c), NULL_TREE);
+			      OMP_CLAUSE_REDUCTION_MERGE (c), NULL_TREE);
 	      TREE_SIDE_EFFECTS (OMP_CLAUSE_REDUCTION_MERGE (c)) = 1;
 	      if (TREE_VEC_LENGTH (list) == 6)
 		{
 		  if (TREE_ADDRESSABLE (TREE_VEC_ELT (list, 3)))
-		    c_mark_addressable (OMP_CLAUSE_DECL (c));
+		    c_mark_addressable (decl_placeholder ? decl_placeholder
+					: OMP_CLAUSE_DECL (c));
 		  if (TREE_ADDRESSABLE (TREE_VEC_ELT (list, 4)))
 		    c_mark_addressable (placeholder);
 		  tree init = TREE_VEC_ELT (list, 5);
@@ -12219,11 +12425,15 @@ c_finish_omp_clauses (tree clauses)
 		  OMP_CLAUSE_REDUCTION_INIT (c)
 		    = c_clone_omp_udr (init, TREE_VEC_ELT (list, 4),
 				       TREE_VEC_ELT (list, 3),
-				       OMP_CLAUSE_DECL (c), placeholder);
+				       decl_placeholder ? decl_placeholder
+				       : OMP_CLAUSE_DECL (c), placeholder);
 		  if (TREE_VEC_ELT (list, 5) == error_mark_node)
-		    OMP_CLAUSE_REDUCTION_INIT (c)
-		      = build2 (INIT_EXPR, TREE_TYPE (t), t,
-				OMP_CLAUSE_REDUCTION_INIT (c));
+		    {
+		      tree v = decl_placeholder ? decl_placeholder : t;
+		      OMP_CLAUSE_REDUCTION_INIT (c)
+			= build2 (INIT_EXPR, TREE_TYPE (v), v,
+				  OMP_CLAUSE_REDUCTION_INIT (c));
+		    }
 		  if (walk_tree (&OMP_CLAUSE_REDUCTION_INIT (c),
 				 c_find_omp_placeholder_r,
 				 placeholder, NULL))
@@ -12232,12 +12442,13 @@ c_finish_omp_clauses (tree clauses)
 	      else
 		{
 		  tree init;
-		  if (AGGREGATE_TYPE_P (TREE_TYPE (t)))
-		    init = build_constructor (TREE_TYPE (t), NULL);
+		  tree v = decl_placeholder ? decl_placeholder : t;
+		  if (AGGREGATE_TYPE_P (TREE_TYPE (v)))
+		    init = build_constructor (TREE_TYPE (v), NULL);
 		  else
-		    init = fold_convert (TREE_TYPE (t), integer_zero_node);
+		    init = fold_convert (TREE_TYPE (v), integer_zero_node);
 		  OMP_CLAUSE_REDUCTION_INIT (c)
-		    = build2 (INIT_EXPR, TREE_TYPE (t), t, init);
+		    = build2 (INIT_EXPR, TREE_TYPE (v), v, init);
 		}
 	      OMP_CLAUSE_REDUCTION_INIT (c)
 		= build3_loc (OMP_CLAUSE_LOCATION (c), BIND_EXPR,
@@ -12245,7 +12456,22 @@ c_finish_omp_clauses (tree clauses)
 			       OMP_CLAUSE_REDUCTION_INIT (c), NULL_TREE);
 	      TREE_SIDE_EFFECTS (OMP_CLAUSE_REDUCTION_INIT (c)) = 1;
 	    }
-	  goto check_dup_generic;
+	  if (TREE_CODE (t) == MEM_REF)
+	    {
+	      if (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (t))) == NULL_TREE
+		  || TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (t))))
+		     != INTEGER_CST)
+		{
+		  sorry ("variable length element type in array "
+			 "%<reduction%> clause");
+		  remove = true;
+		  break;
+		}
+	      t = TREE_OPERAND (t, 0);
+	      if (TREE_CODE (t) == ADDR_EXPR)
+		t = TREE_OPERAND (t, 0);
+	    }
+	  goto check_dup_generic_t;
 
 	case OMP_CLAUSE_COPYPRIVATE:
 	  copyprivate_seen = true;
@@ -12271,7 +12497,17 @@ c_finish_omp_clauses (tree clauses)
 	  goto check_dup_generic;
 
 	case OMP_CLAUSE_LINEAR:
+	  if (!declare_simd)
+	    need_implicitly_determined = true;
 	  t = OMP_CLAUSE_DECL (c);
+	  if (!declare_simd
+	      && OMP_CLAUSE_LINEAR_KIND (c) != OMP_CLAUSE_LINEAR_DEFAULT)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"modifier should not be specified in %<linear%> "
+			"clause on %<simd%> or %<for%> constructs");
+	      OMP_CLAUSE_LINEAR_KIND (c) = OMP_CLAUSE_LINEAR_DEFAULT;
+	    }
 	  if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
 	      && TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE)
 	    {
@@ -12287,7 +12523,9 @@ c_finish_omp_clauses (tree clauses)
 	      s = pointer_int_sum (OMP_CLAUSE_LOCATION (c), PLUS_EXPR,
 				   OMP_CLAUSE_DECL (c), s);
 	      s = fold_build2_loc (OMP_CLAUSE_LOCATION (c), MINUS_EXPR,
-				   sizetype, s, OMP_CLAUSE_DECL (c));
+				   sizetype, fold_convert (sizetype, s),
+				   fold_convert
+				     (sizetype, OMP_CLAUSE_DECL (c)));
 	      if (s == error_mark_node)
 		s = size_one_node;
 	      OMP_CLAUSE_LINEAR_STEP (c) = s;
@@ -12299,6 +12537,7 @@ c_finish_omp_clauses (tree clauses)
 
 	check_dup_generic:
 	  t = OMP_CLAUSE_DECL (c);
+	check_dup_generic_t:
 	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
@@ -12389,9 +12628,43 @@ c_finish_omp_clauses (tree clauses)
 
 	case OMP_CLAUSE_DEPEND:
 	  t = OMP_CLAUSE_DECL (c);
+	  if (t == NULL_TREE)
+	    {
+	      gcc_assert (OMP_CLAUSE_DEPEND_KIND (c)
+			  == OMP_CLAUSE_DEPEND_SOURCE);
+	      break;
+	    }
+	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
+	    {
+	      gcc_assert (TREE_CODE (t) == TREE_LIST);
+	      for (; t; t = TREE_CHAIN (t))
+		{
+		  tree decl = TREE_VALUE (t);
+		  if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
+		    {
+		      tree offset = TREE_PURPOSE (t);
+		      bool neg = wi::neg_p ((wide_int) offset);
+		      offset = fold_unary (ABS_EXPR, TREE_TYPE (offset), offset);
+		      tree t2 = pointer_int_sum (OMP_CLAUSE_LOCATION (c),
+						 neg ? MINUS_EXPR : PLUS_EXPR,
+						 decl, offset);
+		      t2 = fold_build2_loc (OMP_CLAUSE_LOCATION (c), MINUS_EXPR,
+					    sizetype,
+					    fold_convert (sizetype, t2),
+					    fold_convert (sizetype, decl));
+		      if (t2 == error_mark_node)
+			{
+			  remove = true;
+			  break;
+			}
+		      TREE_PURPOSE (t) = t2;
+		    }
+		}
+	      break;
+	    }
 	  if (TREE_CODE (t) == TREE_LIST)
 	    {
-	      if (handle_omp_array_sections (c))
+	      if (handle_omp_array_sections (c, is_omp))
 		remove = true;
 	      break;
 	    }
@@ -12414,7 +12687,7 @@ c_finish_omp_clauses (tree clauses)
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST)
 	    {
-	      if (handle_omp_array_sections (c))
+	      if (handle_omp_array_sections (c, is_omp))
 		remove = true;
 	      else
 		{
@@ -12427,12 +12700,85 @@ c_finish_omp_clauses (tree clauses)
 				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		      remove = true;
 		    }
+		  while (TREE_CODE (t) == ARRAY_REF)
+		    t = TREE_OPERAND (t, 0);
+		  if (TREE_CODE (t) == COMPONENT_REF
+		      && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+		    {
+		      while (TREE_CODE (t) == COMPONENT_REF)
+			t = TREE_OPERAND (t, 0);
+		      if (bitmap_bit_p (&map_field_head, DECL_UID (t)))
+			break;
+		      if (bitmap_bit_p (&map_head, DECL_UID (t)))
+			{
+			  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
+			    error ("%qD appears more than once in motion"
+				   " clauses", t);
+			  else
+			    error ("%qD appears more than once in map"
+				   " clauses", t);
+			  remove = true;
+			}
+		      else
+			{
+			  bitmap_set_bit (&map_head, DECL_UID (t));
+			  bitmap_set_bit (&map_field_head, DECL_UID (t));
+			}
+		    }
 		}
 	      break;
 	    }
 	  if (t == error_mark_node)
-	    remove = true;
-	  else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+	    {
+	      remove = true;
+	      break;
+	    }
+	  if (TREE_CODE (t) == COMPONENT_REF
+	      && is_omp
+	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE__CACHE_)
+	    {
+	      if (DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "bit-field %qE in %qs clause",
+			    t, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  remove = true;
+		}
+	      else if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qE does not have a mappable type in %qs clause",
+			    t, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  remove = true;
+		}
+	      while (TREE_CODE (t) == COMPONENT_REF)
+		{
+		  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0)))
+		      == UNION_TYPE)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%qE is a member of a union", t);
+		      remove = true;
+		      break;
+		    }
+		  t = TREE_OPERAND (t, 0);
+		}
+	      if (remove)
+		break;
+	      if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
+		{
+		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		      && (OMP_CLAUSE_MAP_KIND (c)
+			  == GOMP_MAP_FIRSTPRIVATE_POINTER))
+		    {
+		      if (bitmap_bit_p (&generic_field_head, DECL_UID (t)))
+			break;
+		    }
+		  else if (bitmap_bit_p (&map_field_head, DECL_UID (t)))
+		    break;
+		}
+	    }
+	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE is not a variable in %qs clause", t,
@@ -12451,7 +12797,10 @@ c_finish_omp_clauses (tree clauses)
 	  else if (!(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		     && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
 			 || (OMP_CLAUSE_MAP_KIND (c)
+			     == GOMP_MAP_FIRSTPRIVATE_POINTER)
+			 || (OMP_CLAUSE_MAP_KIND (c)
 			     == GOMP_MAP_FORCE_DEVICEPTR)))
+		   && t == OMP_CLAUSE_DECL (c)
 		   && !lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
@@ -12459,7 +12808,24 @@ c_finish_omp_clauses (tree clauses)
 			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
-	  else if (bitmap_bit_p (&generic_head, DECL_UID (t)))
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		   && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER)
+	    {
+	      if (bitmap_bit_p (&generic_head, DECL_UID (t))
+		  || bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
+		{
+		  error ("%qD appears more than once in data clauses", t);
+		  remove = true;
+		}
+	      else
+		{
+		  bitmap_set_bit (&generic_head, DECL_UID (t));
+		  if (t != OMP_CLAUSE_DECL (c)
+		      && TREE_CODE (OMP_CLAUSE_DECL (c)) == COMPONENT_REF)
+		    bitmap_set_bit (&generic_field_head, DECL_UID (t));
+		}
+	    }
+	  else if (bitmap_bit_p (&map_head, DECL_UID (t)))
 	    {
 	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
 		error ("%qD appears more than once in motion clauses", t);
@@ -12468,7 +12834,42 @@ c_finish_omp_clauses (tree clauses)
 	      remove = true;
 	    }
 	  else
-	    bitmap_set_bit (&generic_head, DECL_UID (t));
+	    {
+	      bitmap_set_bit (&map_head, DECL_UID (t));
+	      if (t != OMP_CLAUSE_DECL (c)
+		  && TREE_CODE (OMP_CLAUSE_DECL (c)) == COMPONENT_REF)
+		bitmap_set_bit (&map_field_head, DECL_UID (t));
+	    }
+	  break;
+
+	case OMP_CLAUSE_TO_DECLARE:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (TREE_CODE (t) == FUNCTION_DECL)
+	    break;
+	  /* FALLTHRU */
+	case OMP_CLAUSE_LINK:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (!VAR_P (t))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE is not a variable in clause %qs", t,
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
+	  else if (DECL_THREAD_LOCAL_P (t))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD is threadprivate variable in %qs clause", t,
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
+	  else if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD does not have a mappable type in %qs clause", t,
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
 	  break;
 
 	case OMP_CLAUSE_UNIFORM:
@@ -12483,6 +12884,19 @@ c_finish_omp_clauses (tree clauses)
 			  "%qE is not an argument in %<uniform%> clause", t);
 	      remove = true;
 	      break;
+	    }
+	  goto check_dup_generic;
+
+	case OMP_CLAUSE_IS_DEVICE_PTR:
+	case OMP_CLAUSE_USE_DEVICE_PTR:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE
+	      && TREE_CODE (TREE_TYPE (t)) != ARRAY_TYPE)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qs variable is neither a pointer nor an array",
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
 	    }
 	  goto check_dup_generic;
 
@@ -12510,8 +12924,6 @@ c_finish_omp_clauses (tree clauses)
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_MERGEABLE:
-	case OMP_CLAUSE_SAFELEN:
-	case OMP_CLAUSE_SIMDLEN:
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_PARALLEL:
@@ -12519,6 +12931,14 @@ c_finish_omp_clauses (tree clauses)
 	case OMP_CLAUSE_SECTIONS:
 	case OMP_CLAUSE_TASKGROUP:
 	case OMP_CLAUSE_PROC_BIND:
+	case OMP_CLAUSE_PRIORITY:
+	case OMP_CLAUSE_GRAINSIZE:
+	case OMP_CLAUSE_NUM_TASKS:
+	case OMP_CLAUSE_NOGROUP:
+	case OMP_CLAUSE_THREADS:
+	case OMP_CLAUSE_SIMD:
+	case OMP_CLAUSE_HINT:
+	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	case OMP_CLAUSE_NUM_GANGS:
 	case OMP_CLAUSE_NUM_WORKERS:
@@ -12530,6 +12950,15 @@ c_finish_omp_clauses (tree clauses)
 	case OMP_CLAUSE_GANG:
 	case OMP_CLAUSE_WORKER:
 	case OMP_CLAUSE_VECTOR:
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
+	case OMP_CLAUSE_SAFELEN:
+	  safelen = c;
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+	case OMP_CLAUSE_SIMDLEN:
+	  simdlen = c;
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
@@ -12600,6 +13029,18 @@ c_finish_omp_clauses (tree clauses)
 	*pc = OMP_CLAUSE_CHAIN (c);
       else
 	pc = &OMP_CLAUSE_CHAIN (c);
+    }
+
+  if (simdlen
+      && safelen
+      && tree_int_cst_lt (OMP_CLAUSE_SAFELEN_EXPR (safelen),
+			  OMP_CLAUSE_SIMDLEN_EXPR (simdlen)))
+    {
+      error_at (OMP_CLAUSE_LOCATION (simdlen),
+		"%<simdlen%> clause value is bigger than "
+		"%<safelen%> clause value");
+      OMP_CLAUSE_SIMDLEN_EXPR (simdlen)
+	= OMP_CLAUSE_SAFELEN_EXPR (safelen);
     }
 
   bitmap_obstack_release (NULL);
@@ -12681,7 +13122,13 @@ c_build_qualified_type (tree type, int type_quals)
       type_quals &= ~TYPE_QUAL_RESTRICT;
     }
 
-  return build_qualified_type (type, type_quals);
+  tree var_type = build_qualified_type (type, type_quals);
+  /* A variant type does not inherit the list of incomplete vars from the
+     type main variant.  */
+  if (TREE_CODE (var_type) == RECORD_TYPE
+      || TREE_CODE (var_type) == UNION_TYPE)
+    C_TYPE_INCOMPLETE_VARS (var_type) = 0;
+  return var_type;
 }
 
 /* Build a VA_ARG_EXPR for the C parser.  */
@@ -12740,7 +13187,7 @@ c_tree_equal (tree t1, tree t2)
       return wi::eq_p (t1, t2);
 
     case REAL_CST:
-      return REAL_VALUES_EQUAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));
+      return real_equal (&TREE_REAL_CST (t1), &TREE_REAL_CST (t2));
 
     case STRING_CST:
       return TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)

@@ -20,24 +20,24 @@
 
 msim
 Target
--msim	Use simulator runtime
+-msim	Use simulator runtime.
 
 mcpu=r8c
 Target RejectNegative Var(target_cpu,'r') Init('r')
--mcpu=r8c	Compile code for R8C variants
+-mcpu=r8c	Compile code for R8C variants.
 
 mcpu=m16c
 Target RejectNegative Var(target_cpu,'6')
--mcpu=m16c	Compile code for M16C variants
+-mcpu=m16c	Compile code for M16C variants.
 
 mcpu=m32cm
 Target RejectNegative Var(target_cpu,'m')
--mcpu=m32cm	Compile code for M32CM variants
+-mcpu=m32cm	Compile code for M32CM variants.
 
 mcpu=m32c
 Target RejectNegative Var(target_cpu,'3')
--mcpu=m32c	Compile code for M32C variants
+-mcpu=m32c	Compile code for M32C variants.
 
 memregs=
 Target RejectNegative Joined UInteger Var(target_memregs) Init(16)
--memregs=	Number of memreg bytes (default: 16, range: 0..16)
+-memregs=	Number of memreg bytes (default: 16, range: 0..16).

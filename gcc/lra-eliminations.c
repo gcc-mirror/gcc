@@ -55,33 +55,17 @@ along with GCC; see the file COPYING3.	If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
 #include "tm_p.h"
+#include "optabs.h"
 #include "regs.h"
-#include "insn-config.h"
-#include "insn-codes.h"
+#include "ira.h"
 #include "recog.h"
 #include "output.h"
-#include "addresses.h"
-#include "target.h"
-#include "flags.h"
-#include "alias.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "except.h"
-#include "optabs.h"
-#include "ira.h"
 #include "rtl-error.h"
-#include "lra.h"
-#include "insn-attr.h"
 #include "lra-int.h"
 
 /* This structure is used to record information about hard register
@@ -1436,11 +1420,11 @@ lra_eliminate (bool final_p, bool first_p)
   bitmap_initialize (&insns_with_changed_offsets, &reg_obstack);
   if (final_p)
     {
-#ifdef ENABLE_CHECKING
-      update_reg_eliminate (&insns_with_changed_offsets);
-      if (! bitmap_empty_p (&insns_with_changed_offsets))
-	gcc_unreachable ();
-#endif
+      if (flag_checking)
+	{
+	  update_reg_eliminate (&insns_with_changed_offsets);
+	  gcc_assert (bitmap_empty_p (&insns_with_changed_offsets));
+	}
       /* We change eliminable hard registers in insns so we should do
 	 this for all insns containing any eliminable hard
 	 register.  */

@@ -24,15 +24,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
+#include "diagnostic-core.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "flags.h"
 #include "convert.h"
-#include "diagnostic-core.h"
-#include "target.h"
 #include "langhooks.h"
 #include "builtins.h"
 #include "ubsan.h"
@@ -223,37 +220,6 @@ convert_to_real (tree type, tree expr)
 	    }
 	default:
 	  break;
-	}
-    }
-  if (optimize
-      && (((fcode == BUILT_IN_FLOORL
-	   || fcode == BUILT_IN_CEILL
-	   || fcode == BUILT_IN_ROUNDL
-	   || fcode == BUILT_IN_RINTL
-	   || fcode == BUILT_IN_TRUNCL
-	   || fcode == BUILT_IN_NEARBYINTL)
-	  && (TYPE_MODE (type) == TYPE_MODE (double_type_node)
-	      || TYPE_MODE (type) == TYPE_MODE (float_type_node)))
-	  || ((fcode == BUILT_IN_FLOOR
-	       || fcode == BUILT_IN_CEIL
-	       || fcode == BUILT_IN_ROUND
-	       || fcode == BUILT_IN_RINT
-	       || fcode == BUILT_IN_TRUNC
-	       || fcode == BUILT_IN_NEARBYINT)
-	      && (TYPE_MODE (type) == TYPE_MODE (float_type_node)))))
-    {
-      tree fn = mathfn_built_in (type, fcode);
-
-      if (fn)
-	{
-	  tree arg = strip_float_extensions (CALL_EXPR_ARG (expr, 0));
-
-	  /* Make sure (type)arg0 is an extension, otherwise we could end up
-	     changing (float)floor(double d) into floorf((float)d), which is
-	     incorrect because (float)d uses round-to-nearest and can round
-	     up to the next integer.  */
-	  if (TYPE_PRECISION (type) >= TYPE_PRECISION (TREE_TYPE (arg)))
-	    return build_call_expr (fn, 1, fold (convert_to_real (type, arg)));
 	}
     }
 

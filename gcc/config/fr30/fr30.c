@@ -24,37 +24,15 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
-#include "regs.h"
-#include "insn-config.h"
-#include "conditions.h"
-#include "insn-attr.h"
-#include "flags.h"
-#include "recog.h"
-#include "alias.h"
-#include "fold-const.h"
+#include "emit-rtl.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "output.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "except.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "diagnostic-core.h"
-#include "tm_p.h"
-#include "target.h"
 #include "builtins.h"
 
 /* This file should be included last.  */
@@ -699,11 +677,9 @@ fr30_print_operand (FILE *file, rtx x, int code)
       /* We handle SFmode constants here as output_addr_const doesn't.  */
       if (GET_MODE (x) == SFmode)
 	{
-	  REAL_VALUE_TYPE d;
 	  long l;
 
-	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  REAL_VALUE_TO_TARGET_SINGLE (d, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
 	  fprintf (file, "0x%08lx", l);
 	  break;
 	}
@@ -888,14 +864,10 @@ fr30_check_multiple_regs (rtx *operands, int num_operands, int descending)
 int
 fr30_const_double_is_zero (rtx operand)
 {
-  REAL_VALUE_TYPE d;
-
   if (operand == NULL || GET_CODE (operand) != CONST_DOUBLE)
     return 0;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (d, operand);
-
-  return REAL_VALUES_EQUAL (d, dconst0);
+  return real_equal (CONST_DOUBLE_REAL_VALUE (operand), &dconst0);
 }
 
 /*}}}*/

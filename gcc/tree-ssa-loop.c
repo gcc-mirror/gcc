@@ -23,22 +23,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "alias.h"
-#include "fold-const.h"
+#include "tree-pass.h"
 #include "tm_p.h"
-#include "internal-fn.h"
+#include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
-#include "tree-pass.h"
 #include "cfgloop.h"
-#include "flags.h"
 #include "tree-inline.h"
 #include "tree-scalar-evolution.h"
-#include "diagnostic-core.h"
 #include "tree-vectorizer.h"
 
 
@@ -426,7 +421,7 @@ make_pass_iv_optimize (gcc::context *ctxt)
 static unsigned int
 tree_ssa_loop_done (void)
 {
-  free_numbers_of_iterations_estimates ();
+  free_numbers_of_iterations_estimates (cfun);
   scev_finalize ();
   loop_optimizer_finalize ();
   return 0;

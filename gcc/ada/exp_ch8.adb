@@ -50,13 +50,15 @@ package body Exp_Ch8 is
    ---------------------------------------------
 
    procedure Expand_N_Exception_Renaming_Declaration (N : Node_Id) is
-      GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
       Decl : Node_Id;
 
    begin
-      --  The exception renaming declaration may be subject to pragma Ghost
-      --  with policy Ignore. Set the mode now to ensure that any nodes
-      --  generated during expansion are properly flagged as ignored Ghost.
+      --  The exception renaming declaration is Ghost when it is subject to
+      --  pragma Ghost or renames a Ghost entity. To accomodate both cases, set
+      --  the mode now to ensure that any nodes generated during expansion are
+      --  properly marked as Ghost.
 
       Set_Ghost_Mode (N);
 
@@ -66,10 +68,7 @@ package body Exp_Ch8 is
          Insert_Action (N, Decl);
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Exception_Renaming_Declaration;
 
    ------------------------------------------
@@ -159,14 +158,15 @@ package body Exp_Ch8 is
 
       --  Local variables
 
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    --  Start of processing for Expand_N_Object_Renaming_Declaration
 
    begin
-      --  The object renaming declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during expansion are properly flagged as ignored Ghost.
+      --  The object renaming declaration is Ghost when it is subject to pragma
+      --  Ghost or renames a Ghost entity. To accomodate both cases, set the
+      --  mode now to ensure that any nodes generated during expansion are
+      --  properly marked as Ghost.
 
       Set_Ghost_Mode (N);
 
@@ -213,10 +213,7 @@ package body Exp_Ch8 is
          Insert_Action (N, Decl);
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Object_Renaming_Declaration;
 
    -------------------------------------------
@@ -224,13 +221,15 @@ package body Exp_Ch8 is
    -------------------------------------------
 
    procedure Expand_N_Package_Renaming_Declaration (N : Node_Id) is
-      GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
       Decl : Node_Id;
 
    begin
-      --  The package renaming declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during expansion are properly flagged as ignored Ghost.
+      --  The package renaming declaration is Ghost when it is subject to
+      --  pragma Ghost or renames a Ghost entity. To accomodate both cases,
+      --  set the mode now to ensure that any nodes generated during expansion
+      --  are properly marked as Ghost.
 
       Set_Ghost_Mode (N);
 
@@ -273,10 +272,7 @@ package body Exp_Ch8 is
          end if;
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Package_Renaming_Declaration;
 
    ----------------------------------------------
@@ -326,15 +322,16 @@ package body Exp_Ch8 is
 
       --  Local variables
 
-      GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Nam : constant Node_Id := Name (N);
+      Nam             : constant Node_Id         := Name (N);
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    --  Start of processing for Expand_N_Subprogram_Renaming_Declaration
 
    begin
-      --  The subprogram renaming declaration may be subject to pragma Ghost
-      --  with policy Ignore. Set the mode now to ensure that any nodes created
-      --  during expansion are properly flagged as ignored Ghost.
+      --  The subprogram renaming declaration is Ghost when it is subject to
+      --  pragma Ghost or renames a Ghost entity. To accomodate both cases, set
+      --  the mode now to ensure that any nodes created during expansion are
+      --  properly flagged as ignored Ghost.
 
       Set_Ghost_Mode (N);
 
@@ -402,10 +399,7 @@ package body Exp_Ch8 is
          end;
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Subprogram_Renaming_Declaration;
 
 end Exp_Ch8;

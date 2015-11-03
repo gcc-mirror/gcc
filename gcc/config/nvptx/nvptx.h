@@ -88,7 +88,7 @@
 #define CALL_USED_REGISTERS				\
   { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 
-#define HARD_REGNO_NREGS(regno, mode)	1
+#define HARD_REGNO_NREGS(regno, mode)	((void)(regno), (void)(mode), 1)
 #define CANNOT_CHANGE_MODE_CLASS(M1, M2, CLS) ((CLS) == RETURN_REG)
 #define HARD_REGNO_MODE_OK(REG, MODE) nvptx_hard_regno_mode_ok (REG, MODE)
 
@@ -228,8 +228,9 @@ struct GTY(()) machine_function
   bool has_call_with_varargs;
   bool has_call_with_sc;
   HOST_WIDE_INT outgoing_stdarg_size;
-  int ret_reg_mode;
+  int ret_reg_mode; /* machine_mode not defined yet. */
   int punning_buffer_size;
+  rtx axis_predicate[2];
 };
 #endif
 
@@ -355,7 +356,7 @@ struct GTY(()) machine_function
 #define FLOAT_STORE_FLAG_VALUE(MODE) REAL_VALUE_ATOF("1.0", (MODE))
 
 #define CASE_VECTOR_MODE SImode
-#define MOVE_MAX 4
+#define MOVE_MAX 8
 #define MOVE_RATIO(SPEED) 4
 #define TRULY_NOOP_TRUNCATION(outprec, inprec) 1
 #define FUNCTION_MODE QImode

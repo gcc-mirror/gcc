@@ -124,3 +124,6 @@
    to COPY relocated symbol in the executable.  See PR65780.  */
 #undef TARGET_BINDS_LOCAL_P
 #define TARGET_BINDS_LOCAL_P default_binds_local_p_2
+
+/* Define this to be nonzero if static stack checking is supported.  */
+#define STACK_CHECK_STATIC_BUILTIN 1

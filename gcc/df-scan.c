@@ -25,22 +25,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
 #include "tm_p.h"
-#include "insn-config.h"
-#include "recog.h"
-#include "alias.h"
 #include "regs.h"
-#include "alloc-pool.h"
-#include "flags.h"
-#include "dumpfile.h"
-#include "target.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
-
-
-typedef struct df_mw_hardreg *df_mw_hardreg_ptr;
+#include "dumpfile.h"
 
 
 /* The set of hard registers in eliminables[i].from. */
@@ -55,7 +47,7 @@ struct df_collection_rec
   auto_vec<df_ref, 128> def_vec;
   auto_vec<df_ref, 32> use_vec;
   auto_vec<df_ref, 32> eq_use_vec;
-  auto_vec<df_mw_hardreg_ptr, 32> mw_vec;
+  auto_vec<df_mw_hardreg *, 32> mw_vec;
 };
 
 static void df_ref_record (enum df_ref_class, struct df_collection_rec *,
@@ -133,8 +125,6 @@ static const unsigned int copy_all = copy_defs | copy_uses | copy_eq_uses
    it gets run.  It also has no need for the iterative solver.
 ----------------------------------------------------------------------------*/
 
-#define SCAN_PROBLEM_DATA_BLOCK_SIZE 512
-
 /* Problem data for the scanning dataflow function.  */
 struct df_scan_problem_data
 {
@@ -148,9 +138,6 @@ struct df_scan_problem_data
   bitmap_obstack reg_bitmaps;
   bitmap_obstack insn_bitmaps;
 };
-
-typedef struct df_scan_bb_info *df_scan_bb_info_t;
-
 
 /* Internal function to shut down the scanning problem.  */
 static void
@@ -253,17 +240,17 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
   df_scan->computed = true;
 
   problem_data->ref_base_pool = new object_allocator<df_base_ref>
-    ("df_scan ref base", SCAN_PROBLEM_DATA_BLOCK_SIZE);
+    ("df_scan ref base");
   problem_data->ref_artificial_pool = new object_allocator<df_artificial_ref>
-    ("df_scan ref artificial", SCAN_PROBLEM_DATA_BLOCK_SIZE);
+    ("df_scan ref artificial");
   problem_data->ref_regular_pool = new object_allocator<df_regular_ref>
-    ("df_scan ref regular", SCAN_PROBLEM_DATA_BLOCK_SIZE);
+    ("df_scan ref regular");
   problem_data->insn_pool = new object_allocator<df_insn_info>
-    ("df_scan insn", SCAN_PROBLEM_DATA_BLOCK_SIZE);
+    ("df_scan insn");
   problem_data->reg_pool = new object_allocator<df_reg_info>
-    ("df_scan reg", SCAN_PROBLEM_DATA_BLOCK_SIZE);
+    ("df_scan reg");
   problem_data->mw_reg_pool = new object_allocator<df_mw_hardreg>
-    ("df_scan mw_reg", SCAN_PROBLEM_DATA_BLOCK_SIZE / 16);
+    ("df_scan mw_reg");
 
   bitmap_obstack_initialize (&problem_data->reg_bitmaps);
   bitmap_obstack_initialize (&problem_data->insn_bitmaps);
@@ -2243,7 +2230,7 @@ df_mw_ptr_compare (const void *m1, const void *m2)
 /* Sort and compress a set of refs.  */
 
 static void
-df_sort_and_compress_mws (vec<df_mw_hardreg_ptr, va_heap> *mw_vec)
+df_sort_and_compress_mws (vec<df_mw_hardreg *, va_heap> *mw_vec)
 {
   unsigned int count;
   struct df_scan_problem_data *problem_data
@@ -2407,7 +2394,7 @@ df_install_refs (basic_block bb,
    insn.  */
 
 static struct df_mw_hardreg *
-df_install_mws (const vec<df_mw_hardreg_ptr, va_heap> *old_vec)
+df_install_mws (const vec<df_mw_hardreg *, va_heap> *old_vec)
 {
   unsigned int count = old_vec->length ();
   if (count)
@@ -4061,7 +4048,7 @@ df_refs_verify (const vec<df_ref, va_heap> *new_rec, df_ref old_rec,
 /* Verify that NEW_REC and OLD_REC have exactly the same members. */
 
 static bool
-df_mws_verify (const vec<df_mw_hardreg_ptr, va_heap> *new_rec,
+df_mws_verify (const vec<df_mw_hardreg *, va_heap> *new_rec,
 	       struct df_mw_hardreg *old_rec,
 	       bool abort_if_fail)
 {

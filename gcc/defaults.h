@@ -351,7 +351,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* If we have named sections, and we're using crtstuff to run ctors,
    use them for registering eh frame information.  */
 #if defined (TARGET_ASM_NAMED_SECTION) && DWARF2_UNWIND_INFO \
-    && !defined (EH_FRAME_IN_DATA_SECTION)
+    && !defined (EH_FRAME_THROUGH_COLLECT2)
 #ifndef EH_FRAME_SECTION_NAME
 #define EH_FRAME_SECTION_NAME ".eh_frame"
 #endif
@@ -1275,6 +1275,26 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef CONSTANT_ALIGNMENT
 #define CONSTANT_ALIGNMENT(EXP, ALIGN) ALIGN
+#endif
+
+#ifndef INITIAL_FRAME_ADDRESS_RTX
+#define INITIAL_FRAME_ADDRESS_RTX NULL
+#endif
+
+#ifndef SETUP_FRAME_ADDRESSES
+#define SETUP_FRAME_ADDRESSES() do { } while (0)
+#endif
+
+#ifndef DYNAMIC_CHAIN_ADDRESS
+#define DYNAMIC_CHAIN_ADDRESS(x) (x)
+#endif
+
+#ifndef FRAME_ADDR_RTX
+#define FRAME_ADDR_RTX(x) (x)
+#endif
+
+#ifndef REVERSE_CONDITION
+#define REVERSE_CONDITION(code, mode) reverse_condition (code)
 #endif
 
 #ifdef GCC_INSN_FLAGS_H

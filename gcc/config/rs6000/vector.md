@@ -78,7 +78,7 @@
 ;; Vector reduction code iterators
 (define_code_iterator VEC_reduc [plus smin smax])
 
-(define_code_attr VEC_reduc_name [(plus "splus")
+(define_code_attr VEC_reduc_name [(plus "plus")
 				  (smin "smin")
 				  (smax "smax")])
 
@@ -1061,38 +1061,29 @@
   "")
 
 ;; Vector reduction expanders for VSX
-
-(define_expand "reduc_<VEC_reduc_name>_v2df"
-  [(parallel [(set (match_operand:V2DF 0 "vfloat_operand" "")
-		   (VEC_reduc:V2DF
-		    (vec_concat:V2DF
-		     (vec_select:DF
-		      (match_operand:V2DF 1 "vfloat_operand" "")
-		      (parallel [(const_int 1)]))
-		     (vec_select:DF
-		      (match_dup 1)
-		      (parallel [(const_int 0)])))
-		    (match_dup 1)))
-	      (clobber (match_scratch:V2DF 2 ""))])]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
-  "")
-
-; The (VEC_reduc:V4SF
+; The (VEC_reduc:...
 ;	(op1)
-;	(unspec:V4SF [(const_int 0)] UNSPEC_REDUC))
+;	(unspec:... [(const_int 0)] UNSPEC_REDUC))
 ;
 ; is to allow us to use a code iterator, but not completely list all of the
 ; vector rotates, etc. to prevent canonicalization
 
-(define_expand "reduc_<VEC_reduc_name>_v4sf"
-  [(parallel [(set (match_operand:V4SF 0 "vfloat_operand" "")
-		   (VEC_reduc:V4SF
-		    (unspec:V4SF [(const_int 0)] UNSPEC_REDUC)
-		    (match_operand:V4SF 1 "vfloat_operand" "")))
-	      (clobber (match_scratch:V4SF 2 ""))
-	      (clobber (match_scratch:V4SF 3 ""))])]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
-  "")
+
+(define_expand "reduc_<VEC_reduc:VEC_reduc_name>_scal_<VEC_F:mode>"
+  [(match_operand:<VEC_base> 0 "register_operand" "")
+   (VEC_reduc:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")
+		    (unspec:VEC_F [(const_int 0)] UNSPEC_REDUC))]
+  "VECTOR_UNIT_VSX_P (<VEC_F:MODE>mode)"
+  {
+    rtx vec = gen_reg_rtx (<VEC_F:MODE>mode);
+    rtx elt = BYTES_BIG_ENDIAN
+		? gen_int_mode (GET_MODE_NUNITS (<VEC_F:MODE>mode) - 1, QImode)
+		: const0_rtx;
+    emit_insn (gen_vsx_reduc_<VEC_reduc:VEC_reduc_name>_<VEC_F:mode> (vec,
+	operand1));
+    emit_insn (gen_vsx_extract_<VEC_F:mode> (operand0, vec, elt));
+    DONE;
+  })
 
 
 ;;; Expanders for vector insn patterns shared between the SPE and TARGET_PAIRED systems.

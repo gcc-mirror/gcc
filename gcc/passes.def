@@ -124,6 +124,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_devirt);
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_cdtor_merge);
+  NEXT_PASS (pass_target_clone);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
   NEXT_PASS (pass_ipa_reference);
@@ -140,6 +141,7 @@ along with GCC; see the file COPYING3.  If not see
      compiled unit.  */
   INSERT_PASSES_AFTER (all_late_ipa_passes)
   NEXT_PASS (pass_ipa_pta);
+  NEXT_PASS (pass_dispatcher_calls);
   NEXT_PASS (pass_omp_simd_clone);
   TERMINATE_PASS_LIST ()
 
@@ -148,6 +150,7 @@ along with GCC; see the file COPYING3.  If not see
   INSERT_PASSES_AFTER (all_passes)
   NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_lower_eh_dispatch);
+  NEXT_PASS (pass_oacc_device_lower);
   NEXT_PASS (pass_all_optimizations);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations)
       NEXT_PASS (pass_remove_cgraph_callee_edges);
@@ -158,6 +161,7 @@ along with GCC; see the file COPYING3.  If not see
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
       NEXT_PASS (pass_complete_unrolli);
+      NEXT_PASS (pass_backprop);
       NEXT_PASS (pass_phiprop);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_object_sizes);
@@ -340,6 +344,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_tm_memopt);
       NEXT_PASS (pass_tm_edges);
   POP_INSERT_PASSES ()
+  NEXT_PASS (pass_simduid_cleanup);
   NEXT_PASS (pass_vtable_verify);
   NEXT_PASS (pass_lower_vaarg);
   NEXT_PASS (pass_lower_vector);

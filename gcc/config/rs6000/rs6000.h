@@ -1217,11 +1217,16 @@ enum data_align { align_abi, align_opt, align_both };
 	 ((MODE) == V4SFmode		\
 	  || (MODE) == V2DFmode)	\
 
-#define ALTIVEC_VECTOR_MODE(MODE)	\
-	 ((MODE) == V16QImode		\
-	  || (MODE) == V8HImode		\
-	  || (MODE) == V4SFmode		\
-	  || (MODE) == V4SImode)
+/* Note KFmode and possibly TFmode (i.e. IEEE 128-bit floating point) are not
+   really a vector, but we want to treat it as a vector for moves, and
+   such.  */
+
+#define ALTIVEC_VECTOR_MODE(MODE)					\
+  ((MODE) == V16QImode							\
+   || (MODE) == V8HImode						\
+   || (MODE) == V4SFmode						\
+   || (MODE) == V4SImode						\
+   || FLOAT128_VECTOR_P (MODE))
 
 #define ALTIVEC_OR_VSX_VECTOR_MODE(MODE)				\
   (ALTIVEC_VECTOR_MODE (MODE) || VSX_VECTOR_MODE (MODE)			\
@@ -1248,11 +1253,18 @@ enum data_align { align_abi, align_opt, align_both };
 
    PTImode cannot tie with other modes because PTImode is restricted to even
    GPR registers, and TImode can go in any GPR as well as VSX registers (PR
-   57744).  */
+   57744).
+
+   Altivec/VSX vector tests were moved ahead of scalar float mode, so that IEEE
+   128-bit floating point on VSX systems ties with other vectors.  */
 #define MODES_TIEABLE_P(MODE1, MODE2)		\
   ((MODE1) == PTImode				\
    ? (MODE2) == PTImode				\
    : (MODE2) == PTImode				\
+   ? 0						\
+   : ALTIVEC_OR_VSX_VECTOR_MODE (MODE1)		\
+   ? ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
+   : ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
    ? 0						\
    : SCALAR_FLOAT_MODE_P (MODE1)		\
    ? SCALAR_FLOAT_MODE_P (MODE2)		\
@@ -1265,10 +1277,6 @@ enum data_align { align_abi, align_opt, align_both };
    : SPE_VECTOR_MODE (MODE1)			\
    ? SPE_VECTOR_MODE (MODE2)			\
    : SPE_VECTOR_MODE (MODE2)			\
-   ? 0						\
-   : ALTIVEC_OR_VSX_VECTOR_MODE (MODE1)		\
-   ? ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
-   : ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
    ? 0						\
    : 1)
 
@@ -1471,14 +1479,9 @@ enum reg_class
 
 extern enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 
-#if ENABLE_CHECKING
 #define REGNO_REG_CLASS(REGNO) 						\
-  (gcc_assert (IN_RANGE ((REGNO), 0, FIRST_PSEUDO_REGISTER-1)),		\
+  (gcc_checking_assert (IN_RANGE ((REGNO), 0, FIRST_PSEUDO_REGISTER-1)),\
    rs6000_regno_regclass[(REGNO)])
-
-#else
-#define REGNO_REG_CLASS(REGNO) rs6000_regno_regclass[(REGNO)]
-#endif
 
 /* Register classes for various constraints that are based on the target
    switches.  */
@@ -1615,7 +1618,7 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
   ((DEFAULT_ABI == ABI_ELFv2 ? 12 : 20) << (TARGET_64BIT ? 1 : 0))
 
 /* Align an address */
-#define RS6000_ALIGN(n,a) (((n) + (a) - 1) & ~((a) - 1))
+#define RS6000_ALIGN(n,a) ROUND_UP ((n), (a))
 
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
@@ -1801,6 +1804,7 @@ typedef struct rs6000_args
 				   GPR space (darwin64) */
   int named;			/* false for varargs params */
   int escapes;			/* if function visible outside tu */
+  int libcall;			/* If this is a compiler generated call.  */
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS

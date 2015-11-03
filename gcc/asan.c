@@ -22,43 +22,35 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "options.h"
+#include "cfghooks.h"
+#include "alloc-pool.h"
+#include "tree-pass.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "tree-ssanames.h"
+#include "optabs.h"
+#include "emit-rtl.h"
+#include "cgraph.h"
+#include "gimple-pretty-print.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "cfganal.h"
-#include "internal-fn.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
-#include "calls.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "tree-iterator.h"
-#include "cgraph.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
-#include "tree-pass.h"
 #include "asan.h"
-#include "gimple-pretty-print.h"
-#include "target.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
 #include "output.h"
-#include "tm_p.h"
 #include "langhooks.h"
-#include "alloc-pool.h"
 #include "cfgloop.h"
 #include "gimple-builder.h"
 #include "ubsan.h"
@@ -350,7 +342,7 @@ struct asan_mem_ref
   HOST_WIDE_INT access_size;
 };
 
-object_allocator <asan_mem_ref> asan_mem_ref_pool ("asan_mem_ref", 10);
+object_allocator <asan_mem_ref> asan_mem_ref_pool ("asan_mem_ref");
 
 /* Initializes an instance of asan_mem_ref.  */
 
@@ -862,7 +854,7 @@ get_mem_refs_of_builtin_call (const gcall *call,
    contains.  */
 
 static bool
-has_stmt_been_instrumented_p (gimple stmt)
+has_stmt_been_instrumented_p (gimple *stmt)
 {
   if (gimple_assign_single_p (stmt))
     {
@@ -1132,12 +1124,16 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
       snprintf (buf, sizeof buf, "__asan_stack_malloc_%d",
 		use_after_return_class);
       ret = init_one_libfunc (buf);
-      rtx addr = convert_memory_address (ptr_mode, base);
-      ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode, 2,
+      ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode, 1,
 				     GEN_INT (asan_frame_size
 					      + base_align_bias),
-				     TYPE_MODE (pointer_sized_int_node),
-				     addr, ptr_mode);
+				     TYPE_MODE (pointer_sized_int_node));
+      /* __asan_stack_malloc_[n] returns a pointer to fake stack if succeeded
+	 and NULL otherwise.  Check RET value is NULL here and jump over the
+	 BASE reassignment in this case.  Otherwise, reassign BASE to RET.  */
+      int very_unlikely = REG_BR_PROB_BASE / 2000 - 1;
+      emit_cmp_and_jump_insns (ret, const0_rtx, EQ, NULL_RTX,
+			       VOIDmode, 0, lab, very_unlikely);
       ret = convert_memory_address (Pmode, ret);
       emit_move_insn (base, ret);
       emit_label (lab);
@@ -1591,7 +1587,7 @@ build_shadow_mem_access (gimple_stmt_iterator *gsi, location_t location,
 {
   tree t, uintptr_type = TREE_TYPE (base_addr);
   tree shadow_type = TREE_TYPE (shadow_ptr_type);
-  gimple g;
+  gimple *g;
 
   t = build_int_cst (uintptr_type, ASAN_SHADOW_SHIFT);
   g = gimple_build_assign (make_ssa_name (uintptr_type), RSHIFT_EXPR,
@@ -1627,7 +1623,7 @@ maybe_create_ssa_name (location_t loc, tree base, gimple_stmt_iterator *iter,
 {
   if (TREE_CODE (base) == SSA_NAME)
     return base;
-  gimple g = gimple_build_assign (make_ssa_name (TREE_TYPE (base)),
+  gimple *g = gimple_build_assign (make_ssa_name (TREE_TYPE (base)),
 				  TREE_CODE (base), base);
   gimple_set_location (g, loc);
   if (before_p)
@@ -1646,7 +1642,7 @@ maybe_cast_to_ptrmode (location_t loc, tree len, gimple_stmt_iterator *iter,
 {
   if (ptrofftype_p (len))
     return len;
-  gimple g = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
+  gimple *g = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
 				  NOP_EXPR, len);
   gimple_set_location (g, loc);
   if (before_p)
@@ -1682,7 +1678,7 @@ build_check_stmt (location_t loc, tree base, tree len,
 		  bool is_scalar_access, unsigned int align = 0)
 {
   gimple_stmt_iterator gsi = *iter;
-  gimple g;
+  gimple *g;
 
   gcc_assert (!(size_in_bytes > 0 && !is_non_zero_len));
 
@@ -1972,7 +1968,7 @@ instrument_builtin_call (gimple_stmt_iterator *iter)
 static bool
 maybe_instrument_assignment (gimple_stmt_iterator *iter)
 {
-  gimple s = gsi_stmt (*iter);
+  gimple *s = gsi_stmt (*iter);
 
   gcc_assert (gimple_assign_single_p (s));
 
@@ -2016,7 +2012,7 @@ maybe_instrument_assignment (gimple_stmt_iterator *iter)
 static bool
 maybe_instrument_call (gimple_stmt_iterator *iter)
 {
-  gimple stmt = gsi_stmt (*iter);
+  gimple *stmt = gsi_stmt (*iter);
   bool is_builtin = gimple_call_builtin_p (stmt, BUILT_IN_NORMAL);
 
   if (is_builtin && instrument_builtin_call (iter))
@@ -2038,7 +2034,7 @@ maybe_instrument_call (gimple_stmt_iterator *iter)
 	    }
 	}
       tree decl = builtin_decl_implicit (BUILT_IN_ASAN_HANDLE_NO_RETURN);
-      gimple g = gimple_build_call (decl, 0);
+      gimple *g = gimple_build_call (decl, 0);
       gimple_set_location (g, gimple_location (stmt));
       gsi_insert_before (iter, g, GSI_SAME_STMT);
     }
@@ -2080,7 +2076,7 @@ transform_statements (void)
 
       for (i = gsi_start_bb (bb); !gsi_end_p (i);)
 	{
-	  gimple s = gsi_stmt (i);
+	  gimple *s = gsi_stmt (i);
 
 	  if (has_stmt_been_instrumented_p (s))
 	    gsi_next (&i);
@@ -2470,6 +2466,8 @@ asan_finish_file (void)
     {
       tree fn = builtin_decl_implicit (BUILT_IN_ASAN_INIT);
       append_to_statement_list (build_call_expr (fn, 0), &asan_ctor_statements);
+      fn = builtin_decl_implicit (BUILT_IN_ASAN_VERSION_MISMATCH_CHECK);
+      append_to_statement_list (build_call_expr (fn, 0), &asan_ctor_statements);
     }
   FOR_EACH_DEFINED_VARIABLE (vnode)
     if (TREE_ASM_WRITTEN (vnode->decl)
@@ -2533,7 +2531,7 @@ asan_finish_file (void)
 bool
 asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 {
-  gimple g = gsi_stmt (*iter);
+  gimple *g = gsi_stmt (*iter);
   location_t loc = gimple_location (g);
 
   bool recover_p
@@ -2555,7 +2553,7 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
   if (use_calls)
     {
       /* Instrument using callbacks.  */
-      gimple g = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
+      gimple *g = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
 				      NOP_EXPR, base);
       gimple_set_location (g, loc);
       gsi_insert_before (iter, g, GSI_SAME_STMT);
@@ -2646,7 +2644,7 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 	 & ((base_addr & 7) + (real_size_in_bytes - 1)) >= shadow).  */
       tree shadow = build_shadow_mem_access (&gsi, loc, base_addr,
 					     shadow_ptr_type);
-      gimple shadow_test = build_assign (NE_EXPR, shadow, 0);
+      gimple *shadow_test = build_assign (NE_EXPR, shadow, 0);
       gimple_seq seq = NULL;
       gimple_seq_add_stmt (&seq, shadow_test);
       /* Aligned (>= 8 bytes) can test just
@@ -2693,7 +2691,7 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 
 	  tree shadow = build_shadow_mem_access (&gsi, loc, base_end_addr,
 						 shadow_ptr_type);
-	  gimple shadow_test = build_assign (NE_EXPR, shadow, 0);
+	  gimple *shadow_test = build_assign (NE_EXPR, shadow, 0);
 	  gimple_seq seq = NULL;
 	  gimple_seq_add_stmt (&seq, shadow_test);
 	  gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR,

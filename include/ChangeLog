@@ -1,3 +1,45 @@
+2015-10-27  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Mark Shinwell  <shinwell@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+	    Rich Felker <dalias@libc.org>
+
+	* longlong.h (udiv_qrnnd): Add FDPIC compatible version for SH.
+
+2015-10-18  Roland McGrath  <roland@gnu.org>
+
+	PR other/63758
+	* environ.h: New file.
+
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* gomp-constants.h (GOMP_MAP_FLAG_ALWAYS): Define.
+	(enum gomp_map_kind): Add GOMP_MAP_FIRSTPRIVATE,
+	GOMP_MAP_FIRSTPRIVATE_INT, GOMP_MAP_USE_DEVICE_PTR,
+	GOMP_MAP_ZERO_LEN_ARRAY_SECTION, GOMP_MAP_ALWAYS_TO,
+	GOMP_MAP_ALWAYS_FROM, GOMP_MAP_ALWAYS_TOFROM, GOMP_MAP_STRUCT,
+	GOMP_MAP_DELETE_ZERO_LEN_ARRAY_SECTION, GOMP_MAP_DELETE,
+	GOMP_MAP_RELEASE, GOMP_MAP_FIRSTPRIVATE_POINTER.
+	(GOMP_MAP_ALWAYS_TO_P, GOMP_MAP_ALWAYS_FROM_P): Define.
+	(GOMP_TASK_FLAG_UNTIED, GOMP_TASK_FLAG_FINAL, GOMP_TASK_FLAG_MERGEABLE,
+	GOMP_TASK_FLAG_DEPEND, GOMP_TASK_FLAG_PRIORITY, GOMP_TASK_FLAG_UP,
+	GOMP_TASK_FLAG_GRAINSIZE, GOMP_TASK_FLAG_IF, GOMP_TASK_FLAG_NOGROUP,
+	GOMP_TARGET_FLAG_NOWAIT, GOMP_TARGET_FLAG_EXIT_DATA,
+	GOMP_TARGET_FLAG_UPDATE): Define.
+
+2015-09-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION_NVIDIA_PTX): Increment.
+	(GOMP_DIM_GANG, GOMP_DIM_WORKER, GOMP_DIM_VECTOR, GOMP_DIM_MAX,
+	GOMP_DIM_MASK): New.
+	(GOMP_LAUNCH_DIM, GOMP_LAUNCH_ASYNC, GOMP_LAUNCH_WAIT): New.
+	(GOMP_LAUNCH_CODE_SHIFT, GOMP_LAUNCH_DEVICE_SHIFT,
+	GOMP_LAUNCH_OP_SHIFT): New.
+	(GOMP_LAUNCH_PACK, GOMP_LAUNCH_CODE, GOMP_LAUNCH_DEVICE,
+	GOMP_LAUNCH_OP): New.
+	(GOMP_LAUNCH_OP_MAX): New.
+
 2015-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gomp-constants.h (GOMP_VERSION, GOMP_VERSION_NVIDIA_PTX,

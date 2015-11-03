@@ -155,6 +155,12 @@ vpath % $(top_srcdir)/src/c++98
 
 libc__98convenience_la_SOURCES = $(sources)
 
+# Use special rules to compile with -fimplicit-templates.
+c++locale.lo: c++locale.cc
+	$(LTCXXCOMPILE) -fimplicit-templates -c $<
+c++locale.o: c++locale.cc
+	$(CXXCOMPILE) -fimplicit-templates -c $<
+
 if ENABLE_DUAL_ABI
 GLIBCXX_ABI_FLAGS = -D_GLIBCXX_USE_CXX11_ABI=@glibcxx_cxx98_abi@
 # Use special rules to compile with the non-default string ABI.

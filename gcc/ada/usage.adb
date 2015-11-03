@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,9 +91,9 @@ begin
 
    Write_Eol;
 
-   --  Common GCC switches not available for JVM, .NET, and AAMP targets
+   --  Common GCC switches not available for AAMP targets
 
-   if VM_Target = No_VM and then not AAMP_On_Target then
+   if not AAMP_On_Target then
       Write_Switch_Char ("fstack-check ", "");
       Write_Line ("Generate stack checking code");
 
@@ -104,7 +104,7 @@ begin
       Write_Line ("Preserve control flow for coverage analysis");
    end if;
 
-   --  Common switches available to both GCC and JGNAT
+   --  Common switches available everywhere
 
    Write_Switch_Char ("g            ", "");
    Write_Line ("Generate debugging information");

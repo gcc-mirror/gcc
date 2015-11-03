@@ -22,44 +22,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cfghooks.h"
 #include "df.h"
+#include "tm_p.h"
+#include "optabs.h"
 #include "regs.h"
-#include "insn-config.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "cgraph.h"
+#include "diagnostic-core.h"
 #include "conditions.h"
 #include "insn-attr.h"
-#include "flags.h"
 #include "alias.h"
-#include "fold-const.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "stmt.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
 #include "expr.h"
-#include "except.h"
-#include "diagnostic-core.h"
-#include "recog.h"
 #include "reload.h"
-#include "tm_p.h"
-#include "debug.h"
 #include "output.h"
 #include "tm-constrs.h"
-#include "target.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "opts.h"
-#include "cgraph.h"
 #include "builtins.h"
 
 /* This file should be included last.  */
@@ -1154,14 +1139,11 @@ cris_print_operand (FILE *file, rtx x, int code)
       else
 	{
 	  /* Only single precision is allowed as plain operands the
-	     moment.  FIXME:  REAL_VALUE_FROM_CONST_DOUBLE isn't
-	     documented.  */
-	  REAL_VALUE_TYPE r;
+	     moment.  */
 	  long l;
 
 	  /* FIXME:  Perhaps check overflow of the "single".  */
-	  REAL_VALUE_FROM_CONST_DOUBLE (r, operand);
-	  REAL_VALUE_TO_TARGET_SINGLE (r, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (operand), l);
 
 	  fprintf (file, "0x%lx", l);
 	}

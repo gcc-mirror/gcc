@@ -284,7 +284,8 @@ static const char *const spec_version = DEFAULT_TARGET_VERSION;
 static const char *spec_machine = DEFAULT_TARGET_MACHINE;
 static const char *spec_host_machine = DEFAULT_REAL_TARGET_MACHINE;
 
-/* List of offload targets.  */
+/* List of offload targets.  Separated by colon.  Empty string for
+   -foffload=disable.  */
 
 static char *offload_targets = NULL;
 
@@ -666,7 +667,11 @@ proper position among the other output files.  */
    libgcc.  This is not yet a real spec, though it could become one;
    it is currently just stuffed into LINK_SPEC.  FIXME: This wrapping
    only works with GNU ld and gold.  */
+#ifdef HAVE_GOLD_NON_DEFAULT_SPLIT_STACK
+#define STACK_SPLIT_SPEC " %{fsplit-stack: -fuse-ld=gold --wrap=pthread_create}"
+#else
 #define STACK_SPLIT_SPEC " %{fsplit-stack: --wrap=pthread_create}"
+#endif
 
 #ifndef LIBASAN_SPEC
 #define STATIC_LIBASAN_LIBS \
@@ -908,7 +913,9 @@ proper position among the other output files.  */
 
 #ifndef LINK_PIE_SPEC
 #ifdef HAVE_LD_PIE
+#ifndef LD_PIE_SPEC
 #define LD_PIE_SPEC "-pie"
+#endif
 #else
 #define LD_PIE_SPEC ""
 #endif
@@ -3359,63 +3366,63 @@ display_help (void)
   printf (_("Usage: %s [options] file...\n"), progname);
   fputs (_("Options:\n"), stdout);
 
-  fputs (_("  -pass-exit-codes         Exit with highest error code from a phase\n"), stdout);
-  fputs (_("  --help                   Display this information\n"), stdout);
-  fputs (_("  --target-help            Display target specific command line options\n"), stdout);
-  fputs (_("  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...]\n"), stdout);
-  fputs (_("                           Display specific types of command line options\n"), stdout);
+  fputs (_("  -pass-exit-codes         Exit with highest error code from a phase.\n"), stdout);
+  fputs (_("  --help                   Display this information.\n"), stdout);
+  fputs (_("  --target-help            Display target specific command line options.\n"), stdout);
+  fputs (_("  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...].\n"), stdout);
+  fputs (_("                           Display specific types of command line options.\n"), stdout);
   if (! verbose_flag)
-    fputs (_("  (Use '-v --help' to display command line options of sub-processes)\n"), stdout);
-  fputs (_("  --version                Display compiler version information\n"), stdout);
-  fputs (_("  -dumpspecs               Display all of the built in spec strings\n"), stdout);
-  fputs (_("  -dumpversion             Display the version of the compiler\n"), stdout);
-  fputs (_("  -dumpmachine             Display the compiler's target processor\n"), stdout);
-  fputs (_("  -print-search-dirs       Display the directories in the compiler's search path\n"), stdout);
-  fputs (_("  -print-libgcc-file-name  Display the name of the compiler's companion library\n"), stdout);
-  fputs (_("  -print-file-name=<lib>   Display the full path to library <lib>\n"), stdout);
-  fputs (_("  -print-prog-name=<prog>  Display the full path to compiler component <prog>\n"), stdout);
+    fputs (_("  (Use '-v --help' to display command line options of sub-processes).\n"), stdout);
+  fputs (_("  --version                Display compiler version information.\n"), stdout);
+  fputs (_("  -dumpspecs               Display all of the built in spec strings.\n"), stdout);
+  fputs (_("  -dumpversion             Display the version of the compiler.\n"), stdout);
+  fputs (_("  -dumpmachine             Display the compiler's target processor.\n"), stdout);
+  fputs (_("  -print-search-dirs       Display the directories in the compiler's search path.\n"), stdout);
+  fputs (_("  -print-libgcc-file-name  Display the name of the compiler's companion library.\n"), stdout);
+  fputs (_("  -print-file-name=<lib>   Display the full path to library <lib>.\n"), stdout);
+  fputs (_("  -print-prog-name=<prog>  Display the full path to compiler component <prog>.\n"), stdout);
   fputs (_("\
   -print-multiarch         Display the target's normalized GNU triplet, used as\n\
-                           a component in the library path\n"), stdout);
-  fputs (_("  -print-multi-directory   Display the root directory for versions of libgcc\n"), stdout);
+                           a component in the library path.\n"), stdout);
+  fputs (_("  -print-multi-directory   Display the root directory for versions of libgcc.\n"), stdout);
   fputs (_("\
   -print-multi-lib         Display the mapping between command line options and\n\
-                           multiple library search directories\n"), stdout);
-  fputs (_("  -print-multi-os-directory Display the relative path to OS libraries\n"), stdout);
-  fputs (_("  -print-sysroot           Display the target libraries directory\n"), stdout);
-  fputs (_("  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers\n"), stdout);
-  fputs (_("  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"), stdout);
-  fputs (_("  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n"), stdout);
-  fputs (_("  -Wl,<options>            Pass comma-separated <options> on to the linker\n"), stdout);
-  fputs (_("  -Xassembler <arg>        Pass <arg> on to the assembler\n"), stdout);
-  fputs (_("  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor\n"), stdout);
-  fputs (_("  -Xlinker <arg>           Pass <arg> on to the linker\n"), stdout);
-  fputs (_("  -save-temps              Do not delete intermediate files\n"), stdout);
-  fputs (_("  -save-temps=<arg>        Do not delete intermediate files\n"), stdout);
+                           multiple library search directories.\n"), stdout);
+  fputs (_("  -print-multi-os-directory Display the relative path to OS libraries.\n"), stdout);
+  fputs (_("  -print-sysroot           Display the target libraries directory.\n"), stdout);
+  fputs (_("  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers.\n"), stdout);
+  fputs (_("  -Wa,<options>            Pass comma-separated <options> on to the assembler.\n"), stdout);
+  fputs (_("  -Wp,<options>            Pass comma-separated <options> on to the preprocessor.\n"), stdout);
+  fputs (_("  -Wl,<options>            Pass comma-separated <options> on to the linker.\n"), stdout);
+  fputs (_("  -Xassembler <arg>        Pass <arg> on to the assembler.\n"), stdout);
+  fputs (_("  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor.\n"), stdout);
+  fputs (_("  -Xlinker <arg>           Pass <arg> on to the linker.\n"), stdout);
+  fputs (_("  -save-temps              Do not delete intermediate files.\n"), stdout);
+  fputs (_("  -save-temps=<arg>        Do not delete intermediate files.\n"), stdout);
   fputs (_("\
   -no-canonical-prefixes   Do not canonicalize paths when building relative\n\
-                           prefixes to other gcc components\n"), stdout);
-  fputs (_("  -pipe                    Use pipes rather than intermediate files\n"), stdout);
-  fputs (_("  -time                    Time the execution of each subprocess\n"), stdout);
-  fputs (_("  -specs=<file>            Override built-in specs with the contents of <file>\n"), stdout);
-  fputs (_("  -std=<standard>          Assume that the input sources are for <standard>\n"), stdout);
+                           prefixes to other gcc components.\n"), stdout);
+  fputs (_("  -pipe                    Use pipes rather than intermediate files.\n"), stdout);
+  fputs (_("  -time                    Time the execution of each subprocess.\n"), stdout);
+  fputs (_("  -specs=<file>            Override built-in specs with the contents of <file>.\n"), stdout);
+  fputs (_("  -std=<standard>          Assume that the input sources are for <standard>.\n"), stdout);
   fputs (_("\
   --sysroot=<directory>    Use <directory> as the root directory for headers\n\
-                           and libraries\n"), stdout);
-  fputs (_("  -B <directory>           Add <directory> to the compiler's search paths\n"), stdout);
-  fputs (_("  -v                       Display the programs invoked by the compiler\n"), stdout);
-  fputs (_("  -###                     Like -v but options quoted and commands not executed\n"), stdout);
-  fputs (_("  -E                       Preprocess only; do not compile, assemble or link\n"), stdout);
-  fputs (_("  -S                       Compile only; do not assemble or link\n"), stdout);
-  fputs (_("  -c                       Compile and assemble, but do not link\n"), stdout);
-  fputs (_("  -o <file>                Place the output into <file>\n"), stdout);
-  fputs (_("  -pie                     Create a position independent executable\n"), stdout);
-  fputs (_("  -shared                  Create a shared library\n"), stdout);
+                           and libraries.\n"), stdout);
+  fputs (_("  -B <directory>           Add <directory> to the compiler's search paths.\n"), stdout);
+  fputs (_("  -v                       Display the programs invoked by the compiler.\n"), stdout);
+  fputs (_("  -###                     Like -v but options quoted and commands not executed.\n"), stdout);
+  fputs (_("  -E                       Preprocess only; do not compile, assemble or link.\n"), stdout);
+  fputs (_("  -S                       Compile only; do not assemble or link.\n"), stdout);
+  fputs (_("  -c                       Compile and assemble, but do not link.\n"), stdout);
+  fputs (_("  -o <file>                Place the output into <file>.\n"), stdout);
+  fputs (_("  -pie                     Create a position independent executable.\n"), stdout);
+  fputs (_("  -shared                  Create a shared library.\n"), stdout);
   fputs (_("\
-  -x <language>            Specify the language of the following input files\n\
+  -x <language>            Specify the language of the following input files.\n\
                            Permissible languages include: c c++ assembler none\n\
                            'none' means revert to the default behavior of\n\
-                           guessing the language based on the file's extension\n\
+                           guessing the language based on the file's extension.\n\
 "), stdout);
 
   printf (_("\
@@ -3656,10 +3663,9 @@ handle_foffload_option (const char *arg)
 	      size_t offload_targets_len = strlen (offload_targets);
 	      offload_targets
 		= XRESIZEVEC (char, offload_targets,
-			      offload_targets_len + next - cur + 2);
-	      if (offload_targets_len)
-		offload_targets[offload_targets_len++] = ':';
-	      memcpy (offload_targets + offload_targets_len, target, next - cur);
+			      offload_targets_len + 1 + next - cur + 1);
+	      offload_targets[offload_targets_len++] = ':';
+	      memcpy (offload_targets + offload_targets_len, target, next - cur + 1);
 	    }
 	}
 
@@ -4376,6 +4382,13 @@ process_command (unsigned int decoded_options_count,
 			   CL_DRIVER, &handlers, global_dc);
     }
 
+#ifdef ENABLE_OFFLOADING
+  /* If the user didn't specify any, default to all configured offload
+     targets.  */
+  if (offload_targets == NULL)
+    handle_foffload_option (OFFLOAD_TARGETS);
+#endif
+
   if (output_file
       && strcmp (output_file, "-") != 0
       && strcmp (output_file, HOST_BIT_BUCKET) != 0)
@@ -4459,7 +4472,7 @@ process_command (unsigned int decoded_options_count,
     }
 
   gcc_assert (!IS_ABSOLUTE_PATH (tooldir_base_prefix));
-  tooldir_prefix2 = concat (tooldir_base_prefix, spec_host_machine,
+  tooldir_prefix2 = concat (tooldir_base_prefix, spec_machine,
 			    dir_separator_str, NULL);
 
   /* Look for tools relative to the location from which the driver is
@@ -7572,22 +7585,17 @@ driver::maybe_putenv_COLLECT_LTO_WRAPPER () const
 void
 driver::maybe_putenv_OFFLOAD_TARGETS () const
 {
-  const char *targets = offload_targets;
-
-  /* If no targets specified by -foffload, use all available targets.  */
-  if (!targets)
-    targets = OFFLOAD_TARGETS;
-
-  if (strlen (targets) > 0)
+  if (offload_targets && offload_targets[0] != '\0')
     {
       obstack_grow (&collect_obstack, "OFFLOAD_TARGET_NAMES=",
 		    sizeof ("OFFLOAD_TARGET_NAMES=") - 1);
-      obstack_grow (&collect_obstack, targets,
-		    strlen (targets) + 1);
+      obstack_grow (&collect_obstack, offload_targets,
+		    strlen (offload_targets) + 1);
       xputenv (XOBFINISH (&collect_obstack, char *));
     }
 
   free (offload_targets);
+  offload_targets = NULL;
 }
 
 /* Reject switches that no pass was interested in.  */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -433,8 +433,8 @@ package body System.File_IO is
    --                                     OPEN         CREATE
    --     Append_File                     "r+"           "w+"
    --     In_File                         "r"            "w+"
-   --     Out_File (Direct_IO)            "r+"           "w"
-   --     Out_File (all others)           "w"            "w"
+   --     Out_File (Direct_IO, Stream_IO) "r+"           "w"
+   --     Out_File (others)               "w"            "w"
    --     Inout_File                      "r+"           "w+"
 
    --  Note: we do not use "a" or "a+" for Append_File, since this would not
@@ -479,7 +479,7 @@ package body System.File_IO is
             end if;
 
          when Out_File =>
-            if Amethod = 'D' and then not Creat then
+            if Amethod in 'D' | 'S' and then not Creat then
                Fopstr (1) := 'r';
                Fopstr (2) := '+';
                Fptr := 3;

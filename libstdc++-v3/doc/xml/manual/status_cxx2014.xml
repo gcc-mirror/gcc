@@ -402,7 +402,11 @@ not in any particular release.
       </entry>
       <entry>File System</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry>
+	Link with
+	<link linkend="manual.intro.using.linkage.experimental">
+	<option>-lstdc++fs</option></link>
+      </entry>
     </row>
 
 

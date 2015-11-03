@@ -27,49 +27,32 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "alias.h"
+#include "predict.h"
+#include "alloc-pool.h"
+#include "gimple-ssa.h"
+#include "cgraph.h"
+#include "lto-streamer.h"
 #include "fold-const.h"
 #include "varasm.h"
 #include "calls.h"
 #include "print-tree.h"
-#include "tree-inline.h"
 #include "langhooks.h"
-#include "toplev.h"
-#include "flags.h"
-#include "debug.h"
-#include "target.h"
-#include "cgraph.h"
 #include "intl.h"
-#include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimple-iterator.h"
-#include "timevar.h"
-#include "dumpfile.h"
-#include "gimple-ssa.h"
 #include "tree-cfg.h"
 #include "tree-ssa.h"
 #include "value-prof.h"
-#include "except.h"
-#include "diagnostic-core.h"
 #include "ipa-utils.h"
-#include "lto-streamer.h"
-#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "cfgloop.h"
 #include "gimple-pretty-print.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-dfa.h"
 #include "profile.h"
 #include "params.h"
@@ -670,7 +653,7 @@ cgraph_edge_hasher::hash (cgraph_edge *e)
 /* Returns a hash value for X (which really is a cgraph_edge).  */
 
 hashval_t
-cgraph_edge_hasher::hash (gimple call_stmt)
+cgraph_edge_hasher::hash (gimple *call_stmt)
 {
   /* This is a really poor hash function, but it is what htab_hash_pointer
      uses.  */
@@ -680,7 +663,7 @@ cgraph_edge_hasher::hash (gimple call_stmt)
 /* Return nonzero if the call_stmt of cgraph_edge X is stmt *Y.  */
 
 inline bool
-cgraph_edge_hasher::equal (cgraph_edge *x, gimple y)
+cgraph_edge_hasher::equal (cgraph_edge *x, gimple *y)
 {
   return x->call_stmt == y;
 }
@@ -690,7 +673,7 @@ cgraph_edge_hasher::equal (cgraph_edge *x, gimple y)
 static inline void
 cgraph_update_edge_in_call_site_hash (cgraph_edge *e)
 {
-  gimple call = e->call_stmt;
+  gimple *call = e->call_stmt;
   *e->caller->call_site_hash->find_slot_with_hash
       (call, cgraph_edge_hasher::hash (call), INSERT) = e;
 }
@@ -721,7 +704,7 @@ cgraph_add_edge_to_call_site_hash (cgraph_edge *e)
    CALL_STMT.  */
 
 cgraph_edge *
-cgraph_node::get_edge (gimple call_stmt)
+cgraph_node::get_edge (gimple *call_stmt)
 {
   cgraph_edge *e, *e2;
   int n = 0;
@@ -832,11 +815,9 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
     {
       /* This is a rather expensive check possibly triggering
 	 construction of call stmt hashtable.  */
-#ifdef ENABLE_CHECKING
       cgraph_edge *e;
-      gcc_checking_assert (
-	!(e = caller->get_edge (call_stmt)) || e->speculative);
-#endif
+      gcc_checking_assert (!(e = caller->get_edge (call_stmt))
+			   || e->speculative);
 
       gcc_assert (is_gimple_call (call_stmt));
     }
@@ -1272,7 +1253,7 @@ cgraph_edge::make_direct (cgraph_node *callee)
 /* If necessary, change the function declaration in the call statement
    associated with E so that it corresponds to the edge callee.  */
 
-gimple
+gimple *
 cgraph_edge::redirect_call_stmt_to_callee (void)
 {
   cgraph_edge *e = this;
@@ -1282,9 +1263,6 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
   gcall *new_stmt;
   gimple_stmt_iterator gsi;
   bool skip_bounds = false;
-#ifdef ENABLE_CHECKING
-  cgraph_node *node;
-#endif
 
   if (e->speculative)
     {
@@ -1402,13 +1380,11 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	  && !skip_bounds))
     return e->call_stmt;
 
-#ifdef ENABLE_CHECKING
-  if (decl)
+  if (flag_checking && decl)
     {
-      node = cgraph_node::get (decl);
+      cgraph_node *node = cgraph_node::get (decl);
       gcc_assert (!node || !node->clone.combined_args_to_skip);
     }
-#endif
 
   if (symtab->dump_file)
     {
@@ -1475,7 +1451,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 					TREE_TYPE (lhs), NULL);
 	  var = get_or_create_ssa_default_def
 		  (DECL_STRUCT_FUNCTION (e->caller->decl), var);
-	  gimple set_stmt = gimple_build_assign (lhs, var);
+	  gimple *set_stmt = gimple_build_assign (lhs, var);
           gsi = gsi_for_stmt (new_stmt);
 	  gsi_insert_before_without_update (&gsi, set_stmt, GSI_SAME_STMT);
 	  update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), set_stmt);
@@ -1512,8 +1488,8 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 
 static void
 cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
-					gimple old_stmt, tree old_call,
-					gimple new_stmt)
+					gimple *old_stmt, tree old_call,
+					gimple *new_stmt)
 {
   tree new_call = (new_stmt && is_gimple_call (new_stmt))
 		  ? gimple_call_fndecl (new_stmt) : 0;
@@ -1596,7 +1572,8 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
    of OLD_STMT before it was updated (updating can happen inplace).  */
 
 void
-cgraph_update_edges_for_call_stmt (gimple old_stmt, tree old_decl, gimple new_stmt)
+cgraph_update_edges_for_call_stmt (gimple *old_stmt, tree old_decl,
+				   gimple *new_stmt)
 {
   cgraph_node *orig = cgraph_node::get (cfun->decl);
   cgraph_node *node;
@@ -1684,39 +1661,38 @@ cgraph_node::remove_callers (void)
 void
 release_function_body (tree decl)
 {
-  if (DECL_STRUCT_FUNCTION (decl))
+  function *fn = DECL_STRUCT_FUNCTION (decl);
+  if (fn)
     {
-      if (DECL_STRUCT_FUNCTION (decl)->cfg
-	  || DECL_STRUCT_FUNCTION (decl)->gimple_df)
+      if (fn->cfg
+	  || fn->gimple_df)
 	{
-	  push_cfun (DECL_STRUCT_FUNCTION (decl));
-	  if (cfun->cfg
-	      && current_loops)
+	  if (fn->cfg
+	      && loops_for_fn (fn))
 	    {
-	      cfun->curr_properties &= ~PROP_loops;
-	      loop_optimizer_finalize ();
+	      fn->curr_properties &= ~PROP_loops;
+	      loop_optimizer_finalize (fn);
 	    }
-	  if (cfun->gimple_df)
+	  if (fn->gimple_df)
 	    {
-	      delete_tree_ssa ();
-	      delete_tree_cfg_annotations ();
-	      cfun->eh = NULL;
+	      delete_tree_ssa (fn);
+	      delete_tree_cfg_annotations (fn);
+	      fn->eh = NULL;
 	    }
-	  if (cfun->cfg)
+	  if (fn->cfg)
 	    {
-	      gcc_assert (!dom_info_available_p (CDI_DOMINATORS));
-	      gcc_assert (!dom_info_available_p (CDI_POST_DOMINATORS));
-	      clear_edges ();
-	      cfun->cfg = NULL;
+	      gcc_assert (!dom_info_available_p (fn, CDI_DOMINATORS));
+	      gcc_assert (!dom_info_available_p (fn, CDI_POST_DOMINATORS));
+	      clear_edges (fn);
+	      fn->cfg = NULL;
 	    }
-	  if (cfun->value_histograms)
-	    free_histograms ();
-	  pop_cfun ();
+	  if (fn->value_histograms)
+	    free_histograms (fn);
 	}
       gimple_set_body (decl, NULL);
       /* Struct function hangs a lot of data that would leak if we didn't
          removed all pointers to it.   */
-      ggc_free (DECL_STRUCT_FUNCTION (decl));
+      ggc_free (fn);
       DECL_STRUCT_FUNCTION (decl) = NULL;
     }
   DECL_SAVED_TREE (decl) = NULL;
@@ -2695,7 +2671,7 @@ cgraph_edge::verify_count_and_frequency ()
 
 /* Switch to THIS_CFUN if needed and print STMT to stderr.  */
 static void
-cgraph_debug_gimple_stmt (function *this_cfun, gimple stmt)
+cgraph_debug_gimple_stmt (function *this_cfun, gimple *stmt)
 {
   bool fndecl_was_null = false;
   /* debug_gimple_stmt needs correct cfun */
@@ -3084,7 +3060,7 @@ cgraph_node::verify_node (void)
     {
       if (this_cfun->cfg)
 	{
-	  hash_set<gimple> stmts;
+	  hash_set<gimple *> stmts;
 	  int i;
 	  ipa_ref *ref = NULL;
 
@@ -3099,7 +3075,7 @@ cgraph_node::verify_node (void)
 		   !gsi_end_p (gsi);
 		   gsi_next (&gsi))
 		{
-		  gimple stmt = gsi_stmt (gsi);
+		  gimple *stmt = gsi_stmt (gsi);
 		  stmts.add (stmt);
 		  if (is_gimple_call (stmt))
 		    {
@@ -3356,7 +3332,7 @@ cgraph_node::get_fun (void)
    return false.  */
 
 static bool
-gimple_check_call_args (gimple stmt, tree fndecl, bool args_count_match)
+gimple_check_call_args (gimple *stmt, tree fndecl, bool args_count_match)
 {
   tree parms, p;
   unsigned int i, nargs;
@@ -3431,7 +3407,7 @@ gimple_check_call_args (gimple stmt, tree fndecl, bool args_count_match)
    If we cannot verify this or there is a mismatch, return false.  */
 
 bool
-gimple_check_call_matching_types (gimple call_stmt, tree callee,
+gimple_check_call_matching_types (gimple *call_stmt, tree callee,
 				  bool args_count_match)
 {
   tree lhs;

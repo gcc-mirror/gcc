@@ -27,16 +27,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
+#include "cp-tree.h"
+#include "alias.h"
 #include "stor-layout.h"
 #include "flags.h"
-#include "cp-tree.h"
 #include "intl.h"
 #include "convert.h"
 #include "decl.h"
-#include "target.h"
 
 static tree cp_convert_to_pointer (tree, tree, tsubst_flags_t);
 static tree convert_to_pointer_force (tree, tree, tsubst_flags_t);
@@ -1789,4 +1788,37 @@ perform_qualification_conversions (tree type, tree expr)
     return build_nop (type, expr);
   else
     return error_mark_node;
+}
+
+/* True iff T is a transaction-safe function type.  */
+
+bool
+tx_safe_fn_type_p (tree t)
+{
+  if (TREE_CODE (t) != FUNCTION_TYPE
+      && TREE_CODE (t) != METHOD_TYPE)
+    return false;
+  return !!lookup_attribute ("transaction_safe", TYPE_ATTRIBUTES (t));
+}
+
+/* Return the transaction-unsafe variant of transaction-safe function type
+   T.  */
+
+tree
+tx_unsafe_fn_variant (tree t)
+{
+  gcc_assert (tx_safe_fn_type_p (t));
+  tree attrs = remove_attribute ("transaction_safe",
+				 TYPE_ATTRIBUTES (t));
+  return cp_build_type_attribute_variant (t, attrs);
+}
+
+/* Return true iff FROM can convert to TO by a transaction-safety
+   conversion.  */
+
+bool
+can_convert_tx_safety (tree to, tree from)
+{
+  return (flag_tm && tx_safe_fn_type_p (from)
+	  && same_type_p (to, tx_unsafe_fn_variant (from)));
 }

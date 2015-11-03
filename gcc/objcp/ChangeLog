@@ -1,3 +1,8 @@
+2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* objcp-decl.c: Reorder #include's and remove duplicates.
+	* objcp-lang.c: Likewise.
+
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* objcp-decl.c: Adjust includes.

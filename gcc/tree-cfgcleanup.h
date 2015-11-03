@@ -23,6 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 /* In tree-cfgcleanup.c  */
 extern bitmap cfgcleanup_altered_bbs;
 extern bool cleanup_tree_cfg (void);
-extern bool fixup_noreturn_call (gimple stmt);
+extern bool fixup_noreturn_call (gimple *stmt);
 
 #endif /* GCC_TREE_CFGCLEANUP_H */

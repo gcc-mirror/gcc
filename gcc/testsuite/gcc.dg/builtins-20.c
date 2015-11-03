@@ -122,7 +122,7 @@ void test2(double x, double y)
   if (cos((y*=3, -x)) != cos((y*=3,x)))
     link_error ();
 
-  if (cos((y*=2, -fabs(tan(x/-y)))) != cos((y*=2,tan(x/y))))
+  if (cos(-fabs(tan(x/-y))) != cos(tan(x/y)))
     link_error ();
 
   if (cos(copysign(x,y)) != cos(x))
@@ -350,7 +350,7 @@ void test2f(float x, float y)
   if (cosf((y*=3, -x)) != cosf((y*=3,x)))
     link_error ();
 
-  if (cosf((y*=2, -fabsf(tanf(x/-y)))) != cosf((y*=2,tanf(x/y))))
+  if (cosf(-fabsf(tanf(x/-y))) != cosf(tanf(x/y)))
     link_error ();
 
   if (cosf(copysignf(x,y)) != cosf(x))
@@ -577,7 +577,7 @@ void test2l(long double x, long double y)
   if (cosl((y*=3, -x)) != cosl((y*=3,x)))
     link_error ();
 
-  if (cosl((y*=2, -fabsl(tanl(x/-y)))) != cosl((y*=2,tanl(x/y))))
+  if (cosl(-fabsl(tanl(x/-y))) != cosl(tanl(x/y)))
     link_error ();
 
   if (cosl(copysignl(x,y)) != cosl(x))

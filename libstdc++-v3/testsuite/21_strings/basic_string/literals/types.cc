@@ -32,8 +32,10 @@ test01()
   static_assert(std::is_same<decltype(u8"Hello"s), std::string>::value,
 		"u8\"Hello\"s is std::string");
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(std::is_same<decltype(L"Hello"s), std::wstring>::value,
 		"L\"Hello\"s is std::wstring");
+#endif
 
   static_assert(std::is_same<decltype(u"Hello"s), std::u16string>::value,
 		"u\"Hello\"s is std::u16string");

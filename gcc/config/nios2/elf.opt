@@ -23,16 +23,16 @@
 
 msmallc
 Target Report RejectNegative
-Link with a limited version of the C library
+Link with a limited version of the C library.
 
 msys-lib=
 Target RejectNegative Joined Var(nios2_sys_lib_string)
-Name of system library to link against
+Name of system library to link against.
 
 msys-crt0=
 Target RejectNegative Joined Var(nios2_sys_crt0_string)
-Name of the startfile
+Name of the startfile.
 
 mhal
 Target Report RejectNegative
-Link with HAL BSP
+Link with HAL BSP.

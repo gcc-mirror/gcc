@@ -66,7 +66,7 @@ i386 port		Jan Hubicka		<hubicka@ucw.cz>
 i386 port		Uros Bizjak		<ubizjak@gmail.com>
 i386 vector ISA extns	Kirill Yukhin		<kirill.yukhin@gmail.com>
 ia64 port		Jim Wilson		<wilson@tuliptree.org>
-ia64 port		Steve Ellcey		<sellcey@mips.com>
+ia64 port		Steve Ellcey		<sellcey@imgtec.com>
 iq2000 port		Nick Clifton		<nickc@redhat.com>
 lm32 port		Sebastien Bourdeauducq	<sebastien@milkymist.org>
 m32c port		DJ Delorie		<dj@redhat.com>
@@ -130,7 +130,7 @@ DJGPP			DJ Delorie		<dj@delorie.com>
 freebsd			Andreas Tobler		<andreast@gcc.gnu.org>
 GNU/Hurd		Thomas Schwinge		<thomas@schwinge.name>
 hpux			John David Anglin	<dave.anglin@bell.net>
-hpux			Steve Ellcey		<sellcey@mips.com>
+hpux			Steve Ellcey		<sellcey@imgtec.com>
 solaris			Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 netbsd			Jason Thorpe		<thorpej@netbsd.org>
 netbsd			Krister Walfridsson	<krister.walfridsson@gmail.com>
@@ -141,16 +141,14 @@ RTEMS Ports		Sebastian Huber		<sebastian.huber@embedded-brains.de>
 VMS			Douglas Rupp		<douglas.b.rupp@gmail.com>
 VMS			Tristan Gingold		<tgingold@free.fr>
 VxWorks ports		Nathan Sidwell		<nathan@codesourcery.com>
-windows, cygwin, mingw	Kai Tietz		<ktietz@redhat.com>
+windows, cygwin, mingw	Kai Tietz		<ktietz70@googlemail.com>
 windows, cygwin, mingw	Dave Korn		<dave.korn.cygwin@gmail.com>
 
 			Language Front Ends Maintainers
 
 C front end/ISO C99	Joseph Myers		<joseph@codesourcery.com>
 C front end/ISO C99	Richard Henderson	<rth@redhat.com>
-Ada front end		Geert Bosch		<bosch@gnat.com>
-Ada front end		Robert Dewar		<dewar@gnat.com>
-Ada front end		Arnaud Charlet		<charlet@act-europe.fr>
+Ada front end		Arnaud Charlet		<charlet@adacore.com>
 Ada front end		Eric Botcazou		<ebotcazou@libertysurf.fr>
 c++			Jason Merrill		<jason@redhat.com>
 c++			Nathan Sidwell		<nathan@codesourcery.com>
@@ -357,7 +355,7 @@ Christian Bruel					<christian.bruel@st.com>
 Iain Buclaw					<ibuclaw@gdcproject.org>
 Kevin Buettner					<kevinb@redhat.com>
 Adam Butcher					<adam@jessamine.co.uk>
-Andrew Cagney					<cagney@redhat.com>
+Andrew Cagney					<cagney@gnu.org>
 Daniel Carrera					<dcarrera@gmail.com>
 Stephane Carrez					<stcarrez@nerim.fr>
 Gabriel Charette				<gchare@google.com>
@@ -394,6 +392,7 @@ Changpeng Fang					<changpeng.fang@amd.com>
 Li Feng						<nemokingdom@gmail.com>
 Max Filippov					<jcmvbkbc@gmail.com>
 Thomas Fitzsimmons				<fitzsim@redhat.com>
+Alexander Fomin				<afomin.mailbox@gmail.com>
 Brian Ford					<ford@vss.fsi.com>
 John Freeman					<jfreeman08@gmail.com>
 Nathan Froyd					<froydnj@gcc.gnu.org>
@@ -420,6 +419,7 @@ Olivier Hainque					<hainque@act-europe.fr>
 Stuart Hastings					<stuart@apple.com>
 Michael Haubenwallner				<michael.haubenwallner@ssi-schaefer.com>
 Pat Haugen					<pthaugen@us.ibm.com>
+Alan Hayward					<alan.hayward@arm.com>
 Mark Heffernan					<meheff@google.com>
 George Helffrich				<george@gcc.gnu.org>
 Daniel Hellstrom				<daniel@gaisler.com>
@@ -455,6 +455,7 @@ Jeff Knaggs					<jknaggs@redhat.com>
 Michael Koch					<konqueror@gmx.de>
 Matt Kraai					<kraai@ftbfs.org>
 Jan Kratochvil					<jan.kratochvil@redhat.com>
+Louis Krupp					<louis.krupp@zoho.com>
 Prathamesh Kulkarni				<prathamesh.kulkarni@linaro.org>
 Venkataramanan Kumar				<venkataramanan.kumar@amd.com>
 Maxim Kuvyrkov					<maxim.kuvyrkov@linaro.org>
@@ -474,6 +475,7 @@ James Lemke					<jim@lemke.org>
 Kriang Lerdsuwanakij				<lerdsuwa@users.sourceforge.net>
 Renlin Li					<renlin.li@arm.com>
 Xinliang David Li				<davidxl@google.com>
+Martin Liska					<mliska@suse.cz>
 Jiangning Liu					<jiangning.liu@arm.com>
 Sa Liu						<saliu@de.ibm.com>
 Ralph Loader					<rcl@ihug.co.nz>
@@ -490,7 +492,7 @@ Mikhail Maltsev					<maltsevm@gmail.com>
 Patrick Marlier					<patrick.marlier@gmail.com>
 Simon Martin					<simartin@users.sourceforge.net>
 Ranjit Mathew					<rmathew@hotmail.com>
-Paulo Matos					<paulo@matos-sorge.com>
+Paulo Matos					<pmatos@linki.tools>
 Michael Matz					<matz@suse.de>
 Greg McGary					<gkm@gnu.org>
 Roland McGrath					<roland@hack.frob.com>
@@ -605,7 +607,7 @@ Feng Wang					<fengwang@nudt.edu.cn>
 Jiong Wang					<jiong.wang@arm.com>
 Stephen M. Webb					<stephen.webb@bregmasoft.com>
 John Wehle					<john@feith.com>
-Florian Weimer					<fw@deneb.enyo.de>
+Florian Weimer					<fweimer@redhat.com>
 Zack Weinberg					<zackw@panix.com>
 Mark Wielaard					<mark@gcc.gnu.org>
 Edmar Wienskoski				<edmar@freescale.com>

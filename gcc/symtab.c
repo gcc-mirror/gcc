@@ -22,22 +22,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "alias.h"
-#include "fold-const.h"
+#include "timevar.h"
+#include "cgraph.h"
+#include "lto-streamer.h"
 #include "print-tree.h"
 #include "varasm.h"
-#include "emit-rtl.h"
-#include "internal-fn.h"
-#include "tree-inline.h"
 #include "langhooks.h"
-#include "cgraph.h"
-#include "diagnostic.h"
-#include "timevar.h"
-#include "target.h"
-#include "lto-streamer.h"
 #include "output.h"
 #include "ipa-utils.h"
 #include "calls.h"
@@ -478,7 +472,7 @@ symtab_node::create_reference (symtab_node *referred_node,
 
 ipa_ref *
 symtab_node::create_reference (symtab_node *referred_node,
-			       enum ipa_ref_use use_type, gimple stmt)
+			       enum ipa_ref_use use_type, gimple *stmt)
 {
   ipa_ref *ref = NULL, *ref2 = NULL;
   ipa_ref_list *list, *list2;
@@ -533,7 +527,7 @@ symtab_node::create_reference (symtab_node *referred_node,
 
 ipa_ref *
 symtab_node::maybe_create_reference (tree val, enum ipa_ref_use use_type,
-				     gimple stmt)
+				     gimple *stmt)
 {
   STRIP_NOPS (val);
   if (TREE_CODE (val) != ADDR_EXPR)
@@ -588,7 +582,7 @@ symtab_node::clone_referring (symtab_node *node)
 /* Clone reference REF to this symtab_node and set its stmt to STMT.  */
 
 ipa_ref *
-symtab_node::clone_reference (ipa_ref *ref, gimple stmt)
+symtab_node::clone_reference (ipa_ref *ref, gimple *stmt)
 {
   bool speculative = ref->speculative;
   unsigned int stmt_uid = ref->lto_stmt_uid;
@@ -605,7 +599,7 @@ symtab_node::clone_reference (ipa_ref *ref, gimple stmt)
 
 ipa_ref *
 symtab_node::find_reference (symtab_node *referred_node,
-			     gimple stmt, unsigned int lto_stmt_uid)
+			     gimple *stmt, unsigned int lto_stmt_uid)
 {
   ipa_ref *r = NULL;
   int i;
@@ -623,7 +617,7 @@ symtab_node::find_reference (symtab_node *referred_node,
 /* Remove all references that are associated with statement STMT.  */
 
 void
-symtab_node::remove_stmt_references (gimple stmt)
+symtab_node::remove_stmt_references (gimple *stmt)
 {
   ipa_ref *r = NULL;
   int i = 0;

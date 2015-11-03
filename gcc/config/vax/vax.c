@@ -21,40 +21,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "alias.h"
+#include "tm_p.h"
+#include "optabs.h"
+#include "regs.h"
+#include "emit-rtl.h"
 #include "calls.h"
 #include "varasm.h"
-#include "regs.h"
-#include "insn-config.h"
 #include "conditions.h"
 #include "output.h"
-#include "insn-attr.h"
-#include "recog.h"
-#include "flags.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "debug.h"
-#include "diagnostic-core.h"
 #include "reload.h"
-#include "tm-preds.h"
-#include "tm-constrs.h"
-#include "tm_p.h"
-#include "target.h"
 #include "builtins.h"
 
 /* This file should be included last.  */
@@ -640,7 +620,8 @@ static bool
 vax_float_literal (rtx c)
 {
   machine_mode mode;
-  REAL_VALUE_TYPE r, s;
+  const REAL_VALUE_TYPE *r;
+  REAL_VALUE_TYPE s;
   int i;
 
   if (GET_CODE (c) != CONST_DOUBLE)
@@ -653,7 +634,7 @@ vax_float_literal (rtx c)
       || c == const_tiny_rtx[(int) mode][2])
     return true;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, c);
+  r = CONST_DOUBLE_REAL_VALUE (c);
 
   for (i = 0; i < 7; i++)
     {
@@ -661,11 +642,11 @@ vax_float_literal (rtx c)
       bool ok;
       real_from_integer (&s, mode, x, SIGNED);
 
-      if (REAL_VALUES_EQUAL (r, s))
+      if (real_equal (r, &s))
 	return true;
       ok = exact_real_inverse (mode, &s);
       gcc_assert (ok);
-      if (REAL_VALUES_EQUAL (r, s))
+      if (real_equal (r, &s))
 	return true;
     }
   return false;

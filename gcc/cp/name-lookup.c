@@ -22,16 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "tree.h"
+#include "cp-tree.h"
+#include "timevar.h"
+#include "stringpool.h"
 #include "flags.h"
 #include "alias.h"
-#include "tree.h"
-#include "stringpool.h"
 #include "print-tree.h"
 #include "attribs.h"
-#include "cp-tree.h"
-#include "name-lookup.h"
-#include "timevar.h"
-#include "diagnostic-core.h"
 #include "intl.h"
 #include "debug.h"
 #include "c-family/c-pragma.h"
@@ -332,7 +330,7 @@ new_class_binding (tree name, tree value, tree type, cp_binding_level *scope)
 /* Make DECL the innermost binding for ID.  The LEVEL is the binding
    level at which this declaration is being bound.  */
 
-static void
+void
 push_binding (tree id, tree decl, cp_binding_level* level)
 {
   cxx_binding *binding;
@@ -1591,6 +1589,7 @@ begin_scope (scope_kind kind, tree entity)
     case sk_class:
     case sk_scoped_enum:
     case sk_function_parms:
+    case sk_transaction:
     case sk_omp:
       scope->keep = keep_next_level_flag;
       break;

@@ -27,16 +27,15 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
-#include "tree.h"
 #include "options.h"
+#include "tree.h"
 #include "stringpool.h"
+#include "diagnostic-core.h"
+#include "alias.h"
 #include "parse.h"
 
 #include "verify.h"
-#include "java-tree.h"
 #include "java-except.h"
-#include "diagnostic-core.h"
 
 void *
 vfy_alloc (size_t bytes)

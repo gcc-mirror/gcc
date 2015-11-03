@@ -32,7 +32,7 @@ float dotprod (float B[], float C[], int n, int block_size,
   int i, i0;
   float sum = 0;
 
-  #pragma omp target map(to: B[0:n], C[0:n])
+  #pragma omp target map(to: B[0:n], C[0:n]) map(tofrom: sum)
     #pragma omp teams num_teams(num_teams) thread_limit(block_threads) \
 		      reduction(+:sum)
       #pragma omp distribute

@@ -22,7 +22,7 @@
 ;; weak symbols, and .gnu.linkonce support.
 mbnu210
 Target Var(TARGET_BNU210)
-Ignored (obsolete)
+Ignored (obsolete).
 
 posix
 Driver

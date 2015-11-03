@@ -36,5 +36,6 @@ extern tree decl_attributes (tree *, tree, int);
 extern bool cxx11_attribute_p (const_tree);
 extern tree get_attribute_name (const_tree);
 extern void apply_tm_attr (tree, tree);
+extern tree make_attribute (const char *, const char *, tree);
 
 #endif // GCC_ATTRIBS_H

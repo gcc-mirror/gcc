@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2014, AdaCore                     --
+--                     Copyright (C) 1999-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,6 +61,10 @@
 --  On platforms where the full capability is not supported, function
 --  Symbolic_Traceback return a list of addresses expressed as "0x..."
 --  separated by line feed.
+
+pragma Polling (Off);
+--  We must turn polling off for this unit, because otherwise we can get
+--  elaboration circularities when polling is turned on.
 
 with Ada.Exceptions;
 

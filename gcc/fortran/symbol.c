@@ -1541,9 +1541,19 @@ gfc_add_procedure (symbol_attribute *attr, procedure_type t,
 
   if (attr->proc != PROC_UNKNOWN && !attr->module_procedure)
     {
-      gfc_error ("%s procedure at %L is already declared as %s procedure",
+      if (attr->proc == PROC_ST_FUNCTION && t == PROC_INTERNAL
+	  && !gfc_notification_std (GFC_STD_F2008))
+	gfc_error ("%s procedure at %L is already declared as %s "
+		   "procedure. \nF2008: A pointer function assignment "
+		   "is ambiguous if it is the first executable statement "
+		   "after the specification block. Please add any other "
+		   "kind of executable statement before it. FIXME",
 		 gfc_code2string (procedures, t), where,
 		 gfc_code2string (procedures, attr->proc));
+      else
+	gfc_error ("%s procedure at %L is already declared as %s "
+		   "procedure", gfc_code2string (procedures, t), where,
+		   gfc_code2string (procedures, attr->proc));
 
       return false;
     }
@@ -2185,7 +2195,7 @@ gfc_free_st_label (gfc_st_label *label)
   if (label == NULL)
     return;
 
-  gfc_delete_bbt (&gfc_current_ns->st_labels, label, compare_st_labels);
+  gfc_delete_bbt (&label->ns->st_labels, label, compare_st_labels);
 
   if (label->format != NULL)
     gfc_free_expr (label->format);
@@ -2250,6 +2260,7 @@ gfc_get_st_label (int labelno)
   lp->value = labelno;
   lp->defined = ST_LABEL_UNKNOWN;
   lp->referenced = ST_LABEL_UNKNOWN;
+  lp->ns = ns;
 
   gfc_insert_bbt (&ns->st_labels, lp, compare_st_labels);
 
@@ -2575,6 +2586,25 @@ gfc_find_uop (const char *name, gfc_namespace *ns)
 }
 
 
+/* Update a symbol's common_block field, and take care of the associated
+   memory management.  */
+
+static void
+set_symbol_common_block (gfc_symbol *sym, gfc_common_head *common_block)
+{
+  if (sym->common_block == common_block)
+    return;
+
+  if (sym->common_block && sym->common_block->name[0] != '\0')
+    {
+      sym->common_block->refs--;
+      if (sym->common_block->refs == 0)
+	free (sym->common_block);
+    }
+  sym->common_block = common_block;
+}
+
+
 /* Remove a gfc_symbol structure and everything it points to.  */
 
 void
@@ -2602,12 +2632,7 @@ gfc_free_symbol (gfc_symbol *sym)
 
   gfc_free_namespace (sym->f2k_derived);
 
-  if (sym->common_block && sym->common_block->name[0] != '\0')
-    { 
-      sym->common_block->refs--; 
-      if (sym->common_block->refs == 0)
-	free (sym->common_block);
-    }
+  set_symbol_common_block (sym, NULL);
 
   free (sym);
 }
@@ -3080,6 +3105,9 @@ restore_old_symbol (gfc_symbol *p)
       p->formal = old->formal;
     }
 
+  set_symbol_common_block (p, old->common_block);
+  p->common_head = old->common_head;
+
   p->old_symbol = old->old_symbol;
   free (old);
 }
@@ -3168,15 +3196,13 @@ gfc_restore_last_undo_checkpoint (void)
 
   FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, p)
     {
-      /* Symbol was new. Or was old and just put in common */
-      if ((p->gfc_new
-	   || (p->attr.in_common && !p->old_symbol->attr.in_common ))
-	  && p->attr.in_common && p->common_block && p->common_block->head)
+      /* Symbol in a common block was new. Or was old and just put in common */
+      if (p->common_block
+	  && (p->gfc_new || !p->old_symbol->common_block))
 	{
 	  /* If the symbol was added to any common block, it
 	     needs to be removed to stop the resolver looking
 	     for a (possibly) dead symbol.  */
-
 	  if (p->common_block->head == p && !p->common_next)
 	    {
 	      gfc_symtree st, *st0;
@@ -3208,6 +3234,7 @@ gfc_restore_last_undo_checkpoint (void)
 	      gcc_assert(cparent->common_next == p);
 	      cparent->common_next = csym->common_next;
 	    }
+	  p->common_next = NULL;
 	}
       if (p->gfc_new)
 	{

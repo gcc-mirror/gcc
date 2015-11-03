@@ -21,33 +21,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
 #include "ssa.h"
-#include "alias.h"
-#include "options.h"
+#include "cgraph.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "flags.h"
-#include "internal-fn.h"
 #include "gimple-fold.h"
-#include "gimple-iterator.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
 #include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-dfa.h"
 #include "builtins.h"
-#include "dumpfile.h"
-#include "target.h"
-#include "cgraph.h"
 #include "gimple-match.h"
+#include "tree-pass.h"
 
 
 /* Forward declarations of the private auto-generated matchers.
@@ -83,7 +70,7 @@ constant_for_folding (tree t)
    *RES_CODE and *RES_OPS with a simplified and/or canonicalized
    result and returns whether any change was made.  */
 
-static bool
+bool
 gimple_resimplify1 (gimple_seq *seq,
 		    code_helper *res_code, tree type, tree *res_ops,
 		    tree (*valueize)(tree))
@@ -139,7 +126,7 @@ gimple_resimplify1 (gimple_seq *seq,
    *RES_CODE and *RES_OPS with a simplified and/or canonicalized
    result and returns whether any change was made.  */
 
-static bool
+bool
 gimple_resimplify2 (gimple_seq *seq,
 		    code_helper *res_code, tree type, tree *res_ops,
 		    tree (*valueize)(tree))
@@ -208,7 +195,7 @@ gimple_resimplify2 (gimple_seq *seq,
    *RES_CODE and *RES_OPS with a simplified and/or canonicalized
    result and returns whether any change was made.  */
 
-static bool
+bool
 gimple_resimplify3 (gimple_seq *seq,
 		    code_helper *res_code, tree type, tree *res_ops,
 		    tree (*valueize)(tree))
@@ -293,6 +280,8 @@ maybe_build_generic_op (enum tree_code code, tree type,
     }
 }
 
+tree (*mprts_hook) (code_helper, tree, tree *);
+
 /* Push the exploded expression described by RCODE, TYPE and OPS
    as a statement to SEQ if necessary and return a gimple value
    denoting the value of the expression.  If RES is not NULL
@@ -306,10 +295,14 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
   if (rcode.is_tree_code ())
     {
       if (!res
-	  && (TREE_CODE_LENGTH ((tree_code) rcode) == 0
-	      || ((tree_code) rcode) == ADDR_EXPR)
-	  && is_gimple_val (ops[0]))
+	  && gimple_simplified_result_is_gimple_val (rcode, ops))
 	return ops[0];
+      if (mprts_hook)
+	{
+	  tree tem = mprts_hook (rcode, type, ops);
+	  if (tem)
+	    return tem;
+	}
       if (!seq)
 	return NULL_TREE;
       /* Play safe and do not allow abnormals to be mentioned in
@@ -324,9 +317,14 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
 	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[2])))
 	return NULL_TREE;
       if (!res)
-	res = make_ssa_name (type);
+	{
+	  if (gimple_in_ssa_p (cfun))
+	    res = make_ssa_name (type);
+	  else
+	    res = create_tmp_reg (type);
+	}
       maybe_build_generic_op (rcode, type, &ops[0], ops[1], ops[2]);
-      gimple new_stmt = gimple_build_assign (res, rcode,
+      gimple *new_stmt = gimple_build_assign (res, rcode,
 					     ops[0], ops[1], ops[2]);
       gimple_seq_add_stmt_without_update (seq, new_stmt);
       return res;
@@ -354,8 +352,13 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
 	}
       gcc_assert (nargs != 0);
       if (!res)
-	res = make_ssa_name (type);
-      gimple new_stmt = gimple_build_call (decl, nargs, ops[0], ops[1], ops[2]);
+	{
+	  if (gimple_in_ssa_p (cfun))
+	    res = make_ssa_name (type);
+	  else
+	    res = create_tmp_reg (type);
+	}
+      gimple *new_stmt = gimple_build_call (decl, nargs, ops[0], ops[1], ops[2]);
       gimple_call_set_lhs (new_stmt, res);
       gimple_seq_add_stmt_without_update (seq, new_stmt);
       return res;
@@ -587,7 +590,7 @@ do_valueize (tree op, tree (*valueize)(tree), bool &valueized)
    and the fold_stmt_to_constant APIs.  */
 
 bool
-gimple_simplify (gimple stmt,
+gimple_simplify (gimple *stmt,
 		 code_helper *rcode, tree *ops,
 		 gimple_seq *seq,
 		 tree (*valueize)(tree), tree (*top_valueize)(tree))
@@ -691,7 +694,8 @@ gimple_simplify (gimple stmt,
 			    rhs1 = build2 (rcode2, TREE_TYPE (rhs1),
 					   ops2[0], ops2[1]);
 			  else if (rcode2 == SSA_NAME
-				   || rcode2 == INTEGER_CST)
+				   || rcode2 == INTEGER_CST
+				   || rcode2 == VECTOR_CST)
 			    rhs1 = ops2[0];
 			  else
 			    valueized = false;
@@ -734,7 +738,6 @@ gimple_simplify (gimple stmt,
 
 	  tree decl = TREE_OPERAND (fn, 0);
 	  if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL
-	      || !builtin_decl_implicit (DECL_FUNCTION_CODE (decl))
 	      || !gimple_builtin_call_types_compatible_p (stmt, decl))
 	    return false;
 
@@ -818,4 +821,13 @@ static inline bool
 single_use (tree t)
 {
   return TREE_CODE (t) != SSA_NAME || has_zero_uses (t) || has_single_use (t);
+}
+
+/* Return true if math operations should be canonicalized,
+   e.g. sqrt(sqrt(x)) -> pow(x, 0.25).  */
+
+static inline bool
+canonicalize_math_p ()
+{
+  return !cfun || (cfun->curr_properties & PROP_gimple_opt_math) == 0;
 }

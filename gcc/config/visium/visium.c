@@ -22,41 +22,34 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "gimple-expr.h"
 #include "df.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "expmed.h"
+#include "optabs.h"
+#include "regs.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "diagnostic-core.h"
 #include "alias.h"
 #include "flags.h"
 #include "fold-const.h"
-#include "stringpool.h"
 #include "stor-layout.h"
 #include "calls.h"
 #include "varasm.h"
-#include "regs.h"
-#include "insn-config.h"
-#include "conditions.h"
 #include "output.h"
 #include "insn-attr.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "tm_p.h"
-#include "optabs.h"
-#include "target.h"
-#include "common/common-target.h"
-#include "gimple-expr.h"
 #include "gimplify.h"
 #include "langhooks.h"
 #include "reload.h"
 #include "tm-constrs.h"
 #include "params.h"
-#include "errors.h"
 #include "tree-pass.h"
 #include "context.h"
 #include "builtins.h"
@@ -1345,7 +1338,7 @@ visium_setup_incoming_varargs (cumulative_args_t pcum_v,
   local_args_so_far.p = &local_copy;
   locargs = get_cumulative_args (pcum_v);
 
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
   local_args_so_far.magic = CUMULATIVE_ARGS_MAGIC;
 #endif
 
@@ -2039,9 +2032,7 @@ visium_expand_copysign (rtx *operands, enum machine_mode mode)
       if (op0 != CONST0_RTX (mode))
 	{
 	  long l;
-	  REAL_VALUE_TYPE rv;
-	  REAL_VALUE_FROM_CONST_DOUBLE (rv, op0);
-	  REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op0), l);
 	  op0 = force_reg (SImode, GEN_INT (trunc_int_for_mode (l, SImode)));
 	}
     }

@@ -4,8 +4,14 @@
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
-/* { dg-final { scan-assembler-times "negc" 15 } } */
-/* { dg-final { scan-assembler-times "addc" 3 } } */
+
+/* { dg-final { scan-assembler-times "negc" 15 { target { ! sh2a } } } } */
+/* { dg-final { scan-assembler-times "addc" 3 { target { ! sh2a } } } } */
+
+/* { dg-final { scan-assembler-times "negc" 13 { target { sh2a } } } } */
+/* { dg-final { scan-assembler-times "addc" 5 { target { sh2a } } } } */
+/* { dg-final { scan-assembler-times "bld" 2 { target { sh2a } } } } */
+
 /* { dg-final { scan-assembler-not "movrt|#-1|add\t|sub\t|movt" } } */
 
 int

@@ -1101,6 +1101,15 @@ information. Here is an example:
       end STB;
 
 
+.. rubric:: Automatic Symbolic Tracebacks
+
+Symbolic tracebacks may also be enabled by using the -Es switch to gnatbind (as
+in `gprbuild -g ... -bargs -Es`).
+This will cause the Exception_Information to contain a symbolic traceback,
+which will also be printed if an unhandled exception terminates the
+program.
+
+
 .. index:: Code Coverage
 .. index:: Profiling
 
@@ -3211,8 +3220,11 @@ This retains compatibility with previous versions of
 GNAT which suppressed overflow checks by default and always
 used the base type for computation of intermediate results.
 
-The switch *-gnato* (with no digits following) is equivalent to
-.. index:: -gnato (gcc)
+.. Sphinx allows no emphasis within :index: role. As a workaround we
+   point the index to "switch" and use emphasis for "-gnato".
+
+The :index:`switch <-gnato (gcc)>` *-gnato* (with no digits following)
+is equivalent to
 
   ::
 
@@ -4184,7 +4196,3 @@ execution of this erroneous program:
 
   The allocation root #1 of the first example has been split in 2 roots #1
   and #3, thanks to the more precise associated backtrace.
-
-
-
-

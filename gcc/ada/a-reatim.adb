@@ -31,8 +31,11 @@
 ------------------------------------------------------------------------------
 
 with System.Tasking;
+with Unchecked_Conversion;
 
-package body Ada.Real_Time is
+package body Ada.Real_Time with
+  SPARK_Mode => Off
+is
 
    ---------
    -- "*" --
@@ -115,8 +118,20 @@ package body Ada.Real_Time is
    function "/" (Left, Right : Time_Span) return Integer is
       pragma Unsuppress (Overflow_Check);
       pragma Unsuppress (Division_Check);
+
+      --  RM D.8 (27) specifies the effects of operators on Time_Span, and
+      --  rounding of the division operator in particular, to be the same as
+      --  effects on integer types. To get the correct rounding we first
+      --  convert Time_Span to its root type Duration, which is represented as
+      --  a 64-bit signed integer, and then use integer division.
+
+      type Duration_Rep is range -(2 ** 63) .. +((2 ** 63 - 1));
+
+      function To_Integer is
+        new Unchecked_Conversion (Duration, Duration_Rep);
    begin
-      return Integer (Duration (Left) / Duration (Right));
+      return Integer
+               (To_Integer (Duration (Left)) / To_Integer (Duration (Right)));
    end "/";
 
    function "/" (Left : Time_Span; Right : Integer) return Time_Span is

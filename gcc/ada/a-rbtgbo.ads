@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@ with Ada.Streams; use Ada.Streams;
 
 generic
    with package Tree_Types is new Generic_Bounded_Tree_Types (<>);
-   use Tree_Types;
+   use Tree_Types, Tree_Types.Implementation;
 
    with function  Parent (Node : Node_Type) return Count_Type is <>;
 
@@ -61,6 +61,7 @@ generic
       Color : Color_Type) is <>;
 
 package Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
+   pragma Annotate (CodePeer, Skip_Analysis);
    pragma Pure;
 
    function Min (Tree : Tree_Type'Class; Node : Count_Type) return Count_Type;

@@ -1,3 +1,119 @@
+2015-10-26  Ilya Verbin  <ilya.verbin@intel.com>
+	    Aleksander Ivanushenko  <aleksander.ivanushenko@intel.com>
+
+	* runtime/offload_host.cpp (OffloadDescriptor::setup_misc_data): Use
+	calloc instead of malloc.
+	(__offload_fini_library): Set mic_engines_total to zero.
+
+2015-10-13  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_dev2dev): New
+	function.
+	* plugin/offload_target_main.cpp (__offload_target_tgt2tgt): New
+	static function, register it in liboffloadmic.
+
+2015-10-08  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* runtime/offload_engine.cpp (Engine::init_process): Use strdup instead
+	of sizeof+malloc+sprintf, check for return value.
+	* runtime/offload_env.cpp (MicEnvVar::get_env_var_kind): Check for
+	strdup return value.
+	* runtime/offload_host.cpp (__offload_init_library_once): Check for
+	strdup return value.  Fix size calculation of COI_HOST_THREAD_AFFINITY.
+	* runtime/emulator/coi_device.cpp (COIProcessWaitForShutdown): Check for
+	malloc return value.
+
+2015-09-29  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (OFFLOAD_ACTIVE_WAIT_ENV): New
+	define.
+	(init): Set OFFLOAD_ACTIVE_WAIT env var to 0, if it is not set.
+	* runtime/emulator/coi_common.h (PIPE_HOST_PATH): Replace with ...
+	(PIPE_HOST2TGT_NAME): ... this.
+	(PIPE_TARGET_PATH): Replace with ...
+	(PIPE_TGT2HOST_NAME): ... this.
+	(MALLOCN): New define.
+	(READN): Likewise.
+	(WRITEN): Likewise.
+	(enum cmd_t): Replace CMD_RUN_FUNCTION with CMD_PIPELINE_RUN_FUNCTION.
+	Add CMD_PIPELINE_CREATE, CMD_PIPELINE_DESTROY.
+	* runtime/emulator/coi_device.cpp (engine_dir): New static variable.
+	(pipeline_thread_routine): New static function.
+	(COIProcessWaitForShutdown): Use global engine_dir instead of mic_dir.
+	Rename pipe_host and pipe_target to pipe_host2tgt and pipe_tgt2host.
+	If cmd is CMD_PIPELINE_CREATE, create a new thread for the pipeline.
+	Remove cmd == CMD_RUN_FUNCTION case.
+	* runtime/emulator/coi_device.h (COIERRORN): New define.
+	* runtime/emulator/coi_host.cpp: Include set, map, queue.
+	Replace typedefs with enums and structs.
+	(struct Function): Remove name, add num_buffers, bufs_size,
+	bufs_data_target, misc_data_len, misc_data, return_value_len,
+	return_value, completion_event.
+	(struct Callback): New.
+	(struct Process): Remove pipeline.  Add pipe_host2tgt and pipe_tgt2host.
+	(struct Pipeline): Remove pipe_host and pipe_target.  Add thread,
+	destroy, is_destroyed, pipe_host2tgt_path, pipe_tgt2host_path,
+	pipe_host2tgt, pipe_tgt2host, queue, process.
+	(max_pipeline_num): New static variable.
+	(pipelines): Likewise.
+	(max_event_num): Likewise.
+	(non_signalled_events): Likewise.
+	(errored_events): Likewise.
+	(callbacks): Likewise.
+	(cleanup): Do not check tmp_dirs before free.
+	(start_critical_section): New static function.
+	(finish_critical_section): Likewise.
+	(pipeline_is_destroyed): Likewise.
+	(maybe_invoke_callback): Likewise.
+	(signal_event): Likewise.
+	(get_event_result): Likewise.
+	(COIBufferCopy): Rename arguments according to headers.  Add asserts.
+	Use process' main pipes, instead of pipeline's pipes.  Signal completion
+	event.
+	(COIBufferCreate): Rename arguments according to headers.  Add asserts.
+	Use process' main pipes, instead of pipeline's pipes.
+	(COIBufferCreateFromMemory): Rename arguments according to headers.
+	Add asserts.
+	(COIBufferDestroy): Rename arguments according to headers.  Add asserts.
+	Use process' main pipes, instead of pipeline's pipes.
+	(COIBufferGetSinkAddress): Rename arguments according to headers.
+	Add asserts.
+	(COIBufferMap): Rename arguments according to headers.  Add asserts.
+	Signal completion event.
+	(COIBufferRead): Likewise.
+	(COIBufferSetState): Likewise.
+	(COIBufferUnmap): Likewise.
+	(COIBufferWrite): Likewise.
+	(COIEngineGetCount): Add assert.
+	(COIEngineGetHandle): Rename arguments according to headers.
+	Add assert.
+	(COIEventWait): Rename arguments according to headers.  Add asserts.
+	Implement waiting for events with zero or infinite timeout.
+	(COIEventRegisterCallback): New function.
+	(pipeline_thread_routine): New static function.
+	(COIPipelineCreate): Create a new thread for the pipeline.
+	(COIPipelineDestroy): Exit pipeline thread.
+	(COIPipelineRunFunction): Add the function into pipeline's queue,
+	instead running it here.  Wait for it's completion in case of
+	synchronous execution.
+	(COIProcessCreateFromMemory): Rename arguments according to headers.
+	Add asserts.  Create process' main pipes, instead of pipeline's pipes.
+	(COIProcessDestroy): Rename arguments according to headers.
+	Add asserts.  Destroy all undestroyed pipelines.
+	(COIProcessGetFunctionHandles): Rename arguments according to headers.
+	Add asserts.  Use process' main pipes, instead of pipeline's pipes.
+	Remove useless function names.
+	(COIProcessLoadLibraryFromMemory): Add asserts.  Use process' main
+	pipes, instead of pipeline's pipes.
+	(COIProcessUnloadLibrary): Likewise.
+	(COIEngineGetInfo): Add assert.
+	* runtime/emulator/coi_host.h (COIERRORN): New define.
+
+2015-09-28  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR other/67652
+	* runtime/offload_engine.cpp (Engine::init_process): Fix sizeof.
+
 2015-09-08  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* Makefile.am (liboffloadmic_host_la_DEPENDENCIES): Remove libcoi_host

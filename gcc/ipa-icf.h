@@ -315,7 +315,7 @@ public:
   }
 
   /* Improve accumulated hash for HSTATE based on a gimple statement STMT.  */
-  void hash_stmt (gimple stmt, inchash::hash &inchash);
+  void hash_stmt (gimple *stmt, inchash::hash &inchash);
 
   /* Return true if polymorphic comparison must be processed.  */
   bool compare_polymorphic_p (void);
@@ -479,6 +479,9 @@ public:
   void dump (void);
 
   /* Verify congruence classes if checking is enabled.  */
+  void checking_verify_classes (void);
+
+  /* Verify congruence classes.  */
   void verify_classes (void);
 
   /* Write IPA ICF summary for symbols.  */

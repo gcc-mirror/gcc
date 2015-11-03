@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -147,12 +147,7 @@ package body System.Img_Real is
    is
       NFrac : constant Natural := Natural'Max (Aft, 1);
       Sign  : Character;
-      X     : aliased Long_Long_Float;
-      --  This is declared aliased because the expansion of X'Valid passes
-      --  X by access and JGNAT requires all access parameters to be aliased.
-      --  The Valid attribute probably needs to be handled via a different
-      --  expansion for JGNAT, and this use of aliased should be removed
-      --  once Valid is handled properly. ???
+      X     : Long_Long_Float;
       Scale : Integer;
       Expon : Integer;
 

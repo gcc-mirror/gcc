@@ -467,6 +467,13 @@ package Exp_Util is
    --  Ada 2005 (AI-251): Given a type T implementing the interface Iface,
    --  return the record component containing the tag of Iface.
 
+   function Find_Primitive_Operations
+     (T    : Entity_Id;
+      Name : Name_Id) return Node_Id;
+   --  Return a reference to a primitive operation with given name. If
+   --  operation is overloaded, the node carries the corresponding set
+   --  of overloaded interpretations.
+
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of a tagged type T with name Name.
    --  This function allows the use of a primitive operation which is not
@@ -718,10 +725,6 @@ package Exp_Util is
    --  indexed/selected component where the prefix is treated as volatile,
    --  or has Volatile_Components set. A slice of a volatile variable is
    --  also volatile.
-
-   function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean;
-   --  Returns True if we are compiling on VM targets and N is a node that
-   --  requires pass-by-copy in these targets.
 
    procedure Kill_Dead_Code (N : Node_Id; Warn : Boolean := False);
    --  N represents a node for a section of code that is known to be dead. Any

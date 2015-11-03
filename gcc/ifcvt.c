@@ -21,35 +21,24 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cfghooks.h"
 #include "df.h"
-
+#include "tm_p.h"
+#include "expmed.h"
+#include "optabs.h"
 #include "regs.h"
-#include "flags.h"
-#include "insn-config.h"
+#include "emit-rtl.h"
 #include "recog.h"
-#include "except.h"
+
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "cfgcleanup.h"
-#include "alias.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
 #include "output.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "diagnostic-core.h"
-#include "tm_p.h"
 #include "cfgloop.h"
-#include "target.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "shrink-wrap.h"
@@ -1761,6 +1750,19 @@ noce_try_cmove (struct noce_if_info *if_info)
   return FALSE;
 }
 
+/* Return true if X contains a conditional code mode rtx.  */
+
+static bool
+contains_ccmode_rtx_p (rtx x)
+{
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    if (GET_MODE_CLASS (GET_MODE (*iter)) == MODE_CC)
+      return true;
+
+  return false;
+}
+
 /* Helper for bb_valid_for_noce_process_p.  Validate that
    the rtx insn INSN is a single set that does not set
    the conditional register CC and is in general valid for
@@ -1779,6 +1781,7 @@ insn_valid_noce_process_p (rtx_insn *insn, rtx cc)
   /* Currently support only simple single sets in test_bb.  */
   if (!sset
       || !noce_operand_ok (SET_DEST (sset))
+      || contains_ccmode_rtx_p (SET_DEST (sset))
       || !noce_operand_ok (SET_SRC (sset)))
     return false;
 
@@ -1961,6 +1964,11 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   insn_a = if_info->insn_a;
   insn_b = if_info->insn_b;
 
+  machine_mode x_mode = GET_MODE (x);
+
+  if (!can_conditionally_move_p (x_mode))
+    return FALSE;
+
   unsigned int then_cost;
   unsigned int else_cost;
   if (insn_a)
@@ -1997,12 +2005,37 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	}
     }
 
-  if (!a_simple && then_bb && !b_simple && else_bb
+  if (then_bb && else_bb && !a_simple && !b_simple
       && (!bbs_ok_for_cmove_arith (then_bb, else_bb)
 	  || !bbs_ok_for_cmove_arith (else_bb, then_bb)))
     return FALSE;
 
   start_sequence ();
+
+  /* If one of the blocks is empty then the corresponding B or A value
+     came from the test block.  The non-empty complex block that we will
+     emit might clobber the register used by B or A, so move it to a pseudo
+     first.  */
+
+  if (b_simple || !else_bb)
+    {
+      rtx tmp_b = gen_reg_rtx (x_mode);
+      /* Perform the simplest kind of set.  The register allocator
+	 should remove it if it's not actually needed.  If this set is not
+	 a valid insn (can happen on the is_mem path) then end_ifcvt_sequence
+	 will cancel the whole sequence.  Don't try any of the fallback paths
+	 from noce_emit_move_insn since we want this to be the simplest kind
+	 of move.  */
+      emit_insn (gen_rtx_SET (tmp_b, b));
+      b = tmp_b;
+    }
+
+  if (a_simple || !then_bb)
+    {
+      rtx tmp_a = gen_reg_rtx (x_mode);
+      emit_insn (gen_rtx_SET (tmp_a, a));
+      a = tmp_a;
+    }
 
   orig_a = a;
   orig_b = b;
@@ -2959,7 +2992,8 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
 	  gcc_assert (sset);
 
 	  if (contains_mem_rtx_p (SET_SRC (sset))
-	      || !REG_P (SET_DEST (sset)))
+	      || !REG_P (SET_DEST (sset))
+	      || reg_overlap_mentioned_p (SET_DEST (sset), cond))
 	    goto free_bitmap_and_fail;
 
 	  potential_cost += insn_rtx_cost (sset, speed_p);
@@ -5048,9 +5082,7 @@ if_convert (bool after_combine)
   if (optimize == 1)
     df_remove_problem (df_live);
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
+  checking_verify_flow_info ();
 }
 
 /* If-conversion and CFG cleanup.  */

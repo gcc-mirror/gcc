@@ -17,16 +17,10 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "cpplib.h"
-#include "alias.h"
-#include "tree.h"
-#include "stringpool.h"
-#include "c-family/c-common.h"
-#include "c-family/c-pragma.h"
-#include "tm_p.h"
-#include "langhooks.h"
 #include "target.h"
+#include "c-family/c-common.h"
+#include "stringpool.h"
+#include "langhooks.h"
 
 
 /* Keep the vector keywords handy for fast comparisons.  */

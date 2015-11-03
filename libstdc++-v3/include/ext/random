@@ -40,10 +40,10 @@
 #include <array>
 #include <ext/cmath>
 #ifdef __SSE2__
-# include <x86intrin.h>
+# include <emmintrin.h>
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#if defined(_GLIBCXX_USE_C99_STDINT_TR1) && defined(UINT32_C)
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -3499,7 +3499,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #include "ext/opt_random.h"
 #include "random.tcc"
 
-#endif // _GLIBCXX_USE_C99_STDINT_TR1
+#endif // _GLIBCXX_USE_C99_STDINT_TR1 && UINT32_C
 
 #endif // C++11
 

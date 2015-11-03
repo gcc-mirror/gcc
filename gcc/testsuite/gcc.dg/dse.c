@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dse-details" } */
+/* { dg-options "-O2 -fdump-tree-dse1-details" } */
 
 #define N 256
 

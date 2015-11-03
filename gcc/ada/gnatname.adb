@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -434,7 +434,7 @@ procedure Gnatname is
                elsif Arg = "-h" then
                   Usage_Needed := True;
 
-               --  -p
+               --  -P
 
                elsif Arg'Length >= 2 and then Arg (1 .. 2) = "-P" then
                   if File_Set then
@@ -609,10 +609,65 @@ begin
       Usage;
    end if;
 
+   if Create_Project then
+      declare
+         Gnatname : constant String_Access :=
+                      Program_Name ("gnatname", "gnatname");
+         Arg_Len  : Positive      := Argument_Count;
+         Target   : String_Access := null;
+
+      begin
+         --  Find the target, if any
+
+         if Gnatname.all /= "gnatname" then
+            Target :=
+              new String'(Gnatname (Gnatname'First .. Gnatname'Last - 9));
+            Arg_Len := Arg_Len + 1;
+         end if;
+
+         declare
+            Args    : Argument_List (1 .. Arg_Len);
+            Gprname : String_Access :=
+                        Locate_Exec_On_Path (Exec_Name => "gprname");
+            Success : Boolean;
+
+         begin
+            if Gprname /= null then
+               for J in 1 .. Argument_Count loop
+                  Args (J) := new String'(Argument (J));
+               end loop;
+
+               --  Add the target if there is one
+
+               if Target /= null then
+                  Args (Args'Last) := new String'("--target=" & Target.all);
+               end if;
+
+               Spawn (Gprname.all, Args, Success);
+
+               Free (Gprname);
+
+               if Success then
+                  Exit_Program (E_Success);
+               end if;
+            end if;
+         end;
+      end;
+   end if;
+
+   --  This only happens if gprname is not found or if the invocation of
+   --  gprname did not succeed.
+
+   if Create_Project then
+      Write_Line
+        ("warning: gnatname -P is obsolete and will not be available in the "
+         & "next release; use gprname instead");
+   end if;
+
    --  If no Ada or foreign pattern was specified, print the usage and return
 
    if Patterns.Last (Arguments.Table (Arguments.Last).Name_Patterns) = 0
-      and then
+        and then
       Patterns.Last (Arguments.Table (Arguments.Last).Foreign_Patterns) = 0
    then
       if Argument_Count = 0 then
@@ -629,9 +684,7 @@ begin
    --  information, the current directory is the directory of the specified
    --  file.
 
-   if Patterns.Last
-     (Arguments.Table (Arguments.Last).Directories) = 0
-   then
+   if Patterns.Last (Arguments.Table (Arguments.Last).Directories) = 0 then
       Patterns.Append
         (Arguments.Table (Arguments.Last).Directories, new String'("."));
    end if;

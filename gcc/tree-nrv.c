@@ -23,19 +23,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
-#include "fold-const.h"
 #include "tree-pretty-print.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
-#include "tree-pass.h"
-#include "langhooks.h"
-#include "flags.h"	/* For "optimize" in gate_pass_return_slot.
-			   FIXME: That should be up to the pass manager,
-			   but pass_nrv is not in pass_all_optimizations.  */
 
 /* This file implements return value optimizations for functions which
    return aggregate types.
@@ -173,7 +165,7 @@ pass_nrv::execute (function *fun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  tree ret_val;
 
 	  if (greturn *return_stmt = dyn_cast <greturn *> (stmt))
@@ -266,7 +258,7 @@ pass_nrv::execute (function *fun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  /* If this is a copy from VAR to RESULT, remove it.  */
 	  if (gimple_assign_copy_p (stmt)
 	      && gimple_assign_lhs (stmt) == result

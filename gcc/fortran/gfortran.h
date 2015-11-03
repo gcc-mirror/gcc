@@ -1123,6 +1123,7 @@ typedef struct gfc_omp_namelist
     } u;
   struct gfc_omp_namelist_udr *udr;
   struct gfc_omp_namelist *next;
+  locus where;
 }
 gfc_omp_namelist;
 
@@ -1291,6 +1292,8 @@ typedef struct gfc_st_label
   tree backend_decl;
 
   locus where;
+
+  gfc_namespace *ns;
 }
 gfc_st_label;
 
@@ -1411,8 +1414,12 @@ typedef struct gfc_symbol
 
   struct gfc_symbol *common_next;	/* Links for COMMON syms */
 
-  /* This is in fact a gfc_common_head but it is only used for pointer
-     comparisons to check if symbols are in the same common block.  */
+  /* This is only used for pointer comparisons to check if symbols
+     are in the same common block.
+     In opposition to common_block, the common_head pointer takes into account
+     equivalences: if A is in a common block C and A and B are in equivalence,
+     then both A and B have common_head pointing to C, while A's common_block
+     points to C and B's is NULL.  */
   struct gfc_common_head* common_head;
 
   /* Make sure setup code for dummy arguments is generated in the correct

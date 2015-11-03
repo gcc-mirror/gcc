@@ -282,7 +282,7 @@ package Restrict is
 
    procedure Check_Restriction_No_Specification_Of_Aspect (N : Node_Id);
    --  N is the node id for an N_Aspect_Specification. An error message
-   --  (warning) will be issued if a restriction (warning) was previous set
+   --  (warning) will be issued if a restriction (warning) was previously set
    --  for this aspect using Set_No_Specification_Of_Aspect.
 
    procedure Check_Restriction_No_Use_Of_Attribute (N : Node_Id);
@@ -292,7 +292,7 @@ package Restrict is
 
    procedure Check_Restriction_No_Use_Of_Entity (N : Node_Id);
    --  N is the node id for an entity reference. An error message (warning)
-   --  will be issued if a restriction (warning) was previous set for this
+   --  will be issued if a restriction (warning) was previously set for this
    --  entity name using Set_No_Use_Of_Entity.
 
    procedure Check_Restriction_No_Use_Of_Pragma (N : Node_Id);
@@ -335,6 +335,15 @@ package Restrict is
 
    procedure Check_No_Implicit_Heap_Alloc (N : Node_Id);
    --  Equivalent to Check_Restriction (No_Implicit_Heap_Allocations, N).
+   --  Provided for easy use by back end, which has to check this restriction.
+
+   procedure Check_No_Implicit_Task_Alloc (N : Node_Id);
+   --  Equivalent to Check_Restriction (No_Implicit_Task_Allocations, N).
+   --  Provided for easy use by back end, which has to check this restriction.
+
+   procedure Check_No_Implicit_Protected_Alloc (N : Node_Id);
+   --  Equivalent to:
+   --    Check_Restriction (No_Implicit_Protected_Object_Allocations, N)
    --  Provided for easy use by back end, which has to check this restriction.
 
    procedure Check_Obsolescent_2005_Entity (E : Entity_Id; N : Node_Id);
@@ -488,7 +497,7 @@ package Restrict is
    --  and this flag is not set. Profile is set to a non-default value if the
    --  No_Dependence restriction comes from a Profile pragma. This procedure
    --  also takes care of setting the Boolean2 flag of the simple name for
-   --  the entity  (to optimize table searches).
+   --  the entity (to optimize table searches).
 
    procedure Set_Restriction_No_Use_Of_Pragma
      (N       : Node_Id;
@@ -537,7 +546,7 @@ package Restrict is
    function Cunit_Boolean_Restrictions_Save
      return Save_Cunit_Boolean_Restrictions;
    --  This function saves the compilation unit restriction settings, leaving
-   --  then unchanged. This is used e.g. at the start of processing a context
+   --  them unchanged. This is used e.g. at the start of processing a context
    --  clause, so that the main unit restrictions can be restored after all
    --  the with'ed units have been processed.
 

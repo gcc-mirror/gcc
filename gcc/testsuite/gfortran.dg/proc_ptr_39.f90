@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-require-visibility "" }
 !
 ! PR 52909: [F03] Procedure pointers not private to modules
 !

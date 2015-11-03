@@ -28,7 +28,7 @@ f_omp (void)
 #pragma acc update host(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc enter data copyin(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc exit data delete(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
-#pragma acc loop /* { dg-error "may not be closely nested" } */
+#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
       for (i = 0; i < 2; ++i)
 	;
     }
@@ -63,7 +63,7 @@ f_omp (void)
     }
 #pragma omp section
     {
-#pragma acc loop /* { dg-error "may not be closely nested" } */
+#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
       for (i = 0; i < 2; ++i)
 	;
     }
@@ -80,7 +80,7 @@ f_omp (void)
 #pragma acc update host(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc enter data copyin(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc exit data delete(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
-#pragma acc loop /* { dg-error "may not be closely nested" } */
+#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
     for (i = 0; i < 2; ++i)
       ;
   }
@@ -96,7 +96,7 @@ f_omp (void)
 #pragma acc update host(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc enter data copyin(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc exit data delete(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
-#pragma acc loop /* { dg-error "may not be closely nested" } */
+#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
     for (i = 0; i < 2; ++i)
       ;
   }
@@ -112,7 +112,7 @@ f_omp (void)
 #pragma acc update host(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc enter data copyin(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc exit data delete(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
-#pragma acc loop /* { dg-error "may not be closely nested" } */
+#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
     for (i = 0; i < 2; ++i)
       ;
   }
@@ -128,7 +128,7 @@ f_omp (void)
 #pragma acc update host(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc enter data copyin(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc exit data delete(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
-#pragma acc loop /* { dg-error "may not be closely nested" } */
+#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
     for (i = 0; i < 2; ++i)
       ;
   }
@@ -144,7 +144,7 @@ f_omp (void)
 #pragma acc update host(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc enter data copyin(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
 #pragma acc exit data delete(i) /* { dg-error "OpenACC construct inside of non-OpenACC region" } */
-#pragma acc loop /* { dg-error "may not be closely nested" } */
+#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
     for (i = 0; i < 2; ++i)
       ;
   }
@@ -160,7 +160,7 @@ f_omp (void)
 #pragma acc update host(i) /* { dg-error "OpenACC update construct inside of OpenMP target region" } */
 #pragma acc enter data copyin(i) /* { dg-error "OpenACC enter/exit data construct inside of OpenMP target region" } */
 #pragma acc exit data delete(i) /* { dg-error "OpenACC enter/exit data construct inside of OpenMP target region" } */
-#pragma acc loop
+#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
     for (i = 0; i < 2; ++i)
       ;
   }
@@ -230,7 +230,7 @@ f_acc_parallel (void)
   {
 #pragma omp target /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
-#pragma omp target data /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
+#pragma omp target data map(i) /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
 #pragma omp target update to(i) /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
   }
@@ -300,7 +300,7 @@ f_acc_kernels (void)
   {
 #pragma omp target /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
-#pragma omp target data /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
+#pragma omp target data map(i) /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
 #pragma omp target update to(i) /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
   }
@@ -370,7 +370,7 @@ f_acc_data (void)
   {
 #pragma omp target /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
-#pragma omp target data /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
+#pragma omp target data map(i) /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
 #pragma omp target update to(i) /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
   }
@@ -379,6 +379,7 @@ f_acc_data (void)
 void
 f_acc_loop (void)
 {
+#pragma acc parallel
 #pragma acc loop
   for (i = 0; i < 2; ++i)
     {
@@ -386,6 +387,7 @@ f_acc_loop (void)
       ;
     }
 
+#pragma acc parallel
 #pragma acc loop
   for (i = 0; i < 2; ++i)
     {
@@ -394,6 +396,7 @@ f_acc_loop (void)
 	;
     }
 
+#pragma acc parallel
 #pragma acc loop
   for (i = 0; i < 2; ++i)
     {
@@ -403,6 +406,7 @@ f_acc_loop (void)
       }
     }
 
+#pragma acc parallel
 #pragma acc loop
   for (i = 0; i < 2; ++i)
     {
@@ -410,6 +414,7 @@ f_acc_loop (void)
       ;
     }
 
+#pragma acc parallel
 #pragma acc loop
   for (i = 0; i < 2; ++i)
     {
@@ -417,6 +422,7 @@ f_acc_loop (void)
       ;
     }
 
+#pragma acc parallel
 #pragma acc loop
   for (i = 0; i < 2; ++i)
     {
@@ -424,6 +430,7 @@ f_acc_loop (void)
       ;
     }
 
+#pragma acc parallel
 #pragma acc loop
   for (i = 0; i < 2; ++i)
     {
@@ -431,6 +438,7 @@ f_acc_loop (void)
       ;
     }
 
+#pragma acc parallel
 #pragma acc loop
   for (i = 0; i < 2; ++i)
     {
@@ -438,6 +446,7 @@ f_acc_loop (void)
       i = 0; /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     }
 
+#pragma acc parallel
 #pragma acc loop
   for (i = 0; i < 2; ++i)
     {
@@ -445,12 +454,13 @@ f_acc_loop (void)
       ;
     }
 
+#pragma acc parallel
 #pragma acc loop
   for (i = 0; i < 2; ++i)
     {
 #pragma omp target /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
       ;
-#pragma omp target data /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
+#pragma omp target data map(i) /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
       ;
 #pragma omp target update to(i) /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     }

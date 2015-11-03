@@ -3030,8 +3030,23 @@ package body Ch3 is
                   Set_Discriminant_Type
                     (Specification_Node,
                      P_Access_Definition (Not_Null_Present));
-               else
 
+               --  Catch ouf-of-order keywords
+
+               elsif Token = Tok_Constant then
+                  Scan;
+
+                  if Token = Tok_Access then
+                     Error_Msg_SC ("CONSTANT must appear after ACCESS");
+                     Set_Discriminant_Type
+                       (Specification_Node,
+                        P_Access_Definition (Not_Null_Present));
+
+                  else
+                     Error_Msg_SC ("misplaced CONSTANT");
+                  end if;
+
+               else
                   Set_Discriminant_Type
                     (Specification_Node, P_Subtype_Mark);
                   No_Constraint;
@@ -3495,6 +3510,7 @@ package body Ch3 is
       end if;
 
       Ident_Sloc := Token_Ptr;
+      Check_Bad_Layout;
       Idents (1) := P_Defining_Identifier (C_Comma_Colon);
       Num_Idents := 1;
 
@@ -4425,6 +4441,12 @@ package body Ch3 is
 
                else
                   Error_Msg_SC ("aspect specifications not allowed here");
+
+                  --  Assume that this is a misplaced aspect specification
+                  --  within a declarative list. After discarding the
+                  --  misplaced aspects we can continue the scan.
+
+                  Done := False;
                end if;
 
                declare
@@ -4538,6 +4560,11 @@ package body Ch3 is
                Scan; -- past RECORD
                TF_Semicolon;
 
+               --  This might happen because of misplaced aspect specification.
+               --  After discarding the misplaced aspects we can continue the
+               --  scan.
+
+               Done := False;
             else
                Restore_Scan_State (Scan_State); -- to END
                Done := True;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,6 @@ with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Sprint;   use Sprint;
 with Sdefault; use Sdefault;
-with Targparm; use Targparm;
 with Treepr;   use Treepr;
 with Types;    use Types;
 
@@ -116,35 +115,19 @@ package body Comperr is
       Abort_In_Progress := True;
 
       --  Generate a "standard" error message instead of a bug box in case
-      --  of .NET compiler, since we do not support all constructs of the
-      --  language. Of course ideally, we should detect this before bombing on
-      --  e.g. an assertion error, but in practice most of these bombs are due
-      --  to a legitimate case of a construct not being supported (in a sense
-      --  they all are, since for sure we are not supporting something if we
-      --  bomb). By giving this message, we provide a more reasonable practical
-      --  interface, since giving scary bug boxes on unsupported features is
-      --  definitely not helpful.
-
-      --  Similarly if we are generating SCIL, an error message is sufficient
-      --  instead of generating a bug box.
+      --  of CodePeer rather than generating a bug box, friendlier.
 
       --  Note that the call to Error_Msg_N below sets Serious_Errors_Detected
       --  to 1, so we use the regular mechanism below in order to display a
       --  "compilation abandoned" message and exit, so we still know we have
       --  this case (and -gnatdk can still be used to get the bug box).
 
-      if (VM_Target = CLI_Target or else CodePeer_Mode)
+      if CodePeer_Mode
         and then Serious_Errors_Detected = 0
         and then not Debug_Flag_K
         and then Sloc (Current_Error_Node) > No_Location
       then
-         if VM_Target = CLI_Target then
-            Error_Msg_N
-              ("unsupported construct in this context",
-               Current_Error_Node);
-         else
-            Error_Msg_N ("cannot generate 'S'C'I'L", Current_Error_Node);
-         end if;
+         Error_Msg_N ("cannot generate 'S'C'I'L", Current_Error_Node);
       end if;
 
       --  If we are in CodePeer mode, we must also delete SCIL files

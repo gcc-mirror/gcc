@@ -154,21 +154,45 @@ along with GCC; see the file COPYING3.  If not see
 #define STARTFILE_ARCH_SPEC "%{ansi:values-Xc.o%s} \
 			    %{!ansi:values-Xa.o%s}"
 
+#if defined(HAVE_LD_PIE) && defined(HAVE_SOLARIS_CRTS)
+#define STARTFILE_CRTBEGIN_SPEC "%{shared:crtbeginS.o%s} \
+				 %{" PIE_SPEC ":crtbeginS.o%s} \
+				 %{" NO_PIE_SPEC ":crtbegin.o%s}"
+#else
+#define STARTFILE_CRTBEGIN_SPEC	"crtbegin.o%s"
+#endif
+
 /* We don't use the standard svr4 STARTFILE_SPEC because it's wrong for us.  */
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared: \
-			 %{!symbolic: \
-			  %{p:mcrt1.o%s} \
-                          %{!p: \
-	                    %{pg:gcrt1.o%s gmon.o%s} \
-                            %{!pg:crt1.o%s}}}} \
-			crti.o%s %(startfile_arch) \
-			crtbegin.o%s"
+#ifdef HAVE_SOLARIS_CRTS
+/* Since Solaris 11.x and Solaris 12, the OS delivers crt1.o, crti.o, and
+   crtn.o, with a hook for compiler-dependent stuff like profile handling.  */
+#define STARTFILE_SPEC "%{!shared:%{!symbolic: \
+			  crt1.o%s \
+			  %{p:%e-p is not supported; \
+			    pg:crtpg.o%s gmon.o%s; \
+			      :crtp.o%s}}} \
+			crti.o%s %(startfile_arch) %(startfile_crtbegin)"
+#else
+#define STARTFILE_SPEC "%{!shared:%{!symbolic: \
+			  %{p:mcrt1.o%s; \
+                            pg:gcrt1.o%s gmon.o%s; \
+                              :crt1.o%s}}} \
+			crti.o%s %(startfile_arch) %(startfile_crtbegin)"
+#endif
+
+#if defined(HAVE_LD_PIE) && defined(HAVE_SOLARIS_CRTS)
+#define ENDFILE_CRTEND_SPEC "%{shared:crtendS.o%s;: \
+			       %{" PIE_SPEC ":crtendS.o%s} \
+			       %{" NO_PIE_SPEC ":crtend.o%s}}"
+#else
+#define ENDFILE_CRTEND_SPEC "crtend.o%s"
+#endif
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
-   crtend.o%s crtn.o%s"
+   %(endfile_arch) %(endfile_crtend) crtn.o%s"
 
 #undef LINK_ARCH32_SPEC_BASE
 #define LINK_ARCH32_SPEC_BASE \
@@ -241,11 +265,14 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
-  { "startfile_arch",	 STARTFILE_ARCH_SPEC },		\
-  { "link_arch32",       LINK_ARCH32_SPEC },            \
-  { "link_arch64",       LINK_ARCH64_SPEC },            \
-  { "link_arch_default", LINK_ARCH_DEFAULT_SPEC },	\
-  { "link_arch",	 LINK_ARCH_SPEC },		\
+  { "startfile_arch",	 	STARTFILE_ARCH_SPEC },		\
+  { "startfile_crtbegin",	STARTFILE_CRTBEGIN_SPEC },	\
+  { "link_arch32",       	LINK_ARCH32_SPEC },		\
+  { "link_arch64",       	LINK_ARCH64_SPEC },		\
+  { "link_arch_default", 	LINK_ARCH_DEFAULT_SPEC },	\
+  { "link_arch",	 	LINK_ARCH_SPEC },		\
+  { "endfile_arch",	 	ENDFILE_ARCH_SPEC },		\
+  { "endfile_crtend",		ENDFILE_CRTEND_SPEC },	\
   SUBTARGET_CPU_EXTRA_SPECS
 
 /* C++11 programs need -lrt for nanosleep.  */
@@ -298,6 +325,20 @@ along with GCC; see the file COPYING3.  If not see
 #if defined(HAVE_LD_EH_FRAME_HDR) && defined(TARGET_DL_ITERATE_PHDR)
 #define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif /* HAVE_LD_EH_FRAME && TARGET_DL_ITERATE_PHDR */
+#endif
+
+#if defined(HAVE_LD_PIE) && defined(HAVE_SOLARIS_CRTS)
+#ifdef USE_GLD
+/* Assert -z text by default to match Solaris ld.  */
+#define LD_PIE_SPEC "-pie %{!mimpure-text:-z text}"
+#else
+/* Solaris ld needs -z type=pie instead of -pie.  */
+#define LD_PIE_SPEC "-z type=pie %{mimpure-text:-z textoff}"
+#endif
+#else
+/* Error out if some part of PIE support is missing.  */
+#define LINK_PIE_SPEC \
+  "%{no-pie:} %{pie:%e-pie is not supported in this configuration} "
 #endif
 
 /* collect2.c can only parse GNU nm -n output.  Solaris nm needs -png to

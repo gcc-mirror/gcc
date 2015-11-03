@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -254,6 +254,71 @@ package GNAT.Debug_Pools is
    --  deallocation of that memory chunk, its current status (allocated or
    --  logically freed), etc.
 
+   type Report_Type is
+     (All_Reports,
+      Memory_Usage,
+      Allocations_Count,
+      Sort_Total_Allocs,
+      Marked_Blocks);
+   for Report_Type use
+     (All_Reports       => 0,
+      Memory_Usage      => 1,
+      Allocations_Count => 2,
+      Sort_Total_Allocs => 3,
+      Marked_Blocks     => 4);
+
+   generic
+      with procedure Put_Line (S : String) is <>;
+      with procedure Put      (S : String) is <>;
+   procedure Dump
+     (Pool   : Debug_Pool;
+      Size   : Positive;
+      Report : Report_Type := All_Reports);
+   --  Dump information about memory usage.
+   --  Size is the number of the biggest memory users we want to show. Report
+   --  indicates which sorting order is used in the report.
+
+   procedure Dump_Stdout
+     (Pool   : Debug_Pool;
+      Size   : Positive;
+      Report : Report_Type := All_Reports);
+   --  Standard instantiation of Dump to print on standard_output. More
+   --  convenient to use where this is the intended location, and in particular
+   --  easier to use from the debugger.
+
+   procedure Reset;
+   --  Reset all internal data. This is in general not needed, unless you want
+   --  to know what memory is used by specific parts of your application
+
+   procedure Get_Size
+     (Storage_Address          : Address;
+      Size_In_Storage_Elements : out Storage_Count;
+      Valid                    : out Boolean);
+   --  Set Valid if Storage_Address is the address of a chunk of memory
+   --  currently allocated by any pool.
+   --  If Valid is True, Size_In_Storage_Elements is set to the size of this
+   --  chunk of memory.
+
+   type Byte_Count is mod System.Max_Binary_Modulus;
+   --  Type used for maintaining byte counts, needs to be large enough to
+   --  to accommodate counts allowing for repeated use of the same memory.
+
+   function High_Water_Mark
+     (Pool : Debug_Pool) return Byte_Count;
+   --  Return the highest size of the memory allocated by the pool.
+   --  Memory used internally by the pool is not taken into account.
+
+   function Current_Water_Mark
+     (Pool : Debug_Pool) return Byte_Count;
+   --  Return the size of the memory currently allocated by the pool.
+   --  Memory used internally by the pool is not taken into account.
+
+   procedure System_Memory_Debug_Pool
+     (Has_Unhandled_Memory : Boolean := True);
+   --  Let the package know the System.Memory is using it.
+   --  If Has_Unhandled_Memory is true, some deallocation can be done for
+   --  memory not allocated with Allocate.
+
 private
    --  The following are the standard primitive subprograms for a pool
 
@@ -292,10 +357,6 @@ private
    --  on the setup of the storage pool.
    --  The parameters have the same semantics as defined in the ARM95.
 
-   type Byte_Count is mod System.Max_Binary_Modulus;
-   --  Type used for maintaining byte counts, needs to be large enough
-   --  to accommodate counts allowing for repeated use of the same memory.
-
    type Debug_Pool is new System.Checked_Pools.Checked_Pool with record
       Stack_Trace_Depth              : Natural := Default_Stack_Trace_Depth;
       Maximum_Logically_Freed_Memory : SSC     := Default_Max_Freed;
@@ -305,6 +366,12 @@ private
       Advanced_Scanning              : Boolean := Default_Advanced_Scanning;
       Errors_To_Stdout               : Boolean := Default_Errors_To_Stdout;
       Low_Level_Traces               : Boolean := Default_Low_Level_Traces;
+
+      Alloc_Count    : Byte_Count := 0;
+      --  Total number of allocation
+
+      Free_Count     : Byte_Count := 0;
+      --  Total number of deallocation
 
       Allocated : Byte_Count := 0;
       --  Total number of bytes allocated in this pool
@@ -337,5 +404,6 @@ private
       --  for the advanced freeing algorithms that needs to traverse all these
       --  blocks to find possible references to the block being physically
       --  freed.
+
    end record;
 end GNAT.Debug_Pools;

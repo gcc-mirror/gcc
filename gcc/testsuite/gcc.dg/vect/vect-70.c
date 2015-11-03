@@ -37,7 +37,7 @@ int main1 ()
           abort ();
     }
   
-  /* not consecutive */
+  /* not consecutive, will use strided stores */
   for (i = 0; i < N; i++)
     for (j = 3; j < N-3; j++)
       { 
@@ -62,7 +62,7 @@ int main (void)
   return main1 ();
 }
           
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" {target { vector_alignment_reachable} } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" {target {{! vector_alignment_reachable} && {! vect_hw_misalign} } } } } */

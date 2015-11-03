@@ -105,6 +105,7 @@ main (int argc, char **argv)
 	}
     }
 
+  fprintf (stderr, "CheCKpOInT\n");
   acc_wait_async (1, 1);
 
   acc_wait (1);
@@ -129,5 +130,6 @@ main (int argc, char **argv)
   return 0;
 }
 
+/* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
 /* { dg-output "identical parameters" } */
 /* { dg-shouldfail "" } */

@@ -388,8 +388,8 @@ package body Sem_Attr is
       --  itself of the form of a library unit name. Note that this is
       --  quite different from Check_Program_Unit, since it only checks
       --  the syntactic form of the name, not the semantic identity. This
-      --  is because it is used with attributes (Elab_Body, Elab_Spec,
-      --  UET_Address and Elaborated) which can refer to non-visible unit.
+      --  is because it is used with attributes (Elab_Body, Elab_Spec and
+      --  Elaborated) which can refer to non-visible unit.
 
       procedure Error_Attr (Msg : String; Error_Node : Node_Id);
       pragma No_Return (Error_Attr);
@@ -1330,7 +1330,7 @@ package body Sem_Attr is
          if Nkind (Prag) = N_Aspect_Specification then
             Subp_Decl := Parent (Prag);
          else
-            Subp_Decl := Find_Related_Subprogram_Or_Body (Prag);
+            Subp_Decl := Find_Related_Declaration_Or_Body (Prag);
          end if;
 
          --  The aspect or pragma where the attribute resides should be
@@ -1351,7 +1351,7 @@ package body Sem_Attr is
          --  If we get here, then the attribute is legal
 
          Legal   := True;
-         Spec_Id := Corresponding_Spec_Of (Subp_Decl);
+         Spec_Id := Unique_Defining_Entity (Subp_Decl);
       end Analyze_Attribute_Old_Result;
 
       ---------------------------------
@@ -1531,7 +1531,7 @@ package body Sem_Attr is
                  ("expression for dimension must be static!", E1);
                Error_Attr;
 
-            elsif  UI_To_Int (Expr_Value (E1)) > D
+            elsif UI_To_Int (Expr_Value (E1)) > D
               or else UI_To_Int (Expr_Value (E1)) < 1
             then
                Error_Attr ("invalid dimension number for array type", E1);
@@ -2675,7 +2675,6 @@ package body Sem_Attr is
       if Aname /= Name_Elab_Body       and then
          Aname /= Name_Elab_Spec       and then
          Aname /= Name_Elab_Subp_Body  and then
-         Aname /= Name_UET_Address     and then
          Aname /= Name_Enabled         and then
          Aname /= Name_Old
       then
@@ -3866,7 +3865,7 @@ package body Sem_Attr is
          Check_E0;
          Analyze (P);
 
-         if Etype (P) =  Standard_Exception_Type then
+         if Etype (P) = Standard_Exception_Type then
             Set_Etype (N, RTE (RE_Exception_Id));
 
          --  Ada 2005 (AI-345): Attribute 'Identity may be applied to task
@@ -4284,10 +4283,13 @@ package body Sem_Attr is
 
             --  Locate the enclosing loop (if any). Note that Ada 2012 array
             --  iteration may be expanded into several nested loops, we are
-            --  interested in the outermost one which has the loop identifier.
+            --  interested in the outermost one which has the loop identifier,
+            --  and comes from source.
 
             elsif Nkind (Stmt) = N_Loop_Statement
               and then Present (Identifier (Stmt))
+              and then Comes_From_Source (Original_Node (Stmt))
+              and then Nkind (Original_Node (Stmt)) = N_Loop_Statement
             then
                Enclosing_Loop := Stmt;
 
@@ -4310,10 +4312,10 @@ package body Sem_Attr is
             Stmt := Parent (Stmt);
          end loop;
 
-            --  Loop_Entry must appear within a Loop_Assertion pragma (Assert,
-            --  Assert_And_Cut, Assume count as loop assertion pragmas for this
-            --  purpose if they appear in an appropriate location in a loop,
-            --  which was already checked by the top level pragma circuit).
+         --  Loop_Entry must appear within a Loop_Assertion pragma (Assert,
+         --  Assert_And_Cut, Assume count as loop assertion pragmas for this
+         --  purpose if they appear in an appropriate location in a loop,
+         --  which was already checked by the top level pragma circuit).
 
          if No (Enclosing_Pragma) then
             Error_Attr ("attribute% must appear within appropriate pragma", N);
@@ -6023,15 +6025,6 @@ package body Sem_Attr is
 
          Analyze_And_Resolve (N, Standard_String);
 
-      -----------------
-      -- UET_Address --
-      -----------------
-
-      when Attribute_UET_Address =>
-         Check_E0;
-         Check_Unit_Name (P);
-         Set_Etype (N, RTE (RE_Address));
-
       -----------------------
       -- Unbiased_Rounding --
       -----------------------
@@ -7216,10 +7209,11 @@ package body Sem_Attr is
          --  We skip evaluation if the expander is not active. This is not just
          --  an optimization. It is of key importance that we not rewrite the
          --  attribute in a generic template, since we want to pick up the
-         --  setting of the check in the instance, and testing expander active
-         --  is as easy way of doing this as any.
+         --  setting of the check in the instance, Testing Expander_Active
+         --  might seem an easy way of doing this, but we need to account for
+         --  ASIS needs, so check explicitly for a generic context.
 
-         if Expander_Active then
+         if not Inside_A_Generic then
             declare
                C : constant Check_Id := Get_Check_Id (Chars (P));
                R : Boolean;
@@ -7271,19 +7265,62 @@ package body Sem_Attr is
          return;
       end if;
 
-      --  Special processing for cases where the prefix is an object. For
-      --  this purpose, a string literal counts as an object (attributes
-      --  of string literals can only appear in generated code).
+      --  Special processing for cases where the prefix is an object. For this
+      --  purpose, a string literal counts as an object (attributes of string
+      --  literals can only appear in generated code).
 
       if Is_Object_Reference (P) or else Nkind (P) = N_String_Literal then
 
          --  For Component_Size, the prefix is an array object, and we apply
-         --  the attribute to the type of the object. This is allowed for
-         --  both unconstrained and constrained arrays, since the bounds
-         --  have no influence on the value of this attribute.
+         --  the attribute to the type of the object. This is allowed for both
+         --  unconstrained and constrained arrays, since the bounds have no
+         --  influence on the value of this attribute.
 
          if Id = Attribute_Component_Size then
             P_Entity := Etype (P);
+
+         --  For Enum_Rep, evaluation depends on the nature of the prefix and
+         --  the optional argument.
+
+         elsif Id = Attribute_Enum_Rep then
+            if Is_Entity_Name (P) then
+
+               --  The prefix denotes a constant or an enumeration literal, the
+               --  attribute can be folded. A generated loop variable for an
+               --  iterator is a constant, but cannot be constant-folded.
+
+               if Ekind (Entity (P)) = E_Enumeration_Literal
+                 or else
+                   (Ekind (Entity (P)) = E_Constant
+                     and then Ekind (Scope (Entity (P))) /= E_Loop)
+               then
+                  P_Entity := Etype (P);
+
+               --  The prefix denotes an enumeration type. Folding can occur
+               --  when the argument is a constant or an enumeration literal.
+
+               elsif Is_Enumeration_Type (Entity (P))
+                 and then Present (E1)
+                 and then Is_Entity_Name (E1)
+                 and then Ekind_In (Entity (E1), E_Constant,
+                                                 E_Enumeration_Literal)
+               then
+                  P_Entity := Etype (P);
+
+               --  Otherwise the attribute must be expanded into a conversion
+               --  and evaluated at run time.
+
+               else
+                  Check_Expressions;
+                  return;
+               end if;
+
+            --  Otherwise the attribute is illegal, do not attempt to perform
+            --  any kind of folding.
+
+            else
+               return;
+            end if;
 
          --  For First and Last, the prefix is an array object, and we apply
          --  the attribute to the type of the array, but we need a constrained
@@ -7977,7 +8014,26 @@ package body Sem_Attr is
       -- Enum_Rep --
       --------------
 
-      when Attribute_Enum_Rep =>
+      when Attribute_Enum_Rep => Enum_Rep : declare
+         Val : Node_Id;
+
+      begin
+         --  The attribute appears in the form:
+
+         --    Enum_Typ'Enum_Rep (Const)
+         --    Enum_Typ'Enum_Rep (Enum_Lit)
+
+         if Present (E1) then
+            Val := E1;
+
+         --  Otherwise the prefix denotes a constant or enumeration literal:
+
+         --    Const'Enum_Rep
+         --    Enum_Lit'Enum_Rep
+
+         else
+            Val := P;
+         end if;
 
          --  For an enumeration type with a non-standard representation use
          --  the Enumeration_Rep field of the proper constant. Note that this
@@ -7989,15 +8045,16 @@ package body Sem_Attr is
          if Is_Enumeration_Type (P_Type)
            and then Has_Non_Standard_Rep (P_Type)
          then
-            Fold_Uint (N, Enumeration_Rep (Expr_Value_E (E1)), Static);
+            Fold_Uint (N, Enumeration_Rep (Expr_Value_E (Val)), Static);
 
-         --  For enumeration types with standard representations and all
-         --  other cases (i.e. all integer and modular types), Enum_Rep
-         --  is equivalent to Pos.
+         --  For enumeration types with standard representations and all other
+         --  cases (i.e. all integer and modular types), Enum_Rep is equivalent
+         --  to Pos.
 
          else
-            Fold_Uint (N, Expr_Value (E1), Static);
+            Fold_Uint (N, Expr_Value (Val), Static);
          end if;
+      end Enum_Rep;
 
       --------------
       -- Enum_Val --
@@ -9707,7 +9764,6 @@ package body Sem_Attr is
            Attribute_Terminated                   |
            Attribute_To_Address                   |
            Attribute_Type_Key                     |
-           Attribute_UET_Address                  |
            Attribute_Unchecked_Access             |
            Attribute_Universal_Literal_String     |
            Attribute_Unrestricted_Access          |
@@ -11056,16 +11112,6 @@ package body Sem_Attr is
 
          when Attribute_Result =>
             null;
-
-         -----------------
-         -- UET_Address --
-         -----------------
-
-         --  Prefix must not be resolved in this case, since it is not a
-         --  real entity reference. No action of any kind is require.
-
-         when Attribute_UET_Address =>
-            return;
 
          ----------------------
          -- Unchecked_Access --

@@ -14,7 +14,7 @@
 #include "asan_internal.h"
 #include "asan_stack.h"
 
-#include "sanitizer_common/sanitizer_interception.h"
+#include "interception/interception.h"
 
 #include <stddef.h>
 
@@ -88,11 +88,11 @@ INTERCEPTOR(void *, _ZnamRKSt9nothrow_t, size_t size, std::nothrow_t const&) {
 
 #if !SANITIZER_MAC
 CXX_OPERATOR_ATTRIBUTE
-void operator delete(void *ptr) throw() {
+void operator delete(void *ptr) NOEXCEPT {
   OPERATOR_DELETE_BODY(FROM_NEW);
 }
 CXX_OPERATOR_ATTRIBUTE
-void operator delete[](void *ptr) throw() {
+void operator delete[](void *ptr) NOEXCEPT {
   OPERATOR_DELETE_BODY(FROM_NEW_BR);
 }
 CXX_OPERATOR_ATTRIBUTE
@@ -104,12 +104,12 @@ void operator delete[](void *ptr, std::nothrow_t const&) {
   OPERATOR_DELETE_BODY(FROM_NEW_BR);
 }
 CXX_OPERATOR_ATTRIBUTE
-void operator delete(void *ptr, size_t size) throw() {
+void operator delete(void *ptr, size_t size) NOEXCEPT {
   GET_STACK_TRACE_FREE;
   asan_sized_free(ptr, size, &stack, FROM_NEW);
 }
 CXX_OPERATOR_ATTRIBUTE
-void operator delete[](void *ptr, size_t size) throw() {
+void operator delete[](void *ptr, size_t size) NOEXCEPT {
   GET_STACK_TRACE_FREE;
   asan_sized_free(ptr, size, &stack, FROM_NEW_BR);
 }

@@ -1,3 +1,216 @@
+2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-array-notation.c: Reorder #include's and remove duplicates.
+	* c-aux-info.c: Likewise.
+	* c-convert.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-errors.c: Likewise.
+	* c-lang.c: Likewise.
+	* c-objc-common.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-typeck.c: Likewise.
+
+2015-10-26  Jim Wilson  <jim.wilson@linaro.org>
+
+	PR debug/66068
+	* c-typeck.c (c_build_qualified_type): Clear C_TYPE_INCOMPLETE_VARS
+	after calling build_qualified_type.
+
+2015-10-27  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Bernd Schmidt  <bschmidt@redhat.com>
+
+	* c-parser.c (c_parser_oacc_shape_clause): New.
+	(c_parser_oacc_simple_clause): New.
+	(c_parser_oacc_all_clauses): Add auto, gang, seq, vector, worker.
+	(OACC_LOOP_CLAUSE_MASK): Add gang, worker, vector, auto, seq.
+
+2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR c/64765
+	PR c/64880
+	* c-parser.c (c_parser_oacc_loop): Add mask, cclauses formal
+	parameters, and handle these.  Adjust all users.
+	(c_parser_oacc_kernels, c_parser_oacc_parallel): Merge functions
+	into...
+	(c_parser_oacc_kernels_parallel): ... this new function.  Adjust
+	all users.
+	* c-tree.h (c_finish_oacc_parallel, c_finish_oacc_kernels): Don't
+	declare functions.
+	(c_finish_omp_construct): Declare function.
+	* c-typeck.c (c_finish_oacc_parallel, c_finish_oacc_kernels):
+	Merge functions into...
+	(c_finish_omp_construct): ... this new function.
+
+2015-10-22  Richard Biener  <rguenther@suse.de>
+
+	* c-typeck.c (c_finish_omp_clauses): Properly convert operands
+	before folding a MINUS_EXPR.
+
+2015-10-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68024
+	* c-decl.c (start_function): Warn about vararg functions without
+	a prototype.
+
+2015-10-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* c-typeck.c (build_conditional_expr): Use boolean vector
+	type for vector comparison.
+	(build_vec_cmp): New.
+	(build_binary_op): Use build_vec_cmp for comparison.
+
+2015-10-20  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (is_cilkplus_vector_p): Don't define here.
+
+2015-10-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67964
+	* c-parser.c (c_parser_attributes): Break out of the loop if the
+	token after an attribute isn't a comma.
+
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-parser.c (c_parser_pragma): Handle PRAGMA_OMP_ORDERED here.
+	(c_parser_omp_clause_name): Handle OpenMP 4.5 clauses.
+	(c_parser_omp_variable_list): Handle structure elements for
+	map, to and from clauses.  Handle array sections in reduction
+	clause.  Formatting fixes.
+	(c_parser_omp_clause_if): Add IS_OMP argument, handle parsing of
+	if clause modifiers.
+	(c_parser_omp_clause_num_tasks, c_parser_omp_clause_grainsize,
+	c_parser_omp_clause_priority, c_parser_omp_clause_hint,
+	c_parser_omp_clause_defaultmap, c_parser_omp_clause_use_device_ptr,
+	c_parser_omp_clause_is_device_ptr): New functions.
+	(c_parser_omp_clause_ordered): Parse optional parameter.
+	(c_parser_omp_clause_reduction): Handle array reductions.
+	(c_parser_omp_clause_schedule): Parse optional simd modifier.
+	(c_parser_omp_clause_nogroup, c_parser_omp_clause_orderedkind): New
+	functions.
+	(c_parser_omp_clause_linear): Parse linear clause modifiers.
+	(c_parser_omp_clause_depend_sink): New function.
+	(c_parser_omp_clause_depend): Parse source/sink depend kinds.
+	(c_parser_omp_clause_map): Parse release/delete map kinds and
+	optional always modifier.
+	(c_parser_oacc_all_clauses): Adjust c_parser_omp_clause_if
+	and c_finish_omp_clauses callers.
+	(c_parser_omp_all_clauses): Likewise.  Parse OpenMP 4.5 clauses.
+	Parse "to" as OMP_CLAUSE_TO_DECLARE if on declare target directive.
+	(c_parser_oacc_cache): Adjust c_finish_omp_clauses caller.
+	(OMP_CRITICAL_CLAUSE_MASK): Define.
+	(c_parser_omp_critical): Parse critical clauses.
+	(c_parser_omp_for_loop): Handle doacross loops, adjust
+	c_finish_omp_for and c_finish_omp_clauses callers.
+	(OMP_SIMD_CLAUSE_MASK): Add simdlen clause.
+	(c_parser_omp_simd): Allow ordered clause if it has no parameter.
+	(OMP_FOR_CLAUSE_MASK): Add linear clause.
+	(c_parser_omp_for): Disallow ordered clause when combined with
+	distribute.  Disallow linear clause when combined with distribute
+	and not combined with simd.
+	(OMP_ORDERED_CLAUSE_MASK, OMP_ORDERED_DEPEND_CLAUSE_MASK): Define.
+	(c_parser_omp_ordered): Add CONTEXT argument, remove LOC argument,
+	parse clauses and if depend clause is found, don't parse a body.
+	(c_parser_omp_parallel): Disallow copyin clause on target parallel.
+	Allow target parallel without for after it.
+	(OMP_TASK_CLAUSE_MASK): Add priority clause.
+	(OMP_TARGET_DATA_CLAUSE_MASK): Add use_device_ptr clause.
+	(c_parser_omp_target_data): Diagnose no map clauses or clauses with
+	invalid kinds.
+	(OMP_TARGET_UPDATE_CLAUSE_MASK): Add depend and nowait clauses.
+	(OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
+	OMP_TARGET_EXIT_DATA_CLAUSE_MASK): Define.
+	(c_parser_omp_target_enter_data, c_parser_omp_target_exit_data): New
+	functions.
+	(OMP_TARGET_CLAUSE_MASK): Add depend, nowait, private, firstprivate,
+	defaultmap and is_device_ptr clauses.
+	(c_parser_omp_target): Parse target parallel and target simd.  Set
+	OMP_TARGET_COMBINED on combined constructs.  Parse target enter data
+	and target exit data.  Diagnose invalid map kinds.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Define.
+	(c_parser_omp_declare_target): Parse OpenMP 4.5 forms of this
+	construct.
+	(c_parser_omp_declare_reduction): Use STRIP_NOPS when checking for
+	&omp_priv.
+	(OMP_TASKLOOP_CLAUSE_MASK): Define.
+	(c_parser_omp_taskloop): New function.
+	(c_parser_omp_construct): Don't handle PRAGMA_OMP_ORDERED here,
+	handle PRAGMA_OMP_TASKLOOP.
+	(c_parser_cilk_for): Adjust c_finish_omp_clauses callers.
+	* c-tree.h (c_finish_omp_clauses): Add two new arguments.
+	* c-typeck.c (handle_omp_array_sections_1): Fix comment typo.
+	Add IS_OMP argument, handle structure element bases, diagnose
+	bitfields, pass IS_OMP recursively, diagnose known zero length
+	array sections in depend clauses, handle array sections in reduction
+	clause, diagnose negative length even for pointers.
+	(handle_omp_array_sections): Add IS_OMP argument, use auto_vec for
+	types, pass IS_OMP down to handle_omp_array_sections_1, handle
+	array sections in reduction clause, set
+	OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION if map could be zero
+	length array section, use GOMP_MAP_FIRSTPRIVATE_POINTER for IS_OMP.
+	(c_finish_omp_clauses): Add IS_OMP and DECLARE_SIMD arguments.
+	Handle new OpenMP 4.5 clauses and new restrictions for the old ones.
+
+2015-10-06  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_statement_after_labels): Use
+	protected_set_expr_location.
+	(c_parser_omp_clause_num_gangs): Likewise.
+	(c_parser_omp_clause_num_threads): Likewise.
+	(c_parser_omp_clause_num_workers): Likewise.
+	(c_parser_omp_clause_vector_length): Likewise.
+	(c_parser_omp_clause_num_teams): Likewise.
+	(c_parser_omp_clause_thread_limit): Likewise.
+	* c-typeck.c (build_c_cast): Likewise.
+	(c_cast_expr): Likewise.
+
+2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-typeck.c (c_tree_equal): Use real_equal instead of
+	REAL_VALUES_EQUAL.
+
+2015-10-04  Jason Merrill  <jason@redhat.com>
+
+	* c-parser.c (c_lex_one_token): Handle @synchronized.
+	* c-decl.c (match_builtin_function_types): A declaration of a built-in
+	can change whether the function is transaction_safe.
+
+2015-10-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67730
+	* c-typeck.c (convert_for_assignment): Use the expansion point
+	location throughout.
+
+2015-10-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64249
+	* c-parser.c (c_parser_statement_after_labels): Add CHAIN parameter
+	and pass it down to c_parser_if_statement.
+	(c_parser_else_body): Add CHAIN parameter and pass it down to
+	c_parser_statement_after_labels.
+	(c_parser_if_statement): Add CHAIN parameter.  Add code to warn about
+	duplicated if-else-if conditions.
+
+2015-10-01  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (convert_for_assignment): Improve commentary.
+
+2015-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67730
+	* c-typeck.c (c_finish_return): Use the expansion point location for
+	certain "return with value" warnings.
+
+2015-09-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-parser.c (pragma_lex): Add loc argument.
+
 2015-09-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c/67580

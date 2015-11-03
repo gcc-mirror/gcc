@@ -1,3 +1,8 @@
+2015-10-15  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR other/66887
+	* mpxrt/mpxrt.c (read_mpx_status_sig): Remove useless code.
+
 2015-07-16  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* configure.ac: Remove link_mpx.

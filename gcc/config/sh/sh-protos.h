@@ -93,6 +93,7 @@ extern rtx sh_fsca_sf2int (void);
 extern rtx sh_fsca_int2sf (void);
 
 /* Declare functions defined in sh.c and used in templates.  */
+extern bool sh_lra_p (void);
 
 extern const char *output_branch (int, rtx_insn *, rtx *);
 extern const char *output_ieee_ccmpeq (rtx_insn *, rtx *);
@@ -306,6 +307,8 @@ extern bool sh_insn_operands_modified_between_p (rtx_insn* operands_insn,
 extern bool sh_reg_dead_or_unused_after_insn (const rtx_insn* i, int regno);
 extern void sh_remove_reg_dead_or_unused_notes (rtx_insn* i, int regno);
 extern rtx_insn* sh_check_add_incdec_notes (rtx_insn* i);
+extern rtx sh_remove_overlapping_post_inc (rtx dst, rtx src);
+extern rtx_insn* sh_peephole_emit_move_insn (rtx dst, rtx src);
 
 extern bool sh_in_recog_treg_set_expr (void);
 extern bool sh_recog_treg_set_expr (rtx op, machine_mode mode);
@@ -374,7 +377,19 @@ extern void fpscr_set_from_mem (int, HARD_REG_SET);
 extern void sh_pr_interrupt (struct cpp_reader *);
 extern void sh_pr_trapa (struct cpp_reader *);
 extern void sh_pr_nosave_low_regs (struct cpp_reader *);
-extern rtx function_symbol (rtx, const char *, enum sh_function_kind);
+
+struct function_symbol_result
+{
+  function_symbol_result (void) : sym (NULL), lab (NULL) { }
+  function_symbol_result (rtx s, rtx l) : sym (s), lab (l) { }
+
+  rtx sym;
+  rtx lab;
+};
+
+extern function_symbol_result function_symbol (rtx, const char *,
+					       sh_function_kind);
+extern rtx sh_get_fdpic_reg_initial_val (void);
 extern rtx sh_get_pr_initial_val (void);
 
 extern void sh_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree,
@@ -393,4 +408,5 @@ extern bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
 extern machine_mode sh_hard_regno_caller_save_mode (unsigned int, unsigned int,
 						    machine_mode);
 extern bool sh_can_use_simple_return_p (void);
+extern rtx sh_load_function_descriptor (rtx);
 #endif /* ! GCC_SH_PROTOS_H */

@@ -9,5 +9,5 @@ foo () /* { dg-error "inlining failed in call to always_inline .* target specifi
 
 int bar()
 {
-  return foo (); /* { dg-error "called from here" } */
+  return foo (); /* { dg-message "called from here" } */
 }

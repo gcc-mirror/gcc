@@ -1466,6 +1466,9 @@ Target supports conversion from @code{float} to @code{signed int}.
 
 @item vect_floatuint_cvt
 Target supports conversion from @code{float} to @code{unsigned int}.
+
+@item vect_max_reduc
+Target supports max reduction for vectors.
 @end table
 
 @subsubsection Thread Local Storage attributes

@@ -33,7 +33,7 @@ Enum(tls_type) String(gnu2) Value(TLS_GNU2)
 
 mabi=
 Target RejectNegative Joined Enum(arm_abi_type) Var(arm_abi) Init(ARM_DEFAULT_ABI)
-Specify an ABI
+Specify an ABI.
 
 Enum
 Name(arm_abi_type) Type(enum arm_abi_type)
@@ -56,29 +56,29 @@ Enum(arm_abi_type) String(aapcs-linux) Value(ARM_ABI_AAPCS_LINUX)
 
 mabort-on-noreturn
 Target Report Mask(ABORT_NORETURN)
-Generate a call to abort if a noreturn function returns
+Generate a call to abort if a noreturn function returns.
 
 mapcs
 Target RejectNegative Mask(APCS_FRAME) Undocumented
 
 mapcs-float
 Target Report Mask(APCS_FLOAT)
-Pass FP arguments in FP registers
+Pass FP arguments in FP registers.
 
 mapcs-frame
 Target Report Mask(APCS_FRAME)
-Generate APCS conformant stack frames
+Generate APCS conformant stack frames.
 
 mapcs-reentrant
 Target Report Mask(APCS_REENT)
-Generate re-entrant, PIC code
+Generate re-entrant, PIC code.
 
 mapcs-stack-check
 Target Report Mask(APCS_STACK) Undocumented
 
 march=
 Target RejectNegative ToLower Joined Enum(arm_arch) Var(arm_arch_option)
-Specify the name of the target architecture
+Specify the name of the target architecture.
 
 ; Other arm_arch values are loaded from arm-tables.opt
 ; but that is a generated file and this is an odd-one-out.
@@ -91,23 +91,23 @@ Generate code in 32 bit ARM state.
 
 mbig-endian
 Target Report RejectNegative Mask(BIG_END)
-Assume target CPU is configured as big endian
+Assume target CPU is configured as big endian.
 
 mcallee-super-interworking
 Target Report Mask(CALLEE_INTERWORKING)
-Thumb: Assume non-static functions may be called from ARM code
+Thumb: Assume non-static functions may be called from ARM code.
 
 mcaller-super-interworking
 Target Report Mask(CALLER_INTERWORKING)
-Thumb: Assume function pointers may go to non-Thumb aware code
+Thumb: Assume function pointers may go to non-Thumb aware code.
 
 mcpu=
 Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_cpu_option) Init(arm_none)
-Specify the name of the target CPU
+Specify the name of the target CPU.
 
 mfloat-abi=
 Target RejectNegative Joined Enum(float_abi_type) Var(arm_float_abi) Init(TARGET_DEFAULT_FLOAT_ABI)
-Specify if floating point hardware should be used
+Specify if floating point hardware should be used.
 
 Enum
 Name(float_abi_type) Type(enum float_abi_type)
@@ -124,11 +124,11 @@ Enum(float_abi_type) String(hard) Value(ARM_FLOAT_ABI_HARD)
 
 mflip-thumb
 Target Report Var(TARGET_FLIP_THUMB) Undocumented
-Switch ARM/Thumb modes on alternating functions for compiler testing
+Switch ARM/Thumb modes on alternating functions for compiler testing.
 
 mfp16-format=
 Target RejectNegative Joined Enum(arm_fp16_format_type) Var(arm_fp16_format) Init(ARM_FP16_FORMAT_NONE)
-Specify the __fp16 floating-point format
+Specify the __fp16 floating-point format.
 
 Enum
 Name(arm_fp16_format_type) Type(enum arm_fp16_format_type)
@@ -145,18 +145,18 @@ Enum(arm_fp16_format_type) String(alternative) Value(ARM_FP16_FORMAT_ALTERNATIVE
 
 mfpu=
 Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index)
-Specify the name of the target floating point hardware/format
+Specify the name of the target floating point hardware/format.
 
 mhard-float
 Target RejectNegative Alias(mfloat-abi=, hard) Undocumented
 
 mlittle-endian
 Target Report RejectNegative InverseMask(BIG_END)
-Assume target CPU is configured as little endian
+Assume target CPU is configured as little endian.
 
 mlong-calls
 Target Report Mask(LONG_CALLS)
-Generate call insns as indirect calls, if necessary
+Generate call insns as indirect calls, if necessary.
 
 mpic-data-is-text-relative
 Target Report Var(arm_pic_data_is_text_relative) Init(TARGET_DEFAULT_PIC_DATA_IS_TEXT_RELATIVE)
@@ -164,42 +164,42 @@ Assume data segments are relative to text segment.
 
 mpic-register=
 Target RejectNegative Joined Var(arm_pic_register_string)
-Specify the register to be used for PIC addressing
+Specify the register to be used for PIC addressing.
 
 mpoke-function-name
 Target Report Mask(POKE_FUNCTION_NAME)
-Store function names in object code
+Store function names in object code.
 
 msched-prolog
 Target Report Mask(SCHED_PROLOG)
-Permit scheduling of a function's prologue sequence
+Permit scheduling of a function's prologue sequence.
 
 msingle-pic-base
 Target Report Mask(SINGLE_PIC_BASE)
-Do not load the PIC register in function prologues
+Do not load the PIC register in function prologues.
 
 msoft-float
 Target RejectNegative Alias(mfloat-abi=, soft) Undocumented
 
 mstructure-size-boundary=
 Target RejectNegative Joined UInteger Var(arm_structure_size_boundary) Init(DEFAULT_STRUCTURE_SIZE_BOUNDARY)
-Specify the minimum bit alignment of structures
+Specify the minimum bit alignment of structures.
 
 mthumb
 Target Report RejectNegative Mask(THUMB) Save
-Generate code for Thumb state
+Generate code for Thumb state.
 
 mthumb-interwork
 Target Report Mask(INTERWORK)
-Support calls between Thumb and ARM instruction sets
+Support calls between Thumb and ARM instruction sets.
 
 mtls-dialect=
 Target RejectNegative Joined Enum(tls_type) Var(target_tls_dialect) Init(TLS_GNU)
-Specify thread local storage scheme
+Specify thread local storage scheme.
 
 mtp=
 Target RejectNegative Joined Enum(arm_tp_type) Var(target_thread_pointer) Init(TP_AUTO)
-Specify how to access the thread pointer
+Specify how to access the thread pointer.
 
 Enum
 Name(arm_tp_type) Type(enum arm_tp_type)
@@ -216,15 +216,15 @@ Enum(arm_tp_type) String(cp15) Value(TP_CP15)
 
 mtpcs-frame
 Target Report Mask(TPCS_FRAME)
-Thumb: Generate (non-leaf) stack frames even if not needed
+Thumb: Generate (non-leaf) stack frames even if not needed.
 
 mtpcs-leaf-frame
 Target Report Mask(TPCS_LEAF_FRAME)
-Thumb: Generate (leaf) stack frames even if not needed
+Thumb: Generate (leaf) stack frames even if not needed.
 
 mtune=
 Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_tune_option) Init(arm_none)
-Tune code for the given processor
+Tune code for the given processor.
 
 mprint-tune-info
 Target Report RejectNegative Var(print_tune_info) Init(0)
@@ -239,11 +239,11 @@ Enum(processor_type) String(native) Value(-1) DriverOnly
 
 mvectorize-with-neon-quad
 Target Report RejectNegative InverseMask(NEON_VECTORIZE_DOUBLE)
-Use Neon quad-word (rather than double-word) registers for vectorization
+Use Neon quad-word (rather than double-word) registers for vectorization.
 
 mvectorize-with-neon-double
 Target Report RejectNegative Mask(NEON_VECTORIZE_DOUBLE)
-Use Neon double-word (rather than quad-word) registers for vectorization
+Use Neon double-word (rather than quad-word) registers for vectorization.
 
 mword-relocations
 Target Report Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)

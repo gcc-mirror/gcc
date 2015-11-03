@@ -86,6 +86,8 @@
 	       || (SCALAR_FLOAT_MODE_P (GET_MODE (X))			\
 		   && ! TARGET_NO_FP_IN_TOC)))))
 
+#undef TARGET_DEBUG_UNWIND_INFO
+#define TARGET_DEBUG_UNWIND_INFO  rs6000_xcoff_debug_unwind_info
 #define TARGET_ASM_OUTPUT_ANCHOR  rs6000_xcoff_asm_output_anchor
 #define TARGET_ASM_GLOBALIZE_LABEL  rs6000_xcoff_asm_globalize_label
 #define TARGET_ASM_INIT_SECTIONS  rs6000_xcoff_asm_init_sections
@@ -264,7 +266,7 @@
 
 #ifdef HAVE_AS_TLS
 #define ASM_OUTPUT_TLS_COMMON(FILE, DECL, NAME, SIZE)	\
-  do { fputs(COMMON_ASM_OP, (FILE));			\
+  do { fputs (COMMON_ASM_OP, (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
        fprintf ((FILE), "[UL]," HOST_WIDE_INT_PRINT_UNSIGNED"\n", \
        (SIZE));						\
@@ -296,10 +298,26 @@
   "\t.csect .data[RW]," XCOFF_CSECT_DEFAULT_ALIGNMENT_STR
 
 
-/* Define to prevent DWARF2 unwind info in the data section rather
-   than in the .eh_frame section.  We do this because the AIX linker
-   would otherwise garbage collect these sections.  */
-#define EH_FRAME_IN_DATA_SECTION 1
+/* The eh_frames are put in the read-only text segment.
+   Local code labels/function will also be in the local text segment so use
+   PC relative addressing.
+   Global symbols must be in the data segment to allow loader relocations.
+   So use DW_EH_PE_indirect to allocate a slot in the local data segment.
+   There is no constant offset to this data segment from the text segment,
+   so use addressing relative to the data segment.
+ */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL) \
+  (((GLOBAL) ? DW_EH_PE_indirect | DW_EH_PE_datarel : DW_EH_PE_pcrel) \
+   | (TARGET_64BIT ? DW_EH_PE_sdata8 : DW_EH_PE_sdata4))
+
+#define EH_FRAME_THROUGH_COLLECT2 1
+#define EH_TABLES_CAN_BE_READ_ONLY 1
+
+#define ASM_OUTPUT_DWARF_PCREL(FILE,SIZE,LABEL) \
+  rs6000_asm_output_dwarf_pcrel ((FILE), (SIZE), (LABEL));
+
+#define ASM_OUTPUT_DWARF_DATAREL(FILE,SIZE,LABEL) \
+  rs6000_asm_output_dwarf_datarel ((FILE), (SIZE), (LABEL));
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
 

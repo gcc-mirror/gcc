@@ -21,26 +21,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "opts.h"
-#include "toplev.h"
-#include "alias.h"
 #include "tm.h"
 #include "function.h"
 #include "bitmap.h"
-#include "cfghooks.h"
 #include "basic-block.h"
+#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "options.h"
+#include "cfghooks.h"
+#include "alloc-pool.h"
+#include "tree-pass.h"
+#include "tree-ssa-operands.h"
+#include "tree-streamer.h"
+#include "cgraph.h"
+#include "diagnostic-core.h"
+#include "opts.h"
+#include "toplev.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "diagnostic-core.h"
-#include "cgraph.h"
-#include "tree-ssa-operands.h"
-#include "tree-pass.h"
 #include "langhooks.h"
-#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "common.h"
@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "lto.h"
 #include "lto-tree.h"
-#include "tree-streamer.h"
 #include "lto-section-names.h"
 #include "splay-tree.h"
 #include "lto-partition.h"
@@ -288,6 +287,7 @@ static hashval_t
 hash_canonical_type (tree type)
 {
   inchash::hash hstate;
+  enum tree_code code;
 
   /* We compute alias sets only for types that needs them.
      Be sure we do not recurse to something else as we can not hash incomplete
@@ -299,7 +299,8 @@ hash_canonical_type (tree type)
      smaller sets; when searching for existing matching types to merge,
      only existing types having the same features as the new type will be
      checked.  */
-  hstate.add_int (tree_code_for_canonical_type_merging (TREE_CODE (type)));
+  code = tree_code_for_canonical_type_merging (TREE_CODE (type));
+  hstate.add_int (code);
   hstate.add_int (TYPE_MODE (type));
 
   /* Incorporate common features of numerical types.  */
@@ -309,8 +310,9 @@ hash_canonical_type (tree type)
       || TREE_CODE (type) == OFFSET_TYPE
       || POINTER_TYPE_P (type))
     {
-      hstate.add_int (TYPE_UNSIGNED (type));
       hstate.add_int (TYPE_PRECISION (type));
+      if (!type_with_interoperable_signedness (type))
+        hstate.add_int (TYPE_UNSIGNED (type));
     }
 
   if (VECTOR_TYPE_P (type))
@@ -1583,19 +1585,18 @@ unify_scc (struct data_in *data_in, unsigned from,
 	  num_sccs_merged++;
 	  total_scc_size_merged += len;
 
-#ifdef ENABLE_CHECKING
-	  for (unsigned i = 0; i < len; ++i)
-	    {
-	      tree t = map[2*i+1];
-	      enum tree_code code = TREE_CODE (t);
-	      /* IDENTIFIER_NODEs should be singletons and are merged by the
-		 streamer.  The others should be singletons, too, and we
-		 should not merge them in any way.  */
-	      gcc_assert (code != TRANSLATION_UNIT_DECL
-			  && code != IDENTIFIER_NODE
-			  && !streamer_handle_as_builtin_p (t));
-	    }
-#endif
+	  if (flag_checking)
+	    for (unsigned i = 0; i < len; ++i)
+	      {
+		tree t = map[2*i+1];
+		enum tree_code code = TREE_CODE (t);
+		/* IDENTIFIER_NODEs should be singletons and are merged by the
+		   streamer.  The others should be singletons, too, and we
+		   should not merge them in any way.  */
+		gcc_assert (code != TRANSLATION_UNIT_DECL
+			    && code != IDENTIFIER_NODE
+			    && !streamer_handle_as_builtin_p (t));
+	      }
 
 	  /* Fixup the streamer cache with the prevailing nodes according
 	     to the tree node mapping computed by compare_tree_sccs.  */
@@ -2633,10 +2634,8 @@ lto_fixup_state (struct lto_in_decl_state *state)
       for (i = 0; i < vec_safe_length (trees); i++)
 	{
 	  tree t = (*trees)[i];
-#ifdef ENABLE_CHECKING
-	  if (TYPE_P (t))
+	  if (flag_checking && TYPE_P (t))
 	    verify_type (t);
-#endif
 	  if (VAR_OR_FUNCTION_DECL_P (t)
 	      && (TREE_PUBLIC (t) || DECL_EXTERNAL (t)))
 	    (*trees)[i] = lto_symtab_prevailing_decl (t);
@@ -3098,9 +3097,8 @@ do_whole_program_analysis (void)
       fprintf (symtab->dump_file, "Optimized ");
       symtab_node::dump_table (symtab->dump_file);
     }
-#ifdef ENABLE_CHECKING
-  symtab_node::verify_symtab_nodes ();
-#endif
+
+  symtab_node::checking_verify_symtab_nodes ();
   bitmap_obstack_release (NULL);
 
   /* We are about to launch the final LTRANS phase, stop the WPA timer.  */

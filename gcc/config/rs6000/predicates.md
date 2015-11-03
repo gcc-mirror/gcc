@@ -684,7 +684,7 @@
 ;; Like indexed_or_indirect_operand, but also allow a GPR register if direct
 ;; moves are supported.
 (define_predicate "reg_or_indexed_operand"
-  (match_code "mem,reg")
+  (match_code "mem,reg,subreg")
 {
   if (MEM_P (op))
     return indexed_or_indirect_operand (op, mode);

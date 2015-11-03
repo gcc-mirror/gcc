@@ -22,44 +22,27 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "c-family/c-common.h"
+#include "cfghooks.h"
 #include "df.h"
+#include "tm_p.h"
+#include "optabs.h"
 #include "regs.h"
-#include "insn-config.h"
+#include "emit-rtl.h"
+#include "recog.h"
 #include "conditions.h"
 #include "insn-attr.h"
-#include "insn-codes.h"
-#include "flags.h"
 #include "reload.h"
-#include "alias.h"
-#include "fold-const.h"
 #include "varasm.h"
-#include "print-tree.h"
 #include "calls.h"
 #include "stor-layout.h"
-#include "stringpool.h"
 #include "output.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "c-family/c-common.h"
-#include "diagnostic-core.h"
-#include "recog.h"
-#include "optabs.h"
 #include "langhooks.h"
-#include "tm_p.h"
-#include "target.h"
-#include "params.h"
 #include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
 #include "builtins.h"
 #include "context.h"
 #include "tree-pass.h"
@@ -2431,11 +2414,9 @@ avr_print_operand (FILE *file, rtx x, int code)
   else if (GET_CODE (x) == CONST_DOUBLE)
     {
       long val;
-      REAL_VALUE_TYPE rv;
       if (GET_MODE (x) != SFmode)
         fatal_insn ("internal compiler error.  Unknown mode:", x);
-      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-      REAL_VALUE_TO_TARGET_SINGLE (rv, val);
+      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), val);
       fprintf (file, "0x%lx", val);
     }
   else if (GET_CODE (x) == CONST_STRING)

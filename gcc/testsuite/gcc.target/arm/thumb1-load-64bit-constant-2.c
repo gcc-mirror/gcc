@@ -1,5 +1,5 @@
-/* { dg-require-effective-target arm_thumb1_ok } */
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_thumb1_ok } */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { ! { arm_thumb1 } } } */
 

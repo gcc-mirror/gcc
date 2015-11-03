@@ -628,7 +628,11 @@ package body Namet is
    -- Get_Last_Two_Chars --
    ------------------------
 
-   procedure Get_Last_Two_Chars (N : Name_Id; C1, C2 : out Character) is
+   procedure Get_Last_Two_Chars
+     (N  : Name_Id;
+      C1 : out Character;
+      C2 : out Character)
+   is
       NE  : Name_Entry renames Name_Entries.Table (N);
       NEL : constant Int := Int (NE.Name_Len);
 
@@ -1309,6 +1313,37 @@ package body Namet is
              T = V11;
    end Nam_In;
 
+   -----------------
+   -- Name_Equals --
+   -----------------
+
+   function Name_Equals (N1 : Name_Id; N2 : Name_Id) return Boolean is
+   begin
+      if N1 = N2 then
+         return True;
+      end if;
+
+      declare
+         L1 : constant Int := Int (Name_Entries.Table (N1).Name_Len);
+         L2 : constant Int := Int (Name_Entries.Table (N2).Name_Len);
+
+      begin
+         if L1 /= L2 then
+            return False;
+         end if;
+
+         declare
+            use Name_Chars;
+            I1 : constant Int := Name_Entries.Table (N1).Name_Chars_Index;
+            I2 : constant Int := Name_Entries.Table (N2).Name_Chars_Index;
+
+         begin
+            return (Name_Chars.Table (1 + I1 .. I1 + L1) =
+                    Name_Chars.Table (1 + I2 .. I2 + L2));
+         end;
+      end;
+   end Name_Equals;
+
    ------------------
    -- Reinitialize --
    ------------------
@@ -1421,7 +1456,6 @@ package body Namet is
    -----------------------------
 
    procedure Store_Encoded_Character (C : Char_Code) is
-
       procedure Set_Hex_Chars (C : Char_Code);
       --  Stores given value, which is in the range 0 .. 255, as two hex
       --  digits (using lower case a-f) in Name_Buffer, incrementing Name_Len.

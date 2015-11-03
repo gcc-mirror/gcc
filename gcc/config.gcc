@@ -420,6 +420,7 @@ microblaze*-*-*)
 mips*-*-*)
 	cpu_type=mips
 	extra_headers="loongson.h"
+	extra_objs="frame-header-opt.o"
 	extra_options="${extra_options} g.opt fused-madd.opt mips/mips-tables.opt"
 	;;
 nds32*)
@@ -587,15 +588,15 @@ tm_defines="$tm_defines LIBC_GLIBC=1 LIBC_UCLIBC=2 LIBC_BIONIC=3 LIBC_MUSL=4"
 x86_archs="athlon athlon-4 athlon-fx athlon-mp athlon-tbird \
 athlon-xp k6 k6-2 k6-3 geode c3 c3-2 winchip-c6 winchip2 i386 i486 \
 i586 i686 pentium pentium-m pentium-mmx pentium2 pentium3 pentium3m \
-pentium4 pentium4m pentiumpro prescott iamcu"
+pentium4 pentium4m pentiumpro prescott lakemont"
 
 # 64-bit x86 processors supported by --with-arch=.  Each processor
 # MUST be separated by exactly one space.
 x86_64_archs="amdfam10 athlon64 athlon64-sse3 barcelona bdver1 bdver2 \
-bdver3 bdver4 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
+bdver3 bdver4 znver1 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
 core2 corei7 corei7-avx core-avx-i core-avx2 atom slm nehalem westmere \
-sandybridge ivybridge haswell broadwell bonnell silvermont knl x86-64 \
-native"
+sandybridge ivybridge haswell broadwell bonnell silvermont knl \
+skylake-avx512 x86-64 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -1834,7 +1835,7 @@ iq2000*-*-elf*)
         md_file=iq2000/iq2000.md
         ;;
 lm32-*-elf*)
-        tm_file="dbxelf.h elfos.h ${tm_file}"
+        tm_file="dbxelf.h elfos.h ${tm_file} newlib-stdint.h"
 	tmake_file="${tmake_file} lm32/t-lm32"
         ;;
 lm32-*-rtems*)
@@ -2442,6 +2443,10 @@ powerpc*-*-linux*)
 	    powerpc*-*-linux*paired*)
 		tm_file="${tm_file} rs6000/750cl.h" ;;
 	esac
+	case ${target} in
+	    *-linux*-musl*)
+		enable_secureplt=yes ;;
+	esac
 	if test x${enable_secureplt} = xyes; then
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
@@ -2527,7 +2532,7 @@ rs6000-ibm-aix5.3.* | powerpc-ibm-aix5.3.*)
 	use_gcc_stdint=wrap
 	extra_headers=altivec.h
 	;;
-rs6000-ibm-aix[6789].* | powerpc-ibm-aix[6789].*)
+rs6000-ibm-aix6.* | powerpc-ibm-aix6.*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix61.h rs6000/xcoff.h rs6000/aix-stdint.h"
 	tmake_file="rs6000/t-aix52 t-slibgcc"
 	extra_options="${extra_options} rs6000/aix64.opt"
@@ -2535,6 +2540,17 @@ rs6000-ibm-aix[6789].* | powerpc-ibm-aix[6789].*)
 	thread_file='aix'
 	use_gcc_stdint=wrap
 	extra_headers=altivec.h
+	default_use_cxa_atexit=yes
+	;;
+rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
+	tm_file="${tm_file} rs6000/aix.h rs6000/aix71.h rs6000/xcoff.h rs6000/aix-stdint.h"
+	tmake_file="rs6000/t-aix52 t-slibgcc"
+	extra_options="${extra_options} rs6000/aix64.opt"
+	use_collect2=yes
+	thread_file='aix'
+	use_gcc_stdint=wrap
+	extra_headers=altivec.h
+	default_use_cxa_atexit=yes
 	;;
 rl78-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
@@ -2612,6 +2628,9 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 	tm_file="${tm_file} dbxelf.h elfos.h sh/elf.h"
 	case ${target} in
 	sh*-*-linux*)	tmake_file="${tmake_file} sh/t-linux"
+			if test x$enable_fdpic = xyes; then
+				tm_defines="$tm_defines FDPIC_DEFAULT=1"
+			fi
 			tm_file="${tm_file} gnu-user.h linux.h glibc-stdint.h sh/linux.h" ;;
 	sh*-*-netbsd*)
 			tm_file="${tm_file} netbsd.h netbsd-elf.h sh/netbsd-elf.h"
@@ -2986,6 +3005,11 @@ xtensa*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/linux.h"
 	tmake_file="${tmake_file} xtensa/t-xtensa"
 	;;
+xtensa*-*-uclinux*)
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/uclinux.h"
+	tmake_file="${tmake_file} xtensa/t-xtensa"
+	extra_options="${extra_options} xtensa/uclinux.opt"
+	;;
 am33_2.0-*-linux*)
 	tm_file="mn10300/mn10300.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h mn10300/linux.h"
 	gas=yes gnu_ld=yes
@@ -3105,6 +3129,10 @@ case ${target} in
     ;;
   i686-*-* | i786-*-*)
     case ${target_noncanonical} in
+      znver1-*)
+	arch=znver1
+	cpu=znver1
+	;;
       bdver4-*)
         arch=bdver4
         cpu=bdver4
@@ -3218,6 +3246,10 @@ case ${target} in
     ;;
   x86_64-*-*)
     case ${target_noncanonical} in
+      znver1-*)
+	arch=znver1
+	cpu=znver1
+	;;
       bdver4-*)
         arch=bdver4
         cpu=bdver4
@@ -3287,7 +3319,7 @@ esac
 if test x$with_cpu = x ; then
   case ${target} in
     i[34567]86-*-elfiamcu)
-      with_cpu=iamcu
+      with_cpu=lakemont
       ;;
     i[34567]86-*-*|x86_64-*-*)
       with_cpu=$cpu
@@ -3385,7 +3417,7 @@ if test x$with_arch = x ; then
       # and TARGET_SUBTARGET64_ISA_DEFAULT in config/i386/darwin.h.
       ;;
     i[34567]86-*-elfiamcu)
-      with_arch=iamcu
+      with_arch=lakemont
       ;;
     i[34567]86-*-*)
       # --with-fpmath sets the default ISA to SSE2, which is the same
@@ -3522,7 +3554,7 @@ case "${target}" in
 
 			eval "val=\$with_$which"
 			base_val=`echo $val | sed -e 's/\+.*//'`
-			ext_val=`echo $val | sed -e 's/[a-z0-9\-]\+//'`
+			ext_val=`echo $val | sed -e 's/[a-z0-9.-]\+//'`
 
 			if [ $which = arch ]; then
 			  def=aarch64-arches.def

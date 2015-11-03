@@ -505,6 +505,8 @@ extern Node_Id Current_Error_Node;
 #define List10(N)     Field10 (N)
 #define List14(N)     Field14 (N)
 #define List25(N)     Field25 (N)
+#define List38(N)     Field38 (N)
+#define List39(N)     Field39 (N)
 
 #define Elist1(N)     Field1  (N)
 #define Elist2(N)     Field2  (N)
@@ -523,6 +525,7 @@ extern Node_Id Current_Error_Node;
 #define Elist24(N)    Field24 (N)
 #define Elist25(N)    Field25 (N)
 #define Elist26(N)    Field26 (N)
+#define Elist36(N)    Field36 (N)
 
 #define Name1(N)      Field1  (N)
 #define Name2(N)      Field2  (N)

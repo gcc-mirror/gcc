@@ -21,24 +21,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
 #include "fold-const.h"
-#include "tm_p.h"
-#include "internal-fn.h"
 #include "gimplify.h"
 #include "tree-cfg.h"
+#include "tree-ssa.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
 #include "cfgloop.h"
 #include "params.h"
-#include "tree-pass.h"
 #include "tree-inline.h"
+#include "gimple-iterator.h"
+#include "cfghooks.h"
 
 /* This file implements the loop unswitching, i.e. transformation of loops like
 
@@ -79,6 +77,13 @@ along with GCC; see the file COPYING3.  If not see
 static struct loop *tree_unswitch_loop (struct loop *, basic_block, tree);
 static bool tree_unswitch_single_loop (struct loop *, int);
 static tree tree_may_unswitch_on (basic_block, struct loop *);
+static bool tree_unswitch_outer_loop (struct loop *);
+static edge find_loop_guard (struct loop *);
+static bool empty_bb_without_guard_p (struct loop *, basic_block);
+static bool used_outside_loop_p (struct loop *, tree);
+static void hoist_guard (struct loop *, edge);
+static bool check_exit_phi (struct loop *);
+static tree get_vop_from_header (struct loop *);
 
 /* Main entry point.  Perform loop unswitching on all suitable loops.  */
 
@@ -87,42 +92,15 @@ tree_ssa_unswitch_loops (void)
 {
   struct loop *loop;
   bool changed = false;
-  HOST_WIDE_INT iterations;
 
-  /* Go through inner loops (only original ones).  */
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  /* Go through all loops starting from innermost.  */
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-        fprintf (dump_file, ";; Considering loop %d\n", loop->num);
-
-      /* Do not unswitch in cold regions. */
-      if (optimize_loop_for_size_p (loop))
-        {
-          if (dump_file && (dump_flags & TDF_DETAILS))
-            fprintf (dump_file, ";; Not unswitching cold loops\n");
-          continue;
-        }
-
-      /* The loop should not be too large, to limit code growth. */
-      if (tree_num_loop_insns (loop, &eni_size_weights)
-          > (unsigned) PARAM_VALUE (PARAM_MAX_UNSWITCH_INSNS))
-        {
-          if (dump_file && (dump_flags & TDF_DETAILS))
-            fprintf (dump_file, ";; Not unswitching, loop too big\n");
-          continue;
-        }
-
-      /* If the loop is not expected to iterate, there is no need
-	 for unswitching.  */
-      iterations = estimated_loop_iterations_int (loop);
-      if (iterations >= 0 && iterations <= 1)
-	{
-          if (dump_file && (dump_flags & TDF_DETAILS))
-            fprintf (dump_file, ";; Not unswitching, loop is not expected to iterate\n");
-          continue;
-	}
-
-      changed |= tree_unswitch_single_loop (loop, 0);
+      if (!loop->inner)
+	/* Unswitch innermost loop.  */
+	changed |= tree_unswitch_single_loop (loop, 0);
+      else
+	changed |= tree_unswitch_outer_loop (loop);
     }
 
   if (changed)
@@ -136,7 +114,7 @@ tree_ssa_unswitch_loops (void)
 static tree
 tree_may_unswitch_on (basic_block bb, struct loop *loop)
 {
-  gimple last, def;
+  gimple *last, *def;
   gcond *stmt;
   tree cond, use;
   basic_block def_bb;
@@ -157,6 +135,10 @@ tree_may_unswitch_on (basic_block bb, struct loop *loop)
   /* Condition must be invariant.  */
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
+      /* Unswitching on undefined values would introduce undefined
+	 behavior that the original program might never exercise.  */
+      if (ssa_undefined_value_p (use, true))
+	return NULL_TREE;
       def = SSA_NAME_DEF_STMT (use);
       def_bb = gimple_bb (def);
       if (def_bb
@@ -178,7 +160,7 @@ static tree
 simplify_using_entry_checks (struct loop *loop, tree cond)
 {
   edge e = loop_preheader_edge (loop);
-  gimple stmt;
+  gimple *stmt;
 
   while (1)
     {
@@ -214,8 +196,41 @@ tree_unswitch_single_loop (struct loop *loop, int num)
   struct loop *nloop;
   unsigned i, found;
   tree cond = NULL_TREE;
-  gimple stmt;
+  gimple *stmt;
   bool changed = false;
+  HOST_WIDE_INT iterations;
+
+  /* Perform initial tests if unswitch is eligible.  */
+  if (num == 0)
+    {
+      /* Do not unswitch in cold regions. */
+      if (optimize_loop_for_size_p (loop))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, ";; Not unswitching cold loops\n");
+	  return false;
+	}
+
+      /* The loop should not be too large, to limit code growth. */
+      if (tree_num_loop_insns (loop, &eni_size_weights)
+	  > (unsigned) PARAM_VALUE (PARAM_MAX_UNSWITCH_INSNS))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, ";; Not unswitching, loop too big\n");
+	  return false;
+	}
+
+      /* If the loop is not expected to iterate, there is no need
+	 for unswitching.  */
+      iterations = estimated_loop_iterations_int (loop);
+      if (iterations >= 0 && iterations <= 1)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, ";; Not unswitching, loop is not expected"
+		     " to iterate\n");
+	  return false;
+	}
+    }
 
   i = 0;
   bbs = get_loop_body (loop);
@@ -314,7 +329,7 @@ tree_unswitch_single_loop (struct loop *loop, int num)
 
 	  if (EDGE_COUNT (b->succs) == 2)
 	    {
-	      gimple stmt = last_stmt (b);
+	      gimple *stmt = last_stmt (b);
 	      if (stmt
 		  && gimple_code (stmt) == GIMPLE_COND)
 		{
@@ -401,6 +416,383 @@ tree_unswitch_loop (struct loop *loop,
   return loop_version (loop, unshare_expr (cond),
 		       NULL, prob_true, prob_true,
 		       REG_BR_PROB_BASE - prob_true, false);
+}
+
+/* Unswitch outer loops by hoisting invariant guard on
+   inner loop without code duplication.  */
+static bool
+tree_unswitch_outer_loop (struct loop *loop)
+{
+  edge exit, guard;
+  HOST_WIDE_INT iterations;
+
+  gcc_assert (loop->inner);
+  if (loop->inner->next)
+    return false;
+  /* Accept loops with single exit only.  */
+  exit = single_exit (loop);
+  if (!exit)
+    return false;
+  /* Check that phi argument of exit edge is not defined inside loop.  */
+  if (!check_exit_phi (loop))
+    return false;
+  /* If the loop is not expected to iterate, there is no need
+      for unswitching.  */
+  iterations = estimated_loop_iterations_int (loop);
+  if (iterations >= 0 && iterations <= 1)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, ";; Not unswitching, loop is not expected"
+		 " to iterate\n");
+	return false;
+    }
+
+  guard = find_loop_guard (loop);
+  if (guard)
+    {
+      hoist_guard (loop, guard);
+      update_ssa (TODO_update_ssa);
+      return true;
+    }
+  return false;
+}
+
+/* Checks if the body of the LOOP is within an invariant guard.  If this
+   is the case, returns the edge that jumps over the real body of the loop,
+   otherwise returns NULL.  */
+
+static edge
+find_loop_guard (struct loop *loop)
+{
+  basic_block header = loop->header;
+  edge guard_edge, te, fe;
+  basic_block *body = NULL;
+  unsigned i;
+  tree use;
+  ssa_op_iter iter;
+
+  /* We check for the following situation:
+
+     while (1)
+       {
+	 [header]]
+         loop_phi_nodes;
+	 something1;
+	 if (cond1)
+	   body;
+	 nvar = phi(orig, bvar) ... for all variables changed in body;
+	 [guard_end]
+	 something2;
+	 if (cond2)
+	   break;
+	 something3;
+       }
+
+     where:
+
+     1) cond1 is loop invariant
+     2) If cond1 is false, then the loop is essentially empty; i.e.,
+	a) nothing in something1, something2 and something3 has side
+	   effects
+	b) anything defined in something1, something2 and something3
+	   is not used outside of the loop.  */
+
+  while (single_succ_p (header))
+    header = single_succ (header);
+  if (!last_stmt (header)
+      || gimple_code (last_stmt (header)) != GIMPLE_COND)
+    return NULL;
+
+  extract_true_false_edges_from_block (header, &te, &fe);
+  if (!flow_bb_inside_loop_p (loop, te->dest)
+      || !flow_bb_inside_loop_p (loop, fe->dest))
+    return NULL;
+
+  if (just_once_each_iteration_p (loop, te->dest)
+      || (single_succ_p (te->dest)
+	  && just_once_each_iteration_p (loop, single_succ (te->dest))))
+    {
+      if (just_once_each_iteration_p (loop, fe->dest))
+	return NULL;
+      guard_edge = te;
+    }
+  else if (just_once_each_iteration_p (loop, fe->dest)
+	   || (single_succ_p (fe->dest)
+	       && just_once_each_iteration_p (loop, single_succ (fe->dest))))
+    guard_edge = fe;
+  else
+    return NULL;
+
+  /* Guard edge must skip inner loop.  */
+  if (!dominated_by_p (CDI_DOMINATORS, loop->inner->header,
+      guard_edge == fe ? te->dest : fe->dest))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Guard edge %d --> %d is not around the loop!\n",
+		 guard_edge->src->index, guard_edge->dest->index);
+      return NULL;
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file,
+	     "Considering guard %d -> %d in loop %d\n",
+	     guard_edge->src->index, guard_edge->dest->index, loop->num);
+  /* Check if condition operands do not have definitions inside loop since
+     any bb copying is not performed.  */
+  FOR_EACH_SSA_TREE_OPERAND (use, last_stmt (header), iter, SSA_OP_USE)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (use);
+      basic_block def_bb = gimple_bb (def);
+      if (def_bb
+          && flow_bb_inside_loop_p (loop, def_bb))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  guard operands have definitions"
+				" inside loop\n");
+	  return NULL;
+	}
+    }
+
+  body = get_loop_body (loop);
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = body[i];
+      if (bb->loop_father != loop)
+	continue;
+      if (bb->flags & BB_IRREDUCIBLE_LOOP)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Block %d is marked as irreducible in loop\n",
+		      bb->index);
+	  guard_edge = NULL;
+	  goto end;
+	}
+      if (!empty_bb_without_guard_p (loop, bb))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  block %d has side effects\n", bb->index);
+	  guard_edge = NULL;
+	  goto end;
+	}
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "  suitable to hoist\n");
+end:
+  if (body)
+    free (body);
+  return guard_edge;
+}
+
+/* Returns true if
+   1) no statement in BB has side effects
+   2) assuming that edge GUARD is always taken, all definitions in BB
+      are noy used outside of the loop.
+   KNOWN_INVARIANTS is a set of ssa names we know to be invariant, and
+   PROCESSED is a set of ssa names for that we already tested whether they
+   are invariant or not.  */
+
+static bool
+empty_bb_without_guard_p (struct loop *loop, basic_block bb)
+{
+  basic_block exit_bb = single_exit (loop)->src;
+  bool may_be_used_outside = (bb == exit_bb
+			      || !dominated_by_p (CDI_DOMINATORS, bb, exit_bb));
+  tree name;
+  ssa_op_iter op_iter;
+
+  /* Phi nodes do not have side effects, but their results might be used
+     outside of the loop.  */
+  if (may_be_used_outside)
+    {
+      for (gphi_iterator gsi = gsi_start_phis (bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  name = PHI_RESULT (phi);
+	  if (virtual_operand_p (name))
+	    continue;
+
+	  if (used_outside_loop_p (loop, name))
+	    return false;
+	}
+    }
+
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (gimple_has_side_effects (stmt))
+	return false;
+
+      if (gimple_vdef(stmt))
+	return false;
+
+      FOR_EACH_SSA_TREE_OPERAND (name, stmt, op_iter, SSA_OP_DEF)
+	{
+	  if (may_be_used_outside
+	      && used_outside_loop_p (loop, name))
+	    return false;
+	}
+    }
+  return true;
+}
+
+/* Return true if NAME is used outside of LOOP.  */
+
+static bool
+used_outside_loop_p (struct loop *loop, tree name)
+{
+  imm_use_iterator it;
+  use_operand_p use;
+
+  FOR_EACH_IMM_USE_FAST (use, it, name)
+    {
+      gimple *stmt = USE_STMT (use);
+      if (!flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
+	return true;
+    }
+
+  return false;
+}
+
+/* Return argument for loop preheader edge in header virtual phi if any.  */
+
+static tree
+get_vop_from_header (struct loop *loop)
+{
+  for (gphi_iterator gsi = gsi_start_phis (loop->header);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gphi *phi = gsi.phi ();
+      if (!virtual_operand_p (gimple_phi_result (phi)))
+	continue;
+      return PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
+    }
+  return NULL_TREE;
+}
+
+/* Move the check of GUARD outside of LOOP.  */
+
+static void
+hoist_guard (struct loop *loop, edge guard)
+{
+  edge exit = single_exit (loop);
+  edge preh = loop_preheader_edge (loop);
+  basic_block pre_header = preh->src;
+  basic_block bb;
+  edge te, fe, e, new_edge;
+  gimple *stmt;
+  basic_block guard_bb = guard->src;
+  gimple_stmt_iterator gsi;
+  int flags = 0;
+  bool fix_dom_of_exit;
+  gcond *cond_stmt, *new_cond_stmt;
+
+  bb = get_immediate_dominator (CDI_DOMINATORS, exit->dest);
+  fix_dom_of_exit = flow_bb_inside_loop_p (loop, bb);
+  gsi = gsi_last_bb (guard_bb);
+  stmt = gsi_stmt (gsi);
+  gcc_assert (gimple_code (stmt) == GIMPLE_COND);
+  cond_stmt = as_a <gcond *> (stmt);
+  extract_true_false_edges_from_block (guard_bb, &te, &fe);
+  /* Insert guard to PRE_HEADER.  */
+  if (!empty_block_p (pre_header))
+    gsi = gsi_last_bb (pre_header);
+  else
+    gsi = gsi_start_bb (pre_header);
+  /* Create copy of COND_STMT.  */
+  new_cond_stmt = gimple_build_cond (gimple_cond_code (cond_stmt),
+				     gimple_cond_lhs (cond_stmt),
+				     gimple_cond_rhs (cond_stmt),
+				     NULL_TREE, NULL_TREE);
+  gsi_insert_after (&gsi, new_cond_stmt, GSI_NEW_STMT);
+  /* Convert COND_STMT to true/false conditional.  */
+  if (guard == te)
+    gimple_cond_make_false (cond_stmt);
+  else
+    gimple_cond_make_true (cond_stmt);
+  update_stmt (cond_stmt);
+  /* Create new loop pre-header.  */
+  e = split_block (pre_header, last_stmt (pre_header));
+  gcc_assert (loop_preheader_edge (loop)->src == e->dest);
+  if (guard == fe)
+    {
+      e->flags = EDGE_TRUE_VALUE;
+      flags |= EDGE_FALSE_VALUE;
+    }
+  else
+    {
+      e->flags = EDGE_FALSE_VALUE;
+      flags |= EDGE_TRUE_VALUE;
+    }
+  new_edge = make_edge (pre_header, exit->dest, flags);
+  if (fix_dom_of_exit)
+    set_immediate_dominator (CDI_DOMINATORS, exit->dest, pre_header);
+  /* Add NEW_ADGE argument for all phi in post-header block.  */
+  bb = exit->dest;
+  for (gphi_iterator gsi = gsi_start_phis (bb);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gphi *phi = gsi.phi ();
+      tree arg;
+      if (virtual_operand_p (gimple_phi_result (phi)))
+	{
+	  arg = get_vop_from_header (loop);
+	  if (arg == NULL_TREE)
+	    /* Use exit edge argument.  */
+	    arg =  PHI_ARG_DEF_FROM_EDGE (phi, exit);
+	  add_phi_arg (phi, arg, new_edge, UNKNOWN_LOCATION);
+	}
+      else
+	{
+	  /* Use exit edge argument.  */
+	  arg = PHI_ARG_DEF_FROM_EDGE (phi, exit);
+	  add_phi_arg (phi, arg, new_edge, UNKNOWN_LOCATION);
+	}
+    }
+
+  mark_virtual_operands_for_renaming (cfun);
+  update_ssa (TODO_update_ssa);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "  guard hoisted.\n");
+}
+
+/* Return true if phi argument for exit edge can be used
+   for edge around loop.  */
+
+static bool
+check_exit_phi (struct loop *loop)
+{
+  edge exit = single_exit (loop);
+  basic_block pre_header = loop_preheader_edge (loop)->src;
+
+  for (gphi_iterator gsi = gsi_start_phis (exit->dest);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gphi *phi = gsi.phi ();
+      tree arg;
+      gimple *def;
+      basic_block def_bb;
+      if (virtual_operand_p (gimple_phi_result (phi)))
+	continue;
+      arg = PHI_ARG_DEF_FROM_EDGE (phi, exit);
+      if (TREE_CODE (arg) != SSA_NAME)
+	continue;
+      def = SSA_NAME_DEF_STMT (arg);
+      if (!def)
+	continue;
+      def_bb = gimple_bb (def);
+      if (!def_bb)
+	continue;
+      if (!dominated_by_p (CDI_DOMINATORS, pre_header, def_bb))
+	/* Definition inside loop!  */
+	return false;
+      /* Check loop closed phi invariant.  */
+      if (!flow_bb_inside_loop_p (def_bb->loop_father, pre_header))
+	return false;
+    }
+  return true;
 }
 
 /* Loop unswitching pass.  */

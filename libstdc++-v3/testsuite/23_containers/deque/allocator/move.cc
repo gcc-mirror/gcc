@@ -36,6 +36,11 @@ void test01()
   VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(1 == v2.get_allocator().get_personality());
   VERIFY( it == v2.begin() );
+
+  // PR libstdc++/67707
+  VERIFY( v1.size() == 0 );
+  v1 = test_type();
+  VERIFY( v1.size() == 0 );
 }
 
 void test02()
@@ -47,6 +52,11 @@ void test02()
   test_type v2(std::move(v1), alloc_type(2));
   VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(2 == v2.get_allocator().get_personality());
+
+  // PR libstdc++/67707
+  VERIFY( v1.size() == 0 );
+  v1 = test_type();
+  VERIFY( v1.size() == 0 );
 }
 
 int main()

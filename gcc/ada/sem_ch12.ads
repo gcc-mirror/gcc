@@ -152,12 +152,9 @@ package Sem_Ch12 is
    --  restored in stack-like fashion. Front-end inlining also uses these
    --  structures for the management of private/full views.
 
-   procedure Save_Global_References_In_Contract
-     (Templ  : Node_Id;
-      Gen_Id : Entity_Id);
-   --  Save all global references found within the aspect specifications and
-   --  the contract-related source pragmas assocated with generic template
-   --  Templ. Gen_Id denotes the entity of the analyzed generic copy.
+   procedure Save_Global_References_In_Aspects (N : Node_Id);
+   --  Save all global references found within the expressions of all aspects
+   --  that appear on node N.
 
    procedure Set_Copied_Sloc_For_Inlined_Body (N : Node_Id; E : Entity_Id);
    --  This procedure is used when a subprogram body is inlined. This process

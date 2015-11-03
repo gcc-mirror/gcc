@@ -26,57 +26,44 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "alias.h"
-#include "fold-const.h"
+#include "alloc-pool.h"
+#include "timevar.h"
+#include "tm_p.h"
+#include "optabs-libfuncs.h"
+#include "insn-config.h"
+#include "ira.h"
+#include "recog.h"
+#include "cgraph.h"
+#include "coverage.h"
+#include "diagnostic.h"
 #include "varasm.h"
 #include "tree-inline.h"
 #include "realmpfr.h"	/* For GMP/MPFR/MPC versions, in print_version.  */
 #include "version.h"
-#include "tm_p.h"
 #include "flags.h"
 #include "insn-attr.h"
-#include "insn-config.h"
-#include "insn-flags.h"
-#include "recog.h"
 #include "output.h"
-#include "except.h"
 #include "toplev.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
 #include "intl.h"
-#include "regs.h"
-#include "timevar.h"
-#include "diagnostic.h"
 #include "tree-diagnostic.h"
-#include "tree-pretty-print.h"
 #include "params.h"
 #include "reload.h"
-#include "ira.h"
 #include "lra.h"
 #include "dwarf2asm.h"
 #include "debug.h"
-#include "target.h"
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "cfgloop.h" /* for init_set_costs */
 #include "hosthooks.h"
-#include "cgraph.h"
 #include "opts.h"
 #include "opts-diagnostic.h"
-#include "coverage.h"
-#include "value-prof.h"
-#include "alloc-pool.h"
 #include "asan.h"
 #include "tsan.h"
-#include "internal-fn.h"
 #include "plugin.h"
 #include "context.h"
 #include "pass_manager.h"
@@ -86,8 +73,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "gcse.h"
-#include "insn-codes.h"
-#include "optabs.h"
 #include "tree-chkp.h"
 #include "omp-low.h"
 
@@ -100,8 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #ifdef XCOFF_DEBUGGING_INFO
-#include "xcoffout.h"		/* Needed for external data
-				   declarations for e.g. AIX 4.x.  */
+#include "xcoffout.h"		/* Needed for external data declarations. */
 #endif
 
 #include <new>
@@ -467,69 +451,6 @@ wrapup_global_declarations (tree *vec, int len)
   while (reconsider);
 
   return output_something;
-}
-
-/* Issue appropriate warnings for the global declaration DECL.  */
-
-void
-check_global_declaration (tree decl)
-{
-  /* Warn about any function declared static but not defined.  We don't
-     warn about variables, because many programs have static variables
-     that exist only to get some text into the object file.  */
-  symtab_node *snode = symtab_node::get (decl);
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_INITIAL (decl) == 0
-      && DECL_EXTERNAL (decl)
-      && ! DECL_ARTIFICIAL (decl)
-      && ! TREE_NO_WARNING (decl)
-      && ! TREE_PUBLIC (decl)
-      && (warn_unused_function
-	  || snode->referred_to_p (/*include_self=*/false)))
-    {
-      if (snode->referred_to_p (/*include_self=*/false))
-	pedwarn (input_location, 0, "%q+F used but never defined", decl);
-      else
-	warning (OPT_Wunused_function, "%q+F declared %<static%> but never defined", decl);
-      /* This symbol is effectively an "extern" declaration now.  */
-      TREE_PUBLIC (decl) = 1;
-    }
-
-  /* Warn about static fns or vars defined but not used.  */
-  if (((warn_unused_function && TREE_CODE (decl) == FUNCTION_DECL)
-       || (((warn_unused_variable && ! TREE_READONLY (decl))
-	    || (warn_unused_const_variable && TREE_READONLY (decl)))
-	   && TREE_CODE (decl) == VAR_DECL))
-      && ! DECL_IN_SYSTEM_HEADER (decl)
-      && ! snode->referred_to_p (/*include_self=*/false)
-      /* This TREE_USED check is needed in addition to referred_to_p
-	 above, because the `__unused__' attribute is not being
-	 considered for referred_to_p.  */
-      && ! TREE_USED (decl)
-      /* The TREE_USED bit for file-scope decls is kept in the identifier,
-	 to handle multiple external decls in different scopes.  */
-      && ! (DECL_NAME (decl) && TREE_USED (DECL_NAME (decl)))
-      && ! DECL_EXTERNAL (decl)
-      && ! DECL_ARTIFICIAL (decl)
-      && ! DECL_ABSTRACT_ORIGIN (decl)
-      && ! TREE_PUBLIC (decl)
-      /* A volatile variable might be used in some non-obvious way.  */
-      && ! TREE_THIS_VOLATILE (decl)
-      /* Global register variables must be declared to reserve them.  */
-      && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
-      /* Global ctors and dtors are called by the runtime.  */
-      && (TREE_CODE (decl) != FUNCTION_DECL
-	  || (!DECL_STATIC_CONSTRUCTOR (decl)
-	      && !DECL_STATIC_DESTRUCTOR (decl)))
-      /* Otherwise, ask the language.  */
-      && lang_hooks.decls.warn_unused_global (decl))
-    warning_at (DECL_SOURCE_LOCATION (decl),
-		(TREE_CODE (decl) == FUNCTION_DECL)
-		? OPT_Wunused_function
-		: (TREE_READONLY (decl)
-		   ? OPT_Wunused_const_variable
-		   : OPT_Wunused_variable),
-		"%qD defined but not used", decl);
 }
 
 /* Compile an entire translation unit.  Write a file of assembly
@@ -1379,10 +1300,8 @@ process_options (void)
   if (flag_schedule_insns || flag_schedule_insns_after_reload)
     warning (0, "instruction scheduling not supported on this target machine");
 #endif
-#ifndef DELAY_SLOTS
-  if (flag_delayed_branch)
+  if (!DELAY_SLOTS && flag_delayed_branch)
     warning (0, "this target machine does not have delayed branches");
-#endif
 
   user_label_prefix = USER_LABEL_PREFIX;
   if (flag_leading_underscore != -1)

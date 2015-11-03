@@ -22,13 +22,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "options.h"
-#include "flags.h"
+#include "tree.h"
 #include "gfortran.h"
+#include "stringpool.h"
+#include "flags.h"
 #include "match.h"
 #include "parse.h"
 #include "alias.h"
-#include "tree.h"
-#include "stringpool.h"
 
 int gfc_matching_ptr_assignment = 0;
 int gfc_matching_procptr_assignment = 0;
@@ -1938,6 +1938,11 @@ kind_selector:
 
   if (m == MATCH_NO)
     m = MATCH_YES;		/* No kind specifier found.  */
+
+  /* gfortran may have matched REAL(a=1), which is the keyword form of the
+     intrinsic procedure.  */
+  if (ts->type == BT_REAL && m == MATCH_ERROR)
+    m = MATCH_NO;
 
   return m;
 }
@@ -4278,19 +4283,12 @@ match match_common_name (char *name)
 match
 gfc_match_common (void)
 {
-  gfc_symbol *sym, **head, *tail, *other, *old_blank_common;
+  gfc_symbol *sym, **head, *tail, *other;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_common_head *t;
   gfc_array_spec *as;
   gfc_equiv *e1, *e2;
   match m;
-
-  old_blank_common = gfc_current_ns->blank_common.head;
-  if (old_blank_common)
-    {
-      while (old_blank_common->common_next)
-	old_blank_common = old_blank_common->common_next;
-    }
 
   as = NULL;
 
@@ -4329,10 +4327,6 @@ gfc_match_common (void)
 	    goto cleanup;
 	  if (m == MATCH_NO)
 	    goto syntax;
-
-          /* Store a ref to the common block for error checking.  */
-          sym->common_block = t;
-          sym->common_block->refs++;
 
           /* See if we know the current common block is bind(c), and if
              so, then see if we can check if the symbol is (which it'll
@@ -4376,16 +4370,6 @@ gfc_match_common (void)
 		goto cleanup;
 	    }
 
-	  if (!gfc_add_in_common (&sym->attr, sym->name, NULL))
-	    goto cleanup;
-
-	  if (tail != NULL)
-	    tail->common_next = sym;
-	  else
-	    *head = sym;
-
-	  tail = sym;
-
 	  /* Deal with an optional array specification after the
 	     symbol name.  */
 	  m = gfc_match_array_spec (&as, true, true);
@@ -4415,6 +4399,20 @@ gfc_match_common (void)
 	      as = NULL;
 
 	    }
+
+	  /* Add the in_common attribute, but ignore the reported errors
+	     if any, and continue matching.  */
+	  gfc_add_in_common (&sym->attr, sym->name, NULL);
+
+	  sym->common_block = t;
+	  sym->common_block->refs++;
+
+	  if (tail != NULL)
+	    tail->common_next = sym;
+	  else
+	    *head = sym;
+
+	  tail = sym;
 
 	  sym->common_head = t;
 
@@ -4886,7 +4884,6 @@ match
 gfc_match_st_function (void)
 {
   gfc_error_buffer old_error;
-
   gfc_symbol *sym;
   gfc_expr *expr;
   match m;
@@ -4923,6 +4920,66 @@ gfc_match_st_function (void)
   if (!gfc_notify_std (GFC_STD_F95_OBS, "Statement function at %C"))
     return MATCH_ERROR;
 
+  return MATCH_YES;
+
+undo_error:
+  gfc_pop_error (&old_error);
+  return MATCH_NO;
+}
+
+
+/* Match an assignment to a pointer function (F2008). This could, in
+   general be ambiguous with a statement function. In this implementation
+   it remains so if it is the first statement after the specification
+   block.  */
+
+match
+gfc_match_ptr_fcn_assign (void)
+{
+  gfc_error_buffer old_error;
+  locus old_loc;
+  gfc_symbol *sym;
+  gfc_expr *expr;
+  match m;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+
+  old_loc = gfc_current_locus;
+  m = gfc_match_name (name);
+  if (m != MATCH_YES)
+    return m;
+
+  gfc_find_symbol (name, NULL, 1, &sym);
+  if (sym && sym->attr.flavor != FL_PROCEDURE)
+    return MATCH_NO;
+
+  gfc_push_error (&old_error);
+
+  if (sym && sym->attr.function)
+    goto match_actual_arglist;
+
+  gfc_current_locus = old_loc;
+  m = gfc_match_symbol (&sym, 0);
+  if (m != MATCH_YES)
+    return m;
+
+  if (!gfc_add_procedure (&sym->attr, PROC_UNKNOWN, sym->name, NULL))
+    goto undo_error;
+
+match_actual_arglist:
+  gfc_current_locus = old_loc;
+  m = gfc_match (" %e", &expr);
+  if (m != MATCH_YES)
+    goto undo_error;
+
+  new_st.op = EXEC_ASSIGN;
+  new_st.expr1 = expr;
+  expr = NULL;
+
+  m = gfc_match (" = %e%t", &expr);
+  if (m != MATCH_YES)
+    goto undo_error;
+
+  new_st.expr2 = expr;
   return MATCH_YES;
 
 undo_error:

@@ -14,7 +14,7 @@ grep -h '^JNIEXPORT .* Java_' @abs_top_srcdir@/include/*.h | \
         LC_ALL=C sed -e 's,.*JNICALL \(Java_[a-z_A-Z0-9]*\).*$,\1,' > $TMPFILE
 grep -h '^JNIEXPORT .* Java_' @abs_top_builddir@/include/*.h | \
         LC_ALL=C sed -e 's,.*JNICALL \(Java_[a-z_A-Z0-9]*\).*$,\1,' >> $TMPFILE
-sort -u $TMPFILE > $TMPFILE4
+LC_ALL=C sort -u $TMPFILE > $TMPFILE4
 mv $TMPFILE4 $TMPFILE
 
 # Find all methods in the JNI C source files.
@@ -31,7 +31,7 @@ find @abs_top_srcdir@/native/jni -name \*.cpp | \
 	cut -f4 -d\  | \
         LC_ALL=C sed -e 's,^\JNIEXPORT .* JNICALL \(Java_[a-z_A-Z0-9]*\).*$,\1,' >> $TMPFILE2
 mv $TMPFILE2 $TMPFILE3
-sort $TMPFILE3 | uniq > $TMPFILE2
+LC_ALL=C sort -u $TMPFILE3 > $TMPFILE2
 rm $TMPFILE3
 
 # Write temporary ignore file.

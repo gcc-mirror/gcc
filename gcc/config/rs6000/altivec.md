@@ -2658,35 +2658,22 @@
   operands[3] = gen_reg_rtx (GET_MODE (operands[0]));
 })
 
-(define_expand "reduc_splus_<mode>"
-  [(set (match_operand:VIshort 0 "register_operand" "=v")
+(define_expand "reduc_plus_scal_<mode>"
+  [(set (match_operand:<VI_scalar> 0 "register_operand" "=v")
         (unspec:VIshort [(match_operand:VIshort 1 "register_operand" "v")]
 			UNSPEC_REDUC_PLUS))]
   "TARGET_ALTIVEC"
 {
   rtx vzero = gen_reg_rtx (V4SImode);
   rtx vtmp1 = gen_reg_rtx (V4SImode);
-  rtx dest = gen_lowpart (V4SImode, operands[0]);
+  rtx vtmp2 = gen_reg_rtx (<MODE>mode);
+  rtx dest = gen_lowpart (V4SImode, vtmp2);
+  int elt = BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (<MODE>mode) - 1 : 0;
 
   emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
   emit_insn (gen_altivec_vsum4s<VI_char>s (vtmp1, operands[1], vzero));
   emit_insn (gen_altivec_vsumsws_direct (dest, vtmp1, vzero));
-  DONE;
-})
-
-(define_expand "reduc_uplus_v16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "=v")
-        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")]
-		      UNSPEC_REDUC_PLUS))]
-  "TARGET_ALTIVEC"
-{
-  rtx vzero = gen_reg_rtx (V4SImode);
-  rtx vtmp1 = gen_reg_rtx (V4SImode);
-  rtx dest = gen_lowpart (V4SImode, operands[0]);
-
-  emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
-  emit_insn (gen_altivec_vsum4ubs (vtmp1, operands[1], vzero));
-  emit_insn (gen_altivec_vsumsws_direct (dest, vtmp1, vzero));
+  rs6000_expand_vector_extract (operands[0], vtmp2, elt);
   DONE;
 })
 

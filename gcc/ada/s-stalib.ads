@@ -220,12 +220,23 @@ package System.Standard_Library is
       --  This is the default behavior.
 
       Every_Raise,
-      --  Denotes every possible raise event, either explicit or due to
-      --  a specific language rule, within the context of a task or not.
+      --  Denotes the initial raise event for any exception occurrence, either
+      --  explicit or due to a specific language rule, within the context of a
+      --  task or not.
 
-      Unhandled_Raise
-      --  Denotes the raise events corresponding to exceptions for which
-      --  there is no user defined handler.
+      Unhandled_Raise,
+      --  Denotes the raise events corresponding to exceptions for which there
+      --  is no user defined handler. This includes unhandled exceptions in
+      --  task bodies.
+
+      Unhandled_Raise_In_Main
+      --  Same as Unhandled_Raise, except exceptions in task bodies are not
+      --  included. Same as RM_Convention, except (1) the message is printed as
+      --  soon as the environment task completes due to an unhandled exception
+      --  (before awaiting the termination of dependent tasks, and before
+      --  library-level finalization), and (2) a symbolic traceback is given
+      --  if possible. This is the default behavior if the binder switch -E is
+      --  used.
      );
    --  Provide a way to denote different kinds of automatic traces related
    --  to exceptions that can be requested.

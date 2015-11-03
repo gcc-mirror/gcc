@@ -22,24 +22,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
-#include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "options.h"
+#include "diagnostic-core.h"
 #include "fold-const.h"
-#include "flags.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "tree-ssa.h"
 #include "cfgloop.h"
-#include "tree-pass.h"
 #include "tree-cfg.h"
-#include "diagnostic-core.h"
 #include "intl.h"
 
 
@@ -53,7 +48,7 @@ static bool cfg_altered;
    This routine only makes a superficial check for a dereference.  Thus,
    it must only be used if it is safe to return a false negative.  */
 static bool
-check_loadstore (gimple stmt, tree op, tree, void *data)
+check_loadstore (gimple *stmt, tree op, tree, void *data)
 {
   if ((TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
       && operand_equal_p (TREE_OPERAND (op, 0), (tree)data, 0))
@@ -80,7 +75,7 @@ insert_trap (gimple_stmt_iterator *si_p, tree op)
      If the dereference is a store and we can easily transform the RHS,
      then simplify the RHS to enable more DCE.   Note that we require the
      statement to be a GIMPLE_ASSIGN which filters out calls on the RHS.  */
-  gimple stmt = gsi_stmt (*si_p);
+  gimple *stmt = gsi_stmt (*si_p);
   if (walk_stmt_load_store_ops (stmt, (void *)op, NULL, check_loadstore)
       && is_gimple_assign (stmt)
       && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt))))
@@ -136,7 +131,7 @@ insert_trap (gimple_stmt_iterator *si_p, tree op)
 
 basic_block
 isolate_path (basic_block bb, basic_block duplicate,
-	      edge e, gimple stmt, tree op, bool ret_zero)
+	      edge e, gimple *stmt, tree op, bool ret_zero)
 {
   gimple_stmt_iterator si, si2;
   edge_iterator ei;
@@ -266,7 +261,7 @@ find_implicit_erroneous_behaviour (void)
 	      tree op = gimple_phi_arg_def (phi, i);
 	      edge e = gimple_phi_arg_edge (phi, i);
 	      imm_use_iterator iter;
-	      gimple use_stmt;
+	      gimple *use_stmt;
 
 	      next_i = i + 1;
 
@@ -387,7 +382,7 @@ find_explicit_erroneous_behaviour (void)
 	 because of jump threading and constant propagation.  */
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  gimple stmt = gsi_stmt (si);
+	  gimple *stmt = gsi_stmt (si);
 
 	  /* By passing null_pointer_node, we can use the
 	     infer_nonnull_range functions to detect explicit NULL

@@ -1037,17 +1037,12 @@ package body Checks is
          --  operation on signed integers on which the expander can promote
          --  later the operands to type Integer (see Expand_N_Type_Conversion).
 
-         --  Special case CLI target, where arithmetic overflow checks can be
-         --  performed for integer and long_integer
-
          if Backend_Overflow_Checks_On_Target
            or else not Do_Overflow_Check (N)
            or else not Expander_Active
            or else (Present (Parent (N))
                      and then Nkind (Parent (N)) = N_Type_Conversion
                      and then Integer_Promotion_Possible (Parent (N)))
-           or else
-             (VM_Target = CLI_Target and then Siz >= Standard_Integer_Size)
          then
             return;
          end if;
@@ -3236,7 +3231,7 @@ package body Checks is
                Rewrite (R_Cno, Make_Null_Statement (Loc));
             end if;
 
-         --  The range check raises Constrant_Error explicitly
+         --  The range check raises Constraint_Error explicitly
 
          else
             Install_Static_Check (R_Cno, Loc);
@@ -5901,11 +5896,6 @@ package body Checks is
       --  appropriate these will be range checked in any case.
 
       elsif Nkind_In (Expr, N_Integer_Literal, N_Character_Literal) then
-         return True;
-
-      --  Real literals are assumed to be valid in VM targets
-
-      elsif VM_Target /= No_VM and then Nkind (Expr) = N_Real_Literal then
          return True;
 
       --  If we have a type conversion or a qualification of a known valid
@@ -9182,7 +9172,7 @@ package body Checks is
                                 (Compile_Time_Constraint_Error
                                   (Wnode, "too few elements for}??", T_Typ));
 
-                           elsif  L_Length < R_Length then
+                           elsif L_Length < R_Length then
                               Add_Check
                                 (Compile_Time_Constraint_Error
                                   (Wnode, "too many elements for}??", T_Typ));

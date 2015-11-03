@@ -132,6 +132,13 @@ namespace __gnu_debug
 
   class _Error_formatter
   {
+    // Tags denoting the type of parameter for construction
+    struct _Is_iterator { };
+    struct _Is_iterator_value_type { };
+    struct _Is_sequence { };
+    struct _Is_instance { };
+
+  public:
     /// Whether an iterator is constant, mutable, or unknown
     enum _Constness
     {
@@ -153,13 +160,6 @@ namespace __gnu_debug
       __last_state
     };
 
-    // Tags denoting the type of parameter for construction
-    struct _Is_iterator { };
-    struct _Is_iterator_value_type { };
-    struct _Is_sequence { };
-    struct _Is_instance { };
-
-  public:
     // A parameter that may be referenced by an error message
     struct _Parameter
     {
@@ -375,15 +375,16 @@ namespace __gnu_debug
 
       void
       _M_print_field(const _Error_formatter* __formatter,
-		     const char* __name) const;
+		     const char* __name) const _GLIBCXX_DEPRECATED;
 
       void
-      _M_print_description(const _Error_formatter* __formatter) const;
+      _M_print_description(const _Error_formatter* __formatter)
+	const _GLIBCXX_DEPRECATED;
     };
 
     template<typename _Iterator>
-      const _Error_formatter&
-      _M_iterator(const _Iterator& __it, const char* __name = 0)  const
+      _Error_formatter&
+      _M_iterator(const _Iterator& __it, const char* __name = 0)
       {
 	if (_M_num_parameters < std::size_t(__max_parameters))
 	  _M_parameters[_M_num_parameters++] = _Parameter(__it, __name,
@@ -392,57 +393,59 @@ namespace __gnu_debug
       }
 
     template<typename _Iterator>
-      const _Error_formatter&
+      _Error_formatter&
       _M_iterator_value_type(const _Iterator& __it,
-			     const char* __name = 0)  const
+			     const char* __name = 0)
       {
-	if (_M_num_parameters < std::size_t(__max_parameters))
+	if (_M_num_parameters < __max_parameters)
 	  _M_parameters[_M_num_parameters++] =
 	    _Parameter(__it, __name, _Is_iterator_value_type());
 	return *this;
       }
 
-    const _Error_formatter&
-    _M_integer(long __value, const char* __name = 0) const
+    _Error_formatter&
+    _M_integer(long __value, const char* __name = 0)
     {
-      if (_M_num_parameters < std::size_t(__max_parameters))
+      if (_M_num_parameters < __max_parameters)
 	_M_parameters[_M_num_parameters++] = _Parameter(__value, __name);
       return *this;
     }
 
-    const _Error_formatter&
-    _M_string(const char* __value, const char* __name = 0) const
+    _Error_formatter&
+    _M_string(const char* __value, const char* __name = 0)
     {
-      if (_M_num_parameters < std::size_t(__max_parameters))
+      if (_M_num_parameters < __max_parameters)
 	_M_parameters[_M_num_parameters++] = _Parameter(__value, __name);
       return *this;
     }
 
     template<typename _Sequence>
-      const _Error_formatter&
-      _M_sequence(const _Sequence& __seq, const char* __name = 0) const
+      _Error_formatter&
+      _M_sequence(const _Sequence& __seq, const char* __name = 0)
       {
-	if (_M_num_parameters < std::size_t(__max_parameters))
+	if (_M_num_parameters < __max_parameters)
 	  _M_parameters[_M_num_parameters++] = _Parameter(__seq, __name,
 							  _Is_sequence());
 	return *this;
       }
 
     template<typename _Type>
-      const _Error_formatter&
-      _M_instance(const _Type& __inst, const char* __name = 0) const
+      _Error_formatter&
+      _M_instance(const _Type& __inst, const char* __name = 0)
       {
-	if (_M_num_parameters < std::size_t(__max_parameters))
+	if (_M_num_parameters < __max_parameters)
 	  _M_parameters[_M_num_parameters++] = _Parameter(__inst, __name,
 							  _Is_instance());
 	return *this;
       }
 
-    const _Error_formatter&
-    _M_message(const char* __text) const
+    _Error_formatter&
+    _M_message(const char* __text)
     { _M_text = __text; return *this; }
 
-    const _Error_formatter&
+    // Kept const qualifier for backward compatibility, to keep the same
+    // exported symbol.
+    _Error_formatter&
     _M_message(_Debug_msg_id __id) const throw ();
 
     _GLIBCXX_NORETURN void
@@ -450,40 +453,38 @@ namespace __gnu_debug
 
     template<typename _Tp>
       void
-      _M_format_word(char*, int, const char*, _Tp) const throw ();
+      _M_format_word(char*, int, const char*, _Tp)
+      const throw () _GLIBCXX_DEPRECATED;
 
     void
-    _M_print_word(const char* __word) const;
+    _M_print_word(const char* __word) const _GLIBCXX_DEPRECATED;
 
     void
-    _M_print_string(const char* __string) const;
+    _M_print_string(const char* __string) const _GLIBCXX_DEPRECATED;
 
   private:
-    _Error_formatter(const char* __file, std::size_t __line)
-    : _M_file(__file), _M_line(__line), _M_num_parameters(0), _M_text(0),
-      _M_max_length(78), _M_column(1), _M_first_line(true), _M_wordwrap(false)
-    { _M_get_max_length(); }
+    _Error_formatter(const char* __file, unsigned int __line)
+    : _M_file(__file), _M_line(__line), _M_num_parameters(0), _M_text(0)
+    { }
 
     void
-    _M_get_max_length() const throw ();
+    _M_get_max_length() const throw () _GLIBCXX_DEPRECATED;
 
     enum { __max_parameters = 9 };
 
     const char*		_M_file;
-    std::size_t		_M_line;
-    mutable _Parameter	_M_parameters[__max_parameters];
-    mutable std::size_t	_M_num_parameters;
-    mutable const char*	_M_text;
-    mutable std::size_t	_M_max_length;
-    enum { _M_indent = 4 } ;
-    mutable std::size_t	_M_column;
-    mutable bool	_M_first_line;
-    mutable bool	_M_wordwrap;
+    unsigned int	_M_line;
+    _Parameter		_M_parameters[__max_parameters];
+    unsigned int	_M_num_parameters;
+    const char*		_M_text;
 
   public:
-    static _Error_formatter
-    _M_at(const char* __file, std::size_t __line)
-    { return _Error_formatter(__file, __line); }
+    static _Error_formatter&
+    _M_at(const char* __file, unsigned int __line)
+    {
+      static _Error_formatter __formatter(__file, __line);
+      return __formatter;
+    }
   };
 } // namespace __gnu_debug
 

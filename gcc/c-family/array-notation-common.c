@@ -24,13 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h" 
 #include "coretypes.h"
-#include "alias.h"
-#include "tree.h"
 #include "options.h"
+#include "tree.h"
+#include "c-family/c-common.h"
 #include "langhooks.h" 
 #include "tree-iterator.h"
-#include "c-family/c-common.h"
-#include "diagnostic-core.h"
 
 /* Returns true if the function call in FNDECL is  __sec_implicit_index.  */
 
@@ -675,4 +673,13 @@ fix_sec_implicit_args (location_t loc, vec <tree, va_gc> *list,
       /* Save the existing value into the array operand.  */
       vec_safe_push (array_operand, (*list)[ii]);
   return array_operand;
+}
+
+/* Returns true if NAME is an IDENTIFIER_NODE with identifier "vector",
+   "__vector", or "__vector__".  */
+
+bool
+is_cilkplus_vector_p (tree name)
+{
+  return flag_cilkplus && is_attribute_p ("vector", name);
 }

@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 
 gfc_st_label
 format_asterisk = {0, NULL, NULL, -1, ST_LABEL_FORMAT, ST_LABEL_FORMAT, NULL,
-		   0, {NULL, NULL}};
+		   0, {NULL, NULL}, NULL};
 
 typedef struct
 {
@@ -2515,12 +2515,21 @@ gfc_resolve_filepos (gfc_filepos *fp)
   if (!gfc_reference_st_label (fp->err, ST_LABEL_TARGET))
     return false;
 
+  if (!fp->unit && (fp->iostat || fp->iomsg))
+    {
+      locus where;
+      where = fp->iostat ? fp->iostat->where : fp->iomsg->where;
+      gfc_error ("UNIT number missing in statement at %L", &where);
+      return false;
+    }
+
   if (fp->unit->expr_type == EXPR_CONSTANT
       && fp->unit->ts.type == BT_INTEGER
       && mpz_sgn (fp->unit->value.integer) < 0)
     {
       gfc_error ("UNIT number in statement at %L must be non-negative",
 		 &fp->unit->where);
+      return false;
     }
 
   return true;

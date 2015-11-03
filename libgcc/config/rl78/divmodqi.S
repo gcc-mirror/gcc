@@ -63,7 +63,7 @@ num_eq_den\which:
 	ret
 	
 den_is_zero\which:
-	mov	r8, #0xff
+	mov	r8, #0x00
 	ret
 
 	;; These routines leave DE alone - the signed functions use DE

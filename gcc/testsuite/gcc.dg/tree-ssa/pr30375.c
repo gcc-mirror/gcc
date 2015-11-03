@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dse" } */
+/* { dg-options "-O2 -fdump-tree-dse1" } */
 
 typedef struct _s {
     int a;

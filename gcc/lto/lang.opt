@@ -42,6 +42,6 @@ Whole program analysis (WPA) mode with number of parallel jobs specified.
 
 fresolution=
 LTO Joined
-The resolution file
+The resolution file.
 
 ; This comment is to ensure we retain the blank line above.

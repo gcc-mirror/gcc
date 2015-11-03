@@ -4822,6 +4822,15 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       return false;
     }
 
+  if (e->ts.type == BT_DERIVED
+      && e->ts.u.derived == NULL)
+    {
+      if (context)
+	gfc_error ("Type inaccessible in variable definition context (%s) "
+		   "at %L", context, &e->where);
+      return false;
+    }
+
   /* F2008, C1303.  */
   if (!alloc_obj
       && (attr.lock_comp

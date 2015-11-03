@@ -23,7 +23,7 @@
 #define _GLIBCXX_USE_CXX11_ABI 1
 #include <clocale>
 #include <cstring>
-#include <cstdlib>     // For getenv, free.
+#include <cstdlib>     // For free.
 #include <cctype>
 #include <cwctype>     // For towupper, etc.
 #include <locale>

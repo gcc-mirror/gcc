@@ -22,23 +22,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
+#include "target.h"
 #include "rtl.h"
+#include "predict.h"
 #include "df.h"
-#include "diagnostic-core.h"
-
-#include "sparseset.h"
 #include "tm_p.h"
 #include "insn-config.h"
+#include "emit-rtl.h"
 #include "recog.h"
-#include "flags.h"
+
+#include "sparseset.h"
 #include "cfgrtl.h"
 #include "cfgcleanup.h"
-#include "target.h"
 #include "cfgloop.h"
 #include "tree-pass.h"
 #include "domwalk.h"
-#include "emit-rtl.h"
 #include "rtl-iter.h"
 
 
@@ -843,9 +841,7 @@ all_uses_available_at (rtx_insn *def_insn, rtx_insn *target_insn)
 
 
 static df_ref *active_defs;
-#ifdef ENABLE_CHECKING
 static sparseset active_defs_check;
-#endif
 
 /* Fill the ACTIVE_DEFS array with the use->def link for the registers
    mentioned in USE_REC.  Register the valid entries in ACTIVE_DEFS_CHECK
@@ -859,9 +855,8 @@ register_active_defs (df_ref use)
       df_ref def = get_def_for_use (use);
       int regno = DF_REF_REGNO (use);
 
-#ifdef ENABLE_CHECKING
-      sparseset_set_bit (active_defs_check, regno);
-#endif
+      if (flag_checking)
+	sparseset_set_bit (active_defs_check, regno);
       active_defs[regno] = def;
     }
 }
@@ -876,9 +871,8 @@ register_active_defs (df_ref use)
 static void
 update_df_init (rtx_insn *def_insn, rtx_insn *insn)
 {
-#ifdef ENABLE_CHECKING
-  sparseset_clear (active_defs_check);
-#endif
+  if (flag_checking)
+    sparseset_clear (active_defs_check);
   register_active_defs (DF_INSN_USES (def_insn));
   register_active_defs (DF_INSN_USES (insn));
   register_active_defs (DF_INSN_EQ_USES (insn));
@@ -899,9 +893,7 @@ update_uses (df_ref use)
       if (DF_REF_ID (use) >= (int) use_def_ref.length ())
         use_def_ref.safe_grow_cleared (DF_REF_ID (use) + 1);
 
-#ifdef ENABLE_CHECKING
-      gcc_assert (sparseset_bit_p (active_defs_check, regno));
-#endif
+      gcc_checking_assert (sparseset_bit_p (active_defs_check, regno));
       use_def_ref[DF_REF_ID (use)] = active_defs[regno];
     }
 }
@@ -1407,9 +1399,8 @@ fwprop_init (void)
   df_set_flags (DF_DEFER_INSN_RESCAN);
 
   active_defs = XNEWVEC (df_ref, max_reg_num ());
-#ifdef ENABLE_CHECKING
-  active_defs_check = sparseset_alloc (max_reg_num ());
-#endif
+  if (flag_checking)
+    active_defs_check = sparseset_alloc (max_reg_num ());
 }
 
 static void
@@ -1419,9 +1410,8 @@ fwprop_done (void)
 
   use_def_ref.release ();
   free (active_defs);
-#ifdef ENABLE_CHECKING
-  sparseset_free (active_defs_check);
-#endif
+  if (flag_checking)
+    sparseset_free (active_defs_check);
 
   free_dominance_info (CDI_DOMINATORS);
   cleanup_cfg (0);

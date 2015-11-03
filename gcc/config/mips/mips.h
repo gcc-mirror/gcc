@@ -2486,7 +2486,7 @@ typedef struct mips_args {
 /* Treat LOC as a byte offset from the stack pointer and round it up
    to the next fully-aligned offset.  */
 #define MIPS_STACK_ALIGN(LOC) \
-  (TARGET_NEWABI ? ((LOC) + 15) & -16 : ((LOC) + 7) & -8)
+  (TARGET_NEWABI ? ROUND_UP ((LOC), 16) : ROUND_UP ((LOC), 8))
 
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
@@ -3119,6 +3119,161 @@ extern const struct mips_cpu_info *mips_tune_info;
 extern unsigned int mips_base_compression_flags;
 extern GTY(()) struct target_globals *mips16_globals;
 extern GTY(()) struct target_globals *micromips_globals;
+
+/* Information about a function's frame layout.  */
+struct GTY(())  mips_frame_info {
+  /* The size of the frame in bytes.  */
+  HOST_WIDE_INT total_size;
+
+  /* The number of bytes allocated to variables.  */
+  HOST_WIDE_INT var_size;
+
+  /* The number of bytes allocated to outgoing function arguments.  */
+  HOST_WIDE_INT args_size;
+
+  /* The number of bytes allocated to the .cprestore slot, or 0 if there
+     is no such slot.  */
+  HOST_WIDE_INT cprestore_size;
+
+  /* Bit X is set if the function saves or restores GPR X.  */
+  unsigned int mask;
+
+  /* Likewise FPR X.  */
+  unsigned int fmask;
+
+  /* Likewise doubleword accumulator X ($acX).  */
+  unsigned int acc_mask;
+
+  /* The number of GPRs, FPRs, doubleword accumulators and COP0
+     registers saved.  */
+  unsigned int num_gp;
+  unsigned int num_fp;
+  unsigned int num_acc;
+  unsigned int num_cop0_regs;
+
+  /* The offset of the topmost GPR, FPR, accumulator and COP0-register
+     save slots from the top of the frame, or zero if no such slots are
+     needed.  */
+  HOST_WIDE_INT gp_save_offset;
+  HOST_WIDE_INT fp_save_offset;
+  HOST_WIDE_INT acc_save_offset;
+  HOST_WIDE_INT cop0_save_offset;
+
+  /* Likewise, but giving offsets from the bottom of the frame.  */
+  HOST_WIDE_INT gp_sp_offset;
+  HOST_WIDE_INT fp_sp_offset;
+  HOST_WIDE_INT acc_sp_offset;
+  HOST_WIDE_INT cop0_sp_offset;
+
+  /* Similar, but the value passed to _mcount.  */
+  HOST_WIDE_INT ra_fp_offset;
+
+  /* The offset of arg_pointer_rtx from the bottom of the frame.  */
+  HOST_WIDE_INT arg_pointer_offset;
+
+  /* The offset of hard_frame_pointer_rtx from the bottom of the frame.  */
+  HOST_WIDE_INT hard_frame_pointer_offset;
+};
+
+/* Enumeration for masked vectored (VI) and non-masked (EIC) interrupts.  */
+enum mips_int_mask
+{
+  INT_MASK_EIC = -1,
+  INT_MASK_SW0 = 0,
+  INT_MASK_SW1 = 1,
+  INT_MASK_HW0 = 2,
+  INT_MASK_HW1 = 3,
+  INT_MASK_HW2 = 4,
+  INT_MASK_HW3 = 5,
+  INT_MASK_HW4 = 6,
+  INT_MASK_HW5 = 7
+};
+
+/* Enumeration to mark the existence of the shadow register set.
+   SHADOW_SET_INTSTACK indicates a shadow register set with a valid stack
+   pointer.  */
+enum mips_shadow_set
+{
+  SHADOW_SET_NO,
+  SHADOW_SET_YES,
+  SHADOW_SET_INTSTACK
+};
+
+struct GTY(())  machine_function {
+  /* The next floating-point condition-code register to allocate
+     for ISA_HAS_8CC targets, relative to ST_REG_FIRST.  */
+  unsigned int next_fcc;
+
+  /* The register returned by mips16_gp_pseudo_reg; see there for details.  */
+  rtx mips16_gp_pseudo_rtx;
+
+  /* The number of extra stack bytes taken up by register varargs.
+     This area is allocated by the callee at the very top of the frame.  */
+  int varargs_size;
+
+  /* The current frame information, calculated by mips_compute_frame_info.  */
+  struct mips_frame_info frame;
+
+  /* The register to use as the function's global pointer, or INVALID_REGNUM
+     if the function doesn't need one.  */
+  unsigned int global_pointer;
+
+  /* How many instructions it takes to load a label into $AT, or 0 if
+     this property hasn't yet been calculated.  */
+  unsigned int load_label_num_insns;
+
+  /* True if mips_adjust_insn_length should ignore an instruction's
+     hazard attribute.  */
+  bool ignore_hazard_length_p;
+
+  /* True if the whole function is suitable for .set noreorder and
+     .set nomacro.  */
+  bool all_noreorder_p;
+
+  /* True if the function has "inflexible" and "flexible" references
+     to the global pointer.  See mips_cfun_has_inflexible_gp_ref_p
+     and mips_cfun_has_flexible_gp_ref_p for details.  */
+  bool has_inflexible_gp_insn_p;
+  bool has_flexible_gp_insn_p;
+
+  /* True if the function's prologue must load the global pointer
+     value into pic_offset_table_rtx and store the same value in
+     the function's cprestore slot (if any).  Even if this value
+     is currently false, we may decide to set it to true later;
+     see mips_must_initialize_gp_p () for details.  */
+  bool must_initialize_gp_p;
+
+  /* True if the current function must restore $gp after any potential
+     clobber.  This value is only meaningful during the first post-epilogue
+     split_insns pass; see mips_must_initialize_gp_p () for details.  */
+  bool must_restore_gp_when_clobbered_p;
+
+  /* True if this is an interrupt handler.  */
+  bool interrupt_handler_p;
+
+  /* Records the way in which interrupts should be masked.  Only used if
+     interrupts are not kept masked.  */
+  enum mips_int_mask int_mask;
+
+  /* Records if this is an interrupt handler that uses shadow registers.  */
+  enum mips_shadow_set use_shadow_register_set;
+
+  /* True if this is an interrupt handler that should keep interrupts
+     masked.  */
+  bool keep_interrupts_masked_p;
+
+  /* True if this is an interrupt handler that should use DERET
+     instead of ERET.  */
+  bool use_debug_exception_return_p;
+
+  /* True if at least one of the formal parameters to a function must be
+     written to the frame header (probably so its address can be taken).  */
+  bool does_not_use_frame_header;
+
+  /* True if none of the functions that are called by this function need
+     stack space allocated for their arguments.  */
+  bool optimize_call_stack;
+};
 #endif
 
 /* Enable querying of DFA units.  */

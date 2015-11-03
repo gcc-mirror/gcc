@@ -1639,6 +1639,39 @@ int, (struct cgraph_node *), NULL)
 
 HOOK_VECTOR_END (simd_clone)
 
+/* Functions relating to openacc.  */
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_GOACC_"
+HOOK_VECTOR (TARGET_GOACC, goacc)
+
+DEFHOOK
+(validate_dims,
+"This hook should check the launch dimensions provided for an OpenACC\n\
+compute region, or routine.  Defaulted values are represented as -1\n\
+and non-constant values as 0. The @var{fn_level} is negative for the\n\
+function corresponding to the compute region.  For a routine is is the\n\
+outermost level at which partitioned execution may be spawned.  It\n\
+should fill in anything that needs to default to non-unity and verify\n\
+non-defaults.  Diagnostics should be issued as appropriate.  Return\n\
+true, if changes have been made.  You must override this hook to\n\
+provide dimensions larger than 1.",
+bool, (tree decl, int *dims, int fn_level),
+default_goacc_validate_dims)
+
+DEFHOOK
+(fork_join,
+"This hook can be used to convert IFN_GOACC_FORK and IFN_GOACC_JOIN\n\
+function calls to target-specific gimple, or indicate whether they\n\
+should be retained.  It is executed during the oacc_device_lower pass.\n\
+It should return true, if the call should be retained.  It should\n\
+return false, if it is to be deleted (either because target-specific\n\
+gimple has been inserted before it, or there is no need for it).\n\
+The default hook returns false, if there are no RTL expanders for them.",
+bool, (gcall *call, const int *dims, bool is_fork),
+default_goacc_fork_join)
+
+HOOK_VECTOR_END (goacc)
+
 /* Functions relating to vectorization.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_VECTORIZE_"
@@ -1788,6 +1821,16 @@ The default is zero which means to not iterate over other vector sizes.",
  unsigned int,
  (void),
  default_autovectorize_vector_sizes)
+
+/* Function to get a target mode for a vector mask.  */
+DEFHOOK
+(get_mask_mode,
+ "This hook returns mode to be used for a mask to be used for a vector\n\
+of specified @var{length} with @var{nunits} elements.  By default an integer\n\
+vector mode of a proper size is returned.",
+ machine_mode,
+ (unsigned nunits, unsigned length),
+ default_get_mask_mode)
 
 /* Target builtin that implements vector gather operation.  */
 DEFHOOK
@@ -3098,8 +3141,7 @@ DEFHOOK
 (pointer_mode,
  "Define this to return the machine mode to use for pointers to\n\
 @var{address_space} if the target supports named address spaces.\n\
-The default version of this hook returns @code{ptr_mode} for the\n\
-generic address space only.",
+The default version of this hook returns @code{ptr_mode}.",
  machine_mode, (addr_space_t address_space),
  default_addr_space_pointer_mode)
 
@@ -3108,8 +3150,7 @@ DEFHOOK
 (address_mode,
  "Define this to return the machine mode to use for addresses in\n\
 @var{address_space} if the target supports named address spaces.\n\
-The default version of this hook returns @code{Pmode} for the\n\
-generic address space only.",
+The default version of this hook returns @code{Pmode}.",
  machine_mode, (addr_space_t address_space),
  default_addr_space_address_mode)
 
@@ -3477,6 +3518,19 @@ registers on machines with lots of registers.",
  int, (rtx address, machine_mode mode, addr_space_t as, bool speed),
  default_address_cost)
 
+/* Permit speculative instructions in delay slots during delayed-branch 
+   scheduling.  */
+DEFHOOK
+(no_speculation_in_delay_slots_p,
+ "This predicate controls the use of the eager delay slot filler to disallow\n\
+speculatively executed instructions being placed in delay slots.  Targets\n\
+such as certain MIPS architectures possess both branches with and without\n\
+delay slots.  As the eager delay slot filler can decrease performance,\n\
+disabling it is beneficial when ordinary branches are available.  Use of\n\
+delay slot branches filled using the basic filler is often still desirable\n\
+as the delay slot can hide a pipeline bubble.", bool, (void),
+  hook_bool_void_false)
+
 /* Return where to allocate pseudo for a given hard register initial value.  */
 DEFHOOK
 (allocate_initial_value,
@@ -3814,7 +3868,7 @@ DEFHOOK_UNDOC
 "Perform architecture specific checking of statements gimplified\
  from @code{VA_ARG_EXPR}.  @var{stmt} is the statement.  Returns true if\
  the statement doesn't need to be checked for @code{va_list} references.",
- bool, (struct stdarg_info *ai, const_gimple stmt), NULL)
+ bool, (struct stdarg_info *ai, const gimple *stmt), NULL)
 
 /* This target hook allows the operating system to override the DECL
    that represents the external variable that contains the stack
@@ -5598,6 +5652,12 @@ default, inlining is not allowed if the callee function has function\n\
 specific target options and the caller does not use the same options.",
  bool, (tree caller, tree callee),
  default_target_can_inline_p)
+
+DEFHOOK
+(relayout_function,
+"This target hook fixes function @var{fndecl} after attributes are processed. Default does nothing. On ARM, the default function's alignment is updated with the attribute target.",
+ void, (tree fndecl),
+ hook_void_tree)
 
 HOOK_VECTOR_END (target_option)
 

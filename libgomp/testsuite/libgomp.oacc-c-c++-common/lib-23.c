@@ -1,5 +1,6 @@
 /* { dg-do run } */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <openacc.h>
 
@@ -28,6 +29,7 @@ main (int argc, char **argv)
 
   (void) acc_copyin (h2, N);
 
+  fprintf (stderr, "CheCKpOInT\n");
   acc_copyout (h1, N + N);
 
   free (h1);
@@ -36,5 +38,6 @@ main (int argc, char **argv)
   return 0;
 }
 
+/* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
 /* { dg-output "\\\[\[0-9a-fA-FxX\]+,256\\\] surrounds2 \\\[\[0-9a-fA-FxX\]+,\\\+512\\\]" } */
 /* { dg-shouldfail "" } */

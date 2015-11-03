@@ -194,6 +194,7 @@ package body Sem_Dim is
    OK_For_Dimension : constant array (Node_Kind) of Boolean :=
      (N_Attribute_Reference       => True,
       N_Expanded_Name             => True,
+      N_Explicit_Dereference      => True,
       N_Defining_Identifier       => True,
       N_Function_Call             => True,
       N_Identifier                => True,
@@ -1135,6 +1136,7 @@ package body Sem_Dim is
 
          when N_Attribute_Reference       |
               N_Expanded_Name             |
+              N_Explicit_Dereference      |
               N_Function_Call             |
               N_Identifier                |
               N_Indexed_Component         |
@@ -1815,10 +1817,15 @@ package body Sem_Dim is
          if Has_Dimension_System (Base_Type (Comp_Typ)) then
             Expr := Expression (Comp);
 
+            --  A box-initialized component needs no checking.
+
+            if No (Expr) and then Box_Present (Comp) then
+               null;
+
             --  Issue an error if the dimensions of the component type and the
             --  dimensions of the component mismatch.
 
-            if Dimensions_Of (Expr) /= Dimensions_Of (Comp_Typ) then
+            elsif Dimensions_Of (Expr) /= Dimensions_Of (Comp_Typ) then
 
                --  Check if an error has already been encountered so far
 
@@ -2093,7 +2100,6 @@ package body Sem_Dim is
 
    procedure Analyze_Dimension_Simple_Return_Statement (N : Node_Id) is
       Expr                : constant Node_Id := Expression (N);
-      Dims_Of_Expr        : constant Dimension_Type := Dimensions_Of (Expr);
       Return_Ent          : constant Entity_Id := Return_Statement_Entity (N);
       Return_Etyp         : constant Entity_Id :=
                               Etype (Return_Applies_To (Return_Ent));
@@ -2126,7 +2132,7 @@ package body Sem_Dim is
    --  Start of processing for Analyze_Dimension_Simple_Return_Statement
 
    begin
-      if Dims_Of_Return_Etyp /= Dims_Of_Expr then
+      if Dims_Of_Return_Etyp /= Dimensions_Of (Expr) then
          Error_Dim_Msg_For_Simple_Return_Statement (N, Return_Etyp, Expr);
          Remove_Dimensions (Expr);
       end if;
@@ -2657,11 +2663,12 @@ package body Sem_Dim is
    -- Expand_Put_Call_With_Symbol --
    ---------------------------------
 
-   --  For procedure Put (resp. Put_Dim_Of) defined in System.Dim.Float_IO
-   --  (System.Dim.Integer_IO), the default string parameter must be rewritten
-   --  to include the unit symbols (resp. dimension symbols) in the output
-   --  of a dimensioned object. Note that if a value is already supplied for
-   --  parameter Symbol, this routine doesn't do anything.
+   --  For procedure Put (resp. Put_Dim_Of) and function Image, defined in
+   --  System.Dim.Float_IO or System.Dim.Integer_IO, the default string
+   --  parameter is rewritten to include the unit symbol (or the dimension
+   --  symbols if not a defined quantity) in the output of a dimensioned
+   --  object.  If a value is already supplied by the user for the parameter
+   --  Symbol, it is used as is.
 
    --  Case 1. Item is dimensionless
 
@@ -2706,6 +2713,9 @@ package body Sem_Dim is
    --      The corresponding outputs are:
    --      $5.0 m**3.cd**(-1)
    --      $[l**3.J**(-1)]
+
+   --      The function Image returns the string identical to that produced by
+   --      a call to Put whose first parameter is a string.
 
    procedure Expand_Put_Call_With_Symbol (N : Node_Id) is
       Actuals        : constant List_Id := Parameter_Associations (N);
@@ -2772,22 +2782,12 @@ package body Sem_Dim is
             if Present (Actual_Str) then
 
                --  Return True if the actual comes from source or if the string
-               --  of symbols doesn't have the default value (i.e. it is "").
+               --  of symbols doesn't have the default value (i.e. it is ""),
+               --  in which case it is used as suffix of the generated string.
 
                if Comes_From_Source (Actual)
                  or else String_Length (Strval (Actual_Str)) /= 0
                then
-                  --  Complain only if the actual comes from source or if it
-                  --  hasn't been fully analyzed yet.
-
-                  if Comes_From_Source (Actual)
-                    or else not Analyzed (Actual)
-                  then
-                     Error_Msg_N ("Symbol parameter should not be provided",
-                                  Actual);
-                     Error_Msg_N ("\reserved for compiler use only", Actual);
-                  end if;
-
                   return True;
 
                else
@@ -2840,7 +2840,9 @@ package body Sem_Dim is
                   Is_Put_Dim_Of := True;
                   return True;
 
-               elsif Chars (Ent) = Name_Put then
+               elsif Chars (Ent) = Name_Put
+                 or else Chars (Ent) = Name_Image
+               then
                   return True;
                end if;
             end if;
@@ -2975,12 +2977,20 @@ package body Sem_Dim is
 
             --  Rewrite and analyze the procedure call
 
-            Rewrite (N,
-              Make_Procedure_Call_Statement (Loc,
-                Name =>                   New_Copy (Name_Call),
-                Parameter_Associations => New_Actuals));
+            if Chars (Name_Call) = Name_Image then
+               Rewrite (N,
+                 Make_Function_Call (Loc,
+                   Name =>                   New_Copy (Name_Call),
+                   Parameter_Associations => New_Actuals));
+               Analyze_And_Resolve (N);
+            else
+               Rewrite (N,
+                 Make_Procedure_Call_Statement (Loc,
+                   Name =>                   New_Copy (Name_Call),
+                   Parameter_Associations => New_Actuals));
+               Analyze (N);
+            end if;
 
-            Analyze (N);
          end if;
       end if;
    end Expand_Put_Call_With_Symbol;

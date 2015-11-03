@@ -735,7 +735,7 @@ package body Prj.Dect is
                  and then Variable_Kind_Of (Current_Attribute) /=
                  Expression_Kind_Of (Expression, In_Tree)
                then
-                  if  Variable_Kind_Of (Current_Attribute) = Undefined then
+                  if Variable_Kind_Of (Current_Attribute) = Undefined then
                      Set_Variable_Kind_Of
                        (Current_Attribute,
                         To => Expression_Kind_Of (Expression, In_Tree));

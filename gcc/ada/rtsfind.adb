@@ -925,9 +925,7 @@ package body Rtsfind is
 
       --  Local variables
 
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the current Ghost mode in effect to ensure a clean environment
-      --  when analyzing the unit.
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    --  Start of processing for Load_RTU
 
@@ -1043,9 +1041,7 @@ package body Rtsfind is
          Set_Is_Potentially_Use_Visible (U.Entity, True);
       end if;
 
-      --  Restore the original Ghost mode now that analysis has taken place
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Load_RTU;
 
    --------------------
@@ -1111,7 +1107,7 @@ package body Rtsfind is
       begin
          Clause := U.First_Implicit_With;
          while Present (Clause) loop
-            if Parent (Clause) =  Cunit (Current_Sem_Unit) then
+            if Parent (Clause) = Cunit (Current_Sem_Unit) then
                return;
             end if;
 

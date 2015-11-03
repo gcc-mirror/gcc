@@ -116,6 +116,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_SHA_P(x)	TARGET_ISA_SHA_P(x)
 #define TARGET_CLFLUSHOPT	TARGET_ISA_CLFLUSHOPT
 #define TARGET_CLFLUSHOPT_P(x)	TARGET_ISA_CLFLUSHOPT_P(x)
+#define TARGET_CLZERO	TARGET_ISA_CLZERO
+#define TARGET_CLZERO_P(x)	TARGET_ISA_CLZERO_P(x)
 #define TARGET_XSAVEC	TARGET_ISA_XSAVEC
 #define TARGET_XSAVEC_P(x)	TARGET_ISA_XSAVEC_P(x)
 #define TARGET_XSAVES	TARGET_ISA_XSAVES
@@ -293,8 +295,12 @@ extern const struct processor_costs ix86_size_cost;
   (TARGET_64BIT_P(x) && TARGET_SSE_P(x) ? FPMATH_SSE : FPMATH_387)
 #endif
 
-#define TARGET_FLOAT_RETURNS_IN_80387 TARGET_FLOAT_RETURNS
-#define TARGET_FLOAT_RETURNS_IN_80387_P(x) TARGET_FLOAT_RETURNS_P(x)
+/* If the i387 is disabled or -miamcu is used , then do not return
+   values in it. */
+#define TARGET_FLOAT_RETURNS_IN_80387 \
+  (TARGET_FLOAT_RETURNS && TARGET_80387 && !TARGET_IAMCU)
+#define TARGET_FLOAT_RETURNS_IN_80387_P(x) \
+  (TARGET_FLOAT_RETURNS_P(x) && TARGET_80387_P(x) && !TARGET_IAMCU_P(x))
 
 /* 64bit Sledgehammer mode.  For libgcc2 we make sure this is a
    compile-time constant.  */
@@ -340,6 +346,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_BONNELL (ix86_tune == PROCESSOR_BONNELL)
 #define TARGET_SILVERMONT (ix86_tune == PROCESSOR_SILVERMONT)
 #define TARGET_KNL (ix86_tune == PROCESSOR_KNL)
+#define TARGET_SKYLAKE_AVX512 (ix86_tune == PROCESSOR_SKYLAKE_AVX512)
 #define TARGET_INTEL (ix86_tune == PROCESSOR_INTEL)
 #define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
@@ -349,6 +356,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_BDVER4 (ix86_tune == PROCESSOR_BDVER4)
 #define TARGET_BTVER1 (ix86_tune == PROCESSOR_BTVER1)
 #define TARGET_BTVER2 (ix86_tune == PROCESSOR_BTVER2)
+#define TARGET_ZNVER1 (ix86_tune == PROCESSOR_ZNVER1)
 
 /* Feature tests against the various tunings.  */
 enum ix86_tune_indices {
@@ -751,7 +759,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define MAIN_STACK_BOUNDARY (TARGET_64BIT ? 128 : 32)
 
 /* Minimum stack boundary.  */
-#define MIN_STACK_BOUNDARY (TARGET_64BIT ? (TARGET_SSE ? 128 : 64) : 32)
+#define MIN_STACK_BOUNDARY BITS_PER_WORD
 
 /* Boundary (in *bits*) on which the stack pointer prefers to be
    aligned; the compiler cannot rely on having this alignment.  */
@@ -836,7 +844,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #endif
 #else
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-   x86_field_alignment (FIELD, COMPUTED)
+  x86_field_alignment ((FIELD), (COMPUTED))
 #endif
 
 /* If defined, a C expression to compute the alignment given to a
@@ -924,7 +932,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    If this macro is not defined, then (ALIGN) will be used.  */
 
 #define MINIMUM_ALIGNMENT(EXP, MODE, ALIGN) \
-  ix86_minimum_alignment (EXP, MODE, ALIGN)
+  ix86_minimum_alignment ((EXP), (MODE), (ALIGN))
 
 
 /* Set this nonzero if move instructions will actually fail to work
@@ -1014,6 +1022,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
    Proper values are computed in TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
+#define CALL_USED_REGISTERS_MASK(IS_64BIT_MS_ABI) \
+  ((IS_64BIT_MS_ABI) ? (1 << 3) : TARGET_64BIT ? (1 << 2) : (1 << 1))
+
 #define CALL_USED_REGISTERS					\
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7*/	\
 {  1, 1, 1, 0, 4, 4, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,	\
@@ -1077,9 +1088,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
    : ((MODE) == XFmode							\
       ? (TARGET_64BIT ? 2 : 3)						\
-      : (MODE) == XCmode						\
-      ? (TARGET_64BIT ? 4 : 6)						\
-      : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
+      : ((MODE) == XCmode						\
+	 ? (TARGET_64BIT ? 4 : 6)					\
+	 : CEIL (GET_MODE_SIZE (MODE), UNITS_PER_WORD))))
 
 #define HARD_REGNO_NREGS_HAS_PADDING(REGNO, MODE)			\
   ((TARGET_128BIT_LONG_DOUBLE && !TARGET_64BIT)				\
@@ -1181,7 +1192,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 
-#define MODES_TIEABLE_P(MODE1, MODE2)  ix86_modes_tieable_p (MODE1, MODE2)
+#define MODES_TIEABLE_P(MODE1, MODE2) \
+  ix86_modes_tieable_p ((MODE1), (MODE2))
 
 /* It is possible to write patterns to move flags; but until someone
    does it,  */
@@ -1455,7 +1467,7 @@ enum reg_class
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) (regclass_map[REGNO])
+#define REGNO_REG_CLASS(REGNO) (regclass_map[(REGNO)])
 
 /* When this hook returns true for MODE, the compiler allows
    registers explicitly used in the rtl to be used as spill registers
@@ -1595,8 +1607,7 @@ enum reg_class
    and -8 for 64bit targets, we need to make sure all stack pointer adjustments
    are in multiple of 4 for 32bit targets and 8 for 64bit targets.  */
 
-#define PUSH_ROUNDING(BYTES) \
-  (((BYTES) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD)
+#define PUSH_ROUNDING(BYTES) ROUND_UP ((BYTES), UNITS_PER_WORD)
 
 /* If defined, the maximum amount of space required for outgoing arguments
    will be computed and placed into the variable `crtl->outgoing_args_size'.
@@ -1711,7 +1722,8 @@ typedef struct ix86_args {
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
-#define FUNCTION_PROFILER(FILE, LABELNO) x86_function_profiler (FILE, LABELNO)
+#define FUNCTION_PROFILER(FILE, LABELNO) \
+  x86_function_profiler ((FILE), (LABELNO))
 
 #define MCOUNT_NAME "_mcount"
 
@@ -2136,11 +2148,11 @@ extern int const x86_64_ms_sysv_extra_clobbered_registers[12];
   gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
 
 /* After the prologue, RA is at -4(AP) in the current frame.  */
-#define RETURN_ADDR_RTX(COUNT, FRAME)					   \
-  ((COUNT) == 0								   \
-   ? gen_rtx_MEM (Pmode, plus_constant (Pmode, arg_pointer_rtx,	   \
-					-UNITS_PER_WORD))		   \
-   : gen_rtx_MEM (Pmode, plus_constant (Pmode, FRAME, UNITS_PER_WORD)))
+#define RETURN_ADDR_RTX(COUNT, FRAME)					\
+  ((COUNT) == 0								\
+   ? gen_rtx_MEM (Pmode, plus_constant (Pmode, arg_pointer_rtx,		\
+					-UNITS_PER_WORD))		\
+   : gen_rtx_MEM (Pmode, plus_constant (Pmode, (FRAME), UNITS_PER_WORD)))
 
 /* PC is dbx register 8; let's use that column for RA.  */
 #define DWARF_FRAME_RETURN_COLUMN 	(TARGET_64BIT ? 16 : 8)
@@ -2236,7 +2248,7 @@ do {									\
 
 #undef ASM_OUTPUT_FUNCTION_LABEL
 #define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL) \
-  ix86_asm_output_function_label (FILE, NAME, DECL)
+  ix86_asm_output_function_label ((FILE), (NAME), (DECL))
 
 /* Under some conditions we need jump tables in the text section,
    because the assembler cannot handle label differences between
@@ -2279,7 +2291,7 @@ enum processor_type
   PROCESSOR_I386,			/* 80386 */
   PROCESSOR_I486,			/* 80486DX, 80486SX, 80486DX[24] */
   PROCESSOR_PENTIUM,
-  PROCESSOR_IAMCU,
+  PROCESSOR_LAKEMONT,
   PROCESSOR_PENTIUMPRO,
   PROCESSOR_PENTIUM4,
   PROCESSOR_NOCONA,
@@ -2290,6 +2302,7 @@ enum processor_type
   PROCESSOR_BONNELL,
   PROCESSOR_SILVERMONT,
   PROCESSOR_KNL,
+  PROCESSOR_SKYLAKE_AVX512,
   PROCESSOR_INTEL,
   PROCESSOR_GEODE,
   PROCESSOR_K6,
@@ -2302,6 +2315,7 @@ enum processor_type
   PROCESSOR_BDVER4,
   PROCESSOR_BTVER1,
   PROCESSOR_BTVER2,
+  PROCESSOR_ZNVER1,
   PROCESSOR_max
 };
 
@@ -2394,9 +2408,9 @@ enum avx_u128_state
 
    Don't rename evex to non-evex sse registers.  */
 
-#define HARD_REGNO_RENAME_OK(SRC, TARGET) (!STACK_REGNO_P (SRC) &&	 \
-					   (EXT_REX_SSE_REGNO_P (SRC) == \
-					    EXT_REX_SSE_REGNO_P (TARGET)))
+#define HARD_REGNO_RENAME_OK(SRC, TARGET)				\
+  (!STACK_REGNO_P (SRC)							\
+   && EXT_REX_SSE_REGNO_P (SRC) == EXT_REX_SSE_REGNO_P (TARGET))
 
 
 #define FASTCALL_PREFIX '@'

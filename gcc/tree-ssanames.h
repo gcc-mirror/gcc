@@ -76,9 +76,9 @@ extern enum value_range_type get_range_info (const_tree, wide_int *,
 extern void set_nonzero_bits (tree, const wide_int_ref &);
 extern wide_int get_nonzero_bits (const_tree);
 extern void init_ssanames (struct function *, int);
-extern void fini_ssanames (void);
+extern void fini_ssanames (struct function *);
 extern void ssanames_print_statistics (void);
-extern tree make_ssa_name_fn (struct function *, tree, gimple);
+extern tree make_ssa_name_fn (struct function *, tree, gimple *);
 extern void release_ssa_name_fn (struct function *, tree);
 extern bool get_ptr_info_alignment (struct ptr_info_def *, unsigned int *,
 				    unsigned int *);
@@ -89,21 +89,23 @@ extern void adjust_ptr_info_misalignment (struct ptr_info_def *,
 					  unsigned int);
 extern struct ptr_info_def *get_ptr_info (tree);
 
-extern tree copy_ssa_name_fn (struct function *, tree, gimple);
+extern tree copy_ssa_name_fn (struct function *, tree, gimple *);
 extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
-extern tree duplicate_ssa_name_fn (struct function *, tree, gimple);
+extern tree duplicate_ssa_name_fn (struct function *, tree, gimple *);
 extern void duplicate_ssa_name_range_info (tree, enum value_range_type,
 					   struct range_info_def *);
 extern void reset_flow_sensitive_info (tree);
-extern void release_defs (gimple);
+extern void reset_flow_sensitive_info_in_bb (basic_block);
+extern void release_defs (gimple *);
 extern void replace_ssa_name_symbol (tree, tree);
+extern void flush_ssaname_freelist (void);
 
 
 /* Return an SSA_NAME node for variable VAR defined in statement STMT
    in function cfun.  */
 
 static inline tree
-make_ssa_name (tree var, gimple stmt = NULL)
+make_ssa_name (tree var, gimple *stmt = NULL)
 {
   return make_ssa_name_fn (cfun, var, stmt);
 }
@@ -112,7 +114,7 @@ make_ssa_name (tree var, gimple stmt = NULL)
    statement STMT in function cfun.  */
 
 static inline tree
-copy_ssa_name (tree var, gimple stmt = NULL)
+copy_ssa_name (tree var, gimple *stmt = NULL)
 {
   return copy_ssa_name_fn (cfun, var, stmt);
 }
@@ -121,7 +123,7 @@ copy_ssa_name (tree var, gimple stmt = NULL)
     in function cfun.  */
 
 static inline tree
-duplicate_ssa_name (tree var, gimple stmt)
+duplicate_ssa_name (tree var, gimple *stmt)
 {
   return duplicate_ssa_name_fn (cfun, var, stmt);
 }
@@ -138,7 +140,7 @@ release_ssa_name (tree name)
    in function cfun.  Arrange so that it uses NAME in dumps.  */
 
 static inline tree
-make_temp_ssa_name (tree type, gimple stmt, const char *name)
+make_temp_ssa_name (tree type, gimple *stmt, const char *name)
 {
   tree ssa_name;
   gcc_checking_assert (TYPE_P (type));

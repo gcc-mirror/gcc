@@ -23,41 +23,24 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
+#include "tm_p.h"
+#include "optabs.h"
 #include "regs.h"
-#include "insn-config.h"
-#include "conditions.h"
-#include "insn-flags.h"
-#include "insn-attr.h"
+#include "emit-rtl.h"
 #include "recog.h"
-#include "alias.h"
+#include "cgraph.h"
+#include "diagnostic-core.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "flags.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
 #include "reload.h"
 #include "output.h"
-#include "target.h"
-#include "tm_p.h"
-#include "gstab.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "diagnostic-core.h"
-#include "cgraph.h"
 #include "builtins.h"
 #include "rtl-iter.h"
 
@@ -270,7 +253,7 @@ microblaze_const_double_ok (rtx op, machine_mode mode)
   if (op == CONST0_RTX (mode))
     return 1;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (d, op);
+  d = *CONST_DOUBLE_REAL_VALUE (op);
 
   if (REAL_VALUE_ISNAN (d))
     return FALSE;
@@ -280,12 +263,12 @@ microblaze_const_double_ok (rtx op, machine_mode mode)
 
   if (mode == DFmode)
     {
-      if (REAL_VALUES_LESS (d, dfhigh) && REAL_VALUES_LESS (dflow, d))
+      if (real_less (&d, &dfhigh) && real_less (&dflow, &d))
 	return 1;
     }
   else
     {
-      if (REAL_VALUES_LESS (d, sfhigh) && REAL_VALUES_LESS (sflow, d))
+      if (real_less (&d, &sfhigh) && real_less (&sflow, &d))
 	return 1;
     }
 
@@ -1640,7 +1623,7 @@ microblaze_version_to_int (const char *version)
 	{			/* Looking for major  */
           if (*p == '.')
             {
-              *v++;
+              v++;
             }
           else
             {
@@ -2354,11 +2337,7 @@ print_operand (FILE * file, rtx op, int letter)
       if (code == CONST_DOUBLE)
 	{
 	  if (GET_MODE (op) == DFmode)
-	    {
-	      REAL_VALUE_TYPE value;
-	      REAL_VALUE_FROM_CONST_DOUBLE (value, op);
-	      REAL_VALUE_TO_TARGET_DOUBLE (value, val);
-	    }
+	    REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (op), val);
 	  else
 	    {
 	      val[0] = CONST_DOUBLE_HIGH (op);
@@ -2380,9 +2359,8 @@ print_operand (FILE * file, rtx op, int letter)
       if (letter == 'F')
 	{
 	  unsigned long value_long;
-	  REAL_VALUE_TYPE value;
-	  REAL_VALUE_FROM_CONST_DOUBLE (value, op);
-	  REAL_VALUE_TO_TARGET_SINGLE (value, value_long);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op),
+				       value_long);
 	  fprintf (file, HOST_WIDE_INT_PRINT_HEX, value_long);
 	}
       else

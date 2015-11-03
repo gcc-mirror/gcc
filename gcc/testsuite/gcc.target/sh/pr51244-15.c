@@ -1,13 +1,16 @@
 /* Check that the redundant test removal code in the *cbranch_t split works
-   as expected on non-SH2A targets.  Because on SH2A the movrt instruction
-   is used, this test is re-used and checked differently in pr51244-16.c.  */
+   as expected.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" "-m2a*" } { "" } } */
-/* { dg-final { scan-assembler-times "tst" 6 } } */
-/* { dg-final { scan-assembler-times "movt" 6 } } */
-/* { dg-final { scan-assembler-times "xor" 3 } } */
+
 /* { dg-final { scan-assembler-not "extu|exts|negc" } } */
+/* { dg-final { scan-assembler-times "tst" 6 } } */
+
+/* { dg-final { scan-assembler-times "movt" 6 { target { ! sh2a } } } } */
+/* { dg-final { scan-assembler-times "xor" 3 { target { ! sh2a } } } } */
+
+/* { dg-final { scan-assembler-times "movt" 3 { target { sh2a } } } } */
+/* { dg-final { scan-assembler-times "movrt" 3 { target { sh2a } } } } */
 
 typedef char bool;
 

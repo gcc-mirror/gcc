@@ -303,9 +303,8 @@ package body Exp_Prag is
    --------------------------
 
    procedure Expand_Pragma_Check (N : Node_Id) is
-      GM   : constant Ghost_Mode_Type := Ghost_Mode;
-      Cond : constant Node_Id         := Arg2 (N);
-      Nam  : constant Name_Id         := Chars (Arg1 (N));
+      Cond : constant Node_Id := Arg2 (N);
+      Nam  : constant Name_Id := Chars (Arg1 (N));
       Msg  : Node_Id;
 
       Loc : constant Source_Ptr := Sloc (First_Node (Cond));
@@ -322,6 +321,8 @@ package body Exp_Prag is
       --  Assert_Failure, so that coverage analysis tools can relate the
       --  call to the failed check.
 
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
    begin
       --  Nothing to do if pragma is ignored
 
@@ -329,13 +330,10 @@ package body Exp_Prag is
          return;
       end if;
 
-      --  Set the Ghost mode in effect from the pragma. In general both the
-      --  assertion policy and the Ghost policy of pragma Check must agree,
-      --  but there are cases where this can be circumvented. For instance,
-      --  a living subtype with an ignored predicate may be declared in one
-      --  packade, an ignored Ghost object in another and the compilation may
-      --  use -gnata to enable assertions.
-      --  ??? Ghost predicates are under redesign
+      --  Pragmas Assert, Assert_And_Cut, Assume, Check and Loop_Invariant are
+      --  Ghost when they apply to a Ghost entity. Set the mode now to ensure
+      --  that any nodes generated during expansion are properly flagged as
+      --  Ghost.
 
       Set_Ghost_Mode (N);
 
@@ -493,7 +491,7 @@ package body Exp_Prag is
          if Is_Entity_Name (Original_Node (Cond))
            and then Entity (Original_Node (Cond)) = Standard_False
          then
-            return;
+            null;
 
          elsif Nam = Name_Assert then
             Error_Msg_N ("?A?assertion will fail at run time", N);
@@ -503,10 +501,7 @@ package body Exp_Prag is
          end if;
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Pragma_Check;
 
    ---------------------------------
@@ -992,7 +987,8 @@ package body Exp_Prag is
 
       Aggr : constant Node_Id :=
                Expression (First (Pragma_Argument_Associations (CCs)));
-      GM   : constant Ghost_Mode_Type := Ghost_Mode;
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
       Case_Guard    : Node_Id;
       CG_Checks     : Node_Id;
@@ -1027,11 +1023,19 @@ package body Exp_Prag is
          return;
       end if;
 
-      --  The contract cases may be subject to pragma Ghost with policy Ignore.
-      --  Set the mode now to ensure that any nodes generated during expansion
-      --  are properly flagged as ignored Ghost.
+      --  The contract cases is Ghost when it applies to a Ghost entity. Set
+      --  the mode now to ensure that any nodes generated during expansion are
+      --  properly flagged as Ghost.
 
       Set_Ghost_Mode (CCs);
+
+      --  The expansion of contract cases is quite distributed as it produces
+      --  various statements to evaluate the case guards and consequences. To
+      --  preserve the original context, set the Is_Assertion_Expr flag. This
+      --  aids the Ghost legality checks when verifying the placement of a
+      --  reference to a Ghost entity.
+
+      In_Assertion_Expr := In_Assertion_Expr + 1;
 
       Multiple_PCs := List_Length (Component_Associations (Aggr)) > 1;
 
@@ -1258,10 +1262,8 @@ package body Exp_Prag is
 
       Append_To (Stmts, Conseq_Checks);
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      In_Assertion_Expr := In_Assertion_Expr - 1;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Pragma_Contract_Cases;
 
    ---------------------------------------
@@ -1361,22 +1363,6 @@ package body Exp_Prag is
    -------------------------------------
 
    procedure Expand_Pragma_Initial_Condition (Spec_Or_Body : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
-
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
-      --  Local variables
-
       Loc       : constant Source_Ptr := Sloc (Spec_Or_Body);
       Check     : Node_Id;
       Expr      : Node_Id;
@@ -1384,7 +1370,7 @@ package body Exp_Prag is
       List      : List_Id;
       Pack_Id   : Entity_Id;
 
-   --  Start of processing for Expand_Pragma_Initial_Condition
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    begin
       if Nkind (Spec_Or_Body) = N_Package_Body then
@@ -1424,9 +1410,9 @@ package body Exp_Prag is
 
       Init_Cond := Get_Pragma (Pack_Id, Pragma_Initial_Condition);
 
-      --  The initial condition be subject to pragma Ghost with policy Ignore.
-      --  Set the mode now to ensure that any nodes generated during expansion
-      --  are properly flagged as ignored Ghost.
+      --  The initial condition is Ghost when it applies to a Ghost entity. Set
+      --  the mode now to ensure that any nodes generated during expansion are
+      --  properly flagged as Ghost.
 
       Set_Ghost_Mode (Init_Cond);
 
@@ -1442,7 +1428,7 @@ package body Exp_Prag is
       --  runtime check as it will repeat the illegality.
 
       if Error_Posted (Init_Cond) or else Error_Posted (Expr) then
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -1461,7 +1447,7 @@ package body Exp_Prag is
       Append_To (List, Check);
       Analyze (Check);
 
-      Restore_Globals;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Pragma_Initial_Condition;
 
    ------------------------------------
@@ -1811,7 +1797,7 @@ package body Exp_Prag is
 
       --  Local variables
 
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    --  Start of processing for Expand_Pragma_Loop_Variant
 
@@ -1825,11 +1811,19 @@ package body Exp_Prag is
          return;
       end if;
 
-      --  The loop variant may be subject to pragma Ghost with policy Ignore.
-      --  Set the mode now to ensure that any nodes generated during expansion
-      --  are properly flagged as ignored Ghost.
+      --  The loop variant is Ghost when it applies to a Ghost entity. Set
+      --  the mode now to ensure that any nodes generated during expansion
+      --  are properly flagged as Ghost.
 
       Set_Ghost_Mode (N);
+
+      --  The expansion of Loop_Variant is quite distributed as it produces
+      --  various statements to capture and compare the arguments. To preserve
+      --  the original context, set the Is_Assertion_Expr flag. This aids the
+      --  Ghost legality checks when verifying the placement of a reference to
+      --  a Ghost entity.
+
+      In_Assertion_Expr := In_Assertion_Expr + 1;
 
       --  Locate the enclosing loop for which this assertion applies. In the
       --  case of Ada 2012 array iteration, we might be dealing with nested
@@ -1892,10 +1886,8 @@ package body Exp_Prag is
       --  corresponding declarations and statements. We leave it in the tree
       --  for documentation purposes. It will be ignored by the backend.
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      In_Assertion_Expr := In_Assertion_Expr - 1;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Pragma_Loop_Variant;
 
    --------------------------------

@@ -22,8 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "intl.h"
 #include "cp-tree.h"
+#include "intl.h"
 #include "cxx-pretty-print.h"
 #include "tree-pretty-print.h"
 
@@ -2193,6 +2193,26 @@ pp_cxx_canonical_template_parameter (cxx_pretty_printer *pp, tree parm)
   pp_minus (pp);
   pp_wide_integer (pp, TEMPLATE_PARM_IDX (parm) + 1);
   pp_cxx_end_template_argument_list (pp);
+}
+
+/* Print a constrained-type-specifier.  */
+
+void
+pp_cxx_constrained_type_spec (cxx_pretty_printer *pp, tree c)
+{
+  tree t, a;
+  placeholder_extract_concept_and_args (c, t, a);
+  pp->id_expression (t);
+  if (TREE_VEC_LENGTH (a) > 1)
+    {
+      pp_cxx_begin_template_argument_list (pp);
+      tree args = make_tree_vec (TREE_VEC_LENGTH (a) - 1);
+      for (int i = TREE_VEC_LENGTH (a) - 1; i > 0; --i)
+	TREE_VEC_ELT (args, i-1) = TREE_VEC_ELT (a, i);
+      pp_cxx_template_argument_list (pp, args);
+      ggc_free (args);
+      pp_cxx_end_template_argument_list (pp);
+    }
 }
 
 /*

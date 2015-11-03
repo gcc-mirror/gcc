@@ -32,21 +32,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
-#include "tree.h"
-#include "langhooks.h"
-#include "intl.h"
-#include "coverage.h"
-#include "tree-cfg.h"
-#include "hard-reg-set.h"
 #include "function.h"
-#include "cgraph.h"
+#include "tree.h"
 #include "alloc-pool.h"
+#include "tree-pass.h"
+#include "cgraph.h"
+#include "tree-cfg.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "tree-inline.h"
-#include "tree-pass.h"
 
 int ncalls_inlined;
 int nfunctions_inlined;
@@ -491,10 +486,9 @@ save_inline_function_body (struct cgraph_node *node)
       first_clone->remove_symbol_and_inline_clones ();
       first_clone = NULL;
     }
-#ifdef ENABLE_CHECKING
-  else
+  else if (flag_checking)
     first_clone->verify ();
-#endif
+
   return first_clone;
 }
 

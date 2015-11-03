@@ -484,7 +484,7 @@ def build_pretty_printer():
                              'cgraph_node', CGraphNodePrinter)
     pp.add_printer_for_types(['dw_die_ref'],
                              'dw_die_ref', DWDieRefPrinter)
-    pp.add_printer_for_types(['gimple', 'gimple_statement_base *',
+    pp.add_printer_for_types(['gimple', 'gimple *',
 
                               # Keep this in the same order as gimple.def:
                               'gimple_cond', 'const_gimple_cond',

@@ -44,8 +44,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#ifdef _GLIBCXX_USE_WCHAR_T
-
   /**
    * @addtogroup locales
    * @{
@@ -156,6 +154,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t __n;
       return __str_codecvt_out(__first, __last, __outstr, __cvt, __state, __n);
     }
+
+#ifdef _GLIBCXX_USE_WCHAR_T
 
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
@@ -533,9 +533,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
       bool			_M_always_noconv;
     };
 
-  /// @} group locales
-
 #endif  // _GLIBCXX_USE_WCHAR_T
+
+  /// @} group locales
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

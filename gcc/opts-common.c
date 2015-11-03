@@ -825,6 +825,7 @@ prune_options (struct cl_decoded_option **decoded_options,
     = XNEWVEC (struct cl_decoded_option, old_decoded_options_count);
   unsigned int i;
   const struct cl_option *option;
+  unsigned int fdiagnostics_color_idx = 0;
 
   /* Remove arguments which are negated by others after them.  */
   new_decoded_options_count = 0;
@@ -843,6 +844,11 @@ prune_options (struct cl_decoded_option **decoded_options,
 	case OPT_SPECIAL_program_name:
 	case OPT_SPECIAL_input_file:
 	  goto keep;
+
+	/* Do not save OPT_fdiagnostics_color_, just remember the last one.  */
+	case OPT_fdiagnostics_color_:
+	  fdiagnostics_color_idx = i;
+	  continue;
 
 	default:
 	  gcc_assert (opt_idx < cl_options_count);
@@ -877,6 +883,17 @@ keep:
 	    }
 	  break;
 	}
+    }
+
+  if (fdiagnostics_color_idx > 1)
+    {
+      /* We put the last -fdiagnostics-color= at the first position
+	 after argv[0] so it can take effect immediately.  */
+      memmove (new_decoded_options + 2, new_decoded_options + 1,
+	       sizeof (struct cl_decoded_option) 
+	       * (new_decoded_options_count - 1));
+      new_decoded_options[1] = old_decoded_options[fdiagnostics_color_idx];
+      new_decoded_options_count++;
     }
 
   free (old_decoded_options);

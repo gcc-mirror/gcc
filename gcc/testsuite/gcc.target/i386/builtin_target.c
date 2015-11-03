@@ -91,6 +91,11 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	      assert (__builtin_cpu_is ("corei7"));
 	      assert (__builtin_cpu_is ("skylake"));
 	      break;
+	    case 0x55:
+	      /* Skylake with AVX-512 support.  */
+	      assert (__builtin_cpu_is ("corei7"));
+	      assert (__builtin_cpu_is ("skylake-avx512"));
+	      break;
 	    case 0x17:
 	    case 0x1d:
 	      /* Penryn.  */
@@ -168,6 +173,10 @@ check_features (unsigned int ecx, unsigned int edx,
     assert (__builtin_cpu_supports ("sse2"));
   if (ecx & bit_POPCNT)
     assert (__builtin_cpu_supports ("popcnt"));
+  if (ecx & bit_AES)
+    assert (__builtin_cpu_supports ("aes"));
+  if (ecx & bit_PCLMUL)
+    assert (__builtin_cpu_supports ("pclmul"));
   if (ecx & bit_SSE3)
     assert (__builtin_cpu_supports ("sse3"));
   if (ecx & bit_SSSE3)
@@ -188,6 +197,22 @@ check_features (unsigned int ecx, unsigned int edx,
 	assert (__builtin_cpu_supports ("avx2"));
       if (ebx & bit_AVX512F)
 	assert (__builtin_cpu_supports ("avx512f"));
+      if (ebx & bit_AVX512VL)
+	assert (__builtin_cpu_supports ("avx512vl"));
+      if (ebx & bit_AVX512CD)
+	assert (__builtin_cpu_supports ("avx512cd"));
+      if (ebx & bit_AVX512PF)
+	assert (__builtin_cpu_supports ("avx512pf"));
+      if (ebx & bit_AVX512ER)
+	assert (__builtin_cpu_supports ("avx512er"));
+      if (ebx & bit_AVX512BW)
+	assert (__builtin_cpu_supports ("avx512bw"));
+      if (ebx & bit_AVX512DQ)
+	assert (__builtin_cpu_supports ("avx512dq"));
+      if (ecx & bit_AVX512IFMA)
+	assert (__builtin_cpu_supports ("avx512ifma"));
+      if (ecx & bit_AVX512VBMI)
+	assert (__builtin_cpu_supports ("avx512vbmi"));
     }
 }
 

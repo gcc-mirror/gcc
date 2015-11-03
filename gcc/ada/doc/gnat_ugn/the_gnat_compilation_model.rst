@@ -4465,7 +4465,7 @@ If you want to generate a single Ada file and not the transitive closure, you
 can use instead the *-fdump-ada-spec-slim* switch.
 
 You can optionally specify a parent unit, of which all generated units will
-be children, using `-fada-spec-parent=``unit`.
+be children, using `-fada-spec-parent=<unit>`.
 
 Note that we recommend when possible to use the *g++* driver to
 generate bindings, even for most C headers, since this will in general

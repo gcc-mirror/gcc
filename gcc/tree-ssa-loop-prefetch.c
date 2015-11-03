@@ -21,52 +21,35 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "alias.h"
+#include "predict.h"
+#include "tree-pass.h"
+#include "gimple-ssa.h"
+#include "optabs-query.h"
+#include "tree-pretty-print.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "tm_p.h"
-#include "tree-pretty-print.h"
-#include "internal-fn.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
-#include "gimple-ssa.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
 #include "cfgloop.h"
-#include "tree-pass.h"
-#include "insn-config.h"
-#include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
-#include "diagnostic-core.h"
 #include "params.h"
 #include "langhooks.h"
 #include "tree-inline.h"
 #include "tree-data-ref.h"
-#include "target.h"
 
 
 /* FIXME: Needed for optabs, but this should all be moved to a TBD interface
    between the GIMPLE and RTL worlds.  */
-#include "flags.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "recog.h"
 
 /* This pass inserts prefetch instructions to optimize cache usage during
    accesses to arrays in loops.  It processes loops sequentially and:
@@ -275,7 +258,7 @@ struct mem_ref_group
 
 struct mem_ref
 {
-  gimple stmt;			/* Statement in that the reference appears.  */
+  gimple *stmt;			/* Statement in that the reference appears.  */
   tree mem;			/* The reference.  */
   HOST_WIDE_INT delta;		/* Constant offset of the reference.  */
   struct mem_ref_group *group;	/* The group of references it belongs to.  */
@@ -364,7 +347,7 @@ find_or_create_group (struct mem_ref_group **groups, tree base, tree step)
    WRITE_P.  The reference occurs in statement STMT.  */
 
 static void
-record_ref (struct mem_ref_group *group, gimple stmt, tree mem,
+record_ref (struct mem_ref_group *group, gimple *stmt, tree mem,
 	    HOST_WIDE_INT delta, bool write_p)
 {
   struct mem_ref **aref;
@@ -430,7 +413,7 @@ release_mem_refs (struct mem_ref_group *groups)
 struct ar_data
 {
   struct loop *loop;			/* Loop of the reference.  */
-  gimple stmt;				/* Statement of the reference.  */
+  gimple *stmt;				/* Statement of the reference.  */
   tree *step;				/* Step of the memory reference.  */
   HOST_WIDE_INT *delta;			/* Offset of the memory reference.  */
 };
@@ -496,7 +479,7 @@ idx_analyze_ref (tree base, tree *index, void *data)
 static bool
 analyze_ref (struct loop *loop, tree *ref_p, tree *base,
 	     tree *step, HOST_WIDE_INT *delta,
-	     gimple stmt)
+	     gimple *stmt)
 {
   struct ar_data ar_data;
   tree off;
@@ -544,7 +527,7 @@ analyze_ref (struct loop *loop, tree *ref_p, tree *base,
 
 static bool
 gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
-			      tree ref, bool write_p, gimple stmt)
+			      tree ref, bool write_p, gimple *stmt)
 {
   tree base, step;
   HOST_WIDE_INT delta;
@@ -620,7 +603,7 @@ gather_memory_references (struct loop *loop, bool *no_other_refs, unsigned *ref_
   basic_block bb;
   unsigned i;
   gimple_stmt_iterator bsi;
-  gimple stmt;
+  gimple *stmt;
   tree lhs, rhs;
   struct mem_ref_group *refs = NULL;
 

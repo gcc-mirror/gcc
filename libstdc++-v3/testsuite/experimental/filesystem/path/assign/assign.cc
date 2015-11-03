@@ -36,6 +36,7 @@ test01()
     p2 = s.c_str();
     compare_paths(p0, p2);
 
+#if _GLIBCXX_USE_WCHAR_T
     std::wstring ws(s.begin(), s.end());
 
     p3 = ws;
@@ -43,6 +44,7 @@ test01()
 
     p4 = ws.c_str();
     compare_paths(p0, p4);
+#endif
   }
 }
 
@@ -65,6 +67,7 @@ test02()
     p4.assign( s.c_str(), s.c_str() + s.size() );
     compare_paths(p0, p4);
 
+#if _GLIBCXX_USE_WCHAR_T
     std::wstring ws(s.begin(), s.end());
 
     p5.assign(ws);
@@ -78,6 +81,7 @@ test02()
 
     p8.assign( ws.c_str(), ws.c_str() + ws.size() );
     compare_paths(p0, p8);
+#endif
   }
 }
 

@@ -85,38 +85,26 @@ a register with any other reload.  */
 
 #define REG_OK_STRICT
 
-/* We do not enable this with ENABLE_CHECKING, since it is awfully slow.  */
+/* We do not enable this with CHECKING_P, since it is awfully slow.  */
 #undef DEBUG_RELOAD
 
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
-#include "rtl-error.h"
 #include "tm_p.h"
-#include "insn-config.h"
-#include "flags.h"
-#include "alias.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "insn-codes.h"
 #include "optabs.h"
-#include "recog.h"
-#include "reload.h"
 #include "regs.h"
+#include "ira.h"
+#include "recog.h"
+#include "rtl-error.h"
+#include "reload.h"
 #include "addresses.h"
 #include "params.h"
-#include "target.h"
-#include "ira.h"
 
 /* True if X is a constant that can be forced into the constant pool.
    MODE is the mode of the operand, or VOIDmode if not known.  */

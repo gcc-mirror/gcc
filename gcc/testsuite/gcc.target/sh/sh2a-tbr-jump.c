@@ -1,8 +1,7 @@
 /* Testcase to check generation of a SH2A specific,
    TBR relative jump instruction - 'JSR @@(disp8,TBR)'.  */
-/* { dg-do assemble }  */
+/* { dg-do compile { target { sh2a } } }  */
 /* { dg-options "" } */
-/* { dg-skip-if "" { "sh*-*-*" } "*" "-m2a -m2a-nofpu -m2a-single -m2a-single-only" } */
 /* { dg-final { scan-assembler-times "jsr/n\\t@@\\(40,tbr\\)" 1} } */
 /* { dg-final { scan-assembler-times "jsr/n\\t@@\\(72,tbr\\)" 1} } */
  

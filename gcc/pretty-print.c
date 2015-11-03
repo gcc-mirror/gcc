@@ -625,10 +625,9 @@ pp_format (pretty_printer *pp, text_info *text)
       *formatters[argno] = XOBFINISH (&buffer->chunk_obstack, const char *);
     }
 
-#ifdef ENABLE_CHECKING
-  for (; argno < PP_NL_ARGMAX; argno++)
-    gcc_assert (!formatters[argno]);
-#endif
+  if (CHECKING_P)
+    for (; argno < PP_NL_ARGMAX; argno++)
+      gcc_assert (!formatters[argno]);
 
   /* Revert to normal obstack and wrapping mode.  */
   buffer->obstack = &buffer->formatted_obstack;
@@ -905,7 +904,8 @@ pp_character (pretty_printer *pp, int c)
 void
 pp_string (pretty_printer *pp, const char *str)
 {
-  pp_maybe_wrap_text (pp, str, str + (str ? strlen (str) : 0));
+  gcc_checking_assert (str);
+  pp_maybe_wrap_text (pp, str, str + strlen (str));
 }
 
 /* Maybe print out a whitespace if needed.  */

@@ -3,8 +3,7 @@
    (On SH3* and SH4* r0..r7 are banked)
    Call-saved registers r8..r13 also don't need to be restored.
    To test that we look for register push insns such as 'mov.l r0,@-r15'.  */
-/* { dg-do compile { target { { "sh*-*-*" } && nonpic } } }  */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m1*" "-m2*" "-m5*" } { "" } }  */
+/* { dg-do compile { target { { banked_r0r7_isr } && nonpic } } }  */
 /* { dg-options "-O" }  */
 /* { dg-final { scan-assembler-times "rte" 1 } }  */
 /* { dg-final { scan-assembler-not "mov.l\tr\[0-9\],@-r15" } }  */

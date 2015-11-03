@@ -22,6 +22,10 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#ifndef _GLIBCXX_USE_CXX11_ABI
+# define _GLIBCXX_USE_CXX11_ABI 1
+#endif
+
 #include <experimental/filesystem>
 
 using std::experimental::filesystem::path;
@@ -437,8 +441,9 @@ path::_M_trim()
 
 path::string_type
 path::_S_convert_loc(const char* __first, const char* __last,
-               const std::locale& __loc)
+		     const std::locale& __loc)
 {
+#if _GLIBCXX_USE_WCHAR_T
   auto& __cvt = std::use_facet<codecvt<wchar_t, char, mbstate_t>>(__loc);
   basic_string<wchar_t> __ws;
   if (!__str_codecvt_in(__first, __last, __ws, __cvt))
@@ -449,6 +454,9 @@ path::_S_convert_loc(const char* __first, const char* __last,
   return __ws;
 #else
   return _Cvt<wchar_t>::_S_convert(__ws.data(), __ws.data() + __ws.size());
+#endif
+#else
+  return {__first, __last};
 #endif
 }
 

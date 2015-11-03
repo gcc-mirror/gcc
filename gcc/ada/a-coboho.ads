@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2014, Free Software Foundation, Inc.            --
+--            Copyright (C) 2015, Free Software Foundation, Inc.            --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -38,6 +38,8 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Bounded_Holders is
+   pragma Annotate (CodePeer, Skip_Analysis);
+
    --  This package is patterned after Ada.Containers.Indefinite_Holders. It is
    --  used to treat indefinite subtypes as definite, but without using heap
    --  allocation. For example, you might like to say:
@@ -51,9 +53,14 @@ package Ada.Containers.Bounded_Holders is
    --
    --  Each object of type Holder is allocated Max_Size_In_Storage_Elements
    --  bytes. If you try to create a holder from an object of type Element_Type
-   --  that is too big, an exception is raised. This applies to To_Holder and
-   --  Replace_Element. If you pass an Element_Type object that is smaller than
-   --  Max_Size_In_Storage_Elements, it works fine, but some space is wasted.
+   --  that is too big, an exception is raised (assuming assertions are
+   --  enabled). This applies to To_Holder and Set. If you pass an Element_Type
+   --  object that is smaller than Max_Size_In_Storage_Elements, it works fine,
+   --  but some space is wasted.
+   --
+   --  NOTE: If assertions are disabled, and you try to use an Element that is
+   --  too big, execution is erroneous, and anything can happen, such as
+   --  overwriting arbitrary memory locations.
    --
    --  Element_Type must not be an unconstrained array type. It can be a
    --  class-wide type or a type with non-defaulted discriminants.

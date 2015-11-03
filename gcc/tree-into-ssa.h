@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 extern tree get_current_def (tree);
 extern void set_current_def (tree, tree);
 void delete_update_ssa (void);
-tree create_new_def_for (tree, gimple, def_operand_p);
+tree create_new_def_for (tree, gimple *, def_operand_p);
 void mark_virtual_operands_for_renaming (struct function *);
 void mark_virtual_operand_for_renaming (tree);
 void mark_virtual_phi_result_for_renaming (gphi *);

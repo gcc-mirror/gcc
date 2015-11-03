@@ -20,17 +20,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "simple-object.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
-#include "stor-layout.h"
 #include "tm_p.h"
+#include "diagnostic.h"
+#include "simple-object.h"
+#include "alias.h"
+#include "stor-layout.h"
 #include "intl.h"
 #include "output.h"	/* for assemble_string */
-#include "target.h"
 #include "common/common-target.h"
-#include "diagnostic.h"
 
 #include "go-c.h"
 

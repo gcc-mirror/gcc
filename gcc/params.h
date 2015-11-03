@@ -55,6 +55,9 @@ struct param_info
 
   /* A short description of the option.  */
   const char *const help;
+
+  /* The optional names corresponding to the values.  */
+  const char **value_names;
 };
 
 /* An array containing the compiler parameters and their current
@@ -84,6 +87,9 @@ enum compiler_param
 #include "params.list"
   LAST_PARAM
 };
+
+extern bool find_param (const char *, enum compiler_param *);
+extern bool param_string_value_p (enum compiler_param, const char *, int *);
 
 /* The value of the parameter given by ENUM.  Not an lvalue.  */
 #define PARAM_VALUE(ENUM) \

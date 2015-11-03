@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Basic eight-word fraction declaration and manipulation.
-   Copyright (C) 1997-2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz) and
@@ -28,6 +28,9 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
+
+#ifndef SOFT_FP_OP_8_H
+#define SOFT_FP_OP_8_H	1
 
 /* We need just a few things from here for op-4, if we ever need some
    other macros, they can be added.  */
@@ -143,3 +146,5 @@
       X##_f[0] |= (_FP_FRAC_SRS_8_s != 0);				\
     }									\
   while (0)
+
+#endif /* !SOFT_FP_OP_8_H */

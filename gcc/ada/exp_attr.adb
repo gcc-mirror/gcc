@@ -1012,13 +1012,15 @@ package body Exp_Attr is
          Loop_Stmt := Label_Construct (Parent (Loop_Id));
 
       --  Climb the parent chain to find the nearest enclosing loop. Skip all
-      --  internally generated loops for quantified expressions.
+      --  internally generated loops for quantified expressions and for
+      --  element iterators over multidimensional arrays: pragma applies to
+      --  source loop.
 
       else
          Loop_Stmt := N;
          while Present (Loop_Stmt) loop
             if Nkind (Loop_Stmt) = N_Loop_Statement
-              and then Present (Identifier (Loop_Stmt))
+              and then Comes_From_Source (Loop_Stmt)
             then
                exit;
             end if;
@@ -1456,57 +1458,39 @@ package body Exp_Attr is
                      Duplicate_Subexpr_No_Checks (Left),
                      Duplicate_Subexpr_No_Checks (Right))));
 
-            --  Otherwise we generate declarations to capture the values. We
-            --  can't put these declarations inside the if expression, since
-            --  we could end up with an N_Expression_With_Actions which has
-            --  declarations in the actions, forbidden for Modify_Tree_For_C.
+            --  Otherwise we generate declarations to capture the values.
 
             --  The translation is
 
-            --    T1 : styp;    --  inserted high up in tree
-            --    T2 : styp;    --  inserted high up in tree
-
             --    do
-            --      T1 := styp!(Left);
-            --      T2 := styp!(Right);
+            --      T1 : constant typ := Left;
+            --      T2 : constant typ := Right;
             --    in
-            --      (if T1 >=|<= T2 then typ!(T1) else typ!(T2))
+            --      (if T1 >=|<= T2 then T1 else T2)
             --    end;
-
-            --  We insert the T1,T2 declarations with Insert_Declaration which
-            --  inserts these declarations high up in the tree unconditionally.
-            --  This is safe since no code is associated with the declarations.
-            --  Here styp is a standard type whose Esize matches the size of
-            --  our type. We do this because the actual type may be a result of
-            --  some local declaration which would not be visible at the point
-            --  where we insert the declarations of T1 and T2.
 
             else
                declare
-                  T1   : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
-                  T2   : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
-                  Styp : constant Entity_Id := Matching_Standard_Type (Typ);
+                  T1 : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
+                  T2 : constant Entity_Id := Make_Temporary (Loc, 'T', Right);
 
                begin
-                  Insert_Declaration (N,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => T1,
-                      Object_Definition   => New_Occurrence_Of (Styp, Loc)));
-
-                  Insert_Declaration (N,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => T2,
-                      Object_Definition   => New_Occurrence_Of (Styp, Loc)));
-
                   Rewrite (N,
                     Make_Expression_With_Actions (Loc,
-                      Actions => New_List (
-                        Make_Assignment_Statement (Loc,
-                          Name       => New_Occurrence_Of (T1, Loc),
-                          Expression => Unchecked_Convert_To (Styp, Left)),
-                        Make_Assignment_Statement (Loc,
-                          Name       => New_Occurrence_Of (T2, Loc),
-                          Expression => Unchecked_Convert_To (Styp, Right))),
+                      Actions    => New_List (
+                        Make_Object_Declaration (Loc,
+                          Defining_Identifier => T1,
+                          Constant_Present    => True,
+                          Object_Definition   =>
+                            New_Occurrence_Of (Etype (Left), Loc),
+                          Expression          => Relocate_Node (Left)),
+
+                        Make_Object_Declaration (Loc,
+                          Defining_Identifier => T2,
+                          Constant_Present    => True,
+                          Object_Definition   =>
+                            New_Occurrence_Of (Etype (Right), Loc),
+                          Expression          => Relocate_Node (Right))),
 
                       Expression =>
                         Make_If_Expression (Loc,
@@ -1514,10 +1498,8 @@ package body Exp_Attr is
                             Make_Compare
                               (New_Occurrence_Of (T1, Loc),
                                New_Occurrence_Of (T2, Loc)),
-                            Unchecked_Convert_To (Typ,
-                              New_Occurrence_Of (T1, Loc)),
-                            Unchecked_Convert_To (Typ,
-                              New_Occurrence_Of (T2, Loc))))));
+                               New_Occurrence_Of (T1, Loc),
+                               New_Occurrence_Of (T2, Loc)))));
                end;
             end if;
 
@@ -2223,14 +2205,7 @@ package body Exp_Attr is
                 Prefix         => Pref,
                 Attribute_Name => Name_Tag);
 
-            if VM_Target = No_VM then
-               New_Node := Build_Get_Alignment (Loc, New_Node);
-            else
-               New_Node :=
-                 Make_Function_Call (Loc,
-                   Name => New_Occurrence_Of (RTE (RE_Get_Alignment), Loc),
-                   Parameter_Associations => New_List (New_Node));
-            end if;
+            New_Node := Build_Get_Alignment (Loc, New_Node);
 
             --  Case where the context is a specific integer type with which
             --  the original attribute was compatible. The function has a
@@ -2901,17 +2876,8 @@ package body Exp_Attr is
             begin
                if Nkind (Nod) = N_Selected_Component then
                   Make_Elab_String (Prefix (Nod));
-
-                  case VM_Target is
-                     when JVM_Target =>
-                        Store_String_Char ('$');
-                     when CLI_Target =>
-                        Store_String_Char ('.');
-                     when No_VM =>
-                        Store_String_Char ('_');
-                        Store_String_Char ('_');
-                  end case;
-
+                  Store_String_Char ('_');
+                  Store_String_Char ('_');
                   Get_Name_String (Chars (Selector_Name (Nod)));
 
                else
@@ -2930,14 +2896,8 @@ package body Exp_Attr is
 
             Start_String;
             Make_Elab_String (Pref);
-
-            if VM_Target = No_VM then
-               Store_String_Chars ("___elab");
-               Lang := Make_Identifier (Loc, Name_C);
-            else
-               Store_String_Chars ("._elab");
-               Lang := Make_Identifier (Loc, Name_Ada);
-            end if;
+            Store_String_Chars ("___elab");
+            Lang := Make_Identifier (Loc, Name_C);
 
             if Id = Attribute_Elab_Body then
                Store_String_Char ('b');
@@ -3035,13 +2995,14 @@ package body Exp_Attr is
               Make_Integer_Literal (Loc, Enumeration_Rep (Entity (Pref))));
 
          --  If this is a renaming of a literal, recover the representation
-         --  of the original.
+         --  of the original. If it renames an expression there is nothing
+         --  to fold.
 
          elsif Ekind (Entity (Pref)) = E_Constant
            and then Present (Renamed_Object (Entity (Pref)))
-           and then
-             Ekind (Entity (Renamed_Object (Entity (Pref))))
-               = E_Enumeration_Literal
+           and then Is_Entity_Name (Renamed_Object (Entity (Pref)))
+           and then Ekind (Entity (Renamed_Object (Entity (Pref)))) =
+                      E_Enumeration_Literal
          then
             Rewrite (N,
               Make_Integer_Literal (Loc,
@@ -4189,11 +4150,7 @@ package body Exp_Attr is
          --  are not part of the actual type. Transform the attribute reference
          --  into a runtime expression to add the size of the hidden header.
 
-         --  Do not perform this expansion on .NET/JVM targets because the
-         --  two pointers are already present in the type.
-
-         if VM_Target = No_VM
-           and then Needs_Finalization (Ptyp)
+         if Needs_Finalization (Ptyp)
            and then not Header_Size_Added (Attr)
          then
             Set_Header_Size_Added (Attr);
@@ -5031,8 +4988,8 @@ package body Exp_Attr is
             --  both cases the type of the first formal of their expanded
             --  subprogram is Address)
 
-            if Etype (First_Entity (Protected_Body_Subprogram (Subprg)))
-              = RTE (RE_Address)
+            if Etype (First_Entity (Protected_Body_Subprogram (Subprg))) =
+                 RTE (RE_Address)
             then
                declare
                   New_Itype : Entity_Id;
@@ -5809,7 +5766,7 @@ package body Exp_Attr is
          --  c) If the prefix is a task type, the size is obtained from the
          --  size variable created for each task type
 
-         --  d) If no storage_size was specified for the type , there is no
+         --  d) If no Storage_Size was specified for the type, there is no
          --  size variable, and the value is a system-specific default.
 
          else
@@ -5850,7 +5807,7 @@ package body Exp_Attr is
 
             elsif Present (Storage_Size_Variable (Ptyp)) then
 
-               --  Static storage size pragma given for type: retrieve value
+               --  Static Storage_Size pragma given for type: retrieve value
                --  from its allocated storage variable.
 
                Rewrite (N,
@@ -6175,49 +6132,6 @@ package body Exp_Attr is
          if not Is_Inline_Floating_Point_Attribute (N) then
             Expand_Fpt_Attribute_R (N);
          end if;
-
-      -----------------
-      -- UET_Address --
-      -----------------
-
-      when Attribute_UET_Address => UET_Address : declare
-         Ent : constant Entity_Id := Make_Temporary (Loc, 'T');
-
-      begin
-         Insert_Action (N,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Ent,
-             Aliased_Present     => True,
-             Object_Definition   =>
-               New_Occurrence_Of (RTE (RE_Address), Loc)));
-
-         --  Construct name __gnat_xxx__SDP, where xxx is the unit name
-         --  in normal external form.
-
-         Get_External_Unit_Name_String (Get_Unit_Name (Pref));
-         Name_Buffer (1 + 7 .. Name_Len + 7) := Name_Buffer (1 .. Name_Len);
-         Name_Len := Name_Len + 7;
-         Name_Buffer (1 .. 7) := "__gnat_";
-         Name_Buffer (Name_Len + 1 .. Name_Len + 5) := "__SDP";
-         Name_Len := Name_Len + 5;
-
-         Set_Is_Imported (Ent);
-         Set_Interface_Name (Ent,
-           Make_String_Literal (Loc,
-             Strval => String_From_Name_Buffer));
-
-         --  Set entity as internal to ensure proper Sprint output of its
-         --  implicit importation.
-
-         Set_Is_Internal (Ent);
-
-         Rewrite (N,
-           Make_Attribute_Reference (Loc,
-             Prefix => New_Occurrence_Of (Ent, Loc),
-             Attribute_Name => Name_Address));
-
-         Analyze_And_Resolve (N, Typ);
-      end UET_Address;
 
       ------------
       -- Update --
@@ -7554,9 +7468,6 @@ package body Exp_Attr is
       --  that appear in GNAT's library, but will generate calls via rtsfind
       --  to library routines for user code.
 
-      --  ??? For now, disable this code for JVM, since this generates a
-      --  VerifyError exception at run time on e.g. c330001.
-
       --  This is disabled for AAMP, to avoid creating dependences on files not
       --  supported in the AAMP library (such as s-fileio.adb).
 
@@ -7567,8 +7478,7 @@ package body Exp_Attr is
       --  instead. That is why we include the test Is_Available when dealing
       --  with these cases.
 
-      if VM_Target /= JVM_Target
-        and then not AAMP_On_Target
+      if not AAMP_On_Target
         and then
           not Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
       then
@@ -8044,8 +7954,7 @@ package body Exp_Attr is
 
       function Is_GCC_Target return Boolean is
       begin
-         return VM_Target = No_VM and then not CodePeer_Mode
-           and then not AAMP_On_Target;
+         return not CodePeer_Mode and then not AAMP_On_Target;
       end Is_GCC_Target;
 
    --  Start of processing for Exp_Attr

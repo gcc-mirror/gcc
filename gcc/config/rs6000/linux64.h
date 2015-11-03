@@ -174,20 +174,24 @@ extern int dot_symbols;
 #undef	ASM_DEFAULT_SPEC
 #undef	ASM_SPEC
 #undef	LINK_OS_LINUX_SPEC
+#undef	LINK_SECURE_PLT_SPEC
 
 #ifndef	RS6000_BI_ARCH
 #define	ASM_DEFAULT_SPEC "-mppc64"
 #define	ASM_SPEC	 "%(asm_spec64) %(asm_spec_common)"
 #define	LINK_OS_LINUX_SPEC "%(link_os_linux_spec64)"
+#define	LINK_SECURE_PLT_SPEC ""
 #else
 #if DEFAULT_ARCH64_P
 #define	ASM_DEFAULT_SPEC "-mppc%{!m32:64}"
 #define	ASM_SPEC	 "%{m32:%(asm_spec32)}%{!m32:%(asm_spec64)} %(asm_spec_common)"
 #define	LINK_OS_LINUX_SPEC "%{m32:%(link_os_linux_spec32)}%{!m32:%(link_os_linux_spec64)}"
+#define	LINK_SECURE_PLT_SPEC "%{m32: " LINK_SECURE_PLT_DEFAULT_SPEC "}"
 #else
 #define	ASM_DEFAULT_SPEC "-mppc%{m64:64}"
 #define	ASM_SPEC	 "%{!m64:%(asm_spec32)}%{m64:%(asm_spec64)} %(asm_spec_common)"
 #define	LINK_OS_LINUX_SPEC "%{!m64:%(link_os_linux_spec32)}%{m64:%(link_os_linux_spec64)}"
+#define	LINK_SECURE_PLT_SPEC "%{!m64: " LINK_SECURE_PLT_DEFAULT_SPEC "}"
 #endif
 #endif
 
@@ -243,6 +247,21 @@ extern int dot_symbols;
 #define MULTILIB_DEFAULTS { "m64" }
 #else
 #define MULTILIB_DEFAULTS { "m32" }
+#endif
+
+/* Split stack is only supported for 64 bit, and requires glibc >= 2.18.  */
+#if TARGET_GLIBC_MAJOR * 1000 + TARGET_GLIBC_MINOR >= 2018
+# ifndef RS6000_BI_ARCH
+#  define TARGET_CAN_SPLIT_STACK
+# else
+#  if DEFAULT_ARCH64_P
+/* Supported, and the default is -m64  */
+#   define TARGET_CAN_SPLIT_STACK_64BIT 1
+#  else
+/* Supported, and the default is -m32  */
+#   define TARGET_CAN_SPLIT_STACK_64BIT 0
+#  endif
+# endif
 #endif
 
 #ifndef RS6000_BI_ARCH
@@ -402,19 +421,31 @@ extern int dot_symbols;
 ":%(dynamic_linker_prefix)/lib64/ld64.so.1}"
 #endif
 
+#define MUSL_DYNAMIC_LINKER32 \
+  "/lib/ld-musl-powerpc" MUSL_DYNAMIC_LINKER_E "%{msoft-float:-sf}.so.1"
+#define MUSL_DYNAMIC_LINKER64 \
+  "/lib/ld-musl-powerpc64" MUSL_DYNAMIC_LINKER_E "%{msoft-float:-sf}.so.1"
+
 #define UCLIBC_DYNAMIC_LINKER32 "/lib/ld-uClibc.so.0"
 #define UCLIBC_DYNAMIC_LINKER64 "/lib/ld64-uClibc.so.0"
 #if DEFAULT_LIBC == LIBC_UCLIBC
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:" G ";:" U "}"
+#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
+  "%{mglibc:" G ";:%{mmusl:" M ";:" U "}}"
 #elif DEFAULT_LIBC == LIBC_GLIBC
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:" U ";:" G "}"
+#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
+  "%{muclibc:" U ";:%{mmusl:" M ";:" G "}}"
+#elif DEFAULT_LIBC == LIBC_MUSL
+#define CHOOSE_DYNAMIC_LINKER(G, U, M) \
+  "%{mglibc:" G ";:%{muclibc:" U ";:" M "}}"
 #else
 #error "Unsupported DEFAULT_LIBC"
 #endif
 #define GNU_USER_DYNAMIC_LINKER32 \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER32)
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER32, \
+			 MUSL_DYNAMIC_LINKER32)
 #define GNU_USER_DYNAMIC_LINKER64 \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64)
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64, \
+			 MUSL_DYNAMIC_LINKER64)
 
 #undef  DEFAULT_ASM_ENDIAN
 #if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)

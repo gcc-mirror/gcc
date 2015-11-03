@@ -26,39 +26,28 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "predict.h"
+#include "alloc-pool.h"
+#include "tm_p.h"
+#include "optabs.h"
+#include "regs.h"
+#include "emit-rtl.h"
+#include "pretty-print.h"
+#include "diagnostic-core.h"
 
-#include "alias.h"
 #include "fold-const.h"
 #include "varasm.h"
 #include "stor-layout.h"
-#include "tm_p.h"
-#include "flags.h"
-#include "except.h"
-#include "insn-config.h"
-#include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
 #include "stmt.h"
 #include "expr.h"
-#include "libfuncs.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "output.h"
 #include "langhooks.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "target.h"
 #include "cfganal.h"
-#include "internal-fn.h"
-#include "regs.h"
-#include "alloc-pool.h"
-#include "pretty-print.h"
 #include "params.h"
 #include "dumpfile.h"
 #include "builtins.h"
@@ -1138,7 +1127,7 @@ expand_case (gswitch *stmt)
   struct case_node *case_list = 0;
 
   /* A pool for case nodes.  */
-  object_allocator<case_node> case_node_pool ("struct case_node pool", 100);
+  object_allocator<case_node> case_node_pool ("struct case_node pool");
 
   /* An ERROR_MARK occurs for various reasons including invalid data type.
      ??? Can this still happen, with GIMPLE and all?  */
@@ -1314,8 +1303,7 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
     {
       /* Similar to expand_case, but much simpler.  */
       struct case_node *case_list = 0;
-      object_allocator<case_node> case_node_pool ("struct sjlj_case pool",
-						ncases);
+      object_allocator<case_node> case_node_pool ("struct sjlj_case pool");
       tree index_expr = make_tree (index_type, dispatch_index);
       tree minval = build_int_cst (index_type, 0);
       tree maxval = CASE_LOW (dispatch_table.last ());

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2014, Free Software Foundation, Inc.            --
+--            Copyright (C) 2015, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,23 +26,31 @@
 ------------------------------------------------------------------------------
 
 with Unchecked_Conversion;
-with Ada.Assertions; use Ada.Assertions;
 
 package body Ada.Containers.Bounded_Holders is
 
-   pragma Annotate (CodePeer, Skip_Analysis);
-
-   function Size_In_Storage_Elements (Element : Element_Type) return Natural is
-     (Element'Size / System.Storage_Unit)
-       with Pre =>
-       (Element'Size mod System.Storage_Unit = 0 or else
-          raise Assertion_Error with "Size must be a multiple of Storage_Unit")
-       and then
-         (Element'Size / System.Storage_Unit <= Max_Size_In_Storage_Elements
-            or else raise Assertion_Error with "Size is too big");
+   function Size_In_Storage_Elements (Element : Element_Type) return Natural;
    --  This returns the size of Element in storage units. It raises an
    --  exception if the size is not a multiple of Storage_Unit, or if the size
    --  is too big.
+
+   ------------------------------
+   -- Size_In_Storage_Elements --
+   ------------------------------
+
+   function Size_In_Storage_Elements (Element : Element_Type) return Natural is
+      Max_Size : Natural renames Max_Size_In_Storage_Elements;
+
+   begin
+      return S : constant Natural := Element'Size / System.Storage_Unit do
+         pragma Assert
+           (Element'Size mod System.Storage_Unit = 0,
+            "Size must be a multiple of Storage_Unit");
+
+         pragma Assert
+           (S <= Max_Size, "Size is too big:" & S'Img & " >" & Max_Size'Img);
+      end return;
+   end Size_In_Storage_Elements;
 
    function Cast is new
      Unchecked_Conversion (System.Address, Element_Access);
@@ -65,9 +73,9 @@ package body Ada.Containers.Bounded_Holders is
       return Cast (Container'Address).all;
    end Get;
 
-   ---------------------
-   -- Replace_Element --
-   ---------------------
+   ---------
+   -- Set --
+   ---------
 
    procedure Set (Container : in out Holder; New_Item  : Element_Type) is
       Storage : Storage_Array

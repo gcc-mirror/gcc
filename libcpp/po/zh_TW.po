@@ -2,14 +2,14 @@
 # Copyright (C) 2005 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Meng Jie <zuxyhere@eastday.com>, 2005.
-# Wei-Lun Chao <bluebat@member.fsf.org>, 2006, 2013.
+# Wei-Lun Chao <bluebat@member.fsf.org>, 2006, 2013, 2015.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.8.0\n"
+"Project-Id-Version: cpplib 5.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-04-13 20:12+0000\n"
-"PO-Revision-Date: 2013-03-27 23:37+0800\n"
+"PO-Revision-Date: 2015-10-08 13:27+0800\n"
 "Last-Translator: Wei-Lun Chao <bluebat@member.fsf.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "Language: zh_TW\n"
@@ -51,10 +51,8 @@ msgid "universal character names are only valid in C++ and C99"
 msgstr "萬國碼字元名稱只在 C++ 和 C99 中有效"
 
 #: charset.c:1002
-#, fuzzy
-#| msgid "universal character names are only valid in C++ and C99"
 msgid "C99's universal character names are incompatible with C90"
-msgstr "萬國碼字元名稱只在 C++ 和 C99 中有效"
+msgstr "C99 的萬國碼字元名稱與 C90 不相容"
 
 #: charset.c:1005
 #, c-format
@@ -200,10 +198,8 @@ msgid "\"defined\" cannot be used as a macro name"
 msgstr "「defined」不能做為巨集名"
 
 #: directives.c:573
-#, fuzzy
-#| msgid "\"defined\" cannot be used as a macro name"
 msgid "\"__has_include__\" cannot be used as a macro name"
-msgstr "「defined」不能做為巨集名"
+msgstr "「__has_include__」不能做為巨集名"
 
 #: directives.c:579
 #, c-format
@@ -433,10 +429,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "無效的浮點常數前綴「0b」"
 
 #: expr.c:550
-#, fuzzy
-#| msgid "use of C99 hexadecimal floating constant"
 msgid "use of C++11 hexadecimal floating constant"
-msgstr "使用 C99 式的十六進位浮點常數"
+msgstr "使用 C++11 式的十六進位浮點常數"
 
 #: expr.c:553
 msgid "use of C99 hexadecimal floating constant"
@@ -471,10 +465,8 @@ msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "整數常數的「%.*s」字尾無效"
 
 #: expr.c:676
-#, fuzzy
-#| msgid "use of C++0x long long integer constant"
 msgid "use of C++11 long long integer constant"
-msgstr "使用 C++0x long long 整數常數"
+msgstr "使用 C++11 long long 整數常數"
 
 #: expr.c:677
 msgid "use of C99 long long integer constant"
@@ -485,10 +477,8 @@ msgid "imaginary constants are a GCC extension"
 msgstr "虛數常數是 GCC 的擴充功能"
 
 #: expr.c:699
-#, fuzzy
-#| msgid "binary constants are a GCC extension"
 msgid "binary constants are a C++14 feature or GCC extension"
-msgstr "二進位常數是 GCC 的擴充功能"
+msgstr "二進位常數是 C++14 特色或 GCC 的擴充功能"
 
 #: expr.c:701
 msgid "binary constants are a GCC extension"
@@ -593,16 +583,12 @@ msgid "division by zero in #if"
 msgstr "#if 中用零做除數"
 
 #: expr.c:2123
-#, fuzzy
-#| msgid "operator \"defined\" requires an identifier"
 msgid "operator \"__has_include__\" requires a header string"
-msgstr "運算子「defined」需要一個識別字"
+msgstr "運算子「__has_include__」需要一個標頭字串"
 
 #: expr.c:2139
-#, fuzzy
-#| msgid "missing ')' after \"defined\""
 msgid "missing ')' after \"__has_include__\""
-msgstr "「defined」 後缺少「)」"
+msgstr "「__has_include__」 後缺少「)」"
 
 #: files.c:513
 msgid "NULL directory in find_file"
@@ -721,10 +707,8 @@ msgid "attempt to use poisoned \"%s\""
 msgstr "試圖使用已加料的「%s」"
 
 #: lex.c:1275 lex.c:1364
-#, fuzzy
-#| msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
-msgstr "__VA_ARGS__ 只能出現在 C99 可變參數巨集的展開中"
+msgstr "__VA_ARGS__ 只能出現在 C++11 可變參數巨集的展開中"
 
 #: lex.c:1279 lex.c:1368
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
@@ -740,10 +724,8 @@ msgid "raw string delimiter longer than 16 characters"
 msgstr "原始字串分隔符號長度超過 16 字元"
 
 #: lex.c:1669
-#, fuzzy
-#| msgid "invalid character '%c' in raw string delimiter"
 msgid "invalid new-line in raw string delimiter"
-msgstr "無效字元『%c』出現於原始字串分隔符號"
+msgstr "無效的新列字元出現於原始字串分隔符號"
 
 #: lex.c:1673
 #, c-format
@@ -755,10 +737,8 @@ msgid "unterminated raw string"
 msgstr "未終結的原始字串"
 
 #: lex.c:1765 lex.c:1894
-#, fuzzy
-#| msgid "invalid suffix on literal; C++11 requires a space between literal and identifier"
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
-msgstr "無效的實字後綴；C++11 要求一個空白位在實字和識別字之間"
+msgstr "無效的實字後綴；C++11 要求一個空白位於實字和字串巨集之間"
 
 #: lex.c:1876
 msgid "null character(s) preserved in literal"
@@ -778,10 +758,8 @@ msgid "(this will be reported only once per input file)"
 msgstr "(此警告為每個輸入檔案只報告一次)"
 
 #: lex.c:2458
-#, fuzzy
-#| msgid "C++ style comments are not allowed in ISO C90"
 msgid "C++ style comments are incompatible with C90"
-msgstr "C++ 風格的註釋在 ISO C90 中不被允許"
+msgstr "C++ 風格的註釋與 C90 不相容"
 
 #: lex.c:2489
 msgid "multi-line comment"
@@ -805,7 +783,7 @@ msgstr "無效的內建巨集「%s」"
 #: macro.c:245 macro.c:342
 #, c-format
 msgid "macro \"%s\" might prevent reproducible builds"
-msgstr ""
+msgstr "巨集「%s」也許會阻止可重製的組建"
 
 #: macro.c:276
 msgid "could not determine file timestamp"
@@ -830,13 +808,11 @@ msgstr "粘貼「%s」和「%s」不能給出一個有效的預先處理識別�
 
 #: macro.c:767
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
-msgstr ""
+msgstr "ISO C++11 需要至少一個引數做為可變巨集中的「...」"
 
 #: macro.c:771
-#, fuzzy
-#| msgid "ISO C99 requires rest arguments to be used"
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
-msgstr "ISO C99 需要使用剩餘的引數"
+msgstr "ISO C99 需要至少一個引數做為可變巨集中的「...」"
 
 #: macro.c:778
 #, c-format
@@ -859,16 +835,14 @@ msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "類似函式的巨集「%s」在傳統 C 中必須與引數一起使用"
 
 #: macro.c:1814
-#, fuzzy, c-format
-#| msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
+#, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
-msgstr "調用巨集 %s 引數 %d：空的巨集引數在 ISO C90 和 ISO C++98 中未定義"
+msgstr "調用巨集 %s 引數 %d：空的巨集引數在 ISO C++98 中未定義"
 
 #: macro.c:1822 macro.c:1831
-#, fuzzy, c-format
-#| msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
+#, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
-msgstr "調用巨集 %s 引數 %d：空的巨集引數在 ISO C90 和 ISO C++98 中未定義"
+msgstr "調用巨集 %s 引數 %d：空的巨集引數在 ISO C90 中未定義"
 
 #: macro.c:2800
 #, c-format
@@ -889,20 +863,16 @@ msgid "parameter name missing"
 msgstr "缺少參數名"
 
 #: macro.c:2896
-#, fuzzy
-#| msgid "anonymous variadic macros were introduced in C99"
 msgid "anonymous variadic macros were introduced in C++11"
-msgstr "匿名可變參數巨集在 C99 中被引入"
+msgstr "匿名可變參數巨集在 C++11 中被引入"
 
 #: macro.c:2900 macro.c:2905
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "匿名可變參數巨集在 C99 中被引入"
 
 #: macro.c:2912
-#, fuzzy
-#| msgid "ISO C does not permit named variadic macros"
 msgid "ISO C++ does not permit named variadic macros"
-msgstr "ISO C 不允許具名的可變參數巨集"
+msgstr "ISO C++ 不允許具名的可變參數巨集"
 
 #: macro.c:2915
 msgid "ISO C does not permit named variadic macros"
@@ -917,10 +887,8 @@ msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "「##」不能出現在巨集展開的兩端"
 
 #: macro.c:3013
-#, fuzzy
-#| msgid "ISO C99 requires whitespace after the macro name"
 msgid "ISO C++11 requires whitespace after the macro name"
-msgstr "ISO C99 要求巨集名後必須有空白"
+msgstr "ISO C++11 要求巨集名後必須有空白"
 
 #: macro.c:3016
 msgid "ISO C99 requires whitespace after the macro name"

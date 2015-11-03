@@ -49,9 +49,9 @@ extern void chkp_build_bndstx (tree addr, tree ptr, tree bounds,
 extern gcall *chkp_retbnd_call_by_val (tree val);
 extern bool chkp_function_instrumented_p (tree fndecl);
 extern void chkp_function_mark_instrumented (tree fndecl);
-extern void chkp_copy_bounds_for_assign (gimple assign,
+extern void chkp_copy_bounds_for_assign (gimple *assign,
 					 struct cgraph_edge *edge);
-extern bool chkp_gimple_call_builtin_p (gimple call,
+extern bool chkp_gimple_call_builtin_p (gimple *call,
 					enum built_in_function code);
 extern rtx chkp_expand_zero_bounds (void);
 extern void chkp_expand_bounds_reset_for_mem (tree mem, tree ptr);

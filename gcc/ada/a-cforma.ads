@@ -71,6 +71,7 @@ package Ada.Containers.Formal_Ordered_Maps with
   SPARK_Mode
 is
    pragma Annotate (GNATprove, External_Axiomatization);
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean with
      Global => null;

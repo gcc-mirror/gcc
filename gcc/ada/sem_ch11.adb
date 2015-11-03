@@ -46,6 +46,7 @@ with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
+with Snames;   use Snames;
 with Stand;    use Stand;
 
 package body Sem_Ch11 is
@@ -55,17 +56,10 @@ package body Sem_Ch11 is
    -----------------------------------
 
    procedure Analyze_Exception_Declaration (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-      Id : constant Entity_Id       := Defining_Identifier (N);
-      PF : constant Boolean         := Is_Pure (Current_Scope);
+      Id : constant Entity_Id := Defining_Identifier (N);
+      PF : constant Boolean   := Is_Pure (Current_Scope);
 
    begin
-      --  The exception declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       Generate_Definition         (Id);
       Enter_Name                  (Id);
       Set_Ekind                   (Id, E_Exception);
@@ -83,11 +77,6 @@ package body Sem_Ch11 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Exception_Declaration;
 
    --------------------------------
@@ -429,9 +418,13 @@ package body Sem_Ch11 is
 
       --  If the current scope is a subprogram, then this is the right place to
       --  check for hanging useless assignments from the statement sequence of
-      --  the subprogram body.
+      --  the subprogram body. Skip this in the body of a postcondition,
+      --  since in that case there are no source references, and we need to
+      --  preserve deferred references from the enclosing scope.
 
-      if Is_Subprogram (Current_Scope) then
+      if Is_Subprogram (Current_Scope)
+         and then Chars (Current_Scope) /= Name_uPostconditions
+      then
          Warn_On_Useless_Assignments (Current_Scope);
       end if;
 

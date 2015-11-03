@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -208,7 +208,7 @@ package Ada.Containers.Restricted_Doubly_Linked_Lists is
       Before    : Cursor;
       Position  : in out Cursor);
    --  If Before is associated with a list object different from Container,
-   --  then Program_Error is raised. If Position equals No_element, then
+   --  then Program_Error is raised. If Position equals No_Element, then
    --  Constraint_Error is raised; if it associated with a list object
    --  different from Container, then Program_Error is raised. Otherwise, the
    --  node designated by Position is relinked immediately prior to Before. If

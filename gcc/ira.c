@@ -367,41 +367,30 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "tree.h"
-#include "rtl.h"
-#include "df.h"
-#include "regs.h"
-#include "alias.h"
-#include "tm_p.h"
 #include "target.h"
-#include "flags.h"
+#include "rtl.h"
+#include "tree.h"
+#include "df.h"
+#include "tm_p.h"
+#include "insn-config.h"
+#include "regs.h"
+#include "ira.h"
+#include "ira-int.h"
+#include "diagnostic-core.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
-#include "params.h"
 #include "tree-pass.h"
 #include "output.h"
-#include "except.h"
 #include "reload.h"
-#include "diagnostic-core.h"
 #include "cfgloop.h"
-#include "ira.h"
-#include "alloc-pool.h"
-#include "ira-int.h"
 #include "lra.h"
 #include "dce.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
 #include "shrink-wrap.h"
+#include "print-rtl.h"
 
 struct target_ira default_target_ira;
 struct target_ira_int default_target_ira_int;
@@ -5152,9 +5141,9 @@ ira (FILE *f)
     df_remove_problem (df_live);
   gcc_checking_assert (df_live == NULL);
 
-#ifdef ENABLE_CHECKING
-  df->changeable_flags |= DF_VERIFY_SCHEDULED;
-#endif
+  if (flag_checking)
+    df->changeable_flags |= DF_VERIFY_SCHEDULED;
+
   df_analyze ();
 
   init_reg_equiv ();

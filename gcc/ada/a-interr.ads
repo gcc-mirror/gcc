@@ -34,6 +34,7 @@
 ------------------------------------------------------------------------------
 
 with System.Interrupts;
+with Ada.Task_Identification;
 
 package Ada.Interrupts is
 
@@ -41,25 +42,44 @@ package Ada.Interrupts is
 
    type Parameterless_Handler is access protected procedure;
 
-   function Is_Reserved (Interrupt : Interrupt_ID) return Boolean;
+   function Is_Reserved (Interrupt : Interrupt_ID) return Boolean with
+     SPARK_Mode,
+     Volatile_Function,
+     Global => Ada.Task_Identification.Tasking_State;
 
-   function Is_Attached (Interrupt : Interrupt_ID) return Boolean;
+   function Is_Attached (Interrupt : Interrupt_ID) return Boolean with
+     SPARK_Mode,
+     Volatile_Function,
+     Global => Ada.Task_Identification.Tasking_State;
 
    function Current_Handler
-     (Interrupt : Interrupt_ID) return Parameterless_Handler;
+     (Interrupt : Interrupt_ID) return Parameterless_Handler
+   with
+     SPARK_Mode => Off,
+     Global     => null;
 
    procedure Attach_Handler
      (New_Handler : Parameterless_Handler;
-      Interrupt   : Interrupt_ID);
+      Interrupt   : Interrupt_ID)
+   with
+     SPARK_Mode => Off,
+     Global     => null;
 
    procedure Exchange_Handler
      (Old_Handler : out Parameterless_Handler;
       New_Handler : Parameterless_Handler;
-      Interrupt   : Interrupt_ID);
+      Interrupt   : Interrupt_ID)
+   with
+     SPARK_Mode => Off,
+     Global     => null;
 
-   procedure Detach_Handler (Interrupt : Interrupt_ID);
+   procedure Detach_Handler (Interrupt : Interrupt_ID) with
+     SPARK_Mode,
+     Global => (In_Out => Ada.Task_Identification.Tasking_State);
 
-   function Reference (Interrupt : Interrupt_ID) return System.Address;
+   function Reference (Interrupt : Interrupt_ID) return System.Address with
+     SPARK_Mode => Off,
+     Global     => null;
 
 private
    pragma Inline (Is_Reserved);

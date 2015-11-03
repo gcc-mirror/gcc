@@ -23,27 +23,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "gfortran.h"
-#include "alias.h"
+#include "target.h"
+#include "function.h"
 #include "tree.h"
-#include "fold-const.h"
+#include "gfortran.h"
+#include "gimple-expr.h"	/* For create_tmp_var_raw.  */
+#include "trans.h"
 #include "stringpool.h"
+#include "cgraph.h"
+#include "diagnostic-core.h"	/* For internal_error.  */
+#include "alias.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "attribs.h"
 #include "tree-dump.h"
-#include "gimple-expr.h"	/* For create_tmp_var_raw.  */
-#include "diagnostic-core.h"	/* For internal_error.  */
 #include "toplev.h"	/* For announce_function.  */
-#include "target.h"
-#include "hard-reg-set.h"
-#include "function.h"
 #include "flags.h"
-#include "cgraph.h"
 #include "debug.h"
 #include "constructor.h"
-#include "trans.h"
 #include "trans-types.h"
 #include "trans-array.h"
 #include "trans-const.h"
@@ -5216,6 +5214,16 @@ generate_local_decl (gfc_symbol * sym)
 	     gfc_warning (OPT_Wunused_parameter,
 			  "Unused parameter %qs which has been explicitly "
 			  "imported at %L", sym->name, &sym->declared_at);
+	}
+
+      if (sym->ns
+	  && sym->ns->parent
+	  && sym->ns->parent->code
+	  && sym->ns->parent->code->op == EXEC_BLOCK)
+	{
+	  if (sym->attr.referenced)
+	    gfc_get_symbol_decl (sym);
+	  sym->mark = 1;
 	}
     }
   else if (sym->attr.flavor == FL_PROCEDURE)

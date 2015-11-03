@@ -198,7 +198,7 @@ Parse::qualified_ident(std::string* pname, Named_object** ppackage)
       return false;
     }
 
-  package->package_value()->note_usage();
+  package->package_value()->note_usage(Gogo::unpack_hidden_name(name));
 
   token = this->advance_token();
   if (!token->is_identifier())
@@ -2430,7 +2430,7 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
 		return Expression::make_error(location);
 	      }
 	    package = named_object->package_value();
-	    package->note_usage();
+	    package->note_usage(id);
 	    id = this->peek_token()->identifier();
 	    is_exported = this->peek_token()->is_identifier_exported();
 	    packed = this->gogo_->pack_hidden_name(id, is_exported);

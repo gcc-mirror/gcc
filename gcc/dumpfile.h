@@ -133,8 +133,8 @@ extern void dump_printf_loc (int, source_location,
 extern void dump_basic_block (int, basic_block, int);
 extern void dump_generic_expr_loc (int, source_location, int, tree);
 extern void dump_generic_expr (int, int, tree);
-extern void dump_gimple_stmt_loc (int, source_location, int, gimple, int);
-extern void dump_gimple_stmt (int, int, gimple, int);
+extern void dump_gimple_stmt_loc (int, source_location, int, gimple *, int);
+extern void dump_gimple_stmt (int, int, gimple *, int);
 extern void print_combine_total_stats (void);
 extern bool enable_rtl_dump_file (void);
 

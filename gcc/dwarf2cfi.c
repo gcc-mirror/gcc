@@ -20,34 +20,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "version.h"
-#include "flags.h"
-#include "rtl.h"
-#include "alias.h"
-#include "tree.h"
-#include "stor-layout.h"
+#include "target.h"
 #include "function.h"
+#include "rtl.h"
+#include "tree.h"
+#include "tree-pass.h"
+#include "tm_p.h"
+#include "emit-rtl.h"
+#include "stor-layout.h"
 #include "cfgbuild.h"
-#include "dwarf2.h"
 #include "dwarf2out.h"
 #include "dwarf2asm.h"
-#include "tm_p.h"
-#include "target.h"
 #include "common/common-target.h"
-#include "tree-pass.h"
 
 #include "except.h"		/* expand_builtin_dwarf_sp_column */
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"		/* init_return_column_size */
-#include "regs.h"		/* expand_builtin_init_dwarf_reg_sizes */
 #include "output.h"		/* asm_out_file */
 #include "debug.h"		/* dwarf2out_do_frame, dwarf2out_do_cfi_asm */
 

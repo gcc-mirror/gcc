@@ -1,11 +1,18 @@
 /* { dg-do run } */
-/* { dg-require-effective-target ia32 } */
 /* { dg-options "-std=gnu99 -msse2 -mpreferred-stack-boundary=4" } */
 /* { dg-require-effective-target sse2 } */
 
 #include "sse2-check.h"
 
 #include <emmintrin.h>
+
+#ifdef __x86_64__
+# define PUSH "pushq %rsi"
+# define POP "popq %rsi"
+#else
+# define PUSH "pushl %esi"
+# define POP "popl %esi"
+#endif
 
 __m128i __attribute__ ((__noinline__))
 vector_using_function ()
@@ -27,9 +34,9 @@ static void
 sse2_test (void)
 {
   int result;
-  asm ("pushl %esi");		/* Disalign runtime stack.  */
+  asm (PUSH);                  /* Misalign runtime stack.  */
   result = self_aligning_function (g_1, g_2);
   if (result != 42)
     abort ();
-  asm ("popl %esi");
+  asm (POP);
 }

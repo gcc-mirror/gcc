@@ -73,7 +73,7 @@ struct macro_arg_token_iter
      -ftrack-macro-expansion is used this location tracks loci across
      macro expansion.  */
   const source_location *location_ptr;
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
   /* The number of times the iterator went forward. This useful only
      when checking is enabled.  */
   size_t num_forwards;
@@ -1310,14 +1310,11 @@ set_arg_token (macro_arg *arg, const cpp_token *token,
 
   if (loc != NULL)
     {
-#ifdef ENABLE_CHECKING
-      if (kind == MACRO_ARG_TOKEN_STRINGIFIED
-	  || !track_macro_exp_p)
-	/* We can't set the location of a stringified argument
-	   token and we can't set any location if we aren't tracking
-	   macro expansion locations.   */
-	abort ();
-#endif
+      /* We can't set the location of a stringified argument
+	 token and we can't set any location if we aren't tracking
+	 macro expansion locations.   */
+      gcc_checking_assert (kind != MACRO_ARG_TOKEN_STRINGIFIED
+			   && track_macro_exp_p);
       *loc = location;
     }
 }
@@ -1403,7 +1400,7 @@ macro_arg_token_iter_init (macro_arg_token_iter *iter,
   iter->location_ptr = NULL;
   if (track_macro_exp_p)
     iter->location_ptr = get_arg_token_location (arg, kind);
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
   iter->num_forwards = 0;
   if (track_macro_exp_p
       && token_ptr != NULL
@@ -1428,14 +1425,14 @@ macro_arg_token_iter_forward (macro_arg_token_iter *it)
 	it->location_ptr++;
       break;
     case MACRO_ARG_TOKEN_STRINGIFIED:
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
       if (it->num_forwards > 0)
 	abort ();
 #endif
       break;
     }
 
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
   it->num_forwards++;
 #endif
 }
@@ -1444,7 +1441,7 @@ macro_arg_token_iter_forward (macro_arg_token_iter *it)
 static const cpp_token *
 macro_arg_token_iter_get_token (const macro_arg_token_iter *it)
 {
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
   if (it->kind == MACRO_ARG_TOKEN_STRINGIFIED
       && it->num_forwards > 0)
     abort ();
@@ -1458,7 +1455,7 @@ macro_arg_token_iter_get_token (const macro_arg_token_iter *it)
 static source_location
 macro_arg_token_iter_get_location (const macro_arg_token_iter *it)
 {
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
   if (it->kind == MACRO_ARG_TOKEN_STRINGIFIED
       && it->num_forwards > 0)
     abort ();
@@ -2144,11 +2141,9 @@ tokens_buff_add_token (_cpp_buff *buffer,
 static void
 alloc_expanded_arg_mem (cpp_reader *pfile, macro_arg *arg, size_t capacity)
 {
-#ifdef ENABLE_CHECKING
-  if (arg->expanded != NULL
-      || arg->expanded_virt_locs != NULL)
-    abort ();
-#endif
+  gcc_checking_assert (arg->expanded == NULL
+		       && arg->expanded_virt_locs == NULL);
+
   arg->expanded = XNEWVEC (const cpp_token *, capacity);
   if (CPP_OPTION (pfile, track_macro_expansion))
     arg->expanded_virt_locs = XNEWVEC (source_location, capacity);
@@ -2709,10 +2704,7 @@ _cpp_backup_tokens (cpp_reader *pfile, unsigned int count)
 	    {
 	      macro_context *m = pfile->context->c.mc;
 	      m->cur_virt_loc--;
-#ifdef ENABLE_CHECKING
-	      if (m->cur_virt_loc < m->virt_locs)
-		abort ();
-#endif
+	      gcc_checking_assert (m->cur_virt_loc >= m->virt_locs);
 	    }
 	  else
 	    abort ();

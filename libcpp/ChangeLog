@@ -1,3 +1,36 @@
+2015-11-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (source_location): In the table in the
+	descriptive comment, show UNKNOWN_LOCATION, BUILTINS_LOCATION,
+	LINE_MAP_MAX_LOCATION_WITH_COLS, LINE_MAP_MAX_SOURCE_LOCATION.
+	Add notes about ad-hoc values.
+
+2015-10-21  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* include/line-map.h: Use CHECKING_P instead of ENABLE_CHECKING.
+	* init.c: Likewise.
+	* macro.c (struct macro_arg_token_iter, set_arg_token,
+	macro_arg_token_iter_init, macro_arg_token_iter_forward,
+	macro_arg_token_iter_get_token, macro_arg_token_iter_get_location,
+	alloc_expanded_arg_mem, _cpp_backup_tokens): Likewise.
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (CHECKING_P): Define.
+	* system.h (fancy_abort): Declare.
+	(abort): Define.
+	(gcc_assert): Define. Use CHECKING_P.
+
+2015-10-13  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* system.h (CHECKING_P, gcc_checking_assert): Define.
+
+2015-09-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/66415
+	* line-map.c (linemap_position_for_loc_and_offset): Handle the
+	case of long lines encoded in multiple maps.
+
 2015-09-07  Marek Polacek  <polacek@redhat.com>
 
 	* system.h (INTTYPE_MINIMUM): Rewrite to avoid shift warning.

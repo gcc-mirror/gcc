@@ -1,3 +1,72 @@
+2015-10-22  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR bootstrap/68041
+	* configure.ac (link_sanitizer_common): Link against librt only if it
+	contains shm_open, required by sanitizers.
+	(CXX_ABI_NEEDED): Remove variable.
+	* configure: Regenerate.
+	* ubsan/Makefile.am (libubsan_la_LIBADD): Do not add -lc++abi anymore.
+	* ubsan/Makefile.in: Regenerate.
+
+2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* HOWTO_MERGE: New file.
+
+2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* sanitizer_common/sanitizer_stacktrace.cc (GetCanonicFrame): Assume we
+	compiled code with GCC when extracting the caller PC for ARM if no
+	valid frame pointer is available.
+
+2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR bootstrap/63888
+	Reapply:
+	2015-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_globals.cc (RegisterGlobal): Disable detect_odr_violation
+	support until it is rewritten upstream.
+
+	* c-c++-common/asan/pr63888.c: New test.
+
+2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR sanitizer/63958
+	Reapply:
+	2014-10-14  David S. Miller  <davem@davemloft.net>
+
+	* sanitizer_common/sanitizer_platform_limits_linux.cc (time_t):
+	Define at __kernel_time_t, as needed for sparc.
+	(struct __old_kernel_stat): Don't check if __sparc__ is defined.
+	* libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
+	(__sanitizer): Define struct___old_kernel_stat_sz,
+	struct_kernel_stat_sz, and struct_kernel_stat64_sz for sparc.
+	(__sanitizer_ipc_perm): Adjust for sparc targets.
+	(__sanitizer_shmid_ds): Likewsie.
+	(__sanitizer_sigaction): Likewise.
+	(IOC_SIZE): Likewsie.
+
+2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* All source files: Merge from upstream r250806.
+	* configure.ac (link_sanitizer_common): Add -lrt flag.
+	* configure.tgt: Enable TSAN and LSAN for aarch64-linux targets.
+	Set USE_CXX_ABI_FLAG=true for darwin.
+	* asan/Makefile.am (asan_files): Add new files.
+	(DEFS): Add DCAN_SANITIZE_UB=0 and remove unused and legacy
+	DASAN_FLEXIBLE_MAPPING_AND_OFFSET=0.
+	* asan/Makefile.in: Regenerate.
+	* ubsan/Makefile.am (ubsan_files): Add new files.
+	(DEFS): Add DCAN_SANITIZE_UB=1.
+	(libubsan_la_LIBADD): Add -lc++abi if USE_CXX_ABI_FLAG is true.
+	* ubsan/Makefile.in: Regenerate.
+	* tsan/Makefile.am (tsan_files): Add new files.
+	(DEFS): Add DCAN_SANITIZE_UB=0.
+	* tsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.am (sanitizer_common_files): Add new files.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* asan/libtool-version: Bump the libasan SONAME.
+
 2015-09-09  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR sanitizer/67258

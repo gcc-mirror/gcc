@@ -22,26 +22,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "target.h"
 #include "function.h"
-#include "predict.h"
 #include "basic-block.h"
 #include "tree.h"
 #include "cp-tree.h"
-#include "gimple.h"
-#include "hard-reg-set.h"
-#include "alias.h"
-#include "stor-layout.h"
 #include "c-family/c-common.h"
+#include "gimple.h"
+#include "predict.h"
+#include "stor-layout.h"
 #include "tree-iterator.h"
 #include "internal-fn.h"
 #include "gimplify.h"
 #include "flags.h"
-#include "splay-tree.h"
-#include "target.h"
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
-#include "gimplify.h"
 
 /* Forward declarations.  */
 
@@ -207,8 +202,8 @@ genericize_if_stmt (tree *stmt_p)
     stmt = else_;
   else
     stmt = build3 (COND_EXPR, void_type_node, cond, then_, else_);
-  if (CAN_HAVE_LOCATION_P (stmt) && !EXPR_HAS_LOCATION (stmt))
-    SET_EXPR_LOCATION (stmt, locus);
+  if (!EXPR_HAS_LOCATION (stmt))
+    protected_set_expr_location (stmt, locus);
   *stmt_p = stmt;
 }
 
@@ -231,8 +226,7 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
   blab = begin_bc_block (bc_break, start_locus);
   clab = begin_bc_block (bc_continue, start_locus);
 
-  if (incr && EXPR_P (incr))
-    SET_EXPR_LOCATION (incr, start_locus);
+  protected_set_expr_location (incr, start_locus);
 
   cp_walk_tree (&cond, cp_genericize_r, data, NULL);
   cp_walk_tree (&body, cp_genericize_r, data, NULL);
@@ -518,7 +512,7 @@ gimplify_must_not_throw_expr (tree *expr_p, gimple_seq *pre_p)
   tree body = TREE_OPERAND (stmt, 0);
   gimple_seq try_ = NULL;
   gimple_seq catch_ = NULL;
-  gimple mnt;
+  gimple *mnt;
 
   gimplify_and_add (body, &try_);
   mnt = gimple_build_eh_must_not_throw (terminate_node);
@@ -714,6 +708,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     case OMP_FOR:
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
+    case OMP_TASKLOOP:
       ret = cp_gimplify_omp_for (expr_p, pre_p);
       break;
 
@@ -1295,7 +1290,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     genericize_break_stmt (stmt_p);
   else if (TREE_CODE (stmt) == OMP_FOR
 	   || TREE_CODE (stmt) == OMP_SIMD
-	   || TREE_CODE (stmt) == OMP_DISTRIBUTE)
+	   || TREE_CODE (stmt) == OMP_DISTRIBUTE
+	   || TREE_CODE (stmt) == OMP_TASKLOOP)
     genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
   else if (TREE_CODE (stmt) == SIZEOF_EXPR)
     {
@@ -1753,16 +1749,7 @@ cxx_omp_finish_clause (tree c, gimple_seq *)
   if (decl == error_mark_node)
     make_shared = true;
   else if (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE)
-    {
-      if (is_invisiref_parm (decl))
-	inner_type = TREE_TYPE (inner_type);
-      else
-	{
-	  error ("%qE implicitly determined as %<firstprivate%> has reference type",
-		 decl);
-	  make_shared = true;
-	}
-    }
+    inner_type = TREE_TYPE (inner_type);
 
   /* We're interested in the base element, not arrays.  */
   while (TREE_CODE (inner_type) == ARRAY_TYPE)
@@ -1778,4 +1765,20 @@ cxx_omp_finish_clause (tree c, gimple_seq *)
 
   if (make_shared)
     OMP_CLAUSE_CODE (c) = OMP_CLAUSE_SHARED;
+}
+
+/* Return true if DECL's DECL_VALUE_EXPR (if any) should be
+   disregarded in OpenMP construct, because it is going to be
+   remapped during OpenMP lowering.  SHARED is true if DECL
+   is going to be shared, false if it is going to be privatized.  */
+
+bool
+cxx_omp_disregard_value_expr (tree decl, bool shared)
+{
+  return !shared
+	 && VAR_P (decl)
+	 && DECL_HAS_VALUE_EXPR_P (decl)
+	 && DECL_ARTIFICIAL (decl)
+	 && DECL_LANG_SPECIFIC (decl)
+	 && DECL_OMP_PRIVATIZED_MEMBER (decl);
 }

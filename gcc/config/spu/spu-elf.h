@@ -61,7 +61,7 @@
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
-#define EH_FRAME_IN_DATA_SECTION 1
+#define EH_FRAME_THROUGH_COLLECT2 1
 
 #define LINK_SPEC "%{mlarge-mem: --defsym __stack=0xfffffff0 }"
 

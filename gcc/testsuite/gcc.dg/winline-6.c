@@ -17,5 +17,5 @@ inline int q(void) /* { dg-warning "large-function-growth" } */
 }
 inline int t (void)
 {
-	return q () + 1;	 /* { dg-warning "called from here" } */
+	return q () + 1;	 /* { dg-message "called from here" } */
 }

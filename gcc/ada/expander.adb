@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;     use Atree;
+with Debug;     use Debug;
 with Debug_A;   use Debug_A;
 with Exp_Aggr;  use Exp_Aggr;
 with Exp_SPARK; use Exp_SPARK;
@@ -66,6 +67,10 @@ package body Expander is
      Table_Initial        => 32,
      Table_Increment      => 200,
      Table_Name           => "Expander_Flags");
+
+   Abort_Bug_Box_Error : exception;
+   --  Arbitrary exception to raise for implementation of -gnatd.B. See "when
+   --  N_Abort_Statement" below. See also debug.adb.
 
    ------------
    -- Expand --
@@ -149,6 +154,13 @@ package body Expander is
 
                when N_Abort_Statement =>
                   Expand_N_Abort_Statement (N);
+
+                  --  If -gnatd.B switch was given, crash the compiler. See
+                  --  debug.adb for explanation.
+
+                  if Debug_Flag_Dot_BB then
+                     raise Abort_Bug_Box_Error;
+                  end if;
 
                when N_Accept_Statement =>
                   Expand_N_Accept_Statement (N);
@@ -420,6 +432,9 @@ package body Expander is
                when N_Selective_Accept =>
                   Expand_N_Selective_Accept (N);
 
+               when N_Single_Protected_Declaration =>
+                  Expand_N_Single_Protected_Declaration (N);
+
                when N_Single_Task_Declaration =>
                   Expand_N_Single_Task_Declaration (N);
 
@@ -459,7 +474,7 @@ package body Expander is
                when N_Variant_Part =>
                   Expand_N_Variant_Part (N);
 
-                  --  For all other node kinds, no expansion activity required
+               --  For all other node kinds, no expansion activity required
 
                when others =>
                   null;

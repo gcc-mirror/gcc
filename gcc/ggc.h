@@ -292,11 +292,10 @@ ggc_alloc_cleared_tree_node_stat (size_t s CXX_MEM_STAT_INFO)
   return (union tree_node *) ggc_internal_cleared_alloc (s PASS_MEM_STAT);
 }
 
-static inline struct gimple_statement_base *
+static inline gimple *
 ggc_alloc_cleared_gimple_statement_stat (size_t s CXX_MEM_STAT_INFO)
 {
-  return (struct gimple_statement_base *)
-    ggc_internal_cleared_alloc (s PASS_MEM_STAT);
+  return (gimple *) ggc_internal_cleared_alloc (s PASS_MEM_STAT);
 }
 
 static inline void

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -726,16 +726,12 @@ package body Repinfo is
             Write_Line ("Assembler");
          when Convention_C                     =>
             Write_Line ("C");
-         when Convention_CIL                   =>
-            Write_Line ("CIL");
          when Convention_COBOL                 =>
             Write_Line ("COBOL");
          when Convention_CPP                   =>
             Write_Line ("C++");
          when Convention_Fortran               =>
             Write_Line ("Fortran");
-         when Convention_Java                  =>
-            Write_Line ("Java");
          when Convention_Stdcall               =>
             Write_Line ("Stdcall");
          when Convention_Stubbed               =>

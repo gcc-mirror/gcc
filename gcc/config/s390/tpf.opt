@@ -20,8 +20,8 @@
 
 mtpf-trace
 Target Report Mask(TPF_PROFILING)
-Enable TPF-OS tracing code
+Enable TPF-OS tracing code.
 
 mmain
 Target Report
-Specify main object for TPF-OS
+Specify main object for TPF-OS.

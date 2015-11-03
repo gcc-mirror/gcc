@@ -94,19 +94,19 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
+#include "tree.h"
+#include "gfortran.h"
+#include "trans.h"
+#include "stringpool.h"
 
 #include <map>
 
-#include "coretypes.h"
-#include "tm.h"
 #include "alias.h"
-#include "tree.h"
 #include "fold-const.h"
-#include "stringpool.h"
 #include "stor-layout.h"
 #include "varasm.h"
-#include "gfortran.h"
-#include "trans.h"
 #include "trans-types.h"
 #include "trans-const.h"
 #include "target-memory.h"
@@ -686,14 +686,13 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
       TREE_STATIC (ctor) = 1;
       DECL_INITIAL (decl) = ctor;
 
-#ifdef ENABLE_CHECKING
-      {
-	tree field, value;
-	unsigned HOST_WIDE_INT idx;
-	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), idx, field, value)
-	  gcc_assert (TREE_CODE (field) == FIELD_DECL);
-      }
-#endif
+      if (flag_checking)
+	{
+	  tree field, value;
+	  unsigned HOST_WIDE_INT idx;
+	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), idx, field, value)
+	    gcc_assert (TREE_CODE (field) == FIELD_DECL);
+	}
     }
 
   /* Build component reference for each variable.  */

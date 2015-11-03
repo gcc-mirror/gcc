@@ -22,23 +22,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
+#include "cp-tree.h"
+#include "gimple-expr.h"
+#include "cgraph.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "tree-hasher.h"
 #include "stor-layout.h"
 #include "print-tree.h"
 #include "tree-iterator.h"
-#include "cp-tree.h"
 #include "flags.h"
 #include "tree-inline.h"
 #include "debug.h"
 #include "convert.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "cgraph.h"
-#include "splay-tree.h"
-#include "gimple-expr.h"
 #include "gimplify.h"
 #include "attribs.h"
 
@@ -2852,7 +2849,7 @@ cp_tree_equal (tree t1, tree t2)
       return tree_int_cst_equal (t1, t2);
 
     case REAL_CST:
-      return REAL_VALUES_EQUAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));
+      return real_equal (&TREE_REAL_CST (t1), &TREE_REAL_CST (t2));
 
     case STRING_CST:
       return TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)

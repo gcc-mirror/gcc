@@ -6,6 +6,7 @@
    Origin: Kaveh R. Ghazi,  April 9, 2010.  */
 
 /* { dg-do link } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 /* { dg-add-options ieee } */
 
 /* All references to link_error should go away at compile-time.  The

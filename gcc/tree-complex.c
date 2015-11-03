@@ -21,34 +21,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "flags.h"
-#include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "tree-cfg.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
-#include "tree-iterator.h"
-#include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "tree-hasher.h"
 #include "cfgloop.h"
@@ -118,7 +105,7 @@ some_nonzerop (tree t)
      cannot be treated the same as operations with a real or imaginary
      operand if we care about the signs of zeros in the result.  */
   if (TREE_CODE (t) == REAL_CST && !flag_signed_zeros)
-    zerop = REAL_VALUES_IDENTICAL (TREE_REAL_CST (t), dconst0);
+    zerop = real_identical (&TREE_REAL_CST (t), &dconst0);
   else if (TREE_CODE (t) == FIXED_CST)
     zerop = fixed_zerop (t);
   else if (TREE_CODE (t) == INTEGER_CST)
@@ -220,7 +207,7 @@ init_dont_simulate_again (void)
       for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  gimple stmt;
+	  gimple *stmt;
 	  tree op0, op1;
 	  bool sim_again_p;
 
@@ -308,7 +295,7 @@ init_dont_simulate_again (void)
 /* Evaluate statement STMT against the complex lattice defined above.  */
 
 static enum ssa_prop_result
-complex_visit_stmt (gimple stmt, edge *taken_edge_p ATTRIBUTE_UNUSED,
+complex_visit_stmt (gimple *stmt, edge *taken_edge_p ATTRIBUTE_UNUSED,
 		    tree *result_p)
 {
   complex_lattice_t new_l, old_l, op1_l, op2_l;
@@ -536,7 +523,7 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
   complex_lattice_t lattice = find_lattice_value (ssa_name);
   size_t ssa_name_index;
   tree comp;
-  gimple last;
+  gimple *last;
   gimple_seq list;
 
   /* We know the value must be zero, else there's a bug in our lattice
@@ -642,7 +629,7 @@ extract_component (gimple_stmt_iterator *gsi, tree t, bool imagpart_p,
 /* Update the complex components of the ssa name on the lhs of STMT.  */
 
 static void
-update_complex_components (gimple_stmt_iterator *gsi, gimple stmt, tree r,
+update_complex_components (gimple_stmt_iterator *gsi, gimple *stmt, tree r,
 			   tree i)
 {
   tree lhs;
@@ -679,7 +666,7 @@ update_complex_components_on_edge (edge e, tree lhs, tree r, tree i)
 static void
 update_complex_assignment (gimple_stmt_iterator *gsi, tree r, tree i)
 {
-  gimple stmt;
+  gimple *stmt;
 
   gimple_assign_set_rhs_with_ops (gsi, COMPLEX_EXPR, r, i);
   stmt = gsi_stmt (*gsi);
@@ -735,7 +722,7 @@ update_phi_components (basic_block bb)
       if (is_complex_reg (gimple_phi_result (phi)))
 	{
 	  tree lr, li;
-	  gimple pr = NULL, pi = NULL;
+	  gimple *pr = NULL, *pi = NULL;
 	  unsigned int i, n;
 
 	  lr = get_component_ssa_name (gimple_phi_result (phi), false);
@@ -771,7 +758,7 @@ expand_complex_move (gimple_stmt_iterator *gsi, tree type)
 {
   tree inner_type = TREE_TYPE (type);
   tree r, i, lhs, rhs;
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
 
   if (is_gimple_assign (stmt))
     {
@@ -832,7 +819,7 @@ expand_complex_move (gimple_stmt_iterator *gsi, tree type)
   else if (rhs && TREE_CODE (rhs) == SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
     {
       tree x;
-      gimple t;
+      gimple *t;
       location_t loc;
 
       loc = gimple_location (stmt);
@@ -954,7 +941,7 @@ expand_complex_libcall (gimple_stmt_iterator *gsi, tree ar, tree ai,
   machine_mode mode;
   enum built_in_function bcode;
   tree fn, type, lhs;
-  gimple old_stmt;
+  gimple *old_stmt;
   gcall *stmt;
 
   old_stmt = gsi_stmt (*gsi);
@@ -1021,7 +1008,7 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree inner_type,
     case PAIR (ONLY_IMAG, ONLY_REAL):
       rr = ar;
       if (TREE_CODE (ai) == REAL_CST
-	  && REAL_VALUES_IDENTICAL (TREE_REAL_CST (ai), dconst1))
+	  && real_identical (&TREE_REAL_CST (ai), &dconst1))
 	ri = br;
       else
 	ri = gimplify_build2 (gsi, MULT_EXPR, inner_type, ai, br);
@@ -1120,7 +1107,7 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
 {
   tree rr, ri, ratio, div, t1, t2, tr, ti, compare;
   basic_block bb_cond, bb_true, bb_false, bb_join;
-  gimple stmt;
+  gimple *stmt;
 
   /* Examine |br| < |bi|, and branch.  */
   t1 = gimplify_build1 (gsi, ABS_EXPR, inner_type, br);
@@ -1134,7 +1121,7 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
   if (TREE_CODE (compare) != INTEGER_CST)
     {
       edge e;
-      gimple stmt;
+      gimple *stmt;
       tree cond, tmp;
 
       tmp = create_tmp_var (boolean_type_node);
@@ -1382,7 +1369,7 @@ expand_complex_comparison (gimple_stmt_iterator *gsi, tree ar, tree ai,
 			   tree br, tree bi, enum tree_code code)
 {
   tree cr, ci, cc, type;
-  gimple stmt;
+  gimple *stmt;
 
   cr = gimplify_build2 (gsi, code, boolean_type_node, ar, br);
   ci = gimplify_build2 (gsi, code, boolean_type_node, ai, bi);
@@ -1460,7 +1447,7 @@ expand_complex_asm (gimple_stmt_iterator *gsi)
 static void
 expand_complex_operations_1 (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   tree type, inner_type, lhs;
   tree ac, ar, ai, bc, br, bi;
   complex_lattice_t al, bl;

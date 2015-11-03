@@ -2461,8 +2461,8 @@ in the reload pass.
 If defined, a C expression that returns nonzero for a @var{class} for which
 a change from mode @var{from} to mode @var{to} is invalid.
 
-For the example, loading 32-bit integer or floating-point objects into
-floating-point registers on the Alpha extends them to 64 bits.
+For example, loading 32-bit integer or floating-point objects into
+floating-point registers on Alpha extends them to 64 bits.
 Therefore loading a 64-bit object and then storing it as a 32-bit object
 does not store the low-order 32 bits, as would be the case for a normal
 register.  Therefore, @file{alpha.h} defines @code{CANNOT_CHANGE_MODE_CLASS}
@@ -2473,6 +2473,17 @@ as below:
   (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) \
    ? reg_classes_intersect_p (FLOAT_REGS, (CLASS)) : 0)
 @end smallexample
+
+Even if storing from a register in mode @var{to} would be valid,
+if both @var{from} and @code{raw_reg_mode} for @var{class} are wider
+than @code{word_mode}, then we must prevent @var{to} narrowing the
+mode.  This happens when the middle-end assumes that it can load
+or store pieces of an @var{N}-word pseudo, and that the pseudo will
+eventually be allocated to @var{N} @code{word_mode} hard registers.
+Failure to prevent this kind of mode change will result in the
+entire @code{raw_reg_mode} being modified instead of the partial
+value that the middle-end intended.
+
 @end defmac
 
 @hook TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
@@ -2626,11 +2637,11 @@ address of the stack word that points to the previous frame.
 @end defmac
 
 @defmac SETUP_FRAME_ADDRESSES
-If defined, a C expression that produces the machine-specific code to
+A C expression that produces the machine-specific code to
 setup the stack so that arbitrary frames can be accessed.  For example,
 on the SPARC, we must flush all of the register windows to the stack
 before we can access arbitrary stack frames.  You will seldom need to
-define this macro.
+define this macro.  The default is to do nothing.
 @end defmac
 
 @hook TARGET_BUILTIN_SETJMP_FRAME_VALUE
@@ -4225,6 +4236,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
 
+@hook TARGET_VECTORIZE_GET_MASK_MODE
+
 @hook TARGET_VECTORIZE_INIT_COST
 
 @hook TARGET_VECTORIZE_ADD_STMT_COST
@@ -4246,6 +4259,10 @@ address;  but often a machine-dependent strategy can generate better code.
 @hook TARGET_SIMD_CLONE_ADJUST
 
 @hook TARGET_SIMD_CLONE_USABLE
+
+@hook TARGET_GOACC_VALIDATE_DIMS
+
+@hook TARGET_GOACC_FORK_JOIN
 
 @node Anchored Addresses
 @section Anchored Addresses
@@ -4721,6 +4738,8 @@ Define this macro if a non-short-circuit operation produced by
 @hook TARGET_RTX_COSTS
 
 @hook TARGET_ADDRESS_COST
+
+@hook TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
 
 @node Scheduling
 @section Adjusting the Instruction Scheduler
@@ -6477,14 +6496,15 @@ You should define this symbol if your target supports DWARF 2 frame
 unwind information and the default definition does not work.
 @end defmac
 
-@defmac EH_FRAME_IN_DATA_SECTION
-If defined, DWARF 2 frame unwind information will be placed in the
-data section even though the target supports named sections.  This
-might be necessary, for instance, if the system linker does garbage
-collection and sections cannot be marked as not to be collected.
+@defmac EH_FRAME_THROUGH_COLLECT2
+If defined, DWARF 2 frame unwind information will identified by
+specially named labels.  The collect2 process will locate these
+labels and generate code to register the frames.
 
-Do not define this macro unless @code{TARGET_ASM_NAMED_SECTION} is
-also defined.
+This might be necessary, for instance, if the system linker will not
+place the eh_frames in-between the sentinals from @file{crtstuff.c},
+or if the system linker does garbage collection and sections cannot
+be marked as not to be collected.
 @end defmac
 
 @defmac EH_TABLES_CAN_BE_READ_ONLY
@@ -7033,6 +7053,11 @@ A C statement to issue assembly directives that create a self-relative
 reference to the given @var{label}, using an integer of the given @var{size}.
 @end defmac
 
+@defmac ASM_OUTPUT_DWARF_DATAREL (@var{stream}, @var{size}, @var{label})
+A C statement to issue assembly directives that create a reference to the
+given @var{label} relative to the dbase, using an integer of the given @var{size}.
+@end defmac
+
 @defmac ASM_OUTPUT_DWARF_TABLE_REF (@var{label})
 A C statement to issue assembly directives that create a reference to
 the DWARF table identifier @var{label} from the current section.  This
@@ -7123,17 +7148,6 @@ array of @code{HOST_WIDE_INT}, but all code should treat it as an opaque
 quantity.
 @end defmac
 
-@deftypefn Macro int REAL_VALUES_EQUAL (REAL_VALUE_TYPE @var{x}, REAL_VALUE_TYPE @var{y})
-Compares for equality the two values, @var{x} and @var{y}.  If the target
-floating point format supports negative zeroes and/or NaNs,
-@samp{REAL_VALUES_EQUAL (-0.0, 0.0)} is true, and
-@samp{REAL_VALUES_EQUAL (NaN, NaN)} is false.
-@end deftypefn
-
-@deftypefn Macro int REAL_VALUES_LESS (REAL_VALUE_TYPE @var{x}, REAL_VALUE_TYPE @var{y})
-Tests whether @var{x} is less than @var{y}.
-@end deftypefn
-
 @deftypefn Macro HOST_WIDE_INT REAL_VALUE_FIX (REAL_VALUE_TYPE @var{x})
 Truncates @var{x} to a signed integer, rounding toward zero.
 @end deftypefn
@@ -7160,21 +7174,6 @@ Determines whether @var{x} represents infinity (positive or negative).
 
 @deftypefn Macro int REAL_VALUE_ISNAN (REAL_VALUE_TYPE @var{x})
 Determines whether @var{x} represents a ``NaN'' (not-a-number).
-@end deftypefn
-
-@deftypefn Macro void REAL_ARITHMETIC (REAL_VALUE_TYPE @var{output}, enum tree_code @var{code}, REAL_VALUE_TYPE @var{x}, REAL_VALUE_TYPE @var{y})
-Calculates an arithmetic operation on the two floating point values
-@var{x} and @var{y}, storing the result in @var{output} (which must be a
-variable).
-
-The operation to be performed is specified by @var{code}.  Only the
-following codes are supported: @code{PLUS_EXPR}, @code{MINUS_EXPR},
-@code{MULT_EXPR}, @code{RDIV_EXPR}, @code{MAX_EXPR}, @code{MIN_EXPR}.
-
-If @code{REAL_ARITHMETIC} is asked to evaluate division by zero and the
-target's floating point format cannot represent infinity, it will call
-@code{abort}.  Callers should check for this situation first, using
-@code{MODE_HAS_INFINITIES}.  @xref{Storage Layout}.
 @end deftypefn
 
 @deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_NEGATE (REAL_VALUE_TYPE @var{x})
@@ -7291,6 +7290,8 @@ on this implementation detail.
 @hook TARGET_OPTION_FUNCTION_VERSIONS
 
 @hook TARGET_CAN_INLINE_P
+
+@hook TARGET_RELAYOUT_FUNCTION
 
 @node Emulated TLS
 @section Emulating TLS

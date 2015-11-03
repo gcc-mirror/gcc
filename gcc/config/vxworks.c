@@ -22,13 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
+#include "tree.h"
+#include "stringpool.h"
 #include "diagnostic-core.h"
 #include "output.h"
-#include "tm.h"
-#include "alias.h"
-#include "tree.h"
 #include "fold-const.h"
-#include "stringpool.h"
 
 /* Like default_named_section_asm_out_constructor, except that even
    constructors with DEFAULT_INIT_PRIORITY must go in a numbered

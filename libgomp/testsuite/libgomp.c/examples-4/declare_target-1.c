@@ -20,7 +20,7 @@ int fib_wrapper (int n)
 {
   int x = 0;
 
-  #pragma omp target if(n > THRESHOLD)
+  #pragma omp target if(n > THRESHOLD) map(from:x)
     x = fib (n);
 
   return x;

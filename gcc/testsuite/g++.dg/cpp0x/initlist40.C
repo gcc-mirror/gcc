@@ -8,6 +8,6 @@ struct A
 
 int main()
 {
-  A a1 = { };
+  A a1 = { };			// { dg-error "explicit" }
   A a2 = { 24 };		// { dg-error "explicit" }
 }

@@ -373,10 +373,11 @@ insn_extract (rtx_insn *insn)\n{\n\
   rtx pat = PATTERN (insn);\n\
   int i ATTRIBUTE_UNUSED; /* only for peepholes */\n\
 \n\
-#ifdef ENABLE_CHECKING\n\
-  memset (ro, 0xab, sizeof (*ro) * MAX_RECOG_OPERANDS);\n\
-  memset (ro_loc, 0xab, sizeof (*ro_loc) * MAX_RECOG_OPERANDS);\n\
-#endif\n");
+  if (flag_checking)\n\
+    {\n\
+      memset (ro, 0xab, sizeof (*ro) * MAX_RECOG_OPERANDS);\n\
+      memset (ro_loc, 0xab, sizeof (*ro_loc) * MAX_RECOG_OPERANDS);\n\
+    }\n");
 
   puts ("\
   switch (INSN_CODE (insn))\n\

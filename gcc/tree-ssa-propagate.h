@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 /* If SIM_P is true, statement S will be simulated again.  */
 
 static inline void
-prop_set_simulate_again (gimple s, bool visit_p)
+prop_set_simulate_again (gimple *s, bool visit_p)
 {
   gimple_set_visited (s, visit_p);
 }
@@ -33,7 +33,7 @@ prop_set_simulate_again (gimple s, bool visit_p)
 /* Return true if statement T should be simulated again.  */
 
 static inline bool
-prop_simulate_again_p (gimple s)
+prop_simulate_again_p (gimple *s)
 {
   return gimple_visited_p (s);
 }
@@ -62,22 +62,23 @@ enum ssa_prop_result {
 
 
 /* Call-back functions used by the value propagation engine.  */
-typedef enum ssa_prop_result (*ssa_prop_visit_stmt_fn) (gimple, edge *, tree *);
+typedef enum ssa_prop_result (*ssa_prop_visit_stmt_fn) (gimple *, edge *,
+							tree *);
 typedef enum ssa_prop_result (*ssa_prop_visit_phi_fn) (gphi *);
 typedef bool (*ssa_prop_fold_stmt_fn) (gimple_stmt_iterator *gsi);
 typedef tree (*ssa_prop_get_value_fn) (tree);
 
 
 extern bool valid_gimple_rhs_p (tree);
-extern void move_ssa_defining_stmt_for_defs (gimple, gimple);
+extern void move_ssa_defining_stmt_for_defs (gimple *, gimple *);
 extern bool update_gimple_call (gimple_stmt_iterator *, tree, int, ...);
 extern bool update_call_from_tree (gimple_stmt_iterator *, tree);
 extern void ssa_propagate (ssa_prop_visit_stmt_fn, ssa_prop_visit_phi_fn);
-extern bool stmt_makes_single_store (gimple);
+extern bool stmt_makes_single_store (gimple *);
 extern bool substitute_and_fold (ssa_prop_get_value_fn, ssa_prop_fold_stmt_fn,
 				 bool);
 extern bool may_propagate_copy (tree, tree);
-extern bool may_propagate_copy_into_stmt (gimple, tree);
+extern bool may_propagate_copy_into_stmt (gimple *, tree);
 extern bool may_propagate_copy_into_asm (tree);
 extern void propagate_value (use_operand_p, tree);
 extern void replace_exp (use_operand_p, tree);

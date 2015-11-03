@@ -2,8 +2,8 @@
    Test that it at happens on x86 by making sure there are 2 xchg's and no
    compare_exchange loop.  */
 
-/* { dg-require-effective-target sync_int_long } */
 /* { dg-do compile { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-require-effective-target sync_int_long } */
 /* { dg-final { scan-assembler-times "cmpxchg" 0 } } */
 /* { dg-final { scan-assembler-times "xchg" 2 } } */
 

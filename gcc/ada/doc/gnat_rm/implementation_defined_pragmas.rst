@@ -803,24 +803,6 @@ compatibility with the standard `Assertion_Policy` pragma. The check
 policy setting `DISABLE` causes the second argument of a corresponding
 `Check` pragma to be completely ignored and not analyzed.
 
-Pragma CIL_Constructor
-======================
-
-Syntax:
-
-
-::
-
-  pragma CIL_Constructor ([Entity =>] function_LOCAL_NAME);
-
-
-This pragma is used to assert that the specified Ada function should be
-mapped to the .NET constructor for some Ada tagged record type.
-
-See section 4.1 of the
-`GNAT User's Guide: Supplement for the .NET Platform.`
-for related information.
-
 Pragma Comment
 ==============
 
@@ -1075,6 +1057,12 @@ If the alignment for a record or array type is not specified (using
 pragma `Pack`, pragma `Component_Alignment`, or a record rep
 clause), the GNAT uses the default alignment as described previously.
 
+Pragma Constant_After_Elaboration
+=================================
+
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 3.3.1.
+
 Pragma Contract_Cases
 =====================
 .. index:: Contract cases
@@ -1327,6 +1315,12 @@ Syntax:
 This pragma is standard in Ada 2012, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
+
+Pragma Default_Initial_Condition
+================================
+
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.3.3.
 
 Pragma Debug
 ============
@@ -1980,6 +1974,12 @@ of GNAT specific extensions are recognized as follows:
   is constrained.
 
 
+Pragma Extensions_Visible
+=========================
+
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 6.1.7.
+
 Pragma External
 ===============
 
@@ -2175,6 +2175,12 @@ be `IEEE_Float` to specify the use of IEEE format, as follows:
   For a digits value of 15, 64-bit IEEE long format will be used.
 *
   No other value of digits is permitted.
+
+Pragma Ghost
+============
+
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 6.9.
 
 Pragma Global
 =============
@@ -2863,42 +2869,6 @@ invariant pragma for the same entity.
 
 For further details on the use of this pragma, see the Ada 2012 documentation
 of the Type_Invariant aspect.
-
-Pragma Java_Constructor
-=======================
-
-Syntax:
-
-
-::
-
-  pragma Java_Constructor ([Entity =>] function_LOCAL_NAME);
-
-
-This pragma is used to assert that the specified Ada function should be
-mapped to the Java constructor for some Ada tagged record type.
-
-See section 7.3.2 of the
-`GNAT User's Guide: Supplement for the JVM Platform.`
-for related information.
-
-Pragma Java_Interface
-=====================
-
-Syntax:
-
-
-::
-
-  pragma Java_Interface ([Entity =>] abstract_tagged_type_LOCAL_NAME);
-
-
-This pragma is used to assert that the specified Ada abstract tagged type
-is to be mapped to a Java interface name.
-
-See sections 7.1 and 7.2 of the
-`GNAT User's Guide: Supplement for the JVM Platform.`
-for related information.
 
 Pragma Keep_Names
 =================
@@ -5430,7 +5400,7 @@ Pragma Source_File_Name_Project
 ===============================
 
 This pragma has the same syntax and semantics as pragma Source_File_Name.
-It is only allowed as a stand alone configuration pragma.
+It is only allowed as a stand-alone configuration pragma.
 It cannot appear after a :ref:`Pragma_Source_File_Name`, and
 most importantly, once pragma Source_File_Name_Project appears,
 no further Source_File_Name pragmas are allowed.
@@ -5768,6 +5738,13 @@ names that are implementation defined (as permitted by the RM):
 *
   `Duplicated_Tag_Check` Can be used to suppress the check that is generated
   for a duplicated tag value when a tagged type is declared.
+
+*
+  `Container_Checks` Can be used to suppress all checks within Ada.Containers
+  and instances of its children, including Tampering_Check.
+
+*
+  `Tampering_Check` Can be used to suppress tampering check in the containers.
 
 *
   `Predicate_Check` can be used to control whether predicate checks are
@@ -6479,8 +6456,8 @@ configuration pragma will ensure this test is not suppressed:
 This pragma is standard in Ada 2005. It is available in all earlier versions
 of Ada as an implementation-defined pragma.
 
-Note that in addition to the checks defined in the Ada RM, GNAT recogizes
-a number of implementation-defined check names. See description of pragma
+Note that in addition to the checks defined in the Ada RM, GNAT recogizes a
+number of implementation-defined check names. See the description of pragma
 `Suppress` for full details.
 
 Pragma Use_VADS_Size
@@ -6614,6 +6591,12 @@ the same object.
 
 It is not permissible to specify `Volatile_Full_Access` for a composite
 (record or array) type or object that has at least one `Aliased` component.
+
+Pragma Volatile_Function
+========================
+
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.2.
 
 Pragma Warning_As_Error
 =======================

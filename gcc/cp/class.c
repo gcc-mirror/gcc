@@ -24,23 +24,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
-#include "options.h"
-#include "tm.h"
+#include "cp-tree.h"
 #include "stringpool.h"
+#include "cgraph.h"
+#include "alias.h"
 #include "stor-layout.h"
 #include "attribs.h"
-#include "cp-tree.h"
 #include "flags.h"
 #include "toplev.h"
-#include "target.h"
 #include "convert.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "cgraph.h"
 #include "dumpfile.h"
-#include "splay-tree.h"
 #include "gimplify.h"
 
 /* The number of nested classes being processed.  If we are not in the
@@ -4570,6 +4565,11 @@ check_methods (tree t)
 	 grok_special_member_properties.  */
       if (DECL_DESTRUCTOR_P (x) && user_provided_p (x))
 	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = 1;
+      if (!DECL_VIRTUAL_P (x)
+	  && lookup_attribute ("transaction_safe_dynamic", DECL_ATTRIBUTES (x)))
+	error_at (DECL_SOURCE_LOCATION (x),
+		  "%<transaction_safe_dynamic%> may only be specified for "
+		  "a virtual function");
     }
 }
 
@@ -4690,9 +4690,6 @@ build_clone (tree fn, tree name)
   /* Create the RTL for this function.  */
   SET_DECL_RTL (clone, NULL);
   rest_of_decl_compilation (clone, /*top_level=*/1, at_eof);
-
-  if (pch_file)
-    note_decl_for_pch (clone);
 
   return clone;
 }
@@ -4935,8 +4932,14 @@ look_for_tm_attr_overrides (tree type, tree fndecl)
 
       o = look_for_overrides_here (basetype, fndecl);
       if (o)
-	found |= tm_attr_to_mask (find_tm_attribute
-				  (TYPE_ATTRIBUTES (TREE_TYPE (o))));
+	{
+	  if (lookup_attribute ("transaction_safe_dynamic",
+				DECL_ATTRIBUTES (o)))
+	    /* transaction_safe_dynamic is not inherited.  */;
+	  else
+	    found |= tm_attr_to_mask (find_tm_attribute
+				      (TYPE_ATTRIBUTES (TREE_TYPE (o))));
+	}
       else
 	found |= look_for_tm_attr_overrides (basetype, fndecl);
     }
@@ -5138,6 +5141,33 @@ type_has_user_provided_constructor (tree t)
   for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
     if (user_provided_p (OVL_CURRENT (fns)))
       return true;
+
+  return false;
+}
+
+/* Returns true iff class T has a user-provided or explicit constructor.  */
+
+bool
+type_has_user_provided_or_explicit_constructor (tree t)
+{
+  tree fns;
+
+  if (!CLASS_TYPE_P (t))
+    return false;
+
+  if (!TYPE_HAS_USER_CONSTRUCTOR (t))
+    return false;
+
+  /* This can happen in error cases; avoid crashing.  */
+  if (!CLASSTYPE_METHOD_VEC (t))
+    return false;
+
+  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+    {
+      tree fn = OVL_CURRENT (fns);
+      if (user_provided_p (fn) || DECL_NONCONVERTING_P (fn))
+	return true;
+    }
 
   return false;
 }
@@ -5727,7 +5757,8 @@ check_bases_and_members (tree t)
      Again, other conditions for being an aggregate are checked
      elsewhere.  */
   CLASSTYPE_NON_AGGREGATE (t)
-    |= (type_has_user_provided_constructor (t) || TYPE_POLYMORPHIC_P (t));
+    |= (type_has_user_provided_or_explicit_constructor (t)
+	|| TYPE_POLYMORPHIC_P (t));
   /* This is the C++98/03 definition of POD; it changed in C++0x, but we
      retain the old definition internally for ABI reasons.  */
   CLASSTYPE_NON_LAYOUT_POD_P (t)
@@ -6689,6 +6720,8 @@ finish_struct_1 (tree t)
 
   finish_struct_bits (t);
   set_method_tm_attributes (t);
+  if (flag_openmp || flag_openmp_simd)
+    finish_omp_declare_simd_methods (t);
 
   /* Complete the rtl for any static member objects of the type we're
      working on.  */
@@ -7611,7 +7644,9 @@ resolve_address_of_overloaded_function (tree target_type,
 	    continue;
 
 	  /* See if there's a match.  */
-	  if (same_type_p (target_fn_type, static_fn_type (fn)))
+	  tree fntype = static_fn_type (fn);
+	  if (same_type_p (target_fn_type, fntype)
+	      || can_convert_tx_safety (target_fn_type, fntype))
 	    matches = tree_cons (fn, NULL_TREE, matches);
 	}
     }
@@ -7689,7 +7724,9 @@ resolve_address_of_overloaded_function (tree target_type,
 	    }
 
 	  /* See if there's a match.  */
-	  if (same_type_p (target_fn_type, static_fn_type (instantiation)))
+	  tree fntype = static_fn_type (instantiation);
+	  if (same_type_p (target_fn_type, fntype)
+	      || can_convert_tx_safety (target_fn_type, fntype))
 	    matches = tree_cons (instantiation, fn, matches);
 	}
 

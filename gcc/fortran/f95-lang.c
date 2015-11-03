@@ -24,28 +24,24 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
-#include "ansidecl.h"
-#include "system.h"
 #include "coretypes.h"
-#include "gfortran.h"
-#include "alias.h"
+#include "target.h"
+#include "function.h"
 #include "tree.h"
-#include "options.h"
+#include "gfortran.h"
+#include "trans.h"
+#include "timevar.h"
+#include "cgraph.h"
+#include "diagnostic.h" /* For errorcount/warningcount */
+#include "ansidecl.h"
+#include "alias.h"
 #include "flags.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
-#include "timevar.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "function.h"
 #include "toplev.h"
-#include "target.h"
 #include "debug.h"
-#include "diagnostic.h" /* For errorcount/warningcount */
 #include "dumpfile.h"
-#include "cgraph.h"
 #include "cpp.h"
-#include "trans.h"
 #include "trans-types.h"
 #include "trans-const.h"
 
@@ -633,12 +629,19 @@ gfc_init_builtin_functions (void)
 			    ARG6, ARG7) NAME,
 #define DEF_FUNCTION_TYPE_8(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 			    ARG6, ARG7, ARG8) NAME,
+#define DEF_FUNCTION_TYPE_9(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			    ARG6, ARG7, ARG8, ARG9) NAME,
+#define DEF_FUNCTION_TYPE_10(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			     ARG6, ARG7, ARG8, ARG9, ARG10) NAME,
+#define DEF_FUNCTION_TYPE_11(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			     ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) NAME,
 #define DEF_FUNCTION_TYPE_VAR_0(NAME, RETURN) NAME,
+#define DEF_FUNCTION_TYPE_VAR_1(NAME, RETURN, ARG1) NAME,
 #define DEF_FUNCTION_TYPE_VAR_2(NAME, RETURN, ARG1, ARG2) NAME,
+#define DEF_FUNCTION_TYPE_VAR_6(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				 ARG6) NAME,
 #define DEF_FUNCTION_TYPE_VAR_7(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 				ARG6, ARG7) NAME,
-#define DEF_FUNCTION_TYPE_VAR_11(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
-				 ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) NAME,
 #define DEF_POINTER_TYPE(NAME, TYPE) NAME,
 #include "types.def"
 #undef DEF_PRIMITIVE_TYPE
@@ -651,10 +654,14 @@ gfc_init_builtin_functions (void)
 #undef DEF_FUNCTION_TYPE_6
 #undef DEF_FUNCTION_TYPE_7
 #undef DEF_FUNCTION_TYPE_8
+#undef DEF_FUNCTION_TYPE_9
+#undef DEF_FUNCTION_TYPE_10
+#undef DEF_FUNCTION_TYPE_11
 #undef DEF_FUNCTION_TYPE_VAR_0
+#undef DEF_FUNCTION_TYPE_VAR_1
 #undef DEF_FUNCTION_TYPE_VAR_2
+#undef DEF_FUNCTION_TYPE_VAR_6
 #undef DEF_FUNCTION_TYPE_VAR_7
-#undef DEF_FUNCTION_TYPE_VAR_11
 #undef DEF_POINTER_TYPE
     BT_LAST
   };
@@ -977,8 +984,7 @@ gfc_init_builtin_functions (void)
 
   /* Type-generic floating-point classification built-ins.  */
 
-  ftype = build_function_type_list (integer_type_node,
-                                    void_type_node, NULL_TREE);
+  ftype = build_function_type (integer_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_isfinite", ftype, BUILT_IN_ISFINITE,
 		      "__builtin_isfinite", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_isinf", ftype, BUILT_IN_ISINF,
@@ -992,8 +998,7 @@ gfc_init_builtin_functions (void)
   gfc_define_builtin ("__builtin_signbit", ftype, BUILT_IN_SIGNBIT,
 		      "__builtin_signbit", ATTR_CONST_NOTHROW_LEAF_LIST);
 
-  ftype = build_function_type_list (integer_type_node, void_type_node,
-				    void_type_node, NULL_TREE);
+  ftype = build_function_type (integer_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_isless", ftype, BUILT_IN_ISLESS,
 		      "__builtin_isless", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_islessequal", ftype, BUILT_IN_ISLESSEQUAL,
@@ -1086,15 +1091,76 @@ gfc_init_builtin_functions (void)
 				builtin_types[(int) ARG7],		\
 				builtin_types[(int) ARG8],		\
 				NULL_TREE);
+#define DEF_FUNCTION_TYPE_9(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			    ARG6, ARG7, ARG8, ARG9)			\
+  builtin_types[(int) ENUM]						\
+    = build_function_type_list (builtin_types[(int) RETURN],		\
+				builtin_types[(int) ARG1],		\
+				builtin_types[(int) ARG2],		\
+				builtin_types[(int) ARG3],		\
+				builtin_types[(int) ARG4],		\
+				builtin_types[(int) ARG5],		\
+				builtin_types[(int) ARG6],		\
+				builtin_types[(int) ARG7],		\
+				builtin_types[(int) ARG8],		\
+				builtin_types[(int) ARG9],		\
+				NULL_TREE);
+#define DEF_FUNCTION_TYPE_10(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4,	\
+			     ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)	\
+  builtin_types[(int) ENUM]						\
+    = build_function_type_list (builtin_types[(int) RETURN],		\
+				builtin_types[(int) ARG1],		\
+				builtin_types[(int) ARG2],		\
+				builtin_types[(int) ARG3],		\
+				builtin_types[(int) ARG4],		\
+				builtin_types[(int) ARG5],		\
+				builtin_types[(int) ARG6],		\
+				builtin_types[(int) ARG7],		\
+				builtin_types[(int) ARG8],		\
+				builtin_types[(int) ARG9],		\
+				builtin_types[(int) ARG10],		\
+				NULL_TREE);
+#define DEF_FUNCTION_TYPE_11(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4,	\
+			     ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)\
+  builtin_types[(int) ENUM]						\
+    = build_function_type_list (builtin_types[(int) RETURN],		\
+				builtin_types[(int) ARG1],		\
+				builtin_types[(int) ARG2],		\
+				builtin_types[(int) ARG3],		\
+				builtin_types[(int) ARG4],		\
+				builtin_types[(int) ARG5],		\
+				builtin_types[(int) ARG6],		\
+				builtin_types[(int) ARG7],		\
+				builtin_types[(int) ARG8],		\
+				builtin_types[(int) ARG9],		\
+				builtin_types[(int) ARG10],		\
+				builtin_types[(int) ARG11],		\
+				NULL_TREE);
 #define DEF_FUNCTION_TYPE_VAR_0(ENUM, RETURN)				\
   builtin_types[(int) ENUM]						\
     = build_varargs_function_type_list (builtin_types[(int) RETURN],    \
                                         NULL_TREE);
+#define DEF_FUNCTION_TYPE_VAR_1(ENUM, RETURN, ARG1)			\
+  builtin_types[(int) ENUM]						\
+    = build_varargs_function_type_list (builtin_types[(int) RETURN],    \
+					builtin_types[(int) ARG1],     	\
+					NULL_TREE);
 #define DEF_FUNCTION_TYPE_VAR_2(ENUM, RETURN, ARG1, ARG2)		\
   builtin_types[(int) ENUM]						\
     = build_varargs_function_type_list (builtin_types[(int) RETURN],   	\
 					builtin_types[(int) ARG1],     	\
 					builtin_types[(int) ARG2],     	\
+					NULL_TREE);
+#define DEF_FUNCTION_TYPE_VAR_6(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				ARG6)	\
+  builtin_types[(int) ENUM]						\
+    = build_varargs_function_type_list (builtin_types[(int) RETURN],   	\
+					builtin_types[(int) ARG1],     	\
+					builtin_types[(int) ARG2],     	\
+					builtin_types[(int) ARG3],	\
+					builtin_types[(int) ARG4],	\
+					builtin_types[(int) ARG5],	\
+					builtin_types[(int) ARG6],	\
 					NULL_TREE);
 #define DEF_FUNCTION_TYPE_VAR_7(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 				ARG6, ARG7)				\
@@ -1107,22 +1173,6 @@ gfc_init_builtin_functions (void)
 					builtin_types[(int) ARG5],	\
 					builtin_types[(int) ARG6],	\
 					builtin_types[(int) ARG7],	\
-					NULL_TREE);
-#define DEF_FUNCTION_TYPE_VAR_11(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
-				 ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)	\
-  builtin_types[(int) ENUM]						\
-    = build_varargs_function_type_list (builtin_types[(int) RETURN],   	\
-					builtin_types[(int) ARG1],     	\
-					builtin_types[(int) ARG2],     	\
-					builtin_types[(int) ARG3],	\
-					builtin_types[(int) ARG4],	\
-					builtin_types[(int) ARG5],	\
-					builtin_types[(int) ARG6],	\
-					builtin_types[(int) ARG7],	\
-					builtin_types[(int) ARG8],	\
-					builtin_types[(int) ARG9],	\
-					builtin_types[(int) ARG10],	\
-					builtin_types[(int) ARG11],	\
 					NULL_TREE);
 #define DEF_POINTER_TYPE(ENUM, TYPE)			\
   builtin_types[(int) ENUM]				\
@@ -1138,10 +1188,12 @@ gfc_init_builtin_functions (void)
 #undef DEF_FUNCTION_TYPE_6
 #undef DEF_FUNCTION_TYPE_7
 #undef DEF_FUNCTION_TYPE_8
+#undef DEF_FUNCTION_TYPE_10
 #undef DEF_FUNCTION_TYPE_VAR_0
+#undef DEF_FUNCTION_TYPE_VAR_1
 #undef DEF_FUNCTION_TYPE_VAR_2
+#undef DEF_FUNCTION_TYPE_VAR_6
 #undef DEF_FUNCTION_TYPE_VAR_7
-#undef DEF_FUNCTION_TYPE_VAR_11
 #undef DEF_POINTER_TYPE
   builtin_types[(int) BT_LAST] = NULL_TREE;
 

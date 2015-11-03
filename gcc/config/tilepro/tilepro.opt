@@ -25,7 +25,7 @@ behavior and thus the flag is ignored.
 
 mcpu=
 Target RejectNegative Joined Enum(tilepro_cpu) Var(tilepro_cpu) Init(0)
--mcpu=CPU	Use features of and schedule code for given CPU
+-mcpu=CPU	Use features of and schedule code for given CPU.
 
 Enum
 Name(tilepro_cpu) Type(int)

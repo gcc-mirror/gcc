@@ -110,37 +110,26 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "predict.h"
 #include "df.h"
 #include "tm_p.h"
+#include "expmed.h"
+#include "optabs.h"
 #include "regs.h"
-#include "insn-config.h"
-#include "insn-codes.h"
+#include "ira.h"
 #include "recog.h"
 #include "output.h"
 #include "addresses.h"
-#include "target.h"
-#include "flags.h"
-#include "alias.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
 #include "cfgrtl.h"
-#include "except.h"
-#include "optabs.h"
-#include "ira.h"
 #include "rtl-error.h"
 #include "params.h"
 #include "lra.h"
-#include "insn-attr.h"
 #include "lra-int.h"
+#include "print-rtl.h"
 
 /* Value of LRA_CURR_RELOAD_NUM at the beginning of BB of the current
    insn.  Remember that LRA_CURR_RELOAD_NUM is the number of emitted
@@ -855,10 +844,11 @@ narrow_reload_pseudo_class (rtx reg, enum reg_class cl)
    numbers with end marker -1) with reg class GOAL_CLASS.  Add input
    and output reloads correspondingly to the lists *BEFORE and *AFTER.
    OUT might be negative.  In this case we generate input reloads for
-   matched input operands INS.  */
+   matched input operands INS.  EARLY_CLOBBER_P is a flag that the
+   output operand is early clobbered for chosen alternative.  */
 static void
 match_reload (signed char out, signed char *ins, enum reg_class goal_class,
-	      rtx_insn **before, rtx_insn **after)
+	      rtx_insn **before, rtx_insn **after, bool early_clobber_p)
 {
   int i, in;
   rtx new_in_reg, new_out_reg, reg;
@@ -939,12 +929,20 @@ match_reload (signed char out, signed char *ins, enum reg_class goal_class,
 	 have a situation like "a <- a op b", where the constraints
 	 force the second input operand ("b") to match the output
 	 operand ("a").  "b" must then be copied into a new register
-	 so that it doesn't clobber the current value of "a".  */
+	 so that it doesn't clobber the current value of "a".
+
+	 We can not use the same value if the output pseudo is
+	 early clobbered or the input pseudo is mentioned in the
+	 output, e.g. as an address part in memory, because
+	 output reload will actually extend the pseudo liveness.
+	 We don't care about eliminable hard regs here as we are
+	 interesting only in pseudos.  */
 
       new_in_reg = new_out_reg
-	= (ins[1] < 0 && REG_P (in_rtx)
+	= (! early_clobber_p && ins[1] < 0 && REG_P (in_rtx)
 	   && (int) REGNO (in_rtx) < lra_new_regno_start
 	   && find_regno_note (curr_insn, REG_DEAD, REGNO (in_rtx))
+	   && (out < 0 || regno_use_in (REGNO (in_rtx), out_rtx) == NULL_RTX)
 	   ? lra_create_new_reg (inmode, in_rtx, goal_class, "")
 	   : lra_create_new_reg_with_unique_value (outmode, out_rtx,
 						   goal_class, ""));
@@ -1333,7 +1331,7 @@ process_addr_reg (rtx *loc, bool check_only_p, rtx_insn **before, rtx_insn **aft
   if (after != NULL)
     {
       start_sequence ();
-      lra_emit_move (reg, new_reg);
+      lra_emit_move (before_p ? copy_rtx (reg) : reg, new_reg);
       emit_insn (*after);
       *after = get_insns ();
       end_sequence ();
@@ -1545,7 +1543,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	  bool insert_before, insert_after;
 
 	  PUT_MODE (new_reg, mode);
-          subreg = simplify_gen_subreg (innermode, new_reg, mode, 0);
+          subreg = gen_lowpart_SUBREG (innermode, new_reg);
 	  bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
 
 	  insert_before = (type != OP_OUT);
@@ -2867,6 +2865,11 @@ process_address_1 (int nop, bool check_only_p,
   enum constraint_num cn = lookup_constraint (constraint);
   bool change_p = false;
 
+  if (MEM_P (op)
+      && GET_MODE (op) == BLKmode
+      && GET_CODE (XEXP (op, 0)) == SCRATCH)
+    return false;
+
   if (insn_extra_address_constraint (cn))
     decompose_lea_address (&ad, curr_id->operand_loc[nop]);
   else if (MEM_P (op))
@@ -3861,13 +3864,18 @@ curr_insn_transform (bool check_only_p)
 	  match_inputs[0] = i;
 	  match_inputs[1] = -1;
 	  match_reload (goal_alt_matched[i][0], match_inputs,
-			goal_alt[i], &before, &after);
+			goal_alt[i], &before, &after,
+			curr_static_id->operand_alternative
+			[goal_alt_number * n_operands + goal_alt_matched[i][0]]
+			.earlyclobber);
 	}
       else if (curr_static_id->operand[i].type == OP_OUT
 	       && (curr_static_id->operand[goal_alt_matched[i][0]].type
 		   == OP_IN))
 	/* Generate reloads for output and matched inputs.  */
-	match_reload (i, goal_alt_matched[i], goal_alt[i], &before, &after);
+	match_reload (i, goal_alt_matched[i], goal_alt[i], &before, &after,
+		      curr_static_id->operand_alternative
+		      [goal_alt_number * n_operands + i].earlyclobber);
       else if (curr_static_id->operand[i].type == OP_IN
 	       && (curr_static_id->operand[goal_alt_matched[i][0]].type
 		   == OP_IN))
@@ -3877,7 +3885,7 @@ curr_insn_transform (bool check_only_p)
 	  for (j = 0; (k = goal_alt_matched[i][j]) >= 0; j++)
 	    match_inputs[j + 1] = k;
 	  match_inputs[j + 1] = -1;
-	  match_reload (-1, match_inputs, goal_alt[i], &before, &after);
+	  match_reload (-1, match_inputs, goal_alt[i], &before, &after, false);
 	}
       else
 	/* We must generate code in any case when function
@@ -3987,35 +3995,6 @@ contains_reg_p (rtx x, bool hard_reg_p, bool spilled_p)
 	{
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    if (contains_reg_p (XVECEXP (x, i, j), hard_reg_p, spilled_p))
-	      return true;
-	}
-    }
-  return false;
-}
-
-/* Return true if X contains a symbol reg.  */
-static bool
-contains_symbol_ref_p (rtx x)
-{
-  int i, j;
-  const char *fmt;
-  enum rtx_code code;
-
-  code = GET_CODE (x);
-  if (code == SYMBOL_REF)
-    return true;
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if (contains_symbol_ref_p (XEXP (x, i)))
-	    return true;
-	}
-      else if (fmt[i] == 'E')
-	{
-	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	    if (contains_symbol_ref_p (XVECEXP (x, i, j)))
 	      return true;
 	}
     }
@@ -4440,8 +4419,7 @@ lra_constraints (bool first_p)
   bitmap_clear (&equiv_insn_bitmap);
   /* If we used a new hard regno, changed_p should be true because the
      hard reg is assigned to a new pseudo.  */
-#ifdef ENABLE_CHECKING
-  if (! changed_p)
+  if (flag_checking && !changed_p)
     {
       for (i = FIRST_PSEUDO_REGISTER; i < new_regno_start; i++)
 	if (lra_reg_info[i].nrefs != 0
@@ -4453,7 +4431,6 @@ lra_constraints (bool first_p)
 	      lra_assert (df_regs_ever_live_p (hard_regno + j));
 	  }
     }
-#endif
   return changed_p;
 }
 
@@ -4531,7 +4508,7 @@ setup_next_usage_insn (int regno, rtx insn, int reloads_num, bool after_p)
    optional debug insns finished by a non-debug insn using REGNO.
    RELOADS_NUM is current number of reload insns processed so far.  */
 static void
-add_next_usage_insn (int regno, rtx insn, int reloads_num)
+add_next_usage_insn (int regno, rtx_insn *insn, int reloads_num)
 {
   rtx next_usage_insns;
 

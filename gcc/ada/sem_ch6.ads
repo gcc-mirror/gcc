@@ -45,31 +45,6 @@ package Sem_Ch6 is
    procedure Analyze_Subprogram_Declaration          (N : Node_Id);
    procedure Analyze_Subprogram_Body                 (N : Node_Id);
 
-   procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id);
-   --  Analyze all delayed aspects chained on the contract of subprogram body
-   --  Body_Id as if they appeared at the end of a declarative region. Aspects
-   --  in question are:
-   --    Contract_Cases   (stand alone body)
-   --    Depends          (stand alone body)
-   --    Global           (stand alone body)
-   --    Postcondition    (stand alone body)
-   --    Precondition     (stand alone body)
-   --    Refined_Depends
-   --    Refined_Global
-   --    Refined_Post
-   --    Test_Case        (stand alone body)
-
-   procedure Analyze_Subprogram_Contract (Subp_Id : Entity_Id);
-   --  Analyze all delayed aspects chained on the contract of subprogram
-   --  Subp_Id as if they appeared at the end of a declarative region. The
-   --  aspects in question are:
-   --    Contract_Cases
-   --    Depends
-   --    Global
-   --    Postcondition
-   --    Precondition
-   --    Test_Case
-
    function Analyze_Subprogram_Specification (N : Node_Id) return Entity_Id;
    --  Analyze subprogram specification in both subprogram declarations
    --  and body declarations. Returns the defining entity for the

@@ -20,18 +20,17 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
-#include "intl.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
+#include "cp-tree.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "intl.h"
+#include "alias.h"
 #include "stor-layout.h"
-#include "cp-tree.h"
 #include "flags.h"
 #include "convert.h"
-#include "target.h"
 #include "c-family/c-pragma.h"
 
 /* C++ returns type information to the user in struct type_info
@@ -983,6 +982,11 @@ ptr_initializer (tinfo_s *ti, tree target)
 
   if (incomplete)
     flags |= 8;
+  if (tx_safe_fn_type_p (to))
+    {
+      flags |= 0x20;
+      to = tx_unsafe_fn_variant (to);
+    }
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, flags));
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,

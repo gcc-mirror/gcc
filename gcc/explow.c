@@ -21,31 +21,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "diagnostic-core.h"
-#include "rtl.h"
-#include "alias.h"
-#include "tree.h"
-#include "stor-layout.h"
-#include "tm_p.h"
-#include "flags.h"
-#include "except.h"
+#include "target.h"
 #include "function.h"
-#include "insn-config.h"
+#include "rtl.h"
+#include "tree.h"
+#include "tm_p.h"
 #include "expmed.h"
+#include "optabs.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "diagnostic-core.h"
+#include "stor-layout.h"
+#include "except.h"
 #include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "libfuncs.h"
-#include "recog.h"
-#include "langhooks.h"
-#include "target.h"
 #include "common/common-target.h"
 #include "output.h"
 
@@ -830,8 +820,10 @@ promote_decl_mode (const_tree decl, int *punsignedp)
   machine_mode mode = DECL_MODE (decl);
   machine_mode pmode;
 
-  if (TREE_CODE (decl) == RESULT_DECL
-      || TREE_CODE (decl) == PARM_DECL)
+  if (TREE_CODE (decl) == RESULT_DECL && !DECL_BY_REFERENCE (decl))
+    pmode = promote_function_mode (type, mode, &unsignedp,
+                                   TREE_TYPE (current_function_decl), 1);
+  else if (TREE_CODE (decl) == RESULT_DECL || TREE_CODE (decl) == PARM_DECL)
     pmode = promote_function_mode (type, mode, &unsignedp,
                                    TREE_TYPE (current_function_decl), 2);
   else
@@ -857,11 +849,22 @@ promote_ssa_mode (const_tree name, int *punsignedp)
   if (SSA_NAME_VAR (name)
       && (TREE_CODE (SSA_NAME_VAR (name)) == PARM_DECL
 	  || TREE_CODE (SSA_NAME_VAR (name)) == RESULT_DECL))
-    return promote_decl_mode (SSA_NAME_VAR (name), punsignedp);
+    {
+      machine_mode mode = promote_decl_mode (SSA_NAME_VAR (name), punsignedp);
+      if (mode != BLKmode)
+	return mode;
+    }
 
   tree type = TREE_TYPE (name);
   int unsignedp = TYPE_UNSIGNED (type);
   machine_mode mode = TYPE_MODE (type);
+
+  /* Bypass TYPE_MODE when it maps vector modes to BLKmode.  */
+  if (mode == BLKmode)
+    {
+      gcc_assert (VECTOR_TYPE_P (type));
+      mode = type->type_common.mode;
+    }
 
   machine_mode pmode = promote_mode (type, mode, &unsignedp);
   if (punsignedp)
@@ -1887,7 +1890,7 @@ hard_libcall_value (machine_mode mode, rtx fun)
 }
 
 /* Look up the tree code for a given rtx code
-   to provide the arithmetic operation for REAL_ARITHMETIC.
+   to provide the arithmetic operation for real_arithmetic.
    The function returns an int because the caller may not know
    what `enum tree_code' means.  */
 

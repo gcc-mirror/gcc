@@ -37,30 +37,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "tm_p.h"
-#include "flags.h"
-#include "regs.h"
 #include "insn-config.h"
-#include "insn-attr.h"
+#include "regs.h"
+#include "emit-rtl.h"
 #include "recog.h"
 #include "cfgrtl.h"
-#include "tree.h"
-#include "alias.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "except.h"
-#include "diagnostic-core.h"
-#include "reload.h"
-#include "tree-pass.h"
-#include "target.h"
 #include "rtl-iter.h"
 
 /* Optimize jump y; x: ... y: jumpif... x?
@@ -389,13 +376,7 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
      machine description to do tricks.  */
   if (GET_MODE_CLASS (mode) == MODE_CC
       && REVERSIBLE_CC_MODE (mode))
-    {
-#ifdef REVERSE_CONDITION
-      return REVERSE_CONDITION (code, mode);
-#else
-      return reverse_condition (code);
-#endif
-    }
+    return REVERSE_CONDITION (code, mode);
 
   /* Try a few special cases based on the comparison code.  */
   switch (code)

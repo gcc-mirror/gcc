@@ -21,31 +21,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cfghooks.h"
 #include "df.h"
 #include "tm_p.h"
+#include "insn-config.h"
 #include "regs.h"
+#include "emit-rtl.h"
+#include "recog.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "cfgcleanup.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "recog.h"
 #include "alias.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "diagnostic-core.h"
 #include "toplev.h"
-#include "except.h"
-#include "target.h"
 #include "params.h"
 #include "rtlhooks-def.h"
 #include "tree-pass.h"
@@ -3342,7 +3332,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 	  if (SCALAR_FLOAT_MODE_P (mode))
 	    {
 #ifdef FLOAT_STORE_FLAG_VALUE
-	      true_rtx = (CONST_DOUBLE_FROM_REAL_VALUE
+	      true_rtx = (const_double_from_real_value
 			  (FLOAT_STORE_FLAG_VALUE (mode), mode));
 #else
 	      true_rtx = NULL_RTX;

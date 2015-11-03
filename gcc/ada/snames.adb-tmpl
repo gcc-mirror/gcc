@@ -152,12 +152,10 @@ package body Snames is
                                               Convention_Ada_Pass_By_Reference;
          when Name_Assembler             => return Convention_Assembler;
          when Name_C                     => return Convention_C;
-         when Name_CIL                   => return Convention_CIL;
          when Name_COBOL                 => return Convention_COBOL;
          when Name_CPP                   => return Convention_CPP;
          when Name_Fortran               => return Convention_Fortran;
          when Name_Intrinsic             => return Convention_Intrinsic;
-         when Name_Java                  => return Convention_Java;
          when Name_Stdcall               => return Convention_Stdcall;
          when Name_Stubbed               => return Convention_Stubbed;
 
@@ -188,13 +186,11 @@ package body Snames is
             return Name_Ada_Pass_By_Reference;
          when Convention_Assembler             => return Name_Assembler;
          when Convention_C                     => return Name_C;
-         when Convention_CIL                   => return Name_CIL;
          when Convention_COBOL                 => return Name_COBOL;
          when Convention_CPP                   => return Name_CPP;
          when Convention_Entry                 => return Name_Entry;
          when Convention_Fortran               => return Name_Fortran;
          when Convention_Intrinsic             => return Name_Intrinsic;
-         when Convention_Java                  => return Name_Java;
          when Convention_Protected             => return Name_Protected;
          when Convention_Stdcall               => return Name_Stdcall;
          when Convention_Stubbed               => return Name_Stubbed;

@@ -1,3 +1,35 @@
+2015-10-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* jcf-parse.c (get_constant): Use real_from_target rather than
+	real_from_target_fmt.
+
+2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* boehm.c: Reorder #include's and remove duplicates.
+	* builtins.c: Likewise.
+	* class.c: Likewise.
+	* constants.c: Likewise.
+	* decl.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* java-gimplify.c: Likewise.
+	* jcf-dump.c: Likewise.
+	* jcf-io.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* jvgenmain.c: Likewise.
+	* lang.c: Likewise.
+	* mangle.c: Likewise.
+	* mangle_name.c: Likewise.
+	* resource.c: Likewise.
+	* typeck.c: Likewise.
+	* verify-glue.c: Likewise.
+	* verify-impl.c: Likewise.
+
+2015-10-22  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* decl.c (java_mark_decl_local): Use flag_checking instead of
+	ENABLE_CHECKING.
+
 2015-07-15  Andrew MacLeod  <amacleod@redhat.com>
 
 	* expr.c: Remove multiline #include comment.

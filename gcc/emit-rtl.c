@@ -35,32 +35,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "insn-config.h"
+#include "regs.h"
+#include "emit-rtl.h"
+#include "recog.h"
 #include "diagnostic-core.h"
 #include "alias.h"
 #include "fold-const.h"
 #include "varasm.h"
 #include "cfgrtl.h"
 #include "tree-eh.h"
-#include "tm_p.h"
-#include "flags.h"
-#include "stringpool.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "regs.h"
-#include "recog.h"
-#include "debug.h"
-#include "langhooks.h"
 #include "params.h"
-#include "target.h"
 #include "builtins.h"
 #include "rtl-iter.h"
 #include "stor-layout.h"
@@ -648,7 +641,7 @@ immed_wide_int_const (const wide_int_ref &v, machine_mode mode)
    implied upper bits are copies of the high bit of i1.  The value
    itself is neither signed nor unsigned.  Do not use this routine for
    non-integer modes; convert to REAL_VALUE_TYPE and use
-   CONST_DOUBLE_FROM_REAL_VALUE.  */
+   const_double_from_real_value.  */
 
 rtx
 immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, machine_mode mode)
@@ -2733,8 +2726,7 @@ verify_rtx_sharing (rtx orig, rtx insn)
 
   /* This rtx may not be shared.  If it has already been seen,
      replace it with a copy of itself.  */
-#ifdef ENABLE_CHECKING
-  if (RTX_FLAG (x, used))
+  if (flag_checking && RTX_FLAG (x, used))
     {
       error ("invalid rtl sharing found in the insn");
       debug_rtx (insn);
@@ -2742,7 +2734,6 @@ verify_rtx_sharing (rtx orig, rtx insn)
       debug_rtx (x);
       internal_error ("internal consistency failure");
     }
-#endif
   gcc_assert (!RTX_FLAG (x, used));
 
   RTX_FLAG (x, used) = 1;
@@ -4259,12 +4250,12 @@ delete_insns_since (rtx_insn *from)
 void
 reorder_insns_nobb (rtx_insn *from, rtx_insn *to, rtx_insn *after)
 {
-#ifdef ENABLE_CHECKING
-  rtx_insn *x;
-  for (x = from; x != to; x = NEXT_INSN (x))
-    gcc_assert (after != x);
-  gcc_assert (after != to);
-#endif
+  if (flag_checking)
+    {
+      for (rtx_insn *x = from; x != to; x = NEXT_INSN (x))
+	gcc_assert (after != x);
+      gcc_assert (after != to);
+    }
 
   /* Splice this bunch out of where it is now.  */
   if (PREV_INSN (from))
@@ -5936,13 +5927,13 @@ init_emit_once (void)
 	   mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	const_tiny_rtx[i][(int) mode] =
-	  CONST_DOUBLE_FROM_REAL_VALUE (*r, mode);
+	  const_double_from_real_value (*r, mode);
 
       for (mode = GET_CLASS_NARROWEST_MODE (MODE_DECIMAL_FLOAT);
 	   mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	const_tiny_rtx[i][(int) mode] =
-	  CONST_DOUBLE_FROM_REAL_VALUE (*r, mode);
+	  const_double_from_real_value (*r, mode);
 
       const_tiny_rtx[i][(int) VOIDmode] = GEN_INT (i);
 

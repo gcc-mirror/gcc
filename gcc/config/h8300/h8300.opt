@@ -20,52 +20,52 @@
 
 ms
 Target Mask(H8300S_1)
-Generate H8S code
+Generate H8S code.
 
 msx
 Target Mask(H8300SX)
-Generate H8SX code
+Generate H8SX code.
 
 ms2600
 Target Mask(MAC)
-Generate H8S/2600 code
+Generate H8S/2600 code.
 
 mint32
 Target RejectNegative Mask(INT32)
-Make integers 32 bits wide
+Make integers 32 bits wide.
 
 maddresses
 Target Undocumented RejectNegative Mask(ADDRESSES)
 
 mquickcall
 Target Mask(QUICKCALL)
-Use registers for argument passing
+Use registers for argument passing.
 
 mslowbyte
 Target RejectNegative Mask(SLOWBYTE)
-Consider access to byte sized memory slow
+Consider access to byte sized memory slow.
 
 mrelax
 Target RejectNegative Mask(RELAX)
-Enable linker relaxing
+Enable linker relaxing.
 
 mh
 Target Mask(H8300H)
-Generate H8/300H code
+Generate H8/300H code.
 
 mn
 Target Mask(NORMAL_MODE)
-Enable the normal mode
+Enable the normal mode.
 
 malign-300
 Target RejectNegative Mask(ALIGN_300)
-Use H8/300 alignment rules
+Use H8/300 alignment rules.
 
 mexr
 Target Mask(EXR)
-Push extended registers on stack in monitor functions
+Push extended registers on stack in monitor functions.
 
 mno-exr
 Target Mask(NEXR)
-Do not push extended registers on stack in monitor functions
+Do not push extended registers on stack in monitor functions.
 

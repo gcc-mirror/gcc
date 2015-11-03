@@ -29,32 +29,17 @@ along with GCC; see the file COPYING3.	If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
-#include "tree.h"
 #include "rtl.h"
+#include "tree.h"
+#include "predict.h"
 #include "df.h"
 #include "tm_p.h"
 #include "insn-config.h"
-#include "recog.h"
-#include "output.h"
 #include "regs.h"
-#include "flags.h"
-#include "alias.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "cfganal.h"
-#include "except.h"
 #include "ira.h"
+#include "recog.h"
+#include "cfganal.h"
 #include "sparseset.h"
-#include "lra.h"
-#include "insn-attr.h"
-#include "insn-codes.h"
 #include "lra-int.h"
 
 /* Program points are enumerated by numbers from range
@@ -107,8 +92,7 @@ static sparseset unused_set, dead_set;
 static bitmap_head temp_bitmap;
 
 /* Pool for pseudo live ranges.	 */
-static object_allocator<lra_live_range> lra_live_range_pool
-  ("live ranges", 100);
+static object_allocator<lra_live_range> lra_live_range_pool ("live ranges");
 
 /* Free live range list LR.  */
 static void
@@ -591,9 +575,7 @@ check_pseudos_live_through_calls (int regno)
   for (hr = 0; hr < FIRST_PSEUDO_REGISTER; hr++)
     if (HARD_REGNO_CALL_PART_CLOBBERED (hr, PSEUDO_REGNO_MODE (regno)))
       SET_HARD_REG_BIT (lra_reg_info[regno].conflict_hard_regs, hr);
-#ifdef ENABLE_CHECKING
   lra_reg_info[regno].call_p = true;
-#endif
   if (! sparseset_bit_p (pseudos_live_through_setjumps, regno))
     return;
   sparseset_clear_bit (pseudos_live_through_setjumps, regno);
@@ -1230,9 +1212,7 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
 	lra_reg_info[i].biggest_mode = GET_MODE (regno_reg_rtx[i]);
       else
 	lra_reg_info[i].biggest_mode = VOIDmode;
-#ifdef ENABLE_CHECKING
       lra_reg_info[i].call_p = false;
-#endif
       if (i >= FIRST_PSEUDO_REGISTER
 	  && lra_reg_info[i].nrefs != 0)
 	{

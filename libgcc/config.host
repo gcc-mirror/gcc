@@ -267,7 +267,7 @@ case ${host} in
 *-*-solaris2*)
   # Unless linker support and dl_iterate_phdr are present,
   # unwind-dw2-fde-dip.c automatically falls back to unwind-dw2-fde.c.
-  tmake_file="$tmake_file t-sol2 t-eh-dw2-dip t-libgcc-pic t-slibgcc t-slibgcc-elf-ver"
+  tmake_file="$tmake_file sol2/t-sol2 t-eh-dw2-dip t-crtstuff-pic t-libgcc-pic t-slibgcc t-slibgcc-elf-ver"
   if test $with_gnu_ld = yes; then
     tmake_file="$tmake_file t-slibgcc-gld"
   else
@@ -276,19 +276,24 @@ case ${host} in
   # Add cpu-specific t-sol2 after t-slibgcc-* so it can augment SHLIB_MAPFILES.
   tmake_file="$tmake_file $cpu_type/t-sol2"
   extra_parts="gmon.o crtbegin.o crtend.o"
-  case ${host} in
-    i?86-*-solaris2.1[0-9]* | x86_64-*-solaris2.1[0-9]*)
-      # Solaris 10+/x86 provides crt1.o, crti.o, crtn.o, and gcrt1.o as
-      # part of the base system.
-      ;;
-    sparc*-*-solaris2.1[0-9]*)
-      # Solaris 10+/SPARC lacks crt1.o and gcrt1.o.
-      extra_parts="$extra_parts crt1.o gcrt1.o"
-      ;;
-    *)
-      extra_parts="$extra_parts crt1.o crti.o crtn.o gcrt1.o"
-      ;;
-  esac
+  if test "${libgcc_cv_solaris_crts}" = yes; then
+    # Solaris 11.x and 12 provide crt1.o, crti.o, and crtn.o as part of the
+    # base system.  crtp.o and crtpg.o implement the compiler-dependent parts.
+    extra_parts="$extra_parts crtp.o crtpg.o"
+    # If the Solaris CRTs are present, both ld and gld will have PIE support.
+    extra_parts="$extra_parts crtbeginS.o crtendS.o"
+  else
+    case ${host} in
+      i?86-*-solaris2.1[0-9]* | x86_64-*-solaris2.1[0-9]*)
+        # Solaris 10+/x86 provides crt1.o, crti.o, crtn.o, and gcrt1.o as
+        # part of the base system.
+        ;;
+      sparc*-*-solaris2.1[0-9]*)
+        # Solaris 10+/SPARC lacks crt1.o and gcrt1.o.
+        extra_parts="$extra_parts crt1.o gcrt1.o"
+        ;;
+    esac
+  fi
   ;;
 *-*-uclinux*)
   extra_parts="crtbegin.o crtend.o"
@@ -409,6 +414,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	  ;;
 	esac
 	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
+	extra_parts="$extra_parts crtfastmath.o"
 	unwind_header=config/arm/unwind-arm.h
 	;;
 avr-*-rtems*)
@@ -1085,7 +1091,7 @@ rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	md_unwind_header=rs6000/aix-unwind.h
 	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-slibgcc-aix rs6000/t-ibm-ldouble rs6000/t-aix-cxa"
-	extra_parts="crtcxa.o crtcxa_s.o"
+	extra_parts="crtcxa.o crtcxa_s.o crtdbase.o"
 	;;
 rl78-*-elf)
 	tmake_file="$tm_file t-fdpbit rl78/t-rl78"
@@ -1289,6 +1295,11 @@ xtensa*-*-elf*)
 xtensa*-*-linux*)
 	tmake_file="$tmake_file xtensa/t-xtensa xtensa/t-linux t-slibgcc-libgcc"
 	md_unwind_header=xtensa/linux-unwind.h
+	;;
+xtensa*-*-uclinux*)
+	tmake_file="$tmake_file xtensa/t-xtensa xtensa/t-linux t-slibgcc-libgcc"
+	md_unwind_header=xtensa/linux-unwind.h
+	extra_parts="$extra_parts crtbeginS.o crtbeginT.o crtendS.o"
 	;;
 am33_2.0-*-linux*)
 	# Don't need crtbeginT.o from *-*-linux* default.

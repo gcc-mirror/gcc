@@ -22,37 +22,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
-#include "regs.h"
+#include "tm_p.h"
 #include "insn-config.h"
+#include "regs.h"
+#include "emit-rtl.h"
+#include "recog.h"
 #include "conditions.h"
 #include "output.h"
-#include "insn-attr.h"
-#include "flags.h"
-#include "recog.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "calls.h"
-#include "alias.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "diagnostic-core.h"
-#include "tm_p.h"
-#include "target.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "opts.h"
-#include "dbxout.h"
 #include "builtins.h"
 
 /* This file should be included last.  */
@@ -488,7 +472,6 @@ pdp11_expand_operands (rtx *operands, rtx exops[][2], int opcount,
   pdp11_partorder useorder;
   bool sameoff = false;
   enum { REGOP, OFFSOP, MEMOP, PUSHOP, POPOP, CNSTOP, RNDOP } optype;
-  REAL_VALUE_TYPE r;
   long sval[2];
   
   words = GET_MODE_BITSIZE (GET_MODE (operands[0])) / 16;
@@ -602,10 +585,8 @@ pdp11_expand_operands (rtx *operands, rtx exops[][2], int opcount,
 	}
 
       if (GET_CODE (operands[op]) == CONST_DOUBLE)
-	{
-	  REAL_VALUE_FROM_CONST_DOUBLE (r, operands[op]);
-	  REAL_VALUE_TO_TARGET_DOUBLE (r, sval);
-	}
+	REAL_VALUE_TO_TARGET_DOUBLE
+	  (*CONST_DOUBLE_REAL_VALUE (operands[op]), sval);
       
       for (i = 0; i < words; i++)
 	{
@@ -729,7 +710,6 @@ pdp11_asm_output_var (FILE *file, const char *name, int size,
 static void
 pdp11_asm_print_operand (FILE *file, rtx x, int code)
 {
-  REAL_VALUE_TYPE r;
   long sval[2];
  
   if (code == '#')
@@ -747,8 +727,7 @@ pdp11_asm_print_operand (FILE *file, rtx x, int code)
     output_address (XEXP (x, 0));
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != SImode)
     {
-      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-      REAL_VALUE_TO_TARGET_DOUBLE (r, sval);
+      REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), sval);
       fprintf (file, "$%#lo", sval[0] >> 16);
     }
   else
@@ -1366,10 +1345,8 @@ output_block_move(rtx *operands)
 int
 legitimate_const_double_p (rtx address)
 {
-  REAL_VALUE_TYPE r;
   long sval[2];
-  REAL_VALUE_FROM_CONST_DOUBLE (r, address);
-  REAL_VALUE_TO_TARGET_DOUBLE (r, sval);
+  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (address), sval);
   if ((sval[0] & 0xffff) == 0 && sval[1] == 0)
     return 1;
   return 0;
@@ -1931,6 +1908,12 @@ pdp11_scalar_mode_supported_p (machine_mode mode)
   if (mode == SFmode)
     return true;
   return default_scalar_mode_supported_p (mode);
+}
+
+int
+pdp11_branch_cost ()
+{
+  return (TARGET_BRANCH_CHEAP ? 0 : 1);
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

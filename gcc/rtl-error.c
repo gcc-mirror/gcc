@@ -23,10 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl-error.h"
-#include "insn-attr.h"
-#include "insn-config.h"
-#include "intl.h"
 #include "diagnostic.h"
+#include "intl.h"
 
 static location_t location_for_asm (const rtx_insn *);
 static void diagnostic_for_asm (const rtx_insn *, const char *, va_list *,

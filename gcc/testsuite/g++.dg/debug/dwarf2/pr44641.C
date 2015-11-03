@@ -19,21 +19,21 @@ template<typename T> struct Base  {
 };
 
 template <>
-struct MisplacedDbg<Full>  // { dg-function-on-line {_ZN12MisplacedDbgI4FullEC[12]Ev} }
-                           // { dg-function-on-line {_ZN12MisplacedDbgI4FullED0Ev} { target *-*-* } 22 }
+struct MisplacedDbg<Full>  // { dg-function-on-line {_ZN12MisplacedDbgI4FullEC[12]Ev} { xfail powerpc-ibm-aix* } }
+                           // { dg-function-on-line {_ZN12MisplacedDbgI4FullED0Ev} { target *-*-* xfail powerpc-ibm-aix* } 22 }
 
     : public Base<int> {
 };
 
 template <class T>
-struct MisplacedDbg<T*>  // { dg-function-on-line {_ZN12MisplacedDbgIP3ArgEC[12]Ev} }
-                         // { dg-function-on-line {_ZN12MisplacedDbgIP3ArgED0Ev} { target *-*-* } 29 }
+struct MisplacedDbg<T*>  // { dg-function-on-line {_ZN12MisplacedDbgIP3ArgEC[12]Ev} { xfail powerpc-ibm-aix* } }
+                         // { dg-function-on-line {_ZN12MisplacedDbgIP3ArgED0Ev} { target *-*-* xfail powerpc-ibm-aix* } 29 }
     : public Base<int> {
 };
 
 template <class A>
-struct MisplacedDbg  // { dg-function-on-line {_ZN12MisplacedDbgI3ArgEC[12]Ev} }
-                     // { dg-function-on-line {_ZN12MisplacedDbgI3ArgED0Ev} { target *-*-* } 35 }
+struct MisplacedDbg  // { dg-function-on-line {_ZN12MisplacedDbgI3ArgEC[12]Ev} { xfail powerpc-ibm-aix* } }
+                     // { dg-function-on-line {_ZN12MisplacedDbgI3ArgED0Ev} { target *-*-* xfail powerpc-ibm-aix* } 35 }
     : public Base<int> {
 };
 

@@ -87,7 +87,7 @@ return_with_result (bool result, const char *func, unsigned int line)
    FUNC is name of function and LINE is location in the source file.  */
 
 static inline bool
-return_different_stmts_1 (gimple s1, gimple s2, const char *code,
+return_different_stmts_1 (gimple *s1, gimple *s2, const char *code,
 			  const char *func, unsigned int line)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -165,11 +165,11 @@ public:
 
   /* Verifies for given GIMPLEs S1 and S2 that
      assignment statements are semantically equivalent.  */
-  bool compare_gimple_assign (gimple s1, gimple s2);
+  bool compare_gimple_assign (gimple *s1, gimple *s2);
 
   /* Verifies for given GIMPLEs S1 and S2 that
      condition statements are semantically equivalent.  */
-  bool compare_gimple_cond (gimple s1, gimple s2);
+  bool compare_gimple_cond (gimple *s1, gimple *s2);
 
   /* Verifies for given GIMPLE_LABEL stmts S1 and S2 that
      label statements are semantically equivalent.  */
@@ -185,7 +185,7 @@ public:
 
   /* Verifies for given GIMPLEs S1 and S2 that
      goto statements are semantically equivalent.  */
-  bool compare_gimple_goto (gimple s1, gimple s2);
+  bool compare_gimple_goto (gimple *s1, gimple *s2);
 
   /* Verifies for given GIMPLE_RESX stmts S1 and S2 that
      resx statements are semantically equivalent.  */

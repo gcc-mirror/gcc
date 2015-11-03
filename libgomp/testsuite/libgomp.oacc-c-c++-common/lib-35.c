@@ -1,5 +1,6 @@
 /* { dg-do run } */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <openacc.h>
 
@@ -12,6 +13,7 @@ main (int argc, char **argv)
 
   h = (unsigned char *) malloc (N);
 
+  fprintf (stderr, "CheCKpOInT\n");
   d = acc_present_or_create (0, N);
   if (!d)
     abort ();
@@ -23,5 +25,6 @@ main (int argc, char **argv)
   return 0;
 }
 
+/* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
 /* { dg-output "\\\[\[^\n\r]*,\\\+256\\\] is a bad range" } */
 /* { dg-shouldfail "" } */

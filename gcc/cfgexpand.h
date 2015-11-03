@@ -20,10 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CFGEXPAND_H
 #define GCC_CFGEXPAND_H
 
-extern tree gimple_assign_rhs_to_tree (gimple);
+extern tree gimple_assign_rhs_to_tree (gimple *);
 extern HOST_WIDE_INT estimated_stack_frame_size (struct cgraph_node *);
-extern bool parm_in_stack_slot_p (tree);
-extern rtx get_rtl_for_parm_ssa_default_def (tree var);
+extern void set_parm_rtl (tree, rtx);
 
 
 #endif /* GCC_CFGEXPAND_H */

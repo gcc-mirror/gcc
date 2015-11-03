@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,9 +110,6 @@ package System.Finalization_Masters is
 
    function Finalization_Started (Master : Finalization_Master) return Boolean;
    --  Return the finalization status of a master
-
-   function Header_Offset return System.Storage_Elements.Storage_Offset;
-   --  Return the size of type FM_Node as Storage_Offset
 
    function Header_Size return System.Storage_Elements.Storage_Count;
    --  Return the size of type FM_Node as Storage_Count

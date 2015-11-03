@@ -92,10 +92,10 @@ struct GTY(()) ssa_operands {
 extern bool ssa_operands_active (struct function *);
 extern void init_ssa_operands (struct function *fn);
 extern void fini_ssa_operands (struct function *);
-extern bool verify_ssa_operands (struct function *, gimple stmt);
-extern void free_stmt_operands (struct function *, gimple);
-extern void update_stmt_operands (struct function *, gimple);
-extern void swap_ssa_operands (gimple, tree *, tree *);
+extern bool verify_ssa_operands (struct function *, gimple *stmt);
+extern void free_stmt_operands (struct function *, gimple *);
+extern void update_stmt_operands (struct function *, gimple *);
+extern void swap_ssa_operands (gimple *, tree *, tree *);
 extern bool verify_imm_links (FILE *f, tree var);
 
 extern void dump_immediate_uses_for (FILE *file, tree var);
@@ -103,7 +103,7 @@ extern void dump_immediate_uses (FILE *file);
 extern void debug_immediate_uses (void);
 extern void debug_immediate_uses_for (tree var);
 
-extern void unlink_stmt_vdef (gimple);
+extern void unlink_stmt_vdef (gimple *);
 
 /* Return the tree pointed-to by USE.  */
 static inline tree

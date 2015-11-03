@@ -59,6 +59,7 @@ enum processor_types
   INTEL_KNL,
   AMD_BTVER1,
   AMD_BTVER2,  
+  AMDFAM17H,
   CPU_TYPE_MAX
 };
 
@@ -74,14 +75,16 @@ enum processor_subtypes
   AMDFAM15H_BDVER2,
   AMDFAM15H_BDVER3,
   AMDFAM15H_BDVER4,
+  AMDFAM17H_ZNVER1,
   INTEL_COREI7_IVYBRIDGE,
   INTEL_COREI7_HASWELL,
   INTEL_COREI7_BROADWELL,
   INTEL_COREI7_SKYLAKE,
+  INTEL_COREI7_SKYLAKE_AVX512,
   CPU_SUBTYPE_MAX
 };
 
-/* ISA Features supported. */
+/* ISA Features supported. New features have to be inserted at the end.  */
 
 enum processor_features
 {
@@ -104,7 +107,15 @@ enum processor_features
   FEATURE_BMI,
   FEATURE_BMI2,
   FEATURE_AES,
-  FEATURE_PCLMUL
+  FEATURE_PCLMUL,
+  FEATURE_AVX512VL,
+  FEATURE_AVX512BW,
+  FEATURE_AVX512DQ,
+  FEATURE_AVX512CD,
+  FEATURE_AVX512ER,
+  FEATURE_AVX512PF,
+  FEATURE_AVX512VBMI,
+  FEATURE_AVX512IFMA
 };
 
 struct __processor_model
@@ -160,10 +171,19 @@ get_amd_cpu (unsigned int family, unsigned int model)
       /* Bulldozer version 3 "Steamroller"  */
       if (model >= 0x30 && model <= 0x4f)
 	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER3;
+      /* Bulldozer version 4 "Excavator"   */
+      if (model >= 0x60 && model <= 0x7f)
+	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER4;
       break;
     /* AMD Family 16h "btver2" */
     case 0x16:
       __cpu_model.__cpu_type = AMD_BTVER2;
+      break;
+    case 0x17:
+      __cpu_model.__cpu_type = AMDFAM17H;
+      /* AMD family 17h version 1.  */
+      if (model <= 0x1f)
+	__cpu_model.__cpu_subtype = AMDFAM17H_ZNVER1;
       break;
     default:
       break;
@@ -252,6 +272,11 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      __cpu_model.__cpu_type = INTEL_COREI7;
 	      __cpu_model.__cpu_subtype = INTEL_COREI7_SKYLAKE;
 	      break;
+	    case 0x55:
+	      /* Skylake with AVX-512 support.  */
+	      __cpu_model.__cpu_type = INTEL_COREI7;
+	      __cpu_model.__cpu_subtype = INTEL_COREI7_SKYLAKE_AVX512;
+	      break;
 	    case 0x17:
 	    case 0x1d:
 	      /* Penryn.  */
@@ -318,6 +343,22 @@ get_available_features (unsigned int ecx, unsigned int edx,
         features |= (1 << FEATURE_BMI2);
       if (ebx & bit_AVX512F)
 	features |= (1 << FEATURE_AVX512F);
+      if (ebx & bit_AVX512VL)
+	features |= (1 << FEATURE_AVX512VL);
+      if (ebx & bit_AVX512BW)
+	features |= (1 << FEATURE_AVX512BW);
+      if (ebx & bit_AVX512DQ)
+	features |= (1 << FEATURE_AVX512DQ);
+      if (ebx & bit_AVX512CD)
+	features |= (1 << FEATURE_AVX512CD);
+      if (ebx & bit_AVX512PF)
+	features |= (1 << FEATURE_AVX512PF);
+      if (ebx & bit_AVX512ER)
+	features |= (1 << FEATURE_AVX512ER);
+      if (ebx & bit_AVX512IFMA)
+	features |= (1 << FEATURE_AVX512IFMA);
+      if (ecx & bit_AVX512VBMI)
+	features |= (1 << FEATURE_AVX512VBMI);
     }
 
   unsigned int ext_level;
@@ -425,7 +466,7 @@ __cpu_indicator_init (void)
       if (family == 0x0f)
 	{
 	  family += extended_family;
-	  model += (extended_model << 4);
+	  model += extended_model;
 	}
 
       /* Get CPU type.  */

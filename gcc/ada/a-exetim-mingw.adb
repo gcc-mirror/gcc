@@ -39,7 +39,9 @@ with System.Task_Primitives.Operations; use System.Task_Primitives.Operations;
 with System.Tasking;                    use System.Tasking;
 with System.Win32;                      use System.Win32;
 
-package body Ada.Execution_Time is
+package body Ada.Execution_Time with
+  SPARK_Mode => Off
+is
 
    ---------
    -- "+" --

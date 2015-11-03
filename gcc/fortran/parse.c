@@ -20,10 +20,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
-#include <setjmp.h>
 #include "coretypes.h"
 #include "options.h"
 #include "gfortran.h"
+#include <setjmp.h>
 #include "match.h"
 #include "parse.h"
 #include "debug.h"
@@ -141,7 +141,7 @@ use_modules (void)
    for the specification statements in a function, whose
    characteristics are deferred into the specification statements.
    eg.:  INTEGER (king = mykind) foo ()
-	 USE mymodule, ONLY mykind..... 
+	 USE mymodule, ONLY mykind.....
    The KIND parameter needs a return after USE or IMPORT, whereas
    derived type declarations can occur anywhere, up the executable
    block.  ST_GET_FCN_CHARACTERISTICS is returned when we have run
@@ -287,6 +287,7 @@ end_of_block:
   return ST_GET_FCN_CHARACTERISTICS;
 }
 
+static bool in_specification_block;
 
 /* This is the primary 'decode_statement'.  */
 static gfc_statement
@@ -295,7 +296,7 @@ decode_statement (void)
   gfc_namespace *ns;
   gfc_statement st;
   locus old_locus;
-  match m;
+  match m = MATCH_NO;
   char c;
 
   gfc_enforce_clean_symbol_state ();
@@ -344,7 +345,7 @@ decode_statement (void)
 	return ST_FUNCTION;
       else if (m == MATCH_ERROR)
 	reject_statement ();
-      else 
+      else
 	gfc_undo_symbols ();
       gfc_current_locus = old_locus;
     }
@@ -356,7 +357,18 @@ decode_statement (void)
 
   match (NULL, gfc_match_assignment, ST_ASSIGNMENT);
   match (NULL, gfc_match_pointer_assignment, ST_POINTER_ASSIGNMENT);
-  match (NULL, gfc_match_st_function, ST_STATEMENT_FUNCTION);
+
+  if (in_specification_block)
+    {
+      m = match_word (NULL, gfc_match_st_function, &old_locus);
+      if (m == MATCH_YES)
+	return ST_STATEMENT_FUNCTION;
+    }
+
+  if (!(in_specification_block && m == MATCH_ERROR))
+    {
+      match (NULL, gfc_match_ptr_fcn_assign, ST_ASSIGNMENT);
+    }
 
   match (NULL, gfc_match_data_decl, ST_DATA_DECL);
   match (NULL, gfc_match_enumerator_def, ST_ENUMERATOR);
@@ -910,7 +922,7 @@ decode_gcc_attribute (void)
 
 /* Assert next length characters to be equal to token in free form.  */
 
-static void 
+static void
 verify_token_free (const char* token, int length, bool last_was_use_stmt)
 {
   int i;
@@ -1013,7 +1025,7 @@ next_free (void)
 	}
       else if (c == '$')
 	{
-	  /* Since both OpenMP and OpenACC directives starts with 
+	  /* Since both OpenMP and OpenACC directives starts with
 	     !$ character sequence, we must check all flags combinations */
 	  if ((flag_openmp || flag_openmp_simd)
 	      && !flag_openacc)
@@ -1044,9 +1056,9 @@ next_free (void)
 	      return decode_oacc_directive ();
 	    }
 	}
-      gcc_unreachable (); 
+      gcc_unreachable ();
     }
- 
+
   if (at_bol && c == ';')
     {
       if (!(gfc_option.allow_std & GFC_STD_F2008))
@@ -1132,7 +1144,7 @@ next_fixed (void)
 
 	case '*':
 	  c = gfc_next_char_literal (NONSTRING);
-	  
+
 	  if (TOLOWER (c) == 'g')
 	    {
 	      for (i = 0; i < 4; i++, c = gfc_next_char_literal (NONSTRING))
@@ -1246,7 +1258,7 @@ blank_line:
   if (digit_flag)
     gfc_warning_now (0, "Ignoring statement label in empty statement at %L",
 		     &label_locus);
-    
+
   gfc_current_locus.lb->truncated = 0;
   gfc_advance_line ();
   return ST_NONE;
@@ -2168,8 +2180,8 @@ gfc_ascii_statement (gfc_statement st)
 
 
 /* Create a symbol for the main program and assign it to ns->proc_name.  */
- 
-static void 
+
+static void
 main_program_symbol (gfc_namespace *ns, const char *name)
 {
   gfc_symbol *main_program;
@@ -2708,7 +2720,7 @@ endType:
 	    }
 
 	  seen_sequence = 1;
-	  gfc_add_sequence (&gfc_current_block ()->attr, 
+	  gfc_add_sequence (&gfc_current_block ()->attr,
 			    gfc_current_block ()->name, NULL);
 	  break;
 
@@ -2771,7 +2783,7 @@ endType:
 	  coarray = true;
 	  sym->attr.coarray_comp = 1;
 	}
-     
+
       if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.coarray_comp
 	  && !c->attr.pointer)
 	{
@@ -2851,7 +2863,7 @@ endType:
 
 
 /* Parse an ENUM.  */
- 
+
 static void
 parse_enum (void)
 {
@@ -2942,7 +2954,7 @@ loop:
 	  gfc_new_block->attr.pointer = 0;
 	  gfc_new_block->attr.proc_pointer = 1;
 	}
-      if (!gfc_add_explicit_interface (gfc_new_block, IFSRC_IFBODY, 
+      if (!gfc_add_explicit_interface (gfc_new_block, IFSRC_IFBODY,
 				       gfc_new_block->formal, NULL))
 	{
 	  reject_statement ();
@@ -3008,6 +3020,7 @@ loop:
 decl:
   /* Read data declaration statements.  */
   st = parse_spec (ST_NONE);
+  in_specification_block = true;
 
   /* Since the interface block does not permit an IMPLICIT statement,
      the default type for the function or the result must be taken
@@ -3113,15 +3126,18 @@ match_deferred_characteristics (gfc_typespec * ts)
 static void
 check_function_result_typed (void)
 {
-  gfc_typespec* ts = &gfc_current_ns->proc_name->result->ts;
+  gfc_typespec ts;
 
   gcc_assert (gfc_current_state () == COMP_FUNCTION);
-  gcc_assert (ts->type != BT_UNKNOWN);
+
+  if (!gfc_current_ns->proc_name->result) return;
+
+  ts = gfc_current_ns->proc_name->result->ts;
 
   /* Check type-parameters, at the moment only CHARACTER lengths possible.  */
   /* TODO:  Extend when KIND type parameters are implemented.  */
-  if (ts->type == BT_CHARACTER && ts->u.cl && ts->u.cl->length)
-    gfc_expr_check_typed (ts->u.cl->length, gfc_current_ns, true);
+  if (ts.type == BT_CHARACTER && ts.u.cl && ts.u.cl->length)
+    gfc_expr_check_typed (ts.u.cl->length, gfc_current_ns, true);
 }
 
 
@@ -3135,6 +3151,8 @@ parse_spec (gfc_statement st)
   bool function_result_typed = false;
   bool bad_characteristic = false;
   gfc_typespec *ts;
+
+  in_specification_block = true;
 
   verify_st_order (&ss, ST_NONE, false);
   if (st == ST_NONE)
@@ -3196,14 +3214,14 @@ loop:
 
 	case ST_NONE:
 	  break;
-	  
+
 	default:
 	  gfc_error ("%s statement is not allowed inside of BLOCK DATA at %C",
 		     gfc_ascii_statement (st));
 	  reject_statement ();
 	  break;
       }
-  
+
   /* If we find a statement that can not be followed by an IMPLICIT statement
      (and thus we can expect to see none any further), type the function result
      if it has not yet been typed.  Be careful not to give the END statement
@@ -3368,6 +3386,8 @@ declSt:
       if (!(ts->type == BT_DERIVED && ts->u.derived))
 	ts->type = BT_UNKNOWN;
     }
+
+  in_specification_block = false;
 
   return st;
 }
@@ -3765,7 +3785,7 @@ done:
    context that causes it to become redefined.  If the symbol is an
    iterator, we generate an error message and return nonzero.  */
 
-int 
+int
 gfc_check_do_variable (gfc_symtree *st)
 {
   gfc_state_data *s;
@@ -3780,7 +3800,7 @@ gfc_check_do_variable (gfc_symtree *st)
 
   return 0;
 }
-  
+
 
 /* Checks to see if the current statement label closes an enddo.
    Returns 0 if not, 1 if closes an ENDDO correctly, or 2 (and issues
@@ -3839,7 +3859,7 @@ parse_critical_block (void)
   gfc_state_data s, *sd;
   gfc_statement st;
 
-  for (sd = gfc_state_stack; sd; sd = sd->previous) 
+  for (sd = gfc_state_stack; sd; sd = sd->previous)
     if (sd->state == COMP_OMP_STRUCTURED_BLOCK)
       gfc_error_now (is_oacc (sd)
 		     ? "CRITICAL block inside of OpenACC region at %C"
@@ -4353,7 +4373,7 @@ parse_oacc_structured_block (gfc_statement acc_st)
   gfc_code *cp, *np;
   gfc_state_data s, *sd;
 
-  for (sd = gfc_state_stack; sd; sd = sd->previous) 
+  for (sd = gfc_state_stack; sd; sd = sd->previous)
     if (sd->state == COMP_CRITICAL)
       gfc_error_now ("OpenACC directive inside of CRITICAL block at %C");
 
@@ -4412,7 +4432,7 @@ parse_oacc_loop (gfc_statement acc_st)
   gfc_code *cp, *np;
   gfc_state_data s, *sd;
 
-  for (sd = gfc_state_stack; sd; sd = sd->previous) 
+  for (sd = gfc_state_stack; sd; sd = sd->previous)
     if (sd->state == COMP_CRITICAL)
       gfc_error_now ("OpenACC directive inside of CRITICAL block at %C");
 
@@ -4968,8 +4988,8 @@ parse_contained (int module)
 			   "ambiguous", gfc_new_block->name);
 	      else
 		{
-		  if (gfc_add_procedure (&sym->attr, PROC_INTERNAL, 
-					 sym->name, 
+		  if (gfc_add_procedure (&sym->attr, PROC_INTERNAL,
+					 sym->name,
 					 &gfc_new_block->declared_at))
 		    {
 		      if (st == ST_FUNCTION)
@@ -5170,11 +5190,11 @@ contains:
 done:
   gfc_current_ns->code = gfc_state_stack->head;
   if (gfc_state_stack->state == COMP_PROGRAM
-      || gfc_state_stack->state == COMP_MODULE 
-      || gfc_state_stack->state == COMP_SUBROUTINE 
+      || gfc_state_stack->state == COMP_MODULE
+      || gfc_state_stack->state == COMP_SUBROUTINE
       || gfc_state_stack->state == COMP_FUNCTION
       || gfc_state_stack->state == COMP_BLOCK)
-    gfc_current_ns->oacc_declare_clauses 
+    gfc_current_ns->oacc_declare_clauses
       = gfc_state_stack->ext.oacc_declare_clauses;
 }
 
@@ -5589,6 +5609,7 @@ gfc_parse_file (void)
   if (gfc_at_eof ())
     goto done;
 
+  in_specification_block = true;
 loop:
   gfc_init_2 ();
   st = next_statement ();
@@ -5715,7 +5736,7 @@ prog_units:
   /* Do the resolution.  */
   resolve_all_program_units (gfc_global_ns_list);
 
-  /* Do the parse tree dump.  */ 
+  /* Do the parse tree dump.  */
   gfc_current_ns
 	= flag_dump_fortran_original ? gfc_global_ns_list : NULL;
 

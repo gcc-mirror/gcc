@@ -141,6 +141,10 @@ proc g++_link_flags { paths } {
       if [file exists "${gccpath}/librx/librx.a"] {
           append flags "-L${gccpath}/librx "
       }
+      if [file exists "${gccpath}/libitm/libitm.spec"] {
+	  append flags "-B${gccpath}/libitm/ -L${gccpath}/libitm/.libs"
+	  append ld_library_path ":${gccpath}/libitm/.libs"
+      }
       append ld_library_path [gcc-set-multilib-library-path $GXX_UNDER_TEST]
     } else {
       global tool_root_dir

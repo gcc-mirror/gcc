@@ -1,25 +1,17 @@
 void bar ();
 
-int toto()
+int toto (int i, int b)
 {
-  int i,j, b;
+  int j;
   int a[100];
 
-  if (i == 20)
-    {
-      for (j = 0; j <= 20; j++)
-        a[j] = b + i;
-      b = 3;
-    }
-  else 
-    {
-      if (i == 30)
-	{
-          for (j = 0; j <= 20; j++)
-            a[j] = b + i;
-	  b = 5;
-	}
-    }
+  for (j = 0; j <= 20; j++)
+    a[j] = b + i;
+
+  if (a[12] == 23)
+    b = 3;
+  else
+    b = 1;
 
   for (j = 0; j <= 20; j++)
     a[j] = b + i;
@@ -27,4 +19,4 @@ int toto()
   return a[b];
 }
 
-/* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite"} } */
+/* { dg-final { scan-tree-dump-times "number of SCoPs: 0" 1 "graphite"} } */

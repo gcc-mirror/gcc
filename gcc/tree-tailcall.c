@@ -21,40 +21,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
+#include "cgraph.h"
+#include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "tm_p.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-dfa.h"
-#include "gimple-pretty-print.h"
 #include "except.h"
-#include "tree-pass.h"
-#include "langhooks.h"
 #include "dbgcnt.h"
-#include "target.h"
 #include "cfgloop.h"
 #include "common/common-target.h"
-#include "cgraph.h"
 #include "ipa-utils.h"
 
 /* The file implements the tail recursion elimination.  It is also used to
@@ -199,7 +184,7 @@ suitable_for_tail_call_opt_p (void)
    containing the value of EXPR at GSI.  */
 
 static tree
-independent_of_stmt_p (tree expr, gimple at, gimple_stmt_iterator gsi)
+independent_of_stmt_p (tree expr, gimple *at, gimple_stmt_iterator gsi)
 {
   basic_block bb, call_bb, at_bb;
   edge e;
@@ -409,7 +394,7 @@ static void
 find_tail_calls (basic_block bb, struct tailcall **ret)
 {
   tree ass_var = NULL_TREE, ret_var, func, param;
-  gimple stmt;
+  gimple *stmt;
   gcall *call = NULL;
   gimple_stmt_iterator gsi, agsi;
   bool tail_recursion;
@@ -818,7 +803,7 @@ static void
 eliminate_tail_call (struct tailcall *t)
 {
   tree param, rslt;
-  gimple stmt, call;
+  gimple *stmt, *call;
   tree arg;
   size_t idx;
   basic_block bb, first;
@@ -826,7 +811,7 @@ eliminate_tail_call (struct tailcall *t)
   gphi *phi;
   gphi_iterator gpi;
   gimple_stmt_iterator gsi;
-  gimple orig_stmt;
+  gimple *orig_stmt;
 
   stmt = orig_stmt = gsi_stmt (t->call_gsi);
   bb = gsi_bb (t->call_gsi);
@@ -847,17 +832,21 @@ eliminate_tail_call (struct tailcall *t)
      possibly unreachable code in other blocks is removed later in
      cfg cleanup.  */
   gsi = t->call_gsi;
-  gsi_next (&gsi);
-  while (!gsi_end_p (gsi))
+  gimple_stmt_iterator gsi2 = gsi_last_bb (gimple_bb (gsi_stmt (gsi)));
+  while (gsi_stmt (gsi2) != gsi_stmt (gsi))
     {
-      gimple t = gsi_stmt (gsi);
+      gimple *t = gsi_stmt (gsi2);
       /* Do not remove the return statement, so that redirect_edge_and_branch
 	 sees how the block ends.  */
-      if (gimple_code (t) == GIMPLE_RETURN)
-	break;
-
-      gsi_remove (&gsi, true);
-      release_defs (t);
+      if (gimple_code (t) != GIMPLE_RETURN)
+	{
+	  gimple_stmt_iterator gsi3 = gsi2;
+	  gsi_prev (&gsi2);
+	  gsi_remove (&gsi3, true);
+	  release_defs (t);
+	}
+      else
+	gsi_prev (&gsi2);
     }
 
   /* Number of executions of function has reduced by the tailcall.  */
@@ -972,7 +961,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
   bool changed = false;
   basic_block first = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   tree param;
-  gimple stmt;
+  gimple *stmt;
   edge_iterator ei;
 
   if (!suitable_for_tail_opt_p ())

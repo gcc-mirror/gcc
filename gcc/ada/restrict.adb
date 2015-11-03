@@ -285,6 +285,24 @@ package body Restrict is
       Check_Restriction (No_Implicit_Heap_Allocations, N);
    end Check_No_Implicit_Heap_Alloc;
 
+   ----------------------------------
+   -- Check_No_Implicit_Task_Alloc --
+   ----------------------------------
+
+   procedure Check_No_Implicit_Task_Alloc (N : Node_Id) is
+   begin
+      Check_Restriction (No_Implicit_Task_Allocations, N);
+   end Check_No_Implicit_Task_Alloc;
+
+   ---------------------------------------
+   -- Check_No_Implicit_Protected_Alloc --
+   ---------------------------------------
+
+   procedure Check_No_Implicit_Protected_Alloc (N : Node_Id) is
+   begin
+      Check_Restriction (No_Implicit_Protected_Object_Allocations, N);
+   end Check_No_Implicit_Protected_Alloc;
+
    -----------------------------------
    -- Check_Obsolescent_2005_Entity --
    -----------------------------------
@@ -480,19 +498,21 @@ package body Restrict is
    begin
       Msg_Issued := False;
 
-      --  In CodePeer and SPARK mode, we do not want to check for any
-      --  restriction, or set additional restrictions other than those already
-      --  set in gnat1drv.adb so that we have consistency between each
-      --  compilation.
+      --  In CodePeer mode, we do not want to check for any restriction, or set
+      --  additional restrictions other than those already set in gnat1drv.adb
+      --  so that we have consistency between each compilation.
 
-      --  Just checking, SPARK does not allow restrictions to be set ???
+      --  In GNATprove mode restrictions are checked, except for
+      --  No_Initialize_Scalars, which is implicitly set in gnat1drv.adb.
 
-      if CodePeer_Mode or GNATprove_Mode then
+      if CodePeer_Mode
+        or else (GNATprove_Mode and then R = No_Initialize_Scalars)
+      then
          return;
       end if;
 
-      --  In SPARK mode, issue an error for any use of class-wide, even if the
-      --  No_Dispatch restriction is not set.
+      --  In SPARK 05 mode, issue an error for any use of class-wide, even if
+      --  the No_Dispatch restriction is not set.
 
       if R = No_Dispatch then
          Check_SPARK_05_Restriction ("class-wide is not allowed", N);

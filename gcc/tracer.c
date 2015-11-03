@@ -37,19 +37,14 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "alias.h"
-#include "fold-const.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "profile.h"
 #include "cfganal.h"
-#include "flags.h"
 #include "params.h"
-#include "coverage.h"
-#include "tree-pass.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa.h"
@@ -93,18 +88,25 @@ bb_seen_p (basic_block bb)
 static bool
 ignore_bb_p (const_basic_block bb)
 {
-  gimple g;
-
   if (bb->index < NUM_FIXED_BLOCKS)
     return true;
   if (optimize_bb_for_size_p (bb))
     return true;
 
-  /* A transaction is a single entry multiple exit region.  It must be
-     duplicated in its entirety or not at all.  */
-  g = last_stmt (CONST_CAST_BB (bb));
-  if (g && gimple_code (g) == GIMPLE_TRANSACTION)
-    return true;
+  if (gimple *g = last_stmt (CONST_CAST_BB (bb)))
+    {
+      /* A transaction is a single entry multiple exit region.  It
+	 must be duplicated in its entirety or not at all.  */
+      if (gimple_code (g) == GIMPLE_TRANSACTION)
+	return true;
+
+      /* An IFN_UNIQUE call must be duplicated as part of its group,
+	 or not at all.  */
+      if (is_gimple_call (g)
+	  && gimple_call_internal_p (g)
+	  && gimple_call_internal_unique_p (g))
+	return true;
+    }
 
   return false;
 }
@@ -115,7 +117,7 @@ static int
 count_insns (basic_block bb)
 {
   gimple_stmt_iterator gsi;
-  gimple stmt;
+  gimple *stmt;
   int n = 0;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))

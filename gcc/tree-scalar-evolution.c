@@ -256,26 +256,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
 #include "ssa.h"
-#include "options.h"
-#include "fold-const.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "gimple-pretty-print.h"
-#include "internal-fn.h"
+#include "fold-const.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
@@ -404,7 +391,7 @@ chrec_contains_symbols_defined_in_loop (const_tree chrec, unsigned loop_nb)
 
   if (TREE_CODE (chrec) == SSA_NAME)
     {
-      gimple def;
+      gimple *def;
       loop_p def_loop, loop;
 
       if (SSA_NAME_IS_DEFAULT_DEF (chrec))
@@ -434,7 +421,7 @@ chrec_contains_symbols_defined_in_loop (const_tree chrec, unsigned loop_nb)
 /* Return true when PHI is a loop-phi-node.  */
 
 static bool
-loop_phi_node_p (gimple phi)
+loop_phi_node_p (gimple *phi)
 {
   /* The implementation of this function is based on the following
      property: "all the loop-phi-nodes of a loop are contained in the
@@ -616,7 +603,7 @@ get_scalar_evolution (basic_block instantiated_below, tree scalar)
 
 static tree
 add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
-		    gimple at_stmt)
+		    gimple *at_stmt)
 {
   tree type, left, right;
   struct loop *loop = get_loop (cfun, loop_nb), *chloop;
@@ -813,7 +800,7 @@ add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
 
 static tree
 add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
-		  tree to_add, gimple at_stmt)
+		  tree to_add, gimple *at_stmt)
 {
   tree type = chrec_type (to_add);
   tree res = NULL_TREE;
@@ -876,7 +863,7 @@ get_loop_exit_condition (const struct loop *loop)
 
   if (exit_edge)
     {
-      gimple stmt;
+      gimple *stmt;
 
       stmt = last_stmt (exit_edge->src);
       if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
@@ -902,14 +889,14 @@ enum t_bool {
 };
 
 
-static t_bool follow_ssa_edge (struct loop *loop, gimple, gphi *,
+static t_bool follow_ssa_edge (struct loop *loop, gimple *, gphi *,
 			       tree *, int);
 
 /* Follow the ssa edge into the binary expression RHS0 CODE RHS1.
    Return true if the strongly connected component has been found.  */
 
 static t_bool
-follow_ssa_edge_binary (struct loop *loop, gimple at_stmt,
+follow_ssa_edge_binary (struct loop *loop, gimple *at_stmt,
 			tree type, tree rhs0, enum tree_code code, tree rhs1,
 			gphi *halting_phi, tree *evolution_of_loop,
 			int limit)
@@ -1044,7 +1031,7 @@ follow_ssa_edge_binary (struct loop *loop, gimple at_stmt,
    Return true if the strongly connected component has been found.  */
 
 static t_bool
-follow_ssa_edge_expr (struct loop *loop, gimple at_stmt, tree expr,
+follow_ssa_edge_expr (struct loop *loop, gimple *at_stmt, tree expr,
 		      gphi *halting_phi, tree *evolution_of_loop,
 		      int limit)
 {
@@ -1135,7 +1122,7 @@ follow_ssa_edge_expr (struct loop *loop, gimple at_stmt, tree expr,
    Return true if the strongly connected component has been found.  */
 
 static t_bool
-follow_ssa_edge_in_rhs (struct loop *loop, gimple stmt,
+follow_ssa_edge_in_rhs (struct loop *loop, gimple *stmt,
 			gphi *halting_phi, tree *evolution_of_loop,
 			int limit)
 {
@@ -1325,7 +1312,7 @@ follow_ssa_edge_inner_loop_phi (struct loop *outer_loop,
    path that is analyzed on the return walk.  */
 
 static t_bool
-follow_ssa_edge (struct loop *loop, gimple def, gphi *halting_phi,
+follow_ssa_edge (struct loop *loop, gimple *def, gphi *halting_phi,
 		 tree *evolution_of_loop, int limit)
 {
   struct loop *def_loop;
@@ -1468,7 +1455,7 @@ analyze_evolution_in_loop (gphi *loop_phi_node,
   for (i = 0; i < n; i++)
     {
       tree arg = PHI_ARG_DEF (loop_phi_node, i);
-      gimple ssa_chain;
+      gimple *ssa_chain;
       tree ev_fn;
       t_bool res;
 
@@ -1591,7 +1578,7 @@ analyze_initial_condition (gphi *loop_phi_node)
      Handle degenerate PHIs here to not miss important unrollings.  */
   if (TREE_CODE (init_cond) == SSA_NAME)
     {
-      gimple def = SSA_NAME_DEF_STMT (init_cond);
+      gimple *def = SSA_NAME_DEF_STMT (init_cond);
       if (gphi *phi = dyn_cast <gphi *> (def))
 	{
 	  tree res = degenerate_phi_result (phi);
@@ -1697,11 +1684,11 @@ interpret_condition_phi (struct loop *loop, gphi *condition_phi)
    analyze the effect of an inner loop: see interpret_loop_phi.  */
 
 static tree
-interpret_rhs_expr (struct loop *loop, gimple at_stmt,
+interpret_rhs_expr (struct loop *loop, gimple *at_stmt,
 		    tree type, tree rhs1, enum tree_code code, tree rhs2)
 {
   tree res, chrec1, chrec2;
-  gimple def;
+  gimple *def;
 
   if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
     {
@@ -1878,7 +1865,7 @@ interpret_rhs_expr (struct loop *loop, gimple at_stmt,
 /* Interpret the expression EXPR.  */
 
 static tree
-interpret_expr (struct loop *loop, gimple at_stmt, tree expr)
+interpret_expr (struct loop *loop, gimple *at_stmt, tree expr)
 {
   enum tree_code code;
   tree type = TREE_TYPE (expr), op0, op1;
@@ -1899,7 +1886,7 @@ interpret_expr (struct loop *loop, gimple at_stmt, tree expr)
 /* Interpret the rhs of the assignment STMT.  */
 
 static tree
-interpret_gimple_assign (struct loop *loop, gimple stmt)
+interpret_gimple_assign (struct loop *loop, gimple *stmt)
 {
   tree type = TREE_TYPE (gimple_assign_lhs (stmt));
   enum tree_code code = gimple_assign_rhs_code (stmt);
@@ -1946,7 +1933,7 @@ static tree
 analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
 {
   tree type = TREE_TYPE (var);
-  gimple def;
+  gimple *def;
   basic_block bb;
   struct loop *def_loop;
 
@@ -3234,8 +3221,10 @@ bool
 simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
 	   affine_iv *iv, bool allow_nonconstant_step)
 {
-  tree type, ev;
-  bool folded_casts;
+  enum tree_code code;
+  tree type, ev, base, e, stop;
+  wide_int extreme;
+  bool folded_casts, overflow;
 
   iv->base = NULL_TREE;
   iv->step = NULL_TREE;
@@ -3276,6 +3265,82 @@ simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
   iv->no_overflow = (!folded_casts && ANY_INTEGRAL_TYPE_P (type)
 		     && TYPE_OVERFLOW_UNDEFINED (type));
 
+  /* Try to simplify iv base:
+
+       (signed T) ((unsigned T)base + step) ;; TREE_TYPE (base) == signed T
+	 == (signed T)(unsigned T)base + step
+	 == base + step
+
+     If we can prove operation (base + step) doesn't overflow or underflow.
+     Specifically, we try to prove below conditions are satisfied:
+
+	     base <= UPPER_BOUND (type) - step  ;;step > 0
+	     base >= LOWER_BOUND (type) - step  ;;step < 0
+
+     This is done by proving the reverse conditions are false using loop's
+     initial conditions.
+
+     The is necessary to make loop niter, or iv overflow analysis easier
+     for below example:
+
+       int foo (int *a, signed char s, signed char l)
+	 {
+	   signed char i;
+	   for (i = s; i < l; i++)
+	     a[i] = 0;
+	   return 0;
+	  }
+
+     Note variable I is firstly converted to type unsigned char, incremented,
+     then converted back to type signed char.  */
+
+  if (wrto_loop->num != use_loop->num)
+    return true;
+
+  if (!CONVERT_EXPR_P (iv->base) || TREE_CODE (iv->step) != INTEGER_CST)
+    return true;
+
+  type = TREE_TYPE (iv->base);
+  e = TREE_OPERAND (iv->base, 0);
+  if (TREE_CODE (e) != PLUS_EXPR
+      || TREE_CODE (TREE_OPERAND (e, 1)) != INTEGER_CST
+      || !tree_int_cst_equal (iv->step,
+			      fold_convert (type, TREE_OPERAND (e, 1))))
+    return true;
+  e = TREE_OPERAND (e, 0);
+  if (!CONVERT_EXPR_P (e))
+    return true;
+  base = TREE_OPERAND (e, 0);
+  if (!useless_type_conversion_p (type, TREE_TYPE (base)))
+    return true;
+
+  if (tree_int_cst_sign_bit (iv->step))
+    {
+      code = LT_EXPR;
+      extreme = wi::min_value (type);
+    }
+  else
+    {
+      code = GT_EXPR;
+      extreme = wi::max_value (type);
+    }
+  overflow = false;
+  extreme = wi::sub (extreme, iv->step, TYPE_SIGN (type), &overflow);
+  if (overflow)
+    return true;
+  e = fold_build2 (code, boolean_type_node, base,
+		   wide_int_to_tree (type, extreme));
+  stop = (TREE_CODE (base) == SSA_NAME) ? base : NULL;
+  e = simplify_using_initial_conditions (use_loop, e, stop);
+  if (!integer_zerop (e))
+    return true;
+
+  if (POINTER_TYPE_P (TREE_TYPE (base)))
+    code = POINTER_PLUS_EXPR;
+  else
+    code = PLUS_EXPR;
+
+  iv->base = fold_build2 (code, TREE_TYPE (base), base, iv->step);
   return true;
 }
 
@@ -3507,7 +3572,7 @@ scev_const_prop (void)
 	      gsi2 = gsi_start (stmts);
 	      while (!gsi_end_p (gsi2))
 		{
-		  gimple stmt = gsi_stmt (gsi2);
+		  gimple *stmt = gsi_stmt (gsi2);
 		  gimple_stmt_iterator gsi3 = gsi2;
 		  gsi_next (&gsi2);
 		  gsi_remove (&gsi3, false);

@@ -20,28 +20,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
+#include "function.h"		/* For cfun.  */
 #include "tree.h"
-#include "options.h"
+#include "c-common.h"
+#include "tm_p.h"		/* For REGISTER_TARGET_PRAGMAS.  */
 #include "stringpool.h"
+#include "cgraph.h"
+#include "diagnostic.h"
+#include "alias.h"
 #include "attribs.h"
 #include "varasm.h"
-#include "hard-reg-set.h"
-#include "function.h"		/* For cfun.  FIXME: Does the parser know
-				   when it is inside a function, so that
-				   we don't have to look at cfun?  */
 #include "cpplib.h"
 #include "c-pragma.h"
 #include "flags.h"
-#include "c-common.h"
-#include "tm_p.h"		/* For REGISTER_TARGET_PRAGMAS (why is
-				   this not a target hook?).  */
-#include "target.h"
-#include "diagnostic.h"
 #include "opts.h"
 #include "plugin.h"
-#include "cgraph.h"
 
 #define GCC_BAD(gmsgid) \
   do { warning (OPT_Wpragmas, gmsgid); return; } while (0)
@@ -704,17 +698,19 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
 static void
 handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
 {
-  const char *kind_string, *option_string;
-  unsigned int option_index;
-  enum cpp_ttype token;
-  diagnostic_t kind;
   tree x;
-  struct cl_option_handlers handlers;
-
-  token = pragma_lex (&x);
+  location_t loc;
+  enum cpp_ttype token = pragma_lex (&x, &loc);
   if (token != CPP_NAME)
-    GCC_BAD ("missing [error|warning|ignored] after %<#pragma GCC diagnostic%>");
-  kind_string = IDENTIFIER_POINTER (x);
+    {
+      warning_at (loc, OPT_Wpragmas,
+		  "missing [error|warning|ignored|push|pop]"
+		  " after %<#pragma GCC diagnostic%>");
+      return;
+    }
+
+  diagnostic_t kind;
+  const char *kind_string = IDENTIFIER_POINTER (x);
   if (strcmp (kind_string, "error") == 0)
     kind = DK_ERROR;
   else if (strcmp (kind_string, "warning") == 0)
@@ -732,23 +728,55 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
       return;
     }
   else
-    GCC_BAD ("expected [error|warning|ignored|push|pop] after %<#pragma GCC diagnostic%>");
+    {
+      warning_at (loc, OPT_Wpragmas,
+		  "expected [error|warning|ignored|push|pop]"
+		  " after %<#pragma GCC diagnostic%>");
+      return;
+    }
 
-  token = pragma_lex (&x);
+  token = pragma_lex (&x, &loc);
   if (token != CPP_STRING)
-    GCC_BAD ("missing option after %<#pragma GCC diagnostic%> kind");
-  option_string = TREE_STRING_POINTER (x);
+    {
+      warning_at (loc, OPT_Wpragmas,
+		  "missing option after %<#pragma GCC diagnostic%> kind");
+      return;
+    }
+
+  const char *option_string = TREE_STRING_POINTER (x);
+  unsigned int lang_mask = c_common_option_lang_mask () | CL_COMMON;
+  /* option_string + 1 to skip the initial '-' */
+  unsigned int option_index = find_opt (option_string + 1, lang_mask);
+  if (option_index == OPT_SPECIAL_unknown)
+    {
+      warning_at (loc, OPT_Wpragmas,
+		  "unknown option after %<#pragma GCC diagnostic%> kind");
+      return;
+    }
+  else if (!(cl_options[option_index].flags & CL_WARNING))
+    {
+      warning_at (loc, OPT_Wpragmas,
+		  "%qs is not an option that controls warnings", option_string);
+      return;
+    }
+  else if (!(cl_options[option_index].flags & lang_mask))
+    {
+      char *ok_langs = write_langs (cl_options[option_index].flags);
+      char *bad_lang = write_langs (c_common_option_lang_mask ());
+      warning_at (loc, OPT_Wpragmas,
+		  "option %qs is valid for %s but not for %s",
+		  option_string, ok_langs, bad_lang);
+      free (ok_langs);
+      free (bad_lang);
+      return;
+    }
+
+  struct cl_option_handlers handlers;
   set_default_handlers (&handlers);
-  for (option_index = 0; option_index < cl_options_count; option_index++)
-    if (strcmp (cl_options[option_index].opt_text, option_string) == 0)
-      {
-	control_warning_option (option_index, (int) kind, kind != DK_IGNORED,
-				input_location, c_family_lang_mask, &handlers,
-				&global_options, &global_options_set,
-				global_dc);
-	return;
-      }
-  GCC_BAD ("unknown option after %<#pragma GCC diagnostic%> kind");
+  control_warning_option (option_index, (int) kind, kind != DK_IGNORED,
+			  loc, lang_mask, &handlers,
+			  &global_options, &global_options_set,
+			  global_dc);
 }
 
 /*  Parse #pragma GCC target (xxx) to set target specific options.  */
@@ -1212,6 +1240,7 @@ static const struct omp_pragma_def omp_pragmas_simd[] = {
   { "parallel", PRAGMA_OMP_PARALLEL },
   { "simd", PRAGMA_OMP_SIMD },
   { "target", PRAGMA_OMP_TARGET },
+  { "taskloop", PRAGMA_OMP_TASKLOOP },
   { "teams", PRAGMA_OMP_TEAMS },
 };
 

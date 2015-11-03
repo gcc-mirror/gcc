@@ -22,20 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "diagnostic.h"
-#include "alias.h"
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
 #include "ssa.h"
-#include "options.h"
-#include "fold-const.h"
-#include "internal-fn.h"
+#include "gimple-streamer.h"
 #include "tree-eh.h"
 #include "gimple-iterator.h"
 #include "cgraph.h"
-#include "gimple-streamer.h"
 #include "value-prof.h"
 
 /* Read a PHI function for basic block BB in function FN.  DATA_IN is
@@ -88,11 +82,11 @@ input_phi (struct lto_input_block *ib, basic_block bb, struct data_in *data_in,
 /* Read a statement with tag TAG in function FN from block IB using
    descriptors in DATA_IN.  */
 
-static gimple
+static gimple *
 input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 		   enum LTO_tags tag)
 {
-  gimple stmt;
+  gimple *stmt;
   enum gimple_code code;
   unsigned HOST_WIDE_INT num_ops;
   size_t i;
@@ -279,7 +273,7 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
   tag = streamer_read_record_start (ib);
   while (tag)
     {
-      gimple stmt = input_gimple_stmt (ib, data_in, tag);
+      gimple *stmt = input_gimple_stmt (ib, data_in, tag);
       gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 
       /* After the statement, expect a 0 delimiter or the EH region

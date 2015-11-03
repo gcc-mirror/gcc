@@ -29,9 +29,21 @@ if ![gcc_parallel_test_run_p help] {
 }
 gcc_parallel_test_enable 0
 
+# GCC breaks up --help output into lines at most $COLUMNS characters
+# wide (or 80 when COLUMNS is not defined), set the COLUMNS environment
+# variable to a value large enough to prevent this (and restore it when
+# done).
+global env
+
+if [ info exists env(COLUMNS) ] {
+    set prev_columns $env(COLUMNS)
+}
+
+set env(COLUMNS) 1024
+
 # Document --version.  Ideally, there should be no undocumented switches
 # in --help.
-check_for_options c "--help" "--version" "This switch lacks documentation" ""
+check_for_options c "--help" "--version" "This option lacks documentation" ""
 
 # Output from different subprocesses should not be intermingled
 # (we check for some patterns that could be seen with a missing
@@ -43,7 +55,7 @@ check_for_options c "-v --help" "" {
 } ""
 
 # There are still undocumented switches in -v --help.
-check_for_options c "-v --help" "" "This switch lacks documentation" "xfail"
+check_for_options c "-v --help" "" "This option lacks documentation" "xfail"
 
 # Check whether multiline conversion in optc-gen is broken.
 check_for_options c "-v --help" "" {are likely to\n  -std} ""
@@ -54,10 +66,10 @@ check_for_options c "--help=params" "maximum number of" "-Wunsafe-loop-optimizat
 check_for_options c "--help=C" "-ansi" "-gnatO" ""
 check_for_options c {--help=C++} {-std=c\+\+} "-gnatO" ""
 check_for_options c "--help=common" "-dumpbase" "-gnatO" ""
-check_for_options c "--help=undocumented" "This switch lacks documentation" "" ""
+check_for_options c "--help=undocumented" "This option lacks documentation" "" ""
 
 # Undocumented flags are not yet consistently marked as such.
-check_for_options c "--help=^undocumented" "-Wall" "This switch lacks documentation" "xfail"
+check_for_options c "--help=^undocumented" "-Wall" "This option lacks documentation" "xfail"
 
 # Try some --help=* examples from the manual.
 check_for_options c "--help=target,undocumented" "" "" ""
@@ -78,15 +90,47 @@ maximum number of
 } "" ""
 
 # Ensure PR 37805 is fixed.
-check_for_options c "--help=joined" "Wformat=" "-fstrict-prototype" ""
-check_for_options c "--help=separate" "-MF" "-fstrict-prototype" ""
-check_for_options c "--help=warnings,joined" "Wformat=" "Wtrigraphs" ""
-check_for_options c "--help=warnings,^joined" "Wtrigraphs" "Wformat=" ""
-check_for_options c "--help=joined,separate" "-I" "" ""
-check_for_options c "--help=^joined,separate" "--param " "" ""
-check_for_options c "--help=joined,^separate" "--help=" "" ""
+# Specify patterns (arguments 3 and later) that match option names
+# at the beginning of the line and not when they are referenced by
+# some other options later on.
+check_for_options c "--help=joined" \
+    "^ +-Wformat=" "^ +-fstrict-prototype" ""
+check_for_options c "--help=separate" \
+    "^ +-MF" "^ +-fstrict-prototype" ""
+check_for_options c "--help=warnings,joined" \
+    "^ +-Wformat=" "^ +-Wtrigraphs" ""
+check_for_options c "--help=warnings,^joined" \
+    "^ +-Wtrigraphs" "^ +-Wformat=" ""
+check_for_options c "--help=joined,separate" \
+    "^ +-I" "" ""
+check_for_options c "--help=^joined,separate" \
+    "^ +--param " "" ""
+check_for_options c "--help=joined,^separate" \
+    "^ +--help=" "" ""
 check_for_options c "--help=joined,undocumented" "" "" ""
+
+# Check to make sure the description for every option is a complete
+# sentence ending in a period.  This matters not just for consistency
+# but also because other sentences may be appended to it by the help
+# subsystem.  Do this one help class at a time to make it easier to
+# find the source a failure.
+
+foreach cls { "ada" "c" "c++" "fortran" "go" \
+		    "optimizers" "param" "target" "warnings" } {
+
+    check_for_options c "--help=$cls" "" "^ +-.*\[^:.\]$" ""
+}
+
 # Listing only excludes gives empty results.
 check_for_options c "--help=^joined,^separate" "" "" ""
+
+if [ info exists prev_columns ] {
+    # Reset the enviroment variable to its oriuginal value.
+    set env(COLUMNS) $prev_columns
+} else {
+    # Remove the variable from the environment if it didn't exist
+    # to begin with to avoid affecting subsequent tests.
+    array unset env COLUMNS
+}
 
 gcc_parallel_test_enable 1

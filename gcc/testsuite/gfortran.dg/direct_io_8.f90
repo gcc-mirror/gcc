@@ -7,7 +7,7 @@ program main
   i=44
   ir = -42
 
-  open(11,file="foo.dat")
+  open(11,file="foo_direct_io_8.dat")
   ! Try a direct access read on a formatted sequential rile
   READ (11, REC = I, ERR = 99) TEMP_CHANGES
   call abort

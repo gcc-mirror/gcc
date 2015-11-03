@@ -21,24 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
-#include "alias.h"
 #include "tm_p.h"
 #include "regs.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "recog.h"
 #include "emit-rtl.h"
-#include "diagnostic-core.h"
 #include "dumpfile.h"
-#include "alloc-pool.h"
 #include "cselib.h"
-#include "valtrack.h"
 #include "params.h"
-#include "alloc-pool.h"
-#include "target.h"
 
 /* A list of cselib_val structures.  */
 struct elt_list
@@ -246,11 +238,11 @@ static unsigned int cfa_base_preserved_regno = INVALID_REGNUM;
    each time memory is invalidated.  */
 static cselib_val *first_containing_mem = &dummy_val;
 
-static object_allocator<elt_list> elt_list_pool ("elt_list", 10);
-static object_allocator<elt_loc_list> elt_loc_list_pool ("elt_loc_list", 10);
-static object_allocator<cselib_val> cselib_val_pool ("cselib_val_list", 10);
+static object_allocator<elt_list> elt_list_pool ("elt_list");
+static object_allocator<elt_loc_list> elt_loc_list_pool ("elt_loc_list");
+static object_allocator<cselib_val> cselib_val_pool ("cselib_val_list");
 
-static pool_allocator value_pool ("value", 100, RTX_CODE_SIZE (VALUE));
+static pool_allocator value_pool ("value", RTX_CODE_SIZE (VALUE));
 
 /* If nonnull, cselib will call this function before freeing useless
    VALUEs.  A VALUE is deemed useless if its "locs" field is null.  */

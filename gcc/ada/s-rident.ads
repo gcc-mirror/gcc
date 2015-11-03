@@ -119,6 +119,8 @@ package System.Rident is
       No_Implicit_Conditionals,                  -- GNAT
       No_Implicit_Dynamic_Code,                  -- GNAT
       No_Implicit_Heap_Allocations,              -- (RM D.8(8), H.4(3))
+      No_Implicit_Task_Allocations,              -- GNAT
+      No_Implicit_Protected_Object_Allocations,  -- GNAT
       No_Implicit_Loops,                         -- GNAT
       No_Initialize_Scalars,                     -- GNAT
       No_Local_Allocators,                       -- (RM H.4(8))
@@ -142,6 +144,7 @@ package System.Rident is
       No_Streams,                                -- GNAT
       No_Task_Allocators,                        -- (RM D.7(7))
       No_Task_Attributes_Package,                -- GNAT
+      No_Task_At_Interrupt_Priority,             -- GNAT
       No_Task_Hierarchy,                         -- (RM D.7(3), H.4(3))
       No_Task_Termination,                       -- GNAT (Ravenscar)
       No_Tasking,                                -- GNAT
@@ -168,6 +171,7 @@ package System.Rident is
       --  units, it applies to all units in this extended main source.
 
       Immediate_Reclamation,                     -- (RM H.4(10))
+      No_Dynamic_Sized_Objects,                  -- GNAT
       No_Implementation_Aspect_Specifications,   -- Ada 2012 AI-241
       No_Implementation_Attributes,              -- Ada 2005 AI-257
       No_Implementation_Identifiers,             -- Ada 2012 AI-246
@@ -458,7 +462,7 @@ package System.Rident is
 
                      --    pragma Dispatching_Policy (FIFO_Within_Priorities);
                      --    pragma Locking_Policy (Ceiling_Locking);
-                     --    pragma Detect_Blocking
+                     --    pragma Detect_Blocking;
 
                      Ravenscar  =>
 

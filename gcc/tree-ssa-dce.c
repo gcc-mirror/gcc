@@ -46,34 +46,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
+#include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "calls.h"
-#include "gimple-pretty-print.h"
 #include "cfganal.h"
-#include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-into-ssa.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-dfa.h"
-#include "tree-pass.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "tree-chkp.h"
@@ -90,7 +79,7 @@ static struct stmt_stats
 
 #define STMT_NECESSARY GF_PLF_1
 
-static vec<gimple> worklist;
+static vec<gimple *> worklist;
 
 /* Vector indicating an SSA name has already been processed and marked
    as necessary.  */
@@ -128,7 +117,7 @@ static bool cfg_altered;
    worklist if ADD_TO_WORKLIST is true.  */
 
 static inline void
-mark_stmt_necessary (gimple stmt, bool add_to_worklist)
+mark_stmt_necessary (gimple *stmt, bool add_to_worklist)
 {
   gcc_assert (stmt);
 
@@ -155,7 +144,7 @@ mark_stmt_necessary (gimple stmt, bool add_to_worklist)
 static inline void
 mark_operand_necessary (tree op)
 {
-  gimple stmt;
+  gimple *stmt;
   int ver;
 
   gcc_assert (op);
@@ -198,7 +187,7 @@ mark_operand_necessary (tree op)
    necessary.  */
 
 static void
-mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
+mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 {
   /* With non-call exceptions, we have to assume that all statements could
      throw.  If a statement could throw, it can be deemed necessary.  */
@@ -316,7 +305,7 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
 static void
 mark_last_stmt_necessary (basic_block bb)
 {
-  gimple stmt = last_stmt (bb);
+  gimple *stmt = last_stmt (bb);
 
   bitmap_set_bit (last_stmt_necessary, bb->index);
   bitmap_set_bit (bb_contains_live_stmts, bb->index);
@@ -377,7 +366,7 @@ find_obviously_necessary_stmts (bool aggressive)
   basic_block bb;
   gimple_stmt_iterator gsi;
   edge e;
-  gimple phi, stmt;
+  gimple *phi, *stmt;
   int flags;
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -467,7 +456,7 @@ static bool chain_ovfl = false;
 static bool
 mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef, void *data)
 {
-  gimple def_stmt = SSA_NAME_DEF_STMT (vdef);
+  gimple *def_stmt = SSA_NAME_DEF_STMT (vdef);
 
   /* All stmts we visit are necessary.  */
   mark_operand_necessary (vdef);
@@ -523,7 +512,7 @@ mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef, void *data)
 }
 
 static void
-mark_aliased_reaching_defs_necessary (gimple stmt, tree ref)
+mark_aliased_reaching_defs_necessary (gimple *stmt, tree ref)
 {
   unsigned int chain;
   ao_ref refd;
@@ -548,7 +537,7 @@ static bool
 mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 				    tree vdef, void *data ATTRIBUTE_UNUSED)
 {
-  gimple def_stmt = SSA_NAME_DEF_STMT (vdef);
+  gimple *def_stmt = SSA_NAME_DEF_STMT (vdef);
 
   /* We have to skip already visited (and thus necessary) statements
      to make the chaining work after we dropped back to simple mode.  */
@@ -596,7 +585,7 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 }
 
 static void
-mark_all_reaching_defs_necessary (gimple stmt)
+mark_all_reaching_defs_necessary (gimple *stmt)
 {
   walk_aliased_vdefs (NULL, gimple_vuse (stmt),
 		      mark_all_reaching_defs_necessary_1, NULL, &visited);
@@ -605,7 +594,7 @@ mark_all_reaching_defs_necessary (gimple stmt)
 /* Return true for PHI nodes with one or identical arguments
    can be removed.  */
 static bool
-degenerate_phi_p (gimple phi)
+degenerate_phi_p (gimple *phi)
 {
   unsigned int i;
   tree op = gimple_phi_arg_def (phi, 0);
@@ -625,7 +614,7 @@ degenerate_phi_p (gimple phi)
 static void
 propagate_necessity (bool aggressive)
 {
-  gimple stmt;
+  gimple *stmt;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nProcessing worklist:\n");
@@ -776,7 +765,7 @@ propagate_necessity (bool aggressive)
 	  if (gimple_call_builtin_p (stmt, BUILT_IN_FREE))
 	    {
 	      tree ptr = gimple_call_arg (stmt, 0);
-	      gimple def_stmt;
+	      gimple *def_stmt;
 	      tree def_callee;
 	      /* If the pointer we free is defined by an allocation
 		 function do not add the call to the worklist.  */
@@ -788,7 +777,7 @@ propagate_necessity (bool aggressive)
 		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_MALLOC
 		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC))
 		{
-		  gimple bounds_def_stmt;
+		  gimple *bounds_def_stmt;
 		  tree bounds;
 
 		  /* For instrumented calls we should also check used
@@ -974,7 +963,7 @@ remove_dead_phis (basic_block bb)
 
 	      use_operand_p use_p;
 	      imm_use_iterator iter;
-	      gimple use_stmt;
+	      gimple *use_stmt;
 	      FOR_EACH_IMM_USE_STMT (use_stmt, iter, vdef)
 		FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		  SET_USE (use_p, vuse);
@@ -1072,7 +1061,7 @@ forward_edge_to_pdom (edge e, basic_block post_dom_bb)
 static void
 remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 {
-  gimple stmt = gsi_stmt (*i);
+  gimple *stmt = gsi_stmt (*i);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1184,7 +1173,7 @@ static void
 maybe_optimize_arith_overflow (gimple_stmt_iterator *gsi,
 			       enum tree_code subcode)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   tree lhs = gimple_call_lhs (stmt);
 
   if (lhs == NULL || TREE_CODE (lhs) != SSA_NAME)
@@ -1197,7 +1186,7 @@ maybe_optimize_arith_overflow (gimple_stmt_iterator *gsi,
   bool has_other_uses = false;
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
     {
-      gimple use_stmt = USE_STMT (use_p);
+      gimple *use_stmt = USE_STMT (use_p);
       if (is_gimple_debug (use_stmt))
 	has_debug_uses = true;
       else if (is_gimple_assign (use_stmt)
@@ -1228,7 +1217,7 @@ maybe_optimize_arith_overflow (gimple_stmt_iterator *gsi,
 
   if (has_debug_uses)
     {
-      gimple use_stmt;
+      gimple *use_stmt;
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
 	{
 	  if (!gimple_debug_bind_p (use_stmt))
@@ -1274,7 +1263,7 @@ eliminate_unnecessary_stmts (void)
   bool something_changed = false;
   basic_block bb;
   gimple_stmt_iterator gsi, psi;
-  gimple stmt;
+  gimple *stmt;
   tree call;
   vec<basic_block> h;
 
@@ -1332,7 +1321,7 @@ eliminate_unnecessary_stmts (void)
 	      tree ptr = gimple_call_arg (stmt, 0);
 	      if (TREE_CODE (ptr) == SSA_NAME)
 		{
-		  gimple def_stmt = SSA_NAME_DEF_STMT (ptr);
+		  gimple *def_stmt = SSA_NAME_DEF_STMT (ptr);
 		  if (!gimple_nop_p (def_stmt)
 		      && !gimple_plf (def_stmt, STMT_NECESSARY))
 		    gimple_set_plf (stmt, STMT_NECESSARY, false);
@@ -1345,7 +1334,7 @@ eliminate_unnecessary_stmts (void)
 		 call is not removed.  */
 	      if (gimple_call_with_bounds_p (stmt))
 		{
-		  gimple bounds_def_stmt;
+		  gimple *bounds_def_stmt;
 		  tree bounds = gimple_call_arg (stmt, 1);
 		  gcc_assert (TREE_CODE (bounds) == SSA_NAME);
 		  bounds_def_stmt = SSA_NAME_DEF_STMT (bounds);
@@ -1669,7 +1658,7 @@ perform_tree_ssa_dce (bool aggressive)
 
   if (something_changed)
     {
-      free_numbers_of_iterations_estimates ();
+      free_numbers_of_iterations_estimates (cfun);
       if (scev_initialized_p ())
 	scev_reset ();
       return TODO_update_ssa | TODO_cleanup_cfg;

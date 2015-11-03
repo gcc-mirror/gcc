@@ -27,38 +27,32 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "intl.h"
+#include "target.h"
+#include "function.h"
 #include "tree.h"
-#include "alias.h"
-#include "fold-const.h"
+#include "c-family/c-common.h"
+#include "c-tree.h"
+#include "timevar.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "cgraph.h"
+#include "intl.h"
 #include "print-tree.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "attribs.h"
-#include "stringpool.h"
 #include "tree-inline.h"
 #include "flags.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "c-tree.h"
 #include "toplev.h"
-#include "tm_p.h"
-#include "cpplib.h"
-#include "target.h"
 #include "debug.h"
 #include "opts.h"
-#include "timevar.h"
-#include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-ubsan.h"
 #include "c-lang.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
-#include "diagnostic-core.h"
 #include "dumpfile.h"
-#include "cgraph.h"
 #include "langhooks-def.h"
 #include "plugin.h"
 #include "c-family/c-ada-spec.h"
@@ -1659,7 +1653,19 @@ match_builtin_function_types (tree newtype, tree oldtype)
     }
 
   trytype = build_function_type (newrettype, tryargs);
-  return build_type_attribute_variant (trytype, TYPE_ATTRIBUTES (oldtype));
+
+  /* Allow declaration to change transaction_safe attribute.  */
+  tree oldattrs = TYPE_ATTRIBUTES (oldtype);
+  tree oldtsafe = lookup_attribute ("transaction_safe", oldattrs);
+  tree newattrs = TYPE_ATTRIBUTES (newtype);
+  tree newtsafe = lookup_attribute ("transaction_safe", newattrs);
+  if (oldtsafe && !newtsafe)
+    oldattrs = remove_attribute ("transaction_safe", oldattrs);
+  else if (newtsafe && !oldtsafe)
+    oldattrs = tree_cons (get_identifier ("transaction_safe"),
+			  NULL_TREE, oldattrs);
+
+  return build_type_attribute_variant (trytype, oldattrs);
 }
 
 /* Subroutine of diagnose_mismatched_decls.  Check for function type
@@ -8316,6 +8322,12 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 	  && comptypes (TREE_TYPE (TREE_TYPE (decl1)),
 			TREE_TYPE (TREE_TYPE (old_decl))))
 	{
+	  if (stdarg_p (TREE_TYPE (old_decl)))
+	    {
+	      warning_at (loc, 0, "%q+D defined as variadic function "
+			  "without prototype", decl1);
+	      locate_old_decl (old_decl);
+	    }
 	  TREE_TYPE (decl1) = composite_type (TREE_TYPE (old_decl),
 					      TREE_TYPE (decl1));
 	  current_function_prototype_locus = DECL_SOURCE_LOCATION (old_decl);

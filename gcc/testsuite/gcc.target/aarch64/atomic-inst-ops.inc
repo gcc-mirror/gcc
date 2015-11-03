@@ -32,6 +32,15 @@ typedef __uint128_t uint128;
   TEST_M##N (NAME, FN, int128, MODEL1, MODEL2)		\
   TEST_M##N (NAME, FN, uint128, MODEL1, MODEL2)
 
+/* Models to test.  */
+#define TEST_MODEL(NAME, FN, N)					\
+  TEST_TY (NAME##_relaxed, FN, N, __ATOMIC_RELAXED, DUMMY)	\
+  TEST_TY (NAME##_consume, FN, N, __ATOMIC_CONSUME, DUMMY)	\
+  TEST_TY (NAME##_acquire, FN, N, __ATOMIC_ACQUIRE, DUMMY)	\
+  TEST_TY (NAME##_release, FN, N, __ATOMIC_RELEASE, DUMMY)	\
+  TEST_TY (NAME##_acq_rel, FN, N, __ATOMIC_ACQ_REL, DUMMY)	\
+  TEST_TY (NAME##_seq_cst, FN, N, __ATOMIC_SEQ_CST, DUMMY)	\
+
 /* Cross-product of models to test.  */
 #define TEST_MODEL_M1(NAME, FN, N, M)			\
   TEST_TY (NAME##_relaxed, FN, N, M, __ATOMIC_RELAXED)	\
@@ -51,3 +60,7 @@ typedef __uint128_t uint128;
 
 /* Expand functions for a cross-product of memory models and types.  */
 #define TEST_TWO(NAME, FN) TEST_MODEL_M2 (NAME, FN)
+
+/* Expand functions for a set of memory models and types.  */
+#define TEST_ONE(NAME, FN) TEST_MODEL (NAME, FN, 1)
+

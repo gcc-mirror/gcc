@@ -22,42 +22,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "tree-pass.h"
+#include "tree-ssa-operands.h"
+#include "streamer-hooks.h"
+#include "cgraph.h"
+#include "data-streamer.h"
+#include "diagnostic.h"
 #include "alias.h"
 #include "fold-const.h"
-#include "print-tree.h"
 #include "calls.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "tree-pass.h"
-#include "target.h"
-#include "cgraph.h"
 #include "ipa-utils.h"
-#include "internal-fn.h"
-#include "gimple-fold.h"
-#include "alloc-pool.h"
-#include "symbol-summary.h"
-#include "ipa-prop.h"
-#include "ipa-inline.h"
-#include "diagnostic.h"
 #include "tree-dfa.h"
-#include "demangle.h"
-#include "dbgcnt.h"
 #include "gimple-pretty-print.h"
-#include "stor-layout.h"
-#include "intl.h"
-#include "data-streamer.h"
-#include "streamer-hooks.h"
-#include "tree-ssa-operands.h"
 #include "tree-into-ssa.h"
 
 /* Return true when TYPE contains an polymorphic type and thus is interesting
@@ -99,6 +78,8 @@ bool
 possible_placement_new (tree type, tree expected_type,
 			HOST_WIDE_INT cur_offset)
 {
+  if (cur_offset < 0)
+    return true;
   return ((TREE_CODE (type) != RECORD_TYPE
 	   || !TYPE_BINFO (type)
 	   || cur_offset >= POINTER_SIZE
@@ -540,7 +521,7 @@ inlined_polymorphic_ctor_dtor_block_p (tree block, bool check_clones)
 
 bool
 decl_maybe_in_construction_p (tree base, tree outer_type,
-			      gimple call, tree function)
+			      gimple *call, tree function)
 {
   if (outer_type)
     outer_type = TYPE_MAIN_VARIANT (outer_type);
@@ -827,7 +808,7 @@ walk_ssa_copies (tree op, hash_set<tree> **global_visited = NULL)
 	 undefined anyway.  */
       if (gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_PHI)
 	{
-	  gimple phi = SSA_NAME_DEF_STMT (op);
+	  gimple *phi = SSA_NAME_DEF_STMT (op);
 
 	  if (gimple_phi_num_args (phi) > 2)
 	    goto done;
@@ -873,7 +854,7 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree cst,
 
 ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 							    tree ref,
-							    gimple stmt,
+							    gimple *stmt,
 							    tree *instance)
 {
   tree otr_type = NULL;
@@ -1119,7 +1100,7 @@ struct type_change_info
    and destructor functions.  */
 
 static bool
-noncall_stmt_may_be_vtbl_ptr_store (gimple stmt)
+noncall_stmt_may_be_vtbl_ptr_store (gimple *stmt)
 {
   if (is_gimple_assign (stmt))
     {
@@ -1165,7 +1146,7 @@ noncall_stmt_may_be_vtbl_ptr_store (gimple stmt)
    in unknown way or ERROR_MARK_NODE if type is unchanged.  */
 
 static tree
-extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
+extr_type_from_vtbl_ptr_store (gimple *stmt, struct type_change_info *tci,
 			       HOST_WIDE_INT *type_offset)
 {
   HOST_WIDE_INT offset, size, max_size;
@@ -1355,7 +1336,7 @@ record_known_type (struct type_change_info *tci, tree type, HOST_WIDE_INT offset
 static bool
 check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 {
-  gimple stmt = SSA_NAME_DEF_STMT (vdef);
+  gimple *stmt = SSA_NAME_DEF_STMT (vdef);
   struct type_change_info *tci = (struct type_change_info *) data;
   tree fn;
 
@@ -1418,7 +1399,21 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 	    && TYPE_SIZE (type)
 	    && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	    && tree_fits_shwi_p (TYPE_SIZE (type))
-	    && tree_to_shwi (TYPE_SIZE (type)) + offset > tci->offset)
+	    && tree_to_shwi (TYPE_SIZE (type)) + offset > tci->offset
+	    /* Some inlined constructors may look as follows:
+		  _3 = operator new (16);
+		  MEM[(struct  &)_3] ={v} {CLOBBER};
+		  MEM[(struct CompositeClass *)_3]._vptr.CompositeClass
+		    = &MEM[(void *)&_ZTV14CompositeClass + 16B];
+		  _7 = &MEM[(struct CompositeClass *)_3].object;
+		  EmptyClass::EmptyClass (_7);
+
+	       When determining dynamic type of _3 and because we stop at first
+	       dynamic type found, we would stop on EmptyClass::EmptyClass (_7).
+	       In this case the emptyclass is not even polymorphic and we miss
+	       it is contained in an outer type that is polymorphic.  */
+
+	    && (tci->offset == offset || contains_polymorphic_type_p (type)))
 	  {
 	    record_known_type (tci, type, tci->offset - offset);
 	    return true;
@@ -1486,16 +1481,17 @@ bool
 ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 						tree otr_object,
 						tree otr_type,
-						gimple call)
+						gimple *call)
 {
   struct type_change_info tci;
   ao_ref ao;
   bool function_entry_reached = false;
   tree instance_ref = NULL;
-  gimple stmt = call;
+  gimple *stmt = call;
   /* Remember OFFSET before it is modified by restrict_to_inner_class.
      This is because we do not update INSTANCE when walking inwards.  */
   HOST_WIDE_INT instance_offset = offset;
+  tree instance_outer_type = outer_type;
 
   if (otr_type)
     otr_type = TYPE_MAIN_VARIANT (otr_type);
@@ -1583,7 +1579,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 	}
     }
  
-  /* If we failed to look up the refernece in code, build our own.  */
+  /* If we failed to look up the reference in code, build our own.  */
   if (!instance_ref)
     {
       /* If the statement in question does not use memory, we can't tell
@@ -1621,13 +1617,13 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
       print_generic_expr (dump_file, otr_object, TDF_SLIM);
       fprintf (dump_file, "  Outer instance pointer: ");
       print_generic_expr (dump_file, instance, TDF_SLIM);
-      fprintf (dump_file, " offset: %i (bits)", (int)offset);
+      fprintf (dump_file, " offset: %i (bits)", (int)instance_offset);
       fprintf (dump_file, " vtbl reference: ");
       print_generic_expr (dump_file, instance_ref, TDF_SLIM);
       fprintf (dump_file, "\n");
     }
 
-  tci.offset = offset;
+  tci.offset = instance_offset;
   tci.instance = instance;
   tci.vtbl_ptr_ref = instance_ref;
   gcc_assert (TREE_CODE (instance) != MEM_REF);
@@ -1693,9 +1689,12 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 	  && !dynamic
 	  && !tci.seen_unanalyzed_store
 	  && !tci.multiple_types_encountered
-	  && offset == tci.offset
-	  && types_same_for_odr (tci.known_current_type,
-				 outer_type)))
+	  && ((offset == tci.offset
+	       && types_same_for_odr (tci.known_current_type,
+				      outer_type))
+	       || (instance_offset == offset
+		   && types_same_for_odr (tci.known_current_type,
+					  instance_outer_type)))))
     {
       if (!outer_type || tci.seen_unanalyzed_store)
 	return false;

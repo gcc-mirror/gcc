@@ -432,6 +432,26 @@ DEFTREECODE (EXPR_PACK_EXPANSION, "expr_pack_expansion", tcc_expression, 3)
    index is a machine integer.  */
 DEFTREECODE (ARGUMENT_PACK_SELECT, "argument_pack_select", tcc_exceptional, 0)
 
+/* Fold expressions allow the expansion of a template argument pack
+   over a binary operator.
+
+   FOLD_EXPR_MOD_P is true when the fold operation is a compound assignment
+   operator.
+
+   FOLD_EXPR_OP is an INTEGER_CST storing the tree code for the folded
+   expression. Note that when FOLDEXPR_MOD_P is true, the operator is
+   a compound assignment operator for that kind of expression.
+
+   FOLD_EXPR_PACK is an expression containing an unexpanded parameter pack;
+   when expanded, each term becomes an argument of the folded expression.
+
+   In a BINARY_FOLD_EXPRESSION, FOLD_EXPR_INIT is the non-pack argument. */
+DEFTREECODE (UNARY_LEFT_FOLD_EXPR, "unary_left_fold_expr", tcc_expression, 2)
+DEFTREECODE (UNARY_RIGHT_FOLD_EXPR, "unary_right_fold_expr", tcc_expression, 2)
+DEFTREECODE (BINARY_LEFT_FOLD_EXPR, "binary_left_fold_expr", tcc_expression, 3)
+DEFTREECODE (BINARY_RIGHT_FOLD_EXPR, "binary_right_fold_expr", tcc_expression, 3)
+
+
 /** C++ extensions. */
 
 /* Represents a trait expression during template expansion.  */

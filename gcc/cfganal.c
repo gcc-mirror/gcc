@@ -24,12 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "backend.h"
 #include "cfghooks.h"
-#include "hard-reg-set.h"
-#include "cfganal.h"
 #include "timevar.h"
+#include "cfganal.h"
 
 /* Store the data structures necessary for depth-first search.  */
-struct depth_first_search_dsS {
+struct depth_first_search_ds {
   /* stack for backtracking during the algorithm */
   basic_block *stack;
 
@@ -40,14 +39,13 @@ struct depth_first_search_dsS {
   /* record of basic blocks already seen by depth-first search */
   sbitmap visited_blocks;
 };
-typedef struct depth_first_search_dsS *depth_first_search_ds;
 
-static void flow_dfs_compute_reverse_init (depth_first_search_ds);
-static void flow_dfs_compute_reverse_add_bb (depth_first_search_ds,
+static void flow_dfs_compute_reverse_init (depth_first_search_ds *);
+static void flow_dfs_compute_reverse_add_bb (depth_first_search_ds *,
 					     basic_block);
-static basic_block flow_dfs_compute_reverse_execute (depth_first_search_ds,
+static basic_block flow_dfs_compute_reverse_execute (depth_first_search_ds *,
 						     basic_block);
-static void flow_dfs_compute_reverse_finish (depth_first_search_ds);
+static void flow_dfs_compute_reverse_finish (depth_first_search_ds *);
 
 /* Mark the back edges in DFS traversal.
    Return nonzero if a loop (natural or otherwise) is present.
@@ -194,6 +192,19 @@ find_unreachable_blocks (void)
 
   free (worklist);
 }
+
+/* Verify that there are no unreachable blocks in the current function.  */
+
+void
+verify_no_unreachable_blocks (void)
+{
+  find_unreachable_blocks ();
+
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, cfun)
+    gcc_assert ((bb->flags & BB_REACHABLE) != 0);
+}
+
 
 /* Functions to access an edge list with a vector representation.
    Enough data is kept such that given an index number, the
@@ -575,7 +586,7 @@ connect_infinite_loops_to_exit (void)
 {
   basic_block unvisited_block = EXIT_BLOCK_PTR_FOR_FN (cfun);
   basic_block deadend_block;
-  struct depth_first_search_dsS dfs_ds;
+  depth_first_search_ds dfs_ds;
 
   /* Perform depth-first search in the reverse graph to find nodes
      reachable from the exit block.  */
@@ -772,6 +783,10 @@ inverted_post_order_compute (int *post_order)
   int sp;
   int post_order_num = 0;
   sbitmap visited;
+
+#if ENABLE_CHECKING
+  verify_no_unreachable_blocks ();
+#endif
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
@@ -1055,7 +1070,7 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
    element on the stack.  */
 
 static void
-flow_dfs_compute_reverse_init (depth_first_search_ds data)
+flow_dfs_compute_reverse_init (depth_first_search_ds *data)
 {
   /* Allocate stack for back-tracking up CFG.  */
   data->stack = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
@@ -1075,7 +1090,7 @@ flow_dfs_compute_reverse_init (depth_first_search_ds data)
    block.  */
 
 static void
-flow_dfs_compute_reverse_add_bb (depth_first_search_ds data, basic_block bb)
+flow_dfs_compute_reverse_add_bb (depth_first_search_ds *data, basic_block bb)
 {
   data->stack[data->sp++] = bb;
   bitmap_set_bit (data->visited_blocks, bb->index);
@@ -1087,7 +1102,7 @@ flow_dfs_compute_reverse_add_bb (depth_first_search_ds data, basic_block bb)
    available.  */
 
 static basic_block
-flow_dfs_compute_reverse_execute (depth_first_search_ds data,
+flow_dfs_compute_reverse_execute (depth_first_search_ds *data,
 				  basic_block last_unvisited)
 {
   basic_block bb;
@@ -1116,7 +1131,7 @@ flow_dfs_compute_reverse_execute (depth_first_search_ds data,
    reverse graph.  */
 
 static void
-flow_dfs_compute_reverse_finish (depth_first_search_ds data)
+flow_dfs_compute_reverse_finish (depth_first_search_ds *data)
 {
   free (data->stack);
   sbitmap_free (data->visited_blocks);

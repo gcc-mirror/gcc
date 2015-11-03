@@ -1,0 +1,241 @@
+#   Copyright (C) 2015 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Testing of multiline output
+
+# We have pre-existing testcases like this:
+#   |typedef struct _GMutex GMutex; // { dg-message "previously declared here"}
+# (using "|" here to indicate the start of a line),
+# generating output like this:
+#   |gcc/testsuite/g++.dg/diagnostic/wrong-tag-1.C:4:16: note: 'struct _GMutex' was previously declared here
+# where the location of the dg-message determines the expected line at
+# which the error should be reported.
+#
+# To handle rich error-reporting, we want to be able to verify that we
+# get output like this:
+#   |gcc/testsuite/g++.dg/diagnostic/wrong-tag-1.C:4:16: note: 'struct _GMutex' was previously declared here
+#   | typedef struct _GMutex GMutex; // { dg-message "previously declared here"}
+#   |                ^~~~~~~
+# where the compiler's first line of output is as before, but in
+# which it then echoes the source lines, adding annotations.
+#
+# We want to be able to write testcases that verify that the
+# emitted source-and-annotations are sane.
+#
+# A complication here is that the source lines contain comments
+# containing DejaGnu directives (such as the "dg-message" above).
+#
+# We punt this somewhat by only matching the beginnings of lines.
+# so that we can write e.g.
+#   |/* { dg-begin-multiline-output "" }
+#   | typedef struct _GMutex GMutex;
+#   |                ^~~~~~~
+#   |   { dg-end-multiline-output "" } */
+# to have the testsuite verify the expected output.
+
+############################################################################
+# Global variables.  Although global, these are intended to only be used from
+# within multiline.exp.
+############################################################################
+
+# The line number of the last dg-begin-multiline-output directive.
+set _multiline_last_beginning_line -1
+
+# A list of lists of strings.
+set _multiline_expected_outputs []
+
+############################################################################
+# Exported functions.
+############################################################################
+
+# Mark the beginning of an expected multiline output
+# All lines between this and the next dg-end-multiline-output are
+# expected to be seen.
+
+proc dg-begin-multiline-output { args } {
+    global _multiline_last_beginning_line
+    verbose "dg-begin-multiline-output: args: $args" 3
+    set line [expr [lindex $args 0] + 1]
+    set _multiline_last_beginning_line $line
+}
+
+# Mark the end of an expected multiline output
+# All lines up to here since the last dg-begin-multiline-output are
+# expected to be seen.
+
+proc dg-end-multiline-output { args } {
+    global _multiline_last_beginning_line
+    verbose "dg-end-multiline-output: args: $args" 3
+    set line [expr [lindex $args 0] - 1]
+    verbose "multiline output lines: $_multiline_last_beginning_line-$line" 3
+
+    upvar 1 prog prog
+    verbose "prog: $prog" 3
+    # "prog" now contains the filename
+    # Load it and split it into lines
+
+    set lines [_get_lines $prog $_multiline_last_beginning_line $line]
+    set _multiline_last_beginning_line -1
+
+    verbose "lines: $lines" 3
+    global _multiline_expected_outputs
+    lappend _multiline_expected_outputs $lines
+    verbose "within dg-end-multiline-output: _multiline_expected_outputs: $_multiline_expected_outputs" 3
+}
+
+# Hook to be called by prune.exp's prune_gcc_output to
+# look for the expected multiline outputs, pruning them,
+# reporting PASS for those that are found, and FAIL for
+# those that weren't found.
+#
+# It returns a pruned version of its output.
+#
+# It also clears the list of expected multiline outputs.
+
+proc handle-multiline-outputs { text } {
+    global _multiline_expected_outputs
+    set index 0
+    foreach multiline $_multiline_expected_outputs {
+	verbose "  multiline: $multiline" 4
+	set rexp [_build_multiline_regex $multiline $index]
+	verbose "rexp: ${rexp}" 4
+	# Escape newlines in $rexp so that we can print them in
+	# pass/fail results.
+	set escaped_regex [string map {"\n" "\\n"} $rexp]
+	verbose "escaped_regex: ${escaped_regex}" 4
+
+	# Use "regsub" to attempt to prune the pattern from $text
+	if {[regsub -line $rexp $text "" text]} {
+	    # Success; the multiline pattern was pruned.
+	    pass "expected multiline pattern $index was found: \"$escaped_regex\""
+	} else {
+	    fail "expected multiline pattern $index not found: \"$escaped_regex\""
+	}
+
+	set index [expr $index + 1]
+    }
+
+    # Clear the list of expected multiline outputs
+    set _multiline_expected_outputs []
+
+    return $text
+}
+
+############################################################################
+# Internal functions
+############################################################################
+
+# Load FILENAME and extract the lines from FIRST_LINE
+# to LAST_LINE (inclusive) as a list of strings.
+
+proc _get_lines { filename first_line last_line } {
+    verbose "_get_lines" 3
+    verbose "  filename: $filename" 3
+    verbose "  first_line: $first_line" 3
+    verbose "  last_line: $last_line" 3
+
+    set fp [open $filename r]
+    set file_data [read $fp]
+    close $fp
+    set data [split $file_data "\n"]
+    set linenum 1
+    set lines []
+    foreach line $data {
+	verbose "line $linenum: $line" 4
+	if { $linenum >= $first_line && $linenum <= $last_line } {
+	    lappend lines $line
+	}
+	set linenum [expr $linenum + 1]
+    }
+
+    return $lines
+}
+
+# Convert $multiline from a list of strings to a multiline regex
+# We need to support matching arbitrary followup text on each line,
+# to deal with comments containing containing DejaGnu directives.
+
+proc _build_multiline_regex { multiline index } {
+    verbose "_build_multiline_regex: $multiline $index" 4
+
+    set rexp ""
+    foreach line $multiline {
+	verbose "  line: $line" 4
+
+	# We need to escape "^" and other regexp metacharacters.
+	set line [string map {"^" "\\^"
+	                      "(" "\\("
+	                      ")" "\\)"
+	                      "[" "\\["
+	                      "]" "\\]"
+	                      "." "\\."
+	                      "\\" "\\\\"
+	                      "?" "\\?"
+	                      "+" "\\+"
+	                      "*" "\\*"
+	                      "|" "\\|"} $line]
+
+	append rexp $line
+	if {[string match "*^" $line] || [string match "*~" $line]} {
+	    # Assume a line containing a caret/range.  This must be
+	    # an exact match.
+	} elseif {[string match "*\\|" $line]} {
+	    # Assume a source line with a right-margin.  Support
+	    # arbitrary text in place of any whitespace before the
+	    # right-margin, to deal with comments containing containing
+	    # DejaGnu directives.
+
+	    # Remove final "\|":
+	    set rexp [string range $rexp 0 [expr [string length $rexp] - 3]]
+
+	    # Trim off trailing whitespace:
+	    set old_length [string length $rexp]
+	    set rexp [string trimright $rexp]
+	    set new_length [string length $rexp]
+
+	    # Replace the trimmed whitespace with "." chars to match anything:
+	    set ws [string repeat "." [expr $old_length - $new_length]]
+	    set rexp "${rexp}${ws}"
+
+	    # Add back the trailing '\|':
+	    set rexp "${rexp}\\|"
+	} else {
+	    # Assume that we have a quoted source line.
+	    # Support arbitrary followup text on each line,
+	    # to deal with comments containing containing DejaGnu
+	    # directives.
+	    append rexp ".*"
+	}
+	append rexp "\n"
+    }
+
+    # dg.exp's dg-test trims leading whitespace from the output
+    # in this line:
+    #   set comp_output [string trimleft $comp_output]
+    # so we can't rely on the exact leading whitespace for the
+    # first line in the *first* multiline regex.
+    #
+    # Trim leading whitespace from the regexp, replacing it with
+    # a "\s*", to match zero or more whitespace characters.
+    if { $index == 0 } {
+	set rexp [string trimleft $rexp]
+	set rexp "\\s*$rexp"
+    }
+
+    verbose "rexp: $rexp" 4
+
+    return $rexp
+}

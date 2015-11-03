@@ -23,7 +23,7 @@ config/tilegx/tilegx-opts.h
 
 mcpu=
 Target RejectNegative Joined Enum(tilegx_cpu) Var(tilegx_cpu) Init(0)
--mcpu=CPU	Use features of and schedule code for given CPU
+-mcpu=CPU	Use features of and schedule code for given CPU.
 
 Enum
 Name(tilegx_cpu) Type(int)
@@ -50,7 +50,7 @@ Use little-endian byte order.
 
 mcmodel=
 Target RejectNegative Joined Enum(cmodel) Var(tilegx_cmodel) Init(CM_SMALL)
-Use given TILE-Gx code model
+Use given TILE-Gx code model.
 
 Enum
 Name(cmodel) Type(enum cmodel)

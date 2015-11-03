@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,10 @@
 
 package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
 
+   pragma Warnings (Off, "variable ""Busy*"" is not referenced");
+   pragma Warnings (Off, "variable ""Lock*"" is not referenced");
+   --  See comment in Ada.Containers.Helpers
+
    -----------------------------
    -- Checked_Equivalent_Keys --
    -----------------------------
@@ -38,28 +42,9 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       Key  : Key_Type;
       Node : Count_Type) return Boolean
    is
-      Result : Boolean;
-
-      B : Natural renames HT.Busy;
-      L : Natural renames HT.Lock;
-
+      Lock : With_Lock (HT.TC'Unrestricted_Access);
    begin
-      B := B + 1;
-      L := L + 1;
-
-      Result := Equivalent_Keys (Key, HT.Nodes (Node));
-
-      B := B - 1;
-      L := L - 1;
-
-      return Result;
-
-   exception
-      when others =>
-         B := B - 1;
-         L := L - 1;
-
-         raise;
+      return Equivalent_Keys (Key, HT.Nodes (Node));
    end Checked_Equivalent_Keys;
 
    -------------------
@@ -70,28 +55,9 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
      (HT  : aliased in out Hash_Table_Type'Class;
       Key : Key_Type) return Hash_Type
    is
-      Result : Hash_Type;
-
-      B : Natural renames HT.Busy;
-      L : Natural renames HT.Lock;
-
+      Lock : With_Lock (HT.TC'Unrestricted_Access);
    begin
-      B := B + 1;
-      L := L + 1;
-
-      Result := HT.Buckets'First + Hash (Key) mod HT.Buckets'Length;
-
-      B := B - 1;
-      L := L - 1;
-
-      return Result;
-
-   exception
-      when others =>
-         B := B - 1;
-         L := L - 1;
-
-         raise;
+      return HT.Buckets'First + Hash (Key) mod HT.Buckets'Length;
    end Checked_Index;
 
    --------------------------
@@ -115,10 +81,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       --  Per AI05-0022, the container implementation is required to detect
       --  element tampering by a generic actual subprogram.
 
-      if HT.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (HT.TC);
 
       Indx := Checked_Index (HT, Key);
       X := HT.Buckets (Indx);
@@ -128,10 +91,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       end if;
 
       if Checked_Equivalent_Keys (HT, Key, X) then
-         if HT.Busy > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors (container is busy)";
-         end if;
+         TC_Check (HT.TC);
          HT.Buckets (Indx) := Next (HT.Nodes (X));
          HT.Length := HT.Length - 1;
          return;
@@ -146,10 +106,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
          end if;
 
          if Checked_Equivalent_Keys (HT, Key, X) then
-            if HT.Busy > 0 then
-               raise Program_Error with
-                 "attempt to tamper with cursors (container is busy)";
-            end if;
+            TC_Check (HT.TC);
             Set_Next (HT.Nodes (Prev), Next => Next (HT.Nodes (X)));
             HT.Length := HT.Length - 1;
             return;
@@ -204,16 +161,13 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       --  Per AI05-0022, the container implementation is required to detect
       --  element tampering by a generic actual subprogram.
 
-      if HT.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (HT.TC);
 
       Indx := Checked_Index (HT, Key);
       Node := HT.Buckets (Indx);
 
       if Node = 0 then
-         if HT.Length = HT.Capacity then
+         if Checks and then HT.Length = HT.Capacity then
             raise Capacity_Error with "no more capacity for insertion";
          end if;
 
@@ -239,7 +193,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
          exit when Node = 0;
       end loop;
 
-      if HT.Length = HT.Capacity then
+      if Checks and then HT.Length = HT.Capacity then
          raise Capacity_Error with "no more capacity for insertion";
       end if;
 
@@ -285,24 +239,9 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       --  the computation of New_Index until after the tampering check. ???
 
       declare
-         B : Natural renames HT.Busy;
-         L : Natural renames HT.Lock;
-
+         Lock : With_Lock (HT.TC'Unrestricted_Access);
       begin
-         B := B + 1;
-         L := L + 1;
-
          Old_Indx := HT.Buckets'First + Hash (NN (Node)) mod HT.Buckets'Length;
-
-         B := B - 1;
-         L := L - 1;
-
-      exception
-         when others =>
-            B := B - 1;
-            L := L - 1;
-
-            raise;
       end;
 
       --  Replace_Element is allowed to change a node's key to Key
@@ -311,10 +250,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       --  hash table as this one, a key is mapped to exactly one node.)
 
       if Checked_Equivalent_Keys (HT, Key, Node) then
-         if HT.Lock > 0 then
-            raise Program_Error with
-              "attempt to tamper with elements (container is locked)";
-         end if;
+         TE_Check (HT.TC);
 
          --  The new Key value is mapped to this same Node, so Node
          --  stays in the same bucket.
@@ -330,7 +266,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
 
       N := New_Bucket;
       while N /= 0 loop
-         if Checked_Equivalent_Keys (HT, Key, N) then
+         if Checks and then Checked_Equivalent_Keys (HT, Key, N) then
             pragma Assert (N /= Node);
             raise Program_Error with
               "attempt to replace existing element";
@@ -350,10 +286,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
          --  The node is already in the bucket implied by Key. In this case
          --  we merely change its value without moving it.
 
-         if HT.Lock > 0 then
-            raise Program_Error with
-              "attempt to tamper with elements (container is locked)";
-         end if;
+         TE_Check (HT.TC);
 
          Assign (NN (Node), Key);
          return;
@@ -361,10 +294,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
 
       --  The node is a bucket different from the bucket implied by Key
 
-      if HT.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (HT.TC);
 
       --  Do the assignment first, before moving the node, so that if Assign
       --  propagates an exception, then the hash table will not have been

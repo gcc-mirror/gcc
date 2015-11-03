@@ -9,22 +9,22 @@ struct T
 
 void T::test()
 {
-  #pragma omp parallel private(n)	// { dg-error "T::n" }
+  #pragma omp parallel private(n)
     n = 1;
 
   #pragma omp parallel shared(n)	// { dg-error "T::n" }
     n = 1;
 
-  #pragma omp parallel firstprivate(n)	// { dg-error "T::n" }
+  #pragma omp parallel firstprivate(n)
     n = 1;
 
-  #pragma omp sections lastprivate(n)	// { dg-error "T::n" }
+  #pragma omp sections lastprivate(n)
     { n = 1; }
 
-  #pragma omp parallel reduction(+:n)	// { dg-error "T::n" }
+  #pragma omp parallel reduction(+:n)
     n = 1;
 
-  #pragma omp single copyprivate(n)	// { dg-error "T::n" }
+  #pragma omp single copyprivate(n)
     n = 1;
 
   #pragma omp parallel copyin(n)	// { dg-error "T::n" }

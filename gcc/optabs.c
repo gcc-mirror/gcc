@@ -22,46 +22,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
+#include "rtl.h"
+#include "tree.h"
 #include "predict.h"
+#include "tm_p.h"
+#include "expmed.h"
+#include "optabs.h"
+#include "emit-rtl.h"
+#include "recog.h"
 #include "diagnostic-core.h"
 
 /* Include insn-config.h before expr.h so that HAVE_conditional_move
    is properly defined.  */
-#include "insn-config.h"
-#include "rtl.h"
-#include "alias.h"
-#include "tree.h"
-#include "tree-hasher.h"
 #include "stor-layout.h"
-#include "stringpool.h"
-#include "varasm.h"
-#include "tm_p.h"
-#include "flags.h"
 #include "except.h"
-#include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
+#include "optabs-tree.h"
 #include "libfuncs.h"
-#include "recog.h"
-#include "reload.h"
-#include "target.h"
-
-struct target_optabs default_target_optabs;
-struct target_libfuncs default_target_libfuncs;
-struct target_optabs *this_fn_optabs = &default_target_optabs;
-#if SWITCHABLE_TARGET
-struct target_optabs *this_target_optabs = &default_target_optabs;
-struct target_libfuncs *this_target_libfuncs = &default_target_libfuncs;
-#endif
-
-#define libfunc_hash \
-  (this_target_libfuncs->x_libfunc_hash)
 
 static void prepare_float_lib_cmp (rtx, rtx, enum rtx_code, rtx *,
 				   machine_mode *);
@@ -70,101 +50,6 @@ static void emit_libcall_block_1 (rtx_insn *, rtx, rtx, rtx, bool);
 
 /* Debug facility for use in GDB.  */
 void debug_optab_libfuncs (void);
-
-/* Prefixes for the current version of decimal floating point (BID vs. DPD) */
-#if ENABLE_DECIMAL_BID_FORMAT
-#define DECIMAL_PREFIX "bid_"
-#else
-#define DECIMAL_PREFIX "dpd_"
-#endif
-
-/* Used for libfunc_hash.  */
-
-hashval_t
-libfunc_hasher::hash (libfunc_entry *e)
-{
-  return ((e->mode1 + e->mode2 * NUM_MACHINE_MODES) ^ e->op);
-}
-
-/* Used for libfunc_hash.  */
-
-bool
-libfunc_hasher::equal (libfunc_entry *e1, libfunc_entry *e2)
-{
-  return e1->op == e2->op && e1->mode1 == e2->mode1 && e1->mode2 == e2->mode2;
-}
-
-/* Return libfunc corresponding operation defined by OPTAB converting
-   from MODE2 to MODE1.  Trigger lazy initialization if needed, return NULL
-   if no libfunc is available.  */
-rtx
-convert_optab_libfunc (convert_optab optab, machine_mode mode1,
-		       machine_mode mode2)
-{
-  struct libfunc_entry e;
-  struct libfunc_entry **slot;
-
-  /* ??? This ought to be an assert, but not all of the places
-     that we expand optabs know about the optabs that got moved
-     to being direct.  */
-  if (!(optab >= FIRST_CONV_OPTAB && optab <= LAST_CONVLIB_OPTAB))
-    return NULL_RTX;
-
-  e.op = optab;
-  e.mode1 = mode1;
-  e.mode2 = mode2;
-  slot = libfunc_hash->find_slot (&e, NO_INSERT);
-  if (!slot)
-    {
-      const struct convert_optab_libcall_d *d
-	= &convlib_def[optab - FIRST_CONV_OPTAB];
-
-      if (d->libcall_gen == NULL)
-	return NULL;
-
-      d->libcall_gen (optab, d->libcall_basename, mode1, mode2);
-      slot = libfunc_hash->find_slot (&e, NO_INSERT);
-      if (!slot)
-	return NULL;
-    }
-  return (*slot)->libfunc;
-}
-
-/* Return libfunc corresponding operation defined by OPTAB in MODE.
-   Trigger lazy initialization if needed, return NULL if no libfunc is
-   available.  */
-rtx
-optab_libfunc (optab optab, machine_mode mode)
-{
-  struct libfunc_entry e;
-  struct libfunc_entry **slot;
-
-  /* ??? This ought to be an assert, but not all of the places
-     that we expand optabs know about the optabs that got moved
-     to being direct.  */
-  if (!(optab >= FIRST_NORM_OPTAB && optab <= LAST_NORMLIB_OPTAB))
-    return NULL_RTX;
-
-  e.op = optab;
-  e.mode1 = mode;
-  e.mode2 = VOIDmode;
-  slot = libfunc_hash->find_slot (&e, NO_INSERT);
-  if (!slot)
-    {
-      const struct optab_libcall_d *d
-	= &normlib_def[optab - FIRST_NORM_OPTAB];
-
-      if (d->libcall_gen == NULL)
-	return NULL;
-
-      d->libcall_gen (optab, d->libcall_basename, d->libcall_suffix, mode);
-      slot = libfunc_hash->find_slot (&e, NO_INSERT);
-      if (!slot)
-	return NULL;
-    }
-  return (*slot)->libfunc;
-}
-
 
 /* Add a REG_EQUAL note to the last insn in INSNS.  TARGET is being set to
    the result of operation CODE applied to OP0 (and OP1 if it is a binary
@@ -298,56 +183,6 @@ widened_mode (machine_mode to_mode, rtx op0, rtx op1)
   return result;
 }
 
-/* Like optab_handler, but for widening_operations that have a
-   TO_MODE and a FROM_MODE.  */
-
-enum insn_code
-widening_optab_handler (optab op, machine_mode to_mode,
-			machine_mode from_mode)
-{
-  unsigned scode = (op << 16) | to_mode;
-  if (to_mode != from_mode && from_mode != VOIDmode)
-    {
-      /* ??? Why does find_widening_optab_handler_and_mode attempt to
-	 widen things that can't be widened?  E.g. add_optab... */
-      if (op > LAST_CONV_OPTAB)
-	return CODE_FOR_nothing;
-      scode |= from_mode << 8;
-    }
-  return raw_optab_handler (scode);
-}
-
-/* Find a widening optab even if it doesn't widen as much as we want.
-   E.g. if from_mode is HImode, and to_mode is DImode, and there is no
-   direct HI->SI insn, then return SI->DI, if that exists.
-   If PERMIT_NON_WIDENING is non-zero then this can be used with
-   non-widening optabs also.  */
-
-enum insn_code
-find_widening_optab_handler_and_mode (optab op, machine_mode to_mode,
-				      machine_mode from_mode,
-				      int permit_non_widening,
-				      machine_mode *found_mode)
-{
-  for (; (permit_non_widening || from_mode != to_mode)
-	 && GET_MODE_SIZE (from_mode) <= GET_MODE_SIZE (to_mode)
-	 && from_mode != VOIDmode;
-       from_mode = GET_MODE_WIDER_MODE (from_mode))
-    {
-      enum insn_code handler = widening_optab_handler (op, to_mode,
-						       from_mode);
-
-      if (handler != CODE_FOR_nothing)
-	{
-	  if (found_mode)
-	    *found_mode = from_mode;
-	  return handler;
-	}
-    }
-
-  return CODE_FOR_nothing;
-}
-
 /* Widen OP to MODE and return the rtx for the widened operand.  UNSIGNEDP
    says whether OP is signed or unsigned.  NO_EXTEND is nonzero if we need
    not actually do a sign-extend or zero-extend, but can leave the
@@ -386,245 +221,6 @@ widen_operand (rtx op, machine_mode mode, machine_mode oldmode,
   return result;
 }
 
-/* Return the optab used for computing the operation given by the tree code,
-   CODE and the tree EXP.  This function is not always usable (for example, it
-   cannot give complete results for multiplication or division) but probably
-   ought to be relied on more widely throughout the expander.  */
-optab
-optab_for_tree_code (enum tree_code code, const_tree type,
-		     enum optab_subtype subtype)
-{
-  bool trapv;
-  switch (code)
-    {
-    case BIT_AND_EXPR:
-      return and_optab;
-
-    case BIT_IOR_EXPR:
-      return ior_optab;
-
-    case BIT_NOT_EXPR:
-      return one_cmpl_optab;
-
-    case BIT_XOR_EXPR:
-      return xor_optab;
-
-    case MULT_HIGHPART_EXPR:
-      return TYPE_UNSIGNED (type) ? umul_highpart_optab : smul_highpart_optab;
-
-    case TRUNC_MOD_EXPR:
-    case CEIL_MOD_EXPR:
-    case FLOOR_MOD_EXPR:
-    case ROUND_MOD_EXPR:
-      return TYPE_UNSIGNED (type) ? umod_optab : smod_optab;
-
-    case RDIV_EXPR:
-    case TRUNC_DIV_EXPR:
-    case CEIL_DIV_EXPR:
-    case FLOOR_DIV_EXPR:
-    case ROUND_DIV_EXPR:
-    case EXACT_DIV_EXPR:
-      if (TYPE_SATURATING (type))
-	return TYPE_UNSIGNED (type) ? usdiv_optab : ssdiv_optab;
-      return TYPE_UNSIGNED (type) ? udiv_optab : sdiv_optab;
-
-    case LSHIFT_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
-	{
-	  if (subtype == optab_vector)
-	    return TYPE_SATURATING (type) ? unknown_optab : vashl_optab;
-
-	  gcc_assert (subtype == optab_scalar);
-	}
-      if (TYPE_SATURATING (type))
-	return TYPE_UNSIGNED (type) ? usashl_optab : ssashl_optab;
-      return ashl_optab;
-
-    case RSHIFT_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
-	{
-	  if (subtype == optab_vector)
-	    return TYPE_UNSIGNED (type) ? vlshr_optab : vashr_optab;
-
-	  gcc_assert (subtype == optab_scalar);
-	}
-      return TYPE_UNSIGNED (type) ? lshr_optab : ashr_optab;
-
-    case LROTATE_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
-	{
-	  if (subtype == optab_vector)
-	    return vrotl_optab;
-
-	  gcc_assert (subtype == optab_scalar);
-	}
-      return rotl_optab;
-
-    case RROTATE_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
-	{
-	  if (subtype == optab_vector)
-	    return vrotr_optab;
-
-	  gcc_assert (subtype == optab_scalar);
-	}
-      return rotr_optab;
-
-    case MAX_EXPR:
-      return TYPE_UNSIGNED (type) ? umax_optab : smax_optab;
-
-    case MIN_EXPR:
-      return TYPE_UNSIGNED (type) ? umin_optab : smin_optab;
-
-    case REALIGN_LOAD_EXPR:
-      return vec_realign_load_optab;
-
-    case WIDEN_SUM_EXPR:
-      return TYPE_UNSIGNED (type) ? usum_widen_optab : ssum_widen_optab;
-
-    case DOT_PROD_EXPR:
-      return TYPE_UNSIGNED (type) ? udot_prod_optab : sdot_prod_optab;
-
-    case SAD_EXPR:
-      return TYPE_UNSIGNED (type) ? usad_optab : ssad_optab;
-
-    case WIDEN_MULT_PLUS_EXPR:
-      return (TYPE_UNSIGNED (type)
-	      ? (TYPE_SATURATING (type)
-		 ? usmadd_widen_optab : umadd_widen_optab)
-	      : (TYPE_SATURATING (type)
-		 ? ssmadd_widen_optab : smadd_widen_optab));
-
-    case WIDEN_MULT_MINUS_EXPR:
-      return (TYPE_UNSIGNED (type)
-	      ? (TYPE_SATURATING (type)
-		 ? usmsub_widen_optab : umsub_widen_optab)
-	      : (TYPE_SATURATING (type)
-		 ? ssmsub_widen_optab : smsub_widen_optab));
-
-    case FMA_EXPR:
-      return fma_optab;
-
-    case REDUC_MAX_EXPR:
-      return TYPE_UNSIGNED (type)
-	     ? reduc_umax_scal_optab : reduc_smax_scal_optab;
-
-    case REDUC_MIN_EXPR:
-      return TYPE_UNSIGNED (type)
-	     ? reduc_umin_scal_optab : reduc_smin_scal_optab;
-
-    case REDUC_PLUS_EXPR:
-      return reduc_plus_scal_optab;
-
-    case VEC_WIDEN_MULT_HI_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
-
-    case VEC_WIDEN_MULT_LO_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
-
-    case VEC_WIDEN_MULT_EVEN_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_widen_umult_even_optab : vec_widen_smult_even_optab;
-
-    case VEC_WIDEN_MULT_ODD_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_widen_umult_odd_optab : vec_widen_smult_odd_optab;
-
-    case VEC_WIDEN_LSHIFT_HI_EXPR:
-      return TYPE_UNSIGNED (type) ?
-        vec_widen_ushiftl_hi_optab : vec_widen_sshiftl_hi_optab;
-
-    case VEC_WIDEN_LSHIFT_LO_EXPR:
-      return TYPE_UNSIGNED (type) ?
-        vec_widen_ushiftl_lo_optab : vec_widen_sshiftl_lo_optab;
-
-    case VEC_UNPACK_HI_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_unpacku_hi_optab : vec_unpacks_hi_optab;
-
-    case VEC_UNPACK_LO_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_unpacku_lo_optab : vec_unpacks_lo_optab;
-
-    case VEC_UNPACK_FLOAT_HI_EXPR:
-      /* The signedness is determined from input operand.  */
-      return TYPE_UNSIGNED (type) ?
-	vec_unpacku_float_hi_optab : vec_unpacks_float_hi_optab;
-
-    case VEC_UNPACK_FLOAT_LO_EXPR:
-      /* The signedness is determined from input operand.  */
-      return TYPE_UNSIGNED (type) ?
-	vec_unpacku_float_lo_optab : vec_unpacks_float_lo_optab;
-
-    case VEC_PACK_TRUNC_EXPR:
-      return vec_pack_trunc_optab;
-
-    case VEC_PACK_SAT_EXPR:
-      return TYPE_UNSIGNED (type) ? vec_pack_usat_optab : vec_pack_ssat_optab;
-
-    case VEC_PACK_FIX_TRUNC_EXPR:
-      /* The signedness is determined from output operand.  */
-      return TYPE_UNSIGNED (type) ?
-	vec_pack_ufix_trunc_optab : vec_pack_sfix_trunc_optab;
-
-    default:
-      break;
-    }
-
-  trapv = INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_TRAPS (type);
-  switch (code)
-    {
-    case POINTER_PLUS_EXPR:
-    case PLUS_EXPR:
-      if (TYPE_SATURATING (type))
-	return TYPE_UNSIGNED (type) ? usadd_optab : ssadd_optab;
-      return trapv ? addv_optab : add_optab;
-
-    case MINUS_EXPR:
-      if (TYPE_SATURATING (type))
-	return TYPE_UNSIGNED (type) ? ussub_optab : sssub_optab;
-      return trapv ? subv_optab : sub_optab;
-
-    case MULT_EXPR:
-      if (TYPE_SATURATING (type))
-	return TYPE_UNSIGNED (type) ? usmul_optab : ssmul_optab;
-      return trapv ? smulv_optab : smul_optab;
-
-    case NEGATE_EXPR:
-      if (TYPE_SATURATING (type))
-	return TYPE_UNSIGNED (type) ? usneg_optab : ssneg_optab;
-      return trapv ? negv_optab : neg_optab;
-
-    case ABS_EXPR:
-      return trapv ? absv_optab : abs_optab;
-
-    default:
-      return unknown_optab;
-    }
-}
-
-/* Given optab UNOPTAB that reduces a vector to a scalar, find instead the old
-   optab that produces a vector with the reduction result in one element,
-   for a tree with type TYPE.  */
-
-optab
-scalar_reduc_to_vector (optab unoptab, const_tree type)
-{
-  switch (unoptab)
-    {
-    case reduc_plus_scal_optab:
-      return TYPE_UNSIGNED (type) ? reduc_uplus_optab : reduc_splus_optab;
-
-    case reduc_smin_scal_optab: return reduc_smin_optab;
-    case reduc_umin_scal_optab: return reduc_umin_optab;
-    case reduc_smax_scal_optab: return reduc_smax_optab;
-    case reduc_umax_scal_optab: return reduc_umax_optab;
-    default: return unknown_optab;
-    }
-}
-
 /* Expand vector widening operations.
 
    There are two different classes of operations handled here:
@@ -2144,11 +1740,12 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       insns = get_insns ();
       end_sequence ();
 
+      bool trapv = trapv_binoptab_p (binoptab);
       target = gen_reg_rtx (mode);
       emit_libcall_block_1 (insns, target, value,
-			    gen_rtx_fmt_ee (optab_to_code (binoptab),
-					    mode, op0, op1),
-			    trapv_binoptab_p (binoptab));
+			    trapv ? NULL_RTX
+			    : gen_rtx_fmt_ee (optab_to_code (binoptab),
+					      mode, op0, op1), trapv);
 
       return target;
     }
@@ -3276,13 +2873,19 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       end_sequence ();
 
       target = gen_reg_rtx (outmode);
-      eq_value = gen_rtx_fmt_e (optab_to_code (unoptab), mode, op0);
-      if (GET_MODE_SIZE (outmode) < GET_MODE_SIZE (mode))
-	eq_value = simplify_gen_unary (TRUNCATE, outmode, eq_value, mode);
-      else if (GET_MODE_SIZE (outmode) > GET_MODE_SIZE (mode))
-	eq_value = simplify_gen_unary (ZERO_EXTEND, outmode, eq_value, mode);
-      emit_libcall_block_1 (insns, target, value, eq_value,
-			    trapv_unoptab_p (unoptab));
+      bool trapv = trapv_unoptab_p (unoptab);
+      if (trapv)
+	eq_value = NULL_RTX;
+      else
+	{
+	  eq_value = gen_rtx_fmt_e (optab_to_code (unoptab), mode, op0);
+	  if (GET_MODE_SIZE (outmode) < GET_MODE_SIZE (mode))
+	    eq_value = simplify_gen_unary (TRUNCATE, outmode, eq_value, mode);
+	  else if (GET_MODE_SIZE (outmode) > GET_MODE_SIZE (mode))
+	    eq_value = simplify_gen_unary (ZERO_EXTEND,
+					   outmode, eq_value, mode);
+	}
+      emit_libcall_block_1 (insns, target, value, eq_value, trapv);
 
       return target;
     }
@@ -3969,7 +3572,8 @@ emit_libcall_block_1 (rtx_insn *insns, rtx target, rtx result, rtx equiv,
     }
 
   last = emit_move_insn (target, result);
-  set_dst_reg_note (last, REG_EQUAL, copy_rtx (equiv), target);
+  if (equiv)
+    set_dst_reg_note (last, REG_EQUAL, copy_rtx (equiv), target);
 
   if (final_dest != target)
     emit_move_insn (final_dest, target);
@@ -4606,23 +4210,6 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   return NULL_RTX;
 }
 
-/* Return nonzero if a conditional move of mode MODE is supported.
-
-   This function is for combine so it can tell whether an insn that looks
-   like a conditional move is actually supported by the hardware.  If we
-   guess wrong we lose a bit on optimization, but that's it.  */
-/* ??? sparc64 supports conditionally moving integers values based on fp
-   comparisons, and vice versa.  How do we handle them?  */
-
-int
-can_conditionally_move_p (machine_mode mode)
-{
-  if (direct_optab_handler (movcc_optab, mode) != CODE_FOR_nothing)
-    return 1;
-
-  return 0;
-}
-
 /* Emit a conditional addition instruction if the machine supports one for that
    condition and machine mode.
 
@@ -4853,22 +4440,6 @@ have_sub2_insn (rtx x, rtx y)
   return 1;
 }
 
-/* Return the insn code used to extend FROM_MODE to TO_MODE.
-   UNSIGNEDP specifies zero-extension instead of sign-extension.  If
-   no such operation exists, CODE_FOR_nothing will be returned.  */
-
-enum insn_code
-can_extend_p (machine_mode to_mode, machine_mode from_mode,
-	      int unsignedp)
-{
-  convert_optab tab;
-  if (unsignedp < 0 && targetm.have_ptr_extend ())
-    return targetm.code_for_ptr_extend;
-
-  tab = unsignedp ? zext_optab : sext_optab;
-  return convert_optab_handler (tab, to_mode, from_mode);
-}
-
 /* Generate the body of an insn to extend Y (with mode MFROM)
    into X (with mode MTO).  Do zero-extension if UNSIGNEDP is nonzero.  */
 
@@ -4879,110 +4450,6 @@ gen_extend_insn (rtx x, rtx y, machine_mode mto,
   enum insn_code icode = can_extend_p (mto, mfrom, unsignedp);
   return GEN_FCN (icode) (x, y);
 }
-
-/* can_fix_p and can_float_p say whether the target machine
-   can directly convert a given fixed point type to
-   a given floating point type, or vice versa.
-   The returned value is the CODE_FOR_... value to use,
-   or CODE_FOR_nothing if these modes cannot be directly converted.
-
-   *TRUNCP_PTR is set to 1 if it is necessary to output
-   an explicit FTRUNC insn before the fix insn; otherwise 0.  */
-
-static enum insn_code
-can_fix_p (machine_mode fixmode, machine_mode fltmode,
-	   int unsignedp, int *truncp_ptr)
-{
-  convert_optab tab;
-  enum insn_code icode;
-
-  tab = unsignedp ? ufixtrunc_optab : sfixtrunc_optab;
-  icode = convert_optab_handler (tab, fixmode, fltmode);
-  if (icode != CODE_FOR_nothing)
-    {
-      *truncp_ptr = 0;
-      return icode;
-    }
-
-  /* FIXME: This requires a port to define both FIX and FTRUNC pattern
-     for this to work. We need to rework the fix* and ftrunc* patterns
-     and documentation.  */
-  tab = unsignedp ? ufix_optab : sfix_optab;
-  icode = convert_optab_handler (tab, fixmode, fltmode);
-  if (icode != CODE_FOR_nothing
-      && optab_handler (ftrunc_optab, fltmode) != CODE_FOR_nothing)
-    {
-      *truncp_ptr = 1;
-      return icode;
-    }
-
-  *truncp_ptr = 0;
-  return CODE_FOR_nothing;
-}
-
-enum insn_code
-can_float_p (machine_mode fltmode, machine_mode fixmode,
-	     int unsignedp)
-{
-  convert_optab tab;
-
-  tab = unsignedp ? ufloat_optab : sfloat_optab;
-  return convert_optab_handler (tab, fltmode, fixmode);
-}
-
-/* Function supportable_convert_operation
-
-   Check whether an operation represented by the code CODE is a
-   convert operation that is supported by the target platform in
-   vector form (i.e., when operating on arguments of type VECTYPE_IN
-   producing a result of type VECTYPE_OUT).
-   
-   Convert operations we currently support directly are FIX_TRUNC and FLOAT.
-   This function checks if these operations are supported
-   by the target platform either directly (via vector tree-codes), or via
-   target builtins.
-   
-   Output:
-   - CODE1 is code of vector operation to be used when
-   vectorizing the operation, if available.
-   - DECL is decl of target builtin functions to be used
-   when vectorizing the operation, if available.  In this case,
-   CODE1 is CALL_EXPR.  */
-
-bool
-supportable_convert_operation (enum tree_code code,
-                                    tree vectype_out, tree vectype_in,
-                                    tree *decl, enum tree_code *code1)
-{
-  machine_mode m1,m2;
-  int truncp;
-
-  m1 = TYPE_MODE (vectype_out);
-  m2 = TYPE_MODE (vectype_in);
-
-  /* First check if we can done conversion directly.  */
-  if ((code == FIX_TRUNC_EXPR 
-       && can_fix_p (m1,m2,TYPE_UNSIGNED (vectype_out), &truncp) 
-          != CODE_FOR_nothing)
-      || (code == FLOAT_EXPR
-          && can_float_p (m1,m2,TYPE_UNSIGNED (vectype_in))
-	     != CODE_FOR_nothing))
-    {
-      *code1 = code;
-      return true;
-    }
-
-  /* Now check for builtin.  */
-  if (targetm.vectorize.builtin_conversion
-      && targetm.vectorize.builtin_conversion (code, vectype_out, vectype_in))
-    {
-      *code1 = CALL_EXPR;
-      *decl = targetm.vectorize.builtin_conversion (code, vectype_out, vectype_in);
-      return true;
-    }
-  return false;
-}
-
 
 /* Generate code to convert FROM to floating point
    and store in TO.  FROM must be fixed point and not VOIDmode.
@@ -5138,7 +4605,7 @@ expand_float (rtx to, rtx from, int unsignedp)
 
       real_2expN (&offset, GET_MODE_PRECISION (GET_MODE (from)), fmode);
       temp = expand_binop (fmode, add_optab, target,
-			   CONST_DOUBLE_FROM_REAL_VALUE (offset, fmode),
+			   const_double_from_real_value (offset, fmode),
 			   target, 0, OPTAB_LIB_WIDEN);
       if (temp != target)
 	emit_move_insn (target, temp);
@@ -5197,7 +4664,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
   enum insn_code icode;
   rtx target = to;
   machine_mode fmode, imode;
-  int must_trunc = 0;
+  bool must_trunc = false;
 
   /* We first try to find a pair of modes, one real and one integer, at
      least as wide as FROM and TO, respectively, in which we can open-code
@@ -5281,7 +4748,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
 
 	  bitsize = GET_MODE_PRECISION (GET_MODE (to));
 	  real_2expN (&offset, bitsize - 1, fmode);
-	  limit = CONST_DOUBLE_FROM_REAL_VALUE (offset, fmode);
+	  limit = const_double_from_real_value (offset, fmode);
 	  lab1 = gen_label_rtx ();
 	  lab2 = gen_label_rtx ();
 
@@ -5478,871 +4945,6 @@ have_insn_for (enum rtx_code code, machine_mode mode)
 	      != CODE_FOR_nothing));
 }
 
-/* Initialize the libfunc fields of an entire group of entries in some
-   optab.  Each entry is set equal to a string consisting of a leading
-   pair of underscores followed by a generic operation name followed by
-   a mode name (downshifted to lowercase) followed by a single character
-   representing the number of operands for the given operation (which is
-   usually one of the characters '2', '3', or '4').
-
-   OPTABLE is the table in which libfunc fields are to be initialized.
-   OPNAME is the generic (string) name of the operation.
-   SUFFIX is the character which specifies the number of operands for
-     the given generic operation.
-   MODE is the mode to generate for.
-*/
-
-static void
-gen_libfunc (optab optable, const char *opname, int suffix,
-	     machine_mode mode)
-{
-  unsigned opname_len = strlen (opname);
-  const char *mname = GET_MODE_NAME (mode);
-  unsigned mname_len = strlen (mname);
-  int prefix_len = targetm.libfunc_gnu_prefix ? 6 : 2;
-  int len = prefix_len + opname_len + mname_len + 1 + 1;
-  char *libfunc_name = XALLOCAVEC (char, len);
-  char *p;
-  const char *q;
-
-  p = libfunc_name;
-  *p++ = '_';
-  *p++ = '_';
-  if (targetm.libfunc_gnu_prefix)
-    {
-      *p++ = 'g';
-      *p++ = 'n';
-      *p++ = 'u';
-      *p++ = '_';
-    }
-  for (q = opname; *q; )
-    *p++ = *q++;
-  for (q = mname; *q; q++)
-    *p++ = TOLOWER (*q);
-  *p++ = suffix;
-  *p = '\0';
-
-  set_optab_libfunc (optable, mode,
-		     ggc_alloc_string (libfunc_name, p - libfunc_name));
-}
-
-/* Like gen_libfunc, but verify that integer operation is involved.  */
-
-void
-gen_int_libfunc (optab optable, const char *opname, char suffix,
-		 machine_mode mode)
-{
-  int maxsize = 2 * BITS_PER_WORD;
-  int minsize = BITS_PER_WORD;
-
-  if (GET_MODE_CLASS (mode) != MODE_INT)
-    return;
-  if (maxsize < LONG_LONG_TYPE_SIZE)
-    maxsize = LONG_LONG_TYPE_SIZE;
-  if (minsize > INT_TYPE_SIZE
-      && (trapv_binoptab_p (optable)
-	  || trapv_unoptab_p (optable)))
-    minsize = INT_TYPE_SIZE;
-  if (GET_MODE_BITSIZE (mode) < minsize
-      || GET_MODE_BITSIZE (mode) > maxsize)
-    return;
-  gen_libfunc (optable, opname, suffix, mode);
-}
-
-/* Like gen_libfunc, but verify that FP and set decimal prefix if needed.  */
-
-void
-gen_fp_libfunc (optab optable, const char *opname, char suffix,
-		machine_mode mode)
-{
-  char *dec_opname;
-
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-    gen_libfunc (optable, opname, suffix, mode);
-  if (DECIMAL_FLOAT_MODE_P (mode))
-    {
-      dec_opname = XALLOCAVEC (char, sizeof (DECIMAL_PREFIX) + strlen (opname));
-      /* For BID support, change the name to have either a bid_ or dpd_ prefix
-	 depending on the low level floating format used.  */
-      memcpy (dec_opname, DECIMAL_PREFIX, sizeof (DECIMAL_PREFIX) - 1);
-      strcpy (dec_opname + sizeof (DECIMAL_PREFIX) - 1, opname);
-      gen_libfunc (optable, dec_opname, suffix, mode);
-    }
-}
-
-/* Like gen_libfunc, but verify that fixed-point operation is involved.  */
-
-void
-gen_fixed_libfunc (optab optable, const char *opname, char suffix,
-		   machine_mode mode)
-{
-  if (!ALL_FIXED_POINT_MODE_P (mode))
-    return;
-  gen_libfunc (optable, opname, suffix, mode);
-}
-
-/* Like gen_libfunc, but verify that signed fixed-point operation is
-   involved.  */
-
-void
-gen_signed_fixed_libfunc (optab optable, const char *opname, char suffix,
-			  machine_mode mode)
-{
-  if (!SIGNED_FIXED_POINT_MODE_P (mode))
-    return;
-  gen_libfunc (optable, opname, suffix, mode);
-}
-
-/* Like gen_libfunc, but verify that unsigned fixed-point operation is
-   involved.  */
-
-void
-gen_unsigned_fixed_libfunc (optab optable, const char *opname, char suffix,
-			    machine_mode mode)
-{
-  if (!UNSIGNED_FIXED_POINT_MODE_P (mode))
-    return;
-  gen_libfunc (optable, opname, suffix, mode);
-}
-
-/* Like gen_libfunc, but verify that FP or INT operation is involved.  */
-
-void
-gen_int_fp_libfunc (optab optable, const char *name, char suffix,
-		    machine_mode mode)
-{
-  if (DECIMAL_FLOAT_MODE_P (mode) || GET_MODE_CLASS (mode) == MODE_FLOAT)
-    gen_fp_libfunc (optable, name, suffix, mode);
-  if (INTEGRAL_MODE_P (mode))
-    gen_int_libfunc (optable, name, suffix, mode);
-}
-
-/* Like gen_libfunc, but verify that FP or INT operation is involved
-   and add 'v' suffix for integer operation.  */
-
-void
-gen_intv_fp_libfunc (optab optable, const char *name, char suffix,
-		     machine_mode mode)
-{
-  if (DECIMAL_FLOAT_MODE_P (mode) || GET_MODE_CLASS (mode) == MODE_FLOAT)
-    gen_fp_libfunc (optable, name, suffix, mode);
-  if (GET_MODE_CLASS (mode) == MODE_INT)
-    {
-      int len = strlen (name);
-      char *v_name = XALLOCAVEC (char, len + 2);
-      strcpy (v_name, name);
-      v_name[len] = 'v';
-      v_name[len + 1] = 0;
-      gen_int_libfunc (optable, v_name, suffix, mode);
-    }
-}
-
-/* Like gen_libfunc, but verify that FP or INT or FIXED operation is
-   involved.  */
-
-void
-gen_int_fp_fixed_libfunc (optab optable, const char *name, char suffix,
-			  machine_mode mode)
-{
-  if (DECIMAL_FLOAT_MODE_P (mode) || GET_MODE_CLASS (mode) == MODE_FLOAT)
-    gen_fp_libfunc (optable, name, suffix, mode);
-  if (INTEGRAL_MODE_P (mode))
-    gen_int_libfunc (optable, name, suffix, mode);
-  if (ALL_FIXED_POINT_MODE_P (mode))
-    gen_fixed_libfunc (optable, name, suffix, mode);
-}
-
-/* Like gen_libfunc, but verify that FP or INT or signed FIXED operation is
-   involved.  */
-
-void
-gen_int_fp_signed_fixed_libfunc (optab optable, const char *name, char suffix,
-				 machine_mode mode)
-{
-  if (DECIMAL_FLOAT_MODE_P (mode) || GET_MODE_CLASS (mode) == MODE_FLOAT)
-    gen_fp_libfunc (optable, name, suffix, mode);
-  if (INTEGRAL_MODE_P (mode))
-    gen_int_libfunc (optable, name, suffix, mode);
-  if (SIGNED_FIXED_POINT_MODE_P (mode))
-    gen_signed_fixed_libfunc (optable, name, suffix, mode);
-}
-
-/* Like gen_libfunc, but verify that INT or FIXED operation is
-   involved.  */
-
-void
-gen_int_fixed_libfunc (optab optable, const char *name, char suffix,
-		       machine_mode mode)
-{
-  if (INTEGRAL_MODE_P (mode))
-    gen_int_libfunc (optable, name, suffix, mode);
-  if (ALL_FIXED_POINT_MODE_P (mode))
-    gen_fixed_libfunc (optable, name, suffix, mode);
-}
-
-/* Like gen_libfunc, but verify that INT or signed FIXED operation is
-   involved.  */
-
-void
-gen_int_signed_fixed_libfunc (optab optable, const char *name, char suffix,
-			      machine_mode mode)
-{
-  if (INTEGRAL_MODE_P (mode))
-    gen_int_libfunc (optable, name, suffix, mode);
-  if (SIGNED_FIXED_POINT_MODE_P (mode))
-    gen_signed_fixed_libfunc (optable, name, suffix, mode);
-}
-
-/* Like gen_libfunc, but verify that INT or unsigned FIXED operation is
-   involved.  */
-
-void
-gen_int_unsigned_fixed_libfunc (optab optable, const char *name, char suffix,
-				machine_mode mode)
-{
-  if (INTEGRAL_MODE_P (mode))
-    gen_int_libfunc (optable, name, suffix, mode);
-  if (UNSIGNED_FIXED_POINT_MODE_P (mode))
-    gen_unsigned_fixed_libfunc (optable, name, suffix, mode);
-}
-
-/* Initialize the libfunc fields of an entire group of entries of an
-   inter-mode-class conversion optab.  The string formation rules are
-   similar to the ones for init_libfuncs, above, but instead of having
-   a mode name and an operand count these functions have two mode names
-   and no operand count.  */
-
-void
-gen_interclass_conv_libfunc (convert_optab tab,
-			     const char *opname,
-			     machine_mode tmode,
-			     machine_mode fmode)
-{
-  size_t opname_len = strlen (opname);
-  size_t mname_len = 0;
-
-  const char *fname, *tname;
-  const char *q;
-  int prefix_len = targetm.libfunc_gnu_prefix ? 6 : 2;
-  char *libfunc_name, *suffix;
-  char *nondec_name, *dec_name, *nondec_suffix, *dec_suffix;
-  char *p;
-
-  /* If this is a decimal conversion, add the current BID vs. DPD prefix that
-     depends on which underlying decimal floating point format is used.  */
-  const size_t dec_len = sizeof (DECIMAL_PREFIX) - 1;
-
-  mname_len = strlen (GET_MODE_NAME (tmode)) + strlen (GET_MODE_NAME (fmode));
-
-  nondec_name = XALLOCAVEC (char, prefix_len + opname_len + mname_len + 1 + 1);
-  nondec_name[0] = '_';
-  nondec_name[1] = '_';
-  if (targetm.libfunc_gnu_prefix)
-    {
-      nondec_name[2] = 'g';
-      nondec_name[3] = 'n';
-      nondec_name[4] = 'u';
-      nondec_name[5] = '_';
-    }
-
-  memcpy (&nondec_name[prefix_len], opname, opname_len);
-  nondec_suffix = nondec_name + opname_len + prefix_len;
-
-  dec_name = XALLOCAVEC (char, 2 + dec_len + opname_len + mname_len + 1 + 1);
-  dec_name[0] = '_';
-  dec_name[1] = '_';
-  memcpy (&dec_name[2], DECIMAL_PREFIX, dec_len);
-  memcpy (&dec_name[2+dec_len], opname, opname_len);
-  dec_suffix = dec_name + dec_len + opname_len + 2;
-
-  fname = GET_MODE_NAME (fmode);
-  tname = GET_MODE_NAME (tmode);
-
-  if (DECIMAL_FLOAT_MODE_P (fmode) || DECIMAL_FLOAT_MODE_P (tmode))
-    {
-      libfunc_name = dec_name;
-      suffix = dec_suffix;
-    }
-  else
-    {
-      libfunc_name = nondec_name;
-      suffix = nondec_suffix;
-    }
-
-  p = suffix;
-  for (q = fname; *q; p++, q++)
-    *p = TOLOWER (*q);
-  for (q = tname; *q; p++, q++)
-    *p = TOLOWER (*q);
-
-  *p = '\0';
-
-  set_conv_libfunc (tab, tmode, fmode,
-		    ggc_alloc_string (libfunc_name, p - libfunc_name));
-}
-
-/* Same as gen_interclass_conv_libfunc but verify that we are producing
-   int->fp conversion.  */
-
-void
-gen_int_to_fp_conv_libfunc (convert_optab tab,
-			    const char *opname,
-			    machine_mode tmode,
-			    machine_mode fmode)
-{
-  if (GET_MODE_CLASS (fmode) != MODE_INT)
-    return;
-  if (GET_MODE_CLASS (tmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (tmode))
-    return;
-  gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-}
-
-/* ufloat_optab is special by using floatun for FP and floatuns decimal fp
-   naming scheme.  */
-
-void
-gen_ufloat_conv_libfunc (convert_optab tab,
-			 const char *opname ATTRIBUTE_UNUSED,
-			 machine_mode tmode,
-			 machine_mode fmode)
-{
-  if (DECIMAL_FLOAT_MODE_P (tmode))
-    gen_int_to_fp_conv_libfunc (tab, "floatuns", tmode, fmode);
-  else
-    gen_int_to_fp_conv_libfunc (tab, "floatun", tmode, fmode);
-}
-
-/* Same as gen_interclass_conv_libfunc but verify that we are producing
-   fp->int conversion.  */
-
-void
-gen_int_to_fp_nondecimal_conv_libfunc (convert_optab tab,
-			               const char *opname,
-			               machine_mode tmode,
-			               machine_mode fmode)
-{
-  if (GET_MODE_CLASS (fmode) != MODE_INT)
-    return;
-  if (GET_MODE_CLASS (tmode) != MODE_FLOAT)
-    return;
-  gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-}
-
-/* Same as gen_interclass_conv_libfunc but verify that we are producing
-   fp->int conversion with no decimal floating point involved.  */
-
-void
-gen_fp_to_int_conv_libfunc (convert_optab tab,
-			    const char *opname,
-			    machine_mode tmode,
-			    machine_mode fmode)
-{
-  if (GET_MODE_CLASS (fmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (fmode))
-    return;
-  if (GET_MODE_CLASS (tmode) != MODE_INT)
-    return;
-  gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-}
-
-/* Initialize the libfunc fields of an of an intra-mode-class conversion optab.
-   The string formation rules are
-   similar to the ones for init_libfunc, above.  */
-
-void
-gen_intraclass_conv_libfunc (convert_optab tab, const char *opname,
-			     machine_mode tmode, machine_mode fmode)
-{
-  size_t opname_len = strlen (opname);
-  size_t mname_len = 0;
-
-  const char *fname, *tname;
-  const char *q;
-  int prefix_len = targetm.libfunc_gnu_prefix ? 6 : 2;
-  char *nondec_name, *dec_name, *nondec_suffix, *dec_suffix;
-  char *libfunc_name, *suffix;
-  char *p;
-
-  /* If this is a decimal conversion, add the current BID vs. DPD prefix that
-     depends on which underlying decimal floating point format is used.  */
-  const size_t dec_len = sizeof (DECIMAL_PREFIX) - 1;
-
-  mname_len = strlen (GET_MODE_NAME (tmode)) + strlen (GET_MODE_NAME (fmode));
-
-  nondec_name = XALLOCAVEC (char, 2 + opname_len + mname_len + 1 + 1);
-  nondec_name[0] = '_';
-  nondec_name[1] = '_';
-  if (targetm.libfunc_gnu_prefix)
-    {
-      nondec_name[2] = 'g';
-      nondec_name[3] = 'n';
-      nondec_name[4] = 'u';
-      nondec_name[5] = '_';
-    }
-  memcpy (&nondec_name[prefix_len], opname, opname_len);
-  nondec_suffix = nondec_name + opname_len + prefix_len;
-
-  dec_name = XALLOCAVEC (char, 2 + dec_len + opname_len + mname_len + 1 + 1);
-  dec_name[0] = '_';
-  dec_name[1] = '_';
-  memcpy (&dec_name[2], DECIMAL_PREFIX, dec_len);
-  memcpy (&dec_name[2 + dec_len], opname, opname_len);
-  dec_suffix = dec_name + dec_len + opname_len + 2;
-
-  fname = GET_MODE_NAME (fmode);
-  tname = GET_MODE_NAME (tmode);
-
-  if (DECIMAL_FLOAT_MODE_P (fmode) || DECIMAL_FLOAT_MODE_P (tmode))
-    {
-      libfunc_name = dec_name;
-      suffix = dec_suffix;
-    }
-  else
-    {
-      libfunc_name = nondec_name;
-      suffix = nondec_suffix;
-    }
-
-  p = suffix;
-  for (q = fname; *q; p++, q++)
-    *p = TOLOWER (*q);
-  for (q = tname; *q; p++, q++)
-    *p = TOLOWER (*q);
-
-  *p++ = '2';
-  *p = '\0';
-
-  set_conv_libfunc (tab, tmode, fmode,
-		    ggc_alloc_string (libfunc_name, p - libfunc_name));
-}
-
-/* Pick proper libcall for trunc_optab.  We need to chose if we do
-   truncation or extension and interclass or intraclass.  */
-
-void
-gen_trunc_conv_libfunc (convert_optab tab,
-			 const char *opname,
-			 machine_mode tmode,
-			 machine_mode fmode)
-{
-  if (GET_MODE_CLASS (tmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (tmode))
-    return;
-  if (GET_MODE_CLASS (fmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (fmode))
-    return;
-  if (tmode == fmode)
-    return;
-
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (fmode))
-      || (GET_MODE_CLASS (fmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (tmode)))
-     gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-
-  if (GET_MODE_PRECISION (fmode) <= GET_MODE_PRECISION (tmode))
-    return;
-
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT
-       && GET_MODE_CLASS (fmode) == MODE_FLOAT)
-      || (DECIMAL_FLOAT_MODE_P (fmode) && DECIMAL_FLOAT_MODE_P (tmode)))
-    gen_intraclass_conv_libfunc (tab, opname, tmode, fmode);
-}
-
-/* Pick proper libcall for extend_optab.  We need to chose if we do
-   truncation or extension and interclass or intraclass.  */
-
-void
-gen_extend_conv_libfunc (convert_optab tab,
-			 const char *opname ATTRIBUTE_UNUSED,
-			 machine_mode tmode,
-			 machine_mode fmode)
-{
-  if (GET_MODE_CLASS (tmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (tmode))
-    return;
-  if (GET_MODE_CLASS (fmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (fmode))
-    return;
-  if (tmode == fmode)
-    return;
-
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (fmode))
-      || (GET_MODE_CLASS (fmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (tmode)))
-     gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-
-  if (GET_MODE_PRECISION (fmode) > GET_MODE_PRECISION (tmode))
-    return;
-
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT
-       && GET_MODE_CLASS (fmode) == MODE_FLOAT)
-      || (DECIMAL_FLOAT_MODE_P (fmode) && DECIMAL_FLOAT_MODE_P (tmode)))
-    gen_intraclass_conv_libfunc (tab, opname, tmode, fmode);
-}
-
-/* Pick proper libcall for fract_optab.  We need to chose if we do
-   interclass or intraclass.  */
-
-void
-gen_fract_conv_libfunc (convert_optab tab,
-			const char *opname,
-			machine_mode tmode,
-			machine_mode fmode)
-{
-  if (tmode == fmode)
-    return;
-  if (!(ALL_FIXED_POINT_MODE_P (tmode) || ALL_FIXED_POINT_MODE_P (fmode)))
-    return;
-
-  if (GET_MODE_CLASS (tmode) == GET_MODE_CLASS (fmode))
-    gen_intraclass_conv_libfunc (tab, opname, tmode, fmode);
-  else
-    gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-}
-
-/* Pick proper libcall for fractuns_optab.  */
-
-void
-gen_fractuns_conv_libfunc (convert_optab tab,
-			   const char *opname,
-			   machine_mode tmode,
-			   machine_mode fmode)
-{
-  if (tmode == fmode)
-    return;
-  /* One mode must be a fixed-point mode, and the other must be an integer
-     mode. */
-  if (!((ALL_FIXED_POINT_MODE_P (tmode) && GET_MODE_CLASS (fmode) == MODE_INT)
-	|| (ALL_FIXED_POINT_MODE_P (fmode)
-	    && GET_MODE_CLASS (tmode) == MODE_INT)))
-    return;
-
-  gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-}
-
-/* Pick proper libcall for satfract_optab.  We need to chose if we do
-   interclass or intraclass.  */
-
-void
-gen_satfract_conv_libfunc (convert_optab tab,
-			   const char *opname,
-			   machine_mode tmode,
-			   machine_mode fmode)
-{
-  if (tmode == fmode)
-    return;
-  /* TMODE must be a fixed-point mode.  */
-  if (!ALL_FIXED_POINT_MODE_P (tmode))
-    return;
-
-  if (GET_MODE_CLASS (tmode) == GET_MODE_CLASS (fmode))
-    gen_intraclass_conv_libfunc (tab, opname, tmode, fmode);
-  else
-    gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-}
-
-/* Pick proper libcall for satfractuns_optab.  */
-
-void
-gen_satfractuns_conv_libfunc (convert_optab tab,
-			      const char *opname,
-			      machine_mode tmode,
-			      machine_mode fmode)
-{
-  if (tmode == fmode)
-    return;
-  /* TMODE must be a fixed-point mode, and FMODE must be an integer mode. */
-  if (!(ALL_FIXED_POINT_MODE_P (tmode) && GET_MODE_CLASS (fmode) == MODE_INT))
-    return;
-
-  gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-}
-
-/* Hashtable callbacks for libfunc_decls.  */
-
-struct libfunc_decl_hasher : ggc_ptr_hash<tree_node>
-{
-  static hashval_t
-  hash (tree entry)
-  {
-    return IDENTIFIER_HASH_VALUE (DECL_NAME (entry));
-  }
-
-  static bool
-  equal (tree decl, tree name)
-  {
-    return DECL_NAME (decl) == name;
-  }
-};
-
-/* A table of previously-created libfuncs, hashed by name.  */
-static GTY (()) hash_table<libfunc_decl_hasher> *libfunc_decls;
-
-/* Build a decl for a libfunc named NAME. */
-
-tree
-build_libfunc_function (const char *name)
-{
-  tree decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
-			  get_identifier (name),
-                          build_function_type (integer_type_node, NULL_TREE));
-  /* ??? We don't have any type information except for this is
-     a function.  Pretend this is "int foo()".  */
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_EXTERNAL (decl) = 1;
-  TREE_PUBLIC (decl) = 1;
-  gcc_assert (DECL_ASSEMBLER_NAME (decl));
-
-  /* Zap the nonsensical SYMBOL_REF_DECL for this.  What we're left with
-     are the flags assigned by targetm.encode_section_info.  */
-  SET_SYMBOL_REF_DECL (XEXP (DECL_RTL (decl), 0), NULL);
-
-  return decl;
-}
-
-rtx
-init_one_libfunc (const char *name)
-{
-  tree id, decl;
-  hashval_t hash;
-
-  if (libfunc_decls == NULL)
-    libfunc_decls = hash_table<libfunc_decl_hasher>::create_ggc (37);
-
-  /* See if we have already created a libfunc decl for this function.  */
-  id = get_identifier (name);
-  hash = IDENTIFIER_HASH_VALUE (id);
-  tree *slot = libfunc_decls->find_slot_with_hash (id, hash, INSERT);
-  decl = *slot;
-  if (decl == NULL)
-    {
-      /* Create a new decl, so that it can be passed to
-	 targetm.encode_section_info.  */
-      decl = build_libfunc_function (name);
-      *slot = decl;
-    }
-  return XEXP (DECL_RTL (decl), 0);
-}
-
-/* Adjust the assembler name of libfunc NAME to ASMSPEC.  */
-
-rtx
-set_user_assembler_libfunc (const char *name, const char *asmspec)
-{
-  tree id, decl;
-  hashval_t hash;
-
-  id = get_identifier (name);
-  hash = IDENTIFIER_HASH_VALUE (id);
-  tree *slot = libfunc_decls->find_slot_with_hash (id, hash, NO_INSERT);
-  gcc_assert (slot);
-  decl = (tree) *slot;
-  set_user_assembler_name (decl, asmspec);
-  return XEXP (DECL_RTL (decl), 0);
-}
-
-/* Call this to reset the function entry for one optab (OPTABLE) in mode
-   MODE to NAME, which should be either 0 or a string constant.  */
-void
-set_optab_libfunc (optab op, machine_mode mode, const char *name)
-{
-  rtx val;
-  struct libfunc_entry e;
-  struct libfunc_entry **slot;
-
-  e.op = op;
-  e.mode1 = mode;
-  e.mode2 = VOIDmode;
-
-  if (name)
-    val = init_one_libfunc (name);
-  else
-    val = 0;
-  slot = libfunc_hash->find_slot (&e, INSERT);
-  if (*slot == NULL)
-    *slot = ggc_alloc<libfunc_entry> ();
-  (*slot)->op = op;
-  (*slot)->mode1 = mode;
-  (*slot)->mode2 = VOIDmode;
-  (*slot)->libfunc = val;
-}
-
-/* Call this to reset the function entry for one conversion optab
-   (OPTABLE) from mode FMODE to mode TMODE to NAME, which should be
-   either 0 or a string constant.  */
-void
-set_conv_libfunc (convert_optab optab, machine_mode tmode,
-		  machine_mode fmode, const char *name)
-{
-  rtx val;
-  struct libfunc_entry e;
-  struct libfunc_entry **slot;
-
-  e.op = optab;
-  e.mode1 = tmode;
-  e.mode2 = fmode;
-
-  if (name)
-    val = init_one_libfunc (name);
-  else
-    val = 0;
-  slot = libfunc_hash->find_slot (&e, INSERT);
-  if (*slot == NULL)
-    *slot = ggc_alloc<libfunc_entry> ();
-  (*slot)->op = optab;
-  (*slot)->mode1 = tmode;
-  (*slot)->mode2 = fmode;
-  (*slot)->libfunc = val;
-}
-
-/* Call this to initialize the contents of the optabs
-   appropriately for the current target machine.  */
-
-void
-init_optabs (void)
-{
-  if (libfunc_hash)
-    libfunc_hash->empty ();
-  else
-    libfunc_hash = hash_table<libfunc_hasher>::create_ggc (10);
-
-  /* Fill in the optabs with the insns we support.  */
-  init_all_optabs (this_fn_optabs);
-
-  /* The ffs function operates on `int'.  Fall back on it if we do not
-     have a libgcc2 function for that width.  */
-  if (INT_TYPE_SIZE < BITS_PER_WORD)
-    set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE, MODE_INT, 0),
-		       "ffs");
-
-  /* Explicitly initialize the bswap libfuncs since we need them to be
-     valid for things other than word_mode.  */
-  if (targetm.libfunc_gnu_prefix)
-    {
-      set_optab_libfunc (bswap_optab, SImode, "__gnu_bswapsi2");
-      set_optab_libfunc (bswap_optab, DImode, "__gnu_bswapdi2");
-    }
-  else
-    {
-      set_optab_libfunc (bswap_optab, SImode, "__bswapsi2");
-      set_optab_libfunc (bswap_optab, DImode, "__bswapdi2");
-    }
-
-  /* Use cabs for double complex abs, since systems generally have cabs.
-     Don't define any libcall for float complex, so that cabs will be used.  */
-  if (complex_double_type_node)
-    set_optab_libfunc (abs_optab, TYPE_MODE (complex_double_type_node),
-		       "cabs");
-
-  abort_libfunc = init_one_libfunc ("abort");
-  memcpy_libfunc = init_one_libfunc ("memcpy");
-  memmove_libfunc = init_one_libfunc ("memmove");
-  memcmp_libfunc = init_one_libfunc ("memcmp");
-  memset_libfunc = init_one_libfunc ("memset");
-  setbits_libfunc = init_one_libfunc ("__setbits");
-
-#ifndef DONT_USE_BUILTIN_SETJMP
-  setjmp_libfunc = init_one_libfunc ("__builtin_setjmp");
-  longjmp_libfunc = init_one_libfunc ("__builtin_longjmp");
-#else
-  setjmp_libfunc = init_one_libfunc ("setjmp");
-  longjmp_libfunc = init_one_libfunc ("longjmp");
-#endif
-  unwind_sjlj_register_libfunc = init_one_libfunc ("_Unwind_SjLj_Register");
-  unwind_sjlj_unregister_libfunc
-    = init_one_libfunc ("_Unwind_SjLj_Unregister");
-
-  /* For function entry/exit instrumentation.  */
-  profile_function_entry_libfunc
-    = init_one_libfunc ("__cyg_profile_func_enter");
-  profile_function_exit_libfunc
-    = init_one_libfunc ("__cyg_profile_func_exit");
-
-  gcov_flush_libfunc = init_one_libfunc ("__gcov_flush");
-
-  /* Allow the target to add more libcalls or rename some, etc.  */
-  targetm.init_libfuncs ();
-}
-
-/* Use the current target and options to initialize
-   TREE_OPTIMIZATION_OPTABS (OPTNODE).  */
-
-void
-init_tree_optimization_optabs (tree optnode)
-{
-  /* Quick exit if we have already computed optabs for this target.  */
-  if (TREE_OPTIMIZATION_BASE_OPTABS (optnode) == this_target_optabs)
-    return;
-
-  /* Forget any previous information and set up for the current target.  */
-  TREE_OPTIMIZATION_BASE_OPTABS (optnode) = this_target_optabs;
-  struct target_optabs *tmp_optabs = (struct target_optabs *)
-    TREE_OPTIMIZATION_OPTABS (optnode);
-  if (tmp_optabs)
-    memset (tmp_optabs, 0, sizeof (struct target_optabs));
-  else
-    tmp_optabs = ggc_alloc<target_optabs> ();
-
-  /* Generate a new set of optabs into tmp_optabs.  */
-  init_all_optabs (tmp_optabs);
-
-  /* If the optabs changed, record it.  */
-  if (memcmp (tmp_optabs, this_target_optabs, sizeof (struct target_optabs)))
-    TREE_OPTIMIZATION_OPTABS (optnode) = tmp_optabs;
-  else
-    {
-      TREE_OPTIMIZATION_OPTABS (optnode) = NULL;
-      ggc_free (tmp_optabs);
-    }
-}
-
-/* A helper function for init_sync_libfuncs.  Using the basename BASE,
-   install libfuncs into TAB for BASE_N for 1 <= N <= MAX.  */
-
-static void
-init_sync_libfuncs_1 (optab tab, const char *base, int max)
-{
-  machine_mode mode;
-  char buf[64];
-  size_t len = strlen (base);
-  int i;
-
-  gcc_assert (max <= 8);
-  gcc_assert (len + 3 < sizeof (buf));
-
-  memcpy (buf, base, len);
-  buf[len] = '_';
-  buf[len + 1] = '0';
-  buf[len + 2] = '\0';
-
-  mode = QImode;
-  for (i = 1; i <= max; i *= 2)
-    {
-      buf[len + 1] = '0' + i;
-      set_optab_libfunc (tab, mode, buf);
-      mode = GET_MODE_2XWIDER_MODE (mode);
-    }
-}
-
-void
-init_sync_libfuncs (int max)
-{
-  if (!flag_sync_libcalls)
-    return;
-
-  init_sync_libfuncs_1 (sync_compare_and_swap_optab,
-			"__sync_val_compare_and_swap", max);
-  init_sync_libfuncs_1 (sync_lock_test_and_set_optab,
-			"__sync_lock_test_and_set", max);
-
-  init_sync_libfuncs_1 (sync_old_add_optab, "__sync_fetch_and_add", max);
-  init_sync_libfuncs_1 (sync_old_sub_optab, "__sync_fetch_and_sub", max);
-  init_sync_libfuncs_1 (sync_old_ior_optab, "__sync_fetch_and_or", max);
-  init_sync_libfuncs_1 (sync_old_and_optab, "__sync_fetch_and_and", max);
-  init_sync_libfuncs_1 (sync_old_xor_optab, "__sync_fetch_and_xor", max);
-  init_sync_libfuncs_1 (sync_old_nand_optab, "__sync_fetch_and_nand", max);
-
-  init_sync_libfuncs_1 (sync_new_add_optab, "__sync_add_and_fetch", max);
-  init_sync_libfuncs_1 (sync_new_sub_optab, "__sync_sub_and_fetch", max);
-  init_sync_libfuncs_1 (sync_new_ior_optab, "__sync_or_and_fetch", max);
-  init_sync_libfuncs_1 (sync_new_and_optab, "__sync_and_and_fetch", max);
-  init_sync_libfuncs_1 (sync_new_xor_optab, "__sync_xor_and_fetch", max);
-  init_sync_libfuncs_1 (sync_new_nand_optab, "__sync_nand_and_fetch", max);
-}
-
 /* Print information about the current contents of the optabs on
    STDERR.  */
 
@@ -6385,7 +4987,6 @@ debug_optab_libfuncs (void)
 	}
 }
 
-
 /* Generate insns to trap with code TCODE if OP1 and OP2 satisfy condition
    CODE.  Return 0 on failure.  */
 
@@ -6532,63 +5133,6 @@ vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
   if (!maybe_legitimize_operands (icode, 4, 2, ops))
     gcc_unreachable ();
   return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
-}
-
-/* Return true if VEC_PERM_EXPR of arbitrary input vectors can be expanded using
-   SIMD extensions of the CPU.  SEL may be NULL, which stands for an unknown
-   constant.  Note that additional permutations representing whole-vector shifts
-   may also be handled via the vec_shr optab, but only where the second input
-   vector is entirely constant zeroes; this case is not dealt with here.  */
-
-bool
-can_vec_perm_p (machine_mode mode, bool variable,
-		const unsigned char *sel)
-{
-  machine_mode qimode;
-
-  /* If the target doesn't implement a vector mode for the vector type,
-     then no operations are supported.  */
-  if (!VECTOR_MODE_P (mode))
-    return false;
-
-  if (!variable)
-    {
-      if (direct_optab_handler (vec_perm_const_optab, mode) != CODE_FOR_nothing
-	  && (sel == NULL
-	      || targetm.vectorize.vec_perm_const_ok == NULL
-	      || targetm.vectorize.vec_perm_const_ok (mode, sel)))
-	return true;
-    }
-
-  if (direct_optab_handler (vec_perm_optab, mode) != CODE_FOR_nothing)
-    return true;
-
-  /* We allow fallback to a QI vector mode, and adjust the mask.  */
-  if (GET_MODE_INNER (mode) == QImode)
-    return false;
-  qimode = mode_for_vector (QImode, GET_MODE_SIZE (mode));
-  if (!VECTOR_MODE_P (qimode))
-    return false;
-
-  /* ??? For completeness, we ought to check the QImode version of
-      vec_perm_const_optab.  But all users of this implicit lowering
-      feature implement the variable vec_perm_optab.  */
-  if (direct_optab_handler (vec_perm_optab, qimode) == CODE_FOR_nothing)
-    return false;
-
-  /* In order to support the lowering of variable permutations,
-     we need to support shifts and adds.  */
-  if (variable)
-    {
-      if (GET_MODE_UNIT_SIZE (mode) > 2
-	  && optab_handler (ashl_optab, mode) == CODE_FOR_nothing
-	  && optab_handler (vashl_optab, mode) == CODE_FOR_nothing)
-	return false;
-      if (optab_handler (add_optab, qimode) == CODE_FOR_nothing)
-	return false;
-    }
-
-  return true;
 }
 
 /* Checks if vec_perm mask SEL is a constant equivalent to a shift of the first
@@ -6800,37 +5344,6 @@ expand_vec_perm (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   return tmp;
 }
 
-/* Return insn code for a conditional operator with a comparison in
-   mode CMODE, unsigned if UNS is true, resulting in a value of mode VMODE.  */
-
-static inline enum insn_code
-get_vcond_icode (machine_mode vmode, machine_mode cmode, bool uns)
-{
-  enum insn_code icode = CODE_FOR_nothing;
-  if (uns)
-    icode = convert_optab_handler (vcondu_optab, vmode, cmode);
-  else
-    icode = convert_optab_handler (vcond_optab, vmode, cmode);
-  return icode;
-}
-
-/* Return TRUE iff, appropriate vector insns are available
-   for vector cond expr with vector type VALUE_TYPE and a comparison
-   with operand vector types in CMP_OP_TYPE.  */
-
-bool
-expand_vec_cond_expr_p (tree value_type, tree cmp_op_type)
-{
-  machine_mode value_mode = TYPE_MODE (value_type);
-  machine_mode cmp_op_mode = TYPE_MODE (cmp_op_type);
-  if (GET_MODE_SIZE (value_mode) != GET_MODE_SIZE (cmp_op_mode)
-      || GET_MODE_NUNITS (value_mode) != GET_MODE_NUNITS (cmp_op_mode)
-      || get_vcond_icode (TYPE_MODE (value_type), TYPE_MODE (cmp_op_type),
-			  TYPE_UNSIGNED (cmp_op_type)) == CODE_FOR_nothing)
-    return false;
-  return true;
-}
-
 /* Generate insns for a VEC_COND_EXPR, given its TYPE and its
    three operands.  */
 
@@ -6852,16 +5365,17 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
       op0a = TREE_OPERAND (op0, 0);
       op0b = TREE_OPERAND (op0, 1);
       tcode = TREE_CODE (op0);
+      unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
     }
   else
     {
       /* Fake op0 < 0.  */
-      gcc_assert (!TYPE_UNSIGNED (TREE_TYPE (op0)));
+      gcc_assert (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (op0)));
       op0a = op0;
       op0b = build_zero_cst (TREE_TYPE (op0));
       tcode = LT_EXPR;
+      unsignedp = false;
     }
-  unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
   cmp_op_mode = TYPE_MODE (TREE_TYPE (op0a));
 
 
@@ -6884,57 +5398,6 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   create_fixed_operand (&ops[5], XEXP (comparison, 1));
   expand_insn (icode, 6, ops);
   return ops[0].value;
-}
-
-/* Return non-zero if a highpart multiply is supported of can be synthisized.
-   For the benefit of expand_mult_highpart, the return value is 1 for direct,
-   2 for even/odd widening, and 3 for hi/lo widening.  */
-
-int
-can_mult_highpart_p (machine_mode mode, bool uns_p)
-{
-  optab op;
-  unsigned char *sel;
-  unsigned i, nunits;
-
-  op = uns_p ? umul_highpart_optab : smul_highpart_optab;
-  if (optab_handler (op, mode) != CODE_FOR_nothing)
-    return 1;
-
-  /* If the mode is an integral vector, synth from widening operations.  */
-  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
-    return 0;
-
-  nunits = GET_MODE_NUNITS (mode);
-  sel = XALLOCAVEC (unsigned char, nunits);
-
-  op = uns_p ? vec_widen_umult_even_optab : vec_widen_smult_even_optab;
-  if (optab_handler (op, mode) != CODE_FOR_nothing)
-    {
-      op = uns_p ? vec_widen_umult_odd_optab : vec_widen_smult_odd_optab;
-      if (optab_handler (op, mode) != CODE_FOR_nothing)
-	{
-	  for (i = 0; i < nunits; ++i)
-	    sel[i] = !BYTES_BIG_ENDIAN + (i & ~1) + ((i & 1) ? nunits : 0);
-	  if (can_vec_perm_p (mode, false, sel))
-	    return 2;
-	}
-    }
-
-  op = uns_p ? vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
-  if (optab_handler (op, mode) != CODE_FOR_nothing)
-    {
-      op = uns_p ? vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
-      if (optab_handler (op, mode) != CODE_FOR_nothing)
-	{
-	  for (i = 0; i < nunits; ++i)
-	    sel[i] = 2 * i + (BYTES_BIG_ENDIAN ? 0 : 1);
-	  if (can_vec_perm_p (mode, false, sel))
-	    return 3;
-	}
-    }
-
-  return 0;
 }
 
 /* Expand a highpart multiply.  */
@@ -7008,89 +5471,7 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
 
   return expand_vec_perm (mode, m1, m2, perm, target);
 }
-
-/* Return true if target supports vector masked load/store for mode.  */
-bool
-can_vec_mask_load_store_p (machine_mode mode, bool is_load)
-{
-  optab op = is_load ? maskload_optab : maskstore_optab;
-  machine_mode vmode;
-  unsigned int vector_sizes;
-
-  /* If mode is vector mode, check it directly.  */
-  if (VECTOR_MODE_P (mode))
-    return optab_handler (op, mode) != CODE_FOR_nothing;
-
-  /* Otherwise, return true if there is some vector mode with
-     the mask load/store supported.  */
-
-  /* See if there is any chance the mask load or store might be
-     vectorized.  If not, punt.  */
-  vmode = targetm.vectorize.preferred_simd_mode (mode);
-  if (!VECTOR_MODE_P (vmode))
-    return false;
-
-  if (optab_handler (op, vmode) != CODE_FOR_nothing)
-    return true;
-
-  vector_sizes = targetm.vectorize.autovectorize_vector_sizes ();
-  while (vector_sizes != 0)
-    {
-      unsigned int cur = 1 << floor_log2 (vector_sizes);
-      vector_sizes &= ~cur;
-      if (cur <= GET_MODE_SIZE (mode))
-	continue;
-      vmode = mode_for_vector (mode, cur / GET_MODE_SIZE (mode));
-      if (VECTOR_MODE_P (vmode)
-	  && optab_handler (op, vmode) != CODE_FOR_nothing)
-	return true;
-    }
-  return false;
-}
 
-/* Return true if there is a compare_and_swap pattern.  */
-
-bool
-can_compare_and_swap_p (machine_mode mode, bool allow_libcall)
-{
-  enum insn_code icode;
-
-  /* Check for __atomic_compare_and_swap.  */
-  icode = direct_optab_handler (atomic_compare_and_swap_optab, mode);
-  if (icode != CODE_FOR_nothing)
-    return true;
-
-  /* Check for __sync_compare_and_swap.  */
-  icode = optab_handler (sync_compare_and_swap_optab, mode);
-  if (icode != CODE_FOR_nothing)
-    return true;
-  if (allow_libcall && optab_libfunc (sync_compare_and_swap_optab, mode))
-    return true;
-
-  /* No inline compare and swap.  */
-  return false;
-}
-
-/* Return true if an atomic exchange can be performed.  */
-
-bool
-can_atomic_exchange_p (machine_mode mode, bool allow_libcall)
-{
-  enum insn_code icode;
-
-  /* Check for __atomic_exchange.  */
-  icode = direct_optab_handler (atomic_exchange_optab, mode);
-  if (icode != CODE_FOR_nothing)
-    return true;
-
-  /* Don't check __sync_test_and_set, as on some platforms that
-     has reduced functionality.  Targets that really do support
-     a proper exchange should simply be updated to the __atomics.  */
-
-  return can_compare_and_swap_p (mode, allow_libcall);
-}
-
-
 /* Helper function to find the MODE_CC set in a sync_compare_and_swap
    pattern.  */
 
@@ -7421,9 +5802,9 @@ expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model)
 
    *PTARGET_BOOL is an optional place to store the boolean success/failure.
    *PTARGET_OVAL is an optional place to store the old value from memory.
-   Both target parameters may be NULL to indicate that we do not care about
-   that return value.  Both target parameters are updated on success to
-   the actual location of the corresponding result.
+   Both target parameters may be NULL or const0_rtx to indicate that we do
+   not care about that return value.  Both target parameters are updated on
+   success to the actual location of the corresponding result.
 
    MEMMODEL is the memory model variant to use.
 
@@ -7448,6 +5829,9 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
   /* Make sure we always have some place to put the return oldval.
      Further, make sure that place is distinct from the input expected,
      just in case we need that path down below.  */
+  if (ptarget_oval && *ptarget_oval == const0_rtx)
+    ptarget_oval = NULL;
+
   if (ptarget_oval == NULL
       || (target_oval = *ptarget_oval) == NULL
       || reg_overlap_mentioned_p (expected, target_oval))
@@ -7457,6 +5841,9 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
   if (icode != CODE_FOR_nothing)
     {
       machine_mode bool_mode = insn_data[icode].operand[0].mode;
+
+      if (ptarget_bool && *ptarget_bool == const0_rtx)
+	ptarget_bool = NULL;
 
       /* Make sure we always have a place for the bool operand.  */
       if (ptarget_bool == NULL
@@ -8412,225 +6799,3 @@ expand_jump_insn (enum insn_code icode, unsigned int nops,
   if (!maybe_expand_jump_insn (icode, nops, ops))
     gcc_unreachable ();
 }
-
-/* Reduce conditional compilation elsewhere.  */
-
-/* Enumerates the possible types of structure operand to an
-   extraction_insn.  */
-enum extraction_type { ET_unaligned_mem, ET_reg };
-
-/* Check whether insv, extv or extzv pattern ICODE can be used for an
-   insertion or extraction of type TYPE on a structure of mode MODE.
-   Return true if so and fill in *INSN accordingly.  STRUCT_OP is the
-   operand number of the structure (the first sign_extract or zero_extract
-   operand) and FIELD_OP is the operand number of the field (the other
-   side of the set from the sign_extract or zero_extract).  */
-
-static bool
-get_traditional_extraction_insn (extraction_insn *insn,
-				 enum extraction_type type,
-				 machine_mode mode,
-				 enum insn_code icode,
-				 int struct_op, int field_op)
-{
-  const struct insn_data_d *data = &insn_data[icode];
-
-  machine_mode struct_mode = data->operand[struct_op].mode;
-  if (struct_mode == VOIDmode)
-    struct_mode = word_mode;
-  if (mode != struct_mode)
-    return false;
-
-  machine_mode field_mode = data->operand[field_op].mode;
-  if (field_mode == VOIDmode)
-    field_mode = word_mode;
-
-  machine_mode pos_mode = data->operand[struct_op + 2].mode;
-  if (pos_mode == VOIDmode)
-    pos_mode = word_mode;
-
-  insn->icode = icode;
-  insn->field_mode = field_mode;
-  insn->struct_mode = (type == ET_unaligned_mem ? byte_mode : struct_mode);
-  insn->pos_mode = pos_mode;
-  return true;
-}
-
-/* Return true if an optab exists to perform an insertion or extraction
-   of type TYPE in mode MODE.  Describe the instruction in *INSN if so.
-
-   REG_OPTAB is the optab to use for register structures and
-   MISALIGN_OPTAB is the optab to use for misaligned memory structures.
-   POS_OP is the operand number of the bit position.  */
-
-static bool
-get_optab_extraction_insn (struct extraction_insn *insn,
-			   enum extraction_type type,
-			   machine_mode mode, direct_optab reg_optab,
-			   direct_optab misalign_optab, int pos_op)
-{
-  direct_optab optab = (type == ET_unaligned_mem ? misalign_optab : reg_optab);
-  enum insn_code icode = direct_optab_handler (optab, mode);
-  if (icode == CODE_FOR_nothing)
-    return false;
-
-  const struct insn_data_d *data = &insn_data[icode];
-
-  insn->icode = icode;
-  insn->field_mode = mode;
-  insn->struct_mode = (type == ET_unaligned_mem ? BLKmode : mode);
-  insn->pos_mode = data->operand[pos_op].mode;
-  if (insn->pos_mode == VOIDmode)
-    insn->pos_mode = word_mode;
-  return true;
-}
-
-/* Return true if an instruction exists to perform an insertion or
-   extraction (PATTERN says which) of type TYPE in mode MODE.
-   Describe the instruction in *INSN if so.  */
-
-static bool
-get_extraction_insn (extraction_insn *insn,
-		     enum extraction_pattern pattern,
-		     enum extraction_type type,
-		     machine_mode mode)
-{
-  switch (pattern)
-    {
-    case EP_insv:
-      if (targetm.have_insv ()
-	  && get_traditional_extraction_insn (insn, type, mode,
-					      targetm.code_for_insv, 0, 3))
-	return true;
-      return get_optab_extraction_insn (insn, type, mode, insv_optab,
-					insvmisalign_optab, 2);
-
-    case EP_extv:
-      if (targetm.have_extv ()
-	  && get_traditional_extraction_insn (insn, type, mode,
-					      targetm.code_for_extv, 1, 0))
-	return true;
-      return get_optab_extraction_insn (insn, type, mode, extv_optab,
-					extvmisalign_optab, 3);
-
-    case EP_extzv:
-      if (targetm.have_extzv ()
-	  && get_traditional_extraction_insn (insn, type, mode,
-					      targetm.code_for_extzv, 1, 0))
-	return true;
-      return get_optab_extraction_insn (insn, type, mode, extzv_optab,
-					extzvmisalign_optab, 3);
-
-    default:
-      gcc_unreachable ();
-    }
-}
-
-/* Return true if an instruction exists to access a field of mode
-   FIELDMODE in a structure that has STRUCT_BITS significant bits.
-   Describe the "best" such instruction in *INSN if so.  PATTERN and
-   TYPE describe the type of insertion or extraction we want to perform.
-
-   For an insertion, the number of significant structure bits includes
-   all bits of the target.  For an extraction, it need only include the
-   most significant bit of the field.  Larger widths are acceptable
-   in both cases.  */
-
-static bool
-get_best_extraction_insn (extraction_insn *insn,
-			  enum extraction_pattern pattern,
-			  enum extraction_type type,
-			  unsigned HOST_WIDE_INT struct_bits,
-			  machine_mode field_mode)
-{
-  machine_mode mode = smallest_mode_for_size (struct_bits, MODE_INT);
-  while (mode != VOIDmode)
-    {
-      if (get_extraction_insn (insn, pattern, type, mode))
-	{
-	  while (mode != VOIDmode
-		 && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (field_mode)
-		 && !TRULY_NOOP_TRUNCATION_MODES_P (insn->field_mode,
-						    field_mode))
-	    {
-	      get_extraction_insn (insn, pattern, type, mode);
-	      mode = GET_MODE_WIDER_MODE (mode);
-	    }
-	  return true;
-	}
-      mode = GET_MODE_WIDER_MODE (mode);
-    }
-  return false;
-}
-
-/* Return true if an instruction exists to access a field of mode
-   FIELDMODE in a register structure that has STRUCT_BITS significant bits.
-   Describe the "best" such instruction in *INSN if so.  PATTERN describes
-   the type of insertion or extraction we want to perform.
-
-   For an insertion, the number of significant structure bits includes
-   all bits of the target.  For an extraction, it need only include the
-   most significant bit of the field.  Larger widths are acceptable
-   in both cases.  */
-
-bool
-get_best_reg_extraction_insn (extraction_insn *insn,
-			      enum extraction_pattern pattern,
-			      unsigned HOST_WIDE_INT struct_bits,
-			      machine_mode field_mode)
-{
-  return get_best_extraction_insn (insn, pattern, ET_reg, struct_bits,
-				   field_mode);
-}
-
-/* Return true if an instruction exists to access a field of BITSIZE
-   bits starting BITNUM bits into a memory structure.  Describe the
-   "best" such instruction in *INSN if so.  PATTERN describes the type
-   of insertion or extraction we want to perform and FIELDMODE is the
-   natural mode of the extracted field.
-
-   The instructions considered here only access bytes that overlap
-   the bitfield; they do not touch any surrounding bytes.  */
-
-bool
-get_best_mem_extraction_insn (extraction_insn *insn,
-			      enum extraction_pattern pattern,
-			      HOST_WIDE_INT bitsize, HOST_WIDE_INT bitnum,
-			      machine_mode field_mode)
-{
-  unsigned HOST_WIDE_INT struct_bits = (bitnum % BITS_PER_UNIT
-					+ bitsize
-					+ BITS_PER_UNIT - 1);
-  struct_bits -= struct_bits % BITS_PER_UNIT;
-  return get_best_extraction_insn (insn, pattern, ET_unaligned_mem,
-				   struct_bits, field_mode);
-}
-
-/* Determine whether "1 << x" is relatively cheap in word_mode.  */
-
-bool
-lshift_cheap_p (bool speed_p)
-{
-  /* FIXME: This should be made target dependent via this "this_target"
-     mechanism, similar to e.g. can_copy_init_p in gcse.c.  */
-  static bool init[2] = { false, false };
-  static bool cheap[2] = { true, true };
-
-  /* If the targer has no lshift in word_mode, the operation will most
-     probably not be cheap.  ??? Does GCC even work for such targets?  */
-  if (optab_handler (ashl_optab, word_mode) == CODE_FOR_nothing)
-    return false;
-
-  if (!init[speed_p])
-    {
-      rtx reg = gen_raw_REG (word_mode, 10000);
-      int cost = set_src_cost (gen_rtx_ASHIFT (word_mode, const1_rtx, reg),
-			       word_mode, speed_p);
-      cheap[speed_p] = cost < COSTS_N_INSNS (3);
-      init[speed_p] = true;
-    }
-
-  return cheap[speed_p];
-}
-
-#include "gt-optabs.h"

@@ -37,91 +37,91 @@ Driver
 
 msoft-float
 Target Report RejectNegative Mask(SOFT_FLOAT)
-Use software emulation for floating point (default)
+Use software emulation for floating point (default).
 
 mhard-float
 Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
-Use hardware floating point instructions
+Use hardware floating point instructions.
 
 msmall-divides
 Target Mask(SMALL_DIVIDES)
-Use table lookup optimization for small signed integer divisions
+Use table lookup optimization for small signed integer divisions.
 
 mcpu=
 Target RejectNegative Joined Var(microblaze_select_cpu)
--mcpu=PROCESSOR		Use features of and schedule code for given CPU
+-mcpu=PROCESSOR		Use features of and schedule code for given CPU.
 
 mmemcpy
 Target Mask(MEMCPY)
-Don't optimize block moves, use memcpy
+Don't optimize block moves, use memcpy.
 
 mbig-endian
 Target Report RejectNegative InverseMask(LITTLE_ENDIAN)
-Assume target CPU is configured as big endian
+Assume target CPU is configured as big endian.
 
 mlittle-endian
 Target Report RejectNegative Mask(LITTLE_ENDIAN)
-Assume target CPU is configured as little endian
+Assume target CPU is configured as little endian.
 
 mxl-soft-mul
 Target Mask(SOFT_MUL)
-Use the soft multiply emulation (default)
+Use the soft multiply emulation (default).
 
 mxl-reorder
 Target Var(TARGET_REORDER) Init(2)
-Use reorder instructions (swap and byte reversed load/store) (default)
+Use reorder instructions (swap and byte reversed load/store) (default).
 
 mxl-soft-div
 Target Mask(SOFT_DIV)
-Use the software emulation for divides (default)
+Use the software emulation for divides (default).
 
 mxl-barrel-shift
 Target Mask(BARREL_SHIFT)
-Use the hardware barrel shifter instead of emulation
+Use the hardware barrel shifter instead of emulation.
 
 mxl-pattern-compare
 Target Mask(PATTERN_COMPARE)
-Use pattern compare instructions
+Use pattern compare instructions.
 
 mxl-stack-check
 Target Mask(STACK_CHECK) Warn(%qs is deprecated; use -fstack-check)
-Check for stack overflow at runtime
+Check for stack overflow at runtime.
 
 mxl-gp-opt
 Target Mask(XLGPOPT)
-Use GP relative sdata/sbss sections
+Use GP relative sdata/sbss sections.
 
 mno-clearbss
 Target RejectNegative Var(flag_zero_initialized_in_bss, 0) Warn(%qs is deprecated; use -fno-zero-initialized-in-bss)
-Clear the BSS to zero and place zero initialized in BSS
+Clear the BSS to zero and place zero initialized in BSS.
 
 mxl-multiply-high
 Target Mask(MULTIPLY_HIGH)
-Use multiply high instructions for high part of 32x32 multiply
+Use multiply high instructions for high part of 32x32 multiply.
 
 mxl-float-convert
 Target Mask(FLOAT_CONVERT)
-Use hardware floating point conversion instructions
+Use hardware floating point conversion instructions.
 
 mxl-float-sqrt
 Target Mask(FLOAT_SQRT)
-Use hardware floating point square root instruction
+Use hardware floating point square root instruction.
 
 mxl-mode-executable
 Target Mask(XL_MODE_EXECUTABLE)
-Description for mxl-mode-executable
+Description for mxl-mode-executable.
 
 mxl-mode-xmdstub
 Target Mask(XL_MODE_XMDSTUB)
-Description for mxl-mode-xmdstub
+Description for mxl-mode-xmdstub.
 
 mxl-mode-bootstrap
 Target Mask(XL_MODE_BOOTSTRAP)
-Description for mxl-mode-bootstrap
+Description for mxl-mode-bootstrap.
 
 mxl-mode-novectors
 Target Mask(XL_MODE_NOVECTORS)
-Description for mxl-mode-novectors
+Description for mxl-mode-novectors.
 
 mxl-mode-xilkernel
 Target

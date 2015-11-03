@@ -710,13 +710,9 @@ print_operand (operand *o, FILE *f = stderr, bool flattened = false)
 {
   if (capture *c = dyn_cast<capture *> (o))
     {
-      fprintf (f, "@%u", c->where);
       if (c->what && flattened == false)
-	{
-	  putc (':', f);
-	  print_operand (c->what, f, flattened);
-	  putc (' ', f);
-	}
+	print_operand (c->what, f, flattened);
+      fprintf (f, "@%u", c->where);
     }
 
   else if (predicate *p = dyn_cast<predicate *> (o))
@@ -727,18 +723,22 @@ print_operand (operand *o, FILE *f = stderr, bool flattened = false)
 
   else if (expr *e = dyn_cast<expr *> (o))
     {
-      fprintf (f, "(%s", e->operation->id);
-
-      if (flattened == false)
+      if (e->ops.length () == 0)
+	fprintf (f, "%s", e->operation->id);
+      else
 	{
-	  putc (' ', f);
-	  for (unsigned i = 0; i < e->ops.length (); ++i)
+	  fprintf (f, "(%s", e->operation->id);
+
+	  if (flattened == false)
 	    {
-	      print_operand (e->ops[i], f, flattened);
-	      putc (' ', f);
+	      for (unsigned i = 0; i < e->ops.length (); ++i)
+		{
+		  putc (' ', f);
+		  print_operand (e->ops[i], f, flattened);
+		}
 	    }
+	  putc (')', f);
 	}
-      putc (')', f);
     }
 
   else
@@ -1563,6 +1563,14 @@ dt_node::append_simplify (simplify *s, unsigned pattern_no,
 			  dt_operand **indexes)
 {
   dt_simplify *n = new dt_simplify (s, pattern_no, indexes);
+  for (unsigned i = 0; i < kids.length (); ++i)
+    if (dt_simplify *s2 = dyn_cast <dt_simplify *> (kids[i]))
+      {
+	warning_at (s->match->location, "duplicate pattern");
+	warning_at (s2->s->match->location, "previous pattern defined here");
+	print_operand (s->match, stderr);
+	fprintf (stderr, "\n");
+      }
   return append_node (n);
 }
 
@@ -2604,7 +2612,7 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
       fprintf_indent (f, indent,
 		      "    {\n");
       fprintf_indent (f, indent,
-		      "      gimple def_stmt = SSA_NAME_DEF_STMT (%s);\n",
+		      "      gimple *def_stmt = SSA_NAME_DEF_STMT (%s);\n",
 		      kid_opname);
 
       indent += 6;
@@ -3155,7 +3163,11 @@ dt_simplify::gen (FILE *f, int indent, bool gimple)
 		      s->capture_max + 1, indexes[0]->get_name (opname));
 
       for (int i = 1; i <= s->capture_max; ++i)
-	fprintf (f, ", %s", indexes[i]->get_name (opname));
+	{
+	  if (!indexes[i])
+	    break;
+	  fprintf (f, ", %s", indexes[i]->get_name (opname));
+	}
       fprintf (f, " };\n");
     }
 
@@ -3823,7 +3835,7 @@ parser::parse_expr ()
 
   if (token->type == CPP_ATSIGN
       && !(token->flags & PREV_WHITE))
-    op = parse_capture (e, !parsing_match_operand);
+    op = parse_capture (e, false);
   else if (force_capture)
     {
       unsigned num = capture_ids->elements ();
@@ -3857,6 +3869,9 @@ parser::parse_expr ()
 	  e->expr_type = expr_type;
 	  return op;
 	}
+      else if (!(token->flags & PREV_WHITE))
+	fatal_at (token, "expected expression operand");
+
       e->append_op (parse_op ());
     }
   while (1);

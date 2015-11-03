@@ -11,13 +11,13 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-extern void abort();
+extern void abort (void);
 
-short as,bs,cs;
+short as,bs,cs,ds;
 char ac,bc,cc;
 
 int
-main ()
+main (void)
 {
 
   ac = __atomic_exchange_n (&bc, cc, __ATOMIC_RELAXED);
@@ -42,14 +42,9 @@ main ()
 
   /* This should be translated to __atomic_fetch_add for the library */
   as = __atomic_add_fetch (&cs, 10, __ATOMIC_RELAXED);
-
   if (cs != 1)
     abort ();
 
-  /* The fake external function should return 10.  */
-  if (__atomic_is_lock_free (4, 0) != 10)
-    abort ();
-   
   /* PR 51040 was caused by arithmetic code not patching up nand_fetch properly
      when used an an external function.  Look for proper return value here.  */
   ac = 0x3C;
@@ -57,8 +52,10 @@ main ()
   if (bc != ac)
     abort ();
 
+  if (!__atomic_is_lock_free (2, &ds))
+    abort ();
+  if (ds != 1)
+    abort ();
+
   return 0;
 }
-
-
-

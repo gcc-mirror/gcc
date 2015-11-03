@@ -40,7 +40,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* X86_TUNE_SCHEDULE: Enable scheduling.  */
 DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
-          m_PENT | m_IAMCU | m_PPRO | m_CORE_ALL | m_BONNELL | m_SILVERMONT
+          m_PENT | m_LAKEMONT | m_PPRO | m_CORE_ALL | m_BONNELL | m_SILVERMONT
 	  | m_INTEL | m_KNL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC)
 
 /* X86_TUNE_PARTIAL_REG_DEPENDENCY: Enable more register renaming
@@ -59,7 +59,7 @@ DEF_TUNE (X86_TUNE_PARTIAL_REG_DEPENDENCY, "partial_reg_dependency",
    that can be partly masked by careful scheduling of moves.  */
 DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY, "sse_partial_reg_dependency",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_AMDFAM10
-	  | m_BDVER | m_GENERIC)
+	  | m_BDVER | m_ZNVER1 | m_GENERIC)
 
 /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
    are resolved on SSE register parts instead of whole registers, so we may
@@ -97,19 +97,19 @@ DEF_TUNE (X86_TUNE_MEMORY_MISMATCH_STALL, "memory_mismatch_stall",
    conditional jump instruction for 32 bit TARGET.
    FIXME: revisit for generic.  */
 DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_32, "fuse_cmp_and_branch_32",
-          m_CORE_ALL | m_BDVER)
+	  m_CORE_ALL | m_BDVER | m_ZNVER1)
 
 /* X86_TUNE_FUSE_CMP_AND_BRANCH_64: Fuse compare with a subsequent
    conditional jump instruction for TARGET_64BIT.
    FIXME: revisit for generic.  */
 DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_64, "fuse_cmp_and_branch_64",
-          m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_BDVER)
+	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_BDVER | m_ZNVER1)
 
 /* X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS: Fuse compare with a
    subsequent conditional jump instruction when the condition jump
    check sign flag (SF) or overflow flag (OF).  */
 DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS, "fuse_cmp_and_branch_soflags",
-          m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_BDVER)
+	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_BDVER | m_ZNVER1)
 
 /* X86_TUNE_FUSE_ALU_AND_BRANCH: Fuse alu with a subsequent conditional
    jump instruction when the alu instruction produces the CCFLAG consumed by
@@ -126,7 +126,7 @@ DEF_TUNE (X86_TUNE_REASSOC_INT_TO_PARALLEL, "reassoc_int_to_parallel",
    during reassociation of fp computation.  */
 DEF_TUNE (X86_TUNE_REASSOC_FP_TO_PARALLEL, "reassoc_fp_to_parallel",
           m_BONNELL | m_SILVERMONT | m_HASWELL | m_KNL |m_INTEL | m_BDVER1
-	  | m_BDVER2 | m_GENERIC)
+	  | m_BDVER2 | m_ZNVER1 | m_GENERIC)
 
 /*****************************************************************************/
 /* Function prologue, epilogue and function calling sequences.               */
@@ -172,21 +172,21 @@ DEF_TUNE (X86_TUNE_PUSH_MEMORY, "push_memory",
 /* X86_TUNE_SINGLE_PUSH: Enable if single push insn is preferred
    over esp subtraction.  */
 DEF_TUNE (X86_TUNE_SINGLE_PUSH, "single_push", m_386 | m_486 | m_PENT
-	  | m_IAMCU | m_K6_GEODE)
+	  | m_LAKEMONT | m_K6_GEODE)
 
 /* X86_TUNE_DOUBLE_PUSH. Enable if double push insn is preferred
    over esp subtraction.  */
-DEF_TUNE (X86_TUNE_DOUBLE_PUSH, "double_push", m_PENT | m_IAMCU
+DEF_TUNE (X86_TUNE_DOUBLE_PUSH, "double_push", m_PENT | m_LAKEMONT
 	  | m_K6_GEODE)
 
 /* X86_TUNE_SINGLE_POP: Enable if single pop insn is preferred
    over esp addition.  */
 DEF_TUNE (X86_TUNE_SINGLE_POP, "single_pop", m_386 | m_486 | m_PENT
-	  | m_IAMCU | m_PPRO)
+	  | m_LAKEMONT | m_PPRO)
 
 /* X86_TUNE_DOUBLE_POP: Enable if double pop insn is preferred
    over esp addition.  */
-DEF_TUNE (X86_TUNE_DOUBLE_POP, "double_pop", m_PENT | m_IAMCU)
+DEF_TUNE (X86_TUNE_DOUBLE_POP, "double_pop", m_PENT | m_LAKEMONT)
 
 /*****************************************************************************/
 /* Branch predictor tuning  		                                     */
@@ -226,7 +226,7 @@ DEF_TUNE (X86_TUNE_LCP_STALL, "lcp_stall", m_CORE_ALL | m_GENERIC)
 
 /* X86_TUNE_READ_MODIFY: Enable use of read-modify instructions such
    as "add mem, reg".  */
-DEF_TUNE (X86_TUNE_READ_MODIFY, "read_modify", ~(m_PENT | m_IAMCU | m_PPRO))
+DEF_TUNE (X86_TUNE_READ_MODIFY, "read_modify", ~(m_PENT | m_LAKEMONT | m_PPRO))
 
 /* X86_TUNE_USE_INCDEC: Enable use of inc/dec instructions.   */
 DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec",
@@ -282,17 +282,17 @@ DEF_TUNE (X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES,
 DEF_TUNE (X86_TUNE_USE_SAHF, "use_sahf",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT
 	  | m_KNL | m_INTEL | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER
-	  | m_BTVER | m_GENERIC)
+	  | m_BTVER | m_ZNVER1 | m_GENERIC)
 
 /* X86_TUNE_USE_CLTD: Controls use of CLTD and CTQO instructions.  */
 DEF_TUNE (X86_TUNE_USE_CLTD, "use_cltd",
-	  ~(m_PENT | m_IAMCU | m_BONNELL | m_SILVERMONT | m_KNL | m_INTEL
+	  ~(m_PENT | m_LAKEMONT | m_BONNELL | m_SILVERMONT | m_KNL | m_INTEL
 	    | m_K6))
 
 /* X86_TUNE_USE_BT: Enable use of BT (bit test) instructions.  */
 DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
           m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_KNL | m_INTEL
-	  | m_AMD_MULTIPLE | m_GENERIC)
+	  | m_LAKEMONT | m_AMD_MULTIPLE | m_GENERIC)
 
 /*****************************************************************************/
 /* 387 instruction selection tuning                                          */
@@ -307,7 +307,7 @@ DEF_TUNE (X86_TUNE_USE_HIMODE_FIOP, "use_himode_fiop",
 /* X86_TUNE_USE_SIMODE_FIOP: Enables use of x87 instructions with 32bit
    integer operand.  */
 DEF_TUNE (X86_TUNE_USE_SIMODE_FIOP, "use_simode_fiop",
-          ~(m_PENT | m_IAMCU | m_PPRO | m_CORE_ALL | m_BONNELL
+          ~(m_PENT | m_LAKEMONT | m_PPRO | m_CORE_ALL | m_BONNELL
 	    | m_SILVERMONT | m_KNL | m_INTEL | m_AMD_MULTIPLE | m_GENERIC))
 
 /* X86_TUNE_USE_FFREEP: Use freep instruction instead of fstp.  */
@@ -334,19 +334,19 @@ DEF_TUNE (X86_TUNE_GENERAL_REGS_SSE_SPILL, "general_regs_sse_spill",
 /* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL: Use movups for misaligned loads instead
    of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal",
-          m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_AMDFAM10 | m_BDVER
-	  | m_BTVER | m_SILVERMONT | m_KNL | m_INTEL | m_GENERIC)
+	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_SILVERMONT | m_KNL
+	  | m_INTEL | m_AMDFAM10 | m_BDVER | m_BTVER | m_ZNVER1 | m_GENERIC)
 
 /* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL: Use movups for misaligned stores instead
    of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal",
-          m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_BDVER | m_SILVERMONT
-	  | m_KNL | m_INTEL | m_GENERIC)
+	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_SILVERMONT | m_KNL
+	  | m_INTEL | m_BDVER | m_ZNVER1 | m_GENERIC)
 
 /* Use packed single precision instructions where posisble.  I.e. movups instead
    of movupd.  */
 DEF_TUNE (X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL, "sse_packed_single_insn_optimal",
-          m_BDVER)
+	  m_BDVER | m_ZNVER1)
 
 /* X86_TUNE_SSE_TYPELESS_STORES: Always movaps/movups for 128bit stores.   */
 DEF_TUNE (X86_TUNE_SSE_TYPELESS_STORES, "sse_typeless_stores",
@@ -355,7 +355,8 @@ DEF_TUNE (X86_TUNE_SSE_TYPELESS_STORES, "sse_typeless_stores",
 /* X86_TUNE_SSE_LOAD0_BY_PXOR: Always use pxor to load0 as opposed to
    xorps/xorpd and other variants.  */
 DEF_TUNE (X86_TUNE_SSE_LOAD0_BY_PXOR, "sse_load0_by_pxor",
-	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BDVER | m_BTVER | m_GENERIC)
+	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BDVER | m_BTVER | m_ZNVER1
+	  | m_GENERIC)
 
 /* X86_TUNE_INTER_UNIT_MOVES_TO_VEC: Enable moves in from integer
    to SSE registers.  If disabled, the moves will be done by storing
@@ -415,11 +416,12 @@ DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL, "256_unaligned_load_optimal",
 /* X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL: if false, unaligned stores are
    split.  */
 DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL, "256_unaligned_store_optimal",
-          ~(m_NEHALEM | m_SANDYBRIDGE | m_BDVER | m_GENERIC))
+	  ~(m_NEHALEM | m_SANDYBRIDGE | m_BDVER | m_ZNVER1 | m_GENERIC))
 
 /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
    the auto-vectorizer.  */
-DEF_TUNE (X86_TUNE_AVX128_OPTIMAL, "avx128_optimal", m_BDVER | m_BTVER2)
+DEF_TUNE (X86_TUNE_AVX128_OPTIMAL, "avx128_optimal", m_BDVER | m_BTVER2
+	  | m_ZNVER1)
 
 /*****************************************************************************/
 /* Historical relics: tuning flags that helps a specific old CPU designs     */
@@ -433,7 +435,7 @@ DEF_TUNE (X86_TUNE_DOUBLE_WITH_ADD, "double_with_add", ~m_386)
    such as fsqrt, fprem, fsin, fcos, fsincos etc.
    Should be enabled for all targets that always has coprocesor.  */
 DEF_TUNE (X86_TUNE_ALWAYS_FANCY_MATH_387, "always_fancy_math_387",
-          ~(m_386 | m_486))
+          ~(m_386 | m_486 | m_LAKEMONT))
 
 /* X86_TUNE_UNROLL_STRLEN: Produce (quite lame) unrolled sequence for
    inline strlen.  This affects only -minline-all-stringops mode. By
@@ -448,7 +450,7 @@ DEF_TUNE (X86_TUNE_SHIFT1, "shift1", ~m_486)
 /* X86_TUNE_ZERO_EXTEND_WITH_AND: Use AND instruction instead
    of mozbl/movwl.  */
 DEF_TUNE (X86_TUNE_ZERO_EXTEND_WITH_AND, "zero_extend_with_and",
-	  m_486 | m_PENT | m_IAMCU)
+	  m_486 | m_PENT)
 
 /* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
    and SImode multiply, but 386 and 486 do HImode multiply faster.  */
@@ -459,20 +461,20 @@ DEF_TUNE (X86_TUNE_PROMOTE_HIMODE_IMUL, "promote_himode_imul",
    into 16bit/8bit when resulting sequence is shorter.  For example
    for "and $-65536, reg" to 16bit store of 0.  */
 DEF_TUNE (X86_TUNE_FAST_PREFIX, "fast_prefix",
-	  ~(m_386 | m_486 | m_PENT | m_IAMCU))
+	  ~(m_386 | m_486 | m_PENT | m_LAKEMONT))
 
 /* X86_TUNE_READ_MODIFY_WRITE: Enable use of read modify write instructions
    such as "add $1, mem".  */
 DEF_TUNE (X86_TUNE_READ_MODIFY_WRITE, "read_modify_write",
-	  ~(m_PENT | m_IAMCU))
+	  ~(m_PENT | m_LAKEMONT))
 
 /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
    than a MOV.  */
-DEF_TUNE (X86_TUNE_MOVE_M1_VIA_OR, "move_m1_via_or", m_PENT | m_IAMCU)
+DEF_TUNE (X86_TUNE_MOVE_M1_VIA_OR, "move_m1_via_or", m_PENT | m_LAKEMONT)
 
 /* X86_TUNE_NOT_UNPAIRABLE: NOT is not pairable on Pentium, while XOR is,
    but one byte longer.  */
-DEF_TUNE (X86_TUNE_NOT_UNPAIRABLE, "not_unpairable", m_PENT | m_IAMCU)
+DEF_TUNE (X86_TUNE_NOT_UNPAIRABLE, "not_unpairable", m_PENT | m_LAKEMONT)
 
 /* X86_TUNE_PARTIAL_REG_STALL: Pentium pro, unlike later chips, handled
    use of partial registers by renaming.  This improved performance of 16bit

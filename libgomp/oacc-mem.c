@@ -289,7 +289,8 @@ acc_map_data (void *h, void *d, size_t s)
       if (d != h)
         gomp_fatal ("cannot map data on shared-memory system");
 
-      tgt = gomp_map_vars (NULL, 0, NULL, NULL, NULL, NULL, true, false);
+      tgt = gomp_map_vars (NULL, 0, NULL, NULL, NULL, NULL, true,
+			   GOMP_MAP_VARS_OPENACC);
     }
   else
     {
@@ -318,7 +319,7 @@ acc_map_data (void *h, void *d, size_t s)
       gomp_mutex_unlock (&acc_dev->lock);
 
       tgt = gomp_map_vars (acc_dev, mapnum, &hostaddrs, &devaddrs, &sizes,
-			   &kinds, true, false);
+			   &kinds, true, GOMP_MAP_VARS_OPENACC);
     }
 
   gomp_mutex_lock (&acc_dev->lock);
@@ -447,7 +448,7 @@ present_create_copy (unsigned f, void *h, size_t s)
       gomp_mutex_unlock (&acc_dev->lock);
 
       tgt = gomp_map_vars (acc_dev, mapnum, &hostaddrs, NULL, &s, &kinds, true,
-			   false);
+			   GOMP_MAP_VARS_OPENACC);
 
       gomp_mutex_lock (&acc_dev->lock);
 
@@ -546,15 +547,15 @@ update_dev_host (int is_dev, void *h, size_t s)
 {
   splay_tree_key n;
   void *d;
+
+  goacc_lazy_initialize ();
+
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
 
   gomp_mutex_lock (&acc_dev->lock);
 
   n = lookup_host (acc_dev, h, s);
-
-  /* No need to call lazy open, as the data must already have been
-     mapped.  */
 
   if (!n)
     {
@@ -594,7 +595,7 @@ gomp_acc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
 
   gomp_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
   tgt = gomp_map_vars (acc_dev, mapnum, hostaddrs,
-		       NULL, sizes, kinds, true, false);
+		       NULL, sizes, kinds, true, GOMP_MAP_VARS_OPENACC);
   gomp_debug (0, "  %s: mappings prepared\n", __FUNCTION__);
 
   gomp_mutex_lock (&acc_dev->lock);
@@ -651,7 +652,7 @@ gomp_acc_remove_pointer (void *h, bool force_copyfrom, int async, int mapnum)
     }
 
   if (force_copyfrom)
-    t->list[0]->copy_from = 1;
+    t->list[0].copy_from = 1;
 
   gomp_mutex_unlock (&acc_dev->lock);
 

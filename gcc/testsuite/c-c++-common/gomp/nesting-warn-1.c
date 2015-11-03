@@ -7,7 +7,7 @@ f_omp_target (void)
   {
 #pragma omp target /* { dg-warning "target construct inside of target region" } */
     ;
-#pragma omp target data /* { dg-warning "target data construct inside of target region" } */
+#pragma omp target data map(i) /* { dg-warning "target data construct inside of target region" } */
     ;
 #pragma omp target update to(i) /* { dg-warning "target update construct inside of target region" } */
 
@@ -15,7 +15,7 @@ f_omp_target (void)
     {
 #pragma omp target /* { dg-warning "target construct inside of target region" } */
       ;
-#pragma omp target data /* { dg-warning "target data construct inside of target region" } */
+#pragma omp target data map(i) /* { dg-warning "target data construct inside of target region" } */
       ;
 #pragma omp target update to(i) /* { dg-warning "target update construct inside of target region" } */
     }

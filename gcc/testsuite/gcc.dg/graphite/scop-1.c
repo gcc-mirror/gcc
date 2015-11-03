@@ -1,6 +1,6 @@
 void bar (void);
 
-int toto()
+int toto ()
 {
   int i, j, k;
   int a[101][100];
@@ -16,12 +16,12 @@ int toto()
       bar ();
 
       for (j = 1; j < 100; j++)
-	a[j][i] = a[j+1][i-1] + 2;
+	a[j][i] = a[j+1][i-1] + 3;
 
       b[i] = a[i-1][i] + 2;
 
       for (j = 1; j < 100; j++)
-	a[j][i] = a[j+1][i-1] + 2;
+	a[j][i] = a[j+1][i-1] + 4;
     }
 
   return a[3][5] + b[1];

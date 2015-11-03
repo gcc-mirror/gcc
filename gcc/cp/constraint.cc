@@ -1379,6 +1379,89 @@ make_constrained_auto (tree con, tree args)
   return decl;
 }
 
+/* Given the predicate constraint T from a placeholder type, extract its
+   TMPL and ARGS.  */
+
+void
+placeholder_extract_concept_and_args (tree t, tree &tmpl, tree &args)
+{
+  gcc_assert (TREE_CODE (t) == PRED_CONSTR);
+  t = PRED_CONSTR_EXPR (t);
+  gcc_assert (TREE_CODE (t) == CALL_EXPR
+              || TREE_CODE (t) == TEMPLATE_ID_EXPR
+              || VAR_P (t));
+
+  if (TREE_CODE (t) == CALL_EXPR)
+    t = CALL_EXPR_FN (t);
+  if (TREE_CODE (t) == TEMPLATE_ID_EXPR)
+    {
+      tmpl = TREE_OPERAND (t, 0);
+      if (TREE_CODE (tmpl) == OVERLOAD)
+	{
+	  gcc_assert (OVL_CHAIN (tmpl) == NULL_TREE);
+	  tmpl = OVL_FUNCTION (tmpl);
+	}
+      args = TREE_OPERAND (t, 1);
+    }
+  else if (DECL_P (t))
+    {
+      tmpl = DECL_TI_TEMPLATE (t);
+      args = DECL_TI_ARGS (t);
+    }
+  else
+    gcc_unreachable ();
+}
+
+/* Returns true iff the placeholders C1 and C2 are equivalent.  C1
+   and C2 can be either PRED_CONSTR_EXPR or TEMPLATE_TYPE_PARM.  */
+
+bool
+equivalent_placeholder_constraints (tree c1, tree c2)
+{
+  if (TREE_CODE (c1) == TEMPLATE_TYPE_PARM)
+    c1 = PLACEHOLDER_TYPE_CONSTRAINTS (c1);
+  if (TREE_CODE (c2) == TEMPLATE_TYPE_PARM)
+    c2 = PLACEHOLDER_TYPE_CONSTRAINTS (c2);
+
+  if (c1 == c2)
+    return true;
+  if (!c1 || !c2)
+    return false;
+
+  tree t1, t2, a1, a2;
+  placeholder_extract_concept_and_args (c1, t1, a1);
+  placeholder_extract_concept_and_args (c2, t2, a2);
+
+  if (t1 != t2)
+    return false;
+  int len = TREE_VEC_LENGTH (a1);
+  if (len != TREE_VEC_LENGTH (a2))
+    return false;
+  /* Skip the first argument to avoid infinite recursion on the
+     placeholder auto itself.  */
+  for (int i = len-1; i > 0; --i)
+    if (!cp_tree_equal (TREE_VEC_ELT (a1, i),
+			TREE_VEC_ELT (a2, i)))
+      return false;
+  return true;
+}
+
+/* Return a hash value for the placeholder PRED_CONSTR C.  */
+
+hashval_t
+hash_placeholder_constraint (tree c)
+{
+  tree t, a;
+  placeholder_extract_concept_and_args (c, t, a);
+
+  /* Like hash_tmpl_and_args, but skip the first argument.  */
+  hashval_t val = iterative_hash_object (DECL_UID (t), 0);
+
+  for (int i = TREE_VEC_LENGTH (a)-1; i > 0; --i)
+    val = iterative_hash_template_arg (TREE_VEC_ELT (a, i), val);
+
+  return val;
+}
 
 /*---------------------------------------------------------------------------
                         Constraint substitution

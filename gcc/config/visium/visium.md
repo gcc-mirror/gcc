@@ -687,10 +687,8 @@
   [(set (match_dup 2) (match_dup 3))]
 {
   long l;
-  REAL_VALUE_TYPE rv;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (rv, operands[1]);
-  REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (operands[1]), l);
 
   operands[2] = operand_subword (operands[0], 0, 0, SFmode);
   operands[3] = GEN_INT (trunc_int_for_mode (l, SImode));

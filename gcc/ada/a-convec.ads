@@ -33,6 +33,7 @@
 
 with Ada.Iterator_Interfaces;
 
+with Ada.Containers.Helpers;
 private with Ada.Finalization;
 private with Ada.Streams;
 
@@ -43,6 +44,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Vectors is
+   pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
    pragma Remote_Types;
 
@@ -366,6 +368,10 @@ private
    pragma Inline (Next);
    pragma Inline (Previous);
 
+   use Ada.Containers.Helpers;
+   package Implementation is new Generic_Implementation;
+   use Implementation;
+
    type Elements_Array is array (Index_Type range <>) of aliased Element_Type;
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
@@ -375,14 +381,13 @@ private
 
    type Elements_Access is access all Elements_Type;
 
-   use Ada.Finalization;
-   use Ada.Streams;
+   use Finalization;
+   use Streams;
 
    type Vector is new Controlled with record
       Elements : Elements_Access := null;
       Last     : Extended_Index := No_Index;
-      Busy     : Natural := 0;
-      Lock     : Natural := 0;
+      TC       : aliased Tamper_Counts;
    end record;
 
    overriding procedure Adjust (Container : in out Vector);
@@ -420,16 +425,8 @@ private
 
    for Cursor'Write use Write;
 
-   type Reference_Control_Type is
-      new Controlled with record
-         Container : Vector_Access;
-      end record;
-
-   overriding procedure Adjust (Control : in out Reference_Control_Type);
-   pragma Inline (Adjust);
-
-   overriding procedure Finalize (Control : in out Reference_Control_Type);
-   pragma Inline (Finalize);
+   subtype Reference_Control_Type is Implementation.Reference_Control_Type;
+   --  It is necessary to rename this here, so that the compiler can find it
 
    type Constant_Reference_Type
      (Element : not null access constant Element_Type) is
@@ -477,7 +474,7 @@ private
 
    --  Three operations are used to optimize in the expansion of "for ... of"
    --  loops: the Next(Cursor) procedure in the visible part, and the following
-   --  Pseudo_Reference and Get_Element_Access functions. See Sem_Ch5 for
+   --  Pseudo_Reference and Get_Element_Access functions. See Exp_Ch5 for
    --  details.
 
    function Pseudo_Reference
@@ -493,12 +490,29 @@ private
      (Position : Cursor) return not null Element_Access;
    --  Returns a pointer to the element designated by Position.
 
-   No_Element   : constant Cursor := Cursor'(null, Index_Type'First);
+   No_Element : constant Cursor := Cursor'(null, Index_Type'First);
 
    Empty_Vector : constant Vector := (Controlled with others => <>);
 
-   Count_Type_Last : constant := Count_Type'Last;
-   --  Count_Type'Last as a universal_integer, so we can compare Index_Type
-   --  values against this without type conversions that might overflow.
+   type Iterator is new Limited_Controlled and
+     Vector_Iterator_Interfaces.Reversible_Iterator with
+   record
+      Container : Vector_Access;
+      Index     : Index_Type'Base;
+   end record
+     with Disable_Controlled => not T_Check;
+
+   overriding procedure Finalize (Object : in out Iterator);
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
 end Ada.Containers.Vectors;

@@ -26,15 +26,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "target.h"
 #include "tree.h"
-#include "alias.h"
-#include "flags.h"
-#include "convert.h"
 #include "c-family/c-common.h"
 #include "c-tree.h"
+#include "flags.h"
+#include "convert.h"
 #include "langhooks.h"
-#include "target.h"
 #include "ubsan.h"
 
 /* Change of width--truncation and extension of integers or reals--

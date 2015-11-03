@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -349,12 +349,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Keys is
       N : Nodes_Type renames Tree.Nodes;
 
    begin
-      if Tree.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
+      TC_Check (Tree.TC);
 
-      if Tree.Length >= Tree.Capacity then
+      if Checks and then Tree.Length >= Tree.Capacity then
          raise Capacity_Error with "not enough capacity to insert new item";
       end if;
 

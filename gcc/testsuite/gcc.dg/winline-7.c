@@ -11,5 +11,5 @@ inline void *q (void) /* { dg-warning "(function not inlinable|alloca)" } */
 }
 inline void *t (void)
 {
-	return q ();		 /* { dg-warning "called from here" } */
+	return q ();		 /* { dg-message "called from here" } */
 }

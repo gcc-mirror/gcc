@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Bindgen;
 with Debug;  use Debug;
 with Osint;  use Osint;
 with Opt;    use Opt;
@@ -126,7 +127,7 @@ package body Switch.B is
       --  A little check, "gnat" at the start of a switch is not allowed except
       --  for the compiler
 
-      if Switch_Chars'Last >= Ptr + 3
+      if Max >= Ptr + 3
         and then Switch_Chars (Ptr .. Ptr + 3) = "gnat"
       then
          Osint.Fail ("invalid switch: """ & Switch_Chars & """"
@@ -228,8 +229,28 @@ package body Switch.B is
          --  Processing for E switch
 
          when 'E' =>
-            Ptr := Ptr + 1;
+
+            --  -E is equivalent to -Ea (see below)
+
             Exception_Tracebacks := True;
+            Ptr := Ptr + 1;
+
+            if Ptr <= Max then
+               case Switch_Chars (Ptr) is
+
+                  --  -Ea sets Exception_Tracebacks
+
+                  when 'a' => null;
+
+                  --  -Es sets both Exception_Tracebacks and
+                  --  Exception_Tracebacks_Symbolic.
+
+                  when 's' => Exception_Tracebacks_Symbolic := True;
+                  when others => Bad_Switch (Switch_Chars);
+               end case;
+
+               Ptr := Ptr + 1;
+            end if;
 
          --  Processing for F switch
 
@@ -417,6 +438,26 @@ package body Switch.B is
             Ptr := Ptr + 1;
             Verbose_Mode := True;
 
+         --  Processing for V switch
+
+         when 'V' =>
+            declare
+               Eq : Integer;
+            begin
+               Ptr := Ptr + 1;
+               Eq := Ptr;
+               while Eq <= Max and then Switch_Chars (Eq) /= '=' loop
+                  Eq := Eq + 1;
+               end loop;
+               if Eq = Ptr or else Eq = Max then
+                  Bad_Switch (Switch_Chars);
+               end if;
+               Bindgen.Set_Bind_Env
+                 (Key   => Switch_Chars (Ptr .. Eq - 1),
+                  Value => Switch_Chars (Eq + 1 .. Max));
+               Ptr := Max + 1;
+            end;
+
          --  Processing for w switch
 
          when 'w' =>
@@ -521,13 +562,11 @@ package body Switch.B is
                   declare
                      Src_Path_Name : constant String_Ptr :=
                                        Get_RTS_Search_Dir
-                                         (Switch_Chars
-                                           (Ptr + 1 .. Switch_Chars'Last),
+                                         (Switch_Chars (Ptr + 1 .. Max),
                                           Include);
                      Lib_Path_Name : constant String_Ptr :=
                                        Get_RTS_Search_Dir
-                                         (Switch_Chars
-                                           (Ptr + 1 .. Switch_Chars'Last),
+                                         (Switch_Chars (Ptr + 1 .. Max),
                                           Objects);
 
                   begin
@@ -543,17 +582,18 @@ package body Switch.B is
 
                         Ptr := Max + 1;
 
-                     elsif  Src_Path_Name = null
+                     elsif Src_Path_Name = null
                        and then Lib_Path_Name = null
                      then
-                        Osint.Fail ("RTS path not valid: missing " &
-                                    "adainclude and adalib directories");
+                        Osint.Fail
+                          ("RTS path not valid: missing adainclude and "
+                           & "adalib directories");
                      elsif Src_Path_Name = null then
-                        Osint.Fail ("RTS path not valid: missing " &
-                                    "adainclude directory");
-                     elsif  Lib_Path_Name = null then
-                        Osint.Fail ("RTS path not valid: missing " &
-                                    "adalib directory");
+                        Osint.Fail
+                          ("RTS path not valid: missing adainclude directory");
+                     elsif Lib_Path_Name = null then
+                        Osint.Fail
+                          ("RTS path not valid: missing adalib directory");
                      end if;
                   end;
                end if;

@@ -20,3 +20,7 @@ $(srcdir)/config/mips/mips-tables.opt: $(srcdir)/config/mips/genopt.sh \
   $(srcdir)/config/mips/mips-cpus.def
 	$(SHELL) $(srcdir)/config/mips/genopt.sh $(srcdir)/config/mips > \
 		$(srcdir)/config/mips/mips-tables.opt
+
+frame-header-opt.o: $(srcdir)/config/mips/frame-header-opt.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)

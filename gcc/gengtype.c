@@ -158,9 +158,6 @@ size_t num_lang_dirs;
    BASE_FILES entry for each language.  */
 static outf_p *base_files;
 
-
-
-#if ENABLE_CHECKING
 /* Utility debugging function, printing the various type counts within
    a list of types.  Called through the DBGPRINT_COUNT_TYPE macro.  */
 void
@@ -222,7 +219,6 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
     fprintf (stderr, "@@%%@@ %d undefined types\n", nb_undefined);
   fprintf (stderr, "\n");
 }
-#endif /* ENABLE_CHECKING */
 
 /* Scan the input file, LIST, and determine how much space we need to
    store strings in.  Also, count the number of language directories
@@ -4878,10 +4874,17 @@ dump_type (int indent, type_p t)
 {
   PTR *slot;
 
+  printf ("%*cType at %p: ", indent, ' ', (void *) t);
+  if (t->kind == TYPE_UNDEFINED)
+    {
+      gcc_assert (t->gc_used == GC_UNUSED);
+      printf ("undefined.\n");
+      return;
+    }
+
   if (seen_types == NULL)
     seen_types = htab_create (100, htab_hash_pointer, htab_eq_pointer, NULL);
 
-  printf ("%*cType at %p: ", indent, ' ', (void *) t);
   slot = htab_find_slot (seen_types, t, INSERT);
   if (*slot != NULL)
     {
@@ -5181,7 +5184,6 @@ main (int argc, char **argv)
 
   parse_program_options (argc, argv);
 
-#if ENABLE_CHECKING
   if (do_debug)
     {
       time_t now = (time_t) 0;
@@ -5189,7 +5191,6 @@ main (int argc, char **argv)
       DBGPRINTF ("gengtype started pid %d at %s",
 		 (int) getpid (), ctime (&now));
     }
-#endif	/* ENABLE_CHECKING */
 
   /* Parse the input list and the input files.  */
   DBGPRINTF ("inputlist %s", inputlist);

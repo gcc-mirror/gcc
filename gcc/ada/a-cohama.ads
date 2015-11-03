@@ -46,6 +46,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Hashed_Maps is
+   pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
    pragma Remote_Types;
 
@@ -337,7 +338,7 @@ private
 
    overriding procedure Finalize (Container : in out Map);
 
-   use HT_Types;
+   use HT_Types, HT_Types.Implementation;
    use Ada.Finalization;
    use Ada.Streams;
 
@@ -373,16 +374,8 @@ private
 
    for Cursor'Write use Write;
 
-   type Reference_Control_Type is
-      new Controlled with record
-         Container : Map_Access;
-      end record;
-
-   overriding procedure Adjust (Control : in out Reference_Control_Type);
-   pragma Inline (Adjust);
-
-   overriding procedure Finalize (Control : in out Reference_Control_Type);
-   pragma Inline (Finalize);
+   subtype Reference_Control_Type is Implementation.Reference_Control_Type;
+   --  It is necessary to rename this here, so that the compiler can find it
 
    type Constant_Reference_Type
      (Element : not null access constant Element_Type) is
@@ -440,13 +433,14 @@ private
    --  container, and increments the Lock. Finalization of this object will
    --  decrement the Lock.
 
-   type Element_Access is access all Element_Type;
+   type Element_Access is access all Element_Type with
+     Storage_Size => 0;
 
    function Get_Element_Access
      (Position : Cursor) return not null Element_Access;
    --  Returns a pointer to the element designated by Position.
 
-   Empty_Map : constant Map := (Controlled with HT => (null, 0, 0, 0));
+   Empty_Map : constant Map := (Controlled with others => <>);
 
    No_Element : constant Cursor := (Container => null, Node => null);
 
@@ -454,7 +448,8 @@ private
      Map_Iterator_Interfaces.Forward_Iterator with
    record
       Container : Map_Access;
-   end record;
+   end record
+     with Disable_Controlled => not T_Check;
 
    overriding procedure Finalize (Object : in out Iterator);
 

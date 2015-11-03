@@ -11,7 +11,7 @@
 // Check that func is declared exactly once in the debug info (in the
 // compile unit).
 //
-// { dg-final { scan-assembler-times "\\.ascii \"func\\\\0\"\[^\n\]*DW_AT_name" 1 } }
+// { dg-final { scan-assembler-times "\\.ascii \"func\\\\0\"\[^\n\]*DW_AT_name" 1 { xfail { powerpc-ibm-aix* } } } }
 //
 // Check to make sure that no type unit contains a DIE with DW_AT_low_pc
 // or DW_AT_ranges.  These patterns assume that the compile unit is always

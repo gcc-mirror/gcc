@@ -39,34 +39,28 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "tm_p.h"
-#include "profile.h"
+#include "cgraph.h"
 #include "gimple-pretty-print.h"
-#include "internal-fn.h"
+#include "fold-const.h"
+#include "profile.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimple-iterator.h"
-#include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
 #include "cfgloop.h"
-#include "tree-pass.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "params.h"
-#include "flags.h"
 #include "tree-inline.h"
-#include "target.h"
 #include "tree-cfgcleanup.h"
 #include "builtins.h"
 
@@ -161,7 +155,7 @@ struct loop_size
 /* Return true if OP in STMT will be constant after peeling LOOP.  */
 
 static bool
-constant_after_peeling (tree op, gimple stmt, struct loop *loop)
+constant_after_peeling (tree op, gimple *stmt, struct loop *loop)
 {
   affine_iv iv;
 
@@ -246,7 +240,7 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 
       for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  int num = estimate_num_insns (stmt, &eni_size_weights);
 	  bool likely_eliminated = false;
 	  bool likely_eliminated_last = false;
@@ -338,7 +332,7 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
       basic_block bb = path.pop ();
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  if (gimple_code (stmt) == GIMPLE_CALL)
 	    {
 	      int flags = gimple_call_flags (stmt);
@@ -1138,7 +1132,7 @@ canonicalize_induction_variables (void)
   bool irred_invalidated = false;
   bitmap loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
-  free_numbers_of_iterations_estimates ();
+  free_numbers_of_iterations_estimates (cfun);
   estimate_numbers_of_iterations ();
 
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
@@ -1176,7 +1170,7 @@ static void
 propagate_into_all_uses (tree ssa_name, tree val)
 {
   imm_use_iterator iter;
-  gimple use_stmt;
+  gimple *use_stmt;
 
   FOR_EACH_IMM_USE_STMT (use_stmt, iter, ssa_name)
     {
@@ -1227,7 +1221,7 @@ propagate_constants_for_unrolling (basic_block bb)
   /* Look for assignments to SSA names with constant RHS.  */
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       tree lhs;
 
       if (is_gimple_assign (stmt)
@@ -1326,7 +1320,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
       if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
 	loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
-      free_numbers_of_iterations_estimates ();
+      free_numbers_of_iterations_estimates (cfun);
       estimate_numbers_of_iterations ();
 
       changed = tree_unroll_loops_completely_1 (may_increase_size,
@@ -1376,10 +1370,8 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	  /* Clean up the information about numbers of iterations, since
 	     complete unrolling might have invalidated it.  */
 	  scev_reset ();
-#ifdef ENABLE_CHECKING
-	  if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
+	  if (flag_checking && loops_state_satisfies_p (LOOP_CLOSED_SSA))
 	    verify_loop_closed_ssa (true);
-#endif
 	}
       if (loop_closed_ssa_invalidated)
         BITMAP_FREE (loop_closed_ssa_invalidated);
@@ -1532,7 +1524,7 @@ pass_complete_unrolli::execute (function *fun)
     {
       scev_initialize ();
       ret = tree_unroll_loops_completely (optimize >= 3, false);
-      free_numbers_of_iterations_estimates ();
+      free_numbers_of_iterations_estimates (fun);
       scev_finalize ();
     }
   loop_optimizer_finalize ();

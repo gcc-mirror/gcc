@@ -97,6 +97,7 @@ void goacc_runtime_initialize (void);
 void goacc_save_and_set_bind (acc_device_t);
 void goacc_restore_bind (void);
 void goacc_lazy_initialize (void);
+void goacc_host_init (void);
 
 #ifdef HAVE_ATTRIBUTE_VISIBILITY
 # pragma GCC visibility pop

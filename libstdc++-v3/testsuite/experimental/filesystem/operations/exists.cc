@@ -20,32 +20,37 @@
 
 #include <experimental/filesystem>
 #include <testsuite_hooks.h>
+#include <testsuite_fs.h>
 
 using std::experimental::filesystem::path;
 
 void
 test01()
 {
+  bool test __attribute__((unused)) = false;
+
   VERIFY( exists(path{"/"}) );
   VERIFY( exists(path{"/."}) );
   VERIFY( exists(path{"."}) );
+  VERIFY( exists(path{".."}) );
+  VERIFY( exists(std::experimental::filesystem::current_path()) );
 }
 
 void
 test02()
 {
-  path rel{"xXxXx"};
-  while (exists(rel))
-    rel /= "x";
+  bool test __attribute__((unused)) = false;
+
+  path rel = __gnu_test::nonexistent_path();
   VERIFY( !exists(rel) );
 }
 
 void
 test03()
 {
-  path abs{"/xXxXx"};
-  while (exists(abs))
-    abs /= "x";
+  bool test __attribute__((unused)) = false;
+
+  path abs = absolute(__gnu_test::nonexistent_path());
   VERIFY( !exists(abs) );
 }
 

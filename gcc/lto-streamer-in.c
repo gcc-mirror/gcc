@@ -24,39 +24,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
+#include "gimple-streamer.h"
 #include "toplev.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "params.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
-#include "tree-pass.h"
-#include "diagnostic.h"
 #include "except.h"
-#include "debug.h"
 #include "cgraph.h"
-#include "ipa-utils.h"
-#include "target.h"
-#include "gimple-streamer.h"
 #include "cfgloop.h"
 
 
@@ -912,7 +895,7 @@ input_ssa_names (struct lto_input_block *ib, struct data_in *data_in,
    so they point to STMTS.  */
 
 static void
-fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
+fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple **stmts,
 			 struct function *fn)
 {
   struct cgraph_edge *cedge;
@@ -954,7 +937,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
 /* Fixup call_stmt pointers in NODE and all clones.  */
 
 static void
-fixup_call_stmt_edges (struct cgraph_node *orig, gimple *stmts)
+fixup_call_stmt_edges (struct cgraph_node *orig, gimple **stmts)
 {
   struct cgraph_node *node;
   struct function *fn;
@@ -1047,7 +1030,7 @@ input_function (tree fn_decl, struct data_in *data_in,
 {
   struct function *fn;
   enum LTO_tags tag;
-  gimple *stmts;
+  gimple **stmts;
   basic_block bb;
   struct cgraph_node *node;
 
@@ -1104,29 +1087,29 @@ input_function (tree fn_decl, struct data_in *data_in,
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
 	}
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
 	}
     }
-  stmts = (gimple *) xcalloc (gimple_stmt_max_uid (fn), sizeof (gimple));
+  stmts = (gimple **) xcalloc (gimple_stmt_max_uid (fn), sizeof (gimple *));
   FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator bsi = gsi_start_phis (bb);
       while (!gsi_end_p (bsi))
 	{
-	  gimple stmt = gsi_stmt (bsi);
+	  gimple *stmt = gsi_stmt (bsi);
 	  gsi_next (&bsi);
 	  stmts[gimple_uid (stmt)] = stmt;
 	}
       bsi = gsi_start_bb (bb);
       while (!gsi_end_p (bsi))
 	{
-	  gimple stmt = gsi_stmt (bsi);
+	  gimple *stmt = gsi_stmt (bsi);
 	  /* If we're recompiling LTO objects with debug stmts but
 	     we're not supposed to have debug stmts, remove them now.
 	     We can't remove them earlier because this would cause uid

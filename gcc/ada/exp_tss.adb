@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -152,7 +152,7 @@ package body Exp_Tss is
    begin
       loop
          Btyp := Base_Type (Btyp);
-         Proc :=  TSS (Btyp, Nam);
+         Proc := TSS (Btyp, Nam);
 
          exit when Present (Proc)
            or else not Is_Derived_Type (Btyp);
@@ -517,7 +517,7 @@ package body Exp_Tss is
       else
          Elmt := First_Elmt (TSS_Elist (FN));
          while Present (Elmt) loop
-            if Chars (Node (Elmt)) =  Nam then
+            if Chars (Node (Elmt)) = Nam then
                Subp := Node (Elmt);
 
                --  For stream subprograms, the TSS entity may be a renaming-

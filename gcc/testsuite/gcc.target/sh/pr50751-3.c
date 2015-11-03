@@ -1,9 +1,8 @@
 /* Check that on SH2A the 4 byte mov.b displacement insn is generated to
    handle larger displacements.  If it is generated correctly, there should
    be no base address adjustments outside the mov.b insns.  */
-/* { dg-do compile }  */
+/* { dg-do compile { target { sh2a } } }  */
 /* { dg-options "-O1" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m2a*" } } */
 /* { dg-final { scan-assembler-not "add|sub" } } */
 
 void

@@ -50,6 +50,7 @@ package Ada.Containers.Formal_Vectors with
   SPARK_Mode
 is
    pragma Annotate (GNATprove, External_Axiomatization);
+   pragma Annotate (CodePeer, Skip_Analysis);
 
    subtype Extended_Index is Index_Type'Base
    range Index_Type'First - 1 ..
@@ -203,7 +204,7 @@ is
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
-   package Generic_Sorting is
+   package Generic_Sorting with SPARK_Mode is
 
       function Is_Sorted (Container : Vector) return Boolean with
         Global => null;

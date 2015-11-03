@@ -66,14 +66,14 @@ odr_type get_odr_type (tree, bool insert = false);
 bool type_in_anonymous_namespace_p (const_tree);
 bool type_with_linkage_p (const_tree);
 bool odr_type_p (const_tree);
-bool possible_polymorphic_call_target_p (tree ref, gimple stmt, struct cgraph_node *n);
+bool possible_polymorphic_call_target_p (tree ref, gimple *stmt, struct cgraph_node *n);
 void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT,
 					     const ipa_polymorphic_call_context &);
 bool possible_polymorphic_call_target_p (tree, HOST_WIDE_INT,
 				         const ipa_polymorphic_call_context &,
 					 struct cgraph_node *);
 tree inlined_polymorphic_ctor_dtor_block_p (tree, bool);
-bool decl_maybe_in_construction_p (tree, tree, gimple, tree);
+bool decl_maybe_in_construction_p (tree, tree, gimple *, tree);
 tree vtable_pointer_value_to_binfo (const_tree);
 bool vtable_pointer_value_to_vtable (const_tree, tree *, unsigned HOST_WIDE_INT *);
 tree subbinfo_with_vtable_at_offset (tree, unsigned HOST_WIDE_INT, tree);
@@ -120,7 +120,7 @@ possible_polymorphic_call_targets (struct cgraph_edge *e,
 
 inline vec <cgraph_node *>
 possible_polymorphic_call_targets (tree ref,
-				   gimple call,
+				   gimple *call,
 				   bool *completep = NULL,
 				   void **cache_token = NULL)
 {

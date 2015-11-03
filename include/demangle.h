@@ -442,6 +442,8 @@ enum demangle_component_type
   DEMANGLE_COMPONENT_PACK_EXPANSION,
   /* A name with an ABI tag.  */
   DEMANGLE_COMPONENT_TAGGED_NAME,
+  /* A transaction-safe function type.  */
+  DEMANGLE_COMPONENT_TRANSACTION_SAFE,
   /* A cloned function.  */
   DEMANGLE_COMPONENT_CLONE
 };

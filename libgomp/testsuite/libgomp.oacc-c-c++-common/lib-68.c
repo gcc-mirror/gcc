@@ -1,5 +1,6 @@
 /* { dg-do run { target openacc_nvidia_accel_selected } } */
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <openacc.h>
@@ -25,6 +26,7 @@ main (int argc, char **argv)
 
   memset (&h[0], 0, N);
 
+  fprintf (stderr, "CheCKpOInT\n");
   acc_memcpy_from_device (h, 0, N);
 
   for (i = 0; i < N; i++)
@@ -40,5 +42,6 @@ main (int argc, char **argv)
   return 0;
 }
 
+/* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
 /* { dg-output "invalid device address" } */
 /* { dg-shouldfail "" } */

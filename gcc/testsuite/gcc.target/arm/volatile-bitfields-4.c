@@ -1,5 +1,5 @@
-/* { dg-require-effective-target arm_eabi } */
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_eabi } */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler-times "ldr\[\\t \]+\[^\n\]*,\[\\t \]*\\\[\[^\n\]*\\\]" 2 } } */
 /* { dg-final { scan-assembler-times "str\[\\t \]+\[^\n\]*,\[\\t \]*\\\[\[^\n\]*\\\]" 2 } } */

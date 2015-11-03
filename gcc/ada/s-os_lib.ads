@@ -48,9 +48,6 @@
 --  be used by other predefined packages. User access to this package is via
 --  a renaming of this package in GNAT.OS_Lib (file g-os_lib.ads).
 
---  Note: a distinct body for this spec is included in the .NET runtime library
---  and must be kept in sync with changes made in this file.
-
 pragma Compiler_Unit_Warning;
 
 with System;
@@ -69,14 +66,14 @@ package System.OS_Lib is
 
    subtype String_Access is Strings.String_Access;
 
-   function "=" (Left, Right : String_Access) return Boolean
+   function "=" (Left : String_Access; Right : String_Access) return Boolean
      renames Strings."=";
 
    procedure Free (X : in out String_Access) renames Strings.Free;
 
    subtype String_List is Strings.String_List;
 
-   function "=" (Left, Right : String_List) return Boolean
+   function "=" (Left : String_List; Right : String_List) return Boolean
      renames Strings."=";
 
    function "&" (Left : String_Access; Right : String_Access)
@@ -90,11 +87,11 @@ package System.OS_Lib is
 
    subtype String_List_Access is Strings.String_List_Access;
 
-   function "=" (Left, Right : String_List_Access) return Boolean
-     renames Strings."=";
+   function "="
+     (Left  : String_List_Access;
+      Right : String_List_Access) return Boolean renames Strings."=";
 
-   procedure Free (Arg : in out String_List_Access)
-     renames Strings.Free;
+   procedure Free (Arg : in out String_List_Access) renames Strings.Free;
 
    ---------------------
    -- Time/Date Stuff --
@@ -113,6 +110,14 @@ package System.OS_Lib is
    Invalid_Time : constant OS_Time;
    --  A special unique value used to flag an invalid time stamp value
 
+   function "<"  (X : OS_Time; Y : OS_Time) return Boolean;
+   function ">"  (X : OS_Time; Y : OS_Time) return Boolean;
+   function ">=" (X : OS_Time; Y : OS_Time) return Boolean;
+   function "<=" (X : OS_Time; Y : OS_Time) return Boolean;
+   --  Basic comparison operators on OS_Time with obvious meanings. Note that
+   --  these have Intrinsic convention, so for example it is not permissible
+   --  to create accesses to any of these functions.
+
    subtype Year_Type   is Integer range 1900 .. 2099;
    subtype Month_Type  is Integer range    1 ..   12;
    subtype Day_Type    is Integer range    1 ..   31;
@@ -124,6 +129,10 @@ package System.OS_Lib is
    function Current_Time return OS_Time;
    --  Return the system clock value as OS_Time
 
+   function Current_Time_String return String;
+   --  Returns current local time in the form YYYY-MM-DD HH:MM:SS. The result
+   --  has bounds 1 .. 19.
+
    function GM_Year    (Date : OS_Time) return Year_Type;
    function GM_Month   (Date : OS_Time) return Month_Type;
    function GM_Day     (Date : OS_Time) return Day_Type;
@@ -131,14 +140,6 @@ package System.OS_Lib is
    function GM_Minute  (Date : OS_Time) return Minute_Type;
    function GM_Second  (Date : OS_Time) return Second_Type;
    --  Functions to extract information from OS_Time value in GMT form
-
-   function "<"  (X, Y : OS_Time) return Boolean;
-   function ">"  (X, Y : OS_Time) return Boolean;
-   function ">=" (X, Y : OS_Time) return Boolean;
-   function "<=" (X, Y : OS_Time) return Boolean;
-   --  Basic comparison operators on OS_Time with obvious meanings. Note that
-   --  these have Intrinsic convention, so for example it is not permissible
-   --  to create accesses to any of these functions.
 
    procedure GM_Split
      (Date   : OS_Time;
@@ -162,10 +163,6 @@ package System.OS_Lib is
    --  Analogous to the Time_Of routine in Ada.Calendar, takes a set of time
    --  component parts to be interpreted in the local time zone, and returns
    --  an OS_Time. Returns Invalid_Time if the creation fails.
-
-   function Current_Time_String return String;
-   --  Returns current local time in the form YYYY-MM-DD HH:MM:SS. The result
-   --  has bounds 1 .. 19.
 
    ----------------
    -- File Stuff --
@@ -194,6 +191,87 @@ package System.OS_Lib is
    Invalid_FD : constant File_Descriptor := -1;
    --  File descriptor returned when error in opening/creating file
 
+   procedure Close (FD : File_Descriptor; Status : out Boolean);
+   --  Close file referenced by FD. Status is False if the underlying service
+   --  failed. Reasons for failure include: disk full, disk quotas exceeded
+   --  and invalid file descriptor (the file may have been closed twice).
+
+   procedure Close (FD : File_Descriptor);
+   --  Close file referenced by FD. This form is used when the caller wants to
+   --  ignore any possible error (see above for error cases).
+
+   type Copy_Mode is
+     (Copy,
+      --  Copy the file. It is an error if the target file already exists. The
+      --  time stamps and other file attributes are preserved in the copy.
+
+      Overwrite,
+      --  If the target file exists, the file is replaced otherwise the file
+      --  is just copied. The time stamps and other file attributes are
+      --  preserved in the copy.
+
+      Append);
+      --  If the target file exists, the contents of the source file is
+      --  appended at the end. Otherwise the source file is just copied. The
+      --  time stamps and other file attributes are preserved if the
+      --  destination file does not exist.
+
+   type Attribute is
+     (Time_Stamps,
+      --  Copy time stamps from source file to target file. All other
+      --  attributes are set to normal default values for file creation.
+
+      Full,
+      --  All attributes are copied from the source file to the target file.
+      --  This includes the timestamps, and for example also includes
+      --  read/write/execute attributes in Unix systems.
+
+      None);
+      --  No attributes are copied. All attributes including the time stamp
+      --  values are set to normal default values for file creation.
+
+   --  Note: The default is Time_Stamps, which corresponds to the normal
+   --  default on Windows style systems. Full corresponds to the typical
+   --  effect of "cp -p" on Unix systems, and None corresponds to the typical
+   --  effect of "cp" on Unix systems.
+
+   --  Note: Time_Stamps and Full are not supported on VxWorks 5
+
+   procedure Copy_File
+     (Name     : String;
+      Pathname : String;
+      Success  : out Boolean;
+      Mode     : Copy_Mode := Copy;
+      Preserve : Attribute := Time_Stamps);
+   --  Copy a file. Name must designate a single file (no wild cards allowed).
+   --  Pathname can be a filename or directory name. In the latter case Name
+   --  is copied into the directory preserving the same file name. Mode
+   --  defines the kind of copy, see above with the default being a normal
+   --  copy in which the target file must not already exist. Success is set to
+   --  True or False indicating if the copy is successful (depending on the
+   --  specified Mode).
+
+   procedure Copy_File_Attributes
+      (From             : String;
+       To               : String;
+       Success          : out Boolean;
+       Copy_Timestamp   : Boolean := True;
+       Copy_Permissions : Boolean := True);
+   --  Copy some of the file attributes from one file to another. Both files
+   --  must exist, or Success is set to False.
+
+   procedure Copy_Time_Stamps
+     (Source  : String;
+      Dest    : String;
+      Success : out Boolean);
+   --  Copy Source file time stamps (last modification and last access time
+   --  stamps) to Dest file. Source and Dest must be valid filenames,
+   --  furthermore Dest must be writable. Success will be set to True if the
+   --  operation was successful and False otherwise.
+   --
+   --  Note: this procedure is not supported on VxWorks 5. On this platform,
+   --  Success is always set to False.
+
    type Mode is (Binary, Text);
    for Mode'Size use Integer'Size;
    for Mode use (Binary => 0, Text => 1);
@@ -205,26 +283,6 @@ package System.OS_Lib is
    --  of Text where appropriate allows programs to take a portable Unix view
    --  of DOS-format files and process them appropriately.
 
-   function Open_Read
-     (Name  : String;
-      Fmode : Mode) return File_Descriptor;
-   --  Open file Name for reading, returning its file descriptor. File
-   --  descriptor returned is Invalid_FD if the file cannot be opened.
-
-   function Open_Read_Write
-     (Name  : String;
-      Fmode : Mode) return File_Descriptor;
-   --  Open file Name for both reading and writing, returning its file
-   --  descriptor. File descriptor returned is Invalid_FD if the file
-   --  cannot be opened.
-
-   function Open_Append
-     (Name  : String;
-      Fmode : Mode) return File_Descriptor;
-   --  Opens file Name for appending, returning its file descriptor. File
-   --  descriptor returned is Invalid_FD if the file cannot be successfully
-   --  opened.
-
    function Create_File
      (Name  : String;
       Fmode : Mode) return File_Descriptor;
@@ -233,11 +291,6 @@ package System.OS_Lib is
    --  overwritten. File descriptor returned is Invalid_FD if file cannot be
    --  successfully created.
 
-   function Create_Output_Text_File (Name : String) return File_Descriptor;
-   --  Creates new text file with given name suitable to redirect standard
-   --  output, returning file descriptor. File descriptor returned is
-   --  Invalid_FD if file cannot be successfully created.
-
    function Create_New_File
      (Name  : String;
       Fmode : Mode) return File_Descriptor;
@@ -245,6 +298,11 @@ package System.OS_Lib is
    --  for subsequent use in Write calls. This differs from Create_File in
    --  that it fails if the file already exists. File descriptor returned is
    --  Invalid_FD if the file exists or cannot be created.
+
+   function Create_Output_Text_File (Name : String) return File_Descriptor;
+   --  Creates new text file with given name suitable to redirect standard
+   --  output, returning file descriptor. File descriptor returned is
+   --  Invalid_FD if file cannot be successfully created.
 
    Temp_File_Len : constant Integer := 12;
    --  Length of name returned by Create_Temp_File call (GNAT-XXXXXX & NUL)
@@ -299,126 +357,133 @@ package System.OS_Lib is
    --  There is no race condition problem between processes trying to create
    --  temp files at the same time in the same directory.
 
-   procedure Close (FD : File_Descriptor; Status : out Boolean);
-   --  Close file referenced by FD. Status is False if the underlying service
-   --  failed. Reasons for failure include: disk full, disk quotas exceeded
-   --  and invalid file descriptor (the file may have been closed twice).
-
-   procedure Close (FD : File_Descriptor);
-   --  Close file referenced by FD. This form is used when the caller wants to
-   --  ignore any possible error (see above for error cases).
-
-   procedure Set_Close_On_Exec
-     (FD            : File_Descriptor;
-      Close_On_Exec : Boolean;
-      Status        : out Boolean);
-   --  When Close_On_Exec is True, mark FD to be closed automatically when new
-   --  program is executed by the calling process (i.e. prevent FD from being
-   --  inherited by child processes). When Close_On_Exec is False, mark FD to
-   --  not be closed on exec (i.e. allow it to be inherited). Status is False
-   --  if the operation could not be performed.
-
    procedure Delete_File (Name : String; Success : out Boolean);
    --  Deletes file. Success is set True or False indicating if the delete is
    --  successful.
 
-   procedure Rename_File
-     (Old_Name : String;
-      New_Name : String;
-      Success  : out Boolean);
-   --  Rename a file. Success is set True or False indicating if the rename is
-   --  successful or not.
+   function File_Length (FD : File_Descriptor) return Long_Integer;
+   pragma Import (C, File_Length, "__gnat_file_length_long");
+
+   type Large_File_Size is range -2**63 .. 2**63 - 1;
+   --  Maximum supported size for a file (8 exabytes = 8 million terabytes,
+   --  should be enough to accomodate all possible needs for quite a while).
+
+   function File_Length64 (FD : File_Descriptor) return Large_File_Size;
+   pragma Import (C, File_Length64, "__gnat_file_length");
+   --  Get length of file from file descriptor FD
+
+   function File_Time_Stamp (Name : String) return OS_Time;
+   --  Given the name of a file or directory, Name, obtains and returns the
+   --  time stamp. This function can be used for an unopened file. Returns
+   --  Invalid_Time is Name doesn't correspond to an existing file.
+
+   function File_Time_Stamp (FD : File_Descriptor) return OS_Time;
+   --  Get time stamp of file from file descriptor FD Returns Invalid_Time is
+   --  FD doesn't correspond to an existing file.
+
+   function Get_Debuggable_Suffix return String_Access;
+   --  Return the debuggable suffix convention. Usually this is the same as
+   --  the convention for Get_Executable_Suffix. The result is allocated on
+   --  the heap and should be freed after use to avoid storage leaks.
+
+   function Get_Executable_Suffix return String_Access;
+   --  Return the executable suffix convention. The result is allocated on the
+   --  heap and should be freed after use to avoid storage leaks.
+
+   function Get_Object_Suffix return String_Access;
+   --  Return the object suffix convention. The result is allocated on the heap
+   --  and should be freed after use to avoid storage leaks.
+
+   function Get_Target_Debuggable_Suffix return String_Access;
+   --  Return the target debuggable suffix convention. Usually this is the same
+   --  as the convention for Get_Executable_Suffix. The result is allocated on
+   --  the heap and should be freed after use to avoid storage leaks.
+
+   function Get_Target_Executable_Suffix return String_Access;
+   --  Return the target executable suffix convention. The result is allocated
+   --  on the heap and should be freed after use to avoid storage leaks.
+
+   function Get_Target_Object_Suffix return String_Access;
+   --  Return the target object suffix convention. The result is allocated on
+   --  the heap and should be freed after use to avoid storage leaks.
+
+   function Is_Absolute_Path (Name : String) return Boolean;
+   --  Returns True if Name is an absolute path name, i.e. it designates a
+   --  file or directory absolutely rather than relative to another directory.
+
+   function Is_Directory (Name : String) return Boolean;
+   --  Determines if the given string, Name, is the name of a directory.
+   --  Returns True if so, False otherwise. Name may be an absolute path
+   --  name or a relative path name, including a simple file name. If it is
+   --  a relative path name, it is relative to the current working directory.
+
+   function Is_Executable_File (Name : String) return Boolean;
+   --  Determines if the given string, Name, is the name of an existing file
+   --  that is executable. Returns True if so, False otherwise. Note that this
+   --  function simply interrogates the file attributes (e.g. using the C
+   --  function stat), so it does not indicate a situation in which a file may
+   --  not actually be readable due to some other process having exclusive
+   --  access.
+
+   function Is_Readable_File (Name : String) return Boolean;
+   --  Determines if the given string, Name, is the name of an existing file
+   --  that is readable. Returns True if so, False otherwise. Note that this
+   --  function simply interrogates the file attributes (e.g. using the C
+   --  function stat), so it does not indicate a situation in which a file may
+   --  not actually be readable due to some other process having exclusive
+   --  access.
+
+   function Is_Regular_File (Name : String) return Boolean;
+   --  Determines if the given string, Name, is the name of an existing
+   --  regular file. Returns True if so, False otherwise. Name may be an
+   --  absolute path name or a relative path name, including a simple file
+   --  name. If it is a relative path name, it is relative to the current
+   --  working directory.
+
+   function Is_Symbolic_Link (Name : String) return Boolean;
+   --  Determines if the given string, Name, is the path of a symbolic link on
+   --  systems that support it. Returns True if so, False if the path is not a
+   --  symbolic link or if the system does not support symbolic links.
    --
-   --  WARNING: In one very important respect, this function is significantly
-   --  non-portable. If New_Name already exists then on Unix systems, the call
-   --  deletes the existing file, and the call signals success. On Windows, the
-   --  call fails, without doing the rename operation. See also the procedure
-   --  Ada.Directories.Rename, which portably provides the windows semantics,
-   --  i.e. fails if the output file already exists.
+   --  A symbolic link is an indirect pointer to a file; its directory entry
+   --  contains the name of the file to which it is linked. Symbolic links may
+   --  span file systems and may refer to directories.
 
-   --  The following defines the mode for the Copy_File procedure below. Note
-   --  that "time stamps and other file attributes" in the descriptions below
-   --  refers to the creation and last modification times, and also the file
-   --  access (read/write/execute) status flags.
+   function Is_Writable_File (Name : String) return Boolean;
+   --  Determines if the given string, Name, is the name of an existing file
+   --  that is writable. Returns True if so, False otherwise. Note that this
+   --  function simply interrogates the file attributes (e.g. using the C
+   --  function stat), so it does not indicate a situation in which a file may
+   --  not actually be writeable due to some other process having exclusive
+   --  access.
 
-   type Copy_Mode is
-     (Copy,
-      --  Copy the file. It is an error if the target file already exists. The
-      --  time stamps and other file attributes are preserved in the copy.
-
-      Overwrite,
-      --  If the target file exists, the file is replaced otherwise the file
-      --  is just copied. The time stamps and other file attributes are
-      --  preserved in the copy.
-
-      Append);
-      --  If the target file exists, the contents of the source file is
-      --  appended at the end. Otherwise the source file is just copied. The
-      --  time stamps and other file attributes are preserved if the
-      --  destination file does not exist.
-
-   type Attribute is
-     (Time_Stamps,
-      --  Copy time stamps from source file to target file. All other
-      --  attributes are set to normal default values for file creation.
-
-      Full,
-      --  All attributes are copied from the source file to the target file.
-      --  This includes the timestamps, and for example also includes
-      --  read/write/execute attributes in Unix systems.
-
-      None);
-      --  No attributes are copied. All attributes including the time stamp
-      --  values are set to normal default values for file creation.
-
-   --  Note: The default is Time_Stamps, which corresponds to the normal
-   --  default on Windows style systems. Full corresponds to the typical
-   --  effect of "cp -p" on Unix systems, and None corresponds to the typical
-   --  effect of "cp" on Unix systems.
-
-   --  Note: Time_Stamps and Full are not supported on VxWorks 5
-
-   procedure Copy_File
-     (Name     : String;
-      Pathname : String;
-      Success  : out Boolean;
-      Mode     : Copy_Mode := Copy;
-      Preserve : Attribute := Time_Stamps);
-   --  Copy a file. Name must designate a single file (no wild cards allowed).
-   --  Pathname can be a filename or directory name. In the latter case Name
-   --  is copied into the directory preserving the same file name. Mode
-   --  defines the kind of copy, see above with the default being a normal
-   --  copy in which the target file must not already exist. Success is set to
-   --  True or False indicating if the copy is successful (depending on the
-   --  specified Mode).
+   function Locate_Exec_On_Path (Exec_Name : String) return String_Access;
+   --  Try to locate an executable whose name is given by Exec_Name in the
+   --  directories listed in the environment Path. If the Exec_Name does not
+   --  have the executable suffix, it will be appended before the search.
+   --  Otherwise works like Locate_Regular_File below. If the executable is
+   --  not found, null is returned.
    --
-   procedure Copy_Time_Stamps (Source, Dest : String; Success : out Boolean);
-   --  Copy Source file time stamps (last modification and last access time
-   --  stamps) to Dest file. Source and Dest must be valid filenames,
-   --  furthermore Dest must be writable. Success will be set to True if the
-   --  operation was successful and False otherwise.
+   --  Note that this function allocates memory for the returned value. This
+   --  memory needs to be deallocated after use.
+
+   function Locate_Regular_File
+     (File_Name : String;
+      Path      : String) return String_Access;
+   --  Try to locate a regular file whose name is given by File_Name in the
+   --  directories listed in Path. If a file is found, its full pathname is
+   --  returned; otherwise, a null pointer is returned. If the File_Name given
+   --  is an absolute pathname, then Locate_Regular_File just checks that the
+   --  file exists and is a regular file. Otherwise, if the File_Name given
+   --  includes directory information, Locate_Regular_File first checks if the
+   --  file exists relative to the current directory. If it does not, or if
+   --  the File_Name given is a simple file name, the Path argument is parsed
+   --  according to OS conventions, and for each directory in the Path a check
+   --  is made if File_Name is a relative pathname of a regular file from that
+   --  directory.
    --
-   --  Note: this procedure is not supported on VxWorks 5. On this platform,
-   --  Success is always set to False.
-
-   procedure Set_File_Last_Modify_Time_Stamp (Name : String; Time : OS_Time);
-   --  Given the name of a file or directory, Name, set the last modification
-   --  time stamp. This function must be used for an unopened file.
-
-   function Read
-     (FD : File_Descriptor;
-      A  : System.Address;
-      N  : Integer) return Integer;
-   --  Read N bytes to address A from file referenced by FD. Returned value is
-   --  count of bytes actually read, which can be less than N at EOF.
-
-   function Write
-     (FD : File_Descriptor;
-      A  : System.Address;
-      N  : Integer) return Integer;
-   --  Write N bytes from address A to file referenced by FD. The returned
-   --  value is the number of bytes written, which can be less than N if a
-   --  disk full condition was detected.
+   --  Note that this function allocates some memory for the returned value.
+   --  This memory needs to be deallocated after use.
 
    Seek_Cur : constant := 1;
    Seek_End : constant := 2;
@@ -433,26 +498,6 @@ package System.OS_Lib is
    --  Sets the current file pointer to the indicated offset value, relative
    --  to the current position (origin = SEEK_CUR), end of file (origin =
    --  SEEK_END), or start of file (origin = SEEK_SET).
-
-   type Large_File_Size is range -2**63 .. 2**63 - 1;
-   --  Maximum supported size for a file (8 exabytes = 8 million terabytes,
-   --  should be enough to accomodate all possible needs for quite a while).
-
-   function File_Length (FD : File_Descriptor) return Long_Integer;
-   pragma Import (C, File_Length, "__gnat_file_length_long");
-
-   function File_Length64 (FD : File_Descriptor) return Large_File_Size;
-   pragma Import (C, File_Length64, "__gnat_file_length");
-   --  Get length of file from file descriptor FD
-
-   function File_Time_Stamp (Name : String) return OS_Time;
-   --  Given the name of a file or directory, Name, obtains and returns the
-   --  time stamp. This function can be used for an unopened file. Returns
-   --  Invalid_Time is Name doesn't correspond to an existing file.
-
-   function File_Time_Stamp (FD : File_Descriptor) return OS_Time;
-   --  Get time stamp of file from file descriptor FD Returns Invalid_Time is
-   --  FD doesn't correspond to an existing file.
 
    function Normalize_Pathname
      (Name           : String;
@@ -496,66 +541,61 @@ package System.OS_Lib is
    --  results. If Case_Sensitive is set to True, this function does not change
    --  the casing of file and directory names.
 
-   function Is_Absolute_Path (Name : String) return Boolean;
-   --  Returns True if Name is an absolute path name, i.e. it designates a
-   --  file or directory absolutely rather than relative to another directory.
+   function Open_Append
+     (Name  : String;
+      Fmode : Mode) return File_Descriptor;
+   --  Opens file Name for appending, returning its file descriptor. File
+   --  descriptor returned is Invalid_FD if the file cannot be successfully
+   --  opened.
 
-   function Is_Regular_File (Name : String) return Boolean;
-   --  Determines if the given string, Name, is the name of an existing
-   --  regular file. Returns True if so, False otherwise. Name may be an
-   --  absolute path name or a relative path name, including a simple file
-   --  name. If it is a relative path name, it is relative to the current
-   --  working directory.
+   function Open_Read
+     (Name  : String;
+      Fmode : Mode) return File_Descriptor;
+   --  Open file Name for reading, returning its file descriptor. File
+   --  descriptor returned is Invalid_FD if the file cannot be opened.
 
-   function Is_Directory (Name : String) return Boolean;
-   --  Determines if the given string, Name, is the name of a directory.
-   --  Returns True if so, False otherwise. Name may be an absolute path
-   --  name or a relative path name, including a simple file name. If it is
-   --  a relative path name, it is relative to the current working directory.
+   function Open_Read_Write
+     (Name  : String;
+      Fmode : Mode) return File_Descriptor;
+   --  Open file Name for both reading and writing, returning its file
+   --  descriptor. File descriptor returned is Invalid_FD if the file
+   --  cannot be opened.
 
-   function Is_Readable_File (Name : String) return Boolean;
-   --  Determines if the given string, Name, is the name of an existing file
-   --  that is readable. Returns True if so, False otherwise. Note that this
-   --  function simply interrogates the file attributes (e.g. using the C
-   --  function stat), so it does not indicate a situation in which a file may
-   --  not actually be readable due to some other process having exclusive
-   --  access.
+   function Read
+     (FD : File_Descriptor;
+      A  : System.Address;
+      N  : Integer) return Integer;
+   --  Read N bytes to address A from file referenced by FD. Returned value is
+   --  count of bytes actually read, which can be less than N at EOF.
 
-   function Is_Executable_File (Name : String) return Boolean;
-   --  Determines if the given string, Name, is the name of an existing file
-   --  that is executable. Returns True if so, False otherwise. Note that this
-   --  function simply interrogates the file attributes (e.g. using the C
-   --  function stat), so it does not indicate a situation in which a file may
-   --  not actually be readable due to some other process having exclusive
-   --  access.
-
-   function Is_Writable_File (Name : String) return Boolean;
-   --  Determines if the given string, Name, is the name of an existing file
-   --  that is writable. Returns True if so, False otherwise. Note that this
-   --  function simply interrogates the file attributes (e.g. using the C
-   --  function stat), so it does not indicate a situation in which a file may
-   --  not actually be writeable due to some other process having exclusive
-   --  access.
-
-   function Is_Symbolic_Link (Name : String) return Boolean;
-   --  Determines if the given string, Name, is the path of a symbolic link on
-   --  systems that support it. Returns True if so, False if the path is not a
-   --  symbolic link or if the system does not support symbolic links.
+   procedure Rename_File
+     (Old_Name : String;
+      New_Name : String;
+      Success  : out Boolean);
+   --  Rename a file. Success is set True or False indicating if the rename is
+   --  successful or not.
    --
-   --  A symbolic link is an indirect pointer to a file; its directory entry
-   --  contains the name of the file to which it is linked. Symbolic links may
-   --  span file systems and may refer to directories.
+   --  WARNING: In one very important respect, this function is significantly
+   --  non-portable. If New_Name already exists then on Unix systems, the call
+   --  deletes the existing file, and the call signals success. On Windows, the
+   --  call fails, without doing the rename operation. See also the procedure
+   --  Ada.Directories.Rename, which portably provides the windows semantics,
+   --  i.e. fails if the output file already exists.
 
-   procedure Set_Writable (Name : String);
-   --  Change permissions on the named file to make it writable for its owner
+   --  The following defines the mode for the Copy_File procedure below. Note
+   --  that "time stamps and other file attributes" in the descriptions below
+   --  refers to the creation and last modification times, and also the file
+   --  access (read/write/execute) status flags.
 
-   procedure Set_Non_Writable (Name : String);
-   --  Change permissions on the named file to make it non-writable for its
-   --  owner. The readable and executable permissions are not modified.
-
-   procedure Set_Read_Only (Name : String) renames Set_Non_Writable;
-   --  This renaming is provided for backwards compatibility with previous
-   --  versions. The use of Set_Non_Writable is preferred (clearer name).
+   procedure Set_Close_On_Exec
+     (FD            : File_Descriptor;
+      Close_On_Exec : Boolean;
+      Status        : out Boolean);
+   --  When Close_On_Exec is True, mark FD to be closed automatically when new
+   --  program is executed by the calling process (i.e. prevent FD from being
+   --  inherited by child processes). When Close_On_Exec is False, mark FD to
+   --  not be closed on exec (i.e. allow it to be inherited). Status is False
+   --  if the operation could not be performed.
 
    S_Owner  : constant := 1;
    S_Group  : constant := 2;
@@ -567,69 +607,37 @@ package System.OS_Lib is
    --  for its owner, group or others, according to the setting of Mode.
    --  As indicated, the default if no Mode parameter is given is owner.
 
-   procedure Set_Readable (Name : String);
-   --  Change permissions on the named file to make it readable for its
-   --  owner.
+   procedure Set_File_Last_Modify_Time_Stamp (Name : String; Time : OS_Time);
+   --  Given the name of a file or directory, Name, set the last modification
+   --  time stamp. This function must be used for an unopened file.
 
    procedure Set_Non_Readable (Name : String);
    --  Change permissions on the named file to make it non-readable for
    --  its owner. The writable and executable permissions are not
    --  modified.
 
-   function Locate_Exec_On_Path
-     (Exec_Name : String) return String_Access;
-   --  Try to locate an executable whose name is given by Exec_Name in the
-   --  directories listed in the environment Path. If the Exec_Name does not
-   --  have the executable suffix, it will be appended before the search.
-   --  Otherwise works like Locate_Regular_File below. If the executable is
-   --  not found, null is returned.
-   --
-   --  Note that this function allocates memory for the returned value. This
-   --  memory needs to be deallocated after use.
+   procedure Set_Non_Writable (Name : String);
+   --  Change permissions on the named file to make it non-writable for its
+   --  owner. The readable and executable permissions are not modified.
 
-   function Locate_Regular_File
-     (File_Name : String;
-      Path      : String) return String_Access;
-   --  Try to locate a regular file whose name is given by File_Name in the
-   --  directories listed in Path. If a file is found, its full pathname is
-   --  returned; otherwise, a null pointer is returned. If the File_Name given
-   --  is an absolute pathname, then Locate_Regular_File just checks that the
-   --  file exists and is a regular file. Otherwise, if the File_Name given
-   --  includes directory information, Locate_Regular_File first checks if the
-   --  file exists relative to the current directory. If it does not, or if
-   --  the File_Name given is a simple file name, the Path argument is parsed
-   --  according to OS conventions, and for each directory in the Path a check
-   --  is made if File_Name is a relative pathname of a regular file from that
-   --  directory.
-   --
-   --  Note that this function allocates some memory for the returned value.
-   --  This memory needs to be deallocated after use.
+   procedure Set_Read_Only (Name : String) renames Set_Non_Writable;
+   --  This renaming is provided for backwards compatibility with previous
+   --  versions. The use of Set_Non_Writable is preferred (clearer name).
 
-   function Get_Debuggable_Suffix return String_Access;
-   --  Return the debuggable suffix convention. Usually this is the same as
-   --  the convention for Get_Executable_Suffix. The result is allocated on
-   --  the heap and should be freed after use to avoid storage leaks.
+   procedure Set_Readable (Name : String);
+   --  Change permissions on the named file to make it readable for its
+   --  owner.
 
-   function Get_Target_Debuggable_Suffix return String_Access;
-   --  Return the target debuggable suffix convention. Usually this is the same
-   --  as the convention for Get_Executable_Suffix. The result is allocated on
-   --  the heap and should be freed after use to avoid storage leaks.
+   procedure Set_Writable (Name : String);
+   --  Change permissions on the named file to make it writable for its owner
 
-   function Get_Executable_Suffix return String_Access;
-   --  Return the executable suffix convention. The result is allocated on the
-   --  heap and should be freed after use to avoid storage leaks.
-
-   function Get_Object_Suffix return String_Access;
-   --  Return the object suffix convention. The result is allocated on the heap
-   --  and should be freed after use to avoid storage leaks.
-
-   function Get_Target_Executable_Suffix return String_Access;
-   --  Return the target executable suffix convention. The result is allocated
-   --  on the heap and should be freed after use to avoid storage leaks.
-
-   function Get_Target_Object_Suffix return String_Access;
-   --  Return the target object suffix convention. The result is allocated on
-   --  the heap and should be freed after use to avoid storage leaks.
+   function Write
+     (FD : File_Descriptor;
+      A  : System.Address;
+      N  : Integer) return Integer;
+   --  Write N bytes from address A to file referenced by FD. The returned
+   --  value is the number of bytes written, which can be less than N if a
+   --  disk full condition was detected.
 
    --  The following section contains low-level routines using addresses to
    --  pass file name and executable name. In each routine the name must be
@@ -642,17 +650,17 @@ package System.OS_Lib is
 
    --  All the following functions need comments ???
 
-   function Open_Read
-     (Name  : C_File_Name;
-      Fmode : Mode) return File_Descriptor;
+   procedure Copy_File
+     (Name     : C_File_Name;
+      Pathname : C_File_Name;
+      Success  : out Boolean;
+      Mode     : Copy_Mode := Copy;
+      Preserve : Attribute := Time_Stamps);
 
-   function Open_Read_Write
-     (Name  : C_File_Name;
-      Fmode : Mode) return File_Descriptor;
-
-   function Open_Append
-     (Name  : C_File_Name;
-      Fmode : Mode) return File_Descriptor;
+   procedure Copy_Time_Stamps
+     (Source  : C_File_Name;
+      Dest    : C_File_Name;
+      Success : out Boolean);
 
    function Create_File
      (Name  : C_File_Name;
@@ -664,35 +672,36 @@ package System.OS_Lib is
 
    procedure Delete_File (Name : C_File_Name; Success : out Boolean);
 
-   procedure Rename_File
-     (Old_Name : C_File_Name;
-      New_Name : C_File_Name;
-      Success  : out Boolean);
-
-   procedure Copy_File
-     (Name     : C_File_Name;
-      Pathname : C_File_Name;
-      Success  : out Boolean;
-      Mode     : Copy_Mode := Copy;
-      Preserve : Attribute := Time_Stamps);
-
-   procedure Copy_Time_Stamps
-     (Source, Dest : C_File_Name;
-      Success      : out Boolean);
-
    function File_Time_Stamp (Name : C_File_Name) return OS_Time;
    --  Returns Invalid_Time is Name doesn't correspond to an existing file
 
-   function Is_Regular_File (Name : C_File_Name) return Boolean;
    function Is_Directory (Name : C_File_Name) return Boolean;
-   function Is_Readable_File (Name : C_File_Name) return Boolean;
    function Is_Executable_File (Name : C_File_Name) return Boolean;
-   function Is_Writable_File (Name : C_File_Name) return Boolean;
+   function Is_Readable_File (Name : C_File_Name) return Boolean;
+   function Is_Regular_File (Name : C_File_Name) return Boolean;
    function Is_Symbolic_Link (Name : C_File_Name) return Boolean;
+   function Is_Writable_File (Name : C_File_Name) return Boolean;
 
    function Locate_Regular_File
      (File_Name : C_File_Name;
       Path      : C_File_Name) return String_Access;
+
+   function Open_Append
+     (Name  : C_File_Name;
+      Fmode : Mode) return File_Descriptor;
+
+   function Open_Read
+     (Name  : C_File_Name;
+      Fmode : Mode) return File_Descriptor;
+
+   function Open_Read_Write
+     (Name  : C_File_Name;
+      Fmode : Mode) return File_Descriptor;
+
+   procedure Rename_File
+     (Old_Name : C_File_Name;
+      New_Name : C_File_Name;
+      Success  : out Boolean);
 
    ------------------
    -- Subprocesses --
@@ -708,6 +717,84 @@ package System.OS_Lib is
    --  Note that there is a Free procedure declared for this subtype which
    --  frees the array and all referenced strings.
 
+   type Process_Id is private;
+   --  A private type used to identify a process activated by the following
+   --  non-blocking calls. The only meaningful operation on this type is a
+   --  comparison for equality.
+
+   Invalid_Pid : constant Process_Id;
+   --  A special value used to indicate errors, as described below
+
+   function Argument_String_To_List
+     (Arg_String : String) return Argument_List_Access;
+   --  Take a string that is a program and its arguments and parse it into an
+   --  Argument_List. Note that the result is allocated on the heap, and must
+   --  be freed by the programmer (when it is no longer needed) to avoid
+   --  memory leaks.
+
+   procedure Kill (Pid : Process_Id; Hard_Kill : Boolean := True);
+   --  Kill the process designated by Pid. Does nothing if Pid is Invalid_Pid
+   --  or on platforms where it is not supported, such as VxWorks. Hard_Kill
+   --  is True by default, and when True the process is terminated immediately.
+   --  If Hard_Kill is False, then a signal SIGINT is sent to the process on
+   --  POSIX OS or a ctrl-C event on Windows, allowing the process a chance to
+   --  terminate properly using a corresponding handler.
+
+   function Non_Blocking_Spawn
+     (Program_Name : String;
+      Args         : Argument_List) return Process_Id;
+   --  This is a non blocking call. The Process_Id of the spawned process is
+   --  returned. Parameters are to be used as in Spawn. If Invalid_Pid is
+   --  returned the program could not be spawned.
+   --
+   --  Spawning processes from tasking programs is not recommended. See
+   --  "NOTE: Spawn in tasking programs" below.
+   --
+   --  This function will always return Invalid_Pid under VxWorks, since there
+   --  is no notion of executables under this OS.
+
+   function Non_Blocking_Spawn
+     (Program_Name           : String;
+      Args                   : Argument_List;
+      Output_File_Descriptor : File_Descriptor;
+      Err_To_Out             : Boolean := True) return Process_Id;
+   --  Similar to the procedure above, but redirects the output to the file
+   --  designated by Output_File_Descriptor. If Err_To_Out is True, then the
+   --  Standard Error output is also redirected. Invalid_Pid is returned
+   --  if the program could not be spawned successfully.
+   --
+   --  Spawning processes from tasking programs is not recommended. See
+   --  "NOTE: Spawn in tasking programs" below.
+   --
+   --  This function will always return Invalid_Pid under VxWorks, since there
+   --  is no notion of executables under this OS.
+
+   function Non_Blocking_Spawn
+     (Program_Name : String;
+      Args         : Argument_List;
+      Output_File  : String;
+      Err_To_Out   : Boolean := True) return Process_Id;
+   --  Similar to the procedure above, but saves the output of the command to
+   --  a file with the name Output_File.
+   --
+   --  Invalid_Pid is returned if the output file could not be created or if
+   --  the program could not be spawned successfully.
+   --
+   --  Spawning processes from tasking programs is not recommended. See
+   --  "NOTE: Spawn in tasking programs" below.
+   --
+   --  This function will always return Invalid_Pid under VxWorks, since there
+   --  is no notion of executables under this OS.
+
+   function Non_Blocking_Spawn
+     (Program_Name : String;
+      Args         : Argument_List;
+      Stdout_File  : String;
+      Stderr_File  : String) return Process_Id;
+   --  Similar to the procedure above, but saves the standard output of the
+   --  command to a file with the name Stdout_File and the standard output
+   --  of the command to a file with the name Stderr_File.
+
    procedure Normalize_Arguments (Args : in out Argument_List);
    --  Normalize all arguments in the list. This ensure that the argument list
    --  is compatible with the running OS and will works fine with Spawn and
@@ -719,6 +806,10 @@ package System.OS_Lib is
    --  before calling Spawn. The call to Normalize_Arguments assumes that the
    --  individual referenced arguments in Argument_List are on the heap, and
    --  may free them and reallocate if they are modified.
+
+   function Pid_To_Integer (Pid : Process_Id) return Integer;
+   --  Convert a process id to an Integer. Useful for writing hash functions
+   --  for type Process_Id or to compare two Process_Id (e.g. for sorting).
 
    procedure Spawn
      (Program_Name : String;
@@ -798,73 +889,6 @@ package System.OS_Lib is
    --  Spawning processes from tasking programs is not recommended. See
    --  "NOTE: Spawn in tasking programs" below.
 
-   type Process_Id is private;
-   --  A private type used to identify a process activated by the following
-   --  non-blocking calls. The only meaningful operation on this type is a
-   --  comparison for equality.
-
-   Invalid_Pid : constant Process_Id;
-   --  A special value used to indicate errors, as described below
-
-   function Pid_To_Integer (Pid : Process_Id) return Integer;
-   --  Convert a process id to an Integer. Useful for writing hash functions
-   --  for type Process_Id or to compare two Process_Id (e.g. for sorting).
-
-   function Non_Blocking_Spawn
-     (Program_Name : String;
-      Args         : Argument_List) return Process_Id;
-   --  This is a non blocking call. The Process_Id of the spawned process is
-   --  returned. Parameters are to be used as in Spawn. If Invalid_Pid is
-   --  returned the program could not be spawned.
-   --
-   --  Spawning processes from tasking programs is not recommended. See
-   --  "NOTE: Spawn in tasking programs" below.
-   --
-   --  This function will always return Invalid_Pid under VxWorks, since there
-   --  is no notion of executables under this OS.
-
-   function Non_Blocking_Spawn
-     (Program_Name           : String;
-      Args                   : Argument_List;
-      Output_File_Descriptor : File_Descriptor;
-      Err_To_Out             : Boolean := True) return Process_Id;
-   --  Similar to the procedure above, but redirects the output to the file
-   --  designated by Output_File_Descriptor. If Err_To_Out is True, then the
-   --  Standard Error output is also redirected. Invalid_Pid is returned
-   --  if the program could not be spawned successfully.
-   --
-   --  Spawning processes from tasking programs is not recommended. See
-   --  "NOTE: Spawn in tasking programs" below.
-   --
-   --  This function will always return Invalid_Pid under VxWorks, since there
-   --  is no notion of executables under this OS.
-
-   function Non_Blocking_Spawn
-     (Program_Name : String;
-      Args         : Argument_List;
-      Output_File  : String;
-      Err_To_Out   : Boolean := True) return Process_Id;
-   --  Similar to the procedure above, but saves the output of the command to
-   --  a file with the name Output_File.
-   --
-   --  Invalid_Pid is returned if the output file could not be created or if
-   --  the program could not be spawned successfully.
-   --
-   --  Spawning processes from tasking programs is not recommended. See
-   --  "NOTE: Spawn in tasking programs" below.
-   --
-   --  This function will always return Invalid_Pid under VxWorks, since there
-   --  is no notion of executables under this OS.
-
-   function Non_Blocking_Spawn
-     (Program_Name : String;
-      Args         : Argument_List;
-      Stdout_File  : String;
-      Stderr_File  : String) return Process_Id;
-   --  Similar to the procedure above, but saves the standard output of the
-   --  command to a file with the name Stdout_File and the standard output
-   --  of the command to a file with the name Stderr_File.
-
    procedure Wait_Process (Pid : out Process_Id; Success : out Boolean);
    --  Wait for the completion of any of the processes created by previous
    --  calls to Non_Blocking_Spawn. The caller will be suspended until one of
@@ -878,13 +902,6 @@ package System.OS_Lib is
    --
    --  This function will always set success to False under VxWorks, since
    --  there is no notion of executables under this OS.
-
-   function Argument_String_To_List
-     (Arg_String : String) return Argument_List_Access;
-   --  Take a string that is a program and its arguments and parse it into an
-   --  Argument_List. Note that the result is allocated on the heap, and must
-   --  be freed by the programmer (when it is no longer needed) to avoid
-   --  memory leaks.
 
    -------------------------------------
    -- NOTE: Spawn in Tasking Programs --
@@ -955,6 +972,17 @@ package System.OS_Lib is
    -- Miscellaneous --
    -------------------
 
+   function Errno return Integer;
+   pragma Import (C, Errno, "__get_errno");
+   --  Return the task-safe last error number
+
+   function Errno_Message
+     (Err     : Integer := Errno;
+      Default : String  := "") return String;
+   --  Return a message describing the given Errno value. If none is provided
+   --  by the system, return Default if not empty, else return a generic
+   --  message indicating the numeric errno value.
+
    function Getenv (Name : String) return String_Access;
    --  Get the value of the environment variable. Returns an access to the
    --  empty string if the environment variable does not exist or has an
@@ -964,16 +992,12 @@ package System.OS_Lib is
    --  case), and needs to be freed explicitly when no longer needed to avoid
    --  memory leaks.
 
-   procedure Setenv (Name : String; Value : String);
-   --  Set the value of the environment variable Name to Value. This call
-   --  modifies the current environment, but does not modify the parent
-   --  process environment. After a call to Setenv, Getenv (Name) will always
-   --  return a String_Access referencing the same String as Value. This is
-   --  true also for the null string case (the actual effect may be to either
-   --  set an explicit null as the value, or to remove the entry, this is
-   --  operating system dependent). Note that any following calls to Spawn
-   --  will pass an environment to the spawned process that includes the
-   --  changes made by Setenv calls.
+   procedure OS_Abort;
+   pragma Import (C, OS_Abort, "abort");
+   pragma No_Return (OS_Abort);
+   --  Exit to OS signalling an abort (traceback or other appropriate
+   --  diagnostic information should be given if possible, or entry made to
+   --  the debugger if that is possible).
 
    procedure OS_Exit (Status : Integer);
    pragma No_Return (OS_Exit);
@@ -994,27 +1018,20 @@ package System.OS_Lib is
    --  change the implementation of OS_Exit by redirecting OS_Exit_Ptr to an
    --  other implementation.
 
-   procedure OS_Abort;
-   pragma Import (C, OS_Abort, "abort");
-   pragma No_Return (OS_Abort);
-   --  Exit to OS signalling an abort (traceback or other appropriate
-   --  diagnostic information should be given if possible, or entry made to
-   --  the debugger if that is possible).
-
-   function Errno return Integer;
-   pragma Import (C, Errno, "__get_errno");
-   --  Return the task-safe last error number
-
    procedure Set_Errno (Errno : Integer);
    pragma Import (C, Set_Errno, "__set_errno");
    --  Set the task-safe error number
 
-   function Errno_Message
-     (Err     : Integer := Errno;
-      Default : String  := "") return String;
-   --  Return a message describing the given Errno value. If none is provided
-   --  by the system, return Default if not empty, else return a generic
-   --  message indicating the numeric errno value.
+   procedure Setenv (Name : String; Value : String);
+   --  Set the value of the environment variable Name to Value. This call
+   --  modifies the current environment, but does not modify the parent
+   --  process environment. After a call to Setenv, Getenv (Name) will always
+   --  return a String_Access referencing the same String as Value. This is
+   --  true also for the null string case (the actual effect may be to either
+   --  set an explicit null as the value, or to remove the entry, this is
+   --  operating system dependent). Note that any following calls to Spawn
+   --  will pass an environment to the spawned process that includes the
+   --  changes made by Setenv calls.
 
    Directory_Separator : constant Character;
    --  The character that is used to separate parts of a pathname

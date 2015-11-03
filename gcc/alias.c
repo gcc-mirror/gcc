@@ -22,34 +22,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
 #include "df.h"
+#include "tm_p.h"
+#include "gimple-ssa.h"
+#include "emit-rtl.h"
 #include "alias.h"
 #include "fold-const.h"
 #include "varasm.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "stmt.h"
-#include "expr.h"
-#include "tm_p.h"
-#include "regs.h"
-#include "diagnostic-core.h"
-#include "alloc-pool.h"
 #include "cselib.h"
 #include "langhooks.h"
-#include "timevar.h"
-#include "dumpfile.h"
-#include "target.h"
 #include "cfganal.h"
-#include "internal-fn.h"
-#include "gimple-ssa.h"
 #include "rtl-iter.h"
 
 /* The aliasing API provided here solves related but different problems:
@@ -339,15 +325,16 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
       || !MEM_SIZE_KNOWN_P (mem))
     return true;
 
-  /* If the base decl is a parameter we can have negative MEM_OFFSET in
-     case of promoted subregs on bigendian targets.  Trust the MEM_EXPR
-     here.  */
+  /* If MEM_OFFSET/MEM_SIZE get us outside of ref->offset/ref->max_size
+     drop ref->ref.  */
   if (MEM_OFFSET (mem) < 0
-      && (MEM_SIZE (mem) + MEM_OFFSET (mem)) * BITS_PER_UNIT == ref->size)
-    return true;
+      || (ref->max_size != -1
+	  && ((MEM_OFFSET (mem) + MEM_SIZE (mem)) * BITS_PER_UNIT
+	      > ref->max_size)))
+    ref->ref = NULL_TREE;
 
-  /* Otherwise continue and refine size and offset we got from analyzing
-     MEM_EXPR by using MEM_SIZE and MEM_OFFSET.  */
+  /* Refine size and offset we got from analyzing MEM_EXPR by using
+     MEM_SIZE and MEM_OFFSET.  */
 
   ref->offset += MEM_OFFSET (mem) * BITS_PER_UNIT;
   ref->size = MEM_SIZE (mem) * BITS_PER_UNIT;

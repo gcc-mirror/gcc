@@ -21,15 +21,15 @@
 
 maix64
 Target Report RejectNegative Negative(maix32) Mask(64BIT) Var(rs6000_isa_flags)
-Compile for 64-bit pointers
+Compile for 64-bit pointers.
 
 maix32
 Target Report RejectNegative Negative(maix64) InverseMask(64BIT) Var(rs6000_isa_flags)
-Compile for 32-bit pointers
+Compile for 32-bit pointers.
 
 mcmodel=
 Target RejectNegative Joined Enum(rs6000_cmodel) Var(rs6000_current_cmodel)
-Select code model
+Select code model.
 
 Enum
 Name(rs6000_cmodel) Type(enum rs6000_cmodel)
@@ -46,7 +46,7 @@ Enum(rs6000_cmodel) String(large) Value(CMODEL_LARGE)
 
 mpe
 Target Report RejectNegative Var(internal_nothing_1) Save
-Support message passing with the Parallel Environment
+Support message passing with the Parallel Environment.
 
 posix
 Driver

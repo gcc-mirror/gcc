@@ -62,16 +62,6 @@ package Ghost is
    procedure Initialize;
    --  Initialize internal tables
 
-   function Is_Ghost_Entity (Id : Entity_Id) return Boolean;
-   --  Determine whether entity Id is Ghost. To qualify as such, the entity
-   --  must be subject to pragma Ghost.
-
-   function Is_Subject_To_Ghost (N : Node_Id) return Boolean;
-   --  Determine whether declarative node N is subject to aspect or pragma
-   --  Ghost. Use this routine in cases where [source] pragma Ghost has not
-   --  been analyzed yet, but the context needs to establish the "ghostness"
-   --  of N.
-
    procedure Lock;
    --  Lock internal tables before calling backend
 

@@ -55,7 +55,6 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
@@ -394,7 +393,8 @@ package body Exp_Intr is
       Analyze_And_Resolve (N, Etype (Act_Constr));
 
       --  Do not generate a run-time check on the built object if tag
-      --  checks are suppressed for the result type or VM_Target /= No_VM
+      --  checks are suppressed for the result type or tagged type expansion
+      --  is disabled.
 
       if Tag_Checks_Suppressed (Etype (Result_Typ))
         or else not Tagged_Type_Expansion
@@ -959,45 +959,35 @@ package body Exp_Intr is
    -- Expand_Unc_Deallocation --
    -----------------------------
 
-   --  Generate the following Code :
-
-   --    if Arg /= null then
-   --     <Finalize_Call> (.., T'Class(Arg.all), ..);  -- for controlled types
-   --       Free (Arg);
-   --       Arg := Null;
-   --    end if;
-
-   --  For a task, we also generate a call to Free_Task to ensure that the
-   --  task itself is freed if it is terminated, ditto for a simple protected
-   --  object, with a call to Finalize_Protection. For composite types that
-   --  have tasks or simple protected objects as components, we traverse the
-   --  structures to find and terminate those components.
-
    procedure Expand_Unc_Deallocation (N : Node_Id) is
       Arg       : constant Node_Id    := First_Actual (N);
       Loc       : constant Source_Ptr := Sloc (N);
       Typ       : constant Entity_Id  := Etype (Arg);
-      Desig_T   : constant Entity_Id  := Designated_Type (Typ);
-      Rtyp      : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
-      Pool      : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
+      Desig_Typ : constant Entity_Id  := Designated_Type (Typ);
+      Needs_Fin : constant Boolean    := Needs_Finalization (Desig_Typ);
+      Root_Typ  : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
+      Pool      : constant Entity_Id  := Associated_Storage_Pool (Root_Typ);
       Stmts     : constant List_Id    := New_List;
-      Needs_Fin : constant Boolean    := Needs_Finalization (Desig_T);
-
-      Finalizer_Data  : Finalization_Exception_Data;
-
-      Blk        : Node_Id := Empty;
-      Blk_Id     : Entity_Id;
-      Deref      : Node_Id;
-      Final_Code : List_Id;
-      Free_Arg   : Node_Id;
-      Free_Node  : Node_Id;
-      Gen_Code   : Node_Id;
 
       Arg_Known_Non_Null : constant Boolean := Known_Non_Null (N);
       --  This captures whether we know the argument to be non-null so that
       --  we can avoid the test. The reason that we need to capture this is
       --  that we analyze some generated statements before properly attaching
       --  them to the tree, and that can disturb current value settings.
+
+      Exceptions_OK : constant Boolean :=
+                        not Restriction_Active (No_Exception_Propagation);
+
+      Abrt_Blk    : Node_Id := Empty;
+      Abrt_Blk_Id : Entity_Id;
+      AUD         : Entity_Id;
+      Fin_Blk     : Node_Id;
+      Fin_Call    : Node_Id;
+      Fin_Data    : Finalization_Exception_Data;
+      Free_Arg    : Node_Id;
+      Free_Nod    : Node_Id;
+      Gen_Code    : Node_Id;
+      Obj_Ref     : Node_Id;
 
       Dummy : Entity_Id;
       --  This variable captures an unused dummy internal entity, see the
@@ -1010,149 +1000,166 @@ package body Exp_Intr is
          return;
       end if;
 
-      --  Processing for pointer to controlled type
+      --  Processing for pointer to controlled types. Generate:
+
+      --    Abrt   : constant Boolean := ...;
+      --    Ex     : Exception_Occurrence;
+      --    Raised : Boolean := False;
+
+      --    begin                             --  aborts allowed
+      --       Abort_Defer;
+
+      --       begin                          --  exception propagation allowed
+      --          [Deep_]Finalize (Obj_Ref);
+
+      --       exception
+      --          when others =>
+      --             if not Raised then
+      --                Raised := True;
+      --                Save_Occurrence (Ex, Get_Current_Excep.all.all);
+      --       end;
+      --    at end
+      --       Abort_Undefer_Direct;
+      --    end;
+
+      --  Depending on whether exception propagation is enabled and/or aborts
+      --  are allowed, the generated code may lack block statements.
 
       if Needs_Fin then
-         Deref :=
+         Obj_Ref :=
            Make_Explicit_Dereference (Loc,
              Prefix => Duplicate_Subexpr_No_Checks (Arg));
 
-         --  If the type is tagged, then we must force dispatching on the
-         --  finalization call because the designated type may not be the
-         --  actual type of the object.
+         --  If the designated type is tagged, the finalization call must
+         --  dispatch because the designated type may not be the actual type
+         --  of the object.
 
-         if Is_Tagged_Type (Desig_T)
-           and then not Is_Class_Wide_Type (Desig_T)
-         then
-            Deref := Unchecked_Convert_To (Class_Wide_Type (Desig_T), Deref);
+         if Is_Tagged_Type (Desig_Typ) then
+            if not Is_Class_Wide_Type (Desig_Typ) then
+               Obj_Ref :=
+                 Unchecked_Convert_To (Class_Wide_Type (Desig_Typ), Obj_Ref);
+            end if;
 
-         elsif not Is_Tagged_Type (Desig_T) then
+         --  Otherwise the designated type is untagged. Set the type of the
+         --  dereference explicitly to force a conversion when needed given
+         --  that [Deep_]Finalize may be inherited from a parent type.
 
-            --  Set type of result, to force a conversion when needed (see
-            --  exp_ch7, Convert_View), given that Deep_Finalize may be
-            --  inherited from the parent type, and we need the type of the
-            --  expression to see whether the conversion is in fact needed.
-
-            Set_Etype (Deref, Desig_T);
+         else
+            Set_Etype (Obj_Ref, Desig_Typ);
          end if;
 
-         --  The finalization call is expanded wrapped in a block to catch any
-         --  possible exception. If an exception does occur, then Program_Error
-         --  must be raised following the freeing of the object and its removal
-         --  from the finalization collection's list. We set a flag to record
-         --  that an exception was raised, and save its occurrence for use in
-         --  the later raise.
-         --
          --  Generate:
-         --    Abort  : constant Boolean :=
-         --               Exception_Occurrence (Get_Current_Excep.all.all) =
-         --                 Standard'Abort_Signal'Identity;
-         --      <or>
-         --    Abort  : constant Boolean := False;  --  no abort
+         --    [Deep_]Finalize (Obj_Ref);
 
-         --    E      : Exception_Occurrence;
+         Fin_Call := Make_Final_Call (Obj_Ref => Obj_Ref, Typ => Desig_Typ);
+
+         --  Generate:
+         --    Abrt   : constant Boolean := ...;
+         --    Ex     : Exception_Occurrence;
          --    Raised : Boolean := False;
-         --
+
          --    begin
-         --       [Deep_]Finalize (Obj);
+         --       <Fin_Call>
+
          --    exception
          --       when others =>
-         --          Raised := True;
-         --          Save_Occurrence (E, Get_Current_Excep.all.all);
+         --          if not Raised then
+         --             Raised := True;
+         --             Save_Occurrence (Ex, Get_Current_Excep.all.all);
          --    end;
 
-         Build_Object_Declarations (Finalizer_Data, Stmts, Loc);
+         if Exceptions_OK then
+            Build_Object_Declarations (Fin_Data, Stmts, Loc);
 
-         Final_Code := New_List (
-           Make_Block_Statement (Loc,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements         => New_List (
-                   Make_Final_Call (Obj_Ref => Deref, Typ => Desig_T)),
-                 Exception_Handlers => New_List (
-                   Build_Exception_Handler (Finalizer_Data)))));
+            Fin_Blk :=
+              Make_Block_Statement (Loc,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements         => New_List (Fin_Call),
+                    Exception_Handlers => New_List (
+                      Build_Exception_Handler (Fin_Data))));
 
-         --  For .NET/JVM, detach the object from the containing finalization
-         --  collection before finalizing it.
+            --  The finalization action must be protected by an abort defer
+            --  undefer pair when aborts are allowed. Generate:
 
-         if VM_Target /= No_VM and then Is_Controlled (Desig_T) then
-            Prepend_To (Final_Code,
-              Make_Detach_Call (New_Copy_Tree (Arg)));
-         end if;
+            --    begin
+            --       Abort_Defer;
+            --       <Fin_Blk>
+            --    at end
+            --       Abort_Undefer_Direct;
+            --    end;
 
-         --  If aborts are allowed, then the finalization code must be
-         --  protected by an abort defer/undefer pair.
+            if Abort_Allowed then
+               AUD := RTE (RE_Abort_Undefer_Direct);
 
-         if Abort_Allowed then
-            Prepend_To (Final_Code, Build_Runtime_Call (Loc, RE_Abort_Defer));
-
-            declare
-               AUD : constant Entity_Id := RTE (RE_Abort_Undefer_Direct);
-
-            begin
-               Blk :=
+               Abrt_Blk :=
                  Make_Block_Statement (Loc,
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements  => Final_Code,
+                       Statements  => New_List (
+                         Build_Runtime_Call (Loc, RE_Abort_Defer),
+                         Fin_Blk),
                        At_End_Proc => New_Occurrence_Of (AUD, Loc)));
+
+               Add_Block_Identifier (Abrt_Blk, Abrt_Blk_Id);
 
                --  Present the Abort_Undefer_Direct function to the backend so
                --  that it can inline the call to the function.
 
                Add_Inlined_Body (AUD, N);
-            end;
+               Append_To (Stmts, Abrt_Blk);
 
-            Add_Block_Identifier (Blk, Blk_Id);
+            --  Otherwise aborts are not allowed. Generate a dummy entity to
+            --  ensure that the internal symbols are in sync when a unit is
+            --  compiled with and without aborts.
 
-            Append (Blk, Stmts);
+            else
+               Dummy := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+               Append_To (Stmts, Fin_Blk);
+            end if;
+
+         --  Otherwise exception propagation is not allowed
 
          else
-            --  Generate a dummy entity to ensure that the internal symbols are
-            --  in sync when a unit is compiled with and without aborts.
-
-            Dummy := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
-            Append_List_To (Stmts, Final_Code);
+            Append_To (Stmts, Fin_Call);
          end if;
       end if;
 
-      --  For a task type, call Free_Task before freeing the ATCB
+      --  For a task type, call Free_Task before freeing the ATCB. We used to
+      --  detect the case of Abort followed by a Free here, because the Free
+      --  wouldn't actually free if it happens before the aborted task actually
+      --  terminates. The warning was removed, because Free now works properly
+      --  (the task will be freed once it terminates).
 
-      if Is_Task_Type (Desig_T) then
-
-         --  We used to detect the case of Abort followed by a Free here,
-         --  because the Free wouldn't actually free if it happens before
-         --  the aborted task actually terminates. The warning was removed,
-         --  because Free now works properly (the task will be freed once
-         --  it terminates).
-
+      if Is_Task_Type (Desig_Typ) then
          Append_To
            (Stmts, Cleanup_Task (N, Duplicate_Subexpr_No_Checks (Arg)));
 
       --  For composite types that contain tasks, recurse over the structure
       --  to build the selectors for the task subcomponents.
 
-      elsif Has_Task (Desig_T) then
-         if Is_Record_Type (Desig_T) then
-            Append_List_To (Stmts, Cleanup_Record (N, Arg, Desig_T));
+      elsif Has_Task (Desig_Typ) then
+         if Is_Array_Type (Desig_Typ) then
+            Append_List_To (Stmts, Cleanup_Array (N, Arg, Desig_Typ));
 
-         elsif Is_Array_Type (Desig_T) then
-            Append_List_To (Stmts, Cleanup_Array (N, Arg, Desig_T));
+         elsif Is_Record_Type (Desig_Typ) then
+            Append_List_To (Stmts, Cleanup_Record (N, Arg, Desig_Typ));
          end if;
       end if;
 
       --  Same for simple protected types. Eventually call Finalize_Protection
       --  before freeing the PO for each protected component.
 
-      if Is_Simple_Protected_Type (Desig_T) then
+      if Is_Simple_Protected_Type (Desig_Typ) then
          Append_To (Stmts,
            Cleanup_Protected_Object (N, Duplicate_Subexpr_No_Checks (Arg)));
 
-      elsif Has_Simple_Protected_Object (Desig_T) then
-         if Is_Record_Type (Desig_T) then
-            Append_List_To (Stmts, Cleanup_Record (N, Arg, Desig_T));
-         elsif Is_Array_Type (Desig_T) then
-            Append_List_To (Stmts, Cleanup_Array (N, Arg, Desig_T));
+      elsif Has_Simple_Protected_Object (Desig_Typ) then
+         if Is_Array_Type (Desig_Typ) then
+            Append_List_To (Stmts, Cleanup_Array (N, Arg, Desig_Typ));
+
+         elsif Is_Record_Type (Desig_Typ) then
+            Append_List_To (Stmts, Cleanup_Record (N, Arg, Desig_Typ));
          end if;
       end if;
 
@@ -1160,10 +1167,10 @@ package body Exp_Intr is
       --  a renaming rather than a constant to ensure that the original context
       --  is always set to null after the deallocation takes place.
 
-      Free_Arg  := Duplicate_Subexpr_No_Checks (Arg, Renaming_Req => True);
-      Free_Node := Make_Free_Statement (Loc, Empty);
-      Append_To (Stmts, Free_Node);
-      Set_Storage_Pool (Free_Node, Pool);
+      Free_Arg := Duplicate_Subexpr_No_Checks (Arg, Renaming_Req => True);
+      Free_Nod := Make_Free_Statement (Loc, Empty);
+      Append_To (Stmts, Free_Nod);
+      Set_Storage_Pool (Free_Nod, Pool);
 
       --  Attach to tree before analysis of generated subtypes below
 
@@ -1184,23 +1191,24 @@ package body Exp_Intr is
          --  Deallocate (which is allowed), then the actual will simply be set
          --  to null.
 
-         elsif Present (Get_Rep_Pragma
-                          (Etype (Pool), Name_Simple_Storage_Pool_Type))
+         elsif Present
+                 (Get_Rep_Pragma (Etype (Pool), Name_Simple_Storage_Pool_Type))
          then
             declare
-               Pool_Type  : constant Entity_Id := Base_Type (Etype (Pool));
-               Dealloc_Op : Entity_Id;
+               Pool_Typ : constant Entity_Id := Base_Type (Etype (Pool));
+               Dealloc  : Entity_Id;
+
             begin
-               Dealloc_Op := Get_Name_Entity_Id (Name_Deallocate);
-               while Present (Dealloc_Op) loop
-                  if Scope (Dealloc_Op) = Scope (Pool_Type)
-                    and then Present (First_Formal (Dealloc_Op))
-                    and then Etype (First_Formal (Dealloc_Op)) = Pool_Type
+               Dealloc := Get_Name_Entity_Id (Name_Deallocate);
+               while Present (Dealloc) loop
+                  if Scope (Dealloc) = Scope (Pool_Typ)
+                    and then Present (First_Formal (Dealloc))
+                    and then Etype (First_Formal (Dealloc)) = Pool_Typ
                   then
-                     Set_Procedure_To_Call (Free_Node, Dealloc_Op);
+                     Set_Procedure_To_Call (Free_Nod, Dealloc);
                      exit;
                   else
-                     Dealloc_Op := Homonym (Dealloc_Op);
+                     Dealloc := Homonym (Dealloc);
                   end if;
                end loop;
             end;
@@ -1209,17 +1217,17 @@ package body Exp_Intr is
          --  Deallocate through the class-wide Deallocate_Any.
 
          elsif Is_Class_Wide_Type (Etype (Pool)) then
-            Set_Procedure_To_Call (Free_Node, RTE (RE_Deallocate_Any));
+            Set_Procedure_To_Call (Free_Nod, RTE (RE_Deallocate_Any));
 
          --  Case of a specific pool type: make a statically bound call
 
          else
-            Set_Procedure_To_Call (Free_Node,
-              Find_Prim_Op (Etype (Pool), Name_Deallocate));
+            Set_Procedure_To_Call
+              (Free_Nod, Find_Prim_Op (Etype (Pool), Name_Deallocate));
          end if;
       end if;
 
-      if Present (Procedure_To_Call (Free_Node)) then
+      if Present (Procedure_To_Call (Free_Nod)) then
 
          --  For all cases of a Deallocate call, the back-end needs to be able
          --  to compute the size of the object being freed. This may require
@@ -1230,11 +1238,11 @@ package body Exp_Intr is
          --  size parameter computed by GIGI. Same for an access to
          --  unconstrained packed array.
 
-         if Is_Class_Wide_Type (Desig_T)
+         if Is_Class_Wide_Type (Desig_Typ)
            or else
-            (Is_Array_Type (Desig_T)
-              and then not Is_Constrained (Desig_T)
-              and then Is_Packed (Desig_T))
+            (Is_Array_Type (Desig_Typ)
+              and then not Is_Constrained (Desig_Typ)
+              and then Is_Packed (Desig_Typ))
          then
             declare
                Deref    : constant Node_Id :=
@@ -1247,9 +1255,9 @@ package body Exp_Intr is
                --  Perform minor decoration as it is needed by the side effect
                --  removal mechanism.
 
-               Set_Etype  (Deref, Desig_T);
-               Set_Parent (Deref, Free_Node);
-               D_Subtyp := Make_Subtype_From_Expr (Deref, Desig_T);
+               Set_Etype  (Deref, Desig_Typ);
+               Set_Parent (Deref, Free_Nod);
+               D_Subtyp := Make_Subtype_From_Expr (Deref, Desig_Typ);
 
                if Nkind (D_Subtyp) in N_Has_Entity then
                   D_Type := Entity (D_Subtyp);
@@ -1268,9 +1276,8 @@ package body Exp_Intr is
 
                Freeze_Itype (D_Type, Deref);
 
-               Set_Actual_Designated_Subtype (Free_Node, D_Type);
+               Set_Actual_Designated_Subtype (Free_Nod, D_Type);
             end;
-
          end if;
       end if;
 
@@ -1285,10 +1292,11 @@ package body Exp_Intr is
       if Is_Interface (Directly_Designated_Type (Typ))
         and then Tagged_Type_Expansion
       then
-         Set_Expression (Free_Node,
+         Set_Expression (Free_Nod,
            Unchecked_Convert_To (Typ,
              Make_Function_Call (Loc,
-               Name => New_Occurrence_Of (RTE (RE_Base_Address), Loc),
+               Name                   =>
+                 New_Occurrence_Of (RTE (RE_Base_Address), Loc),
                Parameter_Associations => New_List (
                  Unchecked_Convert_To (RTE (RE_Address), Free_Arg)))));
 
@@ -1296,7 +1304,7 @@ package body Exp_Intr is
       --    free (Obj_Ptr)
 
       else
-         Set_Expression (Free_Node, Free_Arg);
+         Set_Expression (Free_Nod, Free_Arg);
       end if;
 
       --  Only remaining step is to set result to null, or generate a raise of
@@ -1324,15 +1332,14 @@ package body Exp_Intr is
       --  exception occurrence.
 
       --  Generate:
-      --    if Raised and then not Abort then
-      --       raise Program_Error;                  --  for .NET and
-      --                                             --  restricted RTS
+      --    if Raised and then not Abrt then
+      --       raise Program_Error;                  --  for restricted RTS
       --         <or>
       --       Raise_From_Controlled_Operation (E);  --  all other cases
       --    end if;
 
-      if Needs_Fin then
-         Append_To (Stmts, Build_Raise_Statement (Finalizer_Data));
+      if Needs_Fin and then Exceptions_OK then
+         Append_To (Stmts, Build_Raise_Statement (Fin_Data));
       end if;
 
       --  If we know the argument is non-null, then make a block statement
@@ -1351,7 +1358,7 @@ package body Exp_Intr is
       else
          Gen_Code :=
            Make_Implicit_If_Statement (N,
-             Condition =>
+             Condition       =>
                Make_Op_Ne (Loc,
                  Left_Opnd  => Duplicate_Subexpr (Arg),
                  Right_Opnd => Make_Null (Loc)),
@@ -1366,9 +1373,10 @@ package body Exp_Intr is
       --  If we generated a block with an At_End_Proc, expand the exception
       --  handler. We need to wait until after everything else is analyzed.
 
-      if Present (Blk) then
+      if Present (Abrt_Blk) then
          Expand_At_End_Handler
-           (Handled_Statement_Sequence (Blk), Entity (Identifier (Blk)));
+           (HSS    => Handled_Statement_Sequence (Abrt_Blk),
+            Blk_Id => Entity (Identifier (Abrt_Blk)));
       end if;
    end Expand_Unc_Deallocation;
 

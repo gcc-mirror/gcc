@@ -17,5 +17,5 @@ inline int q(void) /* { dg-warning "max-inline-insns-single" "" } */
 }
 inline int t (void)
 {
-	return q ();		 /* { dg-warning "called from here" "" } */
+	return q ();		 /* { dg-message "called from here" } */
 }

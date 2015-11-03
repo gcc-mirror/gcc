@@ -1,3 +1,206 @@
+2015-10-30  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* config/i386/cpuinfo.c (enum processor_types): Add AMDFAM17H.
+	(processor_subtypes): Add znver1.
+	(get_amd_cpu): Detect znver1.
+
+2015-10-29  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config.host (arm*-*-eabi*, arm*-*-symbianelf*, arm*-*-rtems*):
+	Include crtfastmath.o.
+
+2015-10-23  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR libgcc/66883
+	* config/epiphany/udivsi3-float.c: Fix CONCISE test, and comment typo.
+
+2015-10-16  Kaushik Phatak  <kaushik.phatak@kpit.com>
+
+	* config/rl78/divmodqi.S: Return 0x00 by default for div by 0.
+	* config/rl78/divmodsi.S: Update return register to r8.
+	* config/rl78/divmodhi.S: Update return register to r8,r9.
+	Branch to main_loop_done_himode to pop registers before return.
+
+2015-10-09  Venkataramanan kumar <venkataramanan.kumar@amd.com>
+
+	* config/i386/cpuinfo.c (get_amd_cpu): Detect bdver4.
+	(__cpu_indicator_init): Fix model selection for AMD CPUs.
+
+2015-10-05  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Detect "skylake-avx512".
+
+2015-10-03  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config.host (xtensa*-*-uclinux*): New configuration.
+
+2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * config/i386/cpuinfo.c (processor_features): Add
+	FEATURE_AVX512VBMI and FEATURE_AVX512VBMI.
+
+2015-09-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* soft-fp/adddf3.c: Update from glibc.
+	* soft-fp/addsf3.c: Likewise.
+	* soft-fp/addtf3.c: Likewise.
+	* soft-fp/divdf3.c: Likewise.
+	* soft-fp/divsf3.c: Likewise.
+	* soft-fp/divtf3.c: Likewise.
+	* soft-fp/double.h: Likewise.
+	* soft-fp/eqdf2.c: Likewise.
+	* soft-fp/eqsf2.c: Likewise.
+	* soft-fp/eqtf2.c: Likewise.
+	* soft-fp/extenddftf2.c: Likewise.
+	* soft-fp/extended.h: Likewise.
+	* soft-fp/extendsfdf2.c: Likewise.
+	* soft-fp/extendsftf2.c: Likewise.
+	* soft-fp/extendxftf2.c: Likewise.
+	* soft-fp/fixdfdi.c: Likewise.
+	* soft-fp/fixdfsi.c: Likewise.
+	* soft-fp/fixdfti.c: Likewise.
+	* soft-fp/fixsfdi.c: Likewise.
+	* soft-fp/fixsfsi.c: Likewise.
+	* soft-fp/fixsfti.c: Likewise.
+	* soft-fp/fixtfdi.c: Likewise.
+	* soft-fp/fixtfsi.c: Likewise.
+	* soft-fp/fixtfti.c: Likewise.
+	* soft-fp/fixunsdfdi.c: Likewise.
+	* soft-fp/fixunsdfsi.c: Likewise.
+	* soft-fp/fixunsdfti.c: Likewise.
+	* soft-fp/fixunssfdi.c: Likewise.
+	* soft-fp/fixunssfsi.c: Likewise.
+	* soft-fp/fixunssfti.c: Likewise.
+	* soft-fp/fixunstfdi.c: Likewise.
+	* soft-fp/fixunstfsi.c: Likewise.
+	* soft-fp/fixunstfti.c: Likewise.
+	* soft-fp/floatdidf.c: Likewise.
+	* soft-fp/floatdisf.c: Likewise.
+	* soft-fp/floatditf.c: Likewise.
+	* soft-fp/floatsidf.c: Likewise.
+	* soft-fp/floatsisf.c: Likewise.
+	* soft-fp/floatsitf.c: Likewise.
+	* soft-fp/floattidf.c: Likewise.
+	* soft-fp/floattisf.c: Likewise.
+	* soft-fp/floattitf.c: Likewise.
+	* soft-fp/floatundidf.c: Likewise.
+	* soft-fp/floatundisf.c: Likewise.
+	* soft-fp/floatunditf.c: Likewise.
+	* soft-fp/floatunsidf.c: Likewise.
+	* soft-fp/floatunsisf.c: Likewise.
+	* soft-fp/floatunsitf.c: Likewise.
+	* soft-fp/floatuntidf.c: Likewise.
+	* soft-fp/floatuntisf.c: Likewise.
+	* soft-fp/floatuntitf.c: Likewise.
+	* soft-fp/gedf2.c: Likewise.
+	* soft-fp/gesf2.c: Likewise.
+	* soft-fp/getf2.c: Likewise.
+	* soft-fp/ledf2.c: Likewise.
+	* soft-fp/lesf2.c: Likewise.
+	* soft-fp/letf2.c: Likewise.
+	* soft-fp/muldf3.c: Likewise.
+	* soft-fp/mulsf3.c: Likewise.
+	* soft-fp/multf3.c: Likewise.
+	* soft-fp/negdf2.c: Likewise.
+	* soft-fp/negsf2.c: Likewise.
+	* soft-fp/negtf2.c: Likewise.
+	* soft-fp/op-1.h: Likewise.
+	* soft-fp/op-2.h: Likewise.
+	* soft-fp/op-4.h: Likewise.
+	* soft-fp/op-8.h: Likewise.
+	* soft-fp/op-common.h: Likewise.
+	* soft-fp/quad.h: Likewise.
+	* soft-fp/single.h: Likewise.
+	* soft-fp/soft-fp.h: Likewise.
+	* soft-fp/subdf3.c: Likewise.
+	* soft-fp/subsf3.c: Likewise.
+	* soft-fp/subtf3.c: Likewise.
+	* soft-fp/truncdfsf2.c: Likewise.
+	* soft-fp/trunctfdf2.c: Likewise.
+	* soft-fp/trunctfsf2.c: Likewise.
+	* soft-fp/trunctfxf2.c: Likewise.
+	* soft-fp/unorddf2.c: Likewise.
+	* soft-fp/unordsf2.c: Likewise.
+	* soft-fp/unordtf2.c: Likewise.
+
+2015-09-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR libgcc/67624
+	* config/arm/fp16.c (__gnu_f2h_internal): Handle infinity correctly.
+
+2015-09-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (*-*-solaris2*): Add t-crtstuff-pic to tmake_file.
+	Add crtbeginS.o, crtendS.o to extra_parts if libgcc_cv_solaris_crts.
+	* config/sol2/gmon.c: (monstartup): Don't write trailing NUL of
+	messages.
+	(internal_mcount): Likewise.
+	* config/sol2/t-sol2 (crtp.o, crtpg.o, gmon.o): Compile with
+	crt_compile, add CRTSTUFF_T_CFLAGS_S.
+
+2015-09-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (libgcc_cv_solaris_crts): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sol2/crtp.c, config/sol2/crtpg.c: New files.
+	* config/gmon-sol2.c: Rename to ...
+	* config/sol2/gmon.c: ... this.
+	Include auto-target.h.
+	(internal_mcount): Wrap setup handling in !HAVE_SOLARIS_CRTS.
+	* config/t-sol2: Rename to ...
+	* config/sol2/t-sol2: ... this.
+	(gmon.o): Reflect renaming.
+	(crtp.o, crtpg.o): New rules.
+	* config.host (*-*-solaris2*): Reflect renaming.
+	Use system CRTs if present.
+	Remove default CRT case.
+
+2015-09-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__kernel_cmpxchg2): Reorder error checks.
+	(__sync_fetch_and_##OP##_##WIDTH): Change result to match type of
+	__kernel_cmpxchg2.
+	(__sync_##OP##_and_fetch_##WIDTH): Likewise.
+	(__sync_val_compare_and_swap_##WIDTH): Likewise.
+	(__sync_bool_compare_and_swap_##WIDTH): Likewise.
+	(__sync_lock_test_and_set_##WIDTH): Likewise.
+	(__sync_lock_release_##WIDTH): Likewise.
+	(__sync_fetch_and_##OP##_4): Change result to match type of
+	__kernel_cmpxchg.
+	(__sync_##OP##_and_fetch_4): Likewise.
+	(__sync_val_compare_and_swap_4): Likewise.
+	(__sync_bool_compare_and_swap_4): likewise.
+	(__sync_lock_test_and_set_4): Likewise.
+	(__sync_lock_release_4): Likewise.
+	(FETCH_AND_OP_2): Add long long variants.
+	(OP_AND_FETCH_2): Likewise.
+	(COMPARE_AND_SWAP_2 ): Likewise.
+	(SYNC_LOCK_TEST_AND_SET_2): Likewise.
+	(SYNC_LOCK_RELEASE_2): Likewise.
+	(__sync_bool_compare_and_swap_##WIDTH): Correct return.
+
+2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
+
+	* libgcc/config/i386/cpuinfo.c (enum processor_features): Add
+	FEATURE_AVX512VL, FEATURE_AVX512BW, FEATURE_AVX512DQ,
+	FEATURE_AVX512CD, FEATURE_AVX512ER, FEATURE_AVX512PF.
+	(get_available_features): Habdle new features.
+
+2015-09-21  James Bowman  <james.bowman@ftdichip.com>
+
+	* config/ft32/crti-hw.S: Use __PMSIZE to allow configurable
+	memory layout. Deal correctly with BSS region larger than 32K.
+	Handle a watchdog reset like a power-on reset. Clean up unused
+	code.
+
+2015-09-18  Andrew Dixie  <andrewd@gentrack.com>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.host (powerpc-ibm-aix*): Add crtdbase.o to extra_parts.
+	* config/rs6000/crtdbase.S: New file.
+	* config/rs6000/t-aix-cxa: Build crtdbase.o.
+
 2015-09-15  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/linux-unwind.h (xtensa_fallback_frame_state):

@@ -21,23 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "tree.h"
 #include "rtl.h"
 #include "df.h"
-#include "alias.h"
-#include "regs.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
 #include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-pass.h"
-#include "output.h"
 
 /* Determine if the stack pointer is constant over the life of the function.
    Only useful before prologues have been emitted.  */

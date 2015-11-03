@@ -130,9 +130,6 @@ package body Exp_Ch5 is
    --  Expand loop over arrays and containers that uses the form "for X of C"
    --  with an optional subtype mark, or "for Y in C".
 
-   procedure Expand_Iterator_Loop_Over_Array (N : Node_Id);
-   --  Expand loop over arrays that uses the form "for X of C"
-
    procedure Expand_Iterator_Loop_Over_Container
      (N             : Node_Id;
       Isc           : Node_Id;
@@ -387,14 +384,6 @@ package body Exp_Ch5 is
         and then
            (not Is_Constrained (Etype (Lhs))
              or else not Is_First_Subtype (Etype (Lhs)))
-
-         --  In the case of compiling for the Java or .NET Virtual Machine,
-         --  slices are always passed by making a copy, so we don't have to
-         --  worry about overlap. We also want to prevent generation of "<"
-         --  comparisons for array addresses, since that's a meaningless
-         --  operation on the VM.
-
-        and then VM_Target = No_VM
       then
          Set_Forwards_OK  (N, False);
          Set_Backwards_OK (N, False);
@@ -764,7 +753,7 @@ package body Exp_Ch5 is
             --  The GCC back end can deal with all cases of overlap by falling
             --  back to memmove if it cannot use a more efficient approach.
 
-            if VM_Target = No_VM and not AAMP_On_Target then
+            if not AAMP_On_Target then
                return;
 
             --  Assume other back ends can handle it if Forwards_OK is set
@@ -937,9 +926,9 @@ package body Exp_Ch5 is
             --  We normally compare addresses to find out which way round to
             --  do the loop, since this is reliable, and handles the cases of
             --  parameters, conversions etc. But we can't do that in the bit
-            --  packed case or the VM case, because addresses don't work there.
+            --  packed case, because addresses don't work there.
 
-            if not Is_Bit_Packed_Array (L_Type) and then VM_Target = No_VM then
+            if not Is_Bit_Packed_Array (L_Type) then
                Condition :=
                  Make_Op_Le (Loc,
                    Left_Opnd =>
@@ -1627,22 +1616,6 @@ package body Exp_Ch5 is
    --  cannot just be passed on to the back end in untransformed state.
 
    procedure Expand_N_Assignment_Statement (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
-
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
-      --  Local variables
-
       Crep : constant Boolean    := Change_Of_Representation (N);
       Lhs  : constant Node_Id    := Name (N);
       Loc  : constant Source_Ptr := Sloc (N);
@@ -1650,12 +1623,12 @@ package body Exp_Ch5 is
       Typ  : constant Entity_Id  := Underlying_Type (Etype (Lhs));
       Exp  : Node_Id;
 
-   --  Start of processing for Expand_N_Assignment_Statement
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    begin
-      --  The assignment statement may be Ghost if the left hand side is Ghost.
+      --  The assignment statement is Ghost when the left hand side is Ghost.
       --  Set the mode now to ensure that any nodes generated during expansion
-      --  are properly flagged as ignored Ghost.
+      --  are properly marked as Ghost.
 
       Set_Ghost_Mode (N);
 
@@ -1668,7 +1641,7 @@ package body Exp_Ch5 is
 
       if Componentwise_Assignment (N) then
          Expand_Assign_Record (N);
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -1763,7 +1736,7 @@ package body Exp_Ch5 is
                Rewrite (N, Call);
                Analyze (N);
 
-               Restore_Globals;
+               Ghost_Mode := Save_Ghost_Mode;
                return;
             end if;
          end;
@@ -1914,7 +1887,7 @@ package body Exp_Ch5 is
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze (N);
 
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -2134,7 +2107,7 @@ package body Exp_Ch5 is
 
          if not Crep then
             Expand_Bit_Packed_Element_Set (N);
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
 
          --  Change of representation case
@@ -2181,14 +2154,6 @@ package body Exp_Ch5 is
       then
          Make_Build_In_Place_Call_In_Assignment (N, Rhs);
 
-      elsif Is_Tagged_Type (Typ) and then Is_Value_Type (Etype (Lhs)) then
-
-         --  Nothing to do for valuetypes
-         --  ??? Set_Scope_Is_Transient (False);
-
-         Restore_Globals;
-         return;
-
       elsif Is_Tagged_Type (Typ)
         or else (Needs_Finalization (Typ) and then not Is_Array_Type (Typ))
       then
@@ -2224,7 +2189,6 @@ package body Exp_Ch5 is
                --  generated.
 
                or else (Is_Tagged_Type (Typ)
-                         and then not Is_Value_Type (Etype (Lhs))
                          and then Chars (Current_Scope) /= Name_uAssign
                          and then Expand_Ctrl_Actions
                          and then
@@ -2242,7 +2206,7 @@ package body Exp_Ch5 is
                   --  expansion, since they would be missed in -gnatc mode ???
 
                   Error_Msg_N ("assignment not available on limited type", N);
-                  Restore_Globals;
+                  Ghost_Mode := Save_Ghost_Mode;
                   return;
                end if;
 
@@ -2413,7 +2377,7 @@ package body Exp_Ch5 is
             --  it with all checks suppressed.
 
             Analyze (N, Suppress => All_Checks);
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
          end Tagged_Case;
 
@@ -2431,7 +2395,7 @@ package body Exp_Ch5 is
             end loop;
 
             Expand_Assign_Array (N, Actual_Rhs);
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
          end;
 
@@ -2439,7 +2403,7 @@ package body Exp_Ch5 is
 
       elsif Is_Record_Type (Typ) then
          Expand_Assign_Record (N);
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Scalar types. This is where we perform the processing related to the
@@ -2552,11 +2516,11 @@ package body Exp_Ch5 is
          end if;
       end if;
 
-      Restore_Globals;
+      Ghost_Mode := Save_Ghost_Mode;
 
    exception
       when RE_Not_Available =>
-         Restore_Globals;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
    end Expand_N_Assignment_Statement;
 
@@ -2590,9 +2554,20 @@ package body Exp_Ch5 is
 
       --  If the value is static but its subtype is predicated and the value
       --  does not obey the predicate, the value is marked non-static, and
-      --  there can be no corresponding static alternative.
+      --  there can be no corresponding static alternative. In that case we
+      --  replace the case statement with an exception, regardless of whether
+      --  assertions are enabled or not.
 
       if Compile_Time_Known_Value (Expr)
+        and then Has_Predicates (Etype (Expr))
+        and then not Is_OK_Static_Expression (Expr)
+      then
+         Rewrite (N,
+           Make_Raise_Constraint_Error (Loc, Reason => CE_Invalid_Data));
+         Analyze (N);
+         return;
+
+      elsif Compile_Time_Known_Value (Expr)
         and then (not Has_Predicates (Etype (Expr))
                    or else Is_Static_Expression (Expr))
       then
@@ -2921,8 +2896,23 @@ package body Exp_Ch5 is
       --       Cursor := Next (Container, Cursor);
       --    end loop;
 
+      --   However this expansion is not legal if the element is indefinite.
+      --   In that case we create a block to hold a variable declaration
+      --   initialized with a call to Element, and generate:
+
+      --    Cursor : Cursor_type := First (Container);
+      --    while Has_Element (Cursor, Container) loop
+      --       declare
+      --          Elmt : Element-Type := Element (Container, Cursor);
+      --       begin
+      --          <original loop statements>
+      --          Cursor := Next (Container, Cursor);
+      --       end;
+      --    end loop;
+
       Build_Formal_Container_Iteration
         (N, Container, Cursor, Init, Advance, New_Loop);
+      Append_To (Stats, Advance);
 
       Set_Ekind (Cursor, E_Variable);
       Insert_Action (N, Init);
@@ -2934,33 +2924,54 @@ package body Exp_Ch5 is
           Defining_Identifier => Element,
           Object_Definition   => New_Occurrence_Of (Etype (Element_Op), Loc));
 
+      if not Is_Constrained (Etype (Element_Op)) then
+         Set_Expression (Elmt_Decl,
+           Make_Function_Call (Loc,
+             Name                   => New_Occurrence_Of (Element_Op, Loc),
+             Parameter_Associations => New_List (
+               New_Occurrence_Of (Container, Loc),
+               New_Occurrence_Of (Cursor, Loc))));
+
+         Set_Statements (New_Loop,
+           New_List
+             (Make_Block_Statement (Loc,
+                Declarations => New_List (Elmt_Decl),
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements =>  Stats))));
+
+      else
+         Elmt_Ref :=
+           Make_Assignment_Statement (Loc,
+             Name       => New_Occurrence_Of (Element, Loc),
+             Expression =>
+               Make_Function_Call (Loc,
+                 Name                   => New_Occurrence_Of (Element_Op, Loc),
+                 Parameter_Associations => New_List (
+                   New_Occurrence_Of (Container, Loc),
+                   New_Occurrence_Of (Cursor, Loc))));
+
+         Prepend (Elmt_Ref, Stats);
+
+         --  The element is assignable in the expanded code
+
+         Set_Assignment_OK (Name (Elmt_Ref));
+
+         --  The loop is rewritten as a block, to hold the element declaration
+
+         New_Loop :=
+           Make_Block_Statement (Loc,
+             Declarations               => New_List (Elmt_Decl),
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements =>  New_List (New_Loop)));
+      end if;
+
       --  The element is only modified in expanded code, so it appears as
       --  unassigned to the warning machinery. We must suppress this spurious
       --  warning explicitly.
 
       Set_Warnings_Off (Element);
-
-      Elmt_Ref :=
-        Make_Assignment_Statement (Loc,
-          Name       => New_Occurrence_Of (Element, Loc),
-          Expression =>
-            Make_Function_Call (Loc,
-              Name                   => New_Occurrence_Of (Element_Op, Loc),
-              Parameter_Associations => New_List (
-                New_Occurrence_Of (Container, Loc),
-                New_Occurrence_Of (Cursor, Loc))));
-
-      Prepend (Elmt_Ref, Stats);
-      Append_To (Stats, Advance);
-
-      --  The loop is rewritten as a block, to hold the element declaration
-
-      New_Loop :=
-        Make_Block_Statement (Loc,
-          Declarations               => New_List (Elmt_Decl),
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements =>  New_List (New_Loop)));
 
       Rewrite (N, New_Loop);
 
@@ -2971,7 +2982,6 @@ package body Exp_Ch5 is
 
       Analyze (Elmt_Decl);
       Set_Ekind (Defining_Identifier (Elmt_Decl), E_Loop_Parameter);
-      Set_Assignment_OK (Name (Elmt_Ref));
 
       Analyze (N);
    end Expand_Formal_Container_Element_Loop;
@@ -3337,44 +3347,36 @@ package body Exp_Ch5 is
    begin
       --  for Element of Array loop
 
-      --  This case requires an internally generated cursor to iterate over
-      --  the array.
+      --  It requires an internally generated cursor to iterate over the array
 
-      if Of_Present (I_Spec) then
-         Iterator := Make_Temporary (Loc, 'C');
+      pragma Assert (Of_Present (I_Spec));
 
-         --  Generate:
-         --    Element : Component_Type renames Array (Iterator);
-         --    Iterator is the index value, or a list of index values
-         --    in the case of a multidimensional array.
+      Iterator := Make_Temporary (Loc, 'C');
 
-         Ind_Comp :=
-           Make_Indexed_Component (Loc,
-             Prefix      => Relocate_Node (Array_Node),
-             Expressions => New_List (New_Occurrence_Of (Iterator, Loc)));
+      --  Generate:
+      --    Element : Component_Type renames Array (Iterator);
+      --    Iterator is the index value, or a list of index values
+      --    in the case of a multidimensional array.
 
-         Prepend_To (Stats,
-           Make_Object_Renaming_Declaration (Loc,
-             Defining_Identifier => Id,
-             Subtype_Mark        =>
-               New_Occurrence_Of (Component_Type (Array_Typ), Loc),
-             Name                => Ind_Comp));
+      Ind_Comp :=
+        Make_Indexed_Component (Loc,
+          Prefix      => Relocate_Node (Array_Node),
+          Expressions => New_List (New_Occurrence_Of (Iterator, Loc)));
 
-         --  Mark the loop variable as needing debug info, so that expansion
-         --  of the renaming will result in Materialize_Entity getting set via
-         --  Debug_Renaming_Declaration. (This setting is needed here because
-         --  the setting in Freeze_Entity comes after the expansion, which is
-         --  too late. ???)
+      Prepend_To (Stats,
+        Make_Object_Renaming_Declaration (Loc,
+          Defining_Identifier => Id,
+          Subtype_Mark        =>
+            New_Occurrence_Of (Component_Type (Array_Typ), Loc),
+          Name                => Ind_Comp));
 
-         Set_Debug_Info_Needed (Id);
+      --  Mark the loop variable as needing debug info, so that expansion
+      --  of the renaming will result in Materialize_Entity getting set via
+      --  Debug_Renaming_Declaration. (This setting is needed here because
+      --  the setting in Freeze_Entity comes after the expansion, which is
+      --  too late. ???)
 
-      --  for Index in Array loop
-
-      --  This case utilizes the already given iterator name
-
-      else
-         Iterator := Id;
-      end if;
+      Set_Debug_Info_Needed (Id);
 
       --  Generate:
 
@@ -3862,10 +3864,14 @@ package body Exp_Ch5 is
             Set_Debug_Info_Needed (Id);
 
             --  If the container does not have a variable indexing aspect,
-            --  the element is a constant in the loop.
+            --  the element is a constant in the loop. The container itself
+            --  may be constant, in which case the element is a constant as
+            --  well. The container has been rewritten as a call to Iterate,
+            --  so examine original node.
 
             if No (Find_Value_Of_Aspect
                      (Container_Typ, Aspect_Variable_Indexing))
+              or else not Is_Variable (Original_Node (Container))
             then
                Set_Ekind (Id, E_Constant);
             end if;
@@ -4582,11 +4588,6 @@ package body Exp_Ch5 is
                                        and then not Comp_Asn
                                        and then not No_Ctrl_Actions (N)
                                        and then Tagged_Type_Expansion;
-      --  Tags are not saved and restored when VM_Target because VM tags are
-      --  represented implicitly in objects.
-
-      Next_Id : Entity_Id;
-      Prev_Id : Entity_Id;
       Tag_Id  : Entity_Id;
 
    begin
@@ -4647,48 +4648,6 @@ package body Exp_Ch5 is
          Tag_Id := Empty;
       end if;
 
-      --  Save the Prev and Next fields on .NET/JVM. This is not needed on non
-      --  VM targets since the fields are not part of the object.
-
-      if VM_Target /= No_VM
-        and then Is_Controlled (T)
-      then
-         Prev_Id := Make_Temporary (Loc, 'P');
-         Next_Id := Make_Temporary (Loc, 'N');
-
-         --  Generate:
-         --    Pnn : Root_Controlled_Ptr := Root_Controlled (L).Prev;
-
-         Append_To (Res,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Prev_Id,
-             Object_Definition   =>
-               New_Occurrence_Of (RTE (RE_Root_Controlled_Ptr), Loc),
-             Expression          =>
-               Make_Selected_Component (Loc,
-                 Prefix        =>
-                   Unchecked_Convert_To
-                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Name_Prev))));
-
-         --  Generate:
-         --    Nnn : Root_Controlled_Ptr := Root_Controlled (L).Next;
-
-         Append_To (Res,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Next_Id,
-             Object_Definition   =>
-               New_Occurrence_Of (RTE (RE_Root_Controlled_Ptr), Loc),
-             Expression          =>
-               Make_Selected_Component (Loc,
-                 Prefix        =>
-                   Unchecked_Convert_To
-                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Name_Next))));
-      end if;
-
       --  If the tagged type has a full rep clause, expand the assignment into
       --  component-wise assignments. Mark the node as unanalyzed in order to
       --  generate the proper code and propagate this scenario by setting a
@@ -4712,39 +4671,6 @@ package body Exp_Ch5 is
                  Selector_Name =>
                    New_Occurrence_Of (First_Tag_Component (T), Loc)),
              Expression => New_Occurrence_Of (Tag_Id, Loc)));
-      end if;
-
-      --  Restore the Prev and Next fields on .NET/JVM
-
-      if VM_Target /= No_VM
-        and then Is_Controlled (T)
-      then
-         --  Generate:
-         --    Root_Controlled (L).Prev := Prev_Id;
-
-         Append_To (Res,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               Make_Selected_Component (Loc,
-                 Prefix        =>
-                   Unchecked_Convert_To
-                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Name_Prev)),
-             Expression => New_Occurrence_Of (Prev_Id, Loc)));
-
-         --  Generate:
-         --    Root_Controlled (L).Next := Next_Id;
-
-         Append_To (Res,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               Make_Selected_Component (Loc,
-                 Prefix        =>
-                   Unchecked_Convert_To
-                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
-                 Selector_Name => Make_Identifier (Loc, Name_Next)),
-             Expression => New_Occurrence_Of (Next_Id, Loc)));
       end if;
 
       --  Adjust the target after the assignment when controlled (not in the

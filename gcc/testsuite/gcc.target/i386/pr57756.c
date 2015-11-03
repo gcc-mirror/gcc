@@ -11,7 +11,7 @@ __inline int callee () /* { dg-error "inlining failed in call to always_inline" 
 __attribute__((target("sse")))
 static __inline int caller ()
 {
-  return callee(); /* { dg-error "called from here" }  */
+  return callee(); /* { dg-message "called from here" }  */
 }
 
 int main ()

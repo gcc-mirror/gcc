@@ -1,3 +1,15 @@
+2015-10-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libffi/65441
+	* testsuite/lib/libffi.exp: Load target-supports-dg.exp.
+	* testsuite/libffi.call/float2.c: Don't run on hppa*-*-hpux*.
+
+2015-10-01  Alan Modra  <amodra@gmail.com>
+
+	* src/powerpc/ffi_sysv.c (ffi_prep_cif_sysv_core): Count fprs,
+	gprs, and stack words separately.
+	(ffi_prep_args_SYSV): Similarly.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in: Regenerated with automake-1.11.6.

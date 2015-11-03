@@ -46,17 +46,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cfghooks.h"
 #include "df.h"
-#include "alias.h"
-#include "varasm.h"
 #include "tm_p.h"
-#include "regs.h"
 #include "insn-config.h"
-#include "insn-attr.h"
+#include "regs.h"
+#include "emit-rtl.h"
 #include "recog.h"
+#include "cgraph.h"
+#include "tree-pretty-print.h" /* for dump_function_header */
+#include "varasm.h"
+#include "insn-attr.h"
 #include "conditions.h"
 #include "flags.h"
 #include "output.h"
@@ -66,30 +69,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "intl.h"
 #include "cfgrtl.h"
-#include "target.h"
-#include "targhooks.h"
 #include "debug.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-pass.h"
-#include "cgraph.h"
 #include "tree-ssa.h"
-#include "coverage.h"
 #include "cfgloop.h"
 #include "params.h"
-#include "tree-pretty-print.h" /* for dump_function_header */
 #include "asan.h"
-#include "wide-int-print.h"
 #include "rtl-iter.h"
+#include "print-rtl.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
-#include "xcoffout.h"		/* Needed for external data
-				   declarations for e.g. AIX 4.x.  */
+#include "xcoffout.h"		/* Needed for external data declarations.  */
 #endif
 
 #include "dwarf2out.h"
@@ -296,7 +286,6 @@ app_disable (void)
    delayed branch sequence (we don't count the insn needing the
    delay slot).   Zero if not in a delayed branch sequence.  */
 
-#ifdef DELAY_SLOTS
 int
 dbr_sequence_length (void)
 {
@@ -305,7 +294,6 @@ dbr_sequence_length (void)
   else
     return 0;
 }
-#endif
 
 /* The next two pages contain routines used to compute the length of an insn
    and to shorten branches.  */
@@ -1155,11 +1143,11 @@ shorten_branches (rtx_insn *first)
 	{
 	  int i;
 	  int const_delay_slots;
-#ifdef DELAY_SLOTS
-	  const_delay_slots = const_num_delay_slots (body_seq->insn (0));
-#else
-	  const_delay_slots = 0;
-#endif
+	  if (DELAY_SLOTS)
+	    const_delay_slots = const_num_delay_slots (body_seq->insn (0));
+	  else
+	    const_delay_slots = 0;
+
 	  int (*inner_length_fun) (rtx_insn *)
 	    = const_delay_slots ? length_fun : insn_default_length;
 	  /* Inside a delay slot sequence, we do not do any branch shortening
@@ -4677,7 +4665,7 @@ rest_of_clean_state (void)
 
   free_bb_for_insn ();
 
-  delete_tree_ssa ();
+  delete_tree_ssa (cfun);
 
   /* We can reduce stack alignment on call site only when we are sure that
      the function body just produced will be actually used in the final

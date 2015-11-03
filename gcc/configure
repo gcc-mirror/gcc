@@ -707,6 +707,10 @@ FGREP
 SED
 LIBTOOL
 collect2
+NO_PIE_FLAG_FOR_BUILD
+NO_PIE_CFLAGS_FOR_BUILD
+BUILD_NO_PIE_FLAG
+BUILD_NO_PIE_CFLAGS
 STMP_FIXINC
 BUILD_LDFLAGS
 BUILD_CXXFLAGS
@@ -7096,7 +7100,13 @@ if test x$ac_checking != x ; then
 
 $as_echo "#define ENABLE_CHECKING 1" >>confdefs.h
 
+
+$as_echo "#define CHECKING_P 1" >>confdefs.h
+
   nocommon_flag=-fno-common
+else
+  $as_echo "#define CHECKING_P 0" >>confdefs.h
+
 fi
 
 if test x$ac_df_checking != x ; then
@@ -7696,7 +7706,7 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
   if test x"$offload_targets" = x; then
     offload_targets=$tgt
   else
-    offload_targets="$offload_targets:$tgt"
+    offload_targets="$offload_targets,$tgt"
   fi
 done
 
@@ -12248,13 +12258,23 @@ BUILD_CXXFLAGS='$(ALL_CXXFLAGS)'
 BUILD_LDFLAGS='$(LDFLAGS)'
 STMP_FIXINC=stmp-fixinc
 
+BUILD_NO_PIE_CFLAGS='$(NO_PIE_CFLAGS)'
+BUILD_NO_PIE_FLAG='$(NO_PIE_FLAG)'
+
 # And these apply if build != host, or we are generating coverage data
 if test x$build != x$host || test "x$coverage_flags" != x
 then
     BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD)'
     BUILD_CXXFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CXXFLAGS_FOR_BUILD)'
     BUILD_LDFLAGS='$(LDFLAGS_FOR_BUILD)'
+
+    NO_PIE_CFLAGS_FOR_BUILD=${NO_PIE_CFLAGS_FOR_BUILD-${NO_PIE_CFLAGS}}
+    NO_PIE_FLAG_FOR_BUILD=${NO_PIE_FLAG_FOR_BUILD-${NO_PIE_FLAG}}
+    BUILD_NO_PIE_CFLAGS='$(NO_PIE_CFLAGS_FOR_BUILD)'
+    BUILD_NO_PIE_FLAG='$(NO_PIE_FLAG_FOR_BUILD)'
 fi
+
+
 
 # Expand extra_headers to include complete path.
 # This substitutes for lots of t-* files.
@@ -18385,7 +18405,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18388 "configure"
+#line 18408 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18491,7 +18511,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18494 "configure"
+#line 18514 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22015,6 +22035,45 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ld_is_gold" >&5
 $as_echo "$ld_is_gold" >&6; }
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking gold linker with split stack support as non default" >&5
+$as_echo_n "checking gold linker with split stack support as non default... " >&6; }
+# Check to see if default ld is not gold, but gold is
+# available and has support for split stack.  If gcc was configured
+# with gold then no checking is done.
+#
+if test x$ld_is_gold = xno && which ${gcc_cv_ld}.gold >/dev/null 2>&1; then
+
+# For platforms other than powerpc64*, enable as appropriate.
+
+  gold_non_default=no
+  ld_gold=`which ${gcc_cv_ld}.gold`
+# Make sure this gold has minimal split stack support
+  if $ld_gold --help 2>/dev/null | grep split-stack-adjust-size >/dev/null 2>&1; then
+    ld_vers=`$ld_gold --version | sed 1q`
+    gold_vers=`echo $ld_vers | sed -n \
+          -e 's,^[^)]*[  ]\([0-9][0-9]*\.[0-9][0-9]*[^)]*\)) .*$,\1,p'`
+    case $target in
+# check that the gold version contains the complete split stack support
+# on powerpc64 big and little endian
+      powerpc64*-*-*)
+        case "$gold_vers" in
+          2.25.[1-9]*|2.2[6-9][.0-9]*|2.[3-9][.0-9]*|[3-9].[.0-9]*) gold_non_default=yes
+          ;;
+          *) gold_non_default=no
+          ;;
+        esac
+        ;;
+    esac
+  fi
+  if test $gold_non_default = yes; then
+
+$as_echo "#define HAVE_GOLD_NON_DEFAULT_SPLIT_STACK 1" >>confdefs.h
+
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gold_non_default" >&5
+$as_echo "$gold_non_default" >&6; }
+
 ORIGINAL_LD_FOR_TARGET=$gcc_cv_ld
 
 case "$ORIGINAL_LD_FOR_TARGET" in
@@ -22232,9 +22291,11 @@ if test -f $gcc_cv_binutils_srcdir/configure.ac \
 	gcc_cv_readelf=../binutils/readelf$build_exeext
 elif test -x readelf$build_exeext; then
 	gcc_cv_readelf=./readelf$build_exeext
+elif ( set dummy $READELF_FOR_TARGET; test -x $2 ); then
+        gcc_cv_readelf="$READELF_FOR_TARGET"
 else
-        # Extract the first word of "readelf", so it can be a program name with args.
-set dummy readelf; ac_word=$2
+        # Extract the first word of "$READELF_FOR_TARGET", so it can be a program name with args.
+set dummy $READELF_FOR_TARGET; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if test "${ac_cv_path_gcc_cv_readelf+set}" = set; then :
@@ -26452,6 +26513,46 @@ $as_echo "#define HAVE_AS_REF 1" >>confdefs.h
 fi
 	;;
     esac
+
+    case $target in
+      *-*-aix*)
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for dwarf location lists section support" >&5
+$as_echo_n "checking assembler for dwarf location lists section support... " >&6; }
+if test "${gcc_cv_as_aix_dwloc+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_aix_dwloc=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 21 \) \* 1000 + 0`
+  then gcc_cv_as_aix_dwloc=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '	.dwsect 0xB0000
+	  ' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_aix_dwloc=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_aix_dwloc" >&5
+$as_echo "$gcc_cv_as_aix_dwloc" >&6; }
+if test $gcc_cv_as_aix_dwloc = yes; then
+
+$as_echo "#define HAVE_XCOFF_DWARF_EXTRAS 1" >>confdefs.h
+
+fi
+	;;
+    esac
     ;;
 
   mips*-*-*)
@@ -26490,6 +26591,7 @@ if test $gcc_cv_as_mips_explicit_relocs = yes; then
        else target_cpu_default="($target_cpu_default)|MASK_EXPLICIT_RELOCS"
        fi
 fi
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -mno-shared support" >&5
 $as_echo_n "checking assembler for -mno-shared support... " >&6; }
 if test "${gcc_cv_as_mips_no_shared+set}" = set; then :
@@ -27398,15 +27500,37 @@ $as_echo "$gcc_cv_ld_eh_frame_ciev3" >&6; }
 $as_echo_n "checking linker position independent executable support... " >&6; }
 gcc_cv_ld_pie=no
 if test $in_tree_ld = yes ; then
-  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 15 -o "$gcc_cv_gld_major_version" -gt 2 \
+  case "$target" in
+    # Full PIE support on Solaris was only introduced in gld 2.26.
+    *-*-solaris2*)  gcc_gld_pie_min_version=26 ;;
+    *) 		    gcc_gld_pie_min_version=15 ;;
+  esac
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge "$gcc_gld_pie_min_version" -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
     gcc_cv_ld_pie=yes
   fi
 elif test x$gcc_cv_ld != x; then
-	# Check if linker supports -pie option
-	if $gcc_cv_ld --help 2>/dev/null | grep -- -pie > /dev/null; then
-		gcc_cv_ld_pie=yes
+  # Check if linker supports -pie option
+  if $gcc_cv_ld --help 2>/dev/null | grep -- -pie > /dev/null; then
+    gcc_cv_ld_pie=yes
+    case "$target" in
+      *-*-solaris2*)
+	if echo "$ld_ver" | grep GNU > /dev/null \
+	  && test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 26; then
+	  gcc_cv_ld_pie=no
 	fi
+	;;
+    esac
+  else
+    case "$target" in
+      *-*-solaris2.1[1-9]*)
+	# Solaris 11.x and Solaris 12 added PIE support.
+	if $gcc_cv_ld -z help 2>&1 | grep -- type.*pie > /dev/null; then
+	  gcc_cv_ld_pie=yes
+	fi
+	;;
+    esac
+  fi
 fi
 if test x"$gcc_cv_ld_pie" = xyes; then
 
@@ -28022,6 +28146,44 @@ $as_echo "$gcc_cv_ld_sysroot" >&6; }
 if test x"$gcc_cv_ld_sysroot" = xyes; then
 
 $as_echo "#define HAVE_LD_SYSROOT 1" >>confdefs.h
+
+fi
+
+case $target in
+*-*-solaris2*)
+  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking system-provided CRTs on Solaris" >&5
+$as_echo_n "checking system-provided CRTs on Solaris... " >&6; }
+if test "${gcc_cv_solaris_crts+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_solaris_crts=no
+     if test x$host != x$target; then
+       if test "x$with_sysroot" = xyes; then
+         target_sysroot="${test_exec_prefix}/${target_noncanonical}/sys-root"
+       else
+         target_sysroot="${with_sysroot}"
+       fi
+     fi
+     target_libdir="$target_sysroot/usr/lib"
+     # At the time they were added, gcrt1.o became a symlink for backwards
+     # compatibility on x86, while crt1.o was added on sparc, so check for that.
+     case $target in
+       i?86-*-solaris2* | x86_64-*-solaris2*)
+         if test -h "$target_libdir/gcrt1.o"; then gcc_cv_solaris_crts=yes; fi
+	 ;;
+       sparc*-*-solaris2*)
+         if test -f "$target_libdir/crt1.o"; then gcc_cv_solaris_crts=yes; fi
+	 ;;
+     esac
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_solaris_crts" >&5
+$as_echo "$gcc_cv_solaris_crts" >&6; }
+  ;;
+esac
+if test x$gcc_cv_solaris_crts = xyes; then
+
+$as_echo "#define HAVE_SOLARIS_CRTS 1" >>confdefs.h
 
 fi
 

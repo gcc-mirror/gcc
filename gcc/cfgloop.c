@@ -21,18 +21,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
+#include "gimple-ssa.h"
+#include "diagnostic-core.h"
 #include "cfganal.h"
 #include "cfgloop.h"
-#include "diagnostic-core.h"
-#include "flags.h"
-#include "fold-const.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
 #include "dumpfile.h"
 
 static void flow_loops_cfg_dump (FILE *);
@@ -1114,12 +1111,12 @@ dump_recorded_exits (FILE *file)
 /* Releases lists of loop exits.  */
 
 void
-release_recorded_exits (void)
+release_recorded_exits (function *fn)
 {
-  gcc_assert (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS));
-  current_loops->exits->empty ();
-  current_loops->exits = NULL;
-  loops_state_clear (LOOPS_HAVE_RECORDED_EXITS);
+  gcc_assert (loops_state_satisfies_p (fn, LOOPS_HAVE_RECORDED_EXITS));
+  loops_for_fn (fn)->exits->empty ();
+  loops_for_fn (fn)->exits = NULL;
+  loops_state_clear (fn, LOOPS_HAVE_RECORDED_EXITS);
 }
 
 /* Returns the list of the exit edges of a LOOP.  */

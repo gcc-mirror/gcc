@@ -20,8 +20,8 @@
 
 msmall-model
 Target Report Mask(SMALL_MODEL)
-Assume small address space
+Assume small address space.
 
 mno-lsim
 Target RejectNegative
-Assume that run-time support has been provided, so omit -lsim from the linker command line
+Assume that run-time support has been provided, so omit -lsim from the linker command line.

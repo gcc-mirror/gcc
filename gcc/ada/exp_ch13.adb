@@ -32,6 +32,7 @@ with Exp_Imgv; use Exp_Imgv;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -47,7 +48,6 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Validsw;  use Validsw;
@@ -291,12 +291,6 @@ package body Exp_Ch13 is
 
       if Restriction_Active (No_Finalization) then
          return;
-
-      --  Do not create a specialized Deallocate since .NET/JVM compilers do
-      --  not support pools and address arithmetic.
-
-      elsif VM_Target /= No_VM then
-         return;
       end if;
 
       --  Use the base type to perform the check for finalization master
@@ -368,14 +362,21 @@ package body Exp_Ch13 is
    ----------------------------
 
    procedure Expand_N_Freeze_Entity (N : Node_Id) is
-      E              : constant Entity_Id := Entity (N);
+      E : constant Entity_Id := Entity (N);
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
+      Decl           : Node_Id;
+      Delete         : Boolean := False;
       E_Scope        : Entity_Id;
       In_Other_Scope : Boolean;
       In_Outer_Scope : Boolean;
-      Decl           : Node_Id;
-      Delete         : Boolean := False;
 
    begin
+      --  Ensure that all freezing activities are properly flagged as Ghost
+
+      Set_Ghost_Mode_From_Entity (E);
+
       --  If there are delayed aspect specifications, we insert them just
       --  before the freeze node. They are already analyzed so we don't need
       --  to reanalyze them (they were analyzed before the type was frozen),
@@ -443,13 +444,14 @@ package body Exp_Ch13 is
          --  statement, insert them back into the tree now.
 
          Explode_Initialization_Compound_Statement (E);
-
+         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Only other items requiring any front end action are types and
       --  subprograms.
 
       elsif not Is_Type (E) and then not Is_Subprogram (E) then
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -461,6 +463,7 @@ package body Exp_Ch13 is
 
       if No (E_Scope) then
          Check_Error_Detected;
+         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -678,6 +681,7 @@ package body Exp_Ch13 is
       --  whether we are inside a (possibly nested) call to this procedure.
 
       Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
+      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Freeze_Entity;
 
    -------------------------------------------

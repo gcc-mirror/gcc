@@ -26,20 +26,17 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "vec.h"
-#include "alias.h"
+#include "ggc.h"
+#include "target.h"
 #include "tree.h"
-#include "inchash.h"
-#include "fold-const.h"
 #include "stringpool.h"
+#include "diagnostic-core.h"
+#include "alias.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "flags.h"
 #include "toplev.h"
-#include "ggc.h"
-#include "target.h"
 #include "tree-inline.h"
-#include "diagnostic-core.h"
 
 #include "ada.h"
 #include "types.h"
@@ -2710,10 +2707,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		      TYPE_HAS_ACTUAL_BOUNDS_P (gnu_inner) = 1;
 
-#ifdef ENABLE_CHECKING
 		      /* Check for other cases of overloading.  */
-		      gcc_assert (!TYPE_ACTUAL_BOUNDS (gnu_inner));
-#endif
+		      gcc_checking_assert (!TYPE_ACTUAL_BOUNDS (gnu_inner));
 		    }
 
 		  for (gnat_index = First_Index (gnat_entity);
@@ -5585,6 +5580,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   bool ro_param = in_param && !Address_Taken (gnat_param);
   bool by_return = false, by_component_ptr = false;
   bool by_ref = false;
+  bool restricted_aliasing_p = false;
   tree gnu_param;
 
   /* Copy-return is used only for the first parameter of a valued procedure.
@@ -5675,15 +5671,12 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 		   || (!foreign
 		       && default_pass_by_ref (gnu_param_type)))))
     {
+      gnu_param_type = build_reference_type (gnu_param_type);
       /* We take advantage of 6.2(12) by considering that references built for
 	 parameters whose type isn't by-ref and for which the mechanism hasn't
-	 been forced to by-ref are restrict-qualified in the C sense.  */
-      bool restrict_p
+	 been forced to by-ref allow only a restricted form of aliasing.  */
+      restricted_aliasing_p
 	= !TYPE_IS_BY_REFERENCE_P (gnu_param_type) && mech != By_Reference;
-      gnu_param_type = build_reference_type (gnu_param_type);
-      if (restrict_p)
-	gnu_param_type
-	  = change_qualified_type (gnu_param_type, TYPE_QUAL_RESTRICT);
       by_ref = true;
     }
 
@@ -5731,6 +5724,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   DECL_POINTS_TO_READONLY_P (gnu_param)
     = (ro_param && (by_ref || by_component_ptr));
   DECL_CAN_NEVER_BE_NULL_P (gnu_param) = Can_Never_Be_Null (gnat_param);
+  DECL_RESTRICTED_ALIASING_P (gnu_param) = restricted_aliasing_p;
 
   /* If no Mechanism was specified, indicate what we're using, then
      back-annotate it.  */

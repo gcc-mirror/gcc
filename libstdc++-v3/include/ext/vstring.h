@@ -613,7 +613,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  element of the %string.
        */
       reference
-      front() _GLIBCXX_NOEXCEPT
+      front() noexcept
       { return operator[](0); }
 
       /**
@@ -621,7 +621,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  element of the %string.
        */
       const_reference
-      front() const _GLIBCXX_NOEXCEPT
+      front() const noexcept
       { return operator[](0); }
 
       /**
@@ -629,7 +629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  element of the %string.
        */
       reference
-      back() _GLIBCXX_NOEXCEPT
+      back() noexcept
       { return operator[](this->size() - 1); }
 
       /**
@@ -637,7 +637,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  last element of the %string.
        */
       const_reference
-      back() const _GLIBCXX_NOEXCEPT
+      back() const noexcept
       { return operator[](this->size() - 1); }
 #endif
 

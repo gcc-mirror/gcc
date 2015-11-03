@@ -51,33 +51,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "flags.h"
-#include "regs.h"
-#include "alias.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "cfganal.h"
-#include "diagnostic-core.h"
+#include "cfghooks.h"
+#include "cgraph.h"
 #include "coverage.h"
+#include "diagnostic-core.h"
+#include "cfganal.h"
 #include "value-prof.h"
-#include "fold-const.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
-#include "cfgloop.h"
 #include "dumpfile.h"
-#include "cgraph.h"
 
 #include "profile.h"
 
@@ -912,7 +897,7 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
   for (i = 0; i < values.length (); i++)
     {
       histogram_value hist = values[i];
-      gimple stmt = hist->hvalue.stmt;
+      gimple *stmt = hist->hvalue.stmt;
 
       t = (int) hist->type;
 
@@ -1052,7 +1037,7 @@ branch_prob (void)
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  gimple_stmt_iterator gsi;
-	  gimple last = NULL;
+	  gimple *last = NULL;
 
 	  /* It may happen that there are compiler generated statements
 	     without a locus at all.  Go through the basic block from the
@@ -1118,7 +1103,7 @@ branch_prob (void)
 	  if (have_exit_edge || need_exit_edge)
 	    {
 	      gimple_stmt_iterator gsi;
-	      gimple first;
+	      gimple *first;
 
 	      gsi = gsi_start_nondebug_after_labels_bb (bb);
 	      gcc_checking_assert (!gsi_end_p (gsi));
@@ -1281,7 +1266,7 @@ branch_prob (void)
 
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gimple *stmt = gsi_stmt (gsi);
 	      if (gimple_has_location (stmt))
 		output_location (gimple_filename (stmt), gimple_lineno (stmt),
 				 &offset, bb);

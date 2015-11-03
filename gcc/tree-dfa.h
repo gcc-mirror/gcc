@@ -34,7 +34,7 @@ extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
 extern tree get_addr_base_and_unit_offset_1 (tree, HOST_WIDE_INT *,
 					     tree (*) (tree));
 extern tree get_addr_base_and_unit_offset (tree, HOST_WIDE_INT *);
-extern bool stmt_references_abnormal_ssa_name (gimple);
+extern bool stmt_references_abnormal_ssa_name (gimple *);
 extern void dump_enumerated_decls (FILE *, int);
 
 

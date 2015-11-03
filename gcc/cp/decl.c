@@ -29,38 +29,31 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
+#include "c-family/c-target.h"
 #include "tree.h"
-#include "tree-hasher.h"
+#include "cp-tree.h"
+#include "c-family/c-common.h"
+#include "timevar.h"
+#include "tm_p.h"
 #include "stringpool.h"
+#include "cgraph.h"
+#include "tree-hasher.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "attribs.h"
 #include "calls.h"
 #include "flags.h"
-#include "cp-tree.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"
 #include "decl.h"
 #include "intl.h"
 #include "toplev.h"
-#include "tm_p.h"
-#include "target.h"
-#include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
-#include "c-family/c-target.h"
 #include "c-family/c-ubsan.h"
-#include "diagnostic.h"
-#include "intl.h"
 #include "debug.h"
-#include "timevar.h"
-#include "splay-tree.h"
 #include "plugin.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "cgraph.h"
 #include "cilk.h"
 #include "builtins.h"
 
@@ -230,6 +223,7 @@ struct GTY((for_user)) named_label_entry {
   bool in_try_scope;
   bool in_catch_scope;
   bool in_omp_scope;
+  bool in_transaction_scope;
 };
 
 #define named_labels cp_function_chain->x_named_labels
@@ -497,6 +491,9 @@ poplevel_named_label_1 (named_label_entry **slot, cp_binding_level *bl)
 	  break;
 	case sk_omp:
 	  ent->in_omp_scope = true;
+	  break;
+	case sk_transaction:
+	  ent->in_transaction_scope = true;
 	  break;
 	default:
 	  break;
@@ -2049,6 +2046,17 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    }
 	}
 
+      /* An explicit specialization of a function template or of a member
+	 function of a class template can be declared transaction_safe
+	 independently of whether the corresponding template entity is declared
+	 transaction_safe. */
+      if (flag_tm && TREE_CODE (newdecl) == FUNCTION_DECL
+	  && DECL_TEMPLATE_INSTANTIATION (olddecl)
+	  && DECL_TEMPLATE_SPECIALIZATION (newdecl)
+	  && tx_safe_fn_type_p (newtype)
+	  && !tx_safe_fn_type_p (TREE_TYPE (newdecl)))
+	newtype = tx_unsafe_fn_variant (newtype);
+
       TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = newtype;
 
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -2975,7 +2983,7 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 {
   cp_binding_level *b;
   bool identified = false, complained = false;
-  bool saw_eh = false, saw_omp = false;
+  bool saw_eh = false, saw_omp = false, saw_tm = false;
 
   if (exited_omp)
     {
@@ -3043,6 +3051,18 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	    inform (input_location, "  enters OpenMP structured block");
 	  saw_omp = true;
 	}
+      if (b->kind == sk_transaction && !saw_tm)
+	{
+	  if (!identified)
+	    {
+	      complained = identify_goto (decl, locus);
+	      identified = true;
+	    }
+	  if (complained)
+	    inform (input_location,
+		    "  enters synchronized or atomic statement");
+	  saw_tm = true;
+	}
     }
 
   return !identified;
@@ -3109,7 +3129,7 @@ check_goto (tree decl)
       return;
     }
 
-  if (ent->in_try_scope || ent->in_catch_scope
+  if (ent->in_try_scope || ent->in_catch_scope || ent->in_transaction_scope
       || ent->in_omp_scope || !vec_safe_is_empty (ent->bad_decls))
     {
       complained = permerror (DECL_SOURCE_LOCATION (decl),
@@ -3148,6 +3168,8 @@ check_goto (tree decl)
 	inform (input_location, "  enters try block");
       else if (ent->in_catch_scope && !saw_catch)
 	inform (input_location, "  enters catch block");
+      else if (ent->in_transaction_scope)
+	inform (input_location, "  enters synchronized or atomic statement");
     }
 
   if (ent->in_omp_scope)
@@ -6685,6 +6707,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	       to put statics on the list so we can deal with the label
 	       address extension.  FIXME.  */
 	    add_local_decl (cfun, decl);
+	  /* And make sure it's in the symbol table for
+	     c_parse_final_cleanups to find.  */
+	  varpool_node::get_create (decl);
 	}
 
       /* Convert the initializer to the type of DECL, if we have not
@@ -7797,6 +7822,9 @@ grokfndecl (tree ctype,
       parm = build_this_parm (type, quals);
       DECL_CHAIN (parm) = parms;
       parms = parm;
+
+      /* Allocate space to hold the vptr bit if needed.  */
+      DECL_ALIGN (decl) = MINIMUM_METHOD_BOUNDARY;
     }
   DECL_ARGUMENTS (decl) = parms;
   for (t = parms; t; t = DECL_CHAIN (t))
@@ -7819,14 +7847,6 @@ grokfndecl (tree ctype,
     default:
       break;
     }
-
-  /* If pointers to member functions use the least significant bit to
-     indicate whether a function is virtual, ensure a pointer
-     to this function will have that bit clear.  */
-  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
-      && TREE_CODE (type) == METHOD_TYPE
-      && DECL_ALIGN (decl) < 2 * BITS_PER_UNIT)
-    DECL_ALIGN (decl) = 2 * BITS_PER_UNIT;
 
   if (friendp
       && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)
@@ -7971,6 +7991,11 @@ grokfndecl (tree ctype,
   DECL_EXTERNAL (decl) = 1;
   if (TREE_CODE (type) == FUNCTION_TYPE)
     {
+      if (quals || rqual)
+	TREE_TYPE (decl) = apply_memfn_quals (TREE_TYPE (decl),
+					      TYPE_UNQUALIFIED,
+					      REF_QUAL_NONE);
+
       if (quals)
 	{
 	  error (ctype
@@ -9976,6 +10001,8 @@ grokdeclarator (const cp_declarator *declarator,
             virt_specifiers = declarator->u.function.virt_specifiers;
 	    /* And ref-qualifier, too */
 	    rqual = declarator->u.function.ref_qualifier;
+	    /* And tx-qualifier.  */
+	    tree tx_qual = declarator->u.function.tx_qualifier;
 	    /* Pick up the exception specifications.  */
 	    raises = declarator->u.function.exception_specification;
 	    /* If the exception-specification is ill-formed, let's pretend
@@ -10153,13 +10180,24 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 
 	    type = build_function_type (type, arg_types);
-	    if (declarator->std_attributes)
+
+	    tree attrs = declarator->std_attributes;
+	    if (tx_qual)
+	      {
+		tree att = build_tree_list (tx_qual, NULL_TREE);
+		/* transaction_safe applies to the type, but
+		   transaction_safe_dynamic applies to the function.  */
+		if (is_attribute_p ("transaction_safe", tx_qual))
+		  attrs = chainon (attrs, att);
+		else
+		  returned_attrs = chainon (returned_attrs, att);
+	      }
+	    if (attrs)
 	      /* [dcl.fct]/2:
 
 		 The optional attribute-specifier-seq appertains to
 		 the function type.  */
-	      decl_attributes (&type, declarator->std_attributes,
-			       0);
+	      decl_attributes (&type, attrs, 0);
 	  }
 	  break;
 
@@ -12729,6 +12767,7 @@ xref_basetypes (tree ref, tree base_list)
   tree binfo, base_binfo;
   unsigned max_vbases = 0; /* Maximum direct & indirect virtual bases.  */
   unsigned max_bases = 0;  /* Maximum direct bases.  */
+  unsigned max_dvbases = 0; /* Maximum direct virtual bases.  */
   int i;
   tree default_access;
   tree igo_prev; /* Track Inheritance Graph Order.  */
@@ -12766,12 +12805,13 @@ xref_basetypes (tree ref, tree base_list)
 	{
 	  max_bases++;
 	  if (TREE_TYPE (*basep))
-	    max_vbases++;
+	    max_dvbases++;
 	  if (CLASS_TYPE_P (basetype))
 	    max_vbases += vec_safe_length (CLASSTYPE_VBASECLASSES (basetype));
 	  basep = &TREE_CHAIN (*basep);
 	}
     }
+  max_vbases += max_dvbases;
 
   TYPE_MARKED_P (ref) = 1;
 
@@ -12814,6 +12854,9 @@ xref_basetypes (tree ref, tree base_list)
 	  error ("Java class %qT cannot have multiple bases", ref);
           return false;
         }
+      else
+	warning (OPT_Wmultiple_inheritance,
+		 "%qT defined with multiple direct bases", ref);
     }
 
   if (max_vbases)
@@ -12825,6 +12868,9 @@ xref_basetypes (tree ref, tree base_list)
 	  error ("Java class %qT cannot have virtual bases", ref);
           return false;
         }
+      else if (max_dvbases)
+	warning (OPT_Wvirtual_inheritance,
+		 "%qT defined with direct virtual base", ref);
     }
 
   for (igo_prev = binfo; base_list; base_list = TREE_CHAIN (base_list))
@@ -13580,6 +13626,16 @@ check_function_type (tree decl, tree current_function_parms)
     abstract_virtuals_error (decl, TREE_TYPE (fntype));
 }
 
+/* True iff FN is an implicitly-defined default constructor.  */
+
+static bool
+implicit_default_ctor_p (tree fn)
+{
+  return (DECL_CONSTRUCTOR_P (fn)
+	  && !user_provided_p (fn)
+	  && sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (fn)));
+}
+
 /* Create the FUNCTION_DECL for a function definition.
    DECLSPECS and DECLARATOR are the parts of the declaration;
    they describe the function's name and the type it returns,
@@ -13986,7 +14042,11 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   store_parm_decls (current_function_parms);
 
   if (!processing_template_decl
-      && flag_lifetime_dse && DECL_CONSTRUCTOR_P (decl1))
+      && flag_lifetime_dse && DECL_CONSTRUCTOR_P (decl1)
+      /* We can't clobber safely for an implicitly-defined default constructor
+	 because part of the initialization might happen before we enter the
+	 constructor, via AGGR_INIT_ZERO_FIRST (c++/68006).  */
+      && !implicit_default_ctor_p (decl1))
     {
       /* Insert a clobber to let the back end know that the object storage
 	 is dead when we enter the constructor.  */
@@ -14823,10 +14883,6 @@ complete_vars (tree type)
 	      cp_apply_type_quals_to_decl (cp_type_quals (type), var);
 	    }
 
-	  if (DECL_INITIAL (var)
-	      && decl_constant_var_p (var))
-	    DECL_INITIAL (var) = cplus_expand_constant (DECL_INITIAL (var));
-
 	  /* Remove this entry from the list.  */
 	  incomplete_vars->unordered_remove (ix);
 	}
@@ -14914,8 +14970,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
      a "jumpy" behaviour for users of debuggers when they step around
      the end of the block.  So let's unset the location of the
      destructor call instead.  */
-  if (cleanup != NULL && EXPR_P (cleanup))
-    SET_EXPR_LOCATION (cleanup, UNKNOWN_LOCATION);
+  protected_set_expr_location (cleanup, UNKNOWN_LOCATION);
 
   if (cleanup
       && !lookup_attribute ("warn_unused", TYPE_ATTRIBUTES (TREE_TYPE (decl)))

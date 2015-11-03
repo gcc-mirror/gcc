@@ -21,29 +21,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
+#include "target.h"
 #include "rtl.h"
-#include "alias.h"
 #include "tree.h"
+#include "predict.h"
+#include "tm_p.h"
+#include "optabs.h"
+#include "emit-rtl.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "insn-attr.h"
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
-#include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
 #include "langhooks.h"
-#include "tm_p.h"
-#include "target.h"
 
 static bool prefer_and_bit_test (machine_mode, int);
 static void do_jump_by_parts_greater (tree, tree, int,
@@ -1207,12 +1198,10 @@ do_compare_and_jump (tree treeop0, tree treeop1, enum rtx_code signed_code,
      If one side isn't, we want a noncanonicalized comparison.  See PR
      middle-end/17564.  */
   if (targetm.have_canonicalize_funcptr_for_compare ()
-      && TREE_CODE (TREE_TYPE (treeop0)) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (treeop0)))
-          == FUNCTION_TYPE
-      && TREE_CODE (TREE_TYPE (treeop1)) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (treeop1)))
-          == FUNCTION_TYPE)
+      && POINTER_TYPE_P (TREE_TYPE (treeop0))
+      && POINTER_TYPE_P (TREE_TYPE (treeop1))
+      && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (treeop0)))
+      && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (treeop1))))
     {
       rtx new_op0 = gen_reg_rtx (mode);
       rtx new_op1 = gen_reg_rtx (mode);

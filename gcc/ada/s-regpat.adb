@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2014, AdaCore                    --
+--                      Copyright (C) 1999-2015, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -413,7 +413,7 @@ package body System.Regpat is
          Capturing     : Boolean;
          Flags         : out Expression_Flags;
          IP            : out Pointer);
-      --  Parse regular expression, i.e. main body or parenthesized thing
+      --  Parse regular expression, i.e. main body or parenthesized thing.
       --  Caller must absorb opening parenthesis. Capturing should be set to
       --  True when we have an open parenthesis from which we want the user
       --  to extra text.
@@ -422,7 +422,7 @@ package body System.Regpat is
         (Flags         : out Expression_Flags;
          First         : Boolean;
          IP            : out Pointer);
-      --  Implements the concatenation operator and handles '|'
+      --  Implements the concatenation operator and handles '|'.
       --  First should be true if this is the first item of the alternative.
 
       procedure Parse_Piece

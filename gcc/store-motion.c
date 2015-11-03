@@ -21,33 +21,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
-#include "tree.h"
 #include "rtl.h"
+#include "tree.h"
+#include "predict.h"
 #include "df.h"
-#include "diagnostic-core.h"
 #include "toplev.h"
 
-#include "alias.h"
-#include "tm_p.h"
-#include "regs.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "recog.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgcleanup.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
-#include "except.h"
-#include "intl.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
@@ -644,9 +628,6 @@ compute_store_table (void)
 {
   int ret;
   basic_block bb;
-#ifdef ENABLE_CHECKING
-  unsigned regno;
-#endif
   rtx_insn *insn;
   rtx_insn *tmp;
   df_ref def;
@@ -692,11 +673,12 @@ compute_store_table (void)
 	      last_set_in[DF_REF_REGNO (def)] = 0;
 	}
 
-#ifdef ENABLE_CHECKING
-      /* last_set_in should now be all-zero.  */
-      for (regno = 0; regno < max_gcse_regno; regno++)
-	gcc_assert (!last_set_in[regno]);
-#endif
+      if (flag_checking)
+	{
+	  /* last_set_in should now be all-zero.  */
+	  for (unsigned regno = 0; regno < max_gcse_regno; regno++)
+	    gcc_assert (!last_set_in[regno]);
+	}
 
       /* Clear temporary marks.  */
       for (ptr = first_st_expr (); ptr != NULL; ptr = next_st_expr (ptr))

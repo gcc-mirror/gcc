@@ -21,43 +21,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
-#include "alias.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "optabs.h"
+#include "regs.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "diagnostic-core.h"
 #include "fold-const.h"
 #include "varasm.h"
 #include "stor-layout.h"
-#include "stringpool.h"
-#include "regs.h"
-#include "insn-config.h"
-#include "conditions.h"
-#include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
-#include "flags.h"
-#include "recog.h"
-#include "reload.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "except.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "diagnostic-core.h"
 #include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "tm_p.h"
-#include "target.h"
-#include "targhooks.h"
 #include "langhooks.h"
 #include "dumpfile.h"
 #include "builtins.h"
@@ -2767,11 +2749,9 @@ frv_print_operand (FILE * file, rtx x, int code)
     {
       if (GET_MODE (x) == SFmode)
 	{
-	  REAL_VALUE_TYPE rv;
 	  long l;
 
-	  REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-	  REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
 	  value = l;
 	}
 
@@ -4290,11 +4270,10 @@ output_move_single (rtx operands[], rtx insn)
 
 	      else if (mode == SFmode)
 		{
-		  REAL_VALUE_TYPE rv;
 		  long l;
 
-		  REAL_VALUE_FROM_CONST_DOUBLE (rv, src);
-		  REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+		  REAL_VALUE_TO_TARGET_SINGLE
+		    (*CONST_DOUBLE_REAL_VALUE (src), l);
 		  value = l;
 		}
 

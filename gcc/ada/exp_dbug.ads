@@ -414,7 +414,7 @@ package Exp_Dbug is
    procedure Get_External_Name
      (Entity     : Entity_Id;
       Has_Suffix : Boolean := False;
-      Suffix     : String := "");
+      Suffix     : String  := "");
    --  Set Name_Buffer and Name_Len to the external name of the entity. The
    --  external name is the Interface_Name, if specified, unless the entity
    --  has an address clause or Has_Suffix is true.
@@ -1185,8 +1185,7 @@ package Exp_Dbug is
 
    function Make_Packed_Array_Impl_Type_Name
      (Typ   : Entity_Id;
-      Csize : Uint)
-      return  Name_Id;
+      Csize : Uint) return Name_Id;
    --  This function is used in Exp_Pakd to create the name that is encoded as
    --  described above. The entity Typ provides the name ttt, and the value
    --  Csize is the component size that provides the nnn value.

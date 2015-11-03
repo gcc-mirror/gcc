@@ -12,7 +12,7 @@ unsigned int n = N;
 int
 main (void)
 {
-  for (unsigned int i; i < n; ++i)
+  for (unsigned int i = 0; i < n; ++i)
     {
       a[i] = i % 3;
       b[i] = i % 5;
@@ -25,7 +25,7 @@ main (void)
       c[i] = a[i] + b[i];
   }
 
-  for (unsigned int i; i < n; ++i)
+  for (unsigned int i = 0; i < n; ++i)
     if (c[i] != (i % 3) + (i % 5))
       abort ();
 

@@ -23,14 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
-#include "tree.h"
 #include "options.h"
-#include "fold-const.h"
-#include "stringpool.h"
+#include "tree.h"
 #include "gfortran.h"
-#include "flags.h"
 #include "trans.h"
+#include "stringpool.h"
+#include "alias.h"
+#include "fold-const.h"
+#include "flags.h"
 #include "trans-stmt.h"
 #include "trans-types.h"
 #include "trans-array.h"
@@ -5186,9 +5186,16 @@ gfc_trans_allocate (gfc_code * code)
 	  /* In all other cases evaluate the expr3.  */
 	  symbol_attribute attr;
 	  /* Get the descriptor for all arrays, that are not allocatable or
-	     pointer, because the latter are descriptors already.  */
+	     pointer, because the latter are descriptors already.
+	     The exception are function calls returning a class object:
+	     The descriptor is stored in their results _data component, which
+	     is easier to access, when first a temporary variable for the
+	     result is created and the descriptor retrieved from there.  */
 	  attr = gfc_expr_attr (code->expr3);
-	  if (code->expr3->rank != 0 && !attr.allocatable && !attr.pointer)
+	  if (code->expr3->rank != 0
+	      && ((!attr.allocatable && !attr.pointer)
+		  || (code->expr3->expr_type == EXPR_FUNCTION
+		      && code->expr3->ts.type != BT_CLASS)))
 	    gfc_conv_expr_descriptor (&se, code->expr3);
 	  else
 	    gfc_conv_expr_reference (&se, code->expr3);
@@ -5205,17 +5212,40 @@ gfc_trans_allocate (gfc_code * code)
 	     variable declaration.  */
       if (se.expr != NULL_TREE && temp_var_needed)
 	{
-	  tree var;
+	  tree var, desc;
 	  tmp = GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)) ?
 		se.expr
 	      : build_fold_indirect_ref_loc (input_location, se.expr);
+
+	  /* Get the array descriptor and prepare it to be assigned to the
+	     temporary variable var.  For classes the array descriptor is
+	     in the _data component and the object goes into the
+	     GFC_DECL_SAVED_DESCRIPTOR.  */
+	  if (code->expr3->ts.type == BT_CLASS
+	      && code->expr3->rank != 0)
+	    {
+	      /* When an array_ref was in expr3, then the descriptor is the
+		 first operand.  */
+	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
+		{
+		  desc = TREE_OPERAND (tmp, 0);
+		}
+	      else
+		{
+		  desc = tmp;
+		  tmp = gfc_class_data_get (tmp);
+		}
+	      e3_is = E3_DESC;
+	    }
+	  else
+	    desc = se.expr;
 	  /* We need a regular (non-UID) symbol here, therefore give a
 	     prefix.  */
 	  var = gfc_create_var (TREE_TYPE (tmp), "source");
-	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)))
+	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
 	    {
 	      gfc_allocate_lang_decl (var);
-	      GFC_DECL_SAVED_DESCRIPTOR (var) = se.expr;
+	      GFC_DECL_SAVED_DESCRIPTOR (var) = desc;
 	    }
 	  gfc_add_modify_loc (input_location, &block, var, tmp);
 
@@ -5241,11 +5271,12 @@ gfc_trans_allocate (gfc_code * code)
 	  expr3_len = se.string_length;
 	}
       /* Store what the expr3 is to be used for.  */
-      e3_is = expr3 != NULL_TREE ?
-	    (code->ext.alloc.arr_spec_from_expr3 ?
-	       E3_DESC
-	     : (code->expr3->mold ? E3_MOLD : E3_SOURCE))
-	  : E3_UNSET;
+      if (e3_is == E3_UNSET)
+	e3_is = expr3 != NULL_TREE ?
+	      (code->ext.alloc.arr_spec_from_expr3 ?
+		 E3_DESC
+	       : (code->expr3->mold ? E3_MOLD : E3_SOURCE))
+	    : E3_UNSET;
 
       /* Figure how to get the _vtab entry.  This also obtains the tree
 	 expression for accessing the _len component, because only
@@ -5254,11 +5285,17 @@ gfc_trans_allocate (gfc_code * code)
       if (code->expr3->ts.type == BT_CLASS)
 	{
 	  gfc_expr *rhs;
+	  tmp = expr3 != NULL_TREE && POINTER_TYPE_P (TREE_TYPE (expr3)) ?
+		build_fold_indirect_ref (expr3): expr3;
 	  /* Polymorphic SOURCE: VPTR must be determined at run time.
 	     expr3 may be a temporary array declaration, therefore check for
 	     GFC_CLASS_TYPE_P before trying to get the _vptr component.  */
-	  if (expr3 != NULL_TREE && GFC_CLASS_TYPE_P (TREE_TYPE (expr3))
-	      && (VAR_P (expr3) || !code->expr3->ref))
+	  if (tmp != NULL_TREE
+	      && TREE_CODE (tmp) != POINTER_PLUS_EXPR
+	      && (e3_is == E3_DESC
+		  || (GFC_CLASS_TYPE_P (TREE_TYPE (tmp))
+		      && (VAR_P (tmp) || !code->expr3->ref))
+		  || (VAR_P (tmp) && DECL_LANG_SPECIFIC (tmp))))
 	    tmp = gfc_class_vptr_get (expr3);
 	  else
 	    {
@@ -5342,8 +5379,13 @@ gfc_trans_allocate (gfc_code * code)
 	     will benefit of every enhancements gfc_trans_assignment ()
 	     gets.
 	     No need to check whether e3_is is E3_UNSET, because that is
-	     done by expr3 != NULL_TREE.  */
-	  if (e3_is != E3_MOLD && expr3 != NULL_TREE
+	     done by expr3 != NULL_TREE.
+	     Exclude variables since the following block does not handle
+	     array sections. In any case, there is no harm in sending
+	     variables to gfc_trans_assignment because there is no
+	     evaluation of variables.  */
+	  if (code->expr3->expr_type != EXPR_VARIABLE
+	      && e3_is != E3_MOLD && expr3 != NULL_TREE
 	      && DECL_P (expr3) && DECL_ARTIFICIAL (expr3))
 	    {
 	      /* Build a temporary symtree and symbol.  Do not add it to
@@ -5709,10 +5751,7 @@ gfc_trans_allocate (gfc_code * code)
 	  /* Initialization via SOURCE block (or static default initializer).
 	     Classes need some special handling, so catch them first.  */
 	  if (expr3 != NULL_TREE
-	      && ((POINTER_TYPE_P (TREE_TYPE (expr3))
-		   && TREE_CODE (expr3) != POINTER_PLUS_EXPR)
-		  || (VAR_P (expr3) && GFC_CLASS_TYPE_P (
-			TREE_TYPE (expr3))))
+	      && TREE_CODE (expr3) != POINTER_PLUS_EXPR
 	      && code->expr3->ts.type == BT_CLASS
 	      && (expr->ts.type == BT_CLASS
 		  || expr->ts.type == BT_DERIVED))
@@ -5731,7 +5770,7 @@ gfc_trans_allocate (gfc_code * code)
 	      gfc_expr *ppc;
 	      gfc_code *ppc_code;
 	      gfc_ref *ref, *dataref;
-	      gfc_expr *rhs = gfc_copy_expr (code->expr3);
+	      gfc_expr *rhs = e3rhs ? e3rhs : gfc_copy_expr (code->expr3);
 
 	      /* Do a polymorphic deep copy.  */
 	      actual = gfc_get_actual_arglist ();
@@ -5827,7 +5866,8 @@ gfc_trans_allocate (gfc_code * code)
 					 void_type_node, tmp, extcopy, stdcopy);
 		}
 	      gfc_free_statements (ppc_code);
-	      gfc_free_expr (rhs);
+	      if (rhs != e3rhs)
+		gfc_free_expr (rhs);
 	    }
 	  else
 	    {

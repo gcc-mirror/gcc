@@ -469,6 +469,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 #define VECTOR_TYPE_P(TYPE) (TREE_CODE (TYPE) == VECTOR_TYPE)
 
+/* Nonzero if TYPE represents a vector of booleans.  */
+
+#define VECTOR_BOOLEAN_TYPE_P(TYPE)				\
+  (TREE_CODE (TYPE) == VECTOR_TYPE			\
+   && TREE_CODE (TREE_TYPE (TYPE)) == BOOLEAN_TYPE)
+
 /* Nonzero if TYPE represents an integral type.  Note that we do not
    include COMPLEX types here.  Keep these checks in ascending code
    order.  */
@@ -590,6 +596,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Nonzero if this type is complete or is an array with unspecified bound.  */
 #define COMPLETE_OR_UNBOUND_ARRAY_TYPE_P(NODE) \
   (COMPLETE_TYPE_P (TREE_CODE (NODE) == ARRAY_TYPE ? TREE_TYPE (NODE) : (NODE)))
+
+#define FUNC_OR_METHOD_TYPE_P(NODE) \
+  (TREE_CODE (NODE) == FUNCTION_TYPE || TREE_CODE (NODE) == METHOD_TYPE)
 
 /* Define many boolean fields that all tree nodes have.  */
 
@@ -1200,23 +1209,13 @@ extern void protected_set_expr_location (tree, location_t);
 /* Generic accessors for OMP nodes that keep the body as operand 0, and clauses
    as operand 1.  */
 #define OMP_BODY(NODE) \
-  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_CRITICAL), 0)
+  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_TASKGROUP), 0)
 #define OMP_CLAUSES(NODE) \
   TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_SINGLE), 1)
 
 /* Generic accessors for OMP nodes that keep clauses as operand 0.  */
 #define OMP_STANDALONE_CLAUSES(NODE) \
-  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_CACHE, OMP_TARGET_UPDATE), 0)
-
-#define OACC_PARALLEL_BODY(NODE) \
-  TREE_OPERAND (OACC_PARALLEL_CHECK (NODE), 0)
-#define OACC_PARALLEL_CLAUSES(NODE) \
-  TREE_OPERAND (OACC_PARALLEL_CHECK (NODE), 1)
-
-#define OACC_KERNELS_BODY(NODE) \
-  TREE_OPERAND (OACC_KERNELS_CHECK(NODE), 0)
-#define OACC_KERNELS_CLAUSES(NODE) \
-  TREE_OPERAND (OACC_KERNELS_CHECK(NODE), 1)
+  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_CACHE, OMP_TARGET_EXIT_DATA), 0)
 
 #define OACC_DATA_BODY(NODE) \
   TREE_OPERAND (OACC_DATA_CHECK (NODE), 0)
@@ -1260,6 +1259,8 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_FOR_COND(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 3)
 #define OMP_FOR_INCR(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 4)
 #define OMP_FOR_PRE_BODY(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 5)
+/* Note that this is only available for OMP_FOR, hence OMP_FOR_CHECK.  */
+#define OMP_FOR_ORIG_DECLS(NODE)   TREE_OPERAND (OMP_FOR_CHECK (NODE), 6)
 
 #define OMP_SECTIONS_BODY(NODE)    TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 0)
 #define OMP_SECTIONS_CLAUSES(NODE) TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 1)
@@ -1274,9 +1275,11 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_TASKGROUP_BODY(NODE)   TREE_OPERAND (OMP_TASKGROUP_CHECK (NODE), 0)
 
 #define OMP_ORDERED_BODY(NODE)	   TREE_OPERAND (OMP_ORDERED_CHECK (NODE), 0)
+#define OMP_ORDERED_CLAUSES(NODE)  TREE_OPERAND (OMP_ORDERED_CHECK (NODE), 1)
 
 #define OMP_CRITICAL_BODY(NODE)    TREE_OPERAND (OMP_CRITICAL_CHECK (NODE), 0)
-#define OMP_CRITICAL_NAME(NODE)    TREE_OPERAND (OMP_CRITICAL_CHECK (NODE), 1)
+#define OMP_CRITICAL_CLAUSES(NODE) TREE_OPERAND (OMP_CRITICAL_CHECK (NODE), 1)
+#define OMP_CRITICAL_NAME(NODE)    TREE_OPERAND (OMP_CRITICAL_CHECK (NODE), 2)
 
 #define OMP_TEAMS_BODY(NODE)	   TREE_OPERAND (OMP_TEAMS_CHECK (NODE), 0)
 #define OMP_TEAMS_CLAUSES(NODE)	   TREE_OPERAND (OMP_TEAMS_CHECK (NODE), 1)
@@ -1291,6 +1294,12 @@ extern void protected_set_expr_location (tree, location_t);
 
 #define OMP_TARGET_UPDATE_CLAUSES(NODE)\
   TREE_OPERAND (OMP_TARGET_UPDATE_CHECK (NODE), 0)
+
+#define OMP_TARGET_ENTER_DATA_CLAUSES(NODE)\
+  TREE_OPERAND (OMP_TARGET_ENTER_DATA_CHECK (NODE), 0)
+
+#define OMP_TARGET_EXIT_DATA_CLAUSES(NODE)\
+  TREE_OPERAND (OMP_TARGET_EXIT_DATA_CHECK (NODE), 0)
 
 #define OMP_CLAUSE_SIZE(NODE)						\
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
@@ -1312,15 +1321,6 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_SECTION_LAST(NODE) \
   (OMP_SECTION_CHECK (NODE)->base.private_flag)
 
-/* True on an OACC_KERNELS statement if is represents combined kernels loop
-   directive.  */
-#define OACC_KERNELS_COMBINED(NODE) \
-  (OACC_KERNELS_CHECK (NODE)->base.private_flag)
-
-/* Like OACC_KERNELS_COMBINED, but for parallel loop directive.  */
-#define OACC_PARALLEL_COMBINED(NODE) \
-  (OACC_PARALLEL_CHECK (NODE)->base.private_flag)
-
 /* True on an OMP_PARALLEL statement if it represents an explicit
    combined parallel work-sharing constructs.  */
 #define OMP_PARALLEL_COMBINED(NODE) \
@@ -1330,6 +1330,11 @@ extern void protected_set_expr_location (tree, location_t);
    combined teams distribute constructs.  */
 #define OMP_TEAMS_COMBINED(NODE) \
   (OMP_TEAMS_CHECK (NODE)->base.private_flag)
+
+/* True on an OMP_TARGET statement if it represents explicit
+   combined target teams, target parallel or target simd constructs.  */
+#define OMP_TARGET_COMBINED(NODE) \
+  (OMP_TARGET_CHECK (NODE)->base.private_flag)
 
 /* True if OMP_ATOMIC* is supposed to be sequentially consistent
    as opposed to relaxed.  */
@@ -1348,6 +1353,12 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_PRIVATE_OUTER_REF(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PRIVATE))
 
+/* True if a PRIVATE clause is for a C++ class IV on taskloop construct
+   (thus should be private on the outer taskloop and firstprivate on
+   task).  */
+#define OMP_CLAUSE_PRIVATE_TASKLOOP_IV(NODE) \
+  TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PRIVATE))
+
 /* True on a LASTPRIVATE clause if a FIRSTPRIVATE clause for the same
    decl is present in the chain.  */
 #define OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE(NODE) \
@@ -1359,6 +1370,21 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ(NODE) \
   (OMP_CLAUSE_CHECK (NODE))->omp_clause.gimple_reduction_init
 
+/* True if a LASTPRIVATE clause is for a C++ class IV on taskloop construct
+   (thus should be lastprivate on the outer taskloop and firstprivate on
+   task).  */
+#define OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV(NODE) \
+  TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LASTPRIVATE))
+
+/* True on a SHARED clause if a FIRSTPRIVATE clause for the same
+   decl is present in the chain (this can happen only for taskloop
+   with FIRSTPRIVATE/LASTPRIVATE on it originally.  */
+#define OMP_CLAUSE_SHARED_FIRSTPRIVATE(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SHARED)->base.public_flag)
+
+#define OMP_CLAUSE_IF_MODIFIER(NODE)	\
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_IF)->omp_clause.subcode.if_modifier)
+
 #define OMP_CLAUSE_FINAL_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_FINAL), 0)
 #define OMP_CLAUSE_IF_EXPR(NODE) \
@@ -1367,8 +1393,20 @@ extern void protected_set_expr_location (tree, location_t);
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_THREADS),0)
 #define OMP_CLAUSE_SCHEDULE_CHUNK_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SCHEDULE), 0)
+#define OMP_CLAUSE_NUM_TASKS_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_TASKS), 0)
+#define OMP_CLAUSE_HINT_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_HINT), 0)
+
+#define OMP_CLAUSE_GRAINSIZE_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_GRAINSIZE),0)
+
+#define OMP_CLAUSE_PRIORITY_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PRIORITY),0)
 
 /* OpenACC clause expressions  */
+#define OMP_CLAUSE_EXPR(NODE, CLAUSE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, CLAUSE), 0)
 #define OMP_CLAUSE_GANG_EXPR(NODE) \
   OMP_CLAUSE_OPERAND ( \
     OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_GANG), 0)
@@ -1400,17 +1438,28 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_DEPEND_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEPEND)->omp_clause.subcode.depend_kind)
 
+#define OMP_CLAUSE_DEPEND_SINK_NEGATIVE(NODE) \
+  TREE_PUBLIC (TREE_LIST_CHECK (NODE))
+
 #define OMP_CLAUSE_MAP_KIND(NODE) \
   ((enum gomp_map_kind) OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->omp_clause.subcode.map_kind)
 #define OMP_CLAUSE_SET_MAP_KIND(NODE, MAP_KIND) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->omp_clause.subcode.map_kind \
-   = (unsigned char) (MAP_KIND))
+   = (unsigned int) (MAP_KIND))
 
 /* Nonzero if this map clause is for array (rather than pointer) based array
    section with zero bias.  Both the non-decl OMP_CLAUSE_MAP and corresponding
    OMP_CLAUSE_MAP with GOMP_MAP_POINTER are marked with this flag.  */
 #define OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.public_flag)
+/* Nonzero if the same decl appears both in OMP_CLAUSE_MAP and either
+   OMP_CLAUSE_PRIVATE or OMP_CLAUSE_FIRSTPRIVATE.  */
+#define OMP_CLAUSE_MAP_PRIVATE(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
+/* Nonzero if this is a mapped array section, that might need special
+   treatment if OMP_CLAUSE_SIZE is zero.  */
+#define OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION(NODE) \
+  TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
 
 #define OMP_CLAUSE_PROC_BIND_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PROC_BIND)->omp_clause.subcode.proc_bind_kind)
@@ -1421,6 +1470,9 @@ extern void protected_set_expr_location (tree, location_t);
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_COLLAPSE), 1)
 #define OMP_CLAUSE_COLLAPSE_COUNT(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_COLLAPSE), 2)
+
+#define OMP_CLAUSE_ORDERED_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ORDERED), 0)
 
 #define OMP_CLAUSE_REDUCTION_CODE(NODE)	\
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION)->omp_clause.subcode.reduction_code)
@@ -1434,6 +1486,8 @@ extern void protected_set_expr_location (tree, location_t);
   (OMP_CLAUSE_CHECK (NODE))->omp_clause.gimple_reduction_merge
 #define OMP_CLAUSE_REDUCTION_PLACEHOLDER(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION), 3)
+#define OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION), 4)
 
 /* True if a REDUCTION clause may reference the original list item (omp_orig)
    in its OMP_CLAUSE_REDUCTION_{,GIMPLE_}INIT.  */
@@ -1468,6 +1522,9 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_LINEAR_GIMPLE_SEQ(NODE) \
   (OMP_CLAUSE_CHECK (NODE))->omp_clause.gimple_reduction_init
 
+#define OMP_CLAUSE_LINEAR_KIND(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR)->omp_clause.subcode.linear_kind)
+
 #define OMP_CLAUSE_ALIGNED_ALIGNMENT(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALIGNED), 1)
 
@@ -1496,6 +1553,10 @@ extern void protected_set_expr_location (tree, location_t);
 
 #define OMP_CLAUSE_SCHEDULE_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SCHEDULE)->omp_clause.subcode.schedule_kind)
+
+/* True if a SCHEDULE clause has the simd modifier on it.  */
+#define OMP_CLAUSE_SCHEDULE_SIMD(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SCHEDULE)->base.public_flag)
 
 #define OMP_CLAUSE_DEFAULT_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEFAULT)->omp_clause.subcode.default_kind)
@@ -3772,6 +3833,7 @@ extern tree build_constructor_from_list (tree, tree);
 extern tree build_constructor_va (tree, int, ...);
 extern tree build_real_from_int_cst (tree, const_tree);
 extern tree build_complex (tree, tree, tree);
+extern tree build_complex_inf (tree, bool);
 extern tree build_each_one_cst (tree);
 extern tree build_one_cst (tree);
 extern tree build_minus_one_cst (tree);
@@ -3820,6 +3882,8 @@ extern tree build_reference_type_for_mode (tree, machine_mode, bool);
 extern tree build_reference_type (tree);
 extern tree build_vector_type_for_mode (tree, machine_mode);
 extern tree build_vector_type (tree innertype, int nunits);
+extern tree build_truth_vector_type (unsigned, unsigned);
+extern tree build_same_sized_truth_vector_type (tree vectype);
 extern tree build_opaque_vector_type (tree innertype, int nunits);
 extern tree build_index_type (tree);
 extern tree build_array_type (tree, tree);
@@ -4540,6 +4604,7 @@ extern void init_ttree (void);
 extern void build_common_tree_nodes (bool, bool);
 extern void build_common_builtin_nodes (void);
 extern tree build_nonstandard_integer_type (unsigned HOST_WIDE_INT, int);
+extern tree build_nonstandard_boolean_type (unsigned HOST_WIDE_INT);
 extern tree build_range_type (tree, tree, tree);
 extern tree build_nonshared_range_type (tree, tree, tree);
 extern bool subrange_type_for_debug_p (const_tree, tree *, tree *);
@@ -4603,6 +4668,7 @@ extern int tree_map_base_marked_p (const void *);
 extern void DEBUG_FUNCTION verify_type (const_tree t);
 extern bool gimple_canonical_types_compatible_p (const_tree, const_tree,
 						 bool trust_type_canonical = true);
+extern bool type_with_interoperable_signedness (const_tree);
 /* Return simplified tree code of type that is used for canonical type merging.  */
 inline enum tree_code
 tree_code_for_canonical_type_merging (enum tree_code code)

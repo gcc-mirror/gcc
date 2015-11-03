@@ -76,14 +76,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
-#include "tree.h"
-#include "hard-reg-set.h"
 #include "function.h"
-#include "cgraph.h"
-#include "tree-pass.h"
-#include "calls.h"
+#include "tree.h"
 #include "gimple-expr.h"
+#include "tree-pass.h"
+#include "cgraph.h"
+#include "calls.h"
 #include "varasm.h"
 
 /* Return true when NODE can not be local. Worker for cgraph_local_node_p.  */
@@ -464,16 +462,15 @@ function_and_variable_visibility (bool whole_program)
 	 what comdat group they are in when they won't be emitted in this TU.  */
       if (node->same_comdat_group && DECL_EXTERNAL (node->decl))
 	{
-#ifdef ENABLE_CHECKING
-	  symtab_node *n;
-
-	  for (n = node->same_comdat_group;
-	       n != node;
-	       n = n->same_comdat_group)
-	      /* If at least one of same comdat group functions is external,
-		 all of them have to be, otherwise it is a front-end bug.  */
-	      gcc_assert (DECL_EXTERNAL (n->decl));
-#endif
+	  if (flag_checking)
+	    {
+	      for (symtab_node *n = node->same_comdat_group;
+		   n != node;
+		   n = n->same_comdat_group)
+		/* If at least one of same comdat group functions is external,
+		   all of them have to be, otherwise it is a front-end bug.  */
+		gcc_assert (DECL_EXTERNAL (n->decl));
+	    }
 	  node->dissolve_same_comdat_group_list ();
 	}
       gcc_assert ((!DECL_WEAK (node->decl)

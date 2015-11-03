@@ -24,9 +24,6 @@
 (define_register_constraint "Ucs" "CALLER_SAVE_REGS"
   "@internal The caller save registers.")
 
-(define_register_constraint "Uc0" "FIXED_REG0"
-  "@internal Represent X0/W0.")
-
 (define_register_constraint "w" "FP_REGS"
   "Floating point and SIMD vector registers.")
 

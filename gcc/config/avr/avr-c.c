@@ -22,14 +22,9 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "tm_p.h"
-#include "cpplib.h"
-#include "alias.h"
-#include "tree.h"
-#include "stor-layout.h"
 #include "target.h"
 #include "c-family/c-common.h"
+#include "stor-layout.h"
 #include "langhooks.h"
 
 

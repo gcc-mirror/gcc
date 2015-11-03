@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,7 +127,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
                then
                   Int_Part := Integer (Float_Type'Base'Truncation (A_Right));
                   Result := Left ** Int_Part;
-                  Rest :=  A_Right - Float_Type'Base (Int_Part);
+                  Rest := A_Right - Float_Type'Base (Int_Part);
 
                   --  Compute with two leading bits of the mantissa using
                   --  square roots. Bound  to be better than logarithms, and
@@ -148,7 +148,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
                      Rest := Rest - 0.25;
                   end if;
 
-                  Result :=  Result *
+                  Result := Result *
                     Float_Type'Base (Aux.Pow (Double (Left), Double (Rest)));
 
                   if Right >= 0.0 then
@@ -247,7 +247,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       elsif X < 1.0 + Sqrt_Epsilon then
          return Sqrt (2.0 * (X - 1.0));
 
-      elsif  X > 1.0 / Sqrt_Epsilon then
+      elsif X > 1.0 / Sqrt_Epsilon then
          return Log (X) + Log_Two;
 
       else
@@ -540,7 +540,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       if Y < Sqrt_Epsilon then
          return 1.0;
 
-      elsif  Y > Log_Inverse_Epsilon then
+      elsif Y > Log_Inverse_Epsilon then
          Z := Exp_Strict (Y - Lnv);
          return (Z + V2minus1 * Z);
 
@@ -832,7 +832,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       if Y < Sqrt_Epsilon then
          return X;
 
-      elsif  Y > Log_Inverse_Epsilon then
+      elsif Y > Log_Inverse_Epsilon then
          Z := Exp_Strict (Y - Lnv);
          Z := Z + V2minus1 * Z;
 

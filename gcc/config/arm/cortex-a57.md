@@ -202,7 +202,8 @@
 	  (eq_attr "type" "neon_load1_3reg, neon_load1_3reg_q,\
 			   neon_load1_4reg, neon_load1_4reg_q")
 	    (const_string "neon_load_b")
-	  (eq_attr "type" "neon_load1_one_lane, neon_load1_one_lane_q,\
+	  (eq_attr "type" "neon_ldp, neon_ldp_q,\
+			   neon_load1_one_lane, neon_load1_one_lane_q,\
 			   neon_load1_all_lanes, neon_load1_all_lanes_q,\
 			   neon_load2_2reg, neon_load2_2reg_q,\
 			   neon_load2_all_lanes, neon_load2_all_lanes_q")
@@ -224,7 +225,8 @@
 	    (const_string "neon_store_a")
 	  (eq_attr "type" "neon_store1_2reg, neon_store1_1reg_q")
 	    (const_string "neon_store_b")
-	  (eq_attr "type" "neon_store1_3reg, neon_store1_3reg_q,\
+	  (eq_attr "type" "neon_stp, neon_stp_q,\
+			   neon_store1_3reg, neon_store1_3reg_q,\
 			   neon_store3_3reg, neon_store3_3reg_q,\
 			   neon_store2_4reg, neon_store2_4reg_q,\
 			   neon_store4_4reg, neon_store4_4reg_q,\
@@ -296,7 +298,7 @@
 			alu_sreg,alus_sreg,logic_reg,logics_reg,\
 			adc_imm,adcs_imm,adc_reg,adcs_reg,\
 			adr,bfm,clz,rbit,rev,alu_dsp_reg,\
-			shift_imm,shift_reg,\
+			rotate_imm,shift_imm,shift_reg,\
 			mov_imm,mov_reg,\
 			mvn_imm,mvn_reg,\
 			mrs,multiple,no_insn"))

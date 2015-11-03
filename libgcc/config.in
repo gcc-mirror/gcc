@@ -18,6 +18,12 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* Define if the system-provided CRTs are present on Solaris. */
+#undef HAVE_SOLARIS_CRTS
+
+/* Define if the system-provided CRTs are present on Solaris. */
+#undef HAVE_SOLARIS_CRTS
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 

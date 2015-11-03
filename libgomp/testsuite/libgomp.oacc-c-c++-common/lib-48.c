@@ -1,5 +1,6 @@
 /* { dg-do run } */
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <openacc.h>
@@ -25,6 +26,7 @@ main (int argc, char **argv)
 
   memset (&h[0], 0, N);
 
+  fprintf (stderr, "CheCKpOInT\n");
   acc_update_self (h, 0);
 
   for (i = 0; i < N; i++)
@@ -40,5 +42,6 @@ main (int argc, char **argv)
   return 0;
 }
 
+/* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
 /* { dg-output "\\\[\[0-9a-fA-FxX\]+,0\\\] is not mapped" } */
 /* { dg-shouldfail "" } */

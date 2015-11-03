@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2011, AdaCore                     --
+--                     Copyright (C) 2000-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -465,7 +465,7 @@ package GNAT.AWK is
       Pattern : GNAT.Regpat.Pattern_Matcher;
       Action  : Match_Action_Callback);
    --  Same as above but it pass the set of matches to the action
-   --  procedure. This is useful to analyse further why and where a regular
+   --  procedure. This is useful to analyze further why and where a regular
    --  expression did match.
 
    procedure Register

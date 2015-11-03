@@ -21,7 +21,7 @@ exec_vcvt (void)
 {
   clean_results ();
 
-#define TEST_MSG vcvt_f32_f16
+#define TEST_MSG "vcvt_f32_f16"
   {
     VECT_VAR_DECL (buffer_src, float, 16, 4) [] = { 16.0, 15.0, 14.0, 13.0 };
 
@@ -39,7 +39,7 @@ exec_vcvt (void)
 
   clean_results ();
 
-#define TEST_MSG vcvt_f16_f32
+#define TEST_MSG "vcvt_f16_f32"
   {
     VECT_VAR_DECL (buffer_src, float, 32, 4) [] = { 1.5, 2.5, 3.5, 4.5 };
     DECL_VARIABLE (vector_src, float, 32, 4);
@@ -54,6 +54,8 @@ exec_vcvt (void)
   }
 #undef TEST_MSG
 
+  /* We run more tests for AArch64 as the relevant intrinsics
+     do not exist on AArch32.  */
 #if defined (__aarch64__)
   clean_results ();
 

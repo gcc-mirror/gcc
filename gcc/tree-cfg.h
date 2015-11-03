@@ -49,19 +49,19 @@ extern void gimple_debug_cfg (int);
 extern void gimple_dump_cfg (FILE *, int);
 extern void dump_cfg_stats (FILE *);
 extern void debug_cfg_stats (void);
-extern bool computed_goto_p (gimple);
-extern bool stmt_can_make_abnormal_goto (gimple);
+extern bool computed_goto_p (gimple *);
+extern bool stmt_can_make_abnormal_goto (gimple *);
 extern basic_block get_abnormal_succ_dispatcher (basic_block);
-extern bool is_ctrl_stmt (gimple);
-extern bool is_ctrl_altering_stmt (gimple);
-extern bool simple_goto_p (gimple);
-extern bool stmt_ends_bb_p (gimple);
+extern bool is_ctrl_stmt (gimple *);
+extern bool is_ctrl_altering_stmt (gimple *);
+extern bool simple_goto_p (gimple *);
+extern bool stmt_ends_bb_p (gimple *);
 extern bool assert_unreachable_fallthru_edge_p (edge);
-extern void delete_tree_cfg_annotations (void);
+extern void delete_tree_cfg_annotations (function *);
 extern gphi *get_virtual_phi (basic_block);
-extern gimple first_stmt (basic_block);
-extern gimple last_stmt (basic_block);
-extern gimple last_and_only_stmt (basic_block);
+extern gimple *first_stmt (basic_block);
+extern gimple *last_stmt (basic_block);
+extern gimple *last_and_only_stmt (basic_block);
 extern void verify_gimple_in_seq (gimple_seq);
 extern void verify_gimple_in_cfg (struct function *, bool);
 extern tree gimple_block_label (basic_block);
@@ -103,7 +103,9 @@ extern tree gimplify_build1 (gimple_stmt_iterator *, enum tree_code,
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
 extern unsigned int execute_fixup_cfg (void);
 extern unsigned int split_critical_edges (void);
-extern basic_block insert_cond_bb (basic_block, gimple, gimple);
+extern basic_block insert_cond_bb (basic_block, gimple *, gimple *);
 extern bool gimple_find_sub_bbs (gimple_seq, gimple_stmt_iterator *);
+extern bool extract_true_false_controlled_edges (basic_block, basic_block,
+						 edge *, edge *);
 
 #endif /* _TREE_CFG_H  */

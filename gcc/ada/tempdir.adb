@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,7 +62,7 @@ package body Tempdir is
          end if;
       end Directory;
 
-   --  Start of processing Tempdir
+   --  Start of processing for Create_Temp_File
 
    begin
       if Temp_Dir'Length /= 0 then

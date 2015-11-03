@@ -829,6 +829,9 @@ struct GTY(()) rtvec_def {
 /* Predicate yielding nonzero iff RTX is a subreg.  */
 #define SUBREG_P(RTX) (GET_CODE (RTX) == SUBREG)
 
+/* Predicate yielding true iff RTX is a symbol ref.  */
+#define SYMBOL_REF_P(RTX) (GET_CODE (RTX) == SYMBOL_REF)
+
 template <>
 template <>
 inline bool
@@ -2926,6 +2929,7 @@ extern void set_insn_deleted (rtx);
 /* Functions in rtlanal.c */
 
 extern rtx single_set_2 (const rtx_insn *, const_rtx);
+extern bool contains_symbol_ref_p (const_rtx);
 
 /* Handle the cheap and common cases inline for performance.  */
 
@@ -3452,7 +3456,7 @@ extern int regstack_completed;
 extern int cse_not_expected;
 
 /* Translates rtx code to tree code, for those codes needed by
-   REAL_ARITHMETIC.  The function returns an int because the caller may not
+   real_arithmetic.  The function returns an int because the caller may not
    know what `enum tree_code' means.  */
 
 extern int rtx_to_tree_code (enum rtx_code);
@@ -3564,19 +3568,6 @@ extern void print_simple_rtl (FILE *, const_rtx);
 extern int print_rtl_single (FILE *, const_rtx);
 extern int print_rtl_single_with_indent (FILE *, const_rtx, int);
 extern void print_inline_rtx (FILE *, const_rtx, int);
-
-/* Functions in sched-vis.c.  FIXME: Ideally these functions would
-   not be in sched-vis.c but in rtl.c, because they are not only used
-   by the scheduler anymore but for all "slim" RTL dumping.  */
-extern void dump_value_slim (FILE *, const_rtx, int);
-extern void dump_insn_slim (FILE *, const rtx_insn *);
-extern void dump_rtl_slim (FILE *, const rtx_insn *, const rtx_insn *,
-			   int, int);
-extern void print_value (pretty_printer *, const_rtx, int);
-extern void print_pattern (pretty_printer *, const_rtx, int);
-extern void print_insn (pretty_printer *, const_rtx, int);
-extern void rtl_dump_bb_for_graph (pretty_printer *, basic_block);
-extern const char *str_pattern_slim (const_rtx);
 
 /* In stmt.c */
 extern void expand_null_return (void);

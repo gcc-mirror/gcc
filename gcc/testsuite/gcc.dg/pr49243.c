@@ -20,6 +20,6 @@ static inline int wrapper(const char **s_ptr) /* { dg-warning "(inlining failed|
 void parse(const char *data)
 {
     const char *s = data;
-    if (!(wrapper(&s) == -1 && (s - data) == 1)) /* { dg-warning "called from here" } */
+    if (!(wrapper(&s) == -1 && (s - data) == 1)) /* { dg-message "called from here" } */
 	__builtin_abort();
 }

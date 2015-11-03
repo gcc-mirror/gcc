@@ -27,24 +27,21 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
+#include "target.h"
+#include "function.h"
 #include "tree.h"
-#include "options.h"
-#include "stor-layout.h"
 #include "stringpool.h"
-#include "varasm.h"
+#include "cgraph.h"
 #include "diagnostic-core.h"
+#include "alias.h"
+#include "stor-layout.h"
+#include "varasm.h"
 #include "toplev.h"
 #include "flags.h"
 #include "java-tree.h"
 #include "jcf.h"
 #include "java-except.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "cgraph.h"
 #include "tree-inline.h"
-#include "target.h"
 #include "version.h"
 #include "tree-iterator.h"
 #include "langhooks.h"
@@ -1905,14 +1902,12 @@ java_mark_decl_local (tree decl)
 {
   DECL_EXTERNAL (decl) = 0;
 
-#ifdef ENABLE_CHECKING
   /* Double check that we didn't pass the function to the callgraph early.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL)
+  if (flag_checking && TREE_CODE (decl) == FUNCTION_DECL)
     {
       struct cgraph_node *node = cgraph_node::get (decl);
       gcc_assert (!node || !node->definition);
     }
-#endif
   gcc_assert (!DECL_RTL_SET_P (decl));
 }
 

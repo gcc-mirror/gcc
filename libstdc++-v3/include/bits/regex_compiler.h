@@ -392,7 +392,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	auto __st = _M_traits.lookup_collatename(__s.data(),
 						 __s.data() + __s.size());
 	if (__st.empty())
-	  __throw_regex_error(regex_constants::error_collate);
+	  __throw_regex_error(regex_constants::error_collate,
+			      "Invalid collate element.");
 	_M_char_set.push_back(_M_translator._M_translate(__st[0]));
 	_GLIBCXX_DEBUG_ONLY(_M_is_ready = false);
 	return __st;
@@ -404,7 +405,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	auto __st = _M_traits.lookup_collatename(__s.data(),
 						 __s.data() + __s.size());
 	if (__st.empty())
-	  __throw_regex_error(regex_constants::error_collate);
+	  __throw_regex_error(regex_constants::error_collate,
+			      "Invalid equivalence class.");
 	__st = _M_traits.transform_primary(__st.data(),
 					   __st.data() + __st.size());
 	_M_equiv_set.push_back(__st);
@@ -419,7 +421,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						 __s.data() + __s.size(),
 						 __icase);
 	if (__mask == 0)
-	  __throw_regex_error(regex_constants::error_ctype);
+	  __throw_regex_error(regex_constants::error_collate,
+			      "Invalid character class.");
 	if (!__neg)
 	  _M_class_set |= __mask;
 	else
@@ -431,7 +434,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_make_range(_CharT __l, _CharT __r)
       {
 	if (__l > __r)
-	  __throw_regex_error(regex_constants::error_range);
+	  __throw_regex_error(regex_constants::error_range,
+			      "Invalid range in bracket expression.");
 	_M_range_set.push_back(make_pair(_M_translator._M_transform(__l),
 					 _M_translator._M_transform(__r)));
 	_GLIBCXX_DEBUG_ONLY(_M_is_ready = false);

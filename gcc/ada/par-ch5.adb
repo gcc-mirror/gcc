@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1729,7 +1729,7 @@ package body Ch5 is
       Node1 : Node_Id;
 
    begin
-      Node1 :=  New_Node (N_Iterator_Specification, Sloc (Def_Id));
+      Node1 := New_Node (N_Iterator_Specification, Sloc (Def_Id));
       Set_Defining_Identifier (Node1, Def_Id);
 
       if Token = Tok_Colon then

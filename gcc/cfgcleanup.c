@@ -33,31 +33,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cfghooks.h"
 #include "df.h"
-#include "alias.h"
-#include "regs.h"
+#include "tm_p.h"
 #include "insn-config.h"
-#include "flags.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "alloc-pool.h"
+#include "emit-rtl.h"
 #include "cselib.h"
 #include "params.h"
-#include "tm_p.h"
-#include "target.h"
-#include "emit-rtl.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "cfgbuild.h"
@@ -2873,11 +2860,8 @@ try_optimize_cfg (int mode)
                  to detect and fix during edge forwarding, and in some cases
                  is only visible after newly unreachable blocks are deleted,
                  which will be done in fixup_partitions.  */
-              fixup_partitions ();
-
-#ifdef ENABLE_CHECKING
-              verify_flow_info ();
-#endif
+	      fixup_partitions ();
+	      checking_verify_flow_info ();
             }
 
 	  changed_overall |= changed;

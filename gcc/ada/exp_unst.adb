@@ -275,9 +275,9 @@ package body Exp_Unst is
 
       --  First step, we must mark all nested subprograms that require a static
       --  link (activation record) because either they contain explicit uplevel
-      --  references (as indicated by ??? being set at this
-      --  point), or they make calls to other subprograms in the same nest that
-      --  require a static link (in which case we set this flag).
+      --  references (as indicated by Is_Uplevel_Referenced_Entity being set at
+      --  this point), or they make calls to other subprograms in the same nest
+      --  that require a static link (in which case we set this flag).
 
       --  This is a recursive definition, and to implement this, we have to
       --  build a call graph for the set of nested subprograms, and then go
@@ -316,12 +316,12 @@ package body Exp_Unst is
             Callee : Entity_Id;
 
             procedure Check_Static_Type (T : Entity_Id; DT : in out Boolean);
-               --  Given a type T, checks if it is a static type defined as a
-               --  type with no dynamic bounds in sight. If so, the only action
-               --  is to set Is_Static_Type True for T. If T is not a static
-               --  type, then all types with dynamic bounds associated with
-               --  T are detected, and their bounds are marked as uplevel
-               --  referenced if not at the library level, and DT is set True.
+            --  Given a type T, checks if it is a static type defined as a type
+            --  with no dynamic bounds in sight. If so, the only action is to
+            --  set Is_Static_Type True for T. If T is not a static type, then
+            --  all types with dynamic bounds associated with T are detected,
+            --  and their bounds are marked as uplevel referenced if not at the
+            --  library level, and DT is set True.
 
             procedure Note_Uplevel_Ref
               (E      : Entity_Id;
@@ -407,7 +407,7 @@ package body Exp_Unst is
                      end if;
                   end;
 
-                  --  For record type, check all components
+               --  For record type, check all components
 
                elsif Is_Record_Type (T) then
                   declare
@@ -420,7 +420,7 @@ package body Exp_Unst is
                      end loop;
                   end;
 
-                  --  For array type, check index types and component type
+               --  For array type, check index types and component type
 
                elsif Is_Array_Type (T) then
                   declare
@@ -466,12 +466,22 @@ package body Exp_Unst is
 
                if Caller = Callee then
                   return;
+
+               --  Callee may be a function that returns an array, and that has
+               --  been rewritten as a procedure. If caller is that procedure,
+               --  nothing to do either.
+
+               elsif Ekind (Callee) = E_Function
+                 and then Rewritten_For_C (Callee)
+                 and then Next_Entity (Callee) = Caller
+               then
+                  return;
                end if;
 
                --  We have a new uplevel referenced entity
 
                --  All we do at this stage is to add the uplevel reference to
-               --  the table. It's too earch to do anything else, since this
+               --  the table. It's too early to do anything else, since this
                --  uplevel reference may come from an unreachable subprogram
                --  in which case the entry will be deleted.
 
@@ -520,7 +530,7 @@ package body Exp_Unst is
             --  of no corresponding body being available is ignored for now.
 
             elsif Nkind (N) = N_Subprogram_Body then
-               Ent := Corresponding_Spec_Of (N);
+               Ent := Unique_Defining_Entity (N);
 
                --  Ignore generic subprogram
 
@@ -674,7 +684,7 @@ package body Exp_Unst is
          Modified : Boolean;
 
       begin
-         Subps.Table (1).Reachable := True;
+         Subps.Table (Subps_First).Reachable := True;
 
          --  We use a simple minded algorithm as follows (obviously this can
          --  be done more efficiently, using one of the standard algorithms
@@ -773,6 +783,13 @@ package body Exp_Unst is
                   S := URJ.Caller;
                   loop
                      S := Enclosing_Subprogram (S);
+
+                     --  if we are at the top level, as can happen with
+                     --  references to formals in aspects of nested subprogram
+                     --  declarations, there are no further subprograms to
+                     --  mark as requiring activation records.
+
+                     exit when No (S);
                      Subps.Table (Subp_Index (S)).Declares_AREC := True;
                      exit when S = URJ.Callee;
                   end loop;
@@ -805,13 +822,13 @@ package body Exp_Unst is
 
       --  Remove unreachable subprograms from Subps table. Note that we do
       --  this after eliminating entries from the other two tables, since
-      --  thos elimination steps depend on referencing the Subps table.
+      --  those elimination steps depend on referencing the Subps table.
 
       declare
          New_SI : SI_Type;
 
       begin
-         New_SI := 0;
+         New_SI := Subps_First - 1;
          for J in Subps_First .. Subps.Last loop
             declare
                STJ  : Subp_Entry renames Subps.Table (J);
@@ -1173,7 +1190,11 @@ package body Exp_Unst is
 
                      --  Now we can insert the AREC declarations into the body
 
-                     --  type ARECnT is record .. end record;
+                     --    type ARECnT is record .. end record;
+                     --    pragma Suppress_Initialization (ARECnT);
+
+                     --  Note that we need to set the Suppress_Initialization
+                     --  flag after Decl_ARECnT has been analyzed.
 
                      Decl_ARECnT :=
                        Make_Full_Type_Declaration (Loc,
@@ -1258,20 +1279,23 @@ package body Exp_Unst is
 
                      Push_Scope (STJ.Ent);
                      Analyze (Decl_ARECnT,  Suppress => All_Checks);
+
+                     --  Note that we need to call Set_Suppress_Initialization
+                     --  after Decl_ARECnT has been analyzed, but before
+                     --  analyzing Decl_ARECnP so that the flag is properly
+                     --  taking into account.
+
+                     Set_Suppress_Initialization (STJ.ARECnT);
+
                      Analyze (Decl_ARECnPT, Suppress => All_Checks);
                      Analyze (Decl_ARECn,   Suppress => All_Checks);
                      Analyze (Decl_ARECnP,  Suppress => All_Checks);
 
                      if Present (Decl_Assign) then
-                        Analyze (Decl_Assign,  Suppress => All_Checks);
+                        Analyze (Decl_Assign, Suppress => All_Checks);
                      end if;
 
                      Pop_Scope;
-
-                     --  Mark the types as needing typedefs
-
-                     Set_Needs_Typedef (STJ.ARECnT);
-                     Set_Needs_Typedef (STJ.ARECnPT);
 
                      --  Next step, for each uplevel referenced entity, add
                      --  assignment operations to set the component in the
@@ -1417,8 +1441,8 @@ package body Exp_Unst is
                --  probably happens as a result of not properly treating
                --  instance bodies. To be examined ???
 
-               --  If this test is omitted, then the compilation of
-               --  freeze.adb and inline.adb fail in unnesting mode.
+               --  If this test is omitted, then the compilation of freeze.adb
+               --  and inline.adb fail in unnesting mode.
 
                if No (STJR.ARECnF) then
                   goto Continue;
@@ -1430,12 +1454,11 @@ package body Exp_Unst is
 
                Push_Scope (STJR.Ent);
 
-               --  Now we need to rewrite the reference. We have a
-               --  reference is from level STJR.Lev to level STJE.Lev.
-               --  The general form of the rewritten reference for
-               --  entity X is:
+               --  Now we need to rewrite the reference. We have a reference
+               --  from level STJR.Lev to level STJE.Lev. The general form of
+               --  the rewritten reference for entity X is:
 
-               --   Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECm.X)
+               --    Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECm.X)
 
                --  where a,b,c,d .. m =
                --    STJR.Lev - 1,  STJR.Lev - 2, .. STJE.Lev
@@ -1541,11 +1564,10 @@ package body Exp_Unst is
          begin
             if Present (STT.ARECnF) then
 
-               --  CTJ.N is a call to a subprogram which may require
-               --  a pointer to an activation record. The subprogram
-               --  containing the call is CTJ.From and the subprogram being
-               --  called is CTJ.To, so we have a call from level STF.Lev to
-               --  level STT.Lev.
+               --  CTJ.N is a call to a subprogram which may require a pointer
+               --  to an activation record. The subprogram containing the call
+               --  is CTJ.From and the subprogram being called is CTJ.To, so we
+               --  have a call from level STF.Lev to level STT.Lev.
 
                --  There are three possibilities:
 
@@ -1555,10 +1577,10 @@ package body Exp_Unst is
                if STF.Lev = STT.Lev then
                   Extra := New_Occurrence_Of (STF.ARECnF, Loc);
 
-               --  For a call that goes down a level, we pass a pointer
-               --  to the activation record constructed within the caller
-               --  (which may be the outer level subprogram, but also may
-               --  be a more deeply nested caller).
+               --  For a call that goes down a level, we pass a pointer to the
+               --  activation record constructed within the caller (which may
+               --  be the outer-level subprogram, but also may be a more deeply
+               --  nested caller).
 
                elsif STT.Lev = STF.Lev + 1 then
                   Extra := New_Occurrence_Of (STF.ARECnP, Loc);
@@ -1580,9 +1602,9 @@ package body Exp_Unst is
                   pragma Assert (STT.Lev < STF.Lev);
 
                   Extra := New_Occurrence_Of (STF.ARECnF, Loc);
-                  SubX := Subp_Index (CTJ.Caller);
+                  SubX  := Subp_Index (CTJ.Caller);
                   for K in reverse STT.Lev .. STF.Lev - 1 loop
-                     SubX := Enclosing_Subp (SubX);
+                     SubX  := Enclosing_Subp (SubX);
                      Extra :=
                        Make_Selected_Component (Loc,
                          Prefix        => Extra,
@@ -1607,8 +1629,8 @@ package body Exp_Unst is
 
                Append (ExtraP, Parameter_Associations (CTJ.N));
 
-               --  We need to deal with the actual parameter chain as well.
-               --  The newly added parameter is always the last actual.
+               --  We need to deal with the actual parameter chain as well. The
+               --  newly added parameter is always the last actual.
 
                Act := First_Named_Actual (CTJ.N);
 

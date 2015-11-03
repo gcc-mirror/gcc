@@ -44,6 +44,16 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  namespace
+  {
+    struct _Save_errno
+    {
+      _Save_errno() : _M_errno(errno) { errno = 0; }
+      ~_Save_errno() { if (errno == 0) errno = _M_errno; }
+      int _M_errno;
+    };
+  }
+
   template<>
     void
     __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err,
@@ -59,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool __overflow = false;
 
 #if !__FLT_HAS_INFINITY__
-      errno = 0;
+      const _Save_errno __save_errno;
 #endif
 
 #ifdef _GLIBCXX_HAVE_STRTOF
@@ -123,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       char* __sanity;
 
 #if !__DBL_HAS_INFINITY__
-      errno = 0;
+      const _Save_errno __save_errno;
 #endif
 
       __v = strtod(__s, &__sanity);
@@ -167,7 +177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       setlocale(LC_ALL, "C");
 
 #if !__LDBL_HAS_INFINITY__
-      errno = 0;
+      const _Save_errno __save_errno;
 #endif
 
 #if defined(_GLIBCXX_HAVE_STRTOLD) && !defined(_GLIBCXX_HAVE_BROKEN_STRTOLD)

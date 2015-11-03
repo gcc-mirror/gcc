@@ -1565,13 +1565,9 @@ package body Treepr is
       Print_Elist_Ref (E);
       Print_Eol;
 
-      M := First_Elmt (E);
+      if Present (E) and then not Is_Empty_Elmt_List (E) then
+         M := First_Elmt (E);
 
-      if No (M) then
-         Print_Str ("<empty element list>");
-         Print_Eol;
-
-      else
          loop
             Print_Char ('|');
             Print_Eol;

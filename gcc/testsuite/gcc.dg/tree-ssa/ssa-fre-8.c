@@ -28,5 +28,5 @@ intflt foo(int i, int b)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Replaced u.f with pretmp" 2 "fre1" } } */
-/* { dg-final { scan-tree-dump-times "Inserted pretmp" 2 "fre1" } } */
+/* { dg-final { scan-tree-dump-times "Replaced u.f with" 2 "fre1" } } */
+/* { dg-final { scan-tree-dump-times "Inserted" 2 "fre1" } } */

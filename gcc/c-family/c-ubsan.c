@@ -21,18 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
-#include "tree.h"
-#include "options.h"
-#include "alloc-pool.h"
 #include "tm.h"
-#include "hard-reg-set.h"
 #include "function.h"
+#include "hard-reg-set.h"
+#include "tree.h"
+#include "c-family/c-common.h"
+#include "alloc-pool.h"
 #include "cgraph.h"
 #include "output.h"
 #include "toplev.h"
 #include "ubsan.h"
-#include "c-family/c-common.h"
 #include "c-family/c-ubsan.h"
 #include "asan.h"
 #include "internal-fn.h"
@@ -89,21 +87,9 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
     return NULL_TREE;
 
   /* In case we have a SAVE_EXPR in a conditional context, we need to
-     make sure it gets evaluated before the condition.  If the OP0 is
-     an instrumented array reference, mark it as having side effects so
-     it's not folded away.  */
-  if (flag_sanitize & SANITIZE_BOUNDS)
-    {
-      tree xop0 = op0;
-      while (CONVERT_EXPR_P (xop0))
-	xop0 = TREE_OPERAND (xop0, 0);
-      if (TREE_CODE (xop0) == ARRAY_REF)
-	{
-	  TREE_SIDE_EFFECTS (xop0) = 1;
-	  TREE_SIDE_EFFECTS (op0) = 1;
-	}
-    }
+     make sure it gets evaluated before the condition.  */
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op0), t);
+  t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op1), t);
   if (flag_sanitize_undefined_trap_on_error)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
@@ -186,20 +172,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
     return NULL_TREE;
 
   /* In case we have a SAVE_EXPR in a conditional context, we need to
-     make sure it gets evaluated before the condition.  If the OP0 is
-     an instrumented array reference, mark it as having side effects so
-     it's not folded away.  */
-  if (flag_sanitize & SANITIZE_BOUNDS)
-    {
-      tree xop0 = op0;
-      while (CONVERT_EXPR_P (xop0))
-	xop0 = TREE_OPERAND (xop0, 0);
-      if (TREE_CODE (xop0) == ARRAY_REF)
-	{
-	  TREE_SIDE_EFFECTS (xop0) = 1;
-	  TREE_SIDE_EFFECTS (op0) = 1;
-	}
-    }
+     make sure it gets evaluated before the condition.  */
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op0), t);
   t = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t,
 		   tt ? tt : integer_zero_node);

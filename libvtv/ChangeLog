@@ -1,3 +1,13 @@
+2015-10-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* configure.tgt (aarch64*-*-linux): Enable.
+	(arm*-*-linux*): Enable.
+
+2015-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libvtv.exp: Load multiline.exp before prune.exp,
+	using load_gcc_lib.
+
 2015-08-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Update copyrights.

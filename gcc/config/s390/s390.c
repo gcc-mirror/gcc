@@ -24,58 +24,56 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
+#include "cfghooks.h"
+#include "cfgloop.h"
 #include "df.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "expmed.h"
+#include "optabs.h"
+#include "regs.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "cgraph.h"
+#include "diagnostic-core.h"
 #include "alias.h"
 #include "fold-const.h"
 #include "print-tree.h"
-#include "stringpool.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "calls.h"
-#include "tm_p.h"
-#include "regs.h"
-#include "insn-config.h"
 #include "conditions.h"
 #include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
 #include "except.h"
-#include "recog.h"
-#include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
 #include "stmt.h"
 #include "expr.h"
 #include "reload.h"
-#include "diagnostic-core.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "target.h"
 #include "debug.h"
 #include "langhooks.h"
-#include "insn-codes.h"
-#include "optabs.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimplify.h"
 #include "params.h"
-#include "cfgloop.h"
 #include "opts.h"
 #include "tree-pass.h"
 #include "context.h"
 #include "builtins.h"
 #include "rtl-iter.h"
 #include "intl.h"
-#include "cgraph.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -8719,16 +8717,13 @@ s390_chunkify_cancel (struct constant_pool *pool_list)
 void
 s390_output_pool_entry (rtx exp, machine_mode mode, unsigned int align)
 {
-  REAL_VALUE_TYPE r;
-
   switch (GET_MODE_CLASS (mode))
     {
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
       gcc_assert (GET_CODE (exp) == CONST_DOUBLE);
 
-      REAL_VALUE_FROM_CONST_DOUBLE (r, exp);
-      assemble_real (r, mode, align);
+      assemble_real (*CONST_DOUBLE_REAL_VALUE (exp), mode, align);
       break;
 
     case MODE_INT:
@@ -13681,7 +13676,7 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   tree sfpc = s390_builtin_decls[S390_BUILTIN_s390_sfpc];
   tree efpc = s390_builtin_decls[S390_BUILTIN_s390_efpc];
   tree call_efpc = build_call_expr (efpc, 0);
-  tree fenv_var = create_tmp_var (unsigned_type_node);
+  tree fenv_var = create_tmp_var_raw (unsigned_type_node);
 
 #define FPC_EXCEPTION_MASK	 HOST_WIDE_INT_UC (0xf8000000)
 #define FPC_FLAGS_MASK		 HOST_WIDE_INT_UC (0x00f80000)
@@ -13717,7 +13712,7 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   __builtin_s390_sfpc (fenv_var);
   __atomic_feraiseexcept ((old_fpc & FPC_FLAGS_MASK) >> FPC_FLAGS_SHIFT);  */
 
-  old_fpc = create_tmp_var (unsigned_type_node);
+  old_fpc = create_tmp_var_raw (unsigned_type_node);
   tree store_old_fpc = build2 (MODIFY_EXPR, void_type_node,
 			       old_fpc, call_efpc);
 

@@ -22,13 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
-#include "diagnostic.h"
 #include "debug.h"
 #include "cxx-pretty-print.h"
 #include "cp-objcp-common.h"
@@ -311,6 +309,10 @@ cp_common_init_ts (void)
   MARK_TS_TYPED (CTOR_INITIALIZER);
   MARK_TS_TYPED (ARRAY_NOTATION_REF);
   MARK_TS_TYPED (REQUIRES_EXPR);
+  MARK_TS_TYPED (UNARY_LEFT_FOLD_EXPR);
+  MARK_TS_TYPED (UNARY_RIGHT_FOLD_EXPR);
+  MARK_TS_TYPED (BINARY_LEFT_FOLD_EXPR);
+  MARK_TS_TYPED (BINARY_RIGHT_FOLD_EXPR);
 }
 
 #include "gt-cp-cp-objcp-common.h"

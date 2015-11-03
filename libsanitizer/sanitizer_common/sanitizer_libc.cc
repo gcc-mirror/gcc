@@ -8,37 +8,37 @@
 // This file is shared between AddressSanitizer and ThreadSanitizer
 // run-time libraries. See sanitizer_libc.h for details.
 //===----------------------------------------------------------------------===//
+
 #include "sanitizer_allocator_internal.h"
 #include "sanitizer_common.h"
 #include "sanitizer_libc.h"
 
 namespace __sanitizer {
 
-// Make the compiler think that something is going on there.
-static inline void break_optimization(void *arg) {
-#if _MSC_VER
-  // FIXME: make sure this is actually enough.
-  __asm;
-#else
-  __asm__ __volatile__("" : : "r" (arg) : "memory");
-#endif
-}
-
 s64 internal_atoll(const char *nptr) {
-  return internal_simple_strtoll(nptr, (char**)0, 10);
+  return internal_simple_strtoll(nptr, nullptr, 10);
 }
 
 void *internal_memchr(const void *s, int c, uptr n) {
-  const char* t = (char*)s;
+  const char *t = (const char *)s;
   for (uptr i = 0; i < n; ++i, ++t)
     if (*t == c)
-      return (void*)t;
-  return 0;
+      return reinterpret_cast<void *>(const_cast<char *>(t));
+  return nullptr;
+}
+
+void *internal_memrchr(const void *s, int c, uptr n) {
+  const char *t = (const char *)s;
+  void *res = nullptr;
+  for (uptr i = 0; i < n; ++i, ++t) {
+    if (*t == c) res = reinterpret_cast<void *>(const_cast<char *>(t));
+  }
+  return res;
 }
 
 int internal_memcmp(const void* s1, const void* s2, uptr n) {
-  const char* t1 = (char*)s1;
-  const char* t2 = (char*)s2;
+  const char *t1 = (const char *)s1;
+  const char *t2 = (const char *)s2;
   for (uptr i = 0; i < n; ++i, ++t1, ++t2)
     if (*t1 != *t2)
       return *t1 < *t2 ? -1 : 1;
@@ -47,7 +47,7 @@ int internal_memcmp(const void* s1, const void* s2, uptr n) {
 
 void *internal_memcpy(void *dest, const void *src, uptr n) {
   char *d = (char*)dest;
-  char *s = (char*)src;
+  const char *s = (const char *)src;
   for (uptr i = 0; i < n; ++i)
     d[i] = s[i];
   return dest;
@@ -55,7 +55,7 @@ void *internal_memcpy(void *dest, const void *src, uptr n) {
 
 void *internal_memmove(void *dest, const void *src, uptr n) {
   char *d = (char*)dest;
-  char *s = (char*)src;
+  const char *s = (const char *)src;
   sptr i, signed_n = (sptr)n;
   CHECK_GE(signed_n, 0);
   if (d < s) {
@@ -76,7 +76,8 @@ void internal_bzero_aligned16(void *s, uptr n) {
   CHECK_EQ((reinterpret_cast<uptr>(s) | n) & 15, 0);
   for (S16 *p = reinterpret_cast<S16*>(s), *end = p + n / 16; p < end; p++) {
     p->a = p->b = 0;
-    break_optimization(0);  // Make sure this does not become memset.
+    // Make sure this does not become memset.
+    SanitizerBreakOptimization(nullptr);
   }
 }
 
@@ -95,7 +96,7 @@ void *internal_memset(void* s, int c, uptr n) {
 uptr internal_strcspn(const char *s, const char *reject) {
   uptr i;
   for (i = 0; s[i]; i++) {
-    if (internal_strchr(reject, s[i]) != 0)
+    if (internal_strchr(reject, s[i]))
       return i;
   }
   return i;
@@ -103,6 +104,14 @@ uptr internal_strcspn(const char *s, const char *reject) {
 
 char* internal_strdup(const char *s) {
   uptr len = internal_strlen(s);
+  char *s2 = (char*)InternalAlloc(len + 1);
+  internal_memcpy(s2, s, len);
+  s2[len] = 0;
+  return s2;
+}
+
+char* internal_strndup(const char *s, uptr n) {
+  uptr len = internal_strnlen(s, n);
   char *s2 = (char*)InternalAlloc(len + 1);
   internal_memcpy(s2, s, len);
   s2[len] = 0;
@@ -136,9 +145,9 @@ int internal_strncmp(const char *s1, const char *s2, uptr n) {
 char* internal_strchr(const char *s, int c) {
   while (true) {
     if (*s == (char)c)
-      return (char*)s;
+      return const_cast<char *>(s);
     if (*s == 0)
-      return 0;
+      return nullptr;
     s++;
   }
 }
@@ -146,16 +155,16 @@ char* internal_strchr(const char *s, int c) {
 char *internal_strchrnul(const char *s, int c) {
   char *res = internal_strchr(s, c);
   if (!res)
-    res = (char*)s + internal_strlen(s);
+    res = const_cast<char *>(s) + internal_strlen(s);
   return res;
 }
 
 char *internal_strrchr(const char *s, int c) {
-  const char *res = 0;
+  const char *res = nullptr;
   for (uptr i = 0; s[i]; i++) {
     if (s[i] == c) res = s + i;
   }
-  return (char*)res;
+  return const_cast<char *>(res);
 }
 
 uptr internal_strlen(const char *s) {
@@ -191,12 +200,12 @@ char *internal_strstr(const char *haystack, const char *needle) {
   // This is O(N^2), but we are not using it in hot places.
   uptr len1 = internal_strlen(haystack);
   uptr len2 = internal_strlen(needle);
-  if (len1 < len2) return 0;
+  if (len1 < len2) return nullptr;
   for (uptr pos = 0; pos <= len1 - len2; pos++) {
     if (internal_memcmp(haystack + pos, needle, len2) == 0)
-      return (char*)haystack + pos;
+      return const_cast<char *>(haystack) + pos;
   }
-  return 0;
+  return nullptr;
 }
 
 s64 internal_simple_strtoll(const char *nptr, char **endptr, int base) {
@@ -205,7 +214,7 @@ s64 internal_simple_strtoll(const char *nptr, char **endptr, int base) {
   int sgn = 1;
   u64 res = 0;
   bool have_digits = false;
-  char *old_nptr = (char*)nptr;
+  char *old_nptr = const_cast<char *>(nptr);
   if (*nptr == '+') {
     sgn = 1;
     nptr++;
@@ -220,8 +229,8 @@ s64 internal_simple_strtoll(const char *nptr, char **endptr, int base) {
     have_digits = true;
     nptr++;
   }
-  if (endptr != 0) {
-    *endptr = (have_digits) ? (char*)nptr : old_nptr;
+  if (endptr) {
+    *endptr = (have_digits) ? const_cast<char *>(nptr) : old_nptr;
   }
   if (sgn > 0) {
     return (s64)(Min((u64)INT64_MAX, res));
@@ -249,4 +258,4 @@ bool mem_is_zero(const char *beg, uptr size) {
   return all == 0;
 }
 
-}  // namespace __sanitizer
+} // namespace __sanitizer

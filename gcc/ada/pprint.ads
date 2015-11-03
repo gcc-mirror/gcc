@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2008-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,15 +41,18 @@ package Pprint is
       with function String_Image (S : String_Id) return String;
       with function Ident_Image (Expr        : Node_Id;
                                  Orig_Expr   : Node_Id;
-                                 Expand_Type : Boolean)
-                                 return String;
+                                 Expand_Type : Boolean) return String;
       --  Will be called for printing N_Identifier and N_Defining_Identifier
       --  nodes
       --  ??? Expand_Type argument should be removed
 
-   function Expression_Image (Expr              : Node_Id;
-                              Default           : String)
-                              return String;
+      Hide_Parameter_Blocks : Boolean := False;
+      --  If true, then "Parameter_Block.Field_Name.all" is
+      --  instead displayed as "Field_Name".
+
+   function Expression_Image
+     (Expr    : Node_Id;
+      Default : String) return String;
    --  Given a Node for an expression, return a String that is meaningful for
    --  the programmer. If the expression comes from source, it is copied from
    --  there.

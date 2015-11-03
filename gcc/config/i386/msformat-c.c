@@ -21,15 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
-#include "tree.h"
-#include "flags.h"
 #include "c-family/c-common.h"
 #include "intl.h"
-#include "diagnostic.h"
-#include "langhooks.h"
 #include "c-family/c-format.h"
-#include "alloc-pool.h"
 
 /* Mingw specific format attributes ms_printf, ms_scanf, and ms_strftime.  */
 

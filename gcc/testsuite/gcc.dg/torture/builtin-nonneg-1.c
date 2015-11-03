@@ -6,7 +6,11 @@
    Written by Kaveh Ghazi, 2004-03-10.  */
 
 /* { dg-do link } */
-/* { dg-options "-ffast-math" } */
+/* This test needs more recursion than the default.  PR 68097 is about
+   adding proper range information for reals, so that no recursion
+   would be necessary.  */
+/* { dg-options "-ffast-math --param max-ssa-name-query-depth=3" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
 #define PROTOTYPE_RTYPE(FN,RTYPE) extern RTYPE FN(double); \
   extern RTYPE FN##f(float); \

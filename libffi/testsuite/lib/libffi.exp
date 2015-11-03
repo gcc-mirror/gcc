@@ -24,6 +24,7 @@ proc load_gcc_lib { filename } {
 load_lib dg.exp
 load_lib libgloss.exp
 load_gcc_lib target-supports.exp
+load_gcc_lib target-supports-dg.exp
 load_gcc_lib target-libpath.exp
 load_gcc_lib wrapper.exp
 

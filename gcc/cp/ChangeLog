@@ -1,3 +1,581 @@
+2015-10-31  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Remove the implementation of N3994, terse range-for loops.
+	* parser.c (cp_parser_for_init_statement): Remove the parsing
+	of a terse range-for.
+
+2015-10-31  Jason Merrill  <jason@redhat.com>
+
+	Implement multiple 'auto' feature from Concepts TS.
+	* parser.c (cp_parser_type_id_1): Allow 'auto' if -fconcepts.
+	(cp_parser_template_type_arg): Likewise.
+	(get_concept_from_constraint): Split out most logic to...
+	* constraint.cc (placeholder_extract_concept_and_args): ...here.
+	(equivalent_placeholder_constraints, hash_placeholder_constraint): New.
+	* cxx-pretty-print.c (pp_cxx_constrained_type_spec): New.
+	* cxx-pretty-print.h: Declare it.
+	* error.c (dump_type) [TEMPLATE_TYPE_PARM]: Call it.
+	* pt.c (is_auto_r, extract_autos_r, extract_autos, auto_hash): New.
+	(type_uses_auto): Use is_auto_r.
+	(do_auto_deduction): Handle multiple 'auto's if -fconcepts.
+	* typeck.c (structural_comptypes) [TEMPLATE_TYPE_PARM]: Compare
+	constraints.
+
+	* pt.c (for_each_template_parm_r): Use WALK_SUBTREE.
+	Return a meaningful value rather than error_mark_node.
+	(for_each_template_parm): Return a tree.
+	(uses_template_parms_level): Return bool.
+	* cp-tree.h: Adjust.
+
+	* pt.c (unify): Don't diagnose no common base if we already have
+	the same template.
+	(do_auto_deduction): Explain deduction failure.
+
+	* pt.c (hash_tmpl_and_args): Use iterative_hash_object on template
+	uid.
+
+	* parser.c (synthesize_implicit_template_parm)
+	(finish_fully_implicit_template): Make static.
+
+2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* call.c: Reorder #include's and remove duplicates.
+	* class.c: Likewise.
+	* constexpr.c: Likewise.
+	* cp-array-notation.c: Likewise.
+	* cp-cilkplus.c: Likewise.
+	* cp-gimplify.c: Likewise.
+	* cp-lang.c: Likewise.
+	* cp-objcp-common.c: Likewise.
+	* cp-ubsan.c: Likewise.
+	* cvt.c: Likewise.
+	* cxx-pretty-print.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* dump.c: Likewise.
+	* error.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* friend.c: Likewise.
+	* init.c: Likewise.
+	* lambda.c: Likewise.
+	* lex.c: Likewise.
+	* mangle.c: Likewise.
+	* method.c: Likewise.
+	* name-lookup.c: Likewise.
+	* optimize.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* ptree.c: Likewise.
+	* repo.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+	* vtable-class-hierarchy.c: Likewise.
+
+2015-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67845
+	* decl.c (grokfndecl): In case of erroneous cv-qualified non-member
+	functions consistently reset TREE_TYPE (decl) too.
+
+2015-10-28  Jason Merrill  <jason@redhat.com>
+
+	DR 1518
+	* class.c (type_has_user_provided_or_explicit_constructor): New.
+	(check_bases_and_members): Use it.
+	* cp-tree.h: Declare it.
+
+2015-10-27  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Nathan Sidwell <nathan@codesourcery.com>
+	    Bernd Schmidt  <bschmidt@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Add auto, gang, seq,
+	vector, worker.
+	(cp_parser_oacc_simple_clause): New.
+	(cp_parser_oacc_shape_clause): New.
+	(cp_parser_oacc_all_clauses): Add auto, gang, seq, vector, worker.
+	(OACC_LOOP_CLAUSE_MASK): Likewise.
+	* semantics.c (finish_omp_clauses): Add auto, gang, seq, vector,
+	worker. Unify the handling of teams, tasks and vector_length with
+	the other loop shape clauses.
+
+2015-10-27  Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR c/64765
+	PR c/64880
+	* cp-tree.h (finish_oacc_kernels, finish_oacc_parallel): Don't
+	declare functions.
+	(finish_omp_construct): Declare function.
+	* parser.c (cp_parser_oacc_loop): Add p_name, mask, cclauses
+	formal parameters, and handle these.  Adjust all users.
+	(cp_parser_oacc_kernels, cp_parser_oacc_parallel): Merge functions
+	into...
+	(cp_parser_oacc_kernels_parallel): ... this new function.  Adjust
+	all users.
+	* semantics.c (finish_oacc_kernels, finish_oacc_parallel): Merge functions into...
+	(finish_omp_construct): ... this new function.
+
+2015-10-25  Jason Merrill  <jason@redhat.com>
+
+	DR 2179
+	* pt.c (process_partial_specialization): Handle error_mark_node
+	from most_specialized_partial_spec.
+
+2015-10-23  Jason Merrill  <jason@redhat.com>
+
+	DR 1518
+	DR 1630
+	PR c++/54835
+	PR c++/60417
+	* call.c (convert_like_real): Value-initialization can't use
+	explicit constructors in C++11 and up.
+
+	PR c++/67813
+	* constexpr.c (cxx_eval_store_expression): Always use *valp if
+	set.
+
+2015-10-22  Jason Merrill  <jason@redhat.com>
+
+	* call.c (add_template_conv_candidate): Pass DEDUCE_CALL.
+	(add_template_candidate_real): Handle it.
+	* pt.c (fn_type_unification): Handle it.
+
+	* call.c (add_conv_candidate): Remove first_arg parm.
+	(add_template_conv_candidate): Likewise.
+	(add_template_candidate_real): Don't pass it.
+	(build_op_call_1): Likewise.
+
+2015-10-22  Richard Biener  <rguenther@suse.de>
+
+	* semantics.c (cp_finish_omp_clause_depend_sink): Properly convert
+	before folding a MINUS_EXPR.
+	(finish_omp_clauses): Likewise.
+
+2015-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66781
+	* parser.c (cp_parser_enum_specifier): Upon error_at set
+	nested_name_specifier to error_mark_node; improve error message.
+
+2015-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67847
+	* parser.c (cp_parser_enum_specifier): Reject a nested_name_specifier
+	which doesn't name a class or namespace.
+
+2015-10-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* call.c (build_conditional_expr_1): Use boolean vector
+	type for vector comparison.
+	* typeck.c (build_vec_cmp): New.
+	(cp_build_binary_op): Use build_vec_cmp for comparison.
+
+2015-10-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66583
+	* init.c (innermost_aggr_scope): New.
+	(build_field_list): Change uses_unions_p to uses_unions_or_anon_p.
+	(sort_mem_initializers): Handle initializers for entire anonymous
+	aggregates.
+
+2015-10-20  Marek Polacek  <polacek@redhat.com>
+
+	* parser.c (is_cilkplus_vector_p): Don't define here.
+
+2015-10-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67064
+	* semantics.c (force_paren_expr): Don't mess with hard register vars.
+
+	Implement N4268, Do constant evaluation of all non-type template args.
+	* parser.c (cp_parser_template_argument): For C++1z just parse a
+	constant-expression.
+	* pt.c (convert_nontype_argument): For C++1z always call
+	maybe_constant_value.
+
+	* constexpr.c (cxx_eval_constant_expression): Expand PTRMEM_CST
+	only when necessary.
+	(cxx_eval_component_reference): Like here.
+	* decl2.c (lower_var_init): And here.
+	(c_parse_final_cleanups): Call it.
+	* typeck2.c (digest_init_r): Not here.
+	* decl.c (complete_vars): Or here.
+	(cp_finish_decl): Add local statics to symbol table.
+
+2015-10-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68006
+	* decl.c (implicit_default_ctor_p): New.
+	(start_preparsed_function): Don't clobber on entry to one.
+
+2015-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67926
+	* constexpr.c (potential_constant_expression_1): Handle
+	UNARY_LEFT_FOLD_EXPR, UNARY_RIGHT_FOLD_EXPR, BINARY_LEFT_FOLD_EXPR,
+	BINARY_RIGHT_FOLD_EXPR.
+
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* class.c (finish_struct_1): Call finish_omp_declare_simd_methods.
+	* cp-gimplify.c (cp_gimplify_expr): Handle OMP_TASKLOOP.
+	(cp_genericize_r): Likewise.
+	(cxx_omp_finish_clause): Don't diagnose references.
+	(cxx_omp_disregard_value_expr): New function.
+	* cp-objcp-common.h (LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR): Redefine.
+	* cp-tree.h (OMP_FOR_GIMPLIFYING_P): Document for OMP_TASKLOOP.
+	(DECL_OMP_PRIVATIZED_MEMBER): Define.
+	(finish_omp_declare_simd_methods, push_omp_privatization_clauses,
+	pop_omp_privatization_clauses, save_omp_privatization_clauses,
+	restore_omp_privatization_clauses, omp_privatize_field,
+	cxx_omp_disregard_value_expr): New prototypes.
+	(finish_omp_clauses): Add two new arguments.
+	(finish_omp_for): Add ORIG_DECLV argument.
+	* parser.c (cp_parser_lambda_body): Call
+	save_omp_privatization_clauses and restore_omp_privatization_clauses.
+	(cp_parser_omp_clause_name): Handle OpenMP 4.5 clauses.
+	(cp_parser_omp_var_list_no_open): Handle structure elements for
+	map, to and from clauses.  Handle array sections in reduction
+	clause.  Parse this keyword.  Formatting fixes.
+	(cp_parser_omp_clause_if): Add IS_OMP argument, handle parsing of
+	if clause modifiers.
+	(cp_parser_omp_clause_num_tasks, cp_parser_omp_clause_grainsize,
+	cp_parser_omp_clause_priority, cp_parser_omp_clause_hint,
+	cp_parser_omp_clause_defaultmap): New functions.
+	(cp_parser_omp_clause_ordered): Parse optional parameter.
+	(cp_parser_omp_clause_reduction): Handle array reductions.
+	(cp_parser_omp_clause_schedule): Parse optional simd modifier.
+	(cp_parser_omp_clause_nogroup, cp_parser_omp_clause_orderedkind):
+	New functions.
+	(cp_parser_omp_clause_linear): Parse linear clause modifiers.
+	(cp_parser_omp_clause_depend_sink): New function.
+	(cp_parser_omp_clause_depend): Parse source/sink depend kinds.
+	(cp_parser_omp_clause_map): Parse release/delete map kinds and
+	optional always modifier.
+	(cp_parser_oacc_all_clauses): Adjust cp_parser_omp_clause_if
+	and finish_omp_clauses callers.
+	(cp_parser_omp_all_clauses): Likewise.  Parse OpenMP 4.5 clauses.
+	Parse "to" as OMP_CLAUSE_TO_DECLARE if on declare target directive.
+	(OMP_CRITICAL_CLAUSE_MASK): Define.
+	(cp_parser_omp_critical): Parse critical clauses.
+	(cp_parser_omp_for_incr): Use cp_tree_equal if
+	processing_template_decl.
+	(cp_parser_omp_for_loop_init): Return tree instead of bool.  Handle
+	non-static data member iterators.
+	(cp_parser_omp_for_loop): Handle doacross loops, adjust
+	finish_omp_for and finish_omp_clauses callers.
+	(cp_omp_split_clauses): Adjust finish_omp_clauses caller.
+	(OMP_SIMD_CLAUSE_MASK): Add simdlen clause.
+	(cp_parser_omp_simd): Allow ordered clause if it has no parameter.
+	(OMP_FOR_CLAUSE_MASK): Add linear clause.
+	(cp_parser_omp_for): Disallow ordered clause when combined with
+	distribute.  Disallow linear clause when combined with distribute
+	and not combined with simd.
+	(OMP_ORDERED_CLAUSE_MASK, OMP_ORDERED_DEPEND_CLAUSE_MASK): Define.
+	(cp_parser_omp_ordered): Add CONTEXT argument, return bool instead
+	of tree, parse clauses and if depend clause is found, don't parse
+	a body.
+	(cp_parser_omp_parallel): Disallow copyin clause on target parallel.
+	Allow target parallel without for after it.
+	(OMP_TASK_CLAUSE_MASK): Add priority clause.
+	(OMP_TARGET_DATA_CLAUSE_MASK): Add use_device_ptr clause.
+	(cp_parser_omp_target_data): Diagnose no map clauses or clauses with
+	invalid kinds.
+	(OMP_TARGET_UPDATE_CLAUSE_MASK): Add depend and nowait clauses.
+	(OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
+	OMP_TARGET_EXIT_DATA_CLAUSE_MASK): Define.
+	(cp_parser_omp_target_enter_data, cp_parser_omp_target_exit_data): New
+	functions.
+	(OMP_TARGET_CLAUSE_MASK): Add depend, nowait, private, firstprivate,
+	defaultmap and is_device_ptr clauses.
+	(cp_parser_omp_target): Parse target parallel and target simd.  Set
+	OMP_TARGET_COMBINED on combined constructs.  Parse target enter data
+	and target exit data.  Diagnose invalid map kinds.
+	(cp_parser_oacc_cache): Adjust finish_omp_clauses caller.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Define.
+	(cp_parser_omp_declare_target): Parse OpenMP 4.5 forms of this
+	construct.
+	(OMP_TASKLOOP_CLAUSE_MASK): Define.
+	(cp_parser_omp_taskloop): New function.
+	(cp_parser_omp_construct): Don't handle PRAGMA_OMP_ORDERED here,
+	handle PRAGMA_OMP_TASKLOOP.
+	(cp_parser_pragma): Handle PRAGMA_OMP_ORDERED here directly,
+	handle PRAGMA_OMP_TASKLOOP, call push_omp_privatization_clauses
+	and pop_omp_privatization_clauses around parsing calls.
+	(cp_parser_cilk_for): Adjust finish_omp_clauses caller.
+	* pt.c (apply_late_template_attributes): Adjust tsubst_omp_clauses
+	and finish_omp_clauses callers.
+	(tsubst_omp_clause_decl): Return NULL if decl is NULL.
+	For TREE_LIST, copy over OMP_CLAUSE_DEPEND_SINK_NEGATIVE bit.
+	Use tsubst_expr instead of tsubst_copy, undo convert_from_reference
+	effects.
+	(tsubst_omp_clauses): Add ALLOW_FIELDS argument.  Handle new
+	OpenMP 4.5 clauses.  Use tsubst_omp_clause_decl for more clauses.
+	If ALLOW_FIELDS, handle non-static data members in the clauses.
+	Clear OMP_CLAUSE_LINEAR_STEP if it has been cleared before.
+	(omp_parallel_combined_clauses): New variable.
+	(tsubst_omp_for_iterator): Add ORIG_DECLV argument, recur on
+	OMP_FOR_ORIG_DECLS, handle non-static data member iterators.
+	Improve handling of clauses on combined constructs.
+	(tsubst_expr): Call push_omp_privatization_clauses and
+	pop_omp_privatization_clauses around instantiation of certain
+	OpenMP constructs, improve handling of clauses on combined
+	constructs, handle OMP_TASKLOOP, adjust tsubst_omp_for_iterator,
+	tsubst_omp_clauses and finish_omp_for callers, handle clauses on
+	critical and ordered, handle OMP_TARGET_{ENTER,EXIT}_DATA.
+	(instantiate_decl): Call save_omp_privatization_clauses and
+	restore_omp_privatization_clauses around instantiation.
+	(dependent_omp_for_p): Fix up comment typo.  Handle SCOPE_REF.
+	* semantics.c (omp_private_member_map, omp_private_member_vec,
+	omp_private_member_ignore_next): New variables.
+	(finish_non_static_data_member): Return dummy decl for privatized
+	non-static data members.
+	(omp_clause_decl_field, omp_clause_printable_decl,
+	omp_note_field_privatization, omp_privatize_field): New functions.
+	(handle_omp_array_sections_1): Fix comment typo.
+	Add IS_OMP argument, handle structure element bases, diagnose
+	bitfields, pass IS_OMP recursively, diagnose known zero length
+	array sections in depend clauses, handle array sections in reduction
+	clause, diagnose negative length even for pointers.
+	(handle_omp_array_sections): Add IS_OMP argument, use auto_vec for
+	types, pass IS_OMP down to handle_omp_array_sections_1, handle
+	array sections in reduction clause, set
+	OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION if map could be zero
+	length array section, use GOMP_MAP_FIRSTPRIVATE_POINTER for IS_OMP.
+	(finish_omp_reduction_clause): Handle array sections and arrays.
+	Use omp_clause_printable_decl.
+	(finish_omp_declare_simd_methods, cp_finish_omp_clause_depend_sink):
+	New functions.
+	(finish_omp_clauses): Add ALLOW_FIELDS and DECLARE_SIMD arguments.
+	Handle new OpenMP 4.5 clauses and new restrictions for the old
+	ones, handle non-static data members, reject this keyword when not
+	allowed.
+	(push_omp_privatization_clauses, pop_omp_privatization_clauses,
+	save_omp_privatization_clauses, restore_omp_privatization_clauses):
+	New functions.
+	(handle_omp_for_class_iterator): Handle OMP_TASKLOOP class iterators.
+	Add collapse and ordered arguments.  Fix handling of lastprivate
+	iterators in doacross loops.
+	(finish_omp_for): Add ORIG_DECLV argument, handle doacross loops,
+	adjust c_finish_omp_for, handle_omp_for_class_iterator and
+	finish_omp_clauses callers.  Fill in OMP_CLAUSE_LINEAR_STEP on simd
+	loops with non-static data member iterators.
+
+2015-10-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/58566
+	* lambda.c (lambda_return_type): Return error_mark_node
+	instead of void_type_node for the error cases.
+
+2015-10-08  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (SIMPLE_TARGET_EXPR_P): New.
+	* init.c (get_nsdmi): Use it.
+	* typeck2.c (massage_init_elt): Use it.
+
+2015-10-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67557
+	* call.c (is_base_field_ref): New.
+	(unsafe_copy_elision_p): New.
+	(build_over_call): Use it.
+
+2015-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/67867
+	* search.c (accessible_p): Initialize OTYPE to NULL_TREE.
+
+2015-10-07  Marek Polacek  <polacek@redhat.com>
+
+	* cp-gimplify.c (genericize_if_stmt): Use protected_set_expr_location.
+	(genericize_cp_loop): Likewise.
+	* decl.c (cxx_maybe_build_cleanup): Likewise.
+	* parser.c (cp_parser_binary_expression): Likewise.
+	(cp_parser_omp_for_loop): Likewise.
+	(cp_parser_omp_construct): Likewise.
+	* semantics.c (finish_transaction_stmt): Likewise.
+	(build_transaction_expr): Likewise.
+
+2015-10-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67810
+	* parser.c (cp_parser_fold_expr_p): Remove.
+	(is_binary_op): New.
+	(cp_parser_fold_expression): Take LHS as parameter.
+	(cp_parser_primary_expression): Call it after parsing an expression.
+	(cp_parser_binary_expression, cp_parser_assignment_operator_opt)
+	(cp_parser_expression): Ignore an operator followed by '...'.
+	(is_binary_op): New.
+	* pt.c (tsubst_unary_left_fold, tsubst_binary_left_fold)
+	(tsubst_unary_right_fold, tsubst_binary_right_fold): Handle errors.
+
+2015-10-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/67863
+	* call.c (build_conditional_expr_1): Build the COND_EXPR with
+	a location.
+
+2015-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53856
+	* pt.c (check_default_tmpl_args): Per [temp.param]/9, do not
+	reject default template arguments in out of class definitions
+	of members of non-template classes.
+
+2015-10-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree.c (cp_tree_equal): Use real_equal instead of
+	REAL_VALUES_EQUAL.
+
+2015-10-04  Jason Merrill  <jason@redhat.com>
+
+	Implement N4514, C++ Extensions for Transactional Memory.
+	* cp-tree.h (struct cp_declarator): Add tx_qualifier field.
+	(BCS_NORMAL, BCS_TRANSACTION): New enumerators.
+	* lex.c (init_reswords): Limit TM kewords to -fgnu-tm.
+	* parser.c (cp_lexer_get_preprocessor_token): Fix @synchronized.
+	(make_call_declarator): Take tx_qualifier.
+	(cp_parser_tx_qualifier_opt): New.
+	(cp_parser_lambda_declarator_opt): Use it.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_statement): Handle atomic_noexcept, atomic_cancel.
+	(cp_parser_compound_statement): Change in_try parameter to bcs_flags.
+	(cp_parser_std_attribute): Map optimize_for_synchronized to
+	transaction_callable.
+	(cp_parser_transaction): Take the token.  Handle atomic_noexcept.
+	* lambda.c (maybe_add_lambda_conv_op): Handle transaction-safety.
+	* call.c (enum conversion_kind): Add ck_tsafe.
+	(standard_conversion): Handle transaction-safety conversion.
+	(convert_like_real, resolve_address_of_overloaded_function): Likewise.
+	(check_methods): Diagnose transaction_safe_dynamic on non-virtual
+	function.
+	(look_for_tm_attr_overrides): Don't inherit transaction_safe_dynamic.
+	* cvt.c (tx_safe_fn_type_p, tx_unsafe_fn_variant)
+	(can_convert_tx_safety): New.
+	* typeck.c (composite_pointer_type): Handle transaction-safety.
+	* name-lookup.h (enum scope_kind): Add sk_transaction.
+	* name-lookup.c (begin_scope): Handle it.
+	* semantics.c (begin_compound_stmt): Pass it.
+	* decl.c (check_previous_goto_1): Check it.
+	(struct named_label_entry): Add in_transaction_scope.
+	(poplevel_named_label_1): Set it.
+	(check_goto): Check it.
+	(duplicate_decls): A specialization can be transaction_safe
+	independently of its template.
+	(grokdeclarator): Handle tx-qualifier.
+	* rtti.c (ptr_initializer): Handle transaction-safe.
+	* search.c (check_final_overrider): Check transaction_safe_dynamic.
+	Don't check transaction_safe.
+	* mangle.c (write_function_type): Mangle transaction_safe here.
+	(write_CV_qualifiers_for_type): Not here.
+	(write_type): Preserve transaction_safe when stripping attributes.
+	* error.c (dump_type_suffix): Print transaction_safe.
+
+2015-10-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64249
+	* parser.c (cp_parser_statement): Add CHAIN parameter and pass it
+	down to cp_parser_selection_statement.
+	(cp_parser_selection_statement): Add CHAIN parameter.  Add code to
+	warn about duplicated if-else-if conditions.
+	(cp_parser_implicitly_scoped_statement): Add CHAIN parameter and pass
+	it down to cp_parser_statement.
+
+2015-10-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/54430
+	* name-lookup.c (push_binding): Make non-static.
+	* name-lookup.h (push_binding): Declare it.
+	* parser.c (cp_parser_range_for): Use it, get the range
+	declaration away from the scope until the range expression
+	has been parsed, then restore the declaration.
+
+2015-09-23  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Fix small typos in the coding rule enforcement warnings.
+	* parser.c (cp_parser_namespace_definition): Replace 'namepace'
+	with 'namespace'.
+
+2015-09-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (xref_basetypes): Check virtual and/or multiple
+	inheritance warning.
+	* parser.c (cp_parser_namespace_definition): Check namespaces
+	warning.
+	* pt.c (push_template_decl_real): Check templates warning.
+
+2015-09-22  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (abi_warn_or_compat_version_crosses): New.
+	Use it instead of abi_version_crosses.
+	(mangle_decl): Deal with -fabi-compat-version and -Wabi separately.
+
+2015-09-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Complete the implementation of N4230, Nested namespace definition.
+	* parser.c (cp_parser_namespace_definition): Support namespace
+	attributes both before and after the namespace identifier.
+
+2015-09-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cp-gimplify.c (gimplify_must_not_throw_expr): Adjust.
+
+2015-09-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement nested namespace definitions.
+	* parser.c (cp_parser_namespace_definition): Grok nested namespace
+	definitions.
+
+2015-09-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* parser.c (pragma_lex): Add loc argument. Rearrange the code to
+	make it more similar to the C version.
+
+2015-09-17  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	Implement N4295 fold-expressions.
+	* cp-tree.def: Add UNARY_LEFT_FOLD_EXPR, UNARY_RIGHT_FOLD_EXPR,
+	BINARY_LEFT_FOLD_EXPR, BINARY_RIGHT_FOLD_EXPR.
+	* cp-objcp-common.c (cp_common_init_ts): Handle them.
+	* cp-tree.h (FOLD_EXPR_CHECK, BINARY_FOLD_EXPR_CHECK, FOLD_EXPR_P)
+	(FOLD_EXPR_MODIFY_P, FOLD_EXPR_OP, FOLD_EXPR_PACK, FOLD_EXPR_INIT): New.
+	* parser.c (cp_parser_skip_to_closing_parenthesis): Split out...
+	(cp_parser_skip_to_closing_parenthesis_1): This function.  Change
+	or_comma parameter to or_ttype.
+	(cp_parser_fold_operator, cp_parser_fold_expr_p)
+	(cp_parser_fold_expression): New.
+	(cp_parser_primary_expression): Use them.
+	* pt.c (expand_empty_fold, fold_expression, tsubst_fold_expr_pack)
+	(tsubst_fold_expr_init, expand_left_fold, tsubst_unary_left_fold)
+	(tsubst_binary_left_fold, expand_right_fold)
+	(tsubst_unary_right_fold, tsubst_binary_right_fold): New.
+	(tsubst_copy): Use them.
+	(type_dependent_expression_p): Handle fold-expressions.
+	* semantics.c (finish_unary_fold_expr)
+	(finish_left_unary_fold_expr, finish_right_unary_fold_expr)
+	(finish_binary_fold_expr): New.
+
+2015-09-17  Richard Biener  <rguenther@suse.de>
+
+	* cp-tree.h (note_decl_for_pch): Remove.
+	* class.c (build_clone): Do not call note_decl_for_pch.
+	* semantics.c (finish_member_declaration): Likewise.
+	(note_decl_for_pch): Remove.
+	* decl2.c (c_parse_final_cleanups): Mangle all globals before
+	writing the PCH.
+
 2015-09-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44282

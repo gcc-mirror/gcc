@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -217,7 +217,7 @@ package body Ada.Command_Line.Response_File is
             end loop;
          end Get_Line;
 
-      --  Start or Recurse
+      --  Start of processing for Recurse
 
       begin
          Last_Arg := 0;
@@ -491,7 +491,7 @@ package body Ada.Command_Line.Response_File is
             raise;
       end Recurse;
 
-   --  Start of Arguments_From
+   --  Start of processing for Arguments_From
 
    begin
       --  The job is done by procedure Recurse

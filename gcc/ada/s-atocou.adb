@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,12 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is dummy version of the package, for use on platforms where this
---  capability is not supported. Any use of any of the routines in this
---  package will raise Program_Error.
-
---  Why don't we use pragma Unimplemented_Unit in a dummy spec, this would
---  seem much more useful than raising an exception at run time ???
+--  This is version of the package, for use on platforms where this capability
+--  is not supported. All Atomic_Counter operations raises Program_Error,
+--  Atomic_Unsigned operations processed in non-atomic manner.
 
 package body System.Atomic_Counters is
 
@@ -48,6 +45,18 @@ package body System.Atomic_Counters is
       return False;
    end Decrement;
 
+   function Decrement (Item : aliased in out Atomic_Unsigned) return Boolean is
+   begin
+      --  Could not use Item := Item - 1; because it is disabled in spec.
+      Item := Atomic_Unsigned'Pred (Item);
+      return Item = 0;
+   end Decrement;
+
+   procedure Decrement (Item : aliased in out Atomic_Unsigned) is
+   begin
+      Item := Atomic_Unsigned'Pred (Item);
+   end Decrement;
+
    ---------------
    -- Increment --
    ---------------
@@ -55,6 +64,11 @@ package body System.Atomic_Counters is
    procedure Increment (Item : in out Atomic_Counter) is
    begin
       raise Program_Error;
+   end Increment;
+
+   procedure Increment (Item : aliased in out Atomic_Unsigned) is
+   begin
+      Item := Atomic_Unsigned'Succ (Item);
    end Increment;
 
    ----------------

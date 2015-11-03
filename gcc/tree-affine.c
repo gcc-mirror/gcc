@@ -20,30 +20,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "options.h"
-#include "fold-const.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-pretty-print.h"
+#include "fold-const.h"
 #include "tree-affine.h"
-#include "internal-fn.h"
 #include "gimplify.h"
 #include "dumpfile.h"
 #include "cfgexpand.h"
-#include "wide-int-print.h"
 
 /* Extends CST as appropriate for the affine combinations COMB.  */
 
@@ -634,7 +620,7 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
   unsigned i;
   aff_tree to_add, current, curre;
   tree e, rhs;
-  gimple def;
+  gimple *def;
   widest_int scale;
   struct name_expansion *exp;
 

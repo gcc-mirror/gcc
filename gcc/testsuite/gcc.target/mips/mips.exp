@@ -256,6 +256,7 @@ set mips_option_groups {
     maddps "HAS_MADDPS"
     lsa "(|!)HAS_LSA"
     section_start "-Wl,--section-start=.*"
+    frame-header "-mframe-header-opt|-mno-frame-header-opt"
 }
 
 for { set option 0 } { $option < 32 } { incr option } {

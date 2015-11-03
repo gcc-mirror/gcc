@@ -422,7 +422,7 @@ Supported Aspect                    Source
 * *AI-0220 Needed components for aggregates (0000-00-00)*
 
   This AI addresses a wording problem in the RM that appears to permit some
-  complex cases of aggregates with non-static discriminants. GNAT has always
+  complex cases of aggregates with nonstatic discriminants. GNAT has always
   implemented the intended semantics.
 
   RM References:  4.03.01 (17)

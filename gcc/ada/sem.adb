@@ -29,6 +29,7 @@ with Debug_A;  use Debug_A;
 with Elists;   use Elists;
 with Expander; use Expander;
 with Fname;    use Fname;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Nlists;   use Nlists;
@@ -95,9 +96,7 @@ package body Sem is
    -------------
 
    procedure Analyze (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the current Ghost mode in effect in case the construct sets a
-      --  different mode.
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    begin
       Debug_A_Entry ("analyzing  ", N);
@@ -107,6 +106,14 @@ package body Sem is
       if Analyzed (N) then
          Debug_A_Exit ("analyzing  ", N, "  (done, analyzed already)");
          return;
+      end if;
+
+      --  A declaration may be subject to pragma Ghost. Set the mode now to
+      --  ensure that any nodes generated during analysis and expansion are
+      --  marked as Ghost.
+
+      if Is_Declaration (N) then
+         Set_Ghost_Mode (N);
       end if;
 
       --  Otherwise processing depends on the node kind
@@ -720,10 +727,7 @@ package body Sem is
          Expand (N);
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze;
 
    --  Version with check(s) suppressed
@@ -1310,9 +1314,7 @@ package body Sem is
       ----------------
 
       procedure Do_Analyze is
-         GM : constant Ghost_Mode_Type := Ghost_Mode;
-         --  Save the current Ghost mode in effect in case the compilation unit
-         --  is withed from a unit with a different Ghost mode.
+         Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
          List : Elist_Id;
 
@@ -1343,7 +1345,7 @@ package body Sem is
 
          Pop_Scope;
          Restore_Scope_Stack (List);
-         Ghost_Mode := GM;
+         Ghost_Mode := Save_Ghost_Mode;
       end Do_Analyze;
 
       --  Local variables
@@ -1443,10 +1445,6 @@ package body Sem is
              --  Or if special debug flag -gnatdx is set
 
              or else Debug_Flag_X
-
-             --  Or if we are generating C code
-
-             or else Generate_C_Code
 
              --  Or if in configuration run-time mode. We do this so we get
              --  error messages about missing entities in the run-time even

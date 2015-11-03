@@ -64,7 +64,6 @@ with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Sinput.L; use Sinput.L;
 with SCIL_LL;  use SCIL_LL;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Types;    use Types;
 
@@ -459,14 +458,9 @@ begin
       end if;
    end if;
 
-   --  Qualify all entity names in inner packages, package bodies, etc.,
-   --  except when compiling for the VM back-ends, which depend on having
-   --  unqualified names in certain cases and handles the generation of
-   --  qualified names when needed.
+   --  Qualify all entity names in inner packages, package bodies, etc.
 
-   if VM_Target = No_VM then
-      Exp_Dbug.Qualify_All_Entity_Names;
-   end if;
+   Exp_Dbug.Qualify_All_Entity_Names;
 
    --  SCIL backend requirement. Check that SCIL nodes associated with
    --  dispatching calls reference subprogram calls.

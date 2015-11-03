@@ -29,6 +29,8 @@ namespace fs = std::experimental::filesystem;
 void
 test01()
 {
+  bool test __attribute__((unused)) = false;
+
   fs::path dot(".");
   fs::path cwd = fs::current_path();
   std::error_code ec;
@@ -39,6 +41,8 @@ test01()
 void
 test02()
 {
+  bool test __attribute__((unused)) = false;
+
   auto oldwd = fs::current_path();
   auto tmpdir = fs::temp_directory_path();
   current_path(tmpdir);

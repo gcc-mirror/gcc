@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -106,7 +106,7 @@ package System.Storage_Pools.Subpools is
      (Pool : in out Root_Storage_Pool_With_Subpools)
       return not null Subpool_Handle;
    --  Return a common subpool which is used for object allocations without a
-   --  Subpool_Handle_name in the allocator. The default implementation of this
+   --  Subpool_Handle_Name in the allocator. The default implementation of this
    --  routine raises Program_Error.
 
    function Pool_Of_Subpool

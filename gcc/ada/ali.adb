@@ -385,7 +385,7 @@ package body ALI is
          Write_Str ("make sure you are using consistent versions " &
 
          --  Split the following line so that it can easily be transformed for
-         --  e.g. JVM/.NET back-ends where the compiler has a different name.
+         --  other back-ends where the compiler might have a different name.
 
                     "of gcc/gnatbind");
 

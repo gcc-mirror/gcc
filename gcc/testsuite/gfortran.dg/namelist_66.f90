@@ -17,7 +17,7 @@ end type qptracer
 type(qptracer) , dimension(3) :: qtracer
 namelist/naml2/  qtracer
 
-open (99, file='nml.dat', status="replace")
+open (99, file='nml_66.dat', status="replace")
 write(99,*) "&naml1"
 write(99,*) "   tracer(1)   = 'aa', .true."
 write(99,*) "   tracer(2)   = 'bb', .true."

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,24 +29,37 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package implements Atomic_Counter operatiobns for platforms where
---  GCC supports __sync_add_and_fetch_4 and __sync_sub_and_fetch_4 builtins.
+--  This package implements Atomic_Counter and Atomic_Unsigned operations
+--  for platforms where GCC supports __sync_add_and_fetch_4 and
+--  __sync_sub_and_fetch_4 builtins.
 
 package body System.Atomic_Counters is
 
    procedure Sync_Add_And_Fetch
-     (Ptr   : access Unsigned_32;
-      Value : Unsigned_32);
+     (Ptr   : access Atomic_Unsigned;
+      Value : Atomic_Unsigned);
    pragma Import (Intrinsic, Sync_Add_And_Fetch, "__sync_add_and_fetch_4");
 
    function Sync_Sub_And_Fetch
-     (Ptr   : access Unsigned_32;
-      Value : Unsigned_32) return Unsigned_32;
+     (Ptr   : access Atomic_Unsigned;
+      Value : Atomic_Unsigned) return Atomic_Unsigned;
    pragma Import (Intrinsic, Sync_Sub_And_Fetch, "__sync_sub_and_fetch_4");
 
    ---------------
    -- Decrement --
    ---------------
+
+   procedure Decrement (Item : aliased in out Atomic_Unsigned) is
+   begin
+      if Sync_Sub_And_Fetch (Item'Unrestricted_Access, 1) = 0 then
+         null;
+      end if;
+   end Decrement;
+
+   function Decrement (Item : aliased in out Atomic_Unsigned) return Boolean is
+   begin
+      return Sync_Sub_And_Fetch (Item'Unrestricted_Access, 1) = 0;
+   end Decrement;
 
    function Decrement (Item : in out Atomic_Counter) return Boolean is
    begin
@@ -61,6 +74,11 @@ package body System.Atomic_Counters is
    ---------------
    -- Increment --
    ---------------
+
+   procedure Increment (Item : aliased in out Atomic_Unsigned) is
+   begin
+      Sync_Add_And_Fetch (Item'Unrestricted_Access, 1);
+   end Increment;
 
    procedure Increment (Item : in out Atomic_Counter) is
    begin

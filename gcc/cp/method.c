@@ -24,21 +24,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
-#include "stringpool.h"
-#include "varasm.h"
 #include "cp-tree.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "cgraph.h"
+#include "alias.h"
+#include "varasm.h"
 #include "flags.h"
 #include "toplev.h"
-#include "tm_p.h"
-#include "target.h"
 #include "common/common-target.h"
-#include "diagnostic.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "cgraph.h"
 
 /* Various flags to control the mangling process.  */
 
@@ -1849,13 +1845,8 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       DECL_ASSIGNMENT_OPERATOR_P (fn) = 1;
       SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
     }
-  
-  /* If pointers to member functions use the least significant bit to
-     indicate whether a function is virtual, ensure a pointer
-     to this function will have that bit clear.  */
-  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
-      && DECL_ALIGN (fn) < 2 * BITS_PER_UNIT)
-    DECL_ALIGN (fn) = 2 * BITS_PER_UNIT;
+
+  DECL_ALIGN (fn) = MINIMUM_METHOD_BOUNDARY;
 
   /* Create the explicit arguments.  */
   if (rhs_parm_type)

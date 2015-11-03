@@ -20,9 +20,9 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "diagnostic.h"
 #include "hosthooks.h"
 #include "hosthooks-def.h"
-#include "diagnostic.h"
 
 static void * cygwin_gt_pch_get_address (size_t, int fd);
 static size_t cygwin_gt_pch_alloc_granularity (void);

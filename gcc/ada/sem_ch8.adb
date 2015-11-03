@@ -68,7 +68,6 @@ with Sinfo.CN; use Sinfo.CN;
 with Snames;   use Snames;
 with Style;    use Style;
 with Table;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -108,7 +107,7 @@ package body Sem_Ch8 is
    --  Open scopes, that is to say scopes currently being compiled, have their
    --  corresponding rows of entities in order, innermost scope first.
 
-   --  The scopes of packages that are mentioned in  context clauses appear in
+   --  The scopes of packages that are mentioned in context clauses appear in
    --  no particular order, interspersed among open scopes. This is because
    --  in the course of analyzing the context of a compilation, a package
    --  declaration is first an open scope, and subsequently an element of the
@@ -192,7 +191,7 @@ package body Sem_Ch8 is
    --  removed from visibility chains on exit from the corresponding scope.
    --  From the outside, these entities are always accessed by selected
    --  notation, and the entity chain for the record type, protected type,
-   --  etc. is traversed sequentially in  order to find the designated entity.
+   --  etc. is traversed sequentially in order to find the designated entity.
 
    --  The discriminants of a type and the operations of a protected type or
    --  task are unchained on  exit from the first view of the type, (such as
@@ -225,7 +224,7 @@ package body Sem_Ch8 is
 
    --  The Rtsfind mechanism can force a call to Semantics while another
    --  compilation is in progress. The unit retrieved by Rtsfind must be
-   --  compiled in  its own context, and has no access to the visibility of
+   --  compiled in its own context, and has no access to the visibility of
    --  the unit currently being compiled. The procedures Save_Scope_Stack and
    --  Restore_Scope_Stack make entities in current open scopes invisible
    --  before compiling the retrieved unit, and restore the compilation
@@ -550,17 +549,10 @@ package body Sem_Ch8 is
    --  there is more than one element in the list.
 
    procedure Analyze_Exception_Renaming (N : Node_Id) is
-      GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Id  : constant Entity_Id       := Defining_Entity (N);
-      Nam : constant Node_Id         := Name (N);
+      Id  : constant Entity_Id := Defining_Entity (N);
+      Nam : constant Node_Id   := Name (N);
 
    begin
-      --  The exception renaming declaration may be subject to pragma Ghost
-      --  with policy Ignore. Set the mode now to ensure that any nodes
-      --  generated during analysis and expansion are properly flagged as
-      --  ignored Ghost.
-
-      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("exception renaming is not allowed", N);
 
       Enter_Name (Id);
@@ -595,11 +587,6 @@ package body Sem_Ch8 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Exception_Renaming;
 
    ---------------------------
@@ -610,8 +597,10 @@ package body Sem_Ch8 is
    begin
       --  If the entity pointer is already set, this is an internal node, or a
       --  node that is analyzed more than once, after a tree modification. In
-      --  such a case there is no resolution to perform, just set the type. For
-      --  completeness, analyze prefix as well.
+      --  such a case there is no resolution to perform, just set the type. In
+      --  either case, start by analyzing the prefix.
+
+      Analyze (Prefix (N));
 
       if Present (Entity (N)) then
          if Is_Type (Entity (N)) then
@@ -620,7 +609,6 @@ package body Sem_Ch8 is
             Set_Etype (N, Etype (Entity (N)));
          end if;
 
-         Analyze (Prefix (N));
          return;
       else
          Find_Expanded_Name (N);
@@ -669,8 +657,7 @@ package body Sem_Ch8 is
      (N : Node_Id;
       K : Entity_Kind)
    is
-      GM    : constant Ghost_Mode_Type := Ghost_Mode;
-      New_P : constant Entity_Id       := Defining_Entity (N);
+      New_P : constant Entity_Id := Defining_Entity (N);
       Old_P : Entity_Id;
 
       Inst  : Boolean := False;
@@ -681,11 +668,6 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  The generic renaming declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("generic renaming is not allowed", N);
 
       Generate_Definition (New_P);
@@ -756,11 +738,6 @@ package body Sem_Ch8 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, New_P);
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Generic_Renaming;
 
    -----------------------------
@@ -867,10 +844,6 @@ package body Sem_Ch8 is
          return False;
       end In_Generic_Scope;
 
-      --  Local variables
-
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
    --  Start of processing for Analyze_Object_Renaming
 
    begin
@@ -878,11 +851,6 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  The object renaming declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("object renaming is not allowed", N);
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
@@ -1394,11 +1362,6 @@ package body Sem_Ch8 is
       --  Deal with dimensions
 
       Analyze_Dimension (N);
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Object_Renaming;
 
    ------------------------------
@@ -1406,38 +1369,14 @@ package body Sem_Ch8 is
    ------------------------------
 
    procedure Analyze_Package_Renaming (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
-
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
-      --  Local variables
-
       New_P : constant Entity_Id := Defining_Entity (N);
       Old_P : Entity_Id;
       Spec  : Node_Id;
-
-   --  Start of processing for Analyze_Package_Renaming
 
    begin
       if Name (N) = Error then
          return;
       end if;
-
-      --  The package renaming declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
 
       --  Check for Text_IO special unit (we may be renaming a Text_IO child)
 
@@ -1538,7 +1477,6 @@ package body Sem_Ch8 is
          --  subtypes again, so they are compatible with types in their class.
 
          if not Is_Generic_Instance (Old_P) then
-            Restore_Globals;
             return;
          else
             Spec := Specification (Unit_Declaration_Node (Old_P));
@@ -1580,8 +1518,6 @@ package body Sem_Ch8 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, New_P);
       end if;
-
-      Restore_Globals;
    end Analyze_Package_Renaming;
 
    -------------------------------
@@ -2628,20 +2564,12 @@ package body Sem_Ch8 is
       --  defaulted formal subprogram when the actual for a related formal
       --  type is class-wide.
 
-      GM        : constant Ghost_Mode_Type := Ghost_Mode;
-      Inst_Node : Node_Id                  := Empty;
+      Inst_Node : Node_Id := Empty;
       New_S     : Entity_Id;
 
    --  Start of processing for Analyze_Subprogram_Renaming
 
    begin
-      --  The subprogram renaming declaration may be subject to pragma Ghost
-      --  with policy Ignore. Set the mode now to ensure that any nodes
-      --  generated during analysis and expansion are properly flagged as
-      --  ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       --  We must test for the attribute renaming case before the Analyze
       --  call because otherwise Sem_Attr will complain that the attribute
       --  is missing an argument when it is analyzed.
@@ -2849,7 +2777,7 @@ package body Sem_Ch8 is
       --  Set SPARK mode from current context
 
       Set_SPARK_Pragma (New_S, SPARK_Mode_Pragma);
-      Set_SPARK_Pragma_Inherited (New_S, True);
+      Set_SPARK_Pragma_Inherited (New_S);
 
       Rename_Spec := Find_Corresponding_Spec (N);
 
@@ -3294,7 +3222,13 @@ package body Sem_Ch8 is
                                       Find_Dispatching_Type (Old_S);
 
                begin
-                  if Old_S_Ctrl_Type /= New_S_Ctrl_Type then
+
+                  --  The actual must match the (instance of the) formal,
+                  --  and must be a controlling type.
+
+                  if Old_S_Ctrl_Type /= New_S_Ctrl_Type
+                    or else No (New_S_Ctrl_Type)
+                  then
                      Error_Msg_NE
                        ("actual must be dispatching subprogram for type&",
                         Nam, New_S_Ctrl_Type);
@@ -3559,11 +3493,6 @@ package body Sem_Ch8 is
             Analyze (N);
          end if;
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Subprogram_Renaming;
 
    -------------------------
@@ -3986,15 +3915,14 @@ package body Sem_Ch8 is
       --  type is still not frozen). We exclude from this processing generic
       --  formal subprograms found in instantiations.
 
-      --  We must exclude VM targets and restricted run-time libraries because
+      --  We must exclude restricted run-time libraries because
       --  entity AST_Handler is defined in package System.Aux_Dec which is not
       --  available in those platforms. Note that we cannot use the function
       --  Restricted_Profile (instead of Configurable_Run_Time_Mode) because
       --  the ZFP run-time library is not defined as a profile, and we do not
       --  want to deal with AST_Handler in ZFP mode.
 
-      if VM_Target = No_VM
-        and then not Configurable_Run_Time_Mode
+      if not Configurable_Run_Time_Mode
         and then not Present (Corresponding_Formal_Spec (N))
         and then Etype (Nam) /= RTE (RE_AST_Handler)
       then
@@ -5683,20 +5611,20 @@ package body Sem_Ch8 is
                      end case;
                   end if;
                end if;
-
-               Check_Nested_Access (E);
             end if;
 
             Set_Entity_Or_Discriminal (N, E);
 
             --  The name may designate a generalized reference, in which case
-            --  the dereference interpretation will be included.
+            --  the dereference interpretation will be included. Context is
+            --  one in which a name is legal.
 
             if Ada_Version >= Ada_2012
               and then
                 (Nkind (Parent (N)) in N_Subexpr
-                  or else Nkind_In (Parent (N), N_Object_Declaration,
-                                                N_Assignment_Statement))
+                  or else Nkind_In (Parent (N), N_Assignment_Statement,
+                                                N_Object_Declaration,
+                                                N_Parameter_Association))
             then
                Check_Implicit_Dereference (N, Etype (E));
             end if;
@@ -5719,41 +5647,61 @@ package body Sem_Ch8 is
    --  the scope of its declaration.
 
    procedure Find_Expanded_Name (N : Node_Id) is
-      function In_Pragmas_Depends_Or_Global (N : Node_Id) return Boolean;
-      --  Determine whether an arbitrary node N appears in pragmas [Refined_]
-      --  Depends or [Refined_]Global.
+      function In_Abstract_View_Pragma (Nod : Node_Id) return Boolean;
+      --  Determine whether expanded name Nod appears within a pragma which is
+      --  a suitable context for an abstract view of a state or variable. The
+      --  following pragmas fall in this category:
+      --    Depends
+      --    Global
+      --    Initializes
+      --    Refined_Depends
+      --    Refined_Global
+      --
+      --  In addition, pragma Abstract_State is also considered suitable even
+      --  though it is an illegal context for an abstract view as this allows
+      --  for proper resolution of abstract views of variables. This illegal
+      --  context is later flagged in the analysis of indicator Part_Of.
 
-      ----------------------------------
-      -- In_Pragmas_Depends_Or_Global --
-      ----------------------------------
+      -----------------------------
+      -- In_Abstract_View_Pragma --
+      -----------------------------
 
-      function In_Pragmas_Depends_Or_Global (N : Node_Id) return Boolean is
+      function In_Abstract_View_Pragma (Nod : Node_Id) return Boolean is
          Par : Node_Id;
 
       begin
          --  Climb the parent chain looking for a pragma
 
-         Par := N;
+         Par := Nod;
          while Present (Par) loop
-            if Nkind (Par) = N_Pragma
-              and then Nam_In (Pragma_Name (Par), Name_Depends,
-                                                  Name_Global,
-                                                  Name_Refined_Depends,
-                                                  Name_Refined_Global)
-            then
-               return True;
+            if Nkind (Par) = N_Pragma then
+               if Nam_In (Pragma_Name (Par), Name_Abstract_State,
+                                             Name_Depends,
+                                             Name_Global,
+                                             Name_Initializes,
+                                             Name_Refined_Depends,
+                                             Name_Refined_Global)
+               then
+                  return True;
+
+               --  Otherwise the pragma is not a legal context for an abstract
+               --  view.
+
+               else
+                  exit;
+               end if;
 
             --  Prevent the search from going too far
 
             elsif Is_Body_Or_Package_Declaration (Par) then
-               return False;
+               exit;
             end if;
 
             Par := Parent (Par);
          end loop;
 
          return False;
-      end In_Pragmas_Depends_Or_Global;
+      end In_Abstract_View_Pragma;
 
       --  Local variables
 
@@ -5799,18 +5747,19 @@ package body Sem_Ch8 is
                Is_New_Candidate := True;
 
                --  Handle abstract views of states and variables. These are
-               --  acceptable only when the reference to the view appears in
-               --  pragmas [Refined_]Depends and [Refined_]Global.
+               --  acceptable candidates only when the reference to the view
+               --  appears in certain pragmas.
 
                if Ekind (Id) = E_Abstract_State
                  and then From_Limited_With (Id)
                  and then Present (Non_Limited_View (Id))
                then
-                  if In_Pragmas_Depends_Or_Global (N) then
+                  if In_Abstract_View_Pragma (N) then
                      Candidate        := Non_Limited_View (Id);
                      Is_New_Candidate := True;
 
-                  --  Hide candidate because it is not used in a proper context
+                  --  Hide the candidate because it is not used in a proper
+                  --  context.
 
                   else
                      Candidate        := Empty;
@@ -5902,22 +5851,22 @@ package body Sem_Ch8 is
             Find_Expanded_Name (N);
             return;
 
+         --  There is an implicit instance of the predefined operator in
+         --  the given scope. The operator entity is defined in Standard.
+         --  Has_Implicit_Operator makes the node into an Expanded_Name.
+
          elsif Nkind (Selector) = N_Operator_Symbol
            and then Has_Implicit_Operator (N)
          then
-            --  There is an implicit instance of the predefined operator in
-            --  the given scope. The operator entity is defined in Standard.
-            --  Has_Implicit_Operator makes the node into an Expanded_Name.
-
             return;
+
+         --  If there is no literal defined in the scope denoted by the
+         --  prefix, the literal may belong to (a type derived from)
+         --  Standard_Character, for which we have no explicit literals.
 
          elsif Nkind (Selector) = N_Character_Literal
            and then Has_Implicit_Character_Literal (N)
          then
-            --  If there is no literal defined in the scope denoted by the
-            --  prefix, the literal may belong to (a type derived from)
-            --  Standard_Character, for which we have no explicit literals.
-
             return;
 
          else
@@ -5954,8 +5903,8 @@ package body Sem_Ch8 is
                     and then not In_Private_Part (Current_Scope)
                     and then not Is_Private_Descendant (Current_Scope)
                   then
-                     Error_Msg_N ("private child unit& is not visible here",
-                                  Selector);
+                     Error_Msg_N
+                       ("private child unit& is not visible here", Selector);
 
                   --  Normal case where we have a missing with for a child unit
 
@@ -6004,8 +5953,9 @@ package body Sem_Ch8 is
                                         E_Package,
                                         E_Procedure)
                         then
-                           P := Generic_Parent (Specification
-                                  (Unit_Declaration_Node (S)));
+                           P :=
+                             Generic_Parent (Specification
+                               (Unit_Declaration_Node (S)));
 
                            --  Check that P is a generic child of the generic
                            --  parent of the prefix.
@@ -6043,7 +5993,6 @@ package body Sem_Ch8 is
                --  Here we have the case of an undefined component
 
                else
-
                   --  The prefix may hide a homonym in the context that
                   --  declares the desired entity. This error can use a
                   --  specialized message.
@@ -6679,13 +6628,9 @@ package body Sem_Ch8 is
 
                   --  Do not build the subtype when referencing components of
                   --  dispatch table wrappers. Required to avoid generating
-                  --  elaboration code with HI runtimes. JVM and .NET use a
-                  --  modified version of Ada.Tags which does not contain RE_
-                  --  Dispatch_Table_Wrapper and RE_No_Dispatch_Table_Wrapper.
-                  --  Avoid raising RE_Not_Available exception in those cases.
+                  --  elaboration code with HI runtimes.
 
-                  elsif VM_Target = No_VM
-                    and then RTU_Loaded (Ada_Tags)
+                  elsif RTU_Loaded (Ada_Tags)
                     and then
                       ((RTE_Available (RE_Dispatch_Table_Wrapper)
                          and then Scope (Selector) =
@@ -9093,7 +9038,7 @@ package body Sem_Ch8 is
 
                   function Entity_Of_Unit (U : Node_Id) return Entity_Id is
                   begin
-                     if Nkind (U) =  N_Package_Instantiation
+                     if Nkind (U) = N_Package_Instantiation
                        and then Analyzed (U)
                      then
                         return Defining_Entity (Instance_Spec (U));
@@ -9293,7 +9238,7 @@ package body Sem_Ch8 is
       S : Entity_Id;
    begin
       for J in reverse 1 .. Scope_Stack.Last loop
-         S :=  Scope_Stack.Table (J).Entity;
+         S := Scope_Stack.Table (J).Entity;
          Write_Int (Int (S));
          Write_Str (" === ");
          Write_Name (Chars (S));

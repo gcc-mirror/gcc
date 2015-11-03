@@ -139,6 +139,7 @@ output_buffer_formatted_text (output_buffer *buff)
 static inline void
 output_buffer_append_r (output_buffer *buff, const char *start, int length)
 {
+  gcc_checking_assert (start);
   obstack_grow (buff->obstack, start, length);
   buff->line_length += length;
 }

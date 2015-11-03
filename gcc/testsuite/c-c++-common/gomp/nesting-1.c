@@ -11,12 +11,12 @@ f_omp_parallel (void)
 #pragma omp target
     ;
 
-#pragma omp target data
+#pragma omp target data map(i)
     ;
 
 #pragma omp target update to(i)
 
-#pragma omp target data
+#pragma omp target data map(i)
     {
 #pragma omp parallel
       ;
@@ -24,7 +24,7 @@ f_omp_parallel (void)
 #pragma omp target
       ;
 
-#pragma omp target data
+#pragma omp target data map(i)
       ;
 
 #pragma omp target update to(i)
@@ -45,7 +45,7 @@ f_omp_target (void)
 void
 f_omp_target_data (void)
 {
-#pragma omp target data
+#pragma omp target data map(i)
   {
 #pragma omp parallel
     ;
@@ -53,12 +53,12 @@ f_omp_target_data (void)
 #pragma omp target
     ;
 
-#pragma omp target data
+#pragma omp target data map(i)
     ;
 
 #pragma omp target update to(i)
 
-#pragma omp target data
+#pragma omp target data map(i)
     {
 #pragma omp parallel
       ;
@@ -66,7 +66,7 @@ f_omp_target_data (void)
 #pragma omp target
       ;
 
-#pragma omp target data
+#pragma omp target data map(i)
       ;
 
 #pragma omp target update to(i)

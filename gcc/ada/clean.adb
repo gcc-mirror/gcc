@@ -686,7 +686,7 @@ package body Clean is
                         Delete_File := False;
 
                         if (Project.Library_Kind = Static
-                             and then Name (1 .. Last) =  Archive_Name)
+                             and then Name (1 .. Last) = Archive_Name)
                           or else
                             ((Project.Library_Kind = Dynamic
                                 or else

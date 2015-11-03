@@ -22,16 +22,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "cpplib.h"
-#include "alias.h"
 #include "tree.h"
-#include "c-family/c-pragma.h"
 #include "c-family/c-common.h"
 #include "c/c-tree.h"
-#include "toplev.h"
 #include "tm_p.h"
+#include "c-family/c-pragma.h"
+#include "toplev.h"
 #include "incpath.h"
-#include "diagnostic.h"
 
 /* '#pragma __nostandard' is simply ignored.  */
 

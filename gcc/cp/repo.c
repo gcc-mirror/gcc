@@ -28,13 +28,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
-#include "stringpool.h"
 #include "cp-tree.h"
-#include "obstack.h"
+#include "stringpool.h"
+#include "alias.h"
 #include "toplev.h"
-#include "diagnostic-core.h"
 #include "flags.h"
 
 static const char *extract_string (const char **);

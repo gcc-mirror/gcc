@@ -22,41 +22,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "ssa.h"
-#include "options.h"
-#include "fold-const.h"
-#include "internal-fn.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "gimple-iterator.h"
-#include "tree-cfg.h"
-#include "tree-dfa.h"
 #include "tree-pass.h"
-#include "gimple-pretty-print.h"
-#include "cfgloop.h"
-#include "except.h"
+#include "ssa.h"
 #include "cgraph.h"
 #include "data-streamer.h"
+#include "gimple-pretty-print.h"
+#include "alias.h"
+#include "fold-const.h"
+#include "gimple-iterator.h"
 #include "ipa-utils.h"
 #include <list>
 #include "tree-eh.h"
 #include "builtins.h"
 
 #include "ipa-icf-gimple.h"
-#include "ipa-icf.h"
 
 namespace ipa_icf_gimple {
 
@@ -614,7 +597,7 @@ func_checker::parse_labels (sem_bb *bb)
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb->bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
 
       if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
 	{
@@ -637,7 +620,7 @@ bool
 func_checker::compare_bb (sem_bb *bb1, sem_bb *bb2)
 {
   gimple_stmt_iterator gsi1, gsi2;
-  gimple s1, s2;
+  gimple *s1, *s2;
 
   gsi1 = gsi_start_bb_nondebug (bb1->bb);
   gsi2 = gsi_start_bb_nondebug (bb2->bb);
@@ -797,7 +780,7 @@ func_checker::compare_gimple_call (gcall *s1, gcall *s2)
    assignment statements are semantically equivalent.  */
 
 bool
-func_checker::compare_gimple_assign (gimple s1, gimple s2)
+func_checker::compare_gimple_assign (gimple *s1, gimple *s2)
 {
   tree arg1, arg2;
   tree_code code1, code2;
@@ -832,7 +815,7 @@ func_checker::compare_gimple_assign (gimple s1, gimple s2)
    condition statements are semantically equivalent.  */
 
 bool
-func_checker::compare_gimple_cond (gimple s1, gimple s2)
+func_checker::compare_gimple_cond (gimple *s1, gimple *s2)
 {
   tree t1, t2;
   tree_code code1, code2;
@@ -958,7 +941,7 @@ func_checker::compare_gimple_return (const greturn *g1, const greturn *g2)
    goto statements are semantically equivalent.  */
 
 bool
-func_checker::compare_gimple_goto (gimple g1, gimple g2)
+func_checker::compare_gimple_goto (gimple *g1, gimple *g2)
 {
   tree dest1, dest2;
 

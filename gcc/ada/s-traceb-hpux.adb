@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2009-2014, Free Software Foundation, Inc.        --
+--           Copyright (C) 2009-2015, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -262,15 +262,14 @@ package body System.Traceback is
    --  but it is not usable when frames with dynamically allocated space are
    --  on the way.
 
---   procedure Call_Chain
---     (Traceback   : System.Address;
---      Max_Len     : Natural;
---      Len         : out Natural;
---      Exclude_Min : System.Address := System.Null_Address;
---      Exclude_Max : System.Address := System.Null_Address;
---      Skip_Frames : Natural := 1);
---   --  Same as the exported version, but takes Traceback as an Address
---  ???See declaration in the spec for why this is temporarily commented out.
+   procedure Call_Chain
+     (Traceback   : System.Address;
+      Max_Len     : Natural;
+      Len         : out Natural;
+      Exclude_Min : System.Address := System.Null_Address;
+      Exclude_Max : System.Address := System.Null_Address;
+      Skip_Frames : Natural := 1);
+   --  Same as the exported version, but takes Traceback as an Address
 
    ------------------
    -- C_Call_Chain --

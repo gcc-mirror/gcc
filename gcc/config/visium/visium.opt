@@ -22,31 +22,31 @@ config/visium/visium-opts.h
 
 mdebug
 Target RejectNegative
-Link with libc.a and libdebug.a
+Link with libc.a and libdebug.a.
 
 msim
 Target RejectNegative
-Link with libc.a and libsim.a
+Link with libc.a and libsim.a.
 
 mfpu
 Target Report Mask(FPU)
-Use hardware FP (default)
+Use hardware FP (default).
 
 mhard-float
 Target RejectNegative Mask(FPU) MaskExists
-Use hardware FP
+Use hardware FP.
 
 msoft-float
 Target RejectNegative InverseMask(FPU)
-Do not use hardware FP
+Do not use hardware FP.
 
 mcpu=
 Target RejectNegative Joined Var(visium_cpu_and_features) Enum(visium_processor_type) Init(PROCESSOR_GR5)
-Use features of and schedule code for given CPU
+Use features of and schedule code for given CPU.
 
 mtune=
 Target RejectNegative Joined Var(visium_cpu) Enum(visium_processor_type) Init(PROCESSOR_GR5)
-Schedule code for given CPU
+Schedule code for given CPU.
 
 Enum
 Name(visium_processor_type) Type(enum processor_type)
@@ -62,11 +62,11 @@ Enum(visium_processor_type) String(gr6) Value(PROCESSOR_GR6)
 
 msv-mode
 Target RejectNegative Report Mask(SV_MODE)
-Generate code for the supervisor mode (default)
+Generate code for the supervisor mode (default).
 
 muser-mode
 Target RejectNegative Report InverseMask(SV_MODE)
-Generate code for the user mode
+Generate code for the user mode.
 
 menable-trampolines
 Target RejectNegative

@@ -10,7 +10,7 @@
 
 __m128i foo(__m128i *V)
 {
-    return _mm_stream_load_si128(V); /* { dg-error "called from here" } */
+    return _mm_stream_load_si128(V); /* { dg-message "called from here" } */
 }
 
 /* { dg-prune-output ".*inlining failed.*" }  */

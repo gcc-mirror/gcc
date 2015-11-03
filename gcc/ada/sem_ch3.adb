@@ -23,64 +23,62 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Elists;   use Elists;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Eval_Fat; use Eval_Fat;
-with Exp_Ch3;  use Exp_Ch3;
-with Exp_Ch9;  use Exp_Ch9;
-with Exp_Disp; use Exp_Disp;
-with Exp_Dist; use Exp_Dist;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
-with Freeze;   use Freeze;
-with Ghost;    use Ghost;
-with Itypes;   use Itypes;
-with Layout;   use Layout;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Case; use Sem_Case;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch7;  use Sem_Ch7;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch10; use Sem_Ch10;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Disp; use Sem_Disp;
-with Sem_Dist; use Sem_Dist;
-with Sem_Elim; use Sem_Elim;
-with Sem_Eval; use Sem_Eval;
-with Sem_Mech; use Sem_Mech;
-with Sem_Prag; use Sem_Prag;
-with Sem_Res;  use Sem_Res;
-with Sem_Smem; use Sem_Smem;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
+with Aspects;   use Aspects;
+with Atree;     use Atree;
+with Checks;    use Checks;
+with Contracts; use Contracts;
+with Debug;     use Debug;
+with Elists;    use Elists;
+with Einfo;     use Einfo;
+with Errout;    use Errout;
+with Eval_Fat;  use Eval_Fat;
+with Exp_Ch3;   use Exp_Ch3;
+with Exp_Ch9;   use Exp_Ch9;
+with Exp_Disp;  use Exp_Disp;
+with Exp_Dist;  use Exp_Dist;
+with Exp_Tss;   use Exp_Tss;
+with Exp_Util;  use Exp_Util;
+with Fname;     use Fname;
+with Freeze;    use Freeze;
+with Ghost;     use Ghost;
+with Itypes;    use Itypes;
+with Layout;    use Layout;
+with Lib;       use Lib;
+with Lib.Xref;  use Lib.Xref;
+with Namet;     use Namet;
+with Nmake;     use Nmake;
+with Opt;       use Opt;
+with Restrict;  use Restrict;
+with Rident;    use Rident;
+with Rtsfind;   use Rtsfind;
+with Sem;       use Sem;
+with Sem_Aux;   use Sem_Aux;
+with Sem_Case;  use Sem_Case;
+with Sem_Cat;   use Sem_Cat;
+with Sem_Ch6;   use Sem_Ch6;
+with Sem_Ch7;   use Sem_Ch7;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch13;  use Sem_Ch13;
+with Sem_Dim;   use Sem_Dim;
+with Sem_Disp;  use Sem_Disp;
+with Sem_Dist;  use Sem_Dist;
+with Sem_Elim;  use Sem_Elim;
+with Sem_Eval;  use Sem_Eval;
+with Sem_Mech;  use Sem_Mech;
+with Sem_Res;   use Sem_Res;
+with Sem_Smem;  use Sem_Smem;
+with Sem_Type;  use Sem_Type;
+with Sem_Util;  use Sem_Util;
+with Sem_Warn;  use Sem_Warn;
+with Stand;     use Stand;
+with Sinfo;     use Sinfo;
+with Sinput;    use Sinput;
+with Snames;    use Snames;
+with Targparm;  use Targparm;
+with Tbuild;    use Tbuild;
+with Ttypes;    use Ttypes;
+with Uintp;     use Uintp;
+with Urealp;    use Urealp;
 
 package body Sem_Ch3 is
 
@@ -92,16 +90,6 @@ package body Sem_Ch3 is
    --  Ada 2005 (AI-251): Add the tag components corresponding to all the
    --  abstract interface types implemented by a record type or a derived
    --  record type.
-
-   procedure Analyze_Object_Contract (Obj_Id : Entity_Id);
-   --  Analyze all delayed pragmas chained on the contract of object Obj_Id as
-   --  if they appeared at the end of the declarative region. The pragmas to be
-   --  considered are:
-   --    Async_Readers
-   --    Async_Writers
-   --    Effective_Reads
-   --    Effective_Writes
-   --    Part_Of
 
    procedure Build_Derived_Type
      (N             : Node_Id;
@@ -2306,7 +2294,6 @@ package body Sem_Ch3 is
       Context     : Node_Id   := Empty;
       Freeze_From : Entity_Id := Empty;
       Next_Decl   : Node_Id;
-      Pack_Decl   : Node_Id   := Empty;
 
       Body_Seen : Boolean := False;
       --  Flag set when the first body [stub] is encountered
@@ -2391,6 +2378,29 @@ package body Sem_Ch3 is
                Adjust_Decl;
                Freeze_All (First_Entity (Current_Scope), Decl);
                Freeze_From := Last_Entity (Current_Scope);
+
+            --  At the end of the visible declarations the expressions in
+            --  aspects of all entities declared so far must be resolved.
+            --  The entities themselves might be frozen later, and the
+            --  generated pragmas and attribute definition clauses analyzed
+            --  in full at that point, but name resolution must take place
+            --  now.
+            --  In addition to being the proper semantics, this is mandatory
+            --  within generic units, because global name capture requires
+            --  those expressions to be analyzed, given that the generated
+            --  pragmas do not appear in the original generic tree.
+
+            elsif Serious_Errors_Detected = 0 then
+               declare
+                  E : Entity_Id;
+
+               begin
+                  E := First_Entity (Current_Scope);
+                  while Present (E) loop
+                     Resolve_Aspect_Expressions (E);
+                     Next_Entity (E);
+                  end loop;
+               end;
             end if;
 
          --  If next node is a body then freeze all types before the body.
@@ -2454,7 +2464,6 @@ package body Sem_Ch3 is
          Context := Parent (L);
 
          if Nkind (Context) = N_Package_Specification then
-            Pack_Decl := Parent (Context);
 
             --  When a package has private declarations, its contract must be
             --  analyzed at the end of the said declarations. This way both the
@@ -2483,70 +2492,70 @@ package body Sem_Ch3 is
             end if;
 
          elsif Nkind (Context) = N_Package_Body then
-            Pack_Decl := Context;
             Analyze_Package_Body_Contract (Defining_Entity (Context));
          end if;
 
-         --  Analyze the contracts of all subprogram declarations, subprogram
-         --  bodies and variables now due to the delayed visibility needs of
-         --  of their aspects and pragmas. Capture global references in generic
-         --  subprograms or bodies.
+         --  Analyze the contracts of eligible constructs (see below) due to
+         --  the delayed visibility needs of their aspects and pragmas.
 
          Decl := First (L);
          while Present (Decl) loop
-            if Nkind (Decl) = N_Object_Declaration then
+
+            --  Entry or subprogram declarations
+
+            if Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
+                               N_Entry_Declaration,
+                               N_Generic_Subprogram_Declaration,
+                               N_Subprogram_Declaration)
+            then
+               Analyze_Entry_Or_Subprogram_Contract (Defining_Entity (Decl));
+
+            --  Entry or subprogram bodies
+
+            elsif Nkind_In (Decl, N_Entry_Body, N_Subprogram_Body) then
+               Analyze_Entry_Or_Subprogram_Body_Contract
+                 (Defining_Entity (Decl));
+
+            --  Objects
+
+            elsif Nkind (Decl) = N_Object_Declaration then
                Analyze_Object_Contract (Defining_Entity (Decl));
 
-            elsif Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
-                                  N_Generic_Subprogram_Declaration,
-                                  N_Subprogram_Declaration)
-            then
-               Analyze_Subprogram_Contract (Defining_Entity (Decl));
+            --  Protected untis
 
-            elsif Nkind (Decl) = N_Subprogram_Body then
-               Analyze_Subprogram_Body_Contract (Defining_Entity (Decl));
+            elsif Nkind_In (Decl, N_Protected_Type_Declaration,
+                                  N_Single_Protected_Declaration)
+            then
+               Analyze_Protected_Contract (Defining_Entity (Decl));
+
+            --  Subprogram body stubs
 
             elsif Nkind (Decl) = N_Subprogram_Body_Stub then
                Analyze_Subprogram_Body_Stub_Contract (Defining_Entity (Decl));
-            end if;
 
-            --  Capture all global references in a generic subprogram or a body
-            --  [stub] now that the contract has been analyzed.
+            --  Task units
 
-            if Nkind_In (Decl, N_Generic_Subprogram_Declaration,
-                               N_Subprogram_Body,
-                               N_Subprogram_Body_Stub)
-              and then Is_Generic_Declaration_Or_Body (Decl)
+            elsif Nkind_In (Decl, N_Single_Task_Declaration,
+                                  N_Task_Type_Declaration)
             then
-               Save_Global_References_In_Contract
-                 (Templ  => Original_Node (Decl),
-                  Gen_Id => Corresponding_Spec_Of (Decl));
+               Analyze_Task_Contract (Defining_Entity (Decl));
             end if;
 
             Next (Decl);
          end loop;
 
-         --  The owner of the declarations is a package [body]
+         if Nkind (Context) = N_Package_Body then
 
-         if Present (Pack_Decl) then
+            --  Ensure that all abstract states and objects declared in the
+            --  state space of a package body are utilized as constituents.
 
-            --  Capture all global references in a generic package or a body
-            --  after all nested generic subprograms and bodies were subjected
-            --  to the same processing.
-
-            if Is_Generic_Declaration_Or_Body (Pack_Decl) then
-               Save_Global_References_In_Contract
-                 (Templ  => Original_Node (Pack_Decl),
-                  Gen_Id => Corresponding_Spec_Of (Pack_Decl));
-            end if;
+            Check_Unused_Body_States (Defining_Entity (Context));
 
             --  State refinements are visible upto the end the of the package
             --  body declarations. Hide the state refinements from visibility
             --  to restore the original state conditions.
 
-            if Nkind (Pack_Decl) = N_Package_Body then
-               Remove_Visible_Refinements (Corresponding_Spec (Pack_Decl));
-            end if;
+            Remove_Visible_Refinements (Corresponding_Spec (Context));
          end if;
       end if;
    end Analyze_Declarations;
@@ -2556,9 +2565,8 @@ package body Sem_Ch3 is
    -----------------------------------
 
    procedure Analyze_Full_Type_Declaration (N : Node_Id) is
-      Def    : constant Node_Id         := Type_Definition (N);
-      Def_Id : constant Entity_Id       := Defining_Identifier (N);
-      GM     : constant Ghost_Mode_Type := Ghost_Mode;
+      Def    : constant Node_Id   := Type_Definition (N);
+      Def_Id : constant Entity_Id := Defining_Identifier (N);
       T      : Entity_Id;
       Prev   : Entity_Id;
 
@@ -2568,6 +2576,10 @@ package body Sem_Ch3 is
                       and then not (In_Private_Part (Current_Scope)
                                      or else In_Package_Body (Current_Scope));
 
+      procedure Check_Nonoverridable_Aspects;
+      --  Apply the rule in RM 13.1.1(18.4/4) on iterator aspects that cannot
+      --  be overridden, and can only be confirmed on derivation.
+
       procedure Check_Ops_From_Incomplete_Type;
       --  If there is a tagged incomplete partial view of the type, traverse
       --  the primitives of the incomplete view and change the type of any
@@ -2576,8 +2588,89 @@ package body Sem_Ch3 is
       --  list later in Sem_Disp.Check_Operation_From_Incomplete_Type (which
       --  is called from Process_Incomplete_Dependents).
 
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
+      ----------------------------------
+      -- Check_Nonoverridable_Aspects --
+      ----------------------------------
+
+      procedure Check_Nonoverridable_Aspects is
+         Prev_Aspects   : constant List_Id :=
+                            Aspect_Specifications (Parent (Def_Id));
+         Par_Type       : Entity_Id;
+
+         function Has_Aspect_Spec
+           (Specs : List_Id;
+            Aspect_Name : Name_Id) return Boolean;
+         --  Check whether a list of aspect specifications includes an entry
+         --  for a specific aspect. The list is either that of a partial or
+         --  a full view.
+
+         ---------------------
+         -- Has_Aspect_Spec --
+         ---------------------
+
+         function Has_Aspect_Spec
+           (Specs : List_Id;
+            Aspect_Name : Name_Id) return Boolean
+         is
+            Spec : Node_Id;
+         begin
+            Spec := First (Specs);
+            while Present (Spec) loop
+               if Chars (Identifier (Spec)) = Aspect_Name then
+                  return True;
+               end if;
+               Next (Spec);
+            end loop;
+            return False;
+         end Has_Aspect_Spec;
+
+      --  Start of processing for Check_Nonoverridable_Aspects
+
+      begin
+
+         --  Get parent type of derived type. Note that Prev is the entity
+         --  in the partial declaration, but its contents are now those of
+         --  full view, while Def_Id reflects the partial view.
+
+         if Is_Private_Type (Def_Id) then
+            Par_Type := Etype (Full_View (Def_Id));
+         else
+            Par_Type := Etype (Def_Id);
+         end if;
+
+         --  If there is an inherited Implicit_Dereference, verify that it is
+         --  made explicit in the partial view.
+
+         if Has_Discriminants (Base_Type (Par_Type))
+           and then Nkind (Parent (Prev)) = N_Full_Type_Declaration
+           and then Present (Discriminant_Specifications (Parent (Prev)))
+           and then Present (Get_Reference_Discriminant (Par_Type))
+         then
+            if
+              not Has_Aspect_Spec (Prev_Aspects, Name_Implicit_Dereference)
+            then
+               Error_Msg_N
+                 ("type does not inherit implicit dereference", Prev);
+
+            else
+               --  If one of the views has the aspect specified, verify that it
+               --  is consistent with that of the parent.
+
+               declare
+                  Par_Discr : constant Entity_Id :=
+                                Get_Reference_Discriminant (Par_Type);
+                  Cur_Discr : constant Entity_Id :=
+                                Get_Reference_Discriminant (Prev);
+               begin
+                  if Corresponding_Discriminant (Cur_Discr) /= Par_Discr then
+                     Error_Msg_N ("aspect incosistent with that of parent", N);
+                  end if;
+               end;
+            end if;
+         end if;
+
+         --  TBD : other nonoverridable aspects.
+      end Check_Nonoverridable_Aspects;
 
       ------------------------------------
       -- Check_Ops_From_Incomplete_Type --
@@ -2616,25 +2709,10 @@ package body Sem_Ch3 is
          end if;
       end Check_Ops_From_Incomplete_Type;
 
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
    --  Start of processing for Analyze_Full_Type_Declaration
 
    begin
       Prev := Find_Type_Name (N);
-
-      --  The type declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N, Prev);
 
       --  The full view, if present, now points to the current type. If there
       --  is an incomplete partial view, set a link to it, to simplify the
@@ -2773,7 +2851,6 @@ package body Sem_Ch3 is
       end if;
 
       if Etype (T) = Any_Type then
-         Restore_Globals;
          return;
       end if;
 
@@ -2915,7 +2992,11 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      Restore_Globals;
+      if Is_Derived_Type (Prev)
+        and then Def_Id /= Prev
+      then
+         Check_Nonoverridable_Aspects;
+      end if;
    end Analyze_Full_Type_Declaration;
 
    ----------------------------------
@@ -2923,18 +3004,12 @@ package body Sem_Ch3 is
    ----------------------------------
 
    procedure Analyze_Incomplete_Type_Decl (N : Node_Id) is
-      F  : constant Boolean         := Is_Pure (Current_Scope);
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-      T  : Entity_Id;
+      F : constant Boolean := Is_Pure (Current_Scope);
+      T : Entity_Id;
 
    begin
       Check_SPARK_05_Restriction ("incomplete type is not allowed", N);
 
-      --  The incomplete type declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
       Generate_Definition (Defining_Identifier (N));
 
       --  Process an incomplete declaration. The identifier must not have been
@@ -2984,11 +3059,6 @@ package body Sem_Ch3 is
 
       Set_Private_Dependents (T, New_Elmt_List);
       Set_Is_Pure            (T, F);
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Incomplete_Type_Decl;
 
    -----------------------------------
@@ -3035,10 +3105,9 @@ package body Sem_Ch3 is
 
       --  Check runtime support for synchronized interfaces
 
-      if VM_Target = No_VM
-        and then (Is_Task_Interface (T)
-                   or else Is_Protected_Interface (T)
-                   or else Is_Synchronized_Interface (T))
+      if (Is_Task_Interface (T)
+           or else Is_Protected_Interface (T)
+           or else Is_Synchronized_Interface (T))
         and then not RTE_Available (RE_Select_Specific_Data)
       then
          Error_Msg_CRT ("synchronized interfaces", T);
@@ -3063,37 +3132,13 @@ package body Sem_Ch3 is
    --------------------------------
 
    procedure Analyze_Number_Declaration (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
-
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
-      --  Local variables
-
       E     : constant Node_Id   := Expression (N);
       Id    : constant Entity_Id := Defining_Identifier (N);
       Index : Interp_Index;
       It    : Interp;
       T     : Entity_Id;
 
-   --  Start of processing for Analyze_Number_Declaration
-
    begin
-      --  The number declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       Generate_Definition (Id);
       Enter_Name (Id);
 
@@ -3113,8 +3158,6 @@ package body Sem_Ch3 is
          Set_Etype     (Id, Universal_Integer);
          Set_Ekind     (Id, E_Named_Integer);
          Set_Is_Frozen (Id, True);
-
-         Restore_Globals;
          return;
       end if;
 
@@ -3216,8 +3259,6 @@ package body Sem_Ch3 is
          Set_Ekind               (Id, E_Constant);
          Set_Never_Set_In_Source (Id, True);
          Set_Is_True_Constant    (Id, True);
-
-         Restore_Globals;
          return;
       end if;
 
@@ -3231,184 +3272,15 @@ package body Sem_Ch3 is
          Rewrite (E, Make_Integer_Literal (Sloc (N), 1));
          Set_Etype (E, Any_Type);
       end if;
-
-      Restore_Globals;
    end Analyze_Number_Declaration;
-
-   -----------------------------
-   -- Analyze_Object_Contract --
-   -----------------------------
-
-   procedure Analyze_Object_Contract (Obj_Id : Entity_Id) is
-      Obj_Typ : constant Entity_Id := Etype (Obj_Id);
-      AR_Val  : Boolean := False;
-      AW_Val  : Boolean := False;
-      ER_Val  : Boolean := False;
-      EW_Val  : Boolean := False;
-      Prag    : Node_Id;
-      Seen    : Boolean := False;
-
-   begin
-      --  The loop parameter in an element iterator over a formal container
-      --  is declared with an object declaration but no contracts apply.
-
-      if Ekind (Obj_Id) = E_Loop_Parameter then
-         return;
-      end if;
-
-      --  Constant related checks
-
-      if Ekind (Obj_Id) = E_Constant then
-
-         --  A constant cannot be effectively volatile. This check is only
-         --  relevant with SPARK_Mode on as it is not a standard Ada legality
-         --  rule. Do not flag internally-generated constants that map generic
-         --  formals to actuals in instantiations (SPARK RM 7.1.3(6)).
-
-         if SPARK_Mode = On
-           and then Is_Effectively_Volatile (Obj_Id)
-           and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
-
-           --  Don't give this for internally generated entities (such as the
-           --  FIRST and LAST temporaries generated for bounds).
-
-           and then Comes_From_Source (Obj_Id)
-         then
-            Error_Msg_N ("constant cannot be volatile", Obj_Id);
-         end if;
-
-      --  Variable related checks
-
-      else pragma Assert (Ekind (Obj_Id) = E_Variable);
-
-         --  The following checks are only relevant when SPARK_Mode is on as
-         --  they are not standard Ada legality rules. Internally generated
-         --  temporaries are ignored.
-
-         if SPARK_Mode = On and then Comes_From_Source (Obj_Id) then
-            if Is_Effectively_Volatile (Obj_Id) then
-
-               --  The declaration of an effectively volatile object must
-               --  appear at the library level (SPARK RM 7.1.3(7), C.6(6)).
-
-               if not Is_Library_Level_Entity (Obj_Id) then
-                  Error_Msg_N
-                    ("volatile variable & must be declared at library level",
-                     Obj_Id);
-
-               --  An object of a discriminated type cannot be effectively
-               --  volatile (SPARK RM C.6(4)).
-
-               elsif Has_Discriminants (Obj_Typ) then
-                  Error_Msg_N
-                    ("discriminated object & cannot be volatile", Obj_Id);
-
-               --  An object of a tagged type cannot be effectively volatile
-               --  (SPARK RM C.6(5)).
-
-               elsif Is_Tagged_Type (Obj_Typ) then
-                  Error_Msg_N ("tagged object & cannot be volatile", Obj_Id);
-               end if;
-
-            --  The object is not effectively volatile
-
-            else
-               --  A non-effectively volatile object cannot have effectively
-               --  volatile components (SPARK RM 7.1.3(7)).
-
-               if not Is_Effectively_Volatile (Obj_Id)
-                 and then Has_Volatile_Component (Obj_Typ)
-               then
-                  Error_Msg_N
-                    ("non-volatile object & cannot have volatile components",
-                     Obj_Id);
-               end if;
-            end if;
-         end if;
-
-         if Is_Ghost_Entity (Obj_Id) then
-
-            --  A Ghost object cannot be effectively volatile (SPARK RM 6.9(8))
-
-            if Is_Effectively_Volatile (Obj_Id) then
-               Error_Msg_N ("ghost variable & cannot be volatile", Obj_Id);
-
-            --  A Ghost object cannot be imported or exported (SPARK RM 6.9(8))
-
-            elsif Is_Imported (Obj_Id) then
-               Error_Msg_N ("ghost object & cannot be imported", Obj_Id);
-
-            elsif Is_Exported (Obj_Id) then
-               Error_Msg_N ("ghost object & cannot be exported", Obj_Id);
-            end if;
-         end if;
-
-         --  Analyze all external properties
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Async_Readers);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, AR_Val);
-            Seen := True;
-         end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Async_Writers);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, AW_Val);
-            Seen := True;
-         end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Effective_Reads);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, ER_Val);
-            Seen := True;
-         end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Effective_Writes);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, EW_Val);
-            Seen := True;
-         end if;
-
-         --  Verify the mutual interaction of the various external properties
-
-         if Seen then
-            Check_External_Properties (Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
-         end if;
-      end if;
-
-      --  Check whether the lack of indicator Part_Of agrees with the placement
-      --  of the object with respect to the state space.
-
-      Prag := Get_Pragma (Obj_Id, Pragma_Part_Of);
-
-      if No (Prag) then
-         Check_Missing_Part_Of (Obj_Id);
-      end if;
-
-      --  A ghost object cannot be imported or exported (SPARK RM 6.9(8))
-
-      if Is_Ghost_Entity (Obj_Id) then
-         if Is_Exported (Obj_Id) then
-            Error_Msg_N ("ghost object & cannot be exported", Obj_Id);
-
-         elsif Is_Imported (Obj_Id) then
-            Error_Msg_N ("ghost object & cannot be imported", Obj_Id);
-         end if;
-      end if;
-   end Analyze_Object_Contract;
 
    --------------------------------
    -- Analyze_Object_Declaration --
    --------------------------------
 
    procedure Analyze_Object_Declaration (N : Node_Id) is
-      Loc   : constant Source_Ptr      := Sloc (N);
-      GM    : constant Ghost_Mode_Type := Ghost_Mode;
-      Id    : constant Entity_Id       := Defining_Identifier (N);
+      Loc   : constant Source_Ptr := Sloc (N);
+      Id    : constant Entity_Id  := Defining_Identifier (N);
       Act_T : Entity_Id;
       T     : Entity_Id;
 
@@ -3421,9 +3293,9 @@ package body Sem_Ch3 is
       function Count_Tasks (T : Entity_Id) return Uint;
       --  This function is called when a non-generic library level object of a
       --  task type is declared. Its function is to count the static number of
-      --  tasks declared within the type (it is only called if Has_Tasks is set
+      --  tasks declared within the type (it is only called if Has_Task is set
       --  for T). As a side effect, if an array of tasks with non-static bounds
-      --  or a variant record type is encountered, Check_Restrictions is called
+      --  or a variant record type is encountered, Check_Restriction is called
       --  indicating the count is unknown.
 
       function Delayed_Aspect_Present return Boolean;
@@ -3436,9 +3308,6 @@ package body Sem_Ch3 is
       --  before the analysis of the object declaration is complete.
 
       --  Any other relevant delayed aspects on object declarations ???
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
 
       -----------------
       -- Count_Tasks --
@@ -3518,14 +3387,9 @@ package body Sem_Ch3 is
          return False;
       end Delayed_Aspect_Present;
 
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
+      --  Local variables
 
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    --  Start of processing for Analyze_Object_Declaration
 
@@ -3580,9 +3444,10 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  The object declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  analysis and expansion are properly flagged as ignored Ghost.
+      --  The object declaration is Ghost when it is subject to pragma Ghost or
+      --  completes a deferred Ghost constant. Set the mode now to ensure that
+      --  any nodes generated during analysis and expansion are properly marked
+      --  as Ghost.
 
       Set_Ghost_Mode (N, Prev_Entity);
 
@@ -3839,11 +3704,18 @@ package body Sem_Ch3 is
          --  the possible presence of an address clause, and defer resolution
          --  and expansion of the aggregate to the freeze point of the entity.
 
+         --  This is not always legal because the aggregate may contain other
+         --  references that need freezing, e.g. references to other entities
+         --  with address clauses. In any case, when compiling with -gnatI the
+         --  presence of the address clause must be ignored.
+
          if Comes_From_Source (N)
            and then Expander_Active
            and then Nkind (E) = N_Aggregate
-           and then (Present (Following_Address_Clause (N))
-                      or else Delayed_Aspect_Present)
+           and then
+             ((Present (Following_Address_Clause (N))
+                            and then not Ignore_Rep_Clauses)
+              or else Delayed_Aspect_Present)
          then
             Set_Etype (E, T);
 
@@ -3866,7 +3738,7 @@ package body Sem_Ch3 is
            and then Analyzed (N)
            and then No (Expression (N))
          then
-            Restore_Globals;
+            Ghost_Mode := Save_Ghost_Mode;
             return;
          end if;
 
@@ -4115,7 +3987,7 @@ package body Sem_Ch3 is
                --  An object declared within a Ghost region is automatically
                --  Ghost (SPARK RM 6.9(2)).
 
-               if Comes_From_Source (Id) and then Ghost_Mode > None then
+               if Ghost_Mode > None then
                   Set_Is_Ghost_Entity (Id);
 
                   --  The Ghost policy in effect at the point of declaration
@@ -4139,7 +4011,7 @@ package body Sem_Ch3 is
                Freeze_Before (N, T);
                Set_Is_Frozen (Id);
 
-               Restore_Globals;
+               Ghost_Mode := Save_Ghost_Mode;
                return;
 
             else
@@ -4296,10 +4168,8 @@ package body Sem_Ch3 is
       --  An object declared within a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
-      if Comes_From_Source (Id)
-        and then (Ghost_Mode > None
-                   or else (Present (Prev_Entity)
-                             and then Is_Ghost_Entity (Prev_Entity)))
+      if Ghost_Mode > None
+        or else (Present (Prev_Entity) and then Is_Ghost_Entity (Prev_Entity))
       then
          Set_Is_Ghost_Entity (Id);
 
@@ -4522,7 +4392,7 @@ package body Sem_Ch3 is
          Check_No_Hidden_State (Id);
       end if;
 
-      Restore_Globals;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Object_Declaration;
 
    ---------------------------
@@ -4543,19 +4413,12 @@ package body Sem_Ch3 is
    -------------------------------------------
 
    procedure Analyze_Private_Extension_Declaration (N : Node_Id) is
-      GM          : constant Ghost_Mode_Type := Ghost_Mode;
-      Indic       : constant Node_Id         := Subtype_Indication (N);
-      T           : constant Entity_Id       := Defining_Identifier (N);
+      Indic       : constant Node_Id   := Subtype_Indication (N);
+      T           : constant Entity_Id := Defining_Identifier (N);
       Parent_Base : Entity_Id;
       Parent_Type : Entity_Id;
 
    begin
-      --  The private extension declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       --  Ada 2005 (AI-251): Decorate all names in list of ancestor interfaces
 
       if Is_Non_Empty_List (Interface_List (N)) then
@@ -4769,11 +4632,6 @@ package body Sem_Ch3 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, T);
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Private_Extension_Declaration;
 
    ---------------------------------
@@ -4784,18 +4642,11 @@ package body Sem_Ch3 is
      (N    : Node_Id;
       Skip : Boolean := False)
    is
-      GM       : constant Ghost_Mode_Type := Ghost_Mode;
       Id       : constant Entity_Id := Defining_Identifier (N);
       R_Checks : Check_Result;
       T        : Entity_Id;
 
    begin
-      --  The subtype declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       Generate_Definition (Id);
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
       Init_Size_Align (Id);
@@ -5394,10 +5245,29 @@ package body Sem_Ch3 is
 
       Analyze_Dimension (N);
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
+      --  Check No_Dynamic_Sized_Objects restriction, which disallows subtype
+      --  indications on composite types where the constraints are dynamic.
+      --  Note that object declarations and aggregates generate implicit
+      --  subtype declarations, which this covers. One special case is that the
+      --  implicitly generated "=" for discriminated types includes an
+      --  offending subtype declaration, which is harmless, so we ignore it
+      --  here.
 
-      Ghost_Mode := GM;
+      if Nkind (Subtype_Indication (N)) = N_Subtype_Indication then
+         declare
+            Cstr : constant Node_Id := Constraint (Subtype_Indication (N));
+         begin
+            if Nkind (Cstr) = N_Index_Or_Discriminant_Constraint
+              and then not (Is_Internal (Id)
+                             and then Is_TSS (Scope (Id),
+                                              TSS_Composite_Equality))
+              and then not Within_Init_Proc
+              and then not All_Composite_Constraints_Static (Cstr)
+            then
+               Check_Restriction (No_Dynamic_Sized_Objects, Cstr);
+            end if;
+         end;
+      end if;
    end Analyze_Subtype_Declaration;
 
    --------------------------------
@@ -5703,7 +5573,7 @@ package body Sem_Ch3 is
 
          --  Inherit the "ghostness" from the constrained array type
 
-         if Is_Ghost_Entity (T) or else Ghost_Mode > None then
+         if Ghost_Mode > None or else Is_Ghost_Entity (T) then
             Set_Is_Ghost_Entity (Implicit_Base);
          end if;
 
@@ -5908,7 +5778,7 @@ package body Sem_Ch3 is
 
       if ASIS_Mode then
          declare
-            Typ : constant Entity_Id :=  Make_Temporary (Loc, 'S');
+            Typ : constant Entity_Id := Make_Temporary (Loc, 'S');
 
          begin
             if Nkind (Spec) = N_Access_Function_Definition then
@@ -6009,16 +5879,24 @@ package body Sem_Ch3 is
 
       Mark_Rewrite_Insertion (Comp);
 
-      if Nkind_In (N, N_Object_Declaration, N_Access_Function_Definition) then
+      if Nkind_In (N, N_Object_Declaration, N_Access_Function_Definition)
+        or else (Nkind (Parent (N)) = N_Full_Type_Declaration
+                  and then not Is_Type (Current_Scope))
+      then
+
+         --  Declaration can be analyzed in the current scope.
+
          Analyze (Decl);
 
       else
          --  Temporarily remove the current scope (record or subprogram) from
          --  the stack to add the new declarations to the enclosing scope.
+         --  The anonymous entity is an Itype with the proper attributes.
 
          Scope_Stack.Decrement_Last;
          Analyze (Decl);
          Set_Is_Itype (Anon);
+         Set_Associated_Node_For_Itype (Anon, N);
          Scope_Stack.Append (Curr_Scope);
       end if;
 
@@ -6179,7 +6057,7 @@ package body Sem_Ch3 is
 
          --  Inherit the "ghostness" from the parent base type
 
-         if Is_Ghost_Entity (Parent_Base) or else Ghost_Mode > None then
+         if Ghost_Mode > None or else Is_Ghost_Entity (Parent_Base) then
             Set_Is_Ghost_Entity (Implicit_Base);
          end if;
       end Make_Implicit_Base;
@@ -10120,9 +9998,6 @@ package body Sem_Ch3 is
          --  operations used in dispatching selects since we always provide
          --  automatic overridings for these subprograms.
 
-         --  Also ignore this rule for convention CIL since .NET libraries
-         --  do bizarre things with interfaces???
-
          --  The partial view of T may have been a private extension, for
          --  which inherited functions dispatching on result are abstract.
          --  If the full view is a null extension, there is no need for
@@ -10156,7 +10031,6 @@ package body Sem_Ch3 is
            and then not Is_TSS (Subp, TSS_Stream_Input)
            and then not Is_TSS (Subp, TSS_Stream_Output)
            and then not Is_Abstract_Type (T)
-           and then Convention (T) /= Convention_CIL
            and then not Is_Predefined_Interface_Primitive (Subp)
 
             --  Ada 2005 (AI-251): Do not consider hidden entities associated
@@ -15186,10 +15060,26 @@ package body Sem_Ch3 is
          --  Given that this new interface entity corresponds with a primitive
          --  of the parent that was not overridden we must leave it associated
          --  with its parent primitive to ensure that it will share the same
-         --  dispatch table slot when overridden.
+         --  dispatch table slot when overridden. We must set the Alias to Subp
+         --  (instead of Iface_Subp), and we must fix Is_Abstract_Subprogram
+         --  (in case we inherited Subp from Iface_Type via a nonabstract
+         --  generic formal type).
 
          if No (Actual_Subp) then
             Set_Alias (New_Subp, Subp);
+
+            declare
+               T : Entity_Id := Find_Dispatching_Type (Subp);
+            begin
+               while Etype (T) /= T loop
+                  if Is_Generic_Type (T) and then not Is_Abstract_Type (T) then
+                     Set_Is_Abstract_Subprogram (New_Subp, False);
+                     exit;
+                  end if;
+
+                  T := Etype (T);
+               end loop;
+            end;
 
          --  For instantiations this is not needed since the previous call to
          --  Derive_Subprogram leaves the entity well decorated.
@@ -15784,25 +15674,23 @@ package body Sem_Ch3 is
 
                elsif Protected_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared"
-                       & " as a protected interface",
-                         N, Parent_Type);
+                    ("descendant of & must be declared as a protected "
+                     & "interface", N, Parent_Type);
 
                elsif Synchronized_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared"
-                       & " as a synchronized interface",
-                         N, Parent_Type);
+                    ("descendant of & must be declared as a synchronized "
+                     & "interface", N, Parent_Type);
 
                elsif Task_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared as a task interface",
+                    ("descendant of & must be declared as a task interface",
                        N, Parent_Type);
 
                else
                   Error_Msg_N
-                    ("(Ada 2005) limited interface cannot "
-                     & "inherit from non-limited interface", Indic);
+                    ("(Ada 2005) limited interface cannot inherit from "
+                     & "non-limited interface", Indic);
                end if;
 
             --  Ada 2005 (AI-345): Non-limited interfaces can only inherit
@@ -15817,19 +15705,17 @@ package body Sem_Ch3 is
 
                elsif Protected_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared"
-                       & " as a protected interface",
-                         N, Parent_Type);
+                    ("descendant of & must be declared as a protected "
+                     & "interface", N, Parent_Type);
 
                elsif Synchronized_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared"
-                       & " as a synchronized interface",
-                         N, Parent_Type);
+                    ("descendant of & must be declared as a synchronized "
+                     & "interface", N, Parent_Type);
 
                elsif Task_Present (Iface_Def) then
                   Error_Msg_NE
-                    ("descendant of& must be declared as a task interface",
+                    ("descendant of & must be declared as a task interface",
                        N, Parent_Type);
                else
                   null;
@@ -15843,8 +15729,8 @@ package body Sem_Ch3 is
         and then not Is_Interface (Parent_Type)
       then
          Error_Msg_N
-           ("parent type of a record extension cannot be "
-            & "a synchronized tagged type (RM 3.9.1 (3/1))", N);
+           ("parent type of a record extension cannot be a synchronized "
+            & "tagged type (RM 3.9.1 (3/1))", N);
          Set_Etype (T, Any_Type);
          return;
       end if;
@@ -16458,28 +16344,41 @@ package body Sem_Ch3 is
       -----------------------------
       -- Check_Duplicate_Aspects --
       -----------------------------
+
       procedure Check_Duplicate_Aspects is
          Prev_Aspects   : constant List_Id := Aspect_Specifications (Prev_Par);
          Full_Aspects   : constant List_Id := Aspect_Specifications (N);
          F_Spec, P_Spec : Node_Id;
 
       begin
-         if Present (Prev_Aspects) and then Present (Full_Aspects) then
+         if Present (Full_Aspects) then
             F_Spec := First (Full_Aspects);
             while Present (F_Spec) loop
-               P_Spec := First (Prev_Aspects);
-               while Present (P_Spec) loop
-                  if Chars (Identifier (P_Spec)) = Chars (Identifier (F_Spec))
-                  then
-                     Error_Msg_N
-                       ("aspect already specified in private declaration",
-                         F_Spec);
-                     Remove (F_Spec);
-                     return;
-                  end if;
+               if Present (Prev_Aspects) then
+                  P_Spec := First (Prev_Aspects);
+                  while Present (P_Spec) loop
+                     if Chars (Identifier (P_Spec)) =
+                       Chars (Identifier (F_Spec))
+                     then
+                        Error_Msg_N
+                          ("aspect already specified in private declaration",
+                            F_Spec);
+                        Remove (F_Spec);
+                        return;
+                     end if;
 
-                  Next (P_Spec);
-               end loop;
+                     Next (P_Spec);
+                  end loop;
+               end if;
+
+               if Has_Discriminants (Prev)
+                 and then not Has_Unknown_Discriminants (Prev)
+                 and then Chars (Identifier (F_Spec)) =
+                   Name_Implicit_Dereference
+               then
+                  Error_Msg_N ("cannot specify aspect " &
+                    "if partial view has known discriminants", F_Spec);
+               end if;
 
                Next (F_Spec);
             end loop;
@@ -17945,9 +17844,9 @@ package body Sem_Ch3 is
      (C : Entity_Id;
       N : Node_Id := Empty) return Boolean
    is
-      Original_Comp  : Entity_Id := Empty;
+      Original_Comp : Entity_Id := Empty;
       Original_Type : Entity_Id;
-      Type_Scope     : Entity_Id;
+      Type_Scope    : Entity_Id;
 
       function Is_Local_Type (Typ : Entity_Id) return Boolean;
       --  Check whether parent type of inherited component is declared locally,
@@ -17991,7 +17890,7 @@ package body Sem_Ch3 is
 
       else
          Original_Type := Scope (Original_Comp);
-         Type_Scope     := Scope (Base_Type (Scope (C)));
+         Type_Scope    := Scope (Base_Type (Scope (C)));
       end if;
 
       --  This test only concerns tagged types
@@ -18088,9 +17987,9 @@ package body Sem_Ch3 is
                if Ancestor = Original_Type then
                   return True;
 
-               --  The ancestor may have a partial view of the original
-               --  type, but if the full view is in scope, as in a child
-               --  body, the component is visible.
+               --  The ancestor may have a partial view of the original type,
+               --  but if the full view is in scope, as in a child body, the
+               --  component is visible.
 
                elsif In_Private_Part (Scope (Original_Type))
                  and then Full_View (Ancestor) = Original_Type
@@ -18099,7 +17998,7 @@ package body Sem_Ch3 is
 
                elsif Ancestor = Etype (Ancestor) then
 
-                  --  No further ancestors to examine.
+                  --  No further ancestors to examine
 
                   return False;
                end if;
@@ -18196,6 +18095,12 @@ package body Sem_Ch3 is
       --  The class-wide type of a class-wide type is itself (RM 3.9(14))
 
       Set_Class_Wide_Type (CW_Type, CW_Type);
+
+      --  Inherit the "ghostness" from the root tagged type
+
+      if Ghost_Mode > None or else Is_Ghost_Entity (T) then
+         Set_Is_Ghost_Entity (CW_Type);
+      end if;
    end Make_Class_Wide_Type;
 
    ----------------
@@ -18325,7 +18230,7 @@ package body Sem_Ch3 is
 
          --  The index is given by a subtype with a range constraint
 
-         T :=  Base_Type (Entity (Subtype_Mark (N)));
+         T := Base_Type (Entity (Subtype_Mark (N)));
 
          if not Is_Discrete_Type (T) then
             Error_Msg_N ("discrete type required for range", N);
@@ -19244,9 +19149,9 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  A discriminant cannot be effectively volatile. This check is only
-         --  relevant when SPARK_Mode is on as it is not standard Ada legality
-         --  rule (SPARK RM 7.1.3(6)).
+         --  A discriminant cannot be effectively volatile (SPARK RM 7.1.3(6)).
+         --  This check is relevant only when SPARK_Mode is on as it is not a
+         --  standard Ada legality rule.
 
          if SPARK_Mode = On
            and then Is_Effectively_Volatile (Defining_Identifier (Discr))
@@ -21503,7 +21408,7 @@ package body Sem_Ch3 is
       R      : Node_Id;
       Subt   : Entity_Id)
    is
-      Kind : constant Entity_Kind :=  Ekind (Def_Id);
+      Kind : constant Entity_Kind := Ekind (Def_Id);
 
    begin
       --  Defend against previous error

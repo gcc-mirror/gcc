@@ -18,5 +18,5 @@ _mm_set_epi32 (int __q3, int __q2, int __q1, int __q0) /* { dg-error "target spe
 __m128i
 f1(void)
 { /* { dg-message "warning: SSE vector return without SSE enabled changes the ABI" } */
-  return _mm_set_epi32 (0, 0, 0, 0); /* { dg-error "called from here" } */
+  return _mm_set_epi32 (0, 0, 0, 0); /* { dg-message "called from here" } */
 }

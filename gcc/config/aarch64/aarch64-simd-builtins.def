@@ -407,3 +407,8 @@
   VAR1 (BINOPP, crypto_pmull, 0, di)
   VAR1 (BINOPP, crypto_pmull, 0, v2di)
 
+  /* Implemented by aarch64_tbl3v8qi.  */
+  VAR1 (BINOP, tbl3, 0, v8qi)
+
+  /* Implemented by aarch64_tbx4v8qi.  */
+  VAR1 (TERNOP, tbx4, 0, v8qi)

@@ -31,6 +31,7 @@
 # include <cpuid.h>
 #endif
 
+#include <cerrno>
 #include <cstdio>
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H
@@ -130,16 +131,26 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #endif
 
     result_type __ret;
-
+    void* p = &__ret;
+    size_t n = sizeof(result_type);
 #ifdef _GLIBCXX_HAVE_UNISTD_H
-    auto e = read(fileno(static_cast<FILE*>(_M_file)),
-		  static_cast<void*>(&__ret), sizeof(result_type));
+    do
+      {
+	const int e = read(fileno(static_cast<FILE*>(_M_file)), p, n);
+	if (e > 0)
+	  {
+	    n -= e;
+	    p = static_cast<char*>(p) + e;
+	  }
+	else if (e != -1 || errno != EINTR)
+	  __throw_runtime_error(__N("random_device could not be read"));
+      }
+    while (n > 0);
 #else
-    auto e = std::fread(static_cast<void*>(&__ret), sizeof(result_type),
-		        1, static_cast<FILE*>(_M_file));
+    const size_t e = std::fread(p, n, 1, static_cast<FILE*>(_M_file));
+    if (e != 1)
+      __throw_runtime_error(__N("random_device could not be read"));
 #endif
-    if (e != sizeof(result_type))
-      __throw_runtime_error(__N("random_device could not read enough bytes"));
 
     return __ret;
   }

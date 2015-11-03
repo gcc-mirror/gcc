@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2014, AdaCore                     --
+--                     Copyright (C) 1999-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,15 +37,14 @@ package body System.Traceback is
 
    use System.Machine_State_Operations;
 
---   procedure Call_Chain
---     (Traceback   : System.Address;
---      Max_Len     : Natural;
---      Len         : out Natural;
---      Exclude_Min : System.Address := System.Null_Address;
---      Exclude_Max : System.Address := System.Null_Address;
---      Skip_Frames : Natural := 1);
---   --  Same as the exported version, but takes Traceback as an Address
---  ???See declaration in the spec for why this is temporarily commented out.
+   procedure Call_Chain
+     (Traceback   : System.Address;
+      Max_Len     : Natural;
+      Len         : out Natural;
+      Exclude_Min : System.Address := System.Null_Address;
+      Exclude_Max : System.Address := System.Null_Address;
+      Skip_Frames : Natural := 1);
+   --  Same as the exported version, but takes Traceback as an Address
 
    ----------------
    -- Call_Chain --

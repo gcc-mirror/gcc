@@ -167,7 +167,7 @@
   "@internal
    Conditional or three-address add / sub constant"
   (and (match_code "const_int")
-       (match_test "ival == -1 << 31
+       (match_test "ival == (HOST_WIDE_INT)(HOST_WIDE_INT_M1U << 31)
 		    || (ival >= -0x1f8 && ival <= 0x1f8
 			&& ((ival >= 0 ? ival : -ival)
 			    <= 0x3f * (ival & -ival)))")))
@@ -195,7 +195,7 @@
   "@internal
    Unconditional two-address add / sub constant"
   (and (match_code "const_int")
-       (match_test "ival == -1 << 31
+       (match_test "ival == (HOST_WIDE_INT) (HOST_WIDE_INT_M1U << 31)
 		    || (ival >= -0x4000 && ival <= 0x4000
 			&& ((ival >= 0 ? ival : -ival)
 			    <= 0x7ff * (ival & -ival)))")))

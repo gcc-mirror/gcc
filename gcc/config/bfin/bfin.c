@@ -22,49 +22,30 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cfghooks.h"
 #include "df.h"
+#include "tm_p.h"
+#include "optabs.h"
 #include "regs.h"
-#include "insn-config.h"
-#include "insn-codes.h"
-#include "conditions.h"
-#include "insn-flags.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "cgraph.h"
+#include "diagnostic-core.h"
 #include "output.h"
 #include "insn-attr.h"
-#include "alias.h"
-#include "fold-const.h"
 #include "varasm.h"
 #include "calls.h"
-#include "flags.h"
-#include "except.h"
-#include "target.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "diagnostic-core.h"
-#include "recog.h"
-#include "optabs.h"
 #include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "cgraph.h"
 #include "langhooks.h"
-#include "bfin-protos.h"
-#include "tm_p.h"
-#include "tm-preds.h"
 #include "tm-constrs.h"
 #include "gt-bfin.h"
-#include "timevar.h"
 #include "sel-sched.h"
 #include "hw-doloop.h"
-#include "opts.h"
 #include "dumpfile.h"
 #include "builtins.h"
 
@@ -3811,8 +3792,7 @@ hwloop_optimize (hwloop_info loop)
       edge e;
       edge_iterator ei;
 
-#ifdef ENABLE_CHECKING
-      if (loop->head != loop->incoming_dest)
+      if (flag_checking && loop->head != loop->incoming_dest)
 	{
 	  /* We aren't entering the loop at the top.  Since we've established
 	     that the loop is entered only at one point, this means there
@@ -3822,7 +3802,6 @@ hwloop_optimize (hwloop_info loop)
 	  FOR_EACH_EDGE (e, ei, loop->head->preds)
 	    gcc_assert (!(e->flags & EDGE_FALLTHRU));
 	}
-#endif
 
       emit_insn_before (seq, BB_HEAD (loop->head));
       seq = emit_label_before (gen_label_rtx (), seq);

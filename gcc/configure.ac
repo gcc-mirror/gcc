@@ -569,7 +569,12 @@ if test x$ac_checking != x ; then
   AC_DEFINE(ENABLE_CHECKING, 1,
 [Define if you want more run-time sanity checks.  This one gets a grab
    bag of miscellaneous but relatively cheap checks.])
+  AC_DEFINE(CHECKING_P, 1,
+[Define to 1 if you want more run-time sanity checks.  This one gets a grab
+   bag of miscellaneous but relatively cheap checks.])
   nocommon_flag=-fno-common
+else
+  AC_DEFINE(CHECKING_P, 0)
 fi
 AC_SUBST(nocommon_flag)
 if test x$ac_df_checking != x ; then
@@ -941,11 +946,11 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
   if test x"$offload_targets" = x; then
     offload_targets=$tgt
   else
-    offload_targets="$offload_targets:$tgt"
+    offload_targets="$offload_targets,$tgt"
   fi
 done
 AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
-  [Define to hold the list of target names suitable for offloading.])
+  [Define to offload targets, separated by commas.])
 if test x"$offload_targets" != x; then
   AC_DEFINE(ENABLE_OFFLOADING, 1,
     [Define this to enable support for offloading.])
@@ -2036,13 +2041,23 @@ BUILD_CXXFLAGS='$(ALL_CXXFLAGS)' AC_SUBST(BUILD_CXXFLAGS)
 BUILD_LDFLAGS='$(LDFLAGS)'	AC_SUBST(BUILD_LDFLAGS)
 STMP_FIXINC=stmp-fixinc		AC_SUBST(STMP_FIXINC)
 
+BUILD_NO_PIE_CFLAGS='$(NO_PIE_CFLAGS)' AC_SUBST(BUILD_NO_PIE_CFLAGS)
+BUILD_NO_PIE_FLAG='$(NO_PIE_FLAG)' AC_SUBST(BUILD_NO_PIE_FLAG)
+
 # And these apply if build != host, or we are generating coverage data
 if test x$build != x$host || test "x$coverage_flags" != x
 then
     BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD)'
     BUILD_CXXFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CXXFLAGS_FOR_BUILD)'
     BUILD_LDFLAGS='$(LDFLAGS_FOR_BUILD)'
+
+    NO_PIE_CFLAGS_FOR_BUILD=${NO_PIE_CFLAGS_FOR_BUILD-${NO_PIE_CFLAGS}}
+    NO_PIE_FLAG_FOR_BUILD=${NO_PIE_FLAG_FOR_BUILD-${NO_PIE_FLAG}}
+    BUILD_NO_PIE_CFLAGS='$(NO_PIE_CFLAGS_FOR_BUILD)'
+    BUILD_NO_PIE_FLAG='$(NO_PIE_FLAG_FOR_BUILD)'
 fi
+AC_SUBST(NO_PIE_CFLAGS_FOR_BUILD)
+AC_SUBST(NO_PIE_FLAG_FOR_BUILD)
 
 # Expand extra_headers to include complete path.
 # This substitutes for lots of t-* files.
@@ -2247,6 +2262,42 @@ if test x$gcc_cv_ld != x; then
 fi
 AC_MSG_RESULT($ld_is_gold)
 
+AC_MSG_CHECKING(gold linker with split stack support as non default)
+# Check to see if default ld is not gold, but gold is
+# available and has support for split stack.  If gcc was configured
+# with gold then no checking is done.
+# 
+if test x$ld_is_gold = xno && which ${gcc_cv_ld}.gold >/dev/null 2>&1; then
+
+# For platforms other than powerpc64*, enable as appropriate.
+
+  gold_non_default=no
+  ld_gold=`which ${gcc_cv_ld}.gold`
+# Make sure this gold has minimal split stack support
+  if $ld_gold --help 2>/dev/null | grep split-stack-adjust-size >/dev/null 2>&1; then
+    ld_vers=`$ld_gold --version | sed 1q`
+    gold_vers=`echo $ld_vers | sed -n \
+          -e 's,^[[^)]]*[[  ]]\([[0-9]][[0-9]]*\.[[0-9]][[0-9]]*[[^)]]*\)) .*$,\1,p'`
+    case $target in
+# check that the gold version contains the complete split stack support
+# on powerpc64 big and little endian
+      powerpc64*-*-*)
+        case "$gold_vers" in
+          2.25.[[1-9]]*|2.2[[6-9]][[.0-9]]*|2.[[3-9]][[.0-9]]*|[[3-9]].[[.0-9]]*) gold_non_default=yes
+          ;;
+          *) gold_non_default=no
+          ;;
+        esac
+        ;;
+    esac
+  fi
+  if test $gold_non_default = yes; then
+    AC_DEFINE(HAVE_GOLD_NON_DEFAULT_SPLIT_STACK, 1,
+    	    [Define if the gold linker supports split stack and is available as a non-default])
+  fi
+fi
+AC_MSG_RESULT($gold_non_default)
+
 ORIGINAL_LD_FOR_TARGET=$gcc_cv_ld
 AC_SUBST(ORIGINAL_LD_FOR_TARGET)
 case "$ORIGINAL_LD_FOR_TARGET" in
@@ -2367,8 +2418,10 @@ if test -f $gcc_cv_binutils_srcdir/configure.ac \
 	gcc_cv_readelf=../binutils/readelf$build_exeext
 elif test -x readelf$build_exeext; then
 	gcc_cv_readelf=./readelf$build_exeext
+elif ( set dummy $READELF_FOR_TARGET; test -x $[2] ); then
+        gcc_cv_readelf="$READELF_FOR_TARGET"
 else
-        AC_PATH_PROG(gcc_cv_readelf, readelf)
+        AC_PATH_PROG(gcc_cv_readelf, $READELF_FOR_TARGET)
 fi])
 
 AC_MSG_CHECKING(what readelf to use)
@@ -4326,6 +4379,17 @@ LCF0:
 	    [Define if your assembler supports .ref])])
 	;;
     esac
+
+    case $target in
+      *-*-aix*)
+	gcc_GAS_CHECK_FEATURE([dwarf location lists section support],
+	  gcc_cv_as_aix_dwloc, [2,21,0],,
+	  [	.dwsect 0xB0000
+	  ],,
+	  [AC_DEFINE(HAVE_XCOFF_DWARF_EXTRAS, 1,
+	    [Define if your assembler supports .dwsect 0xB0000])])
+	;;
+    esac
     ;;
 
   mips*-*-*)
@@ -4336,6 +4400,7 @@ LCF0:
        then target_cpu_default=MASK_EXPLICIT_RELOCS
        else target_cpu_default="($target_cpu_default)|MASK_EXPLICIT_RELOCS"
        fi])
+
     gcc_GAS_CHECK_FEATURE([-mno-shared support],
       gcc_cv_as_mips_no_shared, [2,16,0], [-mno-shared], [nop],,
       [AC_DEFINE(HAVE_AS_NO_SHARED, 1,
@@ -4751,19 +4816,41 @@ AC_MSG_RESULT($gcc_cv_ld_eh_frame_ciev3)
 AC_MSG_CHECKING(linker position independent executable support)
 gcc_cv_ld_pie=no
 if test $in_tree_ld = yes ; then
-  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 15 -o "$gcc_cv_gld_major_version" -gt 2 \
+  case "$target" in
+    # Full PIE support on Solaris was only introduced in gld 2.26.
+    *-*-solaris2*)  gcc_gld_pie_min_version=26 ;;
+    *) 		    gcc_gld_pie_min_version=15 ;;
+  esac
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge "$gcc_gld_pie_min_version" -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
     gcc_cv_ld_pie=yes
   fi
 elif test x$gcc_cv_ld != x; then
-	# Check if linker supports -pie option
-	if $gcc_cv_ld --help 2>/dev/null | grep -- -pie > /dev/null; then
-		gcc_cv_ld_pie=yes
+  # Check if linker supports -pie option
+  if $gcc_cv_ld --help 2>/dev/null | grep -- -pie > /dev/null; then
+    gcc_cv_ld_pie=yes
+    case "$target" in
+      *-*-solaris2*)
+	if echo "$ld_ver" | grep GNU > /dev/null \
+	  && test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 26; then
+	  gcc_cv_ld_pie=no
 	fi
+	;;
+    esac
+  else
+    case "$target" in
+      *-*-solaris2.1[[1-9]]*)
+	# Solaris 11.x and Solaris 12 added PIE support.
+	if $gcc_cv_ld -z help 2>&1 | grep -- type.*pie > /dev/null; then
+	  gcc_cv_ld_pie=yes
+	fi
+	;;
+    esac
+  fi
 fi
 if test x"$gcc_cv_ld_pie" = xyes; then
 	AC_DEFINE(HAVE_LD_PIE, 1,
-[Define if your linker supports -pie option.])
+[Define if your linker supports PIE option.])
 fi
 AC_MSG_RESULT($gcc_cv_ld_pie)
 
@@ -5280,6 +5367,37 @@ if test x"$gcc_cv_ld_sysroot" = xyes; then
   AC_DEFINE(HAVE_LD_SYSROOT, 1,
   [Define if your linker supports --sysroot.])
 fi	  
+
+case $target in
+*-*-solaris2*)
+  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  AC_CACHE_CHECK([system-provided CRTs on Solaris],
+    gcc_cv_solaris_crts,
+    [gcc_cv_solaris_crts=no
+     if test x$host != x$target; then
+       if test "x$with_sysroot" = xyes; then
+         target_sysroot="${test_exec_prefix}/${target_noncanonical}/sys-root"
+       else
+         target_sysroot="${with_sysroot}"
+       fi
+     fi
+     target_libdir="$target_sysroot/usr/lib"
+     # At the time they were added, gcrt1.o became a symlink for backwards
+     # compatibility on x86, while crt1.o was added on sparc, so check for that.
+     case $target in
+       i?86-*-solaris2* | x86_64-*-solaris2*)
+         if test -h "$target_libdir/gcrt1.o"; then gcc_cv_solaris_crts=yes; fi
+	 ;;
+       sparc*-*-solaris2*)
+         if test -f "$target_libdir/crt1.o"; then gcc_cv_solaris_crts=yes; fi
+	 ;;
+     esac])
+  ;;
+esac
+if test x$gcc_cv_solaris_crts = xyes; then
+  AC_DEFINE(HAVE_SOLARIS_CRTS, 1,
+  	    [Define if the system-provided CRTs are present on Solaris.])
+fi
 
 # Test for stack protector support in target C library.
 AC_CACHE_CHECK(__stack_chk_fail in target C library,

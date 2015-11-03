@@ -1,5 +1,6 @@
 /* { dg-do run } */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <openacc.h>
 
@@ -27,6 +28,7 @@ main (int argc, char **argv)
       h[i] = 0xab;
     }
 
+  fprintf (stderr, "CheCKpOInT\n");
   acc_update_device (0, N);
 
   acc_copyout (h, N);
@@ -42,5 +44,6 @@ main (int argc, char **argv)
   return 0;
 }
 
+/* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
 /* { dg-output "\\\[\[^\n\r]*,256\\\] is not mapped" } */
 /* { dg-shouldfail "" } */

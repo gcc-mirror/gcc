@@ -44,7 +44,7 @@ Attribute Address_Size
 prefix) is a static constant giving the number of bits in an
 `Address`. It is the same value as System.Address'Size,
 but has the advantage of being static, while a direct
-reference to System.Address'Size is non-static because Address
+reference to System.Address'Size is nonstatic because Address
 is a private type.
 
 Attribute Asm_Input
@@ -233,7 +233,7 @@ Attribute Descriptor_Size
 
 .. index:: Descriptor_Size
 
-Non-static attribute `Descriptor_Size` returns the size in bits of the
+Nonstatic attribute `Descriptor_Size` returns the size in bits of the
 descriptor allocated for a type.  The result is non-zero only for unconstrained
 array types and the returned value is of type universal integer.  In GNAT, an
 array descriptor contains bounds information and is located immediately before
@@ -760,7 +760,7 @@ Attribute Passed_By_Reference
 a value of type `Boolean` value that is `True` if the type is
 normally passed by reference and `False` if the type is normally
 passed by copy in calls.  For scalar types, the result is always `False`
-and is static.  For non-scalar types, the result is non-static.
+and is static.  For non-scalar types, the result is nonstatic.
 
 Attribute Pool_Address
 ======================
@@ -1145,7 +1145,7 @@ a static expression, then the result of the attribute is a
 static expression.  This means that such an expression can be
 used in contexts (e.g., preelaborable packages) which require a
 static expression and where the function call could not be used
-(since the function call is always non-static, even if its
+(since the function call is always nonstatic, even if its
 argument is static). The argument must be in the range
 -(2**(m-1) .. 2**m-1, where m is the memory size
 (typically 32 or 64). Negative values are intepreted in a
@@ -1202,17 +1202,6 @@ Attribute TypeCode
 
 This internal attribute is used for the generation of remote subprogram
 stubs in the context of the Distributed Systems Annex.
-
-Attribute UET_Address
-=====================
-.. index:: UET_Address
-
-The `UET_Address` attribute can only be used for a prefix which
-denotes a library package.  It yields the address of the unit exception
-table when zero cost exception handling is used.  This attribute is
-intended only for use within the GNAT implementation.  See the unit
-`Ada.Exceptions` in files :file:`a-except.ads` and :file:`a-except.adb`
-for details on how this attribute is used in the implementation.
 
 Attribute Unconstrained_Array
 =============================

@@ -31,43 +31,28 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "gimple-predict.h"
-#include "rtl.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
+#include "emit-rtl.h"
+#include "cgraph.h"
+#include "coverage.h"
+#include "diagnostic-core.h"
+#include "gimple-predict.h"
 #include "fold-const.h"
 #include "calls.h"
-#include "tm_p.h"
 #include "cfganal.h"
-#include "insn-config.h"
-#include "regs.h"
-#include "flags.h"
 #include "profile.h"
-#include "except.h"
-#include "diagnostic-core.h"
-#include "recog.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "coverage.h"
 #include "sreal.h"
 #include "params.h"
-#include "target.h"
 #include "cfgloop.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
-#include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
-#include "tree-pass.h"
 #include "tree-scalar-evolution.h"
 
 /* real constants: 0, 1, 1-1/REG_BR_PROB_BASE, REG_BR_PROB_BASE,
@@ -1142,7 +1127,7 @@ is_comparison_with_loop_invariant_p (gcond *stmt, struct loop *loop,
 static bool
 expr_coherent_p (tree t1, tree t2)
 {
-  gimple stmt;
+  gimple *stmt;
   tree ssa_name_1 = NULL;
   tree ssa_name_2 = NULL;
 
@@ -1205,7 +1190,7 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
 		       enum tree_code loop_bound_code,
 		       int loop_bound_step)
 {
-  gimple stmt;
+  gimple *stmt;
   tree compare_var, compare_base;
   enum tree_code compare_code;
   tree compare_step_var;
@@ -1394,10 +1379,10 @@ predict_extra_loop_exits (edge exit_edge)
 {
   unsigned i;
   bool check_value_one;
-  gimple lhs_def_stmt;
+  gimple *lhs_def_stmt;
   gphi *phi_stmt;
   tree cmp_rhs, cmp_lhs;
-  gimple last;
+  gimple *last;
   gcond *cmp_stmt;
 
   last = last_stmt (exit_edge->src);
@@ -1740,7 +1725,7 @@ static tree
 expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		       tree op1, bitmap visited, enum br_predictor *predictor)
 {
-  gimple def;
+  gimple *def;
 
   if (predictor)
     *predictor = PRED_UNCONDITIONAL;
@@ -1935,7 +1920,7 @@ expr_expected_value (tree expr, bitmap visited,
 static void
 tree_predict_by_opcode (basic_block bb)
 {
-  gimple stmt = last_stmt (bb);
+  gimple *stmt = last_stmt (bb);
   edge then_edge;
   tree op0, op1;
   tree type;
@@ -2114,7 +2099,7 @@ apply_return_prediction (void)
 
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
-      gimple last = last_stmt (e->src);
+      gimple *last = last_stmt (e->src);
       if (last
 	  && gimple_code (last) == GIMPLE_RETURN)
 	{
@@ -2178,7 +2163,7 @@ tree_bb_level_predictions (void)
 
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  tree decl;
 
 	  if (is_gimple_call (stmt))
@@ -2205,8 +2190,6 @@ tree_bb_level_predictions (void)
     }
 }
 
-#ifdef ENABLE_CHECKING
-
 /* Callback for hash_map::traverse, asserts that the pointer map is
    empty.  */
 
@@ -2217,7 +2200,6 @@ assert_is_empty (const_basic_block const &, edge_prediction *const &value,
   gcc_assert (!value);
   return false;
 }
-#endif
 
 /* Predict branch probabilities and estimate profile for basic block BB.  */
 
@@ -2226,7 +2208,7 @@ tree_estimate_probability_bb (basic_block bb)
 {
   edge e;
   edge_iterator ei;
-  gimple last;
+  gimple *last;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
@@ -2308,7 +2290,7 @@ tree_estimate_probability_bb (basic_block bb)
 	  for (bi = gsi_start_bb (e->dest); !gsi_end_p (bi);
 	       gsi_next (&bi))
 	    {
-	      gimple stmt = gsi_stmt (bi);
+	      gimple *stmt = gsi_stmt (bi);
 	      if (is_gimple_call (stmt)
 		  /* Constant and pure calls are hardly used to signalize
 		     something exceptional.  */
@@ -2352,9 +2334,9 @@ tree_estimate_probability (void)
   FOR_EACH_BB_FN (bb, cfun)
     combine_predictions_for_bb (bb);
 
-#ifdef ENABLE_CHECKING
-  bb_predictions->traverse<void *, assert_is_empty> (NULL);
-#endif
+  if (flag_checking)
+    bb_predictions->traverse<void *, assert_is_empty> (NULL);
+
   delete bb_predictions;
   bb_predictions = NULL;
 
@@ -2545,11 +2527,10 @@ propagate_freq (basic_block head, bitmap tovisit)
       /* Compute frequency of basic block.  */
       if (bb != head)
 	{
-#ifdef ENABLE_CHECKING
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    gcc_assert (!bitmap_bit_p (tovisit, e->src->index)
-			|| (e->flags & EDGE_DFS_BACK));
-#endif
+	  if (flag_checking)
+	    FOR_EACH_EDGE (e, ei, bb->preds)
+	      gcc_assert (!bitmap_bit_p (tovisit, e->src->index)
+			  || (e->flags & EDGE_DFS_BACK));
 
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    if (EDGE_INFO (e)->back_edge)
@@ -3094,7 +3075,7 @@ unsigned int
 pass_strip_predict_hints::execute (function *fun)
 {
   basic_block bb;
-  gimple ass_stmt;
+  gimple *ass_stmt;
   tree var;
 
   FOR_EACH_BB_FN (bb, fun)
@@ -3102,7 +3083,7 @@ pass_strip_predict_hints::execute (function *fun)
       gimple_stmt_iterator bi;
       for (bi = gsi_start_bb (bb); !gsi_end_p (bi);)
 	{
-	  gimple stmt = gsi_stmt (bi);
+	  gimple *stmt = gsi_stmt (bi);
 
 	  if (gimple_code (stmt) == GIMPLE_PREDICT)
 	    {

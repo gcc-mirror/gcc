@@ -20,19 +20,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
-#include "stor-layout.h"
+#include "c-common.h"
+#include "tm_p.h"		/* For TARGET_CPU_CPP_BUILTINS & friends.  */
 #include "stringpool.h"
+#include "alias.h"
+#include "stor-layout.h"
 #include "version.h"
 #include "flags.h"
-#include "c-common.h"
 #include "c-pragma.h"
 #include "output.h"		/* For user_label_prefix.  */
 #include "debug.h"		/* For dwarf2out_do_cfi_asm.  */
-#include "tm_p.h"		/* For TARGET_CPU_CPP_BUILTINS & friends.  */
-#include "target.h"
 #include "common/common-target.h"
 #include "cpp-id-data.h"
 #include "cppbuiltin.h"
@@ -833,7 +832,8 @@ c_cpp_builtins (cpp_reader *pfile)
       if (cxx_dialect >= cxx11)
 	{
 	  /* Set feature test macros for C++11.  */
-	  cpp_define (pfile, "__cpp_unicode_characters=200704");
+	  if (cxx_dialect <= cxx14)
+	    cpp_define (pfile, "__cpp_unicode_characters=200704");
 	  cpp_define (pfile, "__cpp_raw_strings=200710");
 	  cpp_define (pfile, "__cpp_unicode_literals=200710");
 	  cpp_define (pfile, "__cpp_user_defined_literals=200809");
@@ -869,12 +869,22 @@ c_cpp_builtins (cpp_reader *pfile)
       if (cxx_dialect > cxx14)
 	{
 	  /* Set feature test macros for C++1z.  */
+	  cpp_define (pfile, "__cpp_unicode_characters=201411");
 	  cpp_define (pfile, "__cpp_static_assert=201411");
+	  cpp_define (pfile, "__cpp_namespace_attributes=201411");
+	  cpp_define (pfile, "__cpp_enumerator_attributes=201411");
+	  cpp_define (pfile, "__cpp_nested_namespace_definitions=201411");
+	  cpp_define (pfile, "__cpp_fold_expressions=201411");
+	  cpp_define (pfile, "__cpp_nontype_template_args=201411");
 	}
       if (flag_concepts)
 	/* Use a value smaller than the 201507 specified in
 	   the TS, since we don't yet support extended auto.  */
 	cpp_define (pfile, "__cpp_concepts=201500");
+      if (flag_tm)
+	/* Use a value smaller than the 201505 specified in
+	   the TS, since we don't yet support atomic_cancel.  */
+	cpp_define (pfile, "__cpp_transactional_memory=210500");
       if (flag_sized_deallocation)
 	cpp_define (pfile, "__cpp_sized_deallocation=201309");
     }
@@ -1217,7 +1227,7 @@ c_cpp_builtins (cpp_reader *pfile)
     cpp_define (pfile, "_OPENACC=201306");
 
   if (flag_openmp)
-    cpp_define (pfile, "_OPENMP=201307");
+    cpp_define (pfile, "_OPENMP=201511");
 
   for (i = 0; i < NUM_INT_N_ENTS; i ++)
     if (int_n_enabled_p[i])

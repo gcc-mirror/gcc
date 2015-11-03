@@ -22,36 +22,19 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
+#include "tm_p.h"
 #include "regs.h"
-#include "insn-config.h"
-#include "conditions.h"
-#include "insn-flags.h"
-#include "output.h"
-#include "insn-attr.h"
-#include "flags.h"
-#include "recog.h"
-#include "reload.h"
+#include "emit-rtl.h"
 #include "diagnostic-core.h"
-#include "alias.h"
+#include "output.h"
 #include "stor-layout.h"
 #include "calls.h"
 #include "expr.h"
-#include "optabs.h"
-#include "except.h"
-#include "target.h"
-#include "tm_p.h"
-#include "langhooks.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
 #include "builtins.h"
-#include "emit-rtl.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -745,12 +728,8 @@ ft32_arg_partial_bytes (cumulative_args_t cum_v,
 int
 ft32_is_mem_pm (rtx o)
 {
-  if (GET_CODE (o) != MEM)
-    return false;
-  if (MEM_EXPR (o))
-    return TYPE_ADDR_SPACE (TREE_TYPE (MEM_EXPR (o))) == ADDR_SPACE_PM;
-  else
-    return MEM_ADDR_SPACE (o) == ADDR_SPACE_PM;
+  return (MEM_P (o)
+          && !ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (o)));
 }
 
 /* The Global `targetm' Variable.  */

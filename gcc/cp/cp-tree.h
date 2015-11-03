@@ -58,7 +58,8 @@ c-common.h, not after.
       STMT_EXPR_NO_SCOPE (in STMT_EXPR)
       BIND_EXPR_TRY_BLOCK (in BIND_EXPR)
       TYPENAME_IS_ENUM_P (in TYPENAME_TYPE)
-      OMP_FOR_GIMPLIFYING_P (in OMP_FOR, OMP_SIMD and OMP_DISTRIBUTE)
+      OMP_FOR_GIMPLIFYING_P (in OMP_FOR, OMP_SIMD, OMP_DISTRIBUTE,
+			     and OMP_TASKLOOP)
       BASELINK_QUALIFIED_P (in BASELINK)
       TARGET_EXPR_IMPLICIT_P (in TARGET_EXPR)
       TEMPLATE_PARM_PARAMETER_PACK (in TEMPLATE_PARM_INDEX)
@@ -80,6 +81,7 @@ c-common.h, not after.
       COMPOUND_REQ_NOEXCEPT_P (in COMPOUND_REQ)
       WILDCARD_PACK_P (in WILDCARD_DECL)
       BLOCK_OUTER_CURLY_BRACE_P (in BLOCK)
+      FOLD_EXPR_MODOP_P (*_FOLD_EXPR)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -2171,6 +2173,7 @@ struct GTY(()) lang_decl_base {
   unsigned repo_available_p : 1;	   /* var or fn */
   unsigned threadprivate_or_deleted_p : 1; /* var or fn */
   unsigned anticipated_p : 1;		   /* fn, type or template */
+  /* anticipated_p reused as DECL_OMP_PRIVATIZED_MEMBER in var */
   unsigned friend_or_tls : 1;		   /* var, fn, type or template */
   unsigned template_conv_p : 1;		   /* var or template */
   unsigned odr_used : 1;		   /* var or fn */
@@ -3249,6 +3252,37 @@ extern void decl_shadowed_for_var_insert (tree, tree);
   TREE_VEC_ELT (ARGUMENT_PACK_ARGS (ARGUMENT_PACK_SELECT_FROM_PACK (NODE)), \
 	        ARGUMENT_PACK_SELECT_INDEX (NODE))
 
+#define FOLD_EXPR_CHECK(NODE)						\
+  TREE_CHECK4 (NODE, UNARY_LEFT_FOLD_EXPR, UNARY_RIGHT_FOLD_EXPR,	\
+	       BINARY_LEFT_FOLD_EXPR, BINARY_RIGHT_FOLD_EXPR)
+
+#define BINARY_FOLD_EXPR_CHECK(NODE) \
+  TREE_CHECK2 (NODE, BINARY_LEFT_FOLD_EXPR, BINARY_RIGHT_FOLD_EXPR)
+
+/* True if NODE is UNARY_FOLD_EXPR or a BINARY_FOLD_EXPR */
+#define FOLD_EXPR_P(NODE) \
+  TREE_CODE (NODE) == UNARY_LEFT_FOLD_EXPR \
+    || TREE_CODE (NODE) == UNARY_RIGHT_FOLD_EXPR \
+    || TREE_CODE (NODE) == BINARY_LEFT_FOLD_EXPR \
+    || TREE_CODE (NODE) == BINARY_RIGHT_FOLD_EXPR
+
+/* True when NODE is a fold over a compound assignment operator. */
+#define FOLD_EXPR_MODIFY_P(NODE) \
+  TREE_LANG_FLAG_0 (FOLD_EXPR_CHECK (NODE))
+
+/* An INTEGER_CST containing the tree code of the folded operator. */
+#define FOLD_EXPR_OP(NODE) \
+  TREE_OPERAND (FOLD_EXPR_CHECK (NODE), 0)
+
+/* The expression containing an unexpanded parameter pack. */
+#define FOLD_EXPR_PACK(NODE) \
+  TREE_OPERAND (FOLD_EXPR_CHECK (NODE), 1)
+
+/* In a binary fold expression, the argument with no unexpanded
+   parameter packs. */
+#define FOLD_EXPR_INIT(NODE) \
+  TREE_OPERAND (BINARY_FOLD_EXPR_CHECK (NODE), 2)
+
 /* In a FUNCTION_DECL, the saved language-specific per-function data.  */
 #define DECL_SAVED_FUNCTION_DATA(NODE)			\
   (LANG_DECL_FN_CHECK (FUNCTION_DECL_CHECK (NODE))	\
@@ -3479,6 +3513,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define DECL_ANTICIPATED(NODE) \
   (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
    ->u.base.anticipated_p)
+
+/* True for artificial decls added for OpenMP privatized non-static
+   data members.  */
+#define DECL_OMP_PRIVATIZED_MEMBER(NODE) \
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.anticipated_p)
 
 /* Nonzero if NODE is a FUNCTION_DECL which was declared as a friend
    within a class but has not been declared in the surrounding scope.
@@ -4458,6 +4497,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define TARGET_EXPR_DIRECT_INIT_P(NODE) \
   TREE_LANG_FLAG_2 (TARGET_EXPR_CHECK (NODE))
 
+/* True if NODE is a TARGET_EXPR that just expresses a copy of its INITIAL; if
+   the initializer has void type, it's doing something more complicated.  */
+#define SIMPLE_TARGET_EXPR_P(NODE)				\
+  (TREE_CODE (NODE) == TARGET_EXPR				\
+   && !VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (NODE))))
+
 /* True if EXPR expresses direct-initialization of a TYPE.  */
 #define DIRECT_INIT_EXPR_P(TYPE,EXPR)					\
   (TREE_CODE (EXPR) == TARGET_EXPR && TREE_LANG_FLAG_2 (EXPR)		\
@@ -5285,6 +5330,8 @@ struct cp_declarator {
       cp_virt_specifiers virt_specifiers;
       /* The ref-qualifier for the function.  */
       cp_ref_qualifier ref_qualifier;
+      /* The transaction-safety qualifier for the function.  */
+      tree tx_qualifier;
       /* The exception-specification for the function.  */
       tree exception_specification;
       /* The late-specified return type, if any.  */
@@ -5527,6 +5574,7 @@ extern bool type_has_user_nondefault_constructor (tree);
 extern tree in_class_defaulted_default_constructor (tree);
 extern bool user_provided_p			(tree);
 extern bool type_has_user_provided_constructor  (tree);
+extern bool type_has_user_provided_or_explicit_constructor  (tree);
 extern bool type_has_non_user_provided_default_constructor (tree);
 extern bool vbase_has_user_provided_move_assign (tree);
 extern tree default_init_uninitialized_part (tree);
@@ -5572,6 +5620,9 @@ extern tree convert_force			(tree, tree, int,
 extern tree build_expr_type_conversion		(int, tree, bool);
 extern tree type_promotes_to			(tree);
 extern tree perform_qualification_conversions	(tree, tree);
+extern bool tx_safe_fn_type_p			(tree);
+extern tree tx_unsafe_fn_variant		(tree);
+extern bool can_convert_tx_safety		(tree, tree);
 
 /* in name-lookup.c */
 extern tree pushdecl				(tree);
@@ -5933,7 +5984,7 @@ extern tree lookup_template_class		(tree, tree, tree, tree,
 extern tree lookup_template_function		(tree, tree);
 extern tree lookup_template_variable		(tree, tree);
 extern int uses_template_parms			(tree);
-extern int uses_template_parms_level		(tree, int);
+extern bool uses_template_parms_level		(tree, int);
 extern bool in_template_function		(void);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);
@@ -6186,9 +6237,11 @@ extern void finish_cleanup			(tree, tree);
 extern bool is_this_parameter                   (tree);
 
 enum {
+  BCS_NORMAL = 0,
   BCS_NO_SCOPE = 1,
   BCS_TRY_BLOCK = 2,
-  BCS_FN_BODY = 4
+  BCS_FN_BODY = 4,
+  BCS_TRANSACTION = 8
 };
 extern tree begin_compound_stmt			(unsigned int);
 
@@ -6253,24 +6306,27 @@ extern tree finish_qualified_id_expr		(tree, tree, bool, bool,
 						 bool, bool, tsubst_flags_t);
 extern void simplify_aggr_init_expr		(tree *);
 extern void finalize_nrv			(tree *, tree, tree);
-extern void note_decl_for_pch			(tree);
 extern tree omp_reduction_id			(enum tree_code, tree, tree);
 extern tree cp_remove_omp_priv_cleanup_stmt	(tree *, int *, void *);
 extern void cp_check_omp_declare_reduction	(tree);
-extern tree finish_omp_clauses			(tree);
+extern void finish_omp_declare_simd_methods	(tree);
+extern tree finish_omp_clauses			(tree, bool, bool = false);
+extern tree push_omp_privatization_clauses	(bool);
+extern void pop_omp_privatization_clauses	(tree);
+extern void save_omp_privatization_clauses	(vec<tree> &);
+extern void restore_omp_privatization_clauses	(vec<tree> &);
 extern void finish_omp_threadprivate		(tree);
 extern tree begin_omp_structured_block		(void);
 extern tree finish_omp_structured_block		(tree);
 extern tree finish_oacc_data			(tree, tree);
-extern tree finish_oacc_kernels			(tree, tree);
-extern tree finish_oacc_parallel		(tree, tree);
+extern tree finish_omp_construct		(enum tree_code, tree, tree);
 extern tree begin_omp_parallel			(void);
 extern tree finish_omp_parallel			(tree, tree);
 extern tree begin_omp_task			(void);
 extern tree finish_omp_task			(tree, tree);
 extern tree finish_omp_for			(location_t, enum tree_code,
 						 tree, tree, tree, tree, tree,
-						 tree, tree);
+						 tree, tree, tree);
 extern void finish_omp_atomic			(enum tree_code, enum tree_code,
 						 tree, tree, tree, tree, tree,
 						 bool);
@@ -6280,6 +6336,7 @@ extern void finish_omp_taskwait			(void);
 extern void finish_omp_taskyield		(void);
 extern void finish_omp_cancel			(tree);
 extern void finish_omp_cancellation_point	(tree);
+extern tree omp_privatize_field			(tree);
 extern tree begin_transaction_stmt		(location_t, tree *, int);
 extern void finish_transaction_stmt		(tree, tree, int, tree);
 extern tree build_transaction_expr		(location_t, tree, int, tree);
@@ -6568,6 +6625,10 @@ extern bool check_literal_operator_args		(const_tree, bool *, bool *);
 extern void maybe_warn_about_useless_cast       (tree, tree, tsubst_flags_t);
 extern tree cp_perform_integral_promotions      (tree, tsubst_flags_t);
 
+extern tree finish_left_unary_fold_expr      (tree, int);
+extern tree finish_right_unary_fold_expr     (tree, int);
+extern tree finish_binary_fold_expr          (tree, tree, int);
+
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);
 extern void cxx_incomplete_type_diagnostic	(const_tree, const_tree, diagnostic_t);
@@ -6645,6 +6706,7 @@ extern tree cxx_omp_clause_assign_op		(tree, tree, tree);
 extern tree cxx_omp_clause_dtor			(tree, tree);
 extern void cxx_omp_finish_clause		(tree, gimple_seq *);
 extern bool cxx_omp_privatize_by_reference	(const_tree);
+extern bool cxx_omp_disregard_value_expr	(tree, bool);
 
 /* in name-lookup.c */
 extern void suggest_alternatives_for            (location_t, tree);
@@ -6667,6 +6729,9 @@ extern tree get_shorthand_constraints           (tree);
 extern tree build_concept_check                 (tree, tree, tree = NULL_TREE);
 extern tree build_constrained_parameter         (tree, tree, tree = NULL_TREE);
 extern tree make_constrained_auto               (tree, tree);
+extern void placeholder_extract_concept_and_args (tree, tree&, tree&);
+extern bool equivalent_placeholder_constraints  (tree, tree);
+extern hashval_t hash_placeholder_constraint	(tree);
 extern bool deduce_constrained_parameter        (tree, tree&, tree&);
 extern tree resolve_constraint_check            (tree);
 extern tree check_function_concept              (tree);

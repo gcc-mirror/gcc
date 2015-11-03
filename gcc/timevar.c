@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "timevar.h"
+#include "options.h"
 
 #ifndef HAVE_CLOCK_T
 typedef int clock_t;
@@ -727,10 +728,10 @@ timer::print (FILE *fp)
 #endif
   fprintf (fp, "%8u kB\n", (unsigned) (total->ggc_mem >> 10));
 
-#ifdef ENABLE_CHECKING
-  fprintf (fp, "Extra diagnostic checks enabled; compiler may run slowly.\n");
-  fprintf (fp, "Configure with --enable-checking=release to disable checks.\n");
-#endif
+  if (CHECKING_P || flag_checking)
+    fprintf (fp, "Extra diagnostic checks enabled; compiler may run slowly.\n");
+  if (CHECKING_P)
+    fprintf (fp, "Configure with --enable-checking=release to disable checks.\n");
 #ifndef ENABLE_ASSERT_CHECKING
   fprintf (fp, "Internal checks disabled; compiler is not suited for release.\n");
   fprintf (fp, "Configure with --enable-checking=release to enable checks.\n");

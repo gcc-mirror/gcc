@@ -1256,21 +1256,8 @@ main ()
   printf ("#include \"system.h\"\n");
   printf ("#include \"coretypes.h\"\n");
   printf ("#include \"backend.h\"\n");
-  printf ("#include \"tree.h\"\n");
   printf ("#include \"rtl.h\"\n");
-  printf ("#include \"flags.h\"\n");
-  printf ("#include \"alias.h\"\n");
-  printf ("#include \"insn-config.h\"\n");
   printf ("#include \"expmed.h\"\n");
-  printf ("#include \"dojump.h\"\n");
-  printf ("#include \"explow.h\"\n");
-  printf ("#include \"calls.h\"\n");
-  printf ("#include \"emit-rtl.h\"\n");
-  printf ("#include \"varasm.h\"\n");
-  printf ("#include \"stmt.h\"\n");
-  printf ("#include \"expr.h\"\n");
-  printf ("#include \"insn-codes.h\"\n");
-  printf ("#include \"optabs.h\"\n");
   printf ("#include \"%s-multiply.h\"\n\n", ARCH);
   create_insn_code_compression_table ();
 

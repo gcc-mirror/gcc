@@ -945,10 +945,6 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
                 valptr = self.val['_M_storage']['_M_buffer'].address
             elif '::_Manager_external' in mgrname:
                 valptr = self.val['_M_storage']['_M_ptr']
-            elif '::_Manager_alloc' in mgrname:
-                datatype = gdb.lookup_type(mgrname + '::_Data')
-                valptr = self.val['_M_storage']['_M_ptr'].cast(datatype.pointer())
-                valptr = valptr.dereference()['_M_data'].address
             else:
                 raise ValueError("Unknown manager function in std::experimental::any")
             contained_value = valptr.cast(self.contained_type.pointer()).dereference()

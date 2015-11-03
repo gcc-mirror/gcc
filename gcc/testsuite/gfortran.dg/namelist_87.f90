@@ -30,7 +30,7 @@ character(3) :: c2 = 'YYY'
 character(3) :: c3 = 'ZZZ'
 namelist /nml/ i, r1,r2,r3,r4,r5,c,ll,c1,c2,c3
 
-open (99, file='nml.dat', status="replace")
+open (99, file='nml_87.dat', status="replace")
 write(99,*) "&nml"
 write(99,*) "  i=42!11"         ! Fixed BUG: wrong result: Unmodified, no error
 write(99,*) "  r1=43!11"        ! Fixed BUG: wrong result: Unmodified, no error

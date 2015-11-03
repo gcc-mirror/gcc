@@ -24,14 +24,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
 #include "cp-tree.h"
+#include "alias.h"
 #include "intl.h"
 #include "flags.h"
 #include "toplev.h"
-#include "target.h"
 
 static int is_subobject_of_p (tree, tree);
 static tree dfs_lookup_base (tree, void *);
@@ -961,7 +960,7 @@ accessible_p (tree type, tree decl, bool consider_local_p)
       && (!processing_template_parmlist || processing_template_decl > 1))
     return 1;
 
-  tree otype;
+  tree otype = NULL_TREE;
   if (!TYPE_P (type))
     {
       /* When accessing a non-static member, the most derived type in the
@@ -2014,13 +2013,31 @@ check_final_overrider (tree overrider, tree basefn)
       return 0;
     }
 
-  /* Check for conflicting type attributes.  */
-  if (!comp_type_attributes (over_type, base_type))
+  /* Check for conflicting type attributes.  But leave transaction_safe for
+     set_one_vmethod_tm_attributes.  */
+  if (!comp_type_attributes (over_type, base_type)
+      && !tx_safe_fn_type_p (base_type)
+      && !tx_safe_fn_type_p (over_type))
     {
       error ("conflicting type attributes specified for %q+#D", overrider);
       error ("  overriding %q+#D", basefn);
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
+    }
+
+  /* A function declared transaction_safe_dynamic that overrides a function
+     declared transaction_safe (but not transaction_safe_dynamic) is
+     ill-formed.  */
+  if (tx_safe_fn_type_p (base_type)
+      && lookup_attribute ("transaction_safe_dynamic",
+			   DECL_ATTRIBUTES (overrider))
+      && !lookup_attribute ("transaction_safe_dynamic",
+			    DECL_ATTRIBUTES (basefn)))
+    {
+      error_at (DECL_SOURCE_LOCATION (overrider),
+		"%qD declared %<transaction_safe_dynamic%>", overrider);
+      inform (DECL_SOURCE_LOCATION (basefn),
+	      "overriding %qD declared %<transaction_safe%>", basefn);
     }
 
   if (DECL_DELETED_FN (basefn) != DECL_DELETED_FN (overrider))

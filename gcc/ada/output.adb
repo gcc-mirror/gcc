@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -350,6 +350,7 @@ package body Output is
 
    procedure Write_Char (C : Character) is
    begin
+      pragma Assert (Next_Col in Buffer'Range);
       if Next_Col = Buffer'Length then
          Write_Eol;
       end if;
@@ -406,17 +407,29 @@ package body Output is
    ---------------
 
    procedure Write_Int (Val : Int) is
+      --  Type Int has one extra negative number (i.e. two's complement), so we
+      --  work with negative numbers here. Otherwise, negating Int'First will
+      --  overflow.
+
+      subtype Nonpositive is Int range Int'First .. 0;
+      procedure Write_Abs (Val : Nonpositive);
+      --  Write out the absolute value of Val
+
+      procedure Write_Abs (Val : Nonpositive) is
+      begin
+         if Val < -9 then
+            Write_Abs (Val / 10); -- Recursively write higher digits
+         end if;
+
+         Write_Char (Character'Val (-(Val rem 10) + Character'Pos ('0')));
+      end Write_Abs;
+
    begin
       if Val < 0 then
          Write_Char ('-');
-         Write_Int (-Val);
-
+         Write_Abs (Val);
       else
-         if Val > 9 then
-            Write_Int (Val / 10);
-         end if;
-
-         Write_Char (Character'Val ((Val mod 10) + Character'Pos ('0')));
+         Write_Abs (-Val);
       end if;
    end Write_Int;
 

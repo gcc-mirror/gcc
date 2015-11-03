@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -208,8 +208,8 @@ package System.OS_Interface is
    type clockid_t is new int;
 
    function clock_gettime
-     (clock_id : clockid_t;
-      tp       : access timespec) return int;
+     (clock_id : clockid_t; tp : access timespec) return int;
+   pragma Import (C, clock_gettime, "clock_gettime");
 
    function clock_getres
      (clock_id : clockid_t;
@@ -317,8 +317,7 @@ package System.OS_Interface is
      return Address is (Null_Address);
    --  This is a dummy procedure to share some GNULLI files
 
-   function Get_Page_Size return size_t;
-   function Get_Page_Size return Address;
+   function Get_Page_Size return int;
    pragma Import (C, Get_Page_Size, "_getpagesize");
    --  Returns the size of a page
 

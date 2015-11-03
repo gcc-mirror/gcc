@@ -368,6 +368,7 @@ extern void control_warning_option (unsigned int opt_index, int kind,
 				    struct gcc_options *opts,
 				    struct gcc_options *opts_set,
 				    diagnostic_context *dc);
+extern char *write_langs (unsigned int mask);
 extern void print_ignored_options (void);
 extern void handle_common_deferred_options (void);
 extern bool common_handle_option (struct gcc_options *opts,

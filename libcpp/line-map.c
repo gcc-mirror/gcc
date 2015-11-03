@@ -688,28 +688,34 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
   /* We find the real location and shift it.  */
   loc = linemap_resolve_location (set, loc, LRK_SPELLING_LOCATION, &map);
   /* The new location (loc + offset) should be higher than the first
-     location encoded by MAP.
-     FIXME: We used to linemap_assert_fails here and in the if below,
-     but that led to PR66415.  So give up for now.  */
-  if ((MAP_START_LOCATION (map) >= loc + offset))
+     location encoded by MAP.  This can fail if the line information
+     is messed up because of line directives (see PR66415).  */
+  if (MAP_START_LOCATION (map) >= loc + offset)
     return loc;
+
+  linenum_type line = SOURCE_LINE (map, loc);
+  unsigned int column = SOURCE_COLUMN (map, loc);
 
   /* If MAP is not the last line map of its set, then the new location
      (loc + offset) should be less than the first location encoded by
-     the next line map of the set.  */
-  if (map != LINEMAPS_LAST_ORDINARY_MAP (set))
-    if ((loc + offset >= MAP_START_LOCATION (&map[1])))
-      return loc;
+     the next line map of the set.  Otherwise, we try to encode the
+     location in the next map.  */
+  while (map != LINEMAPS_LAST_ORDINARY_MAP (set)
+	 && loc + offset >= MAP_START_LOCATION (&map[1]))
+    {
+      map = &map[1];
+      /* If the next map starts in a higher line, we cannot encode the
+	 location there.  */
+      if (line < ORDINARY_MAP_STARTING_LINE_NUMBER (map))
+	return loc;
+    }
 
-  offset += SOURCE_COLUMN (map, loc);
-  if (linemap_assert_fails
-        (offset < (1u << map->column_bits)))
+  offset += column;
+  if (linemap_assert_fails (offset < (1u << map->column_bits)))
     return loc;
 
   source_location r = 
-    linemap_position_for_line_and_column (map,
-					  SOURCE_LINE (map, loc),
-					  offset);
+    linemap_position_for_line_and_column (map, line, offset);
   if (linemap_assert_fails (r <= set->highest_location)
       || linemap_assert_fails (map == linemap_lookup (set, r)))
     return loc;

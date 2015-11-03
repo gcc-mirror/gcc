@@ -4,8 +4,8 @@
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } } */
-/* { dg-final { scan-assembler-times "addc" 4 } } */
-/* { dg-final { scan-assembler-times "subc" 3 } } */
+/* { dg-final { scan-assembler-times "addc" 6 } } */
+/* { dg-final { scan-assembler-times "subc" 4 } } */
 /* { dg-final { scan-assembler-times "sett" 5 } } */
 
 /* { dg-final { scan-assembler-times "negc" 2 { target { ! sh2a } } } }  */
@@ -86,3 +86,25 @@ test_08 (int a)
   /* 1x addc, 1x sett  */
   return (a << 1) + 1;
 }
+
+unsigned int
+test_09 (unsigned int x)
+{
+  /* 1x tst, 1x addc  */
+  return x - (x != 0);
+}
+
+unsigned int
+test_10 (unsigned int x)
+{
+  /* 1x tst, 1x subc  */
+  return x + (x == 0);
+}
+
+unsigned int
+test_11 (unsigned int x)
+{
+  /* 1x tst, 1x addc  */
+  return x + (x != 0);
+}
+

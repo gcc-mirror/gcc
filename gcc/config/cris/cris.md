@@ -4634,7 +4634,8 @@
    && INTVAL (operands[1]) > 23
    /* Check that the and-operation enables us to use logical-shift.  */
    && (INTVAL (operands[2])
-	  & ((HOST_WIDE_INT) -1 << (32 - INTVAL (operands[1])))) == 0"
+       & ((HOST_WIDE_INT) (HOST_WIDE_INT_M1U
+			   << (32 - INTVAL (operands[1]))))) == 0"
   [(set (match_dup 0) (lshiftrt:SI (match_dup 0) (match_dup 1)))
    (set (match_dup 3) (and:QI (match_dup 3) (match_dup 4)))]
   ;; FIXME: CC0 is valid except for the M bit.
@@ -4655,7 +4656,8 @@
    && INTVAL (operands[1]) > 15
    /* Check that the and-operation enables us to use logical-shift.  */
    && (INTVAL (operands[2])
-       & ((HOST_WIDE_INT) -1 << (32 - INTVAL (operands[1])))) == 0"
+       & ((HOST_WIDE_INT) (HOST_WIDE_INT_M1U
+			   << (32 - INTVAL (operands[1]))))) == 0"
   [(set (match_dup 0) (lshiftrt:SI (match_dup 0) (match_dup 1)))
    (set (match_dup 3) (and:HI (match_dup 3) (match_dup 4)))]
   ;; FIXME: CC0 is valid except for the M bit.

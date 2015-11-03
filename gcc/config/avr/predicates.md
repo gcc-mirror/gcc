@@ -46,7 +46,7 @@
 (define_special_predicate "low_io_address_operand"
   (ior (and (match_code "const_int")
 	    (match_test "IN_RANGE (INTVAL (op) - avr_arch->sfr_offset,
-				   0, 0x20 - GET_MODE_SIZE (mode))"))
+				   0, 0x1F)"))
        (and (match_code "symbol_ref")
 	    (match_test "SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_IO_LOW"))))
 
@@ -60,7 +60,7 @@
 (define_special_predicate "io_address_operand"
   (ior (and (match_code "const_int")
 	    (match_test "IN_RANGE (INTVAL (op) - avr_arch->sfr_offset,
-				   0, 0x40 - GET_MODE_SIZE (mode))"))
+				   0, 0x3F)"))
        (and (match_code "symbol_ref")
 	    (match_test "SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_IO"))))
 

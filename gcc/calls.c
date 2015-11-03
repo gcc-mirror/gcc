@@ -21,37 +21,28 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "alias.h"
+#include "predict.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "expmed.h"
+#include "optabs.h"
+#include "emit-rtl.h"
+#include "cgraph.h"
+#include "diagnostic-core.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
-#include "stringpool.h"
-#include "attribs.h"
 #include "internal-fn.h"
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
 #include "calls.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "libfuncs.h"
-#include "regs.h"
-#include "diagnostic-core.h"
 #include "output.h"
-#include "tm_p.h"
-#include "timevar.h"
 #include "langhooks.h"
-#include "target.h"
-#include "cgraph.h"
 #include "except.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
@@ -203,18 +194,6 @@ prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
 	       && targetm.small_register_classes_for_mode_p (FUNCTION_MODE))
 	      ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
 	      : memory_address (FUNCTION_MODE, funexp));
-  else if (flag_pic
-	   && fndecl_or_type
-	   && TREE_CODE (fndecl_or_type) == FUNCTION_DECL
-	   && (!flag_plt
-	       || lookup_attribute ("noplt", DECL_ATTRIBUTES (fndecl_or_type)))
-	   && !targetm.binds_local_p (fndecl_or_type))
-    {
-      /* This is done only for PIC code.  There is no easy interface to force the
-	 function address into GOT for non-PIC case.  non-PIC case needs to be
-	 handled specially by the backend.  */
-      funexp = force_reg (Pmode, funexp);
-    }
   else if (! sibcallp)
     {
       if (!NO_FUNCTION_CSE && optimize && ! flag_no_function_cse)
@@ -626,7 +605,7 @@ setjmp_call_p (const_tree fndecl)
 /* Return true if STMT is an alloca call.  */
 
 bool
-gimple_alloca_call_p (const_gimple stmt)
+gimple_alloca_call_p (const gimple *stmt)
 {
   tree fndecl;
 

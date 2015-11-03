@@ -25,13 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "internal-fn.h"
-#include "tree-eh.h"
 #include "stringpool.h"
 #include "gimple-ssa.h"
+#include "fold-const.h"
+#include "tree-eh.h"
 #include "gimplify.h"
 #include "stor-layout.h"
 #include "demangle.h"
@@ -87,15 +84,8 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   if (inner_type == outer_type)
     return true;
 
-  /* If we know the canonical types, compare them.  */
-  if (TYPE_CANONICAL (inner_type)
-      && TYPE_CANONICAL (inner_type) == TYPE_CANONICAL (outer_type))
-    return true;
-
-  /* Changes in machine mode are never useless conversions unless we
-     deal with aggregate types in which case we defer to later checks.  */
-  if (TYPE_MODE (inner_type) != TYPE_MODE (outer_type)
-      && !AGGREGATE_TYPE_P (inner_type))
+  /* Changes in machine mode are never useless conversions unless.  */
+  if (TYPE_MODE (inner_type) != TYPE_MODE (outer_type))
     return false;
 
   /* If both the inner and outer types are integral types, then the
@@ -270,12 +260,22 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
       return true;
     }
 
-  /* For aggregates we rely on TYPE_CANONICAL exclusively and require
-     explicit conversions for types involving to be structurally
-     compared types.  */
+  /* For aggregates compare only the size.  Accesses to fields do have
+     a type information by themselves and thus we only care if we can i.e.
+     use the types in move operations.  */
   else if (AGGREGATE_TYPE_P (inner_type)
 	   && TREE_CODE (inner_type) == TREE_CODE (outer_type))
-    return false;
+    return (TYPE_MODE (outer_type) != BLKmode
+	    || operand_equal_p (TYPE_SIZE (inner_type),
+			        TYPE_SIZE (outer_type), 0));
+
+  else if (TREE_CODE (inner_type) == OFFSET_TYPE
+	   && TREE_CODE (outer_type) == OFFSET_TYPE)
+    return useless_type_conversion_p (TREE_TYPE (outer_type),
+				      TREE_TYPE (inner_type))
+	   && useless_type_conversion_p
+	        (TYPE_OFFSET_BASETYPE (outer_type),
+		 TYPE_OFFSET_BASETYPE (inner_type));
 
   return false;
 }

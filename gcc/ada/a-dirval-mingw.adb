@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                            (Windows Version)                             --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,8 +40,11 @@ package body Ada.Directories.Validity is
      (NUL .. US | '\'       => True,
       '/' | ':' | '*' | '?' => True,
       '"' | '<' | '>' | '|' => True,
-      DEL .. NBSP           => True,
+      DEL                   => True,
       others                => False);
+   --  Note that a valid file-name or path-name is implementation defined.
+   --  To support UTF-8 file and directory names, we do not want to be too
+   --  restrictive here.
 
    ---------------------------------
    -- Is_Path_Name_Case_Sensitive --
@@ -74,8 +77,7 @@ package body Ada.Directories.Validity is
          if Name'Length >= 2
            and then  Name (Start + 1) = ':'
            and then
-            (Name (Start) in 'A' .. 'Z' or else
-             Name (Start) in 'a' .. 'z')
+             (Name (Start) in 'A' .. 'Z' or else Name (Start) in 'a' .. 'z')
          then
             Start := Start + 2;
 
@@ -93,8 +95,8 @@ package body Ada.Directories.Validity is
          loop
             --  Look for the start of the next directory or file name
 
-            while Start <= Name'Last and then
-              (Name (Start) = '\' or Name (Start) = '/')
+            while Start <= Name'Last
+              and then (Name (Start) = '\' or Name (Start) = '/')
             loop
                Start := Start + 1;
             end loop;

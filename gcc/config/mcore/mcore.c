@@ -21,40 +21,24 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
-#include "alias.h"
-#include "fold-const.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "emit-rtl.h"
+#include "diagnostic-core.h"
 #include "stor-layout.h"
 #include "varasm.h"
-#include "stringpool.h"
 #include "calls.h"
-#include "tm_p.h"
 #include "mcore.h"
-#include "regs.h"
-#include "insn-config.h"
-#include "conditions.h"
 #include "output.h"
-#include "insn-attr.h"
-#include "flags.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "reload.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "target.h"
 #include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
 #include "builtins.h"
+#include "regs.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -156,6 +140,8 @@ static void       mcore_trampoline_init		(rtx, tree, rtx);
 static bool       mcore_warn_func_return        (tree);
 static void       mcore_option_override		(void);
 static bool       mcore_legitimate_constant_p   (machine_mode, rtx);
+static bool	  mcore_legitimate_address_p	(machine_mode, rtx, bool,
+						 addr_space_t);
 
 /* MCore specific attributes.  */
 
@@ -243,6 +229,8 @@ static const struct attribute_spec mcore_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P mcore_legitimate_constant_p
+#undef TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
+#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P mcore_legitimate_address_p
 
 #undef TARGET_WARN_FUNC_RETURN
 #define TARGET_WARN_FUNC_RETURN mcore_warn_func_return
@@ -3196,3 +3184,74 @@ mcore_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return GET_CODE (x) != CONST_DOUBLE;
 }
+
+/* Helper function for `mcore_legitimate_address_p'.  */
+
+static bool
+mcore_reg_ok_for_base_p (const_rtx reg, bool strict_p)
+{
+  if (strict_p)
+    return REGNO_OK_FOR_BASE_P (REGNO (reg));
+  else
+    return (REGNO (reg) <= 16 || !HARD_REGISTER_P (reg));
+}
+
+static bool
+mcore_base_register_rtx_p (const_rtx x, bool strict_p)
+{
+  return REG_P(x) && mcore_reg_ok_for_base_p (x, strict_p); 
+}
+
+/*  A legitimate index for a QI is 0..15, for HI is 0..30, for SI is 0..60,
+    and for DI is 0..56 because we use two SI loads, etc.  */
+
+static bool   
+mcore_legitimate_index_p (machine_mode mode, const_rtx op)
+{
+  if (CONST_INT_P (op))
+    {
+      if (GET_MODE_SIZE (mode) >= 4
+	  && (((unsigned HOST_WIDE_INT) INTVAL (op)) % 4) == 0
+	  &&  ((unsigned HOST_WIDE_INT) INTVAL (op))
+	      <= (unsigned HOST_WIDE_INT) 64 - GET_MODE_SIZE (mode))
+	return true;
+      if (GET_MODE_SIZE (mode) == 2
+	  && (((unsigned HOST_WIDE_INT) INTVAL (op)) % 2) == 0
+	  &&  ((unsigned HOST_WIDE_INT) INTVAL (op)) <= 30)
+	return true;
+      if (GET_MODE_SIZE (mode) == 1
+	  && ((unsigned HOST_WIDE_INT) INTVAL (op)) <= 15)
+	return true;
+  }								
+  return false;
+}
+
+ 
+/* Worker function for TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P.
+
+   Allow  REG
+	  REG + disp  */
+
+static bool
+mcore_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
+			    addr_space_t as)
+{
+  gcc_assert (ADDR_SPACE_GENERIC_P (as));
+
+  if (mcore_base_register_rtx_p (x, strict_p))
+    return true;
+  else if (GET_CODE (x) == PLUS || GET_CODE (x) == LO_SUM)
+    {
+      rtx xop0 = XEXP (x, 0);
+      rtx xop1 = XEXP (x, 1);
+      if (mcore_base_register_rtx_p (xop0, strict_p)
+	  && mcore_legitimate_index_p (mode, xop1))
+	return true;
+      if (mcore_base_register_rtx_p (xop1, strict_p)
+ 	  && mcore_legitimate_index_p (mode, xop0))
+	return true;
+    }
+
+  return false;
+}
+

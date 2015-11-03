@@ -20,23 +20,23 @@
 
 mcall-prologues
 Target Report Mask(CALL_PROLOGUES)
-Use subroutines for function prologues and epilogues
+Use subroutines for function prologues and epilogues.
 
 mmcu=
 Target RejectNegative Joined Var(avr_mmcu) MissingArgError(missing device or architecture after %qs)
--mmcu=MCU	Select the target MCU
+-mmcu=MCU	Select the target MCU.
 
 mn-flash=
 Target RejectNegative Joined Var(avr_n_flash) UInteger Init(-1)
-Set the number of 64 KiB flash segments
+Set the number of 64 KiB flash segments.
 
 mskip-bug
 Target Report Mask(SKIP_BUG)
-Indicate presence of a processor erratum
+Indicate presence of a processor erratum.
 
 mrmw
 Target Report Mask(RMW)
-Enable Read-Modify-Write (RMW) instructions support/use
+Enable Read-Modify-Write (RMW) instructions support/use.
 
 mdeb
 Target Report Undocumented Mask(ALL_DEBUG)
@@ -46,11 +46,11 @@ Target RejectNegative Joined Undocumented Var(avr_log_details)
 
 mint8
 Target Report Mask(INT8)
-Use an 8-bit 'int' type
+Use an 8-bit 'int' type.
 
 mno-interrupts
 Target Report RejectNegative Mask(NO_INTERRUPTS)
-Change the stack pointer without disabling interrupts
+Change the stack pointer without disabling interrupts.
 
 mbranch-cost=
 Target Report Joined RejectNegative UInteger Var(avr_branch_cost) Init(0)
@@ -64,11 +64,11 @@ Target Report Undocumented Mask(ORDER_2)
 
 mtiny-stack
 Target Report Mask(TINY_STACK)
-Change only the low 8 bits of the stack pointer
+Change only the low 8 bits of the stack pointer.
 
 mrelax
 Target Report
-Relax branches
+Relax branches.
 
 mpmem-wrap-around
 Target Report
@@ -93,8 +93,8 @@ Warn if the address space of an address is changed.
 
 mfract-convert-truncate
 Target Report Mask(FRACT_CONV_TRUNC)
-Allow to use truncation instead of rounding towards 0 for fractional int types
+Allow to use truncation instead of rounding towards 0 for fractional int types.
 
 nodevicelib
 Driver Target Report RejectNegative
-Do not link against the device-specific library lib<MCU>.a
+Do not link against the device-specific library lib<MCU>.a.

@@ -29,15 +29,31 @@
         integer, parameter :: omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@
         integer, parameter :: omp_sched_kind = 4
         integer, parameter :: omp_proc_bind_kind = 4
+        integer, parameter :: omp_lock_hint_kind = 4
         integer (omp_sched_kind), parameter :: omp_sched_static = 1
         integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
         integer (omp_sched_kind), parameter :: omp_sched_guided = 3
         integer (omp_sched_kind), parameter :: omp_sched_auto = 4
-        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_false = 0
-        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_true = 1
-        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_master = 2
-        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_close = 3
-        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_spread = 4
+        integer (omp_proc_bind_kind), &
+                 parameter :: omp_proc_bind_false = 0
+        integer (omp_proc_bind_kind), &
+                 parameter :: omp_proc_bind_true = 1
+        integer (omp_proc_bind_kind), &
+                 parameter :: omp_proc_bind_master = 2
+        integer (omp_proc_bind_kind), &
+                 parameter :: omp_proc_bind_close = 3
+        integer (omp_proc_bind_kind), &
+                 parameter :: omp_proc_bind_spread = 4
+        integer (omp_lock_hint_kind), &
+                 parameter :: omp_lock_hint_none = 0
+        integer (omp_lock_hint_kind), &
+                 parameter :: omp_lock_hint_uncontended = 1
+        integer (omp_lock_hint_kind), &
+                 parameter :: omp_lock_hint_contended = 2
+        integer (omp_lock_hint_kind), &
+                 parameter :: omp_lock_hint_nonspeculative = 4
+        integer (omp_lock_hint_kind), &
+                 parameter :: omp_lock_hint_speculative = 8
       end module
 
       module omp_lib
@@ -53,10 +69,26 @@
         end interface
 
         interface
+          subroutine omp_init_lock_with_hint (svar, hint)
+            use omp_lib_kinds
+            integer (omp_lock_kind), intent (out) :: svar
+            integer (omp_lock_hint_kind), intent (in) :: hint
+          end subroutine omp_init_lock_with_hint
+        end interface
+
+        interface
           subroutine omp_init_nest_lock (nvar)
             use omp_lib_kinds
             integer (omp_nest_lock_kind), intent (out) :: nvar
           end subroutine omp_init_nest_lock
+        end interface
+
+        interface
+          subroutine omp_init_nest_lock_with_hint (nvar, hint)
+            use omp_lib_kinds
+            integer (omp_nest_lock_kind), intent (out) :: nvar
+            integer (omp_lock_hint_kind), intent (in) :: hint
+          end subroutine omp_init_nest_lock_with_hint
         end interface
 
         interface
@@ -199,28 +231,28 @@
         end interface
 
         interface omp_set_schedule
-          subroutine omp_set_schedule (kind, modifier)
+          subroutine omp_set_schedule (kind, chunk_size)
             use omp_lib_kinds
             integer (omp_sched_kind), intent (in) :: kind
-            integer (4), intent (in) :: modifier
+            integer (4), intent (in) :: chunk_size
           end subroutine omp_set_schedule
-          subroutine omp_set_schedule_8 (kind, modifier)
+          subroutine omp_set_schedule_8 (kind, chunk_size)
             use omp_lib_kinds
             integer (omp_sched_kind), intent (in) :: kind
-            integer (8), intent (in) :: modifier
+            integer (8), intent (in) :: chunk_size
           end subroutine omp_set_schedule_8
          end interface
 
         interface omp_get_schedule
-          subroutine omp_get_schedule (kind, modifier)
+          subroutine omp_get_schedule (kind, chunk_size)
             use omp_lib_kinds
             integer (omp_sched_kind), intent (out) :: kind
-            integer (4), intent (out) :: modifier
+            integer (4), intent (out) :: chunk_size
           end subroutine omp_get_schedule
-          subroutine omp_get_schedule_8 (kind, modifier)
+          subroutine omp_get_schedule_8 (kind, chunk_size)
             use omp_lib_kinds
             integer (omp_sched_kind), intent (out) :: kind
-            integer (8), intent (out) :: modifier
+            integer (8), intent (out) :: chunk_size
           end subroutine omp_get_schedule_8
          end interface
 
@@ -298,6 +330,58 @@
           end function omp_get_proc_bind
         end interface
 
+        interface
+          function omp_get_num_places ()
+            integer (4) :: omp_get_num_places
+          end function omp_get_num_places
+        end interface
+
+        interface omp_get_place_num_procs
+          function omp_get_place_num_procs (place_num)
+            integer (4), intent(in) :: place_num
+            integer (4) :: omp_get_place_num_procs
+          end function omp_get_place_num_procs
+
+          function omp_get_place_num_procs_8 (place_num)
+            integer (8), intent(in) :: place_num
+            integer (4) :: omp_get_place_num_procs_8
+          end function omp_get_place_num_procs_8
+        end interface
+
+        interface omp_get_place_proc_ids
+          subroutine omp_get_place_proc_ids (place_num, ids)
+            integer (4), intent(in) :: place_num
+            integer (4), intent(out) :: ids(*)
+          end subroutine omp_get_place_proc_ids
+
+          subroutine omp_get_place_proc_ids_8 (place_num, ids)
+            integer (8), intent(in) :: place_num
+            integer (8), intent(out) :: ids(*)
+          end subroutine omp_get_place_proc_ids_8
+        end interface
+
+        interface
+          function omp_get_place_num ()
+            integer (4) :: omp_get_place_num
+          end function omp_get_place_num
+        end interface
+
+        interface
+          function omp_get_partition_num_places ()
+            integer (4) :: omp_get_partition_num_places
+          end function omp_get_partition_num_places
+        end interface
+
+        interface omp_get_partition_place_nums
+          subroutine omp_get_partition_place_nums (place_nums)
+            integer (4), intent(out) :: place_nums(*)
+          end subroutine omp_get_partition_place_nums
+
+          subroutine omp_get_partition_place_nums_8 (place_nums)
+            integer (8), intent(out) :: place_nums(*)
+          end subroutine omp_get_partition_place_nums_8
+        end interface
+
         interface omp_set_default_device
           subroutine omp_set_default_device (device_num)
             integer (4), intent (in) :: device_num
@@ -335,6 +419,18 @@
           function omp_is_initial_device ()
             logical (4) :: omp_is_initial_device
           end function omp_is_initial_device
+        end interface
+
+        interface
+          function omp_get_initial_device ()
+            integer (4) :: omp_get_initial_device
+          end function omp_get_initial_device
+        end interface
+
+        interface
+          function omp_get_max_task_priority ()
+            integer (4) :: omp_get_max_task_priority
+          end function omp_get_max_task_priority
         end interface
 
       end module omp_lib

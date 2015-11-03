@@ -20,15 +20,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "options.h"
-#include "fold-const.h"
 #include "stringpool.h"
-#include "internal-fn.h"
 #include "tree-ssanames.h"
 
 
@@ -62,7 +57,7 @@ build_assign (enum tree_code code, tree op1, int val, tree lhs)
 }
 
 gassign *
-build_assign (enum tree_code code, gimple g, int val, tree lhs )
+build_assign (enum tree_code code, gimple *g, int val, tree lhs )
 {
   return build_assign (code, gimple_assign_lhs (g), val, lhs);
 }
@@ -85,19 +80,19 @@ build_assign (enum tree_code code, tree op1, tree op2, tree lhs)
 }
 
 gassign *
-build_assign (enum tree_code code, gimple op1, tree op2, tree lhs)
+build_assign (enum tree_code code, gimple *op1, tree op2, tree lhs)
 {
   return build_assign (code, gimple_assign_lhs (op1), op2, lhs);
 }
 
 gassign *
-build_assign (enum tree_code code, tree op1, gimple op2, tree lhs)
+build_assign (enum tree_code code, tree op1, gimple *op2, tree lhs)
 {
   return build_assign (code, op1, gimple_assign_lhs (op2), lhs);
 }
 
 gassign *
-build_assign (enum tree_code code, gimple op1, gimple op2, tree lhs)
+build_assign (enum tree_code code, gimple *op1, gimple *op2, tree lhs)
 {
   return build_assign (code, gimple_assign_lhs (op1), gimple_assign_lhs (op2),
                        lhs);
@@ -116,7 +111,7 @@ build_type_cast (tree to_type, tree op, tree lhs)
 }
 
 gassign *
-build_type_cast (tree to_type, gimple op, tree lhs)
+build_type_cast (tree to_type, gimple *op, tree lhs)
 {
   return build_type_cast (to_type, gimple_assign_lhs (op), lhs);
 }

@@ -22,24 +22,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "alias.h"
+#include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "cfganal.h"
-#include "gimple-pretty-print.h"
-#include "tree-inline.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
-#include "tree-iterator.h"
-#include "alloc-pool.h"
-#include "tree-pass.h"
-#include "flags.h"
 #include "cfgloop.h"
 #include "params.h"
 
@@ -114,7 +107,7 @@ all_immediate_uses_same_place (def_operand_p def_p)
   imm_use_iterator imm_iter;
   use_operand_p use_p;
 
-  gimple firstuse = NULL;
+  gimple *firstuse = NULL;
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, var)
     {
       if (is_gimple_debug (USE_STMT (use_p)))
@@ -144,7 +137,7 @@ nearest_common_dominator_of_uses (def_operand_p def_p, bool *debug_stmts)
 
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, var)
     {
-      gimple usestmt = USE_STMT (use_p);
+      gimple *usestmt = USE_STMT (use_p);
       basic_block useblock;
 
       if (gphi *phi = dyn_cast <gphi *> (usestmt))
@@ -198,7 +191,7 @@ nearest_common_dominator_of_uses (def_operand_p def_p, bool *debug_stmts)
 static basic_block
 select_best_block (basic_block early_bb,
 		   basic_block late_bb,
-		   gimple stmt)
+		   gimple *stmt)
 {
   basic_block best_bb = late_bb;
   basic_block temp_bb = late_bb;
@@ -250,10 +243,10 @@ select_best_block (basic_block early_bb,
    statement before that STMT should be moved.  */
 
 static bool
-statement_sink_location (gimple stmt, basic_block frombb,
+statement_sink_location (gimple *stmt, basic_block frombb,
 			 gimple_stmt_iterator *togsi)
 {
-  gimple use;
+  gimple *use;
   use_operand_p one_use = NULL_USE_OPERAND_P;
   basic_block sinkbb;
   use_operand_p use_p;
@@ -322,7 +315,7 @@ statement_sink_location (gimple stmt, basic_block frombb,
     {
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, DEF_FROM_PTR (def_p))
 	{
-	  gimple use_stmt = USE_STMT (use_p);
+	  gimple *use_stmt = USE_STMT (use_p);
 
 	  /* A killing definition is not a use.  */
 	  if ((gimple_has_lhs (use_stmt)
@@ -383,7 +376,7 @@ statement_sink_location (gimple stmt, basic_block frombb,
 	  basic_block found = NULL;
 	  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_vuse (stmt))
 	    {
-	      gimple use_stmt = USE_STMT (use_p);
+	      gimple *use_stmt = USE_STMT (use_p);
 	      basic_block bb = gimple_bb (use_stmt);
 	      /* For PHI nodes the block we know sth about
 		 is the incoming block with the use.  */
@@ -488,7 +481,7 @@ sink_code_in_bb (basic_block bb)
 
   for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       gimple_stmt_iterator togsi;
 
       if (!statement_sink_location (stmt, bb, &togsi))
@@ -512,7 +505,7 @@ sink_code_in_bb (basic_block bb)
 	{
 	  imm_use_iterator iter;
 	  use_operand_p use_p;
-	  gimple vuse_stmt;
+	  gimple *vuse_stmt;
 
 	  FOR_EACH_IMM_USE_STMT (vuse_stmt, iter, gimple_vdef (stmt))
 	    if (gimple_code (vuse_stmt) != GIMPLE_PHI)

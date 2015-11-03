@@ -1,3 +1,30 @@
+2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dummy-frontend.c: Reorder #include's and remove duplicates.
+	* jit-builtins.c: Likewise.
+	* jit-playback.c: Likewise.
+	* jit-recording.c: Likewise.
+	* libgccjit.c: Likewise.
+
+2015-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-builtins.c (DEF_FUNCTION_TYPE_9, DEF_FUNCTION_TYPE_10,
+	DEF_FUNCTION_TYPE_11): Define.
+	* jit-builtins.h (DEF_FUNCTION_TYPE_9, DEF_FUNCTION_TYPE_10,
+	DEF_FUNCTION_TYPE_11): Define.
+
+2015-09-30  Thomas Schwinge  <thomas@codesourcery.com>
+	    Ulrich Drepper  <drepper@gmail.com>
+
+	* jit-builtins.h: Undefine DEF_FUNCTION_TYPE_VAR_6 after use.
+
+2015-09-30  Matthias Klose  <doko@ubuntu.com>
+
+	* jit-builtins.h Define DEF_FUNCTION_TYPE_VAR_6,
+	remove DEF_FUNCTION_TYPE_VAR_11.
+	* jit-builtins.c (builtins_manager::make_type): Define and handle
+	DEF_FUNCTION_TYPE_VAR_6, remove DEF_FUNCTION_TYPE_VAR_11.
+
 2015-08-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/topics/contexts.rst

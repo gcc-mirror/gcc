@@ -22,8 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "options.h"
-#include "flags.h"
 #include "gfortran.h"
+#include "flags.h"
 #include "match.h"
 #include "constructor.h"
 
@@ -1080,7 +1080,8 @@ gfc_match_array_constructor (gfc_expr **result)
   /* Try to match an optional "type-spec ::"  */
   gfc_clear_ts (&ts);
   gfc_new_undo_checkpoint (changed_syms);
-  if (gfc_match_type_spec (&ts) == MATCH_YES)
+  m = gfc_match_type_spec (&ts);
+  if (m == MATCH_YES)
     {
       seen_ts = (gfc_match (" ::") == MATCH_YES);
 
@@ -1101,6 +1102,11 @@ gfc_match_array_constructor (gfc_expr **result)
 	      goto cleanup;
 	    }
 	}
+    }
+  else if (m == MATCH_ERROR)
+    {
+      gfc_restore_last_undo_checkpoint ();
+      goto cleanup;
     }
 
   if (seen_ts)
@@ -2202,7 +2208,8 @@ gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result, mpz_t *end)
       if (ar->start[dimen] == NULL)
 	{
 	  if (ar->as->lower[dimen] == NULL
-	      || ar->as->lower[dimen]->expr_type != EXPR_CONSTANT)
+	      || ar->as->lower[dimen]->expr_type != EXPR_CONSTANT
+	      || ar->as->lower[dimen]->ts.type != BT_INTEGER)
 	    goto cleanup;
 	  mpz_set (lower, ar->as->lower[dimen]->value.integer);
 	}
@@ -2216,7 +2223,8 @@ gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result, mpz_t *end)
       if (ar->end[dimen] == NULL)
 	{
 	  if (ar->as->upper[dimen] == NULL
-	      || ar->as->upper[dimen]->expr_type != EXPR_CONSTANT)
+	      || ar->as->upper[dimen]->expr_type != EXPR_CONSTANT
+	      || ar->as->upper[dimen]->ts.type != BT_INTEGER)
 	    goto cleanup;
 	  mpz_set (upper, ar->as->upper[dimen]->value.integer);
 	}

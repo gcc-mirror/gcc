@@ -44,6 +44,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Indefinite_Ordered_Multisets is
+   pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
    pragma Remote_Types;
 
@@ -472,7 +473,7 @@ private
    overriding procedure Finalize (Container : in out Set) renames Clear;
 
    use Red_Black_Trees;
-   use Tree_Types;
+   use Tree_Types, Tree_Types.Implementation;
    use Ada.Finalization;
    use Ada.Streams;
 
@@ -539,20 +540,15 @@ private
 
    for Constant_Reference_Type'Write use Write;
 
-   Empty_Set : constant Set :=
-                 (Controlled with Tree => (First  => null,
-                                           Last   => null,
-                                           Root   => null,
-                                           Length => 0,
-                                           Busy   => 0,
-                                           Lock   => 0));
+   Empty_Set : constant Set := (Controlled with others => <>);
 
    type Iterator is new Limited_Controlled and
      Set_Iterator_Interfaces.Reversible_Iterator with
    record
       Container : Set_Access;
       Node      : Node_Access;
-   end record;
+   end record
+     with Disable_Controlled => not T_Check;
 
    overriding procedure Finalize (Object : in out Iterator);
 

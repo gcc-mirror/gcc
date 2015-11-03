@@ -20,20 +20,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "alias.h"
+#include "target.h"
 #include "tree.h"
-#include "stringpool.h"
-#include "stor-layout.h"
 #include "c-common.h"
-#include "flags.h"
 #include "timevar.h"
-#include "cpplib.h"
+#include "stringpool.h"
+#include "alias.h"
+#include "stor-layout.h"
+#include "flags.h"
 #include "c-pragma.h"
 #include "intl.h"
-#include "splay-tree.h"
 #include "debug.h"
-#include "target.h"
 
 #include "attribs.h"
 
@@ -914,9 +911,9 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	}
     }
   /* We also give a warning if the value underflows.  */
-  else if (REAL_VALUES_EQUAL (real, dconst0)
+  else if (real_equal (&real, &dconst0)
 	   || (const_type != type
-	       && REAL_VALUES_EQUAL (real_trunc, dconst0)))
+	       && real_equal (&real_trunc, &dconst0)))
     {
       REAL_VALUE_TYPE realvoidmode;
       int oflow = real_from_string (&realvoidmode, copy);
@@ -924,7 +921,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
 			      : (oflow < 0 ? OT_UNDERFLOW : OT_OVERFLOW));
       if (!(flags & CPP_N_USERDEF))
 	{
-	  if (oflow < 0 || !REAL_VALUES_EQUAL (realvoidmode, dconst0))
+	  if (oflow < 0 || !real_equal (&realvoidmode, &dconst0))
 	    warning (OPT_Woverflow, "floating constant truncated to zero");
 	}
     }

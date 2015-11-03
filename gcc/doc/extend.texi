@@ -929,6 +929,7 @@ examine and set these two fictitious variables with your debugger.
 @cindex additional floating types
 @cindex @code{__float80} data type
 @cindex @code{__float128} data type
+@cindex @code{__ibm128} data type
 @cindex @code{w} floating point suffix
 @cindex @code{q} floating point suffix
 @cindex @code{W} floating point suffix
@@ -941,19 +942,39 @@ Support for additional types includes the arithmetic operators:
 add, subtract, multiply, divide; unary arithmetic operators;
 relational operators; equality operators; and conversions to and from
 integer and other floating types.  Use a suffix @samp{w} or @samp{W}
-in a literal constant of type @code{__float80} and @samp{q} or @samp{Q}
-for @code{_float128}.  You can declare complex types using the
-corresponding internal complex type, @code{XCmode} for @code{__float80}
-type and @code{TCmode} for @code{__float128} type:
+in a literal constant of type @code{__float80} or type
+@code{__ibm128}.  Use a suffix @samp{q} or @samp{Q} for @code{_float128}.
+
+On the i386, x86_64, IA-64, and HP-UX targets, you can declare complex
+types using the corresponding internal complex type, @code{XCmode} for
+@code{__float80} type and @code{TCmode} for @code{__float128} type:
 
 @smallexample
 typedef _Complex float __attribute__((mode(TC))) _Complex128;
 typedef _Complex float __attribute__((mode(XC))) _Complex80;
 @end smallexample
 
+On PowerPC Linux, Freebsd and Darwin systems, the default for
+@code{long double} is to use the IBM extended floating point format
+that uses a pair of @code{double} values to extend the precision.
+This means that the mode @code{TCmode} was already used by the
+traditional IBM long double format, and you would need to use the mode
+@code{KCmode}:
+
+@smallexample
+typedef _Complex float __attribute__((mode(KC))) _Complex128;
+@end smallexample
+
 Not all targets support additional floating-point types.  @code{__float80}
 and @code{__float128} types are supported on x86 and IA-64 targets.
-The @code{__float128} type is supported on hppa HP-UX targets.
+The @code{__float128} type is supported on hppa HP-UX.
+The @code{__float128} type is supported on PowerPC systems by default
+if the vector scalar instruction set (VSX) is enabled.
+
+On the PowerPC, @code{__ibm128} provides access to the IBM extended
+double format, and it is intended to be used by the library functions
+that handle conversions if/when long double is changed to be IEEE
+128-bit floating point.
 
 @node Half-Precision
 @section Half-Precision Floating Point
@@ -3066,6 +3087,19 @@ This function attribute make a stack protection of the function if
 flags @option{fstack-protector} or @option{fstack-protector-strong}
 or @option{fstack-protector-explicit} are set.
 
+@item target_clones (@var{options})
+@cindex @code{target_clones} function attribute
+The @code{target_clones} attribute is used to specify that a function is to
+be cloned into multiple versions compiled with different target options
+than specified on the command line.  The supported options and restrictions
+are the same as for @code{target} attribute.
+
+For instance on an x86, you could compile a function with
+@code{target_clones("sse4.1,avx")}. It will create 2 function clones,
+one compiled with @option{-msse4.1} and another with @option{-mavx}.
+At the function call it will create resolver @code{ifunc}, that will
+dynamically call a clone suitable for current architecture.
+
 @item target (@var{options})
 @cindex @code{target} function attribute
 Multiple target back ends implement the @code{target} attribute
@@ -3318,6 +3352,24 @@ one pass over the objects and does the best that it can.  Using the
 @option{-ffunction-sections} and @option{-fdata-sections} command line
 options can help the packing however, since they produce smaller,
 easier to pack regions.
+
+@item reentrant
+On the MSP430 a function can be given the @code{reentant} attribute.
+This makes the function disable interrupts upon entry and enable
+interrupts upon exit.  Reentrant functions cannot be @code{naked}.
+
+@item critical
+On the MSP430 a function can be given the @code{critical} attribute.
+This makes the function disable interrupts upon entry and restore the
+previous interrupt enabled/disabled state upon exit.  A function
+cannot have both the @code{reentrant} and @code{critical} attributes.
+Critical functions cannot be @code{naked}.
+
+@item wakeup
+On the MSP430 a function can be given the @code{wakeup} attribute.
+Such a function must also have the @code{interrupt} attribute.  When a
+function with the @code{wakeup} attribute exists the processor will be
+woken up from any low-power state in which it may be residing.
 
 @end table
 
@@ -5264,6 +5316,7 @@ attributes.
 * M32R/D Variable Attributes::
 * MeP Variable Attributes::
 * Microsoft Windows Variable Attributes::
+* MSP430 Variable Attributes::
 * PowerPC Variable Attributes::
 * SPU Variable Attributes::
 * x86 Variable Attributes::
@@ -5852,6 +5905,38 @@ linkers work.  See @code{section} attribute for more information.
 
 The @code{shared} attribute is only available on Microsoft Windows@.
 
+@end table
+
+@node MSP430 Variable Attributes
+@subsection MSP430 Variable Attributes
+
+@table @code
+@item noinit
+@cindex @code{noinit} MSP430 variable attribute
+Any data with the @code{noinit} attribute will not be initialised by
+the C runtime startup code, or the program loader.  Not initialising
+data in this way can reduce program startup times.
+
+@item persistent
+@cindex @code{persistent} MSP430 variable attribute
+Any variable with the @code{persistent} attribute will not be
+initialised by the C runtime startup code.  Instead its value will be
+set once, when the application is loaded, and then never initialised
+again, even if the processor is reset or the program restarts.
+Persistent data is intended to be placed into FLASH RAM, where its
+value will be retained across resets.  The linker script being used to
+create the application should ensure that persistent data is correctly
+placed.
+
+@item lower
+@itemx upper
+@itemx either
+@cindex @code{lower} memory region on the MSP430
+@cindex @code{upper} memory region on the MSP430
+@cindex @code{either} memory region on the MSP430
+These attributes are the same as the MSP430 function attributes of the
+same name.  These attributes can be applied to both functions and
+variables.
 @end table
 
 @node PowerPC Variable Attributes
@@ -7037,21 +7122,19 @@ function are integrated into the caller, and the function's address is
 never used, then the function's own assembler code is never referenced.
 In this case, GCC does not actually output assembler code for the
 function, unless you specify the option @option{-fkeep-inline-functions}.
-Some calls cannot be integrated for various reasons (in particular,
-calls that precede the function's definition cannot be integrated, and
-neither can recursive calls within the definition).  If there is a
-nonintegrated call, then the function is compiled to assembler code as
-usual.  The function must also be compiled as usual if the program
-refers to its address, because that can't be inlined.
+If there is a nonintegrated call, then the function is compiled to
+assembler code as usual.  The function must also be compiled as usual if
+the program refers to its address, because that can't be inlined.
 
 @opindex Winline
 Note that certain usages in a function definition can make it unsuitable
-for inline substitution.  Among these usages are: variadic functions, use of
-@code{alloca}, use of variable-length data types (@pxref{Variable Length}),
-use of computed goto (@pxref{Labels as Values}), use of nonlocal goto,
-and nested functions (@pxref{Nested Functions}).  Using @option{-Winline}
-warns when a function marked @code{inline} could not be substituted,
-and gives the reason for the failure.
+for inline substitution.  Among these usages are: variadic functions,
+use of @code{alloca}, use of computed goto (@pxref{Labels as Values}),
+use of nonlocal goto, use of nested functions, use of @code{setjmp}, use
+of @code{__builtin_longjmp} and use of @code{__builtin_return} or
+@code{__builtin_apply_args}.  Using @option{-Winline} warns when a
+function marked @code{inline} could not be substituted, and gives the
+reason for the failure.
 
 @cindex automatic @code{inline} for C++ member fns
 @cindex @code{inline} automatic for C++ member fns
@@ -7203,7 +7286,8 @@ for a C symbol, or to place a C variable in a specific register.
 * Extended Asm::       Inline assembler with operands.
 * Constraints::        Constraints for @code{asm} operands
 * Asm Labels::         Specifying the assembler name to use for a C symbol.
-* Explicit Reg Vars::  Defining variables residing in specified registers.
+* Explicit Register Variables::  Defining variables residing in specified 
+                       registers.
 * Size of an asm::     How GCC calculates the size of an @code{asm} block.
 @end menu
 
@@ -7723,7 +7807,8 @@ If you list as many alternates as the @code{asm} statement allows, you permit
 the optimizers to produce the best possible code. 
 If you must use a specific register, but your Machine Constraints do not
 provide sufficient control to select the specific register you want, 
-local register variables may provide a solution (@pxref{Local Reg Vars}).
+local register variables may provide a solution (@pxref{Local Register 
+Variables}).
 
 @item cvariablename
 Specifies a C lvalue expression to hold the output, typically a variable name.
@@ -7953,7 +8038,8 @@ When you list more than one possible location (for example, @samp{"irm"}),
 the compiler chooses the most efficient one based on the current context.
 If you must use a specific register, but your Machine Constraints do not
 provide sufficient control to select the specific register you want, 
-local register variables may provide a solution (@pxref{Local Reg Vars}).
+local register variables may provide a solution (@pxref{Local Register 
+Variables}).
 
 Input constraints can also be digits (for example, @code{"0"}). This indicates 
 that the specified input must be in the same place as the output constraint 
@@ -8035,7 +8121,8 @@ enclosed in double quotes and separated by commas.
 Clobber descriptions may not in any way overlap with an input or output 
 operand. For example, you may not have an operand describing a register class 
 with one member when listing that register in the clobber list. Variables 
-declared to live in specific registers (@pxref{Explicit Reg Vars}) and used 
+declared to live in specific registers (@pxref{Explicit Register 
+Variables}) and used 
 as @code{asm} input or output operands must have no part mentioned in the 
 clobber description. In particular, there is no way to specify that input 
 operands get modified without also specifying them as output operands.
@@ -8367,7 +8454,13 @@ asm ("fyl2xp1" : "=t" (result) : "0" (x), "u" (y) : "st(1)");
 
 You can specify the name to be used in the assembler code for a C
 function or variable by writing the @code{asm} (or @code{__asm__})
-keyword after the declarator as follows:
+keyword after the declarator.
+It is up to you to make sure that the assembler names you choose do not
+conflict with any other assembler symbols, or reference registers.
+
+@subsubheading Assembler names for data:
+
+This sample shows how to specify the assembler name for data:
 
 @smallexample
 int foo asm ("myfoo") = 2;
@@ -8379,141 +8472,133 @@ the assembler code should be @samp{myfoo} rather than the usual
 @samp{_foo}.
 
 On systems where an underscore is normally prepended to the name of a C
-function or variable, this feature allows you to define names for the
+variable, this feature allows you to define names for the
 linker that do not start with an underscore.
 
-It does not make sense to use this feature with a non-static local
-variable since such variables do not have assembler names.  If you are
-trying to put the variable in a particular register, see @ref{Explicit
-Reg Vars}.  GCC presently accepts such code with a warning, but will
-probably be changed to issue an error, rather than a warning, in the
-future.
+GCC does not support using this feature with a non-static local variable 
+since such variables do not have assembler names.  If you are
+trying to put the variable in a particular register, see 
+@ref{Explicit Register Variables}.
 
-You cannot use @code{asm} in this way in a function @emph{definition}; but
-you can get the same effect by writing a declaration for the function
-before its definition and putting @code{asm} there, like this:
+@subsubheading Assembler names for functions:
 
-@smallexample
-extern func () asm ("FUNC");
-
-func (x, y)
-     int x, y;
-/* @r{@dots{}} */
-@end smallexample
-
-It is up to you to make sure that the assembler names you choose do not
-conflict with any other assembler symbols.  Also, you must not use a
-register name; that would produce completely invalid assembler code.  GCC
-does not as yet have the ability to store static variables in registers.
-Perhaps that will be added.
-
-@node Explicit Reg Vars
-@subsection Variables in Specified Registers
-@cindex explicit register variables
-@cindex variables in specified registers
-@cindex specified registers
-@cindex registers, global allocation
-
-GNU C allows you to put a few global variables into specified hardware
-registers.  You can also specify the register in which an ordinary
-register variable should be allocated.
-
-@itemize @bullet
-@item
-Global register variables reserve registers throughout the program.
-This may be useful in programs such as programming language
-interpreters that have a couple of global variables that are accessed
-very often.
-
-@item
-Local register variables in specific registers do not reserve the
-registers, except at the point where they are used as input or output
-operands in an @code{asm} statement and the @code{asm} statement itself is
-not deleted.  The compiler's data flow analysis is capable of determining
-where the specified registers contain live values, and where they are
-available for other uses.  Stores into local register variables may be deleted
-when they appear to be dead according to dataflow analysis.  References
-to local register variables may be deleted or moved or simplified.
-
-These local variables are sometimes convenient for use with the extended
-@code{asm} feature (@pxref{Extended Asm}), if you want to write one
-output of the assembler instruction directly into a particular register.
-(This works provided the register you specify fits the constraints
-specified for that operand in the @code{asm}.)
-@end itemize
-
-@menu
-* Global Reg Vars::
-* Local Reg Vars::
-@end menu
-
-@node Global Reg Vars
-@subsubsection Defining Global Register Variables
-@cindex global register variables
-@cindex registers, global variables in
-
-You can define a global register variable in GNU C like this:
+To specify the assembler name for functions, write a declaration for the 
+function before its definition and put @code{asm} there, like this:
 
 @smallexample
-register int *foo asm ("a5");
+int func (int x, int y) asm ("MYFUNC");
+     
+int func (int x, int y)
+@{
+   /* @r{@dots{}} */
 @end smallexample
 
 @noindent
-Here @code{a5} is the name of the register that should be used.  Choose a
-register that is normally saved and restored by function calls on your
-machine, so that library routines will not clobber it.
+This specifies that the name to be used for the function @code{func} in
+the assembler code should be @code{MYFUNC}.
 
-Naturally the register name is CPU-dependent, so you need to
-conditionalize your program according to CPU type.  The register
-@code{a5} is a good choice on a 68000 for a variable of pointer
-type.  On machines with register windows, be sure to choose a ``global''
+@node Explicit Register Variables
+@subsection Variables in Specified Registers
+@anchor{Explicit Reg Vars}
+@cindex explicit register variables
+@cindex variables in specified registers
+@cindex specified registers
+
+GNU C allows you to associate specific hardware registers with C 
+variables.  In almost all cases, allowing the compiler to assign
+registers produces the best code.  However under certain unusual
+circumstances, more precise control over the variable storage is 
+required.
+
+Both global and local variables can be associated with a register.  The
+consequences of performing this association are very different between
+the two, as explained in the sections below.
+
+@menu
+* Global Register Variables::   Variables declared at global scope.
+* Local Register Variables::    Variables declared within a function.
+@end menu
+
+@node Global Register Variables
+@subsubsection Defining Global Register Variables
+@anchor{Global Reg Vars}
+@cindex global register variables
+@cindex registers, global variables in
+@cindex registers, global allocation
+
+You can define a global register variable and associate it with a specified 
+register like this:
+
+@smallexample
+register int *foo asm ("r12");
+@end smallexample
+
+@noindent
+Here @code{r12} is the name of the register that should be used. Note that 
+this is the same syntax used for defining local register variables, but for 
+a global variable the declaration appears outside a function. The 
+@code{register} keyword is required, and cannot be combined with 
+@code{static}. The register name must be a valid register name for the
+target platform.
+
+Registers are a scarce resource on most systems and allowing the 
+compiler to manage their usage usually results in the best code. However, 
+under special circumstances it can make sense to reserve some globally.
+For example this may be useful in programs such as programming language 
+interpreters that have a couple of global variables that are accessed 
+very often.
+
+After defining a global register variable, for the current compilation
+unit:
+
+@itemize @bullet
+@item The register is reserved entirely for this use, and will not be 
+allocated for any other purpose.
+@item The register is not saved and restored by any functions.
+@item Stores into this register are never deleted even if they appear to be 
+dead, but references may be deleted, moved or simplified.
+@end itemize
+
+Note that these points @emph{only} apply to code that is compiled with the
+definition. The behavior of code that is merely linked in (for example 
+code from libraries) is not affected.
+
+If you want to recompile source files that do not actually use your global 
+register variable so they do not use the specified register for any other 
+purpose, you need not actually add the global register declaration to 
+their source code. It suffices to specify the compiler option 
+@option{-ffixed-@var{reg}} (@pxref{Code Gen Options}) to reserve the 
+register.
+
+@subsubheading Declaring the variable
+
+Global register variables can not have initial values, because an
+executable file has no means to supply initial contents for a register.
+
+When selecting a register, choose one that is normally saved and 
+restored by function calls on your machine. This ensures that code
+which is unaware of this reservation (such as library routines) will 
+restore it before returning.
+
+On machines with register windows, be sure to choose a global
 register that is not affected magically by the function call mechanism.
 
-In addition, different operating systems on the same CPU may differ in how they
-name the registers; then you need additional conditionals.  For
-example, some 68000 operating systems call this register @code{%a5}.
-
-Eventually there may be a way of asking the compiler to choose a register
-automatically, but first we need to figure out how it should choose and
-how to enable you to guide the choice.  No solution is evident.
-
-Defining a global register variable in a certain register reserves that
-register entirely for this use, at least within the current compilation.
-The register is not allocated for any other purpose in the functions
-in the current compilation, and is not saved and restored by
-these functions.  Stores into this register are never deleted even if they
-appear to be dead, but references may be deleted or moved or
-simplified.
-
-It is not safe to access the global register variables from signal
-handlers, or from more than one thread of control, because the system
-library routines may temporarily use the register for other things (unless
-you recompile them specially for the task at hand).
+@subsubheading Using the variable
 
 @cindex @code{qsort}, and global register variables
-It is not safe for one function that uses a global register variable to
-call another such function @code{foo} by way of a third function
-@code{lose} that is compiled without knowledge of this variable (i.e.@: in a
-different source file in which the variable isn't declared).  This is
-because @code{lose} might save the register and put some other value there.
-For example, you can't expect a global register variable to be available in
-the comparison-function that you pass to @code{qsort}, since @code{qsort}
-might have put something else in that register.  (If you are prepared to
-recompile @code{qsort} with the same global register variable, you can
-solve this problem.)
+When calling routines that are not aware of the reservation, be 
+cautious if those routines call back into code which uses them. As an 
+example, if you call the system library version of @code{qsort}, it may 
+clobber your registers during execution, but (if you have selected 
+appropriate registers) it will restore them before returning. However 
+it will @emph{not} restore them before calling @code{qsort}'s comparison 
+function. As a result, global values will not reliably be available to 
+the comparison function unless the @code{qsort} function itself is rebuilt.
 
-If you want to recompile @code{qsort} or other source files that do not
-actually use your global register variable, so that they do not use that
-register for any other purpose, then it suffices to specify the compiler
-option @option{-ffixed-@var{reg}}.  You need not actually add a global
-register declaration to their source code.
-
-A function that can alter the value of a global register variable cannot
-safely be called from a function compiled without this variable, because it
-could clobber the value the caller expects to find there on return.
-Therefore, the function that is the entry point into the part of the
-program that uses the global register variable must explicitly save and
-restore the value that belongs to its caller.
+Similarly, it is not safe to access the global register variables from signal
+handlers or from more than one thread of control. Unless you recompile 
+them specially for the task at hand, the system library routines may 
+temporarily use the register for other things.
 
 @cindex register variable after @code{longjmp}
 @cindex global register after @code{longjmp}
@@ -8521,84 +8606,51 @@ restore the value that belongs to its caller.
 @findex longjmp
 @findex setjmp
 On most machines, @code{longjmp} restores to each global register
-variable the value it had at the time of the @code{setjmp}.  On some
+variable the value it had at the time of the @code{setjmp}. On some
 machines, however, @code{longjmp} does not change the value of global
-register variables.  To be portable, the function that called @code{setjmp}
+register variables. To be portable, the function that called @code{setjmp}
 should make other arrangements to save the values of the global register
-variables, and to restore them in a @code{longjmp}.  This way, the same
+variables, and to restore them in a @code{longjmp}. This way, the same
 thing happens regardless of what @code{longjmp} does.
 
-All global register variable declarations must precede all function
-definitions.  If such a declaration could appear after function
-definitions, the declaration would be too late to prevent the register from
-being used for other purposes in the preceding functions.
+Eventually there may be a way of asking the compiler to choose a register 
+automatically, but first we need to figure out how it should choose and 
+how to enable you to guide the choice.  No solution is evident.
 
-Global register variables may not have initial values, because an
-executable file has no means to supply initial contents for a register.
-
-On the SPARC, there are reports that g3 @dots{} g7 are suitable
-registers, but certain library functions, such as @code{getwd}, as well
-as the subroutines for division and remainder, modify g3 and g4.  g1 and
-g2 are local temporaries.
-
-On the 68000, a2 @dots{} a5 should be suitable, as should d2 @dots{} d7.
-Of course, it does not do to use more than a few of those.
-
-@node Local Reg Vars
+@node Local Register Variables
 @subsubsection Specifying Registers for Local Variables
+@anchor{Local Reg Vars}
 @cindex local variables, specifying registers
 @cindex specifying registers for local variables
 @cindex registers for local variables
 
-You can define a local register variable with a specified register
-like this:
+You can define a local register variable and associate it with a specified 
+register like this:
 
 @smallexample
-register int *foo asm ("a5");
+register int *foo asm ("r12");
 @end smallexample
 
 @noindent
-Here @code{a5} is the name of the register that should be used.  Note
-that this is the same syntax used for defining global register
-variables, but for a local variable it appears within a function.
+Here @code{r12} is the name of the register that should be used.  Note
+that this is the same syntax used for defining global register variables, 
+but for a local variable the declaration appears within a function.  The 
+@code{register} keyword is required, and cannot be combined with 
+@code{static}.  The register name must be a valid register name for the
+target platform.
 
-Naturally the register name is CPU-dependent, but this is not a
-problem, since specific registers are most often useful with explicit
-assembler instructions (@pxref{Extended Asm}).  Both of these things
-generally require that you conditionalize your program according to
-CPU type.
+As with global register variables, it is recommended that you choose 
+a register that is normally saved and restored by function calls on your 
+machine, so that calls to library routines will not clobber it.
 
-In addition, operating systems on one type of CPU may differ in how they
-name the registers; then you need additional conditionals.  For
-example, some 68000 operating systems call this register @code{%a5}.
-
-Defining such a register variable does not reserve the register; it
-remains available for other uses in places where flow control determines
-the variable's value is not live.
-
-This option does not guarantee that GCC generates code that has
-this variable in the register you specify at all times.  You may not
-code an explicit reference to this register in the assembler
-instruction template part of an @code{asm} statement and assume it
-always refers to this variable.
-However, using the variable as an input or output operand to the @code{asm}
-guarantees that the specified register is used for that operand.  
-@xref{Extended Asm}, for more information.
-
-Stores into local register variables may be deleted when they appear to be dead
-according to dataflow analysis.  References to local register variables may
-be deleted or moved or simplified.
-
-As with global register variables, it is recommended that you choose a
-register that is normally saved and restored by function calls on
-your machine, so that library routines will not clobber it.  
-
-Sometimes when writing inline @code{asm} code, you need to make an operand be a 
-specific register, but there's no matching constraint letter for that 
-register. To force the operand into that register, create a local variable 
-and specify the register in the variable's declaration. Then use the local 
-variable for the asm operand and specify any constraint letter that matches 
-the register:
+The only supported use for this feature is to specify registers
+for input and output operands when calling Extended @code{asm} 
+(@pxref{Extended Asm}).  This may be necessary if the constraints for a 
+particular machine don't provide sufficient control to select the desired 
+register.  To force an operand into a register, create a local variable 
+and specify the register name after the variable's declaration.  Then use 
+the local variable for the @code{asm} operand and specify any constraint 
+letter that matches the register:
 
 @smallexample
 register int *p1 asm ("r0") = @dots{};
@@ -8607,11 +8659,11 @@ register int *result asm ("r0");
 asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
 @end smallexample
 
-@emph{Warning:} In the above example, be aware that a register (for example r0) can be 
-call-clobbered by subsequent code, including function calls and library calls 
-for arithmetic operators on other variables (for example the initialization 
-of p2). In this case, use temporary variables for expressions between the 
-register assignments:
+@emph{Warning:} In the above example, be aware that a register (for example 
+@code{r0}) can be call-clobbered by subsequent code, including function 
+calls and library calls for arithmetic operators on other variables (for 
+example the initialization of @code{p2}).  In this case, use temporary 
+variables for expressions between the register assignments:
 
 @smallexample
 int t1 = @dots{};
@@ -8620,6 +8672,35 @@ register int *p2 asm ("r1") = t1;
 register int *result asm ("r0");
 asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
 @end smallexample
+
+Defining a register variable does not reserve the register.  Other than
+when invoking the Extended @code{asm}, the contents of the specified 
+register are not guaranteed.  For this reason, the following uses 
+are explicitly @emph{not} supported.  If they appear to work, it is only 
+happenstance, and may stop working as intended due to (seemingly) 
+unrelated changes in surrounding code, or even minor changes in the 
+optimization of a future version of gcc:
+
+@itemize @bullet
+@item Passing parameters to or from Basic @code{asm}
+@item Passing parameters to or from Extended @code{asm} without using input 
+or output operands.
+@item Passing parameters to or from routines written in assembler (or
+other languages) using non-standard calling conventions.
+@end itemize
+
+Some developers use Local Register Variables in an attempt to improve 
+gcc's allocation of registers, especially in large functions.  In this 
+case the register name is essentially a hint to the register allocator.
+While in some instances this can generate better code, improvements are
+subject to the whims of the allocator/optimizers.  Since there are no
+guarantees that your improvements won't be lost, this usage of Local
+Register Variables is discouraged.
+
+On the MIPS platform, there is related use for local register variables 
+with slightly different characteristics (@pxref{MIPS Coprocessors,, 
+Defining coprocessor specifics for MIPS targets, gccint, 
+GNU Compiler Collection (GCC) Internals}).
 
 @node Size of an asm
 @subsection Size of an @code{asm}
@@ -16038,6 +16119,28 @@ unsigned int __builtin_tresume (void)
 unsigned int __builtin_tsuspend (void)
 @end smallexample
 
+Note that the semantics of the above HTM builtins are required to mimic
+the locking semantics used for critical sections.  Builtins that are used
+to create a new transaction or restart a suspended transaction must have
+lock acquisition like semantics while those builtins that end or suspend a
+transaction must have lock release like semantics.  Specifically, this must
+mimic lock semantics as specified by C++11, for example: Lock acquisition is
+as-if an execution of __atomic_exchange_n(&globallock,1,__ATOMIC_ACQUIRE)
+that returns 0, and lock release is as-if an execution of
+__atomic_store(&globallock,0,__ATOMIC_RELEASE), with globallock being an
+implicit implementation-defined lock used for all transactions.  The HTM
+instructions associated with with the builtins inherently provide the
+correct acquisition and release hardware barriers required.  However,
+the compiler must also be prohibited from moving loads and stores across
+the builtins in a way that would violate their semantics.  This has been
+accomplished by adding memory barriers to the associated HTM instructions
+(which is a conservative approach to provide acquire and release semantics).
+Earlier versions of the compiler did not treat the HTM instructions as
+memory barriers.  A @code{__TM_FENCE__} macro has been added, which can
+be used to determine whether the current compiler treats HTM instructions
+as memory barriers or not.  This allows the user to explicitly add memory
+barriers to their code when using an older version of the compiler.
+
 The following set of built-in functions are available to gain access
 to the HTM specific special purpose registers.
 
@@ -16926,6 +17029,9 @@ AMD Family 15h Bulldozer version 4.
 
 @item btver2
 AMD Family 16h CPU.
+
+@item znver1
+AMD Family 17h CPU.
 @end table
 
 Here is an example:
@@ -19571,8 +19677,8 @@ If any calls are not inlined, you will get linker errors.
 @section Where's the Template?
 @cindex template instantiation
 
-C++ templates are the first language feature to require more
-intelligence from the environment than one usually finds on a UNIX
+C++ templates were the first language feature to require more
+intelligence from the environment than was traditionally found on a UNIX
 system.  Somehow the compiler and linker have to make sure that each
 template instance occurs exactly once in the executable if it is needed,
 and not at all otherwise.  There are two basic approaches to this
@@ -19585,7 +19691,7 @@ equivalent of common blocks to their linker; the compiler emits template
 instances in each translation unit that uses them, and the linker
 collapses them together.  The advantage of this model is that the linker
 only has to consider the object files themselves; there is no external
-complexity to worry about.  This disadvantage is that compilation time
+complexity to worry about.  The disadvantage is that compilation time
 is increased because the template code is being compiled repeatedly.
 Code written for this model tends to include definitions of all
 templates in the header file, since they must be seen to be
@@ -19611,46 +19717,35 @@ of non-inline member templates into a separate file, which should be
 compiled separately.
 @end table
 
-When used with GNU ld version 2.8 or later on an ELF system such as
-GNU/Linux or Solaris 2, or on Microsoft Windows, G++ supports the
-Borland model.  On other systems, G++ implements neither automatic
-model.
+G++ implements the Borland model on targets where the linker supports it,
+including ELF targets (such as GNU/Linux), Mac OS X and Microsoft Windows.
+Otherwise G++ implements neither automatic model.
 
 You have the following options for dealing with template instantiations:
 
 @enumerate
 @item
-@opindex frepo
-Compile your template-using code with @option{-frepo}.  The compiler
-generates files with the extension @samp{.rpo} listing all of the
-template instantiations used in the corresponding object files that
-could be instantiated there; the link wrapper, @samp{collect2},
-then updates the @samp{.rpo} files to tell the compiler where to place
-those instantiations and rebuild any affected object files.  The
-link-time overhead is negligible after the first pass, as the compiler
-continues to place the instantiations in the same files.
+Do nothing.  Code written for the Borland model works fine, but
+each translation unit contains instances of each of the templates it
+uses.  The duplicate instances will be discarded by the linker, but in
+a large program, this can lead to an unacceptable amount of code
+duplication in object files or shared libraries.
 
-This is your best option for application code written for the Borland
-model, as it just works.  Code written for the Cfront model 
-needs to be modified so that the template definitions are available at
-one or more points of instantiation; usually this is as simple as adding
-@code{#include <tmethods.cc>} to the end of each template header.
+Duplicate instances of a template can be avoided by defining an explicit
+instantiation in one object file, and preventing the compiler from doing
+implicit instantiations in any other object files by using an explicit
+instantiation declaration, using the @code{extern template} syntax:
 
-For library code, if you want the library to provide all of the template
-instantiations it needs, just try to link all of its object files
-together; the link will fail, but cause the instantiations to be
-generated as a side effect.  Be warned, however, that this may cause
-conflicts if multiple libraries try to provide the same instantiations.
-For greater control, use explicit instantiation as described in the next
-option.
+@smallexample
+extern template int max (int, int);
+@end smallexample
 
-@item
-@opindex fno-implicit-templates
-Compile your code with @option{-fno-implicit-templates} to disable the
-implicit generation of template instances, and explicitly instantiate
-all the ones you use.  This approach requires more knowledge of exactly
-which instances you need than do the others, but it's less
-mysterious and allows greater control.  You can scatter the explicit
+This syntax is defined in the C++ 2011 standard, but has been supported by
+G++ and other compilers since well before 2011.
+
+Explicit instantiations can be used for the largest or most frequently
+duplicated instances, without having to know exactly which other instances
+are used in the rest of the program.  You can scatter the explicit
 instantiations throughout your program, perhaps putting them in the
 translation units where the instances are used or the translation units
 that define the templates themselves; you can put all of the explicit
@@ -19670,6 +19765,45 @@ template ostream& operator <<
 for each of the instances you need, and create a template instantiation
 library from those.
 
+This is the simplest option, but also offers flexibility and
+fine-grained control when necessary. It is also the most portable
+alternative and programs using this approach will work with most modern
+compilers.
+
+@item
+@opindex frepo
+Compile your template-using code with @option{-frepo}.  The compiler
+generates files with the extension @samp{.rpo} listing all of the
+template instantiations used in the corresponding object files that
+could be instantiated there; the link wrapper, @samp{collect2},
+then updates the @samp{.rpo} files to tell the compiler where to place
+those instantiations and rebuild any affected object files.  The
+link-time overhead is negligible after the first pass, as the compiler
+continues to place the instantiations in the same files.
+
+This can be a suitable option for application code written for the Borland
+model, as it usually just works.  Code written for the Cfront model 
+needs to be modified so that the template definitions are available at
+one or more points of instantiation; usually this is as simple as adding
+@code{#include <tmethods.cc>} to the end of each template header.
+
+For library code, if you want the library to provide all of the template
+instantiations it needs, just try to link all of its object files
+together; the link will fail, but cause the instantiations to be
+generated as a side effect.  Be warned, however, that this may cause
+conflicts if multiple libraries try to provide the same instantiations.
+For greater control, use explicit instantiation as described in the next
+option.
+
+@item
+@opindex fno-implicit-templates
+Compile your code with @option{-fno-implicit-templates} to disable the
+implicit generation of template instances, and explicitly instantiate
+all the ones you use.  This approach requires more knowledge of exactly
+which instances you need than do the others, but it's less
+mysterious and allows greater control if you want to ensure that only
+the intended instances are used.
+
 If you are using Cfront-model code, you can probably get away with not
 using @option{-fno-implicit-templates} when compiling files that don't
 @samp{#include} the member template definitions.
@@ -19679,9 +19813,8 @@ compile it without @option{-fno-implicit-templates} so you get all of the
 instances required by your explicit instantiations (but not by any
 other files) without having to specify them as well.
 
-The ISO C++ 2011 standard allows forward declaration of explicit
-instantiations (with @code{extern}). G++ supports explicit instantiation
-declarations in C++98 mode and has extended the template instantiation
+In addition to forward declaration of explicit instantiations
+(with @code{extern}), G++ has extended the template instantiation
 syntax to support instantiation of the compiler support data for a
 template class (i.e.@: the vtable) without instantiating any of its
 members (with @code{inline}), and instantiation of only the static data
@@ -19689,17 +19822,9 @@ members of a template class, without the support data or member
 functions (with @code{static}):
 
 @smallexample
-extern template int max (int, int);
 inline template class Foo<int>;
 static template class Foo<int>;
 @end smallexample
-
-@item
-Do nothing.  Pretend G++ does implement automatic instantiation
-management.  Code written for the Borland model works fine, but
-each translation unit contains instances of each of the templates it
-uses.  In a large program, this can lead to an unacceptable amount of code
-duplication.
 @end enumerate
 
 @node Bound member functions

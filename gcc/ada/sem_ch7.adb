@@ -28,44 +28,45 @@
 --  handling of private and full declarations, and the construction of dispatch
 --  tables for tagged types.
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Disp; use Exp_Disp;
-with Exp_Dist; use Exp_Dist;
-with Exp_Dbug; use Exp_Dbug;
-with Ghost;    use Ghost;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch10; use Sem_Ch10;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Disp; use Sem_Disp;
-with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
+with Aspects;   use Aspects;
+with Atree;     use Atree;
+with Contracts; use Contracts;
+with Debug;     use Debug;
+with Einfo;     use Einfo;
+with Elists;    use Elists;
+with Errout;    use Errout;
+with Exp_Disp;  use Exp_Disp;
+with Exp_Dist;  use Exp_Dist;
+with Exp_Dbug;  use Exp_Dbug;
+with Ghost;     use Ghost;
+with Lib;       use Lib;
+with Lib.Xref;  use Lib.Xref;
+with Namet;     use Namet;
+with Nmake;     use Nmake;
+with Nlists;    use Nlists;
+with Opt;       use Opt;
+with Output;    use Output;
+with Restrict;  use Restrict;
+with Sem;       use Sem;
+with Sem_Aux;   use Sem_Aux;
+with Sem_Cat;   use Sem_Cat;
+with Sem_Ch3;   use Sem_Ch3;
+with Sem_Ch6;   use Sem_Ch6;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch10;  use Sem_Ch10;
+with Sem_Ch12;  use Sem_Ch12;
+with Sem_Ch13;  use Sem_Ch13;
+with Sem_Disp;  use Sem_Disp;
+with Sem_Eval;  use Sem_Eval;
+with Sem_Prag;  use Sem_Prag;
+with Sem_Util;  use Sem_Util;
+with Sem_Warn;  use Sem_Warn;
+with Snames;    use Snames;
+with Stand;     use Stand;
+with Sinfo;     use Sinfo;
+with Sinput;    use Sinput;
 with Style;
-with Uintp;    use Uintp;
+with Uintp;     use Uintp;
 
 package body Sem_Ch7 is
 
@@ -181,47 +182,6 @@ package body Sem_Ch7 is
          Write_Eol;
       end if;
    end Analyze_Package_Body;
-
-   -----------------------------------
-   -- Analyze_Package_Body_Contract --
-   -----------------------------------
-
-   procedure Analyze_Package_Body_Contract (Body_Id : Entity_Id) is
-      Spec_Id   : constant Entity_Id := Spec_Entity (Body_Id);
-      Mode      : SPARK_Mode_Type;
-      Ref_State : Node_Id;
-
-   begin
-      --  Due to the timing of contract analysis, delayed pragmas may be
-      --  subject to the wrong SPARK_Mode, usually that of the enclosing
-      --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related package body.
-
-      Save_SPARK_Mode_And_Set (Body_Id, Mode);
-
-      Ref_State := Get_Pragma (Body_Id, Pragma_Refined_State);
-
-      --  The analysis of pragma Refined_State detects whether the spec has
-      --  abstract states available for refinement.
-
-      if Present (Ref_State) then
-         Analyze_Refined_State_In_Decl_Part (Ref_State);
-
-      --  State refinement is required when the package declaration defines at
-      --  least one abstract state. Null states are not considered. Refinement
-      --  is not envorced when SPARK checks are turned off.
-
-      elsif SPARK_Mode /= Off
-        and then Requires_State_Refinement (Spec_Id, Body_Id)
-      then
-         Error_Msg_N ("package & requires state refinement", Spec_Id);
-      end if;
-
-      --  Restore the SPARK_Mode of the enclosing context after all delayed
-      --  pragmas have been analyzed.
-
-      Restore_SPARK_Mode (Mode);
-   end Analyze_Package_Body_Contract;
 
    ---------------------------------
    -- Analyze_Package_Body_Helper --
@@ -571,7 +531,7 @@ package body Sem_Ch7 is
 
       --  Local variables
 
-      GM               : constant Ghost_Mode_Type := Ghost_Mode;
+      Save_Ghost_Mode  : constant Ghost_Mode_Type := Ghost_Mode;
       Body_Id          : Entity_Id;
       HSS              : Node_Id;
       Last_Spec_Entity : Entity_Id;
@@ -582,6 +542,34 @@ package body Sem_Ch7 is
    --  Start of processing for Analyze_Package_Body_Helper
 
    begin
+      --  A [generic] package body "freezes" the contract of the nearest
+      --  enclosing package body:
+
+      --    package body Nearest_Enclosing_Package
+      --      with Refined_State => (State => Constit)
+      --    is
+      --       Constit : ...;
+
+      --       package body Freezes_Enclosing_Package_Body
+      --         with Refined_State => (State_2 => Constit_2)
+      --       is
+      --          Constit_2 : ...;
+
+      --          procedure Proc
+      --            with Refined_Depends => (Input => (Constit, Constit_2)) ...
+
+      --  This ensures that any annotations referenced by the contract of a
+      --  [generic] subprogram body declared within the current package body
+      --  are available. This form of "freezing" is decoupled from the usual
+      --  Freeze_xxx mechanism because it must also work in the context of
+      --  generics where normal freezing is disabled.
+
+      --  Only bodies coming from source should cause this type of "freezing"
+
+      if Comes_From_Source (N) then
+         Analyze_Enclosing_Package_Body_Contract (N);
+      end if;
+
       --  Find corresponding package specification, and establish the current
       --  scope. The visible defining entity for the package is the defining
       --  occurrence in the spec. On exit from the package body, all body
@@ -637,10 +625,9 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      --  The corresponding spec of the package body may be subject to pragma
-      --  Ghost with policy Ignore. Set the mode now to ensure that any nodes
-      --  generated during analysis and expansion are properly flagged as
-      --  ignored Ghost.
+      --  A package body is Ghost when the corresponding spec is Ghost. Set
+      --  the mode now to ensure that any nodes generated during analysis and
+      --  expansion are properly flagged as ignored Ghost.
 
       Set_Ghost_Mode (N, Spec_Id);
 
@@ -731,23 +718,17 @@ package body Sem_Ch7 is
       --  Set SPARK_Mode only for non-generic package
 
       if Ekind (Spec_Id) = E_Package then
-
-         --  Set SPARK_Mode from context
-
-         Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
-         Set_SPARK_Pragma_Inherited (Body_Id, True);
-
-         --  Set elaboration code SPARK mode the same for now
-
-         Set_SPARK_Aux_Pragma (Body_Id, SPARK_Pragma (Body_Id));
-         Set_SPARK_Aux_Pragma_Inherited (Body_Id, True);
+         Set_SPARK_Pragma               (Body_Id, SPARK_Mode_Pragma);
+         Set_SPARK_Aux_Pragma           (Body_Id, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma_Inherited     (Body_Id);
+         Set_SPARK_Aux_Pragma_Inherited (Body_Id);
       end if;
 
-      --  Inherit the "ghostness" of the subprogram spec. Note that this
-      --  property is not directly inherited as the body may be subject to a
-      --  different Ghost assertion policy.
+      --  Inherit the "ghostness" of the package spec. Note that this property
+      --  is not directly inherited as the body may be subject to a different
+      --  Ghost assertion policy.
 
-      if Is_Ghost_Entity (Spec_Id) or else Ghost_Mode > None then
+      if Ghost_Mode > None or else Is_Ghost_Entity (Spec_Id) then
          Set_Is_Ghost_Entity (Body_Id);
 
          --  The Ghost policy in effect at the point of declaration and at the
@@ -780,6 +761,14 @@ package body Sem_Ch7 is
         and then Scope (Spec_Id) /= Standard_Standard
       then
          Declare_Inherited_Private_Subprograms (Spec_Id);
+      end if;
+
+      --  A package body "freezes" the contract of its initial declaration.
+      --  This analysis depends on attribute Corresponding_Spec being set. Only
+      --  bodies coming from source shuld cause this type of "freezing".
+
+      if Comes_From_Source (N) then
+         Analyze_Initial_Declaration_Contract (N);
       end if;
 
       if Present (Declarations (N)) then
@@ -942,101 +931,14 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
+      Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Package_Body_Helper;
-
-   ------------------------------
-   -- Analyze_Package_Contract --
-   ------------------------------
-
-   procedure Analyze_Package_Contract (Pack_Id : Entity_Id) is
-      Items     : constant Node_Id := Contract (Pack_Id);
-      Init      : Node_Id := Empty;
-      Init_Cond : Node_Id := Empty;
-      Mode      : SPARK_Mode_Type;
-      Prag      : Node_Id;
-      Prag_Nam  : Name_Id;
-
-   begin
-      --  Due to the timing of contract analysis, delayed pragmas may be
-      --  subject to the wrong SPARK_Mode, usually that of the enclosing
-      --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related package.
-
-      Save_SPARK_Mode_And_Set (Pack_Id, Mode);
-
-      if Present (Items) then
-
-         --  Locate and store pragmas Initial_Condition and Initializes since
-         --  their order of analysis matters.
-
-         Prag := Classifications (Items);
-         while Present (Prag) loop
-            Prag_Nam := Pragma_Name (Prag);
-
-            if Prag_Nam = Name_Initial_Condition then
-               Init_Cond := Prag;
-
-            elsif Prag_Nam = Name_Initializes then
-               Init := Prag;
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Analyze the initialization related pragmas. Initializes must come
-         --  before Initial_Condition due to item dependencies.
-
-         if Present (Init) then
-            Analyze_Initializes_In_Decl_Part (Init);
-         end if;
-
-         if Present (Init_Cond) then
-            Analyze_Initial_Condition_In_Decl_Part (Init_Cond);
-         end if;
-      end if;
-
-      --  Check whether the lack of indicator Part_Of agrees with the placement
-      --  of the package instantiation with respect to the state space.
-
-      if Is_Generic_Instance (Pack_Id) then
-         Prag := Get_Pragma (Pack_Id, Pragma_Part_Of);
-
-         if No (Prag) then
-            Check_Missing_Part_Of (Pack_Id);
-         end if;
-      end if;
-
-      --  Restore the SPARK_Mode of the enclosing context after all delayed
-      --  pragmas have been analyzed.
-
-      Restore_SPARK_Mode (Mode);
-   end Analyze_Package_Contract;
 
    ---------------------------------
    -- Analyze_Package_Declaration --
    ---------------------------------
 
    procedure Analyze_Package_Declaration (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
-
-      procedure Restore_Globals;
-      --  Restore the values of all saved global variables
-
-      ---------------------
-      -- Restore_Globals --
-      ---------------------
-
-      procedure Restore_Globals is
-      begin
-         Ghost_Mode := GM;
-      end Restore_Globals;
-
-      --  Local variables
-
       Id : constant Node_Id := Defining_Entity (N);
 
       Body_Required : Boolean;
@@ -1048,8 +950,6 @@ package body Sem_Ch7 is
       PF : Boolean;
       --  True when in the context of a declared pure library unit
 
-   --  Start of processing for Analyze_Package_Declaration
-
    begin
       if Debug_Flag_C then
          Write_Str ("==> package spec ");
@@ -1059,12 +959,6 @@ package body Sem_Ch7 is
          Write_Eol;
          Indent;
       end if;
-
-      --  The package declaration may be subject to pragma Ghost with policy
-      --  Ignore. Set the mode now to ensure that any nodes generated during
-      --  analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
 
       Generate_Definition (Id);
       Enter_Name (Id);
@@ -1076,8 +970,8 @@ package body Sem_Ch7 is
       if Ekind (Id) = E_Package then
          Set_SPARK_Pragma               (Id, SPARK_Mode_Pragma);
          Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
-         Set_SPARK_Pragma_Inherited     (Id, True);
-         Set_SPARK_Aux_Pragma_Inherited (Id, True);
+         Set_SPARK_Pragma_Inherited     (Id);
+         Set_SPARK_Aux_Pragma_Inherited (Id);
       end if;
 
       --  A package declared within a Ghost refion is automatically Ghost
@@ -1102,7 +996,6 @@ package body Sem_Ch7 is
       --     package Pkg is ...
 
       if From_Limited_With (Id) then
-         Restore_Globals;
          return;
       end if;
 
@@ -1163,8 +1056,6 @@ package body Sem_Ch7 is
          Write_Location (Sloc (N));
          Write_Eol;
       end if;
-
-      Restore_Globals;
    end Analyze_Package_Declaration;
 
    -----------------------------------
@@ -1851,17 +1742,10 @@ package body Sem_Ch7 is
    --------------------------------------
 
    procedure Analyze_Private_Type_Declaration (N : Node_Id) is
-      GM : constant Ghost_Mode_Type := Ghost_Mode;
       Id : constant Entity_Id := Defining_Identifier (N);
       PF : constant Boolean   := Is_Pure (Enclosing_Lib_Unit_Entity);
 
    begin
-      --  The private type declaration may be subject to pragma Ghost with
-      --  policy Ignore. Set the mode now to ensure that any nodes generated
-      --  during analysis and expansion are properly flagged as ignored Ghost.
-
-      Set_Ghost_Mode (N);
-
       Generate_Definition (Id);
       Set_Is_Pure         (Id, PF);
       Init_Size_Align     (Id);
@@ -1885,11 +1769,6 @@ package body Sem_Ch7 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
-
-      --  Restore the original Ghost mode once analysis and expansion have
-      --  taken place.
-
-      Ghost_Mode := GM;
    end Analyze_Private_Type_Declaration;
 
    ----------------------------------

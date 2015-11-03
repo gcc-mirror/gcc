@@ -1728,18 +1728,6 @@ package body Sem_Type is
          end if;
       end if;
 
-      --  Check for overloaded CIL convention stuff because the CIL libraries
-      --  do sick things like Console.Write_Line where it matches two different
-      --  overloads, so just pick the first ???
-
-      if Convention (Nam1) = Convention_CIL
-        and then Convention (Nam2) = Convention_CIL
-        and then Ekind (Nam1) = Ekind (Nam2)
-        and then Ekind_In (Nam1, E_Procedure, E_Function)
-      then
-         return It2;
-      end if;
-
       --  If the context is universal, the predefined operator is preferred.
       --  This includes bounds in numeric type declarations, and expressions
       --  in type conversions. If no interpretation yields a universal type,
@@ -1989,7 +1977,7 @@ package body Sem_Type is
                   return It2;
                end if;
 
-            elsif Nkind (N) in  N_Unary_Op then
+            elsif Nkind (N) in N_Unary_Op then
                if Etype (Right_Opnd (N)) = Etype (First_Formal (Nam1)) then
                   return It1;
                else
@@ -2723,6 +2711,17 @@ package body Sem_Type is
          then
             Error_Msg_NE ("(Ada 2005) does not implement interface }",
                           L, Etype (Class_Wide_Type (Etype (R))));
+
+         --  Specialize message if one operand is a limited view, a priori
+         --  unrelated to all other types.
+
+         elsif From_Limited_With (Etype (R)) then
+            Error_Msg_NE ("limited view of& not compatible with context",
+                           R, Etype (R));
+
+         elsif From_Limited_With (Etype (L)) then
+            Error_Msg_NE ("limited view of& not compatible with context",
+                           L, Etype (L));
          else
             Error_Msg_N ("incompatible types", Parent (L));
          end if;

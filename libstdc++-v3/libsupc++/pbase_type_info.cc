@@ -50,8 +50,19 @@ __do_catch (const type_info *thr_type,
   
   const __pbase_type_info *thrown_type =
     static_cast <const __pbase_type_info *> (thr_type);
+
+  unsigned tflags = thrown_type->__flags;
+
+  bool throw_tx = (tflags & __transaction_safe_mask);
+  bool catch_tx = (__flags & __transaction_safe_mask);
+  if (throw_tx && !catch_tx)
+    /* Catch can perform a transaction-safety conversion.  */
+    tflags &= ~__transaction_safe_mask;
+  if (catch_tx && !throw_tx)
+    /* But not the reverse.  */
+    return false;
   
-  if (thrown_type->__flags & ~__flags)
+  if (tflags & ~__flags)
     // We're less qualified.
     return false;
   

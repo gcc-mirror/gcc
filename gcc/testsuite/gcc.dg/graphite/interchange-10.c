@@ -46,4 +46,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "tiled by" 6 "graphite" } } */
+/* { dg-final { scan-tree-dump "tiled" "graphite" } } */

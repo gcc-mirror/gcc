@@ -107,6 +107,7 @@ match gfc_match_namelist (void);
 match gfc_match_module (void);
 match gfc_match_equivalence (void);
 match gfc_match_st_function (void);
+match gfc_match_ptr_fcn_assign (void);
 match gfc_match_case (void);
 match gfc_match_select (void);
 match gfc_match_select_type (void);

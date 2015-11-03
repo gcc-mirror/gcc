@@ -22,46 +22,22 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "gimple-expr.h"
 #include "df.h"
-#include "alias.h"
+#include "tm_p.h"
+#include "regs.h"
+#include "emit-rtl.h"
+#include "diagnostic-core.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "regs.h"
-#include "insn-config.h"
-#include "conditions.h"
 #include "output.h"
-#include "insn-attr.h"
-#include "flags.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "libfuncs.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "toplev.h"
-#include "reload.h"
-#include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "tm_p.h"
-#include "debug.h"
-#include "target.h"
 #include "langhooks.h"
-#include "msp430-protos.h"
-#include "dumpfile.h"
-#include "opts.h"
 #include "builtins.h"
 
 /* This file should be included last.  */
@@ -113,64 +89,613 @@ msp430_init_machine_status (void)
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE		msp430_option_override
 
-static const char * msp430_mcu_names [] =
+/* This is a copy of the same data structure found in gas/config/tc-msp430.c
+   Also another (sort-of) copy can be found in gcc/config/msp430/t-msp430.
+   Keep these three structures in sync.
+   The data in this structure has been extracted from the devices.csv file
+   released by TI, updated as of 8 October 2015.  */
+
+struct msp430_mcu_data
 {
-"msp430afe221",	"msp430afe222",	"msp430afe223",	"msp430afe231",	
-"msp430afe232",	"msp430afe233",	"msp430afe251",	"msp430afe252",	
-"msp430afe253",	"msp430c091",	"msp430c092",	"msp430c111",	
-"msp430c1111",	"msp430c112",	"msp430c1121",	"msp430c1331",	
-"msp430c1351",	"msp430c311s",	"msp430c312",	"msp430c313",	
-"msp430c314",	"msp430c315",	"msp430c323",	"msp430c325",	
-"msp430c336",	"msp430c337",	"msp430c412",	"msp430c413",	
-"msp430e112",	"msp430e313",	"msp430e315",	"msp430e325",	
-"msp430e337",	"msp430f110",	"msp430f1101",	"msp430f1101a",	
-"msp430f1111",	"msp430f1111a",	"msp430f112",	"msp430f1121",	
-"msp430f1121a",	"msp430f1122",	"msp430f1132",	"msp430f122",	
-"msp430f1222",	"msp430f123",	"msp430f1232",	"msp430f133",	
-"msp430f135",	"msp430f147",	"msp430f1471",	"msp430f148",	
-"msp430f1481",	"msp430f149",	"msp430f1491",	"msp430f155",	
-"msp430f156",	"msp430f157",	"msp430f1610",	"msp430f1611",	
-"msp430f1612",	"msp430f167",	"msp430f168",	"msp430f169",	
-"msp430f2001",	"msp430f2002",	"msp430f2003",	"msp430f2011",	
-"msp430f2012",	"msp430f2013",	"msp430f2101",	"msp430f2111",	
-"msp430f2112",	"msp430f2121",	"msp430f2122",	"msp430f2131",	
-"msp430f2132",	"msp430f2232",	"msp430f2234",	"msp430f2252",	
-"msp430f2254",	"msp430f2272",	"msp430f2274",	"msp430f233",	
-"msp430f2330",	"msp430f235",	"msp430f2350",	"msp430f2370",	
-"msp430f2410",	"msp430f247",	"msp430f2471",	"msp430f248",	
-"msp430f2481",	"msp430f249",	"msp430f2491",	"msp430f412",	
-"msp430f413",	"msp430f4132",	"msp430f415",	"msp430f4152",	
-"msp430f417",	"msp430f423",	"msp430f423a",	"msp430f425",	
-"msp430f4250",	"msp430f425a",	"msp430f4260",	"msp430f427",	
-"msp430f4270",	"msp430f427a",	"msp430f435",	"msp430f4351",	
-"msp430f436",	"msp430f4361",	"msp430f437",	"msp430f4371",	
-"msp430f438",	"msp430f439",	"msp430f447",	"msp430f448",	
-"msp430f4481",	"msp430f449",	"msp430f4491",	"msp430f477",	
-"msp430f478",	"msp430f4783",	"msp430f4784",	"msp430f479",	
-"msp430f4793",	"msp430f4794",	"msp430fe423",	"msp430fe4232",	
-"msp430fe423a",	"msp430fe4242",	"msp430fe425",	"msp430fe4252",	
-"msp430fe425a",	"msp430fe427",	"msp430fe4272",	"msp430fe427a",	
-"msp430fg4250",	"msp430fg4260",	"msp430fg4270",	"msp430fg437",	
-"msp430fg438",	"msp430fg439",	"msp430fg477",	"msp430fg478",	
-"msp430fg479",	"msp430fw423",	"msp430fw425",	"msp430fw427",	
-"msp430fw428",	"msp430fw429",	"msp430g2001",	"msp430g2101",	
-"msp430g2102",	"msp430g2111",	"msp430g2112",	"msp430g2113",	
-"msp430g2121",	"msp430g2131",	"msp430g2132",	"msp430g2152",	
-"msp430g2153",	"msp430g2201",	"msp430g2202",	"msp430g2203",	
-"msp430g2210",	"msp430g2211",	"msp430g2212",	"msp430g2213",	
-"msp430g2221",	"msp430g2230",	"msp430g2231",	"msp430g2232",	
-"msp430g2233",	"msp430g2252",	"msp430g2253",	"msp430g2302",	
-"msp430g2303",	"msp430g2312",	"msp430g2313",	"msp430g2332",	
-"msp430g2333",	"msp430g2352",	"msp430g2353",	"msp430g2402",	
-"msp430g2403",	"msp430g2412",	"msp430g2413",	"msp430g2432",	
-"msp430g2433",	"msp430g2444",	"msp430g2452",	"msp430g2453",	
-"msp430g2513",	"msp430g2533",	"msp430g2544",	"msp430g2553",	
-"msp430g2744",	"msp430g2755",	"msp430g2855",	"msp430g2955",	
-"msp430i2020",	"msp430i2021",	"msp430i2030",	"msp430i2031",	
-"msp430i2040",	"msp430i2041",	"msp430l092",   "msp430p112",	
-"msp430p313",	"msp430p315",	"msp430p315s",	"msp430p325",	
-"msp430p337",	"msp430tch5e"
-};
+  const char * name;
+  unsigned int revision; /* 0=> MSP430, 1=>MSP430X, 2=> MSP430Xv2.  */
+  unsigned int hwmpy;    /* 0=>none, 1=>16-bit, 2=>16-bit w/sign extend, 4=>32-bit, 8=> 32-bit (5xx).  */
+}
+msp430_mcu_data [] =
+{
+  { "cc430f5123",2,8 },
+  { "cc430f5125",2,8 },
+  { "cc430f5133",2,8 },
+  { "cc430f5135",2,8 },
+  { "cc430f5137",2,8 },
+  { "cc430f5143",2,8 },
+  { "cc430f5145",2,8 },
+  { "cc430f5147",2,8 },
+  { "cc430f6125",2,8 },
+  { "cc430f6126",2,8 },
+  { "cc430f6127",2,8 },
+  { "cc430f6135",2,8 },
+  { "cc430f6137",2,8 },
+  { "cc430f6143",2,8 },
+  { "cc430f6145",2,8 },
+  { "cc430f6147",2,8 },
+  { "msp430afe221",0,2 },
+  { "msp430afe222",0,2 },
+  { "msp430afe223",0,2 },
+  { "msp430afe231",0,2 },
+  { "msp430afe232",0,2 },
+  { "msp430afe233",0,2 },
+  { "msp430afe251",0,2 },
+  { "msp430afe252",0,2 },
+  { "msp430afe253",0,2 },
+  { "msp430bt5190",2,8 },
+  { "msp430c091",0,0 },
+  { "msp430c092",0,0 },
+  { "msp430c111",0,0 },
+  { "msp430c1111",0,0 },
+  { "msp430c112",0,0 },
+  { "msp430c1121",0,0 },
+  { "msp430c1331",0,0 },
+  { "msp430c1351",0,0 },
+  { "msp430c311s",0,0 },
+  { "msp430c312",0,0 },
+  { "msp430c313",0,0 },
+  { "msp430c314",0,0 },
+  { "msp430c315",0,0 },
+  { "msp430c323",0,0 },
+  { "msp430c325",0,0 },
+  { "msp430c336",0,1 },
+  { "msp430c337",0,1 },
+  { "msp430c412",0,0 },
+  { "msp430c413",0,0 },
+  { "msp430cg4616",1,1 },
+  { "msp430cg4617",1,1 },
+  { "msp430cg4618",1,1 },
+  { "msp430cg4619",1,1 },
+  { "msp430e112",0,0 },
+  { "msp430e313",0,0 },
+  { "msp430e315",0,0 },
+  { "msp430e325",0,0 },
+  { "msp430e337",0,1 },
+  { "msp430f110",0,0 },
+  { "msp430f1101",0,0 },
+  { "msp430f1101a",0,0 },
+  { "msp430f1111",0,0 },
+  { "msp430f1111a",0,0 },
+  { "msp430f112",0,0 },
+  { "msp430f1121",0,0 },
+  { "msp430f1121a",0,0 },
+  { "msp430f1122",0,0 },
+  { "msp430f1132",0,0 },
+  { "msp430f122",0,0 },
+  { "msp430f1222",0,0 },
+  { "msp430f123",0,0 },
+  { "msp430f1232",0,0 },
+  { "msp430f133",0,0 },
+  { "msp430f135",0,0 },
+  { "msp430f147",0,1 },
+  { "msp430f1471",0,1 },
+  { "msp430f148",0,1 },
+  { "msp430f1481",0,1 },
+  { "msp430f149",0,1 },
+  { "msp430f1491",0,1 },
+  { "msp430f155",0,0 },
+  { "msp430f156",0,0 },
+  { "msp430f157",0,0 },
+  { "msp430f1610",0,1 },
+  { "msp430f1611",0,1 },
+  { "msp430f1612",0,1 },
+  { "msp430f167",0,1 },
+  { "msp430f168",0,1 },
+  { "msp430f169",0,1 },
+  { "msp430f2001",0,0 },
+  { "msp430f2002",0,0 },
+  { "msp430f2003",0,0 },
+  { "msp430f2011",0,0 },
+  { "msp430f2012",0,0 },
+  { "msp430f2013",0,0 },
+  { "msp430f2101",0,0 },
+  { "msp430f2111",0,0 },
+  { "msp430f2112",0,0 },
+  { "msp430f2121",0,0 },
+  { "msp430f2122",0,0 },
+  { "msp430f2131",0,0 },
+  { "msp430f2132",0,0 },
+  { "msp430f2232",0,0 },
+  { "msp430f2234",0,0 },
+  { "msp430f2252",0,0 },
+  { "msp430f2254",0,0 },
+  { "msp430f2272",0,0 },
+  { "msp430f2274",0,0 },
+  { "msp430f233",0,2 },
+  { "msp430f2330",0,2 },
+  { "msp430f235",0,2 },
+  { "msp430f2350",0,2 },
+  { "msp430f2370",0,2 },
+  { "msp430f2410",0,2 },
+  { "msp430f2416",1,2 },
+  { "msp430f2417",1,2 },
+  { "msp430f2418",1,2 },
+  { "msp430f2419",1,2 },
+  { "msp430f247",0,2 },
+  { "msp430f2471",0,2 },
+  { "msp430f248",0,2 },
+  { "msp430f2481",0,2 },
+  { "msp430f249",0,2 },
+  { "msp430f2491",0,2 },
+  { "msp430f2616",1,2 },
+  { "msp430f2617",1,2 },
+  { "msp430f2618",1,2 },
+  { "msp430f2619",1,2 },
+  { "msp430f412",0,0 },
+  { "msp430f413",0,0 },
+  { "msp430f4132",0,0 },
+  { "msp430f415",0,0 },
+  { "msp430f4152",0,0 },
+  { "msp430f417",0,0 },
+  { "msp430f423",0,1 },
+  { "msp430f423a",0,1 },
+  { "msp430f425",0,1 },
+  { "msp430f4250",0,0 },
+  { "msp430f425a",0,1 },
+  { "msp430f4260",0,0 },
+  { "msp430f427",0,1 },
+  { "msp430f4270",0,0 },
+  { "msp430f427a",0,1 },
+  { "msp430f435",0,0 },
+  { "msp430f4351",0,0 },
+  { "msp430f436",0,0 },
+  { "msp430f4361",0,0 },
+  { "msp430f437",0,0 },
+  { "msp430f4371",0,0 },
+  { "msp430f438",0,0 },
+  { "msp430f439",0,0 },
+  { "msp430f447",0,1 },
+  { "msp430f448",0,1 },
+  { "msp430f4481",0,1 },
+  { "msp430f449",0,1 },
+  { "msp430f4491",0,1 },
+  { "msp430f4616",1,1 },
+  { "msp430f46161",1,1 },
+  { "msp430f4617",1,1 },
+  { "msp430f46171",1,1 },
+  { "msp430f4618",1,1 },
+  { "msp430f46181",1,1 },
+  { "msp430f4619",1,1 },
+  { "msp430f46191",1,1 },
+  { "msp430f47126",1,4 },
+  { "msp430f47127",1,4 },
+  { "msp430f47163",1,4 },
+  { "msp430f47166",1,4 },
+  { "msp430f47167",1,4 },
+  { "msp430f47173",1,4 },
+  { "msp430f47176",1,4 },
+  { "msp430f47177",1,4 },
+  { "msp430f47183",1,4 },
+  { "msp430f47186",1,4 },
+  { "msp430f47187",1,4 },
+  { "msp430f47193",1,4 },
+  { "msp430f47196",1,4 },
+  { "msp430f47197",1,4 },
+  { "msp430f477",0,0 },
+  { "msp430f478",0,0 },
+  { "msp430f4783",0,4 },
+  { "msp430f4784",0,4 },
+  { "msp430f479",0,0 },
+  { "msp430f4793",0,4 },
+  { "msp430f4794",0,4 },
+  { "msp430f5131",2,8 },
+  { "msp430f5132",2,8 },
+  { "msp430f5151",2,8 },
+  { "msp430f5152",2,8 },
+  { "msp430f5171",2,8 },
+  { "msp430f5172",2,8 },
+  { "msp430f5212",2,8 },
+  { "msp430f5213",2,8 },
+  { "msp430f5214",2,8 },
+  { "msp430f5217",2,8 },
+  { "msp430f5218",2,8 },
+  { "msp430f5219",2,8 },
+  { "msp430f5222",2,8 },
+  { "msp430f5223",2,8 },
+  { "msp430f5224",2,8 },
+  { "msp430f5227",2,8 },
+  { "msp430f5228",2,8 },
+  { "msp430f5229",2,8 },
+  { "msp430f5232",2,8 },
+  { "msp430f5234",2,8 },
+  { "msp430f5237",2,8 },
+  { "msp430f5239",2,8 },
+  { "msp430f5242",2,8 },
+  { "msp430f5244",2,8 },
+  { "msp430f5247",2,8 },
+  { "msp430f5249",2,8 },
+  { "msp430f5252",2,8 },
+  { "msp430f5253",2,8 },
+  { "msp430f5254",2,8 },
+  { "msp430f5255",2,8 },
+  { "msp430f5256",2,8 },
+  { "msp430f5257",2,8 },
+  { "msp430f5258",2,8 },
+  { "msp430f5259",2,8 },
+  { "msp430f5304",2,8 },
+  { "msp430f5308",2,8 },
+  { "msp430f5309",2,8 },
+  { "msp430f5310",2,8 },
+  { "msp430f5324",2,8 },
+  { "msp430f5325",2,8 },
+  { "msp430f5326",2,8 },
+  { "msp430f5327",2,8 },
+  { "msp430f5328",2,8 },
+  { "msp430f5329",2,8 },
+  { "msp430f5333",2,8 },
+  { "msp430f5335",2,8 },
+  { "msp430f5336",2,8 },
+  { "msp430f5338",2,8 },
+  { "msp430f5340",2,8 },
+  { "msp430f5341",2,8 },
+  { "msp430f5342",2,8 },
+  { "msp430f5358",2,8 },
+  { "msp430f5359",2,8 },
+  { "msp430f5418",2,8 },
+  { "msp430f5418a",2,8 },
+  { "msp430f5419",2,8 },
+  { "msp430f5419a",2,8 },
+  { "msp430f5435",2,8 },
+  { "msp430f5435a",2,8 },
+  { "msp430f5436",2,8 },
+  { "msp430f5436a",2,8 },
+  { "msp430f5437",2,8 },
+  { "msp430f5437a",2,8 },
+  { "msp430f5438",2,8 },
+  { "msp430f5438a",2,8 },
+  { "msp430f5500",2,8 },
+  { "msp430f5501",2,8 },
+  { "msp430f5502",2,8 },
+  { "msp430f5503",2,8 },
+  { "msp430f5504",2,8 },
+  { "msp430f5505",2,8 },
+  { "msp430f5506",2,8 },
+  { "msp430f5507",2,8 },
+  { "msp430f5508",2,8 },
+  { "msp430f5509",2,8 },
+  { "msp430f5510",2,8 },
+  { "msp430f5513",2,8 },
+  { "msp430f5514",2,8 },
+  { "msp430f5515",2,8 },
+  { "msp430f5517",2,8 },
+  { "msp430f5519",2,8 },
+  { "msp430f5521",2,8 },
+  { "msp430f5522",2,8 },
+  { "msp430f5524",2,8 },
+  { "msp430f5525",2,8 },
+  { "msp430f5526",2,8 },
+  { "msp430f5527",2,8 },
+  { "msp430f5528",2,8 },
+  { "msp430f5529",2,8 },
+  { "msp430f5630",2,8 },
+  { "msp430f5631",2,8 },
+  { "msp430f5632",2,8 },
+  { "msp430f5633",2,8 },
+  { "msp430f5634",2,8 },
+  { "msp430f5635",2,8 },
+  { "msp430f5636",2,8 },
+  { "msp430f5637",2,8 },
+  { "msp430f5638",2,8 },
+  { "msp430f5658",2,8 },
+  { "msp430f5659",2,8 },
+  { "msp430f5xx_6xxgeneric",2,8 },
+  { "msp430f6433",2,8 },
+  { "msp430f6435",2,8 },
+  { "msp430f6436",2,8 },
+  { "msp430f6438",2,8 },
+  { "msp430f6458",2,8 },
+  { "msp430f6459",2,8 },
+  { "msp430f6630",2,8 },
+  { "msp430f6631",2,8 },
+  { "msp430f6632",2,8 },
+  { "msp430f6633",2,8 },
+  { "msp430f6634",2,8 },
+  { "msp430f6635",2,8 },
+  { "msp430f6636",2,8 },
+  { "msp430f6637",2,8 },
+  { "msp430f6638",2,8 },
+  { "msp430f6658",2,8 },
+  { "msp430f6659",2,8 },
+  { "msp430f6720",2,8 },
+  { "msp430f6720a",2,8 },
+  { "msp430f6721",2,8 },
+  { "msp430f6721a",2,8 },
+  { "msp430f6723",2,8 },
+  { "msp430f6723a",2,8 },
+  { "msp430f6724",2,8 },
+  { "msp430f6724a",2,8 },
+  { "msp430f6725",2,8 },
+  { "msp430f6725a",2,8 },
+  { "msp430f6726",2,8 },
+  { "msp430f6726a",2,8 },
+  { "msp430f6730",2,8 },
+  { "msp430f6730a",2,8 },
+  { "msp430f6731",2,8 },
+  { "msp430f6731a",2,8 },
+  { "msp430f6733",2,8 },
+  { "msp430f6733a",2,8 },
+  { "msp430f6734",2,8 },
+  { "msp430f6734a",2,8 },
+  { "msp430f6735",2,8 },
+  { "msp430f6735a",2,8 },
+  { "msp430f6736",2,8 },
+  { "msp430f6736a",2,8 },
+  { "msp430f6745",2,8 },
+  { "msp430f67451",2,8 },
+  { "msp430f67451a",2,8 },
+  { "msp430f6745a",2,8 },
+  { "msp430f6746",2,8 },
+  { "msp430f67461",2,8 },
+  { "msp430f67461a",2,8 },
+  { "msp430f6746a",2,8 },
+  { "msp430f6747",2,8 },
+  { "msp430f67471",2,8 },
+  { "msp430f67471a",2,8 },
+  { "msp430f6747a",2,8 },
+  { "msp430f6748",2,8 },
+  { "msp430f67481",2,8 },
+  { "msp430f67481a",2,8 },
+  { "msp430f6748a",2,8 },
+  { "msp430f6749",2,8 },
+  { "msp430f67491",2,8 },
+  { "msp430f67491a",2,8 },
+  { "msp430f6749a",2,8 },
+  { "msp430f67621",2,8 },
+  { "msp430f67621a",2,8 },
+  { "msp430f67641",2,8 },
+  { "msp430f67641a",2,8 },
+  { "msp430f6765",2,8 },
+  { "msp430f67651",2,8 },
+  { "msp430f67651a",2,8 },
+  { "msp430f6765a",2,8 },
+  { "msp430f6766",2,8 },
+  { "msp430f67661",2,8 },
+  { "msp430f67661a",2,8 },
+  { "msp430f6766a",2,8 },
+  { "msp430f6767",2,8 },
+  { "msp430f67671",2,8 },
+  { "msp430f67671a",2,8 },
+  { "msp430f6767a",2,8 },
+  { "msp430f6768",2,8 },
+  { "msp430f67681",2,8 },
+  { "msp430f67681a",2,8 },
+  { "msp430f6768a",2,8 },
+  { "msp430f6769",2,8 },
+  { "msp430f67691",2,8 },
+  { "msp430f67691a",2,8 },
+  { "msp430f6769a",2,8 },
+  { "msp430f6775",2,8 },
+  { "msp430f67751",2,8 },
+  { "msp430f67751a",2,8 },
+  { "msp430f6775a",2,8 },
+  { "msp430f6776",2,8 },
+  { "msp430f67761",2,8 },
+  { "msp430f67761a",2,8 },
+  { "msp430f6776a",2,8 },
+  { "msp430f6777",2,8 },
+  { "msp430f67771",2,8 },
+  { "msp430f67771a",2,8 },
+  { "msp430f6777a",2,8 },
+  { "msp430f6778",2,8 },
+  { "msp430f67781",2,8 },
+  { "msp430f67781a",2,8 },
+  { "msp430f6778a",2,8 },
+  { "msp430f6779",2,8 },
+  { "msp430f67791",2,8 },
+  { "msp430f67791a",2,8 },
+  { "msp430f6779a",2,8 },
+  { "msp430fe423",0,0 },
+  { "msp430fe4232",0,0 },
+  { "msp430fe423a",0,0 },
+  { "msp430fe4242",0,0 },
+  { "msp430fe425",0,0 },
+  { "msp430fe4252",0,0 },
+  { "msp430fe425a",0,0 },
+  { "msp430fe427",0,0 },
+  { "msp430fe4272",0,0 },
+  { "msp430fe427a",0,0 },
+  { "msp430fg4250",0,0 },
+  { "msp430fg4260",0,0 },
+  { "msp430fg4270",0,0 },
+  { "msp430fg437",0,0 },
+  { "msp430fg438",0,0 },
+  { "msp430fg439",0,0 },
+  { "msp430fg4616",1,1 },
+  { "msp430fg4617",1,1 },
+  { "msp430fg4618",1,1 },
+  { "msp430fg4619",1,1 },
+  { "msp430fg477",0,0 },
+  { "msp430fg478",0,0 },
+  { "msp430fg479",0,0 },
+  { "msp430fg6425",2,8 },
+  { "msp430fg6426",2,8 },
+  { "msp430fg6625",2,8 },
+  { "msp430fg6626",2,8 },
+  { "msp430fr2032",2,0 },
+  { "msp430fr2033",2,0 },
+  { "msp430fr2433",2,8 },
+  { "msp430fr2xx_4xxgeneric",2,8 },
+  { "msp430fr4131",2,0 },
+  { "msp430fr4132",2,0 },
+  { "msp430fr4133",2,0 },
+  { "msp430fr5720",2,8 },
+  { "msp430fr5721",2,8 },
+  { "msp430fr5722",2,8 },
+  { "msp430fr5723",2,8 },
+  { "msp430fr5724",2,8 },
+  { "msp430fr5725",2,8 },
+  { "msp430fr5726",2,8 },
+  { "msp430fr5727",2,8 },
+  { "msp430fr5728",2,8 },
+  { "msp430fr5729",2,8 },
+  { "msp430fr5730",2,8 },
+  { "msp430fr5731",2,8 },
+  { "msp430fr5732",2,8 },
+  { "msp430fr5733",2,8 },
+  { "msp430fr5734",2,8 },
+  { "msp430fr5735",2,8 },
+  { "msp430fr5736",2,8 },
+  { "msp430fr5737",2,8 },
+  { "msp430fr5738",2,8 },
+  { "msp430fr5739",2,8 },
+  { "msp430fr57xxgeneric",2,8 },
+  { "msp430fr5847",2,8 },
+  { "msp430fr58471",2,8 },
+  { "msp430fr5848",2,8 },
+  { "msp430fr5849",2,8 },
+  { "msp430fr5857",2,8 },
+  { "msp430fr5858",2,8 },
+  { "msp430fr5859",2,8 },
+  { "msp430fr5867",2,8 },
+  { "msp430fr58671",2,8 },
+  { "msp430fr5868",2,8 },
+  { "msp430fr5869",2,8 },
+  { "msp430fr5870",2,8 },
+  { "msp430fr5872",2,8 },
+  { "msp430fr58721",2,8 },
+  { "msp430fr5887",2,8 },
+  { "msp430fr5888",2,8 },
+  { "msp430fr5889",2,8 },
+  { "msp430fr58891",2,8 },
+  { "msp430fr5922",2,8 },
+  { "msp430fr59221",2,8 },
+  { "msp430fr5947",2,8 },
+  { "msp430fr59471",2,8 },
+  { "msp430fr5948",2,8 },
+  { "msp430fr5949",2,8 },
+  { "msp430fr5957",2,8 },
+  { "msp430fr5958",2,8 },
+  { "msp430fr5959",2,8 },
+  { "msp430fr5967",2,8 },
+  { "msp430fr5968",2,8 },
+  { "msp430fr5969",2,8 },
+  { "msp430fr59691",2,8 },
+  { "msp430fr5970",2,8 },
+  { "msp430fr5972",2,8 },
+  { "msp430fr59721",2,8 },
+  { "msp430fr5986",2,8 },
+  { "msp430fr5987",2,8 },
+  { "msp430fr5988",2,8 },
+  { "msp430fr5989",2,8 },
+  { "msp430fr59891",2,8 },
+  { "msp430fr5xx_6xxgeneric",2,8 },
+  { "msp430fr6820",2,8 },
+  { "msp430fr6822",2,8 },
+  { "msp430fr68221",2,8 },
+  { "msp430fr6870",2,8 },
+  { "msp430fr6872",2,8 },
+  { "msp430fr68721",2,8 },
+  { "msp430fr6877",2,8 },
+  { "msp430fr6879",2,8 },
+  { "msp430fr68791",2,8 },
+  { "msp430fr6887",2,8 },
+  { "msp430fr6888",2,8 },
+  { "msp430fr6889",2,8 },
+  { "msp430fr68891",2,8 },
+  { "msp430fr6920",2,8 },
+  { "msp430fr6922",2,8 },
+  { "msp430fr69221",2,8 },
+  { "msp430fr6927",2,8 },
+  { "msp430fr69271",2,8 },
+  { "msp430fr6928",2,8 },
+  { "msp430fr6970",2,8 },
+  { "msp430fr6972",2,8 },
+  { "msp430fr69721",2,8 },
+  { "msp430fr6977",2,8 },
+  { "msp430fr6979",2,8 },
+  { "msp430fr69791",2,8 },
+  { "msp430fr6987",2,8 },
+  { "msp430fr6988",2,8 },
+  { "msp430fr6989",2,8 },
+  { "msp430fr69891",2,8 },
+  { "msp430fw423",0,0 },
+  { "msp430fw425",0,0 },
+  { "msp430fw427",0,0 },
+  { "msp430fw428",0,0 },
+  { "msp430fw429",0,0 },
+  { "msp430g2001",0,0 },
+  { "msp430g2101",0,0 },
+  { "msp430g2102",0,0 },
+  { "msp430g2111",0,0 },
+  { "msp430g2112",0,0 },
+  { "msp430g2113",0,0 },
+  { "msp430g2121",0,0 },
+  { "msp430g2131",0,0 },
+  { "msp430g2132",0,0 },
+  { "msp430g2152",0,0 },
+  { "msp430g2153",0,0 },
+  { "msp430g2201",0,0 },
+  { "msp430g2202",0,0 },
+  { "msp430g2203",0,0 },
+  { "msp430g2210",0,0 },
+  { "msp430g2211",0,0 },
+  { "msp430g2212",0,0 },
+  { "msp430g2213",0,0 },
+  { "msp430g2221",0,0 },
+  { "msp430g2230",0,0 },
+  { "msp430g2231",0,0 },
+  { "msp430g2232",0,0 },
+  { "msp430g2233",0,0 },
+  { "msp430g2252",0,0 },
+  { "msp430g2253",0,0 },
+  { "msp430g2302",0,0 },
+  { "msp430g2303",0,0 },
+  { "msp430g2312",0,0 },
+  { "msp430g2313",0,0 },
+  { "msp430g2332",0,0 },
+  { "msp430g2333",0,0 },
+  { "msp430g2352",0,0 },
+  { "msp430g2353",0,0 },
+  { "msp430g2402",0,0 },
+  { "msp430g2403",0,0 },
+  { "msp430g2412",0,0 },
+  { "msp430g2413",0,0 },
+  { "msp430g2432",0,0 },
+  { "msp430g2433",0,0 },
+  { "msp430g2444",0,0 },
+  { "msp430g2452",0,0 },
+  { "msp430g2453",0,0 },
+  { "msp430g2513",0,0 },
+  { "msp430g2533",0,0 },
+  { "msp430g2544",0,0 },
+  { "msp430g2553",0,0 },
+  { "msp430g2744",0,0 },
+  { "msp430g2755",0,0 },
+  { "msp430g2855",0,0 },
+  { "msp430g2955",0,0 },
+  { "msp430i2020",0,2 },
+  { "msp430i2021",0,2 },
+  { "msp430i2030",0,2 },
+  { "msp430i2031",0,2 },
+  { "msp430i2040",0,2 },
+  { "msp430i2041",0,2 },
+  { "msp430i2xxgeneric",0,2 },
+  { "msp430l092",0,0 },
+  { "msp430p112",0,0 },
+  { "msp430p313",0,0 },
+  { "msp430p315",0,0 },
+  { "msp430p315s",0,0 },
+  { "msp430p325",0,0 },
+  { "msp430p337",0,1 },
+  { "msp430sl5438a",2,8 },
+  { "msp430tch5e",0,0 },
+  { "msp430xgeneric",2,8 },
+  { "rf430f5144",2,8 },
+  { "rf430f5155",2,8 },
+  { "rf430f5175",2,8 },
+  { "rf430frl152h",0,0 },
+  { "rf430frl152h_rom",0,0 },
+  { "rf430frl153h",0,0 },
+  { "rf430frl153h_rom",0,0 },
+  { "rf430frl154h",0,0 },
+  { "rf430frl154h_rom",0,0 }
+};  
 
 /* Generate a C preprocessor symbol based upon the MCU selected by the user.
    If a specific MCU has not been selected then return a generic symbol instead.  */
@@ -215,14 +740,19 @@ msp430_option_override (void)
 	 supports 430.  */
       msp430x = true;
 
-      for (i = ARRAY_SIZE (msp430_mcu_names); i--;)
-	if (strcasecmp (msp430_mcu_names[i], target_mcu) == 0)
+      /* FIXME: This array is alpha sorted, so we could use a binary search.  */
+      for (i = ARRAY_SIZE (msp430_mcu_data); i--;)
+	if (strcasecmp (msp430_mcu_data[i].name, target_mcu) == 0)
 	  {
-	    msp430x = false;
+	    msp430x = msp430_mcu_data[i].revision >= 1;
 	    break;
 	  }
-      /* It is not an error if we do not match the MCU name.  There are
-	 hundreds of them.  */
+      if (i < 0)
+	{
+	  warning (0, "Unrecognised MCU name '%s', assuming that it is just a MSP430 with no hardware multiply",
+		   target_mcu);
+	  msp430x = false;
+	}
     }
 
   if (TARGET_LARGE && !msp430x)
@@ -791,7 +1321,6 @@ msp430_get_raw_result_mode (int regno ATTRIBUTE_UNUSED)
 #define TARGET_GIMPLIFY_VA_ARG_EXPR msp430_gimplify_va_arg_expr
 
 #include "gimplify.h"
-#include "gimple-expr.h"
 
 static tree
 msp430_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
@@ -998,7 +1527,7 @@ msp430_legitimate_constant (machine_mode mode, rtx x)
     /* GCC does not know the width of the PSImode, so make
        sure that it does not try to use a constant value that
        is out of range.  */
-    || (INTVAL (x) < (1 << 20) && INTVAL (x) >= (-1 << 20));
+    || (INTVAL (x) < (1 << 20) && INTVAL (x) >= (HOST_WIDE_INT)(HOST_WIDE_INT_M1U << 20));
 }
 
 
@@ -1148,6 +1677,8 @@ const char * const  ATTR_CRIT   = "critical";
 const char * const  ATTR_LOWER  = "lower";
 const char * const  ATTR_UPPER  = "upper";
 const char * const  ATTR_EITHER = "either";
+const char * const  ATTR_NOINIT = "noinit";
+const char * const  ATTR_PERSIST = "persistent";
 
 static inline bool
 has_attr (const char * attr, tree decl)
@@ -1278,7 +1809,7 @@ msp430_attr (tree * node,
       if (is_naked_func (* node))
 	message = "naked functions cannot be critical";
       else if (is_reentrant_func (* node))
-	message = "reentranct functions cannot be critical";
+	message = "reentrant functions cannot be critical";
     }
   else if (TREE_NAME_EQ (name, ATTR_NAKED))
     {
@@ -1344,6 +1875,39 @@ msp430_section_attr (tree * node,
   return NULL_TREE;
 }
 
+static tree
+msp430_data_attr (tree * node,
+		  tree   name,
+		  tree   args,
+		  int    flags ATTRIBUTE_UNUSED,
+		  bool * no_add_attrs ATTRIBUTE_UNUSED)
+{
+  const char * message = NULL;
+
+  gcc_assert (DECL_P (* node));
+  gcc_assert (args == NULL);
+
+  if (TREE_CODE (* node) != VAR_DECL)
+    message = "%qE attribute only applies to variables";
+
+  if (DECL_SECTION_NAME (* node))
+    message = "%qE attribute cannot be applied to variables with specific sections";
+
+  /* If this var is thought to be common, then change this.  Common variables
+     are assigned to sections before the backend has a chance to process them.  */
+  if (DECL_COMMON (* node))
+    DECL_COMMON (* node) = 0;
+
+  if (message)
+    {
+      warning (OPT_Wattributes, message, name);
+      * no_add_attrs = true;
+    }
+    
+  return NULL_TREE;
+}
+
+
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE		msp430_attribute_table
 
@@ -1362,6 +1926,9 @@ const struct attribute_spec msp430_attribute_table[] =
   { ATTR_LOWER,       0, 0, true,  false, false, msp430_section_attr, false },
   { ATTR_UPPER,       0, 0, true,  false, false, msp430_section_attr, false },
   { ATTR_EITHER,      0, 0, true,  false, false, msp430_section_attr, false },
+
+  { ATTR_NOINIT,      0, 0, true,  false, false, msp430_data_attr, false },
+  { ATTR_PERSIST,     0, 0, true,  false, false, msp430_data_attr, false },
 
   { NULL,             0, 0, false, false, false, NULL,        false }
 };
@@ -1536,6 +2103,19 @@ gen_prefix (tree decl)
   return NULL;
 }
 
+static section * noinit_section;
+static section * persist_section;
+
+#undef  TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS msp430_init_sections
+
+static void
+msp430_init_sections (void)
+{
+  noinit_section = get_unnamed_section (0, output_section_asm_op, ".section .noinit,\"aw\"");
+  persist_section = get_unnamed_section (0, output_section_asm_op, ".section .persistent,\"aw\"");
+}
+
 #undef  TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION msp430_select_section
 
@@ -1561,6 +2141,10 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
     {
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	return text_section;
+      else if (has_attr (ATTR_NOINIT, decl))
+	return noinit_section;
+      else if (has_attr (ATTR_PERSIST, decl))
+	return persist_section;
       else
 	return default_select_section (decl, reloc, align);
     }
@@ -1629,7 +2213,11 @@ msp430_section_type_flags (tree decl, const char * name, int reloc)
     name += strlen (upper_prefix);
   else if (strncmp (name, either_prefix, strlen (either_prefix)) == 0)
     name += strlen (either_prefix);
-
+  else if (strcmp (name, ".noinit") == 0)
+    return SECTION_WRITE | SECTION_BSS | SECTION_NOTYPE;
+  else if (strcmp (name, ".persistent") == 0)
+    return SECTION_WRITE | SECTION_NOTYPE;
+  
   return default_section_type_flags (decl, name, reloc);
 }
 
@@ -2546,21 +3134,12 @@ msp430_use_f5_series_hwmult (void)
   if (strncasecmp (target_mcu, "msp430f6", 8) == 0)
     return cached_result = true;
 
-  static const char * known_f5_mult_mcus [] =
-    {
-      "cc430f5123",	"cc430f5125",	"cc430f5133",
-      "cc430f5135",	"cc430f5137",	"cc430f5143",
-      "cc430f5145",	"cc430f5147",	"cc430f6125",
-      "cc430f6126",	"cc430f6127",	"cc430f6135",
-      "cc430f6137",	"cc430f6143",	"cc430f6145",
-      "cc430f6147",	"msp430bt5190",	"msp430sl5438a",
-      "msp430xgeneric"
-    };
   int i;
 
-  for (i = ARRAY_SIZE (known_f5_mult_mcus); i--;)
-    if (strcasecmp (target_mcu, known_f5_mult_mcus[i]) == 0)
-      return cached_result = true;
+  /* FIXME: This array is alpha sorted - we could use a binary search.  */
+  for (i = ARRAY_SIZE (msp430_mcu_data); i--;)
+    if (strcasecmp (target_mcu, msp430_mcu_data[i].name) == 0)
+      return cached_result = msp430_mcu_data[i].hwmpy == 8;
 
   return cached_result = false;
 }
@@ -2571,15 +3150,6 @@ msp430_use_f5_series_hwmult (void)
 static bool
 use_32bit_hwmult (void)
 {
-  static const char * known_32bit_mult_mcus [] =
-    {
-      "msp430f4783",      "msp430f4793",      "msp430f4784",
-      "msp430f4794",      "msp430f47126",     "msp430f47127",
-      "msp430f47163",     "msp430f47173",     "msp430f47183",
-      "msp430f47193",     "msp430f47166",     "msp430f47176",
-      "msp430f47186",     "msp430f47196",     "msp430f47167",
-      "msp430f47177",     "msp430f47187",     "msp430f47197"
-    };
   static const char * cached_match = NULL;
   static bool         cached_result;
   int i;
@@ -2594,9 +3164,11 @@ use_32bit_hwmult (void)
     return cached_result;
 
   cached_match = target_mcu;
-  for (i = ARRAY_SIZE (known_32bit_mult_mcus); i--;)
-    if (strcasecmp (target_mcu, known_32bit_mult_mcus[i]) == 0)
-      return cached_result = true;
+
+  /* FIXME: This array is alpha sorted - we could use a binary search.  */
+  for (i = ARRAY_SIZE (msp430_mcu_data); i--;)
+    if (strcasecmp (target_mcu, msp430_mcu_data[i].name) == 0)
+      return cached_result = msp430_mcu_data[i].hwmpy == 4;
 
   return cached_result = false;
 }
@@ -2607,64 +3179,6 @@ use_32bit_hwmult (void)
 static bool
 msp430_no_hwmult (void)
 {
-  static const char * known_nomult_mcus [] =
-    {
-      "msp430c091",	"msp430c092",	"msp430c111",
-      "msp430c1111", 	"msp430c112", 	"msp430c1121",
-      "msp430c1331", 	"msp430c1351", 	"msp430c311s",
-      "msp430c312", 	"msp430c313", 	"msp430c314",
-      "msp430c315", 	"msp430c323", 	"msp430c325",
-      "msp430c412", 	"msp430c413", 	"msp430e112",
-      "msp430e313", 	"msp430e315", 	"msp430e325",
-      "msp430f110", 	"msp430f1101", 	"msp430f1101a",
-      "msp430f1111", 	"msp430f1111a",	"msp430f112",
-      "msp430f1121", 	"msp430f1121a", "msp430f1122",
-      "msp430f1132", 	"msp430f122", 	"msp430f1222",
-      "msp430f123", 	"msp430f1232", 	"msp430f133",
-      "msp430f135", 	"msp430f155", 	"msp430f156",
-      "msp430f157", 	"msp430f2001", 	"msp430f2002",
-      "msp430f2003", 	"msp430f2011", 	"msp430f2012",
-      "msp430f2013", 	"msp430f2101", 	"msp430f2111",
-      "msp430f2112", 	"msp430f2121", 	"msp430f2122",
-      "msp430f2131", 	"msp430f2132", 	"msp430f2232",
-      "msp430f2234", 	"msp430f2252", 	"msp430f2254",
-      "msp430f2272", 	"msp430f2274", 	"msp430f412",
-      "msp430f413", 	"msp430f4132", 	"msp430f415",
-      "msp430f4152", 	"msp430f417", 	"msp430f4250",
-      "msp430f4260", 	"msp430f4270", 	"msp430f435",
-      "msp430f4351", 	"msp430f436", 	"msp430f4361",
-      "msp430f437", 	"msp430f4371", 	"msp430f438",
-      "msp430f439", 	"msp430f477", 	"msp430f478",
-      "msp430f479", 	"msp430fe423", 	"msp430fe4232",
-      "msp430fe423a",   "msp430fe4242",	"msp430fe425",
-      "msp430fe4252",   "msp430fe425a", "msp430fe427",
-      "msp430fe4272",   "msp430fe427a", "msp430fg4250",
-      "msp430fg4260",   "msp430fg4270", "msp430fg437",
-      "msp430fg438", 	"msp430fg439", 	"msp430fg477",
-      "msp430fg478", 	"msp430fg479",  "msp430fr2032",
-      "msp430fr2033",	"msp430fr4131",	"msp430fr4132",
-      "msp430fr4133",	"msp430fw423",  "msp430fw425",
-      "msp430fw427", 	"msp430fw428",  "msp430fw429",
-      "msp430g2001", 	"msp430g2101",  "msp430g2102",
-      "msp430g2111", 	"msp430g2112",  "msp430g2113",
-      "msp430g2121", 	"msp430g2131",  "msp430g2132",
-      "msp430g2152", 	"msp430g2153",  "msp430g2201",
-      "msp430g2202", 	"msp430g2203",  "msp430g2210",
-      "msp430g2211", 	"msp430g2212",  "msp430g2213",
-      "msp430g2221", 	"msp430g2230",  "msp430g2231",
-      "msp430g2232", 	"msp430g2233",  "msp430g2252",
-      "msp430g2253", 	"msp430g2302",  "msp430g2303",
-      "msp430g2312", 	"msp430g2313",  "msp430g2332",
-      "msp430g2333", 	"msp430g2352",  "msp430g2353",
-      "msp430g2402", 	"msp430g2403",  "msp430g2412",
-      "msp430g2413", 	"msp430g2432",  "msp430g2433",
-      "msp430g2444", 	"msp430g2452",  "msp430g2453",
-      "msp430g2513", 	"msp430g2533",  "msp430g2544",
-      "msp430g2553", 	"msp430g2744",  "msp430g2755",
-      "msp430g2855", 	"msp430g2955",  "msp430l092",
-      "msp430p112", 	"msp430p313",   "msp430p315",
-      "msp430p315s", 	"msp430p325",   "msp430tch5e"
-    };
   static const char * cached_match = NULL;
   static bool         cached_result;
   int i;
@@ -2679,11 +3193,15 @@ msp430_no_hwmult (void)
     return cached_result;
 
   cached_match = target_mcu;
-  for (i = ARRAY_SIZE (known_nomult_mcus); i--;)
-    if (strcasecmp (target_mcu, known_nomult_mcus[i]) == 0)
-      return cached_result = true;
 
-  return cached_result = false;
+  /* FIXME: This array is alpha sorted - we could use a binary search.  */
+  for (i = ARRAY_SIZE (msp430_mcu_data); i--;)
+    if (strcasecmp (target_mcu, msp430_mcu_data[i].name) == 0)
+      return cached_result = msp430_mcu_data[i].hwmpy == 0;
+
+  /* If we do not recognise the MCU name, we assume that it does not support
+     any kind of hardware multiply - this is the safest assumption to make.  */
+  return cached_result = true;
 }
 
 /* This function does the same as the default, but it will replace GCC

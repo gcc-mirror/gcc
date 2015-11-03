@@ -35,7 +35,11 @@ test01()
   VERIFY( p.filename() == "foobar" );
   p += '/';
   VERIFY( p.parent_path() == "/foobar" && p.filename() == "." );
+#if _GLIBCXX_USE_WCHAR_T
   p += L"baz.txt";
+#else
+  p += "baz.txt";
+#endif
   VERIFY( p.filename() == "baz.txt" );
   p.concat("/dir/");
   VERIFY( p.parent_path() == "/foobar/baz.txt/dir" && p.filename() == "." );

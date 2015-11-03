@@ -1,11 +1,11 @@
 /* Check that when taking the complement of the T bit using the negc
-   instruction pattern, the constant -1 is loaded only once.
-   On SH2A this test is skipped because the movrt instruction is used
-   to get the complement of the T bit.  */
+   instruction pattern, the constant -1 is loaded only once on non-SH2A and
+   that the movrt insn is generated on SH2A.
 /* { dg-do compile }  */
 /* { dg-options "-O1 -mbranch-cost=2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" "-m2a*" } { "" } } */
-/* { dg-final { scan-assembler-times "mov\t#-1" 1 } } */
+
+/* { dg-final { scan-assembler-times "mov\t#-1" 1 { target { ! sh2a } } } } */
+/* { dg-final { scan-assembler-times "movrt" 4 { target { sh2a } } } } */
 
 void
 testfunc_00 (int* a, int* b, int c, int d)

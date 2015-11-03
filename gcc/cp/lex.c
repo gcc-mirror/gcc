@@ -25,16 +25,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
-#include "stringpool.h"
 #include "cp-tree.h"
-#include "cpplib.h"
+#include "timevar.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "alias.h"
 #include "flags.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-objc.h"
-#include "tm_p.h"
-#include "timevar.h"
 
 static int interface_strcmp (const char *);
 static void init_cp_pragma (void);
@@ -176,6 +175,8 @@ init_reswords (void)
     mask |= D_CXX11;
   if (!flag_concepts)
     mask |= D_CXX_CONCEPTS;
+  if (!flag_tm)
+    mask |= D_TRANSMEM;
   if (flag_no_asm)
     mask |= D_ASM | D_EXT;
   if (flag_no_gnu_keywords)

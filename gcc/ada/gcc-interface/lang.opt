@@ -1,5 +1,5 @@
 ; Options for the Ada front end.
-; Copyright (C) 2003-2013 Free Software Foundation, Inc.
+; Copyright (C) 2003-2015 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -54,11 +54,11 @@ Ada AdaWhy AdaSCIL Joined Separate
 
 Wall
 Ada AdaWhy AdaSCIL
-Enable most warning messages
+Enable most warning messages.
 
 k8
 Driver
-Synonym of -gnatk8
+Synonym of -gnatk8.
 
 nostdinc
 Ada AdaWhy AdaSCIL RejectNegative
@@ -66,26 +66,30 @@ Ada AdaWhy AdaSCIL RejectNegative
 
 nostdlib
 Ada AdaWhy AdaSCIL
-Do not look for object files in standard path
+Do not look for object files in standard path.
 
 fRTS=
 Ada AdaWhy AdaSCIL Joined RejectNegative
-Select the runtime
+Select the runtime.
 
 fshort-enums
 Ada AdaWhy AdaSCIL
-Use the narrowest integer type possible for enumeration types
+Use the narrowest integer type possible for enumeration types.
 
 gant
 Ada AdaWhy AdaSCIL Joined Undocumented
-Catch typos
+Catch typos.
 
 gnatO
 Ada AdaWhy AdaSCIL Separate
-Set name of output ALI file (internal switch)
+Set name of output ALI file (internal switch).
 
 gnat
 Ada AdaWhy AdaSCIL Joined
--gnat<options>	Specify options to GNAT
+-gnat<options>	Specify options to GNAT.
+
+fbuiltin-printf
+Ada Undocumented
+Ignored.
 
 ; This comment is to ensure we retain the blank line above.

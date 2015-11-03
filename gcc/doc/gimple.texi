@@ -92,8 +92,8 @@ groups: a header describing the instruction and its locations,
 and a variable length body with all the operands. Tuples are
 organized into a hierarchy with 3 main classes of tuples.
 
-@subsection @code{gimple_statement_base} (gsbase)
-@cindex gimple_statement_base
+@subsection @code{gimple} (gsbase)
+@cindex gimple
 
 This is the root of the hierarchy, it holds basic information
 needed by most GIMPLE statements. There are some fields that
@@ -223,7 +223,7 @@ is then inherited from the other two tuples.
 
 @itemize @bullet
 @item @code{gsbase}
-Inherited from @code{struct gimple_statement_base}.
+Inherited from @code{struct gimple}.
 
 @item @code{def_ops}
 Array of pointers into the operand array indicating all the slots that
@@ -300,7 +300,7 @@ kinds, along with their relationships to @code{GSS_} values (layouts) and
 @code{GIMPLE_} values (codes):
 
 @smallexample
-   gimple_statement_base
+   gimple
      |    layout: GSS_BASE
      |    used for 4 codes: GIMPLE_ERROR_MARK
      |                      GIMPLE_NOP
@@ -2654,7 +2654,7 @@ any new basic blocks which are necessary.
 
 The first step in adding a new GIMPLE statement code, is
 modifying the file @code{gimple.def}, which contains all the GIMPLE
-codes.  Then you must add a corresponding gimple_statement_base subclass
+codes.  Then you must add a corresponding gimple subclass
 located in @code{gimple.h}.  This in turn, will require you to add a
 corresponding @code{GTY} tag in @code{gsstruct.def}, and code to handle
 this tag in @code{gss_for_code} which is located in @code{gimple.c}.
@@ -2667,7 +2667,7 @@ in @code{gimple.c}.
 You will probably want to create a function to build the new
 gimple statement in @code{gimple.c}.  The function should be called
 @code{gimple_build_@var{new-tuple-name}}, and should return the new tuple
-as a pointer to the appropriate gimple_statement_base subclass.
+as a pointer to the appropriate gimple subclass.
 
 If your new statement requires accessors for any members or
 operands it may have, put simple inline accessors in

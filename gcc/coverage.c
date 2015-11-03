@@ -28,42 +28,27 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
 #include "rtl.h"
-#include "alias.h"
 #include "tree.h"
-#include "fold-const.h"
-#include "stringpool.h"
-#include "stor-layout.h"
-#include "flags.h"
-#include "output.h"
-#include "regs.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
-#include "toplev.h"
+#include "tree-pass.h"
 #include "tm_p.h"
+#include "stringpool.h"
+#include "cgraph.h"
 #include "coverage.h"
+#include "diagnostic-core.h"
+#include "fold-const.h"
+#include "stor-layout.h"
+#include "output.h"
+#include "toplev.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "context.h"
 #include "pass_manager.h"
-#include "tree-pass.h"
-#include "cgraph.h"
-#include "dumpfile.h"
-#include "diagnostic-core.h"
 #include "intl.h"
-#include "filenames.h"
-#include "target.h"
 #include "params.h"
 #include "auto-profile.h"
 
-#include "gcov-io.h"
 #include "gcov-io.c"
 
 struct GTY((chain_next ("%h.next"))) coverage_data
@@ -77,7 +62,7 @@ struct GTY((chain_next ("%h.next"))) coverage_data
 };
 
 /* Counts information for a function.  */
-typedef struct counts_entry : pointer_hash <counts_entry>
+struct counts_entry : pointer_hash <counts_entry>
 {
   /* We hash by  */
   unsigned ident;
@@ -93,7 +78,7 @@ typedef struct counts_entry : pointer_hash <counts_entry>
   static inline hashval_t hash (const counts_entry *);
   static int equal (const counts_entry *, const counts_entry *);
   static void remove (counts_entry *);
-} counts_entry_t;
+};
 
 static GTY(()) struct coverage_data *functions_head = 0;
 static struct coverage_data **functions_tail = &functions_head;
@@ -279,7 +264,7 @@ read_counts_file (void)
 	}
       else if (GCOV_TAG_IS_COUNTER (tag) && fn_ident)
 	{
-	  counts_entry_t **slot, *entry, elt;
+	  counts_entry **slot, *entry, elt;
 	  unsigned n_counts = GCOV_TAG_COUNTER_NUM (length);
 	  unsigned ix;
 
@@ -290,7 +275,7 @@ read_counts_file (void)
 	  entry = *slot;
 	  if (!entry)
 	    {
-	      *slot = entry = XCNEW (counts_entry_t);
+	      *slot = entry = XCNEW (counts_entry);
 	      entry->ident = fn_ident;
 	      entry->ctr = elt.ctr;
 	      entry->lineno_checksum = lineno_checksum;
@@ -358,7 +343,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
                      unsigned cfg_checksum, unsigned lineno_checksum,
 		     const struct gcov_ctr_summary **summary)
 {
-  counts_entry_t *entry, elt;
+  counts_entry *entry, elt;
 
   /* No hash table, no counts.  */
   if (!counts_hash)

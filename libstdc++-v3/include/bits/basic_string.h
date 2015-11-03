@@ -833,13 +833,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       shrink_to_fit() noexcept
       {
+#if __cpp_exceptions
 	if (capacity() > size())
 	  {
-	    __try
+	    try
 	      { reserve(0); }
-	    __catch(...)
+	    catch(...)
 	      { }
 	  }
+#endif
       }
 #endif
 
@@ -3282,13 +3284,15 @@ _GLIBCXX_END_NAMESPACE_CXX11
       void
       shrink_to_fit() _GLIBCXX_NOEXCEPT
       {
+#if __cpp_exceptions
 	if (capacity() > size())
 	  {
-	    __try
+	    try
 	      { reserve(0); }
-	    __catch(...)
+	    catch(...)
 	      { }
 	  }
+#endif
       }
 #endif
 
@@ -3437,7 +3441,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  element of the %string.
        */
       const_reference
-      front() const _GLIBCXX_NOEXCEPT
+      front() const noexcept
       {
 	__glibcxx_assert(!empty());
 	return operator[](0);
@@ -3459,7 +3463,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  last element of the %string.
        */
       const_reference
-      back() const _GLIBCXX_NOEXCEPT
+      back() const noexcept
       {
 	__glibcxx_assert(!empty());
 	return operator[](this->size() - 1);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -176,16 +176,17 @@ procedure Gnatxref is
                      elsif Src_Path_Name = null
                        and then Lib_Path_Name = null
                      then
-                        Osint.Fail ("RTS path not valid: missing " &
-                                    "adainclude and adalib directories");
+                        Osint.Fail
+                          ("RTS path not valid: missing adainclude and "
+                           & "adalib directories");
 
                      elsif Src_Path_Name = null then
-                        Osint.Fail ("RTS path not valid: missing " &
-                                    "adainclude directory");
+                        Osint.Fail
+                          ("RTS path not valid: missing adainclude directory");
 
-                     elsif  Lib_Path_Name = null then
-                        Osint.Fail ("RTS path not valid: missing " &
-                                    "adalib directory");
+                     elsif Lib_Path_Name = null then
+                        Osint.Fail
+                          ("RTS path not valid: missing adalib directory");
                      end if;
                   end;
 
@@ -200,8 +201,7 @@ procedure Gnatxref is
                      Osint.Fail ("--ext cannot be specified multiple times");
                   end if;
 
-                  if EXT_Specified'Length
-                    = Osint.ALI_Default_Suffix'Length
+                  if EXT_Specified'Length = Osint.ALI_Default_Suffix'Length
                   then
                      Osint.ALI_Suffix := EXT_Specified.all'Access;
                   else

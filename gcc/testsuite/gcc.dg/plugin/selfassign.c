@@ -63,7 +63,7 @@ get_real_ref_rhs (tree expr)
           if ((!vdecl || DECL_ARTIFICIAL (vdecl))
               && !gimple_nop_p (SSA_NAME_DEF_STMT (expr)))
             {
-              gimple def_stmt = SSA_NAME_DEF_STMT (expr);
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (expr);
               /* We are only interested in an assignment with a single
                  rhs operand because if it is not, the original assignment
                  will not possibly be a self-assignment.  */
@@ -168,7 +168,7 @@ get_non_ssa_expr (tree expr)
           if ((!vdecl || DECL_ARTIFICIAL (vdecl))
               && !gimple_nop_p (SSA_NAME_DEF_STMT (expr)))
             {
-              gimple def_stmt = SSA_NAME_DEF_STMT (expr);
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (expr);
               if (gimple_assign_single_p (def_stmt))
                 vdecl = gimple_assign_rhs1 (def_stmt);
             }
@@ -186,7 +186,7 @@ get_non_ssa_expr (tree expr)
    they are the same. If so, print a warning message about self-assignment.  */
 
 static void
-compare_and_warn (gimple stmt, tree lhs, tree rhs)
+compare_and_warn (gimple *stmt, tree lhs, tree rhs)
 {
   if (operand_equal_p (lhs, rhs, OEP_PURE_SAME))
     {
@@ -210,7 +210,7 @@ compare_and_warn (gimple stmt, tree lhs, tree rhs)
 /* Check and warn if STMT is a self-assign statement.  */
 
 static void
-warn_self_assign (gimple stmt)
+warn_self_assign (gimple *stmt)
 {
   tree rhs, lhs;
 

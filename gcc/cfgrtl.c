@@ -41,35 +41,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cfghooks.h"
 #include "df.h"
-#include "alias.h"
+#include "insn-config.h"
+#include "emit-rtl.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
 #include "bb-reorder.h"
-#include "regs.h"
-#include "flags.h"
-#include "except.h"
 #include "rtl-error.h"
-#include "tm_p.h"
 #include "insn-attr.h"
-#include "insn-config.h"
-#include "expmed.h"
 #include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
 #include "expr.h"
-#include "target.h"
-#include "common/common-target.h"
 #include "cfgloop.h"
 #include "tree-pass.h"
+#include "print-rtl.h"
 
 /* Holds the interesting leading and trailing notes for the function.
    Only applicable if the CFG is in cfglayout mode.  */
@@ -482,15 +472,13 @@ public:
 unsigned int
 pass_free_cfg::execute (function *)
 {
-#ifdef DELAY_SLOTS
   /* The resource.c machinery uses DF but the CFG isn't guaranteed to be
      valid at that point so it would be too late to call df_analyze.  */
-  if (optimize > 0 && flag_delayed_branch)
+  if (DELAY_SLOTS && optimize > 0 && flag_delayed_branch)
     {
       df_note_add_problem ();
       df_analyze ();
     }
-#endif
 
   if (crtl->has_bb_partition)
     insert_section_boundary_note ();
@@ -2097,9 +2085,7 @@ commit_edge_insertions (void)
      which will be done by fixup_partitions.  */
   fixup_partitions ();
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
+  checking_verify_flow_info ();
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
 		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
@@ -3723,9 +3709,8 @@ fixup_reorder_chain (void)
     insn = NEXT_INSN (insn);
 
   set_last_insn (insn);
-#ifdef ENABLE_CHECKING
-  verify_insn_chain ();
-#endif
+  if (flag_checking)
+    verify_insn_chain ();
 
   /* Now add jumps and labels as needed to match the blocks new
      outgoing edges.  */
@@ -4313,9 +4298,7 @@ break_superblocks (void)
 void
 cfg_layout_finalize (void)
 {
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
+  checking_verify_flow_info ();
   force_one_exit_fallthru ();
   rtl_register_cfg_hooks ();
   if (reload_completed && !targetm.have_epilogue ())
@@ -4325,10 +4308,9 @@ cfg_layout_finalize (void)
   rebuild_jump_labels (get_insns ());
   delete_dead_jumptables ();
 
-#ifdef ENABLE_CHECKING
-  verify_insn_chain ();
-  verify_flow_info ();
-#endif
+  if (flag_checking)
+    verify_insn_chain ();
+  checking_verify_flow_info ();
 }
 
 
@@ -4893,13 +4875,11 @@ rtl_flow_call_edges_add (sbitmap blocks)
 		 block in CFG already.  Calling make_edge in such case would
 		 cause us to mark that edge as fake and remove it later.  */
 
-#ifdef ENABLE_CHECKING
-	      if (split_at_insn == BB_END (bb))
+	      if (flag_checking && split_at_insn == BB_END (bb))
 		{
 		  e = find_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun));
 		  gcc_assert (e == NULL);
 		}
-#endif
 
 	      /* Note that the following may create a new basic block
 		 and renumber the existing basic blocks.  */

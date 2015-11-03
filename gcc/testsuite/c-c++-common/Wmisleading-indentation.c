@@ -708,7 +708,7 @@ fn_37 (void)
 
   if (flagA)
     ;
-  else if (flagA); /* { dg-message "8: ...this 'if' clause" } */
+  else if (flagB); /* { dg-message "8: ...this 'if' clause" } */
     foo (0); /* { dg-warning "statement is indented as if" } */
   while (flagA) /* { dg-message "3: ...this 'while' clause" } */
     /* blah */;
@@ -716,13 +716,13 @@ fn_37 (void)
 
   if (flagA)
     ;
-  else if (flagA) /* { dg-message "8: ...this 'if' clause" } */
+  else if (flagB) /* { dg-message "8: ...this 'if' clause" } */
     foo (1);
     foo (2); /* { dg-warning "statement is indented as if" } */
 
   if (flagA)
     foo (1);
-  else if (flagA) /* { dg-message "8: ...this 'if' clause" } */
+  else if (flagB) /* { dg-message "8: ...this 'if' clause" } */
     foo (2);
     foo (3); /* { dg-warning "statement is indented as if" } */
 
@@ -731,6 +731,13 @@ fn_37 (void)
     { /* { dg-warning "statement is indented as if" } */
       foo (0);
     }
+
+  if (flagB) /* { dg-message "3: ...this 'if' clause" } */
+    /* blah */;
+   { /* { dg-warning "statement is indented as if" } */
+     foo (0);
+   }
+
 
   if (flagB)
     ;
@@ -785,6 +792,20 @@ fn_37 (void)
   else if (flagB); /* { dg-message "8: ...this 'if' clause" } */
     foo (2); /* { dg-warning "statement is indented as if" } */
 
+  for (i = 0; /* { dg-message "3: ...this 'for' clause" } */
+       i < 10;
+       i++);
+    foo (i); /* { dg-warning "statement is indented as if" } */
+
+  if (flagA)
+  {
+    foo (1);
+  }
+  else if (flagB); /* { dg-message "8: ...this 'if' clause" } */
+  { /* { dg-warning "statement is indented as if" } */
+    foo (2);
+  }
+
 #undef EMPTY
 #undef FOR_EACH
 }
@@ -836,6 +857,12 @@ fn_38 (void)
   if (flagB)
     foo (2);
   foo (3);
+
+  for (i = 0;
+       i < 10;
+       i++
+  );
+  foo (i);
 }
 
 /* The following function contains good indentation which we definitely should
@@ -844,6 +871,8 @@ fn_38 (void)
 void
 fn_39 (void)
 {
+  int i;
+
   if (flagA)
     ;
   if (flagB)
@@ -856,4 +885,9 @@ fn_39 (void)
       foo (1);
   else
     foo (2);
+
+  for (i = 0;
+       i < 10;
+       i++);
+  foo (i);
 }

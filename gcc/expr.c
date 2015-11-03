@@ -21,53 +21,41 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "predict.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
-#include "df.h"
+#include "predict.h"
+#include "tm_p.h"
 #include "ssa.h"
+#include "expmed.h"
+#include "optabs.h"
+#include "regs.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "cgraph.h"
+#include "diagnostic.h"
 #include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "attribs.h"
 #include "varasm.h"
-#include "flags.h"
-#include "regs.h"
 #include "except.h"
-#include "insn-config.h"
 #include "insn-attr.h"
-#include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
 #include "calls.h"
-#include "emit-rtl.h"
 #include "stmt.h"
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
+#include "optabs-tree.h"
 #include "libfuncs.h"
-#include "recog.h"
 #include "reload.h"
-#include "typeclass.h"
-#include "toplev.h"
 #include "langhooks.h"
-#include "intl.h"
-#include "tm_p.h"
-#include "tree-iterator.h"
-#include "internal-fn.h"
-#include "cgraph.h"
-#include "target.h"
 #include "common/common-target.h"
-#include "timevar.h"
-#include "diagnostic.h"
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
-#include "target-globals.h"
-#include "params.h"
 #include "tree-ssa-address.h"
-#include "cfgexpand.h"
 #include "builtins.h"
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
@@ -2370,10 +2358,10 @@ use_group_regs (rtx *call_fusage, rtx regs)
    assigment and the code of the expresion on the RHS is CODE.  Return
    NULL otherwise.  */
 
-static gimple
+static gimple *
 get_def_for_expr (tree name, enum tree_code code)
 {
-  gimple def_stmt;
+  gimple *def_stmt;
 
   if (TREE_CODE (name) != SSA_NAME)
     return NULL;
@@ -2390,10 +2378,10 @@ get_def_for_expr (tree name, enum tree_code code)
    assigment and the class of the expresion on the RHS is CLASS.  Return
    NULL otherwise.  */
 
-static gimple
+static gimple *
 get_def_for_expr_class (tree name, enum tree_code_class tclass)
 {
-  gimple def_stmt;
+  gimple *def_stmt;
 
   if (TREE_CODE (name) != SSA_NAME)
     return NULL;
@@ -3625,11 +3613,11 @@ compress_float_constant (rtx x, rtx y)
   machine_mode dstmode = GET_MODE (x);
   machine_mode orig_srcmode = GET_MODE (y);
   machine_mode srcmode;
-  REAL_VALUE_TYPE r;
+  const REAL_VALUE_TYPE *r;
   int oldcost, newcost;
   bool speed = optimize_insn_for_speed_p ();
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, y);
+  r = CONST_DOUBLE_REAL_VALUE (y);
 
   if (targetm.legitimate_constant_p (dstmode, y))
     oldcost = set_src_cost (y, orig_srcmode, speed);
@@ -3650,10 +3638,10 @@ compress_float_constant (rtx x, rtx y)
 	continue;
 
       /* Skip if the narrowed value isn't exact.  */
-      if (! exact_real_truncate (srcmode, &r))
+      if (! exact_real_truncate (srcmode, r))
 	continue;
 
-      trunc_y = CONST_DOUBLE_FROM_REAL_VALUE (r, srcmode);
+      trunc_y = const_double_from_real_value (*r, srcmode);
 
       if (targetm.legitimate_constant_p (srcmode, trunc_y))
 	{
@@ -4476,7 +4464,7 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
   tree op0, op1;
   rtx value, result;
   optab binop;
-  gimple srcstmt;
+  gimple *srcstmt;
   enum tree_code code;
 
   if (mode1 != VOIDmode
@@ -4506,7 +4494,7 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
      be from a bitfield load.  */
   if (TREE_CODE (op0) == SSA_NAME)
     {
-      gimple op0stmt = get_gimple_for_ssa_name (op0);
+      gimple *op0stmt = get_gimple_for_ssa_name (op0);
 
       /* We want to eventually have OP0 be the same as TO, which
 	 should be a bitfield.  */
@@ -6607,7 +6595,11 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	 operations.  */
       || (bitsize >= 0
 	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST
-	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)), bitsize) != 0)
+	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)), bitsize) != 0
+	  /* Except for initialization of full bytes from a CONSTRUCTOR, which
+	     we will handle specially below.  */
+	  && !(TREE_CODE (exp) == CONSTRUCTOR
+	       && bitsize % BITS_PER_UNIT == 0))
       /* If we are expanding a MEM_REF of a non-BLKmode non-addressable
          decl we must use bitfield operations.  */
       || (bitsize >= 0
@@ -6618,7 +6610,10 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	  && DECL_MODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) != BLKmode))
     {
       rtx temp;
-      gimple nop_def;
+      gimple *nop_def;
+
+      /* Using bitwise copy is not safe for TREE_ADDRESSABLE types.  */
+      gcc_assert (!TREE_ADDRESSABLE (TREE_TYPE (exp)));
 
       /* If EXP is a NOP_EXPR of precision less than its mode, then that
 	 implies a mask operation.  If the precision is the same size as
@@ -6733,6 +6728,15 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 
       if (!MEM_KEEP_ALIAS_SET_P (to_rtx) && MEM_ALIAS_SET (to_rtx) != 0)
 	set_mem_alias_set (to_rtx, alias_set);
+
+      /* Above we avoided using bitfield operations for storing a CONSTRUCTOR
+	 into a target smaller than its type; handle that case now.  */
+      if (TREE_CODE (exp) == CONSTRUCTOR && bitsize >= 0)
+	{
+	  gcc_assert (bitsize % BITS_PER_UNIT == 0);
+	  store_constructor (exp, to_rtx, 0, bitsize/BITS_PER_UNIT);
+	  return to_rtx;
+	}
 
       return store_expr (exp, to_rtx, 0, nontemporal);
     }
@@ -7903,7 +7907,7 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
   rtx op00, op01, op1, op2;
   enum rtx_code comparison_code;
   machine_mode comparison_mode;
-  gimple srcstmt;
+  gimple *srcstmt;
   rtx temp;
   tree type = TREE_TYPE (treeop1);
   int unsignedp = TYPE_UNSIGNED (type);
@@ -8154,34 +8158,40 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
     case ADDR_SPACE_CONVERT_EXPR:
       {
 	tree treeop0_type = TREE_TYPE (treeop0);
-	addr_space_t as_to;
-	addr_space_t as_from;
 
 	gcc_assert (POINTER_TYPE_P (type));
 	gcc_assert (POINTER_TYPE_P (treeop0_type));
 
-	as_to = TYPE_ADDR_SPACE (TREE_TYPE (type));
-	as_from = TYPE_ADDR_SPACE (TREE_TYPE (treeop0_type));
+	addr_space_t as_to = TYPE_ADDR_SPACE (TREE_TYPE (type));
+	addr_space_t as_from = TYPE_ADDR_SPACE (TREE_TYPE (treeop0_type));
 
         /* Conversions between pointers to the same address space should
 	   have been implemented via CONVERT_EXPR / NOP_EXPR.  */
 	gcc_assert (as_to != as_from);
+
+	op0 = expand_expr (treeop0, NULL_RTX, VOIDmode, modifier);
 
         /* Ask target code to handle conversion between pointers
 	   to overlapping address spaces.  */
 	if (targetm.addr_space.subset_p (as_to, as_from)
 	    || targetm.addr_space.subset_p (as_from, as_to))
 	  {
-	    op0 = expand_expr (treeop0, NULL_RTX, VOIDmode, modifier);
 	    op0 = targetm.addr_space.convert (op0, treeop0_type, type);
-	    gcc_assert (op0);
-	    return op0;
 	  }
-
-	/* For disjoint address spaces, converting anything but
-	   a null pointer invokes undefined behaviour.  We simply
-	   always return a null pointer here.  */
-	return CONST0_RTX (mode);
+        else
+          {
+	    /* For disjoint address spaces, converting anything but a null
+	       pointer invokes undefined behaviour.  We truncate or extend the
+	       value as if we'd converted via integers, which handles 0 as
+	       required, and all others as the programmer likely expects.  */
+#ifndef POINTERS_EXTEND_UNSIGNED
+	    const int POINTERS_EXTEND_UNSIGNED = 1;
+#endif
+	    op0 = convert_modes (mode, TYPE_MODE (treeop0_type),
+				 op0, POINTERS_EXTEND_UNSIGNED);
+	  }
+	gcc_assert (op0);
+	return op0;
       }
 
     case POINTER_PLUS_EXPR:
@@ -8301,7 +8311,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  && TYPE_MODE (TREE_TYPE (treeop0))
 	     == TYPE_MODE (TREE_TYPE (treeop1)))
 	{
-	  gimple def = get_def_for_expr (treeop1, NEGATE_EXPR);
+	  gimple *def = get_def_for_expr (treeop1, NEGATE_EXPR);
 	  if (def)
 	    {
 	      treeop1 = gimple_assign_rhs1 (def);
@@ -8489,7 +8499,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
     case FMA_EXPR:
       {
 	optab opt = fma_optab;
-	gimple def0, def2;
+	gimple *def0, *def2;
 
 	/* If there is no insn for FMA, emit it as __builtin_fma{,f,l}
 	   call.  */
@@ -8895,7 +8905,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	    && TREE_CONSTANT (treeop1)
 	    && TREE_CODE (treeop0) == SSA_NAME)
 	  {
-	    gimple def = SSA_NAME_DEF_STMT (treeop0);
+	    gimple *def = SSA_NAME_DEF_STMT (treeop0);
 	    if (is_gimple_assign (def)
 		&& gimple_assign_rhs_code (def) == NOP_EXPR)
 	      {
@@ -9327,7 +9337,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
    into constant expressions.  */
 
 static bool
-stmt_is_replaceable_p (gimple stmt)
+stmt_is_replaceable_p (gimple *stmt)
 {
   if (ssa_is_replaceable_p (stmt))
     {
@@ -9357,7 +9367,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
   struct separate_ops ops;
   tree treeop0, treeop1, treeop2;
   tree ssa_name = NULL_TREE;
-  gimple g;
+  gimple *g;
 
   type = TREE_TYPE (exp);
   mode = TYPE_MODE (type);
@@ -9707,7 +9717,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	 many insns, so we'd end up copying it to a register in any case.
 
 	 Now, we do the copying in expand_binop, if appropriate.  */
-      return CONST_DOUBLE_FROM_REAL_VALUE (TREE_REAL_CST (exp),
+      return const_double_from_real_value (TREE_REAL_CST (exp),
 					   TYPE_MODE (TREE_TYPE (exp)));
 
     case FIXED_CST:
@@ -9841,7 +9851,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))));
 	machine_mode address_mode;
 	tree base = TREE_OPERAND (exp, 0);
-	gimple def_stmt;
+	gimple *def_stmt;
 	enum insn_code icode;
 	unsigned align;
 	/* Handle expansion of non-aliased memory with non-BLKmode.  That
@@ -11119,7 +11129,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
       && integer_zerop (arg1)
       && (TYPE_PRECISION (ops->type) != 1 || TYPE_UNSIGNED (ops->type)))
     {
-      gimple srcstmt = get_def_for_expr (arg0, BIT_AND_EXPR);
+      gimple *srcstmt = get_def_for_expr (arg0, BIT_AND_EXPR);
       if (srcstmt
 	  && integer_pow2p (gimple_assign_rhs2 (srcstmt)))
 	{
@@ -11338,7 +11348,7 @@ const_vector_from_tree (tree exp)
       elt = VECTOR_CST_ELT (exp, i);
 
       if (TREE_CODE (elt) == REAL_CST)
-	RTVEC_ELT (v, i) = CONST_DOUBLE_FROM_REAL_VALUE (TREE_REAL_CST (elt),
+	RTVEC_ELT (v, i) = const_double_from_real_value (TREE_REAL_CST (elt),
 							 inner);
       else if (TREE_CODE (elt) == FIXED_CST)
 	RTVEC_ELT (v, i) = CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),

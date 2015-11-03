@@ -21,14 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
-#include "tree.h"
-#include "options.h"
-#include "stringpool.h"
-#include "vms-protos.h"
 #include "target.h"
+#include "tree.h"
+#include "stringpool.h"
+#include "alias.h"
+#include "vms-protos.h"
 #include "output.h"
-#include "tm.h"
 #include "dwarf2out.h"
 
 /* Correlation of standard CRTL names with DECCRTL function names.  */

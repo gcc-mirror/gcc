@@ -41,6 +41,16 @@
   return COI_ERROR;			    \
 }
 
+/* Like COIERROR, but return NULL instead of COIRESULT.  */
+#define COIERRORN(...)			    \
+{					    \
+  fprintf (stderr, "COI ERROR - TARGET: "); \
+  fprintf (stderr, __VA_ARGS__);	    \
+  fprintf (stderr, "\n");		    \
+  perror (NULL);			    \
+  return NULL;				    \
+}
+
 #ifdef DEBUG
   #define COITRACE(...)			      \
   {					      \

@@ -26,27 +26,21 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "opts.h"
-#include "options.h"
-#include "tm.h"
-#include "vec.h"
-#include "alias.h"
+#include "ggc.h"
+#include "target.h"
 #include "tree.h"
-#include "inchash.h"
+#include "diagnostic.h"
+#include "opts.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "print-tree.h"
-#include "diagnostic.h"
-#include "target.h"
-#include "ggc.h"
 #include "flags.h"
 #include "debug.h"
 #include "toplev.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "plugin.h"
-#include "hashtab.h"
-#include "hard-reg-set.h"
 #include "calls.h"	/* For pass_by_reference.  */
 #include "dwarf2out.h"
 
@@ -162,6 +156,11 @@ gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
 
     case OPT_fshort_enums:
       /* This is handled by the middle-end.  */
+      break;
+
+    case OPT_fbuiltin_printf:
+      /* This is ignored in Ada but needs to be accepted so it can be
+	 defaulted.  */
       break;
 
     default:

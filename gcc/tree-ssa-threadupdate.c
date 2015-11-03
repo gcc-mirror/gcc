@@ -20,26 +20,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
-#include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
+#include "cfghooks.h"
+#include "tree-pass.h"
 #include "ssa.h"
-#include "options.h"
 #include "fold-const.h"
-#include "flags.h"
 #include "cfganal.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-ssa.h"
 #include "tree-ssa-threadupdate.h"
-#include "dumpfile.h"
 #include "cfgloop.h"
 #include "dbgcnt.h"
 #include "tree-cfg.h"
-#include "tree-pass.h"
 
 /* Given a block B, update the CFG and SSA graph to reflect redirecting
    one or more in-edges to B to instead reach the destination of an
@@ -215,6 +209,18 @@ redirection_data::equal (const redirection_data *p1, const redirection_data *p2)
   return true;
 }
 
+/* Rather than search all the edges in jump thread paths each time
+   DOM is able to simply if control statement, we build a hash table
+   with the deleted edges.  We only care about the address of the edge,
+   not its contents.  */
+struct removed_edges : nofree_ptr_hash<edge_def>
+{
+  static hashval_t hash (edge e) { return htab_hash_pointer (e); }
+  static bool equal (edge e1, edge e2) { return e1 == e2; }
+};
+
+static hash_table<removed_edges> *removed_edges;
+
 /* Data structure of information to pass to hash table traversal routines.  */
 struct ssa_local_info_t
 {
@@ -260,7 +266,7 @@ struct thread_stats_d thread_stats;
    Also remove all outgoing edges except the edge which reaches DEST_BB.
    If DEST_BB is NULL, then remove all outgoing edges.  */
 
-static void
+void
 remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 {
   gimple_stmt_iterator gsi;
@@ -288,6 +294,17 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
       else
 	ei_next (&ei);
     }
+
+  /* If the remaining edge is a loop exit, there must have
+     a removed edge that was not a loop exit.
+
+     In that case BB and possibly other blocks were previously
+     in the loop, but are now outside the loop.  Thus, we need
+     to update the loop structures.  */
+  if (single_succ_p (bb)
+      && loop_outer (bb->loop_father)
+      && loop_exit_edge_p (bb->loop_father, single_succ_edge (bb)))
+    loops_state_set (LOOPS_NEED_FIXUP);
 }
 
 /* Create a duplicate of BB.  Record the duplicate block in an array
@@ -2320,7 +2337,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
 static bool
 bb_ends_with_multiway_branch (basic_block bb ATTRIBUTE_UNUSED)
 {
-  gimple stmt = last_stmt (bb);
+  gimple *stmt = last_stmt (bb);
   if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
     return true;
   if (stmt && gimple_code (stmt) == GIMPLE_GOTO
@@ -2487,9 +2504,8 @@ duplicate_thread_path (edge entry, edge exit,
       scale_bbs_frequencies_int (region_copy, n_region, entry_freq, total_freq);
     }
 
-#ifdef ENABLE_CHECKING
-  verify_jump_thread (region_copy, n_region);
-#endif
+  if (flag_checking)
+    verify_jump_thread (region_copy, n_region);
 
   /* Remove the last branch in the jump thread path.  */
   remove_ctrl_stmt_and_useless_edges (region_copy[n_region - 1], exit->dest);
@@ -2530,13 +2546,61 @@ static bool
 valid_jump_thread_path (vec<jump_thread_edge *> *path)
 {
   unsigned len = path->length ();
+  bool multiway_branch = false;
+  bool threaded_through_latch = false;
 
-  /* Check that the path is connected.  */
+  /* Check that the path is connected and see if there's a multi-way
+     branch on the path.  */
   for (unsigned int j = 0; j < len - 1; j++)
-    if ((*path)[j]->e->dest != (*path)[j+1]->e->src)
-      return false;
+    {
+      edge e = (*path)[j]->e;
+      struct loop *loop = e->dest->loop_father;
+
+      if (e->dest != (*path)[j+1]->e->src)
+        return false;
+
+      /* If we're threading through the loop latch back into the
+	 same loop and the destination does not dominate the loop
+	 latch, then this thread would create an irreducible loop.  */
+      if (loop->latch
+	  && loop_latch_edge (loop) == e
+	  && loop == path->last()->e->dest->loop_father
+	  && (determine_bb_domination_status (loop, path->last ()->e->dest)
+	       == DOMST_NONDOMINATING))
+	threaded_through_latch = true;
+
+      gimple *last = last_stmt (e->dest);
+      multiway_branch |= (last && gimple_code (last) == GIMPLE_SWITCH);
+    }
+
+  /* If we are trying to thread through the loop latch to a block in the
+     loop that does not dominate the loop latch, then that will create an
+     irreducible loop.  We avoid that unless the jump thread has a multi-way
+     branch, in which case we have deemed it worth losing other
+     loop optimizations later if we can eliminate the multi-way branch.  */
+  if (!multiway_branch && threaded_through_latch)
+    return false;
 
   return true;
+}
+
+/* Remove any queued jump threads that include edge E.
+
+   We don't actually remove them here, just record the edges into ax
+   hash table.  That way we can do the search once per iteration of
+   DOM/VRP rather than for every case where DOM optimizes away a COND_EXPR.  */
+
+void
+remove_jump_threads_including (edge_def *e)
+{
+  if (!paths.exists ())
+    return;
+
+  if (!removed_edges)
+    removed_edges = new hash_table<struct removed_edges> (17);
+
+  edge *slot = removed_edges->find_slot (e, INSERT);
+  *slot = e;
 }
 
 /* Walk through all blocks and thread incoming edges to the appropriate
@@ -2560,10 +2624,36 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   struct loop *loop;
 
   if (!paths.exists ())
-    return false;
+    {
+      retval = false;
+      goto out;
+    }
 
   threaded_blocks = BITMAP_ALLOC (NULL);
   memset (&thread_stats, 0, sizeof (thread_stats));
+
+  /* Remove any paths that referenced removed edges.  */
+  if (removed_edges)
+    for (i = 0; i < paths.length (); )
+      {
+	unsigned int j;
+	vec<jump_thread_edge *> *path = paths[i];
+
+	for (j = 0; j < path->length (); j++)
+	  {
+	    edge e = (*path)[j]->e;
+	    if (removed_edges->find_slot (e, NO_INSERT))
+	      break;
+	  }
+
+	if (j != path->length ())
+	  {
+	    delete_jump_thread_path (path);
+	    paths.unordered_remove (i);
+	    continue;
+	  }
+	i++;
+      }
 
   /* Jump-thread all FSM threads before other jump-threads.  */
   for (i = 0; i < paths.length ();)
@@ -2582,7 +2672,9 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       if (bitmap_bit_p (threaded_blocks, entry->src->index)
 	  /* Verify that the jump thread path is still valid: a
 	     previous jump-thread may have changed the CFG, and
-	     invalidated the current path.  */
+	     invalidated the current path or the requested jump
+	     thread might create irreducible loops which should
+	     generally be avoided.  */
 	  || !valid_jump_thread_path (path))
 	{
 	  /* Remove invalid FSM jump-thread paths.  */
@@ -2604,6 +2696,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 	  free_dominance_info (CDI_DOMINATORS);
 	  bitmap_set_bit (threaded_blocks, entry->src->index);
 	  retval = true;
+	  thread_stats.num_threaded_edges++;
 	}
 
       delete_jump_thread_path (path);
@@ -2747,6 +2840,9 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   if (retval)
     loops_state_set (LOOPS_NEED_FIXUP);
 
+ out:
+  delete removed_edges;
+  removed_edges = NULL;
   return retval;
 }
 

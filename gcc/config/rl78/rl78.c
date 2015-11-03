@@ -22,51 +22,30 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
+#include "target.h"
 #include "rtl.h"
+#include "tree.h"
 #include "df.h"
-#include "alias.h"
-#include "fold-const.h"
+#include "tm_p.h"
+#include "stringpool.h"
+#include "optabs.h"
+#include "emit-rtl.h"
+#include "recog.h"
+#include "diagnostic-core.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "regs.h"
-#include "insn-config.h"
-#include "conditions.h"
 #include "output.h"
 #include "insn-attr.h"
-#include "flags.h"
-#include "expmed.h"
-#include "dojump.h"
 #include "explow.h"
-#include "emit-rtl.h"
-#include "stmt.h"
 #include "expr.h"
-#include "insn-codes.h"
-#include "optabs.h"
-#include "libfuncs.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "toplev.h"
 #include "reload.h"
 #include "cfgrtl.h"
-#include "cfganal.h"
-#include "lcm.h"
-#include "cfgbuild.h"
-#include "cfgcleanup.h"
-#include "tm_p.h"
-#include "debug.h"
-#include "target.h"
 #include "langhooks.h"
-#include "rl78-protos.h"
-#include "dumpfile.h"
 #include "tree-pass.h"
 #include "context.h"
 #include "tm-constrs.h" /* for satisfies_constraint_*().  */
-#include "insn-flags.h" /* for gen_*().  */
 #include "builtins.h"
-#include "stringpool.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -4165,21 +4144,42 @@ rl78_rtx_costs (rtx          x,
       return true;
     }
 
+  if (mode == HImode)
+    {
+      if (code == MULT && ! speed)
+	{
+	  * total = COSTS_N_INSNS (8);
+	  return true;
+	}
+      return false;
+    }
+
   if (mode == SImode)
     {
       switch (code)
 	{
 	case MULT:
-	  if (RL78_MUL_G14)
+	  if (! speed)
+	    /* If we are compiling for space then we do not want to use the
+	       inline SImode multiplication patterns or shift sequences.
+	       The cost is not set to 1 or 5 however as we have to allow for
+	       the possibility that we might be converting a leaf function
+	       into a non-leaf function.  (There is no way to tell here).
+	       A value of 13 seems to be a reasonable compromise for the
+	       moment.  */
+	    * total = COSTS_N_INSNS (13);
+	  else if (RL78_MUL_G14)
 	    *total = COSTS_N_INSNS (14);
 	  else if (RL78_MUL_G13)
 	    *total = COSTS_N_INSNS (29);
 	  else
 	    *total = COSTS_N_INSNS (500);
 	  return true;
+
 	case PLUS:
 	  *total = COSTS_N_INSNS (8);
 	  return true;
+
 	case ASHIFT:
 	case ASHIFTRT:
 	case LSHIFTRT:
@@ -4205,6 +4205,9 @@ rl78_rtx_costs (rtx          x,
 	  else
 	    *total = COSTS_N_INSNS (10+4*16);
 	  return true;
+
+	default:
+	  break;
 	}
     }
   return false;
