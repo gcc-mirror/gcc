@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "stor-layout.h"
 #include "demangle.h"
+#include "hash-set.h"
+#include "rtl.h"
 
 /* ----- Type related -----  */
 
@@ -817,6 +819,57 @@ is_gimple_mem_ref_addr (tree t)
 		  || decl_address_invariant_p (TREE_OPERAND (t, 0)))));
 }
 
+/* Hold trees marked addressable during expand.  */
+
+static hash_set<tree> *mark_addressable_queue;
+
+/* Mark X as addressable or queue it up if called during expand.  We
+   don't want to apply it immediately during expand because decls are
+   made addressable at that point due to RTL-only concerns, such as
+   uses of memcpy for block moves, and TREE_ADDRESSABLE changes
+   is_gimple_reg, which might make it seem like a variable that used
+   to be a gimple_reg shouldn't have been an SSA name.  So we queue up
+   this flag setting and only apply it when we're done with GIMPLE and
+   only RTL issues matter.  */
+
+static void
+mark_addressable_1 (tree x)
+{
+  if (!currently_expanding_to_rtl)
+    {
+      TREE_ADDRESSABLE (x) = 1;
+      return;
+    }
+
+  if (!mark_addressable_queue)
+    mark_addressable_queue = new hash_set<tree>();
+  mark_addressable_queue->add (x);
+}
+
+/* Adaptor for mark_addressable_1 for use in hash_set traversal.  */
+
+bool
+mark_addressable_2 (tree const &x, void * ATTRIBUTE_UNUSED = NULL)
+{
+  mark_addressable_1 (x);
+  return false;
+}
+
+/* Mark all queued trees as addressable, and empty the queue.  To be
+   called right after clearing CURRENTLY_EXPANDING_TO_RTL.  */
+
+void
+flush_mark_addressable_queue ()
+{
+  gcc_assert (!currently_expanding_to_rtl);
+  if (mark_addressable_queue)
+    {
+      mark_addressable_queue->traverse<void*, mark_addressable_2> (NULL);
+      delete mark_addressable_queue;
+      mark_addressable_queue = NULL;
+    }
+}
+
 /* Mark X addressable.  Unlike the langhook we expect X to be in gimple
    form and we don't do any syntax checking.  */
 
@@ -832,7 +885,7 @@ mark_addressable (tree x)
       && TREE_CODE (x) != PARM_DECL
       && TREE_CODE (x) != RESULT_DECL)
     return;
-  TREE_ADDRESSABLE (x) = 1;
+  mark_addressable_1 (x);
 
   /* Also mark the artificial SSA_NAME that points to the partition of X.  */
   if (TREE_CODE (x) == VAR_DECL
@@ -843,7 +896,7 @@ mark_addressable (tree x)
     {
       tree *namep = cfun->gimple_df->decls_to_pointers->get (x);
       if (namep)
-	TREE_ADDRESSABLE (*namep) = 1;
+	mark_addressable_1 (*namep);
     }
 }
 
