@@ -20,11 +20,15 @@
 	* include/std/tuple (_ImplicitlyDefaultConstructibleTuple): New.
 	* include/std/tuple (tuple<_Types...>::tuple()): Use it.
 	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust.
-	* testsuite/20_util/is_implicitly_default_constructible/requirements/explicit_instantiation.cc: New.
-	* testsuite/20_util/is_implicitly_default_constructible/requirements/typedefs.cc: Likewise.
-	* testsuite/20_util/is_implicitly_default_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_implicitly_default_constructible/
+	requirements/explicit_instantiation.cc: New.
+	* testsuite/20_util/is_implicitly_default_constructible/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_implicitly_default_constructible/value.cc:
+	Likewise.
 	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust.
-	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
 	* testsuite/20_util/pair/cons/explicit_construct.cc: Likewise.
 	* testsuite/20_util/tuple/cons/explicit_construct.cc: Likewise.
 
