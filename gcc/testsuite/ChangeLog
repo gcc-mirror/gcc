@@ -1,3 +1,10 @@
+2015-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc-gomp/nesting-fail-1.c: Move "atomic" tests
+	from here to...
+	* c-c++-common/goacc-gomp/nesting-1.c: ... here, and expect them
+	to succeed.
+
 2015-11-03  Bilyan Borisov  <bilyan.borisov@arm.com>
 
 	* gcc/testsuite/gcc.target/aarch64/simd/vmulx_f32_1.c: New.

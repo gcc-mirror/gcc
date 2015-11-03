@@ -182,7 +182,8 @@ along with GCC; see the file COPYING3.  If not see
 #define DEF_GOMP_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
                false, true, true, ATTRS, false, \
-	       (flag_openmp \
+	       (flag_openacc \
+		|| flag_openmp \
 		|| flag_tree_parallelize_loops > 1 \
 		|| flag_cilkplus \
 		|| flag_offload_abi != OFFLOAD_ABI_UNSET))

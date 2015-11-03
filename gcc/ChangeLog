@@ -1,3 +1,11 @@
+2015-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* builtins.def (DEF_GOMP_BUILTIN): Enable for flag_openacc.
+	* omp-low.c (check_omp_nesting_restrictions): Allow
+	GIMPLE_OMP_ATOMIC_LOAD, GIMPLE_OMP_ATOMIC_STORE inside OpenACC
+	contexts.
+
 2015-11-03  Bilyan Borisov  <bilyan.borisov@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (fmulx): New.

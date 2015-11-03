@@ -2452,8 +2452,8 @@ gfc_match_omp_ordered (void)
 }
 
 
-match
-gfc_match_omp_atomic (void)
+static match
+gfc_match_omp_oacc_atomic (bool omp_p)
 {
   gfc_omp_atomic_op op = GFC_OMP_ATOMIC_UPDATE;
   int seq_cst = 0;
@@ -2491,13 +2491,24 @@ gfc_match_omp_atomic (void)
       gfc_error ("Unexpected junk after $OMP ATOMIC statement at %C");
       return MATCH_ERROR;
     }
-  new_st.op = EXEC_OMP_ATOMIC;
+  new_st.op = (omp_p ? EXEC_OMP_ATOMIC : EXEC_OACC_ATOMIC);
   if (seq_cst)
     op = (gfc_omp_atomic_op) (op | GFC_OMP_ATOMIC_SEQ_CST);
   new_st.ext.omp_atomic = op;
   return MATCH_YES;
 }
 
+match
+gfc_match_oacc_atomic (void)
+{
+  return gfc_match_omp_oacc_atomic (false);
+}
+
+match
+gfc_match_omp_atomic (void)
+{
+  return gfc_match_omp_oacc_atomic (true);
+}
 
 match
 gfc_match_omp_barrier (void)
@@ -4317,6 +4328,8 @@ oacc_code_to_statement (gfc_code *code)
       return ST_OACC_KERNELS_LOOP;
     case EXEC_OACC_LOOP:
       return ST_OACC_LOOP;
+    case EXEC_OACC_ATOMIC:
+      return ST_OACC_ATOMIC;
     default:
       gcc_unreachable ();
     }
@@ -4660,6 +4673,9 @@ gfc_resolve_oacc_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
     case EXEC_OACC_KERNELS_LOOP:
     case EXEC_OACC_LOOP:
       resolve_oacc_loop (code);
+      break;
+    case EXEC_OACC_ATOMIC:
+      resolve_omp_atomic (code);
       break;
     default:
       break;

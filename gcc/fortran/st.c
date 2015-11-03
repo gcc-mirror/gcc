@@ -240,6 +240,7 @@ gfc_free_statement (gfc_code *p)
       gfc_free_omp_namelist (p->ext.omp_namelist);
       break;
 
+    case EXEC_OACC_ATOMIC:
     case EXEC_OMP_ATOMIC:
     case EXEC_OMP_BARRIER:
     case EXEC_OMP_MASTER:

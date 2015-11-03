@@ -1,3 +1,8 @@
+2015-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_construct): Handle PRAGMA_OACC_ATOMIC.
+
 2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-array-notation.c: Reorder #include's and remove duplicates.
