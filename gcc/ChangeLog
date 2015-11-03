@@ -1,5 +1,9 @@
 2015-11-02  Alexandre Oliva <aoliva@redhat.com>
 
+	* tree-ssa-ifcombine.c (tree_ssa_ifcombine_bb_1): Factor out
+	bb_no_side_effects_p tests...
+	(tree_ssa_ifcombine_bb): ... here.
+
 	PR tree-optimization/68083
 	* tree-ssa-ifcombine.c: Include tree-ssa.h.
 	(bb_no_side_effects_p): Test for undefined uses too.
