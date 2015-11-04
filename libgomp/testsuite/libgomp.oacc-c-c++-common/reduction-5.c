@@ -8,7 +8,7 @@ main (void)
   int n = 100;
   int i;
 
-#pragma acc parallel vector_length (32)
+#pragma acc parallel vector_length (32) copy(s1,s2)
 #pragma acc loop reduction (+:s1, s2)
   for (i = 0; i < n; i++)
     {

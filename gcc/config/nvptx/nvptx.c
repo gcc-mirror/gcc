@@ -3472,8 +3472,29 @@ nvptx_goacc_validate_dims (tree ARG_UNUSED (decl), int *ARG_UNUSED (dims),
 {
   bool changed = false;
 
-  /* TODO: Leave dimensions unaltered.  Reductions need
-     porting before filtering dimensions makes sense.  */
+  /* The vector size must be 32, unless this is a SEQ routine.  */
+  if (fn_level <= GOMP_DIM_VECTOR
+      && dims[GOMP_DIM_VECTOR] != PTX_VECTOR_LENGTH)
+    {
+      if (dims[GOMP_DIM_VECTOR] >= 0 && fn_level < 0)
+	warning_at (DECL_SOURCE_LOCATION (decl), 0,
+		    dims[GOMP_DIM_VECTOR]
+		    ? "using vector_length (%d), ignoring %d"
+		    : "using vector_length (%d), ignoring runtime setting",
+		    PTX_VECTOR_LENGTH, dims[GOMP_DIM_VECTOR]);
+      dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
+      changed = true;
+    }
+
+  /* Check the num workers is not too large.  */
+  if (dims[GOMP_DIM_WORKER] > PTX_WORKER_LENGTH)
+    {
+      warning_at (DECL_SOURCE_LOCATION (decl), 0,
+		  "using num_workers (%d), ignoring %d",
+		  PTX_WORKER_LENGTH, dims[GOMP_DIM_WORKER]);
+      dims[GOMP_DIM_WORKER] = PTX_WORKER_LENGTH;
+      changed = true;
+    }
 
   return changed;
 }

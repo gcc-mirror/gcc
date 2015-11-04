@@ -1,4 +1,8 @@
 2015-11-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims): Add checking.
+
+2015-11-04  Nathan Sidwell  <nathan@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* config/nvptx/nvptx.c: Include gimple headers.

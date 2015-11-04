@@ -1,5 +1,24 @@
 2015-11-04  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* testsuite/libgomp.oacc-fortran/reduction-1.f90: Fix dimensions
+	and reduction copy.
+	* testsuite/libgomp.oacc-fortran/reduction-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-6.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/par-reduction-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/collapse-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/par-reduction-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-initial-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: New.
+
+2015-11-04  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* libgomp.oacc-c-c++-common/loop-red-g-1.c: New.
 	* libgomp.oacc-c-c++-common/loop-red-gwv-1.c: New.
 	* libgomp.oacc-c-c++-common/loop-red-v-1.c: New.

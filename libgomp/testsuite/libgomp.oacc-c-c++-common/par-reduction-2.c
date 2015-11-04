@@ -11,8 +11,7 @@ main (int argc, char *argv[])
 #else
 # define GANGS 256
 #endif
-  #pragma acc parallel num_gangs(GANGS) num_workers(1) vector_length(1) \
-		       copy(res2) async(1)
+  #pragma acc parallel num_gangs(GANGS) copy(res2) async(1)
   {
     #pragma acc atomic
     res2 += 5;
@@ -31,8 +30,7 @@ main (int argc, char *argv[])
 #else
 # define GANGS 8
 #endif
-  #pragma acc parallel num_gangs(GANGS) num_workers(1) vector_length(1) \
-		       copy(res2) async(1)
+  #pragma acc parallel num_gangs(GANGS) copy(res2) async(1)
   {
     #pragma acc atomic
     res2 *= 5;

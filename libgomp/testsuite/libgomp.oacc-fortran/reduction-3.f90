@@ -5,7 +5,7 @@
 program reduction_3
   implicit none
 
-  integer, parameter    :: n = 10, vl = 2
+  integer, parameter    :: n = 10, vl = 32
   integer               :: i
   double precision, parameter :: e = .001
   double precision      :: vresult, result
@@ -21,7 +21,7 @@ program reduction_3
 
   ! '+' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(+:result)
   do i = 1, n
      result = result + array(i)
@@ -40,7 +40,7 @@ program reduction_3
 
   ! '*' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(*:result)
   do i = 1, n
      result = result * array(i)
@@ -59,7 +59,7 @@ program reduction_3
 
   ! 'max' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(max:result)
   do i = 1, n
      result = max (result, array(i))
@@ -78,7 +78,7 @@ program reduction_3
 
   ! 'min' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(min:result)
   do i = 1, n
      result = min (result, array(i))
@@ -97,7 +97,7 @@ program reduction_3
 
   ! '.and.' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(lresult)
   !$acc loop reduction(.and.:lresult)
   do i = 1, n
      lresult = lresult .and. (array(i) .ge. 5)
@@ -116,7 +116,7 @@ program reduction_3
 
   ! '.or.' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(lresult)
   !$acc loop reduction(.or.:lresult)
   do i = 1, n
      lresult = lresult .or. (array(i) .ge. 5)
@@ -135,7 +135,7 @@ program reduction_3
 
   ! '.eqv.' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(lresult)
   !$acc loop reduction(.eqv.:lresult)
   do i = 1, n
      lresult = lresult .eqv. (array(i) .ge. 5)
@@ -154,7 +154,7 @@ program reduction_3
 
   ! '.neqv.' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(lresult)
   !$acc loop reduction(.neqv.:lresult)
   do i = 1, n
      lresult = lresult .neqv. (array(i) .ge. 5)
