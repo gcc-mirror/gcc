@@ -1,5 +1,21 @@
 2015-11-04  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/67742
+	* tree-ssa-structalias.c (struct fieldoff): Add restrict_pointed_type
+	field.
+	(push_fields_onto_fieldstack): Handle restrict_pointed_type field.
+	(create_variable_info_for_1): Add and handle handle_param parameter.
+	Add restrict handling.
+	(create_variable_info_for): Call create_variable_info_for_1 with extra
+	arg.
+	(make_param_constraints): Drop restrict_name parameter.  Ignore
+	vi->only_restrict_pointers.
+	(intra_create_variable_infos): Call create_variable_info_for_1 with
+	extra arg.  Remove restrict handling.  Call make_param_constraints with
+	one less arg.
+
+2015-11-04  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-ssa-structalias.c (create_variable_info_for_1): Use decl_type
 	variable.
 
