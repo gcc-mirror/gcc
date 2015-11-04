@@ -169,11 +169,6 @@ struct omp_context
      construct.  In the case of a parallel, this is in the child function.  */
   tree block_vars;
 
-  /* A map of reduction pointer variables.  For accelerators, each
-     reduction variable is replaced with an array.  Each thread, in turn,
-     is assigned to a slot on that array.  */
-  splay_tree reduction_map;
-
   /* Label to which GOMP_cancel{,llation_point} and explicit and implicit
      barriers should jump to during omplower pass.  */
   tree cancel_label;
@@ -1090,23 +1085,6 @@ maybe_lookup_field (tree var, omp_context *ctx)
   return maybe_lookup_field ((splay_tree_key) var, ctx);
 }
 
-static inline tree
-lookup_oacc_reduction (const char *id, omp_context *ctx)
-{
-  splay_tree_node n;
-  n = splay_tree_lookup (ctx->reduction_map, (splay_tree_key) id);
-  return (tree) n->value;
-}
-
-static inline tree
-maybe_lookup_oacc_reduction (tree var, omp_context *ctx)
-{
-  splay_tree_node n = NULL;
-  if (ctx->reduction_map)
-    n = splay_tree_lookup (ctx->reduction_map, (splay_tree_key) var);
-  return n ? (tree) n->value : NULL_TREE;
-}
-
 /* Return true if DECL should be copied by pointer.  SHARED_CTX is
    the parallel context if DECL is to be shared.  */
 
@@ -1667,7 +1645,6 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
       ctx->cb = outer_ctx->cb;
       ctx->cb.block = NULL;
       ctx->depth = outer_ctx->depth + 1;
-      ctx->reduction_map = outer_ctx->reduction_map;
     }
   else
     {
@@ -1740,13 +1717,6 @@ delete_omp_context (splay_tree_value value)
     splay_tree_delete (ctx->field_map);
   if (ctx->sfield_map)
     splay_tree_delete (ctx->sfield_map);
-  /* Reduction map is copied to nested contexts, so only delete it in the
-     owner.  */
-  if (ctx->reduction_map
-      && gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
-      && is_gimple_omp_offloaded (ctx->stmt)
-      && is_gimple_omp_oacc (ctx->stmt))
-    splay_tree_delete (ctx->reduction_map);
 
   /* We hijacked DECL_ABSTRACT_ORIGIN earlier.  We need to clear it before
      it produces corrupt debug information.  */
@@ -3077,10 +3047,6 @@ scan_omp_target (gomp_target *stmt, omp_context *outer_ctx)
   TYPE_ARTIFICIAL (ctx->record_type) = 1;
   if (offloaded)
     {
-      if (is_gimple_omp_oacc (stmt))
-	ctx->reduction_map = splay_tree_new (splay_tree_compare_pointers,
-					     0, 0);
-
       create_omp_child_function (ctx, false);
       gimple_omp_target_set_child_fn (stmt, ctx->cb.dst_fn);
     }
@@ -14549,7 +14515,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   tree child_fn, t, c;
   gomp_target *stmt = as_a <gomp_target *> (gsi_stmt (*gsi_p));
   gbind *tgt_bind, *bind, *dep_bind = NULL;
-  gimple_seq tgt_body, olist, ilist, orlist, irlist, new_body;
+  gimple_seq tgt_body, olist, ilist, new_body;
   location_t loc = gimple_location (stmt);
   bool offloaded, data_region;
   unsigned int map_cnt = 0;
@@ -14601,9 +14567,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   child_fn = ctx->cb.dst_fn;
 
   push_gimplify_context ();
-
-  irlist = NULL;
-  orlist = NULL;
 
   for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
     switch (OMP_CLAUSE_CODE (c))
@@ -14900,13 +14863,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 					ctx);
 		else
 		  x = build_sender_ref (ovar, ctx);
-		if (maybe_lookup_oacc_reduction (var, ctx))
-		  {
-		    gcc_checking_assert (offloaded
-					 && is_gimple_omp_oacc (stmt));
-		    gimplify_assign (x, var, &ilist);
-		  }
-		else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+
+		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 			 && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
 			 && !OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION (c)
 			 && TREE_CODE (TREE_TYPE (ovar)) == ARRAY_TYPE)
@@ -15553,11 +15511,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			    tgt_bind ? gimple_bind_block (tgt_bind)
 				     : NULL_TREE);
   gsi_replace (gsi_p, dep_bind ? dep_bind : bind, true);
-  gimple_bind_add_seq (bind, irlist);
   gimple_bind_add_seq (bind, ilist);
   gimple_bind_add_stmt (bind, stmt);
   gimple_bind_add_seq (bind, olist);
-  gimple_bind_add_seq (bind, orlist);
 
   pop_gimplify_context (NULL);
 
