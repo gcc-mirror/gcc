@@ -19,7 +19,7 @@ program reduction_4
 
   ! '+' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(+:result)
   do i = 1, n
      result = result + array(i)

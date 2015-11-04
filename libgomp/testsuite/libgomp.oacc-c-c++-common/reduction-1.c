@@ -13,7 +13,7 @@
   {						\
     type res, vres;				\
     res = (init);				\
-DO_PRAGMA (acc parallel vector_length (vl))\
+    DO_PRAGMA (acc parallel vector_length (vl) copy(res))	\
 DO_PRAGMA (acc loop reduction (op:res))\
     for (i = 0; i < n; i++)			\
       res = res op (b);				\
@@ -63,7 +63,7 @@ test_reductions_bool (void)
   {							\
     type res, vres;					\
     res = (init);					\
-DO_PRAGMA (acc parallel vector_length (vl))\
+DO_PRAGMA (acc parallel vector_length (vl) copy(res))\
 DO_PRAGMA (acc loop reduction (op:res))\
     for (i = 0; i < n; i++)				\
       res = op (res, (b));				\

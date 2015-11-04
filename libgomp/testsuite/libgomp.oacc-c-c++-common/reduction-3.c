@@ -23,7 +23,7 @@ main(void)
   vresult = 0;
 
   /* '+' reductions.  */
-#pragma acc parallel vector_length (vl)
+#pragma acc parallel vector_length (vl) copy(result)
 #pragma acc loop reduction (+:result)
   for (i = 0; i < n; i++)
     result += array[i];
@@ -39,7 +39,7 @@ main(void)
   vresult = 0;
 
   /* '*' reductions.  */
-#pragma acc parallel vector_length (vl)
+#pragma acc parallel vector_length (vl) copy(result)
 #pragma acc loop reduction (*:result)
   for (i = 0; i < n; i++)
     result *= array[i];
@@ -91,7 +91,7 @@ main(void)
   lvresult = false;
 
   /* '&&' reductions.  */
-#pragma acc parallel vector_length (vl)
+#pragma acc parallel vector_length (vl) copy(lresult)
 #pragma acc loop reduction (&&:lresult)
   for (i = 0; i < n; i++)
     lresult = lresult && (result > array[i]);
@@ -110,7 +110,7 @@ main(void)
   lvresult = false;
 
   /* '||' reductions.  */
-#pragma acc parallel vector_length (vl)
+#pragma acc parallel vector_length (vl) copy(lresult)
 #pragma acc loop reduction (||:lresult)
   for (i = 0; i < n; i++)
     lresult = lresult || (result > array[i]);
