@@ -4957,11 +4957,6 @@ init_dummy_function_start (void)
 void
 init_function_start (tree subr)
 {
-  if (subr && DECL_STRUCT_FUNCTION (subr))
-    set_cfun (DECL_STRUCT_FUNCTION (subr));
-  else
-    allocate_struct_function (subr, false);
-
   /* Initialize backend, if needed.  */
   initialize_rtl ();
 

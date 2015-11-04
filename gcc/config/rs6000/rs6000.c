@@ -34594,6 +34594,7 @@ rs6000_code_end (void)
 
   DECL_INITIAL (decl) = make_node (BLOCK);
   current_function_decl = decl;
+  allocate_struct_function (decl, false);
   init_function_start (decl);
   first_function_block_is_cold = false;
   /* Make sure unwind info is emitted for the thunk if needed.  */

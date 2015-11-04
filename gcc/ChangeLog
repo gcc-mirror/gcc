@@ -1,3 +1,20 @@
+2015-11-04  Martin Liska  <mliska@suse.cz>
+
+	* cgraphunit.c (cgraph_node::expand_thunk): Call
+	allocate_struct_function before init_function_start.
+	(cgraph_node::expand): Use push_cfun and pop_cfun.
+	* config/i386/i386.c (ix86_code_end): Call
+	allocate_struct_function before init_function_start.
+	* config/rs6000/rs6000.c (rs6000_code_end): Likewise.
+	* function.c (init_function_start): Move preamble to all
+	callers.
+	* passes.c (do_per_function_toporder): Use push_cfun and pop_cfun.
+	(execute_one_pass): Handle newly added TODO_discard_function.
+	(execute_pass_list_1): Terminate if cfun equals to NULL.
+	(execute_pass_list): Do not push and pop cfun, expect that
+	cfun is set.
+	* tree-pass.h (TODO_discard_function): Define.
+
 2015-11-04  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* cfganal.c (inverted_post_order_compute): Remove conditional
