@@ -35,7 +35,6 @@ keep=false
 pkgpath=
 prefix=
 dejagnu=no
-GOARCH=""
 timeout=240
 testname=""
 bench=""
@@ -116,15 +115,6 @@ while $loop; do
 		;;
 	x--dejagnu=*)
 		dejagnu=`echo $1 | sed -e 's/^--dejagnu=//'`
-		shift
-		;;
-	x--goarch)
-		GOARCH=$2
-		shift
-		shift
-		;;
-	x--goarch=*)
-		GOARCH=`echo $1 | sed -e 's/^--goarch=//'`
 		shift
 		;;
 	x--timeout)
@@ -496,7 +486,7 @@ localname() {
 
 {
 	text="T"
-	case "$GOARCH" in
+	case "$goarch" in
 	ppc64*) text="[TD]" ;;
 	esac
 
