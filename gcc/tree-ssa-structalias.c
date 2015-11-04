@@ -5718,8 +5718,8 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id)
       vi->fullsize = tree_to_uhwi (declsize);
       vi->size = vi->fullsize;
       vi->is_full_var = true;
-      if (POINTER_TYPE_P (TREE_TYPE (decl))
-	  && TYPE_RESTRICT (TREE_TYPE (decl)))
+      if (POINTER_TYPE_P (decl_type)
+	  && TYPE_RESTRICT (decl_type))
 	vi->only_restrict_pointers = 1;
       fieldstack.release ();
       return vi;
