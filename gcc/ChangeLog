@@ -1,3 +1,29 @@
+2015-11-04  Nathan Sidwell  <nathan@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* internal-fn.def (GOACC_REDUCTION): New.
+	* internal-fn.h (enum ifn_goacc_reduction_kind): New.
+	* internal-fn.c (expand_GOACC_REDUCTION): New.
+	* target.def (goacc.reduction): New OpenACC hook.
+	* targhooks.h (default_goacc_reduction): Declare.
+	* doc/tm.texi.in: Add TARGET_GOACC_REDUCTION.
+	* doc/tm.texi: Rebuilt.
+	* omp-low.c (oacc_get_reduction_array_id, oacc_max_threads,
+	scan_sharing_clauses): Remove oacc reduction handling here.
+	(lower_rec_input_clauses): Don't handle OpenACC reductions here.
+	(oacc_lower_reduction_var_helper): Delete.
+	(lower_oacc_reductions): New.
+	(lower_reduction_clauses): Don't handle OpenACC reductions here.
+	(lower_oacc_head_tail): Call lower_oacc_reductions.
+	(oacc_gimple_assign, oacc_init_reduction_array,
+	oacc_initialize_reduction_data, oacc_finalize_reduction_data,
+	oacc_process_reduction_data): Delete.
+	(lower_omp_target): Remove old OpenACC reduction handling.  Insert
+	dummy OpenACC gang reduction for reductions at outer level.
+	(oacc_loop_xform_head_tail): Transform IFN_GOACC_REDUCTION.
+	(default_goacc_reduction): New.
+	(execute_oacc_device_lower): Handle IFN_GOACC_REDUCTION.
+
 2015-11-04  Martin Liska  <mliska@suse.cz>
 
 	* cgraphunit.c (cgraph_node::expand_thunk): Call
@@ -41,7 +67,7 @@
 	vi->only_restrict_pointers.
 	(intra_create_variable_infos): Call create_variable_info_for_1 with
 	extra arg.  Remove restrict handling.  Call make_param_constraints with
-	one less arg.
+	one fewer arg.
 
 2015-11-04  Tom de Vries  <tom@codesourcery.com>
 

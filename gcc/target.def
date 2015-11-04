@@ -1670,6 +1670,17 @@ The default hook returns false, if there are no RTL expanders for them.",
 bool, (gcall *call, const int *dims, bool is_fork),
 default_goacc_fork_join)
 
+DEFHOOK
+(reduction,
+"This hook is used by the oacc_transform pass to expand calls to the\n\
+@var{GOACC_REDUCTION} internal function, into a sequence of gimple\n\
+instructions.  @var{call} is gimple statement containing the call to\n\
+the function.  This hook removes statement @var{call} after the\n\
+expanded sequence has been inserted.  This hook is also responsible\n\
+for allocating any storage for reductions when necessary.",
+void, (gcall *call),
+default_goacc_reduction)
+
 HOOK_VECTOR_END (goacc)
 
 /* Functions relating to vectorization.  */
