@@ -1418,8 +1418,7 @@ comptypes (tree t1, tree t2, int strict)
 	   perform a deep check. */
 	return structural_comptypes (t1, t2, strict);
 
-#ifdef ENABLE_CHECKING
-      if (USE_CANONICAL_TYPES)
+      if (flag_checking && USE_CANONICAL_TYPES)
 	{
 	  bool result = structural_comptypes (t1, t2, strict);
 	  
@@ -1440,10 +1439,8 @@ comptypes (tree t1, tree t2, int strict)
 	  
 	  return result;
 	}
-#else
-      if (USE_CANONICAL_TYPES)
+      if (!flag_checking && USE_CANONICAL_TYPES)
 	return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
-#endif
       else
 	return structural_comptypes (t1, t2, strict);
     }

@@ -1075,11 +1075,11 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 	      || TREE_CODE (type) == UNION_TYPE
 	      || TREE_CODE (type) == COMPLEX_TYPE);
 
-#ifdef ENABLE_CHECKING
   /* "If T is a class type and the initializer list has a single
      element of type cv U, where U is T or a class derived from T,
      the object is initialized from that element."  */
-  if (cxx_dialect >= cxx11
+  if (flag_checking
+      && cxx_dialect >= cxx11
       && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CONSTRUCTOR_NELTS (init) == 1
       && ((CLASS_TYPE_P (type) && !CLASSTYPE_NON_AGGREGATE (type))
@@ -1090,7 +1090,6 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 	/* We should have fixed this in reshape_init.  */
 	gcc_unreachable ();
     }
-#endif
 
   if (BRACE_ENCLOSED_INITIALIZER_P (init)
       && !TYPE_NON_AGGREGATE_CLASS (type))

@@ -321,15 +321,13 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
   tree t;
   tree type = TREE_TYPE (decl);
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (VOID_TYPE_P (TREE_TYPE (value))
-	      || TREE_TYPE (decl) == TREE_TYPE (value)
-	      /* On ARM ctors return 'this'.  */
-	      || (TYPE_PTR_P (TREE_TYPE (value))
-		  && TREE_CODE (value) == CALL_EXPR)
-	      || useless_type_conversion_p (TREE_TYPE (decl),
-					    TREE_TYPE (value)));
-#endif
+  gcc_checking_assert (VOID_TYPE_P (TREE_TYPE (value))
+		       || TREE_TYPE (decl) == TREE_TYPE (value)
+		       /* On ARM ctors return 'this'.  */
+		       || (TYPE_PTR_P (TREE_TYPE (value))
+			   && TREE_CODE (value) == CALL_EXPR)
+		       || useless_type_conversion_p (TREE_TYPE (decl),
+						     TREE_TYPE (value)));
 
   t = cxx_maybe_build_cleanup (decl, complain);
   if (t == error_mark_node)

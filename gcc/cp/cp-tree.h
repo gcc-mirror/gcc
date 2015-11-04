@@ -3010,7 +3010,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    property.  */
 #define SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE, INT_VALUE) \
   NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE) = build_int_cst (NULL_TREE, INT_VALUE)
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
 #define GET_NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE) \
     int_cst_value (NON_DEFAULT_TEMPLATE_ARGS_COUNT (NODE))
 #else
@@ -5517,9 +5517,7 @@ extern tree build_cxx_call			(tree, int, tree *,
 						 tsubst_flags_t);
 extern bool is_std_init_list			(tree);
 extern bool is_list_ctor			(tree);
-#ifdef ENABLE_CHECKING
 extern void validate_conversion_obstack		(void);
-#endif /* ENABLE_CHECKING */
 extern void mark_versions_used			(tree);
 extern tree get_function_version_dispatcher	(tree);
 

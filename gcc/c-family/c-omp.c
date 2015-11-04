@@ -1135,7 +1135,10 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
       OMP_CLAUSE_CHAIN (clauses) = cclauses[s];
       cclauses[s] = clauses;
     }
-#ifdef ENABLE_CHECKING
+
+  if (!flag_checking)
+    return;
+
   if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)) == 0)
     gcc_assert (cclauses[C_OMP_CLAUSE_SPLIT_TARGET] == NULL_TREE);
   if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_TEAMS)) == 0)
@@ -1150,7 +1153,6 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
     gcc_assert (cclauses[C_OMP_CLAUSE_SPLIT_FOR] == NULL_TREE);
   if (code != OMP_SIMD)
     gcc_assert (cclauses[C_OMP_CLAUSE_SPLIT_SIMD] == NULL_TREE);
-#endif
 }
 
 
