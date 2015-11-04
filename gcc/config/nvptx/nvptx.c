@@ -57,6 +57,15 @@
 #include "omp-low.h"
 #include "gomp-constants.h"
 #include "dumpfile.h"
+#include "internal-fn.h"
+#include "gimple-iterator.h"
+#include "stringpool.h"
+#include "tree-ssa-operands.h"
+#include "tree-ssanames.h"
+#include "gimplify.h"
+#include "tree-phinodes.h"
+#include "cfgloop.h"
+#include "fold-const.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -88,15 +97,22 @@ struct tree_hasher : ggc_cache_ptr_hash<tree_node>
 static GTY((cache)) hash_table<tree_hasher> *declared_fndecls_htab;
 static GTY((cache)) hash_table<tree_hasher> *needed_fndecls_htab;
 
-/* Size of buffer needed to broadcast across workers.  This is used
-   for both worker-neutering and worker broadcasting.   It is shared
-   by all functions emitted.  The buffer is placed in shared memory.
-   It'd be nice if PTX supported common blocks, because then this
-   could be shared across TUs (taking the largest size).  */
+/* Buffer needed to broadcast across workers.  This is used for both
+   worker-neutering and worker broadcasting.  It is shared by all
+   functions emitted.  The buffer is placed in shared memory.  It'd be
+   nice if PTX supported common blocks, because then this could be
+   shared across TUs (taking the largest size).  */
 static unsigned worker_bcast_size;
 static unsigned worker_bcast_align;
 #define worker_bcast_name "__worker_bcast"
 static GTY(()) rtx worker_bcast_sym;
+
+/* Buffer needed for worker reductions.  This has to be distinct from
+   the worker broadcast array, as both may be live concurrently.  */
+static unsigned worker_red_size;
+static unsigned worker_red_align;
+#define worker_red_name "__worker_red"
+static GTY(()) rtx worker_red_sym;
 
 /* Allocate a new, cleared machine_function structure.  */
 
@@ -128,6 +144,9 @@ nvptx_option_override (void)
 
   worker_bcast_sym = gen_rtx_SYMBOL_REF (Pmode, worker_bcast_name);
   worker_bcast_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
+
+  worker_red_sym = gen_rtx_SYMBOL_REF (Pmode, worker_red_name);
+  worker_red_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
 }
 
 /* Return the mode to be used when declaring a ptx object for OBJ.
@@ -3246,8 +3265,203 @@ nvptx_file_end (void)
 	       worker_bcast_align,
 	       worker_bcast_name, worker_bcast_size);
     }
+
+  if (worker_red_size)
+    {
+      /* Define the reduction buffer.  */
+
+      worker_red_size = ((worker_red_size + worker_red_align - 1)
+			 & ~(worker_red_align - 1));
+      
+      fprintf (asm_out_file, "// BEGIN VAR DEF: %s\n", worker_red_name);
+      fprintf (asm_out_file, ".shared .align %d .u8 %s[%d];\n",
+	       worker_red_align,
+	       worker_red_name, worker_red_size);
+    }
+}
+
+/* Expander for the shuffle builtins.  */
+
+static rtx
+nvptx_expand_shuffle (tree exp, rtx target, machine_mode mode, int ignore)
+{
+  if (ignore)
+    return target;
+  
+  rtx src = expand_expr (CALL_EXPR_ARG (exp, 0),
+			 NULL_RTX, mode, EXPAND_NORMAL);
+  if (!REG_P (src))
+    src = copy_to_mode_reg (mode, src);
+
+  rtx idx = expand_expr (CALL_EXPR_ARG (exp, 1),
+			 NULL_RTX, SImode, EXPAND_NORMAL);
+  rtx op = expand_expr (CALL_EXPR_ARG  (exp, 2),
+			NULL_RTX, SImode, EXPAND_NORMAL);
+  
+  if (!REG_P (idx) && GET_CODE (idx) != CONST_INT)
+    idx = copy_to_mode_reg (SImode, idx);
+
+  rtx pat = nvptx_gen_shuffle (target, src, idx, INTVAL (op));
+  if (pat)
+    emit_insn (pat);
+
+  return target;
+}
+
+/* Worker reduction address expander.  */
+
+static rtx
+nvptx_expand_worker_addr (tree exp, rtx target,
+			  machine_mode ARG_UNUSED (mode), int ignore)
+{
+  if (ignore)
+    return target;
+
+  unsigned align = TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 2));
+  if (align > worker_red_align)
+    worker_red_align = align;
+
+  unsigned offset = TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 0));
+  unsigned size = TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 1));
+  if (size + offset > worker_red_size)
+    worker_red_size = size + offset;
+
+  emit_insn (gen_rtx_SET (target, worker_red_sym));
+
+  if (offset)
+    emit_insn (gen_rtx_SET (target,
+			    gen_rtx_PLUS (Pmode, target, GEN_INT (offset))));
+
+  emit_insn (gen_rtx_SET (target,
+			  gen_rtx_UNSPEC (Pmode, gen_rtvec (1, target),
+					  UNSPEC_FROM_SHARED)));
+
+  return target;
+}
+
+/* Expand the CMP_SWAP PTX builtins.  We have our own versions that do
+   not require taking the address of any object, other than the memory
+   cell being operated on.  */
+
+static rtx
+nvptx_expand_cmp_swap (tree exp, rtx target,
+		       machine_mode ARG_UNUSED (m), int ARG_UNUSED (ignore))
+{
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+  
+  if (!target)
+    target = gen_reg_rtx (mode);
+
+  rtx mem = expand_expr (CALL_EXPR_ARG (exp, 0),
+			 NULL_RTX, Pmode, EXPAND_NORMAL);
+  rtx cmp = expand_expr (CALL_EXPR_ARG (exp, 1),
+			 NULL_RTX, mode, EXPAND_NORMAL);
+  rtx src = expand_expr (CALL_EXPR_ARG (exp, 2),
+			 NULL_RTX, mode, EXPAND_NORMAL);
+  rtx pat;
+
+  mem = gen_rtx_MEM (mode, mem);
+  if (!REG_P (cmp))
+    cmp = copy_to_mode_reg (mode, cmp);
+  if (!REG_P (src))
+    src = copy_to_mode_reg (mode, src);
+  
+  if (mode == SImode)
+    pat = gen_atomic_compare_and_swapsi_1 (target, mem, cmp, src, const0_rtx);
+  else
+    pat = gen_atomic_compare_and_swapdi_1 (target, mem, cmp, src, const0_rtx);
+
+  emit_insn (pat);
+
+  return target;
+}
+
+
+/* Codes for all the NVPTX builtins.  */
+enum nvptx_builtins
+{
+  NVPTX_BUILTIN_SHUFFLE,
+  NVPTX_BUILTIN_SHUFFLELL,
+  NVPTX_BUILTIN_WORKER_ADDR,
+  NVPTX_BUILTIN_CMP_SWAP,
+  NVPTX_BUILTIN_CMP_SWAPLL,
+  NVPTX_BUILTIN_MAX
+};
+
+static GTY(()) tree nvptx_builtin_decls[NVPTX_BUILTIN_MAX];
+
+/* Return the NVPTX builtin for CODE.  */
+
+static tree
+nvptx_builtin_decl (unsigned code, bool ARG_UNUSED (initialize_p))
+{
+  if (code >= NVPTX_BUILTIN_MAX)
+    return error_mark_node;
+
+  return nvptx_builtin_decls[code];
+}
+
+/* Set up all builtin functions for this target.  */
+
+static void
+nvptx_init_builtins (void)
+{
+#define DEF(ID, NAME, T)						\
+  (nvptx_builtin_decls[NVPTX_BUILTIN_ ## ID]				\
+   = add_builtin_function ("__builtin_nvptx_" NAME,			\
+			   build_function_type_list T,			\
+			   NVPTX_BUILTIN_ ## ID, BUILT_IN_MD, NULL, NULL))
+#define ST sizetype
+#define UINT unsigned_type_node
+#define LLUINT long_long_unsigned_type_node
+#define PTRVOID ptr_type_node
+
+  DEF (SHUFFLE, "shuffle", (UINT, UINT, UINT, UINT, NULL_TREE));
+  DEF (SHUFFLELL, "shufflell", (LLUINT, LLUINT, UINT, UINT, NULL_TREE));
+  DEF (WORKER_ADDR, "worker_addr",
+       (PTRVOID, ST, UINT, UINT, NULL_TREE));
+  DEF (CMP_SWAP, "cmp_swap", (UINT, PTRVOID, UINT, UINT, NULL_TREE));
+  DEF (CMP_SWAPLL, "cmp_swapll", (LLUINT, PTRVOID, LLUINT, LLUINT, NULL_TREE));
+
+#undef DEF
+#undef ST
+#undef UINT
+#undef LLUINT
+#undef PTRVOID
+}
+
+/* Expand an expression EXP that calls a built-in function,
+   with result going to TARGET if that's convenient
+   (and in mode MODE if that's convenient).
+   SUBTARGET may be used as the target for computing one of EXP's operands.
+   IGNORE is nonzero if the value is to be ignored.  */
+
+static rtx
+nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
+		      machine_mode mode, int ignore)
+{
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case NVPTX_BUILTIN_SHUFFLE:
+    case NVPTX_BUILTIN_SHUFFLELL:
+      return nvptx_expand_shuffle (exp, target, mode, ignore);
+
+    case NVPTX_BUILTIN_WORKER_ADDR:
+      return nvptx_expand_worker_addr (exp, target, mode, ignore);
+
+    case NVPTX_BUILTIN_CMP_SWAP:
+    case NVPTX_BUILTIN_CMP_SWAPLL:
+      return nvptx_expand_cmp_swap (exp, target, mode, ignore);
+
+    default: gcc_unreachable ();
+    }
 }
 
+/* Define dimension sizes for known hardware.  */
+#define PTX_VECTOR_LENGTH 32
+#define PTX_WORKER_LENGTH 32
+
 /* Validate compute dimensions of an OpenACC offload or routine, fill
    in non-unity defaults.  FN_LEVEL indicates the level at which a
    routine might spawn a loop.  It is negative for non-routines.  */
@@ -3282,6 +3496,404 @@ nvptx_goacc_fork_join (gcall *call, const int dims[],
     return false;
 
   return true;
+}
+
+/* Generate a PTX builtin function call that returns the address in
+   the worker reduction buffer at OFFSET.  TYPE is the type of the
+   data at that location.  */
+
+static tree
+nvptx_get_worker_red_addr (tree type, tree offset)
+{
+  machine_mode mode = TYPE_MODE (type);
+  tree fndecl = nvptx_builtin_decl (NVPTX_BUILTIN_WORKER_ADDR, true);
+  tree size = build_int_cst (unsigned_type_node, GET_MODE_SIZE (mode));
+  tree align = build_int_cst (unsigned_type_node,
+			      GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT);
+  tree call = build_call_expr (fndecl, 3, offset, size, align);
+
+  return fold_convert (build_pointer_type (type), call);
+}
+
+/* Emit a SHFL.DOWN using index SHFL of VAR into DEST_VAR.  This function
+   will cast the variable if necessary.  */
+
+static void
+nvptx_generate_vector_shuffle (location_t loc,
+			       tree dest_var, tree var, unsigned shift,
+			       gimple_seq *seq)
+{
+  unsigned fn = NVPTX_BUILTIN_SHUFFLE;
+  tree_code code = NOP_EXPR;
+  tree type = unsigned_type_node;
+  enum machine_mode mode = TYPE_MODE (TREE_TYPE (var));
+
+  if (!INTEGRAL_MODE_P (mode))
+    code = VIEW_CONVERT_EXPR;
+  if (GET_MODE_SIZE (mode) == GET_MODE_SIZE (DImode))
+    {
+      fn = NVPTX_BUILTIN_SHUFFLELL;
+      type = long_long_unsigned_type_node;
+    }
+
+  tree call = nvptx_builtin_decl (fn, true);
+  call = build_call_expr_loc
+    (loc, call, 3, fold_build1 (code, type, var),
+     build_int_cst (unsigned_type_node, shift),
+     build_int_cst (unsigned_type_node, SHUFFLE_DOWN));
+
+  call = fold_build1 (code, TREE_TYPE (dest_var), call);
+
+  gimplify_assign (dest_var, call, seq);
+}
+
+/* Insert code to locklessly update  *PTR with *PTR OP VAR just before
+   GSI.  */
+
+static tree
+nvptx_lockless_update (location_t loc, gimple_stmt_iterator *gsi,
+		       tree ptr, tree var, tree_code op)
+{
+  unsigned fn = NVPTX_BUILTIN_CMP_SWAP;
+  tree_code code = NOP_EXPR;
+  tree type = unsigned_type_node;
+
+  enum machine_mode mode = TYPE_MODE (TREE_TYPE (var));
+
+  if (!INTEGRAL_MODE_P (mode))
+    code = VIEW_CONVERT_EXPR;
+  if (GET_MODE_SIZE (mode) == GET_MODE_SIZE (DImode))
+    {
+      fn = NVPTX_BUILTIN_CMP_SWAPLL;
+      type = long_long_unsigned_type_node;
+    }
+
+  gimple_seq init_seq = NULL;
+  tree init_var = make_ssa_name (type);
+  tree init_expr = omp_reduction_init_op (loc, op, TREE_TYPE (var));
+  init_expr = fold_build1 (code, type, init_expr);
+  gimplify_assign (init_var, init_expr, &init_seq);
+  gimple *init_end = gimple_seq_last (init_seq);
+
+  gsi_insert_seq_before (gsi, init_seq, GSI_SAME_STMT);
+  
+  gimple_seq loop_seq = NULL;
+  tree expect_var = make_ssa_name (type);
+  tree actual_var = make_ssa_name (type);
+  tree write_var = make_ssa_name (type);
+  
+  tree write_expr = fold_build1 (code, TREE_TYPE (var), expect_var);
+  write_expr = fold_build2 (op, TREE_TYPE (var), write_expr, var);
+  write_expr = fold_build1 (code, type, write_expr);
+  gimplify_assign (write_var, write_expr, &loop_seq);
+
+  tree swap_expr = nvptx_builtin_decl (fn, true);
+  swap_expr = build_call_expr_loc (loc, swap_expr, 3,
+				   ptr, expect_var, write_var);
+  gimplify_assign (actual_var, swap_expr, &loop_seq);
+
+  gcond *cond = gimple_build_cond (EQ_EXPR, actual_var, expect_var,
+				   NULL_TREE, NULL_TREE);
+  gimple_seq_add_stmt (&loop_seq, cond);
+
+  /* Split the block just after the init stmts.  */
+  basic_block pre_bb = gsi_bb (*gsi);
+  edge pre_edge = split_block (pre_bb, init_end);
+  basic_block loop_bb = pre_edge->dest;
+  pre_bb = pre_edge->src;
+  /* Reset the iterator.  */
+  *gsi = gsi_for_stmt (gsi_stmt (*gsi));
+
+  /* Insert the loop statements.  */
+  gimple *loop_end = gimple_seq_last (loop_seq);
+  gsi_insert_seq_before (gsi, loop_seq, GSI_SAME_STMT);
+
+  /* Split the block just after the loop stmts.  */
+  edge post_edge = split_block (loop_bb, loop_end);
+  basic_block post_bb = post_edge->dest;
+  loop_bb = post_edge->src;
+  *gsi = gsi_for_stmt (gsi_stmt (*gsi));
+
+  post_edge->flags ^= EDGE_TRUE_VALUE | EDGE_FALLTHRU;
+  edge loop_edge = make_edge (loop_bb, loop_bb, EDGE_FALSE_VALUE);
+  set_immediate_dominator (CDI_DOMINATORS, loop_bb, pre_bb);
+  set_immediate_dominator (CDI_DOMINATORS, post_bb, loop_bb);
+
+  gphi *phi = create_phi_node (expect_var, loop_bb);
+  add_phi_arg (phi, init_var, pre_edge, loc);
+  add_phi_arg (phi, actual_var, loop_edge, loc);
+
+  loop *loop = alloc_loop ();
+  loop->header = loop_bb;
+  loop->latch = loop_bb;
+  add_loop (loop, loop_bb->loop_father);
+
+  return fold_build1 (code, TREE_TYPE (var), write_var);
+}
+
+/* NVPTX implementation of GOACC_REDUCTION_SETUP.  */
+
+static void
+nvptx_goacc_reduction_setup (gcall *call)
+{
+  gimple_stmt_iterator gsi = gsi_for_stmt (call);
+  tree lhs = gimple_call_lhs (call);
+  tree var = gimple_call_arg (call, 2);
+  int level = TREE_INT_CST_LOW (gimple_call_arg (call, 3));
+  gimple_seq seq = NULL;
+
+  push_gimplify_context (true);
+
+  if (level != GOMP_DIM_GANG)
+    {
+      /* Copy the receiver object.  */
+      tree ref_to_res = gimple_call_arg (call, 1);
+
+      if (!integer_zerop (ref_to_res))
+	var = build_simple_mem_ref (ref_to_res);
+    }
+  
+  if (level == GOMP_DIM_WORKER)
+    {
+      /* Store incoming value to worker reduction buffer.  */
+      tree offset = gimple_call_arg (call, 5);
+      tree call = nvptx_get_worker_red_addr (TREE_TYPE (var), offset);
+      tree ptr = make_ssa_name (TREE_TYPE (call));
+
+      gimplify_assign (ptr, call, &seq);
+      tree ref = build_simple_mem_ref (ptr);
+      TREE_THIS_VOLATILE (ref) = 1;
+      gimplify_assign (ref, var, &seq);
+    }
+
+  if (lhs)
+    gimplify_assign (lhs, var, &seq);
+
+  pop_gimplify_context (NULL);
+  gsi_replace_with_seq (&gsi, seq, true);
+}
+
+/* NVPTX implementation of GOACC_REDUCTION_INIT. */
+
+static void
+nvptx_goacc_reduction_init (gcall *call)
+{
+  gimple_stmt_iterator gsi = gsi_for_stmt (call);
+  tree lhs = gimple_call_lhs (call);
+  tree var = gimple_call_arg (call, 2);
+  int level = TREE_INT_CST_LOW (gimple_call_arg (call, 3));
+  enum tree_code rcode
+    = (enum tree_code)TREE_INT_CST_LOW (gimple_call_arg (call, 4));
+  tree init = omp_reduction_init_op (gimple_location (call), rcode,
+				     TREE_TYPE (var));
+  gimple_seq seq = NULL;
+  
+  push_gimplify_context (true);
+
+  if (level == GOMP_DIM_VECTOR)
+    {
+      /* Initialize vector-non-zeroes to INIT_VAL (OP).  */
+      tree tid = make_ssa_name (integer_type_node);
+      tree dim_vector = gimple_call_arg (call, 3);
+      gimple *tid_call = gimple_build_call_internal (IFN_GOACC_DIM_POS, 1,
+						     dim_vector);
+      gimple *cond_stmt = gimple_build_cond (NE_EXPR, tid, integer_zero_node,
+					     NULL_TREE, NULL_TREE);
+
+      gimple_call_set_lhs (tid_call, tid);
+      gimple_seq_add_stmt (&seq, tid_call);
+      gimple_seq_add_stmt (&seq, cond_stmt);
+
+      /* Split the block just after the call.  */
+      edge init_edge = split_block (gsi_bb (gsi), call);
+      basic_block init_bb = init_edge->dest;
+      basic_block call_bb = init_edge->src;
+
+      /* Fixup flags from call_bb to init_bb.  */
+      init_edge->flags ^= EDGE_FALLTHRU | EDGE_TRUE_VALUE;
+      
+      /* Set the initialization stmts.  */
+      gimple_seq init_seq = NULL;
+      tree init_var = make_ssa_name (TREE_TYPE (var));
+      gimplify_assign (init_var, init, &init_seq);
+      gsi = gsi_start_bb (init_bb);
+      gsi_insert_seq_before (&gsi, init_seq, GSI_SAME_STMT);
+
+      /* Split block just after the init stmt.  */
+      gsi_prev (&gsi);
+      edge inited_edge = split_block (gsi_bb (gsi), gsi_stmt (gsi));
+      basic_block dst_bb = inited_edge->dest;
+      
+      /* Create false edge from call_bb to dst_bb.  */
+      edge nop_edge = make_edge (call_bb, dst_bb, EDGE_FALSE_VALUE);
+
+      /* Create phi node in dst block.  */
+      gphi *phi = create_phi_node (lhs, dst_bb);
+      add_phi_arg (phi, init_var, inited_edge, gimple_location (call));
+      add_phi_arg (phi, var, nop_edge, gimple_location (call));
+
+      /* Reset dominator of dst bb.  */
+      set_immediate_dominator (CDI_DOMINATORS, dst_bb, call_bb);
+
+      /* Reset the gsi.  */
+      gsi = gsi_for_stmt (call);
+    }
+  else
+    {
+      if (level == GOMP_DIM_GANG)
+	{
+	  /* If there's no receiver object, propagate the incoming VAR.  */
+	  tree ref_to_res = gimple_call_arg (call, 1);
+	  if (integer_zerop (ref_to_res))
+	    init = var;
+	}
+
+      gimplify_assign (lhs, init, &seq);
+    }
+
+  pop_gimplify_context (NULL);
+  gsi_replace_with_seq (&gsi, seq, true);
+}
+
+/* NVPTX implementation of GOACC_REDUCTION_FINI.  */
+
+static void
+nvptx_goacc_reduction_fini (gcall *call)
+{
+  gimple_stmt_iterator gsi = gsi_for_stmt (call);
+  tree lhs = gimple_call_lhs (call);
+  tree ref_to_res = gimple_call_arg (call, 1);
+  tree var = gimple_call_arg (call, 2);
+  int level = TREE_INT_CST_LOW (gimple_call_arg (call, 3));
+  enum tree_code op
+    = (enum tree_code)TREE_INT_CST_LOW (gimple_call_arg (call, 4));
+  gimple_seq seq = NULL;
+  tree r = NULL_TREE;;
+
+  push_gimplify_context (true);
+
+  if (level == GOMP_DIM_VECTOR)
+    {
+      /* Emit binary shuffle tree.  TODO. Emit this as an actual loop,
+	 but that requires a method of emitting a unified jump at the
+	 gimple level.  */
+      for (int shfl = PTX_VECTOR_LENGTH / 2; shfl > 0; shfl = shfl >> 1)
+	{
+	  tree other_var = make_ssa_name (TREE_TYPE (var));
+	  nvptx_generate_vector_shuffle (gimple_location (call),
+					 other_var, var, shfl, &seq);
+
+	  r = make_ssa_name (TREE_TYPE (var));
+	  gimplify_assign (r, fold_build2 (op, TREE_TYPE (var),
+					   var, other_var), &seq);
+	  var = r;
+	}
+    }
+  else
+    {
+      tree accum = NULL_TREE;
+
+      if (level == GOMP_DIM_WORKER)
+	{
+	  /* Get reduction buffer address.  */
+	  tree offset = gimple_call_arg (call, 5);
+	  tree call = nvptx_get_worker_red_addr (TREE_TYPE (var), offset);
+	  tree ptr = make_ssa_name (TREE_TYPE (call));
+
+	  gimplify_assign (ptr, call, &seq);
+	  accum = ptr;
+	}
+      else if (integer_zerop (ref_to_res))
+	r = var;
+      else
+	accum = ref_to_res;
+
+      if (accum)
+	{
+	  /* Locklessly update the accumulator.  */
+	  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
+	  seq = NULL;
+	  r = nvptx_lockless_update (gimple_location (call), &gsi,
+				     accum, var, op);
+	}
+    }
+
+  if (lhs)
+    gimplify_assign (lhs, r, &seq);
+  pop_gimplify_context (NULL);
+
+  gsi_replace_with_seq (&gsi, seq, true);
+}
+
+/* NVPTX implementation of GOACC_REDUCTION_TEARDOWN.  */
+
+static void
+nvptx_goacc_reduction_teardown (gcall *call)
+{
+  gimple_stmt_iterator gsi = gsi_for_stmt (call);
+  tree lhs = gimple_call_lhs (call);
+  tree var = gimple_call_arg (call, 2);
+  int level = TREE_INT_CST_LOW (gimple_call_arg (call, 3));
+  gimple_seq seq = NULL;
+  
+  push_gimplify_context (true);
+  if (level == GOMP_DIM_WORKER)
+    {
+      /* Read the worker reduction buffer.  */
+      tree offset = gimple_call_arg (call, 5);
+      tree call = nvptx_get_worker_red_addr(TREE_TYPE (var), offset);
+      tree ptr = make_ssa_name (TREE_TYPE (call));
+
+      gimplify_assign (ptr, call, &seq);
+      var = build_simple_mem_ref (ptr);
+      TREE_THIS_VOLATILE (var) = 1;
+    }
+
+  if (level != GOMP_DIM_GANG)
+    {
+      /* Write to the receiver object.  */
+      tree ref_to_res = gimple_call_arg (call, 1);
+
+      if (!integer_zerop (ref_to_res))
+	gimplify_assign (build_simple_mem_ref (ref_to_res), var, &seq);
+    }
+
+  if (lhs)
+    gimplify_assign (lhs, var, &seq);
+  
+  pop_gimplify_context (NULL);
+
+  gsi_replace_with_seq (&gsi, seq, true);
+}
+
+/* NVPTX reduction expander.  */
+
+void
+nvptx_goacc_reduction (gcall *call)
+{
+  unsigned code = (unsigned)TREE_INT_CST_LOW (gimple_call_arg (call, 0));
+
+  switch (code)
+    {
+    case IFN_GOACC_REDUCTION_SETUP:
+      nvptx_goacc_reduction_setup (call);
+      break;
+
+    case IFN_GOACC_REDUCTION_INIT:
+      nvptx_goacc_reduction_init (call);
+      break;
+
+    case IFN_GOACC_REDUCTION_FINI:
+      nvptx_goacc_reduction_fini (call);
+      break;
+
+    case IFN_GOACC_REDUCTION_TEARDOWN:
+      nvptx_goacc_reduction_teardown (call);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
 }
 
 #undef TARGET_OPTION_OVERRIDE
@@ -3373,11 +3985,21 @@ nvptx_goacc_fork_join (gcall *call, const int dims[],
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P nvptx_cannot_copy_insn_p
 
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS nvptx_init_builtins
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN nvptx_expand_builtin
+#undef  TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL nvptx_builtin_decl
+
 #undef TARGET_GOACC_VALIDATE_DIMS
 #define TARGET_GOACC_VALIDATE_DIMS nvptx_goacc_validate_dims
 
 #undef TARGET_GOACC_FORK_JOIN
 #define TARGET_GOACC_FORK_JOIN nvptx_goacc_fork_join
+
+#undef TARGET_GOACC_REDUCTION
+#define TARGET_GOACC_REDUCTION nvptx_goacc_reduction
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

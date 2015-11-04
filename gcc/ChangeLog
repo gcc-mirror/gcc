@@ -1,6 +1,29 @@
 2015-11-04  Nathan Sidwell  <nathan@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
+	* config/nvptx/nvptx.c: Include gimple headers.
+	(worker_red_size, worker_red_align, worker_red_name,
+	worker_red_sym): New.
+	(nvptx_option_override): Initialize worker reduction buffer.
+	(nvptx_file_end): Write out worker reduction buffer var.
+	(nvptx_expand_shuffle, nvptx_expand_worker_addr,
+	nvptx_expand_cmp_swap): New builtin expanders.
+	(enum nvptx_builtins): New.
+	(nvptx_builtin_decls): New.
+	(nvptx_builtin_decl, nvptx_init_builtins, nvptx_expand_builtin): New
+	(PTX_VECTOR_LENGTH, PTX_WORKER_LENGTH): New.
+	(nvptx_get_worker_red_addr, nvptx_generate_vector_shuffle,
+	nvptx_lockless_update): New helpers.
+	(nvptx_goacc_reduction_setup, nvptx_goacc_reduction_init,
+	nvptx_goacc_reduction_fini, nvptx_goacc_reduction_teaddown): New.
+	(nvptx_goacc_reduction): New.
+	(TARGET_INIT_BUILTINS, TARGET_EXPAND_BUILTIN,
+	TARGET_BUILTIN_DECL): Override.
+	(TARGET_GOACC_REDUCTION): Override.
+
+2015-11-04  Nathan Sidwell  <nathan@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
 	* internal-fn.def (GOACC_REDUCTION): New.
 	* internal-fn.h (enum ifn_goacc_reduction_kind): New.
 	* internal-fn.c (expand_GOACC_REDUCTION): New.
