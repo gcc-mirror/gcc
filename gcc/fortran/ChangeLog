@@ -1,3 +1,18 @@
+2015-01-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk.
+	PR fortran/67171
+	* trans-array.c (structure_alloc_comps): On deallocation of
+	class components, reset the vptr to the declared type vtable
+	and reset the _len field of unlimited polymorphic components.
+	*trans-expr.c (gfc_find_and_cut_at_last_class_ref): Bail out on
+	allocatable component references to the right of part reference
+	with non-zero rank and return NULL.
+	(gfc_reset_vptr): Simplify this function by using the function
+	gfc_get_vptr_from_expr. Return if the vptr is NULL_TREE.
+	(gfc_reset_len): If gfc_find_and_cut_at_last_class_ref returns
+	NULL return.
+
 2015-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/51993
@@ -8,7 +23,7 @@
 
 	PR fortran/68154
 	* decl.c (add_init_expr_to_sym): if the char length in the typespec
-	is NULL, check for and use a constructor. 
+	is NULL, check for and use a constructor.
 
 2015-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 

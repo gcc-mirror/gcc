@@ -1,3 +1,21 @@
+2015-01-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk.
+	PR fortran/67171
+	* gfortran.dg/allocate_with_source_12.f03: New test
+
+	Backported from trunk.
+	PR fortran/61819
+	* gfortran.dg/allocate_with_source_13.f03: New test
+
+	Backported from trunk.
+	PR fortran/61830
+	* gfortran.dg/allocate_with_source_14.f03: New test
+
+	Backported from trunk.
+	PR fortran/67933
+	* gfortran.dg/allocate_with_source_15.f03: New test
+
 2015-11-02  Steve Ellcey  <sellcey@imgtec.com>
 
 	2015-10-23  Steve Ellcey  <sellcey@imgtec.com>
