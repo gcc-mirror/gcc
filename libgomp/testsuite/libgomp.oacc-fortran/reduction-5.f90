@@ -21,12 +21,15 @@ end program reduction
 subroutine redsub(sum, n, c)
   integer :: sum, n, c
 
-  sum = 0
+  integer :: s
+  s = 0
 
-  !$acc parallel vector_length(n) copyin (n, c) num_gangs(1)
-  !$acc loop reduction(+:sum)
+  !$acc parallel vector_length(32) copyin (n, c) copy (s) num_gangs(1)
+  !$acc loop reduction(+:s)
   do i = 1, n
-     sum = sum + c
+     s = s + c
   end do
   !$acc end parallel
+
+  sum = s
 end subroutine redsub
