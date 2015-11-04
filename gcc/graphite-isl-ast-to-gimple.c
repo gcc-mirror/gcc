@@ -62,6 +62,7 @@ extern "C" {
 #include "ssa-iterators.h"
 #include <map>
 #include "graphite-isl-ast-to-gimple.h"
+#include "tree-cfg.h"
 
 /* This flag is set when an error occurred during the translation of
    ISL AST to Gimple.  */
@@ -793,10 +794,23 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
 
   build_iv_mapping (iv_map, gbb, user_expr, ip, pbb->scop->scop_info->region);
   isl_ast_expr_free (user_expr);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "[codegen] copying");
+      print_loops_bb (dump_file, GBB_BB (gbb), 0, 3);
+    }
+
   next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb),
 					   pbb->scop->scop_info, next_e,
 					   iv_map,
 					   &graphite_regenerate_error);
+  if (dump_file)
+    {
+      fprintf (dump_file, "[codegen] to");
+      print_loops_bb (dump_file, next_e->src, 0, 3);
+    }
+
   iv_map.release ();
   mark_virtual_operands_for_renaming (cfun);
   update_ssa (TODO_update_ssa);

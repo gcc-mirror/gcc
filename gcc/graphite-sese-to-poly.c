@@ -67,9 +67,6 @@ extern "C" {
 #include "tree-ssa-propagate.h"
 #include "graphite-sese-to-poly.h"
 
-
-static const unsigned ssa_name_version_typesize =  sizeof(unsigned);
-
 /* Assigns to RES the value of the INTEGER_CST T.  */
 
 static inline void
@@ -201,7 +198,7 @@ reduction_phi_p (sese_l &region, gphi_iterator *psi)
 static isl_id *
 isl_id_for_pbb (scop_p s, poly_bb_p pbb)
 {
-  char name[ssa_name_version_typesize];
+  char name[10];
   snprintf (name, sizeof (name), "S_%d", pbb_index (pbb));
   return isl_id_alloc (s->isl_context, name, pbb);
 }
@@ -401,7 +398,7 @@ isl_id_for_ssa_name (scop_p s, tree e)
     id = isl_id_alloc (s->isl_context, name, e);
   else
     {
-      char name1[ssa_name_version_typesize];
+      char name1[10];
       snprintf (name1, sizeof (name1), "P_%d", SSA_NAME_VERSION (e));
       id = isl_id_alloc (s->isl_context, name1, e);
     }
