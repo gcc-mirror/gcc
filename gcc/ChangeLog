@@ -1,3 +1,8 @@
+2015-11-04  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-structalias.c (create_variable_info_for_1): Use decl_type
+	variable.
+
 2015-11-03  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* config/arm/coff.h: Remove.
