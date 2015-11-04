@@ -3856,13 +3856,11 @@ maybe_constant_value (tree t, tree decl)
     }
 
   r = cxx_eval_outermost_constant_expr (t, true, true, decl);
-#ifdef ENABLE_CHECKING
-  gcc_assert (r == t
-	      || CONVERT_EXPR_P (t)
-	      || TREE_CODE (t) == VIEW_CONVERT_EXPR
-	      || (TREE_CONSTANT (t) && !TREE_CONSTANT (r))
-	      || !cp_tree_equal (r, t));
-#endif
+  gcc_checking_assert (r == t
+		       || CONVERT_EXPR_P (t)
+		       || TREE_CODE (t) == VIEW_CONVERT_EXPR
+		       || (TREE_CONSTANT (t) && !TREE_CONSTANT (r))
+		       || !cp_tree_equal (r, t));
   return r;
 }
 
@@ -3906,14 +3904,12 @@ fold_non_dependent_expr (tree t)
 	    }
 
 	  tree r = cxx_eval_outermost_constant_expr (t, true, true, NULL_TREE);
-#ifdef ENABLE_CHECKING
 	  /* cp_tree_equal looks through NOPs, so allow them.  */
-	  gcc_assert (r == t
-		      || CONVERT_EXPR_P (t)
-		      || TREE_CODE (t) == VIEW_CONVERT_EXPR
-		      || (TREE_CONSTANT (t) && !TREE_CONSTANT (r))
-		      || !cp_tree_equal (r, t));
-#endif
+	  gcc_checking_assert (r == t
+			       || CONVERT_EXPR_P (t)
+			       || TREE_CODE (t) == VIEW_CONVERT_EXPR
+			       || (TREE_CONSTANT (t) && !TREE_CONSTANT (r))
+			       || !cp_tree_equal (r, t));
 	  return r;
 	}
       else if (TREE_OVERFLOW_P (t))

@@ -724,8 +724,6 @@ alloc_conversion (conversion_kind kind)
   return c;
 }
 
-#ifdef ENABLE_CHECKING
-
 /* Make sure that all memory on the conversion obstack has been
    freed.  */
 
@@ -736,8 +734,6 @@ validate_conversion_obstack (void)
     gcc_assert ((obstack_next_free (&conversion_obstack)
 		 == obstack_base (&conversion_obstack)));
 }
-
-#endif /* ENABLE_CHECKING */
 
 /* Dynamically allocate an array of N conversions.  */
 

@@ -1645,10 +1645,8 @@ maybe_explain_implicit_delete (tree decl)
 		    "deleted because its exception-specification does not "
 		    "match the implicit exception-specification %qX",
 		    decl, raises);
-#ifdef ENABLE_CHECKING
-	  else
+	  else if (flag_checking)
 	    gcc_unreachable ();
-#endif
 
 	  pop_scope (scope);
 	}

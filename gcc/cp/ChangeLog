@@ -1,3 +1,29 @@
+2015-11-04  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* call.c (validate_conversion_obstack): Define unconditionally.
+	* constexpr.c (maybe_constant_value, fold_non_dependent_expr): Use
+	gcc_checking_assert.
+	* cp-tree.h: Use CHECKING_P instead of ENABLE_CHECKING.
+	* decl2.c (cxx_post_compilation_parsing_cleanups): Use flag_checking.
+	* mangle.c (add_substitution): Likewise.
+	* method.c (maybe_explain_implicit_delete): Likewise.
+	* parser.c (cp_parser_template_argument_list): Remove conditional
+	compilation.
+	* pt.c (check_unstripped_args): Rename to...
+	(verify_unstripped_args): ... this and remove conditional compilation.
+	(retrieve_specialization): Guard call of verify_unstripped_args with
+	flag_checking.
+	(template_parm_to_arg): Remove conditional compilation.
+	(template_parms_to_args, coerce_template_parameter_pack,
+	coerce_template_parms): Likewise.
+	(tsubst_copy): Use flag_checking.
+	(type_unification_real): Remove conditional compilation.
+	(build_non_dependent_expr): Use flag_checking.
+	* tree.c (build_target_expr): Remove conditional compilation, use
+	gcc_checking_assert.
+	* typeck.c (comptypes): Likewise.
+	* typeck2.c (digest_init_r): Likewise.
+
 2015-11-03  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (struct find_parameter_pack_data): Add

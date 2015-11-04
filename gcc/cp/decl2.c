@@ -4923,9 +4923,8 @@ cxx_post_compilation_parsing_cleanups (void)
 
   input_location = locus_at_end_of_parsing;
 
-#ifdef ENABLE_CHECKING
-  validate_conversion_obstack ();
-#endif /* ENABLE_CHECKING */
+  if (flag_checking)
+    validate_conversion_obstack ();
 
   timevar_stop (TV_PHASE_LATE_PARSING_CLEANUPS);
 }

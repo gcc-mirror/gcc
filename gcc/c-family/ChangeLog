@@ -1,3 +1,8 @@
+2015-11-04  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* c-omp.c (c_omp_split_clauses): Remove conditional compilation. Use
+	flag_checking.
+
 2015-11-03  Bernd Schmidt <bschmidt@redhat.com>
 
 	PR c++-common/67882
