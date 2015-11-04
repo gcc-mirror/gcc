@@ -1,3 +1,12 @@
+2015-11-04  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* (cp_parser_oacc_single_int_clause): New function.
+	(cp_parser_oacc_clause_vector_length): Delete.
+	(cp_parser_omp_clause_num_gangs): Delete.
+	(cp_parser_omp_clause_num_workers): Delete.
+	(cp_parser_oacc_all_clauses): Use cp_parser_oacc_single_int_clause
+	for num_gangs, num_workers and vector_length.
+
 2015-11-04  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* call.c (validate_conversion_obstack): Define unconditionally.
