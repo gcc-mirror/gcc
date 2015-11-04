@@ -259,7 +259,6 @@ new_sese_info (edge entry, edge exit)
   SESE_LOOPS (region) = BITMAP_ALLOC (NULL);
   SESE_LOOP_NEST (region).create (3);
   SESE_PARAMS (region).create (3);
-  region->parameter_rename_map = new parameter_rename_map_t;
   region->bbs.create (3);
 
   return region;
@@ -275,8 +274,6 @@ free_sese_info (sese_info_p region)
 
   SESE_PARAMS (region).release ();
   SESE_LOOP_NEST (region).release ();
-  delete region->parameter_rename_map;
-  region->parameter_rename_map = NULL;
 
   XDELETE (region);
 }
@@ -370,8 +367,7 @@ get_rename (rename_map_type *rename_map, tree old_name)
 /* Register in RENAME_MAP the rename tuple (OLD_NAME, EXPR).  */
 
 static void
-set_rename (rename_map_type *rename_map, tree old_name, tree expr,
-	    sese_info_p region)
+set_rename (rename_map_type *rename_map, tree old_name, tree expr)
 {
   if (dump_file)
     {
@@ -386,13 +382,6 @@ set_rename (rename_map_type *rename_map, tree old_name, tree expr,
     return;
 
   rename_map->put (old_name, expr);
-
-  tree t;
-  int i;
-  /* For a parameter of a scop we dont want to rename it.  */
-  FOR_EACH_VEC_ELT (SESE_PARAMS (region), i, t)
-    if (old_name == t)
-      region->parameter_rename_map->put(old_name, expr);
 }
 
 /* Renames the scalar uses of the statement COPY, using the
@@ -498,7 +487,7 @@ rename_uses (gimple *copy, rename_map_type *rename_map,
 	    recompute_tree_invariant_for_addr_expr (rhs);
 	}
 
-      set_rename (rename_map, old_name, new_expr, region);
+      set_rename (rename_map, old_name, new_expr);
     }
 
   return changed;
@@ -539,14 +528,6 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	  && scev_analyzable_p (lhs, region->region))
 	continue;
 
-      /* Do not copy parameters that have been generated in the header of the
-	 scop.  */
-      if (is_gimple_assign (stmt)
-	  && (lhs = gimple_assign_lhs (stmt))
-	  && TREE_CODE (lhs) == SSA_NAME
-	  && region->parameter_rename_map->get(lhs))
-	continue;
-
       /* Create a new copy of STMT and duplicate STMT's virtual
 	 operands.  */
       copy = gimple_copy (stmt);
@@ -561,7 +542,7 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
  	{
  	  tree old_name = DEF_FROM_PTR (def_p);
  	  tree new_name = create_new_def_for (old_name, copy, def_p);
-	  set_rename (rename_map, old_name, new_name, region);
+	  set_rename (rename_map, old_name, new_name);
  	}
 
       if (rename_uses (copy, rename_map, &gsi_tgt, region, loop, iv_map,
@@ -570,25 +551,6 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	  gcc_assert (gsi_stmt (gsi_tgt) == copy);
 	  fold_stmt_inplace (&gsi_tgt);
 	}
-
-      /* For each SSA_NAME in the parameter_rename_map rename their usage.  */
-      ssa_op_iter iter;
-      use_operand_p use_p;
-      if (!is_gimple_debug (copy))
-	FOR_EACH_SSA_USE_OPERAND (use_p, copy, iter, SSA_OP_USE)
-	  {
-	    tree old_name = USE_FROM_PTR (use_p);
-
-	    if (TREE_CODE (old_name) != SSA_NAME
-		|| SSA_NAME_IS_DEFAULT_DEF (old_name))
-	      continue;
-
-	    tree *new_expr = region->parameter_rename_map->get (old_name);
-	    if (!new_expr)
-	      continue;
-
-	    replace_exp (use_p, *new_expr);
-	  }
 
       update_stmt (copy);
     }

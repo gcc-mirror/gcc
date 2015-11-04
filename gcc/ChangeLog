@@ -1,6 +1,22 @@
 2015-11-04  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-isl-ast-to-gimple.c (gcc_expression_from_isl_ast_expr_id):
+	Remove use of parameter_rename_map.
+	(copy_def): Remove.
+	(copy_internal_parameters): Remove.
+	(graphite_regenerate_ast_isl): Remove call to copy_internal_parameters.
+	* sese.c (new_sese_info): Do not initialize parameter_rename_map.
+	(free_sese_info): Do not free parameter_rename_map.
+	(set_rename): Do not use parameter_rename_map.
+	(rename_uses): Update call to set_rename.
+	(graphite_copy_stmts_from_block): Do not use parameter_rename_map.
+	* sese.h (parameter_rename_map_t): Remove.
+	(struct sese_info_t): Remove field parameter_rename_map.
+
+2015-11-04  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-isl-ast-to-gimple.c: Include tree-cfg.h.
 	(translate_isl_ast_node_user): Add more dumps: call print_loops_bb.
 	* graphite-scop-detection.c (dot_all_scops_1): Moved out of
