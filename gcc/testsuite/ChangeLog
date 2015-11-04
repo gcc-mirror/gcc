@@ -1,3 +1,9 @@
+2015-11-04  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/67742
+	* gcc.dg/tree-ssa/restrict-7.c: New test.
+	* gcc.dg/tree-ssa/restrict-8.c: New test.
+
 2015-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/slice9.adb: New test.
