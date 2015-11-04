@@ -373,6 +373,15 @@ static void
 set_rename (rename_map_type *rename_map, tree old_name, tree expr,
 	    sese_info_p region)
 {
+  if (dump_file)
+    {
+      fprintf (dump_file, "[codegen] setting rename: old_name = ");
+      print_generic_expr (dump_file, old_name, 0);
+      fprintf (dump_file, ", new_name = ");
+      print_generic_expr (dump_file, expr, 0);
+      fprintf (dump_file, "\n");
+    }
+
   if (old_name == expr)
     return;
 
