@@ -1,3 +1,7 @@
+2015-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/slice9.adb: New test.
+
 2015-11-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c++-common/67882
