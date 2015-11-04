@@ -164,8 +164,6 @@ done
 IFS="$ac_save_IFS"
                 
 if test x$ac_checking != x ; then
-  AC_DEFINE(ENABLE_CHECKING, 1,
-[Define if you want more run-time sanity checks.])
   AC_DEFINE(CHECKING_P, 1,
 [Define to 1 if you want more run-time sanity checks.])
 else

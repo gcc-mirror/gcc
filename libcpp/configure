@@ -7298,9 +7298,7 @@ IFS="$ac_save_IFS"
 
 if test x$ac_checking != x ; then
 
-$as_echo "#define ENABLE_CHECKING 1" >>confdefs.h
-
-  $as_echo "#define CHECKING_P 1" >>confdefs.h
+$as_echo "#define CHECKING_P 1" >>confdefs.h
 
 else
   $as_echo "#define CHECKING_P 0" >>confdefs.h

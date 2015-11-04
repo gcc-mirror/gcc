@@ -108,16 +108,18 @@ sese_nb_params (sese_info_p region)
 static inline bool
 bb_in_region (basic_block bb, basic_block entry, basic_block exit)
 {
-#ifdef ENABLE_CHECKING
-  {
-    edge e;
-    edge_iterator ei;
+  /* FIXME: PR67842.  */
+#if 0
+  if (flag_checking)
+    {
+      edge e;
+      edge_iterator ei;
 
-    /* Check that there are no edges coming in the region: all the
-       predecessors of EXIT are dominated by ENTRY.  */
-    FOR_EACH_EDGE (e, ei, exit->preds)
-      dominated_by_p (CDI_DOMINATORS, e->src, entry);
-  }
+      /* Check that there are no edges coming in the region: all the
+	 predecessors of EXIT are dominated by ENTRY.  */
+      FOR_EACH_EDGE (e, ei, exit->preds)
+	gcc_assert (dominated_by_p (CDI_DOMINATORS, e->src, entry));
+    }
 #endif
 
   return dominated_by_p (CDI_DOMINATORS, bb, entry)

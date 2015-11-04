@@ -76,13 +76,6 @@
 #endif
 
 
-/* Define if you want more run-time sanity checks. This one gets a grab bag of
-   miscellaneous but relatively cheap checks. */
-#ifndef USED_FOR_TARGET
-#undef ENABLE_CHECKING
-#endif
-
-
 /* Define to 1 to specify that we are using the BID decimal floating point
    format instead of DPD */
 #ifndef USED_FOR_TARGET
