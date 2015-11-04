@@ -83,3 +83,6 @@ DEF_INTERNAL_FN (GOACC_DIM_POS, ECF_PURE | ECF_NOTHROW | ECF_LEAF, ".")
 
 /* OpenACC looping abstraction.  See internal-fn.h for usage.  */
 DEF_INTERNAL_FN (GOACC_LOOP, ECF_PURE | ECF_NOTHROW, NULL)
+
+/* OpenACC reduction abstraction.  See internal-fn.h  for usage.  */
+DEF_INTERNAL_FN (GOACC_REDUCTION, ECF_NOTHROW | ECF_LEAF, NULL)

@@ -2045,6 +2045,14 @@ expand_GOACC_LOOP (gcall *stmt ATTRIBUTE_UNUSED)
   gcc_unreachable ();
 }
 
+/* This is expanded by oacc_device_lower pass.  */
+
+static void
+expand_GOACC_REDUCTION (gcall *stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
 /* Routines to expand each internal function, indexed by function number.
    Each routine has the prototype:
 

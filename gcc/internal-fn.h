@@ -66,6 +66,28 @@ enum ifn_goacc_loop_kind {
   IFN_GOACC_LOOP_BOUND    /* Limit of iteration value.  */
 };
 
+/* The GOACC_REDUCTION function defines a generic interface to support
+   gang, worker and vector reductions.  All calls are of the following
+   form:
+
+     V = REDUCTION (CODE, REF_TO_RES, LOCAL_VAR, LEVEL, OP, OFFSET)
+
+   REF_TO_RES - is a reference to the original reduction varl, may be NULL
+   LOCAL_VAR is the intermediate reduction variable
+   LEVEL corresponds to the GOMP_DIM of the reduction
+   OP is the tree code of the reduction operation
+   OFFSET may be used as an offset into a reduction array for the
+          reductions occuring at this level.
+   In general the return value is LOCAL_VAR, which creates a data
+   dependency between calls operating on the same reduction.  */
+
+enum ifn_goacc_reduction_kind {
+  IFN_GOACC_REDUCTION_SETUP,
+  IFN_GOACC_REDUCTION_INIT,
+  IFN_GOACC_REDUCTION_FINI,
+  IFN_GOACC_REDUCTION_TEARDOWN
+};
+
 /* Initialize internal function tables.  */
 
 extern void init_internal_fns ();
