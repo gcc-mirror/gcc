@@ -8,17 +8,16 @@ struct {
 
 int foo(int argc)
 {
-  int b;
   int c;
   int i;
-  int d, e;
+  int e;
 
   for (i = 0; i < argc; i++)
     {
       e = x.a;
       x.a = 9;
     }
-  return d + e;
+  return e;
 }
 
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre"  } } */
