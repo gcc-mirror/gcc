@@ -3016,6 +3016,244 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
   return false;
 }
 
+/* We have something like:
+
+     if (x > y)
+       { i = a; j = b; k = c; }
+
+   Make it:
+
+     tmp_i = (x > y) ? a : i;
+     tmp_j = (x > y) ? b : j;
+     tmp_k = (x > y) ? c : k;
+     i = tmp_i;
+     j = tmp_j;
+     k = tmp_k;
+
+   Subsequent passes are expected to clean up the extra moves.
+
+   Look for special cases such as writes to one register which are
+   read back in another SET, as might occur in a swap idiom or
+   similar.
+
+   These look like:
+
+   if (x > y)
+     i = a;
+     j = i;
+
+   Which we want to rewrite to:
+
+     tmp_i = (x > y) ? a : i;
+     tmp_j = (x > y) ? tmp_i : j;
+     i = tmp_i;
+     j = tmp_j;
+
+   We can catch these when looking at (SET x y) by keeping a list of the
+   registers we would have targeted before if-conversion and looking back
+   through it for an overlap with Y.  If we find one, we rewire the
+   conditional set to use the temporary we introduced earlier.
+
+   IF_INFO contains the useful information about the block structure and
+   jump instructions.  */
+
+static int
+noce_convert_multiple_sets (struct noce_if_info *if_info)
+{
+  basic_block test_bb = if_info->test_bb;
+  basic_block then_bb = if_info->then_bb;
+  basic_block join_bb = if_info->join_bb;
+  rtx_insn *jump = if_info->jump;
+  rtx_insn *cond_earliest;
+  rtx_insn *insn;
+
+  start_sequence ();
+
+  /* Decompose the condition attached to the jump.  */
+  rtx cond = noce_get_condition (jump, &cond_earliest, false);
+  rtx x = XEXP (cond, 0);
+  rtx y = XEXP (cond, 1);
+  rtx_code cond_code = GET_CODE (cond);
+
+  /* The true targets for a conditional move.  */
+  vec<rtx> targets = vNULL;
+  /* The temporaries introduced to allow us to not consider register
+     overlap.  */
+  vec<rtx> temporaries = vNULL;
+  /* The insns we've emitted.  */
+  vec<rtx_insn *> unmodified_insns = vNULL;
+  int count = 0;
+
+  FOR_BB_INSNS (then_bb, insn)
+    {
+      /* Skip over non-insns.  */
+      if (!active_insn_p (insn))
+	continue;
+
+      rtx set = single_set (insn);
+      gcc_checking_assert (set);
+
+      rtx target = SET_DEST (set);
+      rtx temp = gen_reg_rtx (GET_MODE (target));
+      rtx new_val = SET_SRC (set);
+      rtx old_val = target;
+
+      /* If we were supposed to read from an earlier write in this block,
+	 we've changed the register allocation.  Rewire the read.  While
+	 we are looking, also try to catch a swap idiom.  */
+      for (int i = count - 1; i >= 0; --i)
+	if (reg_overlap_mentioned_p (new_val, targets[i]))
+	  {
+	    /* Catch a "swap" style idiom.  */
+	    if (find_reg_note (insn, REG_DEAD, new_val) != NULL_RTX)
+	      /* The write to targets[i] is only live until the read
+		 here.  As the condition codes match, we can propagate
+		 the set to here.  */
+	      new_val = SET_SRC (single_set (unmodified_insns[i]));
+	    else
+	      new_val = temporaries[i];
+	    break;
+	  }
+
+      /* If we had a non-canonical conditional jump (i.e. one where
+	 the fallthrough is to the "else" case) we need to reverse
+	 the conditional select.  */
+      if (if_info->then_else_reversed)
+	std::swap (old_val, new_val);
+
+      /* Actually emit the conditional move.  */
+      rtx temp_dest = noce_emit_cmove (if_info, temp, cond_code,
+				       x, y, new_val, old_val);
+
+      /* If we failed to expand the conditional move, drop out and don't
+	 try to continue.  */
+      if (temp_dest == NULL_RTX)
+	{
+	  end_sequence ();
+	  return FALSE;
+	}
+
+      /* Bookkeeping.  */
+      count++;
+      targets.safe_push (target);
+      temporaries.safe_push (temp_dest);
+      unmodified_insns.safe_push (insn);
+    }
+
+  /* We must have seen some sort of insn to insert, otherwise we were
+     given an empty BB to convert, and we can't handle that.  */
+  gcc_assert (!unmodified_insns.is_empty ());
+
+  /* Now fixup the assignments.  */
+  for (int i = 0; i < count; i++)
+    noce_emit_move_insn (targets[i], temporaries[i]);
+
+  /* Actually emit the sequence.  */
+  rtx_insn *seq = get_insns ();
+
+  for (insn = seq; insn; insn = NEXT_INSN (insn))
+    set_used_flags (insn);
+
+  /* Mark all our temporaries and targets as used.  */
+  for (int i = 0; i < count; i++)
+    {
+      set_used_flags (temporaries[i]);
+      set_used_flags (targets[i]);
+    }
+
+  set_used_flags (cond);
+  set_used_flags (x);
+  set_used_flags (y);
+
+  unshare_all_rtl_in_chain (seq);
+  end_sequence ();
+
+  if (!seq)
+    return FALSE;
+
+  for (insn = seq; insn; insn = NEXT_INSN (insn))
+    if (JUMP_P (insn)
+	|| recog_memoized (insn) == -1)
+      return FALSE;
+
+  emit_insn_before_setloc (seq, if_info->jump,
+			   INSN_LOCATION (unmodified_insns.last ()));
+
+  /* Clean up THEN_BB and the edges in and out of it.  */
+  remove_edge (find_edge (test_bb, join_bb));
+  remove_edge (find_edge (then_bb, join_bb));
+  redirect_edge_and_branch_force (single_succ_edge (test_bb), join_bb);
+  delete_basic_block (then_bb);
+  num_true_changes++;
+
+  /* Maybe merge blocks now the jump is simple enough.  */
+  if (can_merge_blocks_p (test_bb, join_bb))
+    {
+      merge_blocks (test_bb, join_bb);
+      num_true_changes++;
+    }
+
+  num_updated_if_blocks++;
+  return TRUE;
+}
+
+/* Return true iff basic block TEST_BB is comprised of only
+   (SET (REG) (REG)) insns suitable for conversion to a series
+   of conditional moves.  FORNOW: Use II to find the expected cost of
+   the branch into/over TEST_BB.
+
+   TODO: This creates an implicit "magic number" for branch_cost.
+   II->branch_cost now guides the maximum number of set instructions in
+   a basic block which is considered profitable to completely
+   if-convert.  */
+
+static bool
+bb_ok_for_noce_convert_multiple_sets (basic_block test_bb,
+				      struct noce_if_info *ii)
+{
+  rtx_insn *insn;
+  unsigned count = 0;
+
+  FOR_BB_INSNS (test_bb, insn)
+    {
+      /* Skip over notes etc.  */
+      if (!active_insn_p (insn))
+	continue;
+
+      /* We only handle SET insns.  */
+      rtx set = single_set (insn);
+      if (set == NULL_RTX)
+	return false;
+
+      rtx dest = SET_DEST (set);
+      rtx src = SET_SRC (set);
+
+      /* We can possibly relax this, but for now only handle REG to REG
+	 moves.  This avoids any issues that might come from introducing
+	 loads/stores that might violate data-race-freedom guarantees.  */
+      if (!(REG_P (src) && REG_P (dest)))
+	return false;
+
+      /* Destination must be appropriate for a conditional write.  */
+      if (!noce_operand_ok (dest))
+	return false;
+
+      /* We must be able to conditionally move in this mode.  */
+      if (!can_conditionally_move_p (GET_MODE (dest)))
+	return false;
+
+      ++count;
+    }
+
+  /* FORNOW: Our cost model is a count of the number of instructions we
+     would if-convert.  This is suboptimal, and should be improved as part
+     of a wider rework of branch_cost.  */
+  if (count > ii->branch_cost)
+    return FALSE;
+
+  return count > 0;
+}
+
 /* Given a simple IF-THEN-JOIN or IF-THEN-ELSE-JOIN block, attempt to convert
    it without using conditional execution.  Return TRUE if we were successful
    at converting the block.  */
@@ -3038,12 +3276,22 @@ noce_process_if_block (struct noce_if_info *if_info)
      (1) if (...) x = a; else x = b;
      (2) x = b; if (...) x = a;
      (3) if (...) x = a;   // as if with an initial x = x.
-
+     (4) if (...) { x = a; y = b; z = c; }  // Like 3, for multiple SETS.
      The later patterns require jumps to be more expensive.
      For the if (...) x = a; else x = b; case we allow multiple insns
      inside the then and else blocks as long as their only effect is
      to calculate a value for x.
-     ??? For future expansion, look for multiple X in such patterns.  */
+     ??? For future expansion, further expand the "multiple X" rules.  */
+
+  /* First look for multiple SETS.  */
+  if (!else_bb
+      && HAVE_conditional_move
+      && !HAVE_cc0
+      && bb_ok_for_noce_convert_multiple_sets (then_bb, if_info))
+    {
+      if (noce_convert_multiple_sets (if_info))
+	return TRUE;
+    }
 
   if (! bb_valid_for_noce_process_p (then_bb, cond, &if_info->then_cost,
 				    &if_info->then_simple))

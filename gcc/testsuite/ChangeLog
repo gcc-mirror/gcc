@@ -1,3 +1,7 @@
+2015-11-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/ifcvt-4.c: New.
+
 2015-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67846
