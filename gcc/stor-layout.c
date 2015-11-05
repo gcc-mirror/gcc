@@ -2174,7 +2174,8 @@ layout_type (tree type)
 	TYPE_SATURATING (type) = TYPE_SATURATING (TREE_TYPE (type));
         TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
 	/* Several boolean vector elements may fit in a single unit.  */
-	if (VECTOR_BOOLEAN_TYPE_P (type))
+	if (VECTOR_BOOLEAN_TYPE_P (type)
+	    && type->type_common.mode != BLKmode)
 	  TYPE_SIZE_UNIT (type)
 	    = size_int (GET_MODE_SIZE (type->type_common.mode));
 	else
