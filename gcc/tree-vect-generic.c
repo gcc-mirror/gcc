@@ -154,10 +154,16 @@ static tree
 do_compare (gimple_stmt_iterator *gsi, tree inner_type, tree a, tree b,
 	    tree bitpos, tree bitsize, enum tree_code code, tree type)
 {
+  tree stype = TREE_TYPE (type);
+  tree cst_false = build_zero_cst (stype);
+  tree cst_true = build_all_ones_cst (stype);
+  tree cmp;
+
   a = tree_vec_extract (gsi, inner_type, a, bitsize, bitpos);
   b = tree_vec_extract (gsi, inner_type, b, bitsize, bitpos);
 
-  return gimplify_build2 (gsi, code, TREE_TYPE (type), a, b);
+  cmp = build2 (code, boolean_type_node, a, b);
+  return gimplify_build3 (gsi, COND_EXPR, stype, cmp, cst_true, cst_false);
 }
 
 /* Expand vector addition to scalars.  This does bit twiddling
