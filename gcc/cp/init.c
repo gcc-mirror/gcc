@@ -2276,6 +2276,201 @@ throw_bad_array_new_length (void)
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
 }
 
+/* Attempt to verify that the argument, OPER, of a placement new expression
+   refers to an object sufficiently large for an object of TYPE or an array
+   of NELTS of such objects when NELTS is non-null, and issue a warning when
+   it does not.  SIZE specifies the size needed to construct the object or
+   array and captures the result of NELTS * sizeof (TYPE). (SIZE could be
+   greater when the array under construction requires a cookie to store
+   NELTS.  GCC's placement new expression stores the cookie when invoking
+   a user-defined placement new operator function but not the default one.
+   Placement new expressions with user-defined placement new operator are
+   not diagnosed since we don't know how they use the buffer (this could
+   be a future extension).  */
+static void
+warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
+{
+  location_t loc = EXPR_LOC_OR_LOC (oper, input_location);
+
+  /* The number of bytes to add to or subtract from the size of the provided
+     buffer based on an offset into an array or an array element reference.
+     Although intermediate results may be negative (as in a[3] - 2) the final
+     result cannot be.  */
+  HOST_WIDE_INT adjust = 0;
+  /* True when the size of the entire destination object should be used
+     to compute the possibly optimistic estimate of the available space.  */
+  bool use_obj_size = false;
+  /* True when the reference to the destination buffer is an ADDR_EXPR.  */
+  bool addr_expr = false;
+
+  STRIP_NOPS (oper);
+
+  /* Using a function argument or a (non-array) variable as an argument
+     to placement new is not checked since it's unknown what it might
+     point to.  */
+  if (TREE_CODE (oper) == PARM_DECL
+      || TREE_CODE (oper) == VAR_DECL
+      || TREE_CODE (oper) == COMPONENT_REF)
+    return;
+
+  /* Evaluate any constant expressions.  */
+  size = fold_non_dependent_expr (size);
+
+  /* Handle the common case of array + offset expression when the offset
+     is a constant.  */
+  if (TREE_CODE (oper) == POINTER_PLUS_EXPR)
+    {
+      /* If the offset is comple-time constant, use it to compute a more
+	 accurate estimate of the size of the buffer.  Otherwise, use
+	 the size of the entire array as an optimistic estimate (this
+	 may lead to false negatives).  */
+      const_tree adj = TREE_OPERAND (oper, 1);
+      if (CONSTANT_CLASS_P (adj))
+	adjust += tree_to_uhwi (adj);
+      else
+	use_obj_size = true;
+
+      oper = TREE_OPERAND (oper, 0);
+
+      STRIP_NOPS (oper);
+    }
+
+  if (TREE_CODE (oper) == TARGET_EXPR)
+    oper = TREE_OPERAND (oper, 1);
+  else if (TREE_CODE (oper) == ADDR_EXPR)
+    {
+      addr_expr = true;
+      oper = TREE_OPERAND (oper, 0);
+    }
+
+  STRIP_NOPS (oper);
+
+  if (TREE_CODE (oper) == ARRAY_REF)
+    {
+      /* Similar to the offset computed above, see if the array index
+	 is a compile-time constant.  If so, and unless the offset was
+	 not a compile-time constant, use the index to determine the
+	 size of the buffer.  Otherwise, use the entire array as
+	 an optimistic estimate of the size.  */
+      const_tree adj = TREE_OPERAND (oper, 1);
+      if (!use_obj_size && CONSTANT_CLASS_P (adj))
+	adjust += tree_to_shwi (adj);
+      else
+	{
+	  use_obj_size = true;
+	  adjust = 0;
+	}
+
+      oper = TREE_OPERAND (oper, 0);
+    }
+
+  /* Descend into a struct or union to find the member whose address
+     is being used as the agument.  */
+  while (TREE_CODE (oper) == COMPONENT_REF)
+    oper = TREE_OPERAND (oper, 1);
+
+  if ((addr_expr || !POINTER_TYPE_P (TREE_TYPE (oper)))
+      && (TREE_CODE (oper) == VAR_DECL
+	  || TREE_CODE (oper) == FIELD_DECL
+	  || TREE_CODE (oper) == PARM_DECL))
+    {
+      /* A possibly optimistic estimate of the number of bytes available
+	 in the destination buffer.  */
+      unsigned HOST_WIDE_INT bytes_avail;
+      /* True when the estimate above is in fact the exact size
+	 of the destination buffer rather than an estimate.  */
+      bool exact_size = true;
+
+      /* Treat members of unions and members of structs uniformly, even
+	 though the size of a member of a union may be viewed as extending
+	 to the end of the union itself (it is by __builtin_object_size).  */
+      if (TREE_CODE (oper) == VAR_DECL || use_obj_size)
+	{
+	  /* Use the size of the entire array object when the expression
+	     refers to a variable or its size depends on an expression
+	     that's not a compile-time constant.  */
+	  bytes_avail = tree_to_shwi (DECL_SIZE_UNIT (oper));
+	  exact_size = !use_obj_size;
+	}
+      else
+	{
+	  /* Use the size of the type of the destination buffer object
+	     as the optimistic estimate of the available space in it.  */
+	  bytes_avail = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (oper)));
+	}
+
+      /* Avoid diagnosing flexible array members (accepted as an extension
+	 and diagnosed with -Wpedantic).
+	 Constructing objects that appear to overflow the C99 equivalent of
+	 flexible array members (i.e., array members of size zero or one)
+	 are diagnosed in C++ since their declaration cannot be diagnosed.  */
+      if (bytes_avail == 0 && TREE_CODE (TREE_TYPE (oper)) == ARRAY_TYPE)
+	return;
+
+      /* The size of the buffer can only be adjusted down but not up.  */
+      gcc_checking_assert (0 <= adjust);
+
+      /* Reduce the size of the buffer by the adjustment computed above
+	 from the offset and/or the index into the array.  */
+      if (bytes_avail < static_cast<unsigned HOST_WIDE_INT>(adjust))
+	bytes_avail = 0;
+      else
+	bytes_avail -= adjust;
+
+      /* The minimum amount of space needed for the allocation.  This
+	 is an optimistic estimate that makes it possible to detect
+	 placement new invocation for some undersize buffers but not
+	 others.  */
+      unsigned HOST_WIDE_INT bytes_need;
+
+      if (CONSTANT_CLASS_P (size))
+	bytes_need = tree_to_uhwi (size);
+      else if (nelts && CONSTANT_CLASS_P (nelts))
+	  bytes_need = tree_to_uhwi (nelts)
+	    * tree_to_uhwi (TYPE_SIZE_UNIT (type));
+      else
+	bytes_need = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+
+      if (bytes_avail < bytes_need)
+	{
+	  if (nelts)
+	    if (CONSTANT_CLASS_P (nelts))
+	      warning_at (loc, OPT_Wplacement_new,
+			  exact_size ?
+			  "placement new constructing an object of type "
+			  "%<%T [%wu]%> and size %qwu in a region of type %qT "
+			  "and size %qwi"
+			  : "placement new constructing an object of type "
+			  "%<%T [%lu]%> and size %qwu in a region of type %qT "
+			  "and size at most %qwu",
+			  type, tree_to_uhwi (nelts), bytes_need,
+			  TREE_TYPE (oper),
+			  bytes_avail);
+	    else
+	      warning_at (loc, OPT_Wplacement_new,
+			  exact_size ?
+			  "placement new constructing an array of objects "
+			  "of type %qT and size %qwu in a region of type %qT "
+			  "and size %qwi"
+			  : "placement new constructing an array of objects "
+			  "of type %qT and size %qwu in a region of type %qT "
+			  "and size at most %qwu",
+			  type, bytes_need, TREE_TYPE (oper),
+			  bytes_avail);
+	  else
+	    warning_at (loc, OPT_Wplacement_new,
+			exact_size ?
+			"placement new constructing an object of type %qT "
+			"and size %qwu in a region of type %qT and size %qwi"
+			: "placement new constructing an object of type %qT"
+			"and size %qwu in a region of type %qT and size "
+			"at most %qwu",
+			type, bytes_need, TREE_TYPE (oper),
+			bytes_avail);
+	}
+    }
+}
+
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
@@ -2525,6 +2720,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       && (TYPE_PTR_P (TREE_TYPE ((**placement)[0]))))
     placement_first = (**placement)[0];
 
+  bool member_new_p = false;
+
   /* Allocate the object.  */
   if (vec_safe_is_empty (*placement) && TYPE_FOR_JAVA (elt_type))
     {
@@ -2573,11 +2770,13 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
       fnname = ansi_opname (array_p ? VEC_NEW_EXPR : NEW_EXPR);
 
-      if (!globally_qualified_p
+      member_new_p = !globally_qualified_p
 	  && CLASS_TYPE_P (elt_type)
 	  && (array_p
 	      ? TYPE_HAS_ARRAY_NEW_OPERATOR (elt_type)
-	      : TYPE_HAS_NEW_OPERATOR (elt_type)))
+	    : TYPE_HAS_NEW_OPERATOR (elt_type));
+
+      if (member_new_p)
 	{
 	  /* Use a class-specific operator new.  */
 	  /* If a cookie is required, add some extra space.  */
@@ -2652,20 +2851,30 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   /* If we found a simple case of PLACEMENT_EXPR above, then copy it
      into a temporary variable.  */
   if (!processing_template_decl
-      && placement_first != NULL_TREE
       && TREE_CODE (alloc_call) == CALL_EXPR
       && call_expr_nargs (alloc_call) == 2
       && TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (alloc_call, 0))) == INTEGER_TYPE
       && TYPE_PTR_P (TREE_TYPE (CALL_EXPR_ARG (alloc_call, 1))))
     {
-      tree placement_arg = CALL_EXPR_ARG (alloc_call, 1);
+      tree placement = CALL_EXPR_ARG (alloc_call, 1);
 
-      if (INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (TREE_TYPE (placement_arg)))
-	  || VOID_TYPE_P (TREE_TYPE (TREE_TYPE (placement_arg))))
+      if (placement_first != NULL_TREE
+	  && (INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (TREE_TYPE (placement)))
+	      || VOID_TYPE_P (TREE_TYPE (TREE_TYPE (placement)))))
 	{
 	  placement_expr = get_target_expr (placement_first);
 	  CALL_EXPR_ARG (alloc_call, 1)
-	    = convert (TREE_TYPE (placement_arg), placement_expr);
+	    = convert (TREE_TYPE (placement), placement_expr);
+	}
+
+      if (!member_new_p
+	  && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (CALL_EXPR_ARG (alloc_call, 1)))))
+	{
+	  /* Attempt to make the warning point at the operator new argument.  */
+	  if (placement_first)
+	    placement = placement_first;
+
+	  warn_placement_new_too_small (orig_type, nelts, size, placement);
 	}
     }
 

@@ -272,7 +272,7 @@ Objective-C and Objective-C++ Dialects}.
 -Woverride-init-side-effects @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
--Wpointer-arith  -Wno-pointer-to-int-cast @gol
+-Wplacement-new -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wshift-overflow -Wshift-overflow=@var{n} @gol
@@ -4869,6 +4869,13 @@ and @option{-pedantic} without GNU extensions, this option
 disables the warnings about non-ISO @code{printf} / @code{scanf} format
 width specifiers @code{I32}, @code{I64}, and @code{I} used on Windows targets,
 which depend on the MS runtime.
+
+@item -Wplacement-new
+@opindex Wplacement-new
+@opindex Wno-placement-new
+Warn about placement new expressions with undefined behavior, such as
+constructing an object in a buffer that is smaller than the type of
+the object.
 
 @item -Wpointer-arith
 @opindex Wpointer-arith

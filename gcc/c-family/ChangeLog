@@ -1,3 +1,8 @@
+2015-11-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/67942
+	* c.opt (-Wplacement-new): New option.
+
 2015-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_finish_omp_atomic): Add TEST argument.
