@@ -9887,7 +9887,12 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 	if (cp_parser_parse_definitely (parser))
 	  {
 	    if (!processing_template_decl)
-	      apply_deduced_return_type (fco, lambda_return_type (expr));
+	      {
+		tree type = lambda_return_type (expr);
+		apply_deduced_return_type (fco, type);
+		if (type == error_mark_node)
+		  expr = error_mark_node;
+	      }
 
 	    /* Will get error here if type not deduced yet.  */
 	    finish_return_stmt (expr);
