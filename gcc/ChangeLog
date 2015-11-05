@@ -1,3 +1,9 @@
+2015-11-05  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR tree-optimization/65963
+	* tree-scalar-evolution.c (interpret_rhs_expr): Try to handle
+	LSHIFT_EXPRs as equivalent unsigned MULT_EXPRs.
+
 2015-11-05  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* ifcvt.c (bb_ok_for_noce_convert_multiple_sets): New.
