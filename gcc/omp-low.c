@@ -12096,6 +12096,41 @@ get_oacc_fn_attrib (tree fn)
   return lookup_attribute (OACC_FN_ATTRIB, DECL_ATTRIBUTES (fn));
 }
 
+/* Extract an oacc execution dimension from FN.  FN must be an
+   offloaded function or routine that has already had its execution
+   dimensions lowered to the target-specific values.  */
+
+int
+get_oacc_fn_dim_size (tree fn, int axis)
+{
+  tree attrs = get_oacc_fn_attrib (fn);
+  
+  gcc_assert (axis < GOMP_DIM_MAX);
+
+  tree dims = TREE_VALUE (attrs);
+  while (axis--)
+    dims = TREE_CHAIN (dims);
+
+  int size = TREE_INT_CST_LOW (TREE_VALUE (dims));
+
+  return size;
+}
+
+/* Extract the dimension axis from an IFN_GOACC_DIM_POS or
+   IFN_GOACC_DIM_SIZE call.  */
+
+int
+get_oacc_ifn_dim_arg (const gimple *stmt)
+{
+  gcc_checking_assert (gimple_call_internal_fn (stmt) == IFN_GOACC_DIM_SIZE
+		       || gimple_call_internal_fn (stmt) == IFN_GOACC_DIM_POS);
+  tree arg = gimple_call_arg (stmt, 0);
+  HOST_WIDE_INT axis = TREE_INT_CST_LOW (arg);
+
+  gcc_checking_assert (axis >= 0 && axis < GOMP_DIM_MAX);
+  return (int) axis;
+}
+
 /* Expand the GIMPLE_OMP_TARGET starting at REGION.  */
 
 static void
@@ -19013,6 +19048,18 @@ default_goacc_validate_dims (tree ARG_UNUSED (decl), int *dims,
     }
 
   return changed;
+}
+
+/* Default dimension bound is unknown on accelerator and 1 on host. */
+
+int
+default_goacc_dim_limit (int ARG_UNUSED (axis))
+{
+#ifdef ACCEL_COMPILER
+  return 0;
+#else
+  return 1;
+#endif
 }
 
 namespace {
