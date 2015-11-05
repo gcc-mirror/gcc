@@ -1,3 +1,9 @@
+2015-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68090
+	* c-parser.c (c_parser_postfix_expression_after_paren_type): Don't
+	deal with pre-evaluation on invalid types.
+
 2015-11-05  Jakub Jelinek  <jakub@redhat.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
 
