@@ -1,3 +1,9 @@
+2015-11-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* ifcvt.c (bb_ok_for_noce_convert_multiple_sets): New.
+	(noce_convert_multiple_sets): Likewise.
+	(noce_process_if_block): Call them.
+
 2015-11-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gimple-fold.c: Include omp-low.h.
