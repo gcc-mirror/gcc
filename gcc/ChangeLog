@@ -1,3 +1,9 @@
+2015-11-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gimple-fold.c: Include omp-low.h.
+	(fold_internal_goacc_dim): New.
+	(gimple_fold_call): Call it.
+
 2015-11-05  Jakub Jelinek  <jakub@redhat.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
 
