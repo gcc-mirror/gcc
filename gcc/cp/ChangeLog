@@ -1,3 +1,11 @@
+2015-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67846
+	* parser.c (cp_parser_lambda_body): Check lambda_return_type
+	return value.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Print member or
+	member function used invalidly.
+
 2015-11-05  Jakub Jelinek  <jakub@redhat.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
 
@@ -27,8 +35,8 @@
 	cp_parser_require_pragma_eol instead of cp_parser_skip_to_pragma_eol.
 	(cp_parser_omp_end_declare_target): Call cp_parser_require_pragma_eol
 	instead of cp_parser_skip_to_pragma_eol.
-	* decl2.c (cplus_decl_attributes): Don't diagnose block scope vars inside
-	declare target.
+	* decl2.c (cplus_decl_attributes): Don't diagnose block scope vars
+	inside declare target.
 	* pt.c (tsubst_omp_clauses): If OMP_CLAUSE_LINEAR_VARIABLE_STRIDE,
 	use tsubst_omp_clause_decl instead of tsubst_expr on
 	OMP_CLAUSE_LINEAR_STEP.  Handle non-static data members in shared

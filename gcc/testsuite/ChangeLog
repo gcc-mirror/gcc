@@ -1,3 +1,8 @@
+2015-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67846
+	* g++.dg/cpp0x/lambda/lambda-ice15.C: New.
+
 2015-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/clauses-2.c (foo): Adjust for diagnostics

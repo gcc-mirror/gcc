@@ -516,12 +516,12 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
 	if (DECL_FUNCTION_MEMBER_P (member)
 	    && ! flag_ms_extensions)
 	  emit_diagnostic (diag_kind, input_location, 0,
-			   "invalid use of member function "
-			   "(did you forget the %<()%> ?)");
+			   "invalid use of member function %qD "
+			   "(did you forget the %<()%> ?)", member);
 	else
 	  emit_diagnostic (diag_kind, input_location, 0,
-			   "invalid use of member "
-			   "(did you forget the %<&%> ?)");
+			   "invalid use of member %qD "
+			   "(did you forget the %<&%> ?)", member);
       }
       break;
 
