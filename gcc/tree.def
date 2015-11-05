@@ -1109,28 +1109,28 @@ DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 2)
 DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 7)
 
 /* OpenMP - #pragma omp simd [clause1 ... clauseN]
-   Operands like operands 1-6 of OMP_FOR.  */
-DEFTREECODE (OMP_SIMD, "omp_simd", tcc_statement, 6)
+   Operands like for OMP_FOR.  */
+DEFTREECODE (OMP_SIMD, "omp_simd", tcc_statement, 7)
 
 /* Cilk Plus - #pragma simd [clause1 ... clauseN]
-   Operands like operands 1-6 of OMP_FOR.  */
-DEFTREECODE (CILK_SIMD, "cilk_simd", tcc_statement, 6)
+   Operands like for OMP_FOR.  */
+DEFTREECODE (CILK_SIMD, "cilk_simd", tcc_statement, 7)
 
 /* Cilk Plus - _Cilk_for (..)
-   Operands like operands 1-6 of OMP_FOR.  */
-DEFTREECODE (CILK_FOR, "cilk_for", tcc_statement, 6)
+   Operands like for OMP_FOR.  */
+DEFTREECODE (CILK_FOR, "cilk_for", tcc_statement, 7)
 
 /* OpenMP - #pragma omp distribute [clause1 ... clauseN]
-   Operands like operands 1-6 of OMP_FOR.  */
-DEFTREECODE (OMP_DISTRIBUTE, "omp_distribute", tcc_statement, 6)
+   Operands like for OMP_FOR.  */
+DEFTREECODE (OMP_DISTRIBUTE, "omp_distribute", tcc_statement, 7)
 
 /* OpenMP - #pragma omp taskloop [clause1 ... clauseN]
-   Operands like operands 1-6 of OMP_FOR.  */
-DEFTREECODE (OMP_TASKLOOP, "omp_taskloop", tcc_statement, 6)
+   Operands like for OMP_FOR.  */
+DEFTREECODE (OMP_TASKLOOP, "omp_taskloop", tcc_statement, 7)
 
 /* OpenMP - #pragma acc loop [clause1 ... clauseN]
-   Operands like operands 1-6 of OMP_FOR.  */
-DEFTREECODE (OACC_LOOP, "oacc_loop", tcc_statement, 6)
+   Operands like for OMP_FOR.  */
+DEFTREECODE (OACC_LOOP, "oacc_loop", tcc_statement, 7)
 
 /* OpenMP - #pragma omp teams [clause1 ... clauseN]
    Operand 0: OMP_TEAMS_BODY: Teams body.

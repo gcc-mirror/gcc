@@ -60,6 +60,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gomp-constants.h"
 #include "c-family/c-indentation.h"
+#include "gimple-expr.h"
+#include "context.h"
 
 
 /* Initialization routine for this file.  */
@@ -11574,33 +11576,56 @@ c_parser_omp_clause_reduction (c_parser *parser, tree list)
 
    OpenMP 4.5:
    schedule ( schedule-modifier : schedule-kind )
-   schedule ( schedule-modifier : schedule-kind , expression )
+   schedule ( schedule-modifier [ , schedule-modifier ] : schedule-kind , expression )
 
    schedule-modifier:
-     simd  */
+     simd
+     monotonic
+     nonmonotonic  */
 
 static tree
 c_parser_omp_clause_schedule (c_parser *parser, tree list)
 {
   tree c, t;
   location_t loc = c_parser_peek_token (parser)->location;
+  int modifiers = 0, nmodifiers = 0;
 
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return list;
 
   c = build_omp_clause (loc, OMP_CLAUSE_SCHEDULE);
 
-  if (c_parser_next_token_is (parser, CPP_NAME))
+  while (c_parser_next_token_is (parser, CPP_NAME))
     {
       tree kind = c_parser_peek_token (parser)->value;
       const char *p = IDENTIFIER_POINTER (kind);
-      if (strcmp ("simd", p) == 0
-	  && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
+      if (strcmp ("simd", p) == 0)
+	OMP_CLAUSE_SCHEDULE_SIMD (c) = 1;
+      else if (strcmp ("monotonic", p) == 0)
+	modifiers |= OMP_CLAUSE_SCHEDULE_MONOTONIC;
+      else if (strcmp ("nonmonotonic", p) == 0)
+	modifiers |= OMP_CLAUSE_SCHEDULE_NONMONOTONIC;
+      else
+	break;
+      c_parser_consume_token (parser);
+      if (nmodifiers++ == 0
+	  && c_parser_next_token_is (parser, CPP_COMMA))
+	c_parser_consume_token (parser);
+      else
 	{
-	  OMP_CLAUSE_SCHEDULE_SIMD (c) = 1;
-	  c_parser_consume_token (parser);
-	  c_parser_consume_token (parser);
+	  c_parser_require (parser, CPP_COLON, "expected %<:%>");
+	  break;
 	}
+    }
+
+  if ((modifiers & (OMP_CLAUSE_SCHEDULE_MONOTONIC
+		    | OMP_CLAUSE_SCHEDULE_NONMONOTONIC))
+      == (OMP_CLAUSE_SCHEDULE_MONOTONIC
+	  | OMP_CLAUSE_SCHEDULE_NONMONOTONIC))
+    {
+      error_at (loc, "both %<monotonic%> and %<nonmonotonic%> modifiers "
+		     "specified");
+      modifiers = 0;
     }
 
   if (c_parser_next_token_is (parser, CPP_NAME))
@@ -11667,6 +11692,10 @@ c_parser_omp_clause_schedule (c_parser *parser, tree list)
   else
     c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 			       "expected %<,%> or %<)%>");
+
+  OMP_CLAUSE_SCHEDULE_KIND (c)
+    = (enum omp_clause_schedule_kind)
+      (OMP_CLAUSE_SCHEDULE_KIND (c) | modifiers);
 
   check_no_duplicate_clause (list, OMP_CLAUSE_SCHEDULE, "schedule");
   OMP_CLAUSE_CHAIN (c) = list;
@@ -14139,8 +14168,15 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
     {
       stmt = c_finish_omp_for (loc, code, declv, NULL, initv, condv,
 			       incrv, body, pre_body);
+
+      /* Check for iterators appearing in lb, b or incr expressions.  */
+      if (stmt && !c_omp_check_loop_iv (stmt, declv, NULL))
+	stmt = NULL_TREE;
+
       if (stmt)
 	{
+	  add_stmt (stmt);
+
 	  if (cclauses != NULL
 	      && cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL] != NULL)
 	    {
@@ -14823,6 +14859,7 @@ c_parser_omp_cancellation_point (c_parser *parser)
 #define OMP_DISTRIBUTE_CLAUSE_MASK				\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LASTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
 
@@ -14998,6 +15035,7 @@ c_parser_omp_target_data (location_t loc, c_parser *parser)
 	    map_seen = 3;
 	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
+	  case GOMP_MAP_ALWAYS_POINTER:
 	    break;
 	  default:
 	    map_seen |= 1;
@@ -15131,6 +15169,7 @@ c_parser_omp_target_enter_data (location_t loc, c_parser *parser,
 	    map_seen = 3;
 	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
+	  case GOMP_MAP_ALWAYS_POINTER:
 	    break;
 	  default:
 	    map_seen |= 1;
@@ -15217,6 +15256,7 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
 	    map_seen = 3;
 	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
+	  case GOMP_MAP_ALWAYS_POINTER:
 	    break;
 	  default:
 	    map_seen |= 1;
@@ -15342,6 +15382,32 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context)
 	  block = c_end_compound_stmt (loc, block, true);
 	  if (ret == NULL_TREE)
 	    return false;
+	  if (ccode == OMP_TEAMS)
+	    {
+	      /* For combined target teams, ensure the num_teams and
+		 thread_limit clause expressions are evaluated on the host,
+		 before entering the target construct.  */
+	      tree c;
+	      for (c = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
+		   c; c = OMP_CLAUSE_CHAIN (c))
+		if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
+		     || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
+		    && TREE_CODE (OMP_CLAUSE_OPERAND (c, 0)) != INTEGER_CST)
+		  {
+		    tree expr = OMP_CLAUSE_OPERAND (c, 0);
+		    tree tmp = create_tmp_var_raw (TREE_TYPE (expr));
+		    expr = build4 (TARGET_EXPR, TREE_TYPE (expr), tmp,
+				   expr, NULL_TREE, NULL_TREE);
+		    add_stmt (expr);
+		    OMP_CLAUSE_OPERAND (c, 0) = expr;
+		    tree tc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+						OMP_CLAUSE_FIRSTPRIVATE);
+		    OMP_CLAUSE_DECL (tc) = tmp;
+		    OMP_CLAUSE_CHAIN (tc)
+		      = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+		    cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = tc;
+		  }
+	    }
 	  tree stmt = make_node (OMP_TARGET);
 	  TREE_TYPE (stmt) = void_type_node;
 	  OMP_TARGET_CLAUSES (stmt) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
@@ -15410,6 +15476,7 @@ check_clauses:
 	  case GOMP_MAP_ALWAYS_TOFROM:
 	  case GOMP_MAP_ALLOC:
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
+	  case GOMP_MAP_ALWAYS_POINTER:
 	    break;
 	  default:
 	    error_at (OMP_CLAUSE_LOCATION (*pc),
@@ -15679,6 +15746,7 @@ c_parser_omp_declare_target (c_parser *parser)
     {
       clauses = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_TO_DECLARE,
 					      clauses);
+      clauses = c_finish_omp_clauses (clauses, true);
       c_parser_skip_to_pragma_eol (parser);
     }
   else
@@ -15712,7 +15780,22 @@ c_parser_omp_declare_target (c_parser *parser)
 	  continue;
 	}
       if (!at1)
-	DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	{
+	  symtab_node *node = symtab_node::get (t);
+	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	  if (node != NULL)
+	    {
+	      node->offloadable = 1;
+#ifdef ENABLE_OFFLOADING
+	      g->have_offload = true;
+	      if (is_a <varpool_node *> (node))
+		{
+		  vec_safe_push (offload_vars, t);
+		  node->force_output = 1;
+		}
+#endif
+	    }
+	}
     }
 }
 

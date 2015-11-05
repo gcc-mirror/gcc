@@ -1262,12 +1262,16 @@ extern tree c_finish_omp_critical (location_t, tree, tree, tree);
 extern tree c_finish_omp_ordered (location_t, tree, tree);
 extern void c_finish_omp_barrier (location_t);
 extern tree c_finish_omp_atomic (location_t, enum tree_code, enum tree_code,
-				 tree, tree, tree, tree, tree, bool, bool);
+				 tree, tree, tree, tree, tree, bool, bool,
+				 bool = false);
 extern void c_finish_omp_flush (location_t);
 extern void c_finish_omp_taskwait (location_t);
 extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
 			      tree, tree, tree, tree);
+extern bool c_omp_check_loop_iv (tree, tree, walk_tree_lh);
+extern bool c_omp_check_loop_iv_exprs (location_t, tree, tree, tree, tree,
+				       walk_tree_lh);
 extern tree c_finish_oacc_wait (location_t, tree, tree);
 extern tree c_oacc_split_loop_clauses (tree, tree *);
 extern void c_omp_split_clauses (location_t, enum tree_code, omp_clause_mask,

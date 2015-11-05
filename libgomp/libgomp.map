@@ -266,9 +266,9 @@ GOMP_4.0.1 {
 
 GOMP_4.5 {
   global:
-	GOMP_target_41;
-	GOMP_target_data_41;
-	GOMP_target_update_41;
+	GOMP_target_ext;
+	GOMP_target_data_ext;
+	GOMP_target_update_ext;
 	GOMP_target_enter_exit_data;
 	GOMP_taskloop;
 	GOMP_taskloop_ull;
@@ -286,6 +286,16 @@ GOMP_4.5 {
 	GOMP_loop_ull_doacross_static_start;
 	GOMP_doacross_ull_post;
 	GOMP_doacross_ull_wait;
+	GOMP_loop_nonmonotonic_dynamic_next;
+	GOMP_loop_nonmonotonic_dynamic_start;
+	GOMP_loop_nonmonotonic_guided_next;
+	GOMP_loop_nonmonotonic_guided_start;
+	GOMP_loop_ull_nonmonotonic_dynamic_next;
+	GOMP_loop_ull_nonmonotonic_dynamic_start;
+	GOMP_loop_ull_nonmonotonic_guided_next;
+	GOMP_loop_ull_nonmonotonic_guided_start;
+	GOMP_parallel_loop_nonmonotonic_dynamic;
+	GOMP_parallel_loop_nonmonotonic_guided;
 } GOMP_4.0.1;
 
 OACC_2.0 {

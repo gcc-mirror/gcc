@@ -76,19 +76,19 @@ B::m2 ()
   #pragma omp parallel for reduction (+:g)	// { dg-error "has const type for .reduction." }
     for (int i = 0; i < 10; i++)
       ;
-  #pragma omp parallel shared (a)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (a)
     ;
-  #pragma omp parallel shared (b)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (b)
     ;
-  #pragma omp parallel shared (c)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (c)
     ;
-  #pragma omp parallel shared (e)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (e)
     ;
-  #pragma omp parallel shared (f)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (f)
     ;
-  #pragma omp parallel shared (g)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (g)
     ;
-  #pragma omp parallel shared (h)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (h)	// { dg-error "is predetermined .shared. for .shared." }
     ;
   return 0;
 }
@@ -150,19 +150,19 @@ B::m4 () const
   #pragma omp parallel for reduction (+:g)	// { dg-error "has const type for .reduction." }
     for (int i = 0; i < 10; i++)
       ;
-  #pragma omp parallel shared (a)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (a)	// { dg-error "is predetermined .shared. for .shared." }
     ;
-  #pragma omp parallel shared (b)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (b)
     ;
-  #pragma omp parallel shared (c)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (c)
     ;
-  #pragma omp parallel shared (e)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (e)
     ;
-  #pragma omp parallel shared (f)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (f)
     ;
-  #pragma omp parallel shared (g)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (g)
     ;
-  #pragma omp parallel shared (h)	// { dg-error "is not a variable in clause" }
+  #pragma omp parallel shared (h)	// { dg-error "is predetermined .shared. for .shared." }
     ;
   return 0;
 }

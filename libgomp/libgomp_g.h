@@ -52,6 +52,10 @@ extern bool GOMP_loop_static_start (long, long, long, long, long *, long *);
 extern bool GOMP_loop_dynamic_start (long, long, long, long, long *, long *);
 extern bool GOMP_loop_guided_start (long, long, long, long, long *, long *);
 extern bool GOMP_loop_runtime_start (long, long, long, long *, long *);
+extern bool GOMP_loop_nonmonotonic_dynamic_start (long, long, long, long,
+						  long *, long *);
+extern bool GOMP_loop_nonmonotonic_guided_start (long, long, long, long,
+						 long *, long *);
 
 extern bool GOMP_loop_ordered_static_start (long, long, long, long,
 					    long *, long *);
@@ -65,6 +69,8 @@ extern bool GOMP_loop_static_next (long *, long *);
 extern bool GOMP_loop_dynamic_next (long *, long *);
 extern bool GOMP_loop_guided_next (long *, long *);
 extern bool GOMP_loop_runtime_next (long *, long *);
+extern bool GOMP_loop_nonmonotonic_dynamic_next (long *, long *);
+extern bool GOMP_loop_nonmonotonic_guided_next (long *, long *);
 
 extern bool GOMP_loop_ordered_static_next (long *, long *);
 extern bool GOMP_loop_ordered_dynamic_next (long *, long *);
@@ -100,6 +106,12 @@ extern void GOMP_parallel_loop_guided (void (*)(void *), void *,
 extern void GOMP_parallel_loop_runtime (void (*)(void *), void *,
 					unsigned, long, long, long,
 					unsigned);
+extern void GOMP_parallel_loop_nonmonotonic_dynamic (void (*)(void *), void *,
+						     unsigned, long, long,
+						     long, long, unsigned);
+extern void GOMP_parallel_loop_nonmonotonic_guided (void (*)(void *), void *,
+						    unsigned, long, long,
+						    long, long, unsigned);
 
 extern void GOMP_loop_end (void);
 extern void GOMP_loop_end_nowait (void);
@@ -130,6 +142,18 @@ extern bool GOMP_loop_ull_runtime_start (bool, unsigned long long,
 					 unsigned long long,
 					 unsigned long long *,
 					 unsigned long long *);
+extern bool GOMP_loop_ull_nonmonotonic_dynamic_start (bool, unsigned long long,
+						      unsigned long long,
+						      unsigned long long,
+						      unsigned long long,
+						      unsigned long long *,
+						      unsigned long long *);
+extern bool GOMP_loop_ull_nonmonotonic_guided_start (bool, unsigned long long,
+						     unsigned long long,
+						     unsigned long long,
+						     unsigned long long,
+						     unsigned long long *,
+						     unsigned long long *);
 
 extern bool GOMP_loop_ull_ordered_static_start (bool, unsigned long long,
 						unsigned long long,
@@ -163,6 +187,10 @@ extern bool GOMP_loop_ull_guided_next (unsigned long long *,
 				       unsigned long long *);
 extern bool GOMP_loop_ull_runtime_next (unsigned long long *,
 					unsigned long long *);
+extern bool GOMP_loop_ull_nonmonotonic_dynamic_next (unsigned long long *,
+						     unsigned long long *);
+extern bool GOMP_loop_ull_nonmonotonic_guided_next (unsigned long long *,
+						    unsigned long long *);
 
 extern bool GOMP_loop_ull_ordered_static_next (unsigned long long *,
 					       unsigned long long *);
@@ -249,17 +277,18 @@ extern void GOMP_single_copy_end (void *);
 
 extern void GOMP_target (int, void (*) (void *), const void *,
 			 size_t, void **, size_t *, unsigned char *);
-extern void GOMP_target_41 (int, void (*) (void *), size_t, void **, size_t *,
-			  unsigned short *, unsigned int, void **);
+extern void GOMP_target_ext (int, void (*) (void *), size_t, void **, size_t *,
+			     unsigned short *, unsigned int, void **,
+			     int, int);
 extern void GOMP_target_data (int, const void *,
 			      size_t, void **, size_t *, unsigned char *);
-extern void GOMP_target_data_41 (int, size_t, void **, size_t *,
-			       unsigned short *);
+extern void GOMP_target_data_ext (int, size_t, void **, size_t *,
+				  unsigned short *);
 extern void GOMP_target_end_data (void);
 extern void GOMP_target_update (int, const void *,
 				size_t, void **, size_t *, unsigned char *);
-extern void GOMP_target_update_41 (int, size_t, void **, size_t *,
-				   unsigned short *, unsigned int, void **);
+extern void GOMP_target_update_ext (int, size_t, void **, size_t *,
+				    unsigned short *, unsigned int, void **);
 extern void GOMP_target_enter_exit_data (int, size_t, void **, size_t *,
 					 unsigned short *, unsigned int,
 					 void **);

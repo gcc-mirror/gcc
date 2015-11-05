@@ -2826,6 +2826,9 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 	      case SIMD_CLONE_ARG_TYPE_LINEAR_VARIABLE_STEP:
 	      case SIMD_CLONE_ARG_TYPE_LINEAR_VAL_CONSTANT_STEP:
 	      case SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_CONSTANT_STEP:
+	      case SIMD_CLONE_ARG_TYPE_LINEAR_REF_VARIABLE_STEP:
+	      case SIMD_CLONE_ARG_TYPE_LINEAR_VAL_VARIABLE_STEP:
+	      case SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_VARIABLE_STEP:
 		/* FORNOW */
 		i = -1;
 		break;
@@ -3098,6 +3101,9 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 		}
 	      break;
 	    case SIMD_CLONE_ARG_TYPE_LINEAR_VARIABLE_STEP:
+	    case SIMD_CLONE_ARG_TYPE_LINEAR_REF_VARIABLE_STEP:
+	    case SIMD_CLONE_ARG_TYPE_LINEAR_VAL_VARIABLE_STEP:
+	    case SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_VARIABLE_STEP:
 	    default:
 	      gcc_unreachable ();
 	    }

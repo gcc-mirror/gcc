@@ -111,6 +111,11 @@ gomp_loop_static_start (long start, long end, long incr, long chunk_size,
   return !gomp_iter_static_next (istart, iend);
 }
 
+/* The current dynamic implementation is always monotonic.  The
+   entrypoints without nonmonotonic in them have to be always monotonic,
+   but the nonmonotonic ones could be changed to use work-stealing for
+   improved scalability.  */
+
 static bool
 gomp_loop_dynamic_start (long start, long end, long incr, long chunk_size,
 			 long *istart, long *iend)
@@ -135,6 +140,9 @@ gomp_loop_dynamic_start (long start, long end, long incr, long chunk_size,
 
   return ret;
 }
+
+/* Similarly as for dynamic, though the question is how can the chunk sizes
+   be decreased without a central locking or atomics.  */
 
 static bool
 gomp_loop_guided_start (long start, long end, long incr, long chunk_size,
@@ -630,6 +638,37 @@ GOMP_parallel_loop_guided (void (*fn) (void *), void *data,
   GOMP_parallel_end ();
 }
 
+#ifdef HAVE_ATTRIBUTE_ALIAS
+extern __typeof(GOMP_parallel_loop_dynamic) GOMP_parallel_loop_nonmonotonic_dynamic
+	__attribute__((alias ("GOMP_parallel_loop_dynamic")));
+extern __typeof(GOMP_parallel_loop_guided) GOMP_parallel_loop_nonmonotonic_guided
+	__attribute__((alias ("GOMP_parallel_loop_guided")));
+#else
+void
+GOMP_parallel_loop_nonmonotonic_dynamic (void (*fn) (void *), void *data,
+					 unsigned num_threads, long start,
+					 long end, long incr, long chunk_size,
+					 unsigned flags)
+{
+  gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
+			    GFS_DYNAMIC, chunk_size, flags);
+  fn (data);
+  GOMP_parallel_end ();
+}
+
+void
+GOMP_parallel_loop_nonmonotonic_guided (void (*fn) (void *), void *data,
+					unsigned num_threads, long start,
+					long end, long incr, long chunk_size,
+					unsigned flags)
+{
+  gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
+			    GFS_GUIDED, chunk_size, flags);
+  fn (data);
+  GOMP_parallel_end ();
+}
+#endif
+
 void
 GOMP_parallel_loop_runtime (void (*fn) (void *), void *data,
 			    unsigned num_threads, long start, long end,
@@ -678,6 +717,10 @@ extern __typeof(gomp_loop_dynamic_start) GOMP_loop_dynamic_start
 	__attribute__((alias ("gomp_loop_dynamic_start")));
 extern __typeof(gomp_loop_guided_start) GOMP_loop_guided_start
 	__attribute__((alias ("gomp_loop_guided_start")));
+extern __typeof(gomp_loop_dynamic_start) GOMP_loop_nonmonotonic_dynamic_start
+	__attribute__((alias ("gomp_loop_dynamic_start")));
+extern __typeof(gomp_loop_guided_start) GOMP_loop_nonmonotonic_guided_start
+	__attribute__((alias ("gomp_loop_guided_start")));
 
 extern __typeof(gomp_loop_ordered_static_start) GOMP_loop_ordered_static_start
 	__attribute__((alias ("gomp_loop_ordered_static_start")));
@@ -698,6 +741,10 @@ extern __typeof(gomp_loop_static_next) GOMP_loop_static_next
 extern __typeof(gomp_loop_dynamic_next) GOMP_loop_dynamic_next
 	__attribute__((alias ("gomp_loop_dynamic_next")));
 extern __typeof(gomp_loop_guided_next) GOMP_loop_guided_next
+	__attribute__((alias ("gomp_loop_guided_next")));
+extern __typeof(gomp_loop_dynamic_next) GOMP_loop_nonmonotonic_dynamic_next
+	__attribute__((alias ("gomp_loop_dynamic_next")));
+extern __typeof(gomp_loop_guided_next) GOMP_loop_nonmonotonic_guided_next
 	__attribute__((alias ("gomp_loop_guided_next")));
 
 extern __typeof(gomp_loop_ordered_static_next) GOMP_loop_ordered_static_next
@@ -724,6 +771,21 @@ GOMP_loop_dynamic_start (long start, long end, long incr, long chunk_size,
 bool
 GOMP_loop_guided_start (long start, long end, long incr, long chunk_size,
 			long *istart, long *iend)
+{
+  return gomp_loop_guided_start (start, end, incr, chunk_size, istart, iend);
+}
+
+bool
+GOMP_loop_nonmonotonic_dynamic_start (long start, long end, long incr,
+				      long chunk_size, long *istart,
+				      long *iend)
+{
+  return gomp_loop_dynamic_start (start, end, incr, chunk_size, istart, iend);
+}
+
+bool
+GOMP_loop_nonmonotonic_guided_start (long start, long end, long incr,
+				     long chunk_size, long *istart, long *iend)
 {
   return gomp_loop_guided_start (start, end, incr, chunk_size, istart, iend);
 }
@@ -790,6 +852,18 @@ GOMP_loop_dynamic_next (long *istart, long *iend)
 
 bool
 GOMP_loop_guided_next (long *istart, long *iend)
+{
+  return gomp_loop_guided_next (istart, iend);
+}
+
+bool
+GOMP_loop_nonmonotonic_dynamic_next (long *istart, long *iend)
+{
+  return gomp_loop_dynamic_next (istart, iend);
+}
+
+bool
+GOMP_loop_nonmonotonic_guided_next (long *istart, long *iend)
 {
   return gomp_loop_guided_next (istart, iend);
 }

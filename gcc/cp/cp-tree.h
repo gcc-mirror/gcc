@@ -6324,7 +6324,7 @@ extern tree begin_omp_task			(void);
 extern tree finish_omp_task			(tree, tree);
 extern tree finish_omp_for			(location_t, enum tree_code,
 						 tree, tree, tree, tree, tree,
-						 tree, tree, tree);
+						 tree, tree, vec<tree> *, tree);
 extern void finish_omp_atomic			(enum tree_code, enum tree_code,
 						 tree, tree, tree, tree, tree,
 						 bool);
@@ -6334,7 +6334,7 @@ extern void finish_omp_taskwait			(void);
 extern void finish_omp_taskyield		(void);
 extern void finish_omp_cancel			(tree);
 extern void finish_omp_cancellation_point	(tree);
-extern tree omp_privatize_field			(tree);
+extern tree omp_privatize_field			(tree, bool);
 extern tree begin_transaction_stmt		(location_t, tree *, int);
 extern void finish_transaction_stmt		(tree, tree, int, tree);
 extern tree build_transaction_expr		(location_t, tree, int, tree);

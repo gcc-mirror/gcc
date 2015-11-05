@@ -1,3 +1,76 @@
+2015-11-05  Jakub Jelinek  <jakub@redhat.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* cp-tree.h (finish_omp_for): Add ORIG_INITS argument.
+	(omp_privatize_field): Add SHARED argument.
+	* parser.c: Include context.h.
+	(cp_parser_omp_clause_schedule): Parse schedule
+	modifiers, diagnose monotonic together with nonmonotonic.
+	(cp_parser_omp_clause_linear): Add DECLARE_SIMD argument.  Parse
+	parameter name as linear step as id-expression rather than expression.
+	(cp_parser_omp_all_clauses): Adjust caller.
+	(cp_parser_omp_for_loop_init): Add ORIG_INIT argument,
+	initialize it.  Adjust omp_privatize_field caller.
+	(cp_parser_omp_for_loop): Compute orig_inits, pass it's address
+	to finish_omp_for.
+	(OMP_DISTRIBUTE_CLAUSE_MASK): Add lastprivate clause.
+	(cp_parser_omp_target_data,
+	cp_parser_omp_target_enter_data,
+	cp_parser_omp_target_exit_data): Allow GOMP_MAP_ALWAYS_POINTER
+	and GOMP_MAP_FIRSTPRIVATE_REFERENCE.
+	(cp_parser_omp_target): Likewise.  Evaluate num_teams and
+	thread_limit expressions on combined target teams before the target.
+	(cp_parser_omp_declare_target): If decl has "omp declare target" or
+	"omp declare target link" attribute, and cgraph or varpool node already
+	exists, then set corresponding flags.  Call finish_omp_clauses
+	in the parenthesized extended-list syntax case.  Call
+	cp_parser_require_pragma_eol instead of cp_parser_skip_to_pragma_eol.
+	(cp_parser_omp_end_declare_target): Call cp_parser_require_pragma_eol
+	instead of cp_parser_skip_to_pragma_eol.
+	* decl2.c (cplus_decl_attributes): Don't diagnose block scope vars inside
+	declare target.
+	* pt.c (tsubst_omp_clauses): If OMP_CLAUSE_LINEAR_VARIABLE_STRIDE,
+	use tsubst_omp_clause_decl instead of tsubst_expr on
+	OMP_CLAUSE_LINEAR_STEP.  Handle non-static data members in shared
+	clauses.
+	(tsubst_omp_for_iterator): Adjust omp_privatize_field caller.
+	(tsubst_find_omp_teams): New function.
+	(tsubst_expr): Evaluate num_teams and thread_limit expressions on
+	combined target teams before the target.  Use OMP_FOR_ORIG_DECLS for
+	all OpenMP/OpenACC/Cilk+ looping constructs.  Adjust finish_omp_for
+	caller.
+	* semantics.c (omp_privatize_field): Add SHARED argument, if true,
+	always create artificial var and never put it into the hash table
+	or vector.
+	(handle_omp_array_sections_1): Adjust omp_privatize_field caller.
+	Allow non-zero low-bound on OMP_CLAUSE_REDUCTION array sections.
+	(handle_omp_array_sections): For structure element
+	based array sections use GOMP_MAP_ALWAYS_POINTER instead of
+	GOMP_MAP_FIRSTPRIVATE_POINTER.  Encode low-bound into the MEM_REF,
+	either into the constant offset, or for variable low-bound using
+	POINTER_PLUS_EXPR.
+	(finish_omp_clauses): Adjust omp_privatize_field caller.  Drop
+	generic_field_head, structure elements are now always mapped even
+	as array section bases, diagnose same var in data sharing and
+	mapping clauses.  For references map what they refer to using
+	GOMP_MAP_ALWAYS_POINTER for structure elements and
+	GOMP_MAP_FIRSTPRIVATE_REFERENCE otherwise.  Diagnose if linear step
+	on declare simd is neither a constant nor a uniform parameter.
+	Allow non-static data members on shared clauses.  Look through
+	POINTER_PLUS_EXPR for array section reductions.  Diagnose nonmonotonic
+	modifier on kinds other than dynamic or guided or nonmonotonic
+	modifier together with ordered clause.  Diagnose the same var or
+	function appearing multiple times on the same directive.  Fix up
+	wording for the to clause if t is neither a FUNCTION_DECL nor a
+	VAR_DECL, use special wording for OVERLOADs and TEMPLATE_ID_EXPR.
+	(handle_omp_for_class_iterator): Add ORIG_DECLS argument.  Call
+	c_omp_check_loop_iv_exprs on cond.
+	(finish_omp_for): Add ORIG_INITS argument.  Call
+	c_omp_check_loop_iv_exprs on ORIG_INITS elements.  Adjust
+	handle_omp_for_class_iterator caller.  Call c_omp_check_loop_iv.
+	Call add_stmt.
+	(finish_omp_atomic): Adjust c_finish_omp_atomic caller.
+
 2015-11-04  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* (cp_parser_oacc_single_int_clause): New function.

@@ -175,12 +175,14 @@ c_finish_omp_taskyield (location_t loc)
    LOC is the location of the atomic statement.  The value returned
    is either error_mark_node (if the construct was erroneous) or an
    OMP_ATOMIC* node which should be added to the current statement
-   tree with add_stmt.  */
+   tree with add_stmt.  If TEST is set, avoid calling save_expr
+   or create_tmp_var*.  */
 
 tree
 c_finish_omp_atomic (location_t loc, enum tree_code code,
 		     enum tree_code opcode, tree lhs, tree rhs,
-		     tree v, tree lhs1, tree rhs1, bool swapped, bool seq_cst)
+		     tree v, tree lhs1, tree rhs1, bool swapped, bool seq_cst,
+		     bool test)
 {
   tree x, type, addr, pre = NULL_TREE;
 
@@ -212,8 +214,10 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
   addr = build_unary_op (loc, ADDR_EXPR, lhs, 0);
   if (addr == error_mark_node)
     return error_mark_node;
-  addr = save_expr (addr);
-  if (TREE_CODE (addr) != SAVE_EXPR
+  if (!test)
+    addr = save_expr (addr);
+  if (!test
+      && TREE_CODE (addr) != SAVE_EXPR
       && (TREE_CODE (addr) != ADDR_EXPR
 	  || !VAR_P (TREE_OPERAND (addr, 0))))
     {
@@ -269,12 +273,15 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
   if (rhs1
       && VAR_P (rhs1)
       && VAR_P (lhs)
-      && rhs1 != lhs)
+      && rhs1 != lhs
+      && !test)
     {
       if (code == OMP_ATOMIC)
-	error_at (loc, "%<#pragma omp atomic update%> uses two different variables for memory");
+	error_at (loc, "%<#pragma omp atomic update%> uses two different "
+		       "variables for memory");
       else
-	error_at (loc, "%<#pragma omp atomic capture%> uses two different variables for memory");
+	error_at (loc, "%<#pragma omp atomic capture%> uses two different "
+		       "variables for memory");
       return error_mark_node;
     }
 
@@ -284,9 +291,10 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 	 location, just diagnose different variables.  */
       if (lhs1 && VAR_P (lhs1) && VAR_P (lhs))
 	{
-	  if (lhs1 != lhs)
+	  if (lhs1 != lhs && !test)
 	    {
-	      error_at (loc, "%<#pragma omp atomic capture%> uses two different variables for memory");
+	      error_at (loc, "%<#pragma omp atomic capture%> uses two "
+			     "different variables for memory");
 	      return error_mark_node;
 	    }
 	}
@@ -308,7 +316,8 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 	    x = omit_one_operand_loc (loc, type, x, lhs1addr);
 	  else
 	    {
-	      x = save_expr (x);
+	      if (!test)
+		x = save_expr (x);
 	      x = omit_two_operands_loc (loc, type, x, x, lhs1addr);
 	    }
 	}
@@ -683,19 +692,177 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
       OMP_FOR_INCR (t) = incrv;
       OMP_FOR_BODY (t) = body;
       OMP_FOR_PRE_BODY (t) = pre_body;
-      if (code == OMP_FOR)
-	OMP_FOR_ORIG_DECLS (t) = orig_declv;
+      OMP_FOR_ORIG_DECLS (t) = orig_declv;
 
       SET_EXPR_LOCATION (t, locus);
-      return add_stmt (t);
+      return t;
     }
+}
+
+/* Type for passing data in between c_omp_check_loop_iv and
+   c_omp_check_loop_iv_r.  */
+
+struct c_omp_check_loop_iv_data
+{
+  tree declv;
+  bool fail;
+  location_t stmt_loc;
+  location_t expr_loc;
+  int kind;
+  walk_tree_lh lh;
+  hash_set<tree> *ppset;
+};
+
+/* Helper function called via walk_tree, to diagnose uses
+   of associated loop IVs inside of lb, b and incr expressions
+   of OpenMP loops.  */
+   
+static tree
+c_omp_check_loop_iv_r (tree *tp, int *walk_subtrees, void *data)
+{
+  struct c_omp_check_loop_iv_data *d
+    = (struct c_omp_check_loop_iv_data *) data;
+  if (DECL_P (*tp))
+    {
+      int i;
+      for (i = 0; i < TREE_VEC_LENGTH (d->declv); i++)
+	if (*tp == TREE_VEC_ELT (d->declv, i))
+	  {
+	    location_t loc = d->expr_loc;
+	    if (loc == UNKNOWN_LOCATION)
+	      loc = d->stmt_loc;
+	    switch (d->kind)
+	      {
+	      case 0:
+		error_at (loc, "initializer expression refers to "
+			       "iteration variable %qD", *tp);
+		break;
+	      case 1:
+		error_at (loc, "condition expression refers to "
+			       "iteration variable %qD", *tp);
+		break;
+	      case 2:
+		error_at (loc, "increment expression refers to "
+			       "iteration variable %qD", *tp);
+		break;
+	      }
+	    d->fail = true;
+	  }
+    }
+  /* Don't walk dtors added by C++ wrap_cleanups_r.  */
+  else if (TREE_CODE (*tp) == TRY_CATCH_EXPR
+	   && TRY_CATCH_IS_CLEANUP (*tp))
+    {
+      *walk_subtrees = 0;
+      return walk_tree_1 (&TREE_OPERAND (*tp, 0), c_omp_check_loop_iv_r, data,
+			  d->ppset, d->lh);
+    }
+
+  return NULL_TREE;
+}
+
+/* Diagnose invalid references to loop iterators in lb, b and incr
+   expressions.  */
+
+bool
+c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
+{
+  hash_set<tree> pset;
+  struct c_omp_check_loop_iv_data data;
+  int i;
+
+  data.declv = declv;
+  data.fail = false;
+  data.stmt_loc = EXPR_LOCATION (stmt);
+  data.lh = lh;
+  data.ppset = &pset;
+  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (stmt)); i++)
+    {
+      tree init = TREE_VEC_ELT (OMP_FOR_INIT (stmt), i);
+      gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
+      tree decl = TREE_OPERAND (init, 0);
+      tree cond = TREE_VEC_ELT (OMP_FOR_COND (stmt), i);
+      gcc_assert (COMPARISON_CLASS_P (cond));
+      gcc_assert (TREE_OPERAND (cond, 0) == decl);
+      tree incr = TREE_VEC_ELT (OMP_FOR_INCR (stmt), i);
+      data.expr_loc = EXPR_LOCATION (TREE_OPERAND (init, 1));
+      data.kind = 0;
+      walk_tree_1 (&TREE_OPERAND (init, 1),
+		   c_omp_check_loop_iv_r, &data, &pset, lh);
+      /* Don't warn for C++ random access iterators here, the
+	 expression then involves the subtraction and always refers
+	 to the original value.  The C++ FE needs to warn on those
+	 earlier.  */
+      if (decl == TREE_VEC_ELT (declv, i))
+	{
+	  data.expr_loc = EXPR_LOCATION (cond);
+	  data.kind = 1;
+	  walk_tree_1 (&TREE_OPERAND (cond, 1),
+		       c_omp_check_loop_iv_r, &data, &pset, lh);
+	}
+      if (TREE_CODE (incr) == MODIFY_EXPR)
+	{
+	  gcc_assert (TREE_OPERAND (incr, 0) == decl);
+	  incr = TREE_OPERAND (incr, 1);
+	  data.kind = 2;
+	  if (TREE_CODE (incr) == PLUS_EXPR
+	      && TREE_OPERAND (incr, 1) == decl)
+	    {
+	      data.expr_loc = EXPR_LOCATION (TREE_OPERAND (incr, 0));
+	      walk_tree_1 (&TREE_OPERAND (incr, 0),
+			   c_omp_check_loop_iv_r, &data, &pset, lh);
+	    }
+	  else
+	    {
+	      data.expr_loc = EXPR_LOCATION (TREE_OPERAND (incr, 1));
+	      walk_tree_1 (&TREE_OPERAND (incr, 1),
+			   c_omp_check_loop_iv_r, &data, &pset, lh);
+	    }
+	}
+    }
+  return !data.fail;
+}
+
+/* Similar, but allows to check the init or cond expressions individually.  */
+
+bool
+c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, tree decl,
+			   tree init, tree cond, walk_tree_lh lh)
+{
+  hash_set<tree> pset;
+  struct c_omp_check_loop_iv_data data;
+
+  data.declv = declv;
+  data.fail = false;
+  data.stmt_loc = stmt_loc;
+  data.lh = lh;
+  data.ppset = &pset;
+  if (init)
+    {
+      data.expr_loc = EXPR_LOCATION (init);
+      data.kind = 0;
+      walk_tree_1 (&init,
+		   c_omp_check_loop_iv_r, &data, &pset, lh);
+    }
+  if (cond)
+    {
+      gcc_assert (COMPARISON_CLASS_P (cond));
+      data.expr_loc = EXPR_LOCATION (init);
+      data.kind = 1;
+      if (TREE_OPERAND (cond, 0) == decl)
+	walk_tree_1 (&TREE_OPERAND (cond, 1),
+		     c_omp_check_loop_iv_r, &data, &pset, lh);
+      else
+	walk_tree_1 (&TREE_OPERAND (cond, 0),
+		     c_omp_check_loop_iv_r, &data, &pset, lh);
+    }
+  return !data.fail;
 }
 
 /* This function splits clauses for OpenACC combined loop
    constructs.  OpenACC combined loop constructs are:
    #pragma acc kernels loop
-   #pragma acc parallel loop
-*/
+   #pragma acc parallel loop  */
 
 tree
 c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses)
@@ -972,10 +1139,24 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	      s = C_OMP_CLAUSE_SPLIT_FOR;
 	    }
 	  break;
-	/* Lastprivate is allowed on for, sections and simd.  In
+	/* Lastprivate is allowed on distribute, for, sections and simd.  In
 	   parallel {for{, simd},sections} we actually want to put it on
 	   parallel rather than for or sections.  */
 	case OMP_CLAUSE_LASTPRIVATE:
+	  if (code == OMP_DISTRIBUTE)
+	    {
+	      s = C_OMP_CLAUSE_SPLIT_DISTRIBUTE;
+	      break;
+	    }
+	  if ((mask & (OMP_CLAUSE_MASK_1
+		       << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)) != 0)
+	    {
+	      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+				    OMP_CLAUSE_LASTPRIVATE);
+	      OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
+	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE];
+	      cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE] = c;
+	    }
 	  if (code == OMP_FOR || code == OMP_SECTIONS)
 	    {
 	      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_THREADS))
@@ -1212,6 +1393,23 @@ c_omp_declare_simd_clauses_to_numbers (tree parms, tree clauses)
 	      continue;
 	    }
 	  OMP_CLAUSE_DECL (c) = build_int_cst (integer_type_node, idx);
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR
+	      && OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (c))
+	    {
+	      decl = OMP_CLAUSE_LINEAR_STEP (c);
+	      for (arg = parms, idx = 0; arg;
+		   arg = TREE_CHAIN (arg), idx++)
+		if (arg == decl)
+		  break;
+	      if (arg == NULL_TREE)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qD is not an function argument", decl);
+		  continue;
+		}
+	      OMP_CLAUSE_LINEAR_STEP (c)
+		= build_int_cst (integer_type_node, idx);
+	    }
 	}
       clvec.safe_push (c);
     }
@@ -1249,6 +1447,17 @@ c_omp_declare_simd_clauses_to_decls (tree fndecl, tree clauses)
 	    break;
 	gcc_assert (arg);
 	OMP_CLAUSE_DECL (c) = arg;
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR
+	    && OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (c))
+	  {
+	    idx = tree_to_shwi (OMP_CLAUSE_LINEAR_STEP (c));
+	    for (arg = DECL_ARGUMENTS (fndecl), i = 0; arg;
+		 arg = TREE_CHAIN (arg), i++)
+	      if (i == idx)
+		break;
+	    gcc_assert (arg);
+	    OMP_CLAUSE_LINEAR_STEP (c) = arg;
+	  }
       }
 }
 

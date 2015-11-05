@@ -1,3 +1,128 @@
+2015-11-05  Jakub Jelinek  <jakub@redhat.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* builtin-types.def
+	(BT_FN_VOID_INT_OMPFN_SIZE_PTR_PTR_PTR_UINT_PTR): Remove.
+	(BT_FN_VOID_INT_OMPFN_SIZE_PTR_PTR_PTR_UINT_PTR_INT_INT): New.
+	* cgraph.h (enum cgraph_simd_clone_arg_type): Add
+	SIMD_CLONE_ARG_TYPE_LINEAR_REF_VARIABLE_STEP,
+	SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_VARIABLE_STEP and
+	SIMD_CLONE_ARG_TYPE_LINEAR_VAL_VARIABLE_STEP.
+	(struct cgraph_simd_clone_arg): Adjust comment.
+	* omp-builtins.def (BUILT_IN_GOMP_TARGET): Rename GOMP_target_41
+	to GOMP_target_ext.  Add num_teams and thread_limit arguments.
+	(BUILT_IN_GOMP_TARGET_DATA): Rename GOMP_target_data_41
+	to GOMP_target_data_ext.
+	(BUILT_IN_GOMP_TARGET_UPDATE): Rename GOMP_target_update_41
+	to GOMP_target_update_ext.
+	(BUILT_IN_GOMP_LOOP_NONMONOTONIC_DYNAMIC_START,
+	BUILT_IN_GOMP_LOOP_NONMONOTONIC_GUIDED_START,
+	BUILT_IN_GOMP_LOOP_NONMONOTONIC_DYNAMIC_NEXT,
+	BUILT_IN_GOMP_LOOP_NONMONOTONIC_GUIDED_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_NONMONOTONIC_DYNAMIC_START,
+	BUILT_IN_GOMP_LOOP_ULL_NONMONOTONIC_GUIDED_START,
+	BUILT_IN_GOMP_LOOP_ULL_NONMONOTONIC_DYNAMIC_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_NONMONOTONIC_GUIDED_NEXT,
+	BUILT_IN_GOMP_PARALLEL_LOOP_NONMONOTONIC_DYNAMIC,
+	BUILT_IN_GOMP_PARALLEL_LOOP_NONMONOTONIC_GUIDED): New built-ins.
+	* tree-core.h (enum omp_clause_schedule_kind): Add
+	OMP_CLAUSE_SCHEDULE_MASK, OMP_CLAUSE_SCHEDULE_MONOTONIC,
+	OMP_CLAUSE_SCHEDULE_NONMONOTONIC and change
+	OMP_CLAUSE_SCHEDULE_LAST value.
+	* tree.def (OMP_SIMD, CILK_SIMD, CILK_FOR, OMP_DISTRIBUTE,
+	OMP_TASKLOOP, OACC_LOOP): Add OMP_FOR_ORIG_DECLS argument.
+	* tree.h (OMP_FOR_ORIG_DECLS): Use OMP_LOOP_CHECK instead of
+	OMP_FOR_CHECK.  Remove comment.
+	* tree-pretty-print.c (dump_omp_clause): Handle
+	GOMP_MAP_FIRSTPRIVATE_REFERENCE and GOMP_MAP_ALWAYS_POINTER.
+	Simplify.  Print schedule clause modifiers.
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Add
+	SIMD_CLONE_ARG_TYPE_LINEAR_{REF,VAL,UVAL}_VARIABLE_STEP
+	cases.
+	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_MAP_ALWAYS_TO.
+	(omp_default_clause): Tweak for
+	private/firstprivate/is_device_ptr variables on target
+	construct and use_device_ptr on target data.
+	(omp_check_private): Likewise.
+	(omp_notice_variable): For references check whether what it refers
+	to has mappable type, rather than the reference itself.
+	(omp_is_private): Diagnose linear iteration variables on non-simd
+	constructs.
+	(omp_no_lastprivate): Return true only for Fortran.
+	(gimplify_scan_omp_clauses): Or in GOVD_MAP_ALWAYS_TO for
+	GOMP_MAP_ALWAYS_TO or GOMP_MAP_ALWAYS_TOFROM kinds.
+	Add support for GOMP_MAP_FIRSTPRIVATE_REFERENCE and
+	GOMP_MAP_ALWAYS_POINTER, remove old handling of structure element
+	based array sections.  Use GOMP_MAP_ALWAYS_P.  Fix up handling of
+	lastprivate and linear when combined with distribute.  Gimplify
+	variable low-bound for array reduction.  Look through
+	POINTER_PLUS_EXPR when looking for ADDR_EXPR for array section
+	reductions.
+	(gimplify_adjust_omp_clauses_1): For implicit references to
+	variables with reference type and when not ref to scalar or
+	ref to pointer, map what they refer to using tofrom and
+	use GOMP_MAP_FIRSTPRIVATE_REFERENCE for the reference.
+	(gimplify_adjust_omp_clauses): Remove GOMP_MAP_ALWAYS_POINTER
+	from target exit data.  Handle GOMP_MAP_FIRSTPRIVATE_REFERENCE.
+	Drop OMP_CLAUSE_MAP_PRIVATE support.  Use GOMP_MAP_ALWAYS_P.
+	Diagnose the same var on both firstprivate and lastprivate on
+	distribute construct.
+	(gimplify_omp_for): Fix up handling of predetermined
+	lastprivate or linear iter vars when combined with distribute.
+	(find_omp_teams, computable_teams_clause, optimize_target_teams): New
+	functions.
+	(gimplify_omp_workshare): Call optimize_target_teams.
+	* omp-low.c (struct omp_region): Add sched_modifiers field.
+	(struct omp_for_data): Likewise.
+	(omp_any_child_fn_dumped): New variable.
+	(extract_omp_for_data): Fill in sched_modifiers, and mask out
+	OMP_CLAUSE_SCHEDULE_KIND bits outside of OMP_CLAUSE_SCHEDULE_MASK
+	from sched_kind.
+	(determine_parallel_type): Use only OMP_CLAUSE_SCHEDULE_MASK
+	bits of OMP_CLAUSE_SCHED_KIND.
+	(scan_sharing_clauses): Handle GOMP_MAP_FIRSTPRIVATE_REFERENCE,
+	drop OMP_CLAUSE_MAP_PRIVATE support.  Look through POINTER_PLUS_EXPR
+	for array section reductions.
+	(add_taskreg_looptemp_clauses): Add one extra _looptemp_ clause even
+	for distribute parallel for, if there are lastprivate clauses on the
+	for.
+	(lower_rec_input_clauses): Handle non-zero low-bound on array
+	section reductions.
+	(lower_reduction_clauses): Likewise.
+	(lower_send_clauses): Look through POINTER_PLUS_EXPR
+	for array section reductions.
+	(expand_parallel_call): Use nonmonotonic entrypoints for
+	nonmonotonic: dynamic/guided.
+	(expand_omp_taskreg): Call assign_assembler_name_if_neeeded on
+	child_fn if current_function_decl has assembler name set, but child_fn
+	does not.  Dump the header and IL of the child function when not in SSA
+	form.
+	(expand_omp_target): Likewise.  Pass num_teams and thread_limit
+	arguments to BUILT_IN_GOMP_TARGET.
+	(expand_omp_for_static_nochunk, expand_omp_for_static_chunk):
+	Initialize the extra _looptemp_ clause to fd->loop.n2.
+	(expand_omp_for): Use nonmonotonic entrypoints for
+	nonmonotonic: dynamic/guided.  Initialize region->sched_modifiers.
+	(expand_omp): Clear omp_any_child_fn_dumped.  Dump function header
+	again if we have dumped any child functions.
+	(lower_omp_for_lastprivate): Determine the right count variable
+	for distribute simd, or distribute parallel for{, simd}.
+	(lower_omp_target): Handle GOMP_MAP_FIRSTPRIVATE_REFERENCE
+	and GOMP_MAP_ALWAYS_POINTER.  Drop OMP_CLAUSE_MAP_PRIVATE
+	support.
+	(simd_clone_clauses_extract): Handle variable step
+	for references and arguments passed by reference.
+	(simd_clone_mangle): Mangle ref/uval/val variable steps.
+	(simd_clone_adjust_argument_types): Handle
+	SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_VARIABLE_STEP like
+	SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_CONSTANT_STEP and
+	SIMD_CLONE_ARG_TYPE_LINEAR_VAL_VARIABLE_STEP like
+	SIMD_CLONE_ARG_TYPE_LINEAR_VAL_CONSTANT_STEP.
+	(simd_clone_linear_addend): New function.
+	(simd_clone_adjust): Handle variable step like similarly
+	to constant step, use simd_clone_linear_addend to determine
+	the actual step at runtime.
+
 2015-11-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* target.def (goacc.dim_limit): New hook.

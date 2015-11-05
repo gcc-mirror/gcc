@@ -1,3 +1,21 @@
+2015-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_atomic): Add TEST argument.
+	(c_omp_check_loop_iv, c_omp_check_loop_iv_exprs): New prototypes.
+	* c-omp.c (c_finish_omp_atomic): Add TEST argument.  Don't call
+	save_expr or create_tmp_var* if TEST is true.
+	(c_finish_omp_for): Store OMP_FOR_ORIG_DECLS always.
+	Don't call add_stmt here.
+	(struct c_omp_check_loop_iv_data): New type.
+	(c_omp_check_loop_iv_r, c_omp_check_loop_iv,
+	c_omp_check_loop_iv_exprs): New functions.
+	(c_omp_split_clauses): Adjust for lastprivate being allowed on
+	distribute.
+	(c_omp_declare_simd_clauses_to_numbers): Change
+	OMP_CLAUSE_LINEAR_VARIABLE_STRIDE OMP_CLAUSE_LINEAR_STEP into numbers.
+	(c_omp_declare_simd_clauses_to_decls): Similarly change those
+	from numbers to PARM_DECLs.
+
 2015-11-04  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* c-omp.c (c_omp_split_clauses): Remove conditional compilation. Use

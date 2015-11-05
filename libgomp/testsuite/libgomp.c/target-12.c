@@ -41,7 +41,7 @@ main ()
 
       if (omp_target_is_present (q, d) != 1
 	  || omp_target_is_present (&q[32], d) != 1
-	  || omp_target_is_present (&q[128], d) != 1)
+	  || omp_target_is_present (&q[127], d) != 1)
 	abort ();
 
       if (omp_target_memcpy (p, q, 128 * sizeof (int), sizeof (int), 0,

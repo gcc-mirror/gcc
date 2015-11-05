@@ -1,3 +1,8 @@
+2015-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* types.def (BT_FN_VOID_INT_OMPFN_SIZE_PTR_PTR_PTR_UINT_PTR): Remove.
+	(BT_FN_VOID_INT_OMPFN_SIZE_PTR_PTR_PTR_UINT_PTR_INT_INT): New.
+
 2015-11-03  Thomas Schwinge  <thomas@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
