@@ -1,3 +1,54 @@
+2015-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/clauses-2.c (foo): Adjust for diagnostics
+	of variables in both data sharing and mapping clauses and for
+	structure element based array sections being mapped rather than
+	privatized.
+	* c-c++-common/gomp/declare-target-2.c: Add various new tests.  Adjust
+	expected diagnostics wording in one case.
+	* c-c++-common/gomp/distribute-1.c: New test.
+	* c-c++-common/gomp/element-1.c: New test.
+	* c-c++-common/gomp/pr61486-2.c: Add #pragma omp declare target
+	and #pragma omp end declare target pair around the function.
+	Change s from a parameter to a file scope variable.
+	* c-c++-common/gomp/pr67521.c: Add dg-error directives.
+	* c-c++-common/gomp/reduction-1.c (foo): Don't expect diagnostics
+	on non-zero low-bound in reduction array sections.  Add further
+	tests.
+	* c-c++-common/gomp/schedule-modifiers-1.c: New test.
+	* c-c++-common/gomp/target-teams-1.c: New test.
+	* gcc.dg/gomp/declare-simd-1.c: Add scan-assembler-times directives
+	for expected mangling on x86_64/i?86.
+	* gcc.dg/gomp/declare-simd-3.c: New test.
+	* gcc.dg/gomp/declare-simd-4.c: New test.
+	* gcc.dg/gomp/for-20.c: New test.
+	* gcc.dg/gomp/for-21.c: New test.
+	* gcc.dg/gomp/for-22.c: New test.
+	* gcc.dg/gomp/for-23.c: New test.
+	* gcc.dg/gomp/for-24.c: New test.
+	* gcc.dg/gomp/linear-1.c: New test.
+	* gcc.dg/gomp/loop-1.c: New test.
+	* g++.dg/gomp/atomic-17.C: New test.
+	* g++.dg/gomp/clause-1.C (T::test): Don't expect error on
+	non-static data member in shared clause.  Add single construct.
+	* g++.dg/gomp/declare-simd-1.C: Add dg-options.  Add
+	scan-assembler-times directives for expected mangling on x86_64/i?86.
+	* g++.dg/gomp/declare-simd-3.C: Likewise.
+	* g++.dg/gomp/declare-simd-4.C: New test.
+	* g++.dg/gomp/declare-simd-5.C: New test.
+	* g++.dg/gomp/declare-target-1.C: New test.
+	* g++.dg/gomp/linear-2.C: New test.
+	* g++.dg/gomp/loop-1.C: New test.
+	* g++.dg/gomp/loop-2.C: New test.
+	* g++.dg/gomp/loop-3.C: New test.
+	* g++.dg/gomp/member-2.C (B::m2, B::m4): Don't expect error on
+	non-static data member in shared clause.
+	* g++.dg/gomp/member-3.C: New test.
+	* g++.dg/gomp/member-4.C: New test.
+	* g++.dg/gomp/pr38639.C (foo): Adjust dg-error.
+	(bar): Remove dg-message.
+	* g++.dg/gomp/target-teams-1.C: New test.
+
 2015-11-05  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/loadpre2.c: Avoid undefined behavior due to

@@ -39,10 +39,9 @@
 /* Special map kinds, enumerated starting here.  */
 #define GOMP_MAP_FLAG_SPECIAL_0		(1 << 2)
 #define GOMP_MAP_FLAG_SPECIAL_1		(1 << 3)
+#define GOMP_MAP_FLAG_SPECIAL_2		(1 << 4)
 #define GOMP_MAP_FLAG_SPECIAL		(GOMP_MAP_FLAG_SPECIAL_1 \
 					 | GOMP_MAP_FLAG_SPECIAL_0)
-/* OpenMP always flag.  */
-#define GOMP_MAP_FLAG_ALWAYS		(1 << 6)
 /* Flag to force a specific behavior (or else, trigger a run-time error).  */
 #define GOMP_MAP_FLAG_FORCE		(1 << 7)
 
@@ -95,34 +94,43 @@ enum gomp_map_kind
     GOMP_MAP_FORCE_TOFROM =		(GOMP_MAP_FLAG_FORCE | GOMP_MAP_TOFROM),
     /* If not already present, allocate.  And unconditionally copy to
        device.  */
-    GOMP_MAP_ALWAYS_TO =		(GOMP_MAP_FLAG_ALWAYS | GOMP_MAP_TO),
+    GOMP_MAP_ALWAYS_TO =		(GOMP_MAP_FLAG_SPECIAL_2 | GOMP_MAP_TO),
     /* If not already present, allocate.  And unconditionally copy from
        device.  */
-    GOMP_MAP_ALWAYS_FROM =		(GOMP_MAP_FLAG_ALWAYS | GOMP_MAP_FROM),
+    GOMP_MAP_ALWAYS_FROM =		(GOMP_MAP_FLAG_SPECIAL_2
+					 | GOMP_MAP_FROM),
     /* If not already present, allocate.  And unconditionally copy to and from
        device.  */
-    GOMP_MAP_ALWAYS_TOFROM =		(GOMP_MAP_FLAG_ALWAYS | GOMP_MAP_TOFROM),
+    GOMP_MAP_ALWAYS_TOFROM =		(GOMP_MAP_FLAG_SPECIAL_2
+					 | GOMP_MAP_TOFROM),
     /* Map a sparse struct; the address is the base of the structure, alignment
        it's required alignment, and size is the number of adjacent entries
        that belong to the struct.  The adjacent entries should be sorted by
        increasing address, so it is easy to determine lowest needed address
        (address of the first adjacent entry) and highest needed address
        (address of the last adjacent entry plus its size).  */
-    GOMP_MAP_STRUCT =			(GOMP_MAP_FLAG_ALWAYS
+    GOMP_MAP_STRUCT =			(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_FLAG_SPECIAL | 0),
+    /* On a location of a pointer/reference that is assumed to be already mapped
+       earlier, store the translated address of the preceeding mapping.
+       No refcount is bumped by this, and the store is done unconditionally.  */
+    GOMP_MAP_ALWAYS_POINTER =		(GOMP_MAP_FLAG_SPECIAL_2
+					 | GOMP_MAP_FLAG_SPECIAL | 1),
     /* Forced deallocation of zero length array section.  */
     GOMP_MAP_DELETE_ZERO_LEN_ARRAY_SECTION
-      =					(GOMP_MAP_FLAG_ALWAYS
+      =					(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_FLAG_SPECIAL | 3),
-    /* OpenMP 4.1 alias for forced deallocation.  */
+    /* OpenMP 4.5 alias for forced deallocation.  */
     GOMP_MAP_DELETE =			GOMP_MAP_FORCE_DEALLOC,
     /* Decrement usage count and deallocate if zero.  */
-    GOMP_MAP_RELEASE =			(GOMP_MAP_FLAG_ALWAYS
+    GOMP_MAP_RELEASE =			(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_FORCE_DEALLOC),
 
     /* Internal to GCC, not used in libgomp.  */
     /* Do not map, but pointer assign a pointer instead.  */
-    GOMP_MAP_FIRSTPRIVATE_POINTER =	(GOMP_MAP_LAST | 1)
+    GOMP_MAP_FIRSTPRIVATE_POINTER =	(GOMP_MAP_LAST | 1),
+    /* Do not map, but pointer assign a reference instead.  */
+    GOMP_MAP_FIRSTPRIVATE_REFERENCE =	(GOMP_MAP_LAST | 2)
   };
 
 #define GOMP_MAP_COPY_TO_P(X) \
@@ -141,6 +149,9 @@ enum gomp_map_kind
 
 #define GOMP_MAP_ALWAYS_FROM_P(X) \
   (((X) == GOMP_MAP_ALWAYS_FROM) || ((X) == GOMP_MAP_ALWAYS_TOFROM))
+
+#define GOMP_MAP_ALWAYS_P(X) \
+  (GOMP_MAP_ALWAYS_TO_P (X) || ((X) == GOMP_MAP_ALWAYS_FROM))
 
 
 /* Asynchronous behavior.  Keep in sync with
@@ -175,7 +186,7 @@ enum gomp_map_kind
 #define GOMP_TASK_FLAG_IF		(1 << 10)
 #define GOMP_TASK_FLAG_NOGROUP		(1 << 11)
 
-/* GOMP_target{_41,update_41,enter_exit_data} flags argument.  */
+/* GOMP_target{_ext,update_ext,enter_exit_data} flags argument.  */
 #define GOMP_TARGET_FLAG_NOWAIT		(1 << 0)
 #define GOMP_TARGET_FLAG_EXIT_DATA	(1 << 1)
 /* Internal to libgomp.  */

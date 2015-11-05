@@ -1,3 +1,112 @@
+2015-11-05  Jakub Jelinek  <jakub@redhat.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* libgomp_g.h (GOMP_loop_nonmonotonic_dynamic_next,
+	GOMP_loop_nonmonotonic_dynamic_start,
+	GOMP_loop_nonmonotonic_guided_next,
+	GOMP_loop_nonmonotonic_guided_start,
+	GOMP_loop_ull_nonmonotonic_dynamic_next,
+	GOMP_loop_ull_nonmonotonic_dynamic_start,
+	GOMP_loop_ull_nonmonotonic_guided_next,
+	GOMP_loop_ull_nonmonotonic_guided_start,
+	GOMP_parallel_loop_nonmonotonic_dynamic,
+	GOMP_parallel_loop_nonmonotonic_guided): New prototypes.
+	(GOMP_target_41): Renamed to ...
+	(GOMP_target_ext): ... this.  Add num_teams and thread_limit
+	arguments.
+	(GOMP_target_data_41): Renamed to ...
+	(GOMP_target_data_ext): ... this.
+	(GOMP_target_update_41): Renamed to ...
+	(GOMP_target_update_ext): ... this.
+	* libgomp.map (GOMP_4.5): Export GOMP_target_ext,
+	GOMP_target_data_ext and GOMP_target_update_ext instead of
+	GOMP_target_41, GOMP_target_data_41 and GOMP_target_update_41.
+	Export GOMP_loop_nonmonotonic_dynamic_next,
+	GOMP_loop_nonmonotonic_dynamic_start,
+	GOMP_loop_nonmonotonic_guided_next,
+	GOMP_loop_nonmonotonic_guided_start,
+	GOMP_loop_ull_nonmonotonic_dynamic_next,
+	GOMP_loop_ull_nonmonotonic_dynamic_start,
+	GOMP_loop_ull_nonmonotonic_guided_next,
+	GOMP_loop_ull_nonmonotonic_guided_start,
+	GOMP_parallel_loop_nonmonotonic_dynamic and
+	GOMP_parallel_loop_nonmonotonic_guided.
+	* loop.c (GOMP_parallel_loop_nonmonotonic_dynamic,
+	GOMP_parallel_loop_nonmonotonic_guided,
+	GOMP_loop_nonmonotonic_dynamic_start,
+	GOMP_loop_nonmonotonic_guided_start,
+	GOMP_loop_nonmonotonic_dynamic_next,
+	GOMP_loop_nonmonotonic_guided_next): New aliases or functions.
+	* loop_ull.c (GOMP_loop_ull_nonmonotonic_dynamic_start,
+	GOMP_loop_ull_nonmonotonic_guided_start,
+	GOMP_loop_ull_nonmonotonic_dynamic_next,
+	GOMP_loop_ull_nonmonotonic_guided_next): Likewise.
+	* target.c (gomp_map_0len_lookup, gomp_map_val): New inline
+	functions.
+	(gomp_map_vars): Handle GOMP_MAP_ALWAYS_POINTER.  For
+	GOMP_MAP_ZERO_LEN_ARRAY_SECTION use gomp_map_0len_lookup.
+	Use gomp_map_val function.
+	(gomp_target_fallback_firstprivate): New static function.
+	(GOMP_target_41): Renamed to ...
+	(GOMP_target_ext): ... this.  Add num_teams and thread_limit
+	arguments.  Move firstprivate fallback handling into a new
+	function.
+	(GOMP_target_data_41): Renamed to ...
+	(GOMP_target_data_ext): ... this.
+	(GOMP_target_update_41): Renamed to ...
+	(GOMP_target_update_ext): ... this.
+	(gomp_exit_data): For GOMP_MAP_*ZERO_LEN* use
+	gomp_map_0len_lookup instead of gomp_map_lookup.
+	(omp_target_is_present): Use gomp_map_0len_lookup instead of
+	gomp_map_lookup.
+	* testsuite/libgomp.c/target-28.c: Likewise.
+	* testsuite/libgomp.c/monotonic-1.c: New test.
+	* testsuite/libgomp.c/monotonic-2.c: New test.
+	* testsuite/libgomp.c/nonmonotonic-1.c: New test.
+	* testsuite/libgomp.c/nonmonotonic-2.c: New test.
+	* testsuite/libgomp.c/pr66199-5.c: New test.
+	* testsuite/libgomp.c/pr66199-6.c: New test.
+	* testsuite/libgomp.c/pr66199-7.c: New test.
+	* testsuite/libgomp.c/pr66199-8.c: New test.
+	* testsuite/libgomp.c/pr66199-9.c: New test.
+	* testsuite/libgomp.c/reduction-11.c: New test.
+	* testsuite/libgomp.c/reduction-12.c: New test.
+	* testsuite/libgomp.c/reduction-13.c: New test.
+	* testsuite/libgomp.c/reduction-14.c: New test.
+	* testsuite/libgomp.c/reduction-15.c: New test.
+	* testsuite/libgomp.c/target-12.c (main): Adjust for
+	omp_target_is_present change for one-past-last element.
+	* testsuite/libgomp.c/target-17.c (foo): Drop tests where
+	the same var is both mapped and privatized.
+	* testsuite/libgomp.c/target-19.c (foo): Adjust for different
+	handling of zero-length array sections.
+	* testsuite/libgomp.c/target-28.c: New test.
+	* testsuite/libgomp.c/target-29.c: New test.
+	* testsuite/libgomp.c/target-30.c: New test.
+	* testsuite/libgomp.c/target-teams-1.c: New test.
+	* testsuite/libgomp.c++/member-6.C: New test.
+	* testsuite/libgomp.c++/member-7.C: New test.
+	* testsuite/libgomp.c++/monotonic-1.C: New test.
+	* testsuite/libgomp.c++/monotonic-2.C: New test.
+	* testsuite/libgomp.c++/nonmonotonic-1.C: New test.
+	* testsuite/libgomp.c++/nonmonotonic-2.C: New test.
+	* testsuite/libgomp.c++/pr66199-3.C: New test.
+	* testsuite/libgomp.c++/pr66199-4.C: New test.
+	* testsuite/libgomp.c++/pr66199-5.C: New test.
+	* testsuite/libgomp.c++/pr66199-6.C: New test.
+	* testsuite/libgomp.c++/pr66199-7.C: New test.
+	* testsuite/libgomp.c++/pr66199-8.C: New test.
+	* testsuite/libgomp.c++/pr66199-9.C: New test.
+	* testsuite/libgomp.c++/reduction-11.C: New test.
+	* testsuite/libgomp.c++/reduction-12.C: New test.
+	* testsuite/libgomp.c++/target-13.C: New test.
+	* testsuite/libgomp.c++/target-14.C: New test.
+	* testsuite/libgomp.c++/target-15.C: New test.
+	* testsuite/libgomp.c++/target-16.C: New test.
+	* testsuite/libgomp.c++/target-17.C: New test.
+	* testsuite/libgomp.c++/target-18.C: New test.
+	* testsuite/libgomp.c++/target-19.C: New test.
+
 2015-11-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/reduction-1.f90: Fix dimensions

@@ -1,21 +1,29 @@
 extern void abort (void);
 
-void
+__attribute__((noinline, noclone)) void
 foo (int *p, int *q, int *r, int n, int m)
 {
   int i, err, *s = r;
+  int sep = 1;
+  #pragma omp target map(to:sep)
+  sep = 0;
   #pragma omp target data map(to:p[0:8])
   {
     /* For zero length array sections, p points to the start of
-       already mapped range, q to the end of it, and r does not point
-       to an mapped range.  */
+       already mapped range, q to the end of it (with nothing mapped
+       after it), and r does not point to an mapped range.  */
     #pragma omp target map(alloc:p[:0]) map(to:q[:0]) map(from:r[:0]) private(i) map(from:err) firstprivate (s)
     {
       err = 0;
       for (i = 0; i < 8; i++)
-	if (p[i] != i + 1 || q[i - 8] != i + 1)
+	if (p[i] != i + 1)
 	  err = 1;
-      if (p + 8 != q || (r != (int *) 0 && r != s))
+      if (sep)
+	{
+	  if (q != (int *) 0 || r != (int *) 0)
+	    err = 1;
+	}
+      else if (p + 8 != q || r != s)
 	err = 1;
     }
     if (err)
@@ -25,9 +33,14 @@ foo (int *p, int *q, int *r, int n, int m)
     {
       err = 0;
       for (i = 0; i < 8; i++)
-	if (p[i] != i + 1 || q[i - 8] != i + 1)
+	if (p[i] != i + 1)
 	  err = 1;
-      if (p + 8 != q || (r != (int *) 0 && r != s))
+      if (sep)
+	{
+	  if (q != (int *) 0 || r != (int *) 0)
+	    err = 1;
+	}
+      else if (p + 8 != q || r != s)
 	err = 1;
     }
     if (err)
@@ -38,9 +51,14 @@ foo (int *p, int *q, int *r, int n, int m)
     {
       err = 0;
       for (i = 0; i < 8; i++)
-	if (p[i] != i + 1 || q[i - 8] != i + 1)
+	if (p[i] != i + 1)
 	  err = 1;
-      if (p + 8 != q || (r != (int *) 0 && r != s))
+      if (sep)
+	{
+	  if (q != (int *) 0 || r != (int *) 0)
+	    err = 1;
+	}
+      else if (p + 8 != q || r != s)
 	err = 1;
     }
     if (err)
@@ -69,7 +87,14 @@ foo (int *p, int *q, int *r, int n, int m)
 	for (i = 0; i < 8; i++)
 	  if (p[i] != i + 1)
 	    err = 1;
-	if (q[0] != 9 || r != q + 1)
+	if (q[0] != 9)
+	  err = 1;
+	else if (sep)
+	  {
+	    if (r != (int *) 0)
+	      err = 1;
+	  }
+	else if (r != q + 1)
 	  err = 1;
       }
       if (err)
@@ -81,7 +106,14 @@ foo (int *p, int *q, int *r, int n, int m)
 	for (i = 0; i < 8; i++)
 	  if (p[i] != i + 1)
 	    err = 1;
-	if (q[0] != 9 || r != q + 1)
+	if (q[0] != 9)
+	  err = 1;
+	else if (sep)
+	  {
+	    if (r != (int *) 0)
+	      err = 1;
+	  }
+	else if (r != q + 1)
 	  err = 1;
       }
       if (err)
@@ -94,7 +126,14 @@ foo (int *p, int *q, int *r, int n, int m)
 	for (i = 0; i < 8; i++)
 	  if (p[i] != i + 1)
 	    err = 1;
-	if (q[0] != 9 || r != q + 1)
+	if (q[0] != 9)
+	  err = 1;
+	else if (sep)
+	  {
+	    if (r != (int *) 0)
+	      err = 1;
+	  }
+	else if (r != q + 1)
 	  err = 1;
       }
       if (err)

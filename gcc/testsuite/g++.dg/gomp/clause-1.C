@@ -12,7 +12,8 @@ void T::test()
   #pragma omp parallel private(n)
     n = 1;
 
-  #pragma omp parallel shared(n)	// { dg-error "T::n" }
+  #pragma omp parallel shared(n)
+  #pragma omp single
     n = 1;
 
   #pragma omp parallel firstprivate(n)
