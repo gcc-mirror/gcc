@@ -1659,6 +1659,13 @@ bool, (tree decl, int *dims, int fn_level),
 default_goacc_validate_dims)
 
 DEFHOOK
+(dim_limit,
+"This hook should return the maximum size of a particular dimension,\n\
+or zero if unbounded.",
+int, (int axis),
+default_goacc_dim_limit)
+
+DEFHOOK
 (fork_join,
 "This hook can be used to convert IFN_GOACC_FORK and IFN_GOACC_JOIN\n\
 function calls to target-specific gimple, or indicate whether they\n\

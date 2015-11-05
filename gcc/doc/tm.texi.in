@@ -4262,6 +4262,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_GOACC_VALIDATE_DIMS
 
+@hook TARGET_GOACC_DIM_LIMIT
+
 @hook TARGET_GOACC_FORK_JOIN
 
 @hook TARGET_GOACC_REDUCTION

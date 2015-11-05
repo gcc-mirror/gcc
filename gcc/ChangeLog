@@ -1,3 +1,19 @@
+2015-11-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* target.def (goacc.dim_limit): New hook.
+	* targhooks.h (default_goacc_dim_limit): Declare.
+	* doc/tm.texi.in (TARGET_GOACC_DIM_LIMIT): Add.
+	* doc/tm.texi: Rebuilt.
+	* omp-low.h (get_oacc_fn_dim_size, get_oacc_ifn_dim_arg): Declare.
+	* omp-low.c (get_oacc_fn_dim_size, get_oacc_ifn_dim_arg): New.
+	(default_goacc_dim_limit): New.
+	* config/nvptx/nvptx.c (PTX_VECTOR_LENGTH, PTX_WORKER_LENGTH): New.
+	(nvptx_goacc_dim_limit) New.
+	(TARGET_GOACC_DIM_LIMIT): Override.
+	* tree-vrp.c: Include omp-low.h, target.h.
+	(extract_range_basic): Add handling for IFN_GOACC_DIM_SIZE &
+	IFN_GOACC_DIM_POS.
+
 2015-11-05  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* tree-vect-generic.c (do_compare): Use -1 for true

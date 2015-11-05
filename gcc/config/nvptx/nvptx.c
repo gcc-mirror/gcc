@@ -3499,6 +3499,25 @@ nvptx_goacc_validate_dims (tree ARG_UNUSED (decl), int *ARG_UNUSED (dims),
   return changed;
 }
 
+/* Return maximum dimension size, or zero for unbounded.  */
+
+static int
+nvptx_dim_limit (int axis)
+{
+  switch (axis)
+    {
+    case GOMP_DIM_WORKER:
+      return PTX_WORKER_LENGTH;
+
+    case GOMP_DIM_VECTOR:
+      return PTX_VECTOR_LENGTH;
+
+    default:
+      break;
+    }
+  return 0;
+}
+
 /* Determine whether fork & joins are needed.  */
 
 static bool
@@ -4015,6 +4034,9 @@ nvptx_goacc_reduction (gcall *call)
 
 #undef TARGET_GOACC_VALIDATE_DIMS
 #define TARGET_GOACC_VALIDATE_DIMS nvptx_goacc_validate_dims
+
+#undef TARGET_GOACC_DIM_LIMIT
+#define TARGET_GOACC_DIM_LIMIT nvptx_dim_limit
 
 #undef TARGET_GOACC_FORK_JOIN
 #define TARGET_GOACC_FORK_JOIN nvptx_goacc_fork_join

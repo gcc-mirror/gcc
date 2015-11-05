@@ -5777,6 +5777,11 @@ true, if changes have been made.  You must override this hook to
 provide dimensions larger than 1.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_GOACC_DIM_LIMIT (int @var{axis})
+This hook should return the maximum size of a particular dimension,
+or zero if unbounded.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_GOACC_FORK_JOIN (gcall *@var{call}, const int *@var{dims}, bool @var{is_fork})
 This hook can be used to convert IFN_GOACC_FORK and IFN_GOACC_JOIN
 function calls to target-specific gimple, or indicate whether they
