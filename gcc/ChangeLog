@@ -1,3 +1,8 @@
+2015-11-05  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* tree-vect-generic.c (do_compare): Use -1 for true
+	result instead of 1.
+
 2015-11-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         * config/aarch64/aarch64.c
