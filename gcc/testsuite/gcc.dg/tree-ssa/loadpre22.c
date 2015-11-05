@@ -3,16 +3,15 @@
 typedef int type[2];
 int main(type *a, int argc)
 {
-  int b;
   int i;
-  int d, e;
+  int e;
 
   /* Should be able to hoist this out of the loop.  */
   for (i = 0; i < argc; i++)
     {
       e = (*a)[argc];
     }
-  return d + e;
+  return e;
 }
 
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre"} } */

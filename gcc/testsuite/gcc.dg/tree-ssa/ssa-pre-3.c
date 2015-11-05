@@ -1,8 +1,8 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fdump-tree-pre-stats" } */
-unsigned foo1 (unsigned a, unsigned b)
+unsigned foo1 (unsigned a, unsigned b, unsigned j, unsigned k)
 {
-  unsigned i, j, k;
+  unsigned i;
   for (i = 0; i != a; i++)
     {
       j += 4*b;

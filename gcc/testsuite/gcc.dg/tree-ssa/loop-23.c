@@ -7,7 +7,7 @@ int bla(int);
 int foo(void)
 {
   int i;
-  int sum;
+  int sum = 0;
 
   /* This loop used to appear to be too large for unrolling.  */
   for (i = 0; i < 4; i++)

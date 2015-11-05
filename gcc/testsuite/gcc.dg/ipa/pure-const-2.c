@@ -5,7 +5,7 @@ int i_am_pure(char *c, int n)
 {
   char *d=__builtin_alloca (n);
   int i;
-  int sum;
+  int sum = 0;
   for (i=0;i<n;i++)
     d[i] = c[i];
   for (i=0;i<n;i++)

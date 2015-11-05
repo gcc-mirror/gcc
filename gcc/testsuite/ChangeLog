@@ -1,3 +1,26 @@
+2015-11-05  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/loadpre2.c: Avoid undefined behavior due to
+	uninitialized variables.
+	* gcc.dg/tree-ssa/loadpre21.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre22.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre23.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre24.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre25.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre4.c: Likewise.
+	* gcc.dg/ipa/inlinehint-2.c: Likewise.
+	* gcc.dg/ipa/pure-const-2.c: Likewise.
+	* gcc.dg/tree-ssa/loop-1.c: Likewise.
+	* gcc.dg/tree-ssa/loop-23.c: Likewise.
+	* gcc.dg/tree-ssa/pr22051-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sccvn-3.c: Likewise.
+	* gcc.dg/vect/pr30858.c: Likewise.
+	* gcc.dg/vect/pr33866.c: Likewise.
+	* gcc.dg/vect/pr37027.c: Likewise.
+	* c-c++-common/ubsan/null-10.c: Likewise.
+	* gcc.target/i386/incoming-8.c: Likewise.
+
 2015-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/slice9.adb: New test.
