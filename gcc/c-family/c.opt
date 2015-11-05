@@ -776,6 +776,10 @@ Wprotocol
 ObjC ObjC++ Var(warn_protocol) Init(1) Warning
 Warn if inherited methods are unimplemented.
 
+Wplacement-new
+C++ Var(warn_placement_new) Init(1) Warning
+Warn for placement new expressions with undefined behavior
+
 Wredundant-decls
 C ObjC C++ ObjC++ Var(warn_redundant_decls) Warning
 Warn about multiple declarations of the same object.
