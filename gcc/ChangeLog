@@ -1,3 +1,9 @@
+2015-11-05  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* targhooks.c (default_get_mask_mode): Use BLKmode in
+	case target doesn't support required vector mode.
+	* stor-layout.c (layout_type); Check for BLKmode.
+
 2015-11-04  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
