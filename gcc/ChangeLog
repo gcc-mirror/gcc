@@ -1,3 +1,11 @@
+2015-11-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        * config/aarch64/aarch64.c
+        (aarch64_can_use_per_function_literal_pools_p): New.
+        (aarch64_use_blocks_for_constant_p): Adjust declaration
+        and use aarch64_can_use_function_literal_pools_p.
+        (aarch64_select_rtx_section): Update.
+
 2015-11-05  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* targhooks.c (default_get_mask_mode): Use BLKmode in
