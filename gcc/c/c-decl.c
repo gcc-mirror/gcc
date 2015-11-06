@@ -5285,9 +5285,10 @@ warn_defaults_to (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  rich_location richloc (location);
 
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
                        flag_isoc99 ? DK_PEDWARN : DK_WARNING);
   diagnostic.option_index = opt;
   report_diagnostic (&diagnostic);

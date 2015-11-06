@@ -27,11 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Maximum number of format string arguments.  */
 #define PP_NL_ARGMAX   30
 
-/* Maximum number of locations associated to each message.  If
-   location 'i' is UNKNOWN_LOCATION, then location 'i+1' is not
-   valid.  */
-#define MAX_LOCATIONS_PER_MESSAGE 2
-
 /* The type of a text to be formatted according a format specification
    along with a list of things.  */
 struct text_info
@@ -40,21 +35,17 @@ struct text_info
   va_list *args_ptr;
   int err_no;  /* for %m */
   void **x_data;
+  rich_location *m_richloc;
 
-  inline void set_location (unsigned int index_of_location, location_t loc)
+  inline void set_location (unsigned int idx, location_t loc, bool caret_p)
   {
-    gcc_checking_assert (index_of_location < MAX_LOCATIONS_PER_MESSAGE);
-    this->locations[index_of_location] = loc;
+    source_range src_range;
+    src_range.m_start = loc;
+    src_range.m_finish = loc;
+    set_range (idx, src_range, caret_p);
   }
-
-  inline location_t get_location (unsigned int index_of_location) const
-  {
-    gcc_checking_assert (index_of_location < MAX_LOCATIONS_PER_MESSAGE);
-    return this->locations[index_of_location];
-  }
-
-private:
-  location_t locations[MAX_LOCATIONS_PER_MESSAGE];
+  void set_range (unsigned int idx, source_range range, bool caret_p);
+  location_t get_location (unsigned int index_of_location) const;
 };
 
 /* How often diagnostics are prefixed by their locations:

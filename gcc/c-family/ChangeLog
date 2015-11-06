@@ -1,3 +1,13 @@
+2015-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_cpp_error): Convert parameter from location_t to
+	rich_location *.  Eliminate the "column_override" parameter and
+	the call to diagnostic_override_column.
+	Update the "done_lexing" clause to set range 0
+	on the rich_location, rather than overwriting a location_t.
+	* c-common.h (c_cpp_error): Convert parameter from location_t to
+	rich_location *.  Eliminate the "column_override" parameter.
+
 2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>

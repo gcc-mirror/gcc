@@ -10543,15 +10543,14 @@ c_option_controlling_cpp_error (int reason)
 /* Callback from cpp_error for PFILE to print diagnostics from the
    preprocessor.  The diagnostic is of type LEVEL, with REASON set
    to the reason code if LEVEL is represents a warning, at location
-   LOCATION unless this is after lexing and the compiler's location
-   should be used instead, with column number possibly overridden by
-   COLUMN_OVERRIDE if not zero; MSG is the translated message and AP
+   RICHLOC unless this is after lexing and the compiler's location
+   should be used instead; MSG is the translated message and AP
    the arguments.  Returns true if a diagnostic was emitted, false
    otherwise.  */
 
 bool
 c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
-	     location_t location, unsigned int column_override,
+	     rich_location *richloc,
 	     const char *msg, va_list *ap)
 {
   diagnostic_info diagnostic;
@@ -10592,11 +10591,11 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
       gcc_unreachable ();
     }
   if (done_lexing)
-    location = input_location;
+    richloc->set_range (0,
+			source_range::from_location (input_location),
+			true, true);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
-				  location, dlevel);
-  if (column_override)
-    diagnostic_override_column (&diagnostic, column_override);
+				  richloc, dlevel);
   diagnostic_override_option_index (&diagnostic,
                                     c_option_controlling_cpp_error (reason));
   ret = report_diagnostic (&diagnostic);

@@ -1,3 +1,10 @@
+2015-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (cp_printer): Update for new "caret_p" param for
+	textinfo::set_location.
+	(pedwarn_cxx98): Update for change in signature of
+	diagnostic_set_info.
+
 2015-11-06  Jason Merrill  <jason@redhat.com>
 
 	Support non-type constrained-type-specifiers.

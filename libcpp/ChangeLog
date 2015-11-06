@@ -1,5 +1,24 @@
 2015-11-06  David Malcolm  <dmalcolm@redhat.com>
 
+	* errors.c (cpp_diagnostic): Update for change in signature
+	of "error" callback.
+	(cpp_diagnostic_with_line): Likewise, calling override_column
+	on the rich_location.
+	* include/cpplib.h (struct cpp_callbacks): Within "error"
+	callback, convert param from source_location to rich_location *,
+	and drop column_override param.
+	* include/line-map.h (struct source_range): New struct.
+	(struct location_range): New struct.
+	(class rich_location): New class.
+	(linemap_client_expand_location_to_spelling_point): New declaration.
+	* line-map.c (rich_location::rich_location): New ctors.
+	(rich_location::lazily_expand_location): New method.
+	(rich_location::override_column): New method.
+	(rich_location::add_range): New methods.
+	(rich_location::set_range): New method.
+
+2015-11-06  David Malcolm  <dmalcolm@redhat.com>
+
 	* include/line-map.h (struct linemap_stats): Add fields
 	"adhoc_table_size" and "adhoc_table_entries_used".
 	* line-map.c (linemap_get_statistics): Populate above fields.

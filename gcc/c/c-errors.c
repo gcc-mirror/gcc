@@ -41,13 +41,14 @@ pedwarn_c99 (location_t location, int opt, const char *gmsgid, ...)
   diagnostic_info diagnostic;
   va_list ap;
   bool warned = false;
+  rich_location richloc (location);
 
   va_start (ap, gmsgid);
   /* If desired, issue the C99/C11 compat warning, which is more specific
      than -pedantic.  */
   if (warn_c99_c11_compat > 0)
     {
-      diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 			   (pedantic && !flag_isoc11)
 			   ? DK_PEDWARN : DK_WARNING);
       diagnostic.option_index = OPT_Wc99_c11_compat;
@@ -59,7 +60,7 @@ pedwarn_c99 (location_t location, int opt, const char *gmsgid, ...)
   /* For -pedantic outside C11, issue a pedwarn.  */
   else if (pedantic && !flag_isoc11)
     {
-      diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_PEDWARN);
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_PEDWARN);
       diagnostic.option_index = opt;
       warned = report_diagnostic (&diagnostic);
     }
@@ -79,6 +80,7 @@ pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  rich_location richloc (location);
 
   va_start (ap, gmsgid);
   /* Warnings such as -Wvla are the most specific ones.  */
@@ -89,7 +91,7 @@ pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
         goto out;
       else if (opt_var > 0)
 	{
-	  diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+	  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 			       (pedantic && !flag_isoc99)
 			       ? DK_PEDWARN : DK_WARNING);
 	  diagnostic.option_index = opt;
@@ -101,7 +103,7 @@ pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
      specific than -pedantic.  */
   if (warn_c90_c99_compat > 0)
     {
-      diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 			   (pedantic && !flag_isoc99)
 			   ? DK_PEDWARN : DK_WARNING);
       diagnostic.option_index = OPT_Wc90_c99_compat;
@@ -113,7 +115,7 @@ pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
   /* For -pedantic outside C99, issue a pedwarn.  */
   else if (pedantic && !flag_isoc99)
     {
-      diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_PEDWARN);
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_PEDWARN);
       diagnostic.option_index = opt;
       report_diagnostic (&diagnostic);
     }

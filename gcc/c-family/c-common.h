@@ -995,9 +995,9 @@ extern void init_c_lex (void);
 
 extern void c_cpp_builtins (cpp_reader *);
 extern void c_cpp_builtins_optimize_pragma (cpp_reader *, tree, tree);
-extern bool c_cpp_error (cpp_reader *, int, int, location_t, unsigned int,
+extern bool c_cpp_error (cpp_reader *, int, int, rich_location *,
 			 const char *, va_list *)
-     ATTRIBUTE_GCC_DIAG(6,0);
+     ATTRIBUTE_GCC_DIAG(5,0);
 extern int c_common_has_attribute (cpp_reader *);
 
 extern bool parse_optimize_options (tree, bool);

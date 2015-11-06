@@ -147,9 +147,9 @@ static void cb_include (cpp_reader *, source_location, const unsigned char *,
 static void cb_ident (cpp_reader *, source_location, const cpp_string *);
 static void cb_used_define (cpp_reader *, source_location, cpp_hashnode *);
 static void cb_used_undef (cpp_reader *, source_location, cpp_hashnode *);
-static bool cb_cpp_error (cpp_reader *, int, int, location_t, unsigned int,
+static bool cb_cpp_error (cpp_reader *, int, int, rich_location *,
 			  const char *, va_list *)
-     ATTRIBUTE_GCC_DIAG(6,0);
+     ATTRIBUTE_GCC_DIAG(5,0);
 void pp_dir_change (cpp_reader *, const char *);
 
 static int dump_macro (cpp_reader *, cpp_hashnode *, void *);
@@ -1024,13 +1024,12 @@ cb_used_define (cpp_reader *pfile, source_location line ATTRIBUTE_UNUSED,
 /* Callback from cpp_error for PFILE to print diagnostics from the
    preprocessor.  The diagnostic is of type LEVEL, with REASON set
    to the reason code if LEVEL is represents a warning, at location
-   LOCATION, with column number possibly overridden by COLUMN_OVERRIDE
-   if not zero; MSG is the translated message and AP the arguments.
+   RICHLOC; MSG is the translated message and AP the arguments.
    Returns true if a diagnostic was emitted, false otherwise.  */
 
 static bool
 cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
-	      location_t location, unsigned int column_override,
+	      rich_location *richloc,
 	      const char *msg, va_list *ap)
 {
   diagnostic_info diagnostic;
@@ -1065,9 +1064,7 @@ cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
       gcc_unreachable ();
     }
   diagnostic_set_info_translated (&diagnostic, msg, ap,
-				  location, dlevel);
-  if (column_override)
-    diagnostic_override_column (&diagnostic, column_override);
+				  richloc, dlevel);
   if (reason == CPP_W_WARNING_DIRECTIVE)
     diagnostic_override_option_index (&diagnostic, OPT_Wcpp);
   ret = report_diagnostic (&diagnostic);

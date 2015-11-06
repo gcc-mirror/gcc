@@ -57,7 +57,8 @@ cpp_diagnostic (cpp_reader * pfile, int level, int reason,
 
   if (!pfile->cb.error)
     abort ();
-  ret = pfile->cb.error (pfile, level, reason, src_loc, 0, _(msgid), ap);
+  rich_location richloc (src_loc);
+  ret = pfile->cb.error (pfile, level, reason, &richloc, _(msgid), ap);
 
   return ret;
 }
@@ -139,7 +140,9 @@ cpp_diagnostic_with_line (cpp_reader * pfile, int level, int reason,
   
   if (!pfile->cb.error)
     abort ();
-  ret = pfile->cb.error (pfile, level, reason, src_loc, column, _(msgid), ap);
+  rich_location richloc (src_loc);
+  richloc.override_column (column);
+  ret = pfile->cb.error (pfile, level, reason, &richloc, _(msgid), ap);
 
   return ret;
 }

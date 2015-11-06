@@ -1,3 +1,98 @@
+2015-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-color.c (color_dict): Eliminate "caret"; add "range1"
+	and "range2".
+	(parse_gcc_colors): Update comment to describe default GCC_COLORS.
+	* diagnostic-core.h (warning_at_rich_loc): New declaration.
+	(error_at_rich_loc): New declaration.
+	(permerror_at_rich_loc): New declaration.
+	(inform_at_rich_loc): New declaration.
+	* diagnostic-show-locus.c (adjust_line): Delete.
+	(struct point_state): New struct.
+	(class colorizer): New class.
+	(class layout_point): New class.
+	(class layout_range): New class.
+	(struct line_bounds): New.
+	(class layout): New class.
+	(colorizer::colorizer): New ctor.
+	(colorizer::~colorizer): New dtor.
+	(layout::layout): New ctor.
+	(layout::print_source_line): New method.
+	(layout::print_annotation_line): New method.
+	(layout::get_state_at_point): New method.
+	(layout::get_x_bound_for_row): New method.
+	(diagnostic_show_locus): Reimplement in terms of class layout.
+	(diagnostic_print_caret_line): Delete.
+	* diagnostic.c (diagnostic_initialize): Replace
+	MAX_LOCATIONS_PER_MESSAGE with rich_location::MAX_RANGES.
+	(diagnostic_set_info_translated): Convert param from location_t
+	to rich_location *.  Eliminate calls to set_location on the
+	message in favor of storing the rich_location ptr there.
+	(diagnostic_set_info): Convert param from location_t to
+	rich_location *.
+	(diagnostic_build_prefix): Break out array into...
+	(diagnostic_kind_color): New variable.
+	(diagnostic_get_color_for_kind): New function.
+	(diagnostic_report_diagnostic): Colorize the option_text
+	using the color for the severity.
+	(diagnostic_append_note): Update for change in signature of
+	diagnostic_set_info.
+	(diagnostic_append_note_at_rich_loc): New function.
+	(emit_diagnostic): Update for change in signature of
+	diagnostic_set_info.
+	(inform): Likewise.
+	(inform_at_rich_loc): New function.
+	(inform_n): Update for change in signature of diagnostic_set_info.
+	(warning): Likewise.
+	(warning_at): Likewise.
+	(warning_at_rich_loc): New function.
+	(warning_n): Update for change in signature of diagnostic_set_info.
+	(pedwarn): Likewise.
+	(permerror): Likewise.
+	(permerror_at_rich_loc): New function.
+	(error): Update for change in signature of diagnostic_set_info.
+	(error_n): Likewise.
+	(error_at): Likewise.
+	(error_at_rich_loc): New function.
+	(sorry): Update for change in signature of diagnostic_set_info.
+	(fatal_error): Likewise.
+	(internal_error): Likewise.
+	(internal_error_no_backtrace): Likewise.
+	(source_range::debug): New function.
+	* diagnostic.h (struct diagnostic_info): Eliminate field
+	"override_column".  Add field "richloc".
+	(struct diagnostic_context): Add field "colorize_source_p".
+	(diagnostic_override_column): Delete.
+	(diagnostic_set_info): Convert param from location_t to
+	rich_location *.
+	(diagnostic_set_info_translated): Likewise.
+	(diagnostic_append_note_at_rich_loc): New function.
+	(diagnostic_num_locations): New function.
+	(diagnostic_expand_location): Get the location from the
+	rich_location.
+	(diagnostic_print_caret_line): Delete.
+	(diagnostic_get_color_for_kind): New declaration.
+	* genmatch.c (linemap_client_expand_location_to_spelling_point): New.
+	(error_cb): Update for change in signature of "error" callback.
+	(fatal_at): Likewise.
+	(warning_at): Likewise.
+	* input.c (linemap_client_expand_location_to_spelling_point): New.
+	* pretty-print.c (text_info::set_range): New method.
+	(text_info::get_location): New method.
+	* pretty-print.h (MAX_LOCATIONS_PER_MESSAGE): Eliminate this macro.
+	(struct text_info): Eliminate "locations" array in favor of
+	"m_richloc", a rich_location *.
+	(textinfo::set_location): Add a "caret_p" param, and reimplement
+	in terms of a call to set_range.
+	(textinfo::get_location): Eliminate inline implementation in favor of
+	an out-of-line reimplementation.
+	(textinfo::set_range): New method.
+	* rtl-error.c (diagnostic_for_asm): Update for change in signature
+	of diagnostic_set_info.
+	* tree-diagnostic.c (default_tree_printer): Update for new
+	"caret_p" param for textinfo::set_location.
+	* tree-pretty-print.c (percent_K_format): Likewise.
+
 2015-11-06  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Properly apply.

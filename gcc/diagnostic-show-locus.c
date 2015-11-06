@@ -36,35 +36,650 @@ along with GCC; see the file COPYING3.  If not see
 # include <sys/ioctl.h>
 #endif
 
-/* If LINE is longer than MAX_WIDTH, and COLUMN is not smaller than
-   MAX_WIDTH by some margin, then adjust the start of the line such
-   that the COLUMN is smaller than MAX_WIDTH minus the margin.  The
-   margin is either CARET_LINE_MARGIN characters or the difference
-   between the column and the length of the line, whatever is smaller.
-   The length of LINE is given by LINE_WIDTH.  */
-static const char *
-adjust_line (const char *line, int line_width,
-	     int max_width, int *column_p)
-{
-  int right_margin = CARET_LINE_MARGIN;
-  int column = *column_p;
+/* Classes for rendering source code and diagnostics, within an
+   anonymous namespace.
+   The work is done by "class layout", which embeds and uses
+   "class colorizer" and "class layout_range" to get things done.  */
 
-  gcc_checking_assert (line_width >= column);
-  right_margin = MIN (line_width - column, right_margin);
-  right_margin = max_width - right_margin;
-  if (line_width >= max_width && column > right_margin)
-    {
-      line += column - right_margin;
-      *column_p = right_margin;
-    }
-  return line;
+namespace {
+
+/* The state at a given point of the source code, assuming that we're
+   in a range: which range are we in, and whether we should draw a caret at
+   this point.  */
+
+struct point_state
+{
+  int range_idx;
+  bool draw_caret_p;
+};
+
+/* A class to inject colorization codes when printing the diagnostic locus.
+
+   It has one kind of colorization for each of:
+     - normal text
+     - range 0 (the "primary location")
+     - range 1
+     - range 2
+
+   The class caches the lookup of the color codes for the above.
+
+   The class also has responsibility for tracking which of the above is
+   active, filtering out unnecessary changes.  This allows
+   layout::print_source_line and layout::print_annotation_line
+   to simply request a colorization code for *every* character they print,
+   via this class, and have the filtering be done for them here.  */
+
+class colorizer
+{
+ public:
+  colorizer (diagnostic_context *context,
+	     const diagnostic_info *diagnostic);
+  ~colorizer ();
+
+  void set_range (int range_idx) { set_state (range_idx); }
+  void set_normal_text () { set_state (STATE_NORMAL_TEXT); }
+
+ private:
+  void set_state (int state);
+  void begin_state (int state);
+  void finish_state (int state);
+
+ private:
+  static const int STATE_NORMAL_TEXT = -1;
+
+  diagnostic_context *m_context;
+  const diagnostic_info *m_diagnostic;
+  int m_current_state;
+  const char *m_caret_cs;
+  const char *m_caret_ce;
+  const char *m_range1_cs;
+  const char *m_range2_cs;
+  const char *m_range_ce;
+};
+
+/* A point within a layout_range; similar to an expanded_location,
+   but after filtering on file.  */
+
+class layout_point
+{
+ public:
+  layout_point (const expanded_location &exploc)
+  : m_line (exploc.line),
+    m_column (exploc.column) {}
+
+  int m_line;
+  int m_column;
+};
+
+/* A class for use by "class layout" below: a filtered location_range.  */
+
+class layout_range
+{
+ public:
+  layout_range (const location_range *loc_range);
+
+  bool contains_point (int row, int column) const;
+
+  layout_point m_start;
+  layout_point m_finish;
+  bool m_show_caret_p;
+  layout_point m_caret;
+};
+
+/* A struct for use by layout::print_source_line for telling
+   layout::print_annotation_line the extents of the source line that
+   it printed, so that underlines can be clipped appropriately.  */
+
+struct line_bounds
+{
+  int m_first_non_ws;
+  int m_last_non_ws;
+};
+
+/* A class to control the overall layout when printing a diagnostic.
+
+   The layout is determined within the constructor.
+   It is then printed by repeatedly calling the "print_source_line"
+   and "print_annotation_line" methods.
+
+   We assume we have disjoint ranges.  */
+
+class layout
+{
+ public:
+  layout (diagnostic_context *context,
+	  const diagnostic_info *diagnostic);
+
+  int get_first_line () const { return m_first_line; }
+  int get_last_line () const { return m_last_line; }
+
+  bool print_source_line (int row, line_bounds *lbounds_out);
+  void print_annotation_line (int row, const line_bounds lbounds);
+
+ private:
+  bool
+  get_state_at_point (/* Inputs.  */
+		      int row, int column,
+		      int first_non_ws, int last_non_ws,
+		      /* Outputs.  */
+		      point_state *out_state);
+
+  int
+  get_x_bound_for_row (int row, int caret_column,
+		       int last_non_ws);
+
+ private:
+  diagnostic_context *m_context;
+  pretty_printer *m_pp;
+  diagnostic_t m_diagnostic_kind;
+  expanded_location m_exploc;
+  colorizer m_colorizer;
+  bool m_colorize_source_p;
+  auto_vec <layout_range> m_layout_ranges;
+  int m_first_line;
+  int m_last_line;
+  int m_x_offset;
+};
+
+/* Implementation of "class colorizer".  */
+
+/* The constructor for "colorizer".  Lookup and store color codes for the
+   different kinds of things we might need to print.  */
+
+colorizer::colorizer (diagnostic_context *context,
+		      const diagnostic_info *diagnostic) :
+  m_context (context),
+  m_diagnostic (diagnostic),
+  m_current_state (STATE_NORMAL_TEXT)
+{
+  m_caret_ce = colorize_stop (pp_show_color (context->printer));
+  m_range1_cs = colorize_start (pp_show_color (context->printer), "range1");
+  m_range2_cs = colorize_start (pp_show_color (context->printer), "range2");
+  m_range_ce = colorize_stop (pp_show_color (context->printer));
 }
 
-/* Print the physical source line corresponding to the location of
-   this diagnostic, and a caret indicating the precise column.  This
-   function only prints two caret characters if the two locations
-   given by DIAGNOSTIC are on the same line according to
-   diagnostic_same_line().  */
+/* The destructor for "colorize".  If colorization is on, print a code to
+   turn it off.  */
+
+colorizer::~colorizer ()
+{
+  finish_state (m_current_state);
+}
+
+/* Update state, printing color codes if necessary if there's a state
+   change.  */
+
+void
+colorizer::set_state (int new_state)
+{
+  if (m_current_state != new_state)
+    {
+      finish_state (m_current_state);
+      m_current_state = new_state;
+      begin_state (new_state);
+    }
+}
+
+/* Turn on any colorization for STATE.  */
+
+void
+colorizer::begin_state (int state)
+{
+  switch (state)
+    {
+    case STATE_NORMAL_TEXT:
+      break;
+
+    case 0:
+      /* Make range 0 be the same color as the "kind" text
+	 (error vs warning vs note).  */
+      pp_string
+	(m_context->printer,
+	 colorize_start (pp_show_color (m_context->printer),
+			 diagnostic_get_color_for_kind (m_diagnostic->kind)));
+      break;
+
+    case 1:
+      pp_string (m_context->printer, m_range1_cs);
+      break;
+
+    case 2:
+      pp_string (m_context->printer, m_range2_cs);
+      break;
+
+    default:
+      /* We don't expect more than 3 ranges per diagnostic.  */
+      gcc_unreachable ();
+      break;
+    }
+}
+
+/* Turn off any colorization for STATE.  */
+
+void
+colorizer::finish_state (int state)
+{
+  switch (state)
+    {
+    case STATE_NORMAL_TEXT:
+      break;
+
+    case 0:
+      pp_string (m_context->printer, m_caret_ce);
+      break;
+
+    default:
+      /* Within a range.  */
+      gcc_assert (state > 0);
+      pp_string (m_context->printer, m_range_ce);
+      break;
+    }
+}
+
+/* Implementation of class layout_range.  */
+
+/* The constructor for class layout_range.
+   Initialize various layout_point fields from expanded_location
+   equivalents; we've already filtered on file.  */
+
+layout_range::layout_range (const location_range *loc_range)
+: m_start (loc_range->m_start),
+  m_finish (loc_range->m_finish),
+  m_show_caret_p (loc_range->m_show_caret_p),
+  m_caret (loc_range->m_caret)
+{
+}
+
+/* Is (column, row) within the given range?
+   We've already filtered on the file.
+
+   Ranges are closed (both limits are within the range).
+
+   Example A: a single-line range:
+     start:  (col=22, line=2)
+     finish: (col=38, line=2)
+
+  |00000011111111112222222222333333333344444444444
+  |34567890123456789012345678901234567890123456789
+--+-----------------------------------------------
+01|bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+02|bbbbbbbbbbbbbbbbbbbSwwwwwwwwwwwwwwwFaaaaaaaaaaa
+03|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+   Example B: a multiline range with
+     start:  (col=14, line=3)
+     finish: (col=08, line=5)
+
+  |00000011111111112222222222333333333344444444444
+  |34567890123456789012345678901234567890123456789
+--+-----------------------------------------------
+01|bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+02|bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+03|bbbbbbbbbbbSwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+04|wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+05|wwwwwFaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+06|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+--+-----------------------------------------------
+
+   Legend:
+   - 'b' indicates a point *before* the range
+   - 'S' indicates the start of the range
+   - 'w' indicates a point within the range
+   - 'F' indicates the finish of the range (which is
+	 within it).
+   - 'a' indicates a subsequent point *after* the range.  */
+
+bool
+layout_range::contains_point (int row, int column) const
+{
+  gcc_assert (m_start.m_line <= m_finish.m_line);
+  /* ...but the equivalent isn't true for the columns;
+     consider example B in the comment above.  */
+
+  if (row < m_start.m_line)
+    /* Points before the first line of the range are
+       outside it (corresponding to line 01 in example A
+       and lines 01 and 02 in example B above).  */
+    return false;
+
+  if (row == m_start.m_line)
+    /* On same line as start of range (corresponding
+       to line 02 in example A and line 03 in example B).  */
+    {
+      if (column < m_start.m_column)
+	/* Points on the starting line of the range, but
+	   before the column in which it begins.  */
+	return false;
+
+      if (row < m_finish.m_line)
+	/* This is a multiline range; the point
+	   is within it (corresponds to line 03 in example B
+	   from column 14 onwards) */
+	return true;
+      else
+	{
+	  /* This is a single-line range.  */
+	  gcc_assert (row == m_finish.m_line);
+	  return column <= m_finish.m_column;
+	}
+    }
+
+  /* The point is in a line beyond that containing the
+     start of the range: lines 03 onwards in example A,
+     and lines 04 onwards in example B.  */
+  gcc_assert (row > m_start.m_line);
+
+  if (row > m_finish.m_line)
+    /* The point is beyond the final line of the range
+       (lines 03 onwards in example A, and lines 06 onwards
+       in example B).  */
+    return false;
+
+  if (row < m_finish.m_line)
+    {
+      /* The point is in a line that's fully within a multiline
+	 range (e.g. line 04 in example B).  */
+      gcc_assert (m_start.m_line < m_finish.m_line);
+      return true;
+    }
+
+  gcc_assert (row ==  m_finish.m_line);
+
+  return column <= m_finish.m_column;
+}
+
+/* Given a source line LINE of length LINE_WIDTH, determine the width
+   without any trailing whitespace.  */
+
+static int
+get_line_width_without_trailing_whitespace (const char *line, int line_width)
+{
+  int result = line_width;
+  while (result > 0)
+    {
+      char ch = line[result - 1];
+      if (ch == ' ' || ch == '\t')
+	result--;
+      else
+	break;
+    }
+  gcc_assert (result >= 0);
+  gcc_assert (result <= line_width);
+  gcc_assert (result == 0 ||
+	      (line[result - 1] != ' '
+	       && line[result -1] != '\t'));
+  return result;
+}
+
+/* Implementation of class layout.  */
+
+/* Constructor for class layout.
+
+   Filter the ranges from the rich_location to those that we can
+   sanely print, populating m_layout_ranges.
+   Determine the range of lines that we will print.
+   Determine m_x_offset, to ensure that the primary caret
+   will fit within the max_width provided by the diagnostic_context.  */
+
+layout::layout (diagnostic_context * context,
+		const diagnostic_info *diagnostic)
+: m_context (context),
+  m_pp (context->printer),
+  m_diagnostic_kind (diagnostic->kind),
+  m_exploc (diagnostic->richloc->lazily_expand_location ()),
+  m_colorizer (context, diagnostic),
+  m_colorize_source_p (context->colorize_source_p),
+  m_layout_ranges (rich_location::MAX_RANGES),
+  m_first_line (m_exploc.line),
+  m_last_line  (m_exploc.line),
+  m_x_offset (0)
+{
+  rich_location *richloc = diagnostic->richloc;
+  for (unsigned int idx = 0; idx < richloc->get_num_locations (); idx++)
+    {
+      /* This diagnostic printer can only cope with "sufficiently sane" ranges.
+	 Ignore any ranges that are awkward to handle.  */
+      location_range *loc_range = richloc->get_range (idx);
+
+      /* If any part of the range isn't in the same file as the primary
+	 location of this diagnostic, ignore the range.  */
+      if (loc_range->m_start.file != m_exploc.file)
+	continue;
+      if (loc_range->m_finish.file != m_exploc.file)
+	continue;
+      if (loc_range->m_show_caret_p)
+	if (loc_range->m_caret.file != m_exploc.file)
+	  continue;
+
+      /* Passed all the tests; add the range to m_layout_ranges so that
+	 it will be printed.  */
+      layout_range ri (loc_range);
+      m_layout_ranges.safe_push (ri);
+
+      /* Update m_first_line/m_last_line if necessary.  */
+      if (loc_range->m_start.line < m_first_line)
+	m_first_line = loc_range->m_start.line;
+      if (loc_range->m_finish.line > m_last_line)
+	m_last_line = loc_range->m_finish.line;
+    }
+
+  /* Adjust m_x_offset.
+     Center the primary caret to fit in max_width; all columns
+     will be adjusted accordingly.  */
+  int max_width = m_context->caret_max_width;
+  int line_width;
+  const char *line = location_get_source_line (m_exploc.file, m_exploc.line,
+					       &line_width);
+  if (line && m_exploc.column <= line_width)
+    {
+      int right_margin = CARET_LINE_MARGIN;
+      int column = m_exploc.column;
+      right_margin = MIN (line_width - column, right_margin);
+      right_margin = max_width - right_margin;
+      if (line_width >= max_width && column > right_margin)
+	m_x_offset = column - right_margin;
+      gcc_assert (m_x_offset >= 0);
+    }
+}
+
+/* Attempt to print line ROW of source code, potentially colorized at any
+   ranges.
+   Return true if the line was printed, populating *LBOUNDS_OUT.
+   Return false if the source line could not be read, leaving *LBOUNDS_OUT
+   untouched.  */
+
+bool
+layout::print_source_line (int row, line_bounds *lbounds_out)
+{
+  int line_width;
+  const char *line = location_get_source_line (m_exploc.file, row,
+					       &line_width);
+  if (!line)
+    return false;
+
+  line += m_x_offset;
+
+  m_colorizer.set_normal_text ();
+
+  /* We will stop printing the source line at any trailing
+     whitespace.  */
+  line_width = get_line_width_without_trailing_whitespace (line,
+							   line_width);
+
+  pp_space (m_pp);
+  int first_non_ws = INT_MAX;
+  int last_non_ws = 0;
+  int column;
+  for (column = 1 + m_x_offset; column <= line_width; column++)
+    {
+      /* Assuming colorization is enabled for the caret and underline
+	 characters, we may also colorize the associated characters
+	 within the source line.
+
+	 For frontends that generate range information, we color the
+	 associated characters in the source line the same as the
+	 carets and underlines in the annotation line, to make it easier
+	 for the reader to see the pertinent code.
+
+	 For frontends that only generate carets, we don't colorize the
+	 characters above them, since this would look strange (e.g.
+	 colorizing just the first character in a token).  */
+      if (m_colorize_source_p)
+	{
+	  bool in_range_p;
+	  point_state state;
+	  in_range_p = get_state_at_point (row, column,
+					   0, INT_MAX,
+					   &state);
+	  if (in_range_p)
+	    m_colorizer.set_range (state.range_idx);
+	  else
+	    m_colorizer.set_normal_text ();
+	}
+      char c = *line == '\t' ? ' ' : *line;
+      if (c == '\0')
+	c = ' ';
+      if (c != ' ')
+	{
+	  last_non_ws = column;
+	  if (first_non_ws == INT_MAX)
+	    first_non_ws = column;
+	}
+      pp_character (m_pp, c);
+      line++;
+    }
+  pp_newline (m_pp);
+
+  lbounds_out->m_first_non_ws = first_non_ws;
+  lbounds_out->m_last_non_ws = last_non_ws;
+  return true;
+}
+
+/* Print a line consisting of the caret/underlines for the given
+   source line.  */
+
+void
+layout::print_annotation_line (int row, const line_bounds lbounds)
+{
+  int x_bound = get_x_bound_for_row (row, m_exploc.column,
+				     lbounds.m_last_non_ws);
+
+  pp_space (m_pp);
+  for (int column = 1 + m_x_offset; column < x_bound; column++)
+    {
+      bool in_range_p;
+      point_state state;
+      in_range_p = get_state_at_point (row, column,
+				       lbounds.m_first_non_ws,
+				       lbounds.m_last_non_ws,
+				       &state);
+      if (in_range_p)
+	{
+	  /* Within a range.  Draw either the caret or an underline.  */
+	  m_colorizer.set_range (state.range_idx);
+	  if (state.draw_caret_p)
+	    /* Draw the caret.  */
+	    pp_character (m_pp, m_context->caret_chars[state.range_idx]);
+	  else
+	    pp_character (m_pp, '~');
+	}
+      else
+	{
+	  /* Not in a range.  */
+	  m_colorizer.set_normal_text ();
+	  pp_character (m_pp, ' ');
+	}
+    }
+  pp_newline (m_pp);
+}
+
+/* Return true if (ROW/COLUMN) is within a range of the layout.
+   If it returns true, OUT_STATE is written to, with the
+   range index, and whether we should draw the caret at
+   (ROW/COLUMN) (as opposed to an underline).  */
+
+bool
+layout::get_state_at_point (/* Inputs.  */
+			    int row, int column,
+			    int first_non_ws, int last_non_ws,
+			    /* Outputs.  */
+			    point_state *out_state)
+{
+  layout_range *range;
+  int i;
+  FOR_EACH_VEC_ELT (m_layout_ranges, i, range)
+    {
+      if (range->contains_point (row, column))
+	{
+	  out_state->range_idx = i;
+
+	  /* Are we at the range's caret?  is it visible? */
+	  out_state->draw_caret_p = false;
+	  if (row == range->m_caret.m_line
+	      && column == range->m_caret.m_column)
+	    out_state->draw_caret_p = range->m_show_caret_p;
+
+	  /* Within a multiline range, don't display any underline
+	     in any leading or trailing whitespace on a line.
+	     We do display carets, however.  */
+	  if (!out_state->draw_caret_p)
+	    if (column < first_non_ws || column > last_non_ws)
+	      return false;
+
+	  /* We are within a range.  */
+	  return true;
+	}
+    }
+
+  return false;
+}
+
+/* Helper function for use by layout::print_line when printing the
+   annotation line under the source line.
+   Get the column beyond the rightmost one that could contain a caret or
+   range marker, given that we stop rendering at trailing whitespace.
+   ROW is the source line within the given file.
+   CARET_COLUMN is the column of range 0's caret.
+   LAST_NON_WS_COLUMN is the last column containing a non-whitespace
+   character of source (as determined when printing the source line).  */
+
+int
+layout::get_x_bound_for_row (int row, int caret_column,
+			     int last_non_ws_column)
+{
+  int result = caret_column + 1;
+
+  layout_range *range;
+  int i;
+  FOR_EACH_VEC_ELT (m_layout_ranges, i, range)
+    {
+      if (row >= range->m_start.m_line)
+	{
+	  if (range->m_finish.m_line == row)
+	    {
+	      /* On the final line within a range; ensure that
+		 we render up to the end of the range.  */
+	      if (result <= range->m_finish.m_column)
+		result = range->m_finish.m_column + 1;
+	    }
+	  else if (row < range->m_finish.m_line)
+	    {
+	      /* Within a multiline range; ensure that we render up to the
+		 last non-whitespace column.  */
+	      if (result <= last_non_ws_column)
+		result = last_non_ws_column + 1;
+	    }
+	}
+    }
+
+  return result;
+}
+
+} /* End of anonymous namespace.  */
+
+/* Print the physical source code corresponding to the location of
+   this diagnostic, with additional annotations.  */
+
 void
 diagnostic_show_locus (diagnostic_context * context,
 		       const diagnostic_info *diagnostic)
@@ -75,92 +690,32 @@ diagnostic_show_locus (diagnostic_context * context,
     return;
 
   context->last_location = diagnostic_location (diagnostic, 0);
-  expanded_location s0 = diagnostic_expand_location (diagnostic, 0);
-  expanded_location s1 = { };
-  /* Zero-initialized. This is checked later by diagnostic_print_caret_line.  */
 
-  if (diagnostic_location (diagnostic, 1) > BUILTINS_LOCATION)
-    s1 = diagnostic_expand_location (diagnostic, 1);
-
-  diagnostic_print_caret_line (context, s0, s1,
-			       context->caret_chars[0],
-			       context->caret_chars[1]);
-}
-
-/* Print (part) of the source line given by xloc1 with caret1 pointing
-   at the column.  If xloc2.column != 0 and it fits within the same
-   line as xloc1 according to diagnostic_same_line (), then caret2 is
-   printed at xloc2.colum.  Otherwise, the caller has to set up things
-   to print a second caret line for xloc2.  */
-void
-diagnostic_print_caret_line (diagnostic_context * context,
-			     expanded_location xloc1,
-			     expanded_location xloc2,
-			     char caret1, char caret2)
-{
-  if (!diagnostic_same_line (context, xloc1, xloc2))
-    /* This will mean ignore xloc2.  */
-    xloc2.column = 0;
-  else if (xloc1.column == xloc2.column)
-    xloc2.column++;
-
-  int cmax = MAX (xloc1.column, xloc2.column);
-  int line_width;
-  const char *line = location_get_source_line (xloc1.file, xloc1.line,
-					       &line_width);
-  if (line == NULL || cmax > line_width)
-    return;
-
-  /* Center the interesting part of the source line to fit in
-     max_width, and adjust all columns accordingly.  */
-  int max_width = context->caret_max_width;
-  int offset = (int) cmax;
-  line = adjust_line (line, line_width, max_width, &offset);
-  offset -= cmax;
-  cmax += offset;
-  xloc1.column += offset;
-  if (xloc2.column)
-    xloc2.column += offset;
-
-  /* Print the source line.  */
   pp_newline (context->printer);
+
   const char *saved_prefix = pp_get_prefix (context->printer);
   pp_set_prefix (context->printer, NULL);
-  pp_space (context->printer);
-  while (max_width > 0 && line_width > 0)
-    {
-      char c = *line == '\t' ? ' ' : *line;
-      if (c == '\0')
-	c = ' ';
-      pp_character (context->printer, c);
-      max_width--;
-      line_width--;
-      line++;
-    }
-  pp_newline (context->printer);
 
-  /* Print the caret under the line.  */
-  const char *caret_cs, *caret_ce;
-  caret_cs = colorize_start (pp_show_color (context->printer), "caret");
-  caret_ce = colorize_stop (pp_show_color (context->printer));
-  int cmin = xloc2.column
-    ? MIN (xloc1.column, xloc2.column) : xloc1.column;
-  int caret_min = cmin == xloc1.column ? caret1 : caret2;
-  int caret_max = cmin == xloc1.column ? caret2 : caret1;
+  {
+    layout layout (context, diagnostic);
+    int last_line = layout.get_last_line ();
+    for (int row = layout.get_first_line ();
+	 row <= last_line;
+	 row++)
+      {
+	/* Print the source line, followed by an annotation line
+	   consisting of any caret/underlines.  If the source line can't
+	   be read, print nothing.  */
+	line_bounds lbounds;
+	if (layout.print_source_line (row, &lbounds))
+	  layout.print_annotation_line (row, lbounds);
+      }
 
-  /* cmin is >= 1, but we indent with an extra space at the start like
-     we did above.  */
-  int i;
-  for (i = 0; i < cmin; i++)
-    pp_space (context->printer);
-  pp_printf (context->printer, "%s%c%s", caret_cs, caret_min, caret_ce);
+    /* The closing scope here leads to the dtor for layout and thus
+       colorizer being called here, which affects the precise
+       place where colorization is turned off in the unittest
+       for colorized output.  */
+  }
 
-  if (xloc2.column)
-    {
-      for (i++; i < cmax; i++)
-	pp_space (context->printer);
-      pp_printf (context->printer, "%s%c%s", caret_cs, caret_max, caret_ce);
-    }
   pp_set_prefix (context->printer, saved_prefix);
-  pp_needs_newline (context->printer) = true;
 }
