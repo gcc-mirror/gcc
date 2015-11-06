@@ -1,3 +1,9 @@
+2015-11-06  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/54224
+	* gfortran.dg/warn_unused_function_2.f90: Add two new 
+	"defined but not used" subroutines.
+
 2015-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/ordered-2.c (f1): Expect an extra error.
