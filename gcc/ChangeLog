@@ -1,3 +1,13 @@
+2015-11-06  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/67753
+	PR rtl-optimization/64164
+	* function.c (assign_parm_setup_block): Avoid allocating a
+	stack slot if we don't have an ABI-reserved one.  Emit the
+	copy to target_reg in the conversion seq if the copy from
+	entry_parm is in it too.  Don't use the conversion seq to copy
+	a PARALLEL to a REG or a CONCAT.
+
 2015-11-06  Richard Biener  <rguenther@suse.de>
 
 	* tree-hash-traits.h (tree_operand_hash): Provide equal, not

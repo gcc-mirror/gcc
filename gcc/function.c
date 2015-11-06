@@ -2879,6 +2879,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   rtx entry_parm = data->entry_parm;
   rtx stack_parm = data->stack_parm;
   rtx target_reg = NULL_RTX;
+  bool in_conversion_seq = false;
   HOST_WIDE_INT size;
   HOST_WIDE_INT size_stored;
 
@@ -2895,9 +2896,23 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
       if (GET_CODE (reg) != CONCAT)
 	stack_parm = reg;
       else
-	/* This will use or allocate a stack slot that we'd rather
-	   avoid.  FIXME: Could we avoid it in more cases?  */
-	target_reg = reg;
+	{
+	  target_reg = reg;
+	  /* Avoid allocating a stack slot, if there isn't one
+	     preallocated by the ABI.  It might seem like we should
+	     always prefer a pseudo, but converting between
+	     floating-point and integer modes goes through the stack
+	     on various machines, so it's better to use the reserved
+	     stack slot than to risk wasting it and allocating more
+	     for the conversion.  */
+	  if (stack_parm == NULL_RTX)
+	    {
+	      int save = generating_concat_p;
+	      generating_concat_p = 0;
+	      stack_parm = gen_reg_rtx (mode);
+	      generating_concat_p = save;
+	    }
+	}
       data->stack_parm = NULL;
     }
 
@@ -2938,7 +2953,9 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
       mem = validize_mem (copy_rtx (stack_parm));
 
       /* Handle values in multiple non-contiguous locations.  */
-      if (GET_CODE (entry_parm) == PARALLEL)
+      if (GET_CODE (entry_parm) == PARALLEL && !MEM_P (mem))
+	emit_group_store (mem, entry_parm, data->passed_type, size);
+      else if (GET_CODE (entry_parm) == PARALLEL)
 	{
 	  push_to_sequence2 (all->first_conversion_insn,
 			     all->last_conversion_insn);
@@ -2946,6 +2963,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	  all->first_conversion_insn = get_insns ();
 	  all->last_conversion_insn = get_last_insn ();
 	  end_sequence ();
+	  in_conversion_seq = true;
 	}
 
       else if (size == 0)
@@ -3025,11 +3043,22 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
       all->first_conversion_insn = get_insns ();
       all->last_conversion_insn = get_last_insn ();
       end_sequence ();
+      in_conversion_seq = true;
     }
 
   if (target_reg)
     {
-      emit_move_insn (target_reg, stack_parm);
+      if (!in_conversion_seq)
+	emit_move_insn (target_reg, stack_parm);
+      else
+	{
+	  push_to_sequence2 (all->first_conversion_insn,
+			     all->last_conversion_insn);
+	  emit_move_insn (target_reg, stack_parm);
+	  all->first_conversion_insn = get_insns ();
+	  all->last_conversion_insn = get_last_insn ();
+	  end_sequence ();
+	}
       stack_parm = target_reg;
     }
 
