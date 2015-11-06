@@ -1,5 +1,15 @@
 2015-11-06  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+	Properly apply.
+	2015-11-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+        * config/aarch64/aarch64.c
+        (aarch64_can_use_per_function_literal_pools_p): New.
+        (aarch64_use_blocks_for_constant_p): Adjust declaration
+        and use aarch64_can_use_function_literal_pools_p.
+        (aarch64_select_rtx_section): Update.
+
+2015-11-06  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
 	* config/arm/arm-ldmstm.ml: Rewrite to generate unified asm templates.
 	* config/arm/arm.c (arm_asm_trampoline_template): Make unified asm safe.
 	(arm_output_multireg_pop): Likewise.

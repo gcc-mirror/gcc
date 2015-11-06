@@ -5237,24 +5237,38 @@ aarch64_uxt_size (int shift, HOST_WIDE_INT mask)
   return 0;
 }
 
+/* Constant pools are per function only when PC relative
+   literal loads are true or we are in the large memory
+   model.  */
+
+static inline bool
+aarch64_can_use_per_function_literal_pools_p (void)
+{
+  return (!aarch64_nopcrelative_literal_loads
+	  || aarch64_cmodel == AARCH64_CMODEL_LARGE);
+}
+
 static bool
-aarch64_use_blocks_for_constant_p (machine_mode mode ATTRIBUTE_UNUSED,
-				   const_rtx x ATTRIBUTE_UNUSED)
+aarch64_use_blocks_for_constant_p (machine_mode, const_rtx)
 {
   /* We can't use blocks for constants when we're using a per-function
      constant pool.  */
-  return false;
+  return !aarch64_can_use_per_function_literal_pools_p ();
 }
+
+/* Select appropriate section for constants depending
+   on where we place literal pools.  */
 
 static section *
-aarch64_select_rtx_section (machine_mode mode ATTRIBUTE_UNUSED,
-			    rtx x ATTRIBUTE_UNUSED,
-			    unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
+aarch64_select_rtx_section (machine_mode mode,
+			    rtx x,
+			    unsigned HOST_WIDE_INT align)
 {
-  /* Force all constant pool entries into the current function section.  */
-  return function_section (current_function_decl);
-}
+  if (aarch64_can_use_per_function_literal_pools_p ())
+    return function_section (current_function_decl);
 
+  return default_elf_select_rtx_section (mode, x, align);
+}
 
 /* Costs.  */
 
