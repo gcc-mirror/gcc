@@ -467,6 +467,8 @@ proc v3_target_compile { source dest type options } {
     global STATIC_LIBCXXFLAGS
     global tool
 
+    lappend options "additional_flags=-fno-diagnostics-show-caret -fdiagnostics-color=never"
+
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
         lappend options "ldflags=${wrap_flags}"
