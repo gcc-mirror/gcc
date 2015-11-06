@@ -1,3 +1,14 @@
+2015-11-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (class sccvn_dom_walker): Add destructor.
+	* lra.c (init_reg_info): Truncate copy_vec instead of
+	re-allocating a new one and leaking the old.
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Free
+	bb_infos vec.
+	* sched-deps.c (sched_deps_finish): Free the dn/dl pools.
+	* postreload-gcse.c (free_mem): Free modify_mem_list and
+	canon_modify_mem_list.
+
 2015-11-06  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR tree-optimization/68145

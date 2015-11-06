@@ -1293,7 +1293,7 @@ init_reg_info (void)
   lra_reg_info = XNEWVEC (struct lra_reg, reg_info_size);
   for (i = 0; i < reg_info_size; i++)
     initialize_lra_reg_info_element (i);
-  copy_vec.create (100);
+  copy_vec.truncate (0);
 }
 
 
