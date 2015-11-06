@@ -2447,7 +2447,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 			  "%<%T [%wu]%> and size %qwu in a region of type %qT "
 			  "and size %qwi"
 			  : "placement new constructing an object of type "
-			  "%<%T [%lu]%> and size %qwu in a region of type %qT "
+			  "%<%T [%wu]%> and size %qwu in a region of type %qT "
 			  "and size at most %qwu",
 			  type, tree_to_uhwi (nelts), bytes_need,
 			  TREE_TYPE (oper),
