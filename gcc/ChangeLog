@@ -1,3 +1,8 @@
+2015-11-06  David Wohlferd  <dw@LimeGreenSocks.com>
+
+	* doc/md.texi (multi-alternative constraints): Don't document
+	alternatives inherently tied to reload for the user documentation.
+
 2015-11-06  Michael Collison  <michael.collison@linaro.org
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
