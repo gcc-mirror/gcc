@@ -1465,6 +1465,8 @@ can be described by a series of letters for each operand.  The overall
 constraint for an operand is made from the letters for this operand
 from the first alternative, a comma, the letters for this operand from
 the second alternative, a comma, and so on until the last alternative.
+All operands for a single instruction must have the same number of 
+alternatives.
 @ifset INTERNALS
 Here is how it is done for fullword logical-or on the 68000:
 
@@ -1482,9 +1484,7 @@ operand 1 (meaning it must match operand 0), and @samp{dKs} for operand
 @samp{0} for operand 1, and @samp{dmKs} for operand 2.  The @samp{=} and
 @samp{%} in the constraints apply to all the alternatives; their
 meaning is explained in the next section (@pxref{Class Preferences}).
-@end ifset
 
-@c FIXME Is this ? and ! stuff of use in asm()?  If not, hide unless INTERNAL
 If all the operands fit any one alternative, the instruction is valid.
 Otherwise, for each alternative, the compiler counts how many instructions
 must be added to copy the operands so that that alternative applies.
@@ -1521,7 +1521,6 @@ This constraint is analogous to @samp{!} but it disparages severely
 the alternative only if the operand with the @samp{$} needs a reload.
 @end table
 
-@ifset INTERNALS
 When an insn pattern has multiple alternatives in its constraints, often
 the appearance of the assembler code is determined mostly by which
 alternative was matched.  When this is so, the C code for writing the
@@ -1529,6 +1528,21 @@ assembler code can use the variable @code{which_alternative}, which is
 the ordinal number of the alternative that was actually satisfied (0 for
 the first, 1 for the second alternative, etc.).  @xref{Output Statement}.
 @end ifset
+@ifclear INTERNALS
+
+So the first alternative for the 68000's logical-or could be written as 
+@code{"+m" (output) : "ir" (input)}.  The second could be @code{"+r" 
+(output): "irm" (input)}.  However, the fact that two memory locations 
+cannot be used in a single instruction prevents simply using @code{"+rm" 
+(output) : "irm" (input)}.  Using multi-alternatives, this might be 
+written as @code{"+m,r" (output) : "ir,irm" (input)}.  This describes
+all the available alternatives to the compiler, allowing it to choose 
+the most efficient one for the current conditions.
+
+There is no way within the template to determine which alternative was 
+chosen.  However you may be able to wrap your @code{asm} statements with 
+builtins such as @code{__builtin_constant_p} to achieve the desired results.
+@end ifclear
 
 @ifset INTERNALS
 @node Class Preferences
