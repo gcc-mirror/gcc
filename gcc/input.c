@@ -866,6 +866,12 @@ dump_line_table_statistics (void)
   fprintf (stderr, "Total used maps size:                %5ld%c\n",
            SCALE (total_used_map_size),
            STAT_LABEL (total_used_map_size));
+  fprintf (stderr, "Ad-hoc table size:                   %5ld%c\n",
+	   SCALE (s.adhoc_table_size),
+	   STAT_LABEL (s.adhoc_table_size));
+  fprintf (stderr, "Ad-hoc table entries used:           %5ld\n",
+	   s.adhoc_table_entries_used);
+
   fprintf (stderr, "\n");
 }
 

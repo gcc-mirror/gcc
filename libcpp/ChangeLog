@@ -1,3 +1,9 @@
+2015-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (struct linemap_stats): Add fields
+	"adhoc_table_size" and "adhoc_table_entries_used".
+	* line-map.c (linemap_get_statistics): Populate above fields.
+
 2015-11-04  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* config.in: Regenerate.

@@ -1712,6 +1712,9 @@ linemap_get_statistics (struct line_maps *set,
   s->macro_maps_used_size = macro_maps_used_size;
   s->duplicated_macro_maps_locations_size =
     duplicated_macro_maps_locations_size;
+  s->adhoc_table_size = (set->location_adhoc_data_map.allocated
+			 * sizeof (struct location_adhoc_data));
+  s->adhoc_table_entries_used = set->location_adhoc_data_map.curr_loc;
 }
 
 
