@@ -2086,6 +2086,7 @@ namespace wi
 inline unsigned int
 wi::int_traits <rtx_mode_t>::get_precision (const rtx_mode_t &x)
 {
+  gcc_checking_assert (x.second != BLKmode && x.second != VOIDmode);
   return GET_MODE_PRECISION (x.second);
 }
 

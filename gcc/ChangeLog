@@ -1,3 +1,15 @@
+2015-11-06  Mike Stump  <mikestump@comcast.net>
+
+	PR debug/66728
+	* dwarf2out.c (get_full_len): Return a value based upon the actual
+	precision needed for the value.
+	(add_const_value_attribute): Use a maximal wide-int for
+	CONST_WIDE_INTs, not VOIDmode.
+	(output_die): Don't ever output NULL with printf.
+
+	* rtl.h (get_precision of rtx_mode_t): Ensure we never process
+	BLKmode nor VOIDmode values.
+
 2015-11-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-color.c (color_dict): Eliminate "caret"; add "range1"
