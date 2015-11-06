@@ -1,3 +1,8 @@
+2015-11-06  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (push_inline_template_parms_recursive): Don't recreate the
+	CONST_DECL.
+
 2015-11-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* init.c (warn_placement_new_too_small): Use %wu format
