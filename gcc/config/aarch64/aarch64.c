@@ -52,6 +52,7 @@
 #include "params.h"
 #include "gimplify.h"
 #include "dwarf2.h"
+#include "gimple-iterator.h"
 #include "tree-vectorizer.h"
 #include "aarch64-cost-tables.h"
 #include "dumpfile.h"

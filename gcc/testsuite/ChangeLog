@@ -1,3 +1,7 @@
+2015-11-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-38.c: New testcase.
+
 2015-11-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gfortran.dg/goacc/private-3.f95: XFAIL.

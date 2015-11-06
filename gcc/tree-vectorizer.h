@@ -390,6 +390,8 @@ nested_in_vect_loop_p (struct loop *loop, gimple *stmt)
 typedef struct _bb_vec_info : public vec_info
 {
   basic_block bb;
+  gimple_stmt_iterator region_begin;
+  gimple_stmt_iterator region_end;
 } *bb_vec_info;
 
 #define BB_VINFO_BB(B)               (B)->bb
@@ -1085,5 +1087,6 @@ void vect_pattern_recog (vec_info *);
 /* In tree-vectorizer.c.  */
 unsigned vectorize_loops (void);
 void vect_destroy_datarefs (vec_info *);
+bool vect_stmt_in_region_p (vec_info *, gimple *);
 
 #endif  /* GCC_TREE_VECTORIZER_H  */
