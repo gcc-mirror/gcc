@@ -107,27 +107,7 @@ static bool
 vect_same_loop_or_bb_p (gimple *stmt1, gimple *stmt2)
 {
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt1);
-  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
-
-  if (!gimple_bb (stmt2))
-    return false;
-
-  if (loop_vinfo)
-    {
-      struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-      if (!flow_bb_inside_loop_p (loop, gimple_bb (stmt2)))
-	return false;
-    }
-  else
-    {
-      if (gimple_bb (stmt2) != BB_VINFO_BB (bb_vinfo)
-	  || gimple_code (stmt2) == GIMPLE_PHI)
-	return false;
-    }
-
-  gcc_assert (vinfo_for_stmt (stmt2));
-  return true;
+  return vect_stmt_in_region_p (stmt_vinfo->vinfo, stmt2);
 }
 
 /* If the LHS of DEF_STMT has a single use, and that statement is
@@ -3611,33 +3591,42 @@ vect_pattern_recog (vec_info *vinfo)
       loop = LOOP_VINFO_LOOP (loop_vinfo);
       bbs = LOOP_VINFO_BBS (loop_vinfo);
       nbbs = loop->num_nodes;
+
+      /* Scan through the loop stmts, applying the pattern recognition
+	 functions starting at each stmt visited:  */
+      for (i = 0; i < nbbs; i++)
+	{
+	  basic_block bb = bbs[i];
+	  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+	    {
+	      /* Scan over all generic vect_recog_xxx_pattern functions.  */
+	      for (j = 0; j < NUM_PATTERNS; j++)
+		{
+		  vect_recog_func = vect_vect_recog_func_ptrs[j];
+		  vect_pattern_recog_1 (vect_recog_func, si,
+					&stmts_to_replace);
+		}
+	    }
+	}
     }
   else
     {
-      bbs = &as_a <bb_vec_info> (vinfo)->bb;
-      nbbs = 1;
-    }
-
-  /* Scan through the loop stmts, applying the pattern recognition
-     functions starting at each stmt visited:  */
-  for (i = 0; i < nbbs; i++)
-    {
-      basic_block bb = bbs[i];
-      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-        {
-	  if (is_a <bb_vec_info> (vinfo)
-	      && (stmt = gsi_stmt (si))
+      bb_vec_info bb_vinfo = as_a <bb_vec_info> (vinfo);
+      for (si = bb_vinfo->region_begin;
+	   gsi_stmt (si) != gsi_stmt (bb_vinfo->region_end); gsi_next (&si))
+	{
+	  if ((stmt = gsi_stmt (si))
 	      && vinfo_for_stmt (stmt)
 	      && !STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)))
-	   continue;
+	    continue;
 
-          /* Scan over all generic vect_recog_xxx_pattern functions.  */
-          for (j = 0; j < NUM_PATTERNS; j++)
-            {
+	  /* Scan over all generic vect_recog_xxx_pattern functions.  */
+	  for (j = 0; j < NUM_PATTERNS; j++)
+	    {
 	      vect_recog_func = vect_vect_recog_func_ptrs[j];
 	      vect_pattern_recog_1 (vect_recog_func, si,
 				    &stmts_to_replace);
-            }
-        }
+	    }
+	}
     }
 }

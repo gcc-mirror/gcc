@@ -1,3 +1,23 @@
+2015-11-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (struct _bb_vec_info): Add region_begin/end
+	members.
+	(vect_stmt_in_region_p): Declare.
+	* tree-vect-slp.c (new_bb_vec_info): Work on a region.
+	(destroy_bb_vec_info): Likewise.
+	(vect_bb_slp_scalar_cost): Use vect_stmt_in_region_p.
+	(vect_get_and_check_slp_defs): Likewise.
+	(vect_slp_analyze_bb_1): Refactor to make it work on sub-BBs.
+	(vect_slp_bb): Likewise.
+	* tree-vect-patterns.c (vect_same_loop_or_bb_p): Implement
+	in terms of vect_stmt_in_region_p.
+	(vect_pattern_recog): Iterate over the BB region.
+	* tree-vect-stmts.c (vect_is_simple_use): Use vect_stmt_in_region_p.
+	* tree-vectorizer.c (vect_stmt_in_region_p): New function.
+	(pass_slp_vectorize::execute): Initialize all stmt UIDs to -1.
+	* config/i386/i386.c: Include gimple-iterator.h.
+	* config/aarch64/aarch64.c: Likewise.
+
 2015-11-06  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/67753

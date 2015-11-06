@@ -8141,12 +8141,7 @@ vect_is_simple_use (tree operand, vec_info *vinfo,
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, *def_stmt, 0);
     }
 
-  basic_block bb = gimple_bb (*def_stmt);
-  if ((is_a <loop_vec_info> (vinfo)
-       && !flow_bb_inside_loop_p (as_a <loop_vec_info> (vinfo)->loop, bb))
-      || (is_a <bb_vec_info> (vinfo)
-	  && (bb != as_a <bb_vec_info> (vinfo)->bb
-	      || gimple_code (*def_stmt) == GIMPLE_PHI)))
+  if (! vect_stmt_in_region_p (vinfo, *def_stmt))
     *dt = vect_external_def;
   else
     {
