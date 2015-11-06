@@ -3455,44 +3455,6 @@
    (set_attr "type" "multiple,multiple")]
 )
 
-;; t = (s/u)min (x, y)
-;; cc = cmp (t, z)
-;; is the same as
-;; cmp x, z
-;; cmpge(u) y, z
-
-(define_insn_and_split "*arm_smin_cmp"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC
-	 (smin:SI (match_operand:SI 0 "s_register_operand" "r")
-		  (match_operand:SI 1 "s_register_operand" "r"))
-	 (match_operand:SI 2 "s_register_operand" "r")))]
-  "TARGET_32BIT"
-  "#"
-  "&& reload_completed"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_dup 0) (match_dup 2)))
-   (cond_exec (ge:CC (reg:CC CC_REGNUM) (const_int 0))
-	      (set (reg:CC CC_REGNUM)
-		   (compare:CC (match_dup 1) (match_dup 2))))]
-)
-
-(define_insn_and_split "*arm_umin_cmp"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC
-	 (umin:SI (match_operand:SI 0 "s_register_operand" "r")
-		  (match_operand:SI 1 "s_register_operand" "r"))
-	 (match_operand:SI 2 "s_register_operand" "r")))]
-  "TARGET_32BIT"
-  "#"
-  "&& reload_completed"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_dup 0) (match_dup 2)))
-   (cond_exec (geu:CC (reg:CC CC_REGNUM) (const_int 0))
-	      (set (reg:CC CC_REGNUM)
-		   (compare:CC (match_dup 1) (match_dup 2))))]
-)
-
 (define_expand "umaxsi3"
   [(parallel [
     (set (match_operand:SI 0 "s_register_operand" "")
