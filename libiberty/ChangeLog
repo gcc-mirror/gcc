@@ -1,3 +1,9 @@
+2015-11-06  Joel Brobecker  <brobecker@adacore.com>
+
+	* configure.ac: Set AC_CV_FUNC_GETPAGESIZE to "yes" on
+	Android hosts.
+	* configure: Regenerate.
+
 2015-10-28  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (TAGS): Fix for separate build directory.

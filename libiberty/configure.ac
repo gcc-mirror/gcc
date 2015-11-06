@@ -600,6 +600,12 @@ if test -z "${setobjs}"; then
 
   case "${host}" in
 
+  *-*-android*)
+    # On android, getpagesize is defined in unistd.h as a static inline
+    # function, which AC_CHECK_FUNCS does not handle properly.
+    ac_cv_func_getpagesize=yes
+    ;;
+
   *-*-mingw32*)
     # Under mingw32, sys_nerr and sys_errlist exist, but they are
     # macros, so the test below won't find them.
