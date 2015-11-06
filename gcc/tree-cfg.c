@@ -5783,7 +5783,7 @@ gimple_split_block_before_cond_jump (basic_block bb)
   if (gimple_code (last) != GIMPLE_COND
       && gimple_code (last) != GIMPLE_SWITCH)
     return NULL;
-  gsi_prev_nondebug (&gsi);
+  gsi_prev (&gsi);
   split_point = gsi_stmt (gsi);
   return split_block (bb, split_point)->dest;
 }
