@@ -1,3 +1,7 @@
+2015-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/combined_loop.f90: XFAIL.
+
 2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/68057
