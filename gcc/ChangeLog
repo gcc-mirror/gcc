@@ -1,3 +1,8 @@
+2015-11-06  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* tree-sra.c (completely_scalarize): Properly handle negative array
+	indices using offset_int.
+
 2015-11-06  Richard Biener  <rguenther@suse.de>
 
 	* alloc-pool.h (object_allocator::allocate): Default-initialize
