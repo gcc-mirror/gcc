@@ -2649,8 +2649,7 @@ combine_comparisons (location_t loc,
 }
 
 /* Return nonzero if two operands (typically of the same tree node)
-   are necessarily equal.  If either argument has side-effects this
-   function returns zero.  FLAGS modifies behavior as follows:
+   are necessarily equal. FLAGS modifies behavior as follows:
 
    If OEP_ONLY_CONST is set, only return nonzero for constants.
    This function tests whether the operands are indistinguishable;
@@ -2675,9 +2674,14 @@ combine_comparisons (location_t loc,
    to ensure that global memory is unchanged in between.
 
    If OEP_ADDRESS_OF is set, we are actually comparing addresses of objects,
-   not values of expressions.  OEP_CONSTANT_ADDRESS_OF in addition to
-   OEP_ADDRESS_OF is used for ADDR_EXPR with TREE_CONSTANT flag set and we
-   further ignore any side effects on SAVE_EXPRs then.  */
+   not values of expressions.
+
+   Unless OEP_MATCH_SIDE_EFFECTS is set, the function returns false on
+   any operand with side effect.  This is unnecesarily conservative in the
+   case we know that arg0 and arg1 are in disjoint code paths (such as in
+   ?: operator).  In addition OEP_MATCH_SIDE_EFFECTS is used when comparing
+   addresses with TREE_CONSTANT flag set so we know that &var == &var
+   even if var is volatile.  */
 
 int
 operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
@@ -2698,9 +2702,8 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
   if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
     {
       /* Address of INTEGER_CST is not defined; check that we did not forget
-	 to drop the OEP_ADDRESS_OF/OEP_CONSTANT_ADDRESS_OF flags.  */
-      gcc_checking_assert (!(flags
-			     & (OEP_ADDRESS_OF | OEP_CONSTANT_ADDRESS_OF)));
+	 to drop the OEP_ADDRESS_OF flags.  */
+      gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
       return tree_int_cst_equal (arg0, arg1);
     }
 
@@ -2806,7 +2809,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
      they are necessarily equal as well.  */
   if (arg0 == arg1 && ! (flags & OEP_ONLY_CONST)
       && (TREE_CODE (arg0) == SAVE_EXPR
-	  || (flags & OEP_CONSTANT_ADDRESS_OF)
+	  || (flags & OEP_MATCH_SIDE_EFFECTS)
 	  || (! TREE_SIDE_EFFECTS (arg0) && ! TREE_SIDE_EFFECTS (arg1))))
     return 1;
 
@@ -2865,11 +2868,10 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 			      TREE_STRING_LENGTH (arg0)));
 
       case ADDR_EXPR:
-	gcc_checking_assert (!(flags
-			       & (OEP_ADDRESS_OF | OEP_CONSTANT_ADDRESS_OF)));
+	gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
 	return operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 0),
 				flags | OEP_ADDRESS_OF
-				| OEP_CONSTANT_ADDRESS_OF);
+				| OEP_MATCH_SIDE_EFFECTS);
       case CONSTRUCTOR:
 	/* In GIMPLE empty constructors are allowed in initializers of
 	   aggregates.  */
@@ -2928,7 +2930,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       /* If either of the pointer (or reference) expressions we are
 	 dereferencing contain a side effect, these cannot be equal,
 	 but their addresses can be.  */
-      if ((flags & OEP_CONSTANT_ADDRESS_OF) == 0
+      if ((flags & OEP_MATCH_SIDE_EFFECTS) == 0
 	  && (TREE_SIDE_EFFECTS (arg0)
 	      || TREE_SIDE_EFFECTS (arg1)))
 	return 0;
@@ -2936,11 +2938,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       switch (TREE_CODE (arg0))
 	{
 	case INDIRECT_REF:
-	  if (!(flags & (OEP_ADDRESS_OF | OEP_CONSTANT_ADDRESS_OF))
+	  if (!(flags & OEP_ADDRESS_OF)
 	      && (TYPE_ALIGN (TREE_TYPE (arg0))
 		  != TYPE_ALIGN (TREE_TYPE (arg1))))
 	    return 0;
-	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
+	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (0);
 
 	case REALPART_EXPR:
@@ -2950,7 +2952,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
 	case TARGET_MEM_REF:
 	case MEM_REF:
-	  if (!(flags & (OEP_ADDRESS_OF | OEP_CONSTANT_ADDRESS_OF)))
+	  if (!(flags & OEP_ADDRESS_OF))
 	    {
 	      /* Require equal access sizes */
 	      if (TYPE_SIZE (TREE_TYPE (arg0)) != TYPE_SIZE (TREE_TYPE (arg1))
@@ -2975,7 +2977,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 		 != TYPE_ALIGN (TREE_TYPE (arg1)))
 		return 0;
 	    }
-	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
+	  flags &= ~OEP_ADDRESS_OF;
 	  return (OP_SAME (0) && OP_SAME (1)
 		  /* TARGET_MEM_REF require equal extra operands.  */
 		  && (TREE_CODE (arg0) != TARGET_MEM_REF
@@ -2990,7 +2992,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	     may have different types but same value here.  */
 	  if (!OP_SAME (0))
 	    return 0;
-	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
+	  flags &= ~OEP_ADDRESS_OF;
 	  return ((tree_int_cst_equal (TREE_OPERAND (arg0, 1),
 				       TREE_OPERAND (arg1, 1))
 		   || OP_SAME (1))
@@ -3003,13 +3005,13 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  if (!OP_SAME_WITH_NULL (0)
 	      || !OP_SAME (1))
 	    return 0;
-	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
+	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME_WITH_NULL (2);
 
 	case BIT_FIELD_REF:
 	  if (!OP_SAME (0))
 	    return 0;
-	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
+	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (1) && OP_SAME (2);
 
 	default:
@@ -3021,9 +3023,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	{
 	case ADDR_EXPR:
 	  /* Be sure we pass right ADDRESS_OF flag.  */
-	  gcc_checking_assert (!(flags
-				 & (OEP_ADDRESS_OF
-				    | OEP_CONSTANT_ADDRESS_OF)));
+	  gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
 	  return operand_equal_p (TREE_OPERAND (arg0, 0),
 				  TREE_OPERAND (arg1, 0),
 				  flags | OEP_ADDRESS_OF);
@@ -3089,6 +3089,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 		return 0;
 	    }
 
+	  /* FIXME: We could skip this test for OEP_MATCH_SIDE_EFFECTS.  */
 	  {
 	    unsigned int cef = call_expr_flags (arg0);
 	    if (flags & OEP_PURE_SAME)
