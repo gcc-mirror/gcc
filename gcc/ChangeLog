@@ -1,3 +1,7 @@
+2015-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.c (dump_line_table_statistics): Dump stats on adhoc table.
+
 2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-core.h (size_type_kind): Remove OEP_CONSTANT_ADDRESS_OF and

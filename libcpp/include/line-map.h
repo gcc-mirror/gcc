@@ -1143,6 +1143,8 @@ struct linemap_stats
   long macro_maps_used_size;
   long macro_maps_locations_size;
   long duplicated_macro_maps_locations_size;
+  long adhoc_table_size;
+  long adhoc_table_entries_used;
 };
 
 /* Return the highest location emitted for a given file for which
