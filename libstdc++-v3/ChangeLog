@@ -1,3 +1,9 @@
+2015-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Add
+	-fno-diagnostics-show-caret -fdiagnostics-color=never to
+	option's additional_flags.
+
 2015-11-03  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/new: Declare sized deletes.
