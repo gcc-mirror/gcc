@@ -108,8 +108,7 @@
 2015-11-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/67942
-	* invoke.texi (-Wplacement-new): Document new option.
-	* gcc/testsuite/g++.dg/warn/Wplacement-new-size.C: New test.
+	* doc/invoke.texi (-Wplacement-new): Document new option.
 
 2015-11-05  Alan Lawrence  <alan.lawrence@arm.com>
 
