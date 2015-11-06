@@ -1,5 +1,24 @@
 2015-11-06  Jason Merrill  <jason@redhat.com>
 
+	Support non-type constrained-type-specifiers.
+	* parser.c (check_type_concept): Remove.
+	(cp_parser_maybe_constrained_type_specifier): Don't call it.
+	(synthesize_implicit_template_parm): Handle non-type and template
+	template parameters.  Also compare extra args.  Return the decl.
+	(cp_parser_template_argument): Handle constrained-type-specifiers for
+	non-type template parameters.
+	(finish_constrained_template_template_parm): Split out from
+	cp_parser_constrained_template_template_parm.
+	(cp_parser_nonclass_name): Move some logic into
+	cp_parser_maybe_concept_name.
+	(cp_parser_init_declarator): Fix error recovery.
+	(get_concept_from_constraint): Remove.
+	(cp_parser_simple_type_specifier): Adjust for
+	synthesize_implicit_template_parm returning the decl.
+	* constraint.cc (placeholder_extract_concept_and_args)
+	(equivalent_placeholder_constraints): Also handle TYPE_DECL
+	constrained parms.
+
 	* pt.c (push_inline_template_parms_recursive): Don't recreate the
 	CONST_DECL.
 
