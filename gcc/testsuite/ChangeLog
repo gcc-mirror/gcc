@@ -1,3 +1,22 @@
+2015-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/ordered-2.c (f1): Expect an extra error.
+	* g++.dg/gomp/ordered-2.C (f1): Likewise.
+	* gfortran.dg/goacc/parallel-kernels-regions.f95: Adjust
+	expected diagnostics for the addition of quotes.
+	* gfortran.dg/gomp/target3.f90: Likewise.
+	* c-c++-common/goacc/nesting-fail-1.c: Likewise.
+	* c-c++-common/goacc-gomp/nesting-fail-1.c: Likewise.
+	* c-c++-common/gomp/doacross-1.c: Likewise.
+	* c-c++-common/gomp/nesting-warn-1.c: Likewise.
+	* c-c++-common/gomp/cancel-1.c (f2): Add some new tests.
+	Adjust expected diagnostics wording.
+	* c-c++-common/gomp/clauses-4.c (foo): Likewise.
+	Don't expect error on ordered threads simd when in for simd.
+	* c-c++-common/gomp/nesting-2.c: New test.
+	* c-c++-common/gomp/ordered-3.c (foo): Add some new tests.
+	* c-c++-common/gomp/ordered-4.c: New test.
+
 2015-11-06  Mike Stump  <mikestump@comcast.net>
 
 	* gcc.dg/pragma-diag-5.c: Make test cases unique.

@@ -9259,9 +9259,9 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
 	      || OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SOURCE))
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "%<depend%> clause must be closely nested "
-		    "inside a loop with %<ordered%> clause with "
-		    "a parameter");
+		    "%<ordered%> construct with %<depend%> clause must be "
+		    "closely nested inside a loop with %<ordered%> clause "
+		    "with a parameter");
 	  failures++;
 	}
       else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND

@@ -3112,9 +3112,9 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
   if (!(is_gimple_omp (stmt)
 	&& is_gimple_omp_oacc (stmt)))
     {
-      for (omp_context *ctx_ = ctx; ctx_ != NULL; ctx_ = ctx_->outer)
-	if (is_gimple_omp (ctx_->stmt)
-	    && is_gimple_omp_oacc (ctx_->stmt)
+      for (omp_context *octx = ctx; octx != NULL; octx = octx->outer)
+	if (is_gimple_omp (octx->stmt)
+	    && is_gimple_omp_oacc (octx->stmt)
 	    /* Except for atomic codes that we share with OpenMP.  */
 	    && ! (gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
 		  || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE))
@@ -3134,12 +3134,27 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  if (gimple_code (stmt) == GIMPLE_OMP_ORDERED)
 	    {
 	      c = gimple_omp_ordered_clauses (as_a <gomp_ordered *> (stmt));
-	      if (c && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SIMD)
-		return true;
+	      if (find_omp_clause (c, OMP_CLAUSE_SIMD))
+		{
+		  if (find_omp_clause (c, OMP_CLAUSE_THREADS)
+		      && (ctx->outer == NULL
+			  || !gimple_omp_for_combined_into_p (ctx->stmt)
+			  || gimple_code (ctx->outer->stmt) != GIMPLE_OMP_FOR
+			  || (gimple_omp_for_kind (ctx->outer->stmt)
+			      != GF_OMP_FOR_KIND_FOR)
+			  || !gimple_omp_for_combined_p (ctx->outer->stmt)))
+		    {
+		      error_at (gimple_location (stmt),
+				"%<ordered simd threads%> must be closely "
+				"nested inside of %<for simd%> region");
+		      return false;
+		    }
+		  return true;
+		}
 	    }
 	  error_at (gimple_location (stmt),
 		    "OpenMP constructs other than %<#pragma omp ordered simd%>"
-		    " may not be nested inside simd region");
+		    " may not be nested inside %<simd%> region");
 	  return false;
 	}
       else if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS)
@@ -3150,8 +3165,9 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	      && gimple_code (stmt) != GIMPLE_OMP_PARALLEL)
 	    {
 	      error_at (gimple_location (stmt),
-			"only distribute or parallel constructs are allowed to "
-			"be closely nested inside teams construct");
+			"only %<distribute%> or %<parallel%> regions are "
+			"allowed to be strictly nested inside %<teams%> "
+			"region");
 	      return false;
 	    }
 	}
@@ -3166,8 +3182,8 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  if (ctx != NULL && gimple_code (ctx->stmt) != GIMPLE_OMP_TEAMS)
 	    {
 	      error_at (gimple_location (stmt),
-			"distribute construct must be closely nested inside "
-			"teams construct");
+			"%<distribute%> region must be strictly nested "
+			"inside %<teams%> construct");
 	      return false;
 	    }
 	  return true;
@@ -3222,13 +3238,15 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	{
 	  const char *bad = NULL;
 	  const char *kind = NULL;
+	  const char *construct
+	    = (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt))
+	       == BUILT_IN_GOMP_CANCEL)
+	      ? "#pragma omp cancel"
+	      : "#pragma omp cancellation point";
 	  if (ctx == NULL)
 	    {
 	      error_at (gimple_location (stmt), "orphaned %qs construct",
-			DECL_FUNCTION_CODE (gimple_call_fndecl (stmt))
-			== BUILT_IN_GOMP_CANCEL
-			? "#pragma omp cancel"
-			: "#pragma omp cancellation point");
+			construct);
 	      return false;
 	    }
 	  switch (tree_fits_shwi_p (gimple_call_arg (stmt, 0))
@@ -3304,7 +3322,33 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	      if (gimple_code (ctx->stmt) != GIMPLE_OMP_TASK)
 		bad = "#pragma omp task";
 	      else
-		ctx->cancellable = true;
+		{
+		  for (omp_context *octx = ctx->outer;
+		       octx; octx = octx->outer)
+		    {
+		      switch (gimple_code (octx->stmt))
+			{
+			case GIMPLE_OMP_TASKGROUP:
+			  break;
+			case GIMPLE_OMP_TARGET:
+			  if (gimple_omp_target_kind (octx->stmt)
+			      != GF_OMP_TARGET_KIND_REGION)
+			    continue;
+			  /* FALLTHRU */
+			case GIMPLE_OMP_PARALLEL:
+			case GIMPLE_OMP_TEAMS:
+			  error_at (gimple_location (stmt),
+				    "%<%s taskgroup%> construct not closely "
+				    "nested inside of %<taskgroup%> region",
+				    construct);
+			  return false;
+			default:
+			  continue;
+			}
+		      break;
+		    }
+		  ctx->cancellable = true;
+		}
 	      kind = "taskgroup";
 	      break;
 	    default:
@@ -3315,10 +3359,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	    {
 	      error_at (gimple_location (stmt),
 			"%<%s %s%> construct not closely nested inside of %qs",
-			DECL_FUNCTION_CODE (gimple_call_fndecl (stmt))
-			== BUILT_IN_GOMP_CANCEL
-			? "#pragma omp cancel"
-			: "#pragma omp cancellation point", kind, bad);
+			construct, kind, bad);
 	      return false;
 	    }
 	}
@@ -3329,6 +3370,10 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	switch (gimple_code (ctx->stmt))
 	  {
 	  case GIMPLE_OMP_FOR:
+	    if (gimple_omp_for_kind (ctx->stmt) != GF_OMP_FOR_KIND_FOR
+		&& gimple_omp_for_kind (ctx->stmt) != GF_OMP_FOR_KIND_TASKLOOP)
+	      break;
+	    /* FALLTHRU */
 	  case GIMPLE_OMP_SECTIONS:
 	  case GIMPLE_OMP_SINGLE:
 	  case GIMPLE_OMP_ORDERED:
@@ -3342,17 +3387,24 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		  return true;
 		error_at (gimple_location (stmt),
 			  "barrier region may not be closely nested inside "
-			  "of work-sharing, critical, ordered, master or "
-			  "explicit task region");
+			  "of work-sharing, %<critical%>, %<ordered%>, "
+			  "%<master%>, explicit %<task%> or %<taskloop%> "
+			  "region");
 		return false;
 	      }
 	    error_at (gimple_location (stmt),
 		      "work-sharing region may not be closely nested inside "
-		      "of work-sharing, critical, ordered, master or explicit "
-		      "task region");
+		      "of work-sharing, %<critical%>, %<ordered%>, "
+		      "%<master%>, explicit %<task%> or %<taskloop%> region");
 	    return false;
 	  case GIMPLE_OMP_PARALLEL:
+	  case GIMPLE_OMP_TEAMS:
 	    return true;
+	  case GIMPLE_OMP_TARGET:
+	    if (gimple_omp_target_kind (ctx->stmt)
+		== GF_OMP_TARGET_KIND_REGION)
+	      return true;
+	    break;
 	  default:
 	    break;
 	  }
@@ -3362,15 +3414,26 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	switch (gimple_code (ctx->stmt))
 	  {
 	  case GIMPLE_OMP_FOR:
+	    if (gimple_omp_for_kind (ctx->stmt) != GF_OMP_FOR_KIND_FOR
+		&& gimple_omp_for_kind (ctx->stmt) != GF_OMP_FOR_KIND_TASKLOOP)
+	      break;
+	    /* FALLTHRU */
 	  case GIMPLE_OMP_SECTIONS:
 	  case GIMPLE_OMP_SINGLE:
 	  case GIMPLE_OMP_TASK:
 	    error_at (gimple_location (stmt),
-		      "master region may not be closely nested inside "
-		      "of work-sharing or explicit task region");
+		      "%<master%> region may not be closely nested inside "
+		      "of work-sharing, explicit %<task%> or %<taskloop%> "
+		      "region");
 	    return false;
 	  case GIMPLE_OMP_PARALLEL:
+	  case GIMPLE_OMP_TEAMS:
 	    return true;
+	  case GIMPLE_OMP_TARGET:
+	    if (gimple_omp_target_kind (ctx->stmt)
+		== GF_OMP_TARGET_KIND_REGION)
+	      return true;
+	    break;
 	  default:
 	    break;
 	  }
@@ -3395,8 +3458,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND)
 	    {
 	      gcc_assert (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREADS
-			  || (ctx == NULL
-			      && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SIMD));
+			  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SIMD);
 	      continue;
 	    }
 	  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_KIND (c);
@@ -3412,23 +3474,40 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 					   OMP_CLAUSE_ORDERED)) == NULL_TREE)
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%<depend%> clause must be closely nested "
-			    "inside an ordered loop");
+			    "%<ordered%> construct with %<depend%> clause "
+			    "must be closely nested inside an %<ordered%> "
+			    "loop");
 		  return false;
 		}
 	      else if (OMP_CLAUSE_ORDERED_EXPR (oclause) == NULL_TREE)
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%<depend%> clause must be closely nested "
-			    "inside a loop with %<ordered%> clause with "
-			    "a parameter");
+			    "%<ordered%> construct with %<depend%> clause "
+			    "must be closely nested inside a loop with "
+			    "%<ordered%> clause with a parameter");
 		  return false;
 		}
 	    }
 	  else
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
-			"invalid depend kind in omp ordered depend");
+			"invalid depend kind in omp %<ordered%> %<depend%>");
+	      return false;
+	    }
+	}
+      c = gimple_omp_ordered_clauses (as_a <gomp_ordered *> (stmt));
+      if (find_omp_clause (c, OMP_CLAUSE_SIMD))
+	{
+	  /* ordered simd must be closely nested inside of simd region,
+	     and simd region must not encounter constructs other than
+	     ordered simd, therefore ordered simd may be either orphaned,
+	     or ctx->stmt must be simd.  The latter case is handled already
+	     earlier.  */
+	  if (ctx != NULL)
+	    {
+	      error_at (gimple_location (stmt),
+			"%<ordered%> %<simd%> must be closely nested inside "
+			"%<simd%> region");
 	      return false;
 	    }
 	}
@@ -3437,24 +3516,35 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  {
 	  case GIMPLE_OMP_CRITICAL:
 	  case GIMPLE_OMP_TASK:
+	  case GIMPLE_OMP_ORDERED:
+	  ordered_in_taskloop:
 	    error_at (gimple_location (stmt),
-		      "ordered region may not be closely nested inside "
-		      "of critical or explicit task region");
+		      "%<ordered%> region may not be closely nested inside "
+		      "of %<critical%>, %<ordered%>, explicit %<task%> or "
+		      "%<taskloop%> region");
 	    return false;
 	  case GIMPLE_OMP_FOR:
+	    if (gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_TASKLOOP)
+	      goto ordered_in_taskloop;
 	    if (find_omp_clause (gimple_omp_for_clauses (ctx->stmt),
 				 OMP_CLAUSE_ORDERED) == NULL)
 	      {
 		error_at (gimple_location (stmt),
-			  "ordered region must be closely nested inside "
-			  "a loop region with an ordered clause");
+			  "%<ordered%> region must be closely nested inside "
+			  "a loop region with an %<ordered%> clause");
 		return false;
 	      }
 	    return true;
+	  case GIMPLE_OMP_TARGET:
+	    if (gimple_omp_target_kind (ctx->stmt)
+		!= GF_OMP_TARGET_KIND_REGION)
+	      break;
+	    /* FALLTHRU */
 	  case GIMPLE_OMP_PARALLEL:
+	  case GIMPLE_OMP_TEAMS:
 	    error_at (gimple_location (stmt),
-		      "ordered region must be closely nested inside "
-		      "a loop region with an ordered clause");
+		      "%<ordered%> region must be closely nested inside "
+		      "a loop region with an %<ordered%> clause");
 	    return false;
 	  default:
 	    break;
@@ -3470,8 +3560,8 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	    if (this_stmt_name == gimple_omp_critical_name (other_crit))
 	      {
 		error_at (gimple_location (stmt),
-			  "critical region may not be nested inside a critical "
-			  "region with the same name");
+			  "%<critical%> region may not be nested inside "
+			   "a %<critical%> region with the same name");
 		return false;
 	      }
       }
@@ -3482,8 +3572,8 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  || gimple_omp_target_kind (ctx->stmt) != GF_OMP_TARGET_KIND_REGION)
 	{
 	  error_at (gimple_location (stmt),
-		    "teams construct not closely nested inside of target "
-		    "region");
+		    "%<teams%> construct not closely nested inside of "
+		    "%<target%> construct");
 	  return false;
 	}
       break;
@@ -3549,7 +3639,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	      != is_gimple_omp_oacc (ctx->stmt))
 	    {
 	      error_at (gimple_location (stmt),
-			"%s %s construct inside of %s %s region",
+			"%s %qs construct inside of %s %qs region",
 			(is_gimple_omp_oacc (stmt)
 			 ? "OpenACC" : "OpenMP"), stmt_name,
 			(is_gimple_omp_oacc (ctx->stmt)
@@ -3562,15 +3652,14 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	      if (is_gimple_omp_oacc (ctx->stmt))
 		{
 		  error_at (gimple_location (stmt),
-			    "%s construct inside of %s region",
+			    "%qs construct inside of %qs region",
 			    stmt_name, ctx_stmt_name);
 		  return false;
 		}
 	      else
 		{
-		  gcc_checking_assert (!is_gimple_omp_oacc (stmt));
 		  warning_at (gimple_location (stmt), 0,
-			      "%s construct inside of %s region",
+			      "%qs construct inside of %qs region",
 			      stmt_name, ctx_stmt_name);
 		}
 	    }

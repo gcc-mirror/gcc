@@ -59,6 +59,18 @@ foo (void)
       #pragma omp ordered depend(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
       #pragma omp ordered depend(source)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
     }
+  #pragma omp parallel for ordered
+  for (i = 0; i < 64; i++)
+    {
+      #pragma omp ordered depend(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
+      #pragma omp ordered depend(source)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
+    }
+  #pragma omp parallel for
+  for (i = 0; i < 64; i++)
+    {
+      #pragma omp ordered depend(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
+      #pragma omp ordered depend(source)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
+    }
 }
 
 void
