@@ -480,7 +480,7 @@ public:
   inline T *
   allocate () ATTRIBUTE_MALLOC
   {
-    return ::new (m_allocator.allocate ()) T ();
+    return ::new (m_allocator.allocate ()) T;
   }
 
   inline void
