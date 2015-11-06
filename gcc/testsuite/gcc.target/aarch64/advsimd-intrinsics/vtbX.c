@@ -147,8 +147,8 @@ void exec_vtbX (void)
   VDUP(vector, , uint, u, 8, 8, 2);
   VDUP(vector, , poly, p, 8, 8, 2);
 
-  /* To ensure coverage, add some indexes larger than 8,16 and 32
-     except: lane 0 (by 6), lane 1 (by 8) and lane 2 (by 9).  */
+  /* To ensure coverage, add some indexes larger than 8, 16 and 32
+     except: lane 0 (by 10), lane 4 (by 20) and lane 5 (by 40).  */
   VSET_LANE(vector, , int, s, 8, 8, 0, 10);
   VSET_LANE(vector, , int, s, 8, 8, 4, 20);
   VSET_LANE(vector, , int, s, 8, 8, 5, 40);
