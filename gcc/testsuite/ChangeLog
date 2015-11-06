@@ -1,3 +1,32 @@
+2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/combined-directives.c: New test.
+	* c-c++-common/goacc/loop-clauses.c: New test.
+	* c-c++-common/goacc/tile.c: New test.
+	* c-c++-common/goacc/loop-shape.c: Add test for pointer variable
+	as gang static arguments.
+	* c-c++-common/goacc/update-1.c: Adjust expected error message.
+	* g++.dg/goacc/template.C: New test.
+	* gfortran.dg/goacc/combined-directives.f90: New test.
+	* gfortran.dg/goacc/default.f95: New test.
+	* gfortran.dg/goacc/default_none.f95: New test.
+	* gfortran.dg/goacc/firstprivate-1.f95: New test.
+	* gfortran.dg/goacc/gang-static.f95: New test.
+	* gfortran.dg/goacc/kernels-loop-inner.f95: New test.
+	* gfortran.dg/goacc/kernels-loops-adjacent.f95: New test.
+	* gfortran.dg/goacc/list.f95: Update test.
+	* gfortran.dg/goacc/loop-2.f95: Likewise.
+	* gfortran.dg/goacc/loop-4.f95: New test.
+	* gfortran.dg/goacc/loop-5.f95: New test.
+	* gfortran.dg/goacc/loop-6.f95: New test.
+	* gfortran.dg/goacc/loop-tree-1.f90: Update test.
+	* gfortran.dg/goacc/multi-clause.f90: New test.
+	* gfortran.dg/goacc/parallel-tree.f95: Update test.
+	* gfortran.dg/goacc/update.f95: New test.
+
 2015-11-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/67942

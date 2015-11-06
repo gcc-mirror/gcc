@@ -13011,10 +13011,12 @@ c_finish_omp_clauses (tree clauses, bool is_omp, bool declare_simd)
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_AUTO:
+	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_GANG:
 	case OMP_CLAUSE_WORKER:
 	case OMP_CLAUSE_VECTOR:
+	case OMP_CLAUSE_TILE:
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 

@@ -2534,8 +2534,12 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
     }
   if (clauses->seq)
     {
-      c = build_omp_clause (where.lb->location, OMP_CLAUSE_ORDERED);
-      OMP_CLAUSE_ORDERED_EXPR (c) = NULL_TREE;
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_SEQ);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+  if (clauses->par_auto)
+    {
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_AUTO);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
   if (clauses->independent)
@@ -2579,6 +2583,21 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       OMP_CLAUSE_VECTOR_LENGTH_EXPR (c) = vector_length_var;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
+  if (clauses->tile_list)
+    {
+      vec<tree, va_gc> *tvec;
+      gfc_expr_list *el;
+
+      vec_alloc (tvec, 4);
+
+      for (el = clauses->tile_list; el; el = el->next)
+	vec_safe_push (tvec, gfc_convert_expr_to_tree (block, el->expr));
+
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_TILE);
+      OMP_CLAUSE_TILE_LIST (c) = build_tree_list_vec (tvec);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+      tvec->truncate (0);
+    }
   if (clauses->vector)
     {
       if (clauses->vector_expr)
@@ -2618,7 +2637,17 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	  tree gang_var
 	    = gfc_convert_expr_to_tree (block, clauses->gang_expr);
 	  c = build_omp_clause (where.lb->location, OMP_CLAUSE_GANG);
-	  OMP_CLAUSE_GANG_EXPR (c) = gang_var;
+	  if (clauses->gang_static)
+	    OMP_CLAUSE_GANG_STATIC_EXPR (c) = gang_var;
+	  else
+	    OMP_CLAUSE_GANG_EXPR (c) = gang_var;
+	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+	}
+      else if (clauses->gang_static)
+	{
+	  /* This corresponds to gang (static: *).  */
+	  c = build_omp_clause (where.lb->location, OMP_CLAUSE_GANG);
+	  OMP_CLAUSE_GANG_STATIC_EXPR (c) = integer_minus_one_node;
 	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
 	}
       else
@@ -3449,16 +3478,33 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
 	      sizeof (construct_clauses));
       loop_clauses.collapse = construct_clauses.collapse;
       loop_clauses.gang = construct_clauses.gang;
+      loop_clauses.gang_expr = construct_clauses.gang_expr;
+      loop_clauses.gang_static = construct_clauses.gang_static;
       loop_clauses.vector = construct_clauses.vector;
+      loop_clauses.vector_expr = construct_clauses.vector_expr;
       loop_clauses.worker = construct_clauses.worker;
+      loop_clauses.worker_expr = construct_clauses.worker_expr;
       loop_clauses.seq = construct_clauses.seq;
+      loop_clauses.par_auto = construct_clauses.par_auto;
       loop_clauses.independent = construct_clauses.independent;
-      construct_clauses.collapse = 0;
+      loop_clauses.tile_list = construct_clauses.tile_list;
+      loop_clauses.lists[OMP_LIST_PRIVATE]
+	= construct_clauses.lists[OMP_LIST_PRIVATE];
+      loop_clauses.lists[OMP_LIST_REDUCTION]
+	= construct_clauses.lists[OMP_LIST_REDUCTION];
       construct_clauses.gang = false;
+      construct_clauses.gang_expr = NULL;
+      construct_clauses.gang_static = false;
       construct_clauses.vector = false;
+      construct_clauses.vector_expr = NULL;
       construct_clauses.worker = false;
+      construct_clauses.worker_expr = NULL;
       construct_clauses.seq = false;
+      construct_clauses.par_auto = false;
       construct_clauses.independent = false;
+      construct_clauses.independent = false;
+      construct_clauses.tile_list = NULL;
+      construct_clauses.lists[OMP_LIST_PRIVATE] = NULL;
       oacc_clauses = gfc_trans_omp_clauses (&block, &construct_clauses,
 					    code->loc);
     }

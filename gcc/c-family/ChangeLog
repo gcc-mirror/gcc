@@ -1,3 +1,17 @@
+2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* c-omp.c (c_oacc_split_loop_clauses): Make TILE, GANG, WORKER, VECTOR,
+	AUTO, SEQ, INDEPENDENT and PRIVATE loop clauses.  Associate REDUCTION
+	clauses with parallel and kernels and loops.
+	* c-pragma.h (enum pragma_omp_clause): Add entries for
+	PRAGMA_OACC_CLAUSE_{INDEPENDENT,TILE,DEFAULT}.
+	* pt.c (tsubst_omp_clauses): Add support for OMP_CLAUSE_{NUM_GANGS,
+	NUM_WORKERS,VECTOR_LENGTH,GANG,WORKER,VECTOR,ASYNC,WAIT,TILE,AUTO,
+	INDEPENDENT,SEQ}.
+	(tsubst_expr): Add support for OMP_CLAUSE_{KERNELS,PARALLEL,LOOP}.
+
 2015-11-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/67942

@@ -328,6 +328,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_NUM_GANGS  */
   1, /* OMP_CLAUSE_NUM_WORKERS  */
   1, /* OMP_CLAUSE_VECTOR_LENGTH  */
+  1, /* OMP_CLAUSE_TILE  */
 };
 
 const char * const omp_clause_code_name[] =
@@ -398,7 +399,8 @@ const char * const omp_clause_code_name[] =
   "vector",
   "num_gangs",
   "num_workers",
-  "vector_length"
+  "vector_length",
+  "tile"
 };
 
 
@@ -11595,6 +11597,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE_TILE:
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_LASTPRIVATE:

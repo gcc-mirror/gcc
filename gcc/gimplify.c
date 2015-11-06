@@ -7141,9 +7141,18 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    remove = true;
 	  break;
 
+	case OMP_CLAUSE_TILE:
+	  for (tree list = OMP_CLAUSE_TILE_LIST (c); !remove && list;
+	       list = TREE_CHAIN (list))
+	    {
+	      if (gimplify_expr (&TREE_VALUE (list), pre_p, NULL,
+				 is_gimple_val, fb_rvalue) == GS_ERROR)
+		remove = true;
+	    }
+	  break;
+
 	case OMP_CLAUSE_DEVICE_RESIDENT:
 	case OMP_CLAUSE_USE_DEVICE:
-	case OMP_CLAUSE_INDEPENDENT:
 	  remove = true;
 	  break;
 
@@ -7153,6 +7162,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PROC_BIND:
 	case OMP_CLAUSE_SAFELEN:
@@ -7663,6 +7673,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, tree *list_p,
 	case OMP_CLAUSE_VECTOR:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE_TILE:
 	  break;
 
 	default:

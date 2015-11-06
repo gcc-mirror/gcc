@@ -1,3 +1,17 @@
+2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_clauses): Update support for the tile
+	and default clauses in OpenACC.
+	(gfc_match_oacc_update): Error when data clauses are supplied.
+	(oacc_compatible_clauses): Delete.
+	(resolve_omp_clauses): Give special care for OpenACC reductions.
+	Also update error reporting for the tile clause.
+	(resolve_oacc_loop_blocks): Update error reporting for the tile clause.
+	* trans-openmp.c (gfc_trans_omp_clauses): Update OMP_CLAUSE_SEQ. Add
+	OMP_CLAUSE_{AUTO,TILE} and add support the the gang static argument.
+	(gfc_trans_oacc_combined_directive): Update the list of clauses which
+	are split to acc loops.
+
 2015-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* types.def (BT_FN_VOID_INT_OMPFN_SIZE_PTR_PTR_PTR_UINT_PTR): Remove.

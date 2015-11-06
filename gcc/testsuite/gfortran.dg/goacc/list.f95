@@ -5,7 +5,7 @@ program test
   implicit none
 
   integer :: i, j, k, l, a(10)
-  common /b/ j, k
+  common /b/ k
   real, pointer :: p1 => NULL()
   complex :: c, d(10)
 
