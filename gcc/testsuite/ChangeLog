@@ -1,3 +1,10 @@
+2015-11-06  Joost VandeVondele  <vondele@gnu.gcc.org>
+
+	PR middle-end/53852
+	PR middle-end/67518
+	* gfortran.dg/PR67518.f90: New test.
+	* gfortran.dg/PR53852.f90: New test.
+
 2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
