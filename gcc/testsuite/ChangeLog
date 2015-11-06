@@ -1,3 +1,10 @@
+2015-11-06  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* gcc.dg/graphite/fuse-1.c: New.
+	* gcc.dg/graphite/fuse-2.c: New.
+	* gcc.dg/graphite/interchange-13.c: Remove bogus check.
+
 2015-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vqtbX.c: New test.
