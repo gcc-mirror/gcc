@@ -999,18 +999,25 @@ completely_scalarize (tree base, tree decl_type, HOST_WIDE_INT offset, tree ref)
 	if (maxidx)
 	  {
 	    gcc_assert (TREE_CODE (maxidx) == INTEGER_CST);
-	    /* MINIDX and MAXIDX are inclusive.  Try to avoid overflow.  */
-	    unsigned HOST_WIDE_INT lenp1 = tree_to_shwi (maxidx)
-					- tree_to_shwi (minidx);
-	    unsigned HOST_WIDE_INT idx = 0;
-	    do
+	    tree domain = TYPE_DOMAIN (decl_type);
+	    /* MINIDX and MAXIDX are inclusive, and must be interpreted in
+	       DOMAIN (e.g. signed int, whereas min/max may be size_int).  */
+	    offset_int idx = wi::to_offset (minidx);
+	    offset_int max = wi::to_offset (maxidx);
+	    if (!TYPE_UNSIGNED (domain))
 	      {
-		tree nref = build4 (ARRAY_REF, elemtype, ref, size_int (idx),
-				    NULL_TREE, NULL_TREE);
-		int el_off = offset + idx * el_size;
-		scalarize_elem (base, el_off, el_size, nref, elemtype);
+		idx = wi::sext (idx, TYPE_PRECISION (domain));
+		max = wi::sext (max, TYPE_PRECISION (domain));
 	      }
-	    while (++idx <= lenp1);
+	    for (int el_off = offset; wi::les_p (idx, max); ++idx)
+	      {
+		tree nref = build4 (ARRAY_REF, elemtype,
+				    ref,
+				    wide_int_to_tree (domain, idx),
+				    NULL_TREE, NULL_TREE);
+		scalarize_elem (base, el_off, el_size, nref, elemtype);
+		el_off += el_size;
+	      }
 	  }
       }
       break;
