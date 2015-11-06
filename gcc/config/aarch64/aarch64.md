@@ -126,6 +126,9 @@
     UNSPEC_VSTRUCTDUMMY
     UNSPEC_SP_SET
     UNSPEC_SP_TEST
+    UNSPEC_RSQRT
+    UNSPEC_RSQRTE
+    UNSPEC_RSQRTS
 ])
 
 (define_c_enum "unspecv" [

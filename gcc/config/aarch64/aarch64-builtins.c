@@ -324,6 +324,11 @@ enum aarch64_builtins
   AARCH64_BUILTIN_GET_FPSR,
   AARCH64_BUILTIN_SET_FPSR,
 
+  AARCH64_BUILTIN_RSQRT_DF,
+  AARCH64_BUILTIN_RSQRT_SF,
+  AARCH64_BUILTIN_RSQRT_V2DF,
+  AARCH64_BUILTIN_RSQRT_V2SF,
+  AARCH64_BUILTIN_RSQRT_V4SF,
   AARCH64_SIMD_BUILTIN_BASE,
   AARCH64_SIMD_BUILTIN_LANE_CHECK,
 #include "aarch64-simd-builtins.def"
@@ -822,6 +827,46 @@ aarch64_init_crc32_builtins ()
     }
 }
 
+/* Add builtins for reciprocal square root.  */
+
+void
+aarch64_init_builtin_rsqrt (void)
+{
+  tree fndecl = NULL;
+  tree ftype = NULL;
+
+  tree V2SF_type_node = build_vector_type (float_type_node, 2);
+  tree V2DF_type_node = build_vector_type (double_type_node, 2);
+  tree V4SF_type_node = build_vector_type (float_type_node, 4);
+
+  struct builtin_decls_data
+  {
+    tree type_node;
+    const char *builtin_name;
+    int function_code;
+  };
+
+  builtin_decls_data bdda[] =
+  {
+    { double_type_node, "__builtin_aarch64_rsqrt_df", AARCH64_BUILTIN_RSQRT_DF },
+    { float_type_node, "__builtin_aarch64_rsqrt_sf", AARCH64_BUILTIN_RSQRT_SF },
+    { V2DF_type_node, "__builtin_aarch64_rsqrt_v2df", AARCH64_BUILTIN_RSQRT_V2DF },
+    { V2SF_type_node, "__builtin_aarch64_rsqrt_v2sf", AARCH64_BUILTIN_RSQRT_V2SF },
+    { V4SF_type_node, "__builtin_aarch64_rsqrt_v4sf", AARCH64_BUILTIN_RSQRT_V4SF }
+  };
+
+  builtin_decls_data *bdd = bdda;
+  builtin_decls_data *bdd_end = bdd + (sizeof (bdda) / sizeof (builtin_decls_data));
+
+  for (; bdd < bdd_end; bdd++)
+  {
+    ftype = build_function_type_list (bdd->type_node, bdd->type_node, NULL_TREE);
+    fndecl = add_builtin_function (bdd->builtin_name,
+      ftype, bdd->function_code, BUILT_IN_MD, NULL, NULL_TREE);
+    aarch64_builtin_decls[bdd->function_code] = fndecl;
+  }
+}
+
 void
 aarch64_init_builtins (void)
 {
@@ -853,6 +898,7 @@ aarch64_init_builtins (void)
     aarch64_init_simd_builtins ();
 
   aarch64_init_crc32_builtins ();
+  aarch64_init_builtin_rsqrt ();
 }
 
 tree
@@ -1116,6 +1162,44 @@ aarch64_crc32_expand_builtin (int fcode, tree exp, rtx target)
   return target;
 }
 
+/* Function to expand reciprocal square root builtins.  */
+
+static rtx
+aarch64_expand_builtin_rsqrt (int fcode, tree exp, rtx target)
+{
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  rtx op0 = expand_normal (arg0);
+
+  rtx (*gen) (rtx, rtx);
+
+  switch (fcode)
+    {
+      case AARCH64_BUILTIN_RSQRT_DF:
+	gen = gen_aarch64_rsqrt_df2;
+	break;
+      case AARCH64_BUILTIN_RSQRT_SF:
+	gen = gen_aarch64_rsqrt_sf2;
+	break;
+      case AARCH64_BUILTIN_RSQRT_V2DF:
+	gen = gen_aarch64_rsqrt_v2df2;
+	break;
+      case AARCH64_BUILTIN_RSQRT_V2SF:
+	gen = gen_aarch64_rsqrt_v2sf2;
+	break;
+      case AARCH64_BUILTIN_RSQRT_V4SF:
+	gen = gen_aarch64_rsqrt_v4sf2;
+	break;
+      default: gcc_unreachable ();
+    }
+
+  if (!target)
+    target = gen_reg_rtx (GET_MODE (op0));
+
+  emit_insn (gen (target, op0));
+
+  return target;
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient.  */
 rtx
@@ -1162,6 +1246,13 @@ aarch64_expand_builtin (tree exp,
     return aarch64_simd_expand_builtin (fcode, exp, target);
   else if (fcode >= AARCH64_CRC32_BUILTIN_BASE && fcode <= AARCH64_CRC32_BUILTIN_MAX)
     return aarch64_crc32_expand_builtin (fcode, exp, target);
+
+  if (fcode == AARCH64_BUILTIN_RSQRT_DF
+      || fcode == AARCH64_BUILTIN_RSQRT_SF
+      || fcode == AARCH64_BUILTIN_RSQRT_V2DF
+      || fcode == AARCH64_BUILTIN_RSQRT_V2SF
+      || fcode == AARCH64_BUILTIN_RSQRT_V4SF)
+    return aarch64_expand_builtin_rsqrt (fcode, exp, target);
 
   gcc_unreachable ();
 }
@@ -1317,6 +1408,30 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
       }
     }
 
+  return NULL_TREE;
+}
+
+/* Return builtin for reciprocal square root.  */
+
+tree
+aarch64_builtin_rsqrt (unsigned int fn, bool md_fn)
+{
+  if (md_fn)
+    {
+      if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv2df)
+	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V2DF];
+      if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv2sf)
+	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V2SF];
+      if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv4sf)
+	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V4SF];
+    }
+  else
+    {
+      if (fn == BUILT_IN_SQRT)
+	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_DF];
+      if (fn == BUILT_IN_SQRTF)
+	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_SF];
+    }
   return NULL_TREE;
 }
 

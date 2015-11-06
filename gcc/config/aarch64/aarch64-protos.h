@@ -352,6 +352,8 @@ void aarch64_register_pragmas (void);
 void aarch64_relayout_simd_types (void);
 void aarch64_reset_previous_fndecl (void);
 
+void aarch64_emit_swrsqrt (rtx, rtx);
+
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);
 
@@ -402,6 +404,8 @@ rtx aarch64_expand_builtin (tree exp,
 			    machine_mode mode ATTRIBUTE_UNUSED,
 			    int ignore ATTRIBUTE_UNUSED);
 tree aarch64_builtin_decl (unsigned, bool ATTRIBUTE_UNUSED);
+
+tree aarch64_builtin_rsqrt (unsigned int, bool);
 
 tree
 aarch64_builtin_vectorized_function (tree fndecl,
