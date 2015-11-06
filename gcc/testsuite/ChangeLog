@@ -1,3 +1,12 @@
+2015-11-06  Michael Collison  <michael.collison@linaro.org
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	Revert:
+	2015-08-01  Michael Collison  <michael.collison@linaro.org
+		    Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* gcc.target/arm/mincmp.c: New test.
+
 2015-11-06  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/54224
