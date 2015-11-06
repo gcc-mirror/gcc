@@ -1,3 +1,7 @@
+2015-11-06  Arnout Vandecappelle  <arnout@mind.be>
+
+	* config.gcc (e6500): Fix cpu_is_64bit typo.
+
 2015-11-06  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* tree-sra.c (completely_scalarize): Properly handle negative array
