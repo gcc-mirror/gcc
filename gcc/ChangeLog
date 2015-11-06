@@ -1,3 +1,12 @@
+2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-core.h (size_type_kind): Remove OEP_CONSTANT_ADDRESS_OF and
+	add OEP_MATCH_SIDE_EFFECTS.
+	* fold-const.c (operand_equal_p): Update documentation; handle
+	OEP_MATCH_SIDE_EFFECTS.
+	* tree-ssa-tail-merge.c (gimple_operand_equal_value_p): Use
+	OEP_MATCH_SIDE_EFFECTS.
+
 2015-11-06  Benedikt Huber  <benedikt.huber@theobroma-systems.com>
 	    Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
 
