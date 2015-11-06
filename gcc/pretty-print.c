@@ -31,6 +31,27 @@ along with GCC; see the file COPYING3.  If not see
 #include <iconv.h>
 #endif
 
+/* Overwrite the range within this text_info's rich_location.
+   For use e.g. when implementing "+" in client format decoders.  */
+
+void
+text_info::set_range (unsigned int idx, source_range range, bool caret_p)
+{
+  gcc_checking_assert (m_richloc);
+  m_richloc->set_range (idx, range, caret_p, true);
+}
+
+location_t
+text_info::get_location (unsigned int index_of_location) const
+{
+  gcc_checking_assert (m_richloc);
+
+  if (index_of_location == 0)
+    return m_richloc->get_loc ();
+  else
+    return UNKNOWN_LOCATION;
+}
+
 // Default construct an output buffer.
 
 output_buffer::output_buffer ()

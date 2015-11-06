@@ -53,14 +53,31 @@ unsigned verbose;
 
 static struct line_maps *line_table;
 
+/* The rich_location class within libcpp requires a way to expand
+   source_location instances, and relies on the client code
+   providing a symbol named
+     linemap_client_expand_location_to_spelling_point
+   to do this.
+
+   This is the implementation for genmatch.  */
+
+expanded_location
+linemap_client_expand_location_to_spelling_point (source_location loc)
+{
+  const struct line_map_ordinary *map;
+  loc = linemap_resolve_location (line_table, loc, LRK_SPELLING_LOCATION, &map);
+  return linemap_expand_location (line_table, map, loc);
+}
+
 static bool
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 6, 0)))
+__attribute__((format (printf, 5, 0)))
 #endif
-error_cb (cpp_reader *, int errtype, int, source_location location,
-	  unsigned int, const char *msg, va_list *ap)
+error_cb (cpp_reader *, int errtype, int, rich_location *richloc,
+	  const char *msg, va_list *ap)
 {
   const line_map_ordinary *map;
+  source_location location = richloc->get_loc ();
   linemap_resolve_location (line_table, location, LRK_SPELLING_LOCATION, &map);
   expanded_location loc = linemap_expand_location (line_table, map, location);
   fprintf (stderr, "%s:%d:%d %s: ", loc.file, loc.line, loc.column,
@@ -102,9 +119,10 @@ __attribute__((format (printf, 2, 3)))
 #endif
 fatal_at (const cpp_token *tk, const char *msg, ...)
 {
+  rich_location richloc (tk->src_loc);
   va_list ap;
   va_start (ap, msg);
-  error_cb (NULL, CPP_DL_FATAL, 0, tk->src_loc, 0, msg, &ap);
+  error_cb (NULL, CPP_DL_FATAL, 0, &richloc, msg, &ap);
   va_end (ap);
 }
 
@@ -114,9 +132,10 @@ __attribute__((format (printf, 2, 3)))
 #endif
 fatal_at (source_location loc, const char *msg, ...)
 {
+  rich_location richloc (loc);
   va_list ap;
   va_start (ap, msg);
-  error_cb (NULL, CPP_DL_FATAL, 0, loc, 0, msg, &ap);
+  error_cb (NULL, CPP_DL_FATAL, 0, &richloc, msg, &ap);
   va_end (ap);
 }
 
@@ -126,9 +145,10 @@ __attribute__((format (printf, 2, 3)))
 #endif
 warning_at (const cpp_token *tk, const char *msg, ...)
 {
+  rich_location richloc (tk->src_loc);
   va_list ap;
   va_start (ap, msg);
-  error_cb (NULL, CPP_DL_WARNING, 0, tk->src_loc, 0, msg, &ap);
+  error_cb (NULL, CPP_DL_WARNING, 0, &richloc, msg, &ap);
   va_end (ap);
 }
 
@@ -138,9 +158,10 @@ __attribute__((format (printf, 2, 3)))
 #endif
 warning_at (source_location loc, const char *msg, ...)
 {
+  rich_location richloc (loc);
   va_list ap;
   va_start (ap, msg);
-  error_cb (NULL, CPP_DL_WARNING, 0, loc, 0, msg, &ap);
+  error_cb (NULL, CPP_DL_WARNING, 0, &richloc, msg, &ap);
   va_end (ap);
 }
 

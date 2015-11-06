@@ -131,6 +131,47 @@ typedef unsigned int linenum_type;
   libcpp/location-example.txt.  */
 typedef unsigned int source_location;
 
+/* A range of source locations.
+
+   Ranges are closed:
+   m_start is the first location within the range,
+   m_finish is the last location within the range.
+
+   We may need a more compact way to store these, but for now,
+   let's do it the simple way, as a pair.  */
+struct GTY(()) source_range
+{
+  source_location m_start;
+  source_location m_finish;
+
+  /* Display this source_range instance, with MSG as a descriptive
+     comment.  This issues a "note" diagnostic at the range, using
+     gcc's diagnostic machinery.
+
+     This is declared here, but is implemented within gcc/diagnostic.c,
+     since it makes use of gcc's diagnostic-printing machinery.  This
+     is a slight layering violation, but this is sufficiently useful
+     for debugging that it's worth it.
+
+     This declaration would have a DEBUG_FUNCTION annotation, but that
+     is implemented in gcc/system.h and thus is not available here in
+     libcpp.  */
+  void debug (const char *msg) const;
+
+  /* We avoid using constructors, since various structs that
+     don't yet have constructors will embed instances of
+     source_range.  */
+
+  /* Make a source_range from a source_location.  */
+  static source_range from_location (source_location loc)
+  {
+    source_range result;
+    result.m_start = loc;
+    result.m_finish = loc;
+    return result;
+  }
+};
+
 /* Memory allocation function typedef.  Works like xrealloc.  */
 typedef void *(*line_map_realloc) (void *, size_t);
 
@@ -1028,6 +1069,174 @@ typedef struct
   bool sysp;
 } expanded_location;
 
+/* Both gcc and emacs number source *lines* starting at 1, but
+   they have differing conventions for *columns*.
+
+   GCC uses a 1-based convention for source columns,
+   whereas Emacs's M-x column-number-mode uses a 0-based convention.
+
+   For example, an error in the initial, left-hand
+   column of source line 3 is reported by GCC as:
+
+      some-file.c:3:1: error: ...etc...
+
+   On navigating to the location of that error in Emacs
+   (e.g. via "next-error"),
+   the locus is reported in the Mode Line
+   (assuming M-x column-number-mode) as:
+
+     some-file.c   10%   (3, 0)
+
+   i.e. "3:1:" in GCC corresponds to "(3, 0)" in Emacs.  */
+
+/* Ranges are closed
+   m_start is the first location within the range, and
+   m_finish is the last location within the range.  */
+struct location_range
+{
+  expanded_location m_start;
+  expanded_location m_finish;
+
+  /* Should a caret be drawn for this range?  Typically this is
+     true for the 0th range, and false for subsequent ranges,
+     but the Fortran frontend overrides this for rendering things like:
+
+       x = x + y
+           1   2
+       Error: Shapes for operands at (1) and (2) are not conformable
+
+     where "1" and "2" are notionally carets.  */
+  bool m_show_caret_p;
+  expanded_location m_caret;
+};
+
+/* A "rich" source code location, for use when printing diagnostics.
+   A rich_location has one or more ranges, each optionally with
+   a caret.   Typically the zeroth range has a caret; other ranges
+   sometimes have carets.
+
+   The "primary" location of a rich_location is the caret of range 0,
+   used for determining the line/column when printing diagnostic
+   text, such as:
+
+      some-file.c:3:1: error: ...etc...
+
+   Additional ranges may be added to help the user identify other
+   pertinent clauses in a diagnostic.
+
+   rich_location instances are intended to be allocated on the stack
+   when generating diagnostics, and to be short-lived.
+
+   Examples of rich locations
+   --------------------------
+
+   Example A
+   *********
+      int i = "foo";
+              ^
+   This "rich" location is simply a single range (range 0), with
+   caret = start = finish at the given point.
+
+   Example B
+   *********
+      a = (foo && bar)
+          ~~~~~^~~~~~~
+   This rich location has a single range (range 0), with the caret
+   at the first "&", and the start/finish at the parentheses.
+   Compare with example C below.
+
+   Example C
+   *********
+      a = (foo && bar)
+           ~~~ ^~ ~~~
+   This rich location has three ranges:
+   - Range 0 has its caret and start location at the first "&" and
+     end at the second "&.
+   - Range 1 has its start and finish at the "f" and "o" of "foo";
+     the caret is not flagged for display, but is perhaps at the "f"
+     of "foo".
+   - Similarly, range 2 has its start and finish at the "b" and "r" of
+     "bar"; the caret is not flagged for display, but is perhaps at the
+     "b" of "bar".
+   Compare with example B above.
+
+   Example D (Fortran frontend)
+   ****************************
+       x = x + y
+           1   2
+   This rich location has range 0 at "1", and range 1 at "2".
+   Both are flagged for caret display.  Both ranges have start/finish
+   equal to their caret point.  The frontend overrides the diagnostic
+   context's default caret character for these ranges.
+
+   Example E
+   *********
+      printf ("arg0: %i  arg1: %s arg2: %i",
+                               ^~
+              100, 101, 102);
+                   ~~~
+   This rich location has two ranges:
+   - range 0 is at the "%s" with start = caret = "%" and finish at
+     the "s".
+   - range 1 has start/finish covering the "101" and is not flagged for
+     caret printing; it is perhaps at the start of "101".  */
+
+class rich_location
+{
+ public:
+  /* Constructors.  */
+
+  /* Constructing from a location.  */
+  rich_location (source_location loc);
+
+  /* Constructing from a source_range.  */
+  rich_location (source_range src_range);
+
+  /* Accessors.  */
+  source_location get_loc () const { return m_loc; }
+
+  source_location *get_loc_addr () { return &m_loc; }
+
+  void
+  add_range (source_location start, source_location finish,
+	     bool show_caret_p);
+
+  void
+  add_range (source_range src_range, bool show_caret_p);
+
+  void
+  add_range (location_range *src_range);
+
+  void
+  set_range (unsigned int idx, source_range src_range,
+	     bool show_caret_p, bool overwrite_loc_p);
+
+  unsigned int get_num_locations () const { return m_num_ranges; }
+
+  location_range *get_range (unsigned int idx)
+  {
+    linemap_assert (idx < m_num_ranges);
+    return &m_ranges[idx];
+  }
+
+  expanded_location lazily_expand_location ();
+
+  void
+  override_column (int column);
+
+public:
+  static const int MAX_RANGES = 3;
+
+protected:
+  source_location m_loc;
+
+  unsigned int m_num_ranges;
+  location_range m_ranges[MAX_RANGES];
+
+  bool m_have_expanded_location;
+  expanded_location m_expanded_location;
+};
+
 /* This is enum is used by the function linemap_resolve_location
    below.  The meaning of the values is explained in the comment of
    that function.  */
@@ -1172,5 +1381,14 @@ void linemap_dump (FILE *, struct line_maps *, unsigned, bool);
    NUM_ORDINARY specifies how many ordinary maps to dump.  NUM_MACRO
    specifies how many macro maps to dump.  */
 void line_table_dump (FILE *, struct line_maps *, unsigned int, unsigned int);
+
+/* The rich_location class requires a way to expand source_location instances.
+   We would directly use expand_location_to_spelling_point, which is
+   implemented in gcc/input.c, but we also need to use it for rich_location
+   within genmatch.c.
+   Hence we require client code of libcpp to implement the following
+   symbol.  */
+extern expanded_location
+linemap_client_expand_location_to_spelling_point (source_location );
 
 #endif /* !LIBCPP_LINE_MAP_H  */

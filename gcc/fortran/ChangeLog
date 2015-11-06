@@ -1,3 +1,24 @@
+2015-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.c (cb_cpp_error): Convert parameter from location_t to
+	rich_location *.  Eliminate the "column_override" parameter.
+	* error.c (gfc_warning): Update for change in signature of
+	diagnostic_set_info.
+	(gfc_format_decoder): Update handling of %C/%L for changes
+	to struct text_info.
+	(gfc_diagnostic_starter): Use richloc when determining whether to
+	print one locus or two.  When handling a location that will
+	involve a call to diagnostic_show_locus, only attempt to print the
+	locus for the primary location, and don't call into
+	diagnostic_print_caret_line.
+	(gfc_warning_now_at): Update for change in signature of
+	diagnostic_set_info.
+	(gfc_warning_now): Likewise.
+	(gfc_error_now): Likewise.
+	(gfc_fatal_error): Likewise.
+	(gfc_error): Likewise.
+	(gfc_internal_error): Likewise.
+
 2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* openmp.c (gfc_match_omp_clauses): Update support for the tile

@@ -573,9 +573,9 @@ struct cpp_callbacks
 
   /* Called to emit a diagnostic.  This callback receives the
      translated message.  */
-  bool (*error) (cpp_reader *, int, int, source_location, unsigned int,
+  bool (*error) (cpp_reader *, int, int, rich_location *,
 		 const char *, va_list *)
-       ATTRIBUTE_FPTR_PRINTF(6,0);
+       ATTRIBUTE_FPTR_PRINTF(5,0);
 
   /* Callbacks for when a macro is expanded, or tested (whether
      defined or not at the time) in #ifdef, #ifndef or "defined".  */

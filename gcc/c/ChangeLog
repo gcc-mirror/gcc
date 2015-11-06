@@ -1,3 +1,12 @@
+2015-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (warn_defaults_to): Update for change in signature
+	of diagnostic_set_info.
+	* c-errors.c (pedwarn_c99): Likewise.
+	(pedwarn_c90): Likewise.
+	* c-objc-common.c (c_tree_printer): Update for new "caret_p" param
+	for textinfo::set_location.
+
 2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>

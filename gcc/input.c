@@ -751,6 +751,22 @@ expand_location_to_spelling_point (source_location loc)
   return expand_location_1 (loc, /*expansion_point_p=*/false);
 }
 
+/* The rich_location class within libcpp requires a way to expand
+   source_location instances, and relies on the client code
+   providing a symbol named
+     linemap_client_expand_location_to_spelling_point
+   to do this.
+
+   This is the implementation for libcommon.a (all host binaries),
+   which simply calls into expand_location_to_spelling_point.  */
+
+expanded_location
+linemap_client_expand_location_to_spelling_point (source_location loc)
+{
+  return expand_location_to_spelling_point (loc);
+}
+
+
 /* If LOCATION is in a system header and if it is a virtual location for
    a token coming from the expansion of a macro, unwind it to the
    location of the expansion point of the macro.  Otherwise, just return
