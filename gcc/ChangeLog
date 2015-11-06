@@ -1,3 +1,11 @@
+2015-11-06  Jeff Law <jeff@redhat.com>
+
+	* cfg-flags.def (IGNORE): New edge flag.
+	* tree-vrp.c (identify_jump_threads): Mark and clear edges
+	scheduled for removal with EDGE_IGNORE around call into
+	jump threader.  Do no thread across edges with EDGE_IGNORE,
+	but do allow threading across those with EDGE_DFS_BACK.
+
 2015-11-06  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* doc/md.texi (multi-alternative constraints): Don't document

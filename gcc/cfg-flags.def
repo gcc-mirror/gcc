@@ -78,7 +78,7 @@ DEF_BASIC_BLOCK_FLAG(RTL, 9)
 DEF_BASIC_BLOCK_FLAG(FORWARDER_BLOCK, 10)
 
 /* Set on blocks that cannot be threaded through.
-   Only used in cfgcleanup.c.  */
+   Only used for jump threading.  */
 DEF_BASIC_BLOCK_FLAG(NONTHREADABLE_BLOCK, 11)
 
 /* Set on blocks that were modified in some way.  This bit is set in
@@ -176,6 +176,11 @@ DEF_EDGE_FLAG(TM_UNINSTRUMENTED, 15)
 
 /* Abort (over) edge out of a GIMPLE_TRANSACTION statement.  */
 DEF_EDGE_FLAG(TM_ABORT, 16)
+
+/* An edge we should ignore.  It should be entirely local to
+   passes.  ie, it is never set on any edge upon the completion
+   of any pass.  */
+DEF_EDGE_FLAG(IGNORE, 17)
 
 #endif
 

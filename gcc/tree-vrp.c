@@ -10076,9 +10076,9 @@ identify_jump_threads (void)
   mark_dfs_back_edges ();
 
   /* Do not thread across edges we are about to remove.  Just marking
-     them as EDGE_DFS_BACK will do.  */
+     them as EDGE_IGNORE will do.  */
   FOR_EACH_VEC_ELT (to_remove_edges, i, e)
-    e->flags |= EDGE_DFS_BACK;
+    e->flags |= EDGE_IGNORE;
 
   /* Allocate our unwinder stack to unwind any temporary equivalences
      that might be recorded.  */
@@ -10135,9 +10135,9 @@ identify_jump_threads (void)
 	     it to a specific successor.  */
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
-	      /* Do not thread across back edges or abnormal edges
-		 in the CFG.  */
-	      if (e->flags & (EDGE_DFS_BACK | EDGE_COMPLEX))
+	      /* Do not thread across edges marked to ignoreor abnormal
+		 edges in the CFG.  */
+	      if (e->flags & (EDGE_IGNORE | EDGE_COMPLEX))
 		continue;
 
 	      thread_across_edge (dummy, e, true, equiv_stack, NULL,
@@ -10145,6 +10145,10 @@ identify_jump_threads (void)
 	    }
 	}
     }
+
+  /* Clear EDGE_IGNORE.  */
+  FOR_EACH_VEC_ELT (to_remove_edges, i, e)
+    e->flags &= ~EDGE_IGNORE;
 
   /* We do not actually update the CFG or SSA graphs at this point as
      ASSERT_EXPRs are still in the IL and cfg cleanup code does not yet
