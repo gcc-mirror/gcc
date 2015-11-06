@@ -1,3 +1,26 @@
+2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Add support for
+	PRAGMA_OACC_CLAUSE_INDEPENDENT and PRAGMA_OACC_CLAUSE_TILE.
+	(c_parser_omp_clause_default): Add is_oacc argument. Handle
+	default(none) in OpenACC.
+	(c_parser_oacc_shape_clause): Allow pointer variables as gang static
+	arguments.
+	(c_parser_oacc_clause_tile): New function.
+	(c_parser_oacc_all_clauses): Add support for OMP_CLAUSE_DEFAULT,
+	OMP_CLAUSE_INDEPENDENT and OMP_CLAUSE_TILE.
+	(OACC_LOOP_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_{PRIVATE,INDEPENDENT,
+	TILE}.
+	(OACC_KERNELS_MASK): Add PRAGMA_OACC_CLAUSE_DEFAULT.
+	(OACC_PARALLEL_MASK): Add PRAGMA_OACC_CLAUSE_{DEFAULT,PRIVATE,
+	FIRSTPRIVATE}.
+	(c_parser_omp_all_clauses): Update call to c_parser_omp_clause_default.
+	(c_parser_oacc_update): Update the error message for missing clauses.
+	* c-typeck.c (c_finish_omp_clauses): Add support for OMP_CLAUSE_TILE
+	and OMP_CLAUSE_INDEPENDENT.
+
 2015-11-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68090

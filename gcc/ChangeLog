@@ -1,3 +1,19 @@
+2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+
+	* gimplify.c (gimplify_scan_omp_clauses): Add support for
+	OMP_CLAUSE_TILE.  Update handling of OMP_CLAUSE_INDEPENDENT.
+	(gimplify_adjust_omp_clauses): Likewise.
+	* omp-low.c (scan_sharing_clauses): Add support for OMP_CLAUSE_TILE.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_TILE.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE_TILE.
+	* tree.c (omp_clause_num_ops): Add an entry for OMP_CLAUSE_TILE.
+	(omp_clause_code_name): Likewise.
+	(walk_tree_1): Handle OMP_CLAUSE_TILE.
+	* tree.h (OMP_TILE_LIST): New macro.
+
 2015-11-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/67942

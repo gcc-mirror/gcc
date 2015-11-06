@@ -867,7 +867,7 @@ c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, tree decl,
 tree
 c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses)
 {
-  tree next, loop_clauses;
+  tree next, loop_clauses, t;
 
   loop_clauses = *not_loop_clauses = NULL_TREE;
   for (; clauses ; clauses = next)
@@ -876,12 +876,27 @@ c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses)
 
       switch (OMP_CLAUSE_CODE (clauses))
         {
+	  /* Loop clauses.  */
 	case OMP_CLAUSE_COLLAPSE:
-	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE_GANG:
+	case OMP_CLAUSE_WORKER:
+	case OMP_CLAUSE_VECTOR:
+	case OMP_CLAUSE_AUTO:
+	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE_INDEPENDENT:
+	case OMP_CLAUSE_PRIVATE:
 	  OMP_CLAUSE_CHAIN (clauses) = loop_clauses;
 	  loop_clauses = clauses;
 	  break;
 
+	  /* Reductions belong in both constructs.  */
+	case OMP_CLAUSE_REDUCTION:
+	  t = copy_node (clauses);
+	  OMP_CLAUSE_CHAIN (t) = loop_clauses;
+	  loop_clauses = t;
+
+	  /* Parallel/kernels clauses.  */
 	default:
 	  OMP_CLAUSE_CHAIN (clauses) = *not_loop_clauses;
 	  *not_loop_clauses = clauses;

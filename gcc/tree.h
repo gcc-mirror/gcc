@@ -1556,6 +1556,9 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_DEFAULT_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEFAULT)->omp_clause.subcode.default_kind)
 
+#define OMP_CLAUSE_TILE_LIST(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_TILE), 0)
+
 /* SSA_NAME accessors.  */
 
 /* Returns the IDENTIFIER_NODE giving the SSA name a name or NULL_TREE

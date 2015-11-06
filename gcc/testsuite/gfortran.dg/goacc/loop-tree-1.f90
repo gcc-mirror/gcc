@@ -3,6 +3,11 @@
 
 ! test for tree-dump-original and spaces-commas
 
+! This error is temporary.  Remove when support is added for these clauses
+! in the middle end.
+! { dg-prune-output "sorry, unimplemented" }
+! { dg-prune-output "Error: work-sharing region" }
+
 program test
   implicit none
   integer :: i, j, k, m, sum
@@ -17,7 +22,7 @@ program test
 
   !$acc loop independent gang (3)
   DO i = 1,10
-    !$acc loop worker(3) ! { dg-error "work-sharing region may not be closely nested inside of work-sharing, critical, ordered, master or explicit task region" }
+    !$acc loop worker(3)
     DO j = 1,10
       !$acc loop vector(5)
       DO k = 1,10

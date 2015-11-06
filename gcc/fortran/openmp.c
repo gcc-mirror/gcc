@@ -703,6 +703,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, uint64_t mask,
 				       OMP_MAP_FORCE_FROM))
 	continue;
       if ((mask & OMP_CLAUSE_TILE)
+	  && !c->tile_list
 	  && match_oacc_expr_list ("tile (", &c->tile_list, true) == MATCH_YES)
 	continue;
       if ((mask & OMP_CLAUSE_SEQ) && !c->seq
@@ -856,12 +857,14 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, uint64_t mask,
       if ((mask & OMP_CLAUSE_DEFAULT)
 	  && c->default_sharing == OMP_DEFAULT_UNKNOWN)
 	{
-	  if (gfc_match ("default ( shared )") == MATCH_YES)
+	  if (gfc_match ("default ( none )") == MATCH_YES)
+	    c->default_sharing = OMP_DEFAULT_NONE;
+	  else if (openacc)
+	    /* c->default_sharing = OMP_DEFAULT_UNKNOWN */;
+	  else if (gfc_match ("default ( shared )") == MATCH_YES)
 	    c->default_sharing = OMP_DEFAULT_SHARED;
 	  else if (gfc_match ("default ( private )") == MATCH_YES)
 	    c->default_sharing = OMP_DEFAULT_PRIVATE;
-	  else if (gfc_match ("default ( none )") == MATCH_YES)
-	    c->default_sharing = OMP_DEFAULT_NONE;
 	  else if (gfc_match ("default ( firstprivate )") == MATCH_YES)
 	    c->default_sharing = OMP_DEFAULT_FIRSTPRIVATE;
 	  if (c->default_sharing != OMP_DEFAULT_UNKNOWN)
@@ -1304,9 +1307,18 @@ match
 gfc_match_oacc_update (void)
 {
   gfc_omp_clauses *c;
+  locus here = gfc_current_locus;
+
   if (gfc_match_omp_clauses (&c, OACC_UPDATE_CLAUSES, false, false, true)
       != MATCH_YES)
     return MATCH_ERROR;
+
+  if (!c->lists[OMP_LIST_MAP])
+    {
+      gfc_error ("%<acc update%> must contain at least one "
+		 "%<device%> or %<host%> or %<self%> clause at %L", &here);
+      return MATCH_ERROR;
+    }
 
   new_st.op = EXEC_OACC_UPDATE;
   new_st.ext.omp_clauses = c;
@@ -2846,30 +2858,6 @@ resolve_omp_udr_clause (gfc_omp_namelist *n, gfc_namespace *ns,
   return copy;
 }
 
-/* Returns true if clause in list 'list' is compatible with any of
-   of the clauses in lists [0..list-1].  E.g., a reduction variable may
-   appear in both reduction and private clauses, so this function
-   will return true in this case.  */
-
-static bool
-oacc_compatible_clauses (gfc_omp_clauses *clauses, int list,
-			   gfc_symbol *sym, bool openacc)
-{
-  gfc_omp_namelist *n;
-
-  if (!openacc)
-    return false;
-
-  if (list != OMP_LIST_REDUCTION)
-    return false;
-
-  for (n = clauses->lists[OMP_LIST_FIRST]; n; n = n->next)
-    if (n->sym == sym)
-      return true;
-
-  return false;
-}
-
 /* OpenMP directive resolving routines.  */
 
 static void
@@ -2975,11 +2963,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	&& list != OMP_LIST_DEPEND
 	&& (list != OMP_LIST_MAP || openacc)
 	&& list != OMP_LIST_FROM
-	&& list != OMP_LIST_TO)
+	&& list != OMP_LIST_TO
+	&& (list != OMP_LIST_REDUCTION || !openacc))
       for (n = omp_clauses->lists[list]; n; n = n->next)
 	{
-	  if (n->sym->mark && !oacc_compatible_clauses (omp_clauses, list,
-							n->sym, openacc))
+	  if (n->sym->mark)
 	    gfc_error ("Symbol %qs present on multiple clauses at %L",
 		       n->sym->name, &n->where);
 	  else
@@ -3028,6 +3016,22 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	n->sym->mark = 1;
     }
 
+  /* OpenACC reductions.  */
+  if (openacc)
+    {
+      for (n = omp_clauses->lists[OMP_LIST_REDUCTION]; n; n = n->next)
+	n->sym->mark = 0;
+
+      for (n = omp_clauses->lists[OMP_LIST_REDUCTION]; n; n = n->next)
+	{
+	  if (n->sym->mark)
+	    gfc_error ("Symbol %qs present on multiple clauses at %L",
+		       n->sym->name, &n->where);
+	  else
+	    n->sym->mark = 1;
+	}
+    }
+  
   for (n = omp_clauses->lists[OMP_LIST_TO]; n; n = n->next)
     n->sym->mark = 0;
   for (n = omp_clauses->lists[OMP_LIST_FROM]; n; n = n->next)
@@ -4528,22 +4532,8 @@ resolve_oacc_loop_blocks (gfc_code *code)
       if (code->ext.omp_clauses->vector)
 	gfc_error ("Clause AUTO conflicts with VECTOR at %L", &code->loc);
     }
-  if (!code->ext.omp_clauses->tile_list)
-    {
-      if (code->ext.omp_clauses->gang)
-	{
-	  if (code->ext.omp_clauses->worker)
-	    gfc_error ("Clause GANG conflicts with WORKER at %L", &code->loc);
-	  if (code->ext.omp_clauses->vector)
-	    gfc_error ("Clause GANG conflicts with VECTOR at %L", &code->loc);
-	}
-      if (code->ext.omp_clauses->worker)
-	if (code->ext.omp_clauses->vector)
-	  gfc_error ("Clause WORKER conflicts with VECTOR at %L", &code->loc);
-    }
-  else if (code->ext.omp_clauses->gang
-	   && code->ext.omp_clauses->worker
-	   && code->ext.omp_clauses->vector)
+  if (code->ext.omp_clauses->tile_list && code->ext.omp_clauses->gang
+      && code->ext.omp_clauses->worker && code->ext.omp_clauses->vector)
     gfc_error ("Tiled loop cannot be parallelized across gangs, workers and "
 	       "vectors at the same time at %L", &code->loc);
 
@@ -4564,10 +4554,21 @@ resolve_oacc_loop_blocks (gfc_code *code)
 	{
 	  num++;
 	  if (el->expr == NULL)
-	    continue;
-	  resolve_oacc_positive_int_expr (el->expr, "TILE");
-	  if (el->expr->expr_type != EXPR_CONSTANT)
-	    gfc_error ("TILE requires constant expression at %L", &code->loc);
+	    {
+	      /* NULL expressions are used to represent '*' arguments.
+		 Convert those to a -1 expressions.  */
+	      el->expr = gfc_get_constant_expr (BT_INTEGER,
+						gfc_default_integer_kind,
+						&code->loc);
+	      mpz_set_si (el->expr->value.integer, -1);
+	    }
+	  else
+	    {
+	      resolve_oacc_positive_int_expr (el->expr, "TILE");
+	      if (el->expr->expr_type != EXPR_CONSTANT)
+		gfc_error ("TILE requires constant expression at %L",
+			   &code->loc);
+	    }
 	}
       resolve_oacc_nested_loops (code, code->block->next, num, "tiled");
     }
