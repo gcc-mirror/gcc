@@ -1,3 +1,12 @@
+2015-11-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/68106
+	* lra-remat.c (input_regno_present_p): Process hard regs
+	explicitly present in machine description insns.
+	(call_used_input_regno_present_p): Ditto.
+	(calculate_gen_cands): Ditto.
+	(do_remat): Ditto.
+
 2015-11-02  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/rs6000/freebsd64.h (ASM_SPEC32): Adapt spec to handle PIE

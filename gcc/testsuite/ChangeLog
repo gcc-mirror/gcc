@@ -1,3 +1,8 @@
+2015-11-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/68106
+	* testsuite/gcc.target/aarch64/pr68106.c: New.
+
 2015-01-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from trunk.

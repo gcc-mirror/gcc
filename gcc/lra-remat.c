@@ -732,12 +732,17 @@ calculate_local_reg_remat_bb_data (void)
 static bool
 input_regno_present_p (rtx_insn *insn, int regno)
 {
+  int iter;
   lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
+  struct lra_static_insn_data *static_id = id->insn_static_data;
   struct lra_insn_reg *reg;
-
-  for (reg = id->regs; reg != NULL; reg = reg->next)
-    if (reg->type == OP_IN && reg->regno == regno)
-      return true;
+  
+  for (iter = 0; iter < 2; iter++)
+    for (reg = (iter == 0 ? id->regs : static_id->hard_regs);
+	 reg != NULL;
+	 reg = reg->next)
+      if (reg->type == OP_IN && reg->regno == regno)
+	return true;
   return false;
 }
 
@@ -745,13 +750,18 @@ input_regno_present_p (rtx_insn *insn, int regno)
 static bool
 call_used_input_regno_present_p (rtx_insn *insn)
 {
+  int iter;
   lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
+  struct lra_static_insn_data *static_id = id->insn_static_data;
   struct lra_insn_reg *reg;
 
-  for (reg = id->regs; reg != NULL; reg = reg->next)
-    if (reg->type == OP_IN && reg->regno <= FIRST_PSEUDO_REGISTER
-	&& TEST_HARD_REG_BIT (call_used_reg_set, reg->regno))
-      return true;
+  for (iter = 0; iter < 2; iter++)
+    for (reg = (iter == 0 ? id->regs : static_id->hard_regs);
+	 reg != NULL;
+	 reg = reg->next)
+      if (reg->type == OP_IN && reg->regno <= FIRST_PSEUDO_REGISTER
+	  && TEST_HARD_REG_BIT (call_used_reg_set, reg->regno))
+	return true;
   return false;
 }
 
@@ -798,11 +808,13 @@ calculate_gen_cands (void)
 	if (INSN_P (insn))
 	  {
 	    lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
+	    struct lra_static_insn_data *static_id = id->insn_static_data;
 	    struct lra_insn_reg *reg;
 	    unsigned int uid;
 	    bitmap_iterator bi;
 	    cand_t cand;
 	    rtx set;
+	    int iter;
 	    int src_regno = -1, dst_regno = -1;
 
 	    if ((set = single_set (insn)) != NULL
@@ -814,26 +826,29 @@ calculate_gen_cands (void)
 
 	    /* Update gen_cands:  */
 	    bitmap_clear (&temp_bitmap);
-	    for (reg = id->regs; reg != NULL; reg = reg->next)
-	      if (reg->type != OP_IN
-		  || find_regno_note (insn, REG_DEAD, reg->regno) != NULL)
-		EXECUTE_IF_SET_IN_BITMAP (&gen_insns, 0, uid, bi)
-		  {
-		    rtx_insn *insn2 = lra_insn_recog_data[uid]->insn;
-
-		    cand = insn_to_cand[INSN_UID (insn2)];
-		    gcc_assert (cand != NULL);
-		    /* Ignore the reload insn.  */
-		    if (src_regno == cand->reload_regno
-			&& dst_regno == cand->regno)
-		      continue;
-		    if (cand->regno == reg->regno
-			|| input_regno_present_p (insn2, reg->regno))
-		      {
-			bitmap_clear_bit (gen_cands, cand->index);
-			bitmap_set_bit (&temp_bitmap, uid);
-		      }
-		  }
+	    for (iter = 0; iter < 2; iter++)
+	      for (reg = (iter == 0 ? id->regs : static_id->hard_regs);
+		   reg != NULL;
+		   reg = reg->next)
+		if (reg->type != OP_IN
+		    || find_regno_note (insn, REG_DEAD, reg->regno) != NULL)
+		  EXECUTE_IF_SET_IN_BITMAP (&gen_insns, 0, uid, bi)
+		    {
+		      rtx_insn *insn2 = lra_insn_recog_data[uid]->insn;
+		      
+		      cand = insn_to_cand[INSN_UID (insn2)];
+		      gcc_assert (cand != NULL);
+		      /* Ignore the reload insn.  */
+		      if (src_regno == cand->reload_regno
+			  && dst_regno == cand->regno)
+			continue;
+		      if (cand->regno == reg->regno
+			  || input_regno_present_p (insn2, reg->regno))
+			{
+			  bitmap_clear_bit (gen_cands, cand->index);
+			  bitmap_set_bit (&temp_bitmap, uid);
+			}
+		    }
 	    
 	    if (CALL_P (insn))
 	      EXECUTE_IF_SET_IN_BITMAP (&gen_insns, 0, uid, bi)
@@ -1107,6 +1122,7 @@ do_remat (void)
 	  unsigned int cid;
 	  bitmap_iterator bi;
 	  rtx set;
+	  int iter;
 	  int src_regno = -1, dst_regno = -1;
 
 	  if ((set = single_set (insn)) != NULL
@@ -1192,21 +1208,24 @@ do_remat (void)
 	  bitmap_clear (&temp_bitmap);
 	  /* Update avail_cands (see analogous code for
 	     calculate_gen_cands).  */
-	  for (reg = id->regs; reg != NULL; reg = reg->next)
-	    if (reg->type != OP_IN
-		|| find_regno_note (insn, REG_DEAD, reg->regno) != NULL)
-	      EXECUTE_IF_SET_IN_BITMAP (&avail_cands, 0, cid, bi)
-		{
-		  cand = all_cands[cid];
-
-		  /* Ignore the reload insn.  */
-		  if (src_regno == cand->reload_regno
-		      && dst_regno == cand->regno)
-		    continue;
-		  if (cand->regno == reg->regno
-		      || input_regno_present_p (cand->insn, reg->regno))
-		    bitmap_set_bit (&temp_bitmap, cand->index);
-		}
+	  for (iter = 0; iter < 2; iter++)
+	    for (reg = (iter == 0 ? id->regs : static_id->hard_regs);
+		 reg != NULL;
+		 reg = reg->next)
+	      if (reg->type != OP_IN
+		  || find_regno_note (insn, REG_DEAD, reg->regno) != NULL)
+		EXECUTE_IF_SET_IN_BITMAP (&avail_cands, 0, cid, bi)
+		  {
+		    cand = all_cands[cid];
+		    
+		    /* Ignore the reload insn.  */
+		    if (src_regno == cand->reload_regno
+			&& dst_regno == cand->regno)
+		      continue;
+		    if (cand->regno == reg->regno
+			|| input_regno_present_p (cand->insn, reg->regno))
+		      bitmap_set_bit (&temp_bitmap, cand->index);
+		  }
 
 	  if (CALL_P (insn))
 	    EXECUTE_IF_SET_IN_BITMAP (&avail_cands, 0, cid, bi)
