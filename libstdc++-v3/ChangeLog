@@ -1,3 +1,9 @@
+2015-11-06  Kai Tietz  <ktietz70@googlemail.com>
+
+	* testsuite/26_numerics/complex/requirements/constexpr.cc
+	* testsuite/26_numerics/complex/requirements/constexpr_functions.cc:
+	Use constexpr where needed.
+
 2015-11-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/lib/libstdc++.exp (v3_target_compile): Add
