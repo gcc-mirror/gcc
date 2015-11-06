@@ -1,3 +1,8 @@
+2015-11-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-hash-traits.h (tree_operand_hash): Provide equal, not
+	equal_keys.
+
 2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
