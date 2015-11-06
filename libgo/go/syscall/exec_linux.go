@@ -171,14 +171,9 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	}
 
 	if sys.Foreground {
-		pgrp := int32(sys.Pgid)
+		pgrp := Pid_t(sys.Pgid)
 		if pgrp == 0 {
-			r1 = uintptr(raw_getpid())
-			if err1 != 0 {
-				goto childerror
-			}
-
-			pgrp = int32(r1)
+			pgrp = raw_getpid()
 		}
 
 		// Place process group in foreground.
@@ -236,7 +231,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		// using SIGKILL.
 		r1 := raw_getppid()
 		if r1 != ppid {
-			pid = raw_getpid()
+			pid := raw_getpid()
 			err1 = raw_kill(pid, sys.Pdeathsig)
 			if err1 != 0 {
 				goto childerror
