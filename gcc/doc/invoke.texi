@@ -521,6 +521,7 @@ Objective-C and Objective-C++ Dialects}.
 -mtls-size=@var{size} @gol
 -mfix-cortex-a53-835769  -mno-fix-cortex-a53-835769 @gol
 -mfix-cortex-a53-843419  -mno-fix-cortex-a53-843419 @gol
+-mlow-precision-recip-sqrt -mno-low-precision-recip-sqrt@gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}}
 
 @emph{Adapteva Epiphany Options}
@@ -12518,6 +12519,17 @@ This involves inserting a NOP instruction between memory instructions and
 Enable or disable the workaround for the ARM Cortex-A53 erratum number 843419.
 This erratum workaround is made at link time and this will only pass the
 corresponding flag to the linker.
+
+@item -mlow-precision-recip-sqrt
+@item -mno-low-precision-recip-sqrt
+@opindex -mlow-precision-recip-sqrt
+@opindex -mno-low-precision-recip-sqrt
+The square root estimate uses two steps instead of three for double-precision,
+and one step instead of two for single-precision.
+Thus reducing latency and precision.
+This is only relevant if @option{-ffast-math} activates
+reciprocal square root estimate instructions.
+Which in turn depends on the target processor.
 
 @item -march=@var{name}
 @opindex march

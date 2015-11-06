@@ -403,7 +403,8 @@ static const struct tune_params cortexa57_tunings =
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_RENAME_FMA_REGS)	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_RENAME_FMA_REGS
+   | AARCH64_EXTRA_TUNE_RECIP_SQRT)	/* tune_flags.  */
 };
 
 static const struct tune_params cortexa72_tunings =
@@ -470,7 +471,7 @@ static const struct tune_params xgene1_tunings =
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_RECIP_SQRT)	/* tune_flags.  */
 };
 
 /* Support for fine-grained override of the tuning structures.  */
@@ -7031,6 +7032,105 @@ aarch64_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
   return aarch64_tune_params.memmov_cost;
 }
 
+/* Function to decide when to use
+   reciprocal square root builtins.  */
+
+static tree
+aarch64_builtin_reciprocal (unsigned int fn,
+			    bool md_fn,
+			    bool)
+{
+  if (flag_trapping_math
+      || !flag_unsafe_math_optimizations
+      || optimize_size
+      || ! (aarch64_tune_params.extra_tuning_flags
+	   & AARCH64_EXTRA_TUNE_RECIP_SQRT))
+  {
+    return NULL_TREE;
+  }
+
+  return aarch64_builtin_rsqrt (fn, md_fn);
+}
+
+typedef rtx (*rsqrte_type) (rtx, rtx);
+
+/* Select reciprocal square root initial estimate
+   insn depending on machine mode.  */
+
+rsqrte_type
+get_rsqrte_type (machine_mode mode)
+{
+  switch (mode)
+  {
+    case DFmode:   return gen_aarch64_rsqrte_df2;
+    case SFmode:   return gen_aarch64_rsqrte_sf2;
+    case V2DFmode: return gen_aarch64_rsqrte_v2df2;
+    case V2SFmode: return gen_aarch64_rsqrte_v2sf2;
+    case V4SFmode: return gen_aarch64_rsqrte_v4sf2;
+    default: gcc_unreachable ();
+  }
+}
+
+typedef rtx (*rsqrts_type) (rtx, rtx, rtx);
+
+/* Select reciprocal square root Newton-Raphson step
+   insn depending on machine mode.  */
+
+rsqrts_type
+get_rsqrts_type (machine_mode mode)
+{
+  switch (mode)
+  {
+    case DFmode:   return gen_aarch64_rsqrts_df3;
+    case SFmode:   return gen_aarch64_rsqrts_sf3;
+    case V2DFmode: return gen_aarch64_rsqrts_v2df3;
+    case V2SFmode: return gen_aarch64_rsqrts_v2sf3;
+    case V4SFmode: return gen_aarch64_rsqrts_v4sf3;
+    default: gcc_unreachable ();
+  }
+}
+
+/* Emit instruction sequence to compute
+   reciprocal square root.  Use two Newton-Raphson steps
+   for single precision and three for double precision.  */
+
+void
+aarch64_emit_swrsqrt (rtx dst, rtx src)
+{
+  machine_mode mode = GET_MODE (src);
+  gcc_assert (
+    mode == SFmode || mode == V2SFmode || mode == V4SFmode
+	|| mode == DFmode || mode == V2DFmode);
+
+  rtx xsrc = gen_reg_rtx (mode);
+  emit_move_insn (xsrc, src);
+  rtx x0 = gen_reg_rtx (mode);
+
+  emit_insn ((*get_rsqrte_type (mode)) (x0, xsrc));
+
+  bool double_mode = (mode == DFmode || mode == V2DFmode);
+
+  int iterations = double_mode ? 3 : 2;
+
+  if (flag_mrecip_low_precision_sqrt)
+    iterations--;
+
+  for (int i = 0; i < iterations; ++i)
+    {
+      rtx x1 = gen_reg_rtx (mode);
+      rtx x2 = gen_reg_rtx (mode);
+      rtx x3 = gen_reg_rtx (mode);
+      emit_set_insn (x2, gen_rtx_MULT (mode, x0, x0));
+
+      emit_insn ((*get_rsqrts_type (mode)) (x3, xsrc, x2));
+
+      emit_set_insn (x1, gen_rtx_MULT (mode, x0, x3));
+      x0 = x1;
+    }
+
+  emit_move_insn (dst, x0);
+}
+
 /* Return the number of instructions that can be issued per cycle.  */
 static int
 aarch64_sched_issue_rate (void)
@@ -13454,6 +13554,9 @@ aarch64_promoted_type (const_tree t)
 
 #undef TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL aarch64_builtin_decl
+
+#undef TARGET_BUILTIN_RECIPROCAL
+#define TARGET_BUILTIN_RECIPROCAL aarch64_builtin_reciprocal
 
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN aarch64_expand_builtin

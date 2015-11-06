@@ -1,3 +1,23 @@
+2015-11-06  Benedikt Huber  <benedikt.huber@theobroma-systems.com>
+	    Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
+
+	* config/aarch64/aarch64-builtins.c: Builtins for rsqrt and rsqrtf.
+	* config/aarch64/aarch64-protos.h: Declare.
+	* config/aarch64/aarch64-simd.md: Matching expressions for frsqrte and
+	frsqrts.
+	* config/aarch64/aarch64-tuning-flags.def: Added recip_sqrt.
+	* config/aarch64/aarch64.c: New functions. Emit rsqrt estimation code when
+	applicable.
+	* config/aarch64/aarch64.md: Added enum entries.
+	* config/aarch64/aarch64.opt: Added option -mlow-precision-recip-sqrt.
+	* testsuite/gcc.target/aarch64/rsqrt_asm_check_common.h: Common macros for
+	assembly checks.
+	* testsuite/gcc.target/aarch64/rsqrt_asm_check_negative_1.c: Make sure
+	frsqrts and frsqrte are not emitted.
+	* testsuite/gcc.target/aarch64/rsqrt_asm_check_1.c: Make sure frsqrts and
+	frsqrte are emitted.
+	* testsuite/gcc.target/aarch64/rsqrt_1.c: Functional tests for rsqrt.
+
 2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/68057

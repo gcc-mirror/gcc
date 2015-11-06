@@ -382,6 +382,33 @@
   [(set_attr "type" "neon_fp_mul_d_scalar_q")]
 )
 
+(define_insn "aarch64_rsqrte_<mode>2"
+  [(set (match_operand:VALLF 0 "register_operand" "=w")
+	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")]
+		     UNSPEC_RSQRTE))]
+  "TARGET_SIMD"
+  "frsqrte\\t%<v>0<Vmtype>, %<v>1<Vmtype>"
+  [(set_attr "type" "neon_fp_rsqrte_<Vetype><q>")])
+
+(define_insn "aarch64_rsqrts_<mode>3"
+  [(set (match_operand:VALLF 0 "register_operand" "=w")
+	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")
+	       (match_operand:VALLF 2 "register_operand" "w")]
+		     UNSPEC_RSQRTS))]
+  "TARGET_SIMD"
+  "frsqrts\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
+  [(set_attr "type" "neon_fp_rsqrts_<Vetype><q>")])
+
+(define_expand "aarch64_rsqrt_<mode>2"
+  [(set (match_operand:VALLF 0 "register_operand" "=w")
+	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")]
+		     UNSPEC_RSQRT))]
+  "TARGET_SIMD"
+{
+  aarch64_emit_swrsqrt (operands[0], operands[1]);
+  DONE;
+})
+
 (define_insn "*aarch64_mul3_elt_to_64v2df"
   [(set (match_operand:DF 0 "register_operand" "=w")
      (mult:DF
