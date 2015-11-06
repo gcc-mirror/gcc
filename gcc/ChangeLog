@@ -1,3 +1,13 @@
+2015-11-06  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+        * graphite-scop-detection.c (scop_detection::merge_sese): Entry
+	and exit edges should not be a part of irreducible loop.
+        (scop_detection::can_represent_loop_1): Loops should not be
+	irreducible.
+        (scop_detection::harmful_stmt_in_region): All the basic block
+	should belong to reducible loops.
+
 2015-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/aarch64/aarch64-simd-builtins.def: Update builtins

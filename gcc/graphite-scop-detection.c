@@ -794,7 +794,8 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
 					      get_entry_bb (second));
 
   edge entry = get_nearest_dom_with_single_entry (dom);
-  if (!entry)
+
+  if (!entry || (entry->flags & EDGE_IRREDUCIBLE_LOOP))
     return invalid_sese;
 
   basic_block pdom = nearest_common_dominator (CDI_POST_DOMINATORS,
@@ -803,7 +804,8 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
   pdom = nearest_common_dominator (CDI_POST_DOMINATORS, dom, pdom);
 
   edge exit = get_nearest_pdom_with_single_exit (pdom);
-  if (!exit)
+
+  if (!exit || (exit->flags & EDGE_IRREDUCIBLE_LOOP))
     return invalid_sese;
 
   sese_l combined (entry, exit);
@@ -923,6 +925,7 @@ scop_detection::can_represent_loop_1 (loop_p loop, sese_l scop)
   struct tree_niter_desc niter_desc;
 
   return single_exit (loop)
+    && !(loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP)
     && number_of_iterations_exit (loop, single_exit (loop), &niter_desc, false)
     && niter_desc.control.no_overflow
     && (niter = number_of_latch_executions (loop))
@@ -1052,6 +1055,10 @@ scop_detection::harmful_stmt_in_region (sese_l scop) const
       /* We don't want to analyze any bb outside sese.  */
       if (!dominated_by_p (CDI_POST_DOMINATORS, bb, exit_bb))
 	continue;
+
+      /* The basic block should not be part of an irreducible loop.  */
+      if (bb->flags & BB_IRREDUCIBLE_LOOP)
+        return true;
 
       if (harmful_stmt_in_bb (scop, bb))
 	return true;
