@@ -23,18 +23,20 @@ along with GCC; see the file COPYING3.  If not see
 /* Hash for trees based on operand_equal_p.  */
 struct tree_operand_hash : ggc_ptr_hash <tree_node>
 {
-  static inline hashval_t hash (const_tree);
-  static inline bool equal_keys (const_tree, const_tree);
+  static inline hashval_t hash (const value_type &);
+  static inline bool equal (const value_type &,
+			    const compare_type &);
 };
 
 inline hashval_t
-tree_operand_hash::hash (const_tree t)
+tree_operand_hash::hash (const value_type &t)
 {
   return iterative_hash_expr (t, 0);
 }
 
 inline bool
-tree_operand_hash::equal_keys (const_tree t1, const_tree t2)
+tree_operand_hash::equal (const value_type &t1,
+			  const compare_type &t2)
 {
   return operand_equal_p (t1, t2, 0);
 }
