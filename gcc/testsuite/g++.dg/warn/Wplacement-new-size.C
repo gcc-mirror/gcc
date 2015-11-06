@@ -408,3 +408,48 @@ void test_user_defined_placement_new ()
         new (&x) ClassWithGlobalNew[2];
     }
 }
+
+extern char extbuf[];
+
+template <class> struct TemplateClass { char c; };
+
+// Declare a specialization but don't provide a definition.
+template <> struct TemplateClass<void>;
+
+// Declare an object of an explicit specialization of an unknown size.
+extern TemplateClass<void> exttempl_void;
+
+// Verify that no warning is issued when placement new is called with
+// an extern buffer of unknown size (and the case is handled gracefully
+// and doesn't cause an ICE).
+static __attribute__ ((used))
+void test_extern_buffer_of_unknown_size ()
+{
+    new (extbuf) int ();
+    new (extbuf) int [1024];
+
+    new (&exttempl_void) int ();
+    new (&exttempl_void) int [1024];
+}
+
+extern char extbuf_size_int [sizeof (int)];
+
+extern TemplateClass<int> exttempl;
+
+// Verify that a warning is issued as expected when placement new is
+// called with an extern buffer of known size (and the case is handled
+// gracefully and doesn't cause an ICE).
+static __attribute__ ((used))
+void test_extern_buffer ()
+{
+    new (extbuf_size_int) int ();
+    new (extbuf_size_int) int [1];
+
+    struct S { int a [2]; };
+
+    new (extbuf_size_int) S;            // { dg-warning "placement" }
+    new (extbuf_size_int) int [2];      // { dg-warning "placement" }
+
+    new (&exttempl) int ();             // { dg-warning "placement" }
+    new (&exttempl) int [1024];         // { dg-warning "placement" }
+}

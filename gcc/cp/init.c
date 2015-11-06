@@ -2384,19 +2384,25 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
       /* Treat members of unions and members of structs uniformly, even
 	 though the size of a member of a union may be viewed as extending
 	 to the end of the union itself (it is by __builtin_object_size).  */
-      if (TREE_CODE (oper) == VAR_DECL || use_obj_size)
+      if ((TREE_CODE (oper) == VAR_DECL || use_obj_size)
+	  && DECL_SIZE_UNIT (oper))
 	{
 	  /* Use the size of the entire array object when the expression
 	     refers to a variable or its size depends on an expression
 	     that's not a compile-time constant.  */
-	  bytes_avail = tree_to_shwi (DECL_SIZE_UNIT (oper));
+	  bytes_avail = tree_to_uhwi (DECL_SIZE_UNIT (oper));
 	  exact_size = !use_obj_size;
 	}
-      else
+      else if (TYPE_SIZE_UNIT (TREE_TYPE (oper)))
 	{
 	  /* Use the size of the type of the destination buffer object
 	     as the optimistic estimate of the available space in it.  */
 	  bytes_avail = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (oper)));
+	}
+      else
+	{
+	  /* Bail if neither the size of the object nor its type is known.  */
+	  return;
 	}
 
       /* Avoid diagnosing flexible array members (accepted as an extension
