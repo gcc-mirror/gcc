@@ -1379,12 +1379,21 @@ make_constrained_auto (tree con, tree args)
   return decl;
 }
 
-/* Given the predicate constraint T from a placeholder type, extract its
-   TMPL and ARGS.  */
+/* Given the predicate constraint T from a constrained-type-specifier, extract
+   its TMPL and ARGS.  FIXME why do we need two different forms of
+   constrained-type-specifier?  */
 
 void
 placeholder_extract_concept_and_args (tree t, tree &tmpl, tree &args)
 {
+  if (TREE_CODE (t) == TYPE_DECL)
+    {
+      /* A constrained parameter.  */
+      tmpl = DECL_TI_TEMPLATE (CONSTRAINED_PARM_CONCEPT (t));
+      args = CONSTRAINED_PARM_EXTRA_ARGS (t);
+      return;
+    }
+
   gcc_assert (TREE_CODE (t) == PRED_CONSTR);
   t = PRED_CONSTR_EXPR (t);
   gcc_assert (TREE_CODE (t) == CALL_EXPR
@@ -1418,9 +1427,10 @@ placeholder_extract_concept_and_args (tree t, tree &tmpl, tree &args)
 bool
 equivalent_placeholder_constraints (tree c1, tree c2)
 {
-  if (TREE_CODE (c1) == TEMPLATE_TYPE_PARM)
+  if (c1 && TREE_CODE (c1) == TEMPLATE_TYPE_PARM)
+    /* A constrained auto.  */
     c1 = PLACEHOLDER_TYPE_CONSTRAINTS (c1);
-  if (TREE_CODE (c2) == TEMPLATE_TYPE_PARM)
+  if (c2 && TREE_CODE (c2) == TEMPLATE_TYPE_PARM)
     c2 = PLACEHOLDER_TYPE_CONSTRAINTS (c2);
 
   if (c1 == c2)
@@ -1434,14 +1444,21 @@ equivalent_placeholder_constraints (tree c1, tree c2)
 
   if (t1 != t2)
     return false;
-  int len = TREE_VEC_LENGTH (a1);
-  if (len != TREE_VEC_LENGTH (a2))
-    return false;
+
   /* Skip the first argument to avoid infinite recursion on the
      placeholder auto itself.  */
-  for (int i = len-1; i > 0; --i)
-    if (!cp_tree_equal (TREE_VEC_ELT (a1, i),
-			TREE_VEC_ELT (a2, i)))
+  bool skip1 = (TREE_CODE (c1) == PRED_CONSTR);
+  bool skip2 = (TREE_CODE (c2) == PRED_CONSTR);
+
+  int len1 = (a1 ? TREE_VEC_LENGTH (a1) : 0) - skip1;
+  int len2 = (a2 ? TREE_VEC_LENGTH (a2) : 0) - skip2;
+
+  if (len1 != len2)
+    return false;
+
+  for (int i = 0; i < len1; ++i)
+    if (!cp_tree_equal (TREE_VEC_ELT (a1, i + skip1),
+			TREE_VEC_ELT (a2, i + skip2)))
       return false;
   return true;
 }

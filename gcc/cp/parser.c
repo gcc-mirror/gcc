@@ -13871,18 +13871,9 @@ cp_parser_constrained_type_template_parm (cp_parser *parser,
     return error_mark_node;
 }
 
-/* Finish parsing/processing a template template parameter by borrowing
-   the template parameter list from the prototype parameter.  */
-
 static tree
-cp_parser_constrained_template_template_parm (cp_parser *parser,
-                                              tree proto,
-                                              tree id,
-                                              cp_parameter_declarator *parmdecl)
+finish_constrained_template_template_parm (tree proto, tree id)
 {
-  if (!cp_parser_check_constrained_type_parm (parser, parmdecl))
-    return error_mark_node;
-
   /* FIXME: This should probably be copied, and we may need to adjust
      the template parameter depths.  */
   tree saved_parms = current_template_parms;
@@ -13894,6 +13885,20 @@ cp_parser_constrained_template_template_parm (cp_parser *parser,
   current_template_parms = saved_parms;
 
   return parm;
+}
+
+/* Finish parsing/processing a template template parameter by borrowing
+   the template parameter list from the prototype parameter.  */
+
+static tree
+cp_parser_constrained_template_template_parm (cp_parser *parser,
+                                              tree proto,
+                                              tree id,
+                                              cp_parameter_declarator *parmdecl)
+{
+  if (!cp_parser_check_constrained_type_parm (parser, parmdecl))
+    return error_mark_node;
+  return finish_constrained_template_template_parm (proto, id);
 }
 
 /* Create a new non-type template parameter from the given PARM
@@ -14950,8 +14955,12 @@ cp_parser_template_argument (cp_parser* parser)
 					  /*check_dependency=*/true,
 					  /*ambiguous_decls=*/NULL,
 					  argument_start_token->location);
-      if (TREE_CODE (argument) != TEMPLATE_DECL
-	  && TREE_CODE (argument) != UNBOUND_CLASS_TEMPLATE)
+      /* Handle a constrained-type-specifier for a non-type template
+	 parameter.  */
+      if (tree decl = cp_parser_maybe_concept_name (parser, argument))
+	argument = decl;
+      else if (TREE_CODE (argument) != TEMPLATE_DECL
+	       && TREE_CODE (argument) != UNBOUND_CLASS_TEMPLATE)
 	cp_parser_error (parser, "expected template-name");
     }
   if (cp_parser_parse_definitely (parser))
@@ -15630,7 +15639,10 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	    }
 
 	  if (cxx_dialect >= cxx14)
-	    type = synthesize_implicit_template_parm (parser, NULL_TREE);
+	    {
+	      type = synthesize_implicit_template_parm (parser, NULL_TREE);
+	      type = TREE_TYPE (type);
+	    }
 	  else
 	    type = error_mark_node;
 
@@ -15949,19 +15961,6 @@ cp_parser_type_name (cp_parser* parser, bool typename_keyword_p)
   return type_decl;
 }
 
-/* Returns true if proto is a type parameter, but not a template
-   template parameter.  */
-static bool
-check_type_concept (tree fn, tree proto)
-{
-  if (TREE_CODE (proto) != TYPE_DECL)
-    {
-      error ("invalid use of non-type concept %qD", fn);
-      return false;
-    }
-  return true;
-}
-
 /*  Check if DECL and ARGS can form a constrained-type-specifier.
     If ARGS is non-null, we try to form a concept check of the
     form DECL<?, ARGS> where ? is a wildcard that matches any
@@ -16009,13 +16008,6 @@ cp_parser_maybe_constrained_type_specifier (cp_parser *parser,
   if (processing_template_parmlist)
     return build_constrained_parameter (conc, proto, args);
 
-  /* In any other context, a concept must be a type concept.
-
-     FIXME: A constrained-type-specifier can be a placeholder
-     of any kind.  */
-  if (!check_type_concept (conc, proto))
-    return error_mark_node;
-
   /* In a parameter-declaration-clause, constrained-type
      specifiers result in invented template parameters.  */
   if (parser->auto_is_implicit_function_template_parm_p)
@@ -16046,7 +16038,13 @@ cp_parser_maybe_constrained_type_specifier (cp_parser *parser,
 static tree
 cp_parser_maybe_concept_name (cp_parser* parser, tree decl)
 {
-  return cp_parser_maybe_constrained_type_specifier (parser, decl, NULL_TREE);
+  if (flag_concepts
+      && (TREE_CODE (decl) == OVERLOAD
+	  || BASELINK_P (decl)
+	  || variable_concept_p (decl)))
+    return cp_parser_maybe_constrained_type_specifier (parser, decl, NULL_TREE);
+  else
+    return NULL_TREE;
 }
 
 /* Check if DECL and ARGS form a partial-concept-id.  If so,
@@ -16093,15 +16091,8 @@ cp_parser_nonclass_name (cp_parser* parser)
   type_decl = strip_using_decl (type_decl);
   
   /* If we found an overload set, then it may refer to a concept-name. */
-  if (flag_concepts
-      && (TREE_CODE (type_decl) == OVERLOAD
-	  || BASELINK_P (type_decl)
-	  || variable_concept_p (type_decl)))
-  {
-    /* Determine whether the overload refers to a concept. */
-    if (tree decl = cp_parser_maybe_concept_name (parser, type_decl))
-      return decl;
-  }
+  if (tree decl = cp_parser_maybe_concept_name (parser, type_decl))
+    type_decl = decl;
 
   if (TREE_CODE (type_decl) != TYPE_DECL
       && (objc_is_id (identifier) || objc_is_class_name (identifier)))
@@ -18183,7 +18174,7 @@ cp_parser_init_declarator (cp_parser* parser,
 	       "attributes after parenthesized initializer ignored");
 
   /* And now complain about a non-function implicit template.  */
-  if (bogus_implicit_tmpl)
+  if (bogus_implicit_tmpl && decl != error_mark_node)
     error_at (DECL_SOURCE_LOCATION (decl),
 	      "non-function %qD declared as implicit template", decl);
 
@@ -36681,17 +36672,6 @@ tree_type_is_auto_or_concept (const_tree t)
   return TREE_TYPE (t) && is_auto_or_concept (TREE_TYPE (t));
 }
 
-/* Returns the template declaration being called or evaluated as
-   part of the constraint check. Note that T must be a predicate
-   constraint (it can't be any other kind of constraint). */
-static tree
-get_concept_from_constraint (tree t)
-{
-  tree tmpl, args;
-  placeholder_extract_concept_and_args (t, tmpl, args);
-  return DECL_TEMPLATE_RESULT (tmpl);
-}
-
 /* Add an implicit template type parameter to the CURRENT_TEMPLATE_PARMS
    (creating a new template parameter list if necessary).  Returns the newly
    created template type parm.  */
@@ -36711,9 +36691,14 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
       tree t = parser->implicit_template_parms;
       while (t)
         {
-          tree c = get_concept_from_constraint (TREE_TYPE (t));
-          if (c == CONSTRAINED_PARM_CONCEPT (constr))
-            return TREE_VALUE (t);
+          if (equivalent_placeholder_constraints (TREE_TYPE (t), constr))
+	    {
+	      tree d = TREE_VALUE (t);
+	      if (TREE_CODE (d) == PARM_DECL)
+		/* Return the TEMPLATE_PARM_INDEX.  */
+		d = DECL_INITIAL (d);
+	      return d;
+	    }
           t = TREE_CHAIN (t);
         }
     }
@@ -36823,9 +36808,23 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
   /* Synthesize a new template parameter and track the current template
      parameter chain with implicit_template_parms.  */
 
+  tree proto = constr ? DECL_INITIAL (constr) : NULL_TREE;
   tree synth_id = make_generic_type_name ();
-  tree synth_tmpl_parm = finish_template_type_parm (class_type_node,
-						    synth_id);
+  tree synth_tmpl_parm;
+  bool non_type = false;
+
+  if (proto == NULL_TREE || TREE_CODE (proto) == TYPE_DECL)
+    synth_tmpl_parm
+      = finish_template_type_parm (class_type_node, synth_id);
+  else if (TREE_CODE (proto) == TEMPLATE_DECL)
+    synth_tmpl_parm
+      = finish_constrained_template_template_parm (proto, synth_id);
+  else
+    {
+      synth_tmpl_parm = copy_decl (proto);
+      DECL_NAME (synth_tmpl_parm) = synth_id;
+      non_type = true;
+    }
 
   // Attach the constraint to the parm before processing.
   tree node = build_tree_list (NULL_TREE, synth_tmpl_parm);
@@ -36834,7 +36833,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
     = process_template_parm (parser->implicit_template_parms,
 			     input_location,
 			     node,
-			     /*non_type=*/false,
+			     /*non_type=*/non_type,
 			     /*param_pack=*/false);
 
   // Chain the new parameter to the list of implicit parameters.
@@ -36844,7 +36843,10 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
   else
     parser->implicit_template_parms = new_parm;
 
-  tree new_type = TREE_TYPE (getdecls ());
+  tree new_decl = getdecls ();
+  if (non_type)
+    /* Return the TEMPLATE_PARM_INDEX, not the PARM_DECL.  */
+    new_decl = DECL_INITIAL (new_decl);
 
   /* If creating a fully implicit function template, start the new implicit
      template parameter list with this synthesized type, otherwise grow the
@@ -36878,7 +36880,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
 
   current_binding_level = entry_scope;
 
-  return new_type;
+  return new_decl;
 }
 
 /* Finish the declaration of a fully implicit function template.  Such a

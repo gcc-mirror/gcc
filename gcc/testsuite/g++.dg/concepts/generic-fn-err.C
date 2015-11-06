@@ -11,8 +11,8 @@ template<template<typename> class X>
 
 struct S { };
 
-void f1(Int) { }      // { dg-error "invalid" }
-void f2(Template) { } // { dg-error "invalid" }
+void f1(Int) { }      // { dg-error "" }
+void f2(Template) { } // { dg-error "" }
 
 struct S1 {
   void f1(auto x) { }
