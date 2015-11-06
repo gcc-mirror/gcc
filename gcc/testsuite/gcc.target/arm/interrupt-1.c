@@ -13,5 +13,5 @@ void foo ()
   bar (0);
 }
 
-/* { dg-final { scan-assembler "stmfd\tsp!, {r0, r1, r2, r3, r4, fp, ip, lr}" } } */
-/* { dg-final { scan-assembler "ldmfd\tsp!, {r0, r1, r2, r3, r4, fp, ip, pc}\\^" } } */
+/* { dg-final { scan-assembler "push\t{r0, r1, r2, r3, r4, fp, ip, lr}" } } */
+/* { dg-final { scan-assembler "pop\t{r0, r1, r2, r3, r4, fp, ip, pc}\\^" } } */
