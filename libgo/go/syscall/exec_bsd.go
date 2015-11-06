@@ -102,11 +102,9 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	}
 
 	if sys.Foreground {
-		pgrp := sys.Pgid
+		pgrp := Pid_t(sys.Pgid)
 		if pgrp == 0 {
-			r1 = raw_getpid()
-
-			pgrp = int(r1)
+			pgrp = raw_getpid()
 		}
 
 		// Place process group in foreground.

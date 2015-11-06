@@ -787,9 +787,13 @@ endif
 endif
 
 if LIBGO_IS_LINUX
-go_net_cloexec_file = go/net/sock_cloexec.go
+go_net_cloexec_file = go/net/sock_cloexec.go go/net/hook_cloexec.go
+else
+if LIBGO_IS_FREEBSD
+go_net_cloexec_file = go/net/sock_cloexec.go go/net/hook_cloexec.go
 else
 go_net_cloexec_file = go/net/sys_cloexec.go
+endif
 endif
 
 if LIBGO_IS_OPENBSD
@@ -825,7 +829,6 @@ go_net_common_files = \
 	go/net/file.go \
 	go/net/file_unix.go \
 	go/net/hook.go \
-	go/net/hook_cloexec.go \
 	go/net/hook_unix.go \
 	go/net/hosts.go \
 	go/net/interface.go \
@@ -1985,6 +1988,12 @@ else
 syscall_exec_test_file =
 endif
 
+if LIBGO_IS_LINUX
+syscall_os_file =
+else
+syscall_os_file = go/syscall/libcall_bsd.go
+endif
+
 go_base_syscall_files = \
 	go/syscall/env_unix.go \
 	go/syscall/syscall_errno.go \
@@ -2003,6 +2012,7 @@ go_base_syscall_files = \
 	$(syscall_sleep_file) \
 	$(syscall_errstr_file) \
 	$(syscall_size_file) \
+	$(syscall_os_file) \
 	$(syscall_socket_file) \
 	$(syscall_socket_os_file) \
 	$(syscall_socket_type_file) \
