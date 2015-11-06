@@ -1,3 +1,7 @@
+2015-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/private-3.f95: XFAIL.
+
 2015-11-06  Joost VandeVondele  <vondele@gnu.gcc.org>
 
 	PR middle-end/53852

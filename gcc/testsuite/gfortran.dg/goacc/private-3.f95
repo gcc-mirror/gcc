@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! <http://news.gmane.org/find-root.php?message_id=%3C563B78B5.5090506%40acm.org%3E>
+! { dg-xfail-if "TODO" { *-*-* } }
 
 ! test for private variables in a reduction clause
 
@@ -7,7 +9,6 @@ program test
   integer, parameter :: n = 100
   integer :: i, k
 
-!  FIXME: This causes an ICE in the gimplifier.
 !  !$acc parallel private (k) reduction (+:k)
 !  do i = 1, n
 !     k = k + 1

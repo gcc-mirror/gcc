@@ -1,5 +1,7 @@
 /* { dg-do run } */
 /* { dg-additional-options "-O2" */
+/* <http://news.gmane.org/find-root.php?message_id=%3C563B78B5.5090506%40acm.org%3E>
+   { dg-xfail-if "TODO" { *-*-* } } */
 
 #include <stdio.h>
 
