@@ -441,21 +441,8 @@ push_inline_template_parms_recursive (tree parmlist, int levels)
 	  break;
 
 	case PARM_DECL:
-	  {
-	    /* Make a CONST_DECL as is done in process_template_parm.
-	       It is ugly that we recreate this here; the original
-	       version built in process_template_parm is no longer
-	       available.  */
-	    tree decl = build_decl (DECL_SOURCE_LOCATION (parm),
-				    CONST_DECL, DECL_NAME (parm),
-				    TREE_TYPE (parm));
-	    DECL_ARTIFICIAL (decl) = 1;
-	    TREE_CONSTANT (decl) = 1;
-	    TREE_READONLY (decl) = 1;
-	    DECL_INITIAL (decl) = DECL_INITIAL (parm);
-	    SET_DECL_TEMPLATE_PARM_P (decl);
-	    pushdecl (decl);
-	  }
+	  /* Push the CONST_DECL.  */
+	  pushdecl (TEMPLATE_PARM_DECL (DECL_INITIAL (parm)));
 	  break;
 
 	default:
