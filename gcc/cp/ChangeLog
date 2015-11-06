@@ -1,6 +1,13 @@
 2015-11-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/67942
+	* cp/init.c (warn_placement_new_too_small): Avoid assuming
+	the size of the first operand of placement new or its type
+	is known.
+
+2015-11-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/67942
 	* cp/init.c (warn_placement_new_too_small): New function.
 	(build_new_1): Call it.
 

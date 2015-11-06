@@ -1,6 +1,13 @@
 2015-11-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/67942
+	* g++.dg/warn/Wplacement-new-size.C: Exercise placement new
+	invocations where the size of the destination buffer object
+	or its type (or both) is unknown.
+
+2015-11-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/67942
 	* g++.dg/warn/Wplacement-new-size.C: New test.
 
 2015-11-05  Alan Lawrence  <alan.lawrence@arm.com>
