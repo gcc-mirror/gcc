@@ -57,40 +57,62 @@ foo (int y, short z)
   #pragma omp distribute parallel for ordered		/* { dg-error ".ordered. is not valid for .#pragma omp distribute parallel for." } */
   for (x = 0; x < 64; x++)
     {
-      #pragma omp ordered	/* { dg-error "ordered region must be closely nested inside a loop region with an ordered clause" } */
+      #pragma omp ordered	/* { dg-error ".ordered. region must be closely nested inside a loop region with an .ordered. clause" } */
       ;
     }
   #pragma omp target teams
   #pragma omp distribute parallel for simd ordered	/* { dg-error ".ordered. is not valid for .#pragma omp distribute parallel for simd." } */
   for (x = 0; x < 64; x++)
     {
-      #pragma omp ordered simd, threads	/* { dg-error "OpenMP constructs other than .#pragma omp ordered simd. may not be nested inside simd region" } */
+      #pragma omp ordered simd, threads
       ;
     }
   #pragma omp target
   #pragma omp teams distribute parallel for ordered		/* { dg-error ".ordered. is not valid for .#pragma omp teams distribute parallel for." } */
   for (x = 0; x < 64; x++)
     {
-      #pragma omp ordered	/* { dg-error "ordered region must be closely nested inside a loop region with an ordered clause" } */
+      #pragma omp ordered	/* { dg-error ".ordered. region must be closely nested inside a loop region with an .ordered. clause" } */
       ;
     }
   #pragma omp target
   #pragma omp teams distribute parallel for simd ordered	/* { dg-error ".ordered. is not valid for .#pragma omp teams distribute parallel for simd." } */
   for (x = 0; x < 64; x++)
     {
-      #pragma omp ordered simd, threads	/* { dg-error "OpenMP constructs other than .#pragma omp ordered simd. may not be nested inside simd region" } */
+      #pragma omp ordered simd, threads
       ;
     }
   #pragma omp target teams distribute parallel for ordered		/* { dg-error ".ordered. is not valid for .#pragma omp target teams distribute parallel for." } */
   for (x = 0; x < 64; x++)
     {
-      #pragma omp ordered	/* { dg-error "ordered region must be closely nested inside a loop region with an ordered clause" } */
+      #pragma omp ordered	/* { dg-error ".ordered. region must be closely nested inside a loop region with an .ordered. clause" } */
       ;
     }
   #pragma omp target teams distribute parallel for simd ordered	/* { dg-error ".ordered. is not valid for .#pragma omp target teams distribute parallel for simd." } */
   for (x = 0; x < 64; x++)
     {
-      #pragma omp ordered simd, threads	/* { dg-error "OpenMP constructs other than .#pragma omp ordered simd. may not be nested inside simd region" } */
+      #pragma omp ordered simd, threads
+      ;
+    }
+  #pragma omp simd
+  for (x = 0; x < 64; x++)
+    {
+      #pragma omp ordered threads simd		/* { dg-error ".ordered simd threads. must be closely nested inside of .for simd. region" } */
+      ;
+    }
+  #pragma omp for
+  for (x = 0; x < 64; x++)
+    {
+      #pragma omp simd
+      for (y = 0; y < 16; y++)
+	{
+	  #pragma omp ordered simd threads	/* { dg-error ".ordered simd threads. must be closely nested inside of .for simd. region" } */
+	  ;
+	}
+    }
+  #pragma omp for simd
+  for (x = 0; x < 64; x++)
+    {
+      #pragma omp ordered threads simd
       ;
     }
 }

@@ -32,8 +32,8 @@ foo (void)
 	  #pragma omp ordered depend (sink: i - 1, j - 2) /* { dg-error "does not match number" } */
 	  #pragma omp ordered depend (source)
 	}
-  #pragma omp ordered depend (sink: j)			/* { dg-error "clause must be closely nested inside an ordered loop" } */
-  #pragma omp ordered depend (source)			/* { dg-error "clause must be closely nested inside an ordered loop" } */
+  #pragma omp ordered depend (sink: j)			/* { dg-error "clause must be closely nested inside an .ordered. loop" } */
+  #pragma omp ordered depend (source)			/* { dg-error "clause must be closely nested inside an .ordered. loop" } */
   #pragma omp for ordered (1)
   for (i = 0; i < 64; i++)
     {

@@ -151,15 +151,15 @@ f_omp (void)
 
 #pragma omp target
   {
-#pragma acc parallel /* { dg-error "OpenACC parallel construct inside of OpenMP target region" } */
+#pragma acc parallel /* { dg-error "OpenACC .parallel. construct inside of OpenMP .target. region" } */
     ;
-#pragma acc kernels /* { dg-error "OpenACC kernels construct inside of OpenMP target region" } */
+#pragma acc kernels /* { dg-error "OpenACC .kernels. construct inside of OpenMP .target. region" } */
     ;
-#pragma acc data /* { dg-error "OpenACC data construct inside of OpenMP target region" } */
+#pragma acc data /* { dg-error "OpenACC .data. construct inside of OpenMP .target. region" } */
     ;
-#pragma acc update host(i) /* { dg-error "OpenACC update construct inside of OpenMP target region" } */
-#pragma acc enter data copyin(i) /* { dg-error "OpenACC enter/exit data construct inside of OpenMP target region" } */
-#pragma acc exit data delete(i) /* { dg-error "OpenACC enter/exit data construct inside of OpenMP target region" } */
+#pragma acc update host(i) /* { dg-error "OpenACC .update. construct inside of OpenMP .target. region" } */
+#pragma acc enter data copyin(i) /* { dg-error "OpenACC .enter/exit data. construct inside of OpenMP .target. region" } */
+#pragma acc exit data delete(i) /* { dg-error "OpenACC .enter/exit data. construct inside of OpenMP .target. region" } */
 #pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
     for (i = 0; i < 2; ++i)
       ;
