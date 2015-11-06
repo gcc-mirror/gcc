@@ -1,3 +1,8 @@
+2015-11-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* init.c (warn_placement_new_too_small): Use %wu format
+	rather than %lu when printing bytes_avail.
+
 2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
