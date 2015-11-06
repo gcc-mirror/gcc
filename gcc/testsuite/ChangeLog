@@ -1,3 +1,11 @@
+2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/68057
+	PR ipa/68220
+	* g++.dg/lto/pr68057_0.C: New testcase.
+	* g++.dg/lto/pr68057_1.C: New testcase.
+	* g++.dg/torture/pr68220.C: New testcase.
+
 2015-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vtbX.c: Fix typos in
