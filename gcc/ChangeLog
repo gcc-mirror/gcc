@@ -1,5 +1,10 @@
 2015-11-06  Richard Biener  <rguenther@suse.de>
 
+	* alloc-pool.h (object_allocator::allocate): Default-initialize
+	object.
+
+2015-11-06  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-sccvn.c (class sccvn_dom_walker): Add destructor.
 	* lra.c (init_reg_info): Truncate copy_vec instead of
 	re-allocating a new one and leaking the old.
