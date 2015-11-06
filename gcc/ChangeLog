@@ -1,3 +1,12 @@
+2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/68057
+	PR ipa/68220
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_type): Fix ordering
+	issue when offset is out of range.
+	(contains_type_p): Fix out of range check, clear dynamic flag.
+
 2015-11-06  Arnout Vandecappelle  <arnout@mind.be>
 
 	* config.gcc (e6500): Fix cpu_is_64bit typo.
