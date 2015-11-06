@@ -237,10 +237,6 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
    && (arm_disable_literal_pool \
        || (!optimize_size && !current_tune->prefer_constant_pool)))
 
-/* We could use unified syntax for arm mode, but for now we just use it
-   for thumb mode.  */
-#define TARGET_UNIFIED_ASM (TARGET_THUMB)
-
 /* Nonzero if this chip provides the DMB instruction.  */
 #define TARGET_HAVE_DMB		(arm_arch6m || arm_arch7)
 
@@ -2023,8 +2019,7 @@ extern int making_const_table;
 		    "\t.syntax divided\n")
 
 #undef  ASM_APP_OFF
-#define ASM_APP_OFF (TARGET_ARM ? "\t.arm\n\t.syntax divided\n" : \
-		     "\t.thumb\n\t.syntax unified\n")
+#define ASM_APP_OFF "\t.syntax unified\n"
 
 /* Output a push or a pop instruction (only used when profiling).
    We can't push STATIC_CHAIN_REGNUM (r12) directly with Thumb-1.  We know
@@ -2035,10 +2030,7 @@ extern int making_const_table;
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)		\
   do							\
     {							\
-      if (TARGET_ARM)					\
-	asm_fprintf (STREAM,"\tstmfd\t%r!,{%r}\n",	\
-		     STACK_POINTER_REGNUM, REGNO);	\
-      else if (TARGET_THUMB1				\
+      if (TARGET_THUMB1					\
 	       && (REGNO) == STATIC_CHAIN_REGNUM)	\
 	{						\
 	  asm_fprintf (STREAM, "\tpush\t{r7}\n");	\
@@ -2054,11 +2046,8 @@ extern int making_const_table;
 #define ASM_OUTPUT_REG_POP(STREAM, REGNO)		\
   do							\
     {							\
-      if (TARGET_ARM)					\
-	asm_fprintf (STREAM, "\tldmfd\t%r!,{%r}\n",	\
-		     STACK_POINTER_REGNUM, REGNO);	\
-      else if (TARGET_THUMB1				\
-	       && (REGNO) == STATIC_CHAIN_REGNUM)	\
+      if (TARGET_THUMB1					\
+	  && (REGNO) == STATIC_CHAIN_REGNUM)		\
 	{						\
 	  asm_fprintf (STREAM, "\tpop\t{r7}\n");	\
 	  asm_fprintf (STREAM, "\tmov\t%r, r7\n", REGNO);\

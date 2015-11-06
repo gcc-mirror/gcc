@@ -1,3 +1,10 @@
+2015-11-06  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* gcc.target/arm/combine-movs.c: Adjust for unified asm.
+	* gcc.target/arm/interrupt-1.c: Likewise.
+	* gcc.target/arm/interrupt-2.c: Likewise.
+	* gcc.target/arm/unaligned-memcpy-4.c: Likewise.
+
 2015-11-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gfortran.dg/goacc/combined_loop.f90: XFAIL.

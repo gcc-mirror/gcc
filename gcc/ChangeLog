@@ -1,3 +1,25 @@
+2015-11-06  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm-ldmstm.ml: Rewrite to generate unified asm templates.
+	* config/arm/arm.c (arm_asm_trampoline_template): Make unified asm safe.
+	(arm_output_multireg_pop): Likewise.
+	(output_move_double):  Likewise.
+	(output_move_quad):  Likewise.
+	(output_return_instruction): Likewise.
+	(arm_print_operand): Remove support for %( and %. print modifiers.
+	(arm_output_shift): Make unified asm.
+	(arm_declare_function_name): Likewise.
+	* config/arm/arm.h (TARGET_UNIFIED_ASM): Delete.
+	(ASM_APP_OFF): Adjust.
+	(ASM_OUTPUT_REG_PUSH): Undo special casing for TARGET_ARM.
+	(ASM_OUTPUT_REG_POP): Likewise.
+	* config/arm/arm.md: Adjust uses of %., %(, %)
+	* config/arm/sync.md: Likewise.
+	* config/arm/thumb2.md: Likewise.
+	* config/arm/ldmstm.md: Regenerate.
+	* config/arm/arm.opt (masm-unified-syntax): Do not special case Thumb.
+	* doc/invoke.texi (masm-unified-syntax): Update documentation.
+
 2015-11-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.c (dump_line_table_statistics): Dump stats on adhoc table.
