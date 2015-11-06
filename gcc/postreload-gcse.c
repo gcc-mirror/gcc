@@ -348,6 +348,8 @@ free_mem (void)
   BITMAP_FREE (blocks_with_calls);
   BITMAP_FREE (modify_mem_list_set);
   free (reg_avail_info);
+  free (modify_mem_list);
+  free (canon_modify_mem_list);
 }
 
 
