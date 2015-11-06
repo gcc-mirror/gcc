@@ -1,3 +1,9 @@
+2015-11-06  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR tree-optimization/68145
+	* tree-vect-stmts.c (vectorizable_operation): Fix
+	determination for booleans.
+
 2015-11-06  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-cfg.c (gimple_split_block_before_cond_jump): Split before

@@ -1,3 +1,8 @@
+2015-11-06  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR tree-optimization/68145
+	* g++.dg/vect/pr68145.cc: New test.
+
 2015-11-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/68088
