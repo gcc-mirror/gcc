@@ -1,3 +1,10 @@
+2015-11-06  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-cfg.c (gimple_split_block_before_cond_jump): Split before
+	cond_jump, instead of split after last nondebug insn before cond_jump.
+	* tree-parloops.c (transform_to_exit_first_loop_alt): Verify ssa before
+	returning.
+
 2015-11-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/68088
