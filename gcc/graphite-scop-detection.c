@@ -959,6 +959,13 @@ scop_detection::loop_is_valid_scop (loop_p loop, sese_l scop) const
   if (!scop)
     return false;
 
+  if (!optimize_loop_nest_for_speed_p (loop))
+    {
+      DEBUG_PRINT (dp << "[scop-detection-fail] loop_"
+		      << loop->num << " is not on a hot path.\n");
+      return false;
+    }
+
   if (!can_represent_loop (loop, scop))
     {
       DEBUG_PRINT (dp << "[scop-detection-fail] cannot represent loop_"
