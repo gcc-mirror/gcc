@@ -1,3 +1,15 @@
+2015-11-06  Simon Dardis  <simon.dardis@imgtec.com>
+
+	* config/mips/loongson.md (vec_loongson_extract_lo_<mode>): New, extract
+	low part to scalar.
+	(reduc_uplus_<mode>): Remove.
+	(reduc_plus_scal_<mode>): Rename from reduc_splus_<mode>, Use vec
+	loongson_extract_lo_<mode>.
+	(reduc_smax_scal_<mode>, reduc_smin_scal_<mode>): Rename from
+	reduc_smax_<mode>, reduc_smax_<mode>, use vec
+	loongson_extract_lo_<mode>.
+	(reduc_umax_scal_<mode>, reduc_umin_scal_<mode>): Rename.
+
 2015-11-06  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (struct _bb_vec_info): Add region_begin/end
