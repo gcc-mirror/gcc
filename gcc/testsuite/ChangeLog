@@ -1,3 +1,7 @@
+2015-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqtbX.c: New test.
+
 2015-11-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c: New file.
@@ -17,7 +21,7 @@
 
 	* gfortran.dg/goacc/combined_loop.f90: XFAIL.
 
-2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
+2015-11-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/68057
 	PR ipa/68220

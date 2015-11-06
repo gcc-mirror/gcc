@@ -1,3 +1,25 @@
+2015-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/aarch64-simd-builtins.def: Update builtins
+	tables: add tbl3v16qi, qtbl[34]*, tbx4v16qi, qtbx[34]*.
+	* config/aarch64/aarch64-simd.md (aarch64_tbl3v8qi): Rename to...
+	(aarch64_tbl3<mode>) ... this, which supports v16qi too.
+	(aarch64_tbx4v8qi): Rename to...
+	aarch64_tbx4<mode>): ... this.
+	(aarch64_qtbl3<mode>): New pattern.
+	(aarch64_qtbx3<mode>): New pattern.
+	(aarch64_qtbl4<mode>): New pattern.
+	(aarch64_qtbx4<mode>): New pattern.
+	* config/aarch64/arm_neon.h (vqtbl2_s8, vqtbl2_u8, vqtbl2_p8)
+	(vqtbl2q_s8, vqtbl2q_u8, vqtbl2q_p8, vqtbl3_s8, vqtbl3_u8)
+	(vqtbl3_p8, vqtbl3q_s8, vqtbl3q_u8, vqtbl3q_p8, vqtbl4_s8)
+	(vqtbl4_u8, vqtbl4_p8, vqtbl4q_s8, vqtbl4q_u8, vqtbl4q_p8)
+	(vqtbx2_s8, vqtbx2_u8, vqtbx2_p8, vqtbx2q_s8, vqtbx2q_u8)
+	(vqtbx2q_p8, vqtbx3_s8, vqtbx3_u8, vqtbx3_p8, vqtbx3q_s8)
+	(vqtbx3q_u8, vqtbx3q_p8, vqtbx4_s8, vqtbx4_u8, vqtbx4_p8)
+	(vqtbx4q_s8, vqtbx4q_u8, vqtbx4q_p8): Rewrite using builtin
+	functions.
+
 2015-11-06  Mike Stump  <mikestump@comcast.net>
 
 	PR debug/66728
