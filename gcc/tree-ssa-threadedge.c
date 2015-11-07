@@ -376,17 +376,6 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
   return stmt;
 }
 
-/* Once we have passed a backedge in the CFG when threading, we do not want to
-   utilize edge equivalences for simplification purpose.  They are no longer
-   necessarily valid.  We use this callback rather than the ones provided by
-   DOM/VRP to achieve that effect.  */
-static tree
-dummy_simplify (gimple *stmt1 ATTRIBUTE_UNUSED, gimple *stmt2 ATTRIBUTE_UNUSED,
-		class avail_exprs_stack *avail_exprs_stack ATTRIBUTE_UNUSED)
-{
-  return NULL_TREE;
-}
-
 /* Simplify the control statement at the end of the block E->dest.
 
    To avoid allocating memory unnecessarily, a scratch GIMPLE_COND
@@ -396,7 +385,7 @@ dummy_simplify (gimple *stmt1 ATTRIBUTE_UNUSED, gimple *stmt2 ATTRIBUTE_UNUSED,
    a condition using pass specific information.
 
    Return the simplified condition or NULL if simplification could
-   not be performed. 
+   not be performed.
 
    The available expression table is referenced via AVAIL_EXPRS_STACK.  */
 
@@ -707,7 +696,7 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
    return false.
 
    DUMMY_COND, HANDLE_DOMINATING_ASSERTS and SIMPLIFY are used to
-   try and simplify the condition at the end of TAKEN_EDGE->dest. 
+   try and simplify the condition at the end of TAKEN_EDGE->dest.
 
    The available expression table is referenced via AVAIL_EXPRS_STACK.  */
 
@@ -718,8 +707,7 @@ thread_around_empty_blocks (edge taken_edge,
 			    bool handle_dominating_asserts,
 			    pfn_simplify simplify,
 			    bitmap visited,
-			    vec<jump_thread_edge *> *path,
-			    bool *backedge_seen_p)
+			    vec<jump_thread_edge *> *path)
 {
   basic_block bb = taken_edge->dest;
   gimple_stmt_iterator gsi;
@@ -754,23 +742,23 @@ thread_around_empty_blocks (edge taken_edge,
       if (single_succ_p (bb))
 	{
 	  taken_edge = single_succ_edge (bb);
+
+	  if ((taken_edge->flags & EDGE_DFS_BACK) != 0)
+	    return false;
+
 	  if (!bitmap_bit_p (visited, taken_edge->dest->index))
 	    {
 	      jump_thread_edge *x
 		= new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
 	      path->safe_push (x);
 	      bitmap_set_bit (visited, taken_edge->dest->index);
-	      *backedge_seen_p |= ((taken_edge->flags & EDGE_DFS_BACK) != 0);
-	      if (*backedge_seen_p)
-		simplify = dummy_simplify;
 	      return thread_around_empty_blocks (taken_edge,
 						 dummy_cond,
 						 avail_exprs_stack,
 						 handle_dominating_asserts,
 						 simplify,
 						 visited,
-						 path,
-						 backedge_seen_p);
+						 path);
 	    }
 	}
 
@@ -786,13 +774,6 @@ thread_around_empty_blocks (edge taken_edge,
       && gimple_code (stmt) != GIMPLE_SWITCH)
     return false;
 
-  /* If we have traversed a backedge, then we do not want to look
-     at certain expressions in the table that can not be relied upon.
-     Luckily the only code that looked at those expressions is the
-     SIMPLIFY callback, which we replace if we can no longer use it.  */
-  if (*backedge_seen_p)
-    simplify = dummy_simplify;
-
   /* Extract and simplify the condition.  */
   cond = simplify_control_stmt_condition (taken_edge, stmt,
 					  avail_exprs_stack, dummy_cond,
@@ -805,6 +786,9 @@ thread_around_empty_blocks (edge taken_edge,
     {
       taken_edge = find_taken_edge (bb, cond);
 
+      if ((taken_edge->flags & EDGE_DFS_BACK) != 0)
+	return false;
+
       if (bitmap_bit_p (visited, taken_edge->dest->index))
 	return false;
       bitmap_set_bit (visited, taken_edge->dest->index);
@@ -812,9 +796,6 @@ thread_around_empty_blocks (edge taken_edge,
       jump_thread_edge *x
 	= new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
       path->safe_push (x);
-      *backedge_seen_p |= ((taken_edge->flags & EDGE_DFS_BACK) != 0);
-      if (*backedge_seen_p)
-	simplify = dummy_simplify;
 
       thread_around_empty_blocks (taken_edge,
 				  dummy_cond,
@@ -822,8 +803,7 @@ thread_around_empty_blocks (edge taken_edge,
 				  handle_dominating_asserts,
 				  simplify,
 				  visited,
-				  path,
-				  backedge_seen_p);
+				  path);
       return true;
     }
 
@@ -871,14 +851,8 @@ thread_through_normal_block (edge e,
 			     avail_exprs_stack *avail_exprs_stack,
 			     pfn_simplify simplify,
 			     vec<jump_thread_edge *> *path,
-			     bitmap visited,
-			     bool *backedge_seen_p)
+			     bitmap visited)
 {
-  /* If we have seen a backedge, then we rely solely on the FSM threader
-     to find jump threads.  */
-  if (*backedge_seen_p)
-    return 0;
-
   /* We want to record any equivalences created by traversing E.  */
   if (!handle_dominating_asserts)
     record_temporary_equivalences (e, const_and_copies, avail_exprs_stack);
@@ -948,6 +922,7 @@ thread_through_normal_block (edge e,
 	     address.  */
 	  if (dest == NULL
 	      || dest == e->dest
+	      || (taken_edge->flags & EDGE_DFS_BACK) != 0
 	      || bitmap_bit_p (visited, dest->index))
 	    return 0;
 
@@ -958,15 +933,11 @@ thread_through_normal_block (edge e,
               jump_thread_edge *x
 	        = new jump_thread_edge (e, EDGE_START_JUMP_THREAD);
 	      path->safe_push (x);
-	      *backedge_seen_p |= ((e->flags & EDGE_DFS_BACK) != 0);
 	    }
 
 	  jump_thread_edge *x
 	    = new jump_thread_edge (taken_edge, EDGE_COPY_SRC_BLOCK);
 	  path->safe_push (x);
-	  *backedge_seen_p |= ((taken_edge->flags & EDGE_DFS_BACK) != 0);
-	  if (*backedge_seen_p)
-	    simplify = dummy_simplify;
 
 	  /* See if we can thread through DEST as well, this helps capture
 	     secondary effects of threading without having to re-run DOM or
@@ -982,8 +953,7 @@ thread_through_normal_block (edge e,
 				      handle_dominating_asserts,
 				      simplify,
 				      visited,
-				      path,
-				      backedge_seen_p);
+				      path);
 	  return 1;
 	}
     }
@@ -992,18 +962,6 @@ thread_through_normal_block (edge e,
 
 /* We are exiting E->src, see if E->dest ends with a conditional
    jump which has a known value when reached via E.
-
-   Special care is necessary if E is a back edge in the CFG as we
-   may have already recorded equivalences for E->dest into our
-   various tables, including the result of the conditional at
-   the end of E->dest.  Threading opportunities are severely
-   limited in that case to avoid short-circuiting the loop
-   incorrectly.
-
-   Note it is quite common for the first block inside a loop to
-   end with a conditional which is either always true or always
-   false when reached via the loop backedge.  Thus we do not want
-   to blindly disable threading across a loop backedge.
 
    DUMMY_COND is a shared cond_expr used by condition simplification as scratch,
    to avoid allocating memory.
@@ -1029,7 +987,6 @@ thread_across_edge (gcond *dummy_cond,
 				      class avail_exprs_stack *))
 {
   bitmap visited = BITMAP_ALLOC (NULL);
-  bool backedge_seen;
 
   stmt_count = 0;
 
@@ -1037,16 +994,18 @@ thread_across_edge (gcond *dummy_cond,
   bitmap_clear (visited);
   bitmap_set_bit (visited, e->src->index);
   bitmap_set_bit (visited, e->dest->index);
-  backedge_seen = ((e->flags & EDGE_DFS_BACK) != 0);
-  if (backedge_seen)
-    simplify = dummy_simplify;
 
-  int threaded = thread_through_normal_block (e, dummy_cond,
-					      handle_dominating_asserts,
-					      const_and_copies,
-					      avail_exprs_stack,
-					      simplify, path,
-					      visited, &backedge_seen);
+  int threaded;
+  if ((e->flags & EDGE_DFS_BACK) == 0)
+    threaded = thread_through_normal_block (e, dummy_cond,
+					    handle_dominating_asserts,
+					    const_and_copies,
+					    avail_exprs_stack,
+					    simplify, path,
+					    visited);
+  else
+    threaded = 0;
+
   if (threaded > 0)
     {
       propagate_threaded_block_debug_into (path->last ()->e->dest,
@@ -1111,6 +1070,13 @@ thread_across_edge (gcond *dummy_cond,
     /* Look at each successor of E->dest to see if we can thread through it.  */
     FOR_EACH_EDGE (taken_edge, ei, e->dest->succs)
       {
+	if ((e->flags & EDGE_DFS_BACK) != 0
+	    || (taken_edge->flags & EDGE_DFS_BACK) != 0)
+	  {
+	    find_jump_threads_backwards (taken_edge);
+	    continue;
+	  }
+
 	/* Push a fresh marker so we can unwind the equivalences created
 	   for each of E->dest's successors.  */
 	const_and_copies->push_marker ();
@@ -1132,21 +1098,13 @@ thread_across_edge (gcond *dummy_cond,
         x = new jump_thread_edge (taken_edge, EDGE_COPY_SRC_JOINER_BLOCK);
 	path->safe_push (x);
 	found = false;
-	backedge_seen = ((e->flags & EDGE_DFS_BACK) != 0);
-	backedge_seen |= ((taken_edge->flags & EDGE_DFS_BACK) != 0);
-	if (backedge_seen)
-	  simplify = dummy_simplify;
 	found = thread_around_empty_blocks (taken_edge,
 					    dummy_cond,
 					    avail_exprs_stack,
 					    handle_dominating_asserts,
 					    simplify,
 					    visited,
-					    path,
-					    &backedge_seen);
-
-	if (backedge_seen)
-	  simplify = dummy_simplify;
+					    path);
 
 	if (!found)
 	  found = thread_through_normal_block (path->last ()->e, dummy_cond,
@@ -1154,7 +1112,7 @@ thread_across_edge (gcond *dummy_cond,
 					       const_and_copies,
 					       avail_exprs_stack,
 					       simplify, path,
-					       visited, &backedge_seen) > 0;
+					       visited) > 0;
 
 	/* If we were able to thread through a successor of E->dest, then
 	   record the jump threading opportunity.  */
