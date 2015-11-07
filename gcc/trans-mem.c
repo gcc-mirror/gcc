@@ -266,6 +266,9 @@ is_tm_safe (const_tree x)
 static bool
 is_tm_pure_call (gimple *call)
 {
+  if (gimple_call_internal_p (call))
+    return (gimple_call_flags (call) & (ECF_CONST | ECF_TM_PURE)) != 0;
+
   tree fn = gimple_call_fn (call);
 
   if (TREE_CODE (fn) == ADDR_EXPR)
