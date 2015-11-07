@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "options.h"
+#include "fold-const.h"
 #include "fold-const-call.h"
 #include "tm.h" /* For C[LT]Z_DEFINED_AT_ZERO.  */
 
@@ -46,6 +47,31 @@ static inline bool
 complex_cst_p (tree t)
 {
   return TREE_CODE (t) == COMPLEX_CST;
+}
+
+/* Return true if ARG is a constant in the range of the host size_t.
+   Store it in *SIZE_OUT if so.  */
+
+static inline bool
+host_size_t_cst_p (tree t, size_t *size_out)
+{
+  if (integer_cst_p (t)
+      && wi::min_precision (t, UNSIGNED) <= sizeof (size_t) * CHAR_BIT)
+    {
+      *size_out = tree_to_uhwi (t);
+      return true;
+    }
+  return false;
+}
+
+/* RES is the result of a comparison in which < 0 means "less", 0 means
+   "equal" and > 0 means "more".  Canonicalize it to -1, 0 or 1 and
+   return it in type TYPE.  */
+
+static inline tree
+build_cmp_result (tree type, int res)
+{
+  return build_int_cst (type, res < 0 ? -1 : res > 0 ? 1 : 0);
 }
 
 /* M is the result of trying to constant-fold an expression (starting
@@ -527,6 +553,20 @@ fold_const_builtin_load_exponent (real_value *result, const real_value *arg0,
   return real_equal (&initial_result, result);
 }
 
+/* Fold a call to __builtin_nan or __builtin_nans with argument ARG and
+   return type TYPE.  QUIET is true if a quiet rather than signalling
+   NaN is required.  */
+
+static tree
+fold_const_builtin_nan (tree type, tree arg, bool quiet)
+{
+  REAL_VALUE_TYPE real;
+  const char *str = c_getstr (arg);
+  if (str && real_nan (&real, str, quiet, TYPE_MODE (type)))
+    return build_real (type, real);
+  return NULL_TREE;
+}
+
 /* Try to evaluate:
 
       *RESULT = FN (*ARG)
@@ -971,11 +1011,11 @@ fold_const_call_cc (real_value *result_real, real_value *result_imag,
     }
 }
 
-/* Try to fold FN (ARG) to a constant.  Return the constant on success,
-   otherwise return null.  TYPE is the type of the return value.  */
+/* Subroutine of fold_const_call, with the same interface.  Handle cases
+   where the arguments and result are numerical.  */
 
-tree
-fold_const_call (built_in_function fn, tree type, tree arg)
+static tree
+fold_const_call_1 (built_in_function fn, tree type, tree arg)
 {
   machine_mode mode = TYPE_MODE (type);
   machine_mode arg_mode = TYPE_MODE (TREE_TYPE (arg));
@@ -1064,6 +1104,33 @@ fold_const_call (built_in_function fn, tree type, tree arg)
     }
 
   return NULL_TREE;
+}
+
+/* Try to fold FN (ARG) to a constant.  Return the constant on success,
+   otherwise return null.  TYPE is the type of the return value.  */
+
+tree
+fold_const_call (built_in_function fn, tree type, tree arg)
+{
+  switch (fn)
+    {
+    case BUILT_IN_STRLEN:
+      if (const char *str = c_getstr (arg))
+	return build_int_cst (type, strlen (str));
+      return NULL_TREE;
+
+    CASE_FLT_FN (BUILT_IN_NAN):
+    case BUILT_IN_NAND32:
+    case BUILT_IN_NAND64:
+    case BUILT_IN_NAND128:
+      return fold_const_builtin_nan (type, arg, true);
+
+    CASE_FLT_FN (BUILT_IN_NANS):
+      return fold_const_builtin_nan (type, arg, false);
+
+    default:
+      return fold_const_call_1 (fn, type, arg);
+    }
 }
 
 /* Try to evaluate:
@@ -1194,11 +1261,11 @@ fold_const_call_ccc (real_value *result_real, real_value *result_imag,
     }
 }
 
-/* Try to fold FN (ARG0, ARG1) to a constant.  Return the constant on success,
-   otherwise return null.  TYPE is the type of the return value.  */
+/* Subroutine of fold_const_call, with the same interface.  Handle cases
+   where the arguments and result are numerical.  */
 
-tree
-fold_const_call (built_in_function fn, tree type, tree arg0, tree arg1)
+static tree
+fold_const_call_1 (built_in_function fn, tree type, tree arg0, tree arg1)
 {
   machine_mode mode = TYPE_MODE (type);
   machine_mode arg0_mode = TYPE_MODE (TREE_TYPE (arg0));
@@ -1286,6 +1353,35 @@ fold_const_call (built_in_function fn, tree type, tree arg0, tree arg1)
   return NULL_TREE;
 }
 
+/* Try to fold FN (ARG0, ARG1) to a constant.  Return the constant on success,
+   otherwise return null.  TYPE is the type of the return value.  */
+
+tree
+fold_const_call (built_in_function fn, tree type, tree arg0, tree arg1)
+{
+  const char *p0, *p1;
+  switch (fn)
+    {
+    case BUILT_IN_STRSPN:
+      if ((p0 = c_getstr (arg0)) && (p1 = c_getstr (arg1)))
+	return build_int_cst (type, strspn (p0, p1));
+      return NULL_TREE;
+
+    case BUILT_IN_STRCSPN:
+      if ((p0 = c_getstr (arg0)) && (p1 = c_getstr (arg1)))
+	return build_int_cst (type, strcspn (p0, p1));
+      return NULL_TREE;
+
+    case BUILT_IN_STRCMP:
+      if ((p0 = c_getstr (arg0)) && (p1 = c_getstr (arg1)))
+	return build_cmp_result (type, strcmp (p0, p1));
+      return NULL_TREE;
+
+    default:
+      return fold_const_call_1 (fn, type, arg0, arg1);
+    }
+}
+
 /* Try to evaluate:
 
       *RESULT = FN (*ARG0, *ARG1, *ARG2)
@@ -1307,12 +1403,12 @@ fold_const_call_ssss (real_value *result, built_in_function fn,
     }
 }
 
-/* Try to fold FN (ARG0, ARG1, ARG2) to a constant.  Return the constant on
-   success, otherwise return null.  TYPE is the type of the return value.  */
+/* Subroutine of fold_const_call, with the same interface.  Handle cases
+   where the arguments and result are numerical.  */
 
-tree
-fold_const_call (built_in_function fn, tree type, tree arg0, tree arg1,
-		 tree arg2)
+static tree
+fold_const_call_1 (built_in_function fn, tree type, tree arg0, tree arg1,
+		   tree arg2)
 {
   machine_mode mode = TYPE_MODE (type);
   machine_mode arg0_mode = TYPE_MODE (TREE_TYPE (arg0));
@@ -1340,6 +1436,39 @@ fold_const_call (built_in_function fn, tree type, tree arg0, tree arg1,
     }
 
   return NULL_TREE;
+}
+
+/* Try to fold FN (ARG0, ARG1, ARG2) to a constant.  Return the constant on
+   success, otherwise return null.  TYPE is the type of the return value.  */
+
+tree
+fold_const_call (built_in_function fn, tree type, tree arg0, tree arg1,
+		 tree arg2)
+{
+  const char *p0, *p1;
+  size_t s2;
+  switch (fn)
+    {
+    case BUILT_IN_STRNCMP:
+      if ((p0 = c_getstr (arg0))
+	  && (p1 = c_getstr (arg1))
+	  && host_size_t_cst_p (arg2, &s2))
+	return build_int_cst (type, strncmp (p0, p1, s2));
+      return NULL_TREE;
+
+    case BUILT_IN_BCMP:
+    case BUILT_IN_MEMCMP:
+      if ((p0 = c_getstr (arg0))
+	  && (p1 = c_getstr (arg1))
+	  && host_size_t_cst_p (arg2, &s2)
+	  && s2 <= strlen (p0)
+	  && s2 <= strlen (p1))
+	return build_cmp_result (type, memcmp (p0, p1, s2));
+      return NULL_TREE;
+
+    default:
+      return fold_const_call_1 (fn, type, arg0, arg1, arg2);
+    }
 }
 
 /* Fold a fma operation with arguments ARG[012].  */
