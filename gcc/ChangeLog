@@ -1,3 +1,10 @@
+2015-11-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/67864
+	* common/config/i386/i386-common.c (ix86_option_optimization_table)
+	<OPT_freorder_blocks_algorithm_>: Use REORDER_BLOCKS_ALGORITHM_STC
+	at -Os and up.
+
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* trans-mem.c (is_tm_pure_call): Use gimple_call_flags for
