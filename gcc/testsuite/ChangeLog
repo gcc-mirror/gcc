@@ -1,3 +1,7 @@
+2015-11-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/Wno-frame-address.c: Skip on hppa*-*-*.
+
 2015-11-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68153
