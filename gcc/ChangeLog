@@ -1,5 +1,19 @@
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_nan): Delete.
+	(fold_builtin_memcmp): Remove case where both arguments are constant.
+	(fold_builtin_strcmp, fold_builtin_strncmp): Likewise.
+	(fold_builtin_strspn, fold_builtin_strcspn): Likewise.
+	(fold_builtin_1): Remove BUILT_IN_NAN* handling.
+	* fold-const-call.c: Include fold-const.h.
+	(host_size_t_cst_p): New function.
+	(build_cmp_result, fold_const_builtin_nan): Likewise.
+	(fold_const_call_1): New function, split out from...
+	(fold_const_call): ...here (for all three interfaces).  Handle
+	constant nan, nans, strlen, strcmp, strncmp, strspn and strcspn.
+
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_bitop, fold_builtin_bswap): Delete.
 	(fold_builtin_1): Don't call them.
 	* fold-const-call.c: Include tm.h.
