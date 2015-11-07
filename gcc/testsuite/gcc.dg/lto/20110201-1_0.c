@@ -1,6 +1,6 @@
 /* { dg-lto-do run } */
-/* { dg-lto-options { { -O0 -flto } } } */
-/* { dg-lto-options { "-O0 -flto -mfloat-abi=softfp -mfpu=neon-vfpv4" } { target arm*-*-* } } */
+/* { dg-lto-options { { -O0 -flto -fno-math-errno } } } */
+/* { dg-lto-options { "-O0 -flto -fno-math-errno -mfloat-abi=softfp -mfpu=neon-vfpv4" } { target arm*-*-* } } */
 /* { dg-require-linker-plugin "" } */
 /* { dg-require-effective-target sqrt_insn } */
 
