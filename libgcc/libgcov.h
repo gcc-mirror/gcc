@@ -43,7 +43,7 @@
 #include "tm.h"
 #include "libgcc_tm.h"
 
-#if BITS_PER_UNIT == 8
+#if __CHAR_BIT__ == 8
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (SI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (SI)));
 #if LONG_LONG_TYPE_SIZE > 32
@@ -54,7 +54,7 @@ typedef signed gcov_type __attribute__ ((mode (SI)));
 typedef unsigned gcov_type_unsigned __attribute__ ((mode (SI)));
 #endif
 #else
-#if BITS_PER_UNIT == 16
+#if __CHAR_BIT__ == 16
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (HI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (HI)));
 #if LONG_LONG_TYPE_SIZE > 32

@@ -1,3 +1,14 @@
+2015-11-07  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	PR libobjc/24775
+	* encoding.c (_darwin_rs6000_special_round_type_align): Use
+	__CHAR_BIT__ instead of BITS_PER_UNIT.
+	(objc_sizeof_type): Likewise.
+	(objc_layout_structure): Likewise.
+	(objc_layout_structure_next_member): Likewise.
+	(objc_layout_finish_structure): Likewise.
+	(objc_layout_structure_get_info): Likewise.
+
 2015-11-03  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	PR libobjc/24775

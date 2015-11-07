@@ -178,7 +178,7 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
    if it existed.  */
 
 #if LIBGCC2_UNITS_PER_WORD == 8
-#define W_TYPE_SIZE (8 * BITS_PER_UNIT)
+#define W_TYPE_SIZE (8 * __CHAR_BIT__)
 #define Wtype	DItype
 #define UWtype	UDItype
 #define HWtype	DItype
@@ -194,7 +194,7 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #endif
 #define COMPAT_SIMODE_TRAPPING_ARITHMETIC
 #elif LIBGCC2_UNITS_PER_WORD == 4
-#define W_TYPE_SIZE (4 * BITS_PER_UNIT)
+#define W_TYPE_SIZE (4 * __CHAR_BIT__)
 #define Wtype	SItype
 #define UWtype	USItype
 #define HWtype	SItype
@@ -209,7 +209,7 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #define __NDW(a,b)	__ ## a ## di ## b
 #endif
 #elif LIBGCC2_UNITS_PER_WORD == 2
-#define W_TYPE_SIZE (2 * BITS_PER_UNIT)
+#define W_TYPE_SIZE (2 * __CHAR_BIT__)
 #define Wtype	HItype
 #define UWtype	UHItype
 #define HWtype	HItype
@@ -224,7 +224,7 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #define __NDW(a,b)	__ ## a ## si ## b
 #endif
 #else
-#define W_TYPE_SIZE BITS_PER_UNIT
+#define W_TYPE_SIZE __CHAR_BIT__
 #define Wtype	QItype
 #define UWtype  UQItype
 #define HWtype	QItype

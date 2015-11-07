@@ -1,3 +1,14 @@
+2015-11-07  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config/visium/lib2funcs.c (__set_trampoline_parity): Use
+	__CHAR_BIT__ instead of BITS_PER_UNIT.
+	* fixed-bit.h: Likewise.
+	* fp-bit.h: Likewise.
+	* libgcc2.c (__popcountSI2): Likewise.
+	(__popcountDI2): Likewise.
+	* libgcc2.h: Likewise.
+	* libgcov.h: Likewise.
+
 2015-11-07  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/atexit.c: New file.
