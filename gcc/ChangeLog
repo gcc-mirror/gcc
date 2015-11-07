@@ -1,5 +1,14 @@
 2015-11-06  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
 
+	* graphite-optimize-isl.c (optimize_isl): Call isl_union_map_is_equal.
+	* graphite-poly.c (new_scop): Initialize original_schedule.
+	(free_scop): Free original_schedule.
+	* graphite-poly.h (struct scop): Add field original_schedule.
+	* graphite-sese-to-poly.c (build_scop_original_schedule): New.
+	(build_poly_scop): Call build_scop_original_schedule.
+
+2015-11-06  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
+
 	* graphite-sese-to-poly.c (build_pbb_scattering_polyhedrons): Remove.
 	(build_pbb_minimal_scattering_polyhedrons): New.
 	(build_scop_scattering): Remove.

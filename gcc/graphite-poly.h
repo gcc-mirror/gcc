@@ -436,6 +436,9 @@ struct scop
     *must_war, *may_war, *must_war_no_source, *may_war_no_source,
     *must_waw, *may_waw, *must_waw_no_source, *may_waw_no_source;
 
+  /* Original schedule of the SCoP.  */
+  isl_union_map *original_schedule;
+
   /* True when the scop has been converted to its polyhedral
      representation.  */
   bool poly_scop_p;
