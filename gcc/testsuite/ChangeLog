@@ -1,3 +1,8 @@
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/68235
+	* gcc.dg/lto/20110201-1_0.c: Add -fno-math-errno.
+
 2015-11-06  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust to look for
