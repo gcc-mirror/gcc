@@ -426,6 +426,55 @@ build_scop_minimal_scattering (scop_p scop)
   isl_aff_free (static_sched);
 }
 
+/* Build the original schedule showing the orginal order of execution
+   of statement instances.
+
+   The following example shows the original schedule:
+
+   for (i: ...)
+     {
+       for (j: ...)
+         {
+           A
+         }
+       B
+     }
+   C
+   for (i: ...)
+     {
+       D
+     }
+
+   Static schedules for A to D expressed in a union map:
+
+   { S_A[i0, i1] -> [i0, i1]; S_B[i0] -> [i0]; S_C[] -> []; S_9[i0] -> [i0] }
+
+*/
+
+static void
+build_scop_original_schedule (scop_p scop)
+{
+  isl_space *space = isl_set_get_space (scop->param_context);
+  isl_union_map *res = isl_union_map_empty (space);
+
+  int i;
+  poly_bb_p pbb;
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+    {
+      int nb_dimensions = isl_set_dim (pbb->domain, isl_dim_set);
+      isl_space *dc = isl_set_get_space (pbb->domain);
+      isl_space *dm = isl_space_add_dims (isl_space_from_domain (dc),
+					  isl_dim_out, nb_dimensions);
+      isl_map *mp = isl_map_universe (dm);
+      for (int i = 0; i < nb_dimensions; i++)
+	mp = isl_map_equate (mp, isl_dim_in, i, isl_dim_out, i);
+
+      res = isl_union_map_add_map (res, mp);
+    }
+  scop->original_schedule = res;
+}
+
+
 static isl_pw_aff *extract_affine (scop_p, tree, __isl_take isl_space *space);
 
 /* Extract an affine expression from the chain of recurrence E.  */
@@ -1799,6 +1848,7 @@ build_poly_scop (scop_p scop)
 
   build_scop_drs (scop);
   build_scop_minimal_scattering (scop);
+  build_scop_original_schedule (scop);
 
   /* This SCoP has been translated to the polyhedral
      representation.  */
