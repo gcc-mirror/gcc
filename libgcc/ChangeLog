@@ -1,3 +1,11 @@
+2015-11-07  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/atexit.c: New file.
+	* config/rs6000/t-aix-cxa (LIB2ADDEH): Build atexit.c.
+	* config/rs6000/libgcc-aix-cxa.ver (atexit): Add symbol to exports.
+	* config/rs6000/cxa_finalize.c
+	(catomic_compare_and_exchange_bool_acq): Negate return value.
+
 2015-10-30  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* config/i386/cpuinfo.c (enum processor_types): Add AMDFAM17H.
