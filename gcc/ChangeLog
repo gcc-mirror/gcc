@@ -1,5 +1,10 @@
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* trans-mem.c (is_tm_pure_call): Use gimple_call_flags for
+	internal functions.
+
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.def: #undef DEF_BUILTIN and DEF_BUILTIN_CHKP
 	* builtins.c, genmatch.c, tree-core.h: Don't undef them here.
 
