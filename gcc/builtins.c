@@ -616,27 +616,6 @@ c_strlen (tree src, int only_value)
   return ssize_int (strlen (ptr + offset));
 }
 
-/* Return a char pointer for a C string if it is a string constant
-   or sum of string constant and integer constant.  */
-
-const char *
-c_getstr (tree src)
-{
-  tree offset_node;
-
-  src = string_constant (src, &offset_node);
-  if (src == 0)
-    return 0;
-
-  if (offset_node == 0)
-    return TREE_STRING_POINTER (src);
-  else if (!tree_fits_uhwi_p (offset_node)
-	   || compare_tree_int (offset_node, TREE_STRING_LENGTH (src) - 1) > 0)
-    return 0;
-
-  return TREE_STRING_POINTER (src) + tree_to_uhwi (offset_node);
-}
-
 /* Return a constant integer corresponding to target reading
    GET_MODE_BITSIZE (MODE) bits from string constant STR.  */
 

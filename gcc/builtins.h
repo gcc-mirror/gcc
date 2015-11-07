@@ -87,7 +87,6 @@ extern bool is_simple_builtin (tree);
 extern bool is_inexpensive_builtin (tree);
 
 extern bool readonly_data_expr (tree exp);
-extern const char *c_getstr (tree);
 extern bool init_target_chars (void);
 extern unsigned HOST_WIDE_INT target_newline;
 extern unsigned HOST_WIDE_INT target_percent;
