@@ -1,5 +1,10 @@
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_classify): Move constant cases to...
+	* fold-const-call.c (fold_const_call_ss): ...here.
+
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.h (c_getstr): Move to...
 	* fold-const.h (c_getstr): ...here.
 	* builtins.c (c_getstr): Move to...

@@ -8018,7 +8018,6 @@ static tree
 fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
 {
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
-  REAL_VALUE_TYPE r;
 
   if (!validate_arg (arg, REAL_TYPE))
     return NULL_TREE;
@@ -8028,16 +8027,6 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
     case BUILT_IN_ISINF:
       if (!HONOR_INFINITIES (arg))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
-
-      if (TREE_CODE (arg) == REAL_CST)
-	{
-	  r = TREE_REAL_CST (arg);
-	  if (real_isinf (&r))
-	    return real_compare (GT_EXPR, &r, &dconst0)
-		   ? integer_one_node : integer_minus_one_node;
-	  else
-	    return integer_zero_node;
-	}
 
       return NULL_TREE;
 
@@ -8078,23 +8067,11 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
 	  && !HONOR_INFINITIES (arg))
 	return omit_one_operand_loc (loc, type, integer_one_node, arg);
 
-      if (TREE_CODE (arg) == REAL_CST)
-	{
-	  r = TREE_REAL_CST (arg);
-	  return real_isfinite (&r) ? integer_one_node : integer_zero_node;
-	}
-
       return NULL_TREE;
 
     case BUILT_IN_ISNAN:
       if (!HONOR_NANS (arg))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
-
-      if (TREE_CODE (arg) == REAL_CST)
-	{
-	  r = TREE_REAL_CST (arg);
-	  return real_isnan (&r) ? integer_one_node : integer_zero_node;
-	}
 
       arg = builtin_save_expr (arg);
       return fold_build2_loc (loc, UNORDERED_EXPR, type, arg, arg);
