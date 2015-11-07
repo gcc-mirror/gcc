@@ -731,6 +731,32 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
   if (nconds == 0)
     return false;
 
+  /* The cfg we want to create looks like this:
+
+	   [guard n-1]         <- guard_bb (old block)
+	     |    \
+	     | [guard n-2]                   }
+	     |    / \                        }
+	     |   /  ...                      } new blocks
+	     |  /  [guard 0]                 }
+	     | /    /   |                    }
+	    [ call ]    |     <- bi_call_bb  }
+	     | \        |
+	     |  \       |
+	     |   [ join ]     <- join_tgt_bb (old iff call must end bb)
+	     |
+	 possible EH edges (only if [join] is old)
+
+     When [join] is new, the immediate dominators for these blocks are:
+
+     1. [guard n-1]: unchanged
+     2. [call]: [guard n-1]
+     3. [guard m]: [guard m+1] for 0 <= m <= n-2
+     4. [join]: [guard n-1]
+
+     We punt for the more complex case case of [join] being old and
+     simply free the dominance info.  We also punt on postdominators,
+     which aren't expected to be available at this point anyway.  */
   bi_call_bb = gimple_bb (bi_call);
 
   /* Now find the join target bb -- split bi_call_bb if needed.  */
@@ -741,6 +767,7 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
       join_tgt_in_edge_from_call = find_fallthru_edge (bi_call_bb->succs);
       if (join_tgt_in_edge_from_call == NULL)
         return false;
+      free_dominance_info (CDI_DOMINATORS);
     }
   else
     join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
@@ -818,6 +845,15 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
       guard_bb_in_edge->probability =
           inverse_probability (bi_call_in_edge->probability);
       guard_bb_in_edge->count = guard_bb->count - bi_call_in_edge->count;
+    }
+
+  if (dom_info_available_p (CDI_DOMINATORS))
+    {
+      /* The split_blocks leave [guard 0] as the immediate dominator
+	 of [call] and [call] as the immediate dominator of [join].
+	 Fix them up.  */
+      set_immediate_dominator (CDI_DOMINATORS, bi_call_bb, guard_bb);
+      set_immediate_dominator (CDI_DOMINATORS, join_tgt_bb, guard_bb);
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -927,7 +963,6 @@ pass_call_cdce::execute (function *fun)
 
   if (something_changed)
     {
-      free_dominance_info (CDI_DOMINATORS);
       free_dominance_info (CDI_POST_DOMINATORS);
       /* As we introduced new control-flow we need to insert PHI-nodes
          for the call-clobbers of the remaining call.  */
