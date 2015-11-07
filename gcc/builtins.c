@@ -148,7 +148,6 @@ static tree rewrite_call_expr (location_t, tree, int, tree, int, ...);
 static bool validate_arg (const_tree, enum tree_code code);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
-static tree fold_builtin_bitop (tree, tree);
 static tree fold_builtin_strchr (location_t, tree, tree, tree);
 static tree fold_builtin_memchr (location_t, tree, tree, tree, tree);
 static tree fold_builtin_memcmp (location_t, tree, tree, tree);
@@ -7332,99 +7331,6 @@ fold_builtin_sincos (location_t loc,
 			 fold_build1_loc (loc, REALPART_EXPR, type, call)));
 }
 
-/* Fold function call to builtin ffs, clz, ctz, popcount and parity
-   and their long and long long variants (i.e. ffsl and ffsll).  ARG is
-   the argument to the call.  Return NULL_TREE if no simplification can
-   be made.  */
-
-static tree
-fold_builtin_bitop (tree fndecl, tree arg)
-{
-  if (!validate_arg (arg, INTEGER_TYPE))
-    return NULL_TREE;
-
-  /* Optimize for constant argument.  */
-  if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
-    {
-      tree type = TREE_TYPE (arg);
-      int result;
-
-      switch (DECL_FUNCTION_CODE (fndecl))
-	{
-	CASE_INT_FN (BUILT_IN_FFS):
-	  result = wi::ffs (arg);
-	  break;
-
-	CASE_INT_FN (BUILT_IN_CLZ):
-	  if (wi::ne_p (arg, 0))
-	    result = wi::clz (arg);
-	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
-	    result = TYPE_PRECISION (type);
-	  break;
-
-	CASE_INT_FN (BUILT_IN_CTZ):
-	  if (wi::ne_p (arg, 0))
-	    result = wi::ctz (arg);
-	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
-	    result = TYPE_PRECISION (type);
-	  break;
-
-	CASE_INT_FN (BUILT_IN_CLRSB):
-	  result = wi::clrsb (arg);
-	  break;
-
-	CASE_INT_FN (BUILT_IN_POPCOUNT):
-	  result = wi::popcount (arg);
-	  break;
-
-	CASE_INT_FN (BUILT_IN_PARITY):
-	  result = wi::parity (arg);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-
-      return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), result);
-    }
-
-  return NULL_TREE;
-}
-
-/* Fold function call to builtin_bswap and the short, long and long long
-   variants.  Return NULL_TREE if no simplification can be made.  */
-static tree
-fold_builtin_bswap (tree fndecl, tree arg)
-{
-  if (! validate_arg (arg, INTEGER_TYPE))
-    return NULL_TREE;
-
-  /* Optimize constant value.  */
-  if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
-    {
-      tree type = TREE_TYPE (TREE_TYPE (fndecl));
-
-      switch (DECL_FUNCTION_CODE (fndecl))
-	{
-	  case BUILT_IN_BSWAP16:
-	  case BUILT_IN_BSWAP32:
-	  case BUILT_IN_BSWAP64:
-	    {
-	      signop sgn = TYPE_SIGN (type);
-	      tree result =
-		wide_int_to_tree (type,
-				  wide_int::from (arg, TYPE_PRECISION (type),
-						  sgn).bswap ());
-	      return result;
-	    }
-	default:
-	  gcc_unreachable ();
-	}
-    }
-
-  return NULL_TREE;
-}
-
 /* Fold function call to builtin memchr.  ARG1, ARG2 and LEN are the
    arguments to the call, and TYPE is its return type.
    Return NULL_TREE if no simplification can be made.  */
@@ -8363,19 +8269,6 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
 
     CASE_FLT_FN (BUILT_IN_NANS):
       return fold_builtin_nan (arg0, type, false);
-
-    case BUILT_IN_BSWAP16:
-    case BUILT_IN_BSWAP32:
-    case BUILT_IN_BSWAP64:
-      return fold_builtin_bswap (fndecl, arg0);
-
-    CASE_INT_FN (BUILT_IN_FFS):
-    CASE_INT_FN (BUILT_IN_CLZ):
-    CASE_INT_FN (BUILT_IN_CTZ):
-    CASE_INT_FN (BUILT_IN_CLRSB):
-    CASE_INT_FN (BUILT_IN_POPCOUNT):
-    CASE_INT_FN (BUILT_IN_PARITY):
-      return fold_builtin_bitop (fndecl, arg0);
 
     case BUILT_IN_ISASCII:
       return fold_builtin_isascii (loc, arg0);

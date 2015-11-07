@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "options.h"
 #include "fold-const-call.h"
+#include "tm.h" /* For C[LT]Z_DEFINED_AT_ZERO.  */
 
 /* Functions that test for certain constant types, abstracting away the
    decision about whether to check for overflow.  */
@@ -768,6 +769,69 @@ fold_const_call_ss (wide_int *result, built_in_function fn,
 
 /* Try to evaluate:
 
+      *RESULT = FN (ARG)
+
+   where ARG_TYPE is the type of ARG and PRECISION is the number of bits
+   in the result.  Return true on success.  */
+
+static bool
+fold_const_call_ss (wide_int *result, built_in_function fn,
+		    const wide_int_ref &arg, unsigned int precision,
+		    tree arg_type)
+{
+  switch (fn)
+    {
+    CASE_INT_FN (BUILT_IN_FFS):
+      *result = wi::shwi (wi::ffs (arg), precision);
+      return true;
+
+    CASE_INT_FN (BUILT_IN_CLZ):
+      {
+	int tmp;
+	if (wi::ne_p (arg, 0))
+	  tmp = wi::clz (arg);
+	else if (! CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (arg_type), tmp))
+	  tmp = TYPE_PRECISION (arg_type);
+	*result = wi::shwi (tmp, precision);
+	return true;
+      }
+
+    CASE_INT_FN (BUILT_IN_CTZ):
+      {
+	int tmp;
+	if (wi::ne_p (arg, 0))
+	  tmp = wi::ctz (arg);
+	else if (! CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (arg_type), tmp))
+	  tmp = TYPE_PRECISION (arg_type);
+	*result = wi::shwi (tmp, precision);
+	return true;
+      }
+
+    CASE_INT_FN (BUILT_IN_CLRSB):
+      *result = wi::shwi (wi::clrsb (arg), precision);
+      return true;
+
+    CASE_INT_FN (BUILT_IN_POPCOUNT):
+      *result = wi::shwi (wi::popcount (arg), precision);
+      return true;
+
+    CASE_INT_FN (BUILT_IN_PARITY):
+      *result = wi::shwi (wi::parity (arg), precision);
+      return true;
+
+    case BUILT_IN_BSWAP16:
+    case BUILT_IN_BSWAP32:
+    case BUILT_IN_BSWAP64:
+      *result = wide_int::from (arg, precision, TYPE_SIGN (arg_type)).bswap ();
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Try to evaluate:
+
       RESULT = FN (*ARG)
 
    where FORMAT is the format of ARG and of the real and imaginary parts
@@ -915,6 +979,18 @@ fold_const_call (built_in_function fn, tree type, tree arg)
 {
   machine_mode mode = TYPE_MODE (type);
   machine_mode arg_mode = TYPE_MODE (TREE_TYPE (arg));
+
+  if (integer_cst_p (arg))
+    {
+      if (SCALAR_INT_MODE_P (mode))
+	{
+	  wide_int result;
+	  if (fold_const_call_ss (&result, fn, arg, TYPE_PRECISION (type),
+				  TREE_TYPE (arg)))
+	    return wide_int_to_tree (type, result);
+	}
+      return NULL_TREE;
+    }
 
   if (real_cst_p (arg))
     {

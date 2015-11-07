@@ -1,5 +1,13 @@
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (fold_builtin_bitop, fold_builtin_bswap): Delete.
+	(fold_builtin_1): Don't call them.
+	* fold-const-call.c: Include tm.h.
+	(fold_const_call_ss): New variant for integer-to-integer folds.
+	(fold_const_call): Call it.
+
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_classify): Move constant cases to...
 	* fold-const-call.c (fold_const_call_ss): ...here.
 
