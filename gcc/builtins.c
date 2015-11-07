@@ -78,7 +78,6 @@ const char * built_in_names[(int) END_BUILTINS] =
 {
 #include "builtins.def"
 };
-#undef DEF_BUILTIN
 
 /* Setup an array of builtin_info_type, make sure each element decl is
    initialized to NULL_TREE.  */

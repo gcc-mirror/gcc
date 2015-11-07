@@ -945,3 +945,6 @@ DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 
 /* Pointer Bounds Checker builtins.  */
 #include "chkp-builtins.def"
+
+#undef DEF_BUILTIN_CHKP
+#undef DEF_BUILTIN

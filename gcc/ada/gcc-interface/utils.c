@@ -6040,7 +6040,6 @@ install_builtin_functions (void)
                    BOTH_P, FALLBACK_P, NONANSI_P,                       \
                    built_in_attributes[(int) ATTRS], IMPLICIT);
 #include "builtins.def"
-#undef DEF_BUILTIN
 }
 
 /* ----------------------------------------------------------------------- *
