@@ -1,3 +1,18 @@
+2015-11-06  Jeff Law <jeff@redhat.com>
+
+	* tree-ssa-threadedge.c (dummy_simplify): Remove.
+	(thread_around_empty_blocks): Remove backedge_seen_p argument.
+	If we thread to a backedge, then return false.  Update recursive
+	call to eliminate backedge_seen_p argument.
+	(thread_through_normal_block): Remove backedge_seen_p argument.
+	Remove backedge_seen_p argument from calls to
+	thread_around_empty_blocks.  Remove checks on backedge_seen_p.
+	If we thread to a backedge, then return 0.
+	(thread_across_edge): Remove bookkeeping for backedge_seen.  Don't
+	pass it to thread_through_normal_block or thread_through_empty_blocks.
+	For joiner handling, if we see a backedge, do not try normal
+	threading.
+
 2015-11-06  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
 
 	* graphite-optimize-isl.c (optimize_isl): Call isl_union_map_is_equal.
