@@ -132,6 +132,9 @@ internal_proto(format_error);
 extern void free_format_data (struct format_data *);
 internal_proto(free_format_data);
 
+extern void free_format (st_parameter_dt *);
+internal_proto(free_format);
+
 extern void free_format_hash_table (gfc_unit *);
 internal_proto(free_format_hash_table);
 
