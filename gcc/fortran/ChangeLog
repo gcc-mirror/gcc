@@ -1,5 +1,10 @@
 2015-11-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/68153
+	* check.c (gfc_check_reshape): Improve check for valid SHAPE argument.
+
+2015-11-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/68151
 	* match.c (match_case_selector):  Check for invalid type.
 
