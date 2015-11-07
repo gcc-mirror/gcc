@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 const char *const internal_fn_name_array[] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) #CODE,
 #include "internal-fn.def"
-#undef DEF_INTERNAL_FN
   "<invalid-fn>"
 };
 
@@ -51,7 +50,6 @@ const char *const internal_fn_name_array[] = {
 const int internal_fn_flags_array[] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) FLAGS,
 #include "internal-fn.def"
-#undef DEF_INTERNAL_FN
   0
 };
 
@@ -65,7 +63,6 @@ init_internal_fns ()
   if (FNSPEC) internal_fn_fnspec_array[IFN_##CODE] = \
     build_string ((int) sizeof (FNSPEC), FNSPEC ? FNSPEC : "");
 #include "internal-fn.def"
-#undef DEF_INTERNAL_FN
   internal_fn_fnspec_array[IFN_LAST] = 0;
 }
 
@@ -2062,7 +2059,6 @@ expand_GOACC_REDUCTION (gcall *stmt ATTRIBUTE_UNUSED)
 static void (*const internal_fn_expanders[]) (gcall *) = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) expand_##CODE,
 #include "internal-fn.def"
-#undef DEF_INTERNAL_FN
   0
 };
 

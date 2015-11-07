@@ -1,5 +1,11 @@
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* internal-fn.def: #undef DEF_INTERNAL_FN at the end.
+	* internal-fn.c: Don't undef it here.
+	* tree-core.h: Likewise.
+
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (fold_builtin_nan): Delete.
 	(fold_builtin_memcmp): Remove case where both arguments are constant.
 	(fold_builtin_strcmp, fold_builtin_strncmp): Likewise.
