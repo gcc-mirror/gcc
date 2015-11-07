@@ -138,6 +138,7 @@ type EmbedA struct {
 	EmbedC
 	EmbedB EmbedB
 	FieldA string
+	embedD
 }
 
 type EmbedB struct {
@@ -150,6 +151,11 @@ type EmbedC struct {
 	FieldA2 string `xml:"FieldA>A2"`
 	FieldB  string
 	FieldC  string
+}
+
+type embedD struct {
+	fieldD string
+	FieldE string // Promoted and visible when embedD is embedded.
 }
 
 type NameCasing struct {
@@ -637,6 +643,9 @@ var marshalTests = []struct {
 				},
 			},
 			FieldA: "A.A",
+			embedD: embedD{
+				FieldE: "A.D.E",
+			},
 		},
 		ExpectXML: `<EmbedA>` +
 			`<FieldB>A.C.B</FieldB>` +
@@ -650,6 +659,7 @@ var marshalTests = []struct {
 			`<FieldC>A.B.C.C</FieldC>` +
 			`</EmbedB>` +
 			`<FieldA>A.A</FieldA>` +
+			`<FieldE>A.D.E</FieldE>` +
 			`</EmbedA>`,
 	},
 
