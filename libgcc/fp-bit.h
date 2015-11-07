@@ -117,11 +117,11 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 
 #define MAX_USI_INT  (~(USItype)0)
 #define MAX_SI_INT   ((SItype) (MAX_USI_INT >> 1))
-#define BITS_PER_SI  (4 * BITS_PER_UNIT)
+#define BITS_PER_SI  (4 * __CHAR_BIT__)
 #ifdef TMODES
 #define MAX_UDI_INT  (~(UDItype)0)
 #define MAX_DI_INT   ((DItype) (MAX_UDI_INT >> 1))
-#define BITS_PER_DI  (8 * BITS_PER_UNIT)
+#define BITS_PER_DI  (8 * __CHAR_BIT__)
 #endif
 
 #ifdef FLOAT_ONLY
