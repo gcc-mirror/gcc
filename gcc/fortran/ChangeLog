@@ -1,3 +1,8 @@
+2015-11-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68151
+	* match.c (match_case_selector):  Check for invalid type.
+
 2015-11-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* cpp.c (cb_cpp_error): Convert parameter from location_t to
