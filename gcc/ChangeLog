@@ -1,5 +1,10 @@
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.def (BUILTIN_RINT, BUILTIN_RINTF, BUILTIN_RINTL): Use
+	ATTR_MATHFN_FPROUNDING rather than ATTR_MATHFN_FPROUNDING_ERRNO.
+
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-call-cdce.c (shrink_wrap_one_built_in_call): Try to update
 	the dominance info; free it if we can't.
 	(pass_call_cdce::execute): Don't free the dominance info here.
