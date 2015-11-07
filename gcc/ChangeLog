@@ -1,3 +1,12 @@
+2015-11-06  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
+
+	* graphite-sese-to-poly.c (build_pbb_scattering_polyhedrons): Remove.
+	(build_pbb_minimal_scattering_polyhedrons): New.
+	(build_scop_scattering): Remove.
+	(build_scop_minimal_scattering): New.
+	(build_scop_scattering): Call build_pbb_minimal_scattering_polyhedrons.
+	(build_poly_scop): Call build_scop_minimal_scattering.
+
 2015-11-06  Jeff Law <jeff@redhat.com>
 
 	* cfg-flags.def (IGNORE): New edge flag.
