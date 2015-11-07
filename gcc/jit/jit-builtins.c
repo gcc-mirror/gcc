@@ -62,7 +62,6 @@ static const struct builtin_data builtin_data[] =
 {
 #include "builtins.def"
 };
-#undef DEF_BUILTIN
 
 /* Helper function for find_builtin_by_name.  */
 

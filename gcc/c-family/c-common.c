@@ -5735,7 +5735,6 @@ c_define_builtins (tree va_list_ref_type_node, tree va_list_arg_type_node)
 		   BOTH_P, FALLBACK_P, NONANSI_P,                       \
 		   built_in_attributes[(int) ATTRS], IMPLICIT);
 #include "builtins.def"
-#undef DEF_BUILTIN
 
   targetm.init_builtins ();
 

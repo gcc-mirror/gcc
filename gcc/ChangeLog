@@ -1,5 +1,10 @@
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.def: #undef DEF_BUILTIN and DEF_BUILTIN_CHKP
+	* builtins.c, genmatch.c, tree-core.h: Don't undef them here.
+
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* internal-fn.def: #undef DEF_INTERNAL_FN at the end.
 	* internal-fn.c: Don't undef it here.
 	* tree-core.h: Likewise.

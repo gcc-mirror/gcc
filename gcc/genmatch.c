@@ -229,7 +229,6 @@ enum built_in_function {
 #include "builtins.def"
 END_BUILTINS
 };
-#undef DEF_BUILTIN
 
 /* Return true if CODE represents a commutative tree code.  Otherwise
    return false.  */
@@ -4619,7 +4618,6 @@ add_operator (VIEW_CONVERT2, "VIEW_CONVERT2", "tcc_unary", 1);
 #define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
   add_builtin (ENUM, # ENUM);
 #include "builtins.def"
-#undef DEF_BUILTIN
 
   /* Parse ahead!  */
   parser p (r);

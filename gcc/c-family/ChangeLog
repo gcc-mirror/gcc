@@ -1,3 +1,7 @@
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.c: Don't undef DEF_BUILTIN.
+
 2015-11-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (c_cpp_error): Convert parameter from location_t to

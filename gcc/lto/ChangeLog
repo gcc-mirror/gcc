@@ -1,3 +1,7 @@
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lto-lang.c: Don't undef DEF_BUILTIN.
+
 2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lto-lang.c: Reorder #include's and remove duplicates.

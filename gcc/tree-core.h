@@ -159,13 +159,10 @@ enum built_in_function {
 
   BEGIN_CHKP_BUILTINS,
 
-#undef DEF_BUILTIN
 #define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND)
-#undef DEF_BUILTIN_CHKP
 #define DEF_BUILTIN_CHKP(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
   ENUM##_CHKP = ENUM + BEGIN_CHKP_BUILTINS + 1,
 #include "builtins.def"
-#undef DEF_BUILTIN_CHKP
 
   END_CHKP_BUILTINS = BEGIN_CHKP_BUILTINS * 2 + 1,
 
@@ -186,7 +183,6 @@ enum built_in_function {
   /* Upper bound on non-language-specific builtins.  */
   END_BUILTINS
 };
-#undef DEF_BUILTIN
 
 /* Tree code classes.  Each tree_code has an associated code class
    represented by a TREE_CODE_CLASS.  */
