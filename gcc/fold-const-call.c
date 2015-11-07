@@ -736,6 +736,31 @@ fold_const_call_ss (wide_int *result, built_in_function fn,
       /* Not yet folded to a constant.  */
       return false;
 
+    CASE_FLT_FN (BUILT_IN_FINITE):
+    case BUILT_IN_FINITED32:
+    case BUILT_IN_FINITED64:
+    case BUILT_IN_FINITED128:
+    case BUILT_IN_ISFINITE:
+      *result = wi::shwi (real_isfinite (arg) ? 1 : 0, precision);
+      return true;
+
+    CASE_FLT_FN (BUILT_IN_ISINF):
+    case BUILT_IN_ISINFD32:
+    case BUILT_IN_ISINFD64:
+    case BUILT_IN_ISINFD128:
+      if (real_isinf (arg))
+	*result = wi::shwi (arg->sign ? -1 : 1, precision);
+      else
+	*result = wi::shwi (0, precision);
+      return true;
+
+    CASE_FLT_FN (BUILT_IN_ISNAN):
+    case BUILT_IN_ISNAND32:
+    case BUILT_IN_ISNAND64:
+    case BUILT_IN_ISNAND128:
+      *result = wi::shwi (real_isnan (arg) ? 1 : 0, precision);
+      return true;
+
     default:
       return false;
     }
