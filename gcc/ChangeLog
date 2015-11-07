@@ -1,5 +1,12 @@
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.h (c_getstr): Move to...
+	* fold-const.h (c_getstr): ...here.
+	* builtins.c (c_getstr): Move to...
+	* fold-const.c (c_getstr): ...here.
+
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.def (BUILTIN_RINT, BUILTIN_RINTF, BUILTIN_RINTL): Use
 	ATTR_MATHFN_FPROUNDING rather than ATTR_MATHFN_FPROUNDING_ERRNO.
 
