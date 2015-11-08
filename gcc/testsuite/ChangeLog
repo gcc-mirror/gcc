@@ -1,3 +1,10 @@
+2015-11-08  Joost VandeVondele <vondele@gcc.gnu.org>
+
+	* gfortran.dg/PR67518.f90: move from here...
+	* gfortran.dg/graphite/PR67518.f90: to here.
+	* gfortran.dg/PR53852.f90: move from here...
+	* gfortran.dg/graphite/PR53852.f90: to here.
+
 2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/sso-1.c: New test.
