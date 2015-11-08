@@ -3711,6 +3711,36 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 	    }
 	}
     }
+  else if (shape->expr_type == EXPR_VARIABLE && shape->ref
+	   && shape->ref->u.ar.type == AR_FULL && shape->ref->u.ar.dimen == 1
+	   && shape->ref->u.ar.as
+	   && shape->ref->u.ar.as->lower[0]->expr_type == EXPR_CONSTANT
+	   && shape->ref->u.ar.as->lower[0]->ts.type == BT_INTEGER
+	   && shape->ref->u.ar.as->upper[0]->expr_type == EXPR_CONSTANT
+	   && shape->ref->u.ar.as->upper[0]->ts.type == BT_INTEGER
+	   && shape->symtree->n.sym->attr.flavor == FL_PARAMETER)
+    {
+      int i, extent;
+      gfc_expr *e, *v;
+
+      v = shape->symtree->n.sym->value;
+
+      for (i = 0; i < shape_size; i++)
+	{
+	  e = gfc_constructor_lookup_expr (v->value.constructor, i);
+	  if (e == NULL)
+	     break;
+
+	  gfc_extract_int (e, &extent);
+
+	  if (extent < 0)
+	    {
+	      gfc_error ("Element %d of actual argument of RESHAPE at %L "
+			 "cannot be negative", i + 1, &shape->where);
+	      return false;
+	    }
+	}
+    }
 
   if (pad != NULL)
     {
