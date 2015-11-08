@@ -2321,12 +2321,14 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
   if (TREE_CODE (oper) == POINTER_PLUS_EXPR)
     {
       /* If the offset is comple-time constant, use it to compute a more
-	 accurate estimate of the size of the buffer.  Otherwise, use
-	 the size of the entire array as an optimistic estimate (this
-	 may lead to false negatives).  */
-      const_tree adj = TREE_OPERAND (oper, 1);
+	 accurate estimate of the size of the buffer.  Since the operand
+	 of POINTER_PLUS_EXPR is represented as an unsigned type, convert
+	 it to signed first.
+	 Otherwise, use the size of the entire array as an optimistic
+	 estimate (this may lead to false negatives).  */
+      tree adj = TREE_OPERAND (oper, 1);
       if (CONSTANT_CLASS_P (adj))
-	adjust += tree_to_uhwi (adj);
+	adjust += tree_to_shwi (convert (ssizetype, adj));
       else
 	use_obj_size = true;
 
