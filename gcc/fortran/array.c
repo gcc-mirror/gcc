@@ -147,9 +147,9 @@ matched:
 }
 
 
-/* Match an array reference, whether it is the whole array or a
-   particular elements or a section. If init is set, the reference has
-   to consist of init expressions.  */
+/* Match an array reference, whether it is the whole array or particular
+   elements or a section.  If init is set, the reference has to consist
+   of init expressions.  */
 
 match
 gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
@@ -422,6 +422,13 @@ match_array_element_spec (gfc_array_spec *as)
   if (!gfc_expr_check_typed (*upper, gfc_current_ns, false))
     return AS_UNKNOWN;
 
+  if ((*upper)->expr_type == EXPR_FUNCTION && (*upper)->ts.type == BT_UNKNOWN
+      && (*upper)->symtree && strcmp ((*upper)->symtree->name, "null") == 0)
+    {
+      gfc_error ("Expecting a scalar INTEGER expression at %C");
+      return AS_UNKNOWN;
+    }
+
   if (gfc_match_char (':') == MATCH_NO)
     {
       *lower = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
@@ -442,13 +449,20 @@ match_array_element_spec (gfc_array_spec *as)
   if (!gfc_expr_check_typed (*upper, gfc_current_ns, false))
     return AS_UNKNOWN;
 
+  if ((*upper)->expr_type == EXPR_FUNCTION && (*upper)->ts.type == BT_UNKNOWN
+      && (*upper)->symtree && strcmp ((*upper)->symtree->name, "null") == 0)
+    {
+      gfc_error ("Expecting a scalar INTEGER expression at %C");
+      return AS_UNKNOWN;
+    }
+
   return AS_EXPLICIT;
 }
 
 
 /* Matches an array specification, incidentally figuring out what sort
-   it is. Match either a normal array specification, or a coarray spec
-   or both. Optionally allow [:] for coarrays.  */
+   it is.  Match either a normal array specification, or a coarray spec
+   or both.  Optionally allow [:] for coarrays.  */
 
 match
 gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
