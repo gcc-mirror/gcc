@@ -1,4 +1,4 @@
-// { dg-lto-do compile }
+// { dg-lto-do link }
 /* { dg-extra-ld-options { -O2 -Wno-odr -r -nostdlib } } */
 struct SPxPricer;
 struct SoPlex {
