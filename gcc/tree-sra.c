@@ -179,11 +179,14 @@ struct access
      when grp_to_be_replaced flag is set.  */
   tree replacement_decl;
 
-  /* Is this particular access write access? */
-  unsigned write : 1;
-
   /* Is this access an access to a non-addressable field? */
   unsigned non_addressable : 1;
+
+  /* Is this access made in reverse storage order? */
+  unsigned reverse : 1;
+
+  /* Is this particular access write access? */
+  unsigned write : 1;
 
   /* Is this access currently in the work queue?  */
   unsigned grp_queued : 1;
@@ -423,6 +426,8 @@ dump_access (FILE *f, struct access *access, bool grp)
   print_generic_expr (f, access->expr, 0);
   fprintf (f, ", type = ");
   print_generic_expr (f, access->type, 0);
+  fprintf (f, ", non_addressable = %d, reverse = %d",
+	   access->non_addressable, access->reverse);
   if (grp)
     fprintf (f, ", grp_read = %d, grp_write = %d, grp_assignment_read = %d, "
 	     "grp_assignment_write = %d, grp_scalar_read = %d, "
@@ -839,9 +844,9 @@ create_access (tree expr, gimple *stmt, bool write)
   struct access *access;
   HOST_WIDE_INT offset, size, max_size;
   tree base = expr;
-  bool ptr, unscalarizable_region = false;
+  bool reverse, ptr, unscalarizable_region = false;
 
-  base = get_ref_base_and_extent (expr, &offset, &size, &max_size);
+  base = get_ref_base_and_extent (expr, &offset, &size, &max_size, &reverse);
 
   if (sra_mode == SRA_MODE_EARLY_IPA
       && TREE_CODE (base) == MEM_REF)
@@ -895,6 +900,7 @@ create_access (tree expr, gimple *stmt, bool write)
   access->write = write;
   access->grp_unscalarizable_region = unscalarizable_region;
   access->stmt = stmt;
+  access->reverse = reverse;
 
   if (TREE_CODE (expr) == COMPONENT_REF
       && DECL_NONADDRESSABLE_P (TREE_OPERAND (expr, 1)))
@@ -959,7 +965,7 @@ scalarizable_type_p (tree type)
   }
 }
 
-static void scalarize_elem (tree, HOST_WIDE_INT, HOST_WIDE_INT, tree, tree);
+static void scalarize_elem (tree, HOST_WIDE_INT, HOST_WIDE_INT, bool, tree, tree);
 
 /* Create total_scalarization accesses for all scalar fields of a member
    of type DECL_TYPE conforming to scalarizable_type_p.  BASE
@@ -980,8 +986,9 @@ completely_scalarize (tree base, tree decl_type, HOST_WIDE_INT offset, tree ref)
 	    tree ft = TREE_TYPE (fld);
 	    tree nref = build3 (COMPONENT_REF, ft, ref, fld, NULL_TREE);
 
-	    scalarize_elem (base, pos, tree_to_uhwi (DECL_SIZE (fld)), nref,
-			    ft);
+	    scalarize_elem (base, pos, tree_to_uhwi (DECL_SIZE (fld)),
+			    TYPE_REVERSE_STORAGE_ORDER (decl_type),
+			    nref, ft);
 	  }
       break;
     case ARRAY_TYPE:
@@ -1015,7 +1022,9 @@ completely_scalarize (tree base, tree decl_type, HOST_WIDE_INT offset, tree ref)
 				    ref,
 				    wide_int_to_tree (domain, idx),
 				    NULL_TREE, NULL_TREE);
-		scalarize_elem (base, el_off, el_size, nref, elemtype);
+		scalarize_elem (base, el_off, el_size,
+				TYPE_REVERSE_STORAGE_ORDER (decl_type),
+				nref, elemtype);
 		el_off += el_size;
 	      }
 	  }
@@ -1029,11 +1038,12 @@ completely_scalarize (tree base, tree decl_type, HOST_WIDE_INT offset, tree ref)
 /* Create total_scalarization accesses for a member of type TYPE, which must
    satisfy either is_gimple_reg_type or scalarizable_type_p.  BASE must be the
    top-most VAR_DECL representing the variable; within that, POS and SIZE locate
-   the member and REF must be the reference expression for it.  */
+   the member, REVERSE gives its torage order. and REF must be the reference
+   expression for it.  */
 
 static void
-scalarize_elem (tree base, HOST_WIDE_INT pos, HOST_WIDE_INT size,
-		 tree ref, tree type)
+scalarize_elem (tree base, HOST_WIDE_INT pos, HOST_WIDE_INT size, bool reverse,
+		tree ref, tree type)
 {
   if (is_gimple_reg_type (type))
   {
@@ -1041,6 +1051,7 @@ scalarize_elem (tree base, HOST_WIDE_INT pos, HOST_WIDE_INT size,
     access->expr = ref;
     access->type = type;
     access->grp_total_scalarization = 1;
+    access->reverse = reverse;
     /* Accesses for intraprocedural SRA can have their stmt NULL.  */
   }
   else
@@ -1116,7 +1127,7 @@ build_access_from_expr_1 (tree expr, gimple *stmt, bool write)
      and not the result type.  Ada produces such statements.  We are also
      capable of handling the topmost V_C_E but not any of those buried in other
      handled components.  */
-  if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
+  if (TREE_CODE (expr) == VIEW_CONVERT_EXPR && !storage_order_barrier_p (expr))
     expr = TREE_OPERAND (expr, 0);
 
   if (contains_view_convert_expr_p (expr))
@@ -1249,7 +1260,11 @@ build_accesses_from_assign (gimple *stmt)
   lacc = build_access_from_expr_1 (lhs, stmt, true);
 
   if (lacc)
-    lacc->grp_assignment_write = 1;
+    {
+      lacc->grp_assignment_write = 1;
+      if (storage_order_barrier_p (rhs))
+	lacc->grp_unscalarizable_region = 1;
+    }
 
   if (racc)
     {
@@ -1257,6 +1272,8 @@ build_accesses_from_assign (gimple *stmt)
       if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
 	  && !is_gimple_reg_type (racc->type))
 	bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
+      if (storage_order_barrier_p (lhs))
+	racc->grp_unscalarizable_region = 1;
     }
 
   if (lacc && racc
@@ -1564,17 +1581,15 @@ make_fancy_name (tree expr)
 }
 
 /* Construct a MEM_REF that would reference a part of aggregate BASE of type
-   EXP_TYPE at the given OFFSET.  If BASE is something for which
-   get_addr_base_and_unit_offset returns NULL, gsi must be non-NULL and is used
-   to insert new statements either before or below the current one as specified
-   by INSERT_AFTER.  This function is not capable of handling bitfields.
-
-   BASE must be either a declaration or a memory reference that has correct
-   alignment ifformation embeded in it (e.g. a pre-existing one in SRA).  */
+   EXP_TYPE at the given OFFSET and with storage order REVERSE.  If BASE is
+   something for which get_addr_base_and_unit_offset returns NULL, gsi must
+   be non-NULL and is used to insert new statements either before or below
+   the current one as specified by INSERT_AFTER.  This function is not capable
+   of handling bitfields.  */
 
 tree
 build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
-		      tree exp_type, gimple_stmt_iterator *gsi,
+		      bool reverse, tree exp_type, gimple_stmt_iterator *gsi,
 		      bool insert_after)
 {
   tree prev_base = base;
@@ -1631,6 +1646,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
     exp_type = build_aligned_type (exp_type, align);
 
   mem_ref = fold_build2_loc (loc, MEM_REF, exp_type, base, off);
+  REF_REVERSE_STORAGE_ORDER (mem_ref) = reverse;
   if (TREE_THIS_VOLATILE (prev_base))
     TREE_THIS_VOLATILE (mem_ref) = 1;
   if (TREE_SIDE_EFFECTS (prev_base))
@@ -1657,13 +1673,17 @@ build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 
       offset -= int_bit_position (fld);
       exp_type = TREE_TYPE (TREE_OPERAND (model->expr, 0));
-      t = build_ref_for_offset (loc, base, offset, exp_type, gsi, insert_after);
+      t = build_ref_for_offset (loc, base, offset, model->reverse, exp_type,
+				gsi, insert_after);
+      /* The flag will be set on the record type.  */
+      REF_REVERSE_STORAGE_ORDER (t) = 0;
       return fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (fld), t, fld,
 			      NULL_TREE);
     }
   else
-    return build_ref_for_offset (loc, base, offset, model->type,
-				 gsi, insert_after);
+    return
+      build_ref_for_offset (loc, base, offset, model->reverse, model->type,
+			    gsi, insert_after);
 }
 
 /* Attempt to build a memory reference that we could but into a gimple
@@ -2320,8 +2340,8 @@ analyze_access_subtree (struct access *root, struct access *parent,
 		      && (root->size % BITS_PER_UNIT) == 0);
 	  root->type = build_nonstandard_integer_type (root->size,
 						       TYPE_UNSIGNED (rt));
-	  root->expr = build_ref_for_offset (UNKNOWN_LOCATION,
-					     root->base, root->offset,
+	  root->expr = build_ref_for_offset (UNKNOWN_LOCATION, root->base,
+					     root->offset, root->reverse,
 					     root->type, NULL, false);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2445,6 +2465,7 @@ create_artificial_child_access (struct access *parent, struct access *model,
   access->type = model->type;
   access->grp_write = true;
   access->grp_read = false;
+  access->reverse = model->reverse;
 
   child = &parent->first_child;
   while (*child && (*child)->offset < new_offset)
@@ -2829,6 +2850,7 @@ get_access_for_expr (tree expr)
 {
   HOST_WIDE_INT offset, size, max_size;
   tree base;
+  bool reverse;
 
   /* FIXME: This should not be necessary but Ada produces V_C_Es with a type of
      a different size than the size of its argument and we need the latter
@@ -2836,7 +2858,7 @@ get_access_for_expr (tree expr)
   if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
-  base = get_ref_base_and_extent (expr, &offset, &size, &max_size);
+  base = get_ref_base_and_extent (expr, &offset, &size, &max_size, &reverse);
   if (max_size == -1 || !DECL_P (base))
     return NULL;
 
@@ -4469,6 +4491,7 @@ turn_representatives_into_adjustments (vec<access_p> representatives,
 	      adj.type = repr->type;
 	      adj.alias_ptr_type = reference_alias_ptr_type (repr->expr);
 	      adj.offset = repr->offset;
+	      adj.reverse = repr->reverse;
 	      adj.by_ref = (POINTER_TYPE_P (TREE_TYPE (repr->base))
 			    && (repr->grp_maybe_modified
 				|| repr->grp_not_necessarilly_dereferenced));
@@ -5099,9 +5122,9 @@ ipa_sra_check_caller (struct cgraph_node *node, void *data)
 	  tree offset;
 	  HOST_WIDE_INT bitsize, bitpos;
 	  machine_mode mode;
-	  int unsignedp, volatilep = 0;
+	  int unsignedp, reversep, volatilep = 0;
 	  get_inner_reference (arg, &bitsize, &bitpos, &offset, &mode,
-			       &unsignedp, &volatilep, false);
+			       &unsignedp, &reversep, &volatilep, false);
 	  if (bitpos % BITS_PER_UNIT)
 	    {
 	      iscc->bad_arg_alignment = true;

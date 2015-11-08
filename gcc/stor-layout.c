@@ -2035,11 +2035,16 @@ finish_record_layout (record_layout_info rli, int free_p)
   /* Compute bitfield representatives.  */
   finish_bitfield_layout (rli->t);
 
-  /* Propagate TYPE_PACKED to variants.  With C++ templates,
-     handle_packed_attribute is too early to do this.  */
+  /* Propagate TYPE_PACKED and TYPE_REVERSE_STORAGE_ORDER to variants.
+     With C++ templates, it is too early to do this when the attribute
+     is being parsed.  */
   for (variant = TYPE_NEXT_VARIANT (rli->t); variant;
        variant = TYPE_NEXT_VARIANT (variant))
-    TYPE_PACKED (variant) = TYPE_PACKED (rli->t);
+    {
+      TYPE_PACKED (variant) = TYPE_PACKED (rli->t);
+      TYPE_REVERSE_STORAGE_ORDER (variant)
+	= TYPE_REVERSE_STORAGE_ORDER (rli->t);
+    }
 
   /* Lay out any static members.  This is done now because their type
      may use the record's type.  */

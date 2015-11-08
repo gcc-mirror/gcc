@@ -1,3 +1,26 @@
+2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-1.c: New test.
+	* gcc.dg/sso-2.c: Likewise.
+	* gcc.dg/sso-3.c: Likewise.
+	* gcc.dg/sso-4.c: Likewise.
+	* gcc.dg/sso-5.c: Likewise.
+	* gcc.dg/sso-6.c: Likewise.
+	* gcc.dg/sso-7.c: Likewise.
+	* gcc.dg/sso-8.c: Likewise.
+	* gcc.dg/sso: New directory.
+	* gcc.target/i386/movbe-3.c: New test.
+	* gnat.dg/sso1.adb: Likewise.
+	* gnat.dg/sso2.ad[sb]: Likewise.
+	* gnat.dg/sso3.adb: Likewise.
+	* gnat.dg/sso4.adb: Likewise.
+	* gnat.dg/sso5.adb: Likewise.
+	* gnat.dg/sso6.adb: Likewise.
+	* gnat.dg/sso7.adb: Likewise.
+	* gnat.dg/specs/sso1.ads: Likewise.
+	* gnat.dg/specs/sso2.ads: Likewise.
+	* gnat.dg/sso: New directory.
+
 2015-11-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/68218

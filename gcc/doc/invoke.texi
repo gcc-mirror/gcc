@@ -169,10 +169,11 @@ in the following sections.
 -aux-info @var{filename} -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
 -fhosted  -ffreestanding -fopenacc -fopenmp -fopenmp-simd @gol
--fms-extensions -fplan9-extensions -trigraphs -traditional -traditional-cpp @gol
+-fms-extensions -fplan9-extensions -fsso-struct=@var{endianness}
 -fallow-single-precision  -fcond-mismatch -flax-vector-conversions @gol
 -fsigned-bitfields  -fsigned-char @gol
--funsigned-bitfields  -funsigned-char}
+-funsigned-bitfields  -funsigned-char @gol
+-trigraphs -traditional -traditional-cpp}
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
@@ -278,6 +279,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wshift-overflow -Wshift-overflow=@var{n} @gol
 -Wshift-count-negative -Wshift-count-overflow -Wshift-negative-value @gol
 -Wsign-compare  -Wsign-conversion -Wfloat-conversion @gol
+-Wno-scalar-storage-order @gol
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
 -Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
@@ -2076,6 +2078,17 @@ These options control whether a bit-field is signed or unsigned, when the
 declaration does not use either @code{signed} or @code{unsigned}.  By
 default, such a bit-field is signed, because this is consistent: the
 basic integer types such as @code{int} are signed types.
+
+@item -fsso-struct=@var{endianness}
+@opindex fsso-struct
+Set the default scalar storage order of structures and unions to the
+specified endianness.  The accepted values are @samp{big-endian} and
+@samp{little-endian}.  If the option is not passed, the compiler uses
+the native endianness of the target.  This option is not supported for C++.
+
+@strong{Warning:} the @option{-fsso-struct} switch causes GCC to generate
+code that is not binary compatible with code generated without it if the
+specified endianness is not the native endianness of the target.
 @end table
 
 @node C++ Dialect Options
@@ -5112,6 +5125,11 @@ Warn for implicit conversions that reduce the precision of a real value.
 This includes conversions from real to integer, and from higher precision
 real to lower precision real values.  This option is also enabled by
 @option{-Wconversion}.
+
+@item -Wno-scalar-storage-order
+@opindex -Wno-scalar-storage-order
+@opindex -Wscalar-storage-order
+Do not warn on suspicious constructs involving reverse scalar storage order.
 
 @item -Wsized-deallocation @r{(C++ and Objective-C++ only)}
 @opindex Wsized-deallocation

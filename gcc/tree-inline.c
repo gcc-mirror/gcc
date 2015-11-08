@@ -952,6 +952,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	      && (!is_parm (TREE_OPERAND (old, 0))
 		  || (!id->transform_parameter && is_parm (ptr))))
 	    TREE_THIS_NOTRAP (*tp) = 1;
+	  REF_REVERSE_STORAGE_ORDER (*tp) = REF_REVERSE_STORAGE_ORDER (old);
 	  *walk_subtrees = 0;
 	  return NULL;
 	}
@@ -1209,6 +1210,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	      && (!is_parm (TREE_OPERAND (old, 0))
 		  || (!id->transform_parameter && is_parm (ptr))))
 	    TREE_THIS_NOTRAP (*tp) = 1;
+	  REF_REVERSE_STORAGE_ORDER (*tp) = REF_REVERSE_STORAGE_ORDER (old);
 	  *walk_subtrees = 0;
 	  return NULL;
 	}

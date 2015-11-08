@@ -388,6 +388,51 @@ handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
     }
 }
 
+static enum scalar_storage_order_kind global_sso;
+
+void
+maybe_apply_pragma_scalar_storage_order (tree type)
+{
+  if (global_sso == SSO_NATIVE)
+    return;
+
+  gcc_assert (RECORD_OR_UNION_TYPE_P (type));
+
+  if (lookup_attribute ("scalar_storage_order", TYPE_ATTRIBUTES (type)))
+    return;
+
+  if (global_sso == SSO_BIG_ENDIAN)
+    TYPE_REVERSE_STORAGE_ORDER (type) = !BYTES_BIG_ENDIAN;
+  else if (global_sso == SSO_LITTLE_ENDIAN)
+    TYPE_REVERSE_STORAGE_ORDER (type) = BYTES_BIG_ENDIAN;
+  else
+    gcc_unreachable ();
+}
+
+static void
+handle_pragma_scalar_storage_order (cpp_reader *ARG_UNUSED(dummy))
+{
+  const char *kind_string;
+  enum cpp_ttype token;
+  tree x;
+
+  if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+    error ("scalar_storage_order is not supported");
+
+  token = pragma_lex (&x);
+  if (token != CPP_NAME)
+    GCC_BAD ("missing [big-endian|little-endian|default] after %<#pragma scalar_storage_order%>");
+  kind_string = IDENTIFIER_POINTER (x);
+  if (strcmp (kind_string, "default") == 0)
+    global_sso = default_sso;
+  else if (strcmp (kind_string, "big") == 0)
+    global_sso = SSO_BIG_ENDIAN;
+  else if (strcmp (kind_string, "little") == 0)
+    global_sso = SSO_LITTLE_ENDIAN;
+  else
+    GCC_BAD ("expected [big-endian|little-endian|default] after %<#pragma scalar_storage_order%>");
+}
+
 /* GCC supports two #pragma directives for renaming the external
    symbol associated with a declaration (DECL_ASSEMBLER_NAME), for
    compatibility with the Solaris and VMS system headers.  GCC also
@@ -1481,6 +1526,7 @@ init_pragma (void)
   c_register_pragma (0, "pack", handle_pragma_pack);
 #endif
   c_register_pragma (0, "weak", handle_pragma_weak);
+
   c_register_pragma ("GCC", "visibility", handle_pragma_visibility);
 
   c_register_pragma ("GCC", "diagnostic", handle_pragma_diagnostic);
@@ -1501,6 +1547,10 @@ init_pragma (void)
 #ifdef REGISTER_TARGET_PRAGMAS
   REGISTER_TARGET_PRAGMAS ();
 #endif
+
+  global_sso = default_sso;
+  c_register_pragma (0, "scalar_storage_order", 
+		     handle_pragma_scalar_storage_order);
 
   /* Allow plugins to register their own pragmas. */
   invoke_plugin_callbacks (PLUGIN_PRAGMAS, NULL);

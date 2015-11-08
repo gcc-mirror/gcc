@@ -154,6 +154,9 @@ extern tree maybe_pad_type (tree type, tree size, unsigned int align,
 			    bool is_user_type, bool definition,
 			    bool set_rm_size);
 
+/* Return a copy of the padded TYPE but with reverse storage order.  */
+extern tree set_reverse_storage_order_on_pad_type (tree type);
+
 enum alias_set_op
 {
   ALIAS_SET_COPY,

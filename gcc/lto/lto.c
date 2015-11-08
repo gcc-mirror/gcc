@@ -1021,7 +1021,10 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
   compare_values (TREE_DEPRECATED);
   if (TYPE_P (t1))
     {
-      compare_values (TYPE_SATURATING);
+      if (AGGREGATE_TYPE_P (t1))
+	compare_values (TYPE_REVERSE_STORAGE_ORDER);
+      else
+	compare_values (TYPE_SATURATING);
       compare_values (TYPE_ADDR_SPACE);
     }
   else if (code == SSA_NAME)

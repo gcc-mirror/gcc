@@ -1805,6 +1805,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  TYPE_ALIGN (gnu_type)
 	    = align > 0 ? align : TYPE_ALIGN (gnu_field_type);
 
+	  /* Propagate the reverse storage order flag to the record type so
+	     that the required byte swapping is performed when retrieving the
+	     enclosed modular value.  */
+	  TYPE_REVERSE_STORAGE_ORDER (gnu_type)
+	    = Reverse_Storage_Order (Original_Array_Type (gnat_entity));
+
 	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 
 	  /* Don't declare the field as addressable since we won't be taking
@@ -2152,8 +2158,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	for (index = ndim - 1; index >= 0; index--)
 	  {
 	    tem = build_nonshared_array_type (tem, gnu_index_types[index]);
-	    if (Reverse_Storage_Order (gnat_entity) && !GNAT_Mode)
-	      sorry ("non-default Scalar_Storage_Order");
+	    if (index == ndim - 1)
+	      TYPE_REVERSE_STORAGE_ORDER (tem)
+		= Reverse_Storage_Order (gnat_entity);
 	    TYPE_MULTI_ARRAY_P (tem) = (index > 0);
 	    if (array_type_has_nonaliased_component (tem, gnat_entity))
 	      TYPE_NONALIASED_COMPONENT (tem) = 1;
@@ -2516,6 +2523,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      gnu_type = build_nonshared_array_type (gnu_type,
 						     gnu_index_types[index]);
+	      if (index == ndim - 1)
+		TYPE_REVERSE_STORAGE_ORDER (gnu_type)
+		  = Reverse_Storage_Order (gnat_entity);
 	      TYPE_MULTI_ARRAY_P (gnu_type) = (index > 0);
 	      if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
 		TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
@@ -2876,8 +2886,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_type = make_node (tree_code_for_record_type (gnat_entity));
 	TYPE_NAME (gnu_type) = gnu_entity_name;
 	TYPE_PACKED (gnu_type) = (packed != 0) || has_rep;
-	if (Reverse_Storage_Order (gnat_entity) && !GNAT_Mode)
-	  sorry ("non-default Scalar_Storage_Order");
+	TYPE_REVERSE_STORAGE_ORDER (gnu_type)
+	  = Reverse_Storage_Order (gnat_entity);
 	process_attributes (&gnu_type, &attr_list, true, gnat_entity);
 
 	if (!definition)
@@ -3287,6 +3297,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      gnu_type = make_node (RECORD_TYPE);
 	      TYPE_NAME (gnu_type) = gnu_entity_name;
 	      TYPE_PACKED (gnu_type) = TYPE_PACKED (gnu_base_type);
+	      TYPE_REVERSE_STORAGE_ORDER (gnu_type)
+		= Reverse_Storage_Order (gnat_entity);
 	      process_attributes (&gnu_type, &attr_list, true, gnat_entity);
 
 	      /* Set the size, alignment and alias set of the new type to
@@ -3341,6 +3353,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			TYPE_NAME (new_variant)
 			  = concat_name (TYPE_NAME (gnu_type),
 					 IDENTIFIER_POINTER (suffix));
+			TYPE_REVERSE_STORAGE_ORDER (new_variant)
+			  = TYPE_REVERSE_STORAGE_ORDER (gnu_type);
 			copy_and_substitute_in_size (new_variant, old_variant,
 						     gnu_subst_list);
 			v->new_type = new_variant;
@@ -5548,6 +5562,16 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 			  gnat_array);
     }
 
+  /* If the component type is a padded type made for a non-bit-packed array
+     of scalars with reverse storage order, we need to propagate the reverse
+     storage order to the padding type since it is the innermost enclosing
+     aggregate type around the scalar.  */
+  if (TYPE_IS_PADDING_P (gnu_type)
+      && Reverse_Storage_Order (gnat_array)
+      && !Is_Bit_Packed_Array (gnat_array)
+      && Is_Scalar_Type (gnat_type))
+    gnu_type = set_reverse_storage_order_on_pad_type (gnu_type);
+
   if (Has_Volatile_Components (gnat_array))
     {
       const int quals
@@ -6718,6 +6742,15 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   else
     gnu_pos = NULL_TREE;
 
+  /* If the field's type is a padded type made for a scalar field of a record
+     type with reverse storage order, we need to propagate the reverse storage
+     order to the padding type since it is the innermost enclosing aggregate
+     type around the scalar.  */
+  if (TYPE_IS_PADDING_P (gnu_field_type)
+      && TYPE_REVERSE_STORAGE_ORDER (gnu_record_type)
+      && Is_Scalar_Type (gnat_field_type))
+    gnu_field_type = set_reverse_storage_order_on_pad_type (gnu_field_type);
+
   gcc_assert (TREE_CODE (gnu_field_type) != RECORD_TYPE
 	      || !TYPE_CONTAINS_TEMPLATE_P (gnu_field_type));
 
@@ -7034,6 +7067,8 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  TYPE_NAME (gnu_union_type) = gnu_union_name;
 	  TYPE_ALIGN (gnu_union_type) = 0;
 	  TYPE_PACKED (gnu_union_type) = TYPE_PACKED (gnu_record_type);
+	  TYPE_REVERSE_STORAGE_ORDER (gnu_union_type)
+	    = TYPE_REVERSE_STORAGE_ORDER (gnu_record_type);
 	}
 
       /* If all the fields down to this level have a rep clause, find out
@@ -7085,6 +7120,8 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	     record actually gets only the alignment required.  */
 	  TYPE_ALIGN (gnu_variant_type) = TYPE_ALIGN (gnu_record_type);
 	  TYPE_PACKED (gnu_variant_type) = TYPE_PACKED (gnu_record_type);
+	  TYPE_REVERSE_STORAGE_ORDER (gnu_variant_type)
+	    = TYPE_REVERSE_STORAGE_ORDER (gnu_record_type);
 
 	  /* Similarly, if the outer record has a size specified and all
 	     the fields have a rep clause, we can propagate the size.  */
@@ -7177,6 +7214,8 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 		     position at this level.  */
 		  tree gnu_rep_type = make_node (RECORD_TYPE);
 		  tree gnu_rep_part;
+		  TYPE_REVERSE_STORAGE_ORDER (gnu_rep_type)
+		    = TYPE_REVERSE_STORAGE_ORDER (gnu_variant_type);
 		  finish_record_type (gnu_rep_type, NULL_TREE, 0, debug_info);
 		  gnu_rep_part
 		    = create_rep_part (gnu_rep_type, gnu_variant_type,
@@ -7384,6 +7423,8 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	gnu_field_list = gnu_rep_list;
       else
 	{
+	  TYPE_REVERSE_STORAGE_ORDER (gnu_rep_type)
+	    = TYPE_REVERSE_STORAGE_ORDER (gnu_record_type);
 	  finish_record_type (gnu_rep_type, gnu_rep_list, 1, debug_info);
 
 	  /* If FIRST_FREE_POS is nonzero, we need to ensure that the fields

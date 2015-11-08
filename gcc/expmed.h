@@ -676,6 +676,10 @@ extern rtx emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
    May emit insns.  */
 extern rtx negate_rtx (machine_mode, rtx);
 
+/* Arguments MODE, RTX: return an rtx for the flipping of that value.
+   May emit insns.  */
+extern rtx flip_storage_order (enum machine_mode, rtx);
+
 /* Expand a logical AND operation.  */
 extern rtx expand_and (machine_mode, rtx, rtx, rtx);
 
@@ -707,10 +711,10 @@ extern void store_bit_field (rtx, unsigned HOST_WIDE_INT,
 			     unsigned HOST_WIDE_INT,
 			     unsigned HOST_WIDE_INT,
 			     unsigned HOST_WIDE_INT,
-			     machine_mode, rtx);
+			     machine_mode, rtx, bool);
 extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
 			      unsigned HOST_WIDE_INT, int, rtx,
-			      machine_mode, machine_mode);
+			      machine_mode, machine_mode, bool);
 extern rtx extract_low_bits (machine_mode, machine_mode, rtx);
 extern rtx expand_mult (machine_mode, rtx, rtx, rtx, int);
 extern rtx expand_mult_highpart_adjust (machine_mode, rtx, rtx, rtx, rtx, int);

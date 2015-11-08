@@ -1,3 +1,15 @@
+2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-common.c (c_common_attributes): Add scalar_storage_order.
+	(handle_scalar_storage_order_attribute): New function.
+	* c-pragma.c (global_sso): New variable.
+	(maybe_apply_pragma_scalar_storage_order): New function.
+	(handle_pragma_scalar_storage_order): Likewise.
+	(init_pragma): Register scalar_storage_order.
+	* c-pragma.h (maybe_apply_pragma_scalar_storage_order): Declare.
+	* c.opt (Wscalar-storage-order): New warning.
+	(fsso-struct=): New option.
+
 2015-11-08  Martin Sebor  <msebor@redhat.com>
 
 	* c.opt (Wplacement-new): Add a period to the end of a sentence.

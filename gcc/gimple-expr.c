@@ -152,14 +152,16 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   else if (TREE_CODE (inner_type) == ARRAY_TYPE
 	   && TREE_CODE (outer_type) == ARRAY_TYPE)
     {
-      /* Preserve string attributes.  */
+      /* Preserve various attributes.  */
+      if (TYPE_REVERSE_STORAGE_ORDER (inner_type)
+	  != TYPE_REVERSE_STORAGE_ORDER (outer_type))
+	return false;
       if (TYPE_STRING_FLAG (inner_type) != TYPE_STRING_FLAG (outer_type))
 	return false;
 
       /* Conversions from array types with unknown extent to
 	 array types with known extent are not useless.  */
-      if (!TYPE_DOMAIN (inner_type)
-	  && TYPE_DOMAIN (outer_type))
+      if (!TYPE_DOMAIN (inner_type) && TYPE_DOMAIN (outer_type))
 	return false;
 
       /* Nor are conversions from array types with non-constant size to

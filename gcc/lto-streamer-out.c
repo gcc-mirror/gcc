@@ -958,7 +958,8 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
     hstate.add_flag (TREE_PRIVATE (t));
   if (TYPE_P (t))
     {
-      hstate.add_flag (TYPE_SATURATING (t));
+      hstate.add_flag (AGGREGATE_TYPE_P (t)
+		       ? TYPE_REVERSE_STORAGE_ORDER (t) : TYPE_SATURATING (t));
       hstate.add_flag (TYPE_ADDR_SPACE (t));
     }
   else if (code == SSA_NAME)

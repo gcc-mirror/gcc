@@ -1,3 +1,276 @@
+2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/extend.texi (type attributes): Document scalar_storage_order.
+	(Structure-Packing Pragmas): Rename into...
+	(Structure-Layout Pragmas): ...this.  Document scalar_storage_order.
+	* doc/invoke.texi (C Dialect Options): Document -fsso-struct
+	(Warnings): Document -Wno-scalar-storage-order.
+	* flag-types.h (enum scalar_storage_order_kind): New enumeration.
+	* calls.c (store_unaligned_arguments_into_pseudos): Adjust calls to
+	extract_bit_field and store_bit_field.
+	(initialize_argument_information): Adjust call to store_expr.
+	(load_register_parameters): Adjust call to extract_bit_field.
+	* expmed.c (check_reverse_storage_order_support): New function.
+	(check_reverse_float_storage_order_support): Likewise.
+	(flip_storage_order): Likewise.
+	(store_bit_field_1): Add REVERSE parameter.  Flip the storage order
+	of the value if it is true.  Pass REVERSE to recursive call after
+	adjusting the target offset.
+	Do not use extraction or movstrict instruction if REVERSE is true.
+	Pass REVERSE to store_fixed_bit_field.
+	(store_bit_field): Add REVERSE parameter and pass to it to above.
+	(store_fixed_bit_field): Add REVERSE parameter and pass to it to
+	store_split_bit_field and store_fixed_bit_field_1.
+	(store_fixed_bit_field_1):  Add REVERSE parameter.  Flip the storage
+	order of the value if it is true and adjust the target offset.
+	(store_split_bit_field): Add REVERSE parameter and pass it to
+	store_fixed_bit_field.  Adjust the target offset if it is true.
+	(extract_bit_field_1): Add REVERSE parameter.  Flip the storage order
+	of the value if it is true.  Pass REVERSE to recursive call after
+	adjusting the target offset.
+	Do not use extraction or subreg instruction if REVERSE is true.
+	Pass REVERSE to extract_fixed_bit_field.
+	(extract_bit_field): Add REVERSE parameter and pass to it to above.
+	(extract_fixed_bit_field): Add REVERSE parameter and pass to it to
+	extract_split_bit_field and extract_fixed_bit_field_1.
+	(extract_fixed_bit_field_1): Add REVERSE parameter.  Flip the storage
+	order of the value if it is true and adjust the target offset.
+	(extract_split_bit_field): Add REVERSE parameter and pass it to
+	extract_fixed_bit_field.  Adjust the target offset if it is true.
+	* expmed.h (flip_storage_order): Declare.
+	(store_bit_field): Adjust prototype.
+	(extract_bit_field): Likewise.
+	* expr.c (emit_group_load_1): Adjust calls to extract_bit_field.
+	(emit_group_store): Adjust call to store_bit_field.
+	(copy_blkmode_from_reg): Likewise.
+	(copy_blkmode_to_reg): Likewise.
+	(write_complex_part): Likewise.
+	(read_complex_part): Likewise.
+	(optimize_bitfield_assignment_op): Add REVERSE parameter.  Assert
+	that it isn't true if the target is a register.
+	<PLUS_EXPR>: If it is, do not optimize unless bitsize is equal to 1,
+	and flip the storage order of the value.
+	<BIT_IOR_EXPR>: Flip the storage order of the value.
+	(get_bit_range): Adjust call to get_inner_reference.
+	(expand_assignment): Adjust calls to get_inner_reference, store_expr,
+	optimize_bitfield_assignment_op and store_field.  Handle MEM_EXPRs
+	with reverse storage order.
+	(store_expr_with_bounds): Add REVERSE parameter and pass it to
+	recursive calls and call to store_bit_field.  Force the value into a
+	register if it is true and then flip the storage order of the value.
+	(store_expr): Add REVERSE parameter and pass it to above.
+	(categorize_ctor_elements_1): Adjust call to
+	initializer_constant_valid_p.
+	(store_constructor_field): Add REVERSE parameter and pass it to
+	recursive calls and call to store_field.
+	(store_constructor): Add REVERSE parameter and pass it to calls to
+	store_constructor_field and store_expr.  Set it to true for an
+	aggregate type with TYPE_REVERSE_STORAGE_ORDER.
+	(store_field): Add REVERSE parameter and pass it to recursive calls
+	and calls to store_expr and store_bit_field.  Temporarily flip the
+	storage order of the value with record type and integral mode and
+	adjust the shift if it is true.
+	(get_inner_reference): Add PREVERSEP parameter and set it to true
+	upon encoutering a reference with reverse storage order.
+	(expand_expr_addr_expr_1): Adjust call to get_inner_reference.
+	(expand_constructor): Adjust call to store_constructor.
+	(expand_expr_real_2) <CASE_CONVERT>: Pass TYPE_REVERSE_STORAGE_ORDER
+	of the union type to store_expr in the MEM case and assert that it
+	isn't set in the REG case.  Adjust call to store_field.
+	(expand_expr_real_1) <MEM_REF>: Handle reverse storage order.
+	<normal_inner_ref>: Add REVERSEP variable and adjust calls to
+	get_inner_reference and extract_bit_field. Temporarily flip the
+	storage order of the value with record type and integral mode and
+	adjust the shift if it is true.  Flip the storage order of the value
+	at the end if it is true.
+	<VIEW_CONVERT_EXPR>: Add REVERSEP variable and adjust call to
+	get_inner_reference.  Do not fetch an inner reference if it is true.
+	* expr.h (store_expr_with_bounds): Ajust prototype.
+	(store_expr): Likewise.
+	* fold-const.c (make_bit_field_ref): Add REVERSEP parameter and set
+	REF_REVERSE_STORAGE_ORDER on the reference according to it.
+	(optimize_bit_field_compare): Deal with reverse storage order.
+	Adjust calls to get_inner_reference and make_bit_field_ref.
+	(decode_field_reference): Add PREVERSEP parameter and adjust call to
+	get_inner_reference.
+	(fold_truth_andor_1): Deal with reverse storage order.  Adjust calls
+	to decode_field_reference and make_bit_field_ref.
+	(fold_unary_loc) <CASE_CONVERT>: Adjust call to get_inner_reference.
+	<VIEW_CONVERT_EXPR>: Propagate the REF_REVERSE_STORAGE_ORDER flag.
+	(fold_comparison): Adjust call to get_inner_reference.
+	(split_address_to_core_and_offset): Adjust call to
+	get_inner_reference.
+	* gimple-expr.c (useless_type_conversion_p): Return false for array
+	types with different TYPE_REVERSE_STORAGE_ORDER flag.
+	* gimplify.c (gimplify_expr) <MEM_REF>: Propagate the
+	REF_REVERSE_STORAGE_ORDER flag.
+	* lto-streamer-out.c (hash_tree): Deal with
+	TYPE_REVERSE_STORAGE_ORDER.
+	* output.h (assemble_real): Adjust prototype.
+	* print-tree.c (print_node): Convey TYPE_REVERSE_STORAGE_ORDER.
+	* stor-layout.c (finish_record_layout): Propagate the
+	TYPE_REVERSE_STORAGE_ORDER flag to the variants.
+	* tree-core.h (TYPE_REVERSE_STORAGE_ORDER): Document.
+	(TYPE_SATURATING): Adjust.
+	(REF_REVERSE_STORAGE_ORDER): Document.
+	* tree-dfa.c (get_ref_base_and_extent): Add PREVERSE parameter and
+	set it to true upon encoutering a reference with reverse storage
+	order.
+	* tree-dfa.h (get_ref_base_and_extent): Adjust prototype.
+	* tree-inline.c (remap_gimple_op_r): Propagate the
+	REF_REVERSE_STORAGE_ORDER flag.
+	(copy_tree_body_r): Likewise.
+	* tree-outof-ssa.c (insert_value_copy_on_edge): Adjust call to
+	store_expr.
+	* tree-streamer-in.c (unpack_ts_base_value_fields): Deal with
+	TYPE_REVERSE_STORAGE_ORDER and REF_REVERSE_STORAGE_ORDER.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Likewise.
+	* tree.c (stabilize_reference) <BIT_FIELD_REF>: Propagate the
+	REF_REVERSE_STORAGE_ORDER flag.
+	(verify_type_variant): Deal with TYPE_REVERSE_STORAGE_ORDER.
+	(gimple_canonical_types_compatible_p): Likewise.
+	* tree.h (TYPE_REVERSE_STORAGE_ORDER): New flag.
+	(TYPE_SATURATING): Adjust.
+	(REF_REVERSE_STORAGE_ORDER): New flag.
+	(reverse_storage_order_for_component_p): New inline predicate.
+ 	(storage_order_barrier_p): Likewise.
+	(get_inner_reference): Adjust prototype.
+	* varasm.c: Include expmed.h.
+	(assemble_variable_contents): Adjust call to output_constant.
+	(assemble_real): Add REVERSE parameter.  Flip the storage
+	order of the value if REVERSE is true.
+	(compare_constant) <CONSTRUCTOR>: Compare TYPE_REVERSE_STORAGE_ORDER.
+	(assemble_constant_contents): Adjust call to output_constant.
+	(output_constant_pool_2): Adjust call to assemble_real.
+	(initializer_constant_valid_p_1) <CONSTRUCTOR>: Deal with
+	TYPE_REVERSE_STORAGE_ORDER.
+	(initializer_constant_valid_p): Add REVERSE parameter.
+	(output_constant): Add REVERSE parameter.
+	<INTEGER_TYPE>: Flip the storage order of the value if REVERSE is true.
+	<REAL_TYPE>: Adjust call to assemble_real.
+	<COMPLEX_TYPE>: Pass it to recursive calls.
+	<ARRAY_TYPE>: Likewise.  Adjust call to output_constructor.
+	<RECORD_TYPE>: Likewise.  Adjust call to output_constructor.
+	(struct oc_local_state): Add REVERSE field.
+	(output_constructor_array_range): Adjust calls to output_constant.
+	(output_constructor_regular_field): Likewise.
+	(output_constructor_bitfield): Adjust call to output_constructor.
+	Flip the storage order of the value if REVERSE is true.
+	(output_constructor): Add REVERSE parameter.  Set it to true for an
+	aggregate type with TYPE_REVERSE_STORAGE_ORDER.  Adjust call to
+	output_constructor_bitfield.
+	* varasm.h (initializer_constant_valid_p): Default REVERSE to false.
+	* asan.c (instrument_derefs): Adjust call to get_inner_reference.
+	* builtins.c (get_object_alignment_2): Likewise.
+	* cfgexpand.c (expand_debug_expr): Adjust call to get_inner_reference
+	and get_ref_base_and_extent.
+	* dbxout.c (dbxout_expand_expr): Likewise.
+	* dwarf2out.c (add_var_loc_to_decl): Likewise.
+	(loc_list_for_address_of_addr_expr_of_indirect_ref): Likewise.
+	(loc_list_from_tree): Likewise.
+	(fortran_common): Likewise.
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Adjust calls to
+	get_ref_base_and_extent.
+	(get_base_constructor): Likewise.
+	(fold_const_aggregate_ref_1): Likewise.
+	* gimple-laddress.c (pass_laddress::execute): Adjust call to
+	get_inner_reference.
+	* gimple-ssa-strength-reduction.c (slsr_process_ref): Adjust call to
+	get_inner_reference and bail out on reverse storage order.
+	* ifcvt.c (noce_emit_move_insn): Adjust calls to store_bit_field.
+	* ipa-cp.c (ipa_get_jf_ancestor_result): Adjust call to
+	build_ref_for_offset.
+	* ipa-polymorphic-call.c (set_by_invariant): Adjust call to
+	get_ref_base_and_extent.
+	(ipa_polymorphic_call_context): Likewise.
+	(extr_type_from_vtbl_ptr_store): Likewise.
+	(check_stmt_for_type_change): Likewise.
+	(get_dynamic_type): Likewise.
+	* ipa-prop.c (ipa_load_from_parm_agg_1): Adjust call to
+	get_ref_base_and_extent.
+	(compute_complex_assign_jump_func): Likewise.
+	(get_ancestor_addr_info): Likewise.
+	(compute_known_type_jump_func): Likewise.
+	(determine_known_aggregate_parts): Likewise.
+	(ipa_get_adjustment_candidate): Likewise.
+	(ipa_modify_call_arguments): Set REF_REVERSE_STORAGE_ORDER on
+	MEM_REF.
+	* ipa-prop.h (ipa_parm_adjustment): Add REVERSE field.
+	(build_ref_for_offset): Adjust prototype.
+	* simplify-rtx.c (delegitimize_mem_from_attrs): Adjust call to
+	get_inner_reference.
+	* tree-affine.c (tree_to_aff_combination): Adjust call to
+	get_inner_reference.
+	(get_inner_reference_aff): Likewise.
+	* tree-data-ref.c (split_constant_offset_1): Likewise.
+	(dr_analyze_innermost): Likewise.  Bail out if reverse storage order.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Adjust call to
+	get_inner_reference.
+	* tree-sra.c (struct access): Add REVERSE and move WRITE around.
+	(dump_access): Print new fields.
+	(create_access): Adjust call to get_ref_base_and_extent and set the
+	REVERSE flag according to the result.
+	(completely_scalarize_record): Set the REVERSE flag.
+	(scalarize_elem): Add REVERSE parameter.
+	(build_access_from_expr_1): Preserve storage order barriers.
+	(build_accesses_from_assign): Likewise.
+	(build_ref_for_offset): Add REVERSE parameter and set the
+	REF_REVERSE_STORAGE_ORDER flag accordingly.
+	(build_ref_for_model): Adjust call to build_ref_for_offset and clear
+	the REF_REVERSE_STORAGE_ORDER flag if there are components.
+	(analyze_access_subtree): Likewise.
+	(create_artificial_child_access): Set the REVERSE flag.
+	(get_access_for_expr): Adjust call to get_ref_base_and_extent.
+	(turn_representatives_into_adjustments): Propagate REVERSE flag.
+	(ipa_sra_check_caller): Adjust call to get_inner_reference.
+	* tree-ssa-alias.c (ao_ref_base): Adjust call to
+	get_ref_base_and_extent.
+	(aliasing_component_refs_p): Likewise.
+	(stmt_kills_ref_p_1): Likewise.
+	* tree-ssa-dce.c (mark_aliased_reaching_defs_necessary_1): Likewise.
+	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p) <MEM_REF>: New.
+	Return true if reverse storage order.
+	<BIT_FIELD_REF>: Likewise.
+	<COMPONENT_REF>: Likewise.
+	<ARRAY_REF>: Likewise.
+	<ARRAY_RANGE_REF>: Likewise.
+	(split_address_cost): Likewise.  Bail out if reverse storage order.
+	* tree-ssa-math-opts.c (find_bswap_or_nop_load): Adjust call to
+	get_inner_reference.  Bail out if reverse storage order.
+	(bswap_replace): Adjust call to get_inner_reference.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1) <MEM_REF>: Set
+	the REF_REVERSE_STORAGE_ORDER flag.
+	<BIT_FIELD_REF>: Likewise.
+	* tree-ssa-sccvn.c (vn_reference_eq): Return false on storage order
+	barriers.
+	(copy_reference_ops_from_ref) <MEM_REF>: Set REVERSE field according
+ 	to the REF_REVERSE_STORAGE_ORDER flag.
+	<BIT_FIELD_REF>: Likewise.
+	<VIEW_CONVERT_EXPR>: Set it for storage order barriers.
+	(contains_storage_order_barrier_p): New predicate.
+	(vn_reference_lookup_3): Adjust calls to get_ref_base_and_extent.
+	Punt on storage order barriers if necessary.
+	* tree-ssa-sccvn.h (struct vn_reference_op_struct): Add REVERSE.
+	* tree-ssa-structalias.c (get_constraint_for_component_ref): Adjust
+	call to get_ref_base_and_extent.
+	(do_structure_copy): Likewise.
+	* tree-vect-data-refs.c (vect_check_gather): Adjust call to
+	get_inner_reference.
+	(vect_analyze_data_refs): Likewise.  Bail out if reverse storage
+	order.
+	* tsan.c (instrument_expr): Adjust call to get_inner_reference.
+	* ubsan.c (instrument_bool_enum_load): Likewise.
+	(instrument_object_size): Likewise.
+	* var-tracking.c (track_expr_p): Adjust call to
+	get_ref_base_and_extent
+	* config/mips/mips.c (r10k_safe_mem_expr_p): Adjust call to
+	get_inner_reference.
+	* config/s390/s390.c (s390_expand_atomic): Adjust call to
+	store_bit_field.
+	* config/tilegx/tilegx.c (tilegx_expand_unaligned_load): Adjust call to
+	extract_bit_field.
+	* config/tilepro/tilepro.c (tilepro_expand_unaligned_load): Likewise.
+
 2015-11-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.opt (mfix-at697f): Add final period.

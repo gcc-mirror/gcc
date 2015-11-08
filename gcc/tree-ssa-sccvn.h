@@ -92,6 +92,7 @@ typedef struct vn_reference_op_struct
   tree op0;
   tree op1;
   tree op2;
+  bool reverse;
 } vn_reference_op_s;
 typedef vn_reference_op_s *vn_reference_op_t;
 typedef const vn_reference_op_s *const_vn_reference_op_t;

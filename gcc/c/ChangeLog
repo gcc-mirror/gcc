@@ -1,3 +1,14 @@
+2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-decl.c (finish_struct): If the structure has reverse storage
+	order, rewrite the type of array fields with scalar component.  Call
+	maybe_apply_pragma_scalar_storage_order on entry.
+	* c-typeck.c (build_unary_op) <ADDR_EXPR>: Remove left-overs.  Issue
+	errors on bit-fields and reverse SSO here and not...
+	(c_mark_addressable): ...here.
+	(output_init_element): Adjust call to initializer_constant_valid_p.
+	(c_build_qualified_type): Propagate TYPE_REVERSE_STORAGE_ORDER.
+
 2015-11-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.c (warn_defaults_to): Update for change in signature

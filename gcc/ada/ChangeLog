@@ -1,3 +1,28 @@
+2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (set_reverse_storage_order_on_pad_type):
+	Declare.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <discrete_type>: Set the
+	storage order on the enclosing record for a packed array type.
+	<E_Array_Type>: Set the storage order.
+	<E_Array_Subtype>: Likewise.
+	<E_Record_Type>: Likewise.
+	<E_Record_Subtype>: Likewise.
+	(gnat_to_gnu_component_type): Set the reverse storage order on a
+	padded type built for a non-bit-packed array.
+	(gnat_to_gnu_field): Likewise.
+	(components_to_record): Deal with TYPE_REVERSE_STORAGE_ORDER.
+	* gcc-interface/utils.c (make_packable_type): Likewise.
+	(pad_type_hasher::equal): Likewise.
+	(gnat_types_compatible_p): Likewise.
+	(unchecked_convert): Likewise.
+	(set_reverse_storage_order_on_pad_type): New public function.
+	* gcc-interface/trans.c (Attribute_to_gnu): Adjust call to
+	get_inner_reference.
+	* gcc-interface/utils2.c (build_unary_op): Likewise.
+	(gnat_build_constructor): Deal with TYPE_REVERSE_STORAGE_ORDER.
+	(gnat_rewrite_reference): Propagate REF_REVERSE_STORAGE_ORDER.
+
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc-interface/utils.c: Don't undef DEF_BUILTIN.

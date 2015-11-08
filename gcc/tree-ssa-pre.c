@@ -2481,6 +2481,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	genop = build2 (MEM_REF, currop->type, baseop, offset);
 	MR_DEPENDENCE_CLIQUE (genop) = currop->clique;
 	MR_DEPENDENCE_BASE (genop) = currop->base;
+	REF_REVERSE_STORAGE_ORDER (genop) = currop->reverse;
 	return genop;
       }
 
@@ -2550,7 +2551,9 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	  return NULL_TREE;
 	tree op1 = currop->op0;
 	tree op2 = currop->op1;
-	return fold_build3 (BIT_FIELD_REF, currop->type, genop0, op1, op2);
+	tree t = build3 (BIT_FIELD_REF, currop->type, genop0, op1, op2);
+	REF_REVERSE_STORAGE_ORDER (t) = currop->reverse;
+	return fold (t);
       }
 
       /* For array ref vn_reference_op's, operand 1 of the array ref

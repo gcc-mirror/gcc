@@ -1715,15 +1715,16 @@ interpret_rhs_expr (struct loop *loop, gimple *at_stmt,
         {
 	  machine_mode mode;
 	  HOST_WIDE_INT bitsize, bitpos;
-	  int unsignedp;
+	  int unsignedp, reversep;
 	  int volatilep = 0;
 	  tree base, offset;
 	  tree chrec3;
 	  tree unitpos;
 
 	  base = get_inner_reference (TREE_OPERAND (rhs1, 0),
-				      &bitsize, &bitpos, &offset,
-				      &mode, &unsignedp, &volatilep, false);
+				      &bitsize, &bitpos, &offset, &mode,
+				      &unsignedp, &reversep, &volatilep,
+				      false);
 
 	  if (TREE_CODE (base) == MEM_REF)
 	    {

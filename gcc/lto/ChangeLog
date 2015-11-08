@@ -1,3 +1,7 @@
+2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto.c (compare_tree_sccs_1): Deal with TYPE_REVERSE_STORAGE_ORDER.
+
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* lto-lang.c: Don't undef DEF_BUILTIN.

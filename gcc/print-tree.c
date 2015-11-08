@@ -565,6 +565,13 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       if (TYPE_NEEDS_CONSTRUCTING (node))
 	fputs (" needs-constructing", file);
 
+      if ((code == RECORD_TYPE
+	   || code == UNION_TYPE
+	   || code == QUAL_UNION_TYPE
+	   || code == ARRAY_TYPE)
+	  && TYPE_REVERSE_STORAGE_ORDER (node))
+	fputs (" reverse-storage-order", file);
+
       /* The transparent-union flag is used for different things in
 	 different nodes.  */
       if ((code == UNION_TYPE || code == RECORD_TYPE)
