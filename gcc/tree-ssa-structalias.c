@@ -3168,6 +3168,7 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
   HOST_WIDE_INT bitsize = -1;
   HOST_WIDE_INT bitmaxsize = -1;
   HOST_WIDE_INT bitpos;
+  bool reverse;
   tree forzero;
 
   /* Some people like to do cute things like take the address of
@@ -3189,7 +3190,7 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
       return;
     }
 
-  t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize);
+  t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize, &reverse);
 
   /* Pretend to take the address of the base, we'll take care of
      adding the required subset of sub-fields below.  */
@@ -3615,9 +3616,12 @@ do_structure_copy (tree lhsop, tree rhsop)
     {
       HOST_WIDE_INT lhssize, lhsmaxsize, lhsoffset;
       HOST_WIDE_INT rhssize, rhsmaxsize, rhsoffset;
+      bool reverse;
       unsigned k = 0;
-      get_ref_base_and_extent (lhsop, &lhsoffset, &lhssize, &lhsmaxsize);
-      get_ref_base_and_extent (rhsop, &rhsoffset, &rhssize, &rhsmaxsize);
+      get_ref_base_and_extent (lhsop, &lhsoffset, &lhssize, &lhsmaxsize,
+			       &reverse);
+      get_ref_base_and_extent (rhsop, &rhsoffset, &rhssize, &rhsmaxsize,
+			       &reverse);
       for (j = 0; lhsc.iterate (j, &lhsp);)
 	{
 	  varinfo_t lhsv, rhsv;

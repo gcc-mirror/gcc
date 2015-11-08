@@ -252,14 +252,14 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
   machine_mode mode;
-  int unsignedp, volatilep;
+  int unsignedp, reversep, volatilep;
   unsigned int align = BITS_PER_UNIT;
   bool known_alignment = false;
 
   /* Get the innermost object and the constant (bitpos) and possibly
      variable (offset) offset of the access.  */
-  exp = get_inner_reference (exp, &bitsize, &bitpos, &offset,
-			     &mode, &unsignedp, &volatilep, true);
+  exp = get_inner_reference (exp, &bitsize, &bitpos, &offset, &mode,
+			     &unsignedp, &reversep, &volatilep, true);
 
   /* Extract alignment information from the innermost object and
      possibly adjust bitpos and offset.  */

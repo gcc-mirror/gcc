@@ -2479,11 +2479,11 @@ dbxout_expand_expr (tree expr)
 	machine_mode mode;
 	HOST_WIDE_INT bitsize, bitpos;
 	tree offset, tem;
-	int volatilep = 0, unsignedp = 0;
+	int unsignedp, reversep, volatilep = 0;
 	rtx x;
 
-	tem = get_inner_reference (expr, &bitsize, &bitpos, &offset,
-				   &mode, &unsignedp, &volatilep, true);
+	tem = get_inner_reference (expr, &bitsize, &bitpos, &offset, &mode,
+				   &unsignedp, &reversep, &volatilep, true);
 
 	x = dbxout_expand_expr (tem);
 	if (x == NULL || !MEM_P (x))

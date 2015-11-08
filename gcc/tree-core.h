@@ -1151,8 +1151,14 @@ struct GTY(()) tree_base {
 
    saturating_flag:
 
+       TYPE_REVERSE_STORAGE_ORDER in
+           RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE, ARRAY_TYPE
+
        TYPE_SATURATING in
-           all types
+           other types
+
+       REF_REVERSE_STORAGE_ORDER in
+           BIT_FIELD_REF, MEM_REF
 
        VAR_DECL_IS_VIRTUAL_OPERAND in
 	   VAR_DECL

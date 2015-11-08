@@ -1983,9 +1983,26 @@ may_be_nonaddressable_p (tree expr)
 	 target, thus they are always addressable.  */
       return false;
 
+    case MEM_REF:
+      /* Likewise for MEM_REFs, modulo the storage order.  */
+      return REF_REVERSE_STORAGE_ORDER (expr);
+
+    case BIT_FIELD_REF:
+      if (REF_REVERSE_STORAGE_ORDER (expr))
+	return true;
+      return may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
+
     case COMPONENT_REF:
+      if (TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (TREE_OPERAND (expr, 0))))
+	return true;
       return DECL_NONADDRESSABLE_P (TREE_OPERAND (expr, 1))
 	     || may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
+
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      if (TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (TREE_OPERAND (expr, 0))))
+	return true;
+      return may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
 
     case VIEW_CONVERT_EXPR:
       /* This kind of view-conversions may wrap non-addressable objects
@@ -1995,11 +2012,6 @@ may_be_nonaddressable_p (tree expr)
       if (is_gimple_reg (TREE_OPERAND (expr, 0))
 	  || !is_gimple_addressable (TREE_OPERAND (expr, 0)))
 	return true;
-
-      /* ... fall through ... */
-
-    case ARRAY_REF:
-    case ARRAY_RANGE_REF:
       return may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
 
     CASE_CONVERT:
@@ -4306,13 +4318,14 @@ split_address_cost (struct ivopts_data *data,
   HOST_WIDE_INT bitpos;
   tree toffset;
   machine_mode mode;
-  int unsignedp, volatilep;
+  int unsignedp, reversep, volatilep;
 
   core = get_inner_reference (addr, &bitsize, &bitpos, &toffset, &mode,
-			      &unsignedp, &volatilep, false);
+			      &unsignedp, &reversep, &volatilep, false);
 
   if (toffset != 0
       || bitpos % BITS_PER_UNIT != 0
+      || reversep
       || TREE_CODE (core) != VAR_DECL)
     {
       *symbol_present = false;

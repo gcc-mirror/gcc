@@ -227,6 +227,7 @@ extern void c_invoke_pragma_handler (unsigned int);
 extern void maybe_apply_pragma_weak (tree);
 extern void maybe_apply_pending_pragma_weaks (void);
 extern tree maybe_apply_renaming_pragma (tree, tree);
+extern void maybe_apply_pragma_scalar_storage_order (tree);
 extern void add_to_renaming_pragma_list (tree, tree);
 
 extern enum cpp_ttype pragma_lex (tree *, location_t *loc = NULL);

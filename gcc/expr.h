@@ -212,6 +212,7 @@ extern rtx_insn *emit_move_complex_push (machine_mode, rtx, rtx);
 extern rtx_insn *emit_move_complex_parts (rtx, rtx);
 extern rtx read_complex_part (rtx, bool);
 extern void write_complex_part (rtx, rtx, bool);
+extern rtx read_complex_part (rtx, bool);
 extern rtx emit_move_resolve_push (machine_mode, rtx);
 
 /* Push a block of length SIZE (perhaps variable)
@@ -229,8 +230,8 @@ extern void expand_assignment (tree, tree, bool);
    and storing the value into TARGET.
    If SUGGEST_REG is nonzero, copy the value through a register
    and return that register, if that is possible.  */
-extern rtx store_expr_with_bounds (tree, rtx, int, bool, tree);
-extern rtx store_expr (tree, rtx, int, bool);
+extern rtx store_expr_with_bounds (tree, rtx, int, bool, bool, tree);
+extern rtx store_expr (tree, rtx, int, bool, bool);
 
 /* Given an rtx that may include add and multiply operations,
    generate them as insns and return a pseudo-reg containing the value.

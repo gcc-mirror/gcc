@@ -368,12 +368,14 @@ get_or_create_ssa_default_def (struct function *fn, tree var)
    base variable.  The access range is delimited by bit positions *POFFSET and
    *POFFSET + *PMAX_SIZE.  The access size is *PSIZE bits.  If either
    *PSIZE or *PMAX_SIZE is -1, they could not be determined.  If *PSIZE
-   and *PMAX_SIZE are equal, the access is non-variable.  */
+   and *PMAX_SIZE are equal, the access is non-variable.  If *PREVERSE is
+   true, the storage order of the reference is reversed.  */
 
 tree
 get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			 HOST_WIDE_INT *psize,
-			 HOST_WIDE_INT *pmax_size)
+			 HOST_WIDE_INT *pmax_size,
+			 bool *preverse)
 {
   offset_int bitsize = -1;
   offset_int maxsize;
@@ -381,7 +383,8 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
   offset_int bit_offset = 0;
   bool seen_variable_array_ref = false;
 
-  /* First get the final access size from just the outermost expression.  */
+  /* First get the final access size and the storage order from just the
+     outermost expression.  */
   if (TREE_CODE (exp) == COMPONENT_REF)
     size_tree = DECL_SIZE (TREE_OPERAND (exp, 1));
   else if (TREE_CODE (exp) == BIT_FIELD_REF)
@@ -397,6 +400,8 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
   if (size_tree != NULL_TREE
       && TREE_CODE (size_tree) == INTEGER_CST)
     bitsize = wi::to_offset (size_tree);
+
+  *preverse = reverse_storage_order_for_component_p (exp);
 
   /* Initially, maxsize is the same as the accessed element size.
      In the following it will only grow (or become -1).  */

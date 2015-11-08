@@ -4207,6 +4207,7 @@ stabilize_reference (tree ref)
       result = build_nt (BIT_FIELD_REF,
 			 stabilize_reference (TREE_OPERAND (ref, 0)),
 			 TREE_OPERAND (ref, 1), TREE_OPERAND (ref, 2));
+      REF_REVERSE_STORAGE_ORDER (result) = REF_REVERSE_STORAGE_ORDER (ref);
       break;
 
     case ARRAY_REF:
@@ -12943,7 +12944,10 @@ verify_type_variant (const_tree t, tree tv)
   verify_variant_match (TYPE_PACKED);
   if (TREE_CODE (t) == REFERENCE_TYPE)
     verify_variant_match (TYPE_REF_IS_RVALUE);
-  verify_variant_match (TYPE_SATURATING);
+  if (AGGREGATE_TYPE_P (t))
+    verify_variant_match (TYPE_REVERSE_STORAGE_ORDER);
+  else
+    verify_variant_match (TYPE_SATURATING);
   /* FIXME: This check trigger during libstdc++ build.  */
   if (RECORD_OR_UNION_TYPE_P (t) && COMPLETE_TYPE_P (t) && 0)
     verify_variant_match (TYPE_FINAL_P);
@@ -13265,6 +13269,7 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
       if (!gimple_canonical_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2),
 						trust_type_canonical)
 	  || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)
+	  || TYPE_REVERSE_STORAGE_ORDER (t1) != TYPE_REVERSE_STORAGE_ORDER (t2)
 	  || TYPE_NONALIASED_COMPONENT (t1) != TYPE_NONALIASED_COMPONENT (t2))
 	return false;
       else
@@ -13337,6 +13342,9 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
     case QUAL_UNION_TYPE:
       {
 	tree f1, f2;
+
+	if (TYPE_REVERSE_STORAGE_ORDER (t1) != TYPE_REVERSE_STORAGE_ORDER (t2))
+	  return false;
 
 	/* For aggregate types, all the fields must be the same.  */
 	for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);

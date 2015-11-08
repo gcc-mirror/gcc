@@ -278,10 +278,11 @@ extern section *get_named_text_section (tree, const char *, const char *);
 #define assemble_aligned_integer(SIZE, VALUE) \
   assemble_integer (VALUE, SIZE, (SIZE) * BITS_PER_UNIT, 1)
 
-#ifdef REAL_VALUE_TYPE_SIZE
-/* Assemble the floating-point constant D into an object of size MODE.  */
-extern void assemble_real (REAL_VALUE_TYPE, machine_mode, unsigned);
-#endif
+/* Assemble the floating-point constant D into an object of size MODE.  ALIGN
+   is the alignment of the constant in bits.  If REVERSE is true, D is output
+   in reverse storage order.  */
+extern void assemble_real (REAL_VALUE_TYPE, machine_mode, unsigned,
+			   bool = false);
 
 /* Write the address of the entity given by SYMBOL to SEC.  */
 extern void assemble_addr_to_section (rtx, section *);

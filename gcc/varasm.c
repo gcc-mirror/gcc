@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "stmt.h"
 #include "expr.h"
+#include "expmed.h"
 #include "output.h"
 #include "langhooks.h"
 #include "debug.h"
@@ -106,7 +107,7 @@ static int compare_constant (const tree, const tree);
 static void output_constant_def_contents (rtx);
 static void output_addressed_constants (tree);
 static unsigned HOST_WIDE_INT output_constant (tree, unsigned HOST_WIDE_INT,
-					       unsigned int);
+					       unsigned int, bool);
 static void globalize_decl (tree);
 static bool decl_readonly_section_1 (enum section_category);
 #ifdef BSS_SECTION_ASM_OP
@@ -2054,7 +2055,8 @@ assemble_variable_contents (tree decl, const char *name,
 	/* Output the actual data.  */
 	output_constant (DECL_INITIAL (decl),
 			 tree_to_uhwi (DECL_SIZE_UNIT (decl)),
-			 get_variable_align (decl));
+			 get_variable_align (decl),
+			 false);
       else
 	/* Leave space for it.  */
 	assemble_zeros (tree_to_uhwi (DECL_SIZE_UNIT (decl)));
@@ -2733,12 +2735,17 @@ assemble_integer (rtx x, unsigned int size, unsigned int align, int force)
   return false;
 }
 
+/* Assemble the floating-point constant D into an object of size MODE.  ALIGN
+   is the alignment of the constant in bits.  If REVERSE is true, D is output
+   in reverse storage order.  */
+
 void
-assemble_real (REAL_VALUE_TYPE d, machine_mode mode, unsigned int align)
+assemble_real (REAL_VALUE_TYPE d, machine_mode mode, unsigned int align,
+	       bool reverse)
 {
   long data[4] = {0, 0, 0, 0};
-  int i;
   int bitsize, nelts, nunits, units_per;
+  rtx elt;
 
   /* This is hairy.  We have a quantity of known size.  real_to_target
      will put it into an array of *host* longs, 32 bits per element
@@ -2760,15 +2767,24 @@ assemble_real (REAL_VALUE_TYPE d, machine_mode mode, unsigned int align)
   real_to_target (data, &d, mode);
 
   /* Put out the first word with the specified alignment.  */
-  assemble_integer (GEN_INT (data[0]), MIN (nunits, units_per), align, 1);
+  if (reverse)
+    elt = flip_storage_order (SImode, gen_int_mode (data[nelts - 1], SImode));
+  else
+    elt = GEN_INT (data[0]);
+  assemble_integer (elt, MIN (nunits, units_per), align, 1);
   nunits -= units_per;
 
   /* Subsequent words need only 32-bit alignment.  */
   align = min_align (align, 32);
 
-  for (i = 1; i < nelts; i++)
+  for (int i = 1; i < nelts; i++)
     {
-      assemble_integer (GEN_INT (data[i]), MIN (nunits, units_per), align, 1);
+      if (reverse)
+	elt = flip_storage_order (SImode,
+				  gen_int_mode (data[nelts - 1 - i], SImode));
+      else
+	elt = GEN_INT (data[i]);
+      assemble_integer (elt, MIN (nunits, units_per), align, 1);
       nunits -= units_per;
     }
 }
@@ -3070,10 +3086,12 @@ compare_constant (const tree t1, const tree t2)
 	if (typecode == ARRAY_TYPE)
 	  {
 	    HOST_WIDE_INT size_1 = int_size_in_bytes (TREE_TYPE (t1));
-	    /* For arrays, check that the sizes all match.  */
+	    /* For arrays, check that mode, size and storage order match.  */
 	    if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2))
 		|| size_1 == -1
-		|| size_1 != int_size_in_bytes (TREE_TYPE (t2)))
+		|| size_1 != int_size_in_bytes (TREE_TYPE (t2))
+		|| TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (t1))
+		   != TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (t2)))
 	      return 0;
 	  }
 	else
@@ -3357,7 +3375,7 @@ assemble_constant_contents (tree exp, const char *label, unsigned int align)
   targetm.asm_out.declare_constant_name (asm_out_file, label, exp, size);
 
   /* Output the value of EXP.  */
-  output_constant (exp, size, align);
+  output_constant (exp, size, align, false);
 
   targetm.asm_out.decl_end ();
 }
@@ -3788,7 +3806,7 @@ output_constant_pool_2 (machine_mode mode, rtx x, unsigned int align)
     case MODE_DECIMAL_FLOAT:
       {
 	gcc_assert (CONST_DOUBLE_AS_FLOAT_P (x));
-	assemble_real (*CONST_DOUBLE_REAL_VALUE (x), mode, align);
+	assemble_real (*CONST_DOUBLE_REAL_VALUE (x), mode, align, false);
 	break;
       }
 
@@ -4288,7 +4306,11 @@ initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
 	      tree reloc;
 	      reloc = initializer_constant_valid_p_1 (elt, TREE_TYPE (elt),
 						      NULL);
-	      if (!reloc)
+	      if (!reloc
+		  /* An absolute value is required with reverse SSO.  */
+		  || (reloc != null_pointer_node
+		      && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (value))
+		      && !AGGREGATE_TYPE_P (TREE_TYPE (elt))))
 		{
 		  if (cache)
 		    {
@@ -4528,9 +4550,19 @@ initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
    therefore, we do not need to check for such things as
    arithmetic-combinations of integers.  */
 tree
-initializer_constant_valid_p (tree value, tree endtype)
+initializer_constant_valid_p (tree value, tree endtype, bool reverse)
 {
-  return initializer_constant_valid_p_1 (value, endtype, NULL);
+  tree reloc = initializer_constant_valid_p_1 (value, endtype, NULL);
+
+  /* An absolute value is required with reverse storage order.  */
+  if (reloc
+      && reloc != null_pointer_node
+      && reverse
+      && !AGGREGATE_TYPE_P (endtype)
+      && !VECTOR_TYPE_P (endtype))
+    reloc = NULL_TREE;
+
+  return reloc;
 }
 
 /* Return true if VALUE is a valid constant-valued expression
@@ -4580,8 +4612,8 @@ struct oc_outer_state {
 };
 
 static unsigned HOST_WIDE_INT
-  output_constructor (tree, unsigned HOST_WIDE_INT, unsigned int,
-		      oc_outer_state *);
+output_constructor (tree, unsigned HOST_WIDE_INT, unsigned int, bool,
+		    oc_outer_state *);
 
 /* Output assembler code for constant EXP, with no label.
    This includes the pseudo-op such as ".int" or ".byte", and a newline.
@@ -4603,13 +4635,17 @@ static unsigned HOST_WIDE_INT
    for a structure constructor that wants to produce more than SIZE bytes.
    But such constructors will never be generated for any possible input.
 
-   ALIGN is the alignment of the data in bits.  */
+   ALIGN is the alignment of the data in bits.
+
+   If REVERSE is true, EXP is output in reverse storage order.  */
 
 static unsigned HOST_WIDE_INT
-output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
+output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
+		 bool reverse)
 {
   enum tree_code code;
   unsigned HOST_WIDE_INT thissize;
+  rtx cst;
 
   if (size == 0 || flag_syntax_only)
     return size;
@@ -4704,9 +4740,10 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
     case FIXED_POINT_TYPE:
     case POINTER_BOUNDS_TYPE:
     case NULLPTR_TYPE:
-      if (! assemble_integer (expand_expr (exp, NULL_RTX, VOIDmode,
-					   EXPAND_INITIALIZER),
-			      MIN (size, thissize), align, 0))
+      cst = expand_expr (exp, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
+      if (reverse)
+	cst = flip_storage_order (TYPE_MODE (TREE_TYPE (exp)), cst);
+      if (!assemble_integer (cst, MIN (size, thissize), align, 0))
 	error ("initializer for integer/fixed-point value is too complicated");
       break;
 
@@ -4714,13 +4751,15 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
       if (TREE_CODE (exp) != REAL_CST)
 	error ("initializer for floating value is not a floating constant");
       else
-	assemble_real (TREE_REAL_CST (exp), TYPE_MODE (TREE_TYPE (exp)), align);
+	assemble_real (TREE_REAL_CST (exp), TYPE_MODE (TREE_TYPE (exp)),
+		       align, reverse);
       break;
 
     case COMPLEX_TYPE:
-      output_constant (TREE_REALPART (exp), thissize / 2, align);
+      output_constant (TREE_REALPART (exp), thissize / 2, align, reverse);
       output_constant (TREE_IMAGPART (exp), thissize / 2,
-		       min_align (align, BITS_PER_UNIT * (thissize / 2)));
+		       min_align (align, BITS_PER_UNIT * (thissize / 2)),
+		       reverse);
       break;
 
     case ARRAY_TYPE:
@@ -4728,7 +4767,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
       switch (TREE_CODE (exp))
 	{
 	case CONSTRUCTOR:
-	  return output_constructor (exp, size, align, NULL);
+	  return output_constructor (exp, size, align, reverse, NULL);
 	case STRING_CST:
 	  thissize
 	    = MIN ((unsigned HOST_WIDE_INT)TREE_STRING_LENGTH (exp), size);
@@ -4739,11 +4778,13 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 	    machine_mode inner = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
 	    unsigned int nalign = MIN (align, GET_MODE_ALIGNMENT (inner));
 	    int elt_size = GET_MODE_SIZE (inner);
-	    output_constant (VECTOR_CST_ELT (exp, 0), elt_size, align);
+	    output_constant (VECTOR_CST_ELT (exp, 0), elt_size, align,
+			     reverse);
 	    thissize = elt_size;
 	    for (unsigned int i = 1; i < VECTOR_CST_NELTS (exp); i++)
 	      {
-		output_constant (VECTOR_CST_ELT (exp, i), elt_size, nalign);
+		output_constant (VECTOR_CST_ELT (exp, i), elt_size, nalign,
+				 reverse);
 		thissize += elt_size;
 	      }
 	    break;
@@ -4756,7 +4797,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
     case RECORD_TYPE:
     case UNION_TYPE:
       gcc_assert (TREE_CODE (exp) == CONSTRUCTOR);
-      return output_constructor (exp, size, align, NULL);
+      return output_constructor (exp, size, align, reverse, NULL);
 
     case ERROR_MARK:
       return 0;
@@ -4770,7 +4811,6 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 
   return size;
 }
-
 
 /* Subroutine of output_constructor, used for computing the size of
    arrays of unspecified length.  VAL must be a CONSTRUCTOR of an array
@@ -4832,6 +4872,7 @@ struct oc_local_state {
   int last_relative_index;    /* Implicit or explicit index of the last
 				 array element output within a bitfield.  */
   bool byte_buffer_in_use;    /* Whether BYTE is in use.  */
+  bool reverse;               /* Whether reverse storage order is in use.  */
 
   /* Current element.  */
   tree field;      /* Current field decl in a record.  */
@@ -4864,7 +4905,8 @@ output_constructor_array_range (oc_local_state *local)
       if (local->val == NULL_TREE)
 	assemble_zeros (fieldsize);
       else
-	fieldsize = output_constant (local->val, fieldsize, align2);
+	fieldsize
+	  = output_constant (local->val, fieldsize, align2, local->reverse);
 
       /* Count its size.  */
       local->total_bytes += fieldsize;
@@ -4950,7 +4992,8 @@ output_constructor_regular_field (oc_local_state *local)
   if (local->val == NULL_TREE)
     assemble_zeros (fieldsize);
   else
-    fieldsize = output_constant (local->val, fieldsize, align2);
+    fieldsize
+      = output_constant (local->val, fieldsize, align2, local->reverse);
 
   /* Count its size.  */
   local->total_bytes += fieldsize;
@@ -5048,7 +5091,7 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
       temp_state.bit_offset = next_offset % BITS_PER_UNIT;
       temp_state.byte = local->byte;
       local->total_bytes
-	  += output_constructor (local->val, 0, 0, &temp_state);
+	+= output_constructor (local->val, 0, 0, local->reverse, &temp_state);
       local->byte = temp_state.byte;
       return;
     }
@@ -5074,9 +5117,9 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
 
       /* Number of bits we can process at once (all part of the same byte).  */
       this_time = MIN (end_offset - next_offset, BITS_PER_UNIT - next_bit);
-      if (BYTES_BIG_ENDIAN)
+      if (local->reverse ? !BYTES_BIG_ENDIAN : BYTES_BIG_ENDIAN)
 	{
-	  /* On big-endian machine, take the most significant bits (of the
+	  /* For big-endian data, take the most significant bits (of the
 	     bits that are significant) first and put them into bytes from
 	     the most significant end.  */
 	  shift = end_offset - next_offset - this_time;
@@ -5138,12 +5181,11 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
    caller output state of relevance in recursive invocations.  */
 
 static unsigned HOST_WIDE_INT
-output_constructor (tree exp, unsigned HOST_WIDE_INT size,
-		    unsigned int align, oc_outer_state *outer)
+output_constructor (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
+		    bool reverse, oc_outer_state *outer)
 {
   unsigned HOST_WIDE_INT cnt;
   constructor_elt *ce;
-
   oc_local_state local;
 
   /* Setup our local state to communicate with helpers.  */
@@ -5160,6 +5202,11 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
   local.byte_buffer_in_use = outer != NULL;
   local.byte = outer ? outer->byte : 0;
   local.last_relative_index = -1;
+  /* The storage order is specified for every aggregate type.  */
+  if (AGGREGATE_TYPE_P (local.type))
+    local.reverse = TYPE_REVERSE_STORAGE_ORDER (local.type);
+  else
+    local.reverse = reverse;
 
   gcc_assert (HOST_BITS_PER_WIDE_INT >= BITS_PER_UNIT);
 

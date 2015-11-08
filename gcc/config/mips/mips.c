@@ -15705,10 +15705,10 @@ r10k_safe_mem_expr_p (tree expr, unsigned HOST_WIDE_INT offset)
   HOST_WIDE_INT bitoffset, bitsize;
   tree inner, var_offset;
   machine_mode mode;
-  int unsigned_p, volatile_p;
+  int unsigned_p, reverse_p, volatile_p;
 
   inner = get_inner_reference (expr, &bitsize, &bitoffset, &var_offset, &mode,
-			       &unsigned_p, &volatile_p, false);
+			       &unsigned_p, &reverse_p, &volatile_p, false);
   if (!DECL_P (inner) || !DECL_SIZE_UNIT (inner) || var_offset)
     return false;
 

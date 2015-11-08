@@ -1408,11 +1408,11 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	      HOST_WIDE_INT bitpos;
 	      tree offset, inner;
 	      machine_mode mode;
-	      int unsignedp, volatilep;
+	      int unsignedp, reversep, volatilep;
 
 	      inner = get_inner_reference (operand, &bitsize, &bitpos, &offset,
-					   &mode, &unsignedp, &volatilep,
-					   false);
+					   &mode, &unsignedp, &reversep,
+					   &volatilep, false);
 
 	      /* If INNER is a padding type whose field has a self-referential
 		 size, convert to that inner type.  We know the offset is zero
@@ -1916,7 +1916,9 @@ gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v)
 	  || (TREE_CODE (type) == RECORD_TYPE
 	      && CONSTRUCTOR_BITFIELD_P (obj)
 	      && !initializer_constant_valid_for_bitfield_p (val))
-	  || !initializer_constant_valid_p (val, TREE_TYPE (val)))
+	  || !initializer_constant_valid_p (val,
+					    TREE_TYPE (val),
+					    TYPE_REVERSE_STORAGE_ORDER (type)))
 	allconstant = false;
 
       if (!TREE_READONLY (val))
@@ -2749,6 +2751,7 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
 		       gnat_rewrite_reference (TREE_OPERAND (ref, 0), func,
 					       data, init),
 		       TREE_OPERAND (ref, 1), TREE_OPERAND (ref, 2));
+      REF_REVERSE_STORAGE_ORDER (result) = REF_REVERSE_STORAGE_ORDER (ref);
       break;
 
     case ARRAY_REF:

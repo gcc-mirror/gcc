@@ -5273,9 +5273,10 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
 	      && TREE_CODE (TREE_OPERAND (realdecl, 0)) == ADDR_EXPR))
 	{
 	  HOST_WIDE_INT maxsize;
-	  tree innerdecl;
-	  innerdecl
-	    = get_ref_base_and_extent (realdecl, &bitpos, &bitsize, &maxsize);
+	  bool reverse;
+	  tree innerdecl
+	    = get_ref_base_and_extent (realdecl, &bitpos, &bitsize, &maxsize,
+				       &reverse);
 	  if (!DECL_P (innerdecl)
 	      || DECL_IGNORED_P (innerdecl)
 	      || TREE_STATIC (innerdecl)
@@ -14463,12 +14464,12 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev,
   tree obj, offset;
   HOST_WIDE_INT bitsize, bitpos, bytepos;
   machine_mode mode;
-  int unsignedp, volatilep = 0;
+  int unsignedp, reversep, volatilep = 0;
   dw_loc_list_ref list_ret = NULL, list_ret1 = NULL;
 
   obj = get_inner_reference (TREE_OPERAND (loc, 0),
 			     &bitsize, &bitpos, &offset, &mode,
-			     &unsignedp, &volatilep, false);
+			     &unsignedp, &reversep, &volatilep, false);
   STRIP_NOPS (obj);
   if (bitpos % BITS_PER_UNIT)
     {
@@ -14797,10 +14798,10 @@ loc_list_from_tree (tree loc, int want_address,
 	tree obj, offset;
 	HOST_WIDE_INT bitsize, bitpos, bytepos;
 	machine_mode mode;
-	int unsignedp, volatilep = 0;
+	int unsignedp, reversep, volatilep = 0;
 
 	obj = get_inner_reference (loc, &bitsize, &bitpos, &offset, &mode,
-				   &unsignedp, &volatilep, false);
+				   &unsignedp, &reversep, &volatilep, false);
 
 	gcc_assert (obj != loc);
 
@@ -16102,7 +16103,7 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
   machine_mode mode;
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
-  int unsignedp, volatilep = 0;
+  int unsignedp, reversep, volatilep = 0;
 
   /* If the decl isn't a VAR_DECL, or if it isn't static, or if
      it does not have a value (the offset into the common area), or if it
@@ -16118,8 +16119,8 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
   if (TREE_CODE (val_expr) != COMPONENT_REF)
     return NULL_TREE;
 
-  cvar = get_inner_reference (val_expr, &bitsize, &bitpos, &offset,
-			      &mode, &unsignedp, &volatilep, true);
+  cvar = get_inner_reference (val_expr, &bitsize, &bitpos, &offset, &mode,
+			      &unsignedp, &reversep, &volatilep, true);
 
   if (cvar == NULL_TREE
       || TREE_CODE (cvar) != VAR_DECL

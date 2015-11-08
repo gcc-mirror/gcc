@@ -474,8 +474,10 @@ mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef, void *data)
     {
       tree base, lhs = gimple_get_lhs (def_stmt);
       HOST_WIDE_INT size, offset, max_size;
+      bool reverse;
       ao_ref_base (ref);
-      base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
+      base
+	= get_ref_base_and_extent (lhs, &offset, &size, &max_size, &reverse);
       /* We can get MEM[symbol: sZ, index: D.8862_1] here,
 	 so base == refd->base does not always hold.  */
       if (base == ref->base)

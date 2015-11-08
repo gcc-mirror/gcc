@@ -7724,6 +7724,8 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 
   TYPE_FIELDS (t) = fieldlist;
 
+  maybe_apply_pragma_scalar_storage_order (t);
+
   layout_type (t);
 
   if (TYPE_SIZE_UNIT (t)
@@ -7732,27 +7734,45 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       && !valid_constant_size_p (TYPE_SIZE_UNIT (t)))
     error ("type %qT is too large", t);
 
-  /* Give bit-fields their proper types.  */
-  {
-    tree *fieldlistp = &fieldlist;
-    while (*fieldlistp)
-      if (TREE_CODE (*fieldlistp) == FIELD_DECL && DECL_INITIAL (*fieldlistp)
-	  && TREE_TYPE (*fieldlistp) != error_mark_node)
+  /* Give bit-fields their proper types and rewrite the type of array fields
+     with scalar component if the enclosing type has reverse storage order.  */
+  for (tree field = fieldlist; field; field = DECL_CHAIN (field))
+    {
+      if (TREE_CODE (field) == FIELD_DECL
+	  && DECL_INITIAL (field)
+	  && TREE_TYPE (field) != error_mark_node)
 	{
 	  unsigned HOST_WIDE_INT width
-	    = tree_to_uhwi (DECL_INITIAL (*fieldlistp));
-	  tree type = TREE_TYPE (*fieldlistp);
+	    = tree_to_uhwi (DECL_INITIAL (field));
+	  tree type = TREE_TYPE (field);
 	  if (width != TYPE_PRECISION (type))
 	    {
-	      TREE_TYPE (*fieldlistp)
+	      TREE_TYPE (field)
 		= c_build_bitfield_integer_type (width, TYPE_UNSIGNED (type));
-	      DECL_MODE (*fieldlistp) = TYPE_MODE (TREE_TYPE (*fieldlistp));
+	      DECL_MODE (field) = TYPE_MODE (TREE_TYPE (field));
 	    }
-	  DECL_INITIAL (*fieldlistp) = 0;
+	  DECL_INITIAL (field) = 0;
 	}
-      else
-	fieldlistp = &DECL_CHAIN (*fieldlistp);
-  }
+      else if (TYPE_REVERSE_STORAGE_ORDER (t)
+	       && TREE_CODE (field) == FIELD_DECL
+	       && TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE)
+	{
+	  tree ftype = TREE_TYPE (field);
+	  tree ctype = strip_array_types (ftype);
+	  if (!RECORD_OR_UNION_TYPE_P (ctype) && TYPE_MODE (ctype) != QImode)
+	    {
+	      tree fmain_type = TYPE_MAIN_VARIANT (ftype);
+	      tree *typep = &fmain_type;
+	      do {
+		*typep = build_distinct_type_copy (*typep);
+		TYPE_REVERSE_STORAGE_ORDER (*typep) = 1;
+		typep = &TREE_TYPE (*typep);
+	      } while (TREE_CODE (*typep) == ARRAY_TYPE);
+	      TREE_TYPE (field)
+		= c_build_qualified_type (fmain_type, TYPE_QUALS (ftype));
+	    }
+	}
+    }
 
   /* Now we have the truly final field list.
      Store it in this type and in the variants.  */
