@@ -1,3 +1,7 @@
+2015-11-08  Martin Sebor  <msebor@redhat.com>
+
+	* c.opt (Wplacement-new): Add a period to the end of a sentence.
+
 2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-common.c: Don't undef DEF_BUILTIN.

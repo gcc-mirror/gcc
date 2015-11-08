@@ -1,3 +1,10 @@
+2015-11-08  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/67942 
+	* cp/init.c (warn_placement_new_too_small): Convert integer
+	operand of POINTER_PLUS_EXPR to ssize_t to determine its signed
+	value.
+
 2015-11-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (cp_printer): Update for new "caret_p" param for
