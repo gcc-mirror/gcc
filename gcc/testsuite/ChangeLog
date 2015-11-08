@@ -1,3 +1,11 @@
+2015-11-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68196
+	* gfortran.dg/proc_ptr_47.f90: New test.
+
+	PR fortran/66465
+	* gfortran.dg/pr66465.f90: New test.
+
 2015-11-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/Wno-frame-address.c: Skip on hppa*-*-*.
@@ -36,7 +44,7 @@
 2015-11-06  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/54224
-	* gfortran.dg/warn_unused_function_2.f90: Add two new 
+	* gfortran.dg/warn_unused_function_2.f90: Add two new
 	"defined but not used" subroutines.
 
 2015-11-06  Jakub Jelinek  <jakub@redhat.com>
