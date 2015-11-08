@@ -1,3 +1,9 @@
+2015-11-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/68218
+	* trans-array.c (gfc_array_init_size): Add gfc_evaluate_now() when
+	array spec in allocate is a function call.
+
 2015-11-08  Steven G. Kargl  <kargl@gc.gnu.org>
 
 	PR fortran/68224
