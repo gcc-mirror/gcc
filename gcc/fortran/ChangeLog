@@ -1,5 +1,11 @@
 2015-11-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/68224
+	* array.c (match_array_element_spec): Check of invalid NULL().
+	While here, fix nearby comments.
+
+2015-11-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/68153
 	* check.c (gfc_check_reshape): Improve check for valid SHAPE argument.
 
