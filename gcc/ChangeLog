@@ -1,5 +1,8 @@
 2015-11-09  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.md (*movabs<mode>_1): Print the full memory rtx.
+	(*movabs<mode>_2): Likewise.
+
 	* dwarf2out.c (modified_type_die): Pass the address space number
 	through TARGET_ADDR_SPACE_DEBUG to produce the dwarf address class.
 	* target.def (TARGET_ADDR_SPACE_DEBUG): New.
