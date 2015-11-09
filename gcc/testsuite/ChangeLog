@@ -1,3 +1,8 @@
+2015-11-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.target/i386/addr-space-3.c: Fix quoting in dg-final
+	scan-assembler directive.
+
 2015-11-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/68129
