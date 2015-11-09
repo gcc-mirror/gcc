@@ -1,3 +1,12 @@
+2015-11-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/68129
+	* config/aarch64/aarch64.h (TARGET_SUPPORTS_WIDE_INT): Define to 1.
+	* config/aarch64/aarch64.c (aarch64_print_operand, CONST_DOUBLE):
+	Delete VOIDmode case.  Assert that mode is not VOIDmode.
+	* config/aarch64/predicates.md (const0_operand): Remove const_double
+	match.
+
 2015-11-09  Martin Liska  <mliska@suse.cz>
 
 	* ipa-inline-analysis.c (estimate_function_body_sizes): Call
