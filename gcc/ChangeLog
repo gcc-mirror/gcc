@@ -1,3 +1,8 @@
+2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/68253
+	* fold-const.c (fold_truth_andor_1): Initialize new variables to 0.
+
 2015-11-09  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386-c.c (ix86_target_macros): Define __SEG_FS,
@@ -91,7 +96,7 @@
 2015-11-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/68182
-	* gcc/bb-reorder.c (reorder_basic_blocks_simple): Treat a conditional
+	* bb-reorder.c (reorder_basic_blocks_simple): Treat a conditional
 	branch with only one successor just like unconditional branches.
 
 2015-11-08  Jeff Law  <law@redhat.com>
