@@ -1,3 +1,17 @@
+2015-11-09  Torvald Riegel  <triegel@redhat.com>
+
+	* alloc_cpp.cc (_ZdlPvX, _ZdlPvXRKSt9nothrow_t, _ZGTtdlPvX,
+	_ZGTtdlPvXRKSt9nothrow_t, delsz_opnt): New.
+	* libitm.map: Add _ZGTtdlPvX and _ZGTtdlPvXRKSt9nothrow_t.
+	* libitm_i.h (gtm_alloc_action): Add free_fn_sz and sz.  Add comments.
+	(gtm_thread::forget_allocations): New overload with size_t argument.
+	* alloc.c (gtm_thread::forget_allocation): Define new overload and
+	adapt existing one.
+	(gtm_thread::record_allocation): Adapt.
+	(gtm_thread::commit_allocations_1): Adapt.
+	(gtm_thread::commit_allocations_2): Adapt.
+	* testsuite/libitm.c++/newdelete.C: New.
+
 2015-10-27  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 	    Mark Shinwell  <shinwell@codesourcery.com>
