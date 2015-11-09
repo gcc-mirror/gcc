@@ -9898,6 +9898,16 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
 	    exit = fold_build3_loc (input_location,
 				COND_EXPR, void_type_node, cond, exit, t);
 	}
+      else
+	{
+	  /* For the backward-goto's location of an unconditional loop
+	     use the beginning of the body, or, if there is none, the
+	     top of the loop.  */
+	  location_t loc = EXPR_LOCATION (expr_first (body));
+	  if (loc == UNKNOWN_LOCATION)
+	    loc = start_locus;
+	  SET_EXPR_LOCATION (exit, loc);
+	}
 
       add_stmt (top);
     }
