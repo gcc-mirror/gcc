@@ -4387,8 +4387,9 @@ reverse_storage_order_for_component_p (tree t)
     {
     case ARRAY_REF:
     case COMPONENT_REF:
-      /* ??? Fortran can take COMPONENT_REF of a void type.  */
-      return !VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0)))
+      /* ??? Fortran can take COMPONENT_REF of a VOID_TYPE.  */
+      /* ??? UBSan can take COMPONENT_REF of a REFERENCE_TYPE.  */
+      return AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0)))
 	     && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (TREE_OPERAND (t, 0)));
 
     case BIT_FIELD_REF:

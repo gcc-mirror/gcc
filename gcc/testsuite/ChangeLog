@@ -1,3 +1,7 @@
+2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/ubsan/pr68259.C: New test.
+
 2015-11-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/cilk-plus/CK/pr66326.cc: Do not include cilk.h.
