@@ -1,3 +1,8 @@
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	* objc-encoding.c (encode_aggregate_within): Cast obstack_next_free
+	return value.
+
 2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* objc-lang.c: Reorder #include's and remove duplicates.

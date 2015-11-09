@@ -1,3 +1,10 @@
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	* gensupport.c (add_mnemonic_string): Make len param a size_t.
+	(gen_mnemonic_setattr): Make "size" var a size_t.  Use
+	obstack_blank_fast to shrink obstack.  Cast obstack_next_free
+	return value.
+
 2015-11-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/68182
