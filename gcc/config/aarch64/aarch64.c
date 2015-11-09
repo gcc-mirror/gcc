@@ -10158,32 +10158,16 @@ aarch64_simd_valid_immediate (rtx op, machine_mode mode, bool inverse,
          it must be laid out in the vector register in reverse order.  */
       rtx el = CONST_VECTOR_ELT (op, BYTES_BIG_ENDIAN ? (n_elts - 1 - i) : i);
       unsigned HOST_WIDE_INT elpart;
-      unsigned int part, parts;
 
-      if (CONST_INT_P (el))
-        {
-          elpart = INTVAL (el);
-          parts = 1;
-        }
-      else if (GET_CODE (el) == CONST_DOUBLE)
-        {
-          elpart = CONST_DOUBLE_LOW (el);
-          parts = 2;
-        }
-      else
-        gcc_unreachable ();
+      gcc_assert (CONST_INT_P (el));
+      elpart = INTVAL (el);
 
-      for (part = 0; part < parts; part++)
-        {
-          unsigned int byte;
-          for (byte = 0; byte < innersize; byte++)
-            {
-              bytes[idx++] = (elpart & 0xff) ^ invmask;
-              elpart >>= BITS_PER_UNIT;
-            }
-          if (GET_CODE (el) == CONST_DOUBLE)
-            elpart = CONST_DOUBLE_HIGH (el);
-        }
+      for (unsigned int byte = 0; byte < innersize; byte++)
+	{
+	  bytes[idx++] = (elpart & 0xff) ^ invmask;
+	  elpart >>= BITS_PER_UNIT;
+	}
+
     }
 
   /* Sanity check.  */
