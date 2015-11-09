@@ -3244,6 +3244,14 @@ as determined by the @code{TARGET_ADDR_SPACE_SUBSET_P} target hook.",
  rtx, (rtx op, tree from_type, tree to_type),
  default_addr_space_convert)
 
+/* Function to encode an address space into dwarf.  */
+DEFHOOK
+(debug,
+ "Define this to define how the address space is encoded in dwarf.\n\
+The result is the value to be used with @code{DW_AT_address_class}.",
+ int, (addr_space_t as),
+ default_addr_space_debug)
+
 HOOK_VECTOR_END (addr_space)
 
 #undef HOOK_PREFIX

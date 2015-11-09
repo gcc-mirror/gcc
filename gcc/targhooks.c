@@ -1277,6 +1277,14 @@ default_addr_space_zero_address_valid (addr_space_t as ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* The default hook for debugging the address space is to return the
+   address space number to indicate DW_AT_address_class.  */
+int
+default_addr_space_debug (addr_space_t as)
+{
+  return as;
+}
+
 /* The default hook for TARGET_ADDR_SPACE_CONVERT. This hook should never be
    called for targets with only a generic address space.  */
 
