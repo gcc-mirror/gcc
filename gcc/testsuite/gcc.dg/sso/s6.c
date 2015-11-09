@@ -22,12 +22,12 @@ int main (void)
   put ("A1 :");
   dump (&A1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "A1 : 78 56 34 12 00 ab 00 12 00 cd 00 34 00 ef 00 56\n" } */
+  /* { dg-output "A1 : 78 56 34 12 00 ab 00 12 00 cd 00 34 00 ef 00 56.*\n" } */
 
   put ("A2 :");
   dump (&A2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "A2 : 12 34 56 78 12 00 ab 00 34 00 cd 00 56 00 ef 00\n" } */
+  /* { dg-output "A2 : 12 34 56 78 12 00 ab 00 34 00 cd 00 56 00 ef 00.*\n" } */
 
   __builtin_memcpy (N1.A, A1.N.A, sizeof (int) * 3);
   C1 = N1.A[0];
@@ -35,13 +35,13 @@ int main (void)
   C3 = N1.A[2];
 
   printf ("C1 : %d\n", C1);
-  /* { dg-output "C1 : 11206674\n" } */
+  /* { dg-output "C1 : 11206674.*\n" } */
 
   printf ("C2 : %d\n", C2);
-  /* { dg-output "C2 : 13434932\n" } */
+  /* { dg-output "C2 : 13434932.*\n" } */
 
   printf ("C3 : %d\n", C3);
-  /* { dg-output "C3 : 15663190\n" } */
+  /* { dg-output "C3 : 15663190.*\n" } */
 
   N1.A[0] = C1;
   N1.A[1] = C2;
@@ -54,13 +54,13 @@ int main (void)
   C3 = N2.A[2];
 
   printf ("C1 : %d\n", C1);
-  /* { dg-output "C1 : 11206674\n" } */
+  /* { dg-output "C1 : 11206674.*\n" } */
 
   printf ("C2 : %d\n", C2);
-  /* { dg-output "C2 : 13434932\n" } */
+  /* { dg-output "C2 : 13434932.*\n" } */
 
   printf ("C3 : %d\n", C3);
-  /* { dg-output "C3 : 15663190\n" } */
+  /* { dg-output "C3 : 15663190.*\n" } */
 
   N2.A[0] = C1;
   N2.A[1] = C2;
@@ -70,12 +70,12 @@ int main (void)
   put ("A1 :");
   dump (&A1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "A1 : 78 56 34 12 00 ab 00 12 00 cd 00 34 00 ef 00 56\n" } */
+  /* { dg-output "A1 : 78 56 34 12 00 ab 00 12 00 cd 00 34 00 ef 00 56.*\n" } */
 
   put ("A2 :");
   dump (&A2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "A2 : 12 34 56 78 12 00 ab 00 34 00 cd 00 56 00 ef 00\n" } */
+  /* { dg-output "A2 : 12 34 56 78 12 00 ab 00 34 00 cd 00 56 00 ef 00.*\n" } */
 
   return 0;
 }

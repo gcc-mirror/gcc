@@ -13,24 +13,24 @@ int main (void)
   put ("My_R1    :");
   dump (&My_R1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "My_R1    : e2 59 d1 48 b4 aa d9 bb\n" } */
+  /* { dg-output "My_R1    : e2 59 d1 48 b4 aa d9 bb.*\n" } */
 
   put ("My_R2    :");
   dump (&My_R2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "My_R2    : 84 8d 15 9e 15 5b 35 df\n" } */
+  /* { dg-output "My_R2    : 84 8d 15 9e 15 5b 35 df.*\n" } */
 
   Local_R1 = My_R1;
   put ("Local_R1 :");
   dump (&Local_R1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "Local_R1 : e2 59 d1 48 b4 aa d9 bb\n" } */
+  /* { dg-output "Local_R1 : e2 59 d1 48 b4 aa d9 bb.*\n" } */
 
   Local_R2 = My_R2;
   put ("Local_R2 :");
   dump (&Local_R2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "Local_R2 : 84 8d 15 9e 15 5b 35 df\n" } */
+  /* { dg-output "Local_R2 : 84 8d 15 9e 15 5b 35 df.*\n" } */
 
   Local_R1.S1 = 2;
   Local_R1.I  = 0x12345678;
@@ -43,7 +43,7 @@ int main (void)
   put ("Local_R1 :");
   dump (&Local_R1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "Local_R1 : e2 59 d1 48 b4 aa d9 bb\n" } */
+  /* { dg-output "Local_R1 : e2 59 d1 48 b4 aa d9 bb.*\n" } */
 
   Local_R2.S1 = 2;
   Local_R2.I  = 0x12345678;
@@ -56,7 +56,7 @@ int main (void)
   put ("Local_R2 :");
   dump (&Local_R2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "Local_R2 : 84 8d 15 9e 15 5b 35 df\n" } */
+  /* { dg-output "Local_R2 : 84 8d 15 9e 15 5b 35 df.*\n" } */
 
   Local_R1.S1 = Local_R2.S1;
   Local_R1.I  = Local_R2.I;
@@ -69,7 +69,7 @@ int main (void)
   put ("Local_R1 :");
   dump (&Local_R1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "Local_R1 : e2 59 d1 48 b4 aa d9 bb\n" } */
+  /* { dg-output "Local_R1 : e2 59 d1 48 b4 aa d9 bb.*\n" } */
 
   Local_R2.S1 = Local_R1.S1;
   Local_R2.I  = Local_R1.I;
@@ -82,7 +82,7 @@ int main (void)
   put ("Local_R2 :");
   dump (&Local_R2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "Local_R2 : 84 8d 15 9e 15 5b 35 df\n" } */
+  /* { dg-output "Local_R2 : 84 8d 15 9e 15 5b 35 df.*\n" } */
 
   return 0;
 }
