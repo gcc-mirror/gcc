@@ -1,3 +1,8 @@
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	* vtv_malloc.cc (obstack_chunk_free): Correct param type.
+	(__vtv_malloc_init): Use obstack_specify_allocation.
+
 2015-10-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* configure.tgt (aarch64*-*-linux): Enable.
