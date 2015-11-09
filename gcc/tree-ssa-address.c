@@ -377,7 +377,7 @@ create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr,
     }
   else
     {
-      base = build_int_cst (ptr_type_node, 0);
+      base = build_int_cst (build_pointer_type (type), 0);
       index2 = addr->base;
     }
 
