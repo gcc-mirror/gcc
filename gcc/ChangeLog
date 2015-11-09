@@ -1,3 +1,7 @@
+2015-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*strmovqi_1): Fix insn enable condition.
+
 2015-11-09  Jeff Law  <law@redhat.com>
 
 	* tree-ssanames.c (verify_ssaname_freelists): Simplify check for
@@ -564,7 +568,7 @@
 	(TYPE_SATURATING): Adjust.
 	(REF_REVERSE_STORAGE_ORDER): New flag.
 	(reverse_storage_order_for_component_p): New inline predicate.
- 	(storage_order_barrier_p): Likewise.
+	(storage_order_barrier_p): Likewise.
 	(get_inner_reference): Adjust prototype.
 	* varasm.c: Include expmed.h.
 	(assemble_variable_contents): Adjust call to output_constant.
@@ -675,7 +679,7 @@
 	* tree-ssa-sccvn.c (vn_reference_eq): Return false on storage order
 	barriers.
 	(copy_reference_ops_from_ref) <MEM_REF>: Set REVERSE field according
- 	to the REF_REVERSE_STORAGE_ORDER flag.
+	to the REF_REVERSE_STORAGE_ORDER flag.
 	<BIT_FIELD_REF>: Likewise.
 	<VIEW_CONVERT_EXPR>: Set it for storage order barriers.
 	(contains_storage_order_barrier_p): New predicate.
@@ -995,11 +999,11 @@
 
 	Properly apply.
 	2015-11-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
-        * config/aarch64/aarch64.c
-        (aarch64_can_use_per_function_literal_pools_p): New.
-        (aarch64_use_blocks_for_constant_p): Adjust declaration
-        and use aarch64_can_use_function_literal_pools_p.
-        (aarch64_select_rtx_section): Update.
+	* config/aarch64/aarch64.c
+	(aarch64_can_use_per_function_literal_pools_p): New.
+	(aarch64_use_blocks_for_constant_p): Adjust declaration
+	and use aarch64_can_use_function_literal_pools_p.
+	(aarch64_select_rtx_section): Update.
 
 2015-11-06  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
@@ -1044,16 +1048,16 @@
 	* config/aarch64/aarch64-simd.md: Matching expressions for frsqrte and
 	frsqrts.
 	* config/aarch64/aarch64-tuning-flags.def: Added recip_sqrt.
-	* config/aarch64/aarch64.c: New functions. Emit rsqrt estimation code when
-	applicable.
+	* config/aarch64/aarch64.c: New functions. Emit rsqrt estimation
+	code when applicable.
 	* config/aarch64/aarch64.md: Added enum entries.
 	* config/aarch64/aarch64.opt: Added option -mlow-precision-recip-sqrt.
-	* testsuite/gcc.target/aarch64/rsqrt_asm_check_common.h: Common macros for
-	assembly checks.
+	* testsuite/gcc.target/aarch64/rsqrt_asm_check_common.h: Common
+	macros for assembly checks.
 	* testsuite/gcc.target/aarch64/rsqrt_asm_check_negative_1.c: Make sure
 	frsqrts and frsqrte are not emitted.
-	* testsuite/gcc.target/aarch64/rsqrt_asm_check_1.c: Make sure frsqrts and
-	frsqrte are emitted.
+	* testsuite/gcc.target/aarch64/rsqrt_asm_check_1.c: Make sure
+	frsqrts and frsqrte are emitted.
 	* testsuite/gcc.target/aarch64/rsqrt_1.c: Functional tests for rsqrt.
 
 2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
@@ -1343,11 +1347,11 @@
 
 2015-11-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config/aarch64/aarch64.c
-        (aarch64_can_use_per_function_literal_pools_p): New.
-        (aarch64_use_blocks_for_constant_p): Adjust declaration
-        and use aarch64_can_use_function_literal_pools_p.
-        (aarch64_select_rtx_section): Update.
+	* config/aarch64/aarch64.c
+	(aarch64_can_use_per_function_literal_pools_p): New.
+	(aarch64_use_blocks_for_constant_p): Adjust declaration
+	and use aarch64_can_use_function_literal_pools_p.
+	(aarch64_select_rtx_section): Update.
 
 2015-11-05  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
