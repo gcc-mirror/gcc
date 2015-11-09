@@ -5559,7 +5559,7 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp, omp_context *ctx)
 {
   gimple_seq sub_seq = NULL;
   gimple *stmt;
-  tree x, c, tid = NULL_TREE;
+  tree x, c;
   int count = 0;
 
   /* OpenACC loop reductions are handled elsewhere.  */
@@ -5588,17 +5588,6 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp, omp_context *ctx)
 
   if (count == 0)
     return;
-
-  /* Initialize thread info for OpenACC.  */
-  if (is_gimple_omp_oacc (ctx->stmt))
-    {
-      /* Get the current thread id.  */
-      tree call = builtin_decl_explicit (BUILT_IN_GOACC_GET_THREAD_NUM);
-      tid = create_tmp_var (TREE_TYPE (TREE_TYPE (call)));
-      gimple *stmt = gimple_build_call (call, 0);
-      gimple_call_set_lhs (stmt, tid);
-      gimple_seq_add_stmt (stmt_seqp, stmt);
-    }
 
   for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
     {
@@ -12266,7 +12255,7 @@ expand_omp_atomic (struct omp_region *region)
 }
 
 
-/* Encode an oacc launc argument.  This matches the GOMP_LAUNCH_PACK
+/* Encode an oacc launch argument.  This matches the GOMP_LAUNCH_PACK
    macro on gomp-constants.h.  We do not check for overflow.  */
 
 static tree
@@ -12292,7 +12281,7 @@ oacc_launch_pack (unsigned code, tree device, unsigned op)
 
    The attribute value is a TREE_LIST.  A set of dimensions is
    represented as a list of INTEGER_CST.  Those that are runtime
-   expres are represented as an INTEGER_CST of zero.
+   exprs are represented as an INTEGER_CST of zero.
 
    TOOO. Normally the attribute will just contain a single such list.  If
    however it contains a list of lists, this will represent the use of
@@ -14311,7 +14300,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			  gimple_omp_for_clauses (stmt),
 			  &oacc_head, &oacc_tail, ctx);
 
-  /* Add OpenACC partitioning markers just before the loop  */
+  /* Add OpenACC partitioning and reduction markers just before the loop  */
   if (oacc_head)
     gimple_seq_add_seq (&body, oacc_head);
   
@@ -19524,7 +19513,7 @@ public:
       return execute_oacc_device_lower ();
     }
 
-}; // class pass_oacc_transform
+}; // class pass_oacc_device_lower
 
 } // anon namespace
 
