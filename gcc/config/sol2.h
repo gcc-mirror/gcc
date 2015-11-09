@@ -398,11 +398,9 @@ along with GCC; see the file COPYING3.  If not see
 #define NO_DBX_BNSYM_ENSYM 1
 #endif
 
-#ifndef USE_GLD
-/* The Solaris linker doesn't understand constructor priorities.  */
+/* Enable constructor priorities if the configured linker supports it.  */
 #undef SUPPORTS_INIT_PRIORITY
-#define SUPPORTS_INIT_PRIORITY 0
-#endif
+#define SUPPORTS_INIT_PRIORITY HAVE_INITFINI_ARRAY_SUPPORT
 
 /* Solaris has an implementation of __enable_execute_stack.  */
 #define HAVE_ENABLE_EXECUTE_STACK

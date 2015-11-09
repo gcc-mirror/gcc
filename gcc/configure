@@ -22930,43 +22930,96 @@ fi
 	    gcc_cv_initfini_array=yes
 	  fi
 	elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
-	  cat > conftest.s <<\EOF
-.section .dtors,"a",%progbits
+	  case $target:$gas in
+	    *:yes)
+	      sh_flags='"a"'
+	      sh_type='%progbits'
+	      ;;
+	    i?86-*-solaris2*:no | x86_64-*-solaris2*:no)
+	      sh_flags='"a"'
+	      sh_type='@progbits'
+	      ;;
+	    sparc*-*-solaris2*:no)
+	      sh_flags='#alloc'
+	      sh_type='#progbits'
+	      sh_quote='"'
+	      ;;
+	  esac
+	  case "$target:$gnu_ld" in
+	    *:yes)
+	      cat > conftest.s <<EOF
+.section .dtors,$sh_flags,$sh_type
 .balign 4
 .byte 'A', 'A', 'A', 'A'
-.section .ctors,"a",%progbits
+.section .ctors,$sh_flags,$sh_type
 .balign 4
 .byte 'B', 'B', 'B', 'B'
-.section .fini_array.65530,"a",%progbits
+.section .fini_array.65530,$sh_flags,$sh_type
 .balign 4
 .byte 'C', 'C', 'C', 'C'
-.section .init_array.65530,"a",%progbits
+.section .init_array.65530,$sh_flags,$sh_type
 .balign 4
 .byte 'D', 'D', 'D', 'D'
-.section .dtors.64528,"a",%progbits
+.section .dtors.64528,$sh_flags,$sh_type
 .balign 4
 .byte 'E', 'E', 'E', 'E'
-.section .ctors.64528,"a",%progbits
+.section .ctors.64528,$sh_flags,$sh_type
 .balign 4
 .byte 'F', 'F', 'F', 'F'
-.section .fini_array.01005,"a",%progbits
+.section .fini_array.01005,$sh_flags,$sh_type
 .balign 4
 .byte 'G', 'G', 'G', 'G'
-.section .init_array.01005,"a",%progbits
+.section .init_array.01005,$sh_flags,$sh_type
 .balign 4
 .byte 'H', 'H', 'H', 'H'
 .text
 .globl _start
 _start:
 EOF
-	  if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-	     && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
-	     && $gcc_cv_objdump -s -j .init_array conftest \
-		| grep HHHHFFFFDDDDBBBB > /dev/null 2>&1 \
-	     && $gcc_cv_objdump -s -j .fini_array conftest \
-		| grep GGGGEEEECCCCAAAA > /dev/null 2>&1; then
-	    gcc_cv_initfini_array=yes
-	  fi
+	      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+	         && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .init_array conftest \
+		    | grep HHHHFFFFDDDDBBBB > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .fini_array conftest \
+		    | grep GGGGEEEECCCCAAAA > /dev/null 2>&1; then
+	        gcc_cv_initfini_array=yes
+	      fi
+	      ;;
+	    *-*-solaris2*:no)
+	      # When Solaris ld added constructor priority support, it was
+	      # decided to only handle .init_array.N/.fini_array.N since
+	      # there was no need for backwards compatibility with
+	      # .ctors.N/.dtors.N.  .ctors/.dtors remain as separate
+	      # sections with correct execution order resp. to
+	      # .init_array/.fini_array, while gld merges them into
+	      # .init_array/.fini_array.
+	      cat > conftest.s <<EOF
+.section $sh_quote.fini_array.65530$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'C', 'C', 'C', 'C'
+.section $sh_quote.init_array.65530$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'D', 'D', 'D', 'D'
+.section $sh_quote.fini_array.01005$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'G', 'G', 'G', 'G'
+.section $sh_quote.init_array.01005$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'H', 'H', 'H', 'H'
+.text
+.globl _start
+_start:
+EOF
+	      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+	         && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .init_array conftest \
+		    | grep HHHHDDDD > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .fini_array conftest \
+		    | grep GGGGCCCC > /dev/null 2>&1; then
+	        gcc_cv_initfini_array=yes
+	      fi
+	      ;;
+	    esac
 	  rm -f conftest conftest.*
 	fi
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -23009,11 +23062,12 @@ $as_echo "$gcc_cv_initfini_array" >&6; }
 
 fi
 
-if test $enable_initfini_array = yes; then
 
-$as_echo "#define HAVE_INITFINI_ARRAY_SUPPORT 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_INITFINI_ARRAY_SUPPORT `if test $enable_initfini_array = yes; then echo 1; else echo 0; fi`
+_ACEOF
 
-fi
+
 
 # Check if we have .[us]leb128, and support symbol arithmetic with it.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .sleb128 and .uleb128" >&5
@@ -24666,39 +24720,6 @@ if test $gcc_cv_as_sparc_register_op = yes; then
 $as_echo "#define HAVE_AS_REGISTER_PSEUDO_OP 1" >>confdefs.h
 
 fi
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for #nobits" >&5
-$as_echo_n "checking assembler for #nobits... " >&6; }
-if test "${gcc_cv_as_sparc_nobits+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_sparc_nobits=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '.section "nobits",#alloc,#write,#nobits
-       .section "progbits",#alloc,#write,#progbits' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_sparc_nobits=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_sparc_nobits" >&5
-$as_echo "$gcc_cv_as_sparc_nobits" >&6; }
-
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_AS_SPARC_NOBITS `if test $gcc_cv_as_sparc_nobits = yes; then echo 1; else echo 0; fi`
-_ACEOF
-
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -relax option" >&5
 $as_echo_n "checking assembler for -relax option... " >&6; }

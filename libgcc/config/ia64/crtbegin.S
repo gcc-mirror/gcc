@@ -61,7 +61,7 @@ __dso_handle:
 	.hidden __dso_handle
 
 
-#ifdef HAVE_INITFINI_ARRAY_SUPPORT
+#if HAVE_INITFINI_ARRAY_SUPPORT
 
 .section .fini_array, "a"
 	data8 @fptr(__do_global_dtors_aux)
