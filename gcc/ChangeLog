@@ -1,5 +1,21 @@
 2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/visium/visium.h (PRINT_OPERAND): Delete.
+	(PRINT_OPERAND_PUNCT_VALID_P): Likewise.
+	(PRINT_OPERAND_ADDRESS): Likewise.
+	* config/visium/visium.c (TARGET_PRINT_OPERAND_PUNCT_VALID_P): Define
+	to...
+	(visium_print_operand_punct_valid_p): ...this.  New function.
+	(TARGET_PRINT_OPERAND): Define to...
+	(print_operand): Rename to...
+	(visium_print_operand): ...this.
+	(TARGET_PRINT_OPERAND_ADDRESS): Define to...
+	(visium_output_address): Rename to...
+	(visium_print_operand_address): ...this.
+	(print_operand_address): Delete.
+
+2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR middle-end/68259
 	* tree.h (reverse_storage_order_for_component_p) <COMPONENT_REF>:
 	Check that the type of the first operand is an aggregate type.
