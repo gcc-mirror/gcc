@@ -1,3 +1,16 @@
+2015-11-08  Jeff Law <jeff@redhat.com>
+
+	* tree-ssa-threadupdate.c (register_jump_thraed): Assert that a
+	non-FSM path has no edges marked with EDGE_DFS_BACK.
+	(ssa_redirect_edges): No longer call mark_loop_for_removal.
+	(thread_single_edge, def_split_header_continue_p): Remove.
+	(bb_ends_with_multiway_branch): Likewise.
+	(thread_through_loop_header): Remove cases of threading from
+	latch through the header.  Simplify knowing we won't thread
+	the latch.
+	(thread_through_all_blocks): Simplify knowing that only the FSM
+	threader needs to handle backedges.
+
 2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/extend.texi (type attributes): Document scalar_storage_order.
