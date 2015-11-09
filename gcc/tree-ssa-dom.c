@@ -121,8 +121,8 @@ static void dump_dominator_optimization_stats (FILE *file,
 
 /* Free the edge_info data attached to E, if it exists.  */
 
-static void
-free_edge_info (edge e)
+void
+free_dom_edge_info (edge e)
 {
   struct edge_info *edge_info = (struct edge_info *)e->aux;
 
@@ -142,7 +142,7 @@ allocate_edge_info (edge e)
   struct edge_info *edge_info;
 
   /* Free the old one, if it exists.  */
-  free_edge_info (e);
+  free_dom_edge_info (e);
 
   edge_info = XCNEW (struct edge_info);
 
@@ -167,7 +167,7 @@ free_all_edge_infos (void)
     {
       FOR_EACH_EDGE (e, ei, bb->preds)
         {
-	  free_edge_info (e);
+	  free_dom_edge_info (e);
 	  e->aux = NULL;
 	}
     }

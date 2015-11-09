@@ -290,7 +290,10 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {
       if (e->dest != dest_bb)
-	remove_edge (e);
+	{
+	  free_dom_edge_info (e);
+	  remove_edge (e);
+	}
       else
 	ei_next (&ei);
     }
@@ -2522,6 +2525,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 
       delete_jump_thread_path (path);
       paths.unordered_remove (i);
+      free (region);
     }
 
   /* Remove from PATHS all the jump-threads starting with an edge already
