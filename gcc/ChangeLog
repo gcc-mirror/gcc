@@ -1,3 +1,17 @@
+2015-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56118
+	* tree-vectorizer.h (vect_find_last_scalar_stmt_in_slp): Declare.
+	* tree-vect-slp.c (vect_find_last_scalar_stmt_in_slp): Export.
+	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences): New
+	function.
+	(vect_slp_analyze_data_ref_dependences): Instead of computing
+	all dependences of the region DRs just analyze the code motions
+	SLP vectorization will perform.  Remove SLP instances that
+	cannot have their store/load motions applied.
+	(vect_analyze_data_refs): Allow DRs without a vectype
+	in BB vectorization.
+
 2015-11-09  Julian Brown  <julian@codesourcery.com>
 
 	* final.c (output_asm_insn): Pass VOIDmode to output_address.

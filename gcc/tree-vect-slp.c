@@ -1426,7 +1426,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 
 /* Find the last store in SLP INSTANCE.  */
 
-static gimple *
+gimple *
 vect_find_last_scalar_stmt_in_slp (slp_tree node)
 {
   gimple *last = NULL, *stmt;
