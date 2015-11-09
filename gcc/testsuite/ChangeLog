@@ -1,3 +1,9 @@
+2015-11-09  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/thumb2-slow-flash-data.c: Add missing typespec for
+	labelref and check use of constant pool by looking for .word and
+	similar directives.
+
 2015-11-09  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR target/66326

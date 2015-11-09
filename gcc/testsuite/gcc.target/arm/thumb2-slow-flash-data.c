@@ -50,7 +50,7 @@ int
 foo (int a, int b)
 {
   int i;
-  volatile *labelref = &&label1;
+  volatile int *labelref = &&label1;
 
   if (a > b)
     {
@@ -70,5 +70,4 @@ label1:
   return a + b;
 }
 
-/* { dg-final { scan-assembler-times "movt" 13 } } */
-/* { dg-final { scan-assembler-times "movt.*LC0\\+4" 1 } } */
+/* { dg-final { scan-assembler-not "\\.(float|l\\?double|\d?byte|short|int|long|quad|word)\\s+\[^.\]" } } */
