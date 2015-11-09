@@ -1,5 +1,14 @@
 2015-11-09  Martin Liska  <mliska@suse.cz>
 
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Call
+	body_info release function.
+	* ipa-prop.c (ipa_release_body_info): New function.
+	(ipa_analyze_node): Call the function.
+	(ipa_node_params::~ipa_node_params): Release known_csts.
+	* ipa-prop.h (ipa_release_body_info): Declare.
+
+2015-11-09  Martin Liska  <mliska@suse.cz>
+
 	* gcc.c (record_temp_file): Release name string.
 	* ifcvt.c (noce_convert_multiple_sets): Use auto_vec instead
 	of vec.
