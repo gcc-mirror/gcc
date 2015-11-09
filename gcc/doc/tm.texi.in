@@ -7455,6 +7455,8 @@ c_register_addr_space ("__ea", ADDR_SPACE_EA);
 
 @hook TARGET_ADDR_SPACE_SUBSET_P
 
+@hook TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID
+
 @hook TARGET_ADDR_SPACE_CONVERT
 
 @node Misc

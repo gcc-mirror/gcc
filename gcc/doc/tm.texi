@@ -10365,6 +10365,11 @@ arithmetic operations.  Pointers to a superset address space can be
 converted to pointers to a subset address space via explicit casts.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID (addr_space_t @var{as})
+Define this to modify the default handling of address 0 for the
+address space.  Return true if 0 should be considered a valid address.
+@end deftypefn
+
 @deftypefn {Target Hook} rtx TARGET_ADDR_SPACE_CONVERT (rtx @var{op}, tree @var{from_type}, tree @var{to_type})
 Define this to convert the pointer expression represented by the RTL
 @var{op} with type @var{from_type} that points to a named address
