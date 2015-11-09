@@ -143,7 +143,10 @@ unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
       TYPE_ADDR_SPACE (expr) = (unsigned) bp_unpack_value (bp, 8);
     }
   else if (TREE_CODE (expr) == BIT_FIELD_REF || TREE_CODE (expr) == MEM_REF)
-    REF_REVERSE_STORAGE_ORDER (expr) = (unsigned) bp_unpack_value (bp, 1);
+    {
+      REF_REVERSE_STORAGE_ORDER (expr) = (unsigned) bp_unpack_value (bp, 1);
+      bp_unpack_value (bp, 8);
+    }
   else if (TREE_CODE (expr) == SSA_NAME)
     {
       SSA_NAME_IS_DEFAULT_DEF (expr) = (unsigned) bp_unpack_value (bp, 1);

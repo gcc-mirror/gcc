@@ -1,3 +1,11 @@
+2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/68251
+	* tree-core.h (REF_REVERSE_STORAGE_ORDER): Move around.
+	* tree.h (REF_REVERSE_STORAGE_ORDER): Change to default_def_flag.
+	* tree-streamer-in.c (unpack_ts_base_value_fields): Adjust.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Likewise.
+
 2015-11-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/67749
