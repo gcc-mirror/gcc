@@ -97,11 +97,25 @@ enum gtm_restart_reason
 
 namespace GTM HIDDEN {
 
+// A log of (de)allocation actions.  We defer handling of some actions until
+// a commit of the outermost transaction.  We also rely on potentially having
+// both an allocation and a deallocation for the same piece of memory in the
+// log; the order in which such entries are processed does not matter because
+// the actions are not in conflict (see below).
 // This type is private to alloc.c, but needs to be defined so that
 // the template used inside gtm_thread can instantiate.
 struct gtm_alloc_action
 {
-  void (*free_fn)(void *);
+  // Iff free_fn_sz is nonzero, it must be used instead of free_fn.
+  union
+  {
+    void (*free_fn)(void *);
+    void (*free_fn_sz)(void *, size_t);
+  };
+  size_t sz;
+  // If true, this is an allocation; we discard the log entry on outermost
+  // commit, and deallocate on abort.  If false, this is a deallocation and
+  // we deallocate on outermost commit and discard the log entry on abort.
   bool allocated;
 };
 
@@ -269,6 +283,7 @@ struct gtm_thread
   void commit_allocations (bool, aa_tree<uintptr_t, gtm_alloc_action>*);
   void record_allocation (void *, void (*)(void *));
   void forget_allocation (void *, void (*)(void *));
+  void forget_allocation (void *, size_t, void (*)(void *, size_t));
   void drop_references_allocations (const void *ptr)
   {
     this->alloc_actions.erase((uintptr_t) ptr);
