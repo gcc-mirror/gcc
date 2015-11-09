@@ -2017,38 +2017,29 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
      emit might clobber the register used by B or A, so move it to a pseudo
      first.  */
 
+  rtx tmp_a = NULL_RTX;
+  rtx tmp_b = NULL_RTX;
+
   if (b_simple || !else_bb)
-    {
-      rtx tmp_b = gen_reg_rtx (x_mode);
-      /* Perform the simplest kind of set.  The register allocator
-	 should remove it if it's not actually needed.  If this set is not
-	 a valid insn (can happen on the is_mem path) then end_ifcvt_sequence
-	 will cancel the whole sequence.  Don't try any of the fallback paths
-	 from noce_emit_move_insn since we want this to be the simplest kind
-	 of move.  */
-      emit_insn (gen_rtx_SET (tmp_b, b));
-      b = tmp_b;
-    }
+    tmp_b = gen_reg_rtx (x_mode);
 
   if (a_simple || !then_bb)
-    {
-      rtx tmp_a = gen_reg_rtx (x_mode);
-      emit_insn (gen_rtx_SET (tmp_a, a));
-      a = tmp_a;
-    }
+    tmp_a = gen_reg_rtx (x_mode);
 
   orig_a = a;
   orig_b = b;
 
   rtx emit_a = NULL_RTX;
   rtx emit_b = NULL_RTX;
-
+  rtx_insn *tmp_insn = NULL;
+  bool modified_in_a = false;
+  bool  modified_in_b = false;
   /* If either operand is complex, load it into a register first.
      The best way to do this is to copy the original insn.  In this
      way we preserve any clobbers etc that the insn may have had.
      This is of course not possible in the IS_MEM case.  */
 
-  if (! general_operand (a, GET_MODE (a)))
+  if (! general_operand (a, GET_MODE (a)) || tmp_a)
     {
 
       if (is_mem)
@@ -2056,36 +2047,51 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	  rtx reg = gen_reg_rtx (GET_MODE (a));
 	  emit_a = gen_rtx_SET (reg, a);
 	}
-      else if (! insn_a)
-	goto end_seq_and_fail;
       else
 	{
-	  a = gen_reg_rtx (GET_MODE (a));
-	  rtx_insn *copy_of_a = as_a <rtx_insn *> (copy_rtx (insn_a));
-	  rtx set = single_set (copy_of_a);
-	  SET_DEST (set) = a;
+	  if (insn_a)
+	    {
+	      a = tmp_a ? tmp_a : gen_reg_rtx (GET_MODE (a));
 
-	  emit_a = PATTERN (copy_of_a);
+	      rtx_insn *copy_of_a = as_a <rtx_insn *> (copy_rtx (insn_a));
+	      rtx set = single_set (copy_of_a);
+	      SET_DEST (set) = a;
+
+	      emit_a = PATTERN (copy_of_a);
+	    }
+	  else
+	    {
+	      rtx tmp_reg = tmp_a ? tmp_a : gen_reg_rtx (GET_MODE (a));
+	      emit_a = gen_rtx_SET (tmp_reg, a);
+	      a = tmp_reg;
+	    }
 	}
     }
 
-  if (! general_operand (b, GET_MODE (b)))
+  if (! general_operand (b, GET_MODE (b)) || tmp_b)
     {
       if (is_mem)
 	{
           rtx reg = gen_reg_rtx (GET_MODE (b));
 	  emit_b = gen_rtx_SET (reg, b);
 	}
-      else if (! insn_b)
-	goto end_seq_and_fail;
       else
 	{
-          b = gen_reg_rtx (GET_MODE (b));
-	  rtx_insn *copy_of_b = as_a <rtx_insn *> (copy_rtx (insn_b));
-	  rtx set = single_set (copy_of_b);
+	  if (insn_b)
+	    {
+	      b = tmp_b ? tmp_b : gen_reg_rtx (GET_MODE (b));
+	      rtx_insn *copy_of_b = as_a <rtx_insn *> (copy_rtx (insn_b));
+	      rtx set = single_set (copy_of_b);
 
-	  SET_DEST (set) = b;
-	  emit_b = PATTERN (copy_of_b);
+	      SET_DEST (set) = b;
+	      emit_b = PATTERN (copy_of_b);
+	    }
+	  else
+	    {
+	      rtx tmp_reg = tmp_b ? tmp_b : gen_reg_rtx (GET_MODE (b));
+	      emit_b = gen_rtx_SET (tmp_reg, b);
+	      b = tmp_reg;
+	  }
 	}
     }
 
@@ -2093,16 +2099,35 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
        swap insn that sets up A with the one that sets up B.  If even
        that doesn't help, punt.  */
 
-    if (emit_a && modified_in_p (orig_b, emit_a))
+  modified_in_a = emit_a != NULL_RTX && modified_in_p (orig_b, emit_a);
+  if (tmp_b && then_bb)
+    {
+      FOR_BB_INSNS (then_bb, tmp_insn)
+	if (modified_in_p (orig_b, tmp_insn))
+	  {
+	    modified_in_a = true;
+	    break;
+	  }
+
+    }
+    if (emit_a && modified_in_a)
       {
-	if (modified_in_p (orig_a, emit_b))
+	modified_in_b = emit_b != NULL_RTX && modified_in_p (orig_a, emit_b);
+	if (tmp_b && else_bb)
+	  {
+	    FOR_BB_INSNS (else_bb, tmp_insn)
+	      if (modified_in_p (orig_a, tmp_insn))
+		{
+		  modified_in_b = true;
+		  break;
+		}
+
+	  }
+	if (modified_in_b)
 	  goto end_seq_and_fail;
 
-	if (else_bb && !b_simple)
-	  {
-	    if (!noce_emit_bb (emit_b, else_bb, b_simple))
-	      goto end_seq_and_fail;
-	  }
+	if (!noce_emit_bb (emit_b, else_bb, b_simple))
+	  goto end_seq_and_fail;
 
 	if (!noce_emit_bb (emit_a, then_bb, a_simple))
 	  goto end_seq_and_fail;
