@@ -135,7 +135,7 @@ void sysdep_save_fp_ctrl_state(__cilkrts_stack_frame *sf)
         {
             __asm__ ("stmxcsr %0" : "=m" (sf->mxcsr));
         }
-        __asm__ ("fnstsw %0" : "=m" (sf->fpcsr));
+	__asm__ ("fnstcw %0" : "=m" (sf->fpcsr));
     }
 #endif
 }

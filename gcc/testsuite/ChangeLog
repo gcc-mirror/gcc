@@ -1,3 +1,8 @@
+2015-11-09  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR target/66326
+	* g++.dg/cilk-plus/CK/pr66326.cc: New test.
+
 2015-11-09  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/addr-space-1.c: New test.
