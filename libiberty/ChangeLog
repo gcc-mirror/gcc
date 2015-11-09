@@ -1,3 +1,9 @@
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	PR gdb/17133
+	* obstack.c: Import current gnulib file.
+	* obstacks.texi: Updated doc, from glibc's manual/memory.texi.
+
 2015-11-06  Joel Brobecker  <brobecker@adacore.com>
 
 	* configure.ac: Set AC_CV_FUNC_GETPAGESIZE to "yes" on
