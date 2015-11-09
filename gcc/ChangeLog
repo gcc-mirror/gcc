@@ -1,4 +1,10 @@
-2015-11-08  Jeff Law <jeff@redhat.com>
+2015-11-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/68182
+	* gcc/bb-reorder.c (reorder_basic_blocks_simple): Treat a conditional
+	branch with only one successor just like unconditional branches.
+
+2015-11-08  Jeff Law  <jeff@redhat.com>
 
 	* tree-ssa-threadupdate.c (register_jump_thraed): Assert that a
 	non-FSM path has no edges marked with EDGE_DFS_BACK.
