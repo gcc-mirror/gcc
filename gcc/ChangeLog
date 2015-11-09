@@ -1,5 +1,18 @@
 2015-11-09  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_check_no_addr_space): New.
+	(decide_alg): Add have_as parameter.
+	(alg_usable_p): Likewise; disable rep algorithms if set.
+	(ix86_expand_set_or_movmem): Notice if either MEM has a
+	non-default address space.
+	(ix86_expand_strlen): Likewise.
+	* config/i386/i386.md (strmov, strset): Likewise.
+	(*strmovdi_rex_1): Use ix86_check_no_addr_space.
+	(*strmovsi_1, *strmovqi_1, *rep_movdi_rex64, *rep_movsi, *rep_movqi,
+	*strsetdi_rex_1, *strsetsi_1, *strsethi_1, *strsetqi_1,
+	*rep_stosdi_rex64, *rep_stossi, *rep_stosqi, *cmpstrnqi_nz_1,
+	*cmpstrnqi_1, *strlenqi_1): Likewise.
+
 	* config/i386/i386.md (*movabs<mode>_1): Print the full memory rtx.
 	(*movabs<mode>_2): Likewise.
 

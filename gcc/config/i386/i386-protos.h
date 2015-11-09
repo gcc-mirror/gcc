@@ -141,6 +141,7 @@ extern void ix86_split_ashr (rtx *, rtx, machine_mode);
 extern void ix86_split_lshr (rtx *, rtx, machine_mode);
 extern rtx ix86_find_base_term (rtx);
 extern bool ix86_check_movabs (rtx, int);
+extern bool ix86_check_no_addr_space (rtx);
 extern void ix86_split_idivmod (machine_mode, rtx[], bool);
 
 extern rtx assign_386_stack_local (machine_mode, enum ix86_stack_slot);
