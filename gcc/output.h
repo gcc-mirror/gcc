@@ -108,9 +108,9 @@ extern void output_asm_label (rtx);
 /* Marks SYMBOL_REFs in x as referenced through use of assemble_external.  */
 extern void mark_symbol_refs_as_used (rtx);
 
-/* Print a memory reference operand for address X
+/* Print a memory reference operand for address X with access mode MODE
    using machine-dependent assembler syntax.  */
-extern void output_address (rtx);
+extern void output_address (machine_mode, rtx);
 
 /* Print an integer constant expression in assembler syntax.
    Addition and subtraction are the only arithmetic

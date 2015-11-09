@@ -893,7 +893,7 @@ DEFHOOK_UNDOC
 DEFHOOK_UNDOC
 (print_operand_address,
  "",
- void, (FILE *file, rtx addr),
+ void, (FILE *file, machine_mode mode, rtx addr),
  default_print_operand_address)
 
 /* Determine whether CODE is a valid punctuation character for the

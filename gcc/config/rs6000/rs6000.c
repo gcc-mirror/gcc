@@ -19259,18 +19259,19 @@ print_operand (FILE *file, rtx x, int code)
 	fputs (reg_names[REGNO (x) + 1], file);
       else if (MEM_P (x))
 	{
+	  machine_mode mode = GET_MODE (x);
 	  /* Handle possible auto-increment.  Since it is pre-increment and
 	     we have already done it, we can just use an offset of word.  */
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0),
-					   UNITS_PER_WORD));
+	    output_address (mode, plus_constant (Pmode, XEXP (XEXP (x, 0), 0),
+						 UNITS_PER_WORD));
 	  else if (GET_CODE (XEXP (x, 0)) == PRE_MODIFY)
-	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0),
-					   UNITS_PER_WORD));
+	    output_address (mode, plus_constant (Pmode, XEXP (XEXP (x, 0), 0),
+						 UNITS_PER_WORD));
 	  else
-	    output_address (XEXP (adjust_address_nv (x, SImode,
-						     UNITS_PER_WORD),
+	    output_address (mode, XEXP (adjust_address_nv (x, SImode,
+							   UNITS_PER_WORD),
 				  0));
 
 	  if (small_data_operand (x, GET_MODE (x)))
@@ -19506,13 +19507,16 @@ print_operand (FILE *file, rtx x, int code)
 	fputs (reg_names[REGNO (x) + 2], file);
       else if (MEM_P (x))
 	{
+	  machine_mode mode = GET_MODE (x);
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 8));
+	    output_address (mode, plus_constant (Pmode,
+						 XEXP (XEXP (x, 0), 0), 8));
 	  else if (GET_CODE (XEXP (x, 0)) == PRE_MODIFY)
-	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 8));
+	    output_address (mode, plus_constant (Pmode,
+						 XEXP (XEXP (x, 0), 0), 8));
 	  else
-	    output_address (XEXP (adjust_address_nv (x, SImode, 8), 0));
+	    output_address (mode, XEXP (adjust_address_nv (x, SImode, 8), 0));
 	  if (small_data_operand (x, GET_MODE (x)))
 	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
 		     reg_names[SMALL_DATA_REG]);
@@ -19551,13 +19555,16 @@ print_operand (FILE *file, rtx x, int code)
 	fputs (reg_names[REGNO (x) + 3], file);
       else if (MEM_P (x))
 	{
+	  machine_mode mode = GET_MODE (x);
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 12));
+	    output_address (mode, plus_constant (Pmode,
+						 XEXP (XEXP (x, 0), 0), 12));
 	  else if (GET_CODE (XEXP (x, 0)) == PRE_MODIFY)
-	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 12));
+	    output_address (mode, plus_constant (Pmode,
+						 XEXP (XEXP (x, 0), 0), 12));
 	  else
-	    output_address (XEXP (adjust_address_nv (x, SImode, 12), 0));
+	    output_address (mode, XEXP (adjust_address_nv (x, SImode, 12), 0));
 	  if (small_data_operand (x, GET_MODE (x)))
 	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
 		     reg_names[SMALL_DATA_REG]);
@@ -19645,9 +19652,9 @@ print_operand (FILE *file, rtx x, int code)
 	    fprintf (file, "%d(%s)", - GET_MODE_SIZE (GET_MODE (x)),
 		     reg_names[REGNO (XEXP (XEXP (x, 0), 0))]);
 	  else if (GET_CODE (XEXP (x, 0)) == PRE_MODIFY)
-	    output_address (XEXP (XEXP (x, 0), 1));
+	    output_address (GET_MODE (x), XEXP (XEXP (x, 0), 1));
 	  else
-	    output_address (XEXP (x, 0));
+	    output_address (GET_MODE (x), XEXP (x, 0));
 	}
       else
 	{

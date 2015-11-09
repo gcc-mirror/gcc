@@ -3713,7 +3713,7 @@ output_asm_insn (const char *templ, rtx *operands)
 	    else if (letter == 'l')
 	      output_asm_label (operands[opnum]);
 	    else if (letter == 'a')
-	      output_address (operands[opnum]);
+	      output_address (VOIDmode, operands[opnum]);
 	    else if (letter == 'c')
 	      {
 		if (CONSTANT_ADDRESS_P (operands[opnum]))
@@ -3848,11 +3848,11 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
    machine-dependent assembler syntax.  */
 
 void
-output_address (rtx x)
+output_address (machine_mode mode, rtx x)
 {
   bool changed = false;
   walk_alter_subreg (&x, &changed);
-  targetm.asm_out.print_operand_address (asm_out_file, x);
+  targetm.asm_out.print_operand_address (asm_out_file, mode, x);
 }
 
 /* Print an integer constant expression in assembler syntax.

@@ -50,7 +50,7 @@
 #define streq(a,b) (strcmp (a, b) == 0)
 #endif
 
-static void v850_print_operand_address (FILE *, rtx);
+static void v850_print_operand_address (FILE *, machine_mode, rtx);
 
 /* Names of the various data areas used on the v850.  */
 const char * GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
@@ -540,10 +540,13 @@ v850_print_operand (FILE * file, rtx x, int code)
 	  fprintf (file, reg_names[REGNO (x) + 1]);
 	  break;
 	case MEM:
-	  x = XEXP (adjust_address (x, SImode, 4), 0);
-	  v850_print_operand_address (file, x);
-	  if (GET_CODE (x) == CONST_INT)
-	    fprintf (file, "[r0]");
+	  {
+	    machine_mode mode = GET_MODE (x);
+	    x = XEXP (adjust_address (x, SImode, 4), 0);
+	    v850_print_operand_address (file, mode, x);
+	    if (GET_CODE (x) == CONST_INT)
+	      fprintf (file, "[r0]");
+	  }
 	  break;
 	  
 	case CONST_INT:
@@ -617,10 +620,11 @@ v850_print_operand (FILE * file, rtx x, int code)
 	{
 	case MEM:
 	  if (GET_CODE (XEXP (x, 0)) == CONST_INT)
-	    output_address (gen_rtx_PLUS (SImode, gen_rtx_REG (SImode, 0),
+	    output_address (GET_MODE (x),
+			    gen_rtx_PLUS (SImode, gen_rtx_REG (SImode, 0),
 					  XEXP (x, 0)));
 	  else
-	    output_address (XEXP (x, 0));
+	    output_address (GET_MODE (x), XEXP (x, 0));
 	  break;
 
 	case REG:
@@ -638,7 +642,7 @@ v850_print_operand (FILE * file, rtx x, int code)
 	case CONST:
 	case LABEL_REF:
 	case CODE_LABEL:
-	  v850_print_operand_address (file, x);
+	  v850_print_operand_address (file, VOIDmode, x);
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -652,7 +656,7 @@ v850_print_operand (FILE * file, rtx x, int code)
 /* Output assembly language output for the address ADDR to FILE.  */
 
 static void
-v850_print_operand_address (FILE * file, rtx addr)
+v850_print_operand_address (FILE * file, machine_mode /*mode*/, rtx addr)
 {
   switch (GET_CODE (addr))
     {

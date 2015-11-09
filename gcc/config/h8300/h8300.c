@@ -95,7 +95,7 @@ static unsigned int h8300_asm_insn_count (const char *);
 static tree h8300_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree h8300_handle_eightbit_data_attribute (tree *, tree, tree, int, bool *);
 static tree h8300_handle_tiny_data_attribute (tree *, tree, tree, int, bool *);
-static void h8300_print_operand_address (FILE *, rtx);
+static void h8300_print_operand_address (FILE *, machine_mode, rtx);
 static void h8300_print_operand (FILE *, rtx, int);
 static bool h8300_print_operand_punct_valid_p (unsigned char code);
 #ifndef OBJECT_FORMAT_ELF
@@ -1647,7 +1647,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
 	}
       break;
     case 'o':
-      h8300_print_operand_address (file, x);
+      h8300_print_operand_address (file, VOIDmode, x);
       break;
     case 's':
       if (GET_CODE (x) == CONST_INT)
@@ -1719,7 +1719,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
 	    rtx addr = XEXP (x, 0);
 
 	    fprintf (file, "@");
-	    output_address (addr);
+	    output_address (GET_MODE (x), addr);
 
 	    /* Add a length suffix to constant addresses.  Although this
 	       is often unnecessary, it helps to avoid ambiguity in the
@@ -1764,7 +1764,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
 	case CONST:
 	case LABEL_REF:
 	  fprintf (file, "#");
-	  h8300_print_operand_address (file, x);
+	  h8300_print_operand_address (file, VOIDmode, x);
 	  break;
 	case CONST_DOUBLE:
 	  {
@@ -1790,7 +1790,7 @@ h8300_print_operand_punct_valid_p (unsigned char code)
 /* Output assembly language output for the address ADDR to FILE.  */
 
 static void
-h8300_print_operand_address (FILE *file, rtx addr)
+h8300_print_operand_address (FILE *file, machine_mode mode, rtx addr)
 {
   rtx index;
   int size;
@@ -1824,12 +1824,12 @@ h8300_print_operand_address (FILE *file, rtx addr)
       if (GET_CODE (index) == REG)
 	{
 	  /* reg,foo */
-	  h8300_print_operand_address (file, XEXP (addr, 1));
+	  h8300_print_operand_address (file, mode, XEXP (addr, 1));
 	  fprintf (file, ",");
 	  switch (size)
 	    {
 	    case 0:
-	      h8300_print_operand_address (file, index);
+	      h8300_print_operand_address (file, mode, index);
 	      break;
 
 	    case 1:
@@ -1852,9 +1852,9 @@ h8300_print_operand_address (FILE *file, rtx addr)
       else
 	{
 	  /* foo+k */
-	  h8300_print_operand_address (file, XEXP (addr, 0));
+	  h8300_print_operand_address (file, mode, XEXP (addr, 0));
 	  fprintf (file, "+");
-	  h8300_print_operand_address (file, XEXP (addr, 1));
+	  h8300_print_operand_address (file, mode, XEXP (addr, 1));
 	}
       fprintf (file, ")");
       break;

@@ -2318,7 +2318,7 @@ print_operand (FILE *file, rtx x, int letter)
 	  && (GET_MODE (x) == DFmode || GET_MODE (x) == DImode))
 	{
 	  x = adjust_address (x, GET_MODE (x) == DFmode ? SFmode : SImode, 4);
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	}
       else
 	output_operand_lossage ("invalid %%N value");
@@ -2429,7 +2429,7 @@ print_operand (FILE *file, rtx x, int letter)
       if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
 	fprintf (file, "%s", reg_names[xt_true_regnum (x)]);
       else if (GET_CODE (x) == MEM)
-	output_address (XEXP (x, 0));
+	output_address (GET_MODE (x), XEXP (x, 0));
       else if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "%ld", INTVAL (x));
       else

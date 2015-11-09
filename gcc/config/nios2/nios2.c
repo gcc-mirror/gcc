@@ -2622,7 +2622,7 @@ nios2_print_operand (FILE *file, rtx op, int letter)
 	}
       if (letter == 0)
         {
-          output_address (op);
+          output_address (VOIDmode, op);
           return;
         }
       break;
@@ -2705,7 +2705,7 @@ nios2_output_addr_const_extra (FILE *file, rtx op)
 
 /* Implement TARGET_PRINT_OPERAND_ADDRESS.  */
 static void
-nios2_print_operand_address (FILE *file, rtx op)
+nios2_print_operand_address (FILE *file, machine_mode mode, rtx op)
 {
   switch (GET_CODE (op))
     {
@@ -2751,7 +2751,7 @@ nios2_print_operand_address (FILE *file, rtx op)
     case MEM:
       {
         rtx base = XEXP (op, 0);
-        nios2_print_operand_address (file, base);
+        nios2_print_operand_address (file, mode, base);
         return;
       }
     default:

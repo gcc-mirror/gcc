@@ -3287,7 +3287,7 @@ msp430_print_operand_raw (FILE * file, rtx op)
    is ADDR.  */
 
 static void
-msp430_print_operand_addr (FILE * file, rtx addr)
+msp430_print_operand_addr (FILE * file, machine_mode /*mode*/, rtx addr)
 {
   switch (GET_CODE (addr))
     {
@@ -3531,7 +3531,7 @@ msp430_print_operand (FILE * file, rtx op, int letter)
 
     case MEM:
       addr = XEXP (op, 0);
-      msp430_print_operand_addr (file, addr);
+      msp430_print_operand_addr (file, GET_MODE (op), addr);
       break;
 
     case CONST:

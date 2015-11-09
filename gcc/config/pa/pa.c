@@ -5413,10 +5413,10 @@ pa_print_operand (FILE *file, rtx x, int code)
 		       reg_names [REGNO (index)], reg_names [REGNO (base)]);
 	    }
 	  else
-	    output_address (XEXP (x, 0));
+	    output_address (GET_MODE (x), XEXP (x, 0));
 	  break;
 	default:
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	  break;
 	}
     }

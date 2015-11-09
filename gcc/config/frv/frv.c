@@ -262,7 +262,7 @@ static int frv_default_flags_for_cpu		(void);
 static int frv_string_begins_with		(const char *, const char *);
 static FRV_INLINE bool frv_small_data_reloc_p	(rtx, int);
 static void frv_print_operand			(FILE *, rtx, int);
-static void frv_print_operand_address		(FILE *, rtx);
+static void frv_print_operand_address		(FILE *, machine_mode, rtx);
 static bool frv_print_operand_punct_valid_p	(unsigned char code);
 static void frv_print_operand_memory_reference_reg
 						(FILE *, rtx);
@@ -2470,7 +2470,7 @@ frv_index_memory (rtx memref, machine_mode mode, int index)
 
 /* Print a memory address as an operand to reference that memory location.  */
 static void
-frv_print_operand_address (FILE * stream, rtx x)
+frv_print_operand_address (FILE * stream, machine_mode /* mode */, rtx x)
 {
   if (GET_CODE (x) == MEM)
     x = XEXP (x, 0);
@@ -3003,10 +3003,10 @@ frv_print_operand (FILE * file, rtx x, int code)
 	frv_output_const_unspec (file, &unspec);
 
       else if (GET_CODE (x) == MEM)
-        frv_print_operand_address (file, XEXP (x, 0));
+        frv_print_operand_address (file, GET_MODE (x), XEXP (x, 0));
 
       else if (CONSTANT_ADDRESS_P (x))
-        frv_print_operand_address (file, x);
+        frv_print_operand_address (file, VOIDmode, x);
 
       else
         fatal_insn ("bad insn in frv_print_operand, 0 case", x);

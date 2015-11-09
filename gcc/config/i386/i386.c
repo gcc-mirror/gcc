@@ -16612,7 +16612,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  if (TARGET_64BIT)
 	    x = gen_rtx_UNSPEC (DImode, gen_rtvec (1, x), UNSPEC_LEA_ADDR);
 
-	  output_address (x);
+	  output_address (VOIDmode, x);
 	  return;
 
 	case 'L':
@@ -17503,7 +17503,7 @@ ix86_print_operand_address_as (FILE *file, rtx addr, addr_space_t as)
 }
 
 static void
-ix86_print_operand_address (FILE *file, rtx addr)
+ix86_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
 {
   ix86_print_operand_address_as (file, addr, ADDR_SPACE_GENERIC);
 }
