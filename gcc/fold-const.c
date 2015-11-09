@@ -5565,6 +5565,7 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
       || (rcode != EQ_EXPR && rcode != NE_EXPR))
     return 0;
 
+  ll_reversep = lr_reversep = rl_reversep = rr_reversep = 0;
   volatilep = 0;
   ll_inner = decode_field_reference (loc, ll_arg,
 				     &ll_bitsize, &ll_bitpos, &ll_mode,
