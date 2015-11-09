@@ -389,12 +389,14 @@ dump_struct_debug (tree type, enum debug_info_usage usage,
 #endif
 
 /* Get the number of HOST_WIDE_INTs needed to represent the precision
-   of the number.  */
+   of the number.  Some constants have a large uniform precision, so
+   we get the precision needed for the actual value of the number.  */
 
 static unsigned int
 get_full_len (const wide_int &op)
 {
-  return ((op.get_precision () + HOST_BITS_PER_WIDE_INT - 1)
+  int prec = wi::min_precision (op, UNSIGNED);
+  return ((prec + HOST_BITS_PER_WIDE_INT - 1)
 	  / HOST_BITS_PER_WIDE_INT);
 }
 
@@ -8901,14 +8903,14 @@ output_die (dw_die_ref die)
 		{
 		  dw2_asm_output_data (l, a->dw_attr_val.v.val_wide->elt (i),
 				       "%s", name);
-		  name = NULL;
+		  name = "";
 		}
 	    else
 	      for (i = 0; i < len; ++i)
 		{
 		  dw2_asm_output_data (l, a->dw_attr_val.v.val_wide->elt (i),
 				       "%s", name);
-		  name = NULL;
+		  name = "";
 		}
 	  }
 	  break;
@@ -15470,8 +15472,13 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       return true;
 
     case CONST_WIDE_INT:
-      add_AT_wide (die, DW_AT_const_value,
-		   std::make_pair (rtl, GET_MODE (rtl)));
+      {
+	wide_int w1 = std::make_pair (rtl, MAX_MODE_INT);
+	unsigned int prec = MIN (wi::min_precision (w1, UNSIGNED),
+				 (unsigned int)CONST_WIDE_INT_NUNITS (rtl) * HOST_BITS_PER_WIDE_INT);
+	wide_int w = wi::zext (w1, prec);
+	add_AT_wide (die, DW_AT_const_value, w);
+      }
       return true;
 
     case CONST_DOUBLE:
