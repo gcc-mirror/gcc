@@ -1,3 +1,65 @@
+2015-11-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.opt (-mpower9-fusion): Add new switches for
+	ISA 3.0 (power9).
+	(-mpower9-vector): Likewise.
+	(-mpower9-dform): Likewise.
+	(-mpower9-minmax): Likewise.
+	(-mtoc-fusion): Likewise.
+	(-mmodulo): Likewise.
+	(-mfloat128-hardware): Likewise.
+
+	* config/rs6000/rs6000-cpus.def (ISA_3_0_MASKS_SERVER): Add option
+	mask for ISA 3.0 (power9).
+	(POWERPC_MASKS): Add new ISA 3.0 switches.
+	(power9 cpu): Add power9 cpu.
+
+	* config/rs6000/rs6000.h (ASM_CPU_POWER9_SPEC): Add support for
+	power9.
+	(ASM_CPU_SPEC): Likewise.
+	(EXTRA_SPECS): Likewise.
+
+	* config/rs6000/rs6000-opts.h (enum processor_type): Add
+	PROCESSOR_POWER9.
+
+	* config/rs6000/rs6000.c (power9_cost): Initial cost setup for
+	power9.
+	(rs6000_debug_reg_global): Add support for power9 fusion.
+	(rs6000_setup_reg_addr_masks): Cache mode size.
+	(rs6000_option_override_internal): Until real power9 tuning is
+	added, use -mtune=power8 for -mcpu=power9.
+	(rs6000_setup_reg_addr_masks): Do not allow pre-increment,
+	pre-decrement, or pre-modify on SFmode/DFmode if we allow the use
+	of Altivec registers.
+	(rs6000_option_override_internal): Add support for ISA 3.0
+	switches.
+	(rs6000_loop_align): Add support for power9 cpu.
+	(rs6000_file_start): Likewise.
+	(rs6000_adjust_cost): Likewise.
+	(rs6000_issue_rate): Likewise.
+	(insn_must_be_first_in_group): Likewise.
+	(insn_must_be_last_in_group): Likewise.
+	(force_new_group): Likewise.
+	(rs6000_register_move_cost): Likewise.
+	(rs6000_opt_masks): Likewise.
+
+	* config/rs6000/rs6000.md (cpu attribute): Add power9.
+	* config/rs6000/rs6000-tables.opt: Regenerate.
+
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	_ARCH_PWR9 if power9 support is available.
+
+	* config/rs6000/aix61.h (ASM_CPU_SPEC): Add power9.
+	* config/rs6000/aix53.h (ASM_CPU_SPEC): Likewise.
+
+	* configure.ac: Determine if the assembler supports the ISA 3.0
+	instructions.
+	* config.in (HAVE_AS_POWER9): Likewise.
+	* configure: Regenerate.
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document ISA 3.0
+	switches.
+
 2015-11-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate):

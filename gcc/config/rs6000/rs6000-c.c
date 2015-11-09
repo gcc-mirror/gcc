@@ -349,6 +349,8 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR7");
   if ((flags & OPTION_MASK_DIRECT_MOVE) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR8");
+  if ((flags & OPTION_MASK_MODULO) != 0)
+    rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR9");
   if ((flags & OPTION_MASK_SOFT_FLOAT) != 0)
     rs6000_define_or_undefine_macro (define_p, "_SOFT_FLOAT");
   if ((flags & OPTION_MASK_RECIP_PRECISION) != 0)
