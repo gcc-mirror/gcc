@@ -1,3 +1,8 @@
+2015-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/cilk-plus/CK/pr66326.cc: Do not include cilk.h.
+	(main): Use _Cilk_spawn instead of cilk_spawn.
+
 2015-11-09  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc.target/i386/addr-space-3.c: Fix quoting in dg-final
