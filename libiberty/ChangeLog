@@ -1,5 +1,11 @@
 2015-11-09  Alan Modra  <amodra@gmail.com>
 
+	* obstack.c (_obstack_newchunk): Silence -Wc++compat warning.
+	(_obstack_begin_worker): Likewise.  Move assignment to h->chunk
+	after alloc failure check.
+
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
 	PR gdb/17133
 	* obstack.c (__alignof__): Expand alignof_type from alignof.h.
 	(obstack_exit_failure): Don't use exitfail.h.

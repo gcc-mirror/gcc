@@ -138,9 +138,10 @@ _obstack_begin_worker (struct obstack *h,
   h->chunk_size = size;
   h->alignment_mask = alignment - 1;
 
-  chunk = h->chunk = call_chunkfun (h, h->chunk_size);
+  chunk = (struct _obstack_chunk *) call_chunkfun (h, h->chunk_size);
   if (!chunk)
     (*obstack_alloc_failed_handler) ();
+  h->chunk = chunk;
   h->next_free = h->object_base = __PTR_ALIGN ((char *) chunk, chunk->contents,
                                                alignment - 1);
   h->chunk_limit = chunk->limit = (char *) chunk + h->chunk_size;
@@ -202,7 +203,7 @@ _obstack_newchunk (struct obstack *h, _OBSTACK_SIZE_T length)
 
   /* Allocate and initialize the new chunk.  */
   if (obj_size <= sum1 && sum1 <= sum2)
-    new_chunk = call_chunkfun (h, new_size);
+    new_chunk = (struct _obstack_chunk *) call_chunkfun (h, new_size);
   if (!new_chunk)
     (*obstack_alloc_failed_handler)();
   h->chunk = new_chunk;
