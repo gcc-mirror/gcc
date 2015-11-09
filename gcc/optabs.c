@@ -4838,6 +4838,33 @@ expand_fix (rtx to, rtx from, int unsignedp)
     }
 }
 
+
+/* Promote integer arguments for a libcall if necessary.
+   emit_library_call_value cannot do the promotion because it does not
+   know if it should do a signed or unsigned promotion.  This is because
+   there are no tree types defined for libcalls.  */
+
+static rtx
+prepare_libcall_arg (rtx arg, int uintp)
+{
+  machine_mode mode = GET_MODE (arg);
+  machine_mode arg_mode;
+  if (SCALAR_INT_MODE_P (mode))
+    {
+      /*  If we need to promote the integer function argument we need to do
+	  it here instead of inside emit_library_call_value because in
+	  emit_library_call_value we don't know if we should do a signed or
+	  unsigned promotion.  */
+
+      int unsigned_p = 0;
+      arg_mode = promote_function_mode (NULL_TREE, mode,
+					&unsigned_p, NULL_TREE, 0);
+      if (arg_mode != mode)
+	return convert_to_mode (arg_mode, arg, uintp);
+    }
+    return arg;
+}
+
 /* Generate code to convert FROM or TO a fixed-point.
    If UINTP is true, either TO or FROM is an unsigned integer.
    If SATP is true, we need to saturate the result.  */
@@ -4879,6 +4906,9 @@ expand_fixed_convert (rtx to, rtx from, int uintp, int satp)
 
   libfunc = convert_optab_libfunc (tab, to_mode, from_mode);
   gcc_assert (libfunc);
+
+  from = prepare_libcall_arg (from, uintp);
+  from_mode = GET_MODE (from);
 
   start_sequence ();
   value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST, to_mode,
