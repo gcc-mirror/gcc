@@ -775,7 +775,7 @@ bool ipa_modify_expr (tree *, bool, ipa_parm_adjustment_vec);
 ipa_parm_adjustment *ipa_get_adjustment_candidate (tree **, bool *,
 						   ipa_parm_adjustment_vec,
 						   bool);
-
+void ipa_release_body_info (struct ipa_func_body_info *);
 
 /* From tree-sra.c:  */
 tree build_ref_for_offset (location_t, tree, HOST_WIDE_INT, bool, tree,

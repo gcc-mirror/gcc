@@ -2258,6 +2258,19 @@ analysis_dom_walker::before_dom_children (basic_block bb)
   ipa_compute_jump_functions_for_bb (m_fbi, bb);
 }
 
+/* Release body info FBI.  */
+
+void
+ipa_release_body_info (struct ipa_func_body_info *fbi)
+{
+  int i;
+  struct ipa_bb_info *bi;
+
+  FOR_EACH_VEC_ELT (fbi->bb_infos, i, bi)
+    free_ipa_bb_info (bi);
+  fbi->bb_infos.release ();
+}
+
 /* Initialize the array describing properties of formal parameters
    of NODE, analyze their uses and compute jump functions associated
    with actual arguments of calls from within NODE.  */
@@ -2313,11 +2326,7 @@ ipa_analyze_node (struct cgraph_node *node)
 
   analysis_dom_walker (&fbi).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
-  int i;
-  struct ipa_bb_info *bi;
-  FOR_EACH_VEC_ELT (fbi.bb_infos, i, bi)
-    free_ipa_bb_info (bi);
-  fbi.bb_infos.release ();
+  ipa_release_body_info (&fbi);
   free_dominance_info (CDI_DOMINATORS);
   pop_cfun ();
 }
@@ -3306,6 +3315,7 @@ ipa_node_params::~ipa_node_params ()
   free (lattices);
   /* Lattice values and their sources are deallocated with their alocation
      pool.  */
+  known_csts.release ();
   known_contexts.release ();
 
   lattices = NULL;
