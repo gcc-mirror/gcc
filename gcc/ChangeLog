@@ -1,3 +1,10 @@
+2015-11-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* omp-low.c: Fix some OpenACC comment typos.
+	(lower_reduction_clauses): Remove BUILT_IN_GOACC_GET_THREAD_NUM call.
+	* omp-builtins.def (BUILT_IN_GOACC_GET_THREAD_NUM,
+	BUILT_IN_GOACC_GET_NUM_THREADS): Delete.
+
 2015-11-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*strmovqi_1): Fix insn enable condition.
