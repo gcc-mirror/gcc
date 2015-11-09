@@ -1,5 +1,34 @@
 2015-11-09  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386-c.c (ix86_target_macros): Define __SEG_FS,
+	__SEG_GS, __SEG_TLS.
+	(ix86_register_pragmas): Register address spaces __seg_fs,
+	__seg_gs, __seg_tls.
+	* config/i386/i386-protos.h (enum ix86_address_seg): Remove.
+	(ADDR_SPACE_SEG_FS, ADDR_SPACE_SEG_GS, ADDR_SPACE_SEG_TLS): New.
+	(struct ix86_address): Use addr_space_t instead of ix86_address_seg.
+	* config/i386/i386.c (ix86_decompose_address): Likewise.
+	(ix86_legitimate_address_p): Likewise.
+	(memory_address_length): Likewise.  Check mem address space too.
+	(ix86_print_operand): Use ix86_print_operand_address_as.
+	(ix86_print_operand_address_as): Rename from
+	ix86_print_operand_address, add new addr_space_t parameter.
+	Validate that either the parameter or the ix86_address segment
+	is default address space.  Handle ADDR_SPACE_SEG_TLS.
+	(ix86_print_operand_address): New.
+	(ix86_addr_space_subset_p, TARGET_ADDR_SPACE_SUBSET_P): New.
+	(ix86_addr_space_convert, TARGET_ADDR_SPACE_CONVERT): New.
+	(ix86_addr_space_debug, TARGET_ADDR_SPACE_DEBUG): New.
+	(ix86_addr_space_zero_address_valid): New.
+	(TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID): New.
+	* config/i386/i386.h (DEFAULT_TLS_SEG_REG): Use addr_space_t constants.
+	* config/i386/rdos.h (DEFAULT_TLS_SEG_REG): Likewise.
+	* config/i386/predicates.md (address_no_seg_operand): Likewise.
+	(vsib_address_operand): Likewise.
+	(address_mpx_no_base_operand): Likewise.
+	(address_mpx_no_index_operand): Likewise.
+	* doc/extend.texi (x86 Named Address Spaces): New section.
+
 	* config/i386/i386.c (ix86_check_no_addr_space): New.
 	(decide_alg): Add have_as parameter.
 	(alg_usable_p): Likewise; disable rep algorithms if set.

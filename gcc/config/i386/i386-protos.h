@@ -279,12 +279,11 @@ extern rtx maybe_get_pool_constant (rtx);
 extern char internal_label_prefix[16];
 extern int internal_label_prefix_len;
 
-enum ix86_address_seg { SEG_DEFAULT, SEG_FS, SEG_GS };
 struct ix86_address
 {
   rtx base, index, disp;
   HOST_WIDE_INT scale;
-  enum ix86_address_seg seg;
+  addr_space_t seg;
 };
 
 extern int ix86_decompose_address (rtx, struct ix86_address *);
@@ -326,3 +325,7 @@ struct ix86_first_cycle_multipass_data_
 # define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DATA_T	\
   struct ix86_first_cycle_multipass_data_
 #endif /* RTX_CODE */
+
+const addr_space_t ADDR_SPACE_SEG_FS = 1;
+const addr_space_t ADDR_SPACE_SEG_GS = 2;
+const addr_space_t ADDR_SPACE_SEG_TLS = 3;
