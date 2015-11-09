@@ -1406,10 +1406,6 @@ ssa_redirect_edges (struct redirection_data **slot,
 	    fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
 		     e->src->index, e->dest->index, rd->dup_blocks[0]->index);
 
-	  /* If we redirect a loop latch edge cancel its loop.  */
-	  if (e->src == e->src->loop_father->latch)
-	    mark_loop_for_removal (e->src->loop_father);
-
 	  /* Redirect the incoming edge (possibly to the joiner block) to the
 	     appropriate duplicate block.  */
 	  e2 = redirect_edge_and_branch (e, rd->dup_blocks[0]);
@@ -1630,67 +1626,6 @@ thread_block (basic_block bb, bool noloop_only)
   return retval;
 }
 
-
-/* Threads edge E through E->dest to the edge THREAD_TARGET (E).  Returns the
-   copy of E->dest created during threading, or E->dest if it was not necessary
-   to copy it (E is its single predecessor).  */
-
-static basic_block
-thread_single_edge (edge e)
-{
-  basic_block bb = e->dest;
-  struct redirection_data rd;
-  vec<jump_thread_edge *> *path = THREAD_PATH (e);
-  edge eto = (*path)[1]->e;
-
-  delete_jump_thread_path (path);
-  e->aux = NULL;
-
-  thread_stats.num_threaded_edges++;
-
-  if (single_pred_p (bb))
-    {
-      /* If BB has just a single predecessor, we should only remove the
-	 control statements at its end, and successors except for ETO.  */
-      remove_ctrl_stmt_and_useless_edges (bb, eto->dest);
-
-      /* And fixup the flags on the single remaining edge.  */
-      eto->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE | EDGE_ABNORMAL);
-      eto->flags |= EDGE_FALLTHRU;
-
-      return bb;
-    }
-
-  /* Otherwise, we need to create a copy.  */
-  if (e->dest == eto->src)
-    update_bb_profile_for_threading (bb, EDGE_FREQUENCY (e), e->count, eto);
-
-  vec<jump_thread_edge *> *npath = new vec<jump_thread_edge *> ();
-  jump_thread_edge *x = new jump_thread_edge (e, EDGE_START_JUMP_THREAD);
-  npath->safe_push (x);
-
-  x = new jump_thread_edge (eto, EDGE_COPY_SRC_BLOCK);
-  npath->safe_push (x);
-  rd.path = npath;
-
-  create_block_for_threading (bb, &rd, 0, NULL);
-  remove_ctrl_stmt_and_useless_edges (rd.dup_blocks[0], NULL);
-  create_edge_and_update_destination_phis (&rd, rd.dup_blocks[0], 0);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
-	     e->src->index, e->dest->index, rd.dup_blocks[0]->index);
-
-  rd.dup_blocks[0]->count = e->count;
-  rd.dup_blocks[0]->frequency = EDGE_FREQUENCY (e);
-  single_succ_edge (rd.dup_blocks[0])->count = e->count;
-  redirect_edge_and_branch (e, rd.dup_blocks[0]);
-  flush_pending_stmts (e);
-
-  delete_jump_thread_path (npath);
-  return rd.dup_blocks[0];
-}
-
 /* Callback for dfs_enumerate_from.  Returns true if BB is different
    from STOP and DBDS_CE_STOP.  */
 
@@ -1767,24 +1702,6 @@ determine_bb_domination_status (struct loop *loop, basic_block bb)
 
   free (bblocks);
   return (bb_reachable ? DOMST_DOMINATING : DOMST_LOOP_BROKEN);
-}
-
-/* Return true if BB is part of the new pre-header that is created
-   when threading the latch to DATA.  */
-
-static bool
-def_split_header_continue_p (const_basic_block bb, const void *data)
-{
-  const_basic_block new_header = (const_basic_block) data;
-  const struct loop *l;
-
-  if (bb == new_header
-      || loop_depth (bb->loop_father) < loop_depth (new_header->loop_father))
-    return false;
-  for (l = bb->loop_father; l; l = loop_outer (l))
-    if (l == new_header->loop_father)
-      return true;
-  return false;
 }
 
 /* Thread jumps through the header of LOOP.  Returns true if cfg changes.
@@ -1869,27 +1786,7 @@ thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
   if (single_succ_p (header))
     goto fail;
 
-  /* If we threaded the latch using a joiner block, we cancel the
-     threading opportunity out of an abundance of caution.  However,
-     still allow threading from outside to inside the loop.  */
-  if (latch->aux)
-    {
-      vec<jump_thread_edge *> *path = THREAD_PATH (latch);
-      if ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK)
-	{
-	  delete_jump_thread_path (path);
-	  latch->aux = NULL;
-	}
-    }
-
-  if (latch->aux)
-    {
-      vec<jump_thread_edge *> *path = THREAD_PATH (latch);
-      tgt_edge = (*path)[1]->e;
-      tgt_bb = tgt_edge->dest;
-    }
-  else if (!may_peel_loop_headers
-	   && !redirection_block_p (loop->header))
+  if (!may_peel_loop_headers && !redirection_block_p (loop->header))
     goto fail;
   else
     {
@@ -1961,96 +1858,34 @@ thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
 	tgt_bb = split_edge (tgt_edge);
     }
 
-  if (latch->aux)
+  basic_block new_preheader;
+
+  /* Now consider the case entry edges are redirected to the new entry
+     block.  Remember one entry edge, so that we can find the new
+     preheader (its destination after threading).  */
+  FOR_EACH_EDGE (e, ei, header->preds)
     {
-      basic_block *bblocks;
-      unsigned nblocks, i;
-
-      /* First handle the case latch edge is redirected.  We are copying
-	 the loop header but not creating a multiple entry loop.  Make the
-	 cfg manipulation code aware of that fact.  */
-      set_loop_copy (loop, loop);
-      loop->latch = thread_single_edge (latch);
-      set_loop_copy (loop, NULL);
-      gcc_assert (single_succ (loop->latch) == tgt_bb);
-      loop->header = tgt_bb;
-
-      /* Remove the new pre-header blocks from our loop.  */
-      bblocks = XCNEWVEC (basic_block, loop->num_nodes);
-      nblocks = dfs_enumerate_from (header, 0, def_split_header_continue_p,
-				    bblocks, loop->num_nodes, tgt_bb);
-      for (i = 0; i < nblocks; i++)
-	if (bblocks[i]->loop_father == loop)
-	  {
-	    remove_bb_from_loops (bblocks[i]);
-	    add_bb_to_loop (bblocks[i], loop_outer (loop));
-	  }
-      free (bblocks);
-
-      /* If the new header has multiple latches mark it so.  */
-      FOR_EACH_EDGE (e, ei, loop->header->preds)
-	if (e->src->loop_father == loop
-	    && e->src != loop->latch)
-	  {
-	    loop->latch = NULL;
-	    loops_state_set (LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
-	  }
-
-      /* Cancel remaining threading requests that would make the
-	 loop a multiple entry loop.  */
-      FOR_EACH_EDGE (e, ei, header->preds)
-	{
-	  edge e2;
-
-	  if (e->aux == NULL)
-	    continue;
-
-	  vec<jump_thread_edge *> *path = THREAD_PATH (e);
-	  e2 = path->last ()->e;
-
-	  if (e->src->loop_father != e2->dest->loop_father
-	      && e2->dest != loop->header)
-	    {
-	      delete_jump_thread_path (path);
-	      e->aux = NULL;
-	    }
-	}
-
-      /* Thread the remaining edges through the former header.  */
-      thread_block (header, false);
-    }
-  else
-    {
-      basic_block new_preheader;
-
-      /* Now consider the case entry edges are redirected to the new entry
-	 block.  Remember one entry edge, so that we can find the new
-	 preheader (its destination after threading).  */
-      FOR_EACH_EDGE (e, ei, header->preds)
-	{
-	  if (e->aux)
-	    break;
-	}
-
-      /* The duplicate of the header is the new preheader of the loop.  Ensure
-	 that it is placed correctly in the loop hierarchy.  */
-      set_loop_copy (loop, loop_outer (loop));
-
-      thread_block (header, false);
-      set_loop_copy (loop, NULL);
-      new_preheader = e->dest;
-
-      /* Create the new latch block.  This is always necessary, as the latch
-	 must have only a single successor, but the original header had at
-	 least two successors.  */
-      loop->latch = NULL;
-      mfb_kj_edge = single_succ_edge (new_preheader);
-      loop->header = mfb_kj_edge->dest;
-      latch = make_forwarder_block (tgt_bb, mfb_keep_just, NULL);
-      loop->header = latch->dest;
-      loop->latch = latch->src;
+      if (e->aux)
+	break;
     }
 
+  /* The duplicate of the header is the new preheader of the loop.  Ensure
+     that it is placed correctly in the loop hierarchy.  */
+  set_loop_copy (loop, loop_outer (loop));
+
+  thread_block (header, false);
+  set_loop_copy (loop, NULL);
+  new_preheader = e->dest;
+
+  /* Create the new latch block.  This is always necessary, as the latch
+     must have only a single successor, but the original header had at
+     least two successors.  */
+  loop->latch = NULL;
+  mfb_kj_edge = single_succ_edge (new_preheader);
+  loop->header = mfb_kj_edge->dest;
+  latch = make_forwarder_block (tgt_bb, mfb_keep_just, NULL);
+  loop->header = latch->dest;
+  loop->latch = latch->src;
   return true;
 
 fail:
@@ -2331,20 +2166,6 @@ mark_threaded_blocks (bitmap threaded_blocks)
   BITMAP_FREE (tmp);
 }
 
-
-/* Return TRUE if BB ends with a switch statement or a computed goto.
-   Otherwise return false.  */
-static bool
-bb_ends_with_multiway_branch (basic_block bb ATTRIBUTE_UNUSED)
-{
-  gimple *stmt = last_stmt (bb);
-  if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
-    return true;
-  if (stmt && gimple_code (stmt) == GIMPLE_GOTO
-      && TREE_CODE (gimple_goto_dest (stmt)) == SSA_NAME)
-    return true;
-  return false;
-}
 
 /* Verify that the REGION is a valid jump thread.  A jump thread is a special
    case of SEME Single Entry Multiple Exits region in which all nodes in the
@@ -2788,36 +2609,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 		e->aux = NULL;
 		ei_next (&ei);
 	      }
-	   else if (bb_ends_with_multiway_branch (path->last ()->e->src))
-	      {
-		/* The code to thread through loop headers may have
-		   split a block with jump threads attached to it.
-
-		   We can identify this with a disjoint jump threading
-		   path.  If found, just remove it.  */
-		for (unsigned int i = 0; i < path->length () - 1; i++)
-		  if ((*path)[i]->e->dest != (*path)[i + 1]->e->src)
-		    {
-		      delete_jump_thread_path (path);
-		      e->aux = NULL;
-		      ei_next (&ei);
-		      break;
-		    }
-
-		/* Our path is still valid, thread it.  */
-		if (e->aux)
-		  {
-		    if (thread_block ((*path)[0]->e->dest, false))
-		      e->aux = NULL;
-		    else
-		      {
-			delete_jump_thread_path (path);
-			e->aux = NULL;
-			ei_next (&ei);
-		      }
-		  }
-	      }
-	   else
+	    else
 	      {
 		delete_jump_thread_path (path);
 		e->aux = NULL;
@@ -2878,18 +2670,26 @@ register_jump_thread (vec<jump_thread_edge *> *path)
   /* First make sure there are no NULL outgoing edges on the jump threading
      path.  That can happen for jumping to a constant address.  */
   for (unsigned int i = 0; i < path->length (); i++)
-    if ((*path)[i]->e == NULL)
-      {
-	if (dump_file && (dump_flags & TDF_DETAILS))
-	  {
-	    fprintf (dump_file,
-		     "Found NULL edge in jump threading path.  Cancelling jump thread:\n");
-	    dump_jump_thread_path (dump_file, *path, false);
-	  }
+    {
+      if ((*path)[i]->e == NULL)
+        {
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file,
+		       "Found NULL edge in jump threading path.  Cancelling jump thread:\n");
+	      dump_jump_thread_path (dump_file, *path, false);
+	    }
 
-	delete_jump_thread_path (path);
-	return;
-      }
+	  delete_jump_thread_path (path);
+	  return;
+        }
+
+      /* Only the FSM threader is allowed to thread across
+	 backedges in the CFG.  */
+      if (flag_checking
+	  && (*path)[0]->type != EDGE_FSM_THREAD)
+	gcc_assert (((*path)[i]->e->flags & EDGE_DFS_BACK) == 0);
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_jump_thread_path (dump_file, *path, true);
