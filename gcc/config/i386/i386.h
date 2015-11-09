@@ -602,7 +602,8 @@ extern tree x86_mfence;
 #define DEFAULT_ABI SYSV_ABI
 
 /* The default TLS segment register used by target.  */
-#define DEFAULT_TLS_SEG_REG (TARGET_64BIT ? SEG_FS : SEG_GS)
+#define DEFAULT_TLS_SEG_REG \
+  (TARGET_64BIT ? ADDR_SPACE_SEG_FS : ADDR_SPACE_SEG_GS)
 
 /* Subtargets may reset this to 1 in order to enable 96-bit long double
    with the rounding mode forced to 53 bits.  */

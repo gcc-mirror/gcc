@@ -586,6 +586,10 @@ ix86_target_macros (void)
 			       ix86_tune,
 			       ix86_fpmath,
 			       cpp_define);
+
+  cpp_define (parse_in, "__SEG_FS");
+  cpp_define (parse_in, "__SEG_GS");
+  cpp_define (parse_in, "__SEG_TLS");
 }
 
 
@@ -599,6 +603,10 @@ ix86_register_pragmas (void)
 {
   /* Update pragma hook to allow parsing #pragma GCC target.  */
   targetm.target_option.pragma_parse = ix86_pragma_target_parse;
+
+  c_register_addr_space ("__seg_fs", ADDR_SPACE_SEG_FS);
+  c_register_addr_space ("__seg_gs", ADDR_SPACE_SEG_GS);
+  c_register_addr_space ("__seg_tls", ADDR_SPACE_SEG_TLS);
 
 #ifdef REGISTER_SUBTARGET_PRAGMAS
   REGISTER_SUBTARGET_PRAGMAS ();
