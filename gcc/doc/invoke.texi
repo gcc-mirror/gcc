@@ -949,8 +949,9 @@ See RS/6000 and PowerPC Options.
 -mquad-memory-atomic -mno-quad-memory-atomic @gol
 -mcompat-align-parm -mno-compat-align-parm @gol
 -mupper-regs-df -mno-upper-regs-df -mupper-regs-sf -mno-upper-regs-sf @gol
--mupper-regs -mno-upper-regs @gol
--mfloat128 -mno-float128}
+-mupper-regs -mno-upper-regs -mmodulo -mno-modulo @gol
+-mfloat128 -mno-float128 -mfloat128-hardware -mno-float128-hardware @gol
+-mpower9-fusion -mno-mpower9-fusion -mpower9-vector -mno-power9-vector}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -19311,8 +19312,9 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{e300c3}, @samp{e500mc}, @samp{e500mc64}, @samp{e5500},
 @samp{e6500}, @samp{ec603e}, @samp{G3}, @samp{G4}, @samp{G5},
 @samp{titan}, @samp{power3}, @samp{power4}, @samp{power5}, @samp{power5+},
-@samp{power6}, @samp{power6x}, @samp{power7}, @samp{power8}, @samp{powerpc},
-@samp{powerpc64}, @samp{powerpc64le}, and @samp{rs64}.
+@samp{power6}, @samp{power6x}, @samp{power7}, @samp{power8},
+@samp{power9}, @samp{powerpc}, @samp{powerpc64}, @samp{powerpc64le},
+and @samp{rs64}.
 
 @option{-mcpu=powerpc}, @option{-mcpu=powerpc64}, and
 @option{-mcpu=powerpc64le} specify pure 32-bit PowerPC (either
@@ -19332,7 +19334,8 @@ following options:
 -mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
 -msimple-fpu -mstring  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
 -mcrypto -mdirect-move -mpower8-fusion -mpower8-vector @gol
--mquad-memory -mquad-memory-atomic}
+-mquad-memory -mquad-memory-atomic -mmodulo -mfloat128 -mfloat128-hardware @gol
+-mpower9-fusion -mpower9-vector}
 
 The particular options set for any particular CPU varies between
 compiler versions, depending on what setting seems to produce optimal
@@ -19569,11 +19572,44 @@ If the @option{-mno-upper-regs} option is used, it turns off both
 @opindex mfloat128
 @opindex mno-float128
 Enable/disable the @var{__float128} keyword for IEEE 128-bit floating point
-and use software emulation for IEEE 128-bit floating point.
+and use either software emulation for IEEE 128-bit floating point or
+hardware instructions.
 
 The VSX instruction set (@option{-mvsx}, @option{-mcpu=power7}, or
 @option{-mcpu=power8}) must be enabled to use the @option{-mfloat128}
 option.
+
+@item -mfloat128-hardware
+@itemx -mno-float128-hardware
+@opindex mfloat128-hardware
+@opindex mno-float128-hardware
+Enable/disable using ISA 3.0 hardware instructions to support the
+@var{__float128} data type.
+
+@item -mmodulo
+@itemx -mno-modulo
+@opindex mmodulo
+@opindex mno-module
+Generate code that uses (does not use) the ISA 3.0 integer modulo
+instructions.  The @option{-mmodulo} option is enabled by default
+with the @option{-mcpu=power9} option.
+
+@item -mpower9-fusion
+@itemx -mno-power9-fusion
+@opindex mpower9-fusion
+@opindex mno-power9-fusion
+Generate code that keeps (does not keeps) some operations adjacent so
+that the instructions can be fused together on power9 and later
+processors.
+
+@item -mpower9-vector
+@itemx -mno-power9-vector
+@opindex mpower9-vector
+@opindex mno-power9-vector
+Generate code that uses (does not use) the vector and scalar
+instructions that were added in version 2.07 of the PowerPC ISA.  Also
+enable the use of built-in functions that allow more direct access to
+the vector instructions.
 
 @item -mfloat-gprs=@var{yes/single/double/no}
 @itemx -mfloat-gprs

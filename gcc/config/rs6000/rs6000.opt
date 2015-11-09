@@ -601,6 +601,34 @@ moptimize-swaps
 Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
 Analyze and remove doubleword swaps from VSX computations.
 
+mpower9-fusion
+Target Report Mask(P9_FUSION) Var(rs6000_isa_flags)
+Fuse certain operations together for better performance on power9.
+
+mpower9-vector
+Target Report Mask(P9_VECTOR) Var(rs6000_isa_flags)
+Use/do not use vector and scalar instructions added in ISA 3.0.
+
+mpower9-dform
+Target Undocumented Mask(P9_DFORM) Var(rs6000_isa_flags)
+Use/do not use vector and scalar instructions added in ISA 3.0.
+
+mpower9-minmax
+Target Undocumented Mask(P9_MINMAX) Var(rs6000_isa_flags)
+Use/do not use the new min/max instructions defined in ISA 3.0.
+
+mtoc-fusion
+Target Undocumented Mask(TOC_FUSION) Var(rs6000_isa_flags)
+Fuse medium/large code model toc references with the memory instruction.
+
+mmodulo
+Target Report Mask(MODULO) Var(rs6000_isa_flags)
+Generate the integer modulo instructions.
+
 mfloat128
 Target Report Mask(FLOAT128) Var(rs6000_isa_flags)
 Enable/disable IEEE 128-bit floating point via the __float128 keyword.
+
+mfloat128-hardware
+Target Report Mask(FLOAT128_HW) Var(rs6000_isa_flags)
+Enable/disable using IEEE 128-bit floating point instructions.

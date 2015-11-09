@@ -180,14 +180,17 @@ EnumValue
 Enum(rs6000_cpu_opt_value) String(power8) Value(50)
 
 EnumValue
-Enum(rs6000_cpu_opt_value) String(powerpc) Value(51)
+Enum(rs6000_cpu_opt_value) String(power9) Value(51)
 
 EnumValue
-Enum(rs6000_cpu_opt_value) String(powerpc64) Value(52)
+Enum(rs6000_cpu_opt_value) String(powerpc) Value(52)
 
 EnumValue
-Enum(rs6000_cpu_opt_value) String(powerpc64le) Value(53)
+Enum(rs6000_cpu_opt_value) String(powerpc64) Value(53)
 
 EnumValue
-Enum(rs6000_cpu_opt_value) String(rs64) Value(54)
+Enum(rs6000_cpu_opt_value) String(powerpc64le) Value(54)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(rs64) Value(55)
 
