@@ -1,5 +1,10 @@
 2015-11-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate):
+	Remove integer CONST_DOUBLE handling.  It should never occur.
+
+2015-11-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR target/68129
 	* config/aarch64/aarch64.h (TARGET_SUPPORTS_WIDE_INT): Define to 1.
 	* config/aarch64/aarch64.c (aarch64_print_operand, CONST_DOUBLE):
