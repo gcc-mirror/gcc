@@ -2345,7 +2345,10 @@ record_temp_file (const char *filename, int always_delete, int fail_delete)
       struct temp_file *temp;
       for (temp = always_delete_queue; temp; temp = temp->next)
 	if (! filename_cmp (name, temp->name))
-	  goto already1;
+	  {
+	    free (name);
+	    goto already1;
+	  }
 
       temp = XNEW (struct temp_file);
       temp->next = always_delete_queue;

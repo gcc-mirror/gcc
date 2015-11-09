@@ -1,3 +1,26 @@
+2015-11-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc.c (record_temp_file): Release name string.
+	* ifcvt.c (noce_convert_multiple_sets): Use auto_vec instead
+	of vec.
+	* lra-lives.c (free_live_range_list): Utilize
+	lra_live_range_pool for allocation and deallocation.
+	(create_live_range): Likewise.
+	(copy_live_range): Likewise.
+	(lra_merge_live_ranges): Likewise.
+	(remove_some_program_points_and_update_live_ranges): Likewise.
+	(lra_create_live_ranges_1): Release point_freq_vec that can
+	be not freed from previous iteration of the function.
+	* tree-eh.c (lower_try_finally_switch): Use auto_vec instead of
+	vec.
+	* tree-sra.c (sra_deinitialize): Release all vectors in
+	base_access_vec.
+	* tree-ssa-dom.c (free_dom_edge_info): Make the function extern.
+	* tree-ssa-threadupdate.c (remove_ctrl_stmt_and_useless_edges):
+	Release edge_info for a removed edge.
+	(thread_through_all_blocks): Free region vector.
+	* tree-ssa.h (free_dom_edge_info): Declare function extern.
+
 2015-11-09  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* optabs.c (expand_vec_cond_expr): Always get sign from type.

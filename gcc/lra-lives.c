@@ -103,7 +103,7 @@ free_live_range_list (lra_live_range_t lr)
   while (lr != NULL)
     {
       next = lr->next;
-      delete lr;
+      lra_live_range_pool.remove (lr);
       lr = next;
     }
 }
@@ -112,7 +112,7 @@ free_live_range_list (lra_live_range_t lr)
 static lra_live_range_t
 create_live_range (int regno, int start, int finish, lra_live_range_t next)
 {
-  lra_live_range_t p = new lra_live_range;
+  lra_live_range_t p = lra_live_range_pool.allocate ();
   p->regno = regno;
   p->start = start;
   p->finish = finish;
@@ -124,7 +124,7 @@ create_live_range (int regno, int start, int finish, lra_live_range_t next)
 static lra_live_range_t
 copy_live_range (lra_live_range_t r)
 {
-  return new lra_live_range (*r);
+  return new (lra_live_range_pool) lra_live_range (*r);
 }
 
 /* Copy live range list given by its head R and return the result.  */
@@ -167,7 +167,7 @@ lra_merge_live_ranges (lra_live_range_t r1, lra_live_range_t r2)
 	  r1->start = r2->start;
 	  lra_live_range_t temp = r2;
 	  r2 = r2->next;
-	  delete temp;
+	  lra_live_range_pool.remove (temp);
 	}
       else
 	{
@@ -1081,7 +1081,7 @@ remove_some_program_points_and_update_live_ranges (void)
 		}
 	      prev_r->start = r->start;
 	      prev_r->next = next_r;
-	      delete r;
+	      lra_live_range_pool.remove (r);
 	    }
 	}
     }
@@ -1240,7 +1240,9 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
   dead_set = sparseset_alloc (max_regno);
   unused_set = sparseset_alloc (max_regno);
   curr_point = 0;
-  point_freq_vec.create (get_max_uid () * 2);
+  unsigned new_length = get_max_uid () * 2;
+  if (point_freq_vec.length () < new_length)
+    point_freq_vec.safe_grow (new_length);
   lra_point_freq = point_freq_vec.address ();
   int *post_order_rev_cfg = XNEWVEC (int, last_basic_block_for_fn (cfun));
   int n_blocks_inverted = inverted_post_order_compute (post_order_rev_cfg);

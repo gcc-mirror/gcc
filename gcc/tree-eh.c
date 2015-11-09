@@ -1362,7 +1362,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   int return_index, eh_index, fallthru_index;
   int nlabels, ndests, j, last_case_index;
   tree last_case;
-  vec<tree> case_label_vec;
+  auto_vec<tree> case_label_vec;
   gimple_seq switch_body = NULL;
   gimple *x;
   geh_else *eh_else;
