@@ -203,17 +203,14 @@ static int modulo_last_stage;
 
 /* sched-verbose controls the amount of debugging output the
    scheduler prints.  It is controlled by -fsched-verbose=N:
-   N>0 and no -DSR : the output is directed to stderr.
-   N>=10 will direct the printouts to stderr (regardless of -dSR).
-   N=1: same as -dSR.
+   N=0: no debugging output.
+   N=1: default value.
    N=2: bb's probabilities, detailed ready list info, unit/insn info.
    N=3: rtl at abort point, control-flow, regions info.
    N=5: dependences info.  */
-
 int sched_verbose = 0;
 
-/* Debugging file.  All printouts are sent to dump, which is always set,
-   either to stderr, or to the dump listing file (-dRS).  */
+/* Debugging file.  All printouts are sent to dump. */
 FILE *sched_dump = 0;
 
 /* This is a placeholder for the scheduler parameters common
@@ -7219,17 +7216,14 @@ set_priorities (rtx_insn *head, rtx_insn *tail)
   return n_insn;
 }
 
-/* Set dump and sched_verbose for the desired debugging output.  If no
-   dump-file was specified, but -fsched-verbose=N (any N), print to stderr.
-   For -fsched-verbose=N, N>=10, print everything to stderr.  */
+/* Set sched_dump and sched_verbose for the desired debugging output. */
 void
 setup_sched_dump (void)
 {
   sched_verbose = sched_verbose_param;
-  if (sched_verbose_param == 0 && dump_file)
-    sched_verbose = 1;
-  sched_dump = ((sched_verbose_param >= 10 || !dump_file)
-		? stderr : dump_file);
+  sched_dump = dump_file;
+  if (!dump_file)
+    sched_verbose = 0;
 }
 
 /* Allocate data for register pressure sensitive scheduling.  */

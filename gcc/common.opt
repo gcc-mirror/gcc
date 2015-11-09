@@ -1972,7 +1972,7 @@ Common Report Var(flag_schedule_speculative_load_dangerous) Optimization
 Allow speculative motion of more loads.
 
 fsched-verbose=
-Common RejectNegative Joined UInteger Var(sched_verbose_param)
+Common RejectNegative Joined UInteger Var(sched_verbose_param) Init(1)
 -fsched-verbose=<number>	Set the verbosity level of the scheduler.
 
 fsched2-use-superblocks
