@@ -1,6 +1,16 @@
 2015-11-09  Alan Modra  <amodra@gmail.com>
 
 	PR gdb/17133
+	* obstack.c (__alignof__): Expand alignof_type from alignof.h.
+	(obstack_exit_failure): Don't use exitfail.h.
+	(_): Include libintl.h when HAVE_LIBINTL_H and nls enabled.
+	Provide default.  Don't include gettext.h.
+	(_Noreturn): Define.
+	* obstacks.texi: Adjust node references to external libc info files.
+
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	PR gdb/17133
 	* obstack.c: Import current gnulib file.
 	* obstacks.texi: Updated doc, from glibc's manual/memory.texi.
 

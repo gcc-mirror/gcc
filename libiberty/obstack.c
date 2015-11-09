@@ -51,9 +51,14 @@
 /* If GCC, or if an oddball (testing?) host that #defines __alignof__,
    use the already-supplied __alignof__.  Otherwise, this must be Gnulib
    (as glibc assumes GCC); defer to Gnulib's alignof_type.  */
-# if !defined __GNUC__ && !defined __alignof__
-#  include <alignof.h>
-#  define __alignof__(type) alignof_type (type)
+# if !defined __GNUC__ && !defined __IBM__ALIGNOF__ && !defined __alignof__
+#  if defined __cplusplus
+template <class type> struct alignof_helper { char __slot1; type __slot2; };
+#   define __alignof__(type) offsetof (alignof_helper<type>, __slot2)
+#  else
+#   define __alignof__(type)						      \
+  offsetof (struct { char __slot1; type __slot2; }, __slot2)
+#  endif
 # endif
 # include <stdlib.h>
 # include <stdint.h>
@@ -309,17 +314,34 @@ _obstack_memory_used (struct obstack *h)
 #  ifdef _LIBC
 int obstack_exit_failure = EXIT_FAILURE;
 #  else
-#   include "exitfail.h"
-#   define obstack_exit_failure exit_failure
+#   ifndef EXIT_FAILURE
+#    define EXIT_FAILURE 1
+#   endif
+#   define obstack_exit_failure EXIT_FAILURE
 #  endif
 
-#  ifdef _LIBC
+#  if defined _LIBC || (HAVE_LIBINTL_H && ENABLE_NLS)
 #   include <libintl.h>
+#   ifndef _
+#    define _(msgid) gettext (msgid)
+#   endif
 #  else
-#   include "gettext.h"
+#   ifndef _
+#    define _(msgid) (msgid)
+#   endif
 #  endif
-#  ifndef _
-#   define _(msgid) gettext (msgid)
+
+#  if !(defined _Noreturn						      \
+        || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 201112))
+#   if ((defined __GNUC__						      \
+	 && (__GNUC__ >= 3 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 8)))	      \
+	|| (defined __SUNPRO_C && __SUNPRO_C >= 0x5110))
+#    define _Noreturn __attribute__ ((__noreturn__))
+#   elif defined _MSC_VER && _MSC_VER >= 1200
+#    define _Noreturn __declspec (noreturn)
+#   else
+#    define _Noreturn
+#   endif
 #  endif
 
 #  ifdef _LIBC

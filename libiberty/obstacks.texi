@@ -93,7 +93,7 @@ them are freed.  These macros should appear before any use of obstacks
 in the source file.
 
 Usually these are defined to use @code{malloc} via the intermediary
-@code{xmalloc} (@pxref{Unconstrained Allocation}).  This is done with
+@code{xmalloc} (@pxref{Unconstrained Allocation, , , libc, The GNU C Library Reference Manual}).  This is done with
 the following pair of macro definitions:
 
 @smallexample
@@ -172,8 +172,8 @@ The value of this variable is a pointer to a function that
 @code{obstack} uses when @code{obstack_chunk_alloc} fails to allocate
 memory.  The default action is to print a message and abort.
 You should supply a function that either calls @code{exit}
-(@pxref{Program Termination}) or @code{longjmp} (@pxref{Non-Local
-Exits}) and doesn't return.
+(@pxref{Program Termination, , , libc, The GNU C Library Reference Manual}) or @code{longjmp} (@pxref{Non-Local
+Exits, , , libc, The GNU C Library Reference Manual}) and doesn't return.
 
 @smallexample
 void my_obstack_alloc_failed (void)
@@ -253,7 +253,7 @@ obstack_savestring (char *addr, size_t size)
 
 @noindent
 Contrast this with the previous example of @code{savestring} using
-@code{malloc} (@pxref{Basic Allocation}).
+@code{malloc} (@pxref{Basic Allocation, , , libc, The GNU C Library Reference Manual}).
 
 @node Freeing Obstack Objects
 @subsubsection Freeing Objects in an Obstack

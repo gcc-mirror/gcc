@@ -142,7 +142,11 @@
                 P, A)
 
 #ifndef __attribute_pure__
-# define __attribute_pure__ _GL_ATTRIBUTE_PURE
+# if defined __GNUC_MINOR__ && __GNUC__ * 1000 + __GNUC_MINOR__ >= 2096
+#  define __attribute_pure__ __attribute__ ((__pure__))
+# else
+#  define __attribute_pure__
+# endif
 #endif
 
 #ifdef __cplusplus
