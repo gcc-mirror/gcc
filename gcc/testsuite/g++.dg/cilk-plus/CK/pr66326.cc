@@ -2,7 +2,6 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-fcilkplus -lcilkrts" { target { i?86-*-* x86_64-*-* } } } */
 
-#include <cilk/cilk.h>
 #include <vector>
 #include <random>
 
@@ -23,8 +22,8 @@ auto compute() {
 
 int main() {
   std::vector<double> v1, v2, v3;
-  cilk_spawn [&] { v1 = compute(); }();
-  cilk_spawn [&] { v2 = compute(); }();
+  _Cilk_spawn [&] { v1 = compute(); }();
+  _Cilk_spawn [&] { v2 = compute(); }();
   v3 = compute();
   do_not_optimize_away(v1.data());
   do_not_optimize_away(v2.data());
