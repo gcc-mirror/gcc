@@ -1439,7 +1439,7 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	case BOOLEAN_TYPE:
 	  /* Cache false or true.  */
 	  limit = 2;
-	  if (hwi < 2)
+	  if (IN_RANGE (hwi, 0, 1))
 	    ix = hwi;
 	  break;
 
@@ -8072,7 +8072,7 @@ build_nonstandard_boolean_type (unsigned HOST_WIDE_INT precision)
 
   type = make_node (BOOLEAN_TYPE);
   TYPE_PRECISION (type) = precision;
-  fixup_unsigned_type (type);
+  fixup_signed_type (type);
 
   if (precision <= MAX_INT_CACHED_PREC)
     nonstandard_boolean_type_cache[precision] = type;

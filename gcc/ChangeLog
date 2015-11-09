@@ -1,3 +1,9 @@
+2015-11-09  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* optabs.c (expand_vec_cond_expr): Always get sign from type.
+	* tree.c (wide_int_to_tree): Support negative values for boolean.
+	(build_nonstandard_boolean_type): Use signed type for booleans.
+
 2015-11-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68248
