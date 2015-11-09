@@ -1,3 +1,11 @@
+2015-11-09  Renlin Li  <renlin.li@arm.com>
+
+	Backport from mainline
+	2014-09-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc/ree.c (combine_reaching_defs): Ensure inserted copy don't change
+	the number of hard registers.
+
 2015-11-02  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
