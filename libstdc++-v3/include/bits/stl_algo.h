@@ -56,7 +56,7 @@
 #ifndef _STL_ALGO_H
 #define _STL_ALGO_H 1
 
-#include <cstdlib>             // for rand
+#include <cstdlib>	     // for rand
 #include <bits/algorithmfwd.h>
 #include <bits/stl_heap.h>
 #include <bits/stl_tempbuf.h>  // for _Temporary_buffer
@@ -306,7 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  while (__unary_pred(--__backTrack))
 	    {
 	      if (--__remainder == 0)
-	        return (__first - __count); // Success
+		return (__first - __count); // Success
 	    }
 	  __remainder = __count + 1 - (__first - __backTrack);
 	}
@@ -314,7 +314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _ForwardIterator, typename _Integer,
-           typename _UnaryPredicate>
+	   typename _UnaryPredicate>
     _ForwardIterator
     __search_n(_ForwardIterator __first, _ForwardIterator __last,
 	       _Integer __count,
@@ -859,15 +859,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       __first = std::__find_if(__first, __last, __pred);
       if (__first == __last)
-        return __first;
+	return __first;
       _ForwardIterator __result = __first;
       ++__first;
       for (; __first != __last; ++__first)
-        if (!__pred(__first))
-          {
-            *__result = _GLIBCXX_MOVE(*__first);
-            ++__result;
-          }
+	if (!__pred(__first))
+	  {
+	    *__result = _GLIBCXX_MOVE(*__first);
+	    ++__result;
+	  }
       return __result;
     }
 
@@ -1020,7 +1020,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ForwardIterator, typename _BinaryPredicate>
     inline _ForwardIterator
     unique(_ForwardIterator __first, _ForwardIterator __last,
-           _BinaryPredicate __binary_pred)
+	   _BinaryPredicate __binary_pred)
     {
       // concept requirements
       __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
@@ -1466,7 +1466,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ForwardIterator, typename _OutputIterator>
     inline _OutputIterator
     rotate_copy(_ForwardIterator __first, _ForwardIterator __middle,
-                _ForwardIterator __last, _OutputIterator __result)
+		_ForwardIterator __last, _OutputIterator __result)
     {
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
@@ -1476,7 +1476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_valid_range(__middle, __last);
 
       return std::copy(__first, __middle,
-                       std::copy(__middle, __last, __result));
+		       std::copy(__middle, __last, __result));
     }
 
   /// This is a helper function...
@@ -1735,19 +1735,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _RandomAccessIterator __result_first,
 		      _RandomAccessIterator __result_last)
     {
+#ifdef _GLIBCXX_CONCEPT_CHECKS
       typedef typename iterator_traits<_InputIterator>::value_type
 	_InputValueType;
       typedef typename iterator_traits<_RandomAccessIterator>::value_type
 	_OutputValueType;
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
-	_DistanceType;
+#endif
 
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_ConvertibleConcept<_InputValueType,
 				  _OutputValueType>)
       __glibcxx_function_requires(_LessThanOpConcept<_InputValueType,
-				                     _OutputValueType>)
+						     _OutputValueType>)
       __glibcxx_function_requires(_LessThanComparableConcept<_OutputValueType>)
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_irreflexive(__first, __last);
@@ -1786,12 +1786,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _RandomAccessIterator __result_last,
 		      _Compare __comp)
     {
+#ifdef _GLIBCXX_CONCEPT_CHECKS
       typedef typename iterator_traits<_InputIterator>::value_type
 	_InputValueType;
       typedef typename iterator_traits<_RandomAccessIterator>::value_type
 	_OutputValueType;
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
-	_DistanceType;
+#endif
 
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
@@ -2020,13 +2020,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lower_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val, _Compare __comp)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type
-	_ValueType;
-
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-				  _ValueType, _Tp>)
+	typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
       __glibcxx_requires_partitioned_lower_pred(__first, __last,
 						__val, __comp);
       __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
@@ -2078,12 +2075,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     upper_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type
-	_ValueType;
-
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_LessThanOpConcept<_Tp, _ValueType>)
+      __glibcxx_function_requires(_LessThanOpConcept<
+	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
       __glibcxx_requires_irreflexive2(__first, __last);
 
@@ -2111,13 +2106,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     upper_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val, _Compare __comp)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type
-	_ValueType;
-
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-				  _Tp, _ValueType>)
+	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
 						__val, __comp);
       __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
@@ -2186,13 +2178,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     equal_range(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type
-	_ValueType;
-
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_LessThanOpConcept<_ValueType, _Tp>)
-      __glibcxx_function_requires(_LessThanOpConcept<_Tp, _ValueType>)
+      __glibcxx_function_requires(_LessThanOpConcept<
+	typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
+      __glibcxx_function_requires(_LessThanOpConcept<
+	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
       __glibcxx_requires_irreflexive2(__first, __last);
@@ -2224,15 +2215,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     equal_range(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val, _Compare __comp)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type
-	_ValueType;
-
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-				  _ValueType, _Tp>)
+	typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-				  _Tp, _ValueType>)
+	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_lower_pred(__first, __last,
 						__val, __comp);
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
@@ -2259,14 +2247,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ForwardIterator, typename _Tp>
     bool
     binary_search(_ForwardIterator __first, _ForwardIterator __last,
-                  const _Tp& __val)
+		  const _Tp& __val)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type
-	_ValueType;
-
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_LessThanOpConcept<_Tp, _ValueType>)
+      __glibcxx_function_requires(_LessThanOpConcept<
+	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
       __glibcxx_requires_irreflexive2(__first, __last);
@@ -2295,15 +2281,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ForwardIterator, typename _Tp, typename _Compare>
     bool
     binary_search(_ForwardIterator __first, _ForwardIterator __last,
-                  const _Tp& __val, _Compare __comp)
+		  const _Tp& __val, _Compare __comp)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type
-	_ValueType;
-
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-				  _Tp, _ValueType>)
+	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_lower_pred(__first, __last,
 						__val, __comp);
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
@@ -2434,7 +2417,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Pointer, typename _Compare>
     void
     __merge_adaptive(_BidirectionalIterator __first,
-                     _BidirectionalIterator __middle,
+		     _BidirectionalIterator __middle,
 		     _BidirectionalIterator __last,
 		     _Distance __len1, _Distance __len2,
 		     _Pointer __buffer, _Distance __buffer_size,
@@ -2495,7 +2478,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Compare>
     void
     __merge_without_buffer(_BidirectionalIterator __first,
-                           _BidirectionalIterator __middle,
+			   _BidirectionalIterator __middle,
 			   _BidirectionalIterator __last,
 			   _Distance __len1, _Distance __len2,
 			   _Compare __comp)
@@ -2550,9 +2533,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    _Compare __comp)
     {
       typedef typename iterator_traits<_BidirectionalIterator>::value_type
-          _ValueType;
+	  _ValueType;
       typedef typename iterator_traits<_BidirectionalIterator>::difference_type
-          _DistanceType;
+	  _DistanceType;
 
       if (__first == __middle || __middle == __last)
 	return;
@@ -2725,7 +2708,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     __merge_sort_with_buffer(_RandomAccessIterator __first,
 			     _RandomAccessIterator __last,
-                             _Pointer __buffer, _Compare __comp)
+			     _Pointer __buffer, _Compare __comp)
     {
       typedef typename iterator_traits<_RandomAccessIterator>::difference_type
 	_Distance;
@@ -2752,8 +2735,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     __stable_sort_adaptive(_RandomAccessIterator __first,
 			   _RandomAccessIterator __last,
-                           _Pointer __buffer, _Distance __buffer_size,
-                           _Compare __comp)
+			   _Pointer __buffer, _Distance __buffer_size,
+			   _Compare __comp)
     {
       const _Distance __len = (__last - __first + 1) / 2;
       const _RandomAccessIterator __middle = __first + __len;
@@ -3326,7 +3309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanComparableConcept<_Tp>)
 
       return __b < __a ? pair<const _Tp&, const _Tp&>(__b, __a)
-	               : pair<const _Tp&, const _Tp&>(__a, __b);
+		       : pair<const _Tp&, const _Tp&>(__a, __b);
     }
 
   /**
@@ -3344,7 +3327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     minmax(const _Tp& __a, const _Tp& __b, _Compare __comp)
     {
       return __comp(__b, __a) ? pair<const _Tp&, const _Tp&>(__b, __a)
-	                      : pair<const _Tp&, const _Tp&>(__a, __b);
+			      : pair<const _Tp&, const _Tp&>(__a, __b);
     }
 
   template<typename _ForwardIterator, typename _Compare>
@@ -4151,7 +4134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  consecutive elements for which the predicate returns true.
   */
   template<typename _ForwardIterator, typename _Integer, typename _Tp,
-           typename _BinaryPredicate>
+	   typename _BinaryPredicate>
     inline _ForwardIterator
     search_n(_ForwardIterator __first, _ForwardIterator __last,
 	     _Integer __count, const _Tp& __val,
@@ -4193,8 +4176,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-            // "the type returned by a _UnaryOperation"
-            __typeof__(__unary_op(*__first))>)
+	    // "the type returned by a _UnaryOperation"
+	    __typeof__(__unary_op(*__first))>)
       __glibcxx_requires_valid_range(__first, __last);
 
       for (; __first != __last; ++__first, (void)++__result)
@@ -4232,8 +4215,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-            // "the type returned by a _BinaryOperation"
-            __typeof__(__binary_op(*__first1,*__first2))>)
+	    // "the type returned by a _BinaryOperation"
+	    __typeof__(__binary_op(*__first1,*__first2))>)
       __glibcxx_requires_valid_range(__first1, __last1);
 
       for (; __first1 != __last1; ++__first1, (void)++__first2, ++__result)
@@ -4355,8 +4338,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     {
       // concept requirements
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-            // "the type returned by a _Generator"
-            __typeof__(__gen())>)
+	    // "the type returned by a _Generator"
+	    __typeof__(__gen())>)
 
       for (__decltype(__n + 0) __niter = __n;
 	   __niter > 0; --__niter, ++__first)
