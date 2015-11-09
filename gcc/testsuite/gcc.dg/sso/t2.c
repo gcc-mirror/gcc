@@ -21,7 +21,7 @@ int main (void)
   put ("Local_R1 :");
   dump (&Local_R1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "Local_R1 : e5 59 d1 48 b0 a0 c1 03\n" } */
+  /* { dg-output "Local_R1 : e5 59 d1 48 b0 a0 c1 03.*\n" } */
 
   Local_R2.S1 = My_R2.S1 - 1;
   Local_R2.I  = My_R2.I + 1;
@@ -34,7 +34,7 @@ int main (void)
   put ("Local_R2 :");
   dump (&Local_R2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "Local_R2 : 44 8d 15 9e 40 58 34 1e\n" } */
+  /* { dg-output "Local_R2 : 44 8d 15 9e 40 58 34 1e.*\n" } */
 
   Local_R1.S1 = 2;
   Local_R1.I  = 0x12345678;
@@ -47,7 +47,7 @@ int main (void)
   put ("Local_R1 :");
   dump (&Local_R1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "Local_R1 : e2 59 d1 48 b4 aa d9 bb\n" } */
+  /* { dg-output "Local_R1 : e2 59 d1 48 b4 aa d9 bb.*\n" } */
 
   Local_R2.S1 = 2;
   Local_R2.I  = 0x12345678;
@@ -60,7 +60,7 @@ int main (void)
   put ("Local_R2 :");
   dump (&Local_R2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "Local_R2 : 84 8d 15 9e 15 5b 35 df\n" } */
+  /* { dg-output "Local_R2 : 84 8d 15 9e 15 5b 35 df.*\n" } */
 
   Local_R1.S1 = Local_R1.S1 - 1;
   Local_R1.I  = Local_R1.I + 1;
@@ -73,7 +73,7 @@ int main (void)
   put ("Local_R1 :");
   dump (&Local_R1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "Local_R1 : e5 59 d1 48 b0 a0 c1 03\n" } */
+  /* { dg-output "Local_R1 : e5 59 d1 48 b0 a0 c1 03.*\n" } */
 
   Local_R2.S1 = Local_R2.S1 - 1;
   Local_R2.I  = Local_R2.I + 1;
@@ -86,7 +86,7 @@ int main (void)
   put ("Local_R2 :");
   dump (&Local_R2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "Local_R2 : 44 8d 15 9e 40 58 34 1e\n" } */
+  /* { dg-output "Local_R2 : 44 8d 15 9e 40 58 34 1e.*\n" } */
 
   return 0;
 }

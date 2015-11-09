@@ -44,12 +44,12 @@ int main (void)
   put ("A1 :");
   dump (&A1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "A1 : c2 7b f3 2a 5e 12 9a 95\n" } */
+  /* { dg-output "A1 : c2 7b f3 2a 5e 12 9a 95.*\n" } */
 
   put ("A2 :");
   dump (&A2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "A2 : 09 e2 af 37 bd 24 d2 b4\n" } */
+  /* { dg-output "A2 : 09 e2 af 37 bd 24 d2 b4.*\n" } */
 
   if (Get_Elem1 (A1) != 0x78ABCDEF) abort ();
 

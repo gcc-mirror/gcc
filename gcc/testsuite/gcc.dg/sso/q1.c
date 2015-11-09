@@ -21,22 +21,22 @@ int main (void)
   put ("A1 :");
   dump (&A1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "A1 : 78 56 34 12\n" } */
+  /* { dg-output "A1 : 78 56 34 12.*\n" } */
 
   put ("B1 :");
   dump (&B1, sizeof (struct R1));
   new_line ();
-  /* { dg-output "B1 : 78 56 34 12\n" } */
+  /* { dg-output "B1 : 78 56 34 12.*\n" } */
 
   put ("A2 :");
   dump (&A2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "A2 : 12 34 56 78\n" } */
+  /* { dg-output "A2 : 12 34 56 78.*\n" } */
 
   put ("B2 :");
   dump (&B2, sizeof (struct R2));
   new_line ();
-  /* { dg-output "B2 : 12 34 56 78\n" } */
+  /* { dg-output "B2 : 12 34 56 78.*\n" } */
 
   if (A1.I != B1.I) abort ();
 
