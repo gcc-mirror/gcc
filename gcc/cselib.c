@@ -1329,15 +1329,15 @@ new_cselib_val (unsigned int hash, machine_mode mode, rtx x)
 static void
 add_mem_for_addr (cselib_val *addr_elt, cselib_val *mem_elt, rtx x)
 {
-  struct elt_loc_list *l;
-
   addr_elt = canonical_cselib_val (addr_elt);
   mem_elt = canonical_cselib_val (mem_elt);
 
   /* Avoid duplicates.  */
-  for (l = mem_elt->locs; l; l = l->next)
+  addr_space_t as = MEM_ADDR_SPACE (x);
+  for (elt_loc_list *l = mem_elt->locs; l; l = l->next)
     if (MEM_P (l->loc)
-	&& CSELIB_VAL_PTR (XEXP (l->loc, 0)) == addr_elt)
+	&& CSELIB_VAL_PTR (XEXP (l->loc, 0)) == addr_elt
+        && MEM_ADDR_SPACE (l->loc) == as)
       {
 	promote_debug_loc (l);
 	return;
@@ -1364,7 +1364,6 @@ cselib_lookup_mem (rtx x, int create)
   cselib_val **slot;
   cselib_val *addr;
   cselib_val *mem_elt;
-  struct elt_list *l;
 
   if (MEM_VOLATILE_P (x) || mode == BLKmode
       || !cselib_record_memory
@@ -1379,14 +1378,19 @@ cselib_lookup_mem (rtx x, int create)
   addr = cselib_lookup (XEXP (x, 0), addr_mode, create, mode);
   if (! addr)
     return 0;
-
   addr = canonical_cselib_val (addr);
+
   /* Find a value that describes a value of our mode at that address.  */
-  for (l = addr->addr_list; l; l = l->next)
+  addr_space_t as = MEM_ADDR_SPACE (x);
+  for (elt_list *l = addr->addr_list; l; l = l->next)
     if (GET_MODE (l->elt->val_rtx) == mode)
       {
-	promote_debug_loc (l->elt->locs);
-	return l->elt;
+	for (elt_loc_list *l2 = l->elt->locs; l2; l2 = l2->next)
+	  if (MEM_P (l2->loc) && MEM_ADDR_SPACE (l2->loc) == as)
+	    {
+	      promote_debug_loc (l->elt->locs);
+	      return l->elt;
+	    }
       }
 
   if (! create)
