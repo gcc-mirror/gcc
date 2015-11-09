@@ -1,5 +1,11 @@
 2015-11-09  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/68248
+	* tree-vect-generic.c (expand_vector_operations_1): Handle
+	scalar rhs2.
+
+2015-11-09  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/56118
 	* tree-vectorizer.h (vect_find_last_scalar_stmt_in_slp): Declare.
 	* tree-vect-slp.c (vect_find_last_scalar_stmt_in_slp): Export.
