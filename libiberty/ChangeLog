@@ -1,5 +1,10 @@
 2015-11-09  Alan Modra  <amodra@gmail.com>
 
+	* configure.ac: Check size of size_t.
+	* configure: Regenerate.
+
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
 	* obstack.c (_obstack_newchunk): Silence -Wc++compat warning.
 	(_obstack_begin_worker): Likewise.  Move assignment to h->chunk
 	after alloc failure check.

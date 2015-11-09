@@ -276,6 +276,7 @@ libiberty_AC_DECLARE_ERRNO
 # Determine sizes of some types.
 AC_CHECK_SIZEOF([int])
 AC_CHECK_SIZEOF([long])
+AC_CHECK_SIZEOF([size_t])
 
 # Check for presense of long long
 AC_CHECK_TYPE([long long],
