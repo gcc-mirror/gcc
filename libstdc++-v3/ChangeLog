@@ -1,3 +1,14 @@
+2015-11-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h
+	(partial_sort_copy): Instantiate std::iterator_traits only if concept
+	checks.
+	(lower_bound): Likewise.
+	(upper_bound): Likewise.
+	(equal_range): Likewise.
+	(binary_search): Likewise.
+	* include/bits/stl_heap.h (pop_heap): Likewise.
+
 2015-11-06  Kai Tietz  <ktietz70@googlemail.com>
 
 	* testsuite/26_numerics/complex/requirements/constexpr.cc
