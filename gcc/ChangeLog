@@ -1,5 +1,9 @@
 2015-11-09  Nikolai Bozhenov  <n.bozhenov@samsung.com>
 
+	* sched-int.h (dump_rgn_dependencies_dot): Declare
+	* sched-rgn.c (dump_rgn_dependencies_dot): New function
+	* print-rtl.h (print_insn): Add prototype
+
 	* haifa-sched.c (setup_sched_dump): Don't redirect output to stderr.
 	* common.opt (-fsched-verbose): Set default value to 1.
 	* invoke.texi (-fsched-verbose): Update the option's description.

@@ -1497,6 +1497,9 @@ extern void compute_priorities (void);
 extern void increase_insn_priority (rtx_insn *, int);
 extern void debug_rgn_dependencies (int);
 extern void debug_dependencies (rtx_insn *, rtx_insn *);
+extern void dump_rgn_dependencies_dot (FILE *);
+extern void dump_rgn_dependencies_dot (const char *);
+
 extern void free_rgn_deps (void);
 extern int contributes_to_priority (rtx_insn *, rtx_insn *);
 extern void extend_rgns (int *, int *, sbitmap, int *);
