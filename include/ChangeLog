@@ -1,3 +1,8 @@
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	PR gdb/17133
+	* obstack.h: Import current gnulib file.
+
 2015-11-05  Jakub Jelinek  <jakub@redhat.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
 
