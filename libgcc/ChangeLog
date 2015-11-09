@@ -1,3 +1,9 @@
+2015-11-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/ia64/crtbegin.S: Check HAVE_INITFINI_ARRAY_SUPPORT
+	value.
+	* config/ia64/crtend.S: Likewise.
+
 2015-11-07  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* config/visium/lib2funcs.c (__set_trampoline_parity): Use

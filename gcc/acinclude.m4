@@ -309,43 +309,96 @@ int (*fp) (void) __attribute__ ((section (".init_array"))) = foo;
 	    gcc_cv_initfini_array=yes
 	  fi
 	elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
-	  cat > conftest.s <<\EOF
-.section .dtors,"a",%progbits
+	  case $target:$gas in
+	    *:yes)
+	      sh_flags='"a"'
+	      sh_type='%progbits'
+	      ;;
+	    i?86-*-solaris2*:no | x86_64-*-solaris2*:no)
+	      sh_flags='"a"'
+	      sh_type='@progbits'
+	      ;;
+	    sparc*-*-solaris2*:no)
+	      sh_flags='#alloc'
+	      sh_type='#progbits'
+	      sh_quote='"'
+	      ;;
+	  esac
+	  case "$target:$gnu_ld" in
+	    *:yes)
+	      cat > conftest.s <<EOF
+.section .dtors,$sh_flags,$sh_type
 .balign 4
 .byte 'A', 'A', 'A', 'A'
-.section .ctors,"a",%progbits
+.section .ctors,$sh_flags,$sh_type
 .balign 4
 .byte 'B', 'B', 'B', 'B'
-.section .fini_array.65530,"a",%progbits
+.section .fini_array.65530,$sh_flags,$sh_type
 .balign 4
 .byte 'C', 'C', 'C', 'C'
-.section .init_array.65530,"a",%progbits
+.section .init_array.65530,$sh_flags,$sh_type
 .balign 4
 .byte 'D', 'D', 'D', 'D'
-.section .dtors.64528,"a",%progbits
+.section .dtors.64528,$sh_flags,$sh_type
 .balign 4
 .byte 'E', 'E', 'E', 'E'
-.section .ctors.64528,"a",%progbits
+.section .ctors.64528,$sh_flags,$sh_type
 .balign 4
 .byte 'F', 'F', 'F', 'F'
-.section .fini_array.01005,"a",%progbits
+.section .fini_array.01005,$sh_flags,$sh_type
 .balign 4
 .byte 'G', 'G', 'G', 'G'
-.section .init_array.01005,"a",%progbits
+.section .init_array.01005,$sh_flags,$sh_type
 .balign 4
 .byte 'H', 'H', 'H', 'H'
 .text
 .globl _start
 _start:
 EOF
-	  if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-	     && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
-	     && $gcc_cv_objdump -s -j .init_array conftest \
-		| grep HHHHFFFFDDDDBBBB > /dev/null 2>&1 \
-	     && $gcc_cv_objdump -s -j .fini_array conftest \
-		| grep GGGGEEEECCCCAAAA > /dev/null 2>&1; then
-	    gcc_cv_initfini_array=yes
-	  fi
+	      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+	         && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .init_array conftest \
+		    | grep HHHHFFFFDDDDBBBB > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .fini_array conftest \
+		    | grep GGGGEEEECCCCAAAA > /dev/null 2>&1; then
+	        gcc_cv_initfini_array=yes
+	      fi
+	      ;;
+	    *-*-solaris2*:no)
+	      # When Solaris ld added constructor priority support, it was
+	      # decided to only handle .init_array.N/.fini_array.N since
+	      # there was no need for backwards compatibility with
+	      # .ctors.N/.dtors.N.  .ctors/.dtors remain as separate
+	      # sections with correct execution order resp. to
+	      # .init_array/.fini_array, while gld merges them into
+	      # .init_array/.fini_array.
+	      cat > conftest.s <<EOF
+.section $sh_quote.fini_array.65530$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'C', 'C', 'C', 'C'
+.section $sh_quote.init_array.65530$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'D', 'D', 'D', 'D'
+.section $sh_quote.fini_array.01005$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'G', 'G', 'G', 'G'
+.section $sh_quote.init_array.01005$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'H', 'H', 'H', 'H'
+.text
+.globl _start
+_start:
+EOF
+	      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+	         && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .init_array conftest \
+		    | grep HHHHDDDD > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .fini_array conftest \
+		    | grep GGGGCCCC > /dev/null 2>&1; then
+	        gcc_cv_initfini_array=yes
+	      fi
+	      ;;
+	    esac
 changequote(,)dnl
 	  rm -f conftest conftest.*
 changequote([,])dnl
@@ -375,10 +428,10 @@ changequote([,])dnl
   fi])
   enable_initfini_array=$gcc_cv_initfini_array
 ])
-if test $enable_initfini_array = yes; then
-  AC_DEFINE(HAVE_INITFINI_ARRAY_SUPPORT, 1,
-    [Define .init_array/.fini_array sections are available and working.])
-fi])
+AC_DEFINE_UNQUOTED(HAVE_INITFINI_ARRAY_SUPPORT,
+  [`if test $enable_initfini_array = yes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if .init_array/.fini_array sections are available and working.])
+])
 
 dnl # _gcc_COMPUTE_GAS_VERSION
 dnl # Used by gcc_GAS_VERSION_GTE_IFELSE

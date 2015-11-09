@@ -3754,13 +3754,6 @@ AS_HELP_STRING([--disable-fix-cortex-a53-843419],
       [AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP, 1,
 		[Define if your assembler supports .register.])])
 
-    gcc_GAS_CHECK_FEATURE([@%:@nobits], gcc_cv_as_sparc_nobits,,,
-      [.section "nobits",#alloc,#write,#nobits
-       .section "progbits",#alloc,#write,#progbits])
-    AC_DEFINE_UNQUOTED(HAVE_AS_SPARC_NOBITS,
-      [`if test $gcc_cv_as_sparc_nobits = yes; then echo 1; else echo 0; fi`],
-      [Define to 1 if your assembler supports #nobits, 0 otherwise.])
-
     gcc_GAS_CHECK_FEATURE([-relax option], gcc_cv_as_sparc_relax,,
       [-relax], [.text],,
       [AC_DEFINE(HAVE_AS_RELAX_OPTION, 1,

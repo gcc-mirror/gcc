@@ -598,12 +598,6 @@
 #endif
 
 
-/* Define to 1 if your assembler supports #nobits, 0 otherwise. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_SPARC_NOBITS
-#endif
-
-
 /* Define if your assembler and linker support unaligned PC relative relocs.
    */
 #ifndef USED_FOR_TARGET
@@ -1329,7 +1323,8 @@
 #endif
 
 
-/* Define .init_array/.fini_array sections are available and working. */
+/* Define 0/1 if .init_array/.fini_array sections are available and working.
+   */
 #ifndef USED_FOR_TARGET
 #undef HAVE_INITFINI_ARRAY_SUPPORT
 #endif
