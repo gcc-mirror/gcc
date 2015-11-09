@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "gimplify.h"
+#include "target.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -2624,9 +2625,15 @@ nonfreeing_call_p (gimple *call)
 static bool
 check_loadstore (gimple *, tree op, tree, void *data)
 {
-  if ((TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
-      && operand_equal_p (TREE_OPERAND (op, 0), (tree)data, 0))
-    return true;
+  if (TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
+    {
+      /* Some address spaces may legitimately dereference zero.  */
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (op));
+      if (targetm.addr_space.zero_address_valid (as))
+	return false;
+
+      return operand_equal_p (TREE_OPERAND (op, 0), (tree)data, 0);
+    }
   return false;
 }
 

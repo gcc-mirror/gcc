@@ -1,5 +1,14 @@
 2015-11-09  Richard Henderson  <rth@redhat.com>
 
+	* gimple.c (check_loadstore): Return false when 0 is a valid address.
+	* fold-const.c (const_unop) [ADDR_SPACE_CONVERT_EXPR]: Do not fold
+	null when 0 is valid in the source address space.
+	* target.def (TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID): New.
+	* targhooks.c (default_addr_space_zero_address_valid): New.
+	* targhooks.h (default_addr_space_zero_address_valid): Declare.
+	* doc/tm.texi.in (TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID): Mark it.
+	* doc/tm.texi: Rebuild.
+
 	* cselib.c (add_mem_for_addr): Compare address spaces when
 	matching memories.
 	(cselib_lookup_mem): Likewise.

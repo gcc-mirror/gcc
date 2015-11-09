@@ -3223,6 +3223,15 @@ converted to pointers to a subset address space via explicit casts.",
  bool, (addr_space_t subset, addr_space_t superset),
  default_addr_space_subset_p)
 
+/* True if 0 is a valid address in the address space, or false if
+   0 is a NULL in the address space.  */
+DEFHOOK
+(zero_address_valid,
+ "Define this to modify the default handling of address 0 for the\n\
+address space.  Return true if 0 should be considered a valid address.",
+ bool, (addr_space_t as),
+ default_addr_space_zero_address_valid)
+
 /* Function to convert an rtl expression from one address space to another.  */
 DEFHOOK
 (convert,

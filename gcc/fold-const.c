@@ -1545,7 +1545,11 @@ const_unop (enum tree_code code, tree type, tree arg0)
       return fold_convert_const (code, type, arg0);
 
     case ADDR_SPACE_CONVERT_EXPR:
-      if (integer_zerop (arg0))
+      /* If the source address is 0, and the source address space
+	 cannot have a valid object at 0, fold to dest type null.  */
+      if (integer_zerop (arg0)
+	  && !(targetm.addr_space.zero_address_valid
+	       (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg0))))))
 	return fold_convert_const (code, type, arg0);
       break;
 
