@@ -2697,6 +2697,13 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
   if (!TREE_TYPE (arg0) || !TREE_TYPE (arg1))
     return 0;
 
+  /* We cannot consider pointers to different address space equal.  */
+  if (POINTER_TYPE_P (TREE_TYPE (arg0))
+      && POINTER_TYPE_P (TREE_TYPE (arg1))
+      && (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg0)))
+	  != TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg1)))))
+    return 0;
+
   /* Check equality of integer constants before bailing out due to
      precision differences.  */
   if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
@@ -2717,13 +2724,6 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       if (TYPE_UNSIGNED (TREE_TYPE (arg0)) != TYPE_UNSIGNED (TREE_TYPE (arg1))
 	  || POINTER_TYPE_P (TREE_TYPE (arg0))
 			     != POINTER_TYPE_P (TREE_TYPE (arg1)))
-	return 0;
-
-      /* We cannot consider pointers to different address space equal.  */
-      if (POINTER_TYPE_P (TREE_TYPE (arg0))
-			  && POINTER_TYPE_P (TREE_TYPE (arg1))
-	  && (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg0)))
-	      != TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg1)))))
 	return 0;
 
       /* If both types don't have the same precision, then it is not safe
