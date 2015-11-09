@@ -927,7 +927,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    But, of course, the storage order must be preserved when the accesses
    themselves are rewritten or transformed.  */
 #define REF_REVERSE_STORAGE_ORDER(NODE) \
-  (TREE_CHECK2 (NODE, BIT_FIELD_REF, MEM_REF)->base.u.bits.saturating_flag)
+  (TREE_CHECK2 (NODE, BIT_FIELD_REF, MEM_REF)->base.default_def_flag)
 
 /* These flags are available for each language front end to use internally.  */
 #define TREE_LANG_FLAG_0(NODE) \

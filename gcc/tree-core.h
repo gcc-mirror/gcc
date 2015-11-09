@@ -1157,9 +1157,6 @@ struct GTY(()) tree_base {
        TYPE_SATURATING in
            other types
 
-       REF_REVERSE_STORAGE_ORDER in
-           BIT_FIELD_REF, MEM_REF
-
        VAR_DECL_IS_VIRTUAL_OPERAND in
 	   VAR_DECL
 
@@ -1174,6 +1171,9 @@ struct GTY(()) tree_base {
 
    default_def_flag:
 
+       TYPE_FINAL_P in
+	   RECORD_TYPE, UNION_TYPE and QUAL_UNION_TYPE
+
        TYPE_VECTOR_OPAQUE in
 	   VECTOR_TYPE
 
@@ -1183,8 +1183,8 @@ struct GTY(()) tree_base {
        DECL_NONLOCAL_FRAME in
 	   VAR_DECL
 
-       TYPE_FINAL_P in
-	   RECORD_TYPE, UNION_TYPE and QUAL_UNION_TYPE
+       REF_REVERSE_STORAGE_ORDER in
+           BIT_FIELD_REF, MEM_REF
 */
 
 struct GTY(()) tree_typed {
