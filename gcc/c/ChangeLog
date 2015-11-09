@@ -1,6 +1,12 @@
 2015-11-09  Andreas Arnez  <arnez@linux.vnet.ibm.com>
 
 	PR debug/67192
+	* c-typeck.c (c_finish_loop): For unconditional loops, set the
+	location of the backward-goto to the start of the loop body.
+
+2015-11-09  Andreas Arnez  <arnez@linux.vnet.ibm.com>
+
+	PR debug/67192
 	* c-parser.c (c_parser_while_statement): Finish the loop before
 	parsing ahead for misleading indentation.
 	(c_parser_for_statement): Likewise.

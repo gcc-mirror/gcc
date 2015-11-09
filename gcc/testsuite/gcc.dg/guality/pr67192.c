@@ -39,15 +39,41 @@ f2 (void)
   do_it (); /* { dg-final { gdb-test 39 "cnt" "10" } } */
 }
 
+__attribute__((noinline, noclone)) static void
+f3 (void)
+{
+  for (;; do_it())
+    if (last ())
+      break;
+  do_it (); /* { dg-final { gdb-test 48 "cnt" "15" } } */
+}
+
+__attribute__((noinline, noclone)) static void
+f4 (void)
+{
+  while (1) /* { dg-final { gdb-test 54 "cnt" "15" } } */
+    if (last ())
+      break;
+    else
+      do_it ();
+  do_it (); /* { dg-final { gdb-test 59 "cnt" "20" } } */
+}
+
 void (*volatile fnp1) (void) = f1;
 void (*volatile fnp2) (void) = f2;
+void (*volatile fnp3) (void) = f3;
+void (*volatile fnp4) (void) = f4;
 
 int
 main ()
 {
   asm volatile ("" : : "r" (&fnp1) : "memory");
   asm volatile ("" : : "r" (&fnp2) : "memory");
+  asm volatile ("" : : "r" (&fnp3) : "memory");
+  asm volatile ("" : : "r" (&fnp4) : "memory");
   fnp1 ();
   fnp2 ();
+  fnp3 ();
+  fnp4 ();
   return 0;
 }
