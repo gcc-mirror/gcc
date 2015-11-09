@@ -2,6 +2,7 @@
 
 	* configure.ac: Check size of size_t.
 	* configure: Regenerate.
+	* config.in: Regenerate.
 
 2015-11-09  Alan Modra  <amodra@gmail.com>
 
