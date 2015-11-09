@@ -1,3 +1,12 @@
+2015-11-09  Jeff Law  <law@redhat.com>
+
+	* tree-into-ssa.c (names_to_release): No longer static.
+	* tree-into-ssa.h (names_to_release): Declare.
+	* tree-ssanames.c (verify_ssaname_freelists): New debug function.
+	(release_free_names_and_compact_live_names): New function extracted
+	from pass_release_ssa_names::execute.
+	(pass_release_ssa_names::execute): Use it.
+
 2015-11-09  Alan Modra  <amodra@gmail.com>
 
 	* gensupport.c (add_mnemonic_string): Make len param a size_t.
@@ -11,7 +20,7 @@
 	* gcc/bb-reorder.c (reorder_basic_blocks_simple): Treat a conditional
 	branch with only one successor just like unconditional branches.
 
-2015-11-08  Jeff Law  <jeff@redhat.com>
+2015-11-08  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (register_jump_thraed): Assert that a
 	non-FSM path has no edges marked with EDGE_DFS_BACK.
@@ -369,7 +378,7 @@
 	the dominance info; free it if we can't.
 	(pass_call_cdce::execute): Don't free the dominance info here.
 
-2015-11-06  Jeff Law <jeff@redhat.com>
+2015-11-06  Jeff Law <law@redhat.com>
 
 	* tree-ssa-threadedge.c (dummy_simplify): Remove.
 	(thread_around_empty_blocks): Remove backedge_seen_p argument.
@@ -402,7 +411,7 @@
 	(build_scop_scattering): Call build_pbb_minimal_scattering_polyhedrons.
 	(build_poly_scop): Call build_scop_minimal_scattering.
 
-2015-11-06  Jeff Law <jeff@redhat.com>
+2015-11-06  Jeff Law <law@redhat.com>
 
 	* cfg-flags.def (IGNORE): New edge flag.
 	* tree-vrp.c (identify_jump_threads): Mark and clear edges
@@ -1174,7 +1183,7 @@
 	* tree-ssa.c (gimple_uses_undefined_value_p): New.
 	* tree-ssa.h (gimple_uses_undefined_value_p): Declare.
 
-2015-11-02  Jeff Law <jeff@redhat.com>
+2015-11-02  Jeff Law <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (valid_jump_thread_path): Also detect
 	cases where the loop latch edge is in the middle of an FSM path.
@@ -1238,7 +1247,7 @@
 	PR middle-end/68166
 	* fold-const.c: Include "md5.h".
 
-2015-11-01  Jeff Law <jeff@redhat.com>
+2015-11-01  Jeff Law <law@redhat.com>
 
 	* vmsdbgout.c: Revert unused header file reduction patch.
 
@@ -1287,7 +1296,7 @@
 
 	* tree-ssa-structalias.c (ipa_pta_execute): Use make_copy_constraint.
 
-2015-10-30  Jeff Law <jeff@redhat.com>
+2015-10-30  Jeff Law <law@redhat.com>
 	    Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.h (HARD_REGNO_NREGS): Avoid warning on unused

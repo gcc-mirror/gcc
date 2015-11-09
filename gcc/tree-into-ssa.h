@@ -48,5 +48,6 @@ extern void dump_names_replaced_by (FILE *, tree);
 extern void debug_names_replaced_by (tree);
 extern void dump_update_ssa (FILE *);
 extern void debug_update_ssa (void);
+extern bitmap names_to_release;
 
 #endif /* GCC_TREE_INTO_SSA_H */
