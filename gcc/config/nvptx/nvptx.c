@@ -1579,7 +1579,7 @@ static void
 output_decl_chunk (void)
 {
   begin_decl_field ();
-  output_address (gen_int_mode (init_part, decl_chunk_mode));
+  output_address (VOIDmode, gen_int_mode (init_part, decl_chunk_mode));
   init_part = 0;
 }
 
@@ -1636,7 +1636,7 @@ nvptx_assemble_integer (rtx x, unsigned int size, int ARG_UNUSED (aligned_p))
 	{
 	  nvptx_record_needed_fndecl (SYMBOL_REF_DECL (x));
 	  fprintf (asm_out_file, "generic(");
-	  output_address (x);
+	  output_address (VOIDmode, x);
 	  fprintf (asm_out_file, ")");
 	}
       if (off != 0)
@@ -1894,7 +1894,7 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
       assemble_name (asm_out_file, name);
     }
   else
-    output_address (callee);
+    output_address (VOIDmode, callee);
 
   if (arg_end > 1 || (decl && DECL_STATIC_CHAIN (decl)))
     {
@@ -1954,9 +1954,9 @@ nvptx_print_address_operand (FILE *file, rtx x, machine_mode)
     {
     case PLUS:
       off = XEXP (x, 1);
-      output_address (XEXP (x, 0));
+      output_address (VOIDmode, XEXP (x, 0));
       fprintf (file, "+");
-      output_address (off);
+      output_address (VOIDmode, off);
       break;
 
     case SYMBOL_REF:
@@ -1974,9 +1974,9 @@ nvptx_print_address_operand (FILE *file, rtx x, machine_mode)
 /* Write assembly language output for the address ADDR to FILE.  */
 
 static void
-nvptx_print_operand_address (FILE *file, rtx addr)
+nvptx_print_operand_address (FILE *file, machine_mode mode, rtx addr)
 {
-  nvptx_print_address_operand (file, addr, VOIDmode);
+  nvptx_print_address_operand (file, addr, mode);
 }
 
 /* Print an operand, X, to FILE, with an optional modifier in CODE.

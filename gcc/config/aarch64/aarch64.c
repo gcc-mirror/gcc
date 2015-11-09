@@ -558,10 +558,6 @@ static const struct aarch64_option_extension all_extensions[] =
   {NULL, 0, 0}
 };
 
-/* Used to track the size of an address when generating a pre/post
-   increment address.  */
-static machine_mode aarch64_memory_reference_mode;
-
 typedef enum aarch64_cond_code
 {
   AARCH64_EQ = 0, AARCH64_NE, AARCH64_CS, AARCH64_CC, AARCH64_MI, AARCH64_PL,
@@ -4133,8 +4129,8 @@ aarch64_ccmp_mode_to_code (enum machine_mode mode)
 }
 
 
-void
-aarch64_print_operand (FILE *f, rtx x, char code)
+static void
+aarch64_print_operand (FILE *f, rtx x, int code)
 {
   switch (code)
     {
@@ -4364,8 +4360,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  break;
 
 	case MEM:
-	  aarch64_memory_reference_mode = GET_MODE (x);
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	  break;
 
 	case CONST:
@@ -4555,13 +4550,12 @@ aarch64_print_operand (FILE *f, rtx x, char code)
     }
 }
 
-void
-aarch64_print_operand_address (FILE *f, rtx x)
+static void
+aarch64_print_operand_address (FILE *f, machine_mode mode, rtx x)
 {
   struct aarch64_address_info addr;
 
-  if (aarch64_classify_address (&addr, x, aarch64_memory_reference_mode,
-			     MEM, true))
+  if (aarch64_classify_address (&addr, x, mode, MEM, true))
     switch (addr.type)
       {
       case ADDRESS_REG_IMM:
@@ -4604,19 +4598,19 @@ aarch64_print_operand_address (FILE *f, rtx x)
 	  {
 	  case PRE_INC:
 	    asm_fprintf (f, "[%s, %d]!", reg_names [REGNO (addr.base)],
-			 GET_MODE_SIZE (aarch64_memory_reference_mode));
+			 GET_MODE_SIZE (mode));
 	    return;
 	  case POST_INC:
 	    asm_fprintf (f, "[%s], %d", reg_names [REGNO (addr.base)],
-			 GET_MODE_SIZE (aarch64_memory_reference_mode));
+			 GET_MODE_SIZE (mode));
 	    return;
 	  case PRE_DEC:
 	    asm_fprintf (f, "[%s, -%d]!", reg_names [REGNO (addr.base)],
-			 GET_MODE_SIZE (aarch64_memory_reference_mode));
+			 GET_MODE_SIZE (mode));
 	    return;
 	  case POST_DEC:
 	    asm_fprintf (f, "[%s], -%d", reg_names [REGNO (addr.base)],
-			 GET_MODE_SIZE (aarch64_memory_reference_mode));
+			 GET_MODE_SIZE (mode));
 	    return;
 	  case PRE_MODIFY:
 	    asm_fprintf (f, "[%s, %wd]!", reg_names [REGNO (addr.base)],
@@ -13810,6 +13804,12 @@ aarch64_promoted_type (const_tree t)
 
 #undef TARGET_USE_PSEUDO_PIC_REG
 #define TARGET_USE_PSEUDO_PIC_REG aarch64_use_pseudo_pic_reg
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND aarch64_print_operand
+
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS aarch64_print_operand_address
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

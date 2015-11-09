@@ -239,7 +239,7 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 	{
 	case MEM:
 	  fputc ('(', file);
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	  fputc (')', file);
 	  break;
 
@@ -258,7 +258,7 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 	{
 	case MEM:
 	  fputc ('(', file);
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	  fputc (')', file);
 	  break;
 
@@ -317,7 +317,7 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 	case MEM:
 	  fputc ('(', file);
 	  x = adjust_address (x, SImode, 4);
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	  fputc (')', file);
 	  break;
 
@@ -369,9 +369,10 @@ mn10300_print_operand (FILE *file, rtx x, int code)
     case 'A':
       fputc ('(', file);
       if (REG_P (XEXP (x, 0)))
-	output_address (gen_rtx_PLUS (SImode, XEXP (x, 0), const0_rtx));
+	output_address (VOIDmode, gen_rtx_PLUS (SImode,
+						XEXP (x, 0), const0_rtx));
       else
-	output_address (XEXP (x, 0));
+	output_address (VOIDmode, XEXP (x, 0));
       fputc (')', file);
       break;
 
@@ -402,12 +403,12 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 	{
 	case MEM:
 	  fputc ('(', file);
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	  fputc (')', file);
 	  break;
 
 	case PLUS:
-	  output_address (x);
+	  output_address (VOIDmode, x);
 	  break;
 
 	case REG:

@@ -472,7 +472,7 @@ print_operand_address (FILE * file, rtx addr)
 
 	    }
 
-	  output_address (offset);
+	  output_address (VOIDmode, offset);
 	}
 
       if (breg != 0)
@@ -527,7 +527,7 @@ print_operand (FILE *file, rtx x, int code)
   else if (REG_P (x))
     fprintf (file, "%s", reg_names[REGNO (x)]);
   else if (MEM_P (x))
-    output_address (XEXP (x, 0));
+    output_address (GET_MODE (x), XEXP (x, 0));
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == SFmode)
     {
       char dstr[30];

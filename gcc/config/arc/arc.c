@@ -2929,19 +2929,22 @@ arc_print_operand (FILE *file, rtx x, int code)
 	      || GET_CODE (XEXP (x, 0)) == POST_INC
 	      || GET_CODE (XEXP (x, 0)) == POST_DEC
 	      || GET_CODE (XEXP (x, 0)) == POST_MODIFY)
-	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 4));
+	    output_address (VOIDmode,
+			    plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 4));
 	  else if (output_scaled)
 	    {
 	      rtx addr = XEXP (x, 0);
 	      int size = GET_MODE_SIZE (GET_MODE (x));
 
-	      output_address (plus_constant (Pmode, XEXP (addr, 0),
+	      output_address (VOIDmode,
+			      plus_constant (Pmode, XEXP (addr, 0),
 					     ((INTVAL (XEXP (addr, 1)) + 4)
 					      >> (size == 2 ? 1 : 2))));
 	      output_scaled = 0;
 	    }
 	  else
-	    output_address (plus_constant (Pmode, XEXP (x, 0), 4));
+	    output_address (VOIDmode,
+			    plus_constant (Pmode, XEXP (x, 0), 4));
 	  fputc (']', file);
 	}
       else
@@ -3132,28 +3135,31 @@ arc_print_operand (FILE *file, rtx x, int code)
 	switch (GET_CODE (addr))
 	  {
 	  case PRE_INC: case POST_INC:
-	    output_address (plus_constant (Pmode, XEXP (addr, 0), size)); break;
+	    output_address (VOIDmode,
+			    plus_constant (Pmode, XEXP (addr, 0), size)); break;
 	  case PRE_DEC: case POST_DEC:
-	    output_address (plus_constant (Pmode, XEXP (addr, 0), -size));
+	    output_address (VOIDmode,
+			    plus_constant (Pmode, XEXP (addr, 0), -size));
 	    break;
 	  case PRE_MODIFY: case POST_MODIFY:
-	    output_address (XEXP (addr, 1)); break;
+	    output_address (VOIDmode, XEXP (addr, 1)); break;
 	  case PLUS:
 	    if (output_scaled)
 	      {
-		output_address (plus_constant (Pmode, XEXP (addr, 0),
+		output_address (VOIDmode,
+				plus_constant (Pmode, XEXP (addr, 0),
 					       (INTVAL (XEXP (addr, 1))
 						>> (size == 2 ? 1 : 2))));
 		output_scaled = 0;
 	      }
 	    else
-	      output_address (addr);
+	      output_address (VOIDmode, addr);
 	    break;
 	  default:
 	    if (flag_pic && CONSTANT_ADDRESS_P (addr))
 	      arc_output_pic_addr_const (file, addr, code);
 	    else
-	      output_address (addr);
+	      output_address (VOIDmode, addr);
 	    break;
 	  }
 	fputc (']', file);
@@ -3239,7 +3245,7 @@ arc_print_operand_address (FILE *file , rtx addr)
 	gcc_assert (GET_CODE (XEXP (c, 0)) == SYMBOL_REF);
 	gcc_assert (GET_CODE (XEXP (c, 1)) == CONST_INT);
 
-	output_address(XEXP(addr,0));
+	output_address (VOIDmode, XEXP (addr, 0));
 
 	break;
       }

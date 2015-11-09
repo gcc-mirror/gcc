@@ -100,7 +100,7 @@ static bool thumb_force_lr_save (void);
 static unsigned arm_size_return_regs (void);
 static bool arm_assemble_integer (rtx, unsigned int, int);
 static void arm_print_operand (FILE *, rtx, int);
-static void arm_print_operand_address (FILE *, rtx);
+static void arm_print_operand_address (FILE *, machine_mode, rtx);
 static bool arm_print_operand_punct_valid_p (unsigned char code);
 static const char *fp_const_from_val (REAL_VALUE_TYPE *);
 static arm_cc get_arm_condition_code (rtx);
@@ -868,11 +868,6 @@ int prefer_neon_for_64bits = 0;
 
 /* Nonzero if we shouldn't use literal pools.  */
 bool arm_disable_literal_pool = false;
-
-/* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference,
-   we must report the mode of the memory reference from
-   TARGET_PRINT_OPERAND to TARGET_PRINT_OPERAND_ADDRESS.  */
-machine_mode output_memory_reference_mode;
 
 /* The register number to be used for the PIC offset register.  */
 unsigned arm_pic_register = INVALID_REGNUM;
@@ -22403,8 +22398,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	  break;
 
 	case MEM:
-	  output_memory_reference_mode = GET_MODE (x);
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	  break;
 
 	case CONST_DOUBLE:
@@ -22433,7 +22427,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
 
 /* Target hook for printing a memory address.  */
 static void
-arm_print_operand_address (FILE *stream, rtx x)
+arm_print_operand_address (FILE *stream, machine_mode mode, rtx x)
 {
   if (TARGET_32BIT)
     {
@@ -22491,20 +22485,18 @@ arm_print_operand_address (FILE *stream, rtx x)
       else if (GET_CODE (x) == PRE_INC || GET_CODE (x) == POST_INC
 	       || GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_DEC)
 	{
-	  extern machine_mode output_memory_reference_mode;
-
 	  gcc_assert (REG_P (XEXP (x, 0)));
 
 	  if (GET_CODE (x) == PRE_DEC || GET_CODE (x) == PRE_INC)
 	    asm_fprintf (stream, "[%r, #%s%d]!",
 			 REGNO (XEXP (x, 0)),
 			 GET_CODE (x) == PRE_DEC ? "-" : "",
-			 GET_MODE_SIZE (output_memory_reference_mode));
+			 GET_MODE_SIZE (mode));
 	  else
 	    asm_fprintf (stream, "[%r], #%s%d",
 			 REGNO (XEXP (x, 0)),
 			 GET_CODE (x) == POST_DEC ? "-" : "",
-			 GET_MODE_SIZE (output_memory_reference_mode));
+			 GET_MODE_SIZE (mode));
 	}
       else if (GET_CODE (x) == PRE_MODIFY)
 	{

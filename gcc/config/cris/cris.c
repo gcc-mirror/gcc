@@ -114,7 +114,7 @@ static int cris_reg_saved_in_regsave_area  (unsigned int, bool);
 
 static void cris_print_operand (FILE *, rtx, int);
 
-static void cris_print_operand_address (FILE *, rtx);
+static void cris_print_operand_address (FILE *, machine_mode, rtx);
 
 static bool cris_print_operand_punct_valid_p (unsigned char code);
 
@@ -803,7 +803,7 @@ cris_print_operand (FILE *file, rtx x, int code)
 		return;
 	      }
 	  }
-	output_address (addr);
+	output_address (VOIDmode, addr);
       }
       return;
 
@@ -942,7 +942,7 @@ cris_print_operand (FILE *file, rtx x, int code)
 	      adj_mem
 		= adjust_address (adj_mem, GET_MODE (adj_mem), size / 2);
 
-	    output_address (XEXP (adj_mem, 0));
+	    output_address (VOIDmode, XEXP (adj_mem, 0));
 	    return;
 	  }
 
@@ -1129,7 +1129,7 @@ cris_print_operand (FILE *file, rtx x, int code)
       return;
 
     case MEM:
-      output_address (XEXP (operand, 0));
+      output_address (GET_MODE (operand), XEXP (operand, 0));
       return;
 
     case CONST_DOUBLE:
@@ -1200,7 +1200,7 @@ cris_print_operand_punct_valid_p (unsigned char code)
 /* The PRINT_OPERAND_ADDRESS worker.  */
 
 static void
-cris_print_operand_address (FILE *file, rtx x)
+cris_print_operand_address (FILE *file, machine_mode /*mode*/, rtx x)
 {
   /* All these were inside MEM:s so output indirection characters.  */
   putc ('[', file);

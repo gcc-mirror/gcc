@@ -345,6 +345,7 @@ default_print_operand (FILE *stream ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 
 void
 default_print_operand_address (FILE *stream ATTRIBUTE_UNUSED,
+			       machine_mode /*mode*/,
 			       rtx x ATTRIBUTE_UNUSED)
 {
 #ifdef PRINT_OPERAND_ADDRESS

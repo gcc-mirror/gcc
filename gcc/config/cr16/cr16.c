@@ -122,7 +122,7 @@ static enum data_model_type data_model = DM_DEFAULT;
 
 /* TARGETM Function Prototypes and forward declarations  */
 static void cr16_print_operand (FILE *, rtx, int);
-static void cr16_print_operand_address (FILE *, rtx);
+static void cr16_print_operand_address (FILE *, machine_mode, rtx);
 
 /* Stack layout and calling conventions.  */
 #undef  TARGET_STRUCT_VALUE_RTX
@@ -1494,7 +1494,7 @@ cr16_print_operand (FILE * file, rtx x, int code)
 	  return;
 
 	case MEM:
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	  return;
 
 	case CONST_DOUBLE:
@@ -1524,7 +1524,7 @@ cr16_print_operand (FILE * file, rtx x, int code)
 	    {
 	      putc ('$', file);
 	    }
-	  cr16_print_operand_address (file, x);
+	  cr16_print_operand_address (file, VOIDmode, x);
 	  return;
 	}
     default:
@@ -1537,7 +1537,7 @@ cr16_print_operand (FILE * file, rtx x, int code)
 /* Implements the macro PRINT_OPERAND_ADDRESS defined in cr16.h.  */
 
 static void
-cr16_print_operand_address (FILE * file, rtx addr)
+cr16_print_operand_address (FILE * file, machine_mode /*mode*/, rtx addr)
 {
   enum cr16_addrtype addrtype;
   struct cr16_address address;

@@ -617,7 +617,7 @@ static machine_mode sparc_preferred_simd_mode (machine_mode);
 static reg_class_t sparc_preferred_reload_class (rtx x, reg_class_t rclass);
 static bool sparc_print_operand_punct_valid_p (unsigned char);
 static void sparc_print_operand (FILE *, rtx, int);
-static void sparc_print_operand_address (FILE *, rtx);
+static void sparc_print_operand_address (FILE *, machine_mode, rtx);
 static reg_class_t sparc_secondary_reload (bool, rtx, reg_class_t,
 					   machine_mode,
 					   secondary_reload_info *);
@@ -8802,7 +8802,7 @@ sparc_print_operand (FILE *file, rtx x, int code)
       return;
     case 'm':
       /* Print the operand's address only.  */
-      output_address (XEXP (x, 0));
+      output_address (GET_MODE (x), XEXP (x, 0));
       return;
     case 'r':
       /* In this case we need a register.  Use %g0 if the
@@ -8895,7 +8895,7 @@ sparc_print_operand (FILE *file, rtx x, int code)
       /* Operand must be a MEM; write its address.  */
       if (GET_CODE (x) != MEM)
 	output_operand_lossage ("invalid %%f operand");
-      output_address (XEXP (x, 0));
+      output_address (GET_MODE (x), XEXP (x, 0));
       return;
 
     case 's':
@@ -8933,7 +8933,7 @@ sparc_print_operand (FILE *file, rtx x, int code)
 	/* Poor Sun assembler doesn't understand absolute addressing.  */
       if (CONSTANT_P (XEXP (x, 0)))
 	fputs ("%g0+", file);
-      output_address (XEXP (x, 0));
+      output_address (GET_MODE (x), XEXP (x, 0));
       fputc (']', file);
     }
   else if (GET_CODE (x) == HIGH)
@@ -8972,7 +8972,7 @@ sparc_print_operand (FILE *file, rtx x, int code)
 /* Implement TARGET_PRINT_OPERAND_ADDRESS.  */
 
 static void
-sparc_print_operand_address (FILE *file, rtx x)
+sparc_print_operand_address (FILE *file, machine_mode /*mode*/, rtx x)
 {
   register rtx base, index = 0;
   int offset = 0;
@@ -8995,7 +8995,7 @@ sparc_print_operand_address (FILE *file, rtx x)
 		      && ! TARGET_CM_MEDMID);
 	  output_operand (XEXP (base, 0), 0);
 	  fputs ("+%lo(", file);
-	  output_address (XEXP (base, 1));
+	  output_address (VOIDmode, XEXP (base, 1));
 	  fprintf (file, ")+%d", offset);
 	}
       else
@@ -9027,7 +9027,7 @@ sparc_print_operand_address (FILE *file, rtx x)
         fputs ("+%l44(", file);
       else
         fputs ("+%lo(", file);
-      output_address (XEXP (addr, 1));
+      output_address (VOIDmode, XEXP (addr, 1));
       fputc (')', file);
     }
   else if (flag_pic

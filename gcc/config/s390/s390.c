@@ -7031,7 +7031,7 @@ print_operand (FILE *file, rtx x, int code)
       break;
 
     case MEM:
-      output_address (XEXP (x, 0));
+      output_address (GET_MODE (x), XEXP (x, 0));
       break;
 
     case CONST:

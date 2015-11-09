@@ -2317,7 +2317,7 @@ print_operand (FILE * file, rtx op, int letter)
     if (letter == 'o')
       {
 	rtx op4 = adjust_address (op, GET_MODE (op), 4);
-	output_address (XEXP (op4, 0));
+	output_address (GET_MODE (op), XEXP (op4, 0));
       }
     else if (letter == 'y')
       {
@@ -2329,7 +2329,7 @@ print_operand (FILE * file, rtx op, int letter)
         }
       }
     else
-      output_address (XEXP (op, 0));
+      output_address (GET_MODE (op), XEXP (op, 0));
 
   else if (letter == 'h' || letter == 'j')
     {

@@ -212,7 +212,7 @@ static tree sh_handle_sp_switch_attribute (tree *, tree, tree, int, bool *);
 static tree sh_handle_trap_exit_attribute (tree *, tree, tree, int, bool *);
 static tree sh_handle_renesas_attribute (tree *, tree, tree, int, bool *);
 static void sh_print_operand (FILE *, rtx, int);
-static void sh_print_operand_address (FILE *, rtx);
+static void sh_print_operand_address (FILE *, machine_mode, rtx);
 static bool sh_print_operand_punct_valid_p (unsigned char code);
 static bool sh_asm_output_addr_const_extra (FILE *file, rtx x);
 static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
@@ -1144,7 +1144,7 @@ sh_override_options_after_change (void)
 
 /* Print the operand address in x to the stream.  */
 static void
-sh_print_operand_address (FILE *stream, rtx x)
+sh_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -1296,7 +1296,7 @@ sh_print_operand (FILE *stream, rtx x, int code)
       else if (MEM_P (x))
 	{
 	  x = adjust_address (x, SImode, 4 * SH_REG_LSW_OFFSET);
-	  sh_print_operand_address (stream, XEXP (x, 0));
+	  sh_print_operand_address (stream, GET_MODE (x), XEXP (x, 0));
 	}
       else
 	{
@@ -1323,7 +1323,7 @@ sh_print_operand (FILE *stream, rtx x, int code)
       else if (MEM_P (x))
 	{
 	  x = adjust_address (x, SImode, 4 * SH_REG_MSW_OFFSET);
-	  sh_print_operand_address (stream, XEXP (x, 0));
+	  sh_print_operand_address (stream, GET_MODE (x), XEXP (x, 0));
 	}
       else
 	{
@@ -1348,10 +1348,13 @@ sh_print_operand (FILE *stream, rtx x, int code)
 	  fputs (reg_names[REGNO (x) + 1], (stream));
 	  break;
 	case MEM:
-	  if (GET_CODE (XEXP (x, 0)) != PRE_DEC
-	      && GET_CODE (XEXP (x, 0)) != POST_INC)
-	    x = adjust_address (x, SImode, 4);
-	  sh_print_operand_address (stream, XEXP (x, 0));
+	  {
+	    machine_mode mode = GET_MODE (x);
+	    if (GET_CODE (XEXP (x, 0)) != PRE_DEC
+		&& GET_CODE (XEXP (x, 0)) != POST_INC)
+	      x = adjust_address (x, SImode, 4);
+	    sh_print_operand_address (stream, mode, XEXP (x, 0));
+	  }
 	  break;
 	default:
 	  break;
@@ -1562,7 +1565,7 @@ sh_print_operand (FILE *stream, rtx x, int code)
 	  break;
 
 	case MEM:
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	  break;
 
 	default:

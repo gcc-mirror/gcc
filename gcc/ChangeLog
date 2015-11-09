@@ -1,3 +1,145 @@
+2015-11-09  Julian Brown  <julian@codesourcery.com>
+
+	* final.c (output_asm_insn): Pass VOIDmode to output_address.
+	(output_address): Add MODE argument. Pass to print_operand_address
+	hook.
+	* targhooks.c (default_print_operand_address): Add MODE argument.
+	* targhooks.h (default_print_operand_address): Update prototype.
+	* output.h (output_address): Update prototype.
+	* target.def (print_operand_address): Add MODE argument.
+	* config/vax/vax.c (print_operand_address): Pass VOIDmode to
+	output_address.
+	(print_operand): Pass access mode to output_address.
+	* config/mcore/mcore.c (mcore_print_operand_address): Add MODE
+	argument.
+	(mcore_print_operand): Update calls to mcore_print_operand_address.
+	* config/fr30/fr30.c (fr30_print_operand): Pass VOIDmode to
+	output_address.
+	* config/lm32/lm32.c (lm32_print_operand): Pass mode in calls to
+	output_address.
+	* config/tilegx/tilegx.c (output_memory_reference_mode): Remove
+	global.
+	(tilegx_print_operand): Don't set above global. Update calls to
+	output_address.
+	(tilegx_print_operand_address): Add MODE argument. Use instead of
+	output_memory_reference_mode global.
+	* config/frv/frv.c (frv_print_operand_address): Add MODE argument.
+	(frv_print_operand): Pass mode to frv_print_operand_address calls.
+	* config/mn10300/mn10300.c (mn10300_print_operand): Pass mode to
+	output_address.
+	* config/cris/cris.c (cris_print_operand_address): Add MODE
+	argument.
+	(cris_print_operand): Pass mode to output_address calls.
+	* config/spu/spu.c (print_operand): Pass mode to output_address
+	calls.
+	* config/aarch64/aarch64.h (aarch64_print_operand)
+	(aarch64_print_operand_address): Remove prototypes.
+	* config/aarch64/aarch64.c (aarch64_memory_reference_mode): Delete
+	global.
+	(aarch64_print_operand): Make static. Update calls to
+	output_address.
+	(aarch64_print_operand_address): Add MODE argument. Use instead of
+	aarch64_memory_reference_mode global.
+	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS): Define target
+	hooks.
+	* config/aarch64/aarch64.h (PRINT_OPERAND, PRINT_OPERAND_ADDRESS):
+	Delete macro definitions.
+	* config/pa/pa.c (pa_print_operand): Pass mode in output_address
+	calls.
+	* config/xtensa/xtensa.c (print_operand): Pass mode in
+	output_address calls.
+	* config/h8300/h8300.c (h8300_print_operand_address): Add MODE
+	argument.
+	(h83000_print_operand): Update calls to h8300_print_operand_address
+	and output_address.
+	* config/ia64/ia64.c (ia64_print_operand_address): Add MODE
+	argument.
+	* config/tilepro/tilepro.c (output_memory_reference_mode): Delete
+	global.
+	(tilepro_print_operand): Pass mode to output_address.
+	(tilepro_print_operand_address): Add MODE argument. Use instead of
+	output_memory_reference_mode.
+	* config/nvptx/nvptx.c (output_decl_chunk, nvptx_assemble_integer)
+	(nvptx_output_call_insn, nvptx_print_address_operand): Pass VOIDmode
+	to output_address calls.
+	(nvptx_print_operand_address): Add MODE argument.
+	* config/alpha/alpha.c (print_operand): Pass mode argument in
+	output_address calls.
+	* config/m68k/m68k.c (print_operand): Pass mode argument in
+	output_address call.
+	* config/avr/avr.c (avr_print_operand_address): Add MODE argument.
+	(avr_print_operand): Update calls to avr_print_operand_address.
+	* config/sparc/sparc.c (sparc_print_operand_address): Add MODE
+	argument. Update calls to output_address.
+	(sparc_print_operand): Pass mode to output_address.
+	* config/iq2000/iq2000.c (iq2000_print_operand_address): Add MODE
+	argument.
+	(iq2000_print_operand): Pass mode in output_address calls.
+	* config/stormy16/stormy16.c (xstormy16_print_operand_address): Add
+	MODE argument.
+	(xstormy16_print_operand): Pass mode to
+	xstormy16_print_operand_address calls.
+	* config/mips/mips.c (mips_print_operand): Update calls to
+	output_address.
+	(mips_print_operand_address): Add MODE argument.
+	* config/epiphany/epiphany.c (epiphany_print_operand): Update calls
+	to output_address.
+	(epiphany_print_operand_address): Add MODE argument. Add FIXME note.
+	* config/pdp11/pdp11.c (pdp11_asm_print_operand): Update call to
+	output_address.
+	* config/rx/rx.c (rx_print_operand_address): Add MODE argument.
+	(rx_print_operand): Update calls to output_address,
+	rx_print_operand_address.
+	* config/nds32/nds32.c (nds32_print_operand): Update calls to
+	output_address.
+	(nds32_print_operand_address): Add MODE argument.
+	* config/rs6000/rs6000.c (print_operand): Pass mem mode to
+	output_address calls.
+	* config/c6x/c6x.c (print_address_offset): Pass mem mode to
+	output_address call.
+	(c6x_print_address_operand): Update calls to output_address.
+	(c6x_print_operand_address): Pass mode to above.
+	* config/v850/v850.c (v850_print_operand_address): Add MODE
+	argument.
+	(v850_print_operand): Pass mode to v850_print_operand_address,
+	output_address.
+	* config/mmix/mmix.c (mmix_print_operand_address): Add MODE
+	argument.
+	(mmix_print_operand): Pass mode in output_address calls.
+	* config/sh/sh.c (sh_print_operand_address): Add MODE argument.
+	(sh_print_operand): Pass mem mode to output_address,
+	sh_print_operand_address.
+	* config/cr16/cr16.c (cr16_print_operand_address): Add MODE
+	argument.
+	(cr16_print_operand): Pass mode to output_address,
+	cr16_print_operand_address.
+	* config/bfin/bfin.c (print_address_operand): Pass VOIDmode to
+	output_address.
+	* config/microblaze/microblaze.c (print_operand): Pass mode to
+	output_address.
+	* config/nios2/nios2.c (nios2_print_operand): Pass VOIDmode to
+	output_address.
+	(nios2_print_operand_address): Add MODE argument. Update call to
+	nios2_print_operand_address.
+	* config/s390/s390.c (print_operand): Pass mode to output_address.
+	* config/m32c/m32c.c (m32c_print_operand_address): Add MODE
+	argument.
+	* config/arc/arc.c (arc_print_operand): Pass VOIDmode to
+	output_address.
+	* config/arm/arm.c (arm_print_operand_address): Add MODE argument.
+	Use instead of output_memory_reference_mode.
+	(output_memory_reference_mode): Delete global.
+	(arm_print_operand): Pass mem mode to output_address.
+	* config/m32r/m32r.c (m32r_print_operand_address): Add MODE
+	argument.
+	(m32r_print_operand): Pass mode to output_address.
+	* config/msp430/msp430.c (msp430_print_operand_addr): Add MODE
+	argument.
+	(msp430_print_operand): Pass mode to msp430_print_operand_addr.
+	* config/i386/i386.c (ix86_print_operand): Pass mode to
+	output_address calls.
+	(ix86_print_operand_address): Add MODE argument.
+
 2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/68251

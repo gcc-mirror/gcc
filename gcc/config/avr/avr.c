@@ -2158,7 +2158,7 @@ cond_string (enum rtx_code code)
 /* Output ADDR to FILE as address.  */
 
 static void
-avr_print_operand_address (FILE *file, rtx addr)
+avr_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
 {
   switch (GET_CODE (addr))
     {
@@ -2358,7 +2358,7 @@ avr_print_operand (FILE *file, rtx x, int code)
           if (GET_CODE (addr) != PLUS)
                fatal_insn ("bad address, not (reg+disp):", addr);
 
-          avr_print_operand_address (file, XEXP (addr, 0));
+          avr_print_operand_address (file, VOIDmode, XEXP (addr, 0));
         }
       else if (code == 'p' || code == 'r')
         {
@@ -2366,13 +2366,14 @@ avr_print_operand (FILE *file, rtx x, int code)
             fatal_insn ("bad address, not post_inc or pre_dec:", addr);
 
           if (code == 'p')
-            avr_print_operand_address (file, XEXP (addr, 0));  /* X, Y, Z */
+	    /* X, Y, Z */
+            avr_print_operand_address (file, VOIDmode, XEXP (addr, 0));
           else
             avr_print_operand (file, XEXP (addr, 0), 0);  /* r26, r28, r30 */
         }
       else if (GET_CODE (addr) == PLUS)
         {
-          avr_print_operand_address (file, XEXP (addr,0));
+          avr_print_operand_address (file, VOIDmode, XEXP (addr,0));
           if (REGNO (XEXP (addr, 0)) == REG_X)
             fatal_insn ("internal compiler error.  Bad address:"
                         ,addr);
@@ -2380,13 +2381,13 @@ avr_print_operand (FILE *file, rtx x, int code)
           avr_print_operand (file, XEXP (addr,1), code);
         }
       else
-        avr_print_operand_address (file, addr);
+        avr_print_operand_address (file, VOIDmode, addr);
     }
   else if (code == 'i')
     {
       if (GET_CODE (x) == SYMBOL_REF && (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_IO))
 	avr_print_operand_address
-	  (file, plus_constant (HImode, x, -avr_arch->sfr_offset));
+	  (file, VOIDmode, plus_constant (HImode, x, -avr_arch->sfr_offset));
       else
 	fatal_insn ("bad address, not an I/O address:", x);
     }
@@ -2426,7 +2427,7 @@ avr_print_operand (FILE *file, rtx x, int code)
   else if (code == 'k')
     fputs (cond_string (reverse_condition (GET_CODE (x))), file);
   else
-    avr_print_operand_address (file, x);
+    avr_print_operand_address (file, VOIDmode, x);
 }
 
 

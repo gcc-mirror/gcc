@@ -792,11 +792,6 @@ do {									     \
 /* Jump table alignment is explicit in ASM_OUTPUT_CASE_LABEL.  */
 #define ADDR_VEC_ALIGN(JUMPTABLE) 0
 
-#define PRINT_OPERAND(STREAM, X, CODE) aarch64_print_operand (STREAM, X, CODE)
-
-#define PRINT_OPERAND_ADDRESS(STREAM, X) \
-  aarch64_print_operand_address (STREAM, X)
-
 #define MCOUNT_NAME "_mcount"
 
 #define NO_PROFILE_COUNTERS 1

@@ -1854,7 +1854,7 @@ print_address_offset (FILE *file, rtx off, machine_mode mem_mode)
 	}
     }
   fputs ("(", file);
-  output_address (off);
+  output_address (mem_mode, off);
   fputs (")", file);
 }
 
@@ -1877,7 +1877,7 @@ c6x_print_address_operand (FILE *file, rtx x, machine_mode mem_mode)
     case PRE_MODIFY:
     case POST_MODIFY:
       if (GET_CODE (x) == POST_MODIFY)
-	output_address (XEXP (x, 0));
+	output_address (mem_mode, XEXP (x, 0));
       off = XEXP (XEXP (x, 1), 1);
       if (XEXP (x, 0) == stack_pointer_rtx)
 	{
@@ -1894,7 +1894,7 @@ c6x_print_address_operand (FILE *file, rtx x, machine_mode mem_mode)
       else
 	fprintf (file, "++");
       if (GET_CODE (x) == PRE_MODIFY)
-	output_address (XEXP (x, 0));
+	output_address (mem_mode, XEXP (x, 0));
       print_address_offset (file, off, mem_mode);
       break;
 
@@ -1907,28 +1907,28 @@ c6x_print_address_operand (FILE *file, rtx x, machine_mode mem_mode)
 	}
       else
 	fprintf (file, "+");
-      output_address (XEXP (x, 0));
+      output_address (mem_mode, XEXP (x, 0));
       print_address_offset (file, off, mem_mode);
       break;
 
     case PRE_DEC:
       gcc_assert (XEXP (x, 0) != stack_pointer_rtx);
       fprintf (file, "--");
-      output_address (XEXP (x, 0));
+      output_address (mem_mode, XEXP (x, 0));
       fprintf (file, "[1]");
       break;
     case PRE_INC:
       fprintf (file, "++");
-      output_address (XEXP (x, 0));
+      output_address (mem_mode, XEXP (x, 0));
       fprintf (file, "[1]");
       break;
     case POST_INC:
       gcc_assert (XEXP (x, 0) != stack_pointer_rtx);
-      output_address (XEXP (x, 0));
+      output_address (mem_mode, XEXP (x, 0));
       fprintf (file, "++[1]");
       break;
     case POST_DEC:
-      output_address (XEXP (x, 0));
+      output_address (mem_mode, XEXP (x, 0));
       fprintf (file, "--[1]");
       break;
 
@@ -2042,9 +2042,9 @@ c6x_print_unit_specifier_field (FILE *file, rtx_insn *insn)
 
 /* Output assembly language output for the address ADDR to FILE.  */
 static void
-c6x_print_operand_address (FILE *file, rtx addr)
+c6x_print_operand_address (FILE *file, machine_mode mode, rtx addr)
 {
-  c6x_print_address_operand (file, addr, VOIDmode);
+  c6x_print_address_operand (file, addr, mode);
 }
 
 /* Print an operand, X, to FILE, with an optional modifier in CODE.

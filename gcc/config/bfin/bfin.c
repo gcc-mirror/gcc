@@ -1300,21 +1300,21 @@ print_address_operand (FILE *file, rtx x)
   switch (GET_CODE (x))
     {
     case PLUS:
-      output_address (XEXP (x, 0));
+      output_address (VOIDmode, XEXP (x, 0));
       fprintf (file, "+");
-      output_address (XEXP (x, 1));
+      output_address (VOIDmode, XEXP (x, 1));
       break;
 
     case PRE_DEC:
       fprintf (file, "--");
-      output_address (XEXP (x, 0));    
+      output_address (VOIDmode, XEXP (x, 0));    
       break;
     case POST_INC:
-      output_address (XEXP (x, 0));
+      output_address (VOIDmode, XEXP (x, 0));
       fprintf (file, "++");
       break;
     case POST_DEC:
-      output_address (XEXP (x, 0));
+      output_address (VOIDmode, XEXP (x, 0));
       fprintf (file, "--");
       break;
 
