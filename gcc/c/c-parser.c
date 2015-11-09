@@ -5437,13 +5437,13 @@ c_parser_while_statement (c_parser *parser, bool ivdep)
     = get_token_indent_info (c_parser_peek_token (parser));
 
   body = c_parser_c99_block_statement (parser);
+  c_finish_loop (loc, cond, NULL, body, c_break_label, c_cont_label, true);
+  add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
 
   token_indent_info next_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
   warn_for_misleading_indentation (while_tinfo, body_tinfo, next_tinfo);
 
-  c_finish_loop (loc, cond, NULL, body, c_break_label, c_cont_label, true);
-  add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
   c_break_label = save_break;
   c_cont_label = save_cont;
 }
@@ -5727,15 +5727,16 @@ c_parser_for_statement (c_parser *parser, bool ivdep)
 
   body = c_parser_c99_block_statement (parser);
 
-  token_indent_info next_tinfo
-    = get_token_indent_info (c_parser_peek_token (parser));
-  warn_for_misleading_indentation (for_tinfo, body_tinfo, next_tinfo);
-
   if (is_foreach_statement)
     objc_finish_foreach_loop (loc, object_expression, collection_expression, body, c_break_label, c_cont_label);
   else
     c_finish_loop (loc, cond, incr, body, c_break_label, c_cont_label, true);
   add_stmt (c_end_compound_stmt (loc, block, flag_isoc99 || c_dialect_objc ()));
+
+  token_indent_info next_tinfo
+    = get_token_indent_info (c_parser_peek_token (parser));
+  warn_for_misleading_indentation (for_tinfo, body_tinfo, next_tinfo);
+
   c_break_label = save_break;
   c_cont_label = save_cont;
 }

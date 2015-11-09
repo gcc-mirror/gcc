@@ -1,3 +1,8 @@
+2015-11-09  Andreas Arnez  <arnez@linux.vnet.ibm.com>
+
+	PR debug/67192
+	* gcc.dg/guality/pr67192.c: New test.
+
 2015-11-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68248
