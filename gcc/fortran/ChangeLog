@@ -1,3 +1,9 @@
+2015-11-08  Steven g. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68053
+	* decl.c (add_init_expr_to_sym):  Try to reduce initialization expression
+	before testing for a constant value.
+
 2015-11-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/68218

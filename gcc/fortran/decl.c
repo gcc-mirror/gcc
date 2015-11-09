@@ -1529,26 +1529,34 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  for (dim = 0; dim < sym->as->rank; ++dim)
 	    {
 	      int k;
-	      gfc_expr* lower;
-	      gfc_expr* e;
+	      gfc_expr *e, *lower;
 
 	      lower = sym->as->lower[dim];
-	      if (lower->expr_type != EXPR_CONSTANT)
+
+	      /* If the lower bound is an array element from another 
+		 parameterized array, then it is marked with EXPR_VARIABLE and
+		 is an initialization expression.  Try to reduce it.  */
+	      if (lower->expr_type == EXPR_VARIABLE)
+		gfc_reduce_init_expr (lower);
+
+	      if (lower->expr_type == EXPR_CONSTANT)
+		{
+		  /* All dimensions must be without upper bound.  */
+		  gcc_assert (!sym->as->upper[dim]);
+
+		  k = lower->ts.kind;
+		  e = gfc_get_constant_expr (BT_INTEGER, k, &sym->declared_at);
+		  mpz_add (e->value.integer, lower->value.integer,
+			   init->shape[dim]);
+		  mpz_sub_ui (e->value.integer, e->value.integer, 1);
+		  sym->as->upper[dim] = e;
+		}
+	      else
 		{
 		  gfc_error ("Non-constant lower bound in implied-shape"
 			     " declaration at %L", &lower->where);
 		  return false;
 		}
-
-	      /* All dimensions must be without upper bound.  */
-	      gcc_assert (!sym->as->upper[dim]);
-
-	      k = lower->ts.kind;
-	      e = gfc_get_constant_expr (BT_INTEGER, k, &sym->declared_at);
-	      mpz_add (e->value.integer,
-		       lower->value.integer, init->shape[dim]);
-	      mpz_sub_ui (e->value.integer, e->value.integer, 1);
-	      sym->as->upper[dim] = e;
 	    }
 
 	  sym->as->type = AS_EXPLICIT;
