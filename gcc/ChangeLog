@@ -1,3 +1,8 @@
+2015-11-09  Steve Ellcey  <sellcey@imgtec.com>
+
+	* optabs.c (prepare_libcall_arg): New function.
+	(expand_fixed_convert): Add call to prepare_libcall_arg.
+
 2015-11-09  Nikolai Bozhenov  <n.bozhenov@samsung.com>
 
 	* sched-int.h (dump_rgn_dependencies_dot): Declare
