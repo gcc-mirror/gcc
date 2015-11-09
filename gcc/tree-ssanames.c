@@ -124,17 +124,13 @@ ssanames_print_statistics (void)
 DEBUG_FUNCTION void
 verify_ssaname_freelists (struct function *fun)
 {
-  /* Do nothing if we are in RTL format.  */
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      if (bb->flags & BB_RTL)
-	return;
-    }
+  if (!gimple_in_ssa_p (fun))
+    return;
 
   bitmap names_in_il = BITMAP_ALLOC (NULL);
 
   /* Walk the entire IL noting every SSA_NAME we see.  */
+  basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
       tree t;
@@ -163,8 +159,7 @@ verify_ssaname_freelists (struct function *fun)
 	  ssa_op_iter iter;
 	  gimple *stmt = gsi_stmt (gsi);
 	  FOR_EACH_SSA_TREE_OPERAND (t, stmt, iter, SSA_OP_ALL_OPERANDS)
-	    if (TREE_CODE (t) == SSA_NAME)
-	      bitmap_set_bit (names_in_il, SSA_NAME_VERSION (t));
+	    bitmap_set_bit (names_in_il, SSA_NAME_VERSION (t));
 	}
     }
 
@@ -218,7 +213,7 @@ verify_ssaname_freelists (struct function *fun)
      debug/non-debug compilations have the same SSA_NAMEs.  So for each
      lost SSA_NAME, see if it's likely one from that wart.  These will always
      be marked as default definitions.  So we loosely assume that anything
-     marked as a default definition isn't leaked by pretening they are
+     marked as a default definition isn't leaked by pretending they are
      in the IL.  */
   for (unsigned int i = UNUSED_NAME_VERSION + 1; i < num_ssa_names; i++)
     if (ssa_name (i) && SSA_NAME_IS_DEFAULT_DEF (ssa_name (i)))

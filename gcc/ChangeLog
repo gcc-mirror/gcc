@@ -1,3 +1,9 @@
+2015-11-09  Jeff Law  <law@redhat.com>
+
+	* tree-ssanames.c (verify_ssaname_freelists): Simplify check for
+	being in gimple/ssa form.  Remove redundant check for SSA_NAME.
+	Fix comment typo.
+
 2015-11-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.opt (-mpower9-fusion): Add new switches for
