@@ -1688,6 +1688,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   bool nested_in_vect_loop = nested_in_vect_loop_p (loop, stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree mask_vectype;
   tree elem_type;
   gimple *new_stmt;
   tree dummy;
@@ -1714,8 +1715,8 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 
   is_store = gimple_call_internal_fn (stmt) == IFN_MASK_STORE;
   mask = gimple_call_arg (stmt, 2);
-  if (TYPE_PRECISION (TREE_TYPE (mask))
-      != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vectype))))
+
+  if (TREE_CODE (TREE_TYPE (mask)) != BOOLEAN_TYPE)
     return false;
 
   /* FORNOW. This restriction should be relaxed.  */
@@ -1742,6 +1743,18 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
     return false;
 
   if (STMT_VINFO_STRIDED_P (stmt_info))
+    return false;
+
+  if (TREE_CODE (mask) != SSA_NAME)
+    return false;
+
+  if (!vect_is_simple_use (mask, loop_vinfo, &def_stmt, &dt, &mask_vectype))
+    return false;
+
+  if (!mask_vectype)
+    mask_vectype = get_mask_type_for_scalar_type (TREE_TYPE (vectype));
+
+  if (!mask_vectype)
     return false;
 
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
@@ -1775,13 +1788,9 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 				 : DR_STEP (dr), size_zero_node) <= 0)
     return false;
   else if (!VECTOR_MODE_P (TYPE_MODE (vectype))
-	   || !can_vec_mask_load_store_p (TYPE_MODE (vectype), !is_store))
-    return false;
-
-  if (TREE_CODE (mask) != SSA_NAME)
-    return false;
-
-  if (!vect_is_simple_use (mask, loop_vinfo, &def_stmt, &dt))
+	   || !can_vec_mask_load_store_p (TYPE_MODE (vectype),
+					  TYPE_MODE (mask_vectype),
+					  !is_store))
     return false;
 
   if (is_store)
@@ -4688,8 +4697,9 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
 
   /* Most operations cannot handle bit-precision types without extra
      truncations.  */
-  if ((TYPE_PRECISION (TREE_TYPE (scalar_dest))
-       != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (scalar_dest))))
+  if (!VECTOR_BOOLEAN_TYPE_P (vectype_out)
+      && (TYPE_PRECISION (TREE_TYPE (scalar_dest))
+	  != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (scalar_dest))))
       /* Exception are bitwise binary operations.  */
       && code != BIT_IOR_EXPR
       && code != BIT_XOR_EXPR

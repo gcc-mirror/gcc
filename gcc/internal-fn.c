@@ -1889,7 +1889,9 @@ expand_MASK_LOAD (gcall *stmt)
   create_output_operand (&ops[0], target, TYPE_MODE (type));
   create_fixed_operand (&ops[1], mem);
   create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
-  expand_insn (optab_handler (maskload_optab, TYPE_MODE (type)), 3, ops);
+  expand_insn (convert_optab_handler (maskload_optab, TYPE_MODE (type),
+				      TYPE_MODE (TREE_TYPE (maskt))),
+	       3, ops);
 }
 
 static void
@@ -1912,7 +1914,9 @@ expand_MASK_STORE (gcall *stmt)
   create_fixed_operand (&ops[0], mem);
   create_input_operand (&ops[1], reg, TYPE_MODE (type));
   create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
-  expand_insn (optab_handler (maskstore_optab, TYPE_MODE (type)), 3, ops);
+  expand_insn (convert_optab_handler (maskstore_optab, TYPE_MODE (type),
+				      TYPE_MODE (TREE_TYPE (maskt))),
+	       3, ops);
 }
 
 static void
