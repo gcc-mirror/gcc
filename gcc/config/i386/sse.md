@@ -799,6 +799,14 @@
   [(V32QI "t") (V16HI "t") (V8SI "t") (V4DI "t") (V8SF "t") (V4DF "t")
    (V64QI "g") (V32HI "g") (V16SI "g") (V8DI "g") (V16SF "g") (V8DF "g")])
 
+;; Half mask mode for unpacks
+(define_mode_attr HALFMASKMODE
+  [(DI "SI") (SI "HI")])
+
+;; Double mask mode for packs
+(define_mode_attr DOUBLEMASKMODE
+  [(HI "SI") (SI "DI")])
+
 
 ;; Include define_subst patterns for instructions with mask
 (include "subst.md")
@@ -11578,6 +11586,23 @@
   DONE;
 })
 
+(define_expand "vec_pack_trunc_qi"
+  [(set (match_operand:HI 0 ("register_operand"))
+        (ior:HI (ashift:HI (zero_extend:HI (match_operand:QI 1 ("register_operand")))
+                           (const_int 8))
+                (zero_extend:HI (match_operand:QI 2 ("register_operand")))))]
+  "TARGET_AVX512F")
+
+(define_expand "vec_pack_trunc_<mode>"
+  [(set (match_operand:<DOUBLEMASKMODE> 0 ("register_operand"))
+        (ior:<DOUBLEMASKMODE> (ashift:<DOUBLEMASKMODE> (zero_extend:<DOUBLEMASKMODE> (match_operand:SWI24 1 ("register_operand")))
+                           (match_dup 3))
+                (zero_extend:<DOUBLEMASKMODE> (match_operand:SWI24 2 ("register_operand")))))]
+  "TARGET_AVX512BW"
+{
+  operands[3] = GEN_INT (GET_MODE_BITSIZE (<MODE>mode));
+})
+
 (define_insn "<sse2_avx2>_packsswb<mask_name>"
   [(set (match_operand:VI1_AVX512 0 "register_operand" "=x,x")
 	(vec_concat:VI1_AVX512
@@ -13474,11 +13499,41 @@
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands[0], operands[1], true, false); DONE;")
 
+(define_expand "vec_unpacks_lo_hi"
+  [(set (match_operand:QI 0 "register_operand")
+        (subreg:QI (match_operand:HI 1 "register_operand") 0))]
+  "TARGET_AVX512DQ")
+
+(define_expand "vec_unpacks_lo_si"
+  [(set (match_operand:HI 0 "register_operand")
+        (subreg:HI (match_operand:SI 1 "register_operand") 0))]
+  "TARGET_AVX512F")
+
+(define_expand "vec_unpacks_lo_di"
+  [(set (match_operand:SI 0 "register_operand")
+        (subreg:SI (match_operand:DI 1 "register_operand") 0))]
+  "TARGET_AVX512BW")
+
 (define_expand "vec_unpacku_hi_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (match_operand:VI124_AVX2_24_AVX512F_1_AVX512BW 1 "register_operand")]
   "TARGET_SSE2"
   "ix86_expand_sse_unpack (operands[0], operands[1], true, true); DONE;")
+
+(define_expand "vec_unpacks_hi_hi"
+  [(set (subreg:HI (match_operand:QI 0 "register_operand") 0)
+        (lshiftrt:HI (match_operand:HI 1 "register_operand")
+                     (const_int 8)))]
+  "TARGET_AVX512F")
+
+(define_expand "vec_unpacks_hi_<mode>"
+  [(set (subreg:SWI48x (match_operand:<HALFMASKMODE> 0 "register_operand") 0)
+        (lshiftrt:SWI48x (match_operand:SWI48x 1 "register_operand")
+                         (match_dup 2)))]
+  "TARGET_AVX512BW"
+{
+  operands[2] = GEN_INT (GET_MODE_BITSIZE (<HALFMASKMODE>mode));
+})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
