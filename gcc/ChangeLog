@@ -1,3 +1,8 @@
+2015-11-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_secondary_reload_direct_move):
+	Remove redundant code.
+
 2015-11-10  Jeff Law  <law@redhat.com>
 
 	* config/ft32/ft32.c (ft32_print_operand): Supply mode to

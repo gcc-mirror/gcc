@@ -18150,28 +18150,7 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
 	}
     }
 
-  if (TARGET_POWERPC64 && size == 16)
-    {
-      /* Handle moving 128-bit values from GPRs to VSX point registers on
-	 power8 when running in 64-bit mode using XXPERMDI to glue the two
-	 64-bit values back together.  */
-      if (to_type == VSX_REG_TYPE && from_type == GPR_REG_TYPE)
-	{
-	  cost = 3;			/* 2 mtvsrd's, 1 xxpermdi.  */
-	  icode = reg_addr[mode].reload_vsx_gpr;
-	}
-
-      /* Handle moving 128-bit values from VSX point registers to GPRs on
-	 power8 when running in 64-bit mode using XXPERMDI to get access to the
-	 bottom 64-bit value.  */
-      else if (to_type == GPR_REG_TYPE && from_type == VSX_REG_TYPE)
-	{
-	  cost = 3;			/* 2 mfvsrd's, 1 xxpermdi.  */
-	  icode = reg_addr[mode].reload_gpr_vsx;
-	}
-    }
-
-  else if (!TARGET_POWERPC64 && size == 8)
+  else if (size == 8)
     {
       /* Handle moving 64-bit values from GPRs to floating point registers on
 	 power8 when running in 32-bit mode using FMRGOW to glue the two 32-bit
