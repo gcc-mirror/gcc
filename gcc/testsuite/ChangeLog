@@ -1,3 +1,9 @@
+2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/sparc-ret.c: Rename to...
+	* gcc.target/sparc/sparc-ret-1.c: ...this.
+	* gcc.target/sparc/sparc-ret-2.c: New test.
+
 2015-11-08  Steven g. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68053
