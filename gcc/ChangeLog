@@ -1,5 +1,10 @@
 2015-11-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.c (arm_new_rtx_costs, FIX case): Handle
+	combine_vcvtf2i pattern.
+
+2015-11-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.c (neon_valid_immediate): Remove integer
 	CONST_DOUBLE handling.  It should never occur.
 
