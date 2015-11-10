@@ -1,5 +1,18 @@
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* config/i386/i386-protos.h (ix86_expand_sse_movcc): New.
+	* config/i386/i386.c (ix86_expand_sse_movcc): Make public.
+	Cast mask to FP mode if required.
+	* config/i386/sse.md (vcond_mask_<mode><avx512fmaskmodelower>): New.
+	(vcond_mask_<mode><avx512fmaskmodelower>): New.
+	(vcond_mask_<mode><sseintvecmodelower>): New.
+	(vcond_mask_<mode><sseintvecmodelower>): New.
+	(vcond_mask_v2div2di): New.
+	(vcond_mask_<mode><sseintvecmodelower>): New.
+	(vcond_mask_<mode><sseintvecmodelower>): New.
+
+2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* optabs-query.h (get_vcond_mask_icode): New.
 	* optabs-tree.c (expand_vec_cond_expr_p): Use
 	get_vcond_mask_icode for VEC_COND_EXPR with mask.

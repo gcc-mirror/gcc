@@ -132,6 +132,7 @@ extern bool ix86_expand_vec_perm_const (rtx[]);
 extern bool ix86_expand_mask_vec_cmp (rtx[]);
 extern bool ix86_expand_int_vec_cmp (rtx[]);
 extern bool ix86_expand_fp_vec_cmp (rtx[]);
+extern void ix86_expand_sse_movcc (rtx, rtx, rtx, rtx);
 extern void ix86_expand_sse_unpack (rtx, rtx, bool, bool);
 extern bool ix86_expand_int_addcc (rtx[]);
 extern rtx ix86_expand_call (rtx, rtx, rtx, rtx, rtx, bool);

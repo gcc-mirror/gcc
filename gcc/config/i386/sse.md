@@ -3015,6 +3015,87 @@
   DONE;
 })
 
+(define_expand "vcond_mask_<mode><avx512fmaskmodelower>"
+  [(set (match_operand:V48_AVX512VL 0 "register_operand")
+	(vec_merge:V48_AVX512VL
+	  (match_operand:V48_AVX512VL 1 "nonimmediate_operand")
+	  (match_operand:V48_AVX512VL 2 "vector_move_operand")
+	  (match_operand:<avx512fmaskmode> 3 "register_operand")))]
+  "TARGET_AVX512F")
+
+(define_expand "vcond_mask_<mode><avx512fmaskmodelower>"
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand")
+	(vec_merge:VI12_AVX512VL
+	  (match_operand:VI12_AVX512VL 1 "nonimmediate_operand")
+	  (match_operand:VI12_AVX512VL 2 "vector_move_operand")
+	  (match_operand:<avx512fmaskmode> 3 "register_operand")))]
+  "TARGET_AVX512BW")
+
+(define_expand "vcond_mask_<mode><sseintvecmodelower>"
+  [(set (match_operand:VI_256 0 "register_operand")
+	(vec_merge:VI_256
+	  (match_operand:VI_256 1 "nonimmediate_operand")
+	  (match_operand:VI_256 2 "vector_move_operand")
+	  (match_operand:<sseintvecmode> 3 "register_operand")))]
+  "TARGET_AVX2"
+{
+  ix86_expand_sse_movcc (operands[0], operands[3],
+			 operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "vcond_mask_<mode><sseintvecmodelower>"
+  [(set (match_operand:VI124_128 0 "register_operand")
+	(vec_merge:VI124_128
+	  (match_operand:VI124_128 1 "nonimmediate_operand")
+	  (match_operand:VI124_128 2 "vector_move_operand")
+	  (match_operand:<sseintvecmode> 3 "register_operand")))]
+  "TARGET_SSE2"
+{
+  ix86_expand_sse_movcc (operands[0], operands[3],
+			 operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "vcond_mask_v2div2di"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(vec_merge:V2DI
+	  (match_operand:V2DI 1 "nonimmediate_operand")
+	  (match_operand:V2DI 2 "vector_move_operand")
+	  (match_operand:V2DI 3 "register_operand")))]
+  "TARGET_SSE4_2"
+{
+  ix86_expand_sse_movcc (operands[0], operands[3],
+			 operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "vcond_mask_<mode><sseintvecmodelower>"
+  [(set (match_operand:VF_256 0 "register_operand")
+	(vec_merge:VF_256
+	  (match_operand:VF_256 1 "nonimmediate_operand")
+	  (match_operand:VF_256 2 "vector_move_operand")
+	  (match_operand:<sseintvecmode> 3 "register_operand")))]
+  "TARGET_AVX"
+{
+  ix86_expand_sse_movcc (operands[0], operands[3],
+			 operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "vcond_mask_<mode><sseintvecmodelower>"
+  [(set (match_operand:VF_128 0 "register_operand")
+	(vec_merge:VF_128
+	  (match_operand:VF_128 1 "nonimmediate_operand")
+	  (match_operand:VF_128 2 "vector_move_operand")
+	  (match_operand:<sseintvecmode> 3 "register_operand")))]
+  "TARGET_SSE"
+{
+  ix86_expand_sse_movcc (operands[0], operands[3],
+			 operands[1], operands[2]);
+  DONE;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel floating point logical operations
