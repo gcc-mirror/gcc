@@ -11049,6 +11049,23 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
     case UNSIGNED_FIX:
       if (TARGET_HARD_FLOAT)
 	{
+	  /* The *combine_vcvtf2i reduces a vmul+vcvt into
+	     a vcvt fixed-point conversion.  */
+	  if (code == FIX && mode == SImode
+	      && GET_CODE (XEXP (x, 0)) == FIX
+	      && GET_MODE (XEXP (x, 0)) == SFmode
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
+	      && vfp3_const_double_for_bits (XEXP (XEXP (XEXP (x, 0), 0), 1))
+		 > 0)
+	    {
+	      if (speed_p)
+		*cost += extra_cost->fp[0].toint;
+
+	      *cost += rtx_cost (XEXP (XEXP (XEXP (x, 0), 0), 0), mode,
+				 code, 0, speed_p);
+	      return true;
+	    }
+
 	  if (GET_MODE_CLASS (mode) == MODE_INT)
 	    {
 	      mode = GET_MODE (XEXP (x, 0));
