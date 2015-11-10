@@ -1,3 +1,17 @@
+2015-11-09  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	c/
+	* c-parser.c (c_parser_declaration_or_fndef): Add OpenACC
+	routine arg.
+	(c_parser_declaration_or_fndef): Call c_finish_oacc_routine.
+	(c_parser_pragma): Parse 'acc routine'.
+	(OACC_ROUTINE_CLAUSE_MARK): Define.
+	(c_parser_oacc_routine, (c_finish_oacc_routine): New.
+
 2015-11-09  Andreas Arnez  <arnez@linux.vnet.ibm.com>
 
 	PR debug/67192
