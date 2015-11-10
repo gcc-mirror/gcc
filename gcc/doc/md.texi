@@ -5805,6 +5805,21 @@ move operand 2 or (operands 2 + operand 3) into operand 0 according to the
 comparison in operand 1.  If the comparison is false, operand 2 is moved into
 operand 0, otherwise (operand 2 + operand 3) is moved.
 
+@cindex @code{neg@var{mode}cc} instruction pattern
+@item @samp{neg@var{mode}cc}
+Similar to @samp{mov@var{mode}cc} but for conditional negation.  Conditionally
+move the negation of operand 2 or the unchanged operand 3 into operand 0
+according to the comparison in operand 1.  If the comparison is true, the negation
+of operand 2 is moved into operand 0, otherwise operand 3 is moved.
+
+@cindex @code{not@var{mode}cc} instruction pattern
+@item @samp{not@var{mode}cc}
+Similar to @samp{neg@var{mode}cc} but for conditional complement.
+Conditionally move the bitwise complement of operand 2 or the unchanged
+operand 3 into operand 0 according to the comparison in operand 1.
+If the comparison is true, the complement of operand 2 is moved into
+operand 0, otherwise operand 3 is moved.
+
 @cindex @code{cstore@var{mode}4} instruction pattern
 @item @samp{cstore@var{mode}4}
 Store zero or nonzero in operand 0 according to whether a comparison

@@ -1168,6 +1168,83 @@ noce_try_store_flag (struct noce_if_info *if_info)
     }
 }
 
+
+/* Convert "if (test) x = -A; else x = A" into
+   x = A; if (test) x = -x if the machine can do the
+   conditional negate form of this cheaply.
+   Try this before noce_try_cmove that will just load the
+   immediates into two registers and do a conditional select
+   between them.  If the target has a conditional negate or
+   conditional invert operation we can save a potentially
+   expensive constant synthesis.  */
+
+static bool
+noce_try_inverse_constants (struct noce_if_info *if_info)
+{
+  if (!noce_simple_bbs (if_info))
+    return false;
+
+  if (!CONST_INT_P (if_info->a)
+      || !CONST_INT_P (if_info->b)
+      || !REG_P (if_info->x))
+    return false;
+
+  machine_mode mode = GET_MODE (if_info->x);
+
+  HOST_WIDE_INT val_a = INTVAL (if_info->a);
+  HOST_WIDE_INT val_b = INTVAL (if_info->b);
+
+  rtx cond = if_info->cond;
+
+  rtx x = if_info->x;
+  rtx target;
+
+  start_sequence ();
+
+  rtx_code code;
+  if (val_b != HOST_WIDE_INT_MIN && val_a == -val_b)
+    code = NEG;
+  else if (val_a == ~val_b)
+    code = NOT;
+  else
+    {
+      end_sequence ();
+      return false;
+    }
+
+  rtx tmp = gen_reg_rtx (mode);
+  noce_emit_move_insn (tmp, if_info->a);
+
+  target = emit_conditional_neg_or_complement (x, code, mode, cond, tmp, tmp);
+
+  if (target)
+    {
+      rtx_insn *seq = get_insns ();
+
+      if (!seq)
+	{
+	  end_sequence ();
+	  return false;
+	}
+
+      if (target != if_info->x)
+	noce_emit_move_insn (if_info->x, target);
+
+	seq = end_ifcvt_sequence (if_info);
+
+	if (!seq)
+	  return false;
+
+	emit_insn_before_setloc (seq, if_info->jump,
+				 INSN_LOCATION (if_info->insn_a));
+	return true;
+    }
+
+  end_sequence ();
+  return false;
+}
+
+
 /* Convert "if (test) x = a; else x = b", for A and B constant.
    Also allow A = y + c1, B = y + c2, with a common y between A
    and B.  */
@@ -3496,6 +3573,8 @@ noce_process_if_block (struct noce_if_info *if_info)
   if (noce_try_minmax (if_info))
     goto success;
   if (noce_try_abs (if_info))
+    goto success;
+  if (noce_try_inverse_constants (if_info))
     goto success;
   if (!targetm.have_conditional_execution ()
       && noce_try_store_flag_constants (if_info))
