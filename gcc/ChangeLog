@@ -1,5 +1,24 @@
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* optabs.c (expand_binop_directly): Allow scalar mode for
+	vec_pack_trunc_optab.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Skip
+	boolean vector producers from pattern sequence when computing VF.
+	* tree-vect-patterns.c (vect_vect_recog_func_ptrs) Add
+	vect_recog_mask_conversion_pattern.
+	(search_type_for_mask): Choose the smallest
+	type if different size types are mixed.
+	(build_mask_conversion): New.
+	(vect_recog_mask_conversion_pattern): New.
+	(vect_pattern_recog_1): Allow scalar mode for boolean vectype.
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Support masked
+	load with pattern.
+	(vectorizable_conversion): Support boolean vectors.
+	(free_stmt_vec_info): Allow patterns for statements with no lhs.
+	* tree-vectorizer.h (NUM_PATTERNS): Increase to 14.
+
+2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* config/i386/i386-protos.h (ix86_expand_sse_movcc): New.
 	* config/i386/i386.c (ix86_expand_sse_movcc): Make public.
 	Cast mask to FP mode if required.

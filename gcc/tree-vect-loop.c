@@ -492,20 +492,27 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		}
             }
 
-	  /* The vectorization factor is according to the smallest
-	     scalar type (or the largest vector size, but we only
-	     support one vector size per loop).  */
-	  if (!bool_result)
-	    scalar_type = vect_get_smallest_scalar_type (stmt, &dummy,
-							 &dummy);
-	  if (dump_enabled_p ())
+	  /* Don't try to compute VF out scalar types if we stmt
+	     produces boolean vector.  Use result vectype instead.  */
+	  if (VECTOR_BOOLEAN_TYPE_P (vectype))
+	    vf_vectype = vectype;
+	  else
 	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-                               "get vectype for scalar type:  ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
-              dump_printf (MSG_NOTE, "\n");
+	      /* The vectorization factor is according to the smallest
+		 scalar type (or the largest vector size, but we only
+		 support one vector size per loop).  */
+	      if (!bool_result)
+		scalar_type = vect_get_smallest_scalar_type (stmt, &dummy,
+							     &dummy);
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_NOTE, vect_location,
+				   "get vectype for scalar type:  ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
+		  dump_printf (MSG_NOTE, "\n");
+		}
+	      vf_vectype = get_vectype_for_scalar_type (scalar_type);
 	    }
-	  vf_vectype = get_vectype_for_scalar_type (scalar_type);
 	  if (!vf_vectype)
 	    {
 	      if (dump_enabled_p ())
