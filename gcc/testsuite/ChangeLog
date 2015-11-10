@@ -1,10 +1,16 @@
+2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/sparc-ret.c: Rename to...
+	* gcc.target/sparc/sparc-ret-1.c: ...this.
+	* gcc.target/sparc/sparc-ret-2.c: New test.
+
 2015-11-02  Martin Jambor  <mjambor@suse.cz>
 
- 	Backport from mainline
+	Backport from mainline
 	2015-10-09  Martin Jambor  <mjambor@suse.cz>
 
- 	* gcc.dg/ipa/ipa-sra-10.c: New test.
- 	* gcc.dg/torture/pr67794.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-10.c: New test.
+	* gcc.dg/torture/pr67794.c: Likewise.
 
 2015-10-22  Paul Thomas  <pault@gcc.gnu.org>
 

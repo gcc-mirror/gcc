@@ -1,9 +1,15 @@
+2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/57845
+	* config/sparc/sparc.c (sparc_function_value_1): In 32-bit mode, do
+	not promote the mode for aggregate types.
+
 2015-11-09  Renlin Li  <renlin.li@arm.com>
 
 	Backport from mainline
 	2014-09-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
-	* gcc/ree.c (combine_reaching_defs): Ensure inserted copy don't change
+	* ree.c (combine_reaching_defs): Ensure inserted copy don't change
 	the number of hard registers.
 
 2015-11-02  Martin Jambor  <mjambor@suse.cz>
