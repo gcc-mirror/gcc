@@ -1,9 +1,15 @@
+2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/57845
+	* config/sparc/sparc.c (sparc_function_value_1): In 32-bit mode, do
+	not promote the mode for aggregate types.
+
 2015-11-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* omp-low.h (replace_oacc_fn_attrib, build_oacc_routine_dims): Declare.
 	* omp-low.c (build_oacc_routine_dims): New.
 
-2015-11-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+2015-11-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/constraints.md (wF constraint): New constraints
 	for power9/toc fusion.
