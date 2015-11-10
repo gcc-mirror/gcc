@@ -137,6 +137,9 @@ nvptx_option_override (void)
   write_symbols = NO_DEBUG;
   debug_info_level = DINFO_LEVEL_NONE;
 
+  if (nvptx_optimize < 0)
+    nvptx_optimize = optimize > 0;
+
   declared_fndecls_htab = hash_table<tree_hasher>::create_ggc (17);
   needed_fndecls_htab = hash_table<tree_hasher>::create_ggc (17);
   declared_libfuncs_htab
@@ -2942,6 +2945,69 @@ nvptx_skip_par (unsigned mask, parallel *par)
   nvptx_single (mask, par->forked_block, pre_tail);
 }
 
+/* If PAR has a single inner parallel and PAR itself only contains
+   empty entry and exit blocks, swallow the inner PAR.  */
+
+static void
+nvptx_optimize_inner (parallel *par)
+{
+  parallel *inner = par->inner;
+
+  /* We mustn't be the outer dummy par.  */
+  if (!par->mask)
+    return;
+
+  /* We must have a single inner par.  */
+  if (!inner || inner->next)
+    return;
+
+  /* We must only contain 2 blocks ourselves -- the head and tail of
+     the inner par.  */
+  if (par->blocks.length () != 2)
+    return;
+
+  /* We must be disjoint partitioning.  As we only have vector and
+     worker partitioning, this is sufficient to guarantee the pars
+     have adjacent partitioning.  */
+  if ((par->mask & inner->mask) & (GOMP_DIM_MASK (GOMP_DIM_MAX) - 1))
+    /* This indicates malformed code generation.  */
+    return;
+
+  /* The outer forked insn should be immediately followed by the inner
+     fork insn.  */
+  rtx_insn *forked = par->forked_insn;
+  rtx_insn *fork = BB_END (par->forked_block);
+
+  if (NEXT_INSN (forked) != fork)
+    return;
+  gcc_checking_assert (recog_memoized (fork) == CODE_FOR_nvptx_fork);
+
+  /* The outer joining insn must immediately follow the inner join
+     insn.  */
+  rtx_insn *joining = par->joining_insn;
+  rtx_insn *join = inner->join_insn;
+  if (NEXT_INSN (join) != joining)
+    return;
+
+  /* Preconditions met.  Swallow the inner par.  */
+  if (dump_file)
+    fprintf (dump_file, "Merging loop %x [%d,%d] into %x [%d,%d]\n",
+	     inner->mask, inner->forked_block->index,
+	     inner->join_block->index,
+	     par->mask, par->forked_block->index, par->join_block->index);
+
+  par->mask |= inner->mask & (GOMP_DIM_MASK (GOMP_DIM_MAX) - 1);
+
+  par->blocks.reserve (inner->blocks.length ());
+  while (inner->blocks.length ())
+    par->blocks.quick_push (inner->blocks.pop ());
+
+  par->inner = inner->inner;
+  inner->inner = NULL;
+
+  delete inner;
+}
+
 /* Process the parallel PAR and all its contained
    parallels.  We do everything but the neutering.  Return mask of
    partitioned modes used within this parallel.  */
@@ -2949,6 +3015,9 @@ nvptx_skip_par (unsigned mask, parallel *par)
 static unsigned
 nvptx_process_pars (parallel *par)
 {
+  if (nvptx_optimize)
+    nvptx_optimize_inner (par);
+  
   unsigned inner_mask = par->mask;
 
   /* Do the inner parallels first.  */

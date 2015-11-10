@@ -1,3 +1,12 @@
+2015-11-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.opt (moptimize): New flag.
+	* config/nvptx/nvptx.c (nvptx_option_override): Set nvptx_optimize
+	default.
+	(nvptx_optimize_inner): New.
+	(nvptx_process_pars): Call it when optimizing.
+	* doc/invoke.texi (Nvidia PTX Options): Document -moptimize.
+
 2015-11-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_secondary_reload_direct_move):

@@ -1,3 +1,7 @@
+2015-11-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.dg/goacc/nvptx-opt-1.c: New test.
+
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* gcc.target/i386/mask-pack.c: New test.
