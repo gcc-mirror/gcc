@@ -1,3 +1,8 @@
+2015-11-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (neon_valid_immediate): Remove integer
+	CONST_DOUBLE handling.  It should never occur.
+
 2015-11-10  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/aarch64/atomics.md (unspecv): Move to iterators.md.
