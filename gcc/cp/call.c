@@ -4235,10 +4235,13 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
 	 {
 	   /* Update the total size.  */
 	   *size = size_binop (PLUS_EXPR, original_size, *cookie_size);
-	   /* Set to (size_t)-1 if the size check fails.  */
-	   gcc_assert (size_check != NULL_TREE);
-	   *size = fold_build3 (COND_EXPR, sizetype, size_check,
-				*size, TYPE_MAX_VALUE (sizetype));
+	   if (size_check)
+	     {
+	       /* Set to (size_t)-1 if the size check fails.  */
+	       gcc_assert (size_check != NULL_TREE);
+	       *size = fold_build3 (COND_EXPR, sizetype, size_check,
+				    *size, TYPE_MAX_VALUE (sizetype));
+	    }
 	   /* Update the argument list to reflect the adjusted size.  */
 	   (**args)[0] = *size;
 	 }
