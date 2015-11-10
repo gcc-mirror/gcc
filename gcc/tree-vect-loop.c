@@ -2825,7 +2825,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   if (LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
     {
       /*  FIXME: Make cost depend on complexity of individual check.  */
-      unsigned len = LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo).length ();
+      unsigned len = LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo).length ();
       (void) add_stmt_cost (target_cost_data, len, vector_stmt, NULL, 0,
 			    vect_prologue);
       dump_printf (MSG_NOTE,

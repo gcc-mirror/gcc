@@ -1,3 +1,12 @@
+2015-11-10  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Partial backport from trunk r228751.
+	PR tree-optimization/68238
+	2015-10-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Use
+	LOOP_VINFO_COMP_ALIAS_DDRS to estimate alias versioning cost.
+
 2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/57845
