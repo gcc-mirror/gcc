@@ -1,5 +1,10 @@
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* gcc.target/i386/mask-pack.c: New test.
+	* gcc.target/i386/mask-unpack.c: New test.
+
+2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* gcc.target/i386/avx2-vec-mask-bit-not.c: New test.
 
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>

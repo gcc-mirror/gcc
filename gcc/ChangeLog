@@ -1,5 +1,17 @@
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* config/i386/sse.md (HALFMASKMODE): New attribute.
+	(DOUBLEMASKMODE): New attribute.
+	(vec_pack_trunc_qi): New.
+	(vec_pack_trunc_<mode>): New.
+	(vec_unpacks_lo_hi): New.
+	(vec_unpacks_lo_si): New.
+	(vec_unpacks_lo_di): New.
+	(vec_unpacks_hi_hi): New.
+	(vec_unpacks_hi_<mode>): New.
+
+2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* optabs.c (expand_binop_directly): Allow scalar mode for
 	vec_pack_trunc_optab.
 	* tree-vect-loop.c (vect_determine_vectorization_factor): Skip
