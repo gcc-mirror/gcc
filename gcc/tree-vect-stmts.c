@@ -1974,6 +1974,11 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 
       /* Ensure that even with -fno-tree-dce the scalar MASK_LOAD is removed
 	 from the IL.  */
+      if (STMT_VINFO_RELATED_STMT (stmt_info))
+	{
+	  stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+	  stmt_info = vinfo_for_stmt (stmt);
+	}
       tree lhs = gimple_call_lhs (stmt);
       new_stmt = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
       set_vinfo_for_stmt (new_stmt, stmt_info);
@@ -2092,6 +2097,11 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
     {
       /* Ensure that even with -fno-tree-dce the scalar MASK_LOAD is removed
 	 from the IL.  */
+      if (STMT_VINFO_RELATED_STMT (stmt_info))
+	{
+	  stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+	  stmt_info = vinfo_for_stmt (stmt);
+	}
       tree lhs = gimple_call_lhs (stmt);
       new_stmt = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
       set_vinfo_for_stmt (new_stmt, stmt_info);
@@ -3565,12 +3575,13 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 	       && SCALAR_FLOAT_TYPE_P (rhs_type))))
     return false;
 
-  if ((INTEGRAL_TYPE_P (lhs_type)
-       && (TYPE_PRECISION (lhs_type)
-	   != GET_MODE_PRECISION (TYPE_MODE (lhs_type))))
-      || (INTEGRAL_TYPE_P (rhs_type)
-	  && (TYPE_PRECISION (rhs_type)
-	      != GET_MODE_PRECISION (TYPE_MODE (rhs_type)))))
+  if (!VECTOR_BOOLEAN_TYPE_P (vectype_out)
+      && ((INTEGRAL_TYPE_P (lhs_type)
+	   && (TYPE_PRECISION (lhs_type)
+	       != GET_MODE_PRECISION (TYPE_MODE (lhs_type))))
+	  || (INTEGRAL_TYPE_P (rhs_type)
+	      && (TYPE_PRECISION (rhs_type)
+		  != GET_MODE_PRECISION (TYPE_MODE (rhs_type))))))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3621,6 +3632,21 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 	{
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                            "no vectype for scalar type ");
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, rhs_type);
+          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+	}
+
+      return false;
+    }
+
+  if (VECTOR_BOOLEAN_TYPE_P (vectype_out)
+      && !VECTOR_BOOLEAN_TYPE_P (vectype_in))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                           "can't convert between boolean and non "
+			   "boolean vectors");
 	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, rhs_type);
           dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 	}
@@ -8217,7 +8243,7 @@ free_stmt_vec_info (gimple *stmt)
 	  gimple *patt_stmt = STMT_VINFO_STMT (patt_info);
 	  gimple_set_bb (patt_stmt, NULL);
 	  tree lhs = gimple_get_lhs (patt_stmt);
-	  if (TREE_CODE (lhs) == SSA_NAME)
+	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	    release_ssa_name (lhs);
 	  if (seq)
 	    {
@@ -8227,7 +8253,7 @@ free_stmt_vec_info (gimple *stmt)
 		  gimple *seq_stmt = gsi_stmt (si);
 		  gimple_set_bb (seq_stmt, NULL);
 		  lhs = gimple_get_lhs (seq_stmt);
-		  if (TREE_CODE (lhs) == SSA_NAME)
+		  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 		    release_ssa_name (lhs);
 		  free_stmt_vec_info (seq_stmt);
 		}

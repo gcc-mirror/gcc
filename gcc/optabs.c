@@ -1047,7 +1047,8 @@ expand_binop_directly (machine_mode mode, optab binoptab,
       /* The mode of the result is different then the mode of the
 	 arguments.  */
       tmp_mode = insn_data[(int) icode].operand[0].mode;
-      if (GET_MODE_NUNITS (tmp_mode) != 2 * GET_MODE_NUNITS (mode))
+      if (VECTOR_MODE_P (mode)
+	  && GET_MODE_NUNITS (tmp_mode) != 2 * GET_MODE_NUNITS (mode))
 	{
 	  delete_insns_since (last);
 	  return NULL_RTX;

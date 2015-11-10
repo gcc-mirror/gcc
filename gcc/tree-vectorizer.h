@@ -1087,7 +1087,7 @@ extern gimple *vect_find_last_scalar_stmt_in_slp (slp_tree);
    Additional pattern recognition functions can (and will) be added
    in the future.  */
 typedef gimple *(* vect_recog_func_ptr) (vec<gimple *> *, tree *, tree *);
-#define NUM_PATTERNS 13
+#define NUM_PATTERNS 14
 void vect_pattern_recog (vec_info *);
 
 /* In tree-vectorizer.c.  */
