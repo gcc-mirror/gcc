@@ -18135,7 +18135,7 @@
    (set_attr "btver2_decode" "vector") 
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "maskload<mode>"
+(define_expand "maskload<mode><sseintvecmodelower>"
   [(set (match_operand:V48_AVX2 0 "register_operand")
 	(unspec:V48_AVX2
 	  [(match_operand:<sseintvecmode> 2 "register_operand")
@@ -18143,7 +18143,23 @@
 	  UNSPEC_MASKMOV))]
   "TARGET_AVX")
 
-(define_expand "maskstore<mode>"
+(define_expand "maskload<mode><avx512fmaskmodelower>"
+  [(set (match_operand:V48_AVX512VL 0 "register_operand")
+	(vec_merge:V48_AVX512VL
+	  (match_operand:V48_AVX512VL 1 "memory_operand")
+	  (match_dup 0)
+	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
+  "TARGET_AVX512F")
+
+(define_expand "maskload<mode><avx512fmaskmodelower>"
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand")
+	(vec_merge:VI12_AVX512VL
+	  (match_operand:VI12_AVX512VL 1 "memory_operand")
+	  (match_dup 0)
+	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
+  "TARGET_AVX512BW")
+
+(define_expand "maskstore<mode><sseintvecmodelower>"
   [(set (match_operand:V48_AVX2 0 "memory_operand")
 	(unspec:V48_AVX2
 	  [(match_operand:<sseintvecmode> 2 "register_operand")
@@ -18151,6 +18167,22 @@
 	   (match_dup 0)]
 	  UNSPEC_MASKMOV))]
   "TARGET_AVX")
+
+(define_expand "maskstore<mode><avx512fmaskmodelower>"
+  [(set (match_operand:V48_AVX512VL 0 "memory_operand")
+	(vec_merge:V48_AVX512VL
+	  (match_operand:V48_AVX512VL 1 "register_operand")
+	  (match_dup 0)
+	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
+  "TARGET_AVX512F")
+
+(define_expand "maskstore<mode><avx512fmaskmodelower>"
+  [(set (match_operand:VI12_AVX512VL 0 "memory_operand")
+	(vec_merge:VI12_AVX512VL
+	  (match_operand:VI12_AVX512VL 1 "register_operand")
+	  (match_dup 0)
+	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
+  "TARGET_AVX512BW")
 
 (define_insn_and_split "avx_<castmode><avxsizesuffix>_<castmode>"
   [(set (match_operand:AVX256MODE2P 0 "nonimmediate_operand" "=x,m")

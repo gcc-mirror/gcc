@@ -1,5 +1,14 @@
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* config/i386/sse.md (maskload<mode>): Rename to ...
+	(maskload<mode><sseintvecmodelower>): ... this.
+	(maskstore<mode>): Rename to ...
+	(maskstore<mode><sseintvecmodelower>): ... this.
+	(maskload<mode><avx512fmaskmodelower>): New.
+	(maskstore<mode><avx512fmaskmodelower>): New.
+
+2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* internal-fn.c (expand_MASK_LOAD): Adjust to maskload optab changes.
 	(expand_MASK_STORE): Adjust to maskstore optab changes.
 	* optabs-query.c (can_vec_mask_load_store_p): Add MASK_MODE arg.
