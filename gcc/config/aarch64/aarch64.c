@@ -4290,11 +4290,10 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  break;
 
 	case CONST_DOUBLE:
-	  /* CONST_DOUBLE can represent a double-width integer.
-	     In this case, the mode of x is VOIDmode.  */
-	  if (GET_MODE (x) == VOIDmode)
-	    ; /* Do Nothing.  */
-	  else if (aarch64_float_const_zero_rtx_p (x))
+	  /* Since we define TARGET_SUPPORTS_WIDE_INT we shouldn't ever
+	     be getting CONST_DOUBLEs holding integers.  */
+	  gcc_assert (GET_MODE (x) != VOIDmode);
+	  if (aarch64_float_const_zero_rtx_p (x))
 	    {
 	      fputc ('0', f);
 	      break;

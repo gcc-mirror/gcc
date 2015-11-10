@@ -1,3 +1,8 @@
+2015-11-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/68129
+	* gcc.target/aarch64/pr68129_1.c: New test.
+
 2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/sparc-ret.c: Rename to...

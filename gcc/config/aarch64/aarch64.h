@@ -151,6 +151,8 @@
 
 #define LONG_DOUBLE_TYPE_SIZE	128
 
+#define TARGET_SUPPORTS_WIDE_INT 1
+
 /* The architecture reserves all bits of the address for hardware use,
    so the vbit must go into the delta field of pointers to member
    functions.  This is the same config as that in the AArch32
