@@ -306,6 +306,29 @@
     UNSPEC_VEC_SHR      ; Used in aarch64-simd.md.
 ])
 
+;; ------------------------------------------------------------------
+;; Unspec enumerations for Atomics.  They are here so that they can be
+;; used in the int_iterators for atomic operations.
+;; ------------------------------------------------------------------
+
+(define_c_enum "unspecv"
+ [
+    UNSPECV_LX			; Represent a load-exclusive.
+    UNSPECV_SX			; Represent a store-exclusive.
+    UNSPECV_LDA			; Represent an atomic load or load-acquire.
+    UNSPECV_STL			; Represent an atomic store or store-release.
+    UNSPECV_ATOMIC_CMPSW	; Represent an atomic compare swap.
+    UNSPECV_ATOMIC_EXCHG	; Represent an atomic exchange.
+    UNSPECV_ATOMIC_CAS		; Represent an atomic CAS.
+    UNSPECV_ATOMIC_SWP		; Represent an atomic SWP.
+    UNSPECV_ATOMIC_OP		; Represent an atomic operation.
+    UNSPECV_ATOMIC_LDOP		; Represent an atomic load-operation
+    UNSPECV_ATOMIC_LDOP_OR	; Represent an atomic load-or
+    UNSPECV_ATOMIC_LDOP_BIC	; Represent an atomic load-bic
+    UNSPECV_ATOMIC_LDOP_XOR	; Represent an atomic load-xor
+    UNSPECV_ATOMIC_LDOP_PLUS	; Represent an atomic load-add
+])
+
 ;; -------------------------------------------------------------------
 ;; Mode attributes
 ;; -------------------------------------------------------------------
@@ -964,6 +987,16 @@
 (define_int_iterator CRYPTO_SHA1 [UNSPEC_SHA1C UNSPEC_SHA1M UNSPEC_SHA1P])
 
 (define_int_iterator CRYPTO_SHA256 [UNSPEC_SHA256H UNSPEC_SHA256H2])
+
+;; Iterators for atomic operations.
+
+(define_int_iterator ATOMIC_LDOP
+ [UNSPECV_ATOMIC_LDOP_OR UNSPECV_ATOMIC_LDOP_BIC
+  UNSPECV_ATOMIC_LDOP_XOR UNSPECV_ATOMIC_LDOP_PLUS])
+
+(define_int_attr atomic_ldop
+ [(UNSPECV_ATOMIC_LDOP_OR "set") (UNSPECV_ATOMIC_LDOP_BIC "clr")
+  (UNSPECV_ATOMIC_LDOP_XOR "eor") (UNSPECV_ATOMIC_LDOP_PLUS "add")])
 
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
