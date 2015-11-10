@@ -1,3 +1,13 @@
+2015-11-10  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* regrename.c (create_new_chain): Initialize renamed and tied_chain.
+	(build_def_use): Initialize terminated_this_insn.
+	(find_best_rename_reg): Pick and check register from the tied chain.
+	(regrename_do_replace): Mark head as renamed.
+	(struct du_head *terminated_this_insn). New static variable.
+	(scan_rtx_reg): Tie chains in move insns.  Set terminated_this_insn.
+	* regrename.h (struct du_head): Add tied_chain, renamed members.
+
 2015-11-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR bootstrap/68256
