@@ -693,6 +693,9 @@
 ;; Code iterator for logical operations whose :nlogical works on SIMD registers.
 (define_code_iterator NLOGICAL [and ior])
 
+;; Code iterator for unary negate and bitwise complement.
+(define_code_iterator NEG_NOT [neg not])
+
 ;; Code iterator for sign/zero extension
 (define_code_iterator ANY_EXTEND [sign_extend zero_extend])
 
@@ -821,6 +824,9 @@
 
 ;; Logical operator instruction mnemonics
 (define_code_attr logical [(and "and") (ior "orr") (xor "eor")])
+
+;; Operation names for negate and bitwise complement.
+(define_code_attr neg_not_op [(neg "neg") (not "not")])
 
 ;; Similar, but when not(op)
 (define_code_attr nlogical [(and "bic") (ior "orn") (xor "eon")])

@@ -1,5 +1,11 @@
 2015-11-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.md (<neg_not_op><mode>cc): New define_expand.
+	* config/aarch64/iterators.md (NEG_NOT): New code iterator.
+	(neg_not_op): New code attribute.
+
+2015-11-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* ifcvt.c (noce_try_inverse_constants): New function.
 	(noce_process_if_block): Call it.
 	* optabs.h (emit_conditional_neg_or_complement): Declare prototype.
