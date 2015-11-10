@@ -477,10 +477,23 @@ public:
     m_allocator.release_if_empty ();
   }
 
+
+  /* Allocate memory for instance of type T and call a default constructor.  */
+
   inline T *
   allocate () ATTRIBUTE_MALLOC
   {
     return ::new (m_allocator.allocate ()) T;
+  }
+
+  /* Allocate memory for instance of type T and return void * that
+     could be used in situations where a default constructor is not provided
+     by the class T.  */
+
+  inline void *
+  allocate_raw () ATTRIBUTE_MALLOC
+  {
+    return m_allocator.allocate ();
   }
 
   inline void
@@ -528,7 +541,7 @@ template <typename T>
 inline void *
 operator new (size_t, object_allocator<T> &a)
 {
-  return a.allocate ();
+  return a.allocate_raw ();
 }
 
 /* Hashtable mapping alloc_pool names to descriptors.  */

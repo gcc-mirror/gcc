@@ -1,3 +1,9 @@
+2015-11-10  Martin Liska  <mliska@suse.cz>
+
+	* alloc-pool.h (allocate_raw): New function.
+	(operator new (size_t, object_allocator<T> &a)): Use the
+	function instead of object_allocator::allocate).
+
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* config/i386/sse.md (HALFMASKMODE): New attribute.
