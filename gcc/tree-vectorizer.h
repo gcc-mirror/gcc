@@ -28,7 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 enum vect_var_kind {
   vect_simple_var,
   vect_pointer_var,
-  vect_scalar_var
+  vect_scalar_var,
+  vect_mask_var
 };
 
 /* Defines type of operation.  */
@@ -420,6 +421,7 @@ enum stmt_vec_info_type {
   call_simd_clone_vec_info_type,
   assignment_vec_info_type,
   condition_vec_info_type,
+  comparison_vec_info_type,
   reduc_vec_info_type,
   induc_vec_info_type,
   type_promotion_vec_info_type,
@@ -944,6 +946,7 @@ extern bool vect_can_advance_ivs_p (loop_vec_info);
 /* In tree-vect-stmts.c.  */
 extern unsigned int current_vector_size;
 extern tree get_vectype_for_scalar_type (tree);
+extern tree get_mask_type_for_scalar_type (tree);
 extern tree get_same_sized_vectype (tree, tree);
 extern bool vect_is_simple_use (tree, vec_info *, gimple **,
                                 enum vect_def_type *);
@@ -975,7 +978,7 @@ extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 extern void vect_finish_stmt_generation (gimple *, gimple *,
                                          gimple_stmt_iterator *);
 extern bool vect_mark_stmts_to_be_vectorized (loop_vec_info);
-extern tree vect_get_vec_def_for_operand (tree, gimple *);
+extern tree vect_get_vec_def_for_operand (tree, gimple *, tree = NULL);
 extern tree vect_init_vector (gimple *, tree, tree,
                               gimple_stmt_iterator *);
 extern tree vect_get_vec_def_for_stmt_copy (enum vect_def_type, tree);
@@ -985,6 +988,8 @@ extern void vect_remove_stores (gimple *);
 extern bool vect_analyze_stmt (gimple *, bool *, slp_tree);
 extern bool vectorizable_condition (gimple *, gimple_stmt_iterator *,
 				    gimple **, tree, int, slp_tree);
+extern bool vectorizable_comparison (gimple *, gimple_stmt_iterator *,
+				     gimple **, tree, int, slp_tree);
 extern void vect_get_load_cost (struct data_reference *, int, bool,
 				unsigned int *, unsigned int *,
 				stmt_vector_for_cost *,

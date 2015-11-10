@@ -74,6 +74,16 @@ trapv_binoptab_p (optab binoptab)
 	  || binoptab == smulv_optab);
 }
 
+/* Return insn code for a comparison operator with VMODE
+   resultin MASK_MODE, unsigned if UNS is true.  */
+
+static inline enum insn_code
+get_vec_cmp_icode (machine_mode vmode, machine_mode mask_mode, bool uns)
+{
+  optab tab = uns ? vec_cmpu_optab : vec_cmp_optab;
+  return convert_optab_handler (tab, vmode, mask_mode);
+}
+
 /* Return insn code for a conditional operator with a comparison in
    mode CMODE, unsigned if UNS is true, resulting in a value of mode VMODE.  */
 

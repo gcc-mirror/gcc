@@ -304,6 +304,9 @@ extern rtx_insn *gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
 /* Generate code for VEC_PERM_EXPR.  */
 extern rtx expand_vec_perm (machine_mode, rtx, rtx, rtx, rtx);
 
+/* Generate code for vector comparison.  */
+extern rtx expand_vec_cmp_expr (tree, tree, rtx);
+
 /* Generate code for VEC_COND_EXPR.  */
 extern rtx expand_vec_cond_expr (tree, tree, tree, tree, rtx);
 

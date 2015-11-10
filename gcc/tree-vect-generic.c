@@ -346,7 +346,8 @@ expand_vector_comparison (gimple_stmt_iterator *gsi, tree type, tree op0,
                           tree op1, enum tree_code code)
 {
   tree t;
-  if (! expand_vec_cond_expr_p (type, TREE_TYPE (op0)))
+  if (!expand_vec_cmp_expr_p (TREE_TYPE (op0), type)
+      && !expand_vec_cond_expr_p (type, TREE_TYPE (op0)))
     t = expand_vector_piecewise (gsi, do_compare, type,
 				 TREE_TYPE (TREE_TYPE (op0)), op0, op1, code);
   else

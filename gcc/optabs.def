@@ -61,6 +61,8 @@ OPTAB_CD(vec_load_lanes_optab, "vec_load_lanes$a$b")
 OPTAB_CD(vec_store_lanes_optab, "vec_store_lanes$a$b")
 OPTAB_CD(vcond_optab, "vcond$a$b")
 OPTAB_CD(vcondu_optab, "vcondu$a$b")
+OPTAB_CD(vec_cmp_optab, "vec_cmp$a$b")
+OPTAB_CD(vec_cmpu_optab, "vec_cmpu$a$b")
 
 OPTAB_NL(add_optab, "add$P$a3", PLUS, "add", '3', gen_int_fp_fixed_libfunc)
 OPTAB_NX(add_optab, "add$F$a3")

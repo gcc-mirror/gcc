@@ -11128,9 +11128,15 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
   if (TREE_CODE (ops->type) == VECTOR_TYPE)
     {
       tree ifexp = build2 (ops->code, ops->type, arg0, arg1);
-      tree if_true = constant_boolean_node (true, ops->type);
-      tree if_false = constant_boolean_node (false, ops->type);
-      return expand_vec_cond_expr (ops->type, ifexp, if_true, if_false, target);
+      if (VECTOR_BOOLEAN_TYPE_P (ops->type))
+	return expand_vec_cmp_expr (ops->type, ifexp, target);
+      else
+	{
+	  tree if_true = constant_boolean_node (true, ops->type);
+	  tree if_false = constant_boolean_node (false, ops->type);
+	  return expand_vec_cond_expr (ops->type, ifexp, if_true,
+				       if_false, target);
+	}
     }
 
   /* Get the rtx comparison code to use.  We know that EXP is a comparison
@@ -11417,6 +11423,40 @@ try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
   return 1;
 }
 
+/* Return a CONST_VECTOR rtx representing vector mask for
+   a VECTOR_CST of booleans.  */
+static rtx
+const_vector_mask_from_tree (tree exp)
+{
+  rtvec v;
+  unsigned i;
+  int units;
+  tree elt;
+  machine_mode inner, mode;
+
+  mode = TYPE_MODE (TREE_TYPE (exp));
+  units = GET_MODE_NUNITS (mode);
+  inner = GET_MODE_INNER (mode);
+
+  v = rtvec_alloc (units);
+
+  for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
+    {
+      elt = VECTOR_CST_ELT (exp, i);
+
+      gcc_assert (TREE_CODE (elt) == INTEGER_CST);
+      if (integer_zerop (elt))
+	RTVEC_ELT (v, i) = CONST0_RTX (inner);
+      else if (integer_onep (elt)
+	       || integer_minus_onep (elt))
+	RTVEC_ELT (v, i) = CONSTM1_RTX (inner);
+      else
+	gcc_unreachable ();
+    }
+
+  return gen_rtx_CONST_VECTOR (mode, v);
+}
+
 /* Return a CONST_VECTOR rtx for a VECTOR_CST tree.  */
 static rtx
 const_vector_from_tree (tree exp)
@@ -11431,6 +11471,9 @@ const_vector_from_tree (tree exp)
 
   if (initializer_zerop (exp))
     return CONST0_RTX (mode);
+
+  if (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (exp)))
+    return const_vector_mask_from_tree (exp);
 
   units = GET_MODE_NUNITS (mode);
   inner = GET_MODE_INNER (mode);
