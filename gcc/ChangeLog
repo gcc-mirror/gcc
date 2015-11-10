@@ -1,5 +1,14 @@
 2015-11-10  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/68240
+	* tree-ssa-sccvn.c (cond_stmts_equal_p): Handle commutative compares
+	properly.
+	(visit_phi): For PHIs with just a single executable edge
+	take its value directly.
+	(expressions_equal_p): Handle VN_TOP properly.
+
+2015-11-10  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences):
 	Handle memory using/clobbering stmts without a STMT_VINFO_DATA_REF
 	conservatively.

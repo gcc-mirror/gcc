@@ -2760,11 +2760,15 @@ cond_stmts_equal_p (gcond *cond1, gcond *cond2, bool *inverted_p)
   else
     return false;
 
-  if (! expressions_equal_p (vn_valueize (lhs1), vn_valueize (lhs2))
-      || ! expressions_equal_p (vn_valueize (rhs1), vn_valueize (rhs2)))
-    return false;
-
-  return true;
+  lhs1 = vn_valueize (lhs1);
+  rhs1 = vn_valueize (rhs1);
+  lhs2 = vn_valueize (lhs2);
+  rhs2 = vn_valueize (rhs2);
+  return ((expressions_equal_p (lhs1, lhs2)
+	   && expressions_equal_p (rhs1, rhs2))
+	  || (commutative_tree_code (code1)
+	      && expressions_equal_p (lhs1, rhs2)
+	      && expressions_equal_p (rhs1, lhs2)));
 }
 
 /* Compare two phi entries for equality, ignoring VN_TOP arguments.  */
@@ -3379,6 +3383,7 @@ visit_phi (gimple *phi)
   tree result;
   tree sameval = VN_TOP;
   bool allsame = true;
+  unsigned n_executable = 0;
 
   /* TODO: We could check for this in init_sccvn, and replace this
      with a gcc_assert.  */
@@ -3394,6 +3399,7 @@ visit_phi (gimple *phi)
       {
 	tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
 
+	++n_executable;
 	if (TREE_CODE (def) == SSA_NAME)
 	  def = SSA_VAL (def);
 	if (def == VN_TOP)
@@ -3408,9 +3414,11 @@ visit_phi (gimple *phi)
       }
   
   /* If none of the edges was executable or all incoming values are
-     undefined keep the value-number at VN_TOP.  */
-  if (sameval == VN_TOP)
-    return set_ssa_val_to (PHI_RESULT (phi), VN_TOP);
+     undefined keep the value-number at VN_TOP.  If only a single edge
+     is exectuable use its value.  */
+  if (sameval == VN_TOP
+      || n_executable == 1)
+    return set_ssa_val_to (PHI_RESULT (phi), sameval);
 
   /* First see if it is equivalent to a phi node in this block.  We prefer
      this as it allows IV elimination - see PRs 66502 and 67167.  */
@@ -4608,6 +4616,10 @@ expressions_equal_p (tree e1, tree e2)
 {
   /* The obvious case.  */
   if (e1 == e2)
+    return true;
+
+  /* If either one is VN_TOP consider them equal.  */
+  if (e1 == VN_TOP || e2 == VN_TOP)
     return true;
 
   /* If only one of them is null, they cannot be equal.  */
