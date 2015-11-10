@@ -1,3 +1,20 @@
+2015-11-09  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parser.c (cp_finalize_oacc_routine): New boolean first argument.
+	(cp_ensure_no_oacc_routine): Update call to cp_finalize_oacc_routine.
+	(cp_parser_simple_declaration): Maintain a boolean first to keep track
+	of each new declarator.  Propagate it to cp_parser_init_declarator.
+	(cp_parser_init_declarator): New boolean first argument.  Propagate it
+	to cp_parser_save_member_function_body and cp_finalize_oacc_routine.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_single_declaration): Update call to
+	cp_parser_init_declarator.
+	(cp_parser_save_member_function_body): New boolean first_decl argument.
+	Propagate it to cp_finalize_oacc_routine.
+	(cp_parser_finish_oacc_routine): New boolean first argument.  Use it to
+	determine if multiple declarators follow a routine construct.
+	(cp_parser_oacc_routine): Update call to cp_parser_finish_oacc_routine.
+
 2015-10-19  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/67913

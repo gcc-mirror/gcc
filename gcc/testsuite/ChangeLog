@@ -1,3 +1,7 @@
+2015-11-09  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/routine-5.c: Enable c++ tests.
+
 2015-10-19  Martin Sebor  <msebor@redhat.com>
 
 	* init/new45.C: New test to verify that operator new is invoked
