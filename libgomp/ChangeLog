@@ -1,3 +1,12 @@
+2015-11-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/firstprivate-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/routine-g-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/routine-gwv-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/routine-v-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/routine-w-1.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-1.c: New.
+
 2015-11-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-2.c: XFAIL.
