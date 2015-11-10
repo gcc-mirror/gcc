@@ -1,3 +1,9 @@
+2015-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56118
+	* tree-vect-slp.c (vect_bb_vectorization_profitable_p): Make equal
+	cost favor vectorized version.
+
 2015-11-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (<neg_not_op><mode>cc): New define_expand.
