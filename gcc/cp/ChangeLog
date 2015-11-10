@@ -1,3 +1,25 @@
+2015-11-09  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	* parser.h (struct cp_parser): Add oacc_routine field.
+	* parser.c (cp_ensure_no_oacc_routine): New.
+	(cp_parser_new): Initialize oacc_routine field.
+	(cp_parser_linkage_specification): Call cp_ensure_no_oacc_routine.
+	(cp_parser_namespace_definition,
+	cp_parser_class_specifier_1): Likewise.
+	(cp_parser_init_declarator): Call cp_finalize_oacc_routine.
+	(cp_parser_function_definition,
+	cp_parser_save_member_function_body): Likewise.
+	(OACC_ROUTINE_CLAUSE_MASK): New.
+	(cp_parser_finish_oacc_routine, cp_parser_oacc_routine,
+	cp_finalize_oacc_routine): New.
+	(cp_parser_pragma): Adjust omp_declare_simd checking.  Call
+	cp_ensure_no_oacc_routine.
+	(cp_parser_pragma): Add OpenACC routine handling.
+	
 2015-11-08  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/67942 

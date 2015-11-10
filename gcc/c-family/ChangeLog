@@ -1,3 +1,12 @@
+2015-11-09  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-pragma.c (oacc_pragmas): Add "routine".
+	* c-pragma.h (pragma_kind): Add PRAGMA_OACC_ROUTINE.
+
 2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-common.c (c_common_attributes): Add scalar_storage_order.

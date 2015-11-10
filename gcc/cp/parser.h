@@ -371,6 +371,9 @@ struct GTY(()) cp_parser {
      necessary.  */
   cp_omp_declare_simd_data * GTY((skip)) cilk_simd_fn_info;
 
+  /* OpenACC routine clauses for subsequent decl/defn.  */
+  tree oacc_routine;
+  
   /* Nonzero if parsing a parameter list where 'auto' should trigger an implicit
      template parameter.  */
   bool auto_is_implicit_function_template_parm_p;
