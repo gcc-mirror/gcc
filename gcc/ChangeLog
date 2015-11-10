@@ -1,3 +1,15 @@
+2015-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_print_operand): Remove dead code that
+	tried to avoid (%rip) for call operands.
+
+2015-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_print_operand_address_as): Add no_rip
+	argument.  Do not use RIP relative addressing when no_rip is set.
+	(ix86_print_operand): Update call to ix86_print_operand_address_as.
+	(ix86_print_operand_address): Ditto.
+
 2015-11-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_new_rtx_costs, FIX case): Handle
