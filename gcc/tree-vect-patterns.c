@@ -3302,7 +3302,7 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
       else
 	{
 	  tree type = search_type_for_mask (var, vinfo);
-	  tree cst0, cst1, cmp, tmp;
+	  tree cst0, cst1, tmp;
 
 	  if (!type)
 	    return NULL;
@@ -3318,9 +3318,7 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
 	  cst0 = build_int_cst (type, 0);
 	  cst1 = build_int_cst (type, 1);
 	  tmp = vect_recog_temp_ssa_var (type, NULL);
-	  cmp = build2 (NE_EXPR, boolean_type_node,
-			var, build_int_cst (TREE_TYPE (var), 0));
-	  pattern_stmt = gimple_build_assign (tmp, COND_EXPR, cmp, cst1, cst0);
+	  pattern_stmt = gimple_build_assign (tmp, COND_EXPR, var, cst1, cst0);
 
 	  if (!useless_type_conversion_p (type, TREE_TYPE (lhs)))
 	    {
@@ -3363,19 +3361,16 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
       if (get_vectype_for_scalar_type (type) == NULL_TREE)
 	return NULL;
 
-      if (check_bool_pattern (var, vinfo))
-	{
-	  rhs = adjust_bool_pattern (var, type, NULL_TREE, stmts);
-	  rhs = build2 (NE_EXPR, boolean_type_node,
-			rhs, build_int_cst (type, 0));
-	}
-      else
-	rhs = build2 (NE_EXPR, boolean_type_node,
-		      var, build_int_cst (TREE_TYPE (var), 0)),
+      if (!check_bool_pattern (var, vinfo))
+	return NULL;
+
+      rhs = adjust_bool_pattern (var, type, NULL_TREE, stmts);
 
       lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
       pattern_stmt 
-	  = gimple_build_assign (lhs, COND_EXPR, rhs,
+	  = gimple_build_assign (lhs, COND_EXPR,
+				 build2 (NE_EXPR, boolean_type_node,
+					 rhs, build_int_cst (type, 0)),
 				 gimple_assign_rhs2 (last_stmt),
 				 gimple_assign_rhs3 (last_stmt));
       *type_out = vectype;
@@ -3402,7 +3397,7 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
       else
 	{
 	  tree type = search_type_for_mask (var, vinfo);
-	  tree cst0, cst1, cmp, new_vectype;
+	  tree cst0, cst1, new_vectype;
 
 	  if (!type)
 	    return NULL;
@@ -3415,10 +3410,7 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
 	  new_vectype = get_vectype_for_scalar_type (type);
 
 	  rhs = vect_recog_temp_ssa_var (type, NULL);
-	  cmp = build2 (NE_EXPR, boolean_type_node,
-			var, build_int_cst (TREE_TYPE (var), 0));
-	  pattern_stmt = gimple_build_assign (rhs, COND_EXPR,
-					      cmp, cst1, cst0);
+	  pattern_stmt = gimple_build_assign (rhs, COND_EXPR, var, cst1, cst0);
 
 	  pattern_stmt_info = new_stmt_vec_info (pattern_stmt, vinfo);
 	  set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);

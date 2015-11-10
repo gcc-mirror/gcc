@@ -98,6 +98,15 @@ get_vcond_icode (machine_mode vmode, machine_mode cmode, bool uns)
   return icode;
 }
 
+/* Return insn code for a conditional operator with a mask mode
+   MMODE resulting in a value of mode VMODE.  */
+
+static inline enum insn_code
+get_vcond_mask_icode (machine_mode vmode, machine_mode mmode)
+{
+  return convert_optab_handler (vcond_mask_optab, vmode, mmode);
+}
+
 /* Enumerates the possible extraction_insn operations.  */
 enum extraction_pattern { EP_insv, EP_extv, EP_extzv };
 
