@@ -12339,32 +12339,15 @@ neon_valid_immediate (rtx op, machine_mode mode, int inverse,
     {
       rtx el = vector ? CONST_VECTOR_ELT (op, i) : op;
       unsigned HOST_WIDE_INT elpart;
-      unsigned int part, parts;
 
-      if (CONST_INT_P (el))
-        {
-          elpart = INTVAL (el);
-          parts = 1;
-        }
-      else if (CONST_DOUBLE_P (el))
-        {
-          elpart = CONST_DOUBLE_LOW (el);
-          parts = 2;
-        }
-      else
-        gcc_unreachable ();
+      gcc_assert (CONST_INT_P (el));
+      elpart = INTVAL (el);
 
-      for (part = 0; part < parts; part++)
-        {
-          unsigned int byte;
-          for (byte = 0; byte < innersize; byte++)
-            {
-              bytes[idx++] = (elpart & 0xff) ^ invmask;
-              elpart >>= BITS_PER_UNIT;
-            }
-          if (CONST_DOUBLE_P (el))
-            elpart = CONST_DOUBLE_HIGH (el);
-        }
+      for (unsigned int byte = 0; byte < innersize; byte++)
+	{
+	  bytes[idx++] = (elpart & 0xff) ^ invmask;
+	  elpart >>= BITS_PER_UNIT;
+	}
     }
 
   /* Sanity check.  */
