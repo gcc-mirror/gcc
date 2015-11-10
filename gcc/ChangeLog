@@ -1,3 +1,69 @@
+2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* expr.c (do_store_flag): Use expand_vec_cmp_expr for mask results.
+	(const_vector_mask_from_tree): New.
+	(const_vector_from_tree): Use const_vector_mask_from_tree
+	for boolean vectors.
+	* optabs-query.h (get_vec_cmp_icode): New.
+	* optabs-tree.c (expand_vec_cmp_expr_p): New.
+	* optabs-tree.h (expand_vec_cmp_expr_p): New.
+	* optabs.c (vector_compare_rtx): Add OPNO arg.
+	(expand_vec_cond_expr): Adjust to vector_compare_rtx change.
+	(expand_vec_cmp_expr): New.
+	* optabs.def (vec_cmp_optab): New.
+	(vec_cmpu_optab): New.
+	* optabs.h (expand_vec_cmp_expr): New.
+	* tree-vect-generic.c (expand_vector_comparison): Add vector
+	comparison optabs check.
+	* tree-vect-loop.c (vect_determine_vectorization_factor):  Ignore mask
+	operations for VF.  Add mask type computation.
+	* tree-vect-stmts.c (get_mask_type_for_scalar_type): New.
+	(vectorizable_comparison): New.
+	(vect_analyze_stmt): Add vectorizable_comparison.
+	(vect_transform_stmt): Likewise.
+	(vect_init_vector): Support boolean vector invariants.
+	(vect_get_vec_def_for_operand): Add VECTYPE arg.
+	(vectorizable_condition): Directly provide vectype for invariants
+	used in comparison.
+	* tree-vectorizer.h (get_mask_type_for_scalar_type): New.
+	(enum vect_var_kind): Add vect_mask_var.
+	(enum stmt_vec_info_type): Add comparison_vec_info_type.
+	(vectorizable_comparison): New.
+	(vect_get_vec_def_for_operand): Add VECTYPE arg.
+	* tree-vect-data-refs.c (vect_get_new_vect_var): Support vect_mask_var.
+	(vect_create_destination_var): Likewise.
+	* tree-vect-patterns.c (check_bool_pattern): Check fails
+	if we can vectorize comparison directly.
+	(search_type_for_mask): New.
+	(vect_recog_bool_pattern): Support cases when bool pattern
+	check fails.
+	* tree-vect-slp.c (vect_build_slp_tree_1): Allow
+	comparison statements.
+	(vect_get_constant_vectors): Support boolean vector
+	constants.
+	* config/i386/i386-protos.h (ix86_expand_mask_vec_cmp): New.
+	(ix86_expand_int_vec_cmp): New.
+	(ix86_expand_fp_vec_cmp): New.
+	* config/i386/i386.c (ix86_expand_sse_cmp): Allow NULL for
+	op_true and op_false.
+	(ix86_int_cmp_code_to_pcmp_immediate): New.
+	(ix86_fp_cmp_code_to_pcmp_immediate): New.
+	(ix86_cmp_code_to_pcmp_immediate): New.
+	(ix86_expand_mask_vec_cmp): New.
+	(ix86_expand_fp_vec_cmp): New.
+	(ix86_expand_int_sse_cmp): New.
+	(ix86_expand_int_vcond): Use ix86_expand_int_sse_cmp.
+	(ix86_expand_int_vec_cmp): New.
+	(ix86_get_mask_mode): New.
+	(TARGET_VECTORIZE_GET_MASK_MODE): New.
+	* config/i386/sse.md (avx512fmaskmodelower): New.
+	(vec_cmp<mode><avx512fmaskmodelower>): New.
+	(vec_cmp<mode><sseintvecmodelower>): New.
+	(vec_cmpv2div2di): New.
+	(vec_cmpu<mode><avx512fmaskmodelower>): New.
+	(vec_cmpu<mode><sseintvecmodelower>): New.
+	(vec_cmpuv2div2di): New.
+
 2015-11-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68240

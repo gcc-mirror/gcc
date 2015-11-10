@@ -5180,11 +5180,13 @@ get_rtx_code (enum tree_code tcode, bool unsignedp)
 }
 
 /* Return comparison rtx for COND. Use UNSIGNEDP to select signed or
-   unsigned operators. Do not generate compare instruction.  */
+   unsigned operators.  OPNO holds an index of the first comparison
+   operand in insn with code ICODE.  Do not generate compare instruction.  */
 
 static rtx
 vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
-		    bool unsignedp, enum insn_code icode)
+		    bool unsignedp, enum insn_code icode,
+		    unsigned int opno)
 {
   struct expand_operand ops[2];
   rtx rtx_op0, rtx_op1;
@@ -5210,7 +5212,7 @@ vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
 
   create_input_operand (&ops[0], rtx_op0, m0);
   create_input_operand (&ops[1], rtx_op1, m1);
-  if (!maybe_legitimize_operands (icode, 4, 2, ops))
+  if (!maybe_legitimize_operands (icode, opno, 2, ops))
     gcc_unreachable ();
   return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
 }
@@ -5465,7 +5467,7 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   if (icode == CODE_FOR_nothing)
     return 0;
 
-  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode);
+  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 4);
   rtx_op1 = expand_normal (op1);
   rtx_op2 = expand_normal (op2);
 
@@ -5476,6 +5478,40 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   create_fixed_operand (&ops[4], XEXP (comparison, 0));
   create_fixed_operand (&ops[5], XEXP (comparison, 1));
   expand_insn (icode, 6, ops);
+  return ops[0].value;
+}
+
+/* Generate insns for a vector comparison into a mask.  */
+
+rtx
+expand_vec_cmp_expr (tree type, tree exp, rtx target)
+{
+  struct expand_operand ops[4];
+  enum insn_code icode;
+  rtx comparison;
+  machine_mode mask_mode = TYPE_MODE (type);
+  machine_mode vmode;
+  bool unsignedp;
+  tree op0a, op0b;
+  enum tree_code tcode;
+
+  op0a = TREE_OPERAND (exp, 0);
+  op0b = TREE_OPERAND (exp, 1);
+  tcode = TREE_CODE (exp);
+
+  unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
+  vmode = TYPE_MODE (TREE_TYPE (op0a));
+
+  icode = get_vec_cmp_icode (vmode, mask_mode, unsignedp);
+  if (icode == CODE_FOR_nothing)
+    return 0;
+
+  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 2);
+  create_output_operand (&ops[0], target, mask_mode);
+  create_fixed_operand (&ops[1], comparison);
+  create_fixed_operand (&ops[2], XEXP (comparison, 0));
+  create_fixed_operand (&ops[3], XEXP (comparison, 1));
+  expand_insn (icode, 4, ops);
   return ops[0].value;
 }
 

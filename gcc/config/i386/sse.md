@@ -613,6 +613,15 @@
    (V16SF "HI") (V8SF  "QI") (V4SF  "QI")
    (V8DF  "QI") (V4DF  "QI") (V2DF  "QI")])
 
+;; Mapping of vector modes to corresponding mask size
+(define_mode_attr avx512fmaskmodelower
+  [(V64QI "di") (V32QI "si") (V16QI "hi")
+   (V32HI "si") (V16HI "hi") (V8HI  "qi") (V4HI "qi")
+   (V16SI "hi") (V8SI  "qi") (V4SI  "qi")
+   (V8DI  "qi") (V4DI  "qi") (V2DI  "qi")
+   (V16SF "hi") (V8SF  "qi") (V4SF  "qi")
+   (V8DF  "qi") (V4DF  "qi") (V2DF  "qi")])
+
 ;; Mapping of vector float modes to an integer mode of the same size
 (define_mode_attr sseintvecmode
   [(V16SF "V16SI") (V8DF  "V8DI")
@@ -2810,6 +2819,150 @@
 		      (const_string "1")
 		      (const_string "0")))
    (set_attr "mode" "<MODE>")])
+
+(define_expand "vec_cmp<mode><avx512fmaskmodelower>"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
+	(match_operator:<avx512fmaskmode> 1 ""
+	  [(match_operand:V48_AVX512VL 2 "register_operand")
+	   (match_operand:V48_AVX512VL 3 "nonimmediate_operand")]))]
+  "TARGET_AVX512F"
+{
+  bool ok = ix86_expand_mask_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmp<mode><avx512fmaskmodelower>"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
+	(match_operator:<avx512fmaskmode> 1 ""
+	  [(match_operand:VI12_AVX512VL 2 "register_operand")
+	   (match_operand:VI12_AVX512VL 3 "nonimmediate_operand")]))]
+  "TARGET_AVX512BW"
+{
+  bool ok = ix86_expand_mask_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmp<mode><sseintvecmodelower>"
+  [(set (match_operand:<sseintvecmode> 0 "register_operand")
+	(match_operator:<sseintvecmode> 1 ""
+	  [(match_operand:VI_256 2 "register_operand")
+	   (match_operand:VI_256 3 "nonimmediate_operand")]))]
+  "TARGET_AVX2"
+{
+  bool ok = ix86_expand_int_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmp<mode><sseintvecmodelower>"
+  [(set (match_operand:<sseintvecmode> 0 "register_operand")
+	(match_operator:<sseintvecmode> 1 ""
+	  [(match_operand:VI124_128 2 "register_operand")
+	   (match_operand:VI124_128 3 "nonimmediate_operand")]))]
+  "TARGET_SSE2"
+{
+  bool ok = ix86_expand_int_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmpv2div2di"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(match_operator:V2DI 1 ""
+	  [(match_operand:V2DI 2 "register_operand")
+	   (match_operand:V2DI 3 "nonimmediate_operand")]))]
+  "TARGET_SSE4_2"
+{
+  bool ok = ix86_expand_int_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmp<mode><sseintvecmodelower>"
+  [(set (match_operand:<sseintvecmode> 0 "register_operand")
+	(match_operator:<sseintvecmode> 1 ""
+	  [(match_operand:VF_256 2 "register_operand")
+	   (match_operand:VF_256 3 "nonimmediate_operand")]))]
+  "TARGET_AVX"
+{
+  bool ok = ix86_expand_fp_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmp<mode><sseintvecmodelower>"
+  [(set (match_operand:<sseintvecmode> 0 "register_operand")
+	(match_operator:<sseintvecmode> 1 ""
+	  [(match_operand:VF_128 2 "register_operand")
+	   (match_operand:VF_128 3 "nonimmediate_operand")]))]
+  "TARGET_SSE"
+{
+  bool ok = ix86_expand_fp_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmpu<mode><avx512fmaskmodelower>"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
+	(match_operator:<avx512fmaskmode> 1 ""
+	  [(match_operand:VI48_AVX512VL 2 "register_operand")
+	   (match_operand:VI48_AVX512VL 3 "nonimmediate_operand")]))]
+  "TARGET_AVX512F"
+{
+  bool ok = ix86_expand_mask_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmpu<mode><avx512fmaskmodelower>"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
+	(match_operator:<avx512fmaskmode> 1 ""
+	  [(match_operand:VI12_AVX512VL 2 "register_operand")
+	   (match_operand:VI12_AVX512VL 3 "nonimmediate_operand")]))]
+  "TARGET_AVX512BW"
+{
+  bool ok = ix86_expand_mask_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmpu<mode><sseintvecmodelower>"
+  [(set (match_operand:<sseintvecmode> 0 "register_operand")
+	(match_operator:<sseintvecmode> 1 ""
+	  [(match_operand:VI_256 2 "register_operand")
+	   (match_operand:VI_256 3 "nonimmediate_operand")]))]
+  "TARGET_AVX2"
+{
+  bool ok = ix86_expand_int_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmpu<mode><sseintvecmodelower>"
+  [(set (match_operand:<sseintvecmode> 0 "register_operand")
+	(match_operator:<sseintvecmode> 1 ""
+	  [(match_operand:VI124_128 2 "register_operand")
+	   (match_operand:VI124_128 3 "nonimmediate_operand")]))]
+  "TARGET_SSE2"
+{
+  bool ok = ix86_expand_int_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmpuv2div2di"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(match_operator:V2DI 1 ""
+	  [(match_operand:V2DI 2 "register_operand")
+	   (match_operand:V2DI 3 "nonimmediate_operand")]))]
+  "TARGET_SSE4_2"
+{
+  bool ok = ix86_expand_int_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
 
 (define_expand "vcond<V_512:mode><VF_512:mode>"
   [(set (match_operand:V_512 0 "register_operand")
