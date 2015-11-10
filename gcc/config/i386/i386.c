@@ -80,7 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 static rtx legitimize_dllimport_symbol (rtx, bool);
 static rtx legitimize_pe_coff_extern_decl (rtx, bool);
 static rtx legitimize_pe_coff_symbol (rtx, bool);
-static void ix86_print_operand_address_as (FILE *file, rtx addr, addr_space_t);
+static void ix86_print_operand_address_as (FILE *, rtx, addr_space_t, bool);
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -17131,13 +17131,6 @@ ix86_print_operand (FILE *file, rtx x, int code)
     {
       rtx addr = XEXP (x, 0);
 
-      /* Avoid (%rip) for call operands.  */
-      if (code == 'P' && CONSTANT_ADDRESS_P (x) && !CONST_INT_P (x))
-	{
-	  output_addr_const (file, addr);
-	  return;
-	}
-
       /* No `byte ptr' prefix for call instructions ... */
       if (ASSEMBLER_DIALECT == ASM_INTEL && code != 'X' && code != 'P')
 	{
@@ -17187,7 +17180,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
       if (this_is_asm_operands && ! address_operand (addr, VOIDmode))
 	output_operand_lossage ("invalid constraints for operand");
       else
-	ix86_print_operand_address_as (file, addr, MEM_ADDR_SPACE (x));
+	ix86_print_operand_address_as
+	  (file, addr, MEM_ADDR_SPACE (x), code == 'p' || code == 'P');
     }
 
   else if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
@@ -17272,7 +17266,8 @@ ix86_print_operand_punct_valid_p (unsigned char code)
 /* Print a memory operand whose address is ADDR.  */
 
 static void
-ix86_print_operand_address_as (FILE *file, rtx addr, addr_space_t as)
+ix86_print_operand_address_as (FILE *file, rtx addr,
+			       addr_space_t as, bool no_rip)
 {
   struct ix86_address parts;
   rtx base, index, disp;
@@ -17346,7 +17341,7 @@ ix86_print_operand_address_as (FILE *file, rtx addr, addr_space_t as)
     }
 
   /* Use one byte shorter RIP relative addressing for 64bit mode.  */
-  if (TARGET_64BIT && !base && !index)
+  if (TARGET_64BIT && !base && !index && !no_rip)
     {
       rtx symbol = disp;
 
@@ -17360,10 +17355,10 @@ ix86_print_operand_address_as (FILE *file, rtx addr, addr_space_t as)
 	      && SYMBOL_REF_TLS_MODEL (symbol) == 0))
 	base = pc_rtx;
     }
+
   if (!base && !index)
     {
       /* Displacement only requires special attention.  */
-
       if (CONST_INT_P (disp))
 	{
 	  if (ASSEMBLER_DIALECT == ASM_INTEL && parts.seg == ADDR_SPACE_GENERIC)
@@ -17505,7 +17500,7 @@ ix86_print_operand_address_as (FILE *file, rtx addr, addr_space_t as)
 static void
 ix86_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
 {
-  ix86_print_operand_address_as (file, addr, ADDR_SPACE_GENERIC);
+  ix86_print_operand_address_as (file, addr, ADDR_SPACE_GENERIC, false);
 }
 
 /* Implementation of TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
