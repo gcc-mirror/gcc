@@ -1,3 +1,8 @@
+2015-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56118
+	* gcc.target/i386/pr56118.c: New testcase.
+
 2015-11-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/cond_op_imm_1.c: New test.

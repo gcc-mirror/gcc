@@ -2317,9 +2317,12 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
       dump_printf (MSG_NOTE, "  Scalar cost of basic block: %d\n", scalar_cost);
     }
 
-  /* Vectorization is profitable if its cost is less than the cost of scalar
-     version.  */
-  if (vec_outside_cost + vec_inside_cost >= scalar_cost)
+  /* Vectorization is profitable if its cost is more than the cost of scalar
+     version.  Note that we err on the vector side for equal cost because
+     the cost estimate is otherwise quite pessimistic (constant uses are
+     free on the scalar side but cost a load on the vector side for
+     example).  */
+  if (vec_outside_cost + vec_inside_cost > scalar_cost)
     return false;
 
   return true;
