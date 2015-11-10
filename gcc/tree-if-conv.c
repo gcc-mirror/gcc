@@ -799,7 +799,7 @@ ifcvt_can_use_mask_load_store (gimple *stmt)
       || VECTOR_MODE_P (mode))
     return false;
 
-  if (can_vec_mask_load_store_p (mode, is_load))
+  if (can_vec_mask_load_store_p (mode, VOIDmode, is_load))
     return true;
 
   return false;
@@ -2056,8 +2056,9 @@ predicate_mem_writes (loop_p loop)
 	  {
 	    tree lhs = gimple_assign_lhs (stmt);
 	    tree rhs = gimple_assign_rhs1 (stmt);
-	    tree ref, addr, ptr, masktype, mask_op0, mask_op1, mask;
+	    tree ref, addr, ptr, mask;
 	    gimple *new_stmt;
+	    gimple_seq stmts = NULL;
 	    int bitsize = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (lhs)));
 	    ref = TREE_CODE (lhs) == SSA_NAME ? rhs : lhs;
 	    mark_addressable (ref);
@@ -2070,16 +2071,27 @@ predicate_mem_writes (loop_p loop)
 	      mask = vect_masks[index];
 	    else
 	      {
-		masktype = build_nonstandard_integer_type (bitsize, 1);
-		mask_op0 = build_int_cst (masktype, swap ? 0 : -1);
-		mask_op1 = build_int_cst (masktype, swap ? -1 : 0);
-		cond = force_gimple_operand_gsi_1 (&gsi, unshare_expr (cond),
-						   is_gimple_condexpr,
-						   NULL_TREE,
-						   true, GSI_SAME_STMT);
-		mask = fold_build_cond_expr (masktype, unshare_expr (cond),
-					     mask_op0, mask_op1);
-		mask = ifc_temp_var (masktype, mask, &gsi);
+		if (COMPARISON_CLASS_P (cond))
+		  mask = gimple_build (&stmts, TREE_CODE (cond),
+				       boolean_type_node,
+				       TREE_OPERAND (cond, 0),
+				       TREE_OPERAND (cond, 1));
+		else
+		  {
+		    gcc_assert (TREE_CODE (cond) == SSA_NAME);
+		    mask = cond;
+		  }
+
+		if (swap)
+		  {
+		    tree true_val
+		      = constant_boolean_node (true, TREE_TYPE (mask));
+		    mask = gimple_build (&stmts, BIT_XOR_EXPR,
+					 TREE_TYPE (mask), mask, true_val);
+		  }
+		gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
+
+		mask = ifc_temp_var (TREE_TYPE (mask), mask, &gsi);
 		/* Save mask and its size for further use.  */
 	        vect_sizes.safe_push (bitsize);
 		vect_masks.safe_push (mask);

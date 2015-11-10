@@ -1,5 +1,9 @@
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* gcc.target/i386/avx2-vec-mask-bit-not.c: New test.
+
+2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* gcc.dg/vect/slp-cond-5.c: New test.
 
 2015-11-10  Richard Biener  <rguenther@suse.de>

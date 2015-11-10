@@ -1,5 +1,21 @@
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* internal-fn.c (expand_MASK_LOAD): Adjust to maskload optab changes.
+	(expand_MASK_STORE): Adjust to maskstore optab changes.
+	* optabs-query.c (can_vec_mask_load_store_p): Add MASK_MODE arg.
+	 Adjust to maskload, maskstore optab changes.
+	* optabs-query.h (can_vec_mask_load_store_p): Add MASK_MODE arg.
+	* optabs.def (maskload_optab): Transform into convert optab.
+	(maskstore_optab): Likewise.
+	* tree-if-conv.c (ifcvt_can_use_mask_load_store): Adjust to
+	can_vec_mask_load_store_p signature change.
+	(predicate_mem_writes): Use boolean mask.
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Adjust to
+	can_vec_mask_load_store_p signature change.  Allow invariant masks.
+	(vectorizable_operation): Ignore type precision for boolean vectors.
+
+2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* expr.c (do_store_flag): Use expand_vec_cmp_expr for mask results.
 	(const_vector_mask_from_tree): New.
 	(const_vector_from_tree): Use const_vector_mask_from_tree
