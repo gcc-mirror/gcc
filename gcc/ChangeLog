@@ -1,5 +1,23 @@
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* optabs-query.h (get_vcond_mask_icode): New.
+	* optabs-tree.c (expand_vec_cond_expr_p): Use
+	get_vcond_mask_icode for VEC_COND_EXPR with mask.
+	* optabs.c (expand_vec_cond_mask_expr): New.
+	(expand_vec_cond_expr): Use get_vcond_mask_icode
+	when possible.
+	* optabs.def (vcond_mask_optab): New.
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Don't
+	generate redundant comparison for COND_EXPR.
+	* tree-vect-stmts.c (vect_is_simple_cond): Allow SSA_NAME
+	as a condition.
+	(vectorizable_condition): Likewise.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Allow
+	cond_exp with no embedded comparison.
+	(vect_build_slp_tree_1): Likewise.
+
+2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* config/i386/sse.md (maskload<mode>): Rename to ...
 	(maskload<mode><sseintvecmodelower>): ... this.
 	(maskstore<mode>): Rename to ...

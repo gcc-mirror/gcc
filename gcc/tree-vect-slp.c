@@ -226,7 +226,8 @@ vect_get_and_check_slp_defs (vec_info *vinfo,
     {
       enum tree_code code = gimple_assign_rhs_code (stmt);
       number_of_oprnds = gimple_num_ops (stmt) - 1;
-      if (gimple_assign_rhs_code (stmt) == COND_EXPR)
+      if (gimple_assign_rhs_code (stmt) == COND_EXPR
+	  && COMPARISON_CLASS_P (gimple_assign_rhs1 (stmt)))
 	{
 	  first_op_cond = true;
 	  commutative = true;
@@ -447,7 +448,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
   machine_mode vec_mode;
   HOST_WIDE_INT dummy;
   gimple *first_load = NULL, *prev_first_load = NULL;
-  tree cond;
 
   /* For every stmt in NODE find its def stmt/s.  */
   FOR_EACH_VEC_ELT (stmts, i, stmt)
@@ -491,24 +491,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
 	  matches[0] = false;
 	  return false;
 	}
-
-       if (is_gimple_assign (stmt)
-	   && gimple_assign_rhs_code (stmt) == COND_EXPR
-           && (cond = gimple_assign_rhs1 (stmt))
-           && !COMPARISON_CLASS_P (cond))
-        {
-          if (dump_enabled_p ())
-            {
-              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
-			       "Build SLP failed: condition is not "
-			       "comparison ");
-              dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-              dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-            }
-	  /* Fatal mismatch.  */
-	  matches[0] = false;
-          return false;
-        }
 
       scalar_type = vect_get_smallest_scalar_type (stmt, &dummy, &dummy);
       vectype = get_vectype_for_scalar_type (scalar_type);

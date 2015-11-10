@@ -5426,6 +5426,38 @@ expand_vec_perm (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   return tmp;
 }
 
+/* Generate insns for a VEC_COND_EXPR with mask, given its TYPE and its
+   three operands.  */
+
+rtx
+expand_vec_cond_mask_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
+			   rtx target)
+{
+  struct expand_operand ops[4];
+  machine_mode mode = TYPE_MODE (vec_cond_type);
+  machine_mode mask_mode = TYPE_MODE (TREE_TYPE (op0));
+  enum insn_code icode = get_vcond_mask_icode (mode, mask_mode);
+  rtx mask, rtx_op1, rtx_op2;
+
+  if (icode == CODE_FOR_nothing)
+    return 0;
+
+  mask = expand_normal (op0);
+  rtx_op1 = expand_normal (op1);
+  rtx_op2 = expand_normal (op2);
+
+  mask = force_reg (GET_MODE (mask), mask);
+  rtx_op1 = force_reg (GET_MODE (rtx_op1), rtx_op1);
+
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], rtx_op1, mode);
+  create_input_operand (&ops[2], rtx_op2, mode);
+  create_input_operand (&ops[3], mask, mask_mode);
+  expand_insn (icode, 4, ops);
+
+  return ops[0].value;
+}
+
 /* Generate insns for a VEC_COND_EXPR, given its TYPE and its
    three operands.  */
 
@@ -5450,11 +5482,20 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
     }
   else
     {
-      /* Fake op0 < 0.  */
       gcc_assert (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (op0)));
-      op0a = op0;
-      op0b = build_zero_cst (TREE_TYPE (op0));
-      tcode = LT_EXPR;
+      if (get_vcond_mask_icode (mode, TYPE_MODE (TREE_TYPE (op0)))
+	  != CODE_FOR_nothing)
+	return expand_vec_cond_mask_expr (vec_cond_type, op0, op1,
+					  op2, target);
+      /* Fake op0 < 0.  */
+      else
+	{
+	  gcc_assert (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (op0)))
+		      == MODE_VECTOR_INT);
+	  op0a = op0;
+	  op0b = build_zero_cst (TREE_TYPE (op0));
+	  tcode = LT_EXPR;
+	}
     }
   cmp_op_mode = TYPE_MODE (TREE_TYPE (op0a));
   unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
