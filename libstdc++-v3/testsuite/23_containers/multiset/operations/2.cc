@@ -54,6 +54,11 @@ test01()
   VERIFY( cit == cx.end() );
 
   VERIFY( Cmp::count == 0);
+
+  static_assert(std::is_same<decltype(it), test_type::iterator>::value,
+      "find returns iterator");
+  static_assert(std::is_same<decltype(cit), test_type::const_iterator>::value,
+      "const find returns const_iterator");
 }
 
 void
