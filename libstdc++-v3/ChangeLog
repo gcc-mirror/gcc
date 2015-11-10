@@ -1,5 +1,13 @@
 2015-11-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/68190
+	* include/bits/stl_multiset.h (multiset::find): Fix return types.
+	* include/bits/stl_set.h (set::find): Likewise.
+	* testsuite/23_containers/map/operations/2.cc: Test find return types.
+	* testsuite/23_containers/multimap/operations/2.cc: Likewise.
+	* testsuite/23_containers/multiset/operations/2.cc: Likewise.
+	* testsuite/23_containers/set/operations/2.cc: Likewise.
+
 	* doc/xml/manual/status_cxx2017.xml: Update.
 	* doc/html/*: Regenerate.
 
