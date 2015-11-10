@@ -1,3 +1,39 @@
+2015-11-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* lib/target-supports.exp (check_p8vector_hw_available): Split
+	long line.
+	(check_vsx_hw_available): Likewise.
+	(check_p9vector_hw_available): Add new checks for ISA 3.0 hardware
+	support and for PowerPC float128 support.
+	(check_p9modulo_hw_available): Likewise.
+	(check_ppc_float128_sw_available): Likewise.
+	(check_ppc_float128_hw_available): Likewise.
+	(check_effective_target_powerpc_p9vector_ok): Likewise.
+	(check_effective_target_powerpc_p9modulo_ok): Likewise.
+	(check_effective_target_powerpc_float128_sw_ok): Likewise.
+	(check_effective_target_powerpc_float128_hw_ok): Likewise.
+	(is-effective-target): Add new PowerPc targets.
+	(is-effective-target-keyword): Likewise.
+	(check_vect_support_and_set_flags): If we have ISA 3.0 vector
+	instructions, use it.
+
+	* gcc.target/powerpc/mod-1.c: New test for ISA 3.0 instructions.
+	* gcc.target/powerpc/mod-2.c: Likewise.
+	* gcc.target/powerpc/ctz-1.c: Likewise.
+	* gcc.target/powerpc/ctz-2.c: Likewise.
+	* gcc.target/powerpc/extswsli-1.c: Likewise.
+	* gcc.target/powerpc/extswsli-2.c: Likewise.
+	* gcc.target/powerpc/extswsli-3.c: Likewise.
+
+	* gcc.target/powerpc/fusion.c (fusion_vector): Move to fusion2.c
+	and allow the test on PowerPC LE.
+	* gcc.target/powerpc/fusion2.c (fusion_vector): Likewise.
+	* gcc.target/powerpc/fusion3.c: New file, test power9 fusion.
+
+	* gcc.target/powerpc/float128-call.c: Use powerpc_float128_sw_ok
+	check instead of powerpc_vsx_ok.
+	* gcc.target/powerpc/float128-mix.c: Likewise.
+
 2015-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/sso/*.c: Robustify dg-output directives.

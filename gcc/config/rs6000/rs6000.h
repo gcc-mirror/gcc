@@ -565,6 +565,8 @@ extern int rs6000_vector_align[];
 #define TARGET_FCFIDUS	TARGET_POPCNTD
 #define TARGET_FCTIDUZ	TARGET_POPCNTD
 #define TARGET_FCTIWUZ	TARGET_POPCNTD
+#define TARGET_CTZ	TARGET_MODULO
+#define TARGET_EXTSWSLI	(TARGET_MODULO && TARGET_POWERPC64)
 
 #define TARGET_XSCVDPSPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
 #define TARGET_XSCVSPDPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
@@ -700,6 +702,22 @@ extern int rs6000_vector_align[];
 #define TARGET_FRSQRTE	(TARGET_HARD_FLOAT && TARGET_FPRS \
 			 && TARGET_DOUBLE_FLOAT \
 			 && (TARGET_PPC_GFXOPT || VECTOR_UNIT_VSX_P (DFmode)))
+
+/* Conditions to allow TOC fusion for loading/storing integers.  */
+#define TARGET_TOC_FUSION_INT	(TARGET_P8_FUSION			\
+				 && TARGET_TOC_FUSION			\
+				 && (TARGET_CMODEL != CMODEL_SMALL)	\
+				 && TARGET_POWERPC64)
+
+/* Conditions to allow TOC fusion for loading/storing floating point.  */
+#define TARGET_TOC_FUSION_FP	(TARGET_P9_FUSION			\
+				 && TARGET_TOC_FUSION			\
+				 && (TARGET_CMODEL != CMODEL_SMALL)	\
+				 && TARGET_POWERPC64			\
+				 && TARGET_HARD_FLOAT			\
+				 && TARGET_FPRS				\
+				 && TARGET_SINGLE_FLOAT			\
+				 && TARGET_DOUBLE_FLOAT)
 
 /* Whether the various reciprocal divide/square root estimate instructions
    exist, and whether we should automatically generate code for the instruction
@@ -2095,8 +2113,12 @@ do {									     \
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
   ((VALUE) = ((MODE) == SImode ? 32 : 64), 1)
 
-/* The CTZ patterns return -1 for input of zero.  */
-#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = -1, 1)
+/* The CTZ patterns that are implemented in terms of CLZ return -1 for input of
+   zero.  The hardware instructions added in Power9 return 32 or 64.  */
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)				\
+  ((!TARGET_CTZ)							\
+   ? ((VALUE) = -1, 1)							\
+   : ((VALUE) = ((MODE) == SImode ? 32 : 64), 1))
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
