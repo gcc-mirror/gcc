@@ -1,3 +1,10 @@
+2015-11-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68236
+	* haifa-sched.c (autopref_multipass_dfa_lookahead_guard): Return 0
+	if insn_queue doesn't exist.
+	(haifa_sched_finish): Reset insn_queue to NULL.
+
 2015-11-10  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* regrename.c (create_new_chain): Initialize renamed and tied_chain.
