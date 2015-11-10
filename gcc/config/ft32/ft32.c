@@ -238,7 +238,7 @@ ft32_print_operand (FILE * file, rtx x, int code)
       return;
 
     case MEM:
-      output_address (XEXP (operand, 0));
+      output_address (GET_MODE (XEXP (operand, 0)), XEXP (operand, 0));
       return;
 
     default:
