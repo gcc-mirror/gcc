@@ -130,6 +130,9 @@ static HARD_REG_SET live_hard_regs;
    record_operand_use.  */
 static operand_rr_info *cur_operand;
 
+/* Set while scanning RTL if a register dies.  Used to tie chains.  */
+static struct du_head *terminated_this_insn;
+
 /* Return the chain corresponding to id number ID.  Take into account that
    chains may have been merged.  */
 du_head_p
@@ -224,6 +227,8 @@ create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
   head->nregs = this_nregs;
   head->need_caller_save_reg = 0;
   head->cannot_rename = 0;
+  head->renamed = 0;
+  head->tied_chain = NULL;
 
   id_to_chain.safe_push (head);
   head->id = current_id++;
@@ -365,6 +370,13 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
      in the chain.  */
   preferred_class
     = (enum reg_class) targetm.preferred_rename_class (super_class);
+
+  /* Pick and check the register from the tied chain iff the tied chain
+     is not renamed.  */
+  if (this_head->tied_chain && !this_head->tied_chain->renamed
+      && check_new_reg_p (old_reg, this_head->tied_chain->regno,
+			  this_head, *unavailable))
+    return this_head->tied_chain->regno;
 
   /* If PREFERRED_CLASS is not NO_REGS, we iterate in the first pass
      over registers that belong to PREFERRED_CLASS and try to find the
@@ -960,6 +972,7 @@ regrename_do_replace (struct du_head *head, int reg)
     return false;
 
   mode = GET_MODE (*head->first->loc);
+  head->renamed = 1;
   head->regno = reg;
   head->nregs = hard_regno_nregs[reg][mode];
   return true;
@@ -1043,7 +1056,34 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
   if (action == mark_write)
     {
       if (type == OP_OUT)
-	create_new_chain (this_regno, this_nregs, loc, insn, cl);
+	{
+	  du_head_p c;
+	  rtx pat = PATTERN (insn);
+
+	  c = create_new_chain (this_regno, this_nregs, loc, insn, cl);
+
+	  /* We try to tie chains in a move instruction for
+	     a single output.  */
+	  if (recog_data.n_operands == 2
+	      && GET_CODE (pat) == SET
+	      && GET_CODE (SET_DEST (pat)) == REG
+	      && GET_CODE (SET_SRC (pat)) == REG
+	      && terminated_this_insn)
+	    {
+	      gcc_assert (terminated_this_insn->regno
+			  == REGNO (recog_data.operand[1]));
+
+	      c->tied_chain = terminated_this_insn;
+	      terminated_this_insn->tied_chain = c;
+
+	      if (dump_file)
+		fprintf (dump_file, "Tying chain %s (%d) with %s (%d)\n",
+			 reg_names[c->regno], c->id,
+			 reg_names[terminated_this_insn->regno],
+			 terminated_this_insn->id);
+	    }
+	}
+
       return;
     }
 
@@ -1151,6 +1191,8 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
 		SET_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
 	    }
 
+	  if (action == terminate_dead)
+	    terminated_this_insn = *p;
 	  *p = next;
 	  if (dump_file)
 	    fprintf (dump_file,
@@ -1706,6 +1748,8 @@ build_def_use (basic_block bb)
 		|| REG_NOTE_KIND (note) == REG_FRAME_RELATED_EXPR)
 	      scan_rtx (insn, &XEXP (note, 0), ALL_REGS, mark_read,
 			OP_INOUT);
+
+	  terminated_this_insn = NULL;
 
 	  /* Step 4: Close chains for registers that die here, unless
 	     the register is mentioned in a REG_UNUSED note.  In that

@@ -28,6 +28,8 @@ struct du_head
   struct du_head *next_chain;
   /* The first and last elements of this chain.  */
   struct du_chain *first, *last;
+  /* The chain that this chain is tied to.  */
+  struct du_head *tied_chain;
   /* Describes the register being tracked.  */
   unsigned regno;
   int nregs;
@@ -45,6 +47,8 @@ struct du_head
      such as the SET_DEST of a CALL_INSN or an asm operand that used
      to be a hard register.  */
   unsigned int cannot_rename:1;
+  /* Nonzero if the chain has already been renamed.  */
+  unsigned int renamed:1;
 };
 
 typedef struct du_head *du_head_p;
