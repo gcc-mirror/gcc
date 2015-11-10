@@ -873,7 +873,7 @@ Objective-C and Objective-C++ Dialects}.
 -march=@var{arch} -mbmx -mno-bmx -mcdx -mno-cdx}
 
 @emph{Nvidia PTX Options}
-@gccoptlist{-m32 -m64 -mmainkernel}
+@gccoptlist{-m32 -m64 -mmainkernel -moptimize}
 
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
@@ -18959,6 +18959,11 @@ Generate code for 32-bit or 64-bit ABI.
 @opindex mmainkernel
 Link in code for a __main kernel.  This is for stand-alone instead of
 offloading execution.
+
+@item -moptimize
+@opindex moptimize
+Apply partitioned execution optimizations.  This is the default when any
+level of optimization is selected.
 
 @end table
 
