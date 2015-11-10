@@ -1,3 +1,12 @@
+2015-11-10  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/aarch64/atomics.md (unspecv): Move to iterators.md.
+	(ATOMIC_LDOP): Likewise.
+	(atomic_ldop): Likewise.
+	* config/aarch64/iterators.md (unspecv): Moved from atomics.md.
+	(ATOMIC_LDOP): Likewise.
+	(atomic_ldop): Likewise.
+
 2015-11-10  Martin Liska  <mliska@suse.cz>
 
 	* alloc-pool.h (allocate_raw): New function.
