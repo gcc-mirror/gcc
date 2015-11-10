@@ -183,6 +183,8 @@ OPTAB_D (reload_out_optab, "reload_out$a")
 
 OPTAB_DC(cbranch_optab, "cbranch$a4", COMPARE)
 OPTAB_D (addcc_optab, "add$acc")
+OPTAB_D (negcc_optab, "neg$acc")
+OPTAB_D (notcc_optab, "not$acc")
 OPTAB_D (movcc_optab, "mov$acc")
 OPTAB_D (cmov_optab, "cmov$a6")
 OPTAB_D (cstore_optab, "cstore$a4")

@@ -4210,6 +4210,56 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   return NULL_RTX;
 }
 
+
+/* Emit a conditional negate or bitwise complement using the
+   negcc or notcc optabs if available.  Return NULL_RTX if such operations
+   are not available.  Otherwise return the RTX holding the result.
+   TARGET is the desired destination of the result.  COMP is the comparison
+   on which to negate.  If COND is true move into TARGET the negation
+   or bitwise complement of OP1.  Otherwise move OP2 into TARGET.
+   CODE is either NEG or NOT.  MODE is the machine mode in which the
+   operation is performed.  */
+
+rtx
+emit_conditional_neg_or_complement (rtx target, rtx_code code,
+				     machine_mode mode, rtx cond, rtx op1,
+				     rtx op2)
+{
+  optab op = unknown_optab;
+  if (code == NEG)
+    op = negcc_optab;
+  else if (code == NOT)
+    op = notcc_optab;
+  else
+    gcc_unreachable ();
+
+  insn_code icode = direct_optab_handler (op, mode);
+
+  if (icode == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  if (!target)
+    target = gen_reg_rtx (mode);
+
+  rtx_insn *last = get_last_insn ();
+  struct expand_operand ops[4];
+
+  create_output_operand (&ops[0], target, mode);
+  create_fixed_operand (&ops[1], cond);
+  create_input_operand (&ops[2], op1, mode);
+  create_input_operand (&ops[3], op2, mode);
+
+  if (maybe_expand_insn (icode, 4, ops))
+    {
+      if (ops[0].value != target)
+	convert_move (target, ops[0].value, false);
+
+      return target;
+    }
+  delete_insns_since (last);
+  return NULL_RTX;
+}
+
 /* Emit a conditional addition instruction if the machine supports one for that
    condition and machine mode.
 

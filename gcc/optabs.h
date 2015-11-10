@@ -259,6 +259,10 @@ extern void emit_indirect_jump (rtx);
 rtx emit_conditional_move (rtx, enum rtx_code, rtx, rtx, machine_mode,
 			   rtx, rtx, machine_mode, int);
 
+/* Emit a conditional negate or bitwise complement operation.  */
+rtx emit_conditional_neg_or_complement (rtx, rtx_code, machine_mode, rtx,
+					 rtx, rtx);
+
 rtx emit_conditional_add (rtx, enum rtx_code, rtx, rtx, machine_mode,
 			  rtx, rtx, machine_mode, int);
 
