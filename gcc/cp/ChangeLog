@@ -1,3 +1,14 @@
+2015-10-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/67913
+	PR c++/67927
+	* call.c (build_operator_new_call): Do not assume size_check
+	is non-null, analogously to the top half of the function.
+	* init.c (build_new_1): Detect and diagnose array sizes in
+	excess of the maximum of roughly SIZE_MAX / 2.
+	Insert a runtime check only for arrays with a non-constant size.
+	(build_new): Detect and diagnose negative array sizes.
+
 2015-11-09  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>

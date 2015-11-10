@@ -2482,7 +2482,11 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
-   build_raw_new_expr.  This may change PLACEMENT and INIT.  */
+   build_raw_new_expr.  This may change PLACEMENT and INIT.
+   TYPE is the type of the object being constructed, possibly an array
+   of NELTS elements when NELTS is non-null (in "new T[NELTS]", T may
+   be an array of the form U[inner], with the whole expression being
+   "new U[NELTS][inner]").  */
 
 static tree
 build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
@@ -2502,13 +2506,16 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
      type.)  */
   tree pointer_type;
   tree non_const_pointer_type;
+  /* The most significant array bound in int[OUTER_NELTS][inner].  */
   tree outer_nelts = NULL_TREE;
-  /* For arrays, a bounds checks on the NELTS parameter. */
+  /* For arrays with a non-constant number of elements, a bounds checks
+     on the NELTS parameter to avoid integer overflow at runtime. */
   tree outer_nelts_check = NULL_TREE;
   bool outer_nelts_from_type = false;
+  /* Number of the "inner" elements in "new T[OUTER_NELTS][inner]".  */
   offset_int inner_nelts_count = 1;
   tree alloc_call, alloc_expr;
-  /* Size of the inner array elements. */
+  /* Size of the inner array elements (those with constant dimensions). */
   offset_int inner_size;
   /* The address returned by the call to "operator new".  This node is
      a VAR_DECL and is therefore reusable.  */
@@ -2702,20 +2709,41 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	}
 
       max_outer_nelts = wi::udiv_trunc (max_size, inner_size);
-      /* Only keep the top-most seven bits, to simplify encoding the
-	 constant in the instruction stream.  */
-      {
-	unsigned shift = (max_outer_nelts.get_precision ()) - 7
-	  - wi::clz (max_outer_nelts);
-	max_outer_nelts = wi::lshift (wi::lrshift (max_outer_nelts, shift),
-				      shift);
-      }
       max_outer_nelts_tree = wide_int_to_tree (sizetype, max_outer_nelts);
 
       size = size_binop (MULT_EXPR, size, convert (sizetype, nelts));
-      outer_nelts_check = fold_build2 (LE_EXPR, boolean_type_node,
-				       outer_nelts,
-				       max_outer_nelts_tree);
+
+      if (TREE_CONSTANT (outer_nelts))
+	{
+	  if (tree_int_cst_lt (max_outer_nelts_tree, outer_nelts))
+	    {
+	      /* When the array size is constant, check it at compile time
+		 to make sure it doesn't exceed the implementation-defined
+		 maximum, as required by C++ 14 (in C++ 11 this requirement
+		 isn't explicitly stated but it's enforced anyway -- see
+		 grokdeclarator in cp/decl.c).  */
+	      if (complain & tf_error)
+		error ("size of array is too large");
+	      return error_mark_node;
+	    }
+	}
+      else
+ 	{
+	  /* When a runtime check is necessary because the array size
+	     isn't constant, keep only the top-most seven bits (starting
+	     with the most significant non-zero bit) of the maximum size
+	     to compare the array size against, to simplify encoding the
+	     constant maximum size in the instruction stream.  */
+
+	  unsigned shift = (max_outer_nelts.get_precision ()) - 7
+	    - wi::clz (max_outer_nelts);
+	  max_outer_nelts = wi::lshift (wi::lrshift (max_outer_nelts, shift),
+				        shift);
+
+          outer_nelts_check = fold_build2 (LE_EXPR, boolean_type_node,
+					   outer_nelts,
+					   max_outer_nelts_tree);
+	}
     }
 
   alloc_fn = NULL_TREE;
@@ -3290,6 +3318,23 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
           else
             return error_mark_node;
         }
+
+      /* Try to determine the constant value only for the purposes
+	 of the diagnostic below but continue to use the original
+	 value and handle const folding later.  */
+      const_tree cst_nelts = maybe_constant_value (nelts);
+
+      /* The expression in a noptr-new-declarator is erroneous if it's of
+	 non-class type and its value before converting to std::size_t is
+	 less than zero. ... If the expression is a constant expression,
+	 the program is ill-fomed.  */
+      if (TREE_CONSTANT (cst_nelts) && tree_int_cst_sgn (cst_nelts) == -1)
+	{
+	  if (complain & tf_error)
+	    error ("size of array is negative");
+	  return error_mark_node;
+	}
+
       nelts = mark_rvalue_use (nelts);
       nelts = cp_save_expr (cp_convert (sizetype, nelts, complain));
     }
