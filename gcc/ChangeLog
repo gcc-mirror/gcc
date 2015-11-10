@@ -1,3 +1,91 @@
+2015-11-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/constraints.md (wF constraint): New constraints
+	for power9/toc fusion.
+	(wG constraint): Likewise.
+
+	* config/rs6000/predicates.md (u6bit_cint_operand): New
+	predicate, recognize 0..63.
+	(upper16_cint_operand): New predicate for power9 and toc fusion.
+	(fpr_reg_operand): Likewise.
+	(toc_fusion_or_p9_reg_operand): Likewise.
+	(toc_fusion_mem_raw): Likewise.
+	(toc_fusion_mem_wrapped): Likewise.
+	(fusion_gpr_addis): If power9 fusion, allow fusion for a larger
+	address range.
+	(fusion_gpr_mem_combo): Delete, use fusion_addis_mem_combo_load
+	instead.
+	(fusion_addis_mem_combo_load): Add support for power9 fusion of
+	floating point loads, floating point stores, and gpr stores.
+	(fusion_addis_mem_combo_store): Likewise.
+	(fusion_offsettable_mem_operand): Likewise.
+
+	* config/rs6000/rs6000-protos.h (emit_fusion_addis): Add
+	declarations.
+	(emit_fusion_load_store): Likewise.
+	(fusion_p9_p): Likewise.
+	(expand_fusion_p9_load): Likewise.
+	(expand_fusion_p9_store): Likewise.
+	(emit_fusion_p9_load): Likewise.
+	(emit_fusion_p9_store): Likewise.
+	(fusion_wrap_memory_address): Likewise.
+
+	* config/rs6000/rs6000.c (struct rs6000_reg_addr): Add new
+	elements for power9 fusion.
+	(rs6000_debug_print_mode): Rework debug information to print more
+	information about fusion.
+	(rs6000_init_hard_regno_mode_ok): Setup for power9 fusion
+	support.
+	(rs6000_legitimate_address_p): Recognize toc fusion as a valid
+	offsettable memory address.
+	(rs6000_rtx_costs): Update costs for new ISA 3.0 instructions.
+	(emit_fusion_gpr_load): Move most of the code from
+	emit_fusion_gpr_load into emit_fusion-addis that handles both
+	power8 and power9 fusion.
+	(emit_fusion_addis): Likewise.
+	(emit_fusion_load_store): Likewise.
+	(fusion_wrap_memory_address): Add support for TOC fusion.
+	(fusion_split_address): Likewise.
+	(fusion_p9_p): Add support for power9 fusion.
+	(expand_fusion_p9_load): Likewise.
+	(expand_fusion_p9_store): Likewise.
+	(emit_fusion_p9_load): Likewise.
+	(emit_fusion_p9_store): Likewise.
+
+	* config/rs6000/rs6000.h (TARGET_EXTSWSLI): Macros for support for
+	new instructions in ISA 3.0.
+	(TARGET_CTZ): Likewise.
+	(TARGET_TOC_FUSION_INT): Macros for power9 fusion support.
+	(TARGET_TOC_FUSION_FP): Likewise.
+
+	* config/rs6000/rs6000.md (UNSPEC_FUSION_P9): New power9/toc
+	fusion unspecs.
+	(UNSPEC_FUSION_ADDIS): Likewise.
+	(QHSI mode iterator): New iterator for power9 fusion.
+	(GPR_FUSION): Likewise.
+	(FPR_FUSION): Likewise.
+	(mod<mode>3): Add support for ISA 3.0
+	modulus instructions.
+	(umod<mode>3): Likewise.
+	(divmod peephole): Likewise.
+	(udivmod peephole): Likewise.
+	(ctz<mode>2): Add support for ISA 3.0 count trailing zeros scalar
+	instructions.
+	(ctz<mode>2_h): Likewise.
+	(ashdi3_extswsli): Add support for ISA 3.0 EXTSWSLI instruction.
+	(ashdi3_extswsli_dot): Likewise.
+	(ashdi3_extswsli_dot2): Likewise.
+	(power9 fusion splitter): New power9/toc fusion support.
+	(toc_fusionload_<mode>): Likewise.
+	(toc_fusionload_di): Likewise.
+	(fusion_gpr_load_<mode>): Update predicate function.
+	(power9 fusion peephole2s): New power9/toc fusion support.
+	(fusion_gpr_<P:mode>_<GPR_FUSION:mode>_load): Likewise.
+	(fusion_gpr_<P:mode>_<GPR_FUSION:mode>_store): Likewise.
+	(fusion_fpr_<P:mode>_<FPR_FUSION:mode>_load): Likewise.
+	(fusion_fpr_<P:mode>_<FPR_FUSION:mode>_store): Likewise.
+	(fusion_p9_<mode>_constant): Likewise.
+
 2015-11-09  Steve Ellcey  <sellcey@imgtec.com>
 
 	* optabs.c (prepare_libcall_arg): New function.

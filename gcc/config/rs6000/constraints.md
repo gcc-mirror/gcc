@@ -137,6 +137,16 @@
   (and (match_code "const_int")
        (match_test "TARGET_VSX && (ival == VECTOR_ELEMENT_SCALAR_64BIT)")))
 
+;; Extended fusion store
+(define_memory_constraint "wF"
+  "Memory operand suitable for power9 fusion load/stores"
+  (match_operand 0 "fusion_addis_mem_combo_load"))
+
+;; Fusion gpr load.
+(define_memory_constraint "wG"
+  "Memory operand suitable for TOC fusion memory references"
+  (match_operand 0 "toc_fusion_mem_wrapped"))
+
 ;; Lq/stq validates the address for load/store quad
 (define_memory_constraint "wQ"
   "Memory operand suitable for the load/store quad instructions"
