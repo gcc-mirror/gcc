@@ -1,3 +1,7 @@
+2015-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/functional_hash.h: Fix grammar in comment.
+
 2015-11-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_algo.h
