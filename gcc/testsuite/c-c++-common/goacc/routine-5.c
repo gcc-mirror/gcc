@@ -3,18 +3,14 @@
 #pragma acc routine /* { dg-error "not followed by" } */
 int a;
 
-#if 0 /* Disable for the moment.  */
-#pragma acc routine /* dg-error "not followed by" */
+#pragma acc routine /* { dg-error "not followed by" } */
 void fn1 (void), fn1b (void);
-#endif
 
 #pragma acc routine /* { dg-error "not followed by" } */
 int b, fn2 (void);
 
-#if 0 /* Disable for the moment.  */
-#pragma acc routine /*  dg-error "not followed by"  */
+#pragma acc routine /* { dg-error "not followed by" } */
 int fn3 (void), b2;
-#endif
 
 #pragma acc routine /* { dg-error "not followed by" } */
 typedef struct c c;
