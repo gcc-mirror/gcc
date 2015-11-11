@@ -45,6 +45,7 @@ __profil_offset:
 	.global	__dcache_linesz
 	.global __profil
 	FUNC(__profil)
+#if !defined (__EM__) && !defined (__HS__)
 .Lstop_profiling:
 	sr	r0,[CONTROL0]
 	j_s	[blink]
@@ -107,6 +108,12 @@ nocache:
 	j_s	[blink]
 	.balign	4
 1:	j	__profil_irq
+#else
+__profil:
+	.balign	4
+	mov_s	r0,-1
+	j_s	[blink]
+#endif /* !__EM__ && !__HS__ */
 	ENDFUNC(__profil)
 
 	FUNC(__profil_irq)
@@ -114,6 +121,7 @@ nocache:
 	.balign 32,0,12	; make sure the code spans no more that two cache lines
 	nop_s
 __profil_irq:
+#if !defined (__EM__) && !defined (__HS__)
 	push_s	r0
 	ld	r0,[__profil_offset]
 	push_s	r1
@@ -128,6 +136,9 @@ __profil_irq:
 nostore:ld.ab	r2,[sp,8]
 	pop_s	r0
 	j.f	[ilink1]
+#else
+	rtie
+#endif /* !__EM__  && !__HS__ */
 	ENDFUNC(__profil_irq)
 
 ; could save one cycle if the counters were allocated at link time and
