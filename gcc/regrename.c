@@ -1068,7 +1068,9 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
 	      && GET_CODE (pat) == SET
 	      && GET_CODE (SET_DEST (pat)) == REG
 	      && GET_CODE (SET_SRC (pat)) == REG
-	      && terminated_this_insn)
+	      && terminated_this_insn
+	      && terminated_this_insn->nregs
+		 == REG_NREGS (recog_data.operand[1]))
 	    {
 	      gcc_assert (terminated_this_insn->regno
 			  == REGNO (recog_data.operand[1]));
@@ -1593,6 +1595,7 @@ build_def_use (basic_block bb)
 	  enum rtx_code set_code = SET;
 	  enum rtx_code clobber_code = CLOBBER;
 	  insn_rr_info *insn_info = NULL;
+	  terminated_this_insn = NULL;
 
 	  /* Process the insn, determining its effect on the def-use
 	     chains and live hard registers.  We perform the following
@@ -1748,8 +1751,6 @@ build_def_use (basic_block bb)
 		|| REG_NOTE_KIND (note) == REG_FRAME_RELATED_EXPR)
 	      scan_rtx (insn, &XEXP (note, 0), ALL_REGS, mark_read,
 			OP_INOUT);
-
-	  terminated_this_insn = NULL;
 
 	  /* Step 4: Close chains for registers that die here, unless
 	     the register is mentioned in a REG_UNUSED note.  In that
