@@ -1,3 +1,8 @@
+2015-11-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gfortran.dg/goacc/private-3.f95: Remove xfail.
+	* gfortran.dg/goacc/combined_loop.f90: Remove xfail.
+
 2015-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/i386/pr67265.c: New test.
