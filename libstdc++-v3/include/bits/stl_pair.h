@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
   /// piecewise_construct_t
-  struct piecewise_construct_t { };
+  struct piecewise_construct_t { explicit piecewise_construct_t() = default; };
 
   /// piecewise_construct
   constexpr piecewise_construct_t piecewise_construct = piecewise_construct_t();
