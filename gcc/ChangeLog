@@ -1,3 +1,10 @@
+2015-11-11  Martin Liska  <mliska@suse.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/68287
+	* lra-lives.c (lra_create_live_ranges_1): Reserve the right
+	number of elements.
+
 2015-11-11  Simon Dardis  <simon.dardis@imgtec.com>
 
 	* config/mips/mips.c (mips_breakable_sequence_p): New function.
