@@ -31,15 +31,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans.h"
 #include "stringpool.h"
 #include "cgraph.h"
-#include "diagnostic-core.h"	/* For internal_error.  */
-#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "attribs.h"
 #include "tree-dump.h"
 #include "toplev.h"	/* For announce_function.  */
-#include "flags.h"
 #include "debug.h"
 #include "constructor.h"
 #include "trans-types.h"

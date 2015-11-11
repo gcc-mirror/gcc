@@ -24,18 +24,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "function.h"
 #include "basic-block.h"
-#include "hard-reg-set.h"
 #include "tree.h"
 #include "gimple.h"
-#include "cfghooks.h"
-#include "alias.h"
-#include "fold-const.h"
 #include "java-tree.h"
 #include "dumpfile.h"
-#include "internal-fn.h"
 #include "gimplify.h"
 
 static tree java_gimplify_block (tree);

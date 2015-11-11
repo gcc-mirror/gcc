@@ -26,20 +26,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree.h"
 #include "gimple.h"
-#include "predict.h"
-#include "alloc-pool.h"
 #include "cgraph.h"
 #include "lto-streamer.h"
-#include "diagnostic-core.h"
-#include "alias.h"
-#include "fold-const.h"
-#include "internal-fn.h"
 #include "ipa-utils.h"
-#include "symbol-summary.h"
-#include "ipa-prop.h"
-#include "ipa-inline.h"
 #include "builtins.h"
-#include "print-tree.h"
 
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
    all edges and removing the old node.  */

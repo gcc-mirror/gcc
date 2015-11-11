@@ -29,15 +29,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "trans.h"
 #include "stringpool.h"
-#include "diagnostic-core.h"  /* For fatal_error.  */
-#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "langhooks.h"	/* For iso-c-bindings.def.  */
 #include "toplev.h"	/* For rest_of_decl_compilation.  */
 #include "trans-types.h"
 #include "trans-const.h"
-#include "flags.h"
 #include "dwarf2out.h"	/* For struct array_descr_info.  */
 
 

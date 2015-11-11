@@ -24,15 +24,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "target.h"
-#include "tree.h"
 #include "cp-tree.h"
 #include "stringpool.h"
-#include "alias.h"
 #include "trans-mem.h"
 #include "attribs.h"
-#include "flags.h"
-#include "tree-inline.h"
 #include "tree-iterator.h"
 
 static void push_eh_cleanup (tree);

@@ -22,15 +22,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "jit-common.h"
-#include "timevar.h"
 #include "pretty-print.h"
 #include "toplev.h"
 
 #include <pthread.h>
 
 #include "jit-builtins.h"
-#include "jit-logging.h"
 #include "jit-recording.h"
 #include "jit-playback.h"
 

@@ -83,12 +83,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "gimple-expr.h"
 #include "trans.h"
-#include "diagnostic-core.h"	/* For internal_error/fatal_error.  */
-#include "alias.h"
 #include "fold-const.h"
-#include "flags.h"
 #include "constructor.h"
-#include "trans-stmt.h"
 #include "trans-types.h"
 #include "trans-array.h"
 #include "trans-const.h"

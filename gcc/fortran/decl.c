@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 #include "constructor.h"
-#include "alias.h"
 
 /* Macros to access allocate memory for gfc_data_variable,
    gfc_data_value and gfc_data.  */

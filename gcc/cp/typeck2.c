@@ -28,14 +28,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "tree.h"
 #include "cp-tree.h"
-#include "alias.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "intl.h"
-#include "flags.h"
 
 static tree
 process_init_constructor (tree type, tree init, tsubst_flags_t complain);

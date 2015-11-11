@@ -68,12 +68,9 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
-#include "c-family/c-common.h"
 #include "c-tree.h"
 #include "gimple-expr.h"
 #include "tree-iterator.h"
-#include "opts.h"
 
 /* If *VALUE is not of type INTEGER_CST, PARM_DECL or VAR_DECL, then map it
    to a variable and then set *VALUE to the new variable.  */

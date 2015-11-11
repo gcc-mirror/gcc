@@ -21,14 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "tree.h"
 #include "cp-tree.h"
-#include "c-family/c-common.h"
-#include "langhooks.h"
-#include "langhooks-def.h"
-#include "debug.h"
-#include "cxx-pretty-print.h"
 #include "cp-objcp-common.h"
 
 /* Special routine to get the alias set for C++.  */

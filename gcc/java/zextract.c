@@ -28,7 +28,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "zipfile.h"
 
 /* This stuff is partly based on the 28 August 1994 public release of the

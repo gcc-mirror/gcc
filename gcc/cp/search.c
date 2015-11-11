@@ -24,12 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "target.h"
-#include "tree.h"
 #include "cp-tree.h"
-#include "alias.h"
 #include "intl.h"
-#include "flags.h"
 #include "toplev.h"
 
 static int is_subobject_of_p (tree, tree);

@@ -1,3 +1,16 @@
+2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-array-notation.c: Remove unused header files.
+	* c-aux-info.c: Likewise.
+	* c-convert.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-errors.c: Likewise.
+	* c-lang.c: Likewise.
+	* c-objc-common.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-typeck.c: Likewise.
+	* gccspec.c: Likewise.
+
 2015-11-09  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>

@@ -1,3 +1,11 @@
+2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-interface/decl.c: Remove unused header files.
+	* gcc-interface/misc.c: Likewise.
+	* gcc-interface/targtyps.c: Likewise.
+	* gcc-interface/trans.c: Likewise.
+	* gcc-interface/utils.c: Likewise.
+
 2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (set_reverse_storage_order_on_pad_type):

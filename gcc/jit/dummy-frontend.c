@@ -20,22 +20,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "function.h"
-#include "hard-reg-set.h"
-#include "tree.h"
 #include "jit-playback.h"
-#include "cgraph.h"
-#include "opts.h"
-#include "alias.h"
 #include "stor-layout.h"
 #include "debug.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
-#include "dumpfile.h"
 
-#include "jit-common.h"
-#include "jit-logging.h"
 
 #include <mpfr.h>
 

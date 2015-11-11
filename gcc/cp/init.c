@@ -24,12 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
-#include "tree.h"
 #include "cp-tree.h"
 #include "stringpool.h"
-#include "alias.h"
 #include "varasm.h"
-#include "flags.h"
 #include "gimplify.h"
 #include "c-family/c-ubsan.h"
 

@@ -27,16 +27,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 #include "coretypes.h"
 #include "options.h"
-#include "obstack.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "diagnostic-core.h"
-#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "flags.h"
 #include "java-tree.h"
-#include "jcf.h"
 #include "convert.h"
 
 static tree convert_ieee_real_to_integer (tree, tree);

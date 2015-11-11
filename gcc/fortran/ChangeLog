@@ -1,3 +1,29 @@
+2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* array.c: Remove unused header files.
+	* convert.c: Likewise.
+	* cpp.c: Likewise.
+	* decl.c: Likewise.
+	* f95-lang.c: Likewise.
+	* frontend-passes.c: Likewise.
+	* iresolve.c: Likewise.
+	* match.c: Likewise.
+	* module.c: Likewise.
+	* options.c: Likewise.
+	* parse.c: Likewise.
+	* target-memory.c: Likewise.
+	* trans-array.c: Likewise.
+	* trans-common.c: Likewise.
+	* trans-const.c: Likewise.
+	* trans-decl.c: Likewise.
+	* trans-expr.c: Likewise.
+	* trans-intrinsic.c: Likewise.
+	* trans-io.c: Likewise.
+	* trans-openmp.c: Likewise.
+	* trans-stmt.c: Likewise.
+	* trans-types.c: Likewise.
+	* trans.c: Likewise.
+
 2015-11-11  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/67826

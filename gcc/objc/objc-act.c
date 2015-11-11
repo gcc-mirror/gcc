@@ -22,10 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "alias.h"
 #include "tree.h"
-#include "options.h"
-#include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "attribs.h"
@@ -37,31 +34,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "c/c-lang.h"
 #endif
 
-#include "c-family/c-common.h"
 #include "c-family/c-objc.h"
-#include "c-family/c-pragma.h"
-#include "c-family/c-format.h"
-#include "flags.h"
 #include "langhooks.h"
 #include "objc-act.h"
 #include "objc-map.h"
-#include "hard-reg-set.h"
 #include "function.h"
 #include "toplev.h"
 #include "debug.h"
 #include "c-family/c-target.h"
-#include "diagnostic-core.h"
 #include "intl.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
-#include "langhooks-def.h"
 /* Different initialization, code gen and meta data generation for each
    runtime.  */
 #include "objc-runtime-hooks.h"
 /* Routines used mainly by the runtimes.  */
 #include "objc-runtime-shared-support.h"
 /* For default_tree_printer ().  */
-#include "tree-pretty-print.h"
 
 /* For enum gimplify_status */
 #include "gimple-expr.h"

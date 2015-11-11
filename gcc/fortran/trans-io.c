@@ -22,13 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "options.h"
 #include "tree.h"
 #include "gfortran.h"
 #include "trans.h"
 #include "stringpool.h"
-#include "diagnostic-core.h"	/* For internal_error.  */
-#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "trans-stmt.h"
