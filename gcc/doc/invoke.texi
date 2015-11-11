@@ -549,7 +549,9 @@ Objective-C and Objective-C++ Dialects}.
 -mexpand-adddi -mindexed-loads -mlra -mlra-priority-none @gol
 -mlra-priority-compact mlra-priority-noncompact -mno-millicode @gol
 -mmixed-code -mq-class -mRcq -mRcw -msize-level=@var{level} @gol
--mtune=@var{cpu} -mmultcost=@var{num} -munalign-prob-threshold=@var{probability}}
+-mtune=@var{cpu} -mmultcost=@var{num} @gol
+-munalign-prob-threshold=@var{probability} -mmpy-option=@var{multo} @gol
+-mdiv-rem -mcode-density}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -12841,7 +12843,7 @@ is being compiled:
 @item -mbarrel-shifter
 @opindex mbarrel-shifter
 Generate instructions supported by barrel shifter.  This is the default
-unless @option{-mcpu=ARC601} is in effect.
+unless @option{-mcpu=ARC601} or @samp{-mcpu=ARCEM} is in effect.
 
 @item -mcpu=@var{cpu}
 @opindex mcpu
@@ -12854,17 +12856,28 @@ values for @var{cpu} are
 @opindex mA6
 @opindex mARC600
 @item ARC600
+@item arc600
 Compile for ARC600.  Aliases: @option{-mA6}, @option{-mARC600}.
 
 @item ARC601
+@item arc601
 @opindex mARC601
 Compile for ARC601.  Alias: @option{-mARC601}.
 
 @item ARC700
+@item arc700
 @opindex mA7
 @opindex mARC700
 Compile for ARC700.  Aliases: @option{-mA7}, @option{-mARC700}.
 This is the default when configured with @option{--with-cpu=arc700}@.
+
+@item ARCEM
+@item arcem
+Compile for ARC EM.
+
+@item ARCHS
+@item archs
+Compile for ARC HS.
 @end table
 
 @item -mdpfp
@@ -12934,6 +12947,62 @@ can overridden by FPX options; @samp{mspfp}, @samp{mspfp-compact}, or
 @item -mswap
 @opindex mswap
 Generate swap instructions.
+
+@item -mdiv-rem
+@opindex mdiv-rem
+Enable DIV/REM instructions for ARCv2 cores.
+
+@item -mcode-density
+@opindex mcode-density
+Enable code density instructions for ARC EM, default on for ARC HS.
+
+@item -mmpy-option=@var{multo}
+@opindex mmpy-option
+Compile ARCv2 code with a multiplier design option.  @samp{wlh1} is
+the default value.  The recognized values for @var{multo} are:
+
+@table @samp
+@item 0
+No multiplier available.
+
+@item 1
+@opindex w
+The multiply option is set to w: 16x16 multiplier, fully pipelined.
+The following instructions are enabled: MPYW, and MPYUW.
+
+@item 2
+@opindex wlh1
+The multiply option is set to wlh1: 32x32 multiplier, fully
+pipelined (1 stage).  The following instructions are additionaly
+enabled: MPY, MPYU, MPYM, MPYMU, and MPY_S.
+
+@item 3
+@opindex wlh2
+The multiply option is set to wlh2: 32x32 multiplier, fully pipelined
+(2 stages).  The following instructions are additionaly enabled: MPY,
+MPYU, MPYM, MPYMU, and MPY_S.
+
+@item 4
+@opindex wlh3
+The multiply option is set to wlh3: Two 16x16 multiplier, blocking,
+sequential.  The following instructions are additionaly enabled: MPY,
+MPYU, MPYM, MPYMU, and MPY_S.
+
+@item 5
+@opindex wlh4
+The multiply option is set to wlh4: One 16x16 multiplier, blocking,
+sequential.  The following instructions are additionaly enabled: MPY,
+MPYU, MPYM, MPYMU, and MPY_S.
+
+@item 6
+@opindex wlh5
+The multiply option is set to wlh5: One 32x4 multiplier, blocking,
+sequential.  The following instructions are additionaly enabled: MPY,
+MPYU, MPYM, MPYMU, and MPY_S.
+
+@end table
+
+This option is only available for ARCv2 cores@.
 
 @end table
 

@@ -127,6 +127,12 @@
   (and (match_code "const_int")
        (match_test "UNSIGNED_INT6 (-ival)")))
 
+(define_constraint "C16"
+  "@internal
+   A 16-bit signed integer constant"
+  (and (match_code "const_int")
+       (match_test "SIGNED_INT16 (ival)")))
+
 (define_constraint "M"
   "@internal
    A 5-bit unsigned integer constant"
@@ -211,6 +217,12 @@
   constant such that x+1 is a power of two, and x != 0"
   (and (match_code "const_int")
        (match_test "ival && IS_POWEROF2_P (ival + 1)")))
+
+(define_constraint "C3p"
+ "@internal
+  constant int used to select xbfu a,b,u6 instruction.  The values accepted are 1 and 2."
+  (and (match_code "const_int")
+       (match_test "((ival == 1) || (ival == 2))")))
 
 (define_constraint "Ccp"
  "@internal
@@ -397,3 +409,15 @@
    Integer constant zero"
   (and (match_code "const_int")
        (match_test "IS_ZERO (ival)")))
+
+(define_constraint "Cm2"
+  "@internal
+   A signed 9-bit integer constant."
+  (and (match_code "const_int")
+       (match_test "(ival >= -256) && (ival <=255)")))
+
+(define_constraint "C62"
+  "@internal
+   An unsigned 6-bit integer constant, up to 62."
+  (and (match_code "const_int")
+       (match_test "UNSIGNED_INT6 (ival - 1)")))

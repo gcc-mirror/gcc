@@ -1,3 +1,62 @@
+2015-11-11  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* common/config/arc/arc-common.c (arc_handle_option): Handle ARCv2
+	options.
+	* config/arc/arc-opts.h: Add ARCv2 CPUs.
+	* config/arc/arc-protos.h (arc_secondary_reload_conv): Prototype.
+	* config/arc/arc.c (arc_secondary_reload): Handle subreg (reg)
+	situation, and store instructions with large offsets.
+	(arc_secondary_reload_conv): New function.
+	(arc_init): Add ARCv2 options.
+	(arc_conditional_register_usage): Select the proper register usage
+	for ARCv2 processors.
+	(arc_handle_interrupt_attribute): ILINK2 is only valid for ARCv1
+	architecture.
+	(arc_compute_function_type): Likewise.
+	(arc_print_operand): Handle new ARCv2 punctuation characters.
+	(arc_return_in_memory): ARCv2 ABI returns in registers up to 16
+	bytes.
+	(workaround_arc_anomaly, arc_asm_insn_p, arc_loop_hazard): New
+	function.
+	(arc_reorg, arc_hazard): Use it.
+	* config/arc/arc.h (TARGET_CPU_CPP_BUILTINS): Define __HS__ and
+	__EM__.
+	(ASM_SPEC): Add ARCv2 options.
+	(TARGET_NORM): ARC HS has norm instructions by default.
+	(TARGET_OPTFPE): Use optimized floating point emulation for ARC
+	HS.
+	(TARGET_AT_DBR_CONDEXEC): Only for ARC600 family.
+	(TARGET_EM, TARGET_HS, TARGET_V2, TARGET_MPYW, TARGET_MULTI):
+	Define.
+	(SIGNED_INT16, TARGET_MPY, TARGET_ARC700_MPY, TARGET_ANY_MPY):
+	Likewise.
+	(TARGET_ARC600_FAMILY, TARGET_ARCOMPACT_FAMILY): Likewise.
+	(TARGET_LP_WR_INTERLOCK): Likewise.
+	* config/arc/arc.md
+	(commutative_binary_mult_comparison_result_used, movsicc_insn)
+	(mulsi3, mulsi3_600_lib, mulsidi3, mulsidi3_700, mulsi3_highpart)
+	(umulsi3_highpart_i, umulsi3_highpart_int, umulsi3_highpart)
+	(umulsidi3, umulsidi3_700, cstoresi4, simple_return, p_return_i):
+	Use it for ARCv2.
+	(mulhisi3, mulhisi3_imm, mulhisi3_reg, umulhisi3, umulhisi3_imm)
+	(umulhisi3_reg, umulhisi3_reg, mulsi3_v2, nopv, bswapsi2)
+	(prefetch, divsi3, udivsi3 modsi3, umodsi3, arcset, arcsetltu)
+	(arcsetgeu, arcsethi, arcsetls, reload_*_load, reload_*_store)
+	(extzvsi): New pattern.
+	* config/arc/arc.opt: New ARCv2 options.
+	* config/arc/arcEM.md: New file.
+	* config/arc/arcHS.md: Likewise.
+	* config/arc/constraints.md (C3p): New constraint, accepts 1 and 2
+	values.
+	(Cm2): A signed 9-bit integer constant constraint.
+	(C62): An unsigned 6-bit integer constant constraint.
+	(C16): A signed 16-bit integer constant constraint.
+	* config/arc/predicates.md (mult_operator): Add ARCv2 processort.
+	(short_const_int_operand): New predicate.
+	* config/arc/t-arc-newlib: Add ARCv2 multilib options.
+	* doc/invoke.texi: Add documentation for -mcpu=<archs/arcem>
+	-mcode-density and -mdiv-rem.
+
 2015-11-11  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/i386.c (m_SKYLAKE_AVX512): Fix typo.
