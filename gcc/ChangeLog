@@ -1,5 +1,9 @@
 2015-11-11  Julia Koval  <julia.koval@intel.com>
 
+	* config/i386/i386.c (m_SKYLAKE_AVX512): Fix typo.
+
+2015-11-11  Julia Koval  <julia.koval@intel.com>
+
 	* config/i386/i386.c: Handle "skylake" and
 	"skylake-avx512".
 
