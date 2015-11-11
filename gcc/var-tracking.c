@@ -9814,7 +9814,7 @@ vt_initialize (void)
 
   alloc_aux_for_blocks (sizeof (variable_tracking_info));
 
-  empty_shared_hash = new shared_hash;
+  empty_shared_hash = shared_hash_pool.allocate ();
   empty_shared_hash->refcount = 1;
   empty_shared_hash->htab = new variable_table_type (1);
   changed_variables = new variable_table_type (10);
