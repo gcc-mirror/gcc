@@ -1,3 +1,12 @@
+2015-11-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68107
+	PR c++/68266
+	* c-c++-common/pr68107.c: New test.
+	* g++.dg/init/new38.C (large_array_char): Adjust dg-error.
+	(large_array_char_template): Likewise.
+	* g++.dg/init/new44.C: Adjust dg-error.
+
 2015-11-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gfortran.dg/goacc/private-3.f95: Remove xfail.
