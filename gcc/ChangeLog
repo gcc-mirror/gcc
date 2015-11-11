@@ -1,3 +1,8 @@
+2015-11-11  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
+
+	* graphite-sese-to-poly.c (build_scop_original_schedule): Call
+	isl_union_map_add_map on every pbb->schedule.
+
 2015-11-11  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (create_parallel_loop): Return void.
