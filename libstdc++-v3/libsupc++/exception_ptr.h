@@ -68,6 +68,8 @@ namespace std
 
   namespace __exception_ptr
   {
+    using std::rethrow_exception;
+
     /**
      *  @brief An opaque pointer to an arbitrary exception.
      *  @ingroup exceptions

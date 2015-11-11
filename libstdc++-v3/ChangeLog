@@ -1,3 +1,11 @@
+2015-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64651
+	* libsupc++/exception_ptr.h (rethrow_exception): Add using-declaration
+	to __exception_ptr namespace.
+	* testsuite/18_support/exception_ptr/rethrow_exception.cc: Test ADL.
+	Remove unnecessary test variables.
+
 2015-11-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/68190
