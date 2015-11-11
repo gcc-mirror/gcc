@@ -5463,7 +5463,7 @@ else
   enable_default_ssp=no
 fi],
 enable_default_ssp=no)
-if test x$enable_default_ssp == xyes ; then
+if test x$enable_default_ssp = xyes ; then
   AC_DEFINE(ENABLE_DEFAULT_SSP, 1,
       [Define if your target supports default stack protector and it is enabled.])
 fi
@@ -6028,7 +6028,7 @@ AC_ARG_ENABLE(default-pie,
   [enable Position Independent Executable as default])],
 enable_default_pie=$enableval,
 enable_default_pie=no)
-if test x$enable_default_pie == xyes ; then
+if test x$enable_default_pie = xyes ; then
   AC_DEFINE(ENABLE_DEFAULT_PIE, 1,
       [Define if your target supports default PIE and it is enabled.])
 fi

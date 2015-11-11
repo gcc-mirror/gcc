@@ -28329,7 +28329,7 @@ else
   enable_default_ssp=no
 fi
 
-if test x$enable_default_ssp == xyes ; then
+if test x$enable_default_ssp = xyes ; then
 
 $as_echo "#define ENABLE_DEFAULT_SSP 1" >>confdefs.h
 
@@ -29181,7 +29181,7 @@ else
   enable_default_pie=no
 fi
 
-if test x$enable_default_pie == xyes ; then
+if test x$enable_default_pie = xyes ; then
 
 $as_echo "#define ENABLE_DEFAULT_PIE 1" >>confdefs.h
 
