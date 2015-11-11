@@ -9939,6 +9939,9 @@ grokdeclarator (const cp_declarator *declarator,
 	case cdk_array:
 	  type = create_array_type_for_decl (dname, type,
 					     declarator->u.array.bounds);
+	  if (!valid_array_size_p (input_location, type, dname))
+	    type = error_mark_node;
+
 	  if (declarator->std_attributes)
 	    /* [dcl.array]/1:
 
@@ -10500,19 +10503,6 @@ grokdeclarator (const cp_declarator *declarator,
         type = make_pack_expansion (type);
       else
         error ("non-parameter %qs cannot be a parameter pack", name);
-    }
-
-  /* Did array size calculations overflow or does the array cover more
-     than half of the address-space?  */
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && COMPLETE_TYPE_P (type)
-      && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
-      && ! valid_constant_size_p (TYPE_SIZE_UNIT (type)))
-    {
-      error ("size of array %qs is too large", name);
-      /* If we proceed with the array type as it is, we'll eventually
-	 crash in tree_to_[su]hwi().  */
-      type = error_mark_node;
     }
 
   if ((decl_context == FIELD || decl_context == PARM)

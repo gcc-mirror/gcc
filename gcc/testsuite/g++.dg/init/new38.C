@@ -5,7 +5,7 @@ large_array_char(int n)
 {
   new char[n]
     [1ULL << (sizeof(void *) * 4)]
-    [1ULL << (sizeof(void *) * 4)]; // { dg-error "size of array" }
+    [1ULL << (sizeof(void *) * 4)]; // { dg-error "size of unnamed array" }
 }
 
 template <typename T>
@@ -14,7 +14,7 @@ large_array_char_template(int n)
 {
   new char[n]
     [1ULL << (sizeof(void *) * 4)]
-    [1ULL << (sizeof(void *) * 4)]; // { dg-error "size of array" }
+    [1ULL << (sizeof(void *) * 4)]; // { dg-error "size of unnamed array" }
 }
 
 

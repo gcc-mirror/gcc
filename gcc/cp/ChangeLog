@@ -1,3 +1,10 @@
+2015-11-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68107
+	PR c++/68266
+	* decl.c (grokdeclarator): Call valid_array_size_p.  Remove code
+	checking the size of an array.
+
 2015-11-11  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR bootstrap/68271

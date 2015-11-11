@@ -6000,6 +6000,9 @@ grokdeclarator (const struct c_declarator *declarator,
 		    TYPE_SIZE_UNIT (type) = size_zero_node;
 		    SET_TYPE_STRUCTURAL_EQUALITY (type);
 		  }
+
+		if (!valid_array_size_p (loc, type, name))
+		  type = error_mark_node;
 	      }
 
 	    if (decl_context != PARM
@@ -6007,7 +6010,8 @@ grokdeclarator (const struct c_declarator *declarator,
 		    || array_ptr_attrs != NULL_TREE
 		    || array_parm_static))
 	      {
-		error_at (loc, "static or type qualifiers in non-parameter array declarator");
+		error_at (loc, "static or type qualifiers in non-parameter "
+			  "array declarator");
 		array_ptr_quals = TYPE_UNQUALIFIED;
 		array_ptr_attrs = NULL_TREE;
 		array_parm_static = 0;
@@ -6284,22 +6288,6 @@ grokdeclarator (const struct c_declarator *declarator,
 	      alignas_align = 0;
 	    }
 	}
-    }
-
-  /* Did array size calculations overflow or does the array cover more
-     than half of the address-space?  */
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && COMPLETE_TYPE_P (type)
-      && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
-      && ! valid_constant_size_p (TYPE_SIZE_UNIT (type)))
-    {
-      if (name)
-	error_at (loc, "size of array %qE is too large", name);
-      else
-	error_at (loc, "size of unnamed array is too large");
-      /* If we proceed with the array type as it is, we'll eventually
-	 crash in tree_to_[su]hwi().  */
-      type = error_mark_node;
     }
 
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
