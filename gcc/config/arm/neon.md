@@ -4267,8 +4267,6 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT lane = NEON_ENDIAN_LANE_N(<MODE>mode, INTVAL (operands[3]));
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   operands[3] = GEN_INT (lane);
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
   if (max == 1)
     return "vld1.<V_sz_elem>\t%P0, %A1";
   else
@@ -4291,9 +4289,7 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   operands[3] = GEN_INT (lane);
   int regno = REGNO (operands[0]);
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
-  else if (lane >= max / 2)
+  if (lane >= max / 2)
     {
       lane -= max / 2;
       regno += 2;
@@ -4379,8 +4375,6 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT lane = NEON_ENDIAN_LANE_N(<MODE>mode, INTVAL (operands[2]));
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   operands[2] = GEN_INT (lane);
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
   if (max == 1)
     return "vst1.<V_sz_elem>\t{%P1}, %A0";
   else
@@ -4402,9 +4396,7 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT lane = NEON_ENDIAN_LANE_N(<MODE>mode, INTVAL (operands[2]));
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[1]);
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
-  else if (lane >= max / 2)
+  if (lane >= max / 2)
     {
       lane -= max / 2;
       regno += 2;
@@ -4475,8 +4467,6 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[0]);
   rtx ops[4];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
   ops[0] = gen_rtx_REG (DImode, regno);
   ops[1] = gen_rtx_REG (DImode, regno + 2);
   ops[2] = operands[1];
@@ -4502,9 +4492,7 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[0]);
   rtx ops[4];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
-  else if (lane >= max / 2)
+  if (lane >= max / 2)
     {
       lane -= max / 2;
       regno += 2;
@@ -4594,8 +4582,6 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[1]);
   rtx ops[4];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
   ops[0] = operands[0];
   ops[1] = gen_rtx_REG (DImode, regno);
   ops[2] = gen_rtx_REG (DImode, regno + 2);
@@ -4621,9 +4607,7 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[1]);
   rtx ops[4];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
-  else if (lane >= max / 2)
+  if (lane >= max / 2)
     {
       lane -= max / 2;
       regno += 2;
@@ -4742,8 +4726,6 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[0]);
   rtx ops[5];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
   ops[0] = gen_rtx_REG (DImode, regno);
   ops[1] = gen_rtx_REG (DImode, regno + 2);
   ops[2] = gen_rtx_REG (DImode, regno + 4);
@@ -4771,9 +4753,7 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[0]);
   rtx ops[5];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
-  else if (lane >= max / 2)
+  if (lane >= max / 2)
     {
       lane -= max / 2;
       regno += 2;
@@ -4918,8 +4898,6 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[1]);
   rtx ops[5];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
   ops[0] = operands[0];
   ops[1] = gen_rtx_REG (DImode, regno);
   ops[2] = gen_rtx_REG (DImode, regno + 2);
@@ -4947,9 +4925,7 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[1]);
   rtx ops[5];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
-  else if (lane >= max / 2)
+  if (lane >= max / 2)
     {
       lane -= max / 2;
       regno += 2;
@@ -5072,8 +5048,6 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[0]);
   rtx ops[6];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
   ops[0] = gen_rtx_REG (DImode, regno);
   ops[1] = gen_rtx_REG (DImode, regno + 2);
   ops[2] = gen_rtx_REG (DImode, regno + 4);
@@ -5102,9 +5076,7 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[0]);
   rtx ops[6];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
-  else if (lane >= max / 2)
+  if (lane >= max / 2)
     {
       lane -= max / 2;
       regno += 2;
@@ -5256,8 +5228,6 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[1]);
   rtx ops[6];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
   ops[0] = operands[0];
   ops[1] = gen_rtx_REG (DImode, regno);
   ops[2] = gen_rtx_REG (DImode, regno + 2);
@@ -5286,9 +5256,7 @@ if (BYTES_BIG_ENDIAN)
   HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[1]);
   rtx ops[6];
-  if (lane < 0 || lane >= max)
-    error ("lane out of range");
-  else if (lane >= max / 2)
+  if (lane >= max / 2)
     {
       lane -= max / 2;
       regno += 2;
