@@ -1,3 +1,10 @@
+2015-11-11  Jiong Wang  <jiong.wang@arm.com>
+	    Jim Wilson  <wilson@gcc.gnu.org>
+
+	PR target/67305
+	* config/arm/arm.md (neon_vector_mem_operand): Return FALSE if strict
+	be true and eliminable registers mentioned.
+
 2015-11-11  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* common/config/arc/arc-common.c (arc_handle_option): Handle ARCv2
