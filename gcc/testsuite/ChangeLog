@@ -1,3 +1,8 @@
+2015-11-11  Richard Biener  <rguenth@gcc.gnu.org>
+	    Jiong Wang	    <jiong.wang@arm.com>
+
+	* gcc.dg/tree-ssa/pr68234.c: New testcase. 
+
 2015-11-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.dg/goacc/nvptx-opt-1.c: New test.
