@@ -1,3 +1,7 @@
+2015-11-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/pr65521.c: Fail on AIX.
+
 2015-11-11  Sebastian Pop  <s.pop@samsung.com>
 
 	* gcc.dg/graphite/fuse-1.c: Adjust pattern.  Remove dg-do.
