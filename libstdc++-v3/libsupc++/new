@@ -79,7 +79,12 @@ namespace std
   };
 #endif
 
-  struct nothrow_t { };
+  struct nothrow_t
+  {
+#if __cplusplus >= 201103L
+    explicit nothrow_t() = default;
+#endif
+  };
 
   extern const nothrow_t nothrow;
 

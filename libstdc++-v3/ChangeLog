@@ -1,3 +1,14 @@
+2015-11-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	LWG 2510, make the default constructors of library tag types
+	explicit.
+	* include/bits/mutex.h (defer_lock_t, try_lock_t,
+	adopt_lock_t): Add an explicit default constructor.
+	* include/bits/stl_pair.h (piecewise_construct_t): Likewise.
+	* include/bits/uses_allocator.h (allocator_arg_t): Likewise.
+	* libsupc++/new (nothrow_t): Likewise.
+	* testsuite/17_intro/tag_type_explicit_ctor.cc: New.
+
 2015-11-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64651

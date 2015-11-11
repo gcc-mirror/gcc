@@ -36,7 +36,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// [allocator.tag]
-  struct allocator_arg_t { };
+  struct allocator_arg_t { explicit allocator_arg_t() = default; };
 
   constexpr allocator_arg_t allocator_arg = allocator_arg_t();
 
