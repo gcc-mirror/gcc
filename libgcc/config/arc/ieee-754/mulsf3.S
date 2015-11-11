@@ -64,7 +64,7 @@ __mulsf3:
 	bset	r2,r0,23
 	asl_s	r2,r2,8
 	bset	r3,r4,23
-	mpyhu	r6,r2,r3
+	MPYHU	r6,r2,r3
 	and	r11,r0,r9
 	breq	r11,0,.Ldenorm_dbl0
 	mpyu	r7,r2,r3
@@ -144,7 +144,7 @@ __mulsf3:
 	add_s	r2,r2,r2
 	asl	r2,r2,r4
 	asl	r4,r4,23
-	mpyhu	r6,r2,r3
+	MPYHU	r6,r2,r3
 	breq	r12,r9,.Ldenorm_dbl0_inf_nan_dbl1
 	sub.ne.f r12,r12,r4
 	mpyu	r7,r2,r3
@@ -163,7 +163,7 @@ __mulsf3:
 	asl	r4,r4,r3
 	sub_s	r3,r3,1
 	asl_s	r3,r3,23
-	mpyhu	r6,r2,r4
+	MPYHU	r6,r2,r4
 	sub.ne.f r11,r11,r3
 	bmsk	r8,r0,30
 	mpyu	r7,r2,r4

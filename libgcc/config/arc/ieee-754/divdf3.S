@@ -118,7 +118,7 @@ __divdf3_support: /* This label makes debugger output saner.  */
 	sub r11,r11,11
 	asl DBL1L,DBL1L,r11
 	sub r11,r11,1
-	mpyhu r5,r4,r8
+	MPYHU r5,r4,r8
 	sub r7,r7,r11
 	asl r4,r4,12
 	b.d .Lpast_denorm_dbl1
@@ -189,25 +189,33 @@ __divdf3:
 	asl r8,DBL1H,12
 	lsr r12,DBL1L,20
 	lsr r4,r8,26
+#ifdef __HS__
+	add3 r10,pcl,60 ; (.Ldivtab-.) >> 3
+#else
 	add3 r10,pcl,59 ; (.Ldivtab-.) >> 3
+#endif
 	ld.as r4,[r10,r4]
+#ifdef __HS__
+	ld.as r9,[pcl,182]; [pcl,(-((.-.L7ff00000) >> 2))] ; 0x7ff00000
+#else
 	ld.as r9,[pcl,180]; [pcl,(-((.-.L7ff00000) >> 2))] ; 0x7ff00000
+#endif
 	or r8,r8,r12
-	mpyhu r5,r4,r8
+	MPYHU r5,r4,r8
 	and.f r7,DBL1H,r9
 	asl r4,r4,12 ; having the asl here is a concession to the XMAC pipeline.
 	beq.d .Ldenorm_dbl1
 	and r6,DBL0H,r9
 .Lpast_denorm_dbl1: ; wb stall
 	sub r4,r4,r5
-	mpyhu r5,r4,r4
+	MPYHU r5,r4,r4
 	breq.d r6,0,.Ldenorm_dbl0
 	lsr r8,r8,1
 	asl r12,DBL0H,11
 	lsr r10,DBL0L,21
 .Lpast_denorm_dbl0: ; wb stall
 	bset r8,r8,31
-	mpyhu r11,r5,r8
+	MPYHU r11,r5,r8
 	add_s r12,r12,r10
 	bset r5,r12,31
 	cmp r5,r8
@@ -215,7 +223,7 @@ __divdf3:
 	; wb stall
 	lsr.cc r5,r5,1
 	sub r4,r4,r11 ; u1.31 inverse, about 30 bit
-	mpyhu r11,r5,r4 ; result fraction highpart
+	MPYHU r11,r5,r4 ; result fraction highpart
 	breq r7,r9,.Linf_nan_dbl1
 	lsr r8,r8,2 ; u3.29
 	add r5,r6, /* wait for immediate /  XMAC wb stall */ \
@@ -226,7 +234,7 @@ __divdf3:
 	asl_s DBL1L,DBL1L,9 ; u-29.23:9
 	sbc r6,r5,r7
 	; resource conflict (not for XMAC)
-	mpyhu r5,r11,DBL1L ; u-28.23:9
+	MPYHU r5,r11,DBL1L ; u-28.23:9
 	add.cs DBL0L,DBL0L,DBL0L
 	asl_s DBL0L,DBL0L,6 ; u-26.25:7
 	asl r10,r11,23
@@ -234,7 +242,7 @@ __divdf3:
 	; wb stall (before 'and' for XMAC)
 	lsr r7,r11,9
 	sub r5,DBL0L,r5 ; rest msw ; u-26.31:0
-	mpyh r12,r5,r4 ; result fraction lowpart
+	MPYH r12,r5,r4 ; result fraction lowpart
 	xor.f 0,DBL0H,DBL1H
 	and DBL0H,r6,r9
 	add_s DBL0H,DBL0H,r7 ; (XMAC wb stall)
@@ -261,7 +269,7 @@ __divdf3:
 	sub.cs DBL0H,DBL0H,1
 	sub.f r12,r12,2
 	; resource conflict (not for XMAC)
-	mpyhu r7,r12,DBL1L ; u-51.32
+	MPYHU r7,r12,DBL1L ; u-51.32
 	asl r5,r5,25 ; s-51.7:25
 	lsr r10,r10,7 ; u-51.30:2
 	; resource conflict (not for XMAC)
@@ -291,10 +299,21 @@ __divdf3:
 	rsub r7,r6,5
 	asr r10,r12,28
 	bmsk r4,r12,27
+#ifdef __HS__
+	min  r7, r7, 31
+	asr  DBL0L, r4, r7
+#else
 	asrs DBL0L,r4,r7
+#endif
 	add DBL1H,r11,r10
+#ifdef __HS__
+	abs.f r10, r4
+	sub.mi r10, r10, 1
+#endif
 	add.f r7,r6,32-5
+#ifdef __ARC700__
 	abss r10,r4
+#endif
 	asl r4,r4,r7
 	mov.mi r4,r10
 	add.f r10,r6,23
@@ -319,7 +338,7 @@ __divdf3:
 	and r9,DBL0L,1 ; tie-breaker: round to even
 	lsr r11,r11,7 ; u-51.30:2
 	; resource conflict (not for XMAC)
-	mpyhu r8,r12,DBL1L ; u-51.32
+	MPYHU r8,r12,DBL1L ; u-51.32
 	sub.mi r11,r11,DBL1L ; signed multiply adjust for r12*DBL1L
 	add_s DBL1H,DBL1H,r11
 	; resource conflict (not for XMAC)

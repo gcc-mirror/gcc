@@ -28,10 +28,10 @@
 CRTSTUFF_T_CFLAGS += -mno-sdata
 
 # Compile crtbeginS.o and crtendS.o with pic.
-CRTSTUFF_T_CFLAGS_S = $(CRTSTUFF_T_CFLAGS) -mA7 -fPIC
+CRTSTUFF_T_CFLAGS_S = $(CRTSTUFF_T_CFLAGS) -fPIC
 
 # Compile libgcc2.a with pic.
-TARGET_LIBGCC2_CFLAGS = -mA7 -fPIC
+TARGET_LIBGCC2_CFLAGS = -fPIC
 
 PROFILE_OSDEP = prof-freq.o
 

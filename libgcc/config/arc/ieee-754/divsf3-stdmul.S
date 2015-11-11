@@ -144,7 +144,7 @@ __divsf3_support: /* This label makes debugger output saner.  */
 	ld.as r5,[r3,r5]
 	add r4,r6,r6
 	; load latency
-	mpyhu r7,r5,r4
+	MPYHU r7,r5,r4
 	bic.ne.f 0, \
 		0x60000000,r0 ; large number / denorm -> Inf
 	beq_s .Linf_NaN
@@ -152,7 +152,7 @@ __divsf3_support: /* This label makes debugger output saner.  */
 	; wb stall
 	; slow track
 	sub r7,r5,r7
-	mpyhu r8,r7,r6
+	MPYHU r8,r7,r6
 	asl_s r12,r12,23
 	and.f r2,r0,r9
 	add r2,r2,r12
@@ -160,7 +160,7 @@ __divsf3_support: /* This label makes debugger output saner.  */
 	; wb stall
 	bne.d .Lpast_denorm_fp1
 .Ldenorm_fp0:
-	mpyhu r8,r8,r7
+	MPYHU r8,r8,r7
 	bclr r12,r12,31
 	norm.f r3,r12 ; flag for 0/x -> 0 check
 	bic.ne.f 0,0x60000000,r1 ; denorm/large number -> 0
@@ -209,7 +209,7 @@ __divsf3:
 	ld.as r5,[r3,r2]
 	asl r4,r1,9
 	ld.as r9,[pcl,-114]; [pcl,(-((.-.L7f800000) >> 2))] ; 0x7f800000
-	mpyhu r7,r5,r4
+	MPYHU r7,r5,r4
 	asl r6,r1,8
 	and.f r11,r1,r9
 	bset r6,r6,31
@@ -217,14 +217,14 @@ __divsf3:
 	; wb stall
 	beq .Ldenorm_fp1
 	sub r7,r5,r7
-	mpyhu r8,r7,r6
+	MPYHU r8,r7,r6
 	breq.d r11,r9,.Linf_nan_fp1
 	and.f r2,r0,r9
 	beq.d .Ldenorm_fp0
 	asl r12,r0,8
 	; wb stall
 	breq r2,r9,.Linf_nan_fp0
-	mpyhu r8,r8,r7
+	MPYHU r8,r8,r7
 .Lpast_denorm_fp1:
 	bset r3,r12,31
 .Lpast_denorm_fp0:
@@ -234,7 +234,7 @@ __divsf3:
 	/* wb stall */ \
 		0x3f000000
 	sub r7,r7,r8 ; u1.31 inverse, about 30 bit
-	mpyhu r3,r3,r7
+	MPYHU r3,r3,r7
 	sbc r2,r2,r11
 	xor.f 0,r0,r1
 	and r0,r2,r9
