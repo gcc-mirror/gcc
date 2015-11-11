@@ -297,7 +297,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	    static_cast<std::time_t>(__s.count()),
 	    static_cast<long>(__ns.count())
 	  };
-	::nanosleep(&__ts, 0);
+	while (::nanosleep(&__ts, &__ts) == -1 && errno == EINTR)
+	  { }
 #else
 	__sleep_for(__s, __ns);
 #endif
@@ -309,8 +310,17 @@ _GLIBCXX_END_NAMESPACE_VERSION
       sleep_until(const chrono::time_point<_Clock, _Duration>& __atime)
       {
 	auto __now = _Clock::now();
-	if (__now < __atime)
-	  sleep_for(__atime - __now);
+	if (_Clock::is_steady)
+	  {
+	    if (__now < __atime)
+	      sleep_for(__atime - __now);
+	    return;
+	  }
+	while (__now < __atime)
+	  {
+	    sleep_for(__atime - __now);
+	    __now = _Clock::now();
+	  }
       }
 
   _GLIBCXX_END_NAMESPACE_VERSION
