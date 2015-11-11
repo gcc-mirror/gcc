@@ -1,3 +1,7 @@
+2015-11-11  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* fold-const.c (get_array_ctor_element_at_index): Fix whitespace, typo.
+
 2015-11-11  Jiong Wang  <jiong.wang@arm.com>
 	    Jim Wilson  <wilson@gcc.gnu.org>
 
