@@ -1,3 +1,9 @@
+2015-11-11  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* regname.c (scan_rtx_reg): Check the matching number of consecutive
+	registers when tying chains.
+	(build_def_use): Move terminated_this_insn earlier in the function.
+
 2015-11-10  Mike Frysinger  <vapier@gentoo.org>
 
 	* configure.ac: Use = with test and not ==.
