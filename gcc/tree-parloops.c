@@ -1986,10 +1986,9 @@ transform_to_exit_first_loop (struct loop *loop,
 /* Create the parallel constructs for LOOP as described in gen_parallel_loop.
    LOOP_FN and DATA are the arguments of GIMPLE_OMP_PARALLEL.
    NEW_DATA is the variable that should be initialized from the argument
-   of LOOP_FN.  N_THREADS is the requested number of threads.  Returns the
-   basic block containing GIMPLE_OMP_PARALLEL tree.  */
+   of LOOP_FN.  N_THREADS is the requested number of threads.  */
 
-static basic_block
+static void
 create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 		      tree new_data, unsigned n_threads, location_t loc)
 {
@@ -2162,8 +2161,6 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   /* After the above dom info is hosed.  Re-compute it.  */
   free_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
-
-  return paral_bb;
 }
 
 /* Generates code to execute the iterations of LOOP in N_THREADS
