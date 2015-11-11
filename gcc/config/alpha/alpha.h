@@ -1005,37 +1005,6 @@ do {						\
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   fprintf (FILE, "\t.gprel32 $L%d\n", (VALUE))
 
-
-/* Print operand X (an rtx) in assembler syntax to file FILE.
-   CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   For `%' followed by punctuation, CODE is the punctuation and X is null.  */
-
-#define PRINT_OPERAND(FILE, X, CODE)  print_operand (FILE, X, CODE)
-
-/* Determine which codes are valid without a following integer.  These must
-   not be alphabetic.
-
-   ~    Generates the name of the current function.
-
-   /	Generates the instruction suffix.  The TRAP_SUFFIX and ROUND_SUFFIX
-	attributes are examined to determine what is appropriate.
-
-   ,    Generates single precision suffix for floating point
-	instructions (s for IEEE, f for VAX)
-
-   -	Generates double precision suffix for floating point
-	instructions (t for IEEE, g for VAX)
-   */
-
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
-  ((CODE) == '/' || (CODE) == ',' || (CODE) == '-' || (CODE) == '~' \
-   || (CODE) == '#' || (CODE) == '*' || (CODE) == '&')
-
-/* Print a memory address as an operand to reference that memory location.  */
-
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR) \
-  print_operand_address((FILE), (ADDR))
-
 /* If we use NM, pass -g to it so it only lists globals.  */
 #define NM_FLAGS "-pg"
 

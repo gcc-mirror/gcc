@@ -1,3 +1,19 @@
+2015-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha-protos.h (print_operand): Remove.
+	(print_operand_address): Remove.
+	* config/alpha/alpha.h (PRINT_OPERAND): Remove.
+	(PRINT_OPERAND_ADDRESS): Remove.
+	(PRINT_OPERAND_PUNCT_VALID_P): Remove.
+	* config/alpha/alpha.c (TARGET_PRINT_OPERAND): New hook define.
+	(TARGET_PRINT_OPERAND_ADDRESS): New hook define.
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P): New hook define.
+	(print_operand_address): Rename to...
+	(alpha_print_operand_address): ...this and make static.
+	(print_operand): Rename to...
+	(alpha_print_operand): ...this and make static.
+	(alpha_print_operand_punct_valid_p): New static function.
+
 2015-11-11  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vect_slp_analyze_and_verify_instance_alignment):
@@ -23,7 +39,6 @@
 2015-11-11  Nathan Sidwell  <nathan@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
-	gcc/
 	* gcc/gimplify.c (enum  omp_region_type): Add ORT_ACC,
 	ORT_ACC_DATA, ORT_ACC_PARALLEL, ORT_ACC_KERNELS.  Adjust ORT_NONE.
 	(gimple_add_tmp_var): Add ORT_ACC checks.
@@ -68,7 +83,7 @@
 2015-11-11  Simon Dardis  <simon.dardis@imgtec.com>
 
 	* config/mips/mips.c (mips_breakable_sequence_p): New function.
-	(mips_break_sequence): New function. 
+	(mips_break_sequence): New function.
 	(mips_reorg_process_insns): Use them. Use compact branches in selected
 	situations.
 
