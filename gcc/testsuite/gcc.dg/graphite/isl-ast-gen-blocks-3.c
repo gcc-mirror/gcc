@@ -1,6 +1,3 @@
-/* { dg-do run } */
-/* { dg-options "-O2 -fgraphite-identity" } */
-
 /* We use a global variable 'k' to avoid ipa-cp. */
 int k = 50;
 static int __attribute__((noinline))

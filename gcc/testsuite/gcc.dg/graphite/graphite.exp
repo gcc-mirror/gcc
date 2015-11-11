@@ -43,6 +43,8 @@ set id_files          [lsort [glob -nocomplain $srcdir/$subdir/id-*.c ] ]
 set run_id_files      [lsort [glob -nocomplain $srcdir/$subdir/run-id-*.c ] ]
 set opt_files         [lsort [glob -nocomplain $srcdir/$subdir/interchange-*.c \
 					       $srcdir/$subdir/uns-interchange-*.c \
+					       $srcdir/$subdir/isl-ast-gen-*.c \
+					       $srcdir/$subdir/fuse-*.c \
 					       $srcdir/$subdir/block-*.c \
 					       $srcdir/$subdir/uns-block-*.c ] ]
 set vect_files        [lsort [glob -nocomplain $srcdir/$subdir/vect-*.c ] ]

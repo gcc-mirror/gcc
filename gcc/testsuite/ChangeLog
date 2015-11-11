@@ -1,3 +1,21 @@
+2015-11-11  Sebastian Pop  <s.pop@samsung.com>
+
+	* gcc.dg/graphite/fuse-1.c: Adjust pattern.  Remove dg-do.
+	* gcc.dg/graphite/fuse-2.c: Same.
+	* gcc.dg/graphite/graphite.exp (opt_files): Add fuse-*.c and
+	isl-ast-gen-*.c files.
+	* gcc.dg/graphite/isl-ast-gen-blocks-1.c: Remove dg-do and dg-options.
+	* gcc.dg/graphite/isl-ast-gen-blocks-2.c: Same.
+	* gcc.dg/graphite/isl-ast-gen-blocks-3.c: Same.
+	* gcc.dg/graphite/isl-ast-gen-blocks-4.c: Same.
+	* gcc.dg/graphite/isl-ast-gen-if-1.c: Same.
+	* gcc.dg/graphite/isl-ast-gen-if-2.c: Same.
+	* gcc.dg/graphite/isl-ast-gen-single-loop-1.c: Same.
+	* gcc.dg/graphite/isl-ast-gen-single-loop-2.c: Same.
+	* gcc.dg/graphite/isl-ast-gen-single-loop-3.c: Same.
+	* gcc.dg/graphite/isl-ast-gen-user-1.c: Same.
+	* gcc.dg/graphite/isl-codegen-loop-dumping.c: Remove.
+
 2015-11-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68107
