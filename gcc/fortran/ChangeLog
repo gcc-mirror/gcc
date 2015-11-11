@@ -1,3 +1,8 @@
+2015-11-11  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/67826
+	* openmp.c (gfc_omp_udr_find): Fix typo.
+
 2015-11-08  Steven g. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68053

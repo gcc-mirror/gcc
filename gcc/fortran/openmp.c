@@ -1820,7 +1820,7 @@ gfc_omp_udr_find (gfc_symtree *st, gfc_typespec *ts)
   for (omp_udr = st->n.omp_udr; omp_udr; omp_udr = omp_udr->next)
     if (omp_udr->ts.type == ts->type
 	|| ((omp_udr->ts.type == BT_DERIVED || omp_udr->ts.type == BT_CLASS)
-	    && (ts->type == BT_DERIVED && ts->type == BT_CLASS)))
+	    && (ts->type == BT_DERIVED || ts->type == BT_CLASS)))
       {
 	if (omp_udr->ts.type == BT_DERIVED || omp_udr->ts.type == BT_CLASS)
 	  {
