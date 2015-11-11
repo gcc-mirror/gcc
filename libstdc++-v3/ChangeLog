@@ -1,4 +1,4 @@
-2015-11-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
+2015-11-11  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	LWG 2510, make the default constructors of library tag types
 	explicit.
