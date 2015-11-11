@@ -1,3 +1,8 @@
+2015-11-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc/simplify-rtx.c (simplify_truncation): Simplify TRUNCATE
+	of AND of [LA]SHIFTRT.
+
 2015-11-11  Martin Liska  <mliska@suse.cz>
 	    Richard Biener  <rguenther@suse.de>
 
