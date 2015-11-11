@@ -1,3 +1,8 @@
+2015-11-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/20050603-3.c: Don't restrict to ilp32.  Do more
+	tests for the expected generated code.
+
 2015-11-11  Simon Dardis  <simon.dardis@imgtec.com>
 
 	* gcc.target/mips/split-ds-sequence.c: New test.
