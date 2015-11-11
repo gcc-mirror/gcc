@@ -5041,10 +5041,20 @@ get_round_mode_suffix (void)
   gcc_unreachable ();
 }
 
-/* Print an operand.  Recognize special options, documented below.  */
+/* Implement TARGET_PRINT_OPERAND_PUNCT_VALID_P.  */
 
-void
-print_operand (FILE *file, rtx x, int code)
+static bool
+alpha_print_operand_punct_valid_p (unsigned char code)
+{
+  return (code == '/' || code == ',' || code == '-' || code == '~'
+	  || code == '#' || code == '*' || code == '&');
+}
+
+/* Implement TARGET_PRINT_OPERAND.  The alpha-specific
+   operand codes are documented below.  */
+
+static void
+alpha_print_operand (FILE *file, rtx x, int code)
 {
   int i;
 
@@ -5064,6 +5074,8 @@ print_operand (FILE *file, rtx x, int code)
       break;
 
     case '/':
+      /* Generates the instruction suffix.  The TRAP_SUFFIX and ROUND_SUFFIX
+	 attributes are examined to determine what is appropriate.  */
       {
 	const char *trap = get_trap_mode_suffix ();
 	const char *round = get_round_mode_suffix ();
@@ -5074,12 +5086,14 @@ print_operand (FILE *file, rtx x, int code)
       }
 
     case ',':
-      /* Generates single precision instruction suffix.  */
+      /* Generates single precision suffix for floating point
+	 instructions (s for IEEE, f for VAX).  */
       fputc ((TARGET_FLOAT_VAX ? 'f' : 's'), file);
       break;
 
     case '-':
-      /* Generates double precision instruction suffix.  */
+      /* Generates double precision suffix for floating point
+	 instructions (t for IEEE, g for VAX).  */
       fputc ((TARGET_FLOAT_VAX ? 'g' : 't'), file);
       break;
 
@@ -5350,8 +5364,10 @@ print_operand (FILE *file, rtx x, int code)
     }
 }
 
-void
-print_operand_address (FILE *file, rtx addr)
+/* Implement TARGET_PRINT_OPERAND_ADDRESS.  */
+
+static void
+alpha_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
 {
   int basereg = 31;
   HOST_WIDE_INT offset = 0;
@@ -9876,6 +9892,13 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #undef TARGET_STDARG_OPTIMIZE_HOOK
 #define TARGET_STDARG_OPTIMIZE_HOOK alpha_stdarg_optimize_hook
 #endif
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND alpha_print_operand
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS alpha_print_operand_address
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P alpha_print_operand_punct_valid_p
 
 /* Use 16-bits anchor.  */
 #undef TARGET_MIN_ANCHOR_OFFSET
