@@ -44,6 +44,18 @@ foo ()
   return 12;
 }
 
+int __attribute__ ((target("arch=broadwell"))) foo () {
+  return 13;
+}
+
+int __attribute__ ((target("arch=skylake"))) foo () {
+  return 14;
+}
+
+int __attribute__ ((target("arch=skylake-avx512"))) foo () {
+  return 15;
+}
+
 int main ()
 {
   int val = foo ();
@@ -58,6 +70,12 @@ int main ()
     assert (val == 9);
   else if (__builtin_cpu_is ("haswell"))
     assert (val == 12);
+  else if (__builtin_cpu_is ("broadwell"))
+    assert (val == 13);
+  else if (__builtin_cpu_is ("skylake"))
+    assert (val == 14);
+  else if (__builtin_cpu_is ("skylake-avx512"))
+    assert (val == 15);
   else
     assert (val == 0);
 

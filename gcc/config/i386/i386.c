@@ -36108,7 +36108,11 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_AVX;
 	      break;
 	    case PROCESSOR_HASWELL:
-	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_ADX)
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
+	        arg_str = "skylake-avx512";
+	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_XSAVES)
+	        arg_str = "skylake";
+	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_ADX)
 		arg_str = "broadwell";
 	      else
 		arg_str = "haswell";
