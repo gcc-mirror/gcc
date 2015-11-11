@@ -1366,9 +1366,9 @@ c_register_pragma_1 (const char *space, const char *name,
       id = registered_pragmas.length ();
       id += PRAGMA_FIRST_EXTERNAL - 1;
 
-      /* The C++ front end allocates 6 bits in cp_token; the C front end
-	 allocates 7 bits in c_token.  At present this is sufficient.  */
-      gcc_assert (id < 64);
+      /* The C++ front end allocates 8 bits in cp_token; the C front end
+	 allocates 8 bits in c_token.  At present this is sufficient.  */
+      gcc_assert (id < 256);
     }
 
   cpp_register_deferred_pragma (parse_in, space, name, id,

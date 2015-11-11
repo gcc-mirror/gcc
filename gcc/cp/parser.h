@@ -48,7 +48,7 @@ struct GTY (()) cp_token {
   /* Token flags.  */
   unsigned char flags;
   /* Identifier for the pragma.  */
-  ENUM_BITFIELD (pragma_kind) pragma_kind : 6;
+  ENUM_BITFIELD (pragma_kind) pragma_kind : 8;
   /* True if this token is from a context where it is implicitly extern "C" */
   BOOL_BITFIELD implicit_extern_c : 1;
   /* True if an error has already been reported for this token, such as a
