@@ -1,3 +1,12 @@
+2015-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60421
+	* include/std/thread (this_thread::sleep_for): Retry on EINTR.
+	(this_thread::sleep_until): Retry if time not reached.
+	* src/c++11/thread.cc (__sleep_for): Retry on EINTR.
+	* testsuite/30_threads/this_thread/60421.cc: Test interruption and
+	non-steady clocks.
+
 2015-11-11  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	LWG 2510, make the default constructors of library tag types
