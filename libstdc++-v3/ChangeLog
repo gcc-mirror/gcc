@@ -1,5 +1,7 @@
 2015-11-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/new_handler.cc: Fix for explicit constructor change.
+
 	PR libstdc++/60421
 	* include/std/thread (this_thread::sleep_for): Retry on EINTR.
 	(this_thread::sleep_until): Retry if time not reached.
