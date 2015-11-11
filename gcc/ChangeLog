@@ -1,3 +1,8 @@
+2015-11-11  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386.c: Handle "skylake" and
+	"skylake-avx512".
+
 2015-11-11  Martin Liska  <mliska@suse.cz>
 
 	* gimple-ssa-strength-reduction.c (create_phi_basis):
