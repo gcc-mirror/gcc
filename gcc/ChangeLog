@@ -15,6 +15,11 @@
 	* config/rs6000/freebsd64.h (ASM_SPEC32): Adust spec to handle
 	PIE executables.
 
+	Backport from mainline
+	2015-03-04  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/rs6000/t-freebsd64: Remove 32-bit soft-float multilibs.
+
 2015-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/67265
