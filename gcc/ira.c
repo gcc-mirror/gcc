@@ -2296,9 +2296,12 @@ ira_setup_eliminable_regset (void)
   frame_pointer_needed
     = (! flag_omit_frame_pointer
        || (cfun->calls_alloca && EXIT_IGNORE_STACK)
-       /* We need the frame pointer to catch stack overflow exceptions
-	  if the stack pointer is moving.  */
-       || (flag_stack_check && STACK_CHECK_MOVING_SP)
+       /* We need the frame pointer to catch stack overflow exceptions if
+	  the stack pointer is moving (as for the alloca case just above).  */
+       || (STACK_CHECK_MOVING_SP
+	   && flag_stack_check
+	   && flag_exceptions
+	   && cfun->can_throw_non_call_exceptions)
        || crtl->accesses_prior_frames
        || (SUPPORTS_STACK_ALIGNMENT && crtl->stack_realign_needed)
        /* We need a frame pointer for all Cilk Plus functions that use

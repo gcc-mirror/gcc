@@ -1,3 +1,10 @@
+2015-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/67265
+	* ira.c (ira_setup_eliminable_regset): Do not necessarily create the
+	frame pointer for stack checking if non-call exceptions aren't used.
+	* config/i386/i386.c (ix86_finalize_stack_realign_flags): Likewise.
+
 2015-11-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/68129
