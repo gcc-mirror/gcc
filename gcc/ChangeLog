@@ -1,6 +1,22 @@
 2015-11-11  Charles Baylis  <charles.baylis@linaro.org>
 
 	PR target/63870
+	* config/arm/arm-builtins.c: (arm_load1_qualifiers) Use
+	qualifier_struct_load_store_lane_index.
+	(arm_storestruct_lane_qualifiers) Likewise.
+	* config/arm/neon.md: (neon_vld1_lane<mode>) Reverse lane numbers for
+	big-endian.
+	(neon_vst1_lane<mode>) Likewise.
+	(neon_vld2_lane<mode>) Likewise.
+	(neon_vst2_lane<mode>) Likewise.
+	(neon_vld3_lane<mode>) Likewise.
+	(neon_vst3_lane<mode>) Likewise.
+	(neon_vld4_lane<mode>) Likewise.
+	(neon_vst4_lane<mode>) Likewise.
+
+2015-11-11  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/63870
 	* config/arm/arm-builtins.c (enum arm_type_qualifiers): New enumerator
 	qualifier_struct_load_store_lane_index.
 	(builtin_arg): New enumerator NEON_ARG_STRUCT_LOAD_STORE_LANE_INDEX.

@@ -152,7 +152,7 @@ arm_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 static enum arm_type_qualifiers
 arm_load1_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_const_pointer_map_mode,
-      qualifier_none, qualifier_immediate };
+      qualifier_none, qualifier_struct_load_store_lane_index };
 #define LOAD1LANE_QUALIFIERS (arm_load1_lane_qualifiers)
 
 /* The first argument (return type) of a store should be void type,
@@ -171,7 +171,7 @@ arm_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 static enum arm_type_qualifiers
 arm_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode,
-      qualifier_none, qualifier_immediate };
+      qualifier_none, qualifier_struct_load_store_lane_index };
 #define STORE1LANE_QUALIFIERS (arm_storestruct_lane_qualifiers)
 
 #define v8qi_UP  V8QImode
