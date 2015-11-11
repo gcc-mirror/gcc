@@ -11887,16 +11887,16 @@ get_array_ctor_element_at_index (tree ctor, offset_int access_index)
   offset_int low_bound = 0;
 
   if (TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE)
-  {
-    tree domain_type = TYPE_DOMAIN (TREE_TYPE (ctor));
-    if (domain_type && TYPE_MIN_VALUE (domain_type))
     {
-      /* Static constructors for variably sized objects makes no sense.  */
-      gcc_assert (TREE_CODE (TYPE_MIN_VALUE (domain_type)) == INTEGER_CST);
-      index_type = TREE_TYPE (TYPE_MIN_VALUE (domain_type));
-      low_bound = wi::to_offset (TYPE_MIN_VALUE (domain_type));
+      tree domain_type = TYPE_DOMAIN (TREE_TYPE (ctor));
+      if (domain_type && TYPE_MIN_VALUE (domain_type))
+	{
+	  /* Static constructors for variably sized objects makes no sense.  */
+	  gcc_assert (TREE_CODE (TYPE_MIN_VALUE (domain_type)) == INTEGER_CST);
+	  index_type = TREE_TYPE (TYPE_MIN_VALUE (domain_type));
+	  low_bound = wi::to_offset (TYPE_MIN_VALUE (domain_type));
+	}
     }
-  }
 
   if (index_type)
     access_index = wi::ext (access_index, TYPE_PRECISION (index_type),
@@ -11912,29 +11912,29 @@ get_array_ctor_element_at_index (tree ctor, offset_int access_index)
   tree cfield, cval;
 
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
-  {
-    /* Array constructor might explicitely set index, or specify range
-     * or leave index NULL meaning that it is next index after previous
-     * one.  */
-    if (cfield)
     {
-      if (TREE_CODE (cfield) == INTEGER_CST)
-	max_index = index = wi::to_offset (cfield);
+      /* Array constructor might explicitly set index, or specify a range,
+	 or leave index NULL meaning that it is next index after previous
+	 one.  */
+      if (cfield)
+	{
+	  if (TREE_CODE (cfield) == INTEGER_CST)
+	    max_index = index = wi::to_offset (cfield);
+	  else
+	    {
+	      gcc_assert (TREE_CODE (cfield) == RANGE_EXPR);
+	      index = wi::to_offset (TREE_OPERAND (cfield, 0));
+	      max_index = wi::to_offset (TREE_OPERAND (cfield, 1));
+	    }
+	}
       else
-      {
-	gcc_assert (TREE_CODE (cfield) == RANGE_EXPR);
-	index = wi::to_offset (TREE_OPERAND (cfield, 0));
-	max_index = wi::to_offset (TREE_OPERAND (cfield, 1));
-      }
-    }
-    else
-    {
-      index += 1;
-      if (index_type)
-	index = wi::ext (index, TYPE_PRECISION (index_type),
-			 TYPE_SIGN (index_type));
-	max_index = index;
-    }
+	{
+	  index += 1;
+	  if (index_type)
+	    index = wi::ext (index, TYPE_PRECISION (index_type),
+			     TYPE_SIGN (index_type));
+	  max_index = index;
+	}
 
     /* Do we have match?  */
     if (wi::cmpu (access_index, index) >= 0
