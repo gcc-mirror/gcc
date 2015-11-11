@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "tree.h"
 #include "options.h"
 #include "stringpool.h"
@@ -33,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c/c-lang.h"
 #endif
 
-#include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 
 #include "objc-encoding.h"
@@ -43,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "objc-runtime-shared-support.h"
 
 /* For BITS_PER_UNIT.  */
-#include "tm.h"
 
 /* When building Objective-C++, we are not linking against the C front-end
    and so need to replicate the C tree-construction functions in some way.  */
@@ -53,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif  /* OBJCPLUS */
 
 /* Set up for use of obstacks.  */
-#include "obstack.h"
 
 /* This obstack is used to accumulate the encoding of a data type.  */
 static struct obstack util_obstack;

@@ -22,17 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
-#include "tree.h"
 #include "cp-tree.h"
 #include "stringpool.h"
 #include "cgraph.h"
-#include "alias.h"
-#include "params.h"
 #include "debug.h"
 #include "tree-inline.h"
-#include "flags.h"
-#include "langhooks.h"
-#include "dumpfile.h"
 #include "tree-iterator.h"
 
 /* Prototypes.  */

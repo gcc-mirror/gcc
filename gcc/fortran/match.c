@@ -22,13 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "options.h"
-#include "tree.h"
 #include "gfortran.h"
-#include "stringpool.h"
-#include "flags.h"
 #include "match.h"
 #include "parse.h"
-#include "alias.h"
 
 int gfc_matching_ptr_assignment = 0;
 int gfc_matching_procptr_assignment = 0;

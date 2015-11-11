@@ -22,18 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "function.h"		/* For cfun.  */
-#include "tree.h"
 #include "c-common.h"
 #include "tm_p.h"		/* For REGISTER_TARGET_PRAGMAS.  */
 #include "stringpool.h"
 #include "cgraph.h"
 #include "diagnostic.h"
-#include "alias.h"
 #include "attribs.h"
 #include "varasm.h"
-#include "cpplib.h"
 #include "c-pragma.h"
-#include "flags.h"
 #include "opts.h"
 #include "plugin.h"
 

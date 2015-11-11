@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include <setjmp.h>
 #include "match.h"
 #include "parse.h"
-#include "debug.h"
 
 /* Current statement label.  Zero means no statement label.  Because new_st
    can get wiped during statement matching, we have to keep it separate.  */

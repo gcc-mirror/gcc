@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "options.h"
 #include "gfortran.h"
-#include "flags.h"
 #include "match.h"
 #include "constructor.h"
 

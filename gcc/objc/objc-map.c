@@ -20,9 +20,7 @@ Boston, MA 02110-1301, USA.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "options.h"
 #include "tree.h"
-#include "alias.h"
 #include "objc-map.h"
 
 #define OUT_OF_MEMORY { fprintf (stderr, "Out of memory\n"); abort (); }

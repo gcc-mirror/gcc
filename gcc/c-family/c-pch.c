@@ -21,18 +21,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
-#include "tree.h"
 #include "c-common.h"
 #include "timevar.h"
-#include "version.h"
-#include "cpplib.h"
-#include "alias.h"
 #include "flags.h"
 #include "debug.h"
 #include "c-pragma.h"
 #include "langhooks.h"
 #include "hosthooks.h"
-#include "opts.h"
 
 /* This is a list of flag variables that must match exactly, and their
    names for the error message.  The possible values for *flag_var must

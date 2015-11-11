@@ -22,15 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
-#include "tree.h"
 #include "cp-tree.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "intl.h"
-#include "alias.h"
 #include "stor-layout.h"
-#include "flags.h"
-#include "convert.h"
 #include "c-family/c-pragma.h"
 
 /* C++ returns type information to the user in struct type_info

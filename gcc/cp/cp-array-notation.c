@@ -53,9 +53,7 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
 #include "cp-tree.h"
-#include "c-family/c-common.h"
 #include "tree-iterator.h"
 
 /* Creates a FOR_STMT with INIT, COND, INCR and BODY as the initializer,

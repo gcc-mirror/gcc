@@ -30,10 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans.h"
 #include "stringpool.h"
 #include "diagnostic-core.h"	/* For fatal_error.  */
-#include "alias.h"
 #include "fold-const.h"
 #include "langhooks.h"
-#include "flags.h"
 #include "arith.h"
 #include "constructor.h"
 #include "trans-const.h"

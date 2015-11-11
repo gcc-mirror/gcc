@@ -21,13 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
-#include "tree.h"
 #include "c-common.h"
 #include "tm_p.h"		/* For TARGET_CPU_CPP_BUILTINS & friends.  */
 #include "stringpool.h"
-#include "alias.h"
 #include "stor-layout.h"
-#include "version.h"
 #include "flags.h"
 #include "c-pragma.h"
 #include "output.h"		/* For user_label_prefix.  */

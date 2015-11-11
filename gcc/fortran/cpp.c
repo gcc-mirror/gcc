@@ -20,13 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
-#include "tree.h"
 #include "gfortran.h"
-#include "tm_p.h"		/* Target prototypes.  */
 #include "diagnostic.h"
-#include "alias.h"
-#include "version.h"
-#include "flags.h"
 
 
 #include "toplev.h"

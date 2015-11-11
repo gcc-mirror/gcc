@@ -28,14 +28,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "trans.h"
 #include "stringpool.h"
-#include "alias.h"
 #include "fold-const.h"
-#include "flags.h"
 #include "trans-stmt.h"
 #include "trans-types.h"
 #include "trans-array.h"
 #include "trans-const.h"
-#include "arith.h"
 #include "dependency.h"
 
 typedef struct iter_info

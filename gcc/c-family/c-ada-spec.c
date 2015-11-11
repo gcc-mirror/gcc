@@ -25,10 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "c-ada-spec.h"
-#include "alias.h"
 #include "fold-const.h"
-#include "dumpfile.h"
-#include "cpplib.h"
 #include "c-pragma.h"
 #include "cpp-id-data.h"
 

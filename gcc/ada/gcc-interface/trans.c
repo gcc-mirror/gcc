@@ -39,7 +39,6 @@
 #include "stor-layout.h"
 #include "stmt.h"
 #include "varasm.h"
-#include "flags.h"
 #include "output.h"
 #include "libfuncs.h"	/* For set_stack_check_libfunc.  */
 #include "tree-iterator.h"
@@ -51,7 +50,6 @@
 #include "adadecode.h"
 #include "types.h"
 #include "atree.h"
-#include "elists.h"
 #include "namet.h"
 #include "nlists.h"
 #include "snames.h"

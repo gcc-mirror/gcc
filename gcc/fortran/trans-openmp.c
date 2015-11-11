@@ -28,8 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "trans.h"
 #include "stringpool.h"
-#include "diagnostic-core.h"	/* For internal_error.  */
-#include "alias.h"
 #include "fold-const.h"
 #include "gimplify.h"	/* For create_tmp_var_raw.  */
 #include "trans-stmt.h"

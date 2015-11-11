@@ -24,19 +24,13 @@
 // include it here before tree.h includes it later.
 #include <gmp.h>
 
-#include "vec.h"
-#include "alias.h"
 #include "tree.h"
-#include "options.h"
-#include "inchash.h"
 #include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "tree-iterator.h"
-#include "hash-map.h"
 #include "tm.h"
-#include "hard-reg-set.h"
 #include "function.h"
 #include "cgraph.h"
 #include "convert.h"

@@ -103,7 +103,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <map>
 
-#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"

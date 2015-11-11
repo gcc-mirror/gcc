@@ -25,13 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gfortran.h"
 #include "diagnostic.h"	/* For global_dc.  */
-#include "alias.h"
-#include "flags.h"
-#include "intl.h"
 #include "opts.h"
 #include "toplev.h"  /* For save_decoded_options.  */
-#include "params.h"
-#include "tree-inline.h"
 #include "cpp.h"
 #include "langhooks.h"
 
