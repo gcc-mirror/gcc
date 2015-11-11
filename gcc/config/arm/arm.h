@@ -284,6 +284,12 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_BPABI false
 #endif
 
+/* Transform lane numbers on big endian targets. This is used to allow for the
+   endianness difference between NEON architectural lane numbers and those
+   used in RTL */
+#define NEON_ENDIAN_LANE_N(mode, n)  \
+  (BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (mode) - 1 - n : n)
+
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march or -mcpu are specified.
    --with-cpu is ignored if -march or -mcpu are specified, and is overridden
