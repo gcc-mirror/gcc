@@ -1,3 +1,8 @@
+2015-11-11  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-parloops.c (transform_to_exit_first_loop_alt): Insert new exit
+	block only when needed.
+
 2015-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha-protos.h (print_operand): Remove.
