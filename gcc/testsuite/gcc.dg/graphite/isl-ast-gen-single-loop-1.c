@@ -1,6 +1,3 @@
-/* { dg-do run } */
-/* { dg-options "-O2 -fgraphite-identity" } */
-
 int
 foo ()
 {
