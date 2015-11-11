@@ -34,7 +34,7 @@ namespace
 }
 #endif
 
-const std::nothrow_t std::nothrow = { };
+const std::nothrow_t std::nothrow = std::nothrow_t{ };
 
 using std::new_handler;
 namespace
