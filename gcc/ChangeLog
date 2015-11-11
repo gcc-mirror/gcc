@@ -1,5 +1,9 @@
 2015-11-11  Tom de Vries  <tom@codesourcery.com>
 
+	* tree-parloops.c (create_parallel_loop): Return void.
+
+2015-11-11  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-parloops.c (transform_to_exit_first_loop_alt): Insert new exit
 	block only when needed.
 
