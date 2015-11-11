@@ -1,3 +1,7 @@
+2015-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/i386/pr67265.c: New test.
+
 2015-11-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/20050603-3.c: Don't restrict to ilp32.  Do more
