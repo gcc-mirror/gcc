@@ -67,7 +67,9 @@ enum arm_type_qualifiers
   /* Polynomial types.  */
   qualifier_poly = 0x100,
   /* Lane indices - must be within range of previous argument = a vector.  */
-  qualifier_lane_index = 0x200
+  qualifier_lane_index = 0x200,
+  /* Lane indices for single lane structure loads and stores.  */
+  qualifier_struct_load_store_lane_index = 0x400
 };
 
 /*  The qualifier_internal allows generation of a unary builtin from
@@ -1963,6 +1965,7 @@ typedef enum {
   NEON_ARG_COPY_TO_REG,
   NEON_ARG_CONSTANT,
   NEON_ARG_LANE_INDEX,
+  NEON_ARG_STRUCT_LOAD_STORE_LANE_INDEX,
   NEON_ARG_MEMORY,
   NEON_ARG_STOP
 } builtin_arg;
@@ -2020,9 +2023,9 @@ neon_dereference_pointer (tree exp, tree type, machine_mode mem_mode,
 /* Expand a Neon builtin.  */
 static rtx
 arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
-		      int icode, int have_retval, tree exp, ...)
+		      int icode, int have_retval, tree exp,
+		      builtin_arg *args)
 {
-  va_list ap;
   rtx pat;
   tree arg[SIMD_MAX_BUILTIN_ARGS];
   rtx op[SIMD_MAX_BUILTIN_ARGS];
@@ -2037,13 +2040,11 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
 	  || !(*insn_data[icode].operand[0].predicate) (target, tmode)))
     target = gen_reg_rtx (tmode);
 
-  va_start (ap, exp);
-
   formals = TYPE_ARG_TYPES (TREE_TYPE (arm_builtin_decls[fcode]));
 
   for (;;)
     {
-      builtin_arg thisarg = (builtin_arg) va_arg (ap, int);
+      builtin_arg thisarg = args[argc];
 
       if (thisarg == NEON_ARG_STOP)
 	break;
@@ -2079,6 +2080,18 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
 		op[argc] = copy_to_mode_reg (mode[argc], op[argc]);
 	      break;
 
+	    case NEON_ARG_STRUCT_LOAD_STORE_LANE_INDEX:
+	      gcc_assert (argc > 1);
+	      if (CONST_INT_P (op[argc]))
+		{
+		  neon_lane_bounds (op[argc], 0,
+				    GET_MODE_NUNITS (map_mode), exp);
+		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
+		  op[argc] =
+		    GEN_INT (NEON_ENDIAN_LANE_N (map_mode, INTVAL (op[argc])));
+		}
+	      goto constant_arg;
+
 	    case NEON_ARG_LANE_INDEX:
 	      /* Previous argument must be a vector, which this indexes.  */
 	      gcc_assert (argc > 0);
@@ -2089,19 +2102,22 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
 		}
 	      /* Fall through - if the lane index isn't a constant then
 		 the next case will error.  */
+
 	    case NEON_ARG_CONSTANT:
+constant_arg:
 	      if (!(*insn_data[icode].operand[opno].predicate)
 		  (op[argc], mode[argc]))
-		error_at (EXPR_LOCATION (exp), "incompatible type for argument %d, "
-		       "expected %<const int%>", argc + 1);
+		{
+		  error ("%Kargument %d must be a constant immediate",
+			 exp, argc + 1);
+		  return const0_rtx;
+		}
 	      break;
+
             case NEON_ARG_MEMORY:
 	      /* Check if expand failed.  */
 	      if (op[argc] == const0_rtx)
-	      {
-		va_end (ap);
 		return 0;
-	      }
 	      gcc_assert (MEM_P (op[argc]));
 	      PUT_MODE (op[argc], mode[argc]);
 	      /* ??? arm_neon.h uses the same built-in functions for signed
@@ -2121,8 +2137,6 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
 	  argc++;
 	}
     }
-
-  va_end (ap);
 
   if (have_retval)
     switch (argc)
@@ -2235,6 +2249,8 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
 
       if (d->qualifiers[qualifiers_k] & qualifier_lane_index)
 	args[k] = NEON_ARG_LANE_INDEX;
+      else if (d->qualifiers[qualifiers_k] & qualifier_struct_load_store_lane_index)
+	args[k] = NEON_ARG_STRUCT_LOAD_STORE_LANE_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_immediate)
 	args[k] = NEON_ARG_CONSTANT;
       else if (d->qualifiers[qualifiers_k] & qualifier_maybe_immediate)
@@ -2260,11 +2276,7 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
      the function is void, and a 1 if it is not.  */
   return arm_expand_neon_args
 	  (target, d->mode, fcode, icode, !is_void, exp,
-	   args[1],
-	   args[2],
-	   args[3],
-	   args[4],
-	   NEON_ARG_STOP);
+	   &args[1]);
 }
 
 /* Expand an expression EXP that calls a built-in function,

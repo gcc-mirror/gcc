@@ -1,3 +1,14 @@
+2015-11-11  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/63870
+	* config/arm/arm-builtins.c (enum arm_type_qualifiers): New enumerator
+	qualifier_struct_load_store_lane_index.
+	(builtin_arg): New enumerator NEON_ARG_STRUCT_LOAD_STORE_LANE_INDEX.
+	(arm_expand_neon_args): New parameter. Remove ellipsis. Handle NEON
+	argument qualifiers.
+	(arm_expand_neon_builtin): Handle new NEON argument qualifier.
+	* config/arm/arm.h (NEON_ENDIAN_LANE_N): New macro.
+
 2015-11-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/nvptx.opt (moptimize): New flag.
