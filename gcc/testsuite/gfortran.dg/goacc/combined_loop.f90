@@ -1,6 +1,4 @@
 ! { dg-do compile } 
-! <http://news.gmane.org/find-root.php?message_id=%3C563B78B5.5090506%40acm.org%3E>
-! { dg-xfail-if "TODO" { *-*-* } }
 
 !
 ! PR fortran/64726
