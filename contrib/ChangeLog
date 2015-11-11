@@ -1,3 +1,8 @@
+2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* header-tools: New.  Directory containing a set of tools for
+	manipulating header files.
+
 2015-10-30  Nathan Sidwell  <nathan@acm.org>
 
 	* config-list.mk (nvptx-none): Add it.

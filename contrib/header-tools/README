@@ -1,0 +1,283 @@
+Quick start documentation for the header file utilities.  
+
+This isn't a full breakdown of the tools, just they typical use scenarios.
+
+- Each tool accepts -h to show it's usage.  Usually no parameters will also
+trigger the help message.  Help may specify additional functionality to what is
+listed here.
+
+- For all tools, option format for specifying filenames must have no spaces
+between the option and filename.
+ie.:     tool -lfilename.h  target.h
+
+- Many of the tools are required to be run from the core gcc source directory
+containing coretypes.h.  Typically that is in gcc/gcc from a source checkout.
+For these tools to work on files not in this directory, their path needs to be
+specified on the command line.
+ie.:     tool c/c-decl.c  lto/lto.c
+
+- options can be intermixed with filenames anywhere on the command line
+ie.   tool ssa.h rtl.h -a   is equivalent to 
+      tool ssa.h -a rtl.h
+
+
+
+
+
+gcc-order-headers
+-----------------
+  This will reorder any primary backend headers files known to the tool into a
+  canonical order which will resolve any hidden dependencies they may have.
+  Any unknown headers will simply be placed after the recognized files, and
+  retain the same relative ordering they had.
+ 
+  This tool must be run in the core gcc source directory.
+
+  Simply execute the command listing any files you wish to process on the
+  command line.
+
+  Any files which are changed are output, and the original is saved with a
+  .bak extention.
+
+  ex.:     gcc-order-headers tree-ssa.c c/c-decl.c
+
+  -s will list all of the known headers in their canonical order. It does not
+  show which of those headers include other headers, just the final canonical
+  ordering.
+
+  if any header files are included within a conditional code block, the tool
+  will issue a message and not change the file.  When this happens, you can
+  manually inspect the file to determine if reordering it is actually OK.  Then
+  rerun the command with the -i option.  This will ignore the conditional error
+  condition and perform the re-ordering anyway.
+  
+  If any #include line has the beginning of a multi-line comment, it will also
+  refuse to process the file until that is resolved by terminating the comment
+  on the same line, or removing it.
+
+
+show-headers
+------------
+  This will show the include structure for any given file. Each level of nesting
+  is indented, and when any duplicate headers are seen, they have their
+  duplicate number shown
+
+  -i may be used to specify additional search directories for headers to parse.
+  -s specifies headers to look for and emphasize in the output.
+
+  This tool must be run in the core gcc source directory.
+
+  ex.: show-headers -sansidecl.h tree-ssa.c
+	tree-ssa.c
+	  config.h
+	    auto-host.h
+	    ansidecl.h  (1)               <<-------
+	  system.h
+	    safe-ctype.h
+	    filenames.h
+	      hashtab.h  (1)
+		ansidecl.h  (2)                <<-------
+	    libiberty.h
+	      ansidecl.h  (3)                <<-------
+	    hwint.h
+	  coretypes.h
+	    machmode.h  (1)
+	      insn-modes.h  (1)
+	    signop.h
+	  <...>
+
+
+
+
+count-headers
+-------------
+  simply count all the headers found in the specified files. A summary is 
+  printed showing occurrences from high to low.
+
+  ex.:    count-headers  tree*.c
+	    86 : coretypes.h
+	    86 : config.h
+	    86 : system.h
+	    86 : tree.h
+	    82 : backend.h
+	    80 : gimple.h
+	    72 : gimple-iterator.h
+	    70 : ssa.h
+	    68 : fold-const.h
+            <...>
+
+
+
+included-by
+-----------
+  This tool will search all the .c,.cc and .h files and output a list of files
+  which include the specified header(s).
+
+  A 4 level deep 'find' of all source files is performed from the current
+  directory and each of those is inspected for a #include of the specified
+  headers.  So expect a little bit of slowness.
+
+  -i limits the search to only other header files.
+  -c limits the search to .c and .cc files.
+  -a shows only source files which include all specified headers.
+  -f allows you to specify a file which contains a list of source files to
+     check rather than performing the much slower find command.
+
+  ex: included-by tree-vectorizer.h
+	config/aarch64/aarch64.c
+	config/i386/i386.c
+	config/rs6000/rs6000.c
+	tree-loop-distribution.c
+	tree-parloops.c
+	tree-ssa-loop-ivopts.c
+	tree-ssa-loop.c
+
+
+
+
+replace-header
+--------------
+  This tool simply replaces a single header file with one or more other headers.
+  -r specifies the include to replace, and one or more -f options specify the
+  replacement headers, in the order they occur.
+  
+  This is commonly used in conjunction with 'included-by' to change all 
+  occurrences of a header file to something else, or to insert new headers 
+  before or after.  
+
+  ex:  to insert #include "before.h" before every occurence of tree.h in all
+  .c and .cc source files:
+
+  replace-header -rtree.h -fbefore.h -ftree.h `included-by -c tree.h`
+
+
+
+
+reduce-headers
+--------------
+
+  This tool removes any header files which are not needed from a source file.
+
+  This tool must be run for the core gcc source directory, and requires either
+  a native build and sometimes target builds, depending on what you are trying
+  to reduce.
+
+  it is good practice to run 'gcc-order-headers' on a source file before trying
+  to reduce it.  This removes duplicates and performs some simplifications 
+  which reduce the chances of the reduction tool missing things.
+  
+  start with a completely bootstrapped native compiler.
+
+  Any desired target builds should be built in one directory using a modified
+  config-list.mk file which does not delete the build directory when it is done.
+  any target directories which do not successfully complete a 'make all-gcc'
+  may cause the tool to not reduce anything.
+  (todo - provide a config-list.mk that leaves successful target builds, but
+          deletes ones which do not compile)
+
+  The tool will examine all the target builds to determine which targets build
+  the file, and include those targets in the testing.
+  
+
+
+  The tool will analyze a source file and attempt to remove each non-conditional
+  header from last to first in the file.:
+    It will first attempt to build the native all-gcc target.
+    If that succeeds, it will attempt to build any target build .o files
+    If that succeeds, it will check to see if there are any conditional
+       compilation dependencies between this header file and the source file or
+       any header which have already been determined as non-removable.
+    If all these tests are passed, the header file is determined to be removable
+       and is removed from the source file.
+    This continues until all headers have been checked.
+  At this point, a bootstrap is attempted in the native build, and if that
+     passes the file is considered reduced.
+
+  Any files from the config subdirectory require target builds to be present
+  in order to proceed.
+
+  A small subset of targets has been determined to provide excellent coverage,
+  at least as of Aug 31/15 .  They were found by reducing all the files
+  contained in libbackend.a oer a full set of targets(207).  All conditions
+  which disallowed removal of a header file were triggered by one or more of
+  these targets.  They are also known to the tool.  When building targets it
+  will check those targets before the rest.  
+  This coverage can be achieved by building config-list.mk with :
+  LIST="aarch64-linux-gnu arm-netbsdelf avr-rtems c6x-elf epiphany-elf hppa2.0-hpux10.1 i686-mingw32crt i686-pc-msdosdjgpp mipsel-elf powerpc-eabisimaltivec rs6000-ibm-aix5.1.0 sh-superh-elf sparc64-elf spu-elf"
+
+  -b specifies the native bootstrapped build root directory
+  -t specifies a target build root directory that config-list.mk was run from
+  -f is used to limit the headers for consideration.
+
+  example:
+
+  mkdir gcc          // checkout gcc in subdir gcc
+  mdsir build        // boostrap gcc in subdir build
+  mkdir target       // create target directory and run config-list.mk
+  cd gcc/gcc
+
+  reduce-headers -b../../build -t../../targets -falias.h -fexpr.h tree*.c  (1)
+       #  This will attempt to remove only alias.h and expr.h from tree*.c
+
+  reduce-headers -b../../build -t../../targets tree-ssa-live.c
+       #  This will attempt to remove all header files from tree-ssa-live.c
+  
+
+  the tool will generate a number of log files:
+
+    reduce-headers.log : All compilation failures from attempted reductions.
+    reduce-headers.sum : One line summary of what happened to each source file.
+
+  (All the remaining logs are appended to, so if the tool is run multiple times
+  these files are just added to. You must physically remove them yourself in
+  order to reset the logs.)
+
+    reduce-headers-kept.log: List of all the successful compiles that were
+                             ignored because of conditional macro dependencies
+			     and why it thinks that is the case
+    $src.c.log  : for each failed header removal, the compilation
+		  messages as to why it failed.
+    $header.h.log: The same log is put into the relevant header log as well.
+
+
+a sample output from ira.c.log:
+
+Compilation failed:
+ for shrink-wrap.h:
+
+ ============================================
+ /gcc/2015-09-09/gcc/gcc/ira.c: In function ‘bool split_live_ranges_for_shrink_wrap()’:
+ /gcc/2015-09-09/gcc/gcc/ira.c:4839:8: error: ‘SHRINK_WRAPPING_ENABLED’ was not declared in this scope
+    if (!SHRINK_WRAPPING_ENABLED)
+            ^
+	    make: *** [ira.o] Error 1
+
+
+the same message would be put into shrink-wrap.h.log.
+
+
+
+graph-header-logs
+-----------------
+  This tool will parse all the messages from the .C files, looking for failures
+  that show up in other headers...  meaning there is a compilation dependency
+  between the 2 header files. 
+
+  The tool will aggregate all these and generate a graph of the dependencies
+  exposed during compilation.  Red lines indicate dependencies that are
+  present because a header file physically includes another file. Black lines
+  represent data dependencies causing compilation failures if the header is
+  not present.
+
+  ex.: graph-header-logs *.c.log
+
+
+
+graph-include-web
+-----------------
+  This tool can be used to visualize the include structure in files.  It is
+  rapidly turned useless if you specify too many things, but it can be 
+  useful for finding cycles and redundancies, or simply to see what a single
+  file looks like.
+
+  ex.: graph-include-web tree.c

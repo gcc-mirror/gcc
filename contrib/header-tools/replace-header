@@ -1,0 +1,53 @@
+#! /usr/bin/python2
+import os.path
+import sys
+import shlex
+import re
+
+from headerutils import *
+
+
+files = list()
+replace = list()
+find = ""
+usage = False
+
+for x in sys.argv[1:]:
+  if x[0:2] == "-h":
+    usage = True
+  elif x[0:2] == "-f" and find == "":
+    find = x[2:]
+  elif x[0:2] == "-r":
+    replace.append (x[2:])
+  elif x[0:1] == "-":
+    print "Error: unrecognized option " + x
+    usage = True
+  else:
+    files.append (x)
+
+if find == "":
+  usage = True
+
+if usage:
+  print "replace-header -fheader -rheader [-rheader] file1 [filen.]"
+  sys.exit(0)
+
+string = ""
+for x in replace:
+  string = string + " '"+x+"'"
+print "Replacing '"+find+"'  with"+string
+
+for x in files:
+  src = readwholefile (x)
+  src = find_replace_include (find, replace, src)
+  if (len(src) > 0):
+    print x + ": Changed"
+    out = open(x, "w")
+    for line in src:
+      out.write (line);
+    out.close ()
+  else:
+    print x
+
+
+

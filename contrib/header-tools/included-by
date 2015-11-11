@@ -1,0 +1,112 @@
+#! /usr/bin/python2
+import os.path
+import sys
+import shlex
+import re
+
+from headerutils import *
+
+
+
+usage = False
+src = list()
+flist = { }
+process_h = False
+process_c = False
+verbose = False
+level = 0
+match_all = False
+num_match = 1
+
+file_list = list()
+current = True
+deeper = True
+scanfiles = True
+for x in sys.argv[1:]:
+  if x[0:2] == "-h":
+    usage = True
+  elif x[0:2] == "-i":
+    process_h = True
+  elif x[0:2] == "-s" or x[0:2] == "-c":
+    process_c = True
+  elif x[0:2] == "-v":
+    verbose = True
+  elif x[0:2] == "-a":
+    match_all = True
+  elif x[0:2] == "-n":
+    num_match = int(x[2:])
+  elif x[0:2] == "-1":
+    deeper = False
+  elif x[0:2] == "-2":
+    current = False
+  elif x[0:2] == "-f":
+    file_list = open (x[2:]).read().splitlines()
+    scanfiles = False
+  elif x[0] == "-":
+    print "Error: Unknown option " + x
+    usage = True
+  else:
+    src.append (x)
+
+if match_all:
+  num_match = len (src)
+
+if not process_h and not process_c:
+  process_h = True
+  process_c = True
+
+if len(src) == 0:
+  usage = True
+
+if not usage:
+  if scanfiles:
+    if process_h:
+      file_list = find_gcc_files ("\*.h", current, deeper)
+    if process_c:
+      file_list = file_list + find_gcc_files ("\*.c", current, deeper)
+      file_list = file_list + find_gcc_files ("\*.cc", current, deeper)
+  else:
+    newlist = list()
+    for x in file_list:
+      if process_h and x[-2:] == ".h":
+        newlist.append (x)
+      elif process_c and (x[-2:] == ".c" or x[-3:] == ".cc"):
+        newlist.append (x)
+    file_list = newlist;
+     
+  file_list.sort()
+  for fn in file_list:
+    found = find_unique_include_list (fn)
+    careabout = list()
+    output = ""
+    for inc in found:
+      if inc in src:
+        careabout.append (inc)
+        if output == "":
+          output = fn
+        if verbose:
+          output = output + " [" + inc +"]"
+    if len (careabout) < num_match:
+        output = ""
+    if output != "":
+      print output
+else:
+  print "included-by [-h] [-i] [-c] [-v] [-a] [-nx] file1 [file2] ... [filen]"
+  print "find the list of all files in subdirectories that include any of "
+  print "the listed files. processed to a depth of 3 subdirs"
+  print " -h  : Show this message"
+  print " -i  : process only header files (*.h) for #include"
+  print " -c  : process only source files (*.c *.cc) for #include"
+  print "       If nothing is specified, defaults to -i -c"
+  print " -s  : Same as -c."
+  print " -v  : Show which include(s) were found"
+  print " -nx : Only list files which have at least x different matches. Default = 1"
+  print " -a  : Show only files which all listed files are included"
+  print "       This is equivilent to -nT where T == # of items in list"
+  print " -flistfile  : Show only files contained in the list of files"
+
+ 
+
+
+
+
