@@ -53,6 +53,18 @@ mARC700
 Target Report
 Same as -mA7.
 
+mmpy-option=
+Target RejectNegative Joined UInteger Var(arc_mpy_option) Init(2)
+-mmpy-option={0,1,2,3,4,5,6,7,8,9} Compile ARCv2 code with a multiplier design option.  Option 2 is default on.
+
+mdiv-rem
+Target Report Mask(DIVREM)
+Enable DIV-REM instructions for ARCv2
+
+mcode-density
+Target Report Mask(CODE_DENSITY)
+Enable code density instructions for ARCv2
+
 mmixed-code
 Target Report Mask(MIXED_CODE_SET)
 Tweak register allocation to help 16-bit instruction generation.
@@ -162,10 +174,31 @@ EnumValue
 Enum(processor_type) String(ARC600) Value(PROCESSOR_ARC600)
 
 EnumValue
+Enum(processor_type) String(arc600) Value(PROCESSOR_ARC600)
+
+EnumValue
 Enum(processor_type) String(ARC601) Value(PROCESSOR_ARC601)
 
 EnumValue
+Enum(processor_type) String(arc601) Value(PROCESSOR_ARC601)
+
+EnumValue
 Enum(processor_type) String(ARC700) Value(PROCESSOR_ARC700)
+
+EnumValue
+Enum(processor_type) String(arc700) Value(PROCESSOR_ARC700)
+
+EnumValue
+Enum(processor_type) String(ARCEM) Value(PROCESSOR_ARCEM)
+
+EnumValue
+Enum(processor_type) String(arcem) Value(PROCESSOR_ARCEM)
+
+EnumValue
+Enum(processor_type) String(ARCHS) Value(PROCESSOR_ARCHS)
+
+EnumValue
+Enum(processor_type) String(archs) Value(PROCESSOR_ARCHS)
 
 msize-level=
 Target RejectNegative Joined UInteger Var(arc_size_opt_level) Init(-1)

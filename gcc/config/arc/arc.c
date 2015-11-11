@@ -590,10 +590,26 @@ arc_sched_adjust_priority (rtx_insn *insn, int priority)
   return priority;
 }
 
+/* For ARC base register + offset addressing, the validity of the
+   address is mode-dependent for most of the offset range, as the
+   offset can be scaled by the access size.
+   We don't expose these as mode-dependent addresses in the
+   mode_dependent_address_p target hook, because that would disable
+   lots of optimizations, and most uses of these addresses are for 32
+   or 64 bit accesses anyways, which are fine.
+   However, that leaves some addresses for 8 / 16 bit values not
+   properly reloaded by the generic code, which is why we have to
+   schedule secondary reloads for these.  */
+
 static reg_class_t
-arc_secondary_reload (bool in_p, rtx x, reg_class_t cl, machine_mode,
-		      secondary_reload_info *)
+arc_secondary_reload (bool in_p,
+		      rtx x,
+		      reg_class_t cl,
+		      machine_mode mode,
+		      secondary_reload_info *sri)
 {
+  enum rtx_code code = GET_CODE (x);
+
   if (cl == DOUBLE_REGS)
     return GENERAL_REGS;
 
@@ -601,7 +617,84 @@ arc_secondary_reload (bool in_p, rtx x, reg_class_t cl, machine_mode,
   if ((cl == LPCOUNT_REG || cl == WRITABLE_CORE_REGS)
       && in_p && MEM_P (x))
     return GENERAL_REGS;
+
+ /* If we have a subreg (reg), where reg is a pseudo (that will end in
+    a memory location), then we may need a scratch register to handle
+    the fp/sp+largeoffset address.  */
+  if (code == SUBREG)
+    {
+      rtx addr = NULL_RTX;
+      x = SUBREG_REG (x);
+
+      if (REG_P (x))
+	{
+	  int regno = REGNO (x);
+	  if (regno >= FIRST_PSEUDO_REGISTER)
+	    regno = reg_renumber[regno];
+
+	  if (regno != -1)
+	    return NO_REGS;
+
+	  /* It is a pseudo that ends in a stack location.  */
+	  if (reg_equiv_mem (REGNO (x)))
+	    {
+	      /* Get the equivalent address and check the range of the
+		 offset.  */
+	      rtx mem = reg_equiv_mem (REGNO (x));
+	      addr = find_replacement (&XEXP (mem, 0));
+	    }
+	}
+      else
+	{
+	  gcc_assert (MEM_P (x));
+	  addr = XEXP (x, 0);
+	  addr = simplify_rtx (addr);
+	}
+      if (addr && GET_CODE (addr) == PLUS
+	  && CONST_INT_P (XEXP (addr, 1))
+	  && (!RTX_OK_FOR_OFFSET_P (mode, XEXP (addr, 1))))
+	{
+	  switch (mode)
+	    {
+	    case QImode:
+	      sri->icode =
+		in_p ? CODE_FOR_reload_qi_load : CODE_FOR_reload_qi_store;
+	      break;
+	    case HImode:
+	      sri->icode =
+		in_p ? CODE_FOR_reload_hi_load : CODE_FOR_reload_hi_store;
+	      break;
+	    default:
+	      break;
+	    }
+	}
+    }
   return NO_REGS;
+}
+
+/* Convert reloads using offsets that are too large to use indirect
+   addressing.  */
+
+void
+arc_secondary_reload_conv (rtx reg, rtx mem, rtx scratch, bool store_p)
+{
+  rtx addr;
+
+  gcc_assert (GET_CODE (mem) == MEM);
+  addr = XEXP (mem, 0);
+
+  /* Large offset: use a move.  FIXME: ld ops accepts limms as
+     offsets.  Hence, the following move insn is not required.  */
+  emit_move_insn (scratch, addr);
+  mem = replace_equiv_address_nv (mem, scratch);
+
+  /* Now create the move.  */
+  if (store_p)
+    emit_insn (gen_rtx_SET (mem, reg));
+  else
+    emit_insn (gen_rtx_SET (reg, mem));
+
+  return;
 }
 
 static unsigned arc_ifcvt (void);
@@ -687,23 +780,35 @@ arc_init (void)
 {
   enum attr_tune tune_dflt = TUNE_NONE;
 
-  if (TARGET_ARC600)
+  switch (arc_cpu)
     {
+    case PROCESSOR_ARC600:
       arc_cpu_string = "ARC600";
       tune_dflt = TUNE_ARC600;
-    }
-  else if (TARGET_ARC601)
-    {
+      break;
+
+    case PROCESSOR_ARC601:
       arc_cpu_string = "ARC601";
       tune_dflt = TUNE_ARC600;
-    }
-  else if (TARGET_ARC700)
-    {
+      break;
+
+    case PROCESSOR_ARC700:
       arc_cpu_string = "ARC700";
       tune_dflt = TUNE_ARC700_4_2_STD;
+      break;
+
+    case PROCESSOR_ARCEM:
+      arc_cpu_string = "EM";
+      break;
+
+    case PROCESSOR_ARCHS:
+      arc_cpu_string = "HS";
+      break;
+
+    default:
+      gcc_unreachable ();
     }
-  else
-    gcc_unreachable ();
+
   if (arc_tune == TUNE_NONE)
     arc_tune = tune_dflt;
   /* Note: arc_multcost is only used in rtx_cost if speed is true.  */
@@ -737,15 +842,15 @@ arc_init (void)
       }
 
   /* Support mul64 generation only for ARC600.  */
-  if (TARGET_MUL64_SET && TARGET_ARC700)
-      error ("-mmul64 not supported for ARC700");
+  if (TARGET_MUL64_SET && (!TARGET_ARC600_FAMILY))
+      error ("-mmul64 not supported for ARC700 or ARCv2");
 
-  /* MPY instructions valid only for ARC700.  */
-  if (TARGET_NOMPY_SET && !TARGET_ARC700)
-      error ("-mno-mpy supported only for ARC700");
+  /* MPY instructions valid only for ARC700 or ARCv2.  */
+  if (TARGET_NOMPY_SET && TARGET_ARC600_FAMILY)
+      error ("-mno-mpy supported only for ARC700 or ARCv2");
 
   /* mul/mac instructions only for ARC600.  */
-  if (TARGET_MULMAC_32BY16_SET && !(TARGET_ARC600 || TARGET_ARC601))
+  if (TARGET_MULMAC_32BY16_SET && (!TARGET_ARC600_FAMILY))
       error ("-mmul32x16 supported only for ARC600 or ARC601");
 
   if (!TARGET_DPFP && TARGET_DPFP_DISABLE_LRSR)
@@ -757,18 +862,25 @@ arc_init (void)
     error ("FPX fast and compact options cannot be specified together");
 
   /* FPX-2. No fast-spfp for arc600 or arc601.  */
-  if (TARGET_SPFP_FAST_SET && (TARGET_ARC600 || TARGET_ARC601))
+  if (TARGET_SPFP_FAST_SET && TARGET_ARC600_FAMILY)
     error ("-mspfp_fast not available on ARC600 or ARC601");
 
   /* FPX-3. No FPX extensions on pre-ARC600 cores.  */
   if ((TARGET_DPFP || TARGET_SPFP)
-      && !(TARGET_ARC600 || TARGET_ARC601 || TARGET_ARC700))
+      && !TARGET_ARCOMPACT_FAMILY)
     error ("FPX extensions not available on pre-ARC600 cores");
 
+  /* Only selected multiplier configurations are available for HS.  */
+  if (TARGET_HS && ((arc_mpy_option > 2 && arc_mpy_option < 7)
+		    || (arc_mpy_option == 1)))
+    error ("This multiplier configuration is not available for HS cores");
+
   /* Warn for unimplemented PIC in pre-ARC700 cores, and disable flag_pic.  */
-  if (flag_pic && !TARGET_ARC700)
+  if (flag_pic && TARGET_ARC600_FAMILY)
     {
-      warning (DK_WARNING, "PIC is not supported for %s. Generating non-PIC code only..", arc_cpu_string);
+      warning (DK_WARNING,
+	       "PIC is not supported for %s. Generating non-PIC code only..",
+	       arc_cpu_string);
       flag_pic = 0;
     }
 
@@ -782,6 +894,8 @@ arc_init (void)
   arc_punct_chars['!'] = 1;
   arc_punct_chars['^'] = 1;
   arc_punct_chars['&'] = 1;
+  arc_punct_chars['+'] = 1;
+  arc_punct_chars['_'] = 1;
 
   if (optimize > 1 && !TARGET_NO_COND_EXEC)
     {
@@ -825,7 +939,7 @@ arc_override_options (void)
   if (flag_no_common == 255)
     flag_no_common = !TARGET_NO_SDATA_SET;
 
-  /* TARGET_COMPACT_CASESI needs the "q" register class.  */ \
+  /* TARGET_COMPACT_CASESI needs the "q" register class.  */
   if (TARGET_MIXED_CODE)
     TARGET_Q_CLASS = 1;
   if (!TARGET_Q_CLASS)
@@ -1198,6 +1312,8 @@ arc_init_reg_tables (void)
   char rname57[5] = "r57";
   char rname58[5] = "r58";
   char rname59[5] = "r59";
+  char rname29[7] = "ilink1";
+  char rname30[7] = "ilink2";
 
 static void
 arc_conditional_register_usage (void)
@@ -1205,6 +1321,14 @@ arc_conditional_register_usage (void)
   int regno;
   int i;
   int fix_start = 60, fix_end = 55;
+
+  if (TARGET_V2)
+    {
+      /* For ARCv2 the core register set is changed.  */
+      strcpy (rname29, "ilink");
+      strcpy (rname30, "r30");
+      fixed_regs[30] = call_used_regs[30] = 1;
+   }
 
   if (TARGET_MUL64_SET)
     {
@@ -1271,7 +1395,7 @@ arc_conditional_register_usage (void)
      machine_dependent_reorg.  */
   if (TARGET_ARC600)
     CLEAR_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], LP_COUNT);
-  else if (!TARGET_ARC700)
+  else if (!TARGET_LP_WR_INTERLOCK)
     fixed_regs[LP_COUNT] = 1;
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (!call_used_regs[regno])
@@ -1279,7 +1403,7 @@ arc_conditional_register_usage (void)
   for (regno = 32; regno < 60; regno++)
     if (!fixed_regs[regno])
       SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], regno);
-  if (TARGET_ARC700)
+  if (!TARGET_ARC600_FAMILY)
     {
       for (regno = 32; regno <= 60; regno++)
 	CLEAR_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], regno);
@@ -1313,7 +1437,7 @@ arc_conditional_register_usage (void)
 	  = (fixed_regs[i]
 	     ? (TEST_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], i)
 		? CHEAP_CORE_REGS : ALL_CORE_REGS)
-	     : ((TARGET_ARC700
+	     : (((!TARGET_ARC600_FAMILY)
 		 && TEST_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], i))
 		? CHEAP_CORE_REGS : WRITABLE_CORE_REGS));
       else
@@ -1331,7 +1455,8 @@ arc_conditional_register_usage (void)
 
   /* Handle Special Registers.  */
   arc_regno_reg_class[29] = LINK_REGS; /* ilink1 register.  */
-  arc_regno_reg_class[30] = LINK_REGS; /* ilink2 register.  */
+  if (!TARGET_V2)
+    arc_regno_reg_class[30] = LINK_REGS; /* ilink2 register.  */
   arc_regno_reg_class[31] = LINK_REGS; /* blink register.  */
   arc_regno_reg_class[60] = LPCOUNT_REG;
   arc_regno_reg_class[61] = NO_REGS;      /* CC_REG: must be NO_REGS.  */
@@ -1413,13 +1538,23 @@ arc_handle_interrupt_attribute (tree *, tree name, tree args, int,
       *no_add_attrs = true;
     }
   else if (strcmp (TREE_STRING_POINTER (value), "ilink1")
-	   && strcmp (TREE_STRING_POINTER (value), "ilink2"))
+	   && strcmp (TREE_STRING_POINTER (value), "ilink2")
+	   && !TARGET_V2)
     {
       warning (OPT_Wattributes,
 	       "argument of %qE attribute is not \"ilink1\" or \"ilink2\"",
 	       name);
       *no_add_attrs = true;
     }
+  else if (TARGET_V2
+	   && strcmp (TREE_STRING_POINTER (value), "ilink"))
+    {
+      warning (OPT_Wattributes,
+	       "argument of %qE attribute is not \"ilink\"",
+	       name);
+      *no_add_attrs = true;
+    }
+
   return NULL_TREE;
 }
 
@@ -1931,7 +2066,8 @@ arc_compute_function_type (struct function *fun)
 	{
 	  tree value = TREE_VALUE (args);
 
-	  if (!strcmp (TREE_STRING_POINTER (value), "ilink1"))
+	  if (!strcmp (TREE_STRING_POINTER (value), "ilink1")
+	      || !strcmp (TREE_STRING_POINTER (value), "ilink"))
 	    fn_type = ARC_FUNCTION_ILINK1;
 	  else if (!strcmp (TREE_STRING_POINTER (value), "ilink2"))
 	    fn_type = ARC_FUNCTION_ILINK2;
@@ -3115,6 +3251,18 @@ arc_print_operand (FILE *file, rtx x, int code)
       if (TARGET_ANNOTATE_ALIGN && cfun->machine->size_reason)
 	fprintf (file, "; unalign: %d", cfun->machine->unalign);
       return;
+    case '+':
+      if (TARGET_V2)
+	fputs ("m", file);
+      else
+	fputs ("h", file);
+      return;
+    case '_':
+      if (TARGET_V2)
+	fputs ("h", file);
+      else
+	fputs ("w", file);
+      return;
     default :
       /* Unknown flag.  */
       output_operand_lossage ("invalid operand output code");
@@ -4224,7 +4372,7 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	*total= arc_multcost;
       /* We do not want synth_mult sequences when optimizing
 	 for size.  */
-      else if (TARGET_MUL64_SET || (TARGET_ARC700 && !TARGET_NOMPY_SET))
+      else if (TARGET_MUL64_SET || TARGET_ARC700_MPY)
 	*total = COSTS_N_INSNS (1);
       else
 	*total = COSTS_N_INSNS (2);
@@ -5639,7 +5787,7 @@ arc_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
   else
     {
       HOST_WIDE_INT size = int_size_in_bytes (type);
-      return (size == -1 || size > 8);
+      return (size == -1 || size > (TARGET_V2 ? 16 : 8));
     }
 }
 
@@ -5737,6 +5885,26 @@ arc_invalid_within_doloop (const rtx_insn *insn)
   return NULL;
 }
 
+/* The same functionality as arc_hazard.  It is called in machine
+   reorg before any other optimization.  Hence, the NOP size is taken
+   into account when doing branch shortening.  */
+
+static void
+workaround_arc_anomaly (void)
+{
+  rtx_insn *insn, *succ0;
+
+  /* For any architecture: call arc_hazard here.  */
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      succ0 = next_real_insn (insn);
+      if (arc_hazard (insn, succ0))
+	{
+	  emit_insn_before (gen_nopv (), succ0);
+	}
+    }
+}
+
 static int arc_reorg_in_progress = 0;
 
 /* ARC's machince specific reorg function.  */
@@ -5749,6 +5917,8 @@ arc_reorg (void)
   rtx pc_target;
   long offset;
   int changed;
+
+  workaround_arc_anomaly ();
 
   cfun->machine->arc_reorg_started = 1;
   arc_reorg_in_progress = 1;
@@ -7758,6 +7928,109 @@ arc600_corereg_hazard (rtx_insn *pred, rtx_insn *succ)
   return 0;
 }
 
+/* Given a rtx, check if it is an assembly instruction or not.  */
+
+static int
+arc_asm_insn_p (rtx x)
+{
+  int i, j;
+
+  if (x == 0)
+    return 0;
+
+  switch (GET_CODE (x))
+    {
+    case ASM_OPERANDS:
+    case ASM_INPUT:
+      return 1;
+
+    case SET:
+      return arc_asm_insn_p (SET_SRC (x));
+
+    case PARALLEL:
+      j = 0;
+      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+	j += arc_asm_insn_p (XVECEXP (x, 0, i));
+      if ( j > 0)
+	return 1;
+      break;
+
+    default:
+      break;
+    }
+
+  return 0;
+}
+
+/* We might have a CALL to a non-returning function before a loop end.
+   ??? Although the manual says that's OK (the target is outside the
+   loop, and the loop counter unused there), the assembler barfs on
+   this for ARC600, so we must insert a nop before such a call too.
+   For ARC700, and ARCv2 is not allowed to have the last ZOL
+   instruction a jump to a location where lp_count is modified.  */
+
+static bool
+arc_loop_hazard (rtx_insn *pred, rtx_insn *succ)
+{
+  rtx_insn *jump  = NULL;
+  rtx_insn *label = NULL;
+  basic_block succ_bb;
+
+  if (recog_memoized (succ) != CODE_FOR_doloop_end_i)
+    return false;
+
+  /* Phase 1: ARC600 and ARCv2HS doesn't allow any control instruction
+     (i.e., jump/call) as the last instruction of a ZOL.  */
+  if (TARGET_ARC600 || TARGET_HS)
+    if (JUMP_P (pred) || CALL_P (pred)
+	|| arc_asm_insn_p (PATTERN (pred))
+	|| GET_CODE (PATTERN (pred)) == SEQUENCE)
+      return true;
+
+  /* Phase 2: Any architecture, it is not allowed to have the last ZOL
+     instruction a jump to a location where lp_count is modified.  */
+
+  /* Phase 2a: Dig for the jump instruction.  */
+  if (JUMP_P (pred))
+    jump = pred;
+  else if (GET_CODE (PATTERN (pred)) == SEQUENCE
+	   && JUMP_P (XVECEXP (PATTERN (pred), 0, 0)))
+    jump = as_a <rtx_insn *> XVECEXP (PATTERN (pred), 0, 0);
+  else
+    return false;
+
+  label = JUMP_LABEL_AS_INSN (jump);
+  if (!label)
+    return false;
+
+  /* Phase 2b: Make sure is not a millicode jump.  */
+  if ((GET_CODE (PATTERN (jump)) == PARALLEL)
+      && (XVECEXP (PATTERN (jump), 0, 0) == ret_rtx))
+    return false;
+
+  /* Phase 2c: Make sure is not a simple_return.  */
+  if ((GET_CODE (PATTERN (jump)) == SIMPLE_RETURN)
+      || (GET_CODE (label) == SIMPLE_RETURN))
+    return false;
+
+  /* Pahse 2d: Go to the target of the jump and check for aliveness of
+     LP_COUNT register.  */
+  succ_bb = BLOCK_FOR_INSN (label);
+  if (!succ_bb)
+    {
+      gcc_assert (NEXT_INSN (label));
+      if (NOTE_INSN_BASIC_BLOCK_P (NEXT_INSN (label)))
+	succ_bb = NOTE_BASIC_BLOCK (NEXT_INSN (label));
+      else
+	succ_bb = BLOCK_FOR_INSN (NEXT_INSN (label));
+    }
+
+  if (succ_bb && REGNO_REG_SET_P (df_get_live_out (succ_bb), LP_COUNT))
+    return true;
+
+  return false;
+}
+
 /* For ARC600:
    A write to a core reg greater or equal to 32 must not be immediately
    followed by a use.  Anticipate the length requirement to insert a nop
@@ -7766,19 +8039,16 @@ arc600_corereg_hazard (rtx_insn *pred, rtx_insn *succ)
 int
 arc_hazard (rtx_insn *pred, rtx_insn *succ)
 {
-  if (!TARGET_ARC600)
-    return 0;
   if (!pred || !INSN_P (pred) || !succ || !INSN_P (succ))
     return 0;
-  /* We might have a CALL to a non-returning function before a loop end.
-     ??? Although the manual says that's OK (the target is outside the loop,
-     and the loop counter unused there), the assembler barfs on this, so we
-     must instert a nop before such a call too.  */
-  if (recog_memoized (succ) == CODE_FOR_doloop_end_i
-      && (JUMP_P (pred) || CALL_P (pred)
-	  || GET_CODE (PATTERN (pred)) == SEQUENCE))
+
+  if (arc_loop_hazard (pred, succ))
     return 4;
-  return arc600_corereg_hazard (pred, succ);
+
+  if (TARGET_ARC600)
+    return arc600_corereg_hazard (pred, succ);
+
+  return 0;
 }
 
 /* Return length adjustment for INSN.  */
