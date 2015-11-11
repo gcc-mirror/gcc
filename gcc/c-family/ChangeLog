@@ -1,3 +1,8 @@
+2015-11-11  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR bootstrap/68271
+	* c-pragma.c (c_register_pragma_1): Update the gcc_assert to 256.
+
 2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* array-notation-common.c: Remove unused header files.

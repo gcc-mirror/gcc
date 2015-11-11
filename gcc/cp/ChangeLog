@@ -1,3 +1,8 @@
+2015-11-11  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR bootstrap/68271
+	* parser.h (cp_token): Update pragma_kind to 8.
+
 2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* call.c: Remove unused header files.
