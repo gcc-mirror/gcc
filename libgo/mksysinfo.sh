@@ -1465,4 +1465,24 @@ grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr/[16]byte/' \
     >> ${OUT}
 
+# The Solaris 12 _flow_arp_desc_t struct.
+grep '^type _flow_arp_desc_t ' gen-sysinfo.go | \
+    sed -e 's/_in6_addr_t/[16]byte/g' \
+    >> ${OUT}
+
+# The Solaris 12 _flow_l3_desc_t struct.
+grep '^type _flow_l3_desc_t ' gen-sysinfo.go | \
+    sed -e 's/_in6_addr_t/[16]byte/g' \
+    >> ${OUT}
+
+# The Solaris 12 _mac_ipaddr_t struct.
+grep '^type _mac_ipaddr_t ' gen-sysinfo.go | \
+    sed -e 's/_in6_addr_t/[16]byte/g' \
+    >> ${OUT}
+
+# The Solaris 12 _mactun_info_t struct.
+grep '^type _mactun_info_t ' gen-sysinfo.go | \
+    sed -e 's/_in6_addr_t/[16]byte/g' \
+    >> ${OUT}
+
 exit $?
