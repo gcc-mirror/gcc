@@ -645,6 +645,7 @@ vect_slp_analyze_data_ref_dependences (bb_vec_info bb_vinfo)
 			      (SLP_INSTANCE_TREE (instance))[0], 0);
 	  vect_free_slp_instance (instance);
 	  BB_VINFO_SLP_INSTANCES (bb_vinfo).ordered_remove (i);
+	  continue;
 	}
       i++;
     }
@@ -668,7 +669,7 @@ vect_slp_analyze_data_ref_dependences (bb_vec_info bb_vinfo)
    FOR NOW: No analysis is actually performed. Misalignment is calculated
    only for trivial cases. TODO.  */
 
-static bool
+bool
 vect_compute_data_ref_alignment (struct data_reference *dr)
 {
   gimple *stmt = DR_STMT (dr);
@@ -838,45 +839,6 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 }
 
 
-/* Function vect_compute_data_refs_alignment
-
-   Compute the misalignment of data references in the loop.
-   Return FALSE if a data reference is found that cannot be vectorized.  */
-
-static bool
-vect_compute_data_refs_alignment (vec_info *vinfo)
-{
-  vec<data_reference_p> datarefs = vinfo->datarefs;
-  struct data_reference *dr;
-  unsigned int i;
-
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
-    {
-      stmt_vec_info stmt_info = vinfo_for_stmt (DR_STMT (dr));
-      if (STMT_VINFO_VECTORIZABLE (stmt_info)
-	  && !vect_compute_data_ref_alignment (dr))
-	{
-	  /* Strided accesses perform only component accesses, misalignment
-	     information is irrelevant for them.  */
-	  if (STMT_VINFO_STRIDED_P (stmt_info)
-	      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
-	    continue;
-
-	  if (is_a <bb_vec_info> (vinfo))
-	    {
-	      /* Mark unsupported statement as unvectorizable.  */
-	      STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr))) = false;
-	      continue;
-	    }
-	  else
-	    return false;
-	}
-    }
-
-  return true;
-}
-
-
 /* Function vect_update_misalignment_for_peel
 
    DR - the data reference whose misalignment is to be adjusted.
@@ -936,63 +898,76 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
 }
 
 
+/* Function verify_data_ref_alignment
+
+   Return TRUE if DR can be handled with respect to alignment.  */
+
+static bool
+verify_data_ref_alignment (data_reference_p dr)
+{
+  enum dr_alignment_support supportable_dr_alignment;
+  gimple *stmt = DR_STMT (dr);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+    return true;
+
+  /* For interleaving, only the alignment of the first access matters. 
+     Skip statements marked as not vectorizable.  */
+  if ((STMT_VINFO_GROUPED_ACCESS (stmt_info)
+       && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
+      || !STMT_VINFO_VECTORIZABLE (stmt_info))
+    return true;
+
+  /* Strided accesses perform only component accesses, alignment is
+     irrelevant for them.  */
+  if (STMT_VINFO_STRIDED_P (stmt_info)
+      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    return true;
+
+  supportable_dr_alignment = vect_supportable_dr_alignment (dr, false);
+  if (!supportable_dr_alignment)
+    {
+      if (dump_enabled_p ())
+	{
+	  if (DR_IS_READ (dr))
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "not vectorized: unsupported unaligned load.");
+	  else
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "not vectorized: unsupported unaligned "
+			     "store.");
+
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+			     DR_REF (dr));
+	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+	}
+      return false;
+    }
+
+  if (supportable_dr_alignment != dr_aligned && dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "Vectorizing an unaligned access.\n");
+
+  return true;
+}
+
 /* Function vect_verify_datarefs_alignment
 
    Return TRUE if all data references in the loop can be
    handled with respect to alignment.  */
 
 bool
-vect_verify_datarefs_alignment (vec_info *vinfo)
+vect_verify_datarefs_alignment (loop_vec_info vinfo)
 {
   vec<data_reference_p> datarefs = vinfo->datarefs;
   struct data_reference *dr;
-  enum dr_alignment_support supportable_dr_alignment;
   unsigned int i;
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
-    {
-      gimple *stmt = DR_STMT (dr);
-      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+    if (! verify_data_ref_alignment (dr))
+      return false;
 
-      if (!STMT_VINFO_RELEVANT_P (stmt_info))
-	continue;
-
-      /* For interleaving, only the alignment of the first access matters. 
-         Skip statements marked as not vectorizable.  */
-      if ((STMT_VINFO_GROUPED_ACCESS (stmt_info)
-           && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
-          || !STMT_VINFO_VECTORIZABLE (stmt_info))
-        continue;
-
-      /* Strided accesses perform only component accesses, alignment is
-	 irrelevant for them.  */
-      if (STMT_VINFO_STRIDED_P (stmt_info)
-	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
-	continue;
-
-      supportable_dr_alignment = vect_supportable_dr_alignment (dr, false);
-      if (!supportable_dr_alignment)
-        {
-          if (dump_enabled_p ())
-            {
-              if (DR_IS_READ (dr))
-                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "not vectorized: unsupported unaligned load.");
-              else
-                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "not vectorized: unsupported unaligned "
-                                 "store.");
-
-              dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-                                 DR_REF (dr));
-              dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-            }
-          return false;
-        }
-      if (supportable_dr_alignment != dr_aligned && dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "Vectorizing an unaligned access.\n");
-    }
   return true;
 }
 
@@ -2064,7 +2039,7 @@ vect_find_same_alignment_drs (struct data_dependence_relation *ddr,
    Return FALSE if a data reference is found that cannot be vectorized.  */
 
 bool
-vect_analyze_data_refs_alignment (vec_info *vinfo)
+vect_analyze_data_refs_alignment (loop_vec_info vinfo)
 {
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -2072,24 +2047,96 @@ vect_analyze_data_refs_alignment (vec_info *vinfo)
 
   /* Mark groups of data references with same alignment using
      data dependence information.  */
-  if (is_a <loop_vec_info> (vinfo))
-    {
-      vec<ddr_p> ddrs = vinfo->ddrs;
-      struct data_dependence_relation *ddr;
-      unsigned int i;
+  vec<ddr_p> ddrs = vinfo->ddrs;
+  struct data_dependence_relation *ddr;
+  unsigned int i;
 
-      FOR_EACH_VEC_ELT (ddrs, i, ddr)
-	vect_find_same_alignment_drs (ddr, as_a <loop_vec_info> (vinfo));
+  FOR_EACH_VEC_ELT (ddrs, i, ddr)
+    vect_find_same_alignment_drs (ddr, vinfo);
+
+  vec<data_reference_p> datarefs = vinfo->datarefs;
+  struct data_reference *dr;
+
+  FOR_EACH_VEC_ELT (datarefs, i, dr)
+    {
+      stmt_vec_info stmt_info = vinfo_for_stmt (DR_STMT (dr));
+      if (STMT_VINFO_VECTORIZABLE (stmt_info)
+	  && !vect_compute_data_ref_alignment (dr))
+	{
+	  /* Strided accesses perform only component accesses, misalignment
+	     information is irrelevant for them.  */
+	  if (STMT_VINFO_STRIDED_P (stmt_info)
+	      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+	    continue;
+
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "not vectorized: can't calculate alignment "
+			     "for data ref.\n");
+
+	  return false;
+	}
     }
 
-  if (!vect_compute_data_refs_alignment (vinfo))
+  return true;
+}
+
+
+/* Analyze alignment of DRs of stmts in NODE.  */
+
+static bool
+vect_slp_analyze_and_verify_node_alignment (slp_tree node)
+{
+  unsigned i;
+  gimple *stmt;
+  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-	                 "not vectorized: can't calculate alignment "
-	                 "for data ref.\n");
+      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+      /* Strided accesses perform only component accesses, misalignment
+	 information is irrelevant for them.  */
+      if (STMT_VINFO_STRIDED_P (stmt_info)
+	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+	continue;
+
+      data_reference_p dr = STMT_VINFO_DATA_REF (stmt_info);
+      if (! vect_compute_data_ref_alignment (dr)
+	  || ! verify_data_ref_alignment (dr))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "not vectorized: bad data alignment in basic "
+			     "block.\n");
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+/* Function vect_slp_analyze_instance_alignment
+
+   Analyze the alignment of the data-references in the SLP instance.
+   Return FALSE if a data reference is found that cannot be vectorized.  */
+
+bool
+vect_slp_analyze_and_verify_instance_alignment (slp_instance instance)
+{
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "=== vect_slp_analyze_and_verify_instance_alignment ===\n");
+
+  slp_tree node;
+  unsigned i;
+  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, node)
+    if (! vect_slp_analyze_and_verify_node_alignment (node))
       return false;
-    }
+
+  node = SLP_INSTANCE_TREE (instance);
+  if (STMT_VINFO_DATA_REF (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (node)[0]))
+      && ! vect_slp_analyze_and_verify_node_alignment
+	     (SLP_INSTANCE_TREE (instance)))
+    return false;
 
   return true;
 }

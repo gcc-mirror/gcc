@@ -1011,8 +1011,9 @@ extern tree vect_get_smallest_scalar_type (gimple *, HOST_WIDE_INT *,
 extern bool vect_analyze_data_ref_dependences (loop_vec_info, int *);
 extern bool vect_slp_analyze_data_ref_dependences (bb_vec_info);
 extern bool vect_enhance_data_refs_alignment (loop_vec_info);
-extern bool vect_analyze_data_refs_alignment (vec_info *);
-extern bool vect_verify_datarefs_alignment (vec_info *);
+extern bool vect_analyze_data_refs_alignment (loop_vec_info);
+extern bool vect_verify_datarefs_alignment (loop_vec_info);
+extern bool vect_slp_analyze_and_verify_instance_alignment (slp_instance);
 extern bool vect_analyze_data_ref_accesses (vec_info *);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern tree vect_check_gather_scatter (gimple *, loop_vec_info, tree *, tree *,

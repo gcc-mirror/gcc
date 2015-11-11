@@ -1,3 +1,25 @@
+2015-11-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_slp_analyze_and_verify_instance_alignment):
+	Declare.
+	(vect_analyze_data_refs_alignment): Make loop vect specific.
+	(vect_verify_datarefs_alignment): Likewise.
+	* tree-vect-data-refs.c (vect_slp_analyze_data_ref_dependences):
+	Add missing continue.
+	(vect_compute_data_ref_alignment): Export.
+	(vect_compute_data_refs_alignment): Merge into...
+	(vect_analyze_data_refs_alignment): ... this.
+	(verify_data_ref_alignment): Split out from ...
+	(vect_verify_datarefs_alignment): ... here.
+	(vect_slp_analyze_and_verify_node_alignment): New function.
+	(vect_slp_analyze_and_verify_instance_alignment): Likewise.
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Remove
+	misplaced checks on alignment.
+	(vect_slp_analyze_bb_1): Add fatal output parameter.  Do
+	alignment analysis after SLP discovery and do it per instance.
+	(vect_slp_bb): When vect_slp_analyze_bb_1 fatally failed do not
+	bother to re-try using different vector sizes.
+
 2015-11-11  Nathan Sidwell  <nathan@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

@@ -1282,8 +1282,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
   unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (slp_instn);
   unsigned int i, j, k, next;
   slp_tree node;
-  gimple *stmt, *load, *next_load, *first_load;
-  struct data_reference *dr;
+  gimple *stmt, *load, *next_load;
 
   if (dump_enabled_p ())
     {
@@ -1365,33 +1364,6 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 		}
 	    }
         }
-
-      /* Check that the alignment of the first load in every subchain, i.e.,
-         the first statement in every load node, is supported.
-	 ???  This belongs in alignment checking.  */
-      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
-	{
-	  first_load = SLP_TREE_SCALAR_STMTS (node)[0];
-	  if (first_load != GROUP_FIRST_ELEMENT (vinfo_for_stmt (first_load)))
-	    {
-	      dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_load));
-	      if (vect_supportable_dr_alignment (dr, false)
-		  == dr_unaligned_unsupported)
-		{
-		  if (dump_enabled_p ())
-		    {
-		      dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-				       vect_location,
-				       "unsupported unaligned load ");
-		      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-					first_load, 0);
-                      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-		    }
-		  return false;
-		}
-	    }
-	}
-
       return true;
     }
 
@@ -2311,18 +2283,24 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
   return true;
 }
 
-/* Check if the basic block can be vectorized.  */
+/* Check if the basic block can be vectorized.  Returns a bb_vec_info
+   if so and sets fatal to true if failure is independent of
+   current_vector_size.  */
 
 static bb_vec_info
 vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 		       gimple_stmt_iterator region_end,
-		       vec<data_reference_p> datarefs, int n_stmts)
+		       vec<data_reference_p> datarefs, int n_stmts,
+		       bool &fatal)
 {
   bb_vec_info bb_vinfo;
   vec<slp_instance> slp_instances;
   slp_instance instance;
   int i;
   int min_vf = 2;
+
+  /* The first group of checks is independent of the vector size.  */
+  fatal = true;
 
   if (n_stmts > PARAM_VALUE (PARAM_SLP_MAX_INSNS_IN_BB))
     {
@@ -2375,18 +2353,24 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
       return NULL;
     }
 
-  vect_pattern_recog (bb_vinfo);
-
-  if (!vect_analyze_data_refs_alignment (bb_vinfo))
+  /* If there are no grouped stores in the region there is no need
+     to continue with pattern recog as vect_analyze_slp will fail
+     anyway.  */
+  if (bb_vinfo->grouped_stores.is_empty ())
     {
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: bad data alignment in basic "
-			 "block.\n");
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: no grouped stores in "
+			 "basic block.\n");
 
       destroy_bb_vec_info (bb_vinfo);
       return NULL;
     }
+
+  /* While the rest of the analysis below depends on it in some way.  */
+  fatal = false;
+
+  vect_pattern_recog (bb_vinfo);
 
   /* Check the SLP opportunities in the basic block, analyze and build SLP
      trees.  */
@@ -2401,6 +2385,30 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 			   "in basic block.\n");
 	}
 
+      destroy_bb_vec_info (bb_vinfo);
+      return NULL;
+    }
+
+  /* Analyze and verify the alignment of data references in the SLP
+     instances.  */
+  for (i = 0; BB_VINFO_SLP_INSTANCES (bb_vinfo).iterate (i, &instance); )
+    {
+      if (! vect_slp_analyze_and_verify_instance_alignment (instance))
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "removing SLP instance operations starting from: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
+			    SLP_TREE_SCALAR_STMTS
+			      (SLP_INSTANCE_TREE (instance))[0], 0);
+	  vect_free_slp_instance (instance);
+	  BB_VINFO_SLP_INSTANCES (bb_vinfo).ordered_remove (i);
+	  continue;
+	}
+      i++;
+    }
+
+  if (! BB_VINFO_SLP_INSTANCES (bb_vinfo).length ())
+    {
       destroy_bb_vec_info (bb_vinfo);
       return NULL;
     }
@@ -2427,23 +2435,13 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
   /* Analyze dependences.  At this point all stmts not participating in
      vectorization have to be marked.  Dependence analysis assumes
      that we either vectorize all SLP instances or none at all.  */
-  if (!vect_slp_analyze_data_ref_dependences (bb_vinfo))
-     {
-       if (dump_enabled_p ())
-	 dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			  "not vectorized: unhandled data dependence "
-			  "in basic block.\n");
-
-       destroy_bb_vec_info (bb_vinfo);
-       return NULL;
-     }
-
-  if (!vect_verify_datarefs_alignment (bb_vinfo))
+  if (! vect_slp_analyze_data_ref_dependences (bb_vinfo))
     {
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "not vectorized: unsupported alignment in basic "
-                         "block.\n");
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: unhandled data dependence "
+			 "in basic block.\n");
+
       destroy_bb_vec_info (bb_vinfo);
       return NULL;
     }
@@ -2533,8 +2531,9 @@ vect_slp_bb (basic_block bb)
       gimple_stmt_iterator region_end = gsi;
 
       bool vectorized = false;
+      bool fatal = false;
       bb_vinfo = vect_slp_analyze_bb_1 (region_begin, region_end,
-					datarefs, insns);
+					datarefs, insns, fatal);
       if (bb_vinfo
 	  && dbg_cnt (vect_slp))
 	{
@@ -2559,7 +2558,10 @@ vect_slp_bb (basic_block bb)
       vector_sizes &= ~current_vector_size;
       if (vectorized
 	  || vector_sizes == 0
-	  || current_vector_size == 0)
+	  || current_vector_size == 0
+	  /* If vect_slp_analyze_bb_1 signaled that analysis for all
+	     vector sizes will fail do not bother iterating.  */
+	  || fatal)
 	{
 	  if (gsi_end_p (region_end))
 	    break;
