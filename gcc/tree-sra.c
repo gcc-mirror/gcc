@@ -4996,9 +4996,9 @@ convert_callers_for_node (struct cgraph_node *node,
 
       if (dump_file)
 	fprintf (dump_file, "Adjusting call %s/%i -> %s/%i\n",
-		 xstrdup (cs->caller->name ()),
+		 xstrdup_for_dump (cs->caller->name ()),
 		 cs->caller->order,
-		 xstrdup (cs->callee->name ()),
+		 xstrdup_for_dump (cs->callee->name ()),
 		 cs->callee->order);
 
       ipa_modify_call_arguments (cs, cs->call_stmt, *adjustments);

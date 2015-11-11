@@ -2226,12 +2226,11 @@ create_phi_basis (slsr_cand_t c, gimple *from_phi, tree basis_name,
   int i;
   tree name, phi_arg;
   gphi *phi;
-  vec<tree> phi_args;
   slsr_cand_t basis = lookup_cand (c->basis);
   int nargs = gimple_phi_num_args (from_phi);
   basic_block phi_bb = gimple_bb (from_phi);
   slsr_cand_t phi_cand = base_cand_from_table (gimple_phi_result (from_phi));
-  phi_args.create (nargs);
+  auto_vec<tree> phi_args (nargs);
 
   /* Process each argument of the existing phi that represents
      conditionally-executed add candidates.  */
