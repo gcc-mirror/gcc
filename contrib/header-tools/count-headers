@@ -1,0 +1,58 @@
+#! /usr/bin/python2
+import os.path
+import sys
+import shlex
+import re
+
+from headerutils import *
+
+usage = False
+src = list ()
+flist = { }
+process_h = True
+process_c = True
+verbose = False
+all_inc = True
+level = 0
+
+only_use_list = list ()
+
+for x in sys.argv[1:]:
+  if x[0:2] == "-h":
+    usage = True
+  else:
+    src.append (x)
+
+
+if not usage and len (src) > 0:
+  incl = { }
+  for fn in src:
+    src = readwholefile (fn)
+    dup = { }
+    for line in src:
+      d = find_pound_include (line, True, True)
+      if d != "" and d[-2:] ==".h":
+        if dup.get (d) == None:
+          if incl.get (d) == None:
+            incl[d] = 1
+          else:
+            incl[d] = incl[d]+ 1
+          dup[d] = 1
+
+  l = list ()
+  for i in incl:
+    l.append ((incl[i], i))
+  l.sort (key=lambda tup:tup[0], reverse=True)
+
+  for f in l:
+    print str (f[0]) + " : " + f[1]
+
+else:
+  print "count-headers file1 [filen]"
+  print "Count the number of occurrences of all includes across all listed files"
+
+ 
+
+
+
+

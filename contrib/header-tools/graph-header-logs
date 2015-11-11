@@ -1,0 +1,227 @@
+#! /usr/bin/python2
+import os.path
+import sys
+import shlex
+import re
+
+from headerutils import *
+
+header_roots = { }
+extra_edges = list()
+verbose = False
+verbosity = 0
+nodes = list()
+
+def unpretty (name):
+  if name[-2:] == "_h":
+    name = name[:-2] + ".h"
+  return name.replace("_", "-")
+
+def pretty_name (name):
+  name = os.path.basename (name)
+  return name.replace(".","_").replace("-","_").replace("/","_").replace("+","_");
+
+depstring = ("In file included from", "                 from")
+
+# indentation indicates nesting levels of included files
+ignore = [ "coretypes_h",
+             "machmode_h",
+             "signop_h",
+             "wide_int_h",
+             "double_int_h",
+             "real_h",
+             "fixed_value_h",
+             "hash_table_h",
+               "statistics_h",
+               "ggc_h",
+               "vec_h",
+               "hashtab_h",
+               "inchash_h",
+               "mem_stats_traits_h",
+               "hash_map_traits_h",
+               "mem_stats_h",
+               "hash_map_h",
+             "hash_set_h",
+             "input_h",
+               "line_map_h",
+             "is_a_h",
+           "system_h",
+           "config_h" ]
+
+def process_log_file (header, logfile):
+  if header_roots.get (header) != None:
+    print "Error: already processed log file: " + header + ".log"
+    return
+  hname = pretty_name (header)
+  header_roots[hname] = { }
+  
+  sline = list();
+  incfrom = list()
+  newinc = True
+  for line in logfile:
+    if len (line) > 21 and line[:21] in depstring:
+      if newinc:
+        incfrom = list()
+        newinc = False
+      fn = re.findall(ur".*/(.*?):", line)
+      if len(fn) != 1:
+        continue
+      if fn[0][-2:] != ".h":
+        continue
+      n = pretty_name (fn[0])
+      if n not in ignore:
+        incfrom.append (n)
+      continue
+    newinc = True
+    note = re.findall (ur"^.*note: (.*)", line)
+    if len(note) > 0:
+      sline.append (("note", note[0]))
+    else:
+      err_msg = re.findall (ur"^.*: error: (.*)", line)
+      if len(err_msg) == 1:
+        msg = err_msg[0]
+        if (len (re.findall("error: forward declaration", line))) != 0:
+          continue
+        path = re.findall (ur"^(.*?):.*error: ", line)
+        if len(path) != 1:
+          continue
+        if path[0][-2:] != ".h":
+          continue
+        fname = pretty_name (path[0])
+        if fname in ignore or fname[0:3] == "gt_":
+          continue
+        sline.append (("error", msg, fname, incfrom))
+
+  print str(len(sline)) + " lines to process"
+  lastline = "note"
+  for line in sline:
+    if line[0] != "note" and lastline[0] == "error":
+      fname = lastline[2]
+      msg = lastline[1]
+      incfrom = lastline[3]
+      string = ""
+      ofname = fname
+      if len(incfrom) != 0:
+        for t in incfrom:
+          string = string + t + " : "
+          ee = (fname, t)
+          if ee not in extra_edges:
+            extra_edges.append (ee)
+          fname = t
+          print string
+
+      if hname not in nodes:
+        nodes.append(hname)
+      if fname not in nodes:
+        nodes.append (ofname)
+      for y in incfrom:
+        if y not in nodes:
+          nodes.append (y)
+
+
+      if header_roots[hname].get(fname) == None:
+        header_roots[hname][fname] = list()
+      if msg not in header_roots[hname][fname]:
+        print string + ofname + " : " +msg
+        header_roots[hname][fname].append (msg)
+    lastline = line;
+
+
+dotname = "graph.dot"
+graphname = "graph.png"
+
+
+def build_dot_file (file_list):
+  output = open(dotname, "w")
+  output.write ("digraph incweb {\n");
+  for x in file_list:
+    if os.path.exists (x) and x[-4:] == ".log":
+      header =  x[:-4]
+      logfile = open(x).read().splitlines()
+      process_log_file (header, logfile)
+    elif os.path.exists (x + ".log"):
+      logfile = open(x + ".log").read().splitlines()
+      process_log_file (x, logfile)
+
+  for n in nodes:
+    fn = unpretty(n)
+    label = n + " [ label = \"" + fn  + "\" ];"
+    output.write (label + "\n")
+    if os.path.exists (fn):
+      h = open(fn).read().splitlines()
+      for l in h:
+        t = find_pound_include (l, True, False)
+        if t != "":
+          t = pretty_name (t)
+          if t in ignore or t[-2:] != "_h":
+            continue
+          if t not in nodes:
+            nodes.append (t)
+          ee = (t, n)
+          if ee not in extra_edges:
+            extra_edges.append (ee)
+
+  depcount = list()
+  for h in header_roots:
+    for dep in header_roots[h]:
+      label = " [ label = "+ str(len(header_roots[h][dep])) + " ];"
+      string = h + " -> " + dep + label
+      output.write (string + "\n");
+      if verbose:
+        depcount.append ((h, dep, len(header_roots[h][dep])))
+
+  for ee in extra_edges:
+    string = ee[0] + " -> " + ee[1] + "[ color=red ];"
+    output.write (string + "\n");
+
+  
+  if verbose:
+    depcount.sort(key=lambda tup:tup[2])
+    for x in depcount:
+      print " ("+str(x[2])+ ") : " + x[0] + " -> " + x[1]
+      if (x[2] <= verbosity):
+        for l in header_roots[x[0]][x[1]]:
+          print "            " + l
+
+  output.write ("}\n");
+
+
+files = list()
+dohelp = False
+edge_thresh = 0
+for arg in sys.argv[1:]:
+  if arg[0:2] == "-o":
+    dotname = arg[2:]+".dot"
+    graphname = arg[2:]+".png"
+  elif arg[0:2] == "-h":
+    dohelp = True
+  elif arg[0:2] == "-v":
+    verbose = True
+    if len(arg) > 2:
+      verbosity = int (arg[2:])
+      if (verbosity == 9):
+        verbosity = 9999
+  elif arg[0:1] == "-":
+    print "Unrecognized option " + arg
+    dohelp = True
+  else:
+    files.append (arg)
+    
+if len(sys.argv) == 1:
+  dohelp = True
+
+if dohelp:
+  print "Parses the log files from the reduce-headers tool to generate"
+  print "dependency graphs for the include web for specified files."
+  print "Usage:  [-nnum] [-h] [-v[n]] [-ooutput] file1 [[file2] ... [filen]]"
+  print "       -ooutput : Specifies output to output.dot and output.png"
+  print "                  Defaults to 'graph.dot and graph.png"
+  print "       -vn : verbose mode, shows the number of connections, and if n"
+  print "             is specified, show the messages if # < n. 9 is infinity"
+  print "       -h : help"
+else:
+  print files
+  build_dot_file (files)
+  os.system ("dot -Tpng " + dotname + " -o" + graphname)
+
+

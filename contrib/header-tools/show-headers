@@ -1,0 +1,151 @@
+#! /usr/bin/python2
+import os.path
+import sys
+import shlex
+import re
+
+from headerutils import *
+
+
+tabstop = 2
+padding = "                                                                  "
+seen = { }
+output = list()
+summary = list()
+sawcore = False
+
+# list of headers to emphasize
+highlight = list ()
+
+bld_dir = ""
+# search path for headers
+incl_dirs = ["../include", "../libcpp/include", "common", "c-family", "c", "cp", "config" ]
+# extra search paths to look in *after* the directory the source file is in. 
+
+# append (1) to the end of the first line which includes INC in list INC.
+def append_1 (output, inc):
+  for n,t in enumerate (output):
+    idx = t.find(inc)
+    if idx != -1:
+      eos = idx + len (inc)
+      t = t[:eos] + "  (1)" + t[eos+1:]
+      output[n] = t
+      return
+
+# These headers show up as duplicates in rtl.h due to conditional code arund the includes
+rtl_core = [ "machmode.h" , "signop.h" , "wide-int.h" , "double-int.h" , "real.h" , "fixed-value.h" , "statistics.h" , "vec.h" , "hash-table.h" , "hash-set.h" , "input.h" , "is-a.h" ]
+
+def find_include_data (inc):
+  global sawcore
+  for x in incl_dirs:
+    nm = x+"/"+inc
+    if os.path.exists (nm):
+      info = find_unique_include_list (nm)
+      # rtl.h mimics coretypes for GENERATOR FILES, remove if coretypes.h seen.
+      if inc == "coretypes.h":
+        sawcore = True
+      elif inc  == "rtl.h" and sawcore:
+        for i in rtl_core:
+          if i in info:
+            info.remove (i)
+      return info
+  return list()
+
+def process_include (inc, indent):
+  if inc[-2:] != ".h":
+    return
+  bname  = os.path.basename (inc)
+  if bname in highlight:
+    arrow = "                <<-------"
+    if bname not in summary:
+      summary.append (bname)
+  else:
+    arrow = ""
+  if seen.get(inc) == None:
+    seen[inc] = 1
+    output.append (padding[:indent*tabstop] + bname + arrow)
+    info = find_include_data (inc)
+    for y in info:
+      process_include (y, indent+1)
+  else:
+    seen[inc] += 1
+    if (seen[inc] == 2):
+      append_1(output, inc)
+    output.append (padding[:indent*tabstop] + bname + "  ("+str(seen[inc])+")" + arrow)
+
+    
+
+extradir = list()
+usage = False
+src = list()
+
+for x in sys.argv[1:]:
+  if x[0:2] == "-i":
+    bld = x[2:]
+    extradir.append (bld)
+  elif x[0:2] == "-s":
+    highlight.append (os.path.basename (x[2:]))
+  elif x[0:2] == "-h":
+    usage = True
+  else:
+    src.append (x)
+
+if len(src) != 1:
+  usage = True
+elif not os.path.exists (src[0]):
+  print src[0] + ": Requested source file does not exist.\n"
+  usage = True
+
+if usage:
+  print "show-headers [-idir] [-sfilen] file1 "
+  print " "
+  print " Show a hierarchical visual format how many times each header file"
+  print " is included in a source file.  Should be run from the source directory"
+  print " files from find-include-depends"
+  print "      -s : search for a header, and point it out."
+  print "      -i : Specifies additonal directories to search for includes."
+  sys.exit(0)
+
+
+
+if extradir:
+  incl_dirs = extradir + incl_dirs;
+
+blddir = find_gcc_bld_dir ("../..")
+
+if blddir:
+  print "Using build directory: " + blddir
+  incl_dirs.insert (0, blddir)
+else:
+  print "Could not find a build directory, better results if you specify one with -i"
+
+# search path is now ".", blddir, extradirs_from_-i, built_in_incl_dirs
+incl_dirs.insert (0, ".")
+
+# if source is in a subdirectory, prepend the subdirectory to the search list
+x = src[0]
+srcpath = os.path.dirname(x)
+if srcpath:
+  incl_dirs.insert (0, srcpath)
+
+output = list()
+sawcore = False
+
+data = open (x).read().splitlines()
+for line in data:
+  d = find_pound_include (line, True, True)
+  if d and d[-2:] == ".h":
+    process_include (d, 1)
+
+print "\n" + x
+for line in output:
+  print line
+
+if highlight:
+  print " "
+  for h in summary:
+    print h + " is included by source file."
+  for h in highlight:
+    if h not in summary:
+      print h + " is not included by source file."
+

@@ -1,0 +1,596 @@
+#! /usr/bin/python2
+import os.path
+import sys
+import shlex
+import re
+import tempfile
+import copy
+
+from headerutils import *
+
+requires = { }
+provides = { }
+
+no_remove = [ "system.h", "coretypes.h", "config.h" , "bconfig.h", "backend.h" ]
+
+# These targets are the ones which provide "coverage".  Typically, if any
+# target is going to fail compilation, it's one of these.  This was determined
+# during the initial runs of reduce-headers... On a full set of target builds,
+# every failure which occured was triggered by one of these.  
+# This list is used during target-list construction simply to put any of these
+# *first* in the candidate list, increasing the probability that a failure is 
+# found quickly.
+target_priority = [
+    "aarch64-linux-gnu",
+    "arm-netbsdelf",
+    "avr-rtems",
+    "c6x-elf",
+    "epiphany-elf",
+    "hppa2.0-hpux10.1",
+    "i686-mingw32crt",
+    "i686-pc-msdosdjgpp",
+    "mipsel-elf",
+    "powerpc-eabisimaltivec",
+    "rs6000-ibm-aix5.1.0",
+    "sh-superh-elf",
+    "sparc64-elf",
+    "spu-elf"
+]
+
+
+target_dir = ""
+build_dir = ""
+ignore_list = list()
+target_builds = list()
+
+target_dict = { }
+header_dict = { }
+search_path = [ ".", "../include", "../libcpp/include" ]
+
+remove_count = { }
+
+
+# Given a header name, normalize it.  ie.  cp/cp-tree.h could be in gcc, while
+# the same header could be referenced from within the cp subdirectory as
+# just cp-tree.h
+# for now, just assume basenames are unique
+
+def normalize_header (header):
+  return os.path.basename (header)
+
+
+# Adds a header file and its sub-includes to the global dictionary if they
+# aren't already there.  Specify s_path since different build directories may
+# append themselves on demand to the global list.
+# return entry for the specified header, knowing all sub entries are completed
+
+def get_header_info (header, s_path):
+  global header_dict
+  global empty_iinfo
+  process_list = list ()
+  location = ""
+  bname = ""
+  bname_iinfo = empty_iinfo
+  for path in s_path:
+    if os.path.exists (path + "/" + header):
+      location = path + "/" + header
+      break
+
+  if location:
+    bname = normalize_header (location)
+    if header_dict.get (bname):
+      bname_iinfo = header_dict[bname]
+      loc2 = ii_path (bname_iinfo)+ "/" + bname
+      if loc2[:2] == "./":
+        loc2 = loc2[2:]
+      if location[:2] == "./":
+        location = location[2:]
+      if loc2 != location:
+        # Don't use the cache if it isnt the right one.
+        bname_iinfo = process_ii_macro (location)
+      return bname_iinfo
+
+    bname_iinfo = process_ii_macro (location)
+    header_dict[bname] = bname_iinfo
+    # now decend into the include tree
+    for i in ii_include_list (bname_iinfo):
+      get_header_info (i, s_path)
+  else:
+    # if the file isnt in the source directories, look in the build and target
+    # directories. If it is here, then aggregate all the versions.
+    location = build_dir + "/gcc/" + header
+    build_inc = target_inc = False
+    if os.path.exists (location):
+      build_inc = True
+    for x in target_dict:
+      location = target_dict[x] + "/gcc/" + header
+      if os.path.exists (location):
+        target_inc = True
+        break
+
+    if (build_inc or target_inc):
+      bname = normalize_header(header)
+      defines = set()
+      consumes = set()
+      incl = set()
+      if build_inc:
+        iinfo = process_ii_macro (build_dir + "/gcc/" + header)
+        defines = set (ii_macro_define (iinfo))
+        consumes = set (ii_macro_consume (iinfo))
+        incl = set (ii_include_list (iinfo))
+
+      if (target_inc):
+        for x in target_dict:
+          location = target_dict[x] + "/gcc/" + header
+          if os.path.exists (location):
+            iinfo = process_ii_macro (location)
+            defines.update (ii_macro_define (iinfo))
+            consumes.update (ii_macro_consume (iinfo))
+            incl.update (ii_include_list (iinfo))
+
+      bname_iinfo = (header, "build", list(incl), list(), list(consumes), list(defines), list(), list())
+
+      header_dict[bname] = bname_iinfo
+      for i in incl:
+        get_header_info (i, s_path)
+
+  return bname_iinfo
+
+
+# return a list of all headers brought in by this header
+def all_headers (fname):
+  global header_dict
+  headers_stack = list()
+  headers_list = list()
+  if header_dict.get (fname) == None:
+    return list ()
+  for y in ii_include_list (header_dict[fname]):
+    headers_stack.append (y)
+
+  while headers_stack:
+    h = headers_stack.pop ()
+    hn = normalize_header (h)
+    if hn not in headers_list:
+      headers_list.append (hn)
+      if header_dict.get(hn):
+        for y in ii_include_list (header_dict[hn]):
+          if normalize_header (y) not in headers_list:
+            headers_stack.append (y)
+
+  return headers_list
+
+
+
+
+# Search bld_dir for all target tuples, confirm that they have a build path with
+# bld_dir/target-tuple/gcc, and build a dictionary of build paths indexed by
+# target tuple..
+
+def build_target_dict (bld_dir, just_these):
+  global target_dict
+  target_doct = { }
+  error = False
+  if os.path.exists (bld_dir):
+    if just_these:
+      ls = just_these
+    else:
+      ls = os.listdir(bld_dir)
+    for t in ls:
+      if t.find("-") != -1:
+        target = t.strip()
+        tpath = bld_dir + "/" + target
+        if not os.path.exists (tpath + "/gcc"):
+          print "Error: gcc build directory for target " + t + " Does not exist: " + tpath + "/gcc"
+          error = True
+        else:
+          target_dict[target] = tpath
+
+  if error:
+    target_dict = { }
+
+def get_obj_name (src_file):
+  if src_file[-2:] == ".c":
+    return src_file.replace (".c", ".o")
+  elif src_file[-3:] == ".cc":
+    return src_file.replace (".cc", ".o")
+  return ""
+
+def target_obj_exists (target, obj_name):
+  global target_dict
+  # look in a subdir if src has a subdir, then check gcc base directory.
+  if target_dict.get(target):
+    obj = target_dict[target] + "/gcc/" + obj_name
+    if not os.path.exists (obj):
+      obj = target_dict[target] + "/gcc/" + os.path.basename(obj_name)
+    if os.path.exists (obj):
+      return True
+  return False
+ 
+# Given a src file, return a list of targets which may build this file.
+def find_targets (src_file):
+  global target_dict
+  targ_list = list()
+  obj_name = get_obj_name (src_file)
+  if not obj_name:
+    print "Error: " + src_file + " - Cannot determine object name."
+    return list()
+
+  # Put the high priority targets which tend to trigger failures first
+  for target in target_priority:
+    if target_obj_exists (target, obj_name):
+      targ_list.append ((target, target_dict[target]))
+
+  for target in target_dict:
+    if target not in target_priority and target_obj_exists (target, obj_name):
+      targ_list.append ((target, target_dict[target]))
+        
+  return targ_list
+
+
+def try_to_remove (src_file, h_list, verbose):
+  global target_dict
+  global header_dict
+  global build_dir
+
+  # build from scratch each time
+  header_dict = { }
+  summary = ""
+  rmcount = 0
+
+  because = { }
+  src_info = process_ii_macro_src (src_file)
+  src_data = ii_src (src_info)
+  if src_data:
+    inclist = ii_include_list_non_cond (src_info)
+    # work is done if there are no includes to check
+    if not inclist:
+      return src_file + ": No include files to attempt to remove"
+
+    # work on the include list in reverse.
+    inclist.reverse()
+
+    # Get the target list 
+    targ_list = list()
+    targ_list = find_targets (src_file)
+
+    spath = search_path
+    if os.path.dirname (src_file):
+      spath.append (os.path.dirname (src_file))
+
+    hostbuild = True
+    if src_file.find("config/") != -1:
+      # config files dont usually build on the host
+      hostbuild = False
+      obn = get_obj_name (os.path.basename (src_file))
+      if obn and os.path.exists (build_dir + "/gcc/" + obn):
+        hostbuild = True
+      if not target_dict:
+        summary = src_file + ": Target builds are required for config files.  None found."
+        print summary
+        return summary
+      if not targ_list:
+        summary =src_file + ": Cannot find any targets which build this file."
+        print summary
+        return summary
+
+    if hostbuild:
+      # confirm it actually builds before we do anything
+      print "Confirming source file builds"
+      res = get_make_output (build_dir + "/gcc", "all")
+      if res[0] != 0:
+        message = "Error: " + src_file + " does not build currently."
+        summary = src_file + " does not build on host."
+        print message
+        print res[1]
+        if verbose:
+          verbose.write (message + "\n")
+          verbose.write (res[1]+ "\n")
+        return summary
+
+    src_requires = set (ii_macro_consume (src_info))
+    for macro in src_requires:
+      because[macro] = src_file
+    header_seen = list ()
+
+    os.rename (src_file, src_file + ".bak")
+    src_orig = copy.deepcopy (src_data)
+    src_tmp = copy.deepcopy (src_data)
+
+    try:
+      # process the includes from bottom to top.  This is because we know that
+      # later includes have are known to be needed, so any dependency from this 
+      # header is a true dependency
+      for inc_file in inclist:
+        inc_file_norm = normalize_header (inc_file)
+        
+        if inc_file in no_remove:
+          continue
+        if len (h_list) != 0 and inc_file_norm not in h_list:
+          continue
+        if inc_file_norm[0:3] == "gt-":
+          continue
+        if inc_file_norm[0:6] == "gtype-":
+          continue
+        if inc_file_norm.replace(".h",".c") == os.path.basename(src_file):
+          continue
+             
+        lookfor = ii_src_line(src_info)[inc_file]
+        src_tmp.remove (lookfor)
+        message = "Trying " + src_file + " without " + inc_file
+        print message
+        if verbose:
+          verbose.write (message + "\n")
+        out = open(src_file, "w")
+        for line in src_tmp:
+          out.write (line)
+        out.close()
+          
+        keep = False
+        if hostbuild:
+          res = get_make_output (build_dir + "/gcc", "all")
+        else:
+          res = (0, "")
+
+        rc = res[0]
+        message = "Passed Host build"
+        if (rc != 0):
+          # host build failed
+          message  = "Compilation failed:\n";
+          keep = True
+        else:
+          if targ_list:
+            objfile = get_obj_name (src_file)
+            t1 = targ_list[0]
+            if objfile and os.path.exists(t1[1] +"/gcc/"+objfile):
+              res = get_make_output_parallel (targ_list, objfile, 0)
+            else:
+              res = get_make_output_parallel (targ_list, "all-gcc", 0)
+            rc = res[0]
+            if rc != 0:
+              message = "Compilation failed on TARGET : " + res[2]
+              keep = True
+            else:
+              message = "Passed host and target builds"
+
+        if keep:
+          print message + "\n"
+
+        if (rc != 0):
+          if verbose:
+            verbose.write (message + "\n");
+            verbose.write (res[1])
+            verbose.write ("\n");
+            if os.path.exists (inc_file):
+              ilog = open(inc_file+".log","a")
+              ilog.write (message + " for " + src_file + ":\n\n");
+              ilog.write ("============================================\n");
+              ilog.write (res[1])
+              ilog.write ("\n");
+              ilog.close()
+            if os.path.exists (src_file):
+              ilog = open(src_file+".log","a")
+              ilog.write (message + " for " +inc_file + ":\n\n");
+              ilog.write ("============================================\n");
+              ilog.write (res[1])
+              ilog.write ("\n");
+              ilog.close()
+
+        # Given a sequence where :
+        # #include "tm.h"
+        # #include "target.h"  // includes tm.h
+
+        # target.h was required, and when attempting to remove tm.h we'd see that
+        # all the macro defintions are "required" since they all look like:
+        # #ifndef HAVE_blah
+        # #define HAVE_blah
+        # endif
+
+        # when target.h was found to be required, tm.h will be tagged as included.
+        # so when we get this far, we know we dont have to check the macros for
+        # tm.h since we know it is already been included.
+
+        if inc_file_norm not in header_seen:
+          iinfo = get_header_info (inc_file, spath)
+          newlist = all_headers (inc_file_norm)
+          if ii_path(iinfo) == "build" and not target_dict:
+            keep = True
+            text = message + " : Will not remove a build file without some targets."
+            print text
+            ilog = open(src_file+".log","a")
+            ilog.write (text +"\n")
+            ilog.write ("============================================\n");
+            ilog.close()
+            ilog = open("reduce-headers-kept.log","a")
+            ilog.write (src_file + " " + text +"\n")
+            ilog.close()
+        else:
+          newlist = list()
+        if not keep and inc_file_norm not in header_seen:
+          # now look for any macro requirements.
+          for h in newlist:
+            if not h in header_seen:
+              if header_dict.get(h):
+                defined = ii_macro_define (header_dict[h])
+                for dep in defined:
+                  if dep in src_requires and dep not in ignore_list:
+                    keep = True;
+                    text = message + ", but must keep " + inc_file + " because it provides " + dep 
+                    if because.get(dep) != None:
+                      text = text + " Possibly required by " + because[dep]
+                    print text
+                    ilog = open(inc_file+".log","a")
+                    ilog.write (because[dep]+": Requires [dep] in "+src_file+"\n")
+                    ilog.write ("============================================\n");
+                    ilog.close()
+                    ilog = open(src_file+".log","a")
+                    ilog.write (text +"\n")
+                    ilog.write ("============================================\n");
+                    ilog.close()
+                    ilog = open("reduce-headers-kept.log","a")
+                    ilog.write (src_file + " " + text +"\n")
+                    ilog.close()
+                    if verbose:
+                      verbose.write (text + "\n")
+
+        if keep:
+          # add all headers 'consumes' to src_requires list, and mark as seen
+          for h in newlist:
+            if not h in header_seen:
+              header_seen.append (h)
+              if header_dict.get(h):
+                consume = ii_macro_consume (header_dict[h])
+                for dep in consume:
+                  if dep not in src_requires:
+                    src_requires.add (dep)
+                    if because.get(dep) == None:
+                      because[dep] = inc_file
+
+          src_tmp = copy.deepcopy (src_data)
+        else:
+          print message + "  --> removing " + inc_file + "\n"
+          rmcount += 1
+          if verbose:
+            verbose.write (message + "  --> removing " + inc_file + "\n")
+          if remove_count.get(inc_file) == None:
+            remove_count[inc_file] = 1
+          else:
+            remove_count[inc_file] += 1
+          src_data = copy.deepcopy (src_tmp)
+    except:
+      print "Interuption: restoring original file"
+      out = open(src_file, "w")
+      for line in src_orig:
+        out.write (line)
+      out.close()
+      raise
+
+    # copy current version, since it is the "right" one now.
+    out = open(src_file, "w")
+    for line in src_data:
+      out.write (line)
+    out.close()
+    
+    # Try a final host bootstrap build to make sure everything is kosher.
+    if hostbuild:
+      res = get_make_output (build_dir, "all")
+      rc = res[0]
+      if (rc != 0):
+        # host build failed! return to original version
+        print "Error: " + src_file + " Failed to bootstrap at end!!! restoring."
+        print "        Bad version at " + src_file + ".bad"
+        os.rename (src_file, src_file + ".bad")
+        out = open(src_file, "w")
+        for line in src_orig:
+          out.write (line)
+        out.close()
+        return src_file + ": failed to build after reduction.  Restored original"
+
+    if src_data == src_orig:
+      summary = src_file + ": No change."
+    else:
+      summary = src_file + ": Reduction performed, "+str(rmcount)+" includes removed."
+  print summary
+  return summary
+
+only_h = list ()
+ignore_cond = False
+
+usage = False
+src = list()
+only_targs = list ()
+for x in sys.argv[1:]:
+  if x[0:2] == "-b":
+    build_dir = x[2:]
+  elif x[0:2] == "-f":
+    fn = normalize_header (x[2:])
+    if fn not in only_h:
+      only_h.append (fn)
+  elif x[0:2] == "-h":
+    usage = True
+  elif x[0:2] == "-d":
+    ignore_cond = True
+  elif x[0:2] == "-D":
+    ignore_list.append(x[2:])
+  elif x[0:2] == "-T":
+    only_targs.append(x[2:])
+  elif x[0:2] == "-t":
+    target_dir = x[2:]
+  elif x[0] == "-":
+    print "Error:  Unrecognized option " + x
+    usgae = True
+  else:
+    if not os.path.exists (x):
+      print "Error: specified file " + x + " does not exist."
+      usage = True
+    else:
+      src.append (x)
+
+if target_dir:
+  build_target_dict (target_dir, only_targs)
+
+if build_dir == "" and target_dir == "":
+  print "Error: Must specify a build directory, and/or a target directory."
+  usage = True
+
+if build_dir and not os.path.exists (build_dir):
+    print "Error: specified build directory does not exist : " + build_dir
+    usage = True
+
+if target_dir and not os.path.exists (target_dir):
+    print "Error: specified target directory does not exist : " + target_dir
+    usage = True
+
+if usage:
+  print "Attempts to remove extraneous include files from source files."
+  print " "
+  print "Should be run from the main gcc source directory, and works on a target"
+  print "directory, as we attempt to make the 'all' target."
+  print " "
+  print "By default, gcc-reorder-includes is run on each file before attempting"
+  print "to remove includes. this removes duplicates and puts some headers in a"
+  print "canonical ordering"
+  print " "
+  print "The build directory should be ready to compile via make. Time is saved"
+  print "if the build is already complete, so that only changes need to be built."
+  print " "
+  print "Usage: [options] file1.c [file2.c] ... [filen.c]"
+  print "      -bdir    : the root build directory to attempt buiding .o files."
+  print "      -tdir    : the target build directory"
+  print "      -d       : Ignore conditional macro dependencies."
+  print " "
+  print "      -Dmacro  : Ignore a specific macro for dependencies"
+  print "      -Ttarget : Only consider target in target directory."
+  print "      -fheader : Specifies a specific .h file to be considered."
+  print " "
+  print "      -D, -T, and -f can be specified mulitple times and are aggregated."
+  print " "
+  print "  The original file will be in filen.bak"
+  print " "
+  sys.exit (0)
+ 
+if only_h:
+  print "Attempting to remove only these files:"
+  for x in only_h:
+    print x
+  print " "
+
+logfile = open("reduce-headers.log","w")
+
+for x in src:
+  msg = try_to_remove (x, only_h, logfile)
+  ilog = open("reduce-headers.sum","a")
+  ilog.write (msg + "\n")
+  ilog.close()
+
+ilog = open("reduce-headers.sum","a")
+ilog.write ("===============================================================\n")
+for x in remove_count:
+  msg = x + ": Removed " + str(remove_count[x]) + " times."
+  print msg
+  logfile.write (msg + "\n")
+  ilog.write (msg + "\n")
+
+
+
+
+

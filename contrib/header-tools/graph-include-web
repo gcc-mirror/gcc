@@ -1,0 +1,122 @@
+#! /usr/bin/python2
+import os.path
+import sys
+import shlex
+import re
+
+from headerutils import *
+
+def pretty_name (name):
+  return name.replace(".","_").replace("-","_").replace("/","_").replace("+","_");
+
+
+include_files = list()
+edges = 0
+one_c = False
+clink = list()
+noterm = False
+
+def build_inclist (output, filen):
+  global edges
+  global one_c
+  global clink
+  global noterm
+  inc = build_include_list (filen)
+  if one_c and filen[-2:] == ".c":
+    pn = "all_c"
+  else:
+    pn = pretty_name(filen)
+  for nm in inc:
+    if pn == "all_c":
+      if nm not in clink:
+        if len(build_include_list(nm)) != 0 or not noterm:
+          output.write (pretty_name(nm) + " -> " + pn + ";\n")
+          edges = edges + 1
+          if nm not in include_files:
+            include_files.append(nm)
+        clink.append (nm)
+    else:
+      output.write (pretty_name(nm) + " -> " + pn + ";\n")
+      edges = edges + 1
+      if nm not in include_files:
+        include_files.append(nm)
+  return len(inc) == 0
+
+dotname = "graph.dot"
+graphname = "graph.png"
+
+def build_dot_file (file_list):
+  global one_c
+  output = open(dotname, "w")
+  output.write ("digraph incweb {\n");
+  if one_c:
+    output.write ("all_c [shape=box];\n");
+  for x in file_list:
+    if x[-2:] == ".h":
+      include_files.append (x)
+    elif os.path.exists (x):
+      build_inclist (output, x)
+      if not one_c:
+        output.write (pretty_name (x) + "[shape=box];\n")
+
+  for x in include_files:
+    term = build_inclist (output, x)
+    if term:
+      output.write (pretty_name(x) + " [style=filled];\n")
+
+  output.write ("}\n");
+
+
+files = list()
+dohelp = False
+edge_thresh = 0
+for arg in sys.argv[1:]:
+  if arg[0:2] == "-o":
+    dotname = arg[2:]+".dot"
+    graphname = arg[2:]+".png"
+  elif arg[0:2] == "-h":
+    dohelp = True
+  elif arg[0:2] == "-a":
+    one_c = True
+    if arg[0:3] == "-at":
+      noterm = True
+  elif arg[0:2] == "-f":
+    if not os.path.exists (arg[2:]):
+      print "Option " + arg +" doesn't specify a proper file"
+      dohelp = True
+    else:
+      sfile = open (arg[2:], "r")
+      srcdata = sfile.readlines()
+      sfile.close()
+      for x in srcdata:
+        files.append(x.rstrip())
+  elif arg[0:2] == "-n":
+    edge_thresh = int (arg[2:])
+  elif arg[0:1] == "-":
+    print "Unrecognized option " + arg
+    dohelp = True
+  else:
+    files.append (arg)
+    
+if len(sys.argv) == 1:
+  dohelp = True
+
+if dohelp:
+  print "Generates a graph of the include web for specified files."
+  print "Usage:  [-finput_file] [-h] [-ooutput] [file1 ... [filen]]"
+  print "  -finput_file : Input file containing a list of files to process."
+  print "  -ooutput : Specifies output to output.dot and output.png."
+  print "             defaults to graph.dot and graph.png."
+  print "  -nnum : Specifies the # of edges beyond which sfdp is invoked. def=0."
+  print "  -a : Aggregate all .c files to 1 file.  Shows only include web."
+  print "  -at : Aggregate, but don't include terminal.h to .c links."
+  print "  -h : Print this help."
+else:
+  print files
+  build_dot_file (files)
+  if edges > edge_thresh:
+    os.system ("sfdp -Tpng " + dotname + " -o" + graphname)
+  else:
+    os.system ("dot -Tpng " + dotname + " -o" + graphname)
+
+
