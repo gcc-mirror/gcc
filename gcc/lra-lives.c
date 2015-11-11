@@ -1241,8 +1241,8 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
   unused_set = sparseset_alloc (max_regno);
   curr_point = 0;
   unsigned new_length = get_max_uid () * 2;
-  if (point_freq_vec.length () < new_length)
-    point_freq_vec.safe_grow (new_length);
+  point_freq_vec.truncate (0);
+  point_freq_vec.reserve_exact (new_length);
   lra_point_freq = point_freq_vec.address ();
   int *post_order_rev_cfg = XNEWVEC (int, last_basic_block_for_fn (cfun));
   int n_blocks_inverted = inverted_post_order_compute (post_order_rev_cfg);
