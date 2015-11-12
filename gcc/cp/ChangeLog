@@ -1,4 +1,8 @@
 2015-11-12  James Norris  <jnorris@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_declare): Remove unused.
+
+2015-11-12  James Norris  <jnorris@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
 	* parser.c (cp_parser_omp_clause_name): Handle 'device_resident'

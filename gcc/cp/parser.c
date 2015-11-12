@@ -34562,7 +34562,7 @@ cp_parser_oacc_data (cp_parser *parser, cp_token *pragma_tok)
 static tree
 cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 {
-  tree clauses, stmt, t;
+  tree clauses, stmt;
   bool error = false;
 
   clauses = cp_parser_oacc_all_clauses (parser, OACC_DECLARE_CLAUSE_MASK,
