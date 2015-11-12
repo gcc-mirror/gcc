@@ -1,3 +1,8 @@
+2015-11-12  Renlin Li  <renlin.li@arm.com>
+
+	* config/arm/arm.md (addsi3_compare_op2): Make the order of
+	assembly pattern consistent with constraint order.
+
 2015-11-12  Tom de Vries  <tom@codesourcery.com>
 
 	* gen-pass-instances.awk (handle_line): Simplify match regexp.

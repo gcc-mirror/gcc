@@ -747,8 +747,8 @@
   "TARGET_32BIT"
   "@
    adds%?\\t%0, %1, %2
-   adds%?\\t%0, %1, %2
-   subs%?\\t%0, %1, #%n2"
+   subs%?\\t%0, %1, #%n2
+   adds%?\\t%0, %1, %2"
   [(set_attr "conds" "set")
    (set_attr "type" "alus_imm,alus_imm,alus_sreg")]
 )
