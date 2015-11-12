@@ -255,7 +255,7 @@ package body Sem_Dim is
 
    procedure Analyze_Dimension_Number_Declaration (N : Node_Id);
    --  Procedure to analyze dimension of expression in a number declaration.
-   --  This allows a named number to have non-trivial dimensions, while by
+   --  This allows a named number to have nontrivial dimensions, while by
    --  default a named number is dimensionless.
 
    procedure Analyze_Dimension_Object_Declaration (N : Node_Id);
@@ -1510,7 +1510,7 @@ package body Sem_Dim is
                end if;
             end if;
 
-            --  If  expander is active, remove dimension information from each
+            --  If expander is active, remove dimension information from each
             --  operand, as only dimensions of result are relevant.
 
             if Expander_Active then

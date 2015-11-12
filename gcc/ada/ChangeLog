@@ -1,3 +1,20 @@
+2015-11-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* back_end.adb, opt.ads (Debugger_Level): Update comment.
+	(Scan_Back_End_Switches): Set Debugger_Level.
+
+2015-11-12  Bob Duff  <duff@adacore.com>
+
+	* fmap.adb, debug.ads, checks.adb, exp_ch11.adb: Minor edits.
+
+2015-11-12  Doug Rupp  <rupp@adacore.com>
+
+	* s-stchop-vxworks.adb (Stack_Limit): Export vice Import.
+
+2015-11-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_dim.adb: Minor reformatting.
+
 2015-11-12  Gary Dismukes  <dismukes@adacore.com>
 
 	* gnat1drv.adb, opt.ads: Minor reformatting.
