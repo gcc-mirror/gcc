@@ -1,3 +1,7 @@
+2015-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/thread: Include <cerrno> for EINTR.
+
 2015-11-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement D0013R2, logical type traits.

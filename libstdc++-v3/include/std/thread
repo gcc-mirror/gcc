@@ -38,6 +38,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <cerrno>
 #include <bits/functexcept.h>
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>
