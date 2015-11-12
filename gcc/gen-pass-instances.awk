@@ -54,6 +54,7 @@ function handle_line()
 	len_of_call = RLENGTH;
 
 	len_of_start = length("NEXT_PASS (");
+	len_of_open = length("(");
 	len_of_close = length(")");
 
 	# Find pass_name argument
@@ -61,11 +62,13 @@ function handle_line()
 	pass_starts_at = where + len_of_start;
 	pass_name = substr(line, pass_starts_at, len_of_pass_name);
 
-	# Find prefix (until and including pass_name)
-	prefix = substr(line, 1, pass_starts_at + len_of_pass_name - 1)
+	# Find call expression prefix (until and including called function)
+	prefix_len = pass_starts_at - 1 - len_of_open;
+	prefix = substr(line, 1, prefix_len);
 
-	# Find postfix (after pass_name)
-	postfix = substr(line, pass_starts_at + len_of_pass_name)
+	# Find call expression postfix
+	postfix_starts_at = pass_starts_at + len_of_pass_name + len_of_close;
+	postfix = substr(line, postfix_starts_at);
 
 	# Set pass_counts
 	if (pass_name in pass_counts)
@@ -76,7 +79,7 @@ function handle_line()
 	pass_num = pass_counts[pass_name];
 
 	# Print call expression with extra pass_num argument
-	printf "%s, %s%s\n", prefix, pass_num, postfix;
+	printf "%s(%s, %s)%s\n", prefix, pass_name, pass_num, postfix;
 }
 
 { handle_line() }
