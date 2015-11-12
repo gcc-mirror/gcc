@@ -1353,6 +1353,9 @@ dump_gimple_omp_target (pretty_printer *buffer, gomp_target *gs,
     case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
       kind = " oacc_enter_exit_data";
       break;
+    case GF_OMP_TARGET_KIND_OACC_DECLARE:
+      kind = " oacc_declare";
+      break;
     default:
       gcc_unreachable ();
     }

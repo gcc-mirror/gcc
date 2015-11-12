@@ -1,3 +1,9 @@
+2015-11-12  James Norris  <jnorris@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* gomp-constants.h (enum gomp_map_kind): Add GOMP_MAP_DEVICE_RESIDENT
+	and GOMP_MAP_LINK.
+
 2015-11-09  Alan Modra  <amodra@gmail.com>
 
 	PR gdb/17133

@@ -12454,6 +12454,7 @@ expand_omp_target (struct omp_region *region)
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
     case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
+    case GF_OMP_TARGET_KIND_OACC_DECLARE:
       data_region = false;
       break;
     case GF_OMP_TARGET_KIND_DATA:
@@ -12697,6 +12698,9 @@ expand_omp_target (struct omp_region *region)
     case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
       start_ix = BUILT_IN_GOACC_ENTER_EXIT_DATA;
       break;
+    case GF_OMP_TARGET_KIND_OACC_DECLARE:
+      start_ix = BUILT_IN_GOACC_DECLARE;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -12819,6 +12823,7 @@ expand_omp_target (struct omp_region *region)
   switch (start_ix)
     {
     case BUILT_IN_GOACC_DATA_START:
+    case BUILT_IN_GOACC_DECLARE:
     case BUILT_IN_GOMP_TARGET_DATA:
       break;
     case BUILT_IN_GOMP_TARGET:
@@ -13133,6 +13138,7 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 		case GF_OMP_TARGET_KIND_EXIT_DATA:
 		case GF_OMP_TARGET_KIND_OACC_UPDATE:
 		case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
+		case GF_OMP_TARGET_KIND_OACC_DECLARE:
 		  /* ..., other than for those stand-alone directives...  */
 		  region = NULL;
 		  break;
@@ -14916,6 +14922,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
     case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
+    case GF_OMP_TARGET_KIND_OACC_DECLARE:
       data_region = false;
       break;
     case GF_OMP_TARGET_KIND_DATA:
@@ -14987,6 +14994,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_FORCE_TOFROM:
 	  case GOMP_MAP_FORCE_PRESENT:
 	  case GOMP_MAP_FORCE_DEVICEPTR:
+	  case GOMP_MAP_DEVICE_RESIDENT:
+	  case GOMP_MAP_LINK:
 	    gcc_assert (is_gimple_omp_oacc (stmt));
 	    break;
 	  default:
@@ -16713,6 +16722,7 @@ make_gimple_omp_edges (basic_block bb, struct omp_region **region,
 	case GF_OMP_TARGET_KIND_EXIT_DATA:
 	case GF_OMP_TARGET_KIND_OACC_UPDATE:
 	case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
+	case GF_OMP_TARGET_KIND_OACC_DECLARE:
 	  cur_region = cur_region->outer;
 	  break;
 	default:

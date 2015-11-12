@@ -1,3 +1,17 @@
+2015-11-12  James Norris  <jnorris@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_name): Handle 'device_resident'
+	clause.
+	(cp_parser_oacc_data_clause): Handle PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT
+	and PRAGMA_OMP_CLAUSE_LINK.
+	(cp_paser_oacc_all_clauses): Handle PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT
+	and PRAGMA_OMP_CLAUSE_LINK.
+	(OACC_DECLARE_CLAUSE_MASK): New definition.
+	(cp_parser_oacc_declare): New function.
+	(cp_parser_pragma): Handle PRAGMA_OACC_DECLARE.
+	* pt.c (tsubst_expr): Handle OACC_DECLARE.
+
 2015-11-12  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (check_explicit_specialization): Check the namespace after

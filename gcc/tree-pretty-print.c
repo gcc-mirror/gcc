@@ -654,6 +654,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, int flags)
 	case GOMP_MAP_ALWAYS_POINTER:
 	  pp_string (pp, "always_pointer");
 	  break;
+	case GOMP_MAP_DEVICE_RESIDENT:
+	  pp_string (pp, "device_resident");
+	  break;
+	case GOMP_MAP_LINK:
+	  pp_string (pp, "link");
+	  break;
 	default:
 	  gcc_unreachable ();
 	}

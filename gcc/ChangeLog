@@ -1,3 +1,26 @@
+2015-11-12  James Norris  <jnorris@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* gimple-pretty-print.c (dump_gimple_omp_target): Handle
+	GF_OMP_TARGET_KIND_OACC_DECLARE. 
+	* gimple.h (enum gf_mask): Add GF_OMP_TARGET_KIND_OACC_DECLARE.
+	(is_gomple_omp_oacc): Handle GF_OMP_TARGET_KIND_OACC_DECLARE.
+	* gimplify.c (oacc_declare_returns): New.
+	(gimplify_bind_expr): Prepend 'exit' stmt to cleanup.
+	(device_resident_p): New function.
+	(oacc_default_clause): Handle device_resident clause.
+	(gimplify_oacc_declare_1, gimplify_oacc_declare): New functions.
+	(gimplify_expr): Handle OACC_DECLARE.
+	* omp-builtins.def (BUILT_IN_GOACC_DECLARE): New builtin.
+	* omp-low.c (expand_omp_target): Handle
+	GF_OMP_TARGET_KIND_OACC_DECLARE and BUILTIN_GOACC_DECLARE.
+	(build_omp_regions_1): Handlde GF_OMP_TARGET_KIND_OACC_DECLARE.
+	(lower_omp_target): Handle GF_OMP_TARGET_KIND_OACC_DECLARE,
+	GOMP_MAP_DEVICE_RESIDENT and GOMP_MAP_LINK.
+	(make_gimple_omp_edges): Handle GF_OMP_TARGET_KIND_OACC_DECLARE.
+	* tree-pretty-print.c (dump_omp_clause): Handle GOMP_MAP_LINK and
+	GOMP_MAP_DEVICE_RESIDENT.
+
 2015-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	[ARM] Remove neon-testgen.ml and generated tests.
