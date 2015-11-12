@@ -634,11 +634,10 @@ package body Exp_Attr is
       Arr   : Entity_Id;
       Check : Boolean)
    is
-      C_Type    : constant Entity_Id := Base_Type (Component_Type (Arr));
-      Curr      : constant Entity_Id := Current_Scope;
-
-      Install   : Boolean := False;
-      Scop      : Entity_Id := Scope (Arr);
+      C_Type  : constant Entity_Id := Base_Type (Component_Type (Arr));
+      Curr    : constant Entity_Id := Current_Scope;
+      Install : Boolean := False;
+      Scop    : Entity_Id := Scope (Arr);
 
    begin
       if Is_Hidden (Arr)
@@ -646,10 +645,10 @@ package body Exp_Attr is
         and then Ekind (Scop) = E_Package
       then
          Install := True;
-      else
 
-         --  The component type may be private, in which case we install
-         --  its full view to compile the subprogram.
+      else
+         --  The component type may be private, in which case we install its
+         --  full view to compile the subprogram.
 
          Scop := Scope (C_Type);
 
@@ -665,9 +664,7 @@ package body Exp_Attr is
       --  If we are within an instance body, then all visibility has been
       --  established already and there is no need to install the package.
 
-      if Install
-        and then not In_Instance_Body
-      then
+      if Install and then not In_Instance_Body then
          Push_Scope (Scop);
          Install_Visible_Declarations (Scop);
          Install_Private_Declarations (Scop);
