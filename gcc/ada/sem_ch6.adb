@@ -153,6 +153,14 @@ package body Sem_Ch6 is
    --  against a formal access-to-subprogram type so Get_Instance_Of must
    --  be called.
 
+   procedure Check_Limited_Return
+     (N      : Node_Id;
+      Expr   : Node_Id;
+      R_Type : Entity_Id);
+   --  Check the appropriate (Ada 95 or Ada 2005) rules for returning limited
+   --  types. Used only for simple return statements. Expr is the expression
+   --  returned.
+
    procedure Check_Subprogram_Order (N : Node_Id);
    --  N is the N_Subprogram_Body node for a subprogram. This routine applies
    --  the alpha ordering rule for N if this ordering requirement applicable.
@@ -450,6 +458,7 @@ package body Sem_Ch6 is
          end if;
 
          Analyze (N);
+         Def_Id := Defining_Entity (N);
 
          --  If aspect SPARK_Mode was specified on the body, it needs to be
          --  repeated both on the generated spec and the body.
@@ -467,16 +476,11 @@ package body Sem_Ch6 is
          --  this because it is not part of the original source.
 
          if Inside_A_Generic then
-            declare
-               Id : constant Entity_Id := Defining_Entity (N);
-
-            begin
-               Set_Has_Completion (Id);
-               Push_Scope (Id);
-               Install_Formals (Id);
-               Preanalyze_Spec_Expression (Expr, Etype (Id));
-               End_Scope;
-            end;
+            Set_Has_Completion (Def_Id);
+            Push_Scope (Def_Id);
+            Install_Formals (Def_Id);
+            Preanalyze_Spec_Expression (Expr, Etype (Def_Id));
+            End_Scope;
          end if;
 
          Set_Is_Inlined (Defining_Entity (N));
@@ -500,8 +504,9 @@ package body Sem_Ch6 is
 
          declare
             Decls : List_Id            := List_Containing (N);
+            Expr  : constant Node_Id   := Expression (Ret);
             Par   : constant Node_Id   := Parent (Decls);
-            Id    : constant Entity_Id := Defining_Entity (N);
+            Typ   : constant Entity_Id := Etype (Def_Id);
 
          begin
             --  If this is a wrapper created for in an instance for a formal
@@ -523,23 +528,19 @@ package body Sem_Ch6 is
                end if;
 
                Insert_After (Last (Decls), New_Body);
-               Push_Scope (Id);
-               Install_Formals (Id);
 
                --  Preanalyze the expression for name capture, except in an
                --  instance, where this has been done during generic analysis,
                --  and will be redone when analyzing the body.
 
-               declare
-                  Expr : constant Node_Id := Expression (Ret);
+               Set_Parent (Expr, Ret);
+               Push_Scope (Def_Id);
+               Install_Formals (Def_Id);
 
-               begin
-                  Set_Parent (Expr, Ret);
-
-                  if not In_Instance then
-                     Preanalyze_Spec_Expression (Expr, Etype (Id));
-                  end if;
-               end;
+               if not In_Instance then
+                  Preanalyze_Spec_Expression (Expr, Typ);
+                  Check_Limited_Return (Original_Node (N), Expr, Typ);
+               end if;
 
                End_Scope;
             end if;
@@ -549,8 +550,8 @@ package body Sem_Ch6 is
       --  If the return expression is a static constant, we suppress warning
       --  messages on unused formals, which in most cases will be noise.
 
-      Set_Is_Trivial_Subprogram (Defining_Entity (New_Body),
-        Is_OK_Static_Expression (Expr));
+      Set_Is_Trivial_Subprogram
+        (Defining_Entity (New_Body), Is_OK_Static_Expression (Expr));
    end Analyze_Expression_Function;
 
    ----------------------------------------
@@ -624,11 +625,6 @@ package body Sem_Ch6 is
       --  Apply legality rule of 6.5 (8.2) to the access discriminants of an
       --  aggregate in a return statement.
 
-      procedure Check_Limited_Return (Expr : Node_Id);
-      --  Check the appropriate (Ada 95 or Ada 2005) rules for returning
-      --  limited types. Used only for simple return statements.
-      --  Expr is the expression returned.
-
       procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id);
       --  Check that the return_subtype_indication properly matches the result
       --  subtype of the function, as required by RM-6.5(5.1/2-5.3/2).
@@ -684,87 +680,6 @@ package body Sem_Ch6 is
             end loop;
          end if;
       end Check_Aggregate_Accessibility;
-
-      --------------------------
-      -- Check_Limited_Return --
-      --------------------------
-
-      procedure Check_Limited_Return (Expr : Node_Id) is
-      begin
-         --  Ada 2005 (AI-318-02): Return-by-reference types have been
-         --  removed and replaced by anonymous access results. This is an
-         --  incompatibility with Ada 95. Not clear whether this should be
-         --  enforced yet or perhaps controllable with special switch. ???
-
-         --  A limited interface that is not immutably limited is OK.
-
-         if Is_Limited_Interface (R_Type)
-           and then
-             not (Is_Task_Interface (R_Type)
-                   or else Is_Protected_Interface (R_Type)
-                   or else Is_Synchronized_Interface (R_Type))
-         then
-            null;
-
-         elsif Is_Limited_Type (R_Type)
-           and then not Is_Interface (R_Type)
-           and then Comes_From_Source (N)
-           and then not In_Instance_Body
-           and then not OK_For_Limited_Init_In_05 (R_Type, Expr)
-         then
-            --  Error in Ada 2005
-
-            if Ada_Version >= Ada_2005
-              and then not Debug_Flag_Dot_L
-              and then not GNAT_Mode
-            then
-               Error_Msg_N
-                 ("(Ada 2005) cannot copy object of a limited type "
-                  & "(RM-2005 6.5(5.5/2))", Expr);
-
-               if Is_Limited_View (R_Type) then
-                  Error_Msg_N
-                    ("\return by reference not permitted in Ada 2005", Expr);
-               end if;
-
-            --  Warn in Ada 95 mode, to give folks a heads up about this
-            --  incompatibility.
-
-            --  In GNAT mode, this is just a warning, to allow it to be
-            --  evilly turned off. Otherwise it is a real error.
-
-            --  In a generic context, simplify the warning because it makes
-            --  no sense to discuss pass-by-reference or copy.
-
-            elsif Warn_On_Ada_2005_Compatibility or GNAT_Mode then
-               if Inside_A_Generic then
-                  Error_Msg_N
-                    ("return of limited object not permitted in Ada 2005 "
-                     & "(RM-2005 6.5(5.5/2))?y?", Expr);
-
-               elsif Is_Limited_View (R_Type) then
-                  Error_Msg_N
-                    ("return by reference not permitted in Ada 2005 "
-                     & "(RM-2005 6.5(5.5/2))?y?", Expr);
-               else
-                  Error_Msg_N
-                    ("cannot copy object of a limited type in Ada 2005 "
-                     & "(RM-2005 6.5(5.5/2))?y?", Expr);
-               end if;
-
-            --  Ada 95 mode, compatibility warnings disabled
-
-            else
-               return; --  skip continuation messages below
-            end if;
-
-            if not Inside_A_Generic then
-               Error_Msg_N
-                 ("\consider switching to return of access type", Expr);
-               Explain_Limited_Type (R_Type, Expr);
-            end if;
-         end if;
-      end Check_Limited_Return;
 
       -------------------------------------
       -- Check_Return_Subtype_Indication --
@@ -987,7 +902,7 @@ package body Sem_Ch6 is
             end if;
 
             Resolve (Expr, R_Type);
-            Check_Limited_Return (Expr);
+            Check_Limited_Return (N, Expr, R_Type);
 
             if Present (Expr) and then Nkind (Expr) = N_Aggregate then
                Check_Aggregate_Accessibility (Expr);
@@ -5525,6 +5440,91 @@ package body Sem_Ch6 is
       Check_Conformance
         (New_Id, Old_Id, Fully_Conformant, True, Result, Err_Loc);
    end Check_Fully_Conformant;
+
+   --------------------------
+   -- Check_Limited_Return --
+   --------------------------
+
+   procedure Check_Limited_Return
+     (N      : Node_Id;
+      Expr   : Node_Id;
+      R_Type : Entity_Id)
+   is
+   begin
+      --  Ada 2005 (AI-318-02): Return-by-reference types have been removed and
+      --  replaced by anonymous access results. This is an incompatibility with
+      --  Ada 95. Not clear whether this should be enforced yet or perhaps
+      --  controllable with special switch. ???
+
+      --  A limited interface that is not immutably limited is OK
+
+      if Is_Limited_Interface (R_Type)
+        and then
+          not (Is_Task_Interface (R_Type)
+                or else Is_Protected_Interface (R_Type)
+                or else Is_Synchronized_Interface (R_Type))
+      then
+         null;
+
+      elsif Is_Limited_Type (R_Type)
+        and then not Is_Interface (R_Type)
+        and then Comes_From_Source (N)
+        and then not In_Instance_Body
+        and then not OK_For_Limited_Init_In_05 (R_Type, Expr)
+      then
+         --  Error in Ada 2005
+
+         if Ada_Version >= Ada_2005
+           and then not Debug_Flag_Dot_L
+           and then not GNAT_Mode
+         then
+            Error_Msg_N
+              ("(Ada 2005) cannot copy object of a limited type "
+               & "(RM-2005 6.5(5.5/2))", Expr);
+
+            if Is_Limited_View (R_Type) then
+               Error_Msg_N
+                 ("\return by reference not permitted in Ada 2005", Expr);
+            end if;
+
+         --  Warn in Ada 95 mode, to give folks a heads up about this
+         --  incompatibility.
+
+         --  In GNAT mode, this is just a warning, to allow it to be evilly
+         --  turned off. Otherwise it is a real error.
+
+         --  In a generic context, simplify the warning because it makes no
+         --  sense to discuss pass-by-reference or copy.
+
+         elsif Warn_On_Ada_2005_Compatibility or GNAT_Mode then
+            if Inside_A_Generic then
+               Error_Msg_N
+                 ("return of limited object not permitted in Ada 2005 "
+                  & "(RM-2005 6.5(5.5/2))?y?", Expr);
+
+            elsif Is_Limited_View (R_Type) then
+               Error_Msg_N
+                 ("return by reference not permitted in Ada 2005 "
+                  & "(RM-2005 6.5(5.5/2))?y?", Expr);
+            else
+               Error_Msg_N
+                 ("cannot copy object of a limited type in Ada 2005 "
+                  & "(RM-2005 6.5(5.5/2))?y?", Expr);
+            end if;
+
+         --  Ada 95 mode, compatibility warnings disabled
+
+         else
+            return; --  skip continuation messages below
+         end if;
+
+         if not Inside_A_Generic then
+            Error_Msg_N
+              ("\consider switching to return of access type", Expr);
+            Explain_Limited_Type (R_Type, Expr);
+         end if;
+      end if;
+   end Check_Limited_Return;
 
    ---------------------------
    -- Check_Mode_Conformant --

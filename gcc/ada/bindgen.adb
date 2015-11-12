@@ -89,7 +89,7 @@ package body Bindgen is
    --  elaboration policy is sequential.
 
    System_BB_CPU_Primitives_Multiprocessors_Used : Boolean := False;
-   --  Flag indicating wether the unit System.BB.CPU_Primitives.Multiprocessors
+   --  Flag indicating whether unit System.BB.CPU_Primitives.Multiprocessors
    --  is in the closure of the partiation. This is set by procedure
    --  Resolve_Binder_Options, and it is used to call a procedure that starts
    --  slave processors.
