@@ -12362,12 +12362,50 @@ package body Sem_Util is
       end if;
    end Is_Local_Variable_Reference;
 
+   ------------------------------------------------
+   -- Is_Non_Trivial_Default_Init_Cond_Procedure --
+   ------------------------------------------------
+
+   function Is_Non_Trivial_Default_Init_Cond_Procedure
+     (Id : Entity_Id) return Boolean
+   is
+      Body_Decl : Node_Id;
+      Stmt : Node_Id;
+
+   begin
+      if Ekind (Id) = E_Procedure
+        and then Is_Default_Init_Cond_Procedure (Id)
+      then
+         Body_Decl :=
+           Unit_Declaration_Node
+             (Corresponding_Body (Unit_Declaration_Node (Id)));
+
+         --  The body of the Default_Initial_Condition procedure must contain
+         --  at least one statement, otherwise the generation of the subprogram
+         --  body failed.
+
+         pragma Assert (Present (Handled_Statement_Sequence (Body_Decl)));
+
+         --  To qualify as non-trivial, the first statement of the procedure
+         --  must be a check in the form of an if statement. If the original
+         --  Default_Initial_Condition expression was folded, then the first
+         --  statement is not a check.
+
+         Stmt := First (Statements (Handled_Statement_Sequence (Body_Decl)));
+
+         return
+           Nkind (Stmt) = N_If_Statement
+             and then Nkind (Original_Node (Stmt)) = N_Pragma;
+      end if;
+
+      return False;
+   end Is_Non_Trivial_Default_Init_Cond_Procedure;
+
    -------------------------
    -- Is_Object_Reference --
    -------------------------
 
    function Is_Object_Reference (N : Node_Id) return Boolean is
-
       function Is_Internally_Generated_Renaming (N : Node_Id) return Boolean;
       --  Determine whether N is the name of an internally-generated renaming
 
