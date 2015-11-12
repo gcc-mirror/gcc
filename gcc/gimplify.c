@@ -5944,9 +5944,9 @@ oacc_default_clause (struct gimplify_omp_ctx *ctx, tree decl, unsigned flags)
 	 about them.  */
   else if (ctx->default_kind == OMP_CLAUSE_DEFAULT_NONE)
     {
-      error ("%qE not specified in enclosing OpenACC %s construct",
+      error ("%qE not specified in enclosing OpenACC %qs construct",
 	     DECL_NAME (lang_hooks.decls.omp_report_decl (decl)), rkind);
-      error_at (ctx->location, "enclosing OpenACC %s construct", rkind);
+      error_at (ctx->location, "enclosing OpenACC %qs construct", rkind);
     }
   else
     gcc_checking_assert (ctx->default_kind == OMP_CLAUSE_DEFAULT_SHARED);
