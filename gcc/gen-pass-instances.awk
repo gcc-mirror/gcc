@@ -47,7 +47,6 @@ function handle_line()
 		len_of_start = length("NEXT_PASS (")
 		len_of_end = length(")")
 		len_of_pass_name = RLENGTH - (len_of_start + len_of_end)
-		line_length = length(line)
 		pass_starts_at = where + len_of_start
 		pass_name = substr(line, pass_starts_at, len_of_pass_name)
 		if (pass_name in pass_counts)
