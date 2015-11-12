@@ -1,3 +1,8 @@
+2015-11-12  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (gen_compare_reg): Swap operands also when we
+	do not expand to rtl.
+
 2015-11-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58497

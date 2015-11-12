@@ -1690,6 +1690,7 @@ gen_compare_reg (rtx comparison, machine_mode omode)
     {
       rtx op0 = gen_rtx_REG (cmode, 0);
       rtx op1 = gen_rtx_REG (cmode, GET_MODE_SIZE (cmode) / UNITS_PER_WORD);
+      bool swap = false;
 
       switch (code)
 	{
@@ -1698,15 +1699,19 @@ gen_compare_reg (rtx comparison, machine_mode omode)
 	  break;
 	case LT: case UNGE: case LE: case UNGT:
 	  code = swap_condition (code);
-	  tmp = x;
-	  x = y;
-	  y = tmp;
+	  swap = true;
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
       if (currently_expanding_to_rtl)
 	{
+	  if (swap)
+	    {
+	      tmp = x;
+	      x = y;
+	      y = tmp;
+	    }
 	  emit_move_insn (op0, x);
 	  emit_move_insn (op1, y);
 	}
@@ -1714,6 +1719,11 @@ gen_compare_reg (rtx comparison, machine_mode omode)
 	{
 	  gcc_assert (rtx_equal_p (op0, x));
 	  gcc_assert (rtx_equal_p (op1, y));
+	  if (swap)
+	    {
+	      op0 = y;
+	      op1 = x;
+	    }
 	}
       emit_insn (gen_cmp_float (cc_reg, gen_rtx_COMPARE (mode, op0, op1)));
     }
