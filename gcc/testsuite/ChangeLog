@@ -1,3 +1,8 @@
+2015-11-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-1.c (swizzle): Assume that a is
+	aligned to 64 bits.
+
 2015-11-11  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/pr65521.c: Fail on AIX.

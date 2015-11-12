@@ -1,12 +1,18 @@
+2015-11-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_legitimate_combined_insn): Reject
+	combined insn if the alignment of vector mode memory operand
+	is less than ssememalign.
+
 2015-11-12  Tom de Vries  <tom@codesourcery.com>
 
-	* gen-pass-instances.awk (handle_line): Print parentheses and pass_name
-	explicitly.
+	* gen-pass-instances.awk (handle_line): Print parentheses and
+	pass_name explicitly.
 
 2015-11-12  Tom de Vries  <tom@codesourcery.com>
 
-	* gen-pass-instances.awk (handle_line): Add pass_num, prefix and postfix
-	vars.
+	* gen-pass-instances.awk (handle_line): Add pass_num, prefix
+	and postfix vars.
 
 2015-11-12  Tom de Vries  <tom@codesourcery.com>
 
@@ -45,7 +51,7 @@
 	Move Convert C1/(X*C2) into (C1/C2)/X to match.pd.
 	Move Optimize (X & (-A)) / A where A is a power of 2, to
 	X >> log2(A) to match.pd.
-       
+
 	* match.pd (rdiv (rdiv:s @0 @1) @2): New simplifier.
 	(rdiv @0 (rdiv:s @1 @2)): New simplifier.
 	(div (convert? (bit_and @0 INTEGER_CST@1)) INTEGER_CST@2):

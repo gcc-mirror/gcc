@@ -7236,11 +7236,12 @@ ix86_legitimate_combined_insn (rtx_insn *insn)
 	  /* For pre-AVX disallow unaligned loads/stores where the
 	     instructions don't support it.  */
 	  if (!TARGET_AVX
-	      && VECTOR_MODE_P (GET_MODE (op))
-	      && misaligned_operand (op, GET_MODE (op)))
+	      && VECTOR_MODE_P (mode)
+	      && misaligned_operand (op, mode))
 	    {
-	      int min_align = get_attr_ssememalign (insn);
-	      if (min_align == 0)
+	      unsigned int min_align = get_attr_ssememalign (insn);
+	      if (min_align == 0
+		  || MEM_ALIGN (op) < min_align)
 		return false;
 	    }
 
