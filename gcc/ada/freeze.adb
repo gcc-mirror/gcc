@@ -672,24 +672,25 @@ package body Freeze is
          --  later for the variable if it is assigned.
 
          if (Ekind (E) = E_Variable
-               or else (Ekind (E) = E_Constant
-                          and then not Is_Imported (E)))
+              or else (Ekind (E) = E_Constant
+                        and then not Is_Imported (E)))
            and then Overlays_Constant (E)
            and then Present (Init)
          then
             declare
                O_Ent : Entity_Id;
                Off   : Boolean;
+
             begin
                Find_Overlaid_Entity (Addr, O_Ent, Off);
 
                if Ekind (O_Ent) = E_Constant
                  and then Etype (O_Ent) = Typ
                  and then Present (Constant_Value (O_Ent))
-                 and then Compile_Time_Compare (
-                            Init,
-                            Constant_Value (O_Ent),
-                            Assume_Valid => True) = EQ
+                 and then Compile_Time_Compare
+                            (Init,
+                             Constant_Value (O_Ent),
+                             Assume_Valid => True) = EQ
                then
                   Set_No_Initialization (Decl);
                   return;

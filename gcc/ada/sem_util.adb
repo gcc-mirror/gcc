@@ -16267,6 +16267,7 @@ package body Sem_Util is
                   Addr  : constant Node_Id := Address_Clause (Ent);
                   O_Ent : Entity_Id;
                   Off   : Boolean;
+
                begin
                   Find_Overlaid_Entity (Addr, O_Ent, Off);
 

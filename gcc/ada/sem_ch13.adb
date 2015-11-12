@@ -4725,11 +4725,13 @@ package body Sem_Ch13 is
                   Find_Overlaid_Entity (N, O_Ent, Off);
 
                   if Present (O_Ent) then
+
                      --  If the object overlays a constant object, mark it so
 
                      if Is_Constant_Object (O_Ent) then
                         Set_Overlays_Constant (U_Ent);
                      end if;
+
                   else
                      --  If this is not an overlay, mark a variable as being
                      --  volatile to prevent unwanted optimizations. It's a
@@ -4744,9 +4746,9 @@ package body Sem_Ch13 is
                      end if;
                   end if;
 
-                  --  Overlaying controlled objects is erroneous.
-                  --  Emit warning but continue analysis because program is
-                  --  itself legal, and back-end must see address clause.
+                  --  Overlaying controlled objects is erroneous. Emit warning
+                  --  but continue analysis because program is itself legal,
+                  --  and back-end must see address clause.
 
                   if Present (O_Ent)
                     and then (Has_Controlled_Component (Etype (O_Ent))
