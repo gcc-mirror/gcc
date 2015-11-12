@@ -1376,7 +1376,7 @@ package Opt is
    Style_Check_Main : Boolean := False;
    --  GNAT
    --  Set True if Style_Check was set for the main unit. This is used to
-   --  renable style checks for units in the mail extended source that get
+   --  enable style checks for units in the main extended source that get
    --  with'ed indirectly. It is set True by use of either the -gnatg or
    --  -gnaty switches, but not by use of the Style_Checks pragma.
 
@@ -2058,7 +2058,7 @@ package Opt is
    --  unit. This affects setting of the assert/debug pragma switches, which
    --  are normally set false by default for an internal unit, except when the
    --  internal unit is the main unit, in which case we use the command line
-   --  settings).
+   --  settings.
 
    procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type);
    --  This procedure restores a set of switch values previously saved by a

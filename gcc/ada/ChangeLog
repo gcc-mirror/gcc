@@ -1,3 +1,20 @@
+2015-11-12  Philippe Gil  <gil@adacore.com>
+
+	* g-debpoo.adb (Print_Address): print address in hexadecimal as
+	in previous GNAT version (without secondary stack use)
+	(Deallocate): Deallocate calling once Unlock_Task.all when it
+	raise exception.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Remove redundant
+	copying of dimensions from parent type to subtype. This is
+	properly done in Analyze_Dimension.
+	* sem_dim.adb (Analyze_Dimension_Subtype_Declaration): Add entity
+	to error message, so that reference to entity can be formatted
+	properly.
+	* opt.ads: Fix typo.
+
 2015-11-12  Bob Duff  <duff@adacore.com>
 
 	* impunit.adb, lib-xref.ads, restrict.ads, scos.ads, sem_attr.ads,

@@ -4833,7 +4833,9 @@ package body Sem_Ch3 is
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Digits_Value         (Id, Digits_Value       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
-               Copy_Dimensions          (From => T, To => Id);
+
+               --  If the floating point type has dimensions, these will be
+               --  inherited subsequently when Analyze_Dimensions is called.
 
             when Signed_Integer_Kind =>
                Set_Ekind                (Id, E_Signed_Integer_Subtype);
