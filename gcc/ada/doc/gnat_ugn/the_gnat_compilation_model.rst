@@ -3665,7 +3665,7 @@ Convention identifiers are recognized by GNAT:
 .. index:: Convention Stdcall
 
 *Stdcall*
-  This is relevant only to Windows XP/2000/NT implementations of GNAT,
+  This is relevant only to Windows implementations of GNAT,
   and specifies that the `Stdcall` calling sequence will be used,
   as defined by the NT API. Nevertheless, to ease building
   cross-platform bindings this convention will be handled as a `C` calling

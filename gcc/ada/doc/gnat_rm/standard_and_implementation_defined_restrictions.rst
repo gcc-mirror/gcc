@@ -261,7 +261,7 @@ The following example indicates constructs that violate this restriction.
        null;
     end if;
   end Example;
-  
+
 
 No_Dynamic_Attachment
 ---------------------
@@ -319,7 +319,7 @@ must define with the following profile:
     (Source_Location : System.Address; Line : Integer);
   pragma Export (C, Last_Chance_Handler,
                  "__gnat_last_chance_handler");
-  
+
 
 The parameter is a C null-terminated string representing a message to be
 associated with the exception (typically the source location of the raise
@@ -367,19 +367,19 @@ chapter 7.6 of the Ada 2005 RM as well as all form of code generation
 performed by the compiler to support these features. The following types
 are no longer considered controlled when this restriction is in effect:
 
-* 
+*
   `Ada.Finalization.Controlled`
-* 
+*
   `Ada.Finalization.Limited_Controlled`
-* 
+*
   Derivations from `Controlled` or `Limited_Controlled`
-* 
+*
   Class-wide types
-* 
+*
   Protected types
-* 
+*
   Task types
-* 
+*
   Array and record types with controlled components
 
 The compiler no longer generates code to initialize, finalize or adjust an
@@ -844,7 +844,7 @@ example, if the source contains a declaration:
 .. code-block:: ada
 
      Val : constant Integer := X;
-  
+
 
 where X is not a static constant, it may be possible, depending
 on complex optimization circuitry, for the compiler to figure
@@ -856,6 +856,21 @@ optimizer can figure this out.
 Note that this the implementation of this restriction requires full
 code generation. If it is used in conjunction with "semantics only"
 checking, then some cases of violations may be missed.
+
+No_Dynamic_Sized_Objects
+--------------
+.. index:: No_Dynamic_Sized_Objects
+
+[GNAT] This restriction disallows certain constructs that might lead to the
+creation of dynamic-sized composite objects (or array or discriminated type).
+An array subtype indication is illegal if the bounds are not static
+or references to discriminants of an enclosing type.
+A discriminated subtype indication is illegal if the type has
+discriminant-dependent array components or a variant part, and the
+discriminants are not static. In addition, array and record aggregates are
+illegal in corresponding cases. Note that this restriction does not forbid
+access discriminants. It is often a good idea to combine this restriction
+with No_Secondary_Stack.
 
 No_Entry_Queue
 --------------
@@ -960,7 +975,7 @@ SPARK restriction have the form:
 
   violation of restriction "SPARK_05" at <source-location>
    <error message>
-  
+
 
 .. index:: SPARK
 
@@ -1097,4 +1112,3 @@ currently checked by the SPARK_05 restriction:
 Note that if a unit is compiled in Ada 95 mode with the SPARK restriction,
 violations will be reported for constructs forbidden in SPARK 95,
 instead of SPARK 2005.
-

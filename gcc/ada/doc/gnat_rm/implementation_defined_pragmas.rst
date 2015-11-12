@@ -4456,7 +4456,7 @@ the effect is identical to the following Ada 2012 code:
     Dynamic_Predicate => F(Q) or G(Q);
 
 
-Note that there is are no pragmas `Dynamic_Predicate`
+Note that there are no pragmas `Dynamic_Predicate`
 or `Static_Predicate`. That is
 because these pragmas would affect legality and semantics of
 the program and thus do not have a neutral effect if ignored.
@@ -4470,6 +4470,23 @@ fundamentally changed (for example a membership test
 `A in B` would not take into account a predicate
 defined for subtype B). When following this approach, the
 use of predicates should be avoided.
+
+Pragma Predicate_Failure
+========================
+
+Syntax:
+
+
+::
+
+  pragma Predicate_Failure
+    ([Entity  =>] type_LOCAL_NAME,
+     [Message =>] String_Expression);
+
+
+The `Predicate_Failure` pragma is intended to be an exact replacement for
+the language-defined
+`Predicate_Failure` aspect, and shares its restrictions and semantics.
 
 Pragma Preelaborable_Initialization
 ===================================
