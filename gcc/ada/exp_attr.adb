@@ -650,12 +650,19 @@ package body Exp_Attr is
          --  The component type may be private, in which case we install its
          --  full view to compile the subprogram.
 
+         --  The component type may be private, in which case we install its
+         --  full view to compile the subprogram. We do not do this if the
+         --  type has a Stream_Convert pragma, which indicates that there are
+         --  special stream-processing operations for that type (for example
+         --  Unbounded_String and its wide varieties).
+
          Scop := Scope (C_Type);
 
          if Is_Private_Type (C_Type)
            and then Present (Full_View (C_Type))
            and then not In_Open_Scopes (Scop)
            and then Ekind (Scop) = E_Package
+           and then No (Get_Stream_Convert_Pragma (C_Type))
          then
             Install := True;
          end if;

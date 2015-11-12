@@ -1,3 +1,15 @@
+2015-11-12  Jerome Lambourg  <lambourg@adacore.com>
+
+	* init.c: Do not try to mess with the MSR values in RTP mode:
+	not needed and forbidden.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Compile_Stream_Body_In_Scope): Do not install
+	full view of a type that has pragma Stream_Convert, because
+	this indicates special processing for the stream operations of
+	the type.
+
 2015-11-12  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch5.adb, sem_ch3.adb, exp_util.ads, inline.adb, freeze.adb,
