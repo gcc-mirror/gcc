@@ -1,3 +1,7 @@
+2015-11-12  Mike Stump  <mikestump@comcast.net>
+
+	* Makefile.in (etags tags TAGS): Use && instead of ;.
+
 2015-11-09  Alan Modra  <amodra@gmail.com>
 
 	* configure.ac: Check size of size_t.
