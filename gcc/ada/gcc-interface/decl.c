@@ -4131,6 +4131,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   of its type, so we must elaborate that type now.  */
 	if (Present (Alias (gnat_entity)))
 	  {
+	    const Entity_Id gnat_renamed = Renamed_Object (gnat_entity);
+
 	    if (Ekind (Alias (gnat_entity)) == E_Enumeration_Literal)
 	      gnat_to_gnu_entity (Etype (Alias (gnat_entity)), NULL_TREE, 0);
 
@@ -4142,6 +4144,33 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 gnat_temp = Next_Formal_With_Extras (gnat_temp))
 	      if (Is_Itype (Etype (gnat_temp)))
 		gnat_to_gnu_entity (Etype (gnat_temp), NULL_TREE, 0);
+
+	    /* Materialize renamed subprograms in the debugging information
+	       when the renamed object is compile time known.  We can consider
+	       such renamings as imported declarations.
+
+	       Because the parameters in generics instantiation are generally
+	       materialized as renamings, we ofter end up having both the
+	       renamed subprogram and the renaming in the same context and with
+	       the same name: in this case, renaming is both useless debug-wise
+	       and potentially harmful as name resolution in the debugger could
+	       return twice the same entity!  So avoid this case.  */
+	    if (debug_info_p && !artificial_p
+		&& !(get_debug_scope (gnat_entity, NULL)
+		       == get_debug_scope (gnat_renamed, NULL)
+		     && Name_Equals (Chars (gnat_entity),
+				     Chars (gnat_renamed)))
+		&& Present (gnat_renamed)
+		&& (Ekind (gnat_renamed) == E_Function
+		    || Ekind (gnat_renamed) == E_Procedure)
+		&& gnu_decl != NULL_TREE
+		&& TREE_CODE (gnu_decl) == FUNCTION_DECL)
+	      {
+		tree decl = build_decl (input_location, IMPORTED_DECL,
+					gnu_entity_name, void_type_node);
+		IMPORTED_DECL_ASSOCIATED_DECL (decl) = gnu_decl;
+		gnat_pushdecl (decl, gnat_entity);
+	      }
 
 	    break;
 	  }

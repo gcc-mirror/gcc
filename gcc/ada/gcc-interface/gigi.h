@@ -1004,6 +1004,11 @@ extern bool renaming_from_generic_instantiation_p (Node_Id gnat_node);
    don't have a GNU translation.  */
 extern void process_deferred_decl_context (bool force);
 
+/* Return the innermost scope, starting at GNAT_NODE, we are be interested in
+   the debug info, or Empty if there is no such scope.  If not NULL, set
+   IS_SUBPROGRAM to whether the returned entity is a subprogram.  */
+extern Entity_Id get_debug_scope (Node_Id gnat_node, bool *is_subprogram);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
