@@ -154,6 +154,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<bool, !_Pp::value>
     { };
 
+#if __cplusplus > 201402L
+
+#define __cpp_lib_logical_traits 201511
+
+  template<typename... _Bn>
+    struct conjunction
+    : __and_<_Bn...>
+    { };
+
+  template<typename... _Bn>
+    struct disjunction
+    : __or_<_Bn...>
+    { };
+
+  template<typename _Pp>
+    struct negation
+    : __not_<_Pp>
+    { };
+#endif
+
   // For several sfinae-friendly trait implementations we transport both the
   // result information (as the member type) and the failure information (no
   // member type). This is very similar to std::enable_if, but we cannot use
