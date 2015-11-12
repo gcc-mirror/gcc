@@ -573,7 +573,7 @@ package Checks is
    --  For scalar types, constructs a range check action that first tests that
    --  the expression is contained in the Target_Typ range. The difference
    --  between this and Apply_Scalar_Range_Check is that the latter generates
-   --  the actual checking code in gigi against the Etype of the expression.
+   --  the actual checking code against the Etype of the expression.
    --
    --  For constrained array types, construct series of range check actions
    --  to check that each Expr range is properly contained in the range of

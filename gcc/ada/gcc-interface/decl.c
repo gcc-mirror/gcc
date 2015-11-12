@@ -1068,14 +1068,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	/* Make a volatile version of this object's type if we are to make
-	   the object volatile.  We also interpret 13.3(19) conservatively
-	   and disallow any optimizations for such a non-constant object.  */
+	   the object volatile.  We also implement RM 13.3(19) for exported
+	   and imported (non-constant) objects by making them volatile.  */
 	if ((Treat_As_Volatile (gnat_entity)
 	     || (!const_flag
 		 && gnu_type != except_type_node
-		 && (Is_Exported (gnat_entity)
-		     || imported_p
-		     || Present (Address_Clause (gnat_entity)))))
+		 && (Is_Exported (gnat_entity) || imported_p)))
 	    && !TYPE_VOLATILE (gnu_type))
 	  {
 	    const int quals
@@ -1118,7 +1116,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_expr = convert (gnu_type, gnu_expr);
 
 	/* If this is a pointer that doesn't have an initializing expression,
-	   initialize it to NULL, unless the object is imported.  */
+	   initialize it to NULL, unless the object is declared imported as
+	   per RM B.1(24).  */
 	if (definition
 	    && (POINTER_TYPE_P (gnu_type) || TYPE_IS_FAT_POINTER_P (gnu_type))
 	    && !gnu_expr
@@ -1141,7 +1140,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    save_gnu_tree (gnat_entity, NULL_TREE, false);
 
 	    /* Convert the type of the object to a reference type that can
-	       alias everything as per 13.3(19).  */
+	       alias everything as per RM 13.3(19).  */
 	    gnu_type
 	      = build_reference_type_for_mode (gnu_type, ptr_mode, true);
 	    gnu_address = convert (gnu_type, gnu_address);
@@ -1206,11 +1205,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   as an indirect object.  Likewise for Stdcall objects that are
 	   imported.  */
 	if ((!definition && Present (Address_Clause (gnat_entity)))
-	    || (Is_Imported (gnat_entity)
-		&& Has_Stdcall_Convention (gnat_entity)))
+	    || (imported_p && Has_Stdcall_Convention (gnat_entity)))
 	  {
 	    /* Convert the type of the object to a reference type that can
-	       alias everything as per 13.3(19).  */
+	       alias everything as per RM 13.3(19).  */
 	    gnu_type
 	      = build_reference_type_for_mode (gnu_type, ptr_mode, true);
 	    used_by_ref = true;
@@ -1402,10 +1400,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* If this name is external or a name was specified, use it, but don't
 	   use the Interface_Name with an address clause (see cd30005).  */
-	if ((Present (Interface_Name (gnat_entity))
-	     && No (Address_Clause (gnat_entity)))
-	    || (Is_Public (gnat_entity)
-		&& (!Is_Imported (gnat_entity) || Is_Exported (gnat_entity))))
+	if ((Is_Public (gnat_entity) && !Is_Imported (gnat_entity))
+	    || (Present (Interface_Name (gnat_entity))
+		&& No (Address_Clause (gnat_entity))))
 	  gnu_ext_name = create_concat_name (gnat_entity, NULL);
 
 	/* If this is an aggregate constant initialized to a constant, force it
@@ -4618,7 +4615,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    save_gnu_tree (gnat_entity, NULL_TREE, false);
 
 	    /* Convert the type of the object to a reference type that can
-	       alias everything as per 13.3(19).  */
+	       alias everything as per RM 13.3(19).  */
 	    gnu_type
 	      = build_reference_type_for_mode (gnu_type, ptr_mode, true);
 	    if (gnu_address)

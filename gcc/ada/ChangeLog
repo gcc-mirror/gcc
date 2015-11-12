@@ -1,3 +1,14 @@
+2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): For a
+	variable, if this is not an overlay, set on Treat_As_Volatile on it.
+	* gcc-interface/decl.c (E_Variable): Do not force the type to volatile
+	for address clauses. Tweak and adjust various RM references.
+
+2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.ads: Minor comment fix.
+
 2015-11-12  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat_rm.texi, gnat_ugn.texi,
