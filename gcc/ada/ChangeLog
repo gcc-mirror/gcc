@@ -1,3 +1,10 @@
+2015-11-12  Steve Baird  <baird@adacore.com>
+
+	* sem_ch6.adb (Analyze_Procedure_Call) If CodePeer_Mode is True,
+	do not analyze the expression of a machine code insertion.
+	* sem_ch13.adb (Analyze_Code_Statement) If CodePeer_Mode is True,
+	mark the N_Code_Statement node as analyzed and do nothing else.
+
 2015-11-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Check_Limited_Return): Make global to package
