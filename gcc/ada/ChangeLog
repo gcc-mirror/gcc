@@ -1,3 +1,11 @@
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Compile_Stream_Body_In_Scope): When compiling
+	a stream operation for an array type, install the scope of the
+	component type if it is private and not in scope, to prevent
+	spurious errors if the full view of the component type has
+	defaulted discriminants.
+
 2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): For a
