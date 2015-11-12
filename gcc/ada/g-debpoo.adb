@@ -874,7 +874,7 @@ package body GNAT.Debug_Pools is
       P       : Ptr;
       Trace   : Traceback_Htable_Elem_Ptr;
 
-      Disable_Exit_Value : constant Boolean := Disable;
+      Reset_Disable_At_Exit : Boolean := False;
 
    begin
       <<Allocate_Label>>
@@ -887,6 +887,7 @@ package body GNAT.Debug_Pools is
          return;
       end if;
 
+      Reset_Disable_At_Exit := True;
       Disable := True;
 
       Pool.Alloc_Count := Pool.Alloc_Count + 1;
@@ -1017,13 +1018,15 @@ package body GNAT.Debug_Pools is
          Pool.High_Water := Current;
       end if;
 
-      Disable := Disable_Exit_Value;
+      Disable := False;
 
       Unlock_Task.all;
 
    exception
       when others =>
-         Disable := Disable_Exit_Value;
+         if Reset_Disable_At_Exit then
+            Disable := False;
+         end if;
          Unlock_Task.all;
          raise;
    end Allocate;

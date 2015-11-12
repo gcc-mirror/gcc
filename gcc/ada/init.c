@@ -1911,6 +1911,41 @@ __gnat_vxsim_error_handler (int sig, siginfo_t *si, void *sc);
 static int is_vxsim = 0;
 #endif
 
+#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR >= 7)
+
+/* ARM-vx7 case with arm unwinding exceptions */
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+#include <arch/../regs.h>
+#ifndef __RTP__
+#include <sigLib.h>
+#else
+#include <signal.h>
+#include <regs.h>
+#include <ucontext.h>
+#endif /* __RTP__ */
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
+				 void *sc ATTRIBUTE_UNUSED)
+{
+  /* In case of ARM exceptions, the registers context have the PC pointing
+     to the instruction that raised the signal. However the Unwinder expects
+     the instruction to be in the range ]PC,PC+1].
+      */
+  uintptr_t *pc_addr; /* address of the pc value to restore */
+#ifdef __RTP__
+  mcontext_t *mcontext = &((ucontext_t *) sc)->uc_mcontext;
+  pc_addr = (uintptr_t*)&mcontext->regs.pc;
+#else
+  struct sigcontext * sctx = (struct sigcontext *) sc;
+  pc_addr = (uintptr_t*)&sctx->sc_pregs->pc;
+#endif
+  /* ARM Bump has to be an even number because of odd/even architecture.  */
+  *pc_addr += 2;
+}
+#endif /* ARMEL && _WRS_VXWORKS_MAJOR >= 7 */
+
 /* Tasking and Non-tasking signal handler.  Map SIGnal to Ada exception
    propagation after the required low level adjustments.  */
 
@@ -1956,6 +1991,10 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
 
   if (is_vxsim)
     __gnat_vxsim_error_handler (sig, si, sc);
+#endif
+
+#ifdef HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+  __gnat_adjust_context_for_raise (sig, sc);
 #endif
 
   #include "sigtramp.h"

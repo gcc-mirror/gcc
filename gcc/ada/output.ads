@@ -203,20 +203,6 @@ package Output is
    --  Dump contents of string followed by blank, Boolean, line return
 
 private
-   --  Note: the following buffer and column position are maintained by the
-   --  subprograms defined in this package, and cannot be directly modified or
-   --  accessed by a client.
-
-   Buffer : String (1 .. Buffer_Max + 1) := (others => '*');
-   for Buffer'Alignment use 4;
-   --  Buffer used to build output line. We do line buffering because it is
-   --  needed for the support of the debug-generated-code option (-gnatD). Note
-   --  any attempt to write more output to a line than can fit in the buffer
-   --  will be silently ignored. The alignment clause improves the efficiency
-   --  of the save/restore procedures.
-
-   Next_Col : Positive range 1 .. Buffer'Length + 1 := 1;
-   --  Column about to be written
 
    type Saved_Output_Buffer is record
       Buffer          : String (1 .. Buffer_Max + 1);
