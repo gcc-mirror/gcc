@@ -1,3 +1,9 @@
+2015-11-12  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* expr.c (do_store_flag): Expand vector comparison as
+	VEC_COND_EXPR if vector comparison is not supported
+	by target.
+
 2015-11-12  Renlin Li  <renlin.li@arm.com>
 
 	* config/arm/arm.md (addsi3_compare_op2): Make the order of
