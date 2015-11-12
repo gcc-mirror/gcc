@@ -1,3 +1,9 @@
+2015-11-12  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR tree-optimization/68305
+	* tree-vect-slp.c (vect_get_constant_vectors): Support
+	COND_EXPR with SSA_NAME as a condition.
+
 2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/visium-protos.h (notice_update_cc): Delete.
