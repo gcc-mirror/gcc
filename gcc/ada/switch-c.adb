@@ -585,6 +585,12 @@ package body Switch.C is
                      Ptr := Ptr + 1;
                      Check_Float_Overflow := not Machine_Overflows_On_Target;
 
+                  --  -gnateg (generate C code)
+
+                  when 'g' =>
+                     Generate_C_Code := True;
+                     Ptr := Ptr + 1;
+
                   --  -gnateG (save preprocessor output)
 
                   when 'G' =>
