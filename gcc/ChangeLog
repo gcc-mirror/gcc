@@ -1,5 +1,10 @@
 2015-11-12  Tom de Vries  <tom@codesourcery.com>
 
+	* gen-pass-instances.awk (handle_line): Simplify init of
+	postfix_starts_at.
+
+2015-11-12  Tom de Vries  <tom@codesourcery.com>
+
 	* gen-pass-instances.awk (handle_line): Rename var where to
 	call_starts_at.
 

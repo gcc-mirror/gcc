@@ -67,7 +67,7 @@ function handle_line()
 	prefix = substr(line, 1, prefix_len);
 
 	# Find call expression postfix
-	postfix_starts_at = pass_starts_at + len_of_pass_name + len_of_close;
+	postfix_starts_at = call_starts_at + len_of_call;
 	postfix = substr(line, postfix_starts_at);
 
 	# Set pass_counts
