@@ -109,6 +109,16 @@ package body Exp_Attr is
    --  If we are within an instance body all visibility has been established
    --  already and there is no need to install the package.
 
+   --  This mechanism is now extended to the component types of the array type,
+   --  when the component type is not in scope and is private, to handle
+   --  properly the case when the full view has defaulted discriminants.
+
+   --  This special processing is ultimately caused by the fact that the
+   --  compiler lacks a well-defined phase when full views are visible
+   --  everywhere. Having such a separate pass would remove much of the
+   --  special-case code that shuffles partial and full views in the middle
+   --  of semantic analysis and expansion.
+
    procedure Expand_Access_To_Protected_Op
      (N    : Node_Id;
       Pref : Node_Id;
@@ -624,24 +634,43 @@ package body Exp_Attr is
       Arr   : Entity_Id;
       Check : Boolean)
    is
-      Installed : Boolean := False;
-      Scop      : constant Entity_Id := Scope (Arr);
+      C_Type    : constant Entity_Id := Base_Type (Component_Type (Arr));
       Curr      : constant Entity_Id := Current_Scope;
+
+      Install   : Boolean := False;
+      Scop      : Entity_Id := Scope (Arr);
 
    begin
       if Is_Hidden (Arr)
         and then not In_Open_Scopes (Scop)
         and then Ekind (Scop) = E_Package
+      then
+         Install := True;
+      else
 
-        --  If we are within an instance body, then all visibility has been
-        --  established already and there is no need to install the package.
+         --  The component type may be private, in which case we install
+         --  its full view to compile the subprogram.
 
+         Scop := Scope (C_Type);
+
+         if Is_Private_Type (C_Type)
+           and then Present (Full_View (C_Type))
+           and then not In_Open_Scopes (Scop)
+           and then Ekind (Scop) = E_Package
+         then
+            Install := True;
+         end if;
+      end if;
+
+      --  If we are within an instance body, then all visibility has been
+      --  established already and there is no need to install the package.
+
+      if Install
         and then not In_Instance_Body
       then
          Push_Scope (Scop);
          Install_Visible_Declarations (Scop);
          Install_Private_Declarations (Scop);
-         Installed := True;
 
          --  The entities in the package are now visible, but the generated
          --  stream entity must appear in the current scope (usually an
@@ -649,6 +678,8 @@ package body Exp_Attr is
          --  scopes.
 
          Push_Scope (Curr);
+      else
+         Install := False;
       end if;
 
       if Check then
@@ -657,7 +688,7 @@ package body Exp_Attr is
          Insert_Action (N, Decl, Suppress => All_Checks);
       end if;
 
-      if Installed then
+      if Install then
 
          --  Remove extra copy of current scope, and package itself
 
