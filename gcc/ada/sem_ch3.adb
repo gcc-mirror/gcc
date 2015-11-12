@@ -3043,15 +3043,13 @@ package body Sem_Ch3 is
          Set_Direct_Primitive_Operations (T, New_Elmt_List);
       end if;
 
-      Push_Scope (T);
-
       Set_Stored_Constraint (T, No_Elist);
 
       if Present (Discriminant_Specifications (N)) then
+         Push_Scope (T);
          Process_Discriminants (N);
+         End_Scope;
       end if;
-
-      End_Scope;
 
       --  If the type has discriminants, non-trivial subtypes may be
       --  declared before the full view of the type. The full views of those
@@ -4833,6 +4831,7 @@ package body Sem_Ch3 is
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Digits_Value         (Id, Digits_Value       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
+               Copy_Dimensions          (From => T, To => Id);
 
             when Signed_Integer_Kind =>
                Set_Ekind                (Id, E_Signed_Integer_Subtype);
@@ -18624,6 +18623,16 @@ package body Sem_Ch3 is
       --  If the function is parameterless, the original node was an explicit
       --  dereference. The function may also be parameterless, in which case
       --  the source node is just an identifier.
+
+      --  A branch of a conditional expression may have been removed if the
+      --  condition is statically known. This happens during expansion, and
+      --  thus will not happen if previous errors were encountered. The check
+      --  will have been performed on the chosen branch, which replaces the
+      --  original conditional expression.
+
+      if No (Exp) then
+         return True;
+      end if;
 
       case Nkind (Original_Node (Exp)) is
          when N_Aggregate | N_Extension_Aggregate | N_Function_Call | N_Op =>

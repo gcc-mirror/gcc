@@ -53,9 +53,11 @@ pragma Polling (Off);
 with Ada.Unchecked_Conversion;
 
 package System.Standard_Library is
-   pragma Warnings (Off);
+
+   --  Historical note: pragma Preelaborate was surrounded by a pair of pragma
+   --  Warnings (Off/On) to circumvent a bootstrap issue.
+
    pragma Preelaborate;
-   pragma Warnings (On);
 
    subtype Big_String is String (1 .. Positive'Last);
    pragma Suppress_Initialization (Big_String);

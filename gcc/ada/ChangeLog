@@ -1,3 +1,42 @@
+2015-11-12  Emmanuel Briot  <briot@adacore.com>
+
+	* s-os_lib.ads: Documentation update.
+
+2015-11-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taprop-vxworks.adb, s-osinte-vxworks.ads: Use a single import of
+	taskDelay to avoid confusion.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): If the return
+	type is class-wide and the expression is a view conversion,
+	remove the conversion to prevent overriding of the tag, which
+	must be that of the object being returned.
+
+2015-11-12  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb (Gen_Adainit): Code cleanup.
+
+2015-11-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* s-stalib.ads: Code cleanup.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Incomplete_Type_Decl): small optimization.
+	(Analyze_Subtype_Declaration): For floating point types,
+	inherit dimensions.
+	(OK_For_Limited_Init_In_05): Handle properly a conditional
+	expression whose condition is static, and is rewritten as the
+	branch that will be executed.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute, case 'Access): If the context
+	type is an access constant type, do not mark the attribute
+	reference as a possible modification of the prefix.
+
 2015-11-12  Steve Baird  <baird@adacore.com>
 
 	* sem_ch6.adb (Analyze_Procedure_Call) If CodePeer_Mode is True,
