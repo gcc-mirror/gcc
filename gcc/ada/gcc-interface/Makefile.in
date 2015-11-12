@@ -148,7 +148,7 @@ GCC_CFLAGS = $(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS)
 
 # We don't use cross-make.  Instead we use the tools from the build tree,
 # if they are available.
-# program_transform_name and objdir are set by configure.ac.
+# program_transform_name and objdir are set by configure.in.
 program_transform_name =
 objdir = .
 

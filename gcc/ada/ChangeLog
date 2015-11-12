@@ -1,3 +1,25 @@
+2015-11-12  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Create
+	IMPORTED_DECL nodes to describe the subprogram renamings which
+	are relevant at debug time.
+	* gcc-interface/gigi.h (get_debug_scope): Add declaration.
+	* gcc-interface/trans.c (Identifier_to_gnu): Consider
+	N_Defining_Operator_Symbol as valid entities.
+	(gnat_to_gnu): Handle N_Defining_Operator_Symbol the same way as
+	other entities.  Introduce a specific handling for
+	N_Subprogram_Renaming_Declaration: call gnat_to_gnu_entity on
+	the entity defined for relevant ones.
+	(process_decls): Process subprogram renaming declarations during
+	the second pass only.
+	* gcc-interface/utils.c (get_debug_scope): Make it external.
+	Consider N_Defining_Operator_Symbol as valid entities.
+	(gnat_write_global_declarations): Output debugging information
+	for top-level imported declarations.
+	* gcc-interface/Makefile.in: Fix typo.
+
+2015-11-12  Emmanuel Briot  <briot@adacore.com>
+
 2015-11-12  Emmanuel Briot  <briot@adacore.com>
 
 	* s-os_lib.ads: Documentation update.

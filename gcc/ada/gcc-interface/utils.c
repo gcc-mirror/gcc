@@ -585,7 +585,7 @@ gnat_set_type_context (tree type, tree context)
    the debug info, or Empty if there is no such scope.  If not NULL, set
    IS_SUBPROGRAM to whether the returned entity is a subprogram.  */
 
-static Entity_Id
+Entity_Id
 get_debug_scope (Node_Id gnat_node, bool *is_subprogram)
 {
   Entity_Id gnat_entity;
@@ -593,7 +593,8 @@ get_debug_scope (Node_Id gnat_node, bool *is_subprogram)
   if (is_subprogram)
     *is_subprogram = false;
 
-  if (Nkind (gnat_node) == N_Defining_Identifier)
+  if (Nkind (gnat_node) == N_Defining_Identifier
+      || Nkind (gnat_node) == N_Defining_Operator_Symbol)
     gnat_entity = Scope (gnat_node);
   else
     return Empty;
