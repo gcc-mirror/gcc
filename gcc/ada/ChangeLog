@@ -1,5 +1,19 @@
 2015-11-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch10.adb, atree.adb: Minor reformatting.
+
+2015-11-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Check_A_Call): Add new variable
+	Is_DIC_Proc. Report elaboration issue in SPARK concerning calls
+	to source subprograms or nontrivial Default_Initial_Condition
+	procedures. Add specialized error message to avoid outputting
+	the internal name of the Default_Initial_Condition procedure.
+	* sem_util.ads, sem_util.adb
+	(Is_Non_Trivial_Default_Init_Cond_Procedure): New routine.
+
+2015-11-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* contracts.adb (Analyze_Entry_Or_Subprogram_Body_Contract):
 	Remove the guard concerning entry bodies as it is spurious.
 	(Analyze_Entry_Or_Subprogram_Contract): Skip the analysis of

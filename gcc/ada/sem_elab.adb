@@ -597,6 +597,11 @@ package body Sem_Elab is
       --  non-visible unit. This is the scope that is to be investigated to
       --  see whether an elaboration check is required.
 
+      Is_DIC_Proc : Boolean := False;
+      --  Flag set when the call denotes the Default_Initial_Condition
+      --  procedure of a private type which wraps a non-trivila assertion
+      --  expression.
+
       Issue_In_SPARK : Boolean;
       --  Flag set when a source entity is called during elaboration in SPARK
 
@@ -966,7 +971,16 @@ package body Sem_Elab is
          return;
       end if;
 
-      Issue_In_SPARK := SPARK_Mode = On and Comes_From_Source (Ent);
+      Is_DIC_Proc := Is_Non_Trivial_Default_Init_Cond_Procedure (Ent);
+
+      --  Elaboration issues in SPARK are reported only for source constructs
+      --  and for non-trivial Default_Initial_Condition procedures. The latter
+      --  must be checked because the default initialization of an object of a
+      --  private type triggers the evaluation of the Default_Initial_Condition
+      --  expression which in turn may have side effects.
+
+      Issue_In_SPARK :=
+        SPARK_Mode = On and (Comes_From_Source (Ent) or Is_DIC_Proc);
 
       --  Now check if an Elaborate_All (or dynamic check) is needed
 
@@ -1016,7 +1030,20 @@ package body Sem_Elab is
                   Ent);
 
             elsif Issue_In_SPARK then
-               Error_Msg_NE ("call to & during elaboration in SPARK", N, Ent);
+
+               --  Emit a specialized error message when the elaboration of an
+               --  object of a private type evaluates the expression of pragma
+               --  Default_Initial_Condition. This prevents the internal name
+               --  of the procedure from appearing in the error message.
+
+               if Is_DIC_Proc then
+                  Error_Msg_N
+                    ("call to Default_Initial_Condition during elaboration in "
+                     & "SPARK", N);
+               else
+                  Error_Msg_NE
+                    ("call to & during elaboration in SPARK", N, Ent);
+               end if;
 
             else
                Elab_Warning

@@ -1877,9 +1877,8 @@ package body Sem_Ch10 is
                   --  the extended main unit.
 
                   if Generate_SCO
-                    and then
-                      In_Extended_Main_Source_Unit
-                        (Cunit_Entity (Current_Sem_Unit))
+                    and then In_Extended_Main_Source_Unit
+                               (Cunit_Entity (Current_Sem_Unit))
                   then
                      SCO_Record_Raw (Unum);
                   end if;

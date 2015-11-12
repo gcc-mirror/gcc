@@ -1433,6 +1433,12 @@ package Sem_Util is
    --  parameter of the current enclosing subprogram.
    --  Why are OUT parameters not considered here ???
 
+   function Is_Non_Trivial_Default_Init_Cond_Procedure
+     (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id denotes the procedure which verifies the
+   --  assertion expression of pragma Default_Initial_Condition and if it does,
+   --  the encapsulated expression is non-trivial.
+
    function Is_Object_Reference (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents an object. Both
    --  variable and constant objects return True (compare Is_Variable).

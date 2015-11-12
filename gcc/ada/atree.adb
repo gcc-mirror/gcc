@@ -794,7 +794,7 @@ package body Atree is
    ------------------------
 
    function Copy_Separate_Tree (Source : Node_Id) return Node_Id is
-      New_Id  : Node_Id;
+      New_Id : Node_Id;
 
       function Copy_Entity (E : Entity_Id) return Entity_Id;
       --  Copy Entity, copying only the Ekind and Chars fields
@@ -803,8 +803,8 @@ package body Atree is
       --  Copy list
 
       function Possible_Copy (Field : Union_Id) return Union_Id;
-      --  Given a field, returns a copy of the node or list if its parent
-      --  is the current source node, and otherwise returns the input
+      --  Given a field, returns a copy of the node or list if its parent is
+      --  the current source node, and otherwise returns the input.
 
       -----------------
       -- Copy_Entity --
@@ -871,8 +871,7 @@ package body Atree is
 
       begin
          if Field in Node_Range then
-            New_N :=
-              Union_Id (Copy_Separate_Tree (Node_Id (Field)));
+            New_N := Union_Id (Copy_Separate_Tree (Node_Id (Field)));
 
             if Parent (Node_Id (Field)) = Source then
                Set_Parent (Node_Id (New_N), New_Id);
