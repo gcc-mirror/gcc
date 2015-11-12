@@ -1,3 +1,9 @@
+2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/visium-protos.h (notice_update_cc): Delete.
+	(print_operand): Likewise.
+	(print_operand_address): Likewise.
+
 2015-11-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.h (FUNCTION_VALUE, LIBCALL_VALUE,
