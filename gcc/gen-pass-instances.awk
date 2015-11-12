@@ -41,25 +41,27 @@ BEGIN {
 function handle_line()
 {
 	line = $0;
+
 	where = match(line, /NEXT_PASS \((.+)\)/);
-	if (where != 0)
+	if (where == 0)
 	{
-		len_of_start = length("NEXT_PASS (");
-		len_of_end = length(")");
-		len_of_pass_name = RLENGTH - (len_of_start + len_of_end);
-		pass_starts_at = where + len_of_start;
-		pass_name = substr(line, pass_starts_at, len_of_pass_name);
-		if (pass_name in pass_counts)
-			pass_counts[pass_name]++;
-		else
-			pass_counts[pass_name] = 1;
-		printf "%s, %s%s\n",
-			substr(line, 1, pass_starts_at + len_of_pass_name - 1),
-			pass_counts[pass_name],
-			substr(line, pass_starts_at + len_of_pass_name);
-	} else {
 		print line;
+		return;
 	}
+
+	len_of_start = length("NEXT_PASS (");
+	len_of_end = length(")");
+	len_of_pass_name = RLENGTH - (len_of_start + len_of_end);
+	pass_starts_at = where + len_of_start;
+	pass_name = substr(line, pass_starts_at, len_of_pass_name);
+	if (pass_name in pass_counts)
+		pass_counts[pass_name]++;
+	else
+		pass_counts[pass_name] = 1;
+	printf "%s, %s%s\n",
+		substr(line, 1, pass_starts_at + len_of_pass_name - 1),
+		pass_counts[pass_name],
+		substr(line, pass_starts_at + len_of_pass_name);
 }
 
 { handle_line() }
