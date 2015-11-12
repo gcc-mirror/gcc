@@ -909,14 +909,9 @@ verify_data_ref_alignment (data_reference_p dr)
   gimple *stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
-  if (!STMT_VINFO_RELEVANT_P (stmt_info))
-    return true;
-
-  /* For interleaving, only the alignment of the first access matters. 
-     Skip statements marked as not vectorizable.  */
-  if ((STMT_VINFO_GROUPED_ACCESS (stmt_info)
-       && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
-      || !STMT_VINFO_VECTORIZABLE (stmt_info))
+  /* For interleaving, only the alignment of the first access matters.   */
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+      && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
     return true;
 
   /* Strided accesses perform only component accesses, alignment is
@@ -965,8 +960,15 @@ vect_verify_datarefs_alignment (loop_vec_info vinfo)
   unsigned int i;
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
-    if (! verify_data_ref_alignment (dr))
-      return false;
+    {
+      gimple *stmt = DR_STMT (dr);
+      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+      if (!STMT_VINFO_RELEVANT_P (stmt_info))
+	continue;
+      if (! verify_data_ref_alignment (dr))
+	return false;
+    }
 
   return true;
 }

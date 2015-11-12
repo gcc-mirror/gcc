@@ -1,3 +1,8 @@
+2015-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68306
+	* gcc.dg/pr68306.c: New testcase.
+
 2015-11-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement D0013R2, logical type traits.
