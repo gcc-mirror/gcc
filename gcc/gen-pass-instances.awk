@@ -43,8 +43,8 @@ function handle_line()
 	line = $0;
 
 	# Find call expression.
-	where = match(line, /NEXT_PASS \((.+)\)/);
-	if (where == 0)
+	call_starts_at = match(line, /NEXT_PASS \((.+)\)/);
+	if (call_starts_at == 0)
 	{
 		print line;
 		return;
@@ -59,7 +59,7 @@ function handle_line()
 
 	# Find pass_name argument
 	len_of_pass_name = len_of_call - (len_of_start + len_of_close);
-	pass_starts_at = where + len_of_start;
+	pass_starts_at = call_starts_at + len_of_start;
 	pass_name = substr(line, pass_starts_at, len_of_pass_name);
 
 	# Find call expression prefix (until and including called function)
