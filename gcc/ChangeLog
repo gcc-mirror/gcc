@@ -1,3 +1,9 @@
+2015-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	[ARM] Remove neon-testgen.ml and generated tests.
+
+	* config/arm/neon-testgen.ml: Remove.
+
 2015-11-12  Jim Wilson  <jim.wilson@linaro.org>
 
 	* config/aarch64/aarch64-cores.def (qdf24xx): New.
