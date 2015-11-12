@@ -25408,6 +25408,14 @@ package body Sem_Prag is
                         SPARK_Msg_N
                           ("\all constituents must be declared before body #",
                            N);
+
+                        --  A misplaced constituent is a critical error because
+                        --  pragma Refined_Depends or Refined_Global depends on
+                        --  the proper link between a state and a constituent.
+                        --  Stop the compilation, as this leads to a multitude
+                        --  of misleading cascaded errors.
+
+                        raise Program_Error;
                      end if;
 
                   --  The constituent is a valid state or object

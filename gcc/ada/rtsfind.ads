@@ -640,6 +640,7 @@ package Rtsfind is
      RE_Max_Predef_Prims,                -- Ada.Tags
      RE_Needs_Finalization,              -- Ada.Tags
      RE_No_Dispatch_Table_Wrapper,       -- Ada.Tags
+     RE_No_Tag,                          -- Ada.Tags
      RE_NDT_Prims_Ptr,                   -- Ada.Tags
      RE_NDT_TSD,                         -- Ada.Tags
      RE_Num_Prims,                       -- Ada.Tags
@@ -1871,6 +1872,7 @@ package Rtsfind is
      RE_Max_Predef_Prims                 => Ada_Tags,
      RE_Needs_Finalization               => Ada_Tags,
      RE_No_Dispatch_Table_Wrapper        => Ada_Tags,
+     RE_No_Tag                           => Ada_Tags,
      RE_NDT_Prims_Ptr                    => Ada_Tags,
      RE_NDT_TSD                          => Ada_Tags,
      RE_Num_Prims                        => Ada_Tags,

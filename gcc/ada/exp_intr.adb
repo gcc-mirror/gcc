@@ -311,6 +311,31 @@ package body Exp_Intr is
 
       Remove_Side_Effects (Tag_Arg);
 
+      --  Check that we have a proper tag
+
+      Insert_Action (N,
+        Make_Implicit_If_Statement (N,
+          Condition       => Make_Op_Eq (Loc,
+            Left_Opnd  => New_Copy_Tree (Tag_Arg),
+            Right_Opnd => New_Occurrence_Of (RTE (RE_No_Tag), Loc)),
+
+          Then_Statements => New_List (
+            Make_Raise_Statement (Loc,
+              New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
+
+      --  Check that it is not the tag of an abstract type
+
+      Insert_Action (N,
+        Make_Implicit_If_Statement (N,
+          Condition       => Make_Function_Call (Loc,
+             Name                   =>
+               New_Occurrence_Of (RTE (RE_Type_Is_Abstract), Loc),
+             Parameter_Associations => New_List (New_Copy_Tree (Tag_Arg))),
+
+          Then_Statements => New_List (
+            Make_Raise_Statement (Loc,
+              New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
+
       --  The subprogram is the third actual in the instantiation, and is
       --  retrieved from the corresponding renaming declaration. However,
       --  freeze nodes may appear before, so we retrieve the declaration
@@ -323,6 +348,22 @@ package body Exp_Intr is
 
       Act_Constr := Entity (Name (Act_Rename));
       Result_Typ := Class_Wide_Type (Etype (Act_Constr));
+
+      --  Check that the accessibility level of the tag is no deeper than that
+      --  of the constructor function.
+
+      Insert_Action (N,
+        Make_Implicit_If_Statement (N,
+          Condition       =>
+            Make_Op_Gt (Loc,
+              Left_Opnd  =>
+                Build_Get_Access_Level (Loc, New_Copy_Tree (Tag_Arg)),
+              Right_Opnd =>
+                Make_Integer_Literal (Loc, Scope_Depth (Act_Constr))),
+
+          Then_Statements => New_List (
+            Make_Raise_Statement (Loc,
+              New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
 
       if Is_Interface (Etype (Act_Constr)) then
 
@@ -390,7 +431,6 @@ package body Exp_Intr is
       --  conversion of the call to the actual constructor.
 
       Rewrite (N, Convert_To (Result_Typ, Cnstr_Call));
-      Analyze_And_Resolve (N, Etype (Act_Constr));
 
       --  Do not generate a run-time check on the built object if tag
       --  checks are suppressed for the result type or tagged type expansion
@@ -458,6 +498,8 @@ package body Exp_Intr is
                  Make_Raise_Statement (Loc,
                    Name => New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
       end if;
+
+      Analyze_And_Resolve (N, Etype (Act_Constr));
    end Expand_Dispatching_Constructor_Call;
 
    ---------------------------

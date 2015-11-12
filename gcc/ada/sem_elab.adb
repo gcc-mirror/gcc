@@ -599,7 +599,7 @@ package body Sem_Elab is
 
       Is_DIC_Proc : Boolean := False;
       --  Flag set when the call denotes the Default_Initial_Condition
-      --  procedure of a private type which wraps a non-trivila assertion
+      --  procedure of a private type that wraps a nontrivial assertion
       --  expression.
 
       Issue_In_SPARK : Boolean;
@@ -971,13 +971,13 @@ package body Sem_Elab is
          return;
       end if;
 
-      Is_DIC_Proc := Is_Non_Trivial_Default_Init_Cond_Procedure (Ent);
+      Is_DIC_Proc := Is_Nontrivial_Default_Init_Cond_Procedure (Ent);
 
       --  Elaboration issues in SPARK are reported only for source constructs
-      --  and for non-trivial Default_Initial_Condition procedures. The latter
+      --  and for nontrivial Default_Initial_Condition procedures. The latter
       --  must be checked because the default initialization of an object of a
       --  private type triggers the evaluation of the Default_Initial_Condition
-      --  expression which in turn may have side effects.
+      --  expression, which in turn may have side effects.
 
       Issue_In_SPARK :=
         SPARK_Mode = On and (Comes_From_Source (Ent) or Is_DIC_Proc);

@@ -193,7 +193,7 @@ package body Inline is
 
    function Has_Initialized_Type (E : Entity_Id) return Boolean;
    --  If a candidate for inlining contains type declarations for types with
-   --  non-trivial initialization procedures, they are not worth inlining.
+   --  nontrivial initialization procedures, they are not worth inlining.
 
    function Has_Single_Return (N : Node_Id) return Boolean;
    --  In general we cannot inline functions that return unconstrained type.

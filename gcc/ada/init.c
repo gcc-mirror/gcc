@@ -1919,11 +1919,11 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
 {
   sigset_t mask;
 
-  /* VxWorks 7 on e500v2 clears the SPE bit of the MSR when entering CPU
+  /* VxWorks on e500v2 clears the SPE bit of the MSR when entering CPU
      exception state. To allow the handler and exception to work properly
      when they contain SPE instructions, we need to set it back before doing
      anything else. */
-#if (CPU == PPCE500V2) && (_WRS_VXWORKS_MAJOR == 7)
+#if (CPU == PPCE500V2) || (CPU == PPC85XX)
   register unsigned msr;
   /* Read the MSR value */
   asm volatile ("mfmsr %0" : "=r" (msr));

@@ -12362,11 +12362,11 @@ package body Sem_Util is
       end if;
    end Is_Local_Variable_Reference;
 
-   ------------------------------------------------
-   -- Is_Non_Trivial_Default_Init_Cond_Procedure --
-   ------------------------------------------------
+   -----------------------------------------------
+   -- Is_Nontrivial_Default_Init_Cond_Procedure --
+   -----------------------------------------------
 
-   function Is_Non_Trivial_Default_Init_Cond_Procedure
+   function Is_Nontrivial_Default_Init_Cond_Procedure
      (Id : Entity_Id) return Boolean
    is
       Body_Decl : Node_Id;
@@ -12386,7 +12386,7 @@ package body Sem_Util is
 
          pragma Assert (Present (Handled_Statement_Sequence (Body_Decl)));
 
-         --  To qualify as non-trivial, the first statement of the procedure
+         --  To qualify as nontrivial, the first statement of the procedure
          --  must be a check in the form of an if statement. If the original
          --  Default_Initial_Condition expression was folded, then the first
          --  statement is not a check.
@@ -12399,7 +12399,7 @@ package body Sem_Util is
       end if;
 
       return False;
-   end Is_Non_Trivial_Default_Init_Cond_Procedure;
+   end Is_Nontrivial_Default_Init_Cond_Procedure;
 
    -------------------------
    -- Is_Object_Reference --

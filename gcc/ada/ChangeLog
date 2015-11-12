@@ -1,3 +1,41 @@
+2015-11-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb, sem_ch3.adb, exp_util.ads, inline.adb, freeze.adb,
+	sem_util.adb, sem_util.ads, par-ch6.adb, sem_elab.adb: Minor
+	reformatting and a typo fix.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Preanalyze_Actuals): Add guard on use of
+	Incomplete_Actuals, which are only stored for a package
+	instantiation, in order to place the instance in the body of
+	the enclosing unit.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_intr.adb: Add legality checks on calls to a
+	Generic_Dispatching_Constructor: the given tag must be defined,
+	it cannot be the tag of an abstract type, and its accessibility
+	level must not be greater than that of the constructor.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing, Constant_Indexing_OK):	If
+	the context is an overloaded call, assume that Constant_Indexing
+	is not OK if an interpretation has an assignable parameter
+	corresponding to the indexing expression.
+
+2015-11-12  Jerome Lambourg  <lambourg@adacore.com>
+
+	* init.c (__gnat_error_handler): Force the SPE bit of the MSR
+	when executing on e500v2 CPU.
+
+2015-11-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Constituent): Stop the
+	analysis after detecting a misplaced constituent as this is a
+	critical error.
+
 2015-11-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch10.adb, atree.adb: Minor reformatting.
