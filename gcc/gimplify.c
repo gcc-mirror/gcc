@@ -176,6 +176,7 @@ static struct gimplify_omp_ctx *gimplify_omp_ctxp;
 
 /* Forward declaration.  */
 static enum gimplify_status gimplify_compound_expr (tree *, gimple_seq *, bool);
+static hash_map<tree, tree> *oacc_declare_returns;
 
 /* Shorter alias name for the above function for use in gimplify.c
    only.  */
@@ -1078,6 +1079,7 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
   gimple_seq body, cleanup;
   gcall *stack_save;
   location_t start_locus = 0, end_locus = 0;
+  tree ret_clauses = NULL;
 
   tree temp = voidify_wrapper_expr (bind_expr, NULL);
 
@@ -1179,7 +1181,37 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	  clobber_stmt = gimple_build_assign (t, clobber);
 	  gimple_set_location (clobber_stmt, end_locus);
 	  gimplify_seq_add_stmt (&cleanup, clobber_stmt);
+
+	  if (flag_openacc && oacc_declare_returns != NULL)
+	    {
+	      tree *c = oacc_declare_returns->get (t);
+	      if (c != NULL)
+		{
+		  if (ret_clauses)
+		    OMP_CLAUSE_CHAIN (*c) = ret_clauses;
+
+		  ret_clauses = *c;
+
+		  oacc_declare_returns->remove (t);
+
+		  if (oacc_declare_returns->elements () == 0)
+		    {
+		      delete oacc_declare_returns;
+		      oacc_declare_returns = NULL;
+		    }
+		}
+	    }
 	}
+    }
+
+  if (ret_clauses)
+    {
+      gomp_target *stmt;
+      gimple_stmt_iterator si = gsi_start (cleanup);
+
+      stmt = gimple_build_omp_target (NULL, GF_OMP_TARGET_KIND_OACC_DECLARE,
+				      ret_clauses);
+      gsi_insert_seq_before_without_update (&si, stmt, GSI_NEW_STMT);
     }
 
   if (cleanup)
@@ -5809,6 +5841,26 @@ omp_notice_threadprivate_variable (struct gimplify_omp_ctx *ctx, tree decl,
   return false;
 }
 
+/* Return true if global var DECL is device resident.  */
+
+static bool
+device_resident_p (tree decl)
+{
+  tree attr = lookup_attribute ("oacc declare target", DECL_ATTRIBUTES (decl));
+
+  if (!attr)
+    return false;
+
+  for (tree t = TREE_VALUE (attr); t; t = TREE_PURPOSE (t))
+    {
+      tree c = TREE_VALUE (t);
+      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DEVICE_RESIDENT)
+	return true;
+    }
+
+  return false;
+}
+
 /* Determine outer default flags for DECL mentioned in an OMP region
    but not declared in an enclosing clause.
 
@@ -5908,6 +5960,15 @@ static unsigned
 oacc_default_clause (struct gimplify_omp_ctx *ctx, tree decl, unsigned flags)
 {
   const char *rkind;
+  bool on_device = false;
+
+  if ((ctx->region_type & (ORT_ACC_PARALLEL | ORT_ACC_KERNELS)) != 0
+      && is_global_var (decl)
+      && device_resident_p (decl))
+    {
+      on_device = true;
+      flags |= GOVD_MAP_TO_ONLY;
+    }
 
   switch (ctx->region_type)
     {
@@ -5928,7 +5989,7 @@ oacc_default_clause (struct gimplify_omp_ctx *ctx, tree decl, unsigned flags)
 	    || POINTER_TYPE_P (type))
 	  type = TREE_TYPE (type);
 
-	if (AGGREGATE_TYPE_P (type))
+	if (on_device || AGGREGATE_TYPE_P (type))
 	  /* Aggregates default to 'present_or_copy'.  */
 	  flags |= GOVD_MAP;
 	else
@@ -7818,6 +7879,121 @@ gimplify_oacc_cache (tree *expr_p, gimple_seq *pre_p)
   gimplify_adjust_omp_clauses (pre_p, &OACC_CACHE_CLAUSES (expr), OACC_CACHE);
 
   /* TODO: Do something sensible with this information.  */
+
+  *expr_p = NULL_TREE;
+}
+
+/* Helper function of gimplify_oacc_declare.  The helper's purpose is to,
+   if required, translate 'kind' in CLAUSE into an 'entry' kind and 'exit'
+   kind.  The entry kind will replace the one in CLAUSE, while the exit
+   kind will be used in a new omp_clause and returned to the caller.  */
+
+static tree
+gimplify_oacc_declare_1 (tree clause)
+{
+  HOST_WIDE_INT kind, new_op;
+  bool ret = false;
+  tree c = NULL;
+
+  kind = OMP_CLAUSE_MAP_KIND (clause);
+
+  switch (kind)
+    {
+      case GOMP_MAP_ALLOC:
+      case GOMP_MAP_FORCE_ALLOC:
+      case GOMP_MAP_FORCE_TO:
+	new_op = GOMP_MAP_FORCE_DEALLOC;
+	ret = true;
+	break;
+
+      case GOMP_MAP_FORCE_FROM:
+	OMP_CLAUSE_SET_MAP_KIND (clause, GOMP_MAP_FORCE_ALLOC);
+	new_op = GOMP_MAP_FORCE_FROM;
+	ret = true;
+	break;
+
+      case GOMP_MAP_FORCE_TOFROM:
+	OMP_CLAUSE_SET_MAP_KIND (clause, GOMP_MAP_FORCE_TO);
+	new_op = GOMP_MAP_FORCE_FROM;
+	ret = true;
+	break;
+
+      case GOMP_MAP_FROM:
+	OMP_CLAUSE_SET_MAP_KIND (clause, GOMP_MAP_FORCE_ALLOC);
+	new_op = GOMP_MAP_FROM;
+	ret = true;
+	break;
+
+      case GOMP_MAP_TOFROM:
+	OMP_CLAUSE_SET_MAP_KIND (clause, GOMP_MAP_TO);
+	new_op = GOMP_MAP_FROM;
+	ret = true;
+	break;
+
+      case GOMP_MAP_DEVICE_RESIDENT:
+      case GOMP_MAP_FORCE_DEVICEPTR:
+      case GOMP_MAP_FORCE_PRESENT:
+      case GOMP_MAP_LINK:
+      case GOMP_MAP_POINTER:
+      case GOMP_MAP_TO:
+	break;
+
+      default:
+	gcc_unreachable ();
+	break;
+    }
+
+  if (ret)
+    {
+      c = build_omp_clause (OMP_CLAUSE_LOCATION (clause), OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (c, new_op);
+      OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clause);
+    }
+
+  return c;
+}
+
+/* Gimplify OACC_DECLARE.  */
+
+static void
+gimplify_oacc_declare (tree *expr_p, gimple_seq *pre_p)
+{
+  tree expr = *expr_p;
+  gomp_target *stmt;
+  tree clauses, t;
+
+  clauses = OACC_DECLARE_CLAUSES (expr);
+
+  gimplify_scan_omp_clauses (&clauses, pre_p, ORT_TARGET_DATA, OACC_DECLARE);
+
+  for (t = clauses; t; t = OMP_CLAUSE_CHAIN (t))
+    {
+      tree decl = OMP_CLAUSE_DECL (t);
+
+      if (TREE_CODE (decl) == MEM_REF)
+	continue;
+
+      if (TREE_CODE (decl) == VAR_DECL
+	  && !is_global_var (decl)
+	  && DECL_CONTEXT (decl) == current_function_decl)
+	{
+	  tree c = gimplify_oacc_declare_1 (t);
+	  if (c)
+	    {
+	      if (oacc_declare_returns == NULL)
+		oacc_declare_returns = new hash_map<tree, tree>;
+
+	      oacc_declare_returns->put (decl, c);
+	    }
+	}
+
+      omp_add_variable (gimplify_omp_ctxp, decl, GOVD_SEEN);
+    }
+
+  stmt = gimple_build_omp_target (NULL, GF_OMP_TARGET_KIND_OACC_DECLARE,
+				  clauses);
+
+  gimplify_seq_add_stmt (pre_p, stmt);
 
   *expr_p = NULL_TREE;
 }
@@ -10182,8 +10358,12 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  break;
 
 	case OACC_HOST_DATA:
-	case OACC_DECLARE:
 	  sorry ("directive not yet implemented");
+	  ret = GS_ALL_DONE;
+	  break;
+
+	case OACC_DECLARE:
+	  gimplify_oacc_declare (expr_p, pre_p);
 	  ret = GS_ALL_DONE;
 	  break;
 

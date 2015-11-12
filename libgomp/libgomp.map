@@ -392,6 +392,7 @@ GOACC_2.0 {
 
 GOACC_2.0.1 {
   global:
+	GOACC_declare;
 	GOACC_parallel_keyed;
 } GOACC_2.0;
 

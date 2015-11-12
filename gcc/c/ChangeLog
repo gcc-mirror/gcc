@@ -1,3 +1,15 @@
+2015-11-12  James Norris  <jnorris@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_pragma): Handle PRAGMA_OACC_DECLARE.
+	(c_parser_omp_clause_name): Handle 'device_resident' clause.
+	(c_parser_oacc_data_clause): Handle PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT
+	and PRAGMA_OMP_CLAUSE_LINK.
+	(c_parser_oacc_all_clauses): Handle PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT
+	and PRAGMA_OACC_CLAUSE_LINK.
+	(OACC_DECLARE_CLAUSE_MASK): New definition.
+	(c_parser_oacc_declare): New function.
+
 2015-11-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/67784
