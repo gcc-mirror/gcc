@@ -1,3 +1,27 @@
+2015-11-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat1drv.adb, opt.ads: Minor reformatting.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Number_Declaration): Call Analyze_Dimension,
+	to propagate dimension information from expression to named
+	number.
+	* sem_dim.ads: Documentation:  number declaration and explicit
+	dereference can carry dimension information.
+	* sem_dim.adb (Analyze_Dimension_Number_Declaration): New
+	procedure, to propagate dimension information from expression
+	of declaration to named number, whose type becomes one of the
+	dimensioned base types rather than universal real.
+	(Analyze_Dimension_Binary_Op):
+	a) If one operand is a literal that is the value of a declared
+	constant after constant-foloding, use the dimensions of the
+	declared constant.
+	b) If an operand is a literal that is a contant-folded expression,
+	and expander is active, do not report a dimension mismatch if
+	literal does not carry them, because dimension matching will
+	have been checked previously.
+
 2015-11-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Find_Selected_Component): In a synchronized

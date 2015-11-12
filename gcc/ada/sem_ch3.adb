@@ -3270,6 +3270,8 @@ package body Sem_Ch3 is
          Rewrite (E, Make_Integer_Literal (Sloc (N), 1));
          Set_Etype (E, Any_Type);
       end if;
+
+      Analyze_Dimension (N);
    end Analyze_Number_Declaration;
 
    --------------------------------

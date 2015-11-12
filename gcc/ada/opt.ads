@@ -200,7 +200,7 @@ package Opt is
 
    Alternate_Main_Name : String_Ptr := null;
    --  GNATBIND
-   --  Set to non null when Bind_Alternate_Main_Name is True. This value
+   --  Set to non-null when Bind_Alternate_Main_Name is True. This value
    --  is modified as needed by Gnatbind.Scan_Bind_Arg.
 
    ASIS_Mode : Boolean := False;
@@ -424,7 +424,7 @@ package Opt is
    --  The value given to the -g parameter. The default value for -g with
    --  no value is 2. If no -g is specified, defaults to 0.
    --  Note that the generated code should never depend on this variable,
-   --  since we want debug info to be non intrusive on the generate code.
+   --  since we want debug info to be nonintrusive on the generate code.
 
    Default_Exit_Status : Int := 0;
    --  GNATBIND
@@ -1317,8 +1317,8 @@ package Opt is
 
    Setup_Projects : Boolean := False;
    --  GNAT DRIVER
-   --  Set to True for GNAT SETUP: the Project Manager creates non existing
-   --  object, library and exec directories.
+   --  Set to True for GNAT SETUP: the Project Manager creates nonexistent
+   --  object, library, and exec directories.
 
    Shared_Libgnat : Boolean;
    --  GNATBIND
@@ -1880,7 +1880,7 @@ package Opt is
    --  to date version of Ada).
 
    Ada_Version_Pragma_Config : Node_Id;
-   --  This will be set non empty if it is set by a configuration pragma
+   --  This will be set nonempty if it is set by a configuration pragma
 
    Ada_Version_Explicit_Config : Ada_Version_Type;
    --  GNAT
