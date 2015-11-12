@@ -1878,7 +1878,7 @@ package body Ch6 is
          Scan; -- past ;
          Ret_Node := New_Node (N_Simple_Return_Statement, Ret_Sloc);
 
-      --  Non-trivial case
+      --  Nontrivial case
 
       else
          --  Simple_return_statement with expression

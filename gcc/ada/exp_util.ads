@@ -806,7 +806,7 @@ package Exp_Util is
      (Decl : Node_Id;
       Typ  : Entity_Id) return Boolean;
    --  Check whether the expression in an address clause is restricted to
-   --  consist of constants, when the object has a non-trivial initialization
+   --  consist of constants, when the object has a nontrivial initialization
    --  or is controlled.
 
    function Needs_Finalization (T : Entity_Id) return Boolean;

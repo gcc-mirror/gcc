@@ -7190,10 +7190,43 @@ package body Sem_Ch4 is
                begin
                   --  We should look for an interpretation with the proper
                   --  number of formals, and determine whether it is an
-                  --  In_Parameter, but for now assume that in the overloaded
-                  --  case constant indexing is legal. To be improved ???
+                  --  In_Parameter, but for now we examine the formal that
+                  --  corresponds to the indexing, and assume that variable
+                  --  indexing is required if some interpretation has an
+                  --  assignable formal at that position.  Still does not
+                  --  cover the most complex cases ???
 
                   if Is_Overloaded (Name (Parent (Par))) then
+                     declare
+                        Proc : constant Node_Id := Name (Parent (Par));
+                        A    : Node_Id;
+                        F    : Entity_Id;
+                        I    : Interp_Index;
+                        It   : Interp;
+
+                     begin
+                        Get_First_Interp (Proc, I, It);
+                        while Present (It.Nam) loop
+                           F := First_Formal (It.Nam);
+                           A := First (Parameter_Associations (Parent (Par)));
+
+                           while Present (F) and then Present (A) loop
+                              if A = Par then
+                                 if Ekind (F) /= E_In_Parameter then
+                                    return False;
+                                 else
+                                    exit;  --  interpretation is safe
+                                 end if;
+                              end if;
+
+                              Next_Formal (F);
+                              Next_Actual (A);
+                           end loop;
+
+                           Get_Next_Interp (I, It);
+                        end loop;
+                     end;
+
                      return True;
 
                   else

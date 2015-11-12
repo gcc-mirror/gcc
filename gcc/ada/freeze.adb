@@ -1452,7 +1452,7 @@ package body Freeze is
          return;
       end if;
 
-      --  The situation that is non trivial is something like
+      --  The situation that is nontrivial is something like:
 
       --     subtype x1 is integer range -10 .. +10;
       --     subtype x2 is x1 range 0 .. V1;

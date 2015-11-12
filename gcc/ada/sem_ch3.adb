@@ -3051,9 +3051,9 @@ package body Sem_Ch3 is
          End_Scope;
       end if;
 
-      --  If the type has discriminants, non-trivial subtypes may be
-      --  declared before the full view of the type. The full views of those
-      --  subtypes will be built after the full view of the type.
+      --  If the type has discriminants, nontrivial subtypes may be declared
+      --  before the full view of the type. The full views of those subtypes
+      --  will be built after the full view of the type.
 
       Set_Private_Dependents (T, New_Elmt_List);
       Set_Is_Pure            (T, F);
