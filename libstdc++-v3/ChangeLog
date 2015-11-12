@@ -1,3 +1,20 @@
+2015-11-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement D0013R2, logical type traits.
+
+	* include/experimental/type_traits (conjunction, disjunction,
+	negation, conjunction_v, disjunction_v,	negation_v): New.
+	* include/std/type_traits (conjunction, disjunction, negation):
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/experimental/type_traits/value.cc: Likewise.
+	* testsuite/20_util/logical_traits/requirements/explicit_instantiation.cc: New.
+	* testsuite/20_util/logical_traits/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/logical_traits/value.cc: Likewise.
+
 2015-11-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/string_view.tcc: Fix doxygen @file.
