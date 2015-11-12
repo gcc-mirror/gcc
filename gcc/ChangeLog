@@ -1,3 +1,117 @@
+2015-11-11  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-isl-ast-to-gimple.c (class translate_isl_ast_to_gimple):
+	New member codegen_error
+	(translate_isl_ast_for_loop): Remove call to single_succ_edge and
+	early return.
+	(translate_isl_ast_node_user): Early return in case of error.
+	(translate_isl_ast_to_gimple::translate_isl_ast): Same.
+	(translate_isl_ast_to_gimple::translate_pending_phi_nodes): New.
+	(add_parameters_to_ivs_params): Remove macro.
+	(graphite_regenerate_ast_isl): Add if_region pointer to region.
+	* graphite-poly.c (new_poly_dr): Remove macro.
+	(print_pdr): Same.
+	(new_gimple_poly_bb): Same.
+	(free_gimple_poly_bb): Same.
+	(print_scop_params): Same.
+	* graphite-poly.h (struct poly_dr): Same.
+	(struct poly_bb): Add new_bb.
+	(gbb_from_bb): Remove dead code.
+	(pbb_from_bb): Same.
+	* graphite-scop-detection.c (parameter_index_in_region_1): Same.
+	(parameter_index_in_region): Same.
+	(find_scop_parameters): Same.
+	(build_cross_bb_scalars_def): New.
+	(build_cross_bb_scalars_use): New.
+	(graphite_find_cross_bb_scalar_vars): New
+	(try_generate_gimple_bb): Reads and Writes.
+	(build_alias_set): Move.
+	(gather_bbs::before_dom_children): Gather bbs visited.
+	(build_scops): call build_alias_set.
+	* graphite-sese-to-poly.c (phi_arg_in_outermost_loop): Delete.
+	(remove_simple_copy_phi): Delete.
+	(remove_invariant_phi): Delete.
+	(simple_copy_phi_p): Delete.
+	(reduction_phi_p): Delete.
+	(isl_id_for_dr): Remove unused param.
+	(parameter_index_in_region_1): Remove macro usage.
+	(set_scop_parameter_dim): Same.
+	(add_param_constraints): Same.
+	(add_conditions_to_constraints): Same
+	(build_scop_iteration_domain): Same.
+	(pdr_add_alias_set): Comment.
+	(add_scalar_version_numbers): New.
+	(build_poly_dr): ISL id.
+	(build_scop_drs): Move.
+	(build_poly_sr_1): Same.
+	(insert_stmts): Remove.
+	(build_poly_sr): New.
+	(new_pbb_from_pbb): Delete.
+	(insert_out_of_ssa_copy_on_edge): Delete.
+	(create_zero_dim_array): Delete.
+	(scalar_close_phi_node_p): Delete.
+	(propagate_expr_outside_region): Delete.
+	(rewrite_close_phi_out_of_ssa): Delete.
+	(rewrite_phi_out_of_ssa): Delete.
+	(rewrite_degenerate_phi): Delete.
+	(rewrite_reductions_out_of_ssa): Delete.
+	(rewrite_cross_bb_scalar_dependence): Delete.
+	(handle_scalar_deps_crossing_scop_limits):
+	(rewrite_cross_bb_scalar_deps): Delete.
+	(build_poly_scop): Remove calls to out-of-ssa functions.
+	* graphite.c (graphite_transform_loops): Early return in case of
+	codegen error.
+	* sese.c (debug_rename_map_1): Delete.
+	(debug_rename_map): Delete.
+	(sese_record_loop): Remove macro.
+	(build_sese_loop_nests): Same.
+	(new_sese_info): Same.
+	(free_sese_info): Same.
+	(sese_insert_phis_for_liveouts):
+	(is_loop_closed_ssa_use): New.
+	(number_of_phi_nodes): New.
+	(bb_contains_loop_close_phi_nodes): New.
+	(bb_contains_loop_phi_nodes): New.
+	(phi_uses_name): New.
+	(is_valid_rename):
+	(get_rename): Add old_bb and loop_phi for more precise matching of
+	exprs.
+	(set_rename): Pass region.
+	(later_of_the_two): New.
+	(gsi_insert_earliest): New.
+	(collect_all_ssa_names): New.
+	(substitute_ssa_name): New.
+	(rename_all_uses): New.
+	(get_rename_from_scev): New.
+	(rename_uses): Pass old_bb for more precise matching of exprs.
+	(get_def_bb_for_const): New.
+	(get_new_name): New.
+	(get_loc): New.
+	(get_edges): New.
+	(copy_loop_phi_args): New.
+	(copy_loop_phi_nodes): New.
+	(get_loop_init_value): New.
+	(find_init_value): New.
+	(find_init_value_close_phi): New.
+	(copy_loop_close_phi_args): New.
+	(copy_loop_close_phi_nodes): New.
+	(add_phi_arg_for_new_expr): New.
+	(copy_cond_phi_args): New.
+	(copy_cond_phi_nodes): New.
+	(copy_phi_nodes): New.
+	(should_copy_to_new_region): New.
+	(set_rename_for_each_def): New.
+	(graphite_copy_stmts_from_block): Early return in case of error.
+	(copy_bb_and_scalar_dependences): Same.
+	* sese.h (vec_find): New.
+	(SESE_PARAMS): Delete.
+	(SESE_LOOPS): Delete.
+	(SESE_LOOP_NEST): Delete.
+	(sese_contains_loop): Remove macro usage.
+	(sese_nb_params): Same.
+	(struct gimple_poly_bb): Added read_scalar_refs, write_scalar_refs.
+
 2015-11-11  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
 
 	* graphite-sese-to-poly.c (build_scop_original_schedule): Call

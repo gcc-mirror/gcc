@@ -333,12 +333,16 @@ graphite_transform_loops (void)
 
 	if (dump_file && dump_flags)
 	  print_scop (dump_file, scop);
-
 	if (scop->poly_scop_p
-	    && apply_poly_transforms (scop)
-	    && graphite_regenerate_ast_isl (scop))
-	  need_cfg_cleanup_p = true;
-
+	    && apply_poly_transforms (scop))
+	  {
+	    need_cfg_cleanup_p = true;
+	    /* When code generation is not successful, do not continue
+	       generating code for the next scops: the IR has to be cleaned up
+	       and could be in an inconsistent state.  */
+	    if (!graphite_regenerate_ast_isl (scop))
+	      break;
+	  }
       }
 
   free_scops (scops);
