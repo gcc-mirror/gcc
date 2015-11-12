@@ -731,6 +731,12 @@ package System.OS_Lib is
    --  Argument_List. Note that the result is allocated on the heap, and must
    --  be freed by the programmer (when it is no longer needed) to avoid
    --  memory leaks.
+   --  On Windows, backslashes are used as directory separators. On Unix,
+   --  however, they are used to escape the following character, so that for
+   --  instance "-d=name\ with\ space" is a single argument. In the result
+   --  list, the backslashes have been cleaned up when needed. The previous
+   --  example will thus result a single-element array, where the element is
+   --  "-d=name with space" (Unix) or "-d=name\ with\ space" (windows).
 
    procedure Kill (Pid : Process_Id; Hard_Kill : Boolean := True);
    --  Kill the process designated by Pid. Does nothing if Pid is Invalid_Pid

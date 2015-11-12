@@ -5980,7 +5980,7 @@ package body Exp_Ch6 is
 
       Utyp : constant Entity_Id := Underlying_Type (R_Type);
 
-      Exp : constant Node_Id := Expression (N);
+      Exp : Node_Id := Expression (N);
       pragma Assert (Present (Exp));
 
       Exptyp : constant Entity_Id := Etype (Exp);
@@ -5996,11 +5996,24 @@ package body Exp_Ch6 is
 
    begin
       if Is_Class_Wide_Type (R_Type)
-        and then not Is_Class_Wide_Type (Etype (Exp))
+        and then not Is_Class_Wide_Type (Exptyp)
+        and then Nkind (Exp) /= N_Type_Conversion
       then
-         Subtype_Ind := New_Occurrence_Of (Etype (Exp), Loc);
+         Subtype_Ind := New_Occurrence_Of (Exptyp, Loc);
       else
          Subtype_Ind := New_Occurrence_Of (R_Type, Loc);
+
+         --  If the result type is class-wide and the expression is a view
+         --  conversion, the conversion plays no role in the expansion because
+         --  it does not modify the tag of the object. Remove the conversion
+         --  altogether to prevent tag overwriting.
+
+         if Is_Class_Wide_Type (R_Type)
+           and then not Is_Class_Wide_Type (Exptyp)
+           and then Nkind (Exp) = N_Type_Conversion
+         then
+            Exp := Expression (Exp);
+         end if;
       end if;
 
       --  For the case of a simple return that does not come from an extended
