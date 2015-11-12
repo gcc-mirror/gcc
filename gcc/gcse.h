@@ -40,5 +40,6 @@ extern struct target_gcse *this_target_gcse;
 #endif
 
 void gcse_c_finalize (void);
+extern bool gcse_or_cprop_is_too_expensive (const char *);
 
 #endif

@@ -1,3 +1,17 @@
+2015-11-12  Brad Lucier  <lucier@math.purdue.edu>
+
+	* gcc/cprop.c (is_too_expensive): Remove.
+	(gcse.h): Include.
+	(one_cprop_pass): Call gcse_or_cprop_is_too_expensive, not
+	is_too_expensive.
+	* gcc/gcse.h (gcse_or_cprop_is_too_expensive): Declare.
+	* gcc/gcse.c (is_too_expensive): Rename to ...
+	(gcse_or_cprop_is_too_expensive): ... this.
+	Expand warning to add required size of max-gcse-memory.
+	(one_pre_gcse_pass): Use it.
+	(one_code_hoisting_pass): Use it.
+ 	* gcc/params.def (max-gcse-memory): Increase from 50MB to 128MB.
+
 2015-11-12  James Norris  <jnorris@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 

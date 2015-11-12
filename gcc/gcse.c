@@ -510,7 +510,6 @@ static void trim_ld_motion_mems (void);
 static void update_ld_motion_stores (struct gcse_expr *);
 static void clear_modify_mem_tables (void);
 static void free_modify_mem_tables (void);
-static bool is_too_expensive (const char *);
 
 #define GNEW(T)			((T *) gmalloc (sizeof (T)))
 #define GCNEW(T)		((T *) gcalloc (1, sizeof (T)))
@@ -2565,7 +2564,7 @@ one_pre_gcse_pass (void)
 
   /* Return if there's nothing to do, or it is too expensive.  */
   if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1
-      || is_too_expensive (_("PRE disabled")))
+      || gcse_or_cprop_is_too_expensive (_("PRE disabled")))
     return 0;
 
   /* We need alias.  */
@@ -3493,7 +3492,7 @@ one_code_hoisting_pass (void)
 
   /* Return if there's nothing to do, or it is too expensive.  */
   if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1
-      || is_too_expensive (_("GCSE disabled")))
+      || gcse_or_cprop_is_too_expensive (_("GCSE disabled")))
     return 0;
 
   doing_code_hoisting_p = true;
@@ -3957,9 +3956,13 @@ update_ld_motion_stores (struct gcse_expr * expr)
 /* Return true if the graph is too expensive to optimize. PASS is the
    optimization about to be performed.  */
 
-static bool
-is_too_expensive (const char *pass)
+bool
+gcse_or_cprop_is_too_expensive (const char *pass)
 {
+  unsigned int memory_request = (n_basic_blocks_for_fn (cfun)
+				 * SBITMAP_SET_SIZE (max_reg_num ())
+				 * sizeof (SBITMAP_ELT_TYPE));
+  
   /* Trying to perform global optimizations on flow graphs which have
      a high connectivity will take a long time and is unlikely to be
      particularly useful.
@@ -3981,13 +3984,12 @@ is_too_expensive (const char *pass)
 
   /* If allocating memory for the dataflow bitmaps would take up too much
      storage it's better just to disable the optimization.  */
-  if ((n_basic_blocks_for_fn (cfun)
-       * SBITMAP_SET_SIZE (max_reg_num ())
-       * sizeof (SBITMAP_ELT_TYPE)) > MAX_GCSE_MEMORY)
+  if (memory_request > MAX_GCSE_MEMORY)
     {
       warning (OPT_Wdisabled_optimization,
-	       "%s: %d basic blocks and %d registers",
-	       pass, n_basic_blocks_for_fn (cfun), max_reg_num ());
+	       "%s: %d basic blocks and %d registers; increase --param max-gcse-memory above %d",
+	       pass, n_basic_blocks_for_fn (cfun), max_reg_num (),
+	       memory_request);
 
       return true;
     }
