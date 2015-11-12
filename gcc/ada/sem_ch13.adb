@@ -4724,6 +4724,12 @@ package body Sem_Ch13 is
 
                   Find_Overlaid_Entity (N, O_Ent, Off);
 
+                  --  If the object overlays a constant view, mark it so
+
+                  if Present (O_Ent) and then Is_Constant_Object (O_Ent) then
+                     Set_Overlays_Constant (U_Ent);
+                  end if;
+
                   --  Overlaying controlled objects is erroneous.
                   --  Emit warning but continue analysis because program is
                   --  itself legal, and back-end must see address clause.
@@ -4743,12 +4749,12 @@ package body Sem_Ch13 is
 
                   --  Issue an unconditional warning for a constant overlaying
                   --  a variable. For the reverse case, we will issue it only
-                  --  if the variable is modified, see below.
+                  --  if the variable is modified.
 
-                  elsif Address_Clause_Overlay_Warnings
+                  elsif Ekind (U_Ent) = E_Constant
                     and then Present (O_Ent)
-                    and then Ekind (U_Ent) = E_Constant
-                    and then not Is_Constant_Object (O_Ent)
+                    and then not Overlays_Constant (U_Ent)
+                    and then Address_Clause_Overlay_Warnings
                   then
                      Error_Msg_N ("??constant overlays a variable", Expr);
 
@@ -4766,34 +4772,6 @@ package body Sem_Ch13 is
                   --  address clause, since it is likely aliasing is occurring.
 
                   Note_Possible_Modification (Nam, Sure => False);
-
-                  --  Here we are checking for explicit overlap of one variable
-                  --  by another, and if we find this then mark the overlapped
-                  --  variable as also being volatile to prevent unwanted
-                  --  optimizations. This is a significant pessimization so
-                  --  avoid it when there is an offset, i.e. when the object
-                  --  is composite; they cannot be optimized easily anyway.
-
-                  if Present (O_Ent)
-                    and then Is_Object (O_Ent)
-                    and then not Off
-
-                    --  The following test is an expedient solution to what
-                    --  is really a problem in CodePeer. Suppressing the
-                    --  Set_Treat_As_Volatile call here prevents later
-                    --  generation (in some cases) of trees that CodePeer
-                    --  should, but currently does not, handle correctly.
-                    --  This test should probably be removed when CodePeer
-                    --  is improved, just because we want the tree CodePeer
-                    --  analyzes to match the tree for which we generate code
-                    --  as closely as is practical. ???
-
-                    and then not CodePeer_Mode
-                  then
-                     --  ??? O_Ent might not be in current unit
-
-                     Set_Treat_As_Volatile (O_Ent);
-                  end if;
 
                   --  Legality checks on the address clause for initialized
                   --  objects is deferred until the freeze point, because
@@ -4867,39 +4845,12 @@ package body Sem_Ch13 is
                   --  Furthermore, by removing the test, we handle the
                   --  aspect case properly.
 
-                  if Address_Clause_Overlay_Warnings
-                    and then Present (O_Ent)
+                  if Present (O_Ent)
                     and then Is_Object (O_Ent)
+                    and then not Is_Generic_Type (Etype (U_Ent))
+                    and then Address_Clause_Overlay_Warnings
                   then
-                     if not Is_Generic_Type (Etype (U_Ent)) then
-                        Address_Clause_Checks.Append ((N, U_Ent, O_Ent, Off));
-                     end if;
-
-                     --  If variable overlays a constant view, and we are
-                     --  warning on overlays, then mark the variable as
-                     --  overlaying a constant and warn immediately if it
-                     --  is initialized. We will give other warnings later
-                     --  if the variable is assigned.
-
-                     if Is_Constant_Object (O_Ent)
-                       and then Ekind (U_Ent) = E_Variable
-                     then
-                        declare
-                           Init : constant Node_Id :=
-                                    Expression (Declaration_Node (U_Ent));
-                        begin
-                           Set_Overlays_Constant (U_Ent);
-
-                           if Present (Init)
-                             and then Comes_From_Source (Init)
-                           then
-                              Error_Msg_Sloc := Sloc (N);
-                              Error_Msg_NE
-                                ("??constant& may be modified via address "
-                                 & "clause#", Declaration_Node (U_Ent), O_Ent);
-                           end if;
-                        end;
-                     end if;
+                     Address_Clause_Checks.Append ((N, U_Ent, O_Ent, Off));
                   end if;
                end;
 

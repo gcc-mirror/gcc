@@ -3638,8 +3638,9 @@ package Einfo is
 --         Points to the component in the base type.
 
 --    Overlays_Constant (Flag243)
---       Defined in all entities. Set only for a variable for which there is
---       an address clause which causes the variable to overlay a constant.
+--       Defined in all entities. Set only for E_Constant or E_Variable for
+--       which there is an address clause which causes the entity to overlay
+--       a constant object.
 
 --    Overridden_Operation (Node26)
 --       Defined in subprograms. For overriding operations, points to the

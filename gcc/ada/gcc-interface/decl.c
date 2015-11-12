@@ -506,7 +506,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* Ignore constant definitions already marked with the error node.  See
 	 the N_Object_Declaration case of gnat_to_gnu for the rationale.  */
       if (definition
-	  && gnu_expr
 	  && present_gnu_tree (gnat_entity)
 	  && get_gnu_tree (gnat_entity) == error_mark_node)
 	{
@@ -1185,13 +1184,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				"compatible subtype", gnat_clause);
 		  }
 	      }
-
-	    /* If this is a deferred constant, the initializer is attached to
-	       the full view.  */
-	    if (kind == E_Constant && Present (Full_View (gnat_entity)))
-	      gnu_expr
-		= gnat_to_gnu
-		    (Expression (Declaration_Node (Full_View (gnat_entity))));
 
 	    /* If we don't have an initializing expression for the underlying
 	       variable, the initializing expression for the pointer is the

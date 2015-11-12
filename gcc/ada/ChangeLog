@@ -1,5 +1,26 @@
 2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* einfo.ads (Overlays_Constant): Document usage for E_Constant.
+	* freeze.adb (Warn_Overlay): Small reformatting.
+	(Check_Address_Clause): Deal specifically with deferred
+	constants.  For a variable or a non-imported constant
+	overlaying a constant object and with initialization value,
+	either remove the initialization or issue a warning.  Fix a
+	couple of typos.
+	* sem_util.adb (Note_Possible_Modification): Overhaul the condition for
+	the warning on modified constants and use Find_Overlaid_Entity instead
+	of doing it manually.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Compute and
+	set Overlays_Constant once on entry.  Do not treat the overlaid
+	entity as volatile.  Do not issue the warning on modified
+	constants here.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: Remove
+	over-restrictive condition for the special treatment of deferred
+	constants.
+	<E_Variable>: Remove obsolete associated code.
+
+2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Subprogram_Renaming_Decl>: Do
 	not materialize renamed subprograms if only annotating types.
 
