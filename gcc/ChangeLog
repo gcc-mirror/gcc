@@ -1,3 +1,18 @@
+2015-11-12  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* fold-const.c (fold_binary_loc) : Move Convert A/B/C to A/(B*C)
+	to match.pd.
+	Move Convert A/(B/C) to (A/B)*C to match.pd.
+	Move Convert C1/(X*C2) into (C1/C2)/X to match.pd.
+	Move Optimize (X & (-A)) / A where A is a power of 2, to
+	X >> log2(A) to match.pd.
+       
+	* match.pd (rdiv (rdiv:s @0 @1) @2): New simplifier.
+	(rdiv @0 (rdiv:s @1 @2)): New simplifier.
+	(div (convert? (bit_and @0 INTEGER_CST@1)) INTEGER_CST@2):
+	New simplifier.
+	(rdiv REAL_CST@0 (mult @1 REAL_CST@2)): New simplifier.
+
 2015-11-12  Charles Baylis  <charles.baylis@linaro.org>
 
 	* config/arm/neon.md: (neon_vld2_lane<mode>): Remove unused max

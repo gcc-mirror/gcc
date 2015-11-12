@@ -247,6 +247,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (!HONOR_SNANS (type))
   (negate @0)))
 
+(if (flag_reciprocal_math)
+ /* Convert (A/B)/C to A/(B*C)  */
+ (simplify
+  (rdiv (rdiv:s @0 @1) @2)
+   (rdiv @0 (mult @1 @2)))
+
+ /* Convert A/(B/C) to (A/B)*C  */
+ (simplify
+  (rdiv @0 (rdiv:s @1 @2))
+   (mult (rdiv @0 @1) @2)))
+
+/* Optimize (X & (-A)) / A where A is a power of 2, to X >> log2(A) */
+(for div (trunc_div ceil_div floor_div round_div exact_div)
+ (simplify
+  (div (convert? (bit_and @0 INTEGER_CST@1)) INTEGER_CST@2)
+  (if (integer_pow2p (@2)
+       && tree_int_cst_sgn (@2) > 0
+       && wi::add (@2, @1) == 0
+       && tree_nop_conversion_p (type, TREE_TYPE (@0)))
+   (rshift (convert @0) { build_int_cst (integer_type_node,
+					 wi::exact_log2 (@2)); }))))
+
 /* If ARG1 is a constant, we can convert this to a multiply by the
    reciprocal.  This does not have the same rounding properties,
    so only do this if -freciprocal-math.  We can actually
@@ -461,6 +483,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (flag_associative_math)
    (with
     { tree tem = const_binop (MULT_EXPR, type, @0, @2); }
+    (if (tem)
+     (rdiv { tem; } @1)))))
+
+/* Convert C1/(X*C2) into (C1/C2)/X  */
+(simplify
+ (rdiv REAL_CST@0 (mult @1 REAL_CST@2))
+  (if (flag_reciprocal_math)
+   (with
+    { tree tem = const_binop (RDIV_EXPR, type, @0, @2); }
     (if (tem)
      (rdiv { tem; } @1)))))
 
