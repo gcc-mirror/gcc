@@ -1,3 +1,7 @@
+2015-11-12  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.target/arm/mmx-1.c: Adjust for unified asm.
+
 2015-11-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse-1.c (swizzle): Assume that a is
