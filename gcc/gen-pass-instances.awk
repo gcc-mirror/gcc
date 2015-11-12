@@ -43,7 +43,7 @@ function handle_line()
 	line = $0;
 
 	# Find call expression.
-	call_starts_at = match(line, /NEXT_PASS \((.+)\)/);
+	call_starts_at = match(line, /NEXT_PASS \(.+\)/);
 	if (call_starts_at == 0)
 	{
 		print line;
