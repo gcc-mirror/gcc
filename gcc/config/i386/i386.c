@@ -11061,8 +11061,6 @@ ix86_adjust_stack_and_probe (const HOST_WIDE_INT size)
       release_scratch_register_on_entry (&sr);
     }
 
-  gcc_assert (cfun->machine->fs.cfa_reg != stack_pointer_rtx);
-
   /* Even if the stack pointer isn't the CFA register, we need to correctly
      describe the adjustments made to it, in particular differentiate the
      frame-related ones from the frame-unrelated ones.  */
