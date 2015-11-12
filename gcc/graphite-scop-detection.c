@@ -1507,7 +1507,7 @@ parameter_index_in_region_1 (tree name, sese_info_p region)
 
   gcc_assert (TREE_CODE (name) == SSA_NAME);
 
-  FOR_EACH_VEC_ELT (SESE_PARAMS (region), i, p)
+  FOR_EACH_VEC_ELT (region->params, i, p)
     if (p == name)
       return i;
 
@@ -1536,8 +1536,8 @@ parameter_index_in_region (tree name, sese_info_p region)
   if (i != -1)
     return i;
 
-  i = SESE_PARAMS (region).length ();
-  SESE_PARAMS (region).safe_push (name);
+  i = region->params.length ();
+  region->params.safe_push (name);
   return i;
 }
 
@@ -1635,7 +1635,7 @@ find_scop_parameters (scop_p scop)
   struct loop *loop;
 
   /* Find the parameters used in the loop bounds.  */
-  FOR_EACH_VEC_ELT (SESE_LOOP_NEST (region), i, loop)
+  FOR_EACH_VEC_ELT (region->loop_nest, i, loop)
     {
       tree nb_iters = number_of_latch_executions (loop);
 
@@ -1655,6 +1655,94 @@ find_scop_parameters (scop_p scop)
   scop_set_nb_params (scop, nbp);
 }
 
+/* Record DEF if it is used in other bbs different than DEF_BB in the SCOP.  */
+
+static void
+build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
+			     vec<tree> *writes)
+{
+  gcc_assert (def);
+  if (!is_gimple_reg (def))
+    return;
+
+  /* Do not gather scalar variables that can be analyzed by SCEV as they can be
+     generated out of the induction variables.  */
+  if (scev_analyzable_p (def, scop->scop_info->region))
+    return;
+
+  gimple *use_stmt;
+  imm_use_iterator imm_iter;
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
+    if (def_bb != gimple_bb (use_stmt) && !is_gimple_debug (use_stmt))
+      {
+	writes->safe_push (def);
+	DEBUG_PRINT (dp << "Adding scalar write:\n";
+		     print_generic_expr (dump_file, def, 0);
+		     dp << "From stmt:\n";
+		     print_gimple_stmt (dump_file,
+					SSA_NAME_DEF_STMT (def), 0, 0));
+	/* This is required by the FOR_EACH_IMM_USE_STMT when we want to break
+	   before all the uses have been visited.  */
+	BREAK_FROM_IMM_USE_STMT (imm_iter);
+      }
+}
+
+/* Record DEF if it is used in other bbs different than DEF_BB in the SCOP.  */
+
+static void
+build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
+			    vec<scalar_use> *reads)
+{
+  gcc_assert (use);
+  if (!is_gimple_reg (use))
+    return;
+
+  /* Do not gather scalar variables that can be analyzed by SCEV as they can be
+     generated out of the induction variables.  */
+  if (scev_analyzable_p (use, scop->scop_info->region))
+    return;
+
+  gimple *def_stmt = SSA_NAME_DEF_STMT (use);
+  if (gimple_bb (def_stmt) != gimple_bb (use_stmt))
+    {
+      DEBUG_PRINT (dp << "Adding scalar read:\n";
+		   print_generic_expr (dump_file, use, 0);
+		   dp << "From stmt:\n";
+		   print_gimple_stmt (dump_file, use_stmt, 0, 0));
+      reads->safe_push (std::make_pair (use_stmt, use));
+    }
+}
+
+/* Record all scalar variables that are defined and used in different BBs of the
+   SCOP.  */
+
+static void
+graphite_find_cross_bb_scalar_vars (scop_p scop, gimple *stmt,
+				    vec<scalar_use> *reads, vec<tree> *writes)
+{
+  tree def;
+
+  if (gimple_code (stmt) == GIMPLE_ASSIGN)
+    def = gimple_assign_lhs (stmt);
+  else if (gimple_code (stmt) == GIMPLE_CALL)
+    def = gimple_call_lhs (stmt);
+  else if (gimple_code (stmt) == GIMPLE_PHI)
+    def = gimple_phi_result (stmt);
+  else
+    return;
+
+
+  build_cross_bb_scalars_def (scop, def, gimple_bb (stmt), writes);
+
+  ssa_op_iter iter;
+  use_operand_p use_p;
+  FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, iter, SSA_OP_USE)
+    {
+      tree use = USE_FROM_PTR (use_p);
+      build_cross_bb_scalars_use (scop, use, stmt, reads);
+    }
+}
+
 /* Generates a polyhedral black box only if the bb contains interesting
    information.  */
 
@@ -1662,7 +1750,12 @@ static gimple_poly_bb_p
 try_generate_gimple_bb (scop_p scop, basic_block bb)
 {
   vec<data_reference_p> drs;
-  drs.create (5);
+  drs.create (3);
+  vec<tree> writes;
+  writes.create (3);
+  vec<scalar_use> reads;
+  reads.create (3);
+
   sese_l region = scop->scop_info->region;
   loop_p nest = outermost_loop_in_sese (region, bb);
 
@@ -1670,17 +1763,58 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   if (!loop_in_sese_p (loop, region))
     loop = nest;
 
-  gimple_stmt_iterator gsi;
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
       if (is_gimple_debug (stmt))
 	continue;
 
       graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
+      graphite_find_cross_bb_scalar_vars (scop, stmt, &reads, &writes);
     }
 
-  return new_gimple_poly_bb (bb, drs);
+  for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);
+       gsi_next (&psi))
+    if (!virtual_operand_p (gimple_phi_result (psi.phi ())))
+      graphite_find_cross_bb_scalar_vars (scop, psi.phi (), &reads, &writes);
+
+  if (drs.is_empty () && writes.is_empty () && reads.is_empty ())
+    return NULL;
+
+  return new_gimple_poly_bb (bb, drs, reads, writes);
+}
+
+/* Compute alias-sets for all data references in DRS.  */
+
+static void
+build_alias_set (scop_p scop)
+{
+  int num_vertices = scop->drs.length ();
+  struct graph *g = new_graph (num_vertices);
+  dr_info *dr1, *dr2;
+  int i, j;
+  int *all_vertices;
+
+  FOR_EACH_VEC_ELT (scop->drs, i, dr1)
+    for (j = i+1; scop->drs.iterate (j, &dr2); j++)
+      if (dr_may_alias_p (dr1->dr, dr2->dr, true))
+	{
+	  add_edge (g, i, j);
+	  add_edge (g, j, i);
+	}
+
+  all_vertices = XNEWVEC (int, num_vertices);
+  for (i = 0; i < num_vertices; i++)
+    all_vertices[i] = i;
+
+  graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL);
+  free (all_vertices);
+
+  for (i = 0; i < g->n_vertices; i++)
+    scop->drs[i].alias_set = g->vertices[i].component + 1;
+
+  free_graph (g);
 }
 
 /* Gather BBs and conditions for a SCOP.  */
@@ -1728,11 +1862,19 @@ gather_bbs::before_dom_children (basic_block bb)
   scop->scop_info->bbs.safe_push (bb);
 
   gimple_poly_bb_p gbb = try_generate_gimple_bb (scop, bb);
+  if (!gbb)
+    return;
+
   GBB_CONDITIONS (gbb) = conditions.copy ();
   GBB_CONDITION_CASES (gbb) = cases.copy ();
 
   poly_bb_p pbb = new_poly_bb (scop, gbb);
   scop->pbbs.safe_push (pbb);
+
+  int i;
+  data_reference_p dr;
+  FOR_EACH_VEC_ELT (gbb->data_refs, i, dr)
+    scop->drs.safe_push (dr_info (dr, pbb));
 }
 
 /* Call-back for dom_walk executed after visiting the dominated
@@ -1776,6 +1918,8 @@ build_scops (vec<scop_p> *scops)
       /* Record all basic blocks and their conditions in REGION.  */
       gather_bbs (CDI_DOMINATORS, scop).walk (cfun->cfg->x_entry_block_ptr);
 
+      build_alias_set (scop);
+
       /* Do not optimize a scop containing only PBBs that do not belong
 	 to any loops.  */
       if (sb.nb_pbbs_in_loops (scop) == 0)
@@ -1807,7 +1951,6 @@ build_scops (vec<scop_p> *scops)
 		          << scop_nb_params (scop)
 		          << " larger than --param graphite-max-nb-scop-params="
 		          << max_dim << ".\n");
-
 	  free_scop (scop);
 	  continue;
 	}

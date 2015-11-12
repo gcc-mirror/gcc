@@ -22,6 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SESE_H
 #define GCC_SESE_H
 
+typedef hash_map<basic_block, vec<basic_block> > bb_map_t;
+typedef hash_map<tree, vec<tree> > rename_map_t;
+typedef struct ifsese_s *ifsese;
+/* First phi is the new codegenerated phi second one is original phi.  */
+typedef std::pair <gphi *, gphi *> phi_rename;
+/* First edge is the init edge and second is the back edge w.r.t. a loop.  */
+typedef std::pair<edge, edge> init_back_edge_pair_t;
+
 /* A Single Entry, Single Exit region is a part of the CFG delimited
    by two edges.  */
 struct sese_l
@@ -50,6 +58,20 @@ get_exit_bb (sese_l &s)
   return s.exit->src;
 }
 
+/* Returns the index of V where ELEM can be found. -1 Otherwise.  */
+
+template<typename T>
+int
+vec_find (const vec<T> &v, const T &elem)
+{
+  int i;
+  T t;
+  FOR_EACH_VEC_ELT (v, i, t)
+    if (elem == t)
+      return i;
+  return -1;
+}
+
 /* A helper structure for bookkeeping information about a scop in graphite.  */
 typedef struct sese_info_t
 {
@@ -59,17 +81,29 @@ typedef struct sese_info_t
   /* Parameters used within the SCOP.  */
   vec<tree> params;
 
+  /* Maps an old name to one or more new names.  When there are several new
+     names, one has to select the definition corresponding to the immediate
+     dominator.  */
+  rename_map_t *rename_map;
+
   /* Loops completely contained in this SESE.  */
   bitmap loops;
   vec<loop_p> loop_nest;
 
   /* Basic blocks contained in this SESE.  */
   vec<basic_block> bbs;
-} *sese_info_p;
 
-#define SESE_PARAMS(S) (S->params)
-#define SESE_LOOPS(S) (S->loops)
-#define SESE_LOOP_NEST(S) (S->loop_nest)
+  /* Copied basic blocks indexed by the original bb.  */
+  bb_map_t *copied_bb_map;
+
+  /* A vector of phi nodes to be updated when all arguments are available.  The
+     pair contains first the old_phi and second the new_phi.  */
+  vec<phi_rename> incomplete_phis;
+
+  /* The condition region generated for this sese.  */
+  ifsese if_region;
+
+} *sese_info_p;
 
 extern sese_info_p new_sese_info (edge, edge);
 extern void free_sese_info (sese_info_p);
@@ -80,13 +114,23 @@ extern edge copy_bb_and_scalar_dependences (basic_block, sese_info_p, edge,
 extern struct loop *outermost_loop_in_sese (sese_l &, basic_block);
 extern tree scalar_evolution_in_region (sese_l &, loop_p, tree);
 extern bool invariant_in_sese_p_rec (tree, sese_l &, bool *);
+extern bool bb_contains_loop_phi_nodes (basic_block);
+extern bool bb_contains_loop_close_phi_nodes (basic_block);
+extern std::pair<edge, edge> get_edges (basic_block bb);
+extern void copy_loop_phi_args (gphi *, init_back_edge_pair_t &,
+				gphi *, init_back_edge_pair_t &,
+				sese_info_p, bool);
+extern bool copy_loop_close_phi_args (basic_block, basic_block,
+				      sese_info_p, bool);
+extern bool copy_cond_phi_args (gphi *, gphi *, vec<tree>,
+				sese_info_p, bool);
 
 /* Check that SESE contains LOOP.  */
 
 static inline bool
 sese_contains_loop (sese_info_p sese, struct loop *loop)
 {
-  return bitmap_bit_p (SESE_LOOPS (sese), loop->num);
+  return bitmap_bit_p (sese->loops, loop->num);
 }
 
 /* The number of parameters in REGION. */
@@ -94,7 +138,7 @@ sese_contains_loop (sese_info_p sese, struct loop *loop)
 static inline unsigned
 sese_nb_params (sese_info_p region)
 {
-  return SESE_PARAMS (region).length ();
+  return region->params.length ();
 }
 
 /* Checks whether BB is contained in the region delimited by ENTRY and
@@ -239,6 +283,8 @@ recompute_all_dominators (void)
   calculate_dominance_info (CDI_POST_DOMINATORS);
 }
 
+typedef std::pair <gimple *, tree> scalar_use;
+
 typedef struct gimple_poly_bb
 {
   basic_block bb;
@@ -267,6 +313,8 @@ typedef struct gimple_poly_bb
   vec<gimple *> conditions;
   vec<gimple *> condition_cases;
   vec<data_reference_p> data_refs;
+  vec<scalar_use> read_scalar_refs;
+  vec<tree> write_scalar_refs;
 } *gimple_poly_bb_p;
 
 #define GBB_BB(GBB) (GBB)->bb

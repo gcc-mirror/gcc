@@ -63,11 +63,7 @@ extern "C" {
 #include <map>
 #include "graphite-isl-ast-to-gimple.h"
 #include "tree-cfg.h"
-
-/* This flag is set when an error occurred during the translation of
-   ISL AST to Gimple.  */
-
-static bool graphite_regenerate_error;
+#include "gimple-pretty-print.h"
 
 /* We always try to use signed 128 bit types, but fall back to smaller types
    in case a platform does not provide types of these sizes. In the future we
@@ -132,7 +128,7 @@ class translate_isl_ast_to_gimple
 {
  public:
   translate_isl_ast_to_gimple (sese_info_p r)
-    : region (r)
+    : region (r), codegen_error (false)
   { }
 
   /* Translates an ISL AST node NODE to GCC representation in the
@@ -261,8 +257,17 @@ class translate_isl_ast_to_gimple
   void build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
 			 __isl_keep isl_ast_expr *user_expr, ivs_params &ip,
 			 sese_l &region);
+
+  void translate_pending_phi_nodes (void);
+
+  bool codegen_error_p () { return codegen_error; }
+
 private:
   sese_info_p region;
+
+  /* This flag is set when an error occurred during the translation of ISL AST
+     to Gimple.  */
+  bool codegen_error;
 };
 
 /* Return the tree variable that corresponds to the given isl ast identifier
@@ -575,13 +580,15 @@ translate_isl_ast_for_loop (loop_p context_loop,
   edge to_body = single_succ_edge (loop->header);
   basic_block after = to_body->dest;
 
-  /* Create a basic block for loop close phi nodes.  */
-  last_e = single_succ_edge (split_edge (last_e));
-
   /* Translate the body of the loop.  */
   isl_ast_node *for_body = isl_ast_node_for_get_body (node_for);
   next_e = translate_isl_ast (loop, for_body, to_body, ip);
   isl_ast_node_free (for_body);
+
+  /* Early return if we failed to translate loop body.  */
+  if (!next_e || codegen_error)
+    return NULL;
+
   redirect_edge_succ_nodup (next_e, after);
   set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
 
@@ -770,14 +777,17 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
 			     edge next_e, ivs_params &ip)
 {
   gcc_assert (isl_ast_node_get_type (node) == isl_ast_node_user);
+
   isl_ast_expr *user_expr = isl_ast_node_user_get_expr (node);
   isl_ast_expr *name_expr = isl_ast_expr_get_op_arg (user_expr, 0);
   gcc_assert (isl_ast_expr_get_type (name_expr) == isl_ast_expr_id);
+
   isl_id *name_id = isl_ast_expr_get_id (name_expr);
   poly_bb_p pbb = (poly_bb_p) isl_id_get_user (name_id);
   gcc_assert (pbb);
+
   gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
-  vec<tree> iv_map;
+
   isl_ast_expr_free (name_expr);
   isl_id_free (name_id);
 
@@ -785,6 +795,7 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
 	      "The entry block should not even appear within a scop");
 
   int nb_loops = number_of_loops (cfun);
+  vec<tree> iv_map;
   iv_map.create (nb_loops);
   iv_map.safe_grow_cleared (nb_loops);
 
@@ -793,23 +804,35 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
 
   if (dump_file)
     {
-      fprintf (dump_file, "[codegen] copying");
+      fprintf (dump_file, "[codegen] copying from basic block\n");
       print_loops_bb (dump_file, GBB_BB (gbb), 0, 3);
+      fprintf (dump_file, "\n[codegen] to new basic block\n");
+      print_loops_bb (dump_file, next_e->src, 0, 3);
     }
 
   next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb),
 					   pbb->scop->scop_info, next_e,
 					   iv_map,
-					   &graphite_regenerate_error);
+					   &codegen_error);
+  if (codegen_error)
+    return NULL;
+
   if (dump_file)
     {
-      fprintf (dump_file, "[codegen] to");
+      fprintf (dump_file, "\n[codegen] (after copy) new basic block\n");
       print_loops_bb (dump_file, next_e->src, 0, 3);
     }
 
   iv_map.release ();
   mark_virtual_operands_for_renaming (cfun);
   update_ssa (TODO_update_ssa);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "\n[codegen] (after update SSA) new basic block\n");
+      print_loops_bb (dump_file, next_e->src, 0, 3);
+    }
+
   return next_e;
 }
 
@@ -881,6 +904,9 @@ translate_isl_ast_to_gimple::translate_isl_ast (loop_p context_loop,
 						__isl_keep isl_ast_node *node,
 						edge next_e, ivs_params &ip)
 {
+  if (codegen_error)
+    return NULL;
+
   switch (isl_ast_node_get_type (node))
     {
     case isl_ast_node_error:
@@ -906,6 +932,47 @@ translate_isl_ast_to_gimple::translate_isl_ast (loop_p context_loop,
     }
 }
 
+/* Patch the missing arguments of the phi nodes.  */
+
+void
+translate_isl_ast_to_gimple::translate_pending_phi_nodes ()
+{
+  int i;
+  phi_rename *rename;
+  FOR_EACH_VEC_ELT (region->incomplete_phis, i, rename)
+    {
+      gphi *old_phi = rename->first;
+      gphi *new_phi = rename->second;
+      basic_block old_bb = gimple_bb (old_phi);
+      basic_block new_bb = gimple_bb (new_phi);
+
+      /* First edge is the init edge and second is the back edge.  */
+      init_back_edge_pair_t ibp_old_bb = get_edges (old_bb);
+      init_back_edge_pair_t ibp_new_bb = get_edges (new_bb);
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "\n[codegen] translating pending old-phi: ");
+	  print_gimple_stmt (dump_file, old_phi, 0, 0);
+	}
+
+      auto_vec <tree, 1> iv_map;
+      if (bb_contains_loop_phi_nodes (new_bb))
+	copy_loop_phi_args (old_phi, ibp_old_bb, new_phi,
+			    ibp_new_bb, region, false);
+      else if (bb_contains_loop_close_phi_nodes (new_bb))
+	copy_loop_close_phi_args (old_bb, new_bb, region, false);
+      else if (!copy_cond_phi_args (old_phi, new_phi, iv_map, region, false))
+	gcc_unreachable ();
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "[codegen] to new-phi: ");
+	  print_gimple_stmt (dump_file, new_phi, 0, 0);
+	}
+    }
+}
+
 /* Prints NODE to FILE.  */
 
 void
@@ -926,13 +993,13 @@ add_parameters_to_ivs_params (scop_p scop, ivs_params &ip)
 {
   sese_info_p region = scop->scop_info;
   unsigned nb_parameters = isl_set_dim (scop->param_context, isl_dim_param);
-  gcc_assert (nb_parameters == SESE_PARAMS (region).length ());
+  gcc_assert (nb_parameters == region->params.length ());
   unsigned i;
   for (i = 0; i < nb_parameters; i++)
     {
       isl_id *tmp_id = isl_set_get_dim_id (scop->param_context,
                                            isl_dim_param, i);
-      ip[tmp_id] = SESE_PARAMS (region)[i];
+      ip[tmp_id] = region->params[i];
     }
 }
 
@@ -1101,7 +1168,6 @@ graphite_regenerate_ast_isl (scop_p scop)
   ivs_params ip;
 
   timevar_push (TV_GRAPHITE_CODE_GEN);
-  graphite_regenerate_error = false;
   root_node = scop_to_isl_ast (scop, ip);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1115,30 +1181,47 @@ graphite_regenerate_ast_isl (scop_p scop)
   graphite_verify ();
 
   if_region = move_sese_in_condition (region);
-  sese_insert_phis_for_liveouts (region,
-				 if_region->region->region.exit->src,
-				 if_region->false_region->region.exit,
-				 if_region->true_region->region.exit);
+  region->if_region = if_region;
   recompute_all_dominators ();
-  graphite_verify ();
 
   context_loop = region->region.entry->src->loop_father;
 
   translate_isl_ast_to_gimple t(region);
   edge e = single_succ_edge (if_region->true_region->region.entry->dest);
-  split_edge (e);
+  basic_block bb = split_edge (e);
+  /* Update the true_region exit edge.  */
+  region->if_region->true_region->region.exit = single_succ_edge (bb);
+
   t.translate_isl_ast (context_loop, root_node, e, ip);
+  if (t.codegen_error_p ())
+    {
+      if (dump_file)
+	fprintf (dump_file, "\n[codegen] unsuccessful, "
+		 "reverting back to the original code.");
+      set_ifsese_condition (if_region, integer_zero_node);
+    }
+  else
+    {
+      t.translate_pending_phi_nodes ();
+      if (!t.codegen_error_p ())
+	{
+	  sese_insert_phis_for_liveouts (region,
+					 if_region->region->region.exit->src,
+					 if_region->false_region->region.exit,
+					 if_region->true_region->region.exit);
+	  mark_virtual_operands_for_renaming (cfun);
+	  update_ssa (TODO_update_ssa);
 
-  mark_virtual_operands_for_renaming (cfun);
-  update_ssa (TODO_update_ssa);
 
-  graphite_verify ();
-  scev_reset ();
-  recompute_all_dominators ();
-  graphite_verify ();
-
-  if (graphite_regenerate_error)
-    set_ifsese_condition (if_region, integer_zero_node);
+	  graphite_verify ();
+	  scev_reset ();
+	  recompute_all_dominators ();
+	  graphite_verify ();
+	}
+      else if (dump_file)
+	fprintf (dump_file, "\n[codegen] unsuccessful in translating "
+		 "pending phis, reverting back to the original code.");
+    }
 
   free (if_region->true_region);
   free (if_region->region);
@@ -1161,6 +1244,6 @@ graphite_regenerate_ast_isl (scop_p scop)
 	       num_no_dependency);
     }
 
-  return !graphite_regenerate_error;
+  return !t.codegen_error_p ();
 }
 #endif  /* HAVE_isl */
