@@ -31,6 +31,17 @@
 
 package body Output is
 
+   Buffer : String (1 .. Buffer_Max + 1) := (others => '*');
+   for Buffer'Alignment use 4;
+   --  Buffer used to build output line. We do line buffering because it is
+   --  needed for the support of the debug-generated-code option (-gnatD). Note
+   --  any attempt to write more output to a line than can fit in the buffer
+   --  will be silently ignored. The alignment clause improves the efficiency
+   --  of the save/restore procedures.
+
+   Next_Col : Positive range 1 .. Buffer'Length + 1 := 1;
+   --  Column about to be written
+
    Current_FD : File_Descriptor := Standout;
    --  File descriptor for current output
 

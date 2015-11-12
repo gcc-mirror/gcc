@@ -109,8 +109,9 @@ package Types is
      Character range Character'Val (16#80#) .. Character'Val (16#FF#);
    --  8-bit Characters with the upper bit set
 
-   type Character_Ptr is access all Character;
-   type String_Ptr    is access all String;
+   type Character_Ptr    is access all Character;
+   type String_Ptr       is access all String;
+   type String_Ptr_Const is access constant String;
    --  Standard character and string pointers
 
    procedure Free is new Unchecked_Deallocation (String, String_Ptr);
@@ -896,7 +897,7 @@ package Types is
    type Reason_Kind is (CE_Reason, PE_Reason, SE_Reason);
    --  Categorization of reason codes by exception raised
 
-   Rkind : array (RT_Exception_Code range <>) of Reason_Kind :=
+   Rkind : constant array (RT_Exception_Code range <>) of Reason_Kind :=
              (CE_Access_Check_Failed            => CE_Reason,
               CE_Access_Parameter_Is_Null       => CE_Reason,
               CE_Discriminant_Check_Failed      => CE_Reason,

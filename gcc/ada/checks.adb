@@ -2878,11 +2878,35 @@ package body Checks is
          --  Always do a range check if the source type includes infinities and
          --  the target type does not include infinities. We do not do this if
          --  range checks are killed.
+         --  If the expression is a literal and the bounds of the type are
+         --  static constants it may be possible to optimize the check.
 
          if Has_Infinities (S_Typ)
            and then not Has_Infinities (Target_Typ)
          then
-            Enable_Range_Check (Expr);
+            --  If the expression is a literal and the bounds of the type are
+            --  static constants it may be possible to optimize the check.
+
+            if Nkind (Expr) = N_Real_Literal then
+               declare
+                  Tlo : constant Node_Id := Type_Low_Bound  (Target_Typ);
+                  Thi : constant Node_Id := Type_High_Bound (Target_Typ);
+
+               begin
+                  if Compile_Time_Known_Value (Tlo)
+                    and then Compile_Time_Known_Value (Thi)
+                    and then Expr_Value_R (Expr) >= Expr_Value_R (Tlo)
+                    and then Expr_Value_R (Expr) <= Expr_Value_R (Thi)
+                  then
+                     return;
+                  else
+                     Enable_Range_Check (Expr);
+                  end if;
+               end;
+
+            else
+               Enable_Range_Check (Expr);
+            end if;
          end if;
       end if;
 

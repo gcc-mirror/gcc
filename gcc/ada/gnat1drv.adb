@@ -142,12 +142,6 @@ procedure Gnat1drv is
          Modify_Tree_For_C := True;
       end if;
 
-      --  -gnatd.V enables C generation
-
-      if Debug_Flag_Dot_VV then
-         Generate_C_Code := True;
-      end if;
-
       --  Set all flags required when generating C code
 
       if Generate_C_Code then
@@ -222,7 +216,7 @@ procedure Gnat1drv is
          --  do not expect this to happen in normal use, since both modes are
          --  enabled by special tools, but it is useful to turn off these flags
          --  this way when we are doing CodePeer tests on existing test suites
-         --  that may have -gnatd.V set, to avoid the need for special casing.
+         --  that may have -gnateg set, to avoid the need for special casing.
 
          Modify_Tree_For_C := False;
          Generate_C_Code := False;

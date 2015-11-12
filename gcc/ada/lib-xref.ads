@@ -433,7 +433,7 @@ package Lib.Xref is
    --  indicating procedures and functions. If the operation is abstract,
    --  these letters are replaced in the xref by 'x' and 'y' respectively.
 
-   Xref_Entity_Letters : array (Entity_Kind) of Character :=
+   Xref_Entity_Letters : constant array (Entity_Kind) of Character :=
      (E_Abstract_State                             => '@',
       E_Access_Attribute_Type                      => 'P',
       E_Access_Protected_Subprogram_Type           => 'P',

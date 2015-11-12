@@ -46,7 +46,8 @@ package Sem_Attr is
    --  in GNAT, as well as constructing an array of flags indicating which
    --  attributes these are.
 
-   Attribute_Impl_Def : Attribute_Class_Array := Attribute_Class_Array'(
+   Attribute_Impl_Def : constant Attribute_Class_Array :=
+     Attribute_Class_Array'(
 
       ------------------
       -- Abort_Signal --

@@ -1936,8 +1936,7 @@ package body Exp_Aggr is
                --  constraint associated with the type entity (which is
                --  preferable, but it's not always present ???)
 
-               if Is_Empty_Elmt_List (
-                 Discriminant_Constraint (Current_Typ))
+               if Is_Empty_Elmt_List (Discriminant_Constraint (Current_Typ))
                then
                   Assoc := Get_Constraint_Association (Current_Typ);
                   Assoc_Elmt := No_Elmt;

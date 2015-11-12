@@ -1,3 +1,48 @@
+2015-11-12  Bob Duff  <duff@adacore.com>
+
+	* impunit.adb, lib-xref.ads, restrict.ads, scos.ads, sem_attr.ads,
+	types.ads: Get rid of some global variables.
+	* output.adb, output.ads: Move some global variables to the body.
+
+2015-11-12  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb
+	(Is_Constant_Object_Without_Variable_Input): Add special case
+	for imported constants.
+
+2015-11-12  Philippe Gil  <gil@adacore.com>
+
+	* g-debpoo.adb (Allocate): Avoid having allocations not handled.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): If the expression is
+	a real literal and the context type has static bounds, remove
+	range check when possible.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Collect_Primitive_Operations): If the type is
+	derived from a type declared elsewhere that has an incomplete
+	type declaration, the primitives are found in the scope of the
+	type nat that of its ancestor.
+
+2015-11-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* switch-c.adb, debug.adb, osint-c.adb, gnat1drv.adb: Remove -gnatd.V
+	debug switch.
+	* exp_aggr.adb, exp_util.adb: Fix typos.
+
+2015-11-12  Jerome Lambourg  <lambourg@adacore.com>
+
+	* init.c: Properly adjust PC values in case of signals.
+
+2015-11-12  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (Check_Arg_Is_Library_Level_Local_Name): A
+	pragma that comes from an aspect does not "come from source",
+	so we need to test whether it comes from an aspect.
+
 2015-11-12  Arnaud Charlet  <charlet@adacore.com>
 
 	* switch-c.adb, gnat1drv.adb, opt.ads: Reserve -gnateg for generation

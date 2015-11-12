@@ -4223,6 +4223,14 @@ package body Sem_Util is
          then
             Id := Defining_Entity (Incomplete_View (Parent (B_Type)));
 
+            --  If T is a derived from a type with an incomplete view declared
+            --  elsewhere, that incomplete view is irrelevant, we want the
+            --  operations in the scope of T.
+
+            if Scope (Id) /= Scope (B_Type) then
+               Id := Next_Entity (B_Type);
+            end if;
+
          else
             Id := Next_Entity (B_Type);
          end if;

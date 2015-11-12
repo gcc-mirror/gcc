@@ -445,8 +445,12 @@ package body SPARK_Specific is
                      Decl := Parent (E);
                   end if;
 
-                  pragma Assert (Present (Expression (Decl)));
-                  Result := Is_Static_Expression (Expression (Decl));
+                  if Is_Imported (E) then
+                     Result := False;
+                  else
+                     pragma Assert (Present (Expression (Decl)));
+                     Result := Is_Static_Expression (Expression (Decl));
+                  end if;
                end;
 
             when E_Loop_Parameter | E_In_Parameter =>

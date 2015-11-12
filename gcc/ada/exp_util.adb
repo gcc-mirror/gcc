@@ -1672,17 +1672,10 @@ package body Exp_Util is
    function Containing_Package_With_Ext_Axioms
      (E : Entity_Id) return Entity_Id
    is
+      First_Ax_Parent_Scope : Entity_Id;
       Decl : Node_Id;
 
    begin
-      if Ekind (E) = E_Package then
-         if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
-            Decl := Parent (Parent (E));
-         else
-            Decl := Parent (E);
-         end if;
-      end if;
-
       --  E is the package or generic package which is externally axiomatized
 
       if Ekind_In (E, E_Package, E_Generic_Package)
@@ -1691,33 +1684,35 @@ package body Exp_Util is
          return E;
       end if;
 
-      --  If E's scope is axiomatized, E is axiomatized.
+      --  If E's scope is axiomatized, E is axiomatized
 
-      declare
-         First_Ax_Parent_Scope : Entity_Id := Empty;
-
-      begin
-         if Present (Scope (E)) then
-            First_Ax_Parent_Scope :=
-              Containing_Package_With_Ext_Axioms (Scope (E));
-         end if;
+      if Present (Scope (E)) then
+         First_Ax_Parent_Scope :=
+           Containing_Package_With_Ext_Axioms (Scope (E));
 
          if Present (First_Ax_Parent_Scope) then
             return First_Ax_Parent_Scope;
          end if;
 
-         --  otherwise, if E is a package instance, it is axiomatized if the
-         --  corresponding generic package is axiomatized.
+      end if;
 
-         if Ekind (E) = E_Package
-           and then Present (Generic_Parent (Decl))
-         then
+      --  Otherwise, if E is a package instance, it is axiomatized if the
+      --  corresponding generic package is axiomatized.
+
+      if Ekind (E) = E_Package then
+         if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
+            Decl := Parent (Parent (E));
+         else
+            Decl := Parent (E);
+         end if;
+
+         if Present (Generic_Parent (Decl)) then
             return
               Containing_Package_With_Ext_Axioms (Generic_Parent (Decl));
-         else
-            return Empty;
          end if;
-      end;
+      end if;
+
+      return Empty;
    end Containing_Package_With_Ext_Axioms;
 
    -------------------------------

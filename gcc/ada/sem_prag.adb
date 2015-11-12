@@ -4328,8 +4328,12 @@ package body Sem_Prag is
       begin
          Check_Arg_Is_Local_Name (Arg);
 
+         --  If it came from an aspect, we want to give the error just as if it
+         --  came from source.
+
          if not Is_Library_Level_Entity (Entity (Get_Pragma_Arg (Arg)))
-           and then Comes_From_Source (N)
+           and then (Comes_From_Source (N)
+                       or else Present (Corresponding_Aspect (Parent (Arg))))
          then
             Error_Pragma_Arg
               ("argument for pragma% must be library level entity", Arg);
