@@ -4724,10 +4724,24 @@ package body Sem_Ch13 is
 
                   Find_Overlaid_Entity (N, O_Ent, Off);
 
-                  --  If the object overlays a constant view, mark it so
+                  if Present (O_Ent) then
+                     --  If the object overlays a constant object, mark it so
 
-                  if Present (O_Ent) and then Is_Constant_Object (O_Ent) then
-                     Set_Overlays_Constant (U_Ent);
+                     if Is_Constant_Object (O_Ent) then
+                        Set_Overlays_Constant (U_Ent);
+                     end if;
+                  else
+                     --  If this is not an overlay, mark a variable as being
+                     --  volatile to prevent unwanted optimizations. It's a
+                     --  conservative interpretation of RM 13.3(19) for the
+                     --  cases where the compiler cannot detect potential
+                     --  aliasing issues easily and it also covers the case
+                     --  of an absolute address where the volatile aspect is
+                     --  kind of implicit.
+
+                     if Ekind (U_Ent) = E_Variable then
+                        Set_Treat_As_Volatile (U_Ent);
+                     end if;
                   end if;
 
                   --  Overlaying controlled objects is erroneous.
