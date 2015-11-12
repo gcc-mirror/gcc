@@ -409,7 +409,7 @@ stamp-noasandir:
 .PHONY: all etags tags TAGS ls clean stage1 stage2
 
 etags tags TAGS: etags-subdir
-	cd $(srcdir); etags $(CFILES)
+	cd $(srcdir) && etags $(CFILES)
 
 # The standalone demangler (c++filt) has been moved to binutils.
 # But make this target work anyway for demangler hacking.
