@@ -1,3 +1,9 @@
+2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/67265
+	* config/i386/i386.c (ix86_adjust_stack_and_probe): Remove obsolete
+	assertion on the CFA register.
+
 2015-11-11  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline
