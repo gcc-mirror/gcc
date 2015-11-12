@@ -2191,6 +2191,17 @@ package body Sem_Ch4 is
 
                Get_Next_Interp (I, It);
             end loop;
+
+            --  If no valid interpretation has been found, then the type of
+            --  the ELSE expression does not match any interpretation of
+            --  the THEN expression.
+
+            if Etype (N) = Any_Type then
+               Error_Msg_N
+                 ("type incompatible with that of `THEN` expression",
+                  Else_Expr);
+               return;
+            end if;
          end;
       end if;
    end Analyze_If_Expression;

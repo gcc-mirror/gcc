@@ -1,3 +1,21 @@
+2015-11-12  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb (analyze_If_Expression): Reject IF-expression where
+	THEN-expression is overloaded and none of its interpretation is
+	compatible with the ELSE-expression.
+
+2015-11-12  Jerome Lambourg  <lambourg@adacore.com>
+
+	* init.c: Do not try to mess with the MSR values in RTP mode:
+	not needed and forbidden.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Compile_Stream_Body_In_Scope): Do not install
+	full view of a type that has pragma Stream_Convert, because
+	this indicates special processing for the stream operations of
+	the type.
+
 2015-11-12  Jerome Lambourg  <lambourg@adacore.com>
 
 	* init.c: Do not try to mess with the MSR values in RTP mode:
