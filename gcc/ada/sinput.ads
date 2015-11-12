@@ -608,7 +608,7 @@ package Sinput is
    function Num_Source_Lines (S : Source_File_Index) return Nat;
    --  Returns the number of source lines (this is equivalent to reading
    --  the value of Last_Source_Line, but returns Nat rather than a
-   --  physical line number.
+   --  physical line number).
 
    procedure Register_Source_Ref_Pragma
      (File_Name          : File_Name_Type;

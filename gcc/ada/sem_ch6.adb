@@ -334,6 +334,7 @@ package body Sem_Ch6 is
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (LocX,
               Statements => New_List (Ret)));
+      Set_Was_Expression_Function (New_Body);
 
       --  If the expression completes a generic subprogram, we must create a
       --  separate node for the body, because at instantiation the original

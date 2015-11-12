@@ -148,12 +148,16 @@ procedure Gnat1drv is
          Generate_C_Code := True;
          Modify_Tree_For_C := True;
          Unnest_Subprogram_Mode := True;
-         Back_Annotate_Rep_Info := True;
 
          --  Set operating mode to Generate_Code to benefit from full front-end
          --  expansion (e.g. generics).
 
          Operating_Mode := Generate_Code;
+
+         --  Suppress alignment checks since we do not have access to alignment
+         --  info on the target
+
+         Suppress_Options.Suppress (Alignment_Check) := False;
       end if;
 
       --  -gnatd.E sets Error_To_Warning mode, causing selected error messages
@@ -1346,8 +1350,8 @@ begin
       Back_End.Call_Back_End (Back_End_Mode);
 
       --  Once the backend is complete, we unlock the names table. This call
-      --  allows a few extra entries, needed for example for the file name for
-      --  the library file output.
+      --  allows a few extra entries, needed for example for the file name
+      --  for the library file output.
 
       Namet.Unlock;
 

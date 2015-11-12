@@ -1,3 +1,32 @@
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Selected_Component): In a synchronized
+	body, a reference to an operation of an object of the same
+	synchronized type was always interpreted as a reference to the
+	current instance. This is not always the case, as the prefix of
+	the reference may designate an object of the same type declared
+	in the enclosing context prior to the body.
+
+2015-11-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* impunit.ads, impunit.adb (Get_Kind_Of_File): New. Cleaned up
+	implementation from previous Get_Kind_Of_Unit.
+	(Get_Kind_Of_Unit): Reimplemented using Get_Kind_Of_File.
+	* debug.adb: Remove d.4 switch, no longer used.
+	* opt.ads: Update doc on Debugger_Level.
+	* gnat1drv.adb: Code clean ups.
+	* sinput.ads: minor fix in comment
+
+2015-11-12  Bob Duff  <duff@adacore.com>
+
+	* sinfo.adb, sinfo.ads, sem_ch6.adb, atree.ads: Add
+	Was_Expression_Function flag, which is set in sem_ch6.adb when
+	converting an Expression_Function into a Subprogram_Body.
+
+2015-11-12  Pascal Obry  <obry@adacore.com>
+
+	* usage.adb: Update overflow checking documentation.
+
 2015-11-12  Tristan Gingold  <gingold@adacore.com>
 
 	* snames.ads-tmpl: Name_Gnat_Extended_Ravenscar: New identifier.
