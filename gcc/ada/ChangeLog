@@ -1,3 +1,12 @@
+2015-11-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi,
+	doc/gnat_ugn/platform_specific_information.rst,
+	doc/gnat_ugn/gnat_and_program_execution.rst,
+	doc/gnat_ugn/the_gnat_compilation_model.rst,
+	doc/gnat_rm/standard_and_implementation_defined_restrictions.rst,
+	doc/gnat_rm/implementation_defined_pragmas.rst: Update documentation.
+
 2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* einfo.ads (Overlays_Constant): Document usage for E_Constant.
