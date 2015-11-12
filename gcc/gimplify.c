@@ -5900,6 +5900,60 @@ omp_default_clause (struct gimplify_omp_ctx *ctx, tree decl,
   return flags;
 }
 
+
+/* Determine outer default flags for DECL mentioned in an OACC region
+   but not declared in an enclosing clause.  */
+
+static unsigned
+oacc_default_clause (struct gimplify_omp_ctx *ctx, tree decl, unsigned flags)
+{
+  const char *rkind;
+
+  switch (ctx->region_type)
+    {
+    default:
+      gcc_unreachable ();
+
+    case ORT_ACC_KERNELS:
+      /* Everything under kernels are default 'present_or_copy'.  */
+      flags |= GOVD_MAP;
+      rkind = "kernels";
+      break;
+
+    case ORT_ACC_PARALLEL:
+      {
+	tree type = TREE_TYPE (decl);
+
+	if (TREE_CODE (type) == REFERENCE_TYPE
+	    || POINTER_TYPE_P (type))
+	  type = TREE_TYPE (type);
+
+	if (AGGREGATE_TYPE_P (type))
+	  /* Aggregates default to 'present_or_copy'.  */
+	  flags |= GOVD_MAP;
+	else
+	  /* Scalars default to 'firstprivate'.  */
+	  flags |= GOVD_FIRSTPRIVATE;
+	rkind = "parallel";
+      }
+      break;
+    }
+
+  if (DECL_ARTIFICIAL (decl))
+    ; /* We can get compiler-generated decls, and should not complain
+	 about them.  */
+  else if (ctx->default_kind == OMP_CLAUSE_DEFAULT_NONE)
+    {
+      error ("%qE not specified in enclosing OpenACC %s construct",
+	     DECL_NAME (lang_hooks.decls.omp_report_decl (decl)), rkind);
+      error_at (ctx->location, "enclosing OpenACC %s construct", rkind);
+    }
+  else
+    gcc_checking_assert (ctx->default_kind == OMP_CLAUSE_DEFAULT_SHARED);
+
+  return flags;
+}
+
 /* Record the fact that DECL was used within the OMP context CTX.
    IN_CODE is true when real code uses DECL, and false when we should
    merely emit default(none) errors.  Return true if DECL is going to
@@ -6023,7 +6077,12 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 		nflags |= GOVD_MAP | GOVD_EXPLICIT;
 	      }
 	    else if (nflags == flags)
-	      nflags |= GOVD_MAP;
+	      {
+		if ((ctx->region_type & ORT_ACC) != 0)
+		  nflags = oacc_default_clause (ctx, decl, flags);
+		else
+		  nflags |= GOVD_MAP;
+	      }
 	  }
 	found_outer:
 	  omp_add_variable (ctx, decl, nflags);

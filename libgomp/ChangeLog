@@ -1,3 +1,7 @@
+2015-11-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/default-1.c: New.
+
 2015-11-1  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/firstprivate-1.c: New.
