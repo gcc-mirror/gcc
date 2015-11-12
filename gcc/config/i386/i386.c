@@ -6237,6 +6237,8 @@ ix86_valid_target_attribute_p (tree fndecl,
 	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
     }
 
+  finalize_options_struct (&func_options);
+
   return ret;
 }
 

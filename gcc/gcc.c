@@ -9915,7 +9915,7 @@ driver_get_configure_time_options (void (*cb) (const char *option,
   size_t i;
 
   obstack_init (&obstack);
-  gcc_obstack_init (&opts_obstack);
+  init_opts_obstack ();
   n_switches = 0;
 
   for (i = 0; i < ARRAY_SIZE (option_default_specs); i++)

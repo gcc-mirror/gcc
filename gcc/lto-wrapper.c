@@ -1355,7 +1355,7 @@ main (int argc, char *argv[])
 {
   const char *p;
 
-  gcc_obstack_init (&opts_obstack);
+  init_opts_obstack ();
 
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
