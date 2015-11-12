@@ -1251,22 +1251,25 @@ package body Sem_Ch13 is
         (Prag        : Node_Id;
          Is_Instance : Boolean := False)
       is
-         Aux   : Node_Id;
-         Decl  : Node_Id;
-         Decls : List_Id;
-         Def   : Node_Id;
+         Aux      : Node_Id;
+         Decl     : Node_Id;
+         Decls    : List_Id;
+         Def      : Node_Id;
+         Inserted : Boolean := False;
 
       begin
-         --  When the aspect appears on a package, protected unit, subprogram
-         --  or task unit body, insert the generated pragma at the top of the
-         --  body declarations to emulate the behavior of a source pragma.
+         --  When the aspect appears on an entry, package, protected unit,
+         --  subprogram, or task unit body, insert the generated pragma at the
+         --  top of the body declarations to emulate the behavior of a source
+         --  pragma.
 
          --    package body Pack with Aspect is
 
          --    package body Pack is
          --       pragma Prag;
 
-         if Nkind_In (N, N_Package_Body,
+         if Nkind_In (N, N_Entry_Body,
+                         N_Package_Body,
                          N_Protected_Body,
                          N_Subprogram_Body,
                          N_Task_Body)
@@ -1278,35 +1281,7 @@ package body Sem_Ch13 is
                Set_Declarations (N, Decls);
             end if;
 
-            --  Skip other internally generated pragmas from aspects to find
-            --  the proper insertion point. As a result the order of pragmas
-            --  is the same as the order of aspects.
-
-            --  As precondition pragmas generated from conjuncts in the
-            --  precondition aspect are presented in reverse order to
-            --  Insert_Pragma, insert them in the correct order here by not
-            --  skipping previously inserted precondition pragmas when the
-            --  current pragma is a precondition.
-
-            Decl := First (Decls);
-            while Present (Decl) loop
-               if Nkind (Decl) = N_Pragma
-                 and then From_Aspect_Specification (Decl)
-                 and then not (Get_Pragma_Id (Decl) = Pragma_Precondition
-                                 and then
-                               Get_Pragma_Id (Prag) = Pragma_Precondition)
-               then
-                  Next (Decl);
-               else
-                  exit;
-               end if;
-            end loop;
-
-            if Present (Decl) then
-               Insert_Before (Decl, Prag);
-            else
-               Append_To (Decls, Prag);
-            end if;
+            Prepend_To (Decls, Prag);
 
          --  When the aspect is associated with a [generic] package declaration
          --  insert the generated pragma at the top of the visible declarations
@@ -1335,23 +1310,24 @@ package body Sem_Ch13 is
             --    <first source declaration>
 
             --  Insert the pragma before the first source declaration by
-            --  skipping the instance "header".
+            --  skipping the instance "header" to ensure proper visibility of
+            --  all formals.
 
             if Is_Instance then
                Decl := First (Decls);
-               while Present (Decl) and then not Comes_From_Source (Decl) loop
-                  Decl := Next (Decl);
+               while Present (Decl) loop
+                  if Comes_From_Source (Decl) then
+                     Insert_Before (Decl, Prag);
+                     Inserted := True;
+                     exit;
+                  else
+                     Next (Decl);
+                  end if;
                end loop;
 
-               --  The instance "header" is followed by at least one source
-               --  declaration.
+               --  The pragma is placed after the instance "header"
 
-               if Present (Decl) then
-                  Insert_Before (Decl, Prag);
-
-               --  Otherwise the pragma is placed after the instance "header"
-
-               else
+               if not Inserted then
                   Append_To (Decls, Prag);
                end if;
 
@@ -2769,6 +2745,10 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Post);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
 
                --  Refined_State
 
@@ -4748,7 +4728,7 @@ package body Sem_Ch13 is
 
                   --  Overlaying controlled objects is erroneous. Emit warning
                   --  but continue analysis because program is itself legal,
-                  --  and back-end must see address clause.
+                  --  and back end must see address clause.
 
                   if Present (O_Ent)
                     and then (Has_Controlled_Component (Etype (O_Ent))
@@ -6587,7 +6567,7 @@ package body Sem_Ch13 is
 
             --  In ASIS_Mode mode, expansion is disabled, but we must convert
             --  the Mod clause into an alignment clause anyway, so that the
-            --  back-end can compute and back-annotate properly the size and
+            --  back end can compute and back-annotate properly the size and
             --  alignment of types that may include this record.
 
             --  This seems dubious, this destroys the source tree in a manner
@@ -13048,7 +13028,7 @@ package body Sem_Ch13 is
             end loop;
 
             --  Reset homonym link of other entities, but do not modify link
-            --  between entities in current scope, so that the back-end can
+            --  between entities in current scope, so that the back end can
             --  have a proper count of local overloadings.
 
             if No (Prev) then
@@ -13643,7 +13623,7 @@ package body Sem_Ch13 is
 
       --  Make entry in unchecked conversion table for later processing by
       --  Validate_Unchecked_Conversions, which will check sizes and alignments
-      --  (using values set by the back-end where possible). This is only done
+      --  (using values set by the back end where possible). This is only done
       --  if the appropriate warning is active.
 
       if Warn_On_Unchecked_Conversion then

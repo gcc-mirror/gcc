@@ -216,11 +216,11 @@ package body Einfo is
    --    Related_Expression              Node24
    --    Subps_Index                     Uint24
 
+   --    Contract_Wrapper                Node25
    --    Debug_Renaming_Link             Node25
    --    DT_Offset_To_Top_Func           Node25
    --    Interface_Alias                 Node25
    --    Interfaces                      Elist25
-   --    PPC_Wrapper                     Node25
    --    Related_Array_Object            Node25
    --    Static_Discrete_Predicate       List25
    --    Static_Real_Or_String_Predicate Node25
@@ -1230,6 +1230,12 @@ package body Einfo is
          Ekind (Id) = E_Void);             --  special purpose
       return Node34 (Id);
    end Contract;
+
+   function Contract_Wrapper (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Entry, E_Entry_Family));
+      return Node25 (Id);
+   end Contract_Wrapper;
 
    function Entry_Parameters_Type (Id : E) return E is
    begin
@@ -2876,12 +2882,6 @@ package body Einfo is
       return Node14 (Id);
    end Postconditions_Proc;
 
-   function PPC_Wrapper (Id : E) return E is
-   begin
-      pragma Assert (Ekind_In (Id, E_Entry, E_Entry_Family));
-      return Node25 (Id);
-   end PPC_Wrapper;
-
    function Prival (Id : E) return E is
    begin
       pragma Assert (Is_Protected_Component (Id));
@@ -3876,6 +3876,12 @@ package body Einfo is
          Ekind (Id) = E_Void);             --  special purpose
       Set_Node34 (Id, V);
    end Set_Contract;
+
+   procedure Set_Contract_Wrapper (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Entry, E_Entry_Family));
+      Set_Node25 (Id, V);
+   end Set_Contract_Wrapper;
 
    procedure Set_Corresponding_Concurrent_Type (Id : E; V : E) is
    begin
@@ -5911,12 +5917,6 @@ package body Einfo is
                                    E_Procedure));
       Set_Node14 (Id, V);
    end Set_Postconditions_Proc;
-
-   procedure Set_PPC_Wrapper (Id : E; V : E) is
-   begin
-      pragma Assert (Ekind_In (Id, E_Entry, E_Entry_Family));
-      Set_Node25 (Id, V);
-   end Set_PPC_Wrapper;
 
    procedure Set_Direct_Primitive_Operations (Id : E; V : L) is
    begin
@@ -10003,6 +10003,10 @@ package body Einfo is
               E_Package                                    =>
             Write_Str ("Abstract_States");
 
+         when E_Entry                                      |
+              E_Entry_Family                               =>
+            Write_Str ("Contract_Wrapper");
+
          when E_Variable                                   =>
             Write_Str ("Debug_Renaming_Link");
 
@@ -10025,10 +10029,6 @@ package body Einfo is
 
          when Task_Kind                                    =>
             Write_Str ("Task_Body_Procedure");
-
-         when E_Entry                                      |
-              E_Entry_Family                               =>
-            Write_Str ("PPC_Wrapper");
 
          when Discrete_Kind                                =>
             Write_Str ("Static_Discrete_Predicate");

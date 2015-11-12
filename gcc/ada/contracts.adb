@@ -366,17 +366,6 @@ package body Contracts is
       if Ekind (Body_Id) = E_Void then
          return;
 
-      --  Do not analyze the contract of an entry body unless annotating the
-      --  original tree. It is preferable to analyze the contract after the
-      --  entry body has been transformed into a subprogram body to properly
-      --  handle references to unpacked formals.
-
-      elsif Ekind_In (Body_Id, E_Entry, E_Entry_Family)
-        and then not ASIS_Mode
-        and then not GNATprove_Mode
-      then
-         return;
-
       --  Do not analyze a contract multiple times
 
       elsif Present (Items) then
@@ -442,11 +431,17 @@ package body Contracts is
    procedure Analyze_Entry_Or_Subprogram_Contract (Subp_Id : Entity_Id) is
       Items     : constant Node_Id := Contract (Subp_Id);
       Subp_Decl : constant Node_Id := Unit_Declaration_Node (Subp_Id);
-      Depends   : Node_Id := Empty;
-      Global    : Node_Id := Empty;
-      Mode      : SPARK_Mode_Type;
-      Prag      : Node_Id;
-      Prag_Nam  : Name_Id;
+
+      Skip_Assert_Exprs : constant Boolean :=
+                            Ekind_In (Subp_Id, E_Entry, E_Entry_Family)
+                              and then not ASIS_Mode
+                              and then not GNATprove_Mode;
+
+      Depends  : Node_Id := Empty;
+      Global   : Node_Id := Empty;
+      Mode     : SPARK_Mode_Type;
+      Prag     : Node_Id;
+      Prag_Nam : Name_Id;
 
    begin
       --  Do not analyze a contract multiple times
@@ -475,17 +470,11 @@ package body Contracts is
       elsif Present (Items) then
 
          --  Do not analyze the pre/postconditions of an entry declaration
-         --  unless annotating the original tree for ASIS or GNATprove.
+         --  unless annotating the original tree for ASIS or GNATprove. The
+         --  real analysis occurs when the pre/postconditons are relocated to
+         --  the contract wrapper procedure (see Build_Contract_Wrapper).
 
-         --  ??? References to formals are causing problems during contract
-         --  expansion as the references resolve to the entry formals, not
-         --  the subprogram body emulating the entry body. This will have to
-         --  be addressed.
-
-         if Ekind_In (Subp_Id, E_Entry, E_Entry_Family)
-           and then not ASIS_Mode
-           and then not GNATprove_Mode
-         then
+         if Skip_Assert_Exprs then
             null;
 
          --  Otherwise analyze the pre/postconditions
@@ -505,7 +494,20 @@ package body Contracts is
             Prag_Nam := Pragma_Name (Prag);
 
             if Prag_Nam = Name_Contract_Cases then
-               Analyze_Contract_Cases_In_Decl_Part (Prag);
+
+               --  Do not analyze the contract cases of an entry declaration
+               --  unless annotating the original tree for ASIS or GNATprove.
+               --  The real analysis occurs when the contract cases are moved
+               --  to the contract wrapper procedure (Build_Contract_Wrapper).
+
+               if Skip_Assert_Exprs then
+                  null;
+
+               --  Otherwise analyze the contract cases
+
+               else
+                  Analyze_Contract_Cases_In_Decl_Part (Prag);
+               end if;
             else
                pragma Assert (Prag_Nam = Name_Test_Case);
                Analyze_Test_Case_In_Decl_Part (Prag);
