@@ -482,8 +482,34 @@ package body GNAT.Debug_Pools is
       type My_Address is mod Memory_Size;
       function To_My_Address is new Ada.Unchecked_Conversion
         (System.Address, My_Address);
+      Address_To_Print : My_Address := To_My_Address (Addr);
+      type Hexadecimal_Element is range 0 .. 15;
+      Hexadecimal_Characters : constant array
+      (Hexadecimal_Element) of Character :=
+        ('0', '1', '2', '3', '4', '5', '6', '7',
+         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F');
+      pragma Warnings
+        (Off, "types for unchecked conversion have different sizes");
+      function To_Hexadecimal_Element is new Ada.Unchecked_Conversion
+        (My_Address, Hexadecimal_Element);
+      pragma Warnings
+        (On, "types for unchecked conversion have different sizes");
+      Number_Of_Hexadecimal_Characters_In_Address : constant Natural :=
+        Standard'Address_Size / 4;
+      type Hexadecimal_Elements_Range is
+        range 1 .. Number_Of_Hexadecimal_Characters_In_Address;
+      Hexadecimal_Elements : array (Hexadecimal_Elements_Range) of
+        Hexadecimal_Element;
    begin
-      Put (File, My_Address'Image (To_My_Address (Addr)));
+      for Index in Hexadecimal_Elements_Range loop
+         Hexadecimal_Elements (Index) :=
+           To_Hexadecimal_Element (Address_To_Print mod 16);
+         Address_To_Print := Address_To_Print / 16;
+      end loop;
+      Put (File, "0x");
+      for Index in reverse Hexadecimal_Elements_Range loop
+         Put (File, Hexadecimal_Characters (Hexadecimal_Elements (Index)));
+      end loop;
    end Print_Address;
 
    --------------
@@ -1406,6 +1432,7 @@ package body GNAT.Debug_Pools is
    is
       pragma Unreferenced (Alignment);
 
+      Unlock_Task_Required : Boolean := False;
       Header   : constant Allocation_Header_Access :=
         Header_Of (Storage_Address);
       Valid    : Boolean;
@@ -1414,9 +1441,11 @@ package body GNAT.Debug_Pools is
    begin
       <<Deallocate_Label>>
       Lock_Task.all;
+      Unlock_Task_Required := True;
       Valid := Is_Valid (Storage_Address);
 
       if not Valid then
+         Unlock_Task_Required := False;
          Unlock_Task.all;
 
          if Storage_Address = System.Null_Address then
@@ -1453,6 +1482,7 @@ package body GNAT.Debug_Pools is
          end if;
 
       elsif Header.Block_Size < 0 then
+         Unlock_Task_Required := False;
          Unlock_Task.all;
          if Pool.Raise_Exceptions then
             raise Freeing_Deallocated_Storage;
@@ -1574,12 +1604,15 @@ package body GNAT.Debug_Pools is
          --  Do not physically release the memory here, but in Alloc.
          --  See comment there for details.
 
+         Unlock_Task_Required := False;
          Unlock_Task.all;
       end if;
 
    exception
       when others =>
-         Unlock_Task.all;
+         if Unlock_Task_Required then
+            Unlock_Task.all;
+         end if;
          raise;
    end Deallocate;
 

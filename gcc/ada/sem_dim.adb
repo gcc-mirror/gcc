@@ -2227,8 +2227,8 @@ package body Sem_Dim is
             --  it cannot inherit a dimension from its subtype.
 
             if Exists (Dims_Of_Id) then
-               Error_Msg_N
-                 ("subtype& already" & Dimensions_Msg_Of (Id, True), N);
+               Error_Msg_NE
+                 ("subtype& already " & Dimensions_Msg_Of (Id, True), N, Id);
             else
                Set_Dimensions (Id, Dims_Of_Etyp);
                Set_Symbol (Id, Symbol_Of (Etyp));
