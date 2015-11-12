@@ -64,3 +64,8 @@ function handle_line()
 }
 
 { handle_line() }
+
+# Local Variables:
+# mode:awk
+# c-basic-offset:8
+# End:
