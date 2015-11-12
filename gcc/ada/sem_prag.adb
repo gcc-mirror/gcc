@@ -3737,10 +3737,11 @@ package body Sem_Prag is
       --  Activate the set of configuration pragmas and permissions that make
       --  up the Rational profile.
 
-      procedure Set_Ravenscar_Profile (N : Node_Id);
+      procedure Set_Ravenscar_Profile (Profile : Profile_Name; N : Node_Id);
       --  Activate the set of configuration pragmas and restrictions that make
-      --  up the Ravenscar Profile. N is the corresponding pragma node, which
-      --  is used for error messages on any constructs violating the profile.
+      --  up the Profile. Profile must be either GNAT_Extended_Ravencar or
+      --  Ravenscar. N is the corresponding pragma node, which is used for
+      --  error messages on any constructs violating the profile.
 
       ----------------------------------
       -- Acquire_Warning_Match_String --
@@ -9654,12 +9655,31 @@ package body Sem_Prag is
       --      No_Dependence => Ada.Task_Attributes
       --      No_Dependence => System.Multiprocessors.Dispatching_Domains
 
-      procedure Set_Ravenscar_Profile (N : Node_Id) is
+      procedure Set_Ravenscar_Profile (Profile : Profile_Name; N : Node_Id) is
          Prefix_Entity   : Entity_Id;
          Selector_Entity : Entity_Id;
          Prefix_Node     : Node_Id;
          Node            : Node_Id;
 
+         procedure Set_Error_Msg_To_Profile_Name;
+         --  Set Error_Msg_String and Error_Msg_Strlen to the name of the
+         --  profile.
+
+         -----------------------------------
+         -- Set_Error_Msg_To_Profile_Name --
+         -----------------------------------
+
+         procedure Set_Error_Msg_To_Profile_Name is
+            Pragma_Args     : constant List_Id :=
+                                Pragma_Argument_Associations (N);
+            Profile_Name    : constant Node_Id :=
+                                Get_Pragma_Arg (First (Pragma_Args));
+         begin
+            Get_Name_String (Chars (Profile_Name));
+            Adjust_Name_Case (Sloc (Profile_Name));
+            Error_Msg_Strlen := Name_Len;
+            Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
+         end Set_Error_Msg_To_Profile_Name;
       begin
          --  pragma Task_Dispatching_Policy (FIFO_Within_Priorities)
 
@@ -9667,7 +9687,8 @@ package body Sem_Prag is
            and then Task_Dispatching_Policy /= 'F'
          then
             Error_Msg_Sloc := Task_Dispatching_Policy_Sloc;
-            Error_Pragma ("Profile (Ravenscar) incompatible with policy#");
+            Set_Error_Msg_To_Profile_Name;
+            Error_Pragma ("Profile (~) incompatible with policy#");
 
          --  Set the FIFO_Within_Priorities policy, but always preserve
          --  System_Location since we like the error message with the run time
@@ -9687,7 +9708,8 @@ package body Sem_Prag is
            and then Locking_Policy /= 'C'
          then
             Error_Msg_Sloc := Locking_Policy_Sloc;
-            Error_Pragma ("Profile (Ravenscar) incompatible with policy#");
+            Set_Error_Msg_To_Profile_Name;
+            Error_Pragma ("Profile (~) incompatible with policy#");
 
          --  Set the Ceiling_Locking policy, but preserve System_Location since
          --  we like the error message with the run time name.
@@ -9707,7 +9729,7 @@ package body Sem_Prag is
          --  Set the corresponding restrictions
 
          Set_Profile_Restrictions
-           (Ravenscar, N, Warn => Treat_Restrictions_As_Warnings);
+           (Profile, N, Warn => Treat_Restrictions_As_Warnings);
 
          --  Set the No_Dependence restrictions
 
@@ -18798,7 +18820,10 @@ package body Sem_Prag is
 
             begin
                if Chars (Argx) = Name_Ravenscar then
-                  Set_Ravenscar_Profile (N);
+                  Set_Ravenscar_Profile (Ravenscar, N);
+
+               elsif Chars (Argx) = Name_Gnat_Extended_Ravenscar then
+                  Set_Ravenscar_Profile (GNAT_Extended_Ravenscar, N);
 
                elsif Chars (Argx) = Name_Restricted then
                   Set_Profile_Restrictions
@@ -19721,7 +19746,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (0);
             Check_Valid_Configuration_Pragma;
-            Set_Ravenscar_Profile (N);
+            Set_Ravenscar_Profile (Ravenscar, N);
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
