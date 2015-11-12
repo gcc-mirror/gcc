@@ -5749,6 +5749,21 @@ c_parser_for_statement (c_parser *parser, bool ivdep)
     c_finish_loop (loc, cond, incr, body, c_break_label, c_cont_label, true);
   add_stmt (c_end_compound_stmt (loc, block, flag_isoc99 || c_dialect_objc ()));
 
+  /* We might need to reclassify any previously-lexed identifier, e.g.
+     when we've left a for loop with an if-statement without else in the
+     body - we might have used a wrong scope for the token.  See PR67784.  */
+  if (c_parser_next_token_is (parser, CPP_NAME))
+    {
+      c_token *token = c_parser_peek_token (parser);
+      tree decl = lookup_name (token->value);
+      if (decl == NULL_TREE)
+	;
+      else if (TREE_CODE (decl) == TYPE_DECL)
+	token->id_kind = C_ID_TYPENAME;
+      else if (VAR_P (decl))
+	token->id_kind = C_ID_ID;
+    }
+
   token_indent_info next_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
   warn_for_misleading_indentation (for_tinfo, body_tinfo, next_tinfo);
