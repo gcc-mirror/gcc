@@ -1,3 +1,10 @@
+2015-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68306
+	* tree-vect-data-refs.c (verify_data_ref_alignment): Remove
+	relevant and vectorizable checks here.
+	(vect_verify_datarefs_alignment): Add relevant check here.
+
 2015-11-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	gcc/
