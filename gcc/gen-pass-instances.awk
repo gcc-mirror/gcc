@@ -56,13 +56,18 @@ function handle_line()
 	len_of_start = length("NEXT_PASS (");
 	len_of_close = length(")");
 
+	# Find pass_name argument
 	len_of_pass_name = len_of_call - (len_of_start + len_of_close);
 	pass_starts_at = where + len_of_start;
 	pass_name = substr(line, pass_starts_at, len_of_pass_name);
+
+	# Set pass_counts
 	if (pass_name in pass_counts)
 		pass_counts[pass_name]++;
 	else
 		pass_counts[pass_name] = 1;
+
+	# Print call expression with extra pass_num argument
 	printf "%s, %s%s\n",
 		substr(line, 1, pass_starts_at + len_of_pass_name - 1),
 		pass_counts[pass_name],
