@@ -6893,10 +6893,12 @@ package body Exp_Ch6 is
          return False;
       end if;
 
-      --  Step past qualification or unchecked conversion (the latter can occur
-      --  in cases of calls to 'Input).
+      --  Step past qualification, type conversion (which can occur in actual
+      --  parameter contexts), and unchecked conversion (which can occur in
+      --  cases of calls to 'Input).
 
       if Nkind_In (Exp_Node, N_Qualified_Expression,
+                             N_Type_Conversion,
                              N_Unchecked_Type_Conversion)
       then
          Exp_Node := Expression (N);
@@ -7425,10 +7427,12 @@ package body Exp_Ch6 is
       Return_Obj_Decl : Entity_Id;
 
    begin
-      --  Step past qualification or unchecked conversion (the latter can occur
-      --  in cases of calls to 'Input).
+      --  Step past qualification, type conversion (which can occur in actual
+      --  parameter contexts), and unchecked conversion (which can occur in
+      --  cases of calls to 'Input).
 
       if Nkind_In (Func_Call, N_Qualified_Expression,
+                              N_Type_Conversion,
                               N_Unchecked_Type_Conversion)
       then
          Func_Call := Expression (Func_Call);

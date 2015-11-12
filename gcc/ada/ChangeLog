@@ -1,3 +1,42 @@
+2015-11-12  Tristan Gingold  <gingold@adacore.com>
+
+	* snames.ads-tmpl: Name_Gnat_Extended_Ravenscar: New identifier.
+	* s-rident.ads (Profile_Name): Add GNAT_Extended_Ravenscar.
+	(Profile_Info): Add new entry for GNAT_Extended_Ravenscar.
+	* sem_prag.adb (Set_Ravenscar_Profile): Add Profile parameter
+	to handle various ravenscar profiles. Adjust error messages.
+	(Analyze_Pragma): Handle GNAT_Extended_Ravenscar profile.
+	* targparm.adb (Get_Target_Parameters): Handle
+	GNAT_Extended_Ravenscar profile.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Warn_On_Unreferenced_Entity): If the entity is an
+	Out_Parameter the front-end does not emit any warning on it, so
+	do not suppress warnings on the entity because the backend might
+	be able to determine an uninitialized path and warn accordingly.
+
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Diagnose an attempt
+	to reference an internal entity from a synchronized type from
+	within the body of that type, when the prefix of the selected
+	component is not the current instance.
+
+2015-11-12  Ed Falis  <falis@adacore.com>
+
+	* s-stchop-vxworks.adb: Clean up in stack checking code.
+
+2015-11-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Is_Build_In_Place_Function_Call):
+	Test Expression (N) in N_Type_Conversion cases as well,
+	since conversions can occur in actual parameter contexts.
+	(Make_Build_In_Place_Call_In_Anonymous_Context): Retrieve
+	function call from Expression (Func_Call) when Nkind (Func_Call)
+	is N_Type_Conversion, since conversions are allowed in "anonymous"
+	contexts (specifically, as actual parameters).
+
 2015-11-12  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch4.adb (analyze_If_Expression): Reject IF-expression where

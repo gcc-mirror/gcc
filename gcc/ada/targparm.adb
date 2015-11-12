@@ -293,6 +293,17 @@ package body Targparm is
             P := P + 27;
             goto Line_Loop_Continue;
 
+         --  Test for pragma Profile (GNAT_Extended_Ravenscar);
+
+         elsif System_Text (P .. P + 40) =
+                 "pragma Profile (GNAT_Extended_Ravenscar);"
+         then
+            Set_Profile_Restrictions (GNAT_Extended_Ravenscar);
+            Opt.Task_Dispatching_Policy := 'F';
+            Opt.Locking_Policy          := 'C';
+            P := P + 27;
+            goto Line_Loop_Continue;
+
          --  Test for pragma Profile (Restricted);
 
          elsif System_Text (P .. P + 27) =

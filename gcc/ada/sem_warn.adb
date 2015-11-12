@@ -4217,8 +4217,12 @@ package body Sem_Warn is
          end case;
 
          --  Kill warnings on the entity on which the message has been posted
+         --  (nothing is posted on out parameters because back end might be
+         --  able to uncover an uninitialized path, and warn accordingly).
 
-         Set_Warnings_Off (E);
+         if Ekind (E) /= E_Out_Parameter then
+            Set_Warnings_Off (E);
+         end if;
       end if;
    end Warn_On_Unreferenced_Entity;
 

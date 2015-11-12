@@ -4655,6 +4655,23 @@ package body Sem_Ch4 is
                    Comp = First_Private_Entity (Base_Type (Prefix_Type));
          end loop;
 
+         --  If the scope is a current instance, the prefix cannot be an
+         --  expression of the same type (that would represent an attempt
+         --  to reach an internal operation of another synchronized object).
+         --  This is legal if prefix is an access to such type and there is
+         --  a dereference.
+
+         if In_Scope
+           and then not Is_Entity_Name (Name)
+           and then Nkind (Name) /= N_Explicit_Dereference
+         then
+            Error_Msg_NE ("invalid reference to internal operation "
+               & "of some object of type&", N, Type_To_Use);
+            Set_Entity (Sel, Any_Id);
+            Set_Etype (Sel, Any_Type);
+            return;
+         end if;
+
          --  If there is no visible entity with the given name or none of the
          --  visible entities are plausible interpretations, check whether
          --  there is some other primitive operation with that name.
