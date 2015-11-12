@@ -12577,7 +12577,7 @@ processors implementing the target architecture.
 Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
 @samp{generic}, @samp{cortex-a53}, @samp{cortex-a57}, @samp{cortex-a72},
-@samp{exynos-m1}, @samp{thunderx}, @samp{xgene1}.
+@samp{exynos-m1}, @samp{qdf24xx}, @samp{thunderx}, @samp{xgene1}.
 
 Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible values for this
@@ -13564,6 +13564,7 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply},
 @samp{exynos-m1},
+@samp{qdf24xx},
 @samp{marvell-pj4},
 @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312},
 @samp{fa526}, @samp{fa626},

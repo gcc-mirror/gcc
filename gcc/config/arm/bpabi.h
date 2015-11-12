@@ -74,6 +74,7 @@
    |mcpu=cortex-a72					\
    |mcpu=cortex-a72.cortex-a53				\
    |mcpu=exynos-m1                                      \
+   |mcpu=qdf24xx					\
    |mcpu=xgene1                                         \
    |mcpu=cortex-m1.small-multiply                       \
    |mcpu=cortex-m0.small-multiply                       \
@@ -99,6 +100,7 @@
    |mcpu=cortex-a72					\
    |mcpu=cortex-a72.cortex-a53				\
    |mcpu=exynos-m1                                      \
+   |mcpu=qdf24xx					\
    |mcpu=xgene1                                         \
    |mcpu=cortex-m1.small-multiply                       \
    |mcpu=cortex-m0.small-multiply                       \

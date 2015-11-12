@@ -1,3 +1,13 @@
+2015-11-12  Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/aarch64/aarch64-cores.def (qdf24xx): New.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+	* config/arm/arm-cores.def (qdf24xx): New.
+	* config/arm/arm-tables.opt, config/arm/arm-tune.md: Regenerated.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add qdf24xx support.
+	* doc/invoke.texi (AArch64 Options/-mtune): Add "qdf24xx".
+	(ARM Options/-mtune); Likewise.
+
 2015-11-12  Martin Liska  <mliska@suse.cz>
 
 	* config/i386/i386.c (ix86_valid_target_attribute_p):
