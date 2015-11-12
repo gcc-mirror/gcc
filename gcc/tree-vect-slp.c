@@ -2740,18 +2740,20 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 	      switch (code)
 		{
 		  case COND_EXPR:
-		    if (op_num == 0 || op_num == 1)
-		      {
-			tree cond = gimple_assign_rhs1 (stmt);
+		    {
+		      tree cond = gimple_assign_rhs1 (stmt);
+		      if (TREE_CODE (cond) == SSA_NAME)
+			op = gimple_op (stmt, op_num + 1);
+		      else if (op_num == 0 || op_num == 1)
 			op = TREE_OPERAND (cond, op_num);
-		      }
-		    else
-		      {
-			if (op_num == 2)
-			  op = gimple_assign_rhs2 (stmt);
-			else
-			  op = gimple_assign_rhs3 (stmt);
-		      }
+		      else
+			{
+			  if (op_num == 2)
+			    op = gimple_assign_rhs2 (stmt);
+			  else
+			    op = gimple_assign_rhs3 (stmt);
+			}
+		    }
 		    break;
 
 		  case CALL_EXPR:
