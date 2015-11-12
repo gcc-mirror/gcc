@@ -6774,7 +6774,26 @@ package body Sem_Ch8 is
             --  Prefix denotes an enclosing loop, block, or task, i.e. an
             --  enclosing construct that is not a subprogram or accept.
 
-            Find_Expanded_Name (N);
+            --  A special case: a protected body may call an operation
+            --  on an external object of the same type, in which case it
+            --  is not an expanded name. If the prefix is the type itself,
+            --  or the context is a single synchronized object it can only
+            --  be interpreted as an expanded name.
+
+            if Is_Concurrent_Type (Etype (P_Name)) then
+               if Is_Type (P_Name)
+                  or else Present (Anonymous_Object (Etype (P_Name)))
+               then
+                  Find_Expanded_Name (N);
+
+               else
+                  Analyze_Selected_Component (N);
+                  return;
+               end if;
+
+            else
+               Find_Expanded_Name (N);
+            end if;
 
          elsif Ekind (P_Name) = E_Package then
             Find_Expanded_Name (N);

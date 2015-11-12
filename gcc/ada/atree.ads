@@ -181,7 +181,7 @@ package Atree is
    --   Flag10
    --   Flag11        Note that Flag0-3 are stored separately in the Flags
    --   Flag12        table, but that's a detail of the implementation which
-   --   Flag13        is entirely hidden by the funcitonal interface.
+   --   Flag13        is entirely hidden by the functional interface.
    --   Flag14
    --   Flag15
    --   Flag16

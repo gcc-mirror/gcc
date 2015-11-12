@@ -422,8 +422,9 @@ package Opt is
    subtype Debug_Level_Value is Nat range 0 .. 3;
    Debugger_Level : Debug_Level_Value := 0;
    --  The value given to the -g parameter. The default value for -g with
-   --  no value is 2. This is not currently used but is retained for possible
-   --  future use.
+   --  no value is 2. If no -g is specified, defaults to 0.
+   --  Note that the generated code should never depend on this variable,
+   --  since we want debug info to be non intrusive on the generate code.
 
    Default_Exit_Status : Int := 0;
    --  GNATBIND
