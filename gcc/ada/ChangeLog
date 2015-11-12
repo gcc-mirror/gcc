@@ -1,3 +1,8 @@
+2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Subprogram_Renaming_Decl>: Do
+	not materialize renamed subprograms if only annotating types.
+
 2015-11-12  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Create
@@ -16,7 +21,6 @@
 	Consider N_Defining_Operator_Symbol as valid entities.
 	(gnat_write_global_declarations): Output debugging information
 	for top-level imported declarations.
-	* gcc-interface/Makefile.in: Fix typo.
 
 2015-11-12  Emmanuel Briot  <briot@adacore.com>
 

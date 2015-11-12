@@ -5971,12 +5971,13 @@ gnat_to_gnu (Node_Id gnat_node)
 	   skip them when they aren't needed.  Avoid doing this if:
 
 	     - there is a freeze node: in this case the renamed entity is not
-	       elaborated yet;
+	       elaborated yet,
 	     - the renamed subprogram is intrinsic: it will not be available in
 	       the debugging information (note that both or only one of the
 	       renaming and the renamed subprograms can be intrinsic).  */
-	if (No (Freeze_Node (gnat_renaming))
+	if (!type_annotate_only
 	    && Needs_Debug_Info (gnat_renaming)
+	    && No (Freeze_Node (gnat_renaming))
 	    && Present (gnat_renamed)
 	    && (Ekind (gnat_renamed) == E_Function
 		|| Ekind (gnat_renamed) == E_Procedure)
