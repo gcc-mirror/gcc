@@ -16258,27 +16258,22 @@ package body Sem_Util is
             --  If we are sure this is a modification from source, and we know
             --  this modifies a constant, then give an appropriate warning.
 
-            if Overlays_Constant (Ent)
-              and then (Modification_Comes_From_Source and Sure)
+            if Sure
+              and then Modification_Comes_From_Source
+              and then Overlays_Constant (Ent)
+              and then Address_Clause_Overlay_Warnings
             then
                declare
-                  A : constant Node_Id := Address_Clause (Ent);
+                  Addr  : constant Node_Id := Address_Clause (Ent);
+                  O_Ent : Entity_Id;
+                  Off   : Boolean;
                begin
-                  if Present (A) then
-                     declare
-                        Exp : constant Node_Id := Expression (A);
-                     begin
-                        if Nkind (Exp) = N_Attribute_Reference
-                          and then Attribute_Name (Exp) = Name_Address
-                          and then Is_Entity_Name (Prefix (Exp))
-                        then
-                           Error_Msg_Sloc := Sloc (A);
-                           Error_Msg_NE
-                             ("constant& may be modified via address "
-                              & "clause#??", N, Entity (Prefix (Exp)));
-                        end if;
-                     end;
-                  end if;
+                  Find_Overlaid_Entity (Addr, O_Ent, Off);
+
+                  Error_Msg_Sloc := Sloc (Addr);
+                  Error_Msg_NE
+                    ("??constant& may be modified via address clause#",
+                     N, O_Ent);
                end;
             end if;
 
