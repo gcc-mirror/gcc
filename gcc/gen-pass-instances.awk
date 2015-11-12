@@ -42,6 +42,7 @@ function handle_line()
 {
 	line = $0;
 
+	# Find call expression.
 	where = match(line, /NEXT_PASS \((.+)\)/);
 	if (where == 0)
 	{
@@ -49,9 +50,12 @@ function handle_line()
 		return;
 	}
 
+	# Length of the call expression.
+	len_of_call = RLENGTH;
+
 	len_of_start = length("NEXT_PASS (");
 	len_of_end = length(")");
-	len_of_pass_name = RLENGTH - (len_of_start + len_of_end);
+	len_of_pass_name = len_of_call - (len_of_start + len_of_end);
 	pass_starts_at = where + len_of_start;
 	pass_name = substr(line, pass_starts_at, len_of_pass_name);
 	if (pass_name in pass_counts)
