@@ -1,5 +1,17 @@
 2015-11-12  Martin Liska  <mliska@suse.cz>
 
+	* config/i386/i386.c (ix86_valid_target_attribute_p):
+	Finalize options at the of the function.
+	* gcc.c (driver_get_configure_time_options): Call newly
+	introduced init_opts_obstack.
+	* lto-wrapper.c (main): Likewise.
+	* opts.c (init_opts_obstack): New function.
+	(init_options_struct): Call newly
+	introduced init_opts_obstack.
+	* opts.h (init_options_struct): Declare.
+
+2015-11-12  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/68035
 	* ipa-icf.c (void sem_item::set_hash): New function.
 	(sem_function::get_hash): Use renamed m_hash member variable.

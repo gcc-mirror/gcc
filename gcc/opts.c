@@ -266,6 +266,20 @@ add_comma_separated_to_vector (void **pvec, const char *arg)
   *pvec = v;
 }
 
+/* Initialize opts_obstack if not initialized.  */
+
+void
+init_opts_obstack (void)
+{
+  static bool opts_obstack_initialized = false;
+
+  if (!opts_obstack_initialized)
+    {
+      opts_obstack_initialized = true;
+      gcc_obstack_init (&opts_obstack);
+    }
+}
+
 /* Initialize OPTS and OPTS_SET before using them in parsing options.  */
 
 void
@@ -273,7 +287,7 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
 {
   size_t num_params = get_num_compiler_params ();
 
-  gcc_obstack_init (&opts_obstack);
+  init_opts_obstack ();
 
   *opts = global_options_init;
 
