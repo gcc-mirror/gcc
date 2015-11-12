@@ -458,7 +458,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location, "Build SLP for ");
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-          dump_printf (MSG_NOTE, "\n");
 	}
 
       /* Fail to vectorize statements marked as unvectorizable.  */
@@ -1114,7 +1113,7 @@ vect_build_slp_tree (vec_info *vinfo,
 /* Dump a slp tree NODE using flags specified in DUMP_KIND.  */
 
 static void
-vect_print_slp_tree (int dump_kind, slp_tree node)
+vect_print_slp_tree (int dump_kind, location_t loc, slp_tree node)
 {
   int i;
   gimple *stmt;
@@ -1123,16 +1122,14 @@ vect_print_slp_tree (int dump_kind, slp_tree node)
   if (!node)
     return;
 
-  dump_printf (dump_kind, "node ");
+  dump_printf_loc (dump_kind, loc, "node\n");
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
     {
-      dump_printf (dump_kind, "\n\tstmt %d ", i);
+      dump_printf_loc (dump_kind, loc, "\tstmt %d ", i);
       dump_gimple_stmt (dump_kind, TDF_SLIM, stmt, 0);
     }
-  dump_printf (dump_kind, "\n");
-
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_print_slp_tree (dump_kind, child);
+    vect_print_slp_tree (dump_kind, loc, child);
 }
 
 
@@ -1756,7 +1753,11 @@ vect_analyze_slp_instance (vec_info *vinfo,
       vinfo->slp_instances.safe_push (new_instance);
 
       if (dump_enabled_p ())
-	vect_print_slp_tree (MSG_NOTE, node);
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Final SLP tree for instance:\n");
+	  vect_print_slp_tree (MSG_NOTE, vect_location, node);
+	}
 
       return true;
     }
@@ -2294,7 +2295,6 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 		       bool &fatal)
 {
   bb_vec_info bb_vinfo;
-  vec<slp_instance> slp_instances;
   slp_instance instance;
   int i;
   int min_vf = 2;
@@ -2389,11 +2389,12 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
       return NULL;
     }
 
-  /* Analyze and verify the alignment of data references in the SLP
-     instances.  */
+  /* Analyze and verify the alignment of data references and the
+     dependence in the SLP instances.  */
   for (i = 0; BB_VINFO_SLP_INSTANCES (bb_vinfo).iterate (i, &instance); )
     {
-      if (! vect_slp_analyze_and_verify_instance_alignment (instance))
+      if (! vect_slp_analyze_and_verify_instance_alignment (instance)
+	  || ! vect_slp_analyze_instance_dependence (instance))
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "removing SLP instance operations starting from: ");
@@ -2404,23 +2405,18 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 	  BB_VINFO_SLP_INSTANCES (bb_vinfo).ordered_remove (i);
 	  continue;
 	}
+
+      /* Mark all the statements that we want to vectorize as pure SLP and
+	 relevant.  */
+      vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance), pure_slp, -1);
+      vect_mark_slp_stmts_relevant (SLP_INSTANCE_TREE (instance));
+
       i++;
     }
-
   if (! BB_VINFO_SLP_INSTANCES (bb_vinfo).length ())
     {
       destroy_bb_vec_info (bb_vinfo);
       return NULL;
-    }
-
-  slp_instances = BB_VINFO_SLP_INSTANCES (bb_vinfo);
-
-  /* Mark all the statements that we want to vectorize as pure SLP and
-     relevant.  */
-  FOR_EACH_VEC_ELT (slp_instances, i, instance)
-    {
-      vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance), pure_slp, -1);
-      vect_mark_slp_stmts_relevant (SLP_INSTANCE_TREE (instance));
     }
 
   /* Mark all the statements that we do not want to vectorize.  */
@@ -2430,20 +2426,6 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
       stmt_vec_info vinfo = vinfo_for_stmt (gsi_stmt (gsi));
       if (STMT_SLP_TYPE (vinfo) != pure_slp)
 	STMT_VINFO_VECTORIZABLE (vinfo) = false;
-    }
-
-  /* Analyze dependences.  At this point all stmts not participating in
-     vectorization have to be marked.  Dependence analysis assumes
-     that we either vectorize all SLP instances or none at all.  */
-  if (! vect_slp_analyze_data_ref_dependences (bb_vinfo))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: unhandled data dependence "
-			 "in basic block.\n");
-
-      destroy_bb_vec_info (bb_vinfo);
-      return NULL;
     }
 
   if (!vect_slp_analyze_operations (BB_VINFO_SLP_INSTANCES (bb_vinfo),
