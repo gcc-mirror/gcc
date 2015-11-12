@@ -1,3 +1,18 @@
+2015-11-12  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/68035
+	* ipa-icf.c (void sem_item::set_hash): New function.
+	(sem_function::get_hash): Use renamed m_hash member variable.
+	(sem_item::update_hash_by_addr_refs): Utilize get_hash.
+	(sem_item::update_hash_by_local_refs): Likewise.
+	(sem_variable::get_hash): Use renamed m_hash member variable.
+	(sem_item_optimizer::update_hash_by_addr_refs): Utilize get_hash.
+	(sem_item_optimizer::build_hash_based_classes): Utilize set_hash.
+	(sem_item_optimizer::build_graph): As the hash value of an item
+	is lazy initialized, force the calculation.
+	* ipa-icf.h (set_hash): Declare new function and rename hash member
+	variable to m_hash.
+
 2015-11-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vect_slp_analyze_data_ref_dependences):
