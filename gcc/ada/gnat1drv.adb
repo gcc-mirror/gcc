@@ -155,7 +155,7 @@ procedure Gnat1drv is
          Operating_Mode := Generate_Code;
 
          --  Suppress alignment checks since we do not have access to alignment
-         --  info on the target
+         --  info on the target.
 
          Suppress_Options.Suppress (Alignment_Check) := False;
       end if;
