@@ -95,7 +95,7 @@ static int inside_function = FALSE;
 
 /* The number of cycles of latency we should assume on memory reads.  */
 
-int alpha_memory_latency = 3;
+static int alpha_memory_latency = 3;
 
 /* Whether the function needs the GP.  */
 
@@ -1339,6 +1339,36 @@ alpha_legitimize_reload_address (rtx x,
   return NULL_RTX;
 }
 
+/* Return the cost of moving between registers of various classes.  Moving
+   between FLOAT_REGS and anything else except float regs is expensive.
+   In fact, we make it quite expensive because we really don't want to
+   do these moves unless it is clearly worth it.  Optimizations may
+   reduce the impact of not being able to allocate a pseudo to a
+   hard register.  */
+
+static int
+alpha_register_move_cost (machine_mode /*mode*/,
+			  reg_class_t from, reg_class_t to)
+{
+  if ((from == FLOAT_REGS) == (to == FLOAT_REGS))
+    return 2;
+
+  if (TARGET_FIX)
+    return (from == FLOAT_REGS) ? 6 : 8;
+
+  return 4 + 2 * alpha_memory_latency;
+}
+
+/* Return the cost of moving data of MODE from a register to
+   or from memory.  On the Alpha, bump this up a bit.  */
+
+static int
+alpha_memory_move_cost (machine_mode /*mode*/, reg_class_t /*regclass*/,
+			bool /*in*/)
+{
+  return 2 * alpha_memory_latency;
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
@@ -5736,9 +5766,9 @@ alpha_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
    On Alpha the value is found in $0 for integer functions and
    $f0 for floating-point functions.  */
 
-rtx
-function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
-		machine_mode mode)
+static rtx
+alpha_function_value_1 (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
+			machine_mode mode)
 {
   unsigned int regnum, dummy ATTRIBUTE_UNUSED;
   enum mode_class mclass;
@@ -5791,6 +5821,33 @@ function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
     }
 
   return gen_rtx_REG (mode, regnum);
+}
+
+/* Implement TARGET_FUNCTION_VALUE.  */
+
+static rtx
+alpha_function_value (const_tree valtype, const_tree fn_decl_or_type,
+		      bool /*outgoing*/)
+{
+  return alpha_function_value_1 (valtype, fn_decl_or_type, VOIDmode);
+}
+
+/* Implement TARGET_LIBCALL_VALUE.  */
+
+static rtx
+alpha_libcall_value (machine_mode mode, const_rtx /*fun*/)
+{
+  return alpha_function_value_1 (NULL_TREE, NULL_TREE, mode);
+}
+
+/* Implement TARGET_FUNCTION_VALUE_REGNO_P.
+
+   On the Alpha, $0 $1 and $f0 $f1 are the only register thus used.  */
+
+static bool
+alpha_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == 0 || regno == 1 || regno == 32 || regno == 33);
 }
 
 /* TCmode complex values are passed by invisible reference.  We
@@ -9908,6 +9965,10 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
 #define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_const_rtx_true
 
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST alpha_register_move_cost
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST alpha_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS alpha_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -9920,6 +9981,13 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_false
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE alpha_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE alpha_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P alpha_function_value_regno_p
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY alpha_return_in_memory
 #undef TARGET_PASS_BY_REFERENCE
