@@ -1,3 +1,15 @@
+2015-11-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	gcc/
+	* gimplify.c (oacc_default_clause): New.
+	(omp_notice_variable): Call it.
+
+	gcc/testsuite/
+	* c-c++-common/goacc/data-default-1.c: New.
+
+	libgomp/
+	* testsuite/libgomp.oacc-c-c++-common/default-1.c: New.
+
 2015-11-12  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR tree-optimization/68305
@@ -311,7 +323,7 @@
 2015-11-11  Nathan Sidwell  <nathan@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
-	* gcc/gimplify.c (enum  omp_region_type): Add ORT_ACC,
+	* gimplify.c (enum omp_region_type): Add ORT_ACC,
 	ORT_ACC_DATA, ORT_ACC_PARALLEL, ORT_ACC_KERNELS.  Adjust ORT_NONE.
 	(gimple_add_tmp_var): Add ORT_ACC checks.
 	(gimplify_var_or_parm_decl): Likewise.
@@ -327,7 +339,7 @@
 	(gimplify_oacc_cache): Specify ORT_ACC.
 	(gimplify_omp_workshare): Adjust OpenACC region types.
 	(gimplify_omp_target_update): Likewise.
-	* gcc/omp-low.c (scan_sharing_clauses): Remove Openacc
+	* omp-low.c (scan_sharing_clauses): Remove Openacc
 	firstprivate sorry.
 	(lower-rec_input_clauses): Don't handle openacc firstprivate
 	references here.
