@@ -2800,14 +2800,6 @@ check_explicit_specialization (tree declarator,
 		  error ("%qD is not a template function", dname);
 		  fns = error_mark_node;
 		}
-	      else
-		{
-		  tree fn = OVL_CURRENT (fns);
-		  if (!is_associated_namespace (CP_DECL_CONTEXT (decl),
-						CP_DECL_CONTEXT (fn)))
-		    error ("%qD is not declared in %qD",
-			   decl, current_namespace);
-		}
 	    }
 
 	  declarator = lookup_template_function (fns, NULL_TREE);
@@ -2941,6 +2933,14 @@ check_explicit_specialization (tree declarator,
 	return error_mark_node;
       else
 	{
+	  if (!ctype && !was_template_id
+	      && (specialization || member_specialization
+		  || explicit_instantiation)
+	      && !is_associated_namespace (CP_DECL_CONTEXT (decl),
+					   CP_DECL_CONTEXT (tmpl)))
+	    error ("%qD is not declared in %qD",
+		   tmpl, current_namespace);
+
 	  tree gen_tmpl = most_general_template (tmpl);
 
 	  if (explicit_instantiation)
