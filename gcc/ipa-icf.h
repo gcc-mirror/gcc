@@ -181,6 +181,9 @@ public:
   /* References independent hash function.  */
   virtual hashval_t get_hash (void) = 0;
 
+  /* Set new hash value of the item.  */
+  void set_hash (hashval_t hash);
+
   /* Merges instance with an ALIAS_ITEM, where alias, thunk or redirection can
      be applied.  */
   virtual bool merge (sem_item *alias_item) = 0;
@@ -234,9 +237,6 @@ public:
   /* A set with symbol table references.  */
   hash_set <symtab_node *> refs_set;
 
-  /* Hash of item.  */
-  hashval_t hash;
-
   /* Temporary hash used where hash values of references are added.  */
   hashval_t global_hash;
 protected:
@@ -270,6 +270,9 @@ protected:
 				  &ignored_nodes,
 				  symtab_node *n1, symtab_node *n2,
 				  bool address);
+protected:
+  /* Hash of item.  */
+  hashval_t m_hash;
 
 private:
   /* Initialize internal data structures. Bitmap STACK is used for
