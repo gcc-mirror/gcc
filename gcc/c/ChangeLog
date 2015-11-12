@@ -1,3 +1,9 @@
+2015-11-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67784
+	* c-parser.c (c_parser_for_statement): Reclassify the token in
+	a correct scope.
+
 2015-11-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68107

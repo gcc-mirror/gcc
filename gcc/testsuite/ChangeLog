@@ -1,3 +1,9 @@
+2015-11-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67784
+	* gcc.dg/pr67784-1.c: New test.
+	* gcc.dg/pr67784-2.c: New test.
+
 2015-11-12  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/pr68035.c: New test.
