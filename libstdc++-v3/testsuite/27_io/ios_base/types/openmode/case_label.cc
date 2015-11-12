@@ -46,5 +46,9 @@ case_labels(bitmask_type b)
       break;
     case std::_S_ios_openmode_end:
       break;
+    case std::_S_ios_openmode_min:
+      break;
+    case std::_S_ios_openmode_max:
+      break;
     }
 }
