@@ -704,7 +704,7 @@ package Opt is
    Generate_C_Code : Boolean := False;
    --  GNAT
    --  If True, the Cprint circuitry to generate C code output is activated.
-   --  Set True by use of -gnatd.V.
+   --  Set True by use of -gnateg or -gnatd.V.
 
    Generate_CodePeer_Messages : Boolean := False;
    --  GNAT

@@ -142,10 +142,15 @@ procedure Gnat1drv is
          Modify_Tree_For_C := True;
       end if;
 
-      --  Set all flags required when generating C code (-gnatd.V)
+      --  -gnatd.V enables C generation
 
       if Debug_Flag_Dot_VV then
          Generate_C_Code := True;
+      end if;
+
+      --  Set all flags required when generating C code
+
+      if Generate_C_Code then
          Modify_Tree_For_C := True;
          Unnest_Subprogram_Mode := True;
 

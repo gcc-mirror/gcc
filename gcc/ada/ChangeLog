@@ -1,5 +1,10 @@
 2015-11-12  Arnaud Charlet  <charlet@adacore.com>
 
+	* switch-c.adb, gnat1drv.adb, opt.ads: Reserve -gnateg for generation
+	of C headers.
+
+2015-11-12  Arnaud Charlet  <charlet@adacore.com>
+
 	* back_end.adb, opt.ads (Debugger_Level): Update comment.
 	(Scan_Back_End_Switches): Set Debugger_Level.
 
