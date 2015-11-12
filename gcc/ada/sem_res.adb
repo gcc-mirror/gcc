@@ -7577,8 +7577,8 @@ package body Sem_Res is
       end if;
 
       if Ekind_In (Nam, E_Entry, E_Entry_Family)
-        and then Present (PPC_Wrapper (Nam))
-        and then Current_Scope /= PPC_Wrapper (Nam)
+        and then Present (Contract_Wrapper (Nam))
+        and then Current_Scope /= Contract_Wrapper (Nam)
       then
          --  Rewrite as call to the precondition wrapper, adding the task
          --  object to the list of actuals. If the call is to a member of an
@@ -7600,7 +7600,7 @@ package body Sem_Res is
             New_Call :=
               Make_Procedure_Call_Statement (Loc,
                 Name                   =>
-                  New_Occurrence_Of (PPC_Wrapper (Nam), Loc),
+                  New_Occurrence_Of (Contract_Wrapper (Nam), Loc),
                 Parameter_Associations => New_Actuals);
             Rewrite (N, New_Call);
 

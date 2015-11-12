@@ -12670,9 +12670,14 @@ package body Sem_Prag is
             Subp_Decl :=
               Find_Related_Declaration_Or_Body (N, Do_Checks => True);
 
+            --  Entry
+
+            if Nkind (Subp_Decl) = N_Entry_Declaration then
+               null;
+
             --  Generic subprogram
 
-            if Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
+            elsif Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
                null;
 
             --  Body acts as spec

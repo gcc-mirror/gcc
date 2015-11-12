@@ -714,6 +714,12 @@ package Einfo is
 --       variable and task type entities. Points to the contract of the entity,
 --       holding various assertion items and data classifiers.
 
+--    Contract_Wrapper (Node25)
+--       Defined in entry and entry family entities. Set only when the entry
+--       [family] has contract cases, preconditions, and/or postconditions.
+--       Contains the entity of a wrapper procedure which encapsulates the
+--       original entry and implements precondition/postcondition semantics.
+
 --    Corresponding_Concurrent_Type (Node18)
 --       Defined in record types that are constructed by the expander to
 --       represent task and protected types (Is_Concurrent_Record_Type flag
@@ -3639,7 +3645,7 @@ package Einfo is
 
 --    Overlays_Constant (Flag243)
 --       Defined in all entities. Set only for E_Constant or E_Variable for
---       which there is an address clause which causes the entity to overlay
+--       which there is an address clause that causes the entity to overlay
 --       a constant object.
 
 --    Overridden_Operation (Node26)
@@ -3706,11 +3712,6 @@ package Einfo is
 --       Defined in functions, procedures, entries, and entry families. Refers
 --       to the entity of the _Postconditions procedure used to check contract
 --       assertions on exit from a subprogram.
-
---    PPC_Wrapper (Node25)
---       Defined in entries and entry families. Set only if pre- or post-
---       conditions are present. The precondition_wrapper body is the original
---       entry call, decorated with the given precondition for the entry.
 
 --    Predicate_Function (synthesized)
 --       Defined in all types. Set for types for which (Has_Predicates is True)
@@ -5758,7 +5759,7 @@ package Einfo is
    --    Accept_Address                      (Elist21)
    --    Scope_Depth_Value                   (Uint22)
    --    Protection_Object                   (Node23)   (protected kind)
-   --    PPC_Wrapper                         (Node25)
+   --    Contract_Wrapper                    (Node25)
    --    Extra_Formals                       (Node28)
    --    Contract                            (Node34)
    --    SPARK_Pragma                        (Node40)   (protected kind)
@@ -6751,6 +6752,7 @@ package Einfo is
    function Component_Type                      (Id : E) return E;
    function Contains_Ignored_Ghost_Code         (Id : E) return B;
    function Contract                            (Id : E) return N;
+   function Contract_Wrapper                    (Id : E) return E;
    function Corresponding_Concurrent_Type       (Id : E) return E;
    function Corresponding_Discriminant          (Id : E) return E;
    function Corresponding_Equality              (Id : E) return E;
@@ -7089,7 +7091,6 @@ package Einfo is
    function Partial_View_Has_Unknown_Discr      (Id : E) return B;
    function Pending_Access_Types                (Id : E) return L;
    function Postconditions_Proc                 (Id : E) return E;
-   function PPC_Wrapper                         (Id : E) return E;
    function Prival                              (Id : E) return E;
    function Prival_Link                         (Id : E) return E;
    function Private_Dependents                  (Id : E) return L;
@@ -7415,6 +7416,7 @@ package Einfo is
    procedure Set_Component_Type                  (Id : E; V : E);
    procedure Set_Contains_Ignored_Ghost_Code     (Id : E; V : B := True);
    procedure Set_Contract                        (Id : E; V : N);
+   procedure Set_Contract_Wrapper                (Id : E; V : E);
    procedure Set_Corresponding_Concurrent_Type   (Id : E; V : E);
    procedure Set_Corresponding_Discriminant      (Id : E; V : E);
    procedure Set_Corresponding_Equality          (Id : E; V : E);
@@ -7756,7 +7758,6 @@ package Einfo is
    procedure Set_Partial_View_Has_Unknown_Discr  (Id : E; V : B := True);
    procedure Set_Pending_Access_Types            (Id : E; V : L);
    procedure Set_Postconditions_Proc             (Id : E; V : E);
-   procedure Set_PPC_Wrapper                     (Id : E; V : E);
    procedure Set_Prival                          (Id : E; V : E);
    procedure Set_Prival_Link                     (Id : E; V : E);
    procedure Set_Private_Dependents              (Id : E; V : L);
@@ -8194,6 +8195,7 @@ package Einfo is
    pragma Inline (Component_Type);
    pragma Inline (Contains_Ignored_Ghost_Code);
    pragma Inline (Contract);
+   pragma Inline (Contract_Wrapper);
    pragma Inline (Corresponding_Concurrent_Type);
    pragma Inline (Corresponding_Discriminant);
    pragma Inline (Corresponding_Equality);
@@ -8578,7 +8580,6 @@ package Einfo is
    pragma Inline (Partial_View_Has_Unknown_Discr);
    pragma Inline (Pending_Access_Types);
    pragma Inline (Postconditions_Proc);
-   pragma Inline (PPC_Wrapper);
    pragma Inline (Prival);
    pragma Inline (Prival_Link);
    pragma Inline (Private_Dependents);
@@ -8702,6 +8703,7 @@ package Einfo is
    pragma Inline (Set_Component_Type);
    pragma Inline (Set_Contains_Ignored_Ghost_Code);
    pragma Inline (Set_Contract);
+   pragma Inline (Set_Contract_Wrapper);
    pragma Inline (Set_Corresponding_Concurrent_Type);
    pragma Inline (Set_Corresponding_Discriminant);
    pragma Inline (Set_Corresponding_Equality);
@@ -9039,7 +9041,6 @@ package Einfo is
    pragma Inline (Set_Partial_View_Has_Unknown_Discr);
    pragma Inline (Set_Pending_Access_Types);
    pragma Inline (Set_Postconditions_Proc);
-   pragma Inline (Set_PPC_Wrapper);
    pragma Inline (Set_Prival);
    pragma Inline (Set_Prival_Link);
    pragma Inline (Set_Private_Dependents);

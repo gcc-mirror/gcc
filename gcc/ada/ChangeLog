@@ -1,5 +1,42 @@
 2015-11-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* contracts.adb (Analyze_Entry_Or_Subprogram_Body_Contract):
+	Remove the guard concerning entry bodies as it is spurious.
+	(Analyze_Entry_Or_Subprogram_Contract): Skip the analysis of
+	Contract_Cases when not annotating the tree.
+	* einfo.adb: Node25 is now used as Contract_Wrapper.
+	(Contract_Wrapper): New routine.
+	(PPC_Wrapper): Removed.
+	(Set_Contract_Wrapper): New routine.
+	(Set_PPC_Wrapper): Removed.
+	(Write_Field25_Name): Add output for Contract_Wrapper. Remove
+	output for PPC_Wrapper.
+	* einfo.ads: New attribute Contract_Wrapper along with usage
+	in entities. Remove attribute PPC_Wrapper along with usage in nodes.
+	(Contract_Wrapper): New routine along with pragma Inline.
+	(PPC_Wrapper): Removed along with pragma Inline.
+	(Set_Contract_Wrapper): New routine along with pragma Inline.
+	(Set_PPC_Wrapper): Removed along with pragma Inline.
+	* exp_ch9.adb (Build_Contract_Wrapper): New routine.
+	(Build_PPC_Wrapper): Removed.
+	(Build_Protected_Entry): Code cleanup.
+	(Expand_Entry_Declaration): Create a contract wrapper
+	which now verifies Contract_Cases along with pre/postconditions.
+	(Expand_N_Task_Type_Declaration): There is no need to check
+	whether an entry has pre/postconditions as this is now done
+	in Build_Contract_Wrapper.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Pragma
+	Refined_Post is now properly inserted in entry bodies.
+	(Insert_Pragma): Add circuitry to insert in an entry body. Redo
+	the instance "header" circuitry. Remove the now obsolete special
+	case of inserting pre- conditions.
+	* sem_prag.adb (Analyze_Pragma): Pragma Contract_Cases now
+	applies to entries.
+	* sem_res.adb (Resolve_Entry_Call): Update the calls to
+	PPC_Wrapper.
+
+2015-11-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_attr.adb, freeze.adb, sem_util.adb, sem_ch13.adb: Minor
 	reformatting.
 
