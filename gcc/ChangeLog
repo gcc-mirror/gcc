@@ -1,5 +1,10 @@
 2015-11-12  Tom de Vries  <tom@codesourcery.com>
 
+	* gen-pass-instances.awk (handle_line): Rename len_of_end to
+	len_of_close.
+
+2015-11-12  Tom de Vries  <tom@codesourcery.com>
+
 	* gen-pass-instances.awk (handle_line): Add len_of_call variable.
 
 2015-11-12  Tom de Vries  <tom@codesourcery.com>
