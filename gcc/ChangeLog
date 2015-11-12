@@ -1,3 +1,22 @@
+2015-11-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_slp_analyze_data_ref_dependences):
+	Rename to vect_slp_analyze_instance_dependence.
+	* tree-vect-data-refs.c (vect_slp_analyze_data_ref_dependence):
+	Remove WAR special-case.
+	(vect_slp_analyze_node_dependences): Instead add more specific
+	code here, not relying on other instances being vectorized.
+	(vect_slp_analyze_instance_dependence): Adjust accordingly.
+	* tree-vect-slp.c (vect_build_slp_tree_1): Remove excessive
+	vertical space in dump files.
+	(vect_print_slp_tree): Likewise.
+	(vect_analyze_slp_instance): Dump a header for the final SLP tree.
+	(vect_slp_analyze_bb_1): Delay computing relevant stmts and
+	not vectorized stmts until after dependence analysis removed
+	instances.  Merge alignment and dependence checks.
+	* tree-vectorizer.c (pass_slp_vectorize::execute): Clear visited
+	flag on all stmts.
+
 2015-11-12  Evandro Menezes  <e.menezes@samsung.com>
 
 	* config/aarch64/aarch64-protos.h (tune_params): Add new members

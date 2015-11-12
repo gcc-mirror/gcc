@@ -719,12 +719,16 @@ pass_slp_vectorize::execute (function *fun)
       scev_initialize ();
     }
 
-  /* Mark all stmts as not belonging to the current region.  */
+  /* Mark all stmts as not belonging to the current region and unvisited.  */
   FOR_EACH_BB_FN (bb, fun)
     {
       for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
-	gimple_set_uid (gsi_stmt (gsi), -1);
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  gimple_set_uid (stmt, -1);
+	  gimple_set_visited (stmt, false);
+	}
     }
 
   init_stmt_vec_info_vec ();

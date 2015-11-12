@@ -537,32 +537,17 @@ vect_slp_analyze_data_ref_dependence (struct data_dependence_relation *ddr)
       dump_printf (MSG_NOTE,  "\n");
     }
 
-  /* We do not vectorize basic blocks with write-write dependencies.  */
-  if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))
-    return true;
-
-  /* If we have a read-write dependence check that the load is before the store.
-     When we vectorize basic blocks, vector load can be only before
-     corresponding scalar load, and vector store can be only after its
-     corresponding scalar store.  So the order of the acceses is preserved in
-     case the load is before the store.  */
-  gimple *earlier_stmt = get_earlier_stmt (DR_STMT (dra), DR_STMT (drb));
-  if (DR_IS_READ (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt))))
-    {
-      /* That only holds for load-store pairs taking part in vectorization.  */
-      if (STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dra)))
-	  && STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (drb))))
-	return false;
-    }
-
   return true;
 }
 
 
-/* Analyze dependences involved in the transform of SLP NODE.  */
+/* Analyze dependences involved in the transform of SLP NODE.  STORES
+   contain the vector of scalar stores of this instance if we are
+   disambiguating the loads.  */
 
 static bool
-vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node)
+vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
+				   vec<gimple *> stores, gimple *last_store)
 {
   /* This walks over all stmts involved in the SLP load/store done
      in NODE verifying we can sink them up to the last stmt in the
@@ -584,15 +569,40 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node)
 
 	  /* If we couldn't record a (single) data reference for this
 	     stmt we have to give up.  */
+	  /* ???  Here and below if dependence analysis fails we can resort
+	     to the alias oracle which can handle more kinds of stmts.  */
 	  data_reference *dr_b = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt));
 	  if (!dr_b)
 	    return false;
 
+	  /* If we run into a store of this same instance (we've just
+	     marked those) then delay dependence checking until we run
+	     into the last store because this is where it will have
+	     been sunk to (and we verify if we can do that as well).  */
+	  if (gimple_visited_p (stmt))
+	    {
+	      if (stmt != last_store)
+		continue;
+	      unsigned i;
+	      gimple *store;
+	      FOR_EACH_VEC_ELT (stores, i, store)
+		{
+		  data_reference *store_dr
+		    = STMT_VINFO_DATA_REF (vinfo_for_stmt (store));
+		  ddr_p ddr = initialize_data_dependence_relation
+				(dr_a, store_dr, vNULL);
+		  if (vect_slp_analyze_data_ref_dependence (ddr))
+		    {
+		      free_dependence_relation (ddr);
+		      return false;
+		    }
+		  free_dependence_relation (ddr);
+		}
+	    }
+
 	  ddr_p ddr = initialize_data_dependence_relation (dr_a, dr_b, vNULL);
 	  if (vect_slp_analyze_data_ref_dependence (ddr))
 	    {
-	      /* ???  If the dependence analysis failed we can resort to the
-		 alias oracle which can handle more kinds of stmts.  */
 	      free_dependence_relation (ddr);
 	      return false;
 	    }
@@ -610,52 +620,53 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node)
    the maximum vectorization factor the data dependences allow.  */
 
 bool
-vect_slp_analyze_data_ref_dependences (bb_vec_info bb_vinfo)
+vect_slp_analyze_instance_dependence (slp_instance instance)
 {
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_slp_analyze_data_ref_dependences ===\n");
+                     "=== vect_slp_analyze_instance_dependence ===\n");
 
-  slp_instance instance;
-  slp_tree load;
-  unsigned int i, j;
-  for (i = 0; BB_VINFO_SLP_INSTANCES (bb_vinfo).iterate (i, &instance); )
+  /* The stores of this instance are at the root of the SLP tree.  */
+  slp_tree store = SLP_INSTANCE_TREE (instance);
+  if (! STMT_VINFO_DATA_REF (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (store)[0])))
+    store = NULL;
+
+  /* Verify we can sink stores to the vectorized stmt insert location.  */
+  gimple *last_store = NULL;
+  if (store)
     {
-      bool remove = false;
-      /* Verify we can sink loads to the vectorized stmt insert location.  */
-      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), j, load)
-	if (! vect_slp_analyze_node_dependences (instance, load))
-	  {
-	    remove = true;
-	    break;
-	  }
-      /* Verify we can sink stores to the vectorized stmt insert location.  */
-      slp_tree store = SLP_INSTANCE_TREE (instance);
-      if (!remove
-	  && STMT_VINFO_DATA_REF
-		(vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (store)[0]))
-	  && ! vect_slp_analyze_node_dependences (instance, store))
-	remove = true;
-      if (remove)
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "removing SLP instance operations starting from: ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
-			    SLP_TREE_SCALAR_STMTS
-			      (SLP_INSTANCE_TREE (instance))[0], 0);
-	  vect_free_slp_instance (instance);
-	  BB_VINFO_SLP_INSTANCES (bb_vinfo).ordered_remove (i);
-	  continue;
-	}
-      i++;
+      if (! vect_slp_analyze_node_dependences (instance, store, vNULL, NULL))
+	return false;
+
+      /* Mark stores in this instance and remember the last one.  */
+      last_store = vect_find_last_scalar_stmt_in_slp (store);
+      for (unsigned k = 0; k < SLP_INSTANCE_GROUP_SIZE (instance); ++k)
+	gimple_set_visited (SLP_TREE_SCALAR_STMTS (store)[k], true);
     }
 
-  if (!BB_VINFO_SLP_INSTANCES (bb_vinfo).length ())
-    return false;
+  bool res = true;
 
-  return true;
+  /* Verify we can sink loads to the vectorized stmt insert location,
+     special-casing stores of this instance.  */
+  slp_tree load;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load)
+    if (! vect_slp_analyze_node_dependences (instance, load,
+					     store
+					     ? SLP_TREE_SCALAR_STMTS (store)
+					     : vNULL, last_store))
+      {
+	res = false;
+	break;
+      }
+
+  /* Unset the visited flag.  */
+  if (store)
+    for (unsigned k = 0; k < SLP_INSTANCE_GROUP_SIZE (instance); ++k)
+      gimple_set_visited (SLP_TREE_SCALAR_STMTS (store)[k], false);
+
+  return res;
 }
-
 
 /* Function vect_compute_data_ref_alignment
 
