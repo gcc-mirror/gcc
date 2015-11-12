@@ -1,3 +1,22 @@
+2015-11-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Limited_Return): Make global to package
+	for use elsewhere.
+	(Analyze_Expression_Function): Remove duplicated code, pre-analyze
+	expression to capture names and call Check_Limited_Return so
+	that semantic checks are identical to those for regular functions
+	returning limited types.
+
+2015-11-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* bindgen.adb: Fix typo.
+	* sem_ch6.adb: Minor reformatting.
+
+2015-11-12  Emmanuel Briot  <briot@adacore.com>
+
+	* s-os_lib.adb (Argument_String_To_List): fix handling of
+	windows separators
+
 2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-interface/decl.c: Remove unused header files.

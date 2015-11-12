@@ -197,6 +197,10 @@ package body System.OS_Lib is
       --  backslash escapes when computing the bounds for arguments. It is
       --  then removing the extra backslashes from the argument.
 
+      Backslash_Is_Sep : constant Boolean := Directory_Separator = '\';
+      --  Whether '\' is a directory separator (as on Windows), or a
+      --  way to quote special characters.
+
    begin
       Idx := Arg_String'First;
 
@@ -246,7 +250,9 @@ package body System.OS_Lib is
 
                --  Following character is backquoted
 
-               elsif Arg_String (Idx) = '\' then
+               elsif not Backslash_Is_Sep
+                  and then Arg_String (Idx) = '\'
+               then
                   Backqd := True;
 
                else
