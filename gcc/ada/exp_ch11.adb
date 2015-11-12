@@ -1995,7 +1995,7 @@ package body Exp_Ch11 is
    -- Get_Local_Raise_Call_Entity --
    ---------------------------------
 
-   --  Note: this is primary provided for use by the back end in generating
+   --  Note: this is primarily provided for use by the back end in generating
    --  calls to Local_Raise. But it would be too late in the back end to call
    --  RTE if this actually caused a load/analyze of the unit. So what we do
    --  is to ensure there is a dummy call to this function during front end

@@ -169,7 +169,7 @@ package body Checks is
    end record;
 
    --  The following table keeps track of saved checks. Rather than use an
-   --  extensible table. We just use a table of fixed size, and we discard
+   --  extensible table, we just use a table of fixed size, and we discard
    --  any saved checks that do not fit. That's very unlikely to happen and
    --  this is only an optimization in any case.
 

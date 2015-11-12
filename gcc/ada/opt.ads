@@ -421,6 +421,7 @@ package Opt is
 
    subtype Debug_Level_Value is Nat range 0 .. 3;
    Debugger_Level : Debug_Level_Value := 0;
+   --  GNAT, GNATBIND
    --  The value given to the -g parameter. The default value for -g with
    --  no value is 2. If no -g is specified, defaults to 0.
    --  Note that the generated code should never depend on this variable,
