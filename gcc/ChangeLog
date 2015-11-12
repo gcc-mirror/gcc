@@ -73,15 +73,8 @@
 
 2015-11-12  Nathan Sidwell  <nathan@codesourcery.com>
 
-	gcc/
 	* gimplify.c (oacc_default_clause): New.
 	(omp_notice_variable): Call it.
-
-	gcc/testsuite/
-	* c-c++-common/goacc/data-default-1.c: New.
-
-	libgomp/
-	* testsuite/libgomp.oacc-c-c++-common/default-1.c: New.
 
 2015-11-12  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
