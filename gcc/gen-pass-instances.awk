@@ -61,17 +61,22 @@ function handle_line()
 	pass_starts_at = where + len_of_start;
 	pass_name = substr(line, pass_starts_at, len_of_pass_name);
 
+	# Find prefix (until and including pass_name)
+	prefix = substr(line, 1, pass_starts_at + len_of_pass_name - 1)
+
+	# Find postfix (after pass_name)
+	postfix = substr(line, pass_starts_at + len_of_pass_name)
+
 	# Set pass_counts
 	if (pass_name in pass_counts)
 		pass_counts[pass_name]++;
 	else
 		pass_counts[pass_name] = 1;
 
+	pass_num = pass_counts[pass_name];
+
 	# Print call expression with extra pass_num argument
-	printf "%s, %s%s\n",
-		substr(line, 1, pass_starts_at + len_of_pass_name - 1),
-		pass_counts[pass_name],
-		substr(line, pass_starts_at + len_of_pass_name);
+	printf "%s, %s%s\n", prefix, pass_num, postfix;
 }
 
 { handle_line() }
