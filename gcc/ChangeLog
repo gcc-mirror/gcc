@@ -1,3 +1,7 @@
+2015-11-12  Tom de Vries  <tom@codesourcery.com>
+
+	* gen-pass-instances.awk: Add emacs indent setting.
+
 2015-11-12  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* fold-const.c (fold_binary_loc) : Move Convert A/B/C to A/(B*C)
