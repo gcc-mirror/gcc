@@ -1,5 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-options "-O2 -msecure-plt -fPIC" } */
+/* { dg-skip-if "" { powerpc*-*-darwin* powerpc-ibm-aix* } { "*" } { "" } } */
 
 #define FE_TONEAREST 0
 #define FE_UPWARD 1
