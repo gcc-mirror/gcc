@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,8 +33,8 @@
 
 separate (GNAT.IO)
 procedure Put (C : Character) is
-   procedure Putchar (C : Character);
+   procedure Putchar (C : Integer);
    pragma Import (C, Putchar, "putchar");
 begin
-   Putchar (C);
+   Putchar (Character'Pos (C));
 end Put;
