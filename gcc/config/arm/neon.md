@@ -4464,7 +4464,6 @@ if (BYTES_BIG_ENDIAN)
   "TARGET_NEON"
 {
   HOST_WIDE_INT lane = NEON_ENDIAN_LANE_N(<MODE>mode, INTVAL (operands[3]));
-  HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[0]);
   rtx ops[4];
   ops[0] = gen_rtx_REG (DImode, regno);
@@ -4579,7 +4578,6 @@ if (BYTES_BIG_ENDIAN)
   "TARGET_NEON"
 {
   HOST_WIDE_INT lane = NEON_ENDIAN_LANE_N(<MODE>mode, INTVAL (operands[2]));
-  HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[1]);
   rtx ops[4];
   ops[0] = operands[0];
@@ -4723,7 +4721,6 @@ if (BYTES_BIG_ENDIAN)
   "TARGET_NEON"
 {
   HOST_WIDE_INT lane = NEON_ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[3]));
-  HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[0]);
   rtx ops[5];
   ops[0] = gen_rtx_REG (DImode, regno);
@@ -4895,7 +4892,6 @@ if (BYTES_BIG_ENDIAN)
   "TARGET_NEON"
 {
   HOST_WIDE_INT lane = NEON_ENDIAN_LANE_N(<MODE>mode, INTVAL (operands[2]));
-  HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[1]);
   rtx ops[5];
   ops[0] = operands[0];
@@ -5045,7 +5041,6 @@ if (BYTES_BIG_ENDIAN)
   "TARGET_NEON"
 {
   HOST_WIDE_INT lane = NEON_ENDIAN_LANE_N(<MODE>mode, INTVAL (operands[3]));
-  HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[0]);
   rtx ops[6];
   ops[0] = gen_rtx_REG (DImode, regno);
@@ -5225,7 +5220,6 @@ if (BYTES_BIG_ENDIAN)
   "TARGET_NEON"
 {
   HOST_WIDE_INT lane = NEON_ENDIAN_LANE_N(<MODE>mode, INTVAL (operands[2]));
-  HOST_WIDE_INT max = GET_MODE_NUNITS (<MODE>mode);
   int regno = REGNO (operands[1]);
   rtx ops[6];
   ops[0] = operands[0];

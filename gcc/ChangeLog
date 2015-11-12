@@ -1,3 +1,13 @@
+2015-11-12  Charles Baylis  <charles.baylis@linaro.org>
+
+	* config/arm/neon.md: (neon_vld2_lane<mode>): Remove unused max
+	variable.
+	(neon_vst2_lane<mode>): Likewise.
+	(neon_vld3_lane<mode>): Likewise.
+	(neon_vst3_lane<mode>): Likewise.
+	(neon_vld4_lane<mode>): Likewise.
+	(neon_vst4_lane<mode>): Likewise.
+
 2015-11-11  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
