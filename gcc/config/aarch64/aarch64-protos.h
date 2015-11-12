@@ -195,6 +195,10 @@ struct tune_params
   int vec_reassoc_width;
   int min_div_recip_mul_sf;
   int min_div_recip_mul_df;
+  /* Value for aarch64_case_values_threshold; or 0 for the default.  */
+  unsigned int max_case_values;
+  /* Value for PARAM_L1_CACHE_LINE_SIZE; or 0 to use the default.  */
+  unsigned int cache_line_size;
 
 /* An enum specifying how to take into account CPU autoprefetch capabilities
    during instruction scheduling:

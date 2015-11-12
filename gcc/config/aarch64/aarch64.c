@@ -356,6 +356,8 @@ static const struct tune_params generic_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
@@ -379,6 +381,8 @@ static const struct tune_params cortexa53_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
@@ -402,6 +406,8 @@ static const struct tune_params cortexa57_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_RENAME_FMA_REGS
    | AARCH64_EXTRA_TUNE_RECIP_SQRT)	/* tune_flags.  */
@@ -426,6 +432,8 @@ static const struct tune_params cortexa72_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
@@ -448,6 +456,8 @@ static const struct tune_params thunderx_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
@@ -470,6 +480,8 @@ static const struct tune_params xgene1_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_RECIP_SQRT)	/* tune_flags.  */
 };
@@ -3238,6 +3250,20 @@ aarch64_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
     }
 
   return aarch64_tls_referenced_p (x);
+}
+
+/* Implement TARGET_CASE_VALUES_THRESHOLD.  */
+
+static unsigned int
+aarch64_case_values_threshold (void)
+{
+  /* Use the specified limit for the number of cases before using jump
+     tables at higher optimization levels.  */
+  if (optimize > 2
+      && selected_cpu->tune->max_case_values != 0)
+    return selected_cpu->tune->max_case_values;
+  else
+    return default_case_values_threshold ();
 }
 
 /* Return true if register REGNO is a valid index register.
@@ -7781,6 +7807,13 @@ aarch64_override_options_internal (struct gcc_options *opts)
 			 queue_depth,
 			 opts->x_param_values,
 			 global_options_set.x_param_values);
+
+  /* Set the L1 cache line size.  */
+  if (selected_cpu->tune->cache_line_size != 0)
+    maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
+			   selected_cpu->tune->cache_line_size,
+			   opts->x_param_values,
+			   global_options_set.x_param_values);
 
   aarch64_override_options_after_change_1 (opts);
 }
@@ -13525,6 +13558,9 @@ aarch64_promoted_type (const_tree t)
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM aarch64_cannot_force_const_mem
+
+#undef TARGET_CASE_VALUES_THRESHOLD
+#define TARGET_CASE_VALUES_THRESHOLD aarch64_case_values_threshold
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE aarch64_conditional_register_usage

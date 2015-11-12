@@ -1,3 +1,13 @@
+2015-11-12  Evandro Menezes  <e.menezes@samsung.com>
+
+	* config/aarch64/aarch64-protos.h (tune_params): Add new members
+	"max_case_values" and "cache_line_size".
+	* config/aarch64/aarch64.c (aarch64_case_values_threshold): New
+	function.
+	(aarch64_override_options_internal): Tune heuristics based on new
+	members in "tune_params".
+	(TARGET_CASE_VALUES_THRESHOLD): Define macro.
+
 2015-11-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68306
