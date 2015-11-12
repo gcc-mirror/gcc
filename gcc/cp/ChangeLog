@@ -1,5 +1,10 @@
 2015-11-11  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (duplicate_decls): When combining typedefs, remove the
+	new type from the variants list.
+
+2015-11-11  Jason Merrill  <jason@redhat.com>
+
 	* pt.c (instantiate_class_template_1): Set function_depth around
 	instantiation of lambda op().
 
