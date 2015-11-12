@@ -8,7 +8,7 @@
 /* { dg-options "-O -mno-apcs-frame -mcpu=iwmmxt -mabi=iwmmxt" } */
 /* { dg-require-effective-target arm32 } */
 /* { dg-require-effective-target arm_iwmmxt_ok } */
-/* { dg-final { scan-assembler "ldmfd\[ 	]sp!.*ip,\[ ]*pc" } } */
+/* { dg-final { scan-assembler "push.*ip,\[ ]*pc" } } */
 
 /* This function uses all the call-saved registers, namely r4, r5, r6,
    r7, r8, r9, sl, fp.  Since we also save lr, that leaves an odd
