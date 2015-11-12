@@ -10162,7 +10162,12 @@ instantiate_class_template_1 (tree type)
 	{
 	  if (!DECL_TEMPLATE_INFO (decl)
 	      || DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (decl)) != decl)
-	    instantiate_decl (decl, false, false);
+	    {
+	      /* Set function_depth to avoid garbage collection.  */
+	      ++function_depth;
+	      instantiate_decl (decl, false, false);
+	      --function_depth;
+	    }
 
 	  /* We need to instantiate the capture list from the template
 	     after we've instantiated the closure members, but before we
