@@ -1,3 +1,7 @@
+2015-11-13  Tom de Vries  <tom@codesourcery.com>
+
+	* gen-pass-instances.awk (handle_line): Add args_str variable.
+
 2015-11-13  Martin Liska  <mliska@suse.cz>
 
 	* graphite-poly.c (free_scop): Release scop->drs vector.
