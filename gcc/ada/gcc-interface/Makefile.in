@@ -2523,6 +2523,7 @@ ADA_EXCLUDE_SRCS =\
   s-bbthre.ads s-bbtiev.adb s-bbtiev.ads s-bbtime.adb s-bbtime.ads \
   s-bcprmu.adb s-bcprmu.ads s-btstch.adb s-btstch.ads \
   s-init.ads s-init.adb \
+  s-macres.ads \
   s-stache.adb s-stache.ads \
   s-thread.ads \
   s-vxwext.adb s-vxwext.ads \
