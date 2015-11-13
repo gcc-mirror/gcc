@@ -1,3 +1,31 @@
+2015-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c [Darwin/arm64]: Move __gnat_sigtramp implementation to...
+	(__gnat_map_signal): New function.
+	(__gnat_error_handler):
+	Adjust the context and call above function.
+	* sigtramp-armios.c: ...here.  New file.
+
+2015-11-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* bcheck.adb (Check_Consistent_Restrictions): Do not check
+	consistency of No_Dependence for runtime units.
+
+2015-11-13  Tristan Gingold  <gingold@adacore.com>
+
+	* s-rident.ads (Restriction_Id): Add Pure_Barriers.
+	* restrict.ads (Implementation_Restriction): Add Pure_Barriers.
+	* exp_ch9.adb (Expand_Entry_Barrier): Create
+	Is_Simple_Barrier_Name function, add Is_Pure_Barrier and
+	Check_Pure_Barriers.
+
+2015-11-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Get_Cursor_Type): To determine whether a function
+	First is the proper Iterable primitive, use the base type of the
+	first formal rather than the type. This is needed in the unusual
+	case where the Iterable aspect is specified for an integer type.
+
 2015-11-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Constant_Indexing_OK): If the indexing is the

@@ -7553,13 +7553,16 @@ package body Sem_Util is
       Cursor := Any_Type;
 
       --  Locate function with desired name and profile in scope of type
+      --  In the rare case where the type is an integer type, a base type
+      --  is created for it, check that the base type of the first formal
+      --  of First matches the base type of the domain.
 
       Func := First_Entity (Scope (Typ));
       while Present (Func) loop
          if Chars (Func) = Chars (First_Op)
            and then Ekind (Func) = E_Function
            and then Present (First_Formal (Func))
-           and then Etype (First_Formal (Func)) = Typ
+           and then Base_Type (Etype (First_Formal (Func))) = Base_Type (Typ)
            and then No (Next_Formal (First_Formal (Func)))
          then
             if Cursor /= Any_Type then

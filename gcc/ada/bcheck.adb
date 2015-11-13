@@ -979,23 +979,27 @@ package body Bcheck is
             for J in ALIs.First .. ALIs.Last loop
                declare
                   A : ALIs_Record renames ALIs.Table (J);
-
                begin
                   for K in A.First_Unit .. A.Last_Unit loop
                      declare
                         U : Unit_Record renames Units.Table (K);
                      begin
-                        for L in U.First_With .. U.Last_With loop
-                           if Same_Unit
-                             (Withs.Table (L).Uname, ND_Unit)
-                           then
-                              Error_Msg_File_1 := U.Sfile;
-                              Error_Msg_Name_1 := ND_Unit;
-                              Consistency_Error_Msg
-                                ("file { violates restriction " &
-                                 "No_Dependence => %");
-                           end if;
-                        end loop;
+                        --  Exclude runtime units from this check since the
+                        --  user does not care how a runtime unit is
+                        --  implemented.
+
+                        if not Is_Internal_File_Name (U.Sfile) then
+                           for L in U.First_With .. U.Last_With loop
+                              if Same_Unit (Withs.Table (L).Uname, ND_Unit)
+                              then
+                                 Error_Msg_File_1 := U.Sfile;
+                                 Error_Msg_Name_1 := ND_Unit;
+                                 Consistency_Error_Msg
+                                   ("file { violates restriction " &
+                                    "No_Dependence => %");
+                              end if;
+                           end loop;
+                        end if;
                      end;
                   end loop;
                end;
