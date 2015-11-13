@@ -67,7 +67,7 @@ void test01(int dummy, ...)
   ret3 = ret3; // Suppress unused warning.
 #endif
 
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_WCHAR
 
   const wchar_t* nptr2 = 0;
   wchar_t** endptr2 = 0;

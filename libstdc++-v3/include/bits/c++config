@@ -529,4 +529,40 @@ namespace std
 #undef min
 #undef max
 
+// N.B. these _GLIBCXX_USE_C99_XXX macros are defined unconditionally
+// so they should be tested with #if not with #ifdef.
+#if __cplusplus >= 201103L
+# ifndef _GLIBCXX_USE_C99_MATH
+#  define _GLIBCXX_USE_C99_MATH _GLIBCXX11_USE_C99_MATH
+# endif
+# ifndef _GLIBCXX_USE_C99_COMPLEX
+# define _GLIBCXX_USE_C99_COMPLEX _GLIBCXX11_USE_C99_COMPLEX
+# endif
+# ifndef _GLIBCXX_USE_C99_STDIO
+# define _GLIBCXX_USE_C99_STDIO _GLIBCXX11_USE_C99_STDIO
+# endif
+# ifndef _GLIBCXX_USE_C99_STDLIB
+# define _GLIBCXX_USE_C99_STDLIB _GLIBCXX11_USE_C99_STDLIB
+# endif
+# ifndef _GLIBCXX_USE_C99_WCHAR
+# define _GLIBCXX_USE_C99_WCHAR _GLIBCXX11_USE_C99_WCHAR
+# endif
+#else
+# ifndef _GLIBCXX_USE_C99_MATH
+#  define _GLIBCXX_USE_C99_MATH _GLIBCXX98_USE_C99_MATH
+# endif
+# ifndef _GLIBCXX_USE_C99_COMPLEX
+# define _GLIBCXX_USE_C99_COMPLEX _GLIBCXX98_USE_C99_COMPLEX
+# endif
+# ifndef _GLIBCXX_USE_C99_STDIO
+# define _GLIBCXX_USE_C99_STDIO _GLIBCXX98_USE_C99_STDIO
+# endif
+# ifndef _GLIBCXX_USE_C99_STDLIB
+# define _GLIBCXX_USE_C99_STDLIB _GLIBCXX98_USE_C99_STDLIB
+# endif
+# ifndef _GLIBCXX_USE_C99_WCHAR
+# define _GLIBCXX_USE_C99_WCHAR _GLIBCXX98_USE_C99_WCHAR
+# endif
+#endif
+
 // End of prewritten config; the settings discovered at configure time follow.

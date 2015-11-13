@@ -1614,7 +1614,7 @@ proc check_v3_target_string_conversions { } {
 
         set f [open $src "w"]
         puts $f "#include <bits/c++config.h>"
-        puts $f "#if !defined(_GLIBCXX_USE_C99) || defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF)"
+        puts $f "#if !(_GLIBCXX_USE_C99_STDIO && _GLIBCXX_USE_C99_STDLIB && _GLIBCXX_USE_C99_WCHAR) || defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF)"
         puts $f "#  error No string conversions"
         puts $f "#endif"
         close $f

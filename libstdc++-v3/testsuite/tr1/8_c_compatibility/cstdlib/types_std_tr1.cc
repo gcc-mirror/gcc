@@ -27,10 +27,10 @@
 
 void test01()
 {
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDLIB
 
   typedef std::tr1::lldiv_t     my_lldiv_t;
-  
+
 #endif
 }
 

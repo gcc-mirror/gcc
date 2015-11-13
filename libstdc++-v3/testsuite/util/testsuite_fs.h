@@ -83,7 +83,7 @@ namespace __gnu_test
     p = tmp;
 #else
     char buf[64];
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDIO
     std::snprintf(buf, 64, "filesystem-ts-test.%lu", (unsigned long)::getpid());
 #else
     std::sprintf(buf, "filesystem-ts-test.%lu", (unsigned long)::getpid());

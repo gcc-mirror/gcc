@@ -23,7 +23,7 @@
 #include <exception>
 #include <stdlib.h>
 
-#ifdef _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDLIB
 void terminate() { _Exit(0); }
 
 void f() noexcept
@@ -39,7 +39,7 @@ void f() noexcept
 
 int main()
 {
-#ifdef _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDLIB
   f();
 #endif
   return 0;

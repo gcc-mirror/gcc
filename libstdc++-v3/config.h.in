@@ -731,6 +731,44 @@
 /* Version number of package */
 #undef VERSION
 
+/* Define if C99 functions in <complex.h> should be used in <complex> for
+   C++11. Using compiler builtins for these functions requires corresponding
+   C99 library functions to be present. */
+#undef _GLIBCXX11_USE_C99_COMPLEX
+
+/* Define if C99 functions or macros in <math.h> should be imported in <cmath>
+   in namespace std for C++11. */
+#undef _GLIBCXX11_USE_C99_MATH
+
+/* Define if C99 functions or macros in <stdio.h> should be imported in
+   <cstdio> in namespace std for C++11. */
+#undef _GLIBCXX11_USE_C99_STDIO
+
+/* Define if C99 functions or macros in <stdlib.h> should be imported in
+   <cstdlib> in namespace std for C++11. */
+#undef _GLIBCXX11_USE_C99_STDLIB
+
+/* Define if C99 functions or macros in <wchar.h> should be imported in
+   <cwchar> in namespace std for C++11. */
+#undef _GLIBCXX11_USE_C99_WCHAR
+
+/* Define if C99 functions in <complex.h> should be used in <complex> for
+   C++98. Using compiler builtins for these functions requires corresponding
+   C99 library functions to be present. */
+#undef _GLIBCXX98_USE_C99_COMPLEX
+
+/* Define if C99 functions or macros in <math.h> should be imported in <cmath>
+   in namespace std for C++98. */
+#undef _GLIBCXX98_USE_C99_MATH
+
+/* Define if C99 functions or macros in <stdio.h> should be imported in
+   <cstdio> in namespace std for C++98. */
+#undef _GLIBCXX98_USE_C99_STDIO
+
+/* Define if C99 functions or macros in <wchar.h> should be imported in
+   <cwchar> in namespace std for C++98. */
+#undef _GLIBCXX98_USE_C99_WCHAR
+
 /* Define if the compiler supports C++11 atomics. */
 #undef _GLIBCXX_ATOMIC_BUILTINS
 
@@ -791,11 +829,6 @@
    <stdio.h>, and <stdlib.h> can be used or exposed. */
 #undef _GLIBCXX_USE_C99
 
-/* Define if C99 functions in <complex.h> should be used in <complex>. Using
-   compiler builtins for these functions requires corresponding C99 library
-   functions to be present. */
-#undef _GLIBCXX_USE_C99_COMPLEX
-
 /* Define if C99 functions in <complex.h> should be used in <tr1/complex>.
    Using compiler builtins for these functions requires corresponding C99
    library functions to be present. */
@@ -816,10 +849,6 @@
 /* Define if wchar_t C99 functions in <inttypes.h> should be imported in
    <tr1/cinttypes> in namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1
-
-/* Define if C99 functions or macros in <math.h> should be imported in <cmath>
-   in namespace std. */
-#undef _GLIBCXX_USE_C99_MATH
 
 /* Define if C99 functions or macros in <math.h> should be imported in
    <tr1/cmath> in namespace std::tr1. */

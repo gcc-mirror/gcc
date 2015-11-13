@@ -146,7 +146,7 @@ namespace std
   using ::vsprintf;
 } // namespace
 
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDIO
 
 #undef snprintf
 #undef vfscanf
@@ -189,6 +189,6 @@ namespace std
   using ::__gnu_cxx::vsscanf;
 } // namespace std
 
-#endif // _GLIBCXX_USE_C99
+#endif // _GLIBCXX_USE_C99_STDIO
 
 #endif
