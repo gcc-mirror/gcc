@@ -1,3 +1,11 @@
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-typeck.c: Include spellcheck.h.
+	(lookup_field_fuzzy_find_candidates): New function.
+	(lookup_field_fuzzy): New function.
+	(build_component_ref): If the field was not found, try using
+	lookup_field_fuzzy and potentially offer a suggestion.
+
 2015-11-12  James Norris  <jnorris@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 

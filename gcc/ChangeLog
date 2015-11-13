@@ -1,3 +1,9 @@
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add spellcheck.o.
+	* spellcheck.c: New file.
+	* spellcheck.h: New file.
+
 2015-11-13  James Bowman  <james.bowman@ftdichip.com>
 
         * config/ft32/ft32.md (*sne): New insn pattern.

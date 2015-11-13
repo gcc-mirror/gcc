@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
 #include "gomp-constants.h"
+#include "spellcheck.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
    diagnostic messages in convert_for_assignment.  */
@@ -2242,6 +2243,72 @@ lookup_field (tree type, tree component)
   return tree_cons (NULL_TREE, field, NULL_TREE);
 }
 
+/* Recursively append candidate IDENTIFIER_NODEs to CANDIDATES.  */
+
+static void
+lookup_field_fuzzy_find_candidates (tree type, tree component,
+				    vec<tree> *candidates)
+{
+  tree field;
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      if (DECL_NAME (field) == NULL_TREE
+	  && (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
+	      || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE))
+	{
+	  lookup_field_fuzzy_find_candidates (TREE_TYPE (field),
+					      component,
+					      candidates);
+	}
+
+      if (DECL_NAME (field))
+	candidates->safe_push (DECL_NAME (field));
+    }
+}
+
+/* Like "lookup_field", but find the closest matching IDENTIFIER_NODE,
+   rather than returning a TREE_LIST for an exact match.  */
+
+static tree
+lookup_field_fuzzy (tree type, tree component)
+{
+  gcc_assert (TREE_CODE (component) == IDENTIFIER_NODE);
+
+  /* First, gather a list of candidates.  */
+  auto_vec <tree> candidates;
+
+  lookup_field_fuzzy_find_candidates (type, component,
+				      &candidates);
+
+  /* Now determine which is closest.  */
+  int i;
+  tree identifier;
+  tree best_identifier = NULL;
+  edit_distance_t best_distance = MAX_EDIT_DISTANCE;
+  FOR_EACH_VEC_ELT (candidates, i, identifier)
+    {
+      gcc_assert (TREE_CODE (identifier) == IDENTIFIER_NODE);
+      edit_distance_t dist = levenshtein_distance (component, identifier);
+      if (dist < best_distance)
+	{
+	  best_distance = dist;
+	  best_identifier = identifier;
+	}
+    }
+
+  /* If more than half of the letters were misspelled, the suggestion is
+     likely to be meaningless.  */
+  if (best_identifier)
+    {
+      unsigned int cutoff = MAX (IDENTIFIER_LENGTH (component),
+				 IDENTIFIER_LENGTH (best_identifier)) / 2;
+      if (best_distance > cutoff)
+	return NULL;
+    }
+
+  return best_identifier;
+}
+
 /* Make an expression to refer to the COMPONENT field of structure or
    union value DATUM.  COMPONENT is an IDENTIFIER_NODE.  LOC is the
    location of the COMPONENT_REF.  */
@@ -2277,7 +2344,12 @@ build_component_ref (location_t loc, tree datum, tree component)
 
       if (!field)
 	{
-	  error_at (loc, "%qT has no member named %qE", type, component);
+	  tree guessed_id = lookup_field_fuzzy (type, component);
+	  if (guessed_id)
+	    error_at (loc, "%qT has no member named %qE; did you mean %qE?",
+		      type, component, guessed_id);
+	  else
+	    error_at (loc, "%qT has no member named %qE", type, component);
 	  return error_mark_node;
 	}
 
