@@ -147,6 +147,7 @@ package Restrict is
       No_Wide_Characters                 => True,
       Static_Priorities                  => True,
       Static_Storage_Size                => True,
+      Pure_Barriers                      => True,
       SPARK_05                           => True,
       others                             => False);
 

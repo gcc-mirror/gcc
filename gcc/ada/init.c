@@ -2299,45 +2299,7 @@ char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
 
 #ifdef __arm64__
 #include <sys/ucontext.h>
-
-/* Trampoline inserted before raising the exception.  It modifies the
-   stack so that it looks to be called directly from the fault point.
-   Note that LR may be incorrectly restored by unwinding.  */
-void __gnat_sigtramp (struct Exception_Data *d, const char *m,
-		      mcontext_t ctxt,
-		      void (*proc)(struct Exception_Data *, const char *));
-
-asm("\n"
-"	.section	__TEXT,__text,regular,pure_instructions\n"
-"	.align  2\n"
-"___gnat_sigtramp:\n"
-"	.cfi_startproc\n"
-	/* Restore callee saved registers.  */
-"	ldp	x19, x20, [x2, #168]\n"
-"	ldp	x21, x22, [x2, #184]\n"
-"	ldp	x23, x24, [x2, #200]\n"
-"	ldp	x25, x26, [x2, #216]\n"
-"	ldp	x27, x28, [x2, #232]\n"
-"	ldp	q8, q9, [x2, #416]\n"
-"	ldp	q10, q11, [x2, #448]\n"
-"	ldp	q12, q13, [x2, #480]\n"
-"	ldp	q14, q15, [x2, #512]\n"
-	/* Read FP from mcontext.  */
-"	ldr	fp, [x2, #248]\n"
-	/* Read SP and PC from mcontext.  */
-"	ldp	x6, lr, [x2, #264]\n"
-"	mov	sp, x6\n"
-	/* Create a minimal frame.  */
-"	stp	fp, lr, [sp, #-16]!\n"
-"	.cfi_def_cfa_offset 16\n"
-"	.cfi_offset	30, -8\n"
-"	.cfi_offset	29, -16\n"
-"	blr	x3\n"
-	/* Release our frame and return (should never get here!).  */
-"	ldp	fp, lr, [sp, #16]\n"
-"	ret\n"
-"	.cfi_endproc\n"
-);
+#include "sigtramp.h"
 #endif
 
 /* Return true if ADDR is within a stack guard area.  */
@@ -2425,12 +2387,10 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
 }
 
 static void
-__gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
+__gnat_map_signal (int sig, siginfo_t *si, void *ucontext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
-
-  __gnat_adjust_context_for_raise (sig, ucontext);
 
   switch (sig)
     {
@@ -2446,29 +2406,11 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 	  exception = &constraint_error;
 	  msg = "erroneous memory access";
 	}
+
       /* Reset the use of alt stack, so that the alt stack will be used
 	 for the next signal delivery.
          The stack can't be used in case of stack checking.  */
       syscall (SYS_sigreturn, NULL, UC_RESET_ALT_STACK);
-
-#ifdef __arm64__
-      /* ??? Temporary kludge to make stack checking work.  The problem is
-	 that the trampoline doesn't restore LR and, consequently, doesn't
-	 make it possible to unwind past an interrupted frame which hasn"t
-	 saved LR on the stack yet.  */
-      if (__gnat_is_stack_guard ((unsigned long)si->si_addr))
-	{
-	  ucontext_t *uc = (ucontext_t *)ucontext;
-	  uc->uc_mcontext->__ss.__pc = uc->uc_mcontext->__ss.__lr;
-	}
-
-      /* On arm64, use a trampoline so that the unwinder won't see the
-	 signal frame.  */
-      __gnat_sigtramp (exception, msg,
-		       ((ucontext_t *)ucontext)->uc_mcontext,
-		       Raise_From_Signal_Handler);
-      return;
-#endif
       break;
 
     case SIGFPE:
@@ -2482,6 +2424,30 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
     }
 
   Raise_From_Signal_Handler (exception, msg);
+}
+
+static void
+__gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
+{
+  __gnat_adjust_context_for_raise (sig, ucontext);
+
+#ifdef __arm64__
+  /* ??? Temporary kludge to make stack checking work.  The problem is
+     that the trampoline doesn't restore LR and, consequently, doesn't
+     make it possible to unwind past an interrupted frame which hasn"t
+     saved LR on the stack yet.  */
+  if (__gnat_is_stack_guard ((unsigned long)si->si_addr))
+    {
+      ucontext_t *uc = (ucontext_t *)ucontext;
+      uc->uc_mcontext->__ss.__pc = uc->uc_mcontext->__ss.__lr;
+    }
+
+    /* Use a trampoline so that the unwinder won't see the signal frame.  */
+  __gnat_sigtramp (sig, (void *)si, ucontext,
+		   (__sigtramphandler_t *)&__gnat_map_signal);
+#else
+  __gnat_map_signal (sig, si, ucontext);
+#endif
 }
 
 void

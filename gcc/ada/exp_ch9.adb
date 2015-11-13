@@ -6306,6 +6306,14 @@ package body Exp_Ch9 is
       --  Check whether entity in Barrier is external to protected type.
       --  If so, barrier may not be properly synchronized.
 
+      function Is_Pure_Barrier (N : Node_Id) return Traverse_Result;
+      --  Check whether N follow the Pure_Barriers restriction. Return OK if
+      --  so.
+
+      function Is_Simple_Barrier_Name (N : Node_Id) return Boolean;
+      --  Check wether entity name N denotes a component of the protected
+      --  object. This is used to check the Simple_Barrier restriction.
+
       ----------------------
       -- Is_Global_Entity --
       ----------------------
@@ -6356,6 +6364,81 @@ package body Exp_Ch9 is
       procedure Check_Unprotected_Barrier is
         new Traverse_Proc (Is_Global_Entity);
 
+      ----------------------------
+      -- Is_Simple_Barrier_Name --
+      ----------------------------
+
+      function Is_Simple_Barrier_Name (N : Node_Id) return Boolean is
+         Renamed : Node_Id;
+      begin
+         if not Expander_Active then
+            return Scope (Entity (N)) = Current_Scope;
+
+         --  Check for case of _object.all.field (note that the explicit
+         --  dereference gets inserted by analyze/expand of _object.field)
+
+         else
+            Renamed := Renamed_Object (Entity (N));
+            return Present (Renamed)
+              and then Nkind (Renamed) = N_Selected_Component
+              and then Chars (Prefix (Prefix (Renamed))) = Name_uObject;
+         end if;
+      end Is_Simple_Barrier_Name;
+
+      ---------------------
+      -- Is_Pure_Barrier --
+      ---------------------
+
+      function Is_Pure_Barrier (N : Node_Id) return Traverse_Result is
+      begin
+         case Nkind (N) is
+            when N_Identifier
+              | N_Expanded_Name =>
+
+               if No (Entity (N)) then
+                  return Abandon;
+               end if;
+
+               case Ekind (Entity (N)) is
+                  when E_Constant
+                    | E_Discriminant
+                    | E_Named_Integer
+                    | E_Named_Real
+                    | E_Enumeration_Literal =>
+                     return OK;
+
+                  when E_Variable =>
+                     if Is_Simple_Barrier_Name (N) then
+                        return OK;
+                     end if;
+
+                  when others =>
+                     null;
+               end case;
+
+            when N_Integer_Literal
+              | N_Real_Literal
+              | N_Character_Literal =>
+               return OK;
+
+            when N_Op_Boolean
+              | N_Op_Not =>
+               if Ekind (Entity (N)) = E_Operator then
+                  return OK;
+               end if;
+
+            when N_Short_Circuit =>
+               return OK;
+
+            when others =>
+               null;
+         end case;
+
+         return Abandon;
+      end Is_Pure_Barrier;
+
+      function Check_Pure_Barriers is new Traverse_Func (Is_Pure_Barrier);
+
    --  Start of processing for Expand_Entry_Barrier
 
    begin
@@ -6393,6 +6476,12 @@ package body Exp_Ch9 is
          Analyze_And_Resolve (Cond, Any_Boolean);
       end if;
 
+      --  Check Pure_Barriers restriction
+
+      if Check_Pure_Barriers (Cond) = Abandon then
+         Check_Restriction (Pure_Barriers, Cond);
+      end if;
+
       --  The Ravenscar profile restricts barriers to simple variables declared
       --  within the protected object. We also allow Boolean constants, since
       --  these appear in several published examples and are also allowed by
@@ -6421,22 +6510,7 @@ package body Exp_Ch9 is
          then
             return;
 
-         elsif not Expander_Active
-           and then Scope (Entity (Cond)) = Current_Scope
-         then
-            return;
-
-         --  Check for case of _object.all.field (note that the explicit
-         --  dereference gets inserted by analyze/expand of _object.field)
-
-         elsif Present (Renamed_Object (Entity (Cond)))
-           and then
-             Nkind (Renamed_Object (Entity (Cond))) = N_Selected_Component
-           and then
-             Chars
-               (Prefix
-                 (Prefix (Renamed_Object (Entity (Cond))))) = Name_uObject
-         then
+         elsif Is_Simple_Barrier_Name (Cond) then
             return;
          end if;
       end if;
