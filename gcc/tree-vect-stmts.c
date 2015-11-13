@@ -7645,8 +7645,8 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
 	    }
 	  else
 	    {
-	      vec_rhs1 = vect_get_vec_def_for_operand (rhs1, stmt, NULL);
-	      vec_rhs2 = vect_get_vec_def_for_operand (rhs2, stmt, NULL);
+	      vec_rhs1 = vect_get_vec_def_for_operand (rhs1, stmt, vectype);
+	      vec_rhs2 = vect_get_vec_def_for_operand (rhs2, stmt, vectype);
 	    }
 	}
       else

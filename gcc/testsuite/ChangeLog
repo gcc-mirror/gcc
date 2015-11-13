@@ -1,3 +1,8 @@
+2015-11-13  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* g++.dg/vect/simd-bool-comparison-1.cc: New test.
+	* g++.dg/vect/simd-bool-comparison-2.cc: New test.
+
 2015-11-13  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/47266
