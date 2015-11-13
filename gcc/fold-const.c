@@ -2095,6 +2095,25 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
       else if (TREE_CODE (arg1) == REAL_CST)
 	return fold_convert_const_fixed_from_real (type, arg1);
     }
+  else if (TREE_CODE (type) == VECTOR_TYPE)
+    {
+      if (TREE_CODE (arg1) == VECTOR_CST
+	  && TYPE_VECTOR_SUBPARTS (type) == VECTOR_CST_NELTS (arg1))
+	{
+	  int len = TYPE_VECTOR_SUBPARTS (type);
+	  tree elttype = TREE_TYPE (type);
+	  tree *v = XALLOCAVEC (tree, len);
+	  for (int i = 0; i < len; ++i)
+	    {
+	      tree elt = VECTOR_CST_ELT (arg1, i);
+	      tree cvt = fold_convert_const (code, elttype, elt);
+	      if (cvt == NULL_TREE)
+		return NULL_TREE;
+	      v[i] = cvt;
+	    }
+	  return build_vector (type, v);
+	}
+    }
   return NULL_TREE;
 }
 
