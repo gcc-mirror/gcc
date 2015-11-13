@@ -432,8 +432,8 @@ create_one_component_var (tree type, tree orig, const char *prefix,
   if (DECL_NAME (orig) && !DECL_IGNORED_P (orig))
     {
       const char *name = IDENTIFIER_POINTER (DECL_NAME (orig));
-
-      DECL_NAME (r) = get_identifier (ACONCAT ((name, suffix, NULL)));
+      name = ACONCAT ((name, suffix, NULL));
+      DECL_NAME (r) = get_identifier (name);
 
       SET_DECL_DEBUG_EXPR (r, build1 (code, type, orig));
       DECL_HAS_DEBUG_EXPR_P (r) = 1;
