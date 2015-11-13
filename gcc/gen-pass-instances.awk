@@ -57,13 +57,16 @@ function handle_line()
 	len_of_open = length("(");
 	len_of_close = length(")");
 
-	# Find pass_name argument
-	len_of_pass_name = len_of_call - (len_of_start + len_of_close);
-	pass_starts_at = call_starts_at + len_of_start;
-	pass_name = substr(line, pass_starts_at, len_of_pass_name);
+	# Find arguments
+	len_of_args = len_of_call - (len_of_start + len_of_close);
+	args_start_at = call_starts_at + len_of_start;
+	args_str = substr(line, args_start_at, len_of_args);
+
+	# Set pass_name argument
+	pass_name = args_str;
 
 	# Find call expression prefix (until and including called function)
-	prefix_len = pass_starts_at - 1 - len_of_open;
+	prefix_len = args_start_at - 1 - len_of_open;
 	prefix = substr(line, 1, prefix_len);
 
 	# Find call expression postfix
