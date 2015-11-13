@@ -1,3 +1,7 @@
+2015-11-13  Jason Merrill  <jason@redhat.com>
+
+	* hash-map.h (hash_map::empty): New.
+
 2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc/omp-low.c (scan_sharing_clauses): Accept INDEPENDENT, AUTO &
