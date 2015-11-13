@@ -1,5 +1,7 @@
 2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* c-c++-common/goacc/loop-auto-1.c: New.
+
 	* lib/target-supports.exp (check_effective_target_offload_nvptx): New.
 	* gcc.dg/goacc/nvptx-merged-loop.c: New.
 

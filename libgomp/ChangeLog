@@ -1,5 +1,7 @@
 2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: New.
+
 	* testsuite/libgomp.oacc-c-c++-common/collapse-2.c: Sequential
 	loop is sequential.
 

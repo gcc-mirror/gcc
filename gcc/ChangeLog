@@ -1,3 +1,13 @@
+2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc/omp-low.c (scan_sharing_clauses): Accept INDEPENDENT, AUTO &
+	SEQ.
+	(oacc_loop_fixed_partitions): Correct return type to bool.
+	(oacc_loop_auto_partitions): New.
+	(oacc_loop_partition): Take mask argument, call
+	oacc_loop_auto_partitions.
+	(execute_oacc_device_lower): Provide mask to oacc_loop_partition.
+
 2015-11-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/constraints.md (we constraint): New constraint for
