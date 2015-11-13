@@ -66,8 +66,8 @@ function handle_line()
 	pass_name = args_str;
 
 	# Find call expression prefix (until and including called function)
-	prefix_len = args_start_at - 1 - len_of_open;
-	prefix = substr(line, 1, prefix_len);
+	len_of_prefix = args_start_at - 1 - len_of_open;
+	prefix = substr(line, 1, len_of_prefix);
 
 	# Find call expression postfix
 	postfix_starts_at = call_starts_at + len_of_call;
