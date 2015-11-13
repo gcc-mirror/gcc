@@ -1,3 +1,15 @@
+2015-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c [Darwin/arm64] (__gnat_sigtramp): Do not increment PC,
+	fix CFI and add return sequence.
+
+2015-11-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_fixd.adb (Expand_Convert_Float_To_Fixed): If the conversion
+	comes from an attribute reference 'Round, the operation must
+	round and not truncate.
+	* sem_res.adb, sem_ch6.adb: Minor editing.
+
 2015-11-12  Philippe Gil  <gil@adacore.com>
 
 	* g-debpoo.adb (Print_Address): print address in hexadecimal as

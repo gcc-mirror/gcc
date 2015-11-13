@@ -1635,7 +1635,7 @@ package body Sem_Res is
                end if;
 
                if Nkind (Old_Sec) = N_Parameter_Association then
-                  if Chars (Selector_Name (Old_Sec))  =
+                  if Chars (Selector_Name (Old_Sec)) =
                      Chars (First_Entity (Op_Id))
                   then
                      Rewrite (Explicit_Actual_Parameter (Old_Sec),
