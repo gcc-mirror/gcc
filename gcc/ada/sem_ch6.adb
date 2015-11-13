@@ -8759,6 +8759,11 @@ package body Sem_Ch6 is
             --  True if S overrides a function in the visible part. The
             --  overridden function could be explicitly or implicitly declared.
 
+            function Parent_Is_Private return Boolean;
+            --  This detects the special case where the overriding subprogram
+            --  is overriding a subprogram that was declared in the same
+            --  private part. That case is illegal by 3.9.3(10).
+
             function Overrides_Visible_Function
               (Partial_View : Entity_Id) return Boolean
             is
@@ -8797,6 +8802,14 @@ package body Sem_Ch6 is
                return False;
             end Overrides_Visible_Function;
 
+            function Parent_Is_Private return Boolean is
+               S_Decl : constant Node_Id := Parent (Parent (S));
+               Overridden_Decl : constant Node_Id :=
+                 Parent (Parent (Overridden_Operation (S)));
+            begin
+               return In_Same_List (Overridden_Decl, S_Decl);
+            end Parent_Is_Private;
+
          --  Start of processing for Check_Private_Overriding
 
          begin
@@ -8808,10 +8821,11 @@ package body Sem_Ch6 is
                if Is_Abstract_Type (T)
                  and then Is_Abstract_Subprogram (S)
                  and then (not Is_Overriding
-                            or else not Is_Abstract_Subprogram (E))
+                             or else not Is_Abstract_Subprogram (E)
+                             or else Parent_Is_Private)
                then
                   Error_Msg_N ("abstract subprograms must be visible "
-                               & "(RM 3.9.3(10))!", S);
+                                 & "(RM 3.9.3(10))!", S);
 
                elsif Ekind (S) = E_Function then
                   declare

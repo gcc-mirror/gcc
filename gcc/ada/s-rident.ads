@@ -543,7 +543,7 @@ package System.Rident is
                            No_Select_Statements             => True,
                            No_Specific_Termination_Handlers => True,
                            No_Task_Termination              => True,
-                           Simple_Barriers                  => True,
+                           Pure_Barriers                    => True,
                            others                           => False),
 
                         --  Value settings for Ravenscar (same as Restricted)

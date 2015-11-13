@@ -6370,18 +6370,20 @@ package body Exp_Ch9 is
 
       function Is_Simple_Barrier_Name (N : Node_Id) return Boolean is
          Renamed : Node_Id;
-      begin
-         if not Expander_Active then
-            return Scope (Entity (N)) = Current_Scope;
 
+      begin
          --  Check for case of _object.all.field (note that the explicit
          --  dereference gets inserted by analyze/expand of _object.field).
 
-         else
+         if Expander_Active then
             Renamed := Renamed_Object (Entity (N));
-            return Present (Renamed)
-              and then Nkind (Renamed) = N_Selected_Component
-              and then Chars (Prefix (Prefix (Renamed))) = Name_uObject;
+
+            return
+              Present (Renamed)
+                and then Nkind (Renamed) = N_Selected_Component
+                and then Chars (Prefix (Prefix (Renamed))) = Name_uObject;
+         else
+            return Scope (Entity (N)) = Current_Scope;
          end if;
       end Is_Simple_Barrier_Name;
 
@@ -6392,19 +6394,18 @@ package body Exp_Ch9 is
       function Is_Pure_Barrier (N : Node_Id) return Traverse_Result is
       begin
          case Nkind (N) is
-            when N_Identifier
-              | N_Expanded_Name =>
-
+            when N_Expanded_Name |
+                 N_Identifier    =>
                if No (Entity (N)) then
                   return Abandon;
                end if;
 
                case Ekind (Entity (N)) is
-                  when E_Constant
-                    | E_Discriminant
-                    | E_Named_Integer
-                    | E_Named_Real
-                    | E_Enumeration_Literal =>
+                  when E_Constant            |
+                       E_Discriminant        |
+                       E_Named_Integer       |
+                       E_Named_Real          |
+                       E_Enumeration_Literal =>
                      return OK;
 
                   when E_Variable =>
@@ -6416,13 +6417,13 @@ package body Exp_Ch9 is
                      null;
                end case;
 
-            when N_Integer_Literal
-              | N_Real_Literal
-              | N_Character_Literal =>
+            when N_Integer_Literal   |
+                 N_Real_Literal      |
+                 N_Character_Literal =>
                return OK;
 
-            when N_Op_Boolean
-              | N_Op_Not =>
+            when N_Op_Boolean |
+                 N_Op_Not     =>
                if Ekind (Entity (N)) = E_Operator then
                   return OK;
                end if;

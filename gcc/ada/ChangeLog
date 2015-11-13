@@ -1,3 +1,20 @@
+2015-11-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb, exp_fixd.adb, exp_util.adb, g-debpoo.adb,
+	impunit.adb, scos.ads, sem_ch4.adb, sem_prag.adb,
+	s-stchop-vxworks.adb: Minor reformatting.
+
+2015-11-13  Tristan Gingold  <gingold@adacore.com>
+
+	* s-rident.ads (Profile_Info): Enable Pure_Barriers for
+	GNAT_Extended_Ravenscar.
+
+2015-11-13  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Check_Private_Overriding): Detect the special
+	case where the overriding subprogram is overriding a subprogram
+	that was declared in the same private part.
+
 2015-11-13  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch9.adb: Minor reformatting and typo fixes.

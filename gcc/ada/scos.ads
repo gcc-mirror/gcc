@@ -361,7 +361,7 @@ package SCOs is
    end record;
 
    No_Source_Location : constant Source_Location :=
-     (No_Line_Number, No_Column_Number);
+                          (No_Line_Number, No_Column_Number);
 
    type SCO_Table_Entry is record
       From : Source_Location := No_Source_Location;

@@ -649,8 +649,8 @@ package body Impunit is
       --  Ada/System/Interfaces are all Ada 95 units
 
       if File = "ada.ads"
-        or else File = "system.ads"
         or else File = "interfac.ads"
+        or else File = "system.ads"
       then
          return Ada_95_Unit;
       end if;
@@ -726,9 +726,9 @@ package body Impunit is
       --  Only remaining special possibilities are children of System.RPC and
       --  System.Garlic and special files of the form System.Aux...
 
-      if File (1 .. 5) = "s-rpc"
+      if File (1 .. 5) = "s-aux"
         or else File (1 .. 5) = "s-gar"
-        or else File (1 .. 5) = "s-aux"
+        or else File (1 .. 5) = "s-rpc"
       then
          return Ada_95_Unit;
       end if;

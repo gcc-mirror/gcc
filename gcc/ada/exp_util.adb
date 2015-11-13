@@ -1672,8 +1672,8 @@ package body Exp_Util is
    function Containing_Package_With_Ext_Axioms
      (E : Entity_Id) return Entity_Id
    is
+      Decl                  : Node_Id;
       First_Ax_Parent_Scope : Entity_Id;
-      Decl : Node_Id;
 
    begin
       --  E is the package or generic package which is externally axiomatized

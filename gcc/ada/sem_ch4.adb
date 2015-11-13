@@ -2192,9 +2192,9 @@ package body Sem_Ch4 is
                Get_Next_Interp (I, It);
             end loop;
 
-            --  If no valid interpretation has been found, then the type of
-            --  the ELSE expression does not match any interpretation of
-            --  the THEN expression.
+            --  If no valid interpretation has been found, then the type of the
+            --  ELSE expression does not match any interpretation of the THEN
+            --  expression.
 
             if Etype (N) = Any_Type then
                Error_Msg_N
@@ -4665,10 +4665,11 @@ package body Sem_Ch4 is
            and then not Is_Entity_Name (Name)
            and then Nkind (Name) /= N_Explicit_Dereference
          then
-            Error_Msg_NE ("invalid reference to internal operation "
-               & "of some object of type&", N, Type_To_Use);
+            Error_Msg_NE
+              ("invalid reference to internal operation of some object of "
+               & "type &", N, Type_To_Use);
             Set_Entity (Sel, Any_Id);
-            Set_Etype (Sel, Any_Type);
+            Set_Etype  (Sel, Any_Type);
             return;
          end if;
 
@@ -4676,9 +4677,7 @@ package body Sem_Ch4 is
          --  visible entities are plausible interpretations, check whether
          --  there is some other primitive operation with that name.
 
-         if Ada_Version >= Ada_2005
-           and then Is_Tagged_Type (Prefix_Type)
-         then
+         if Ada_Version >= Ada_2005 and then Is_Tagged_Type (Prefix_Type) then
             if (Etype (N) = Any_Type
                   or else not Has_Candidate)
               and then Try_Object_Operation (N)
@@ -4710,13 +4709,12 @@ package body Sem_Ch4 is
             if Has_Candidate
               and then Is_Concurrent_Type (Prefix_Type)
               and then Nkind (Parent (N)) = N_Procedure_Call_Statement
-
+            then
                --  Duplicate the call. This is required to avoid problems with
                --  the tree transformations performed by Try_Object_Operation.
                --  Set properly the parent of the copied call, because it is
                --  about to be reanalyzed.
 
-            then
                declare
                   Par : constant Node_Id := New_Copy_Tree (Parent (N));
 
@@ -7305,20 +7303,16 @@ package body Sem_Ch4 is
                   Nam : constant Entity_Id := Current_Entity (Sel);
 
                begin
-                  if Present (Nam)
-                    and then Is_Overloadable (Nam)
-                  then
-                     if Nkind (Parent (Parent (Par)))
-                        = N_Procedure_Call_Statement
+                  if Present (Nam) and then Is_Overloadable (Nam) then
+                     if Nkind (Parent (Parent (Par))) =
+                          N_Procedure_Call_Statement
                      then
                         return False;
 
-                     else
-                        if Ekind (Nam) = E_Function
-                          and then Present (First_Formal (Nam))
-                        then
-                           return Ekind (First_Formal (Nam)) = E_In_Parameter;
-                        end if;
+                     elsif Ekind (Nam) = E_Function
+                       and then Present (First_Formal (Nam))
+                     then
+                        return Ekind (First_Formal (Nam)) = E_In_Parameter;
                      end if;
                   end if;
                end;
