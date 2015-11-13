@@ -109,7 +109,8 @@ get_loc (unsigned int line_num, unsigned int col_num)
 
   /* Convert from 0-based column numbers to 1-based column numbers.  */
   source_location loc
-    = linemap_position_for_line_and_column (line_map,
+    = linemap_position_for_line_and_column (line_table,
+					    line_map,
 					    line_num, col_num + 1);
 
   return loc;
@@ -163,7 +164,7 @@ test_show_locus (function *fun)
   if (0 == strcmp (fnname, "test_simple"))
     {
       const int line = fnstart_line + 2;
-      rich_location richloc (get_loc (line, 15));
+      rich_location richloc (line_table, get_loc (line, 15));
       richloc.add_range (get_loc (line, 10), get_loc (line, 14), false);
       richloc.add_range (get_loc (line, 16), get_loc (line, 16), false);
       warning_at_rich_loc (&richloc, 0, "test");
@@ -172,7 +173,7 @@ test_show_locus (function *fun)
   if (0 == strcmp (fnname, "test_simple_2"))
     {
       const int line = fnstart_line + 2;
-      rich_location richloc (get_loc (line, 24));
+      rich_location richloc (line_table, get_loc (line, 24));
       richloc.add_range (get_loc (line, 6),
 			 get_loc (line, 22), false);
       richloc.add_range (get_loc (line, 26),
@@ -183,7 +184,7 @@ test_show_locus (function *fun)
   if (0 == strcmp (fnname, "test_multiline"))
     {
       const int line = fnstart_line + 2;
-      rich_location richloc (get_loc (line + 1, 7));
+      rich_location richloc (line_table, get_loc (line + 1, 7));
       richloc.add_range (get_loc (line, 7),
 			 get_loc (line, 23), false);
       richloc.add_range (get_loc (line + 1, 9),
@@ -194,7 +195,7 @@ test_show_locus (function *fun)
   if (0 == strcmp (fnname, "test_many_lines"))
     {
       const int line = fnstart_line + 2;
-      rich_location richloc (get_loc (line + 5, 7));
+      rich_location richloc (line_table, get_loc (line + 5, 7));
       richloc.add_range (get_loc (line, 7),
 			 get_loc (line + 4, 65), false);
       richloc.add_range (get_loc (line + 5, 9),
@@ -223,7 +224,7 @@ test_show_locus (function *fun)
       source_range src_range;
       src_range.m_start = get_loc (line, 12);
       src_range.m_finish = get_loc (line, 20);
-      rich_location richloc (caret);
+      rich_location richloc (line_table, caret);
       richloc.set_range (0, src_range, true, false);
       warning_at_rich_loc (&richloc, 0, "test");
     }
@@ -237,7 +238,7 @@ test_show_locus (function *fun)
       source_range src_range;
       src_range.m_start = get_loc (line, 90);
       src_range.m_finish = get_loc (line, 98);
-      rich_location richloc (caret);
+      rich_location richloc (line_table, caret);
       richloc.set_range (0, src_range, true, false);
       warning_at_rich_loc (&richloc, 0, "test");
     }
@@ -248,7 +249,7 @@ test_show_locus (function *fun)
       const int line = fnstart_line + 2;
       location_t caret_a = get_loc (line, 7);
       location_t caret_b = get_loc (line, 11);
-      rich_location richloc (caret_a);
+      rich_location richloc (line_table, caret_a);
       richloc.add_range (caret_b, caret_b, true);
       global_dc->caret_chars[0] = 'A';
       global_dc->caret_chars[1] = 'B';
@@ -269,7 +270,7 @@ test_show_locus (function *fun)
       const int line = fnstart_line + 3;
       location_t caret_a = get_loc (line, 5);
       location_t caret_b = get_loc (line - 1, 19);
-      rich_location richloc (caret_a);
+      rich_location richloc (line_table, caret_a);
       richloc.add_range (caret_b, caret_b, true);
       global_dc->caret_chars[0] = '1';
       global_dc->caret_chars[1] = '2';
@@ -303,11 +304,6 @@ plugin_init (struct plugin_name_args *plugin_info,
 
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
-
-  /* For now, tell the dc to expect ranges and thus to colorize the source
-     lines, not just the carets/underlines.  This will be redundant
-     once the C frontend generates ranges.  */
-  global_dc->colorize_source_p = true;
 
   for (int i = 0; i < argc; i++)
     {

@@ -3460,6 +3460,12 @@ parser_build_unary_op (location_t loc, enum tree_code code, struct c_expr arg)
     overflow_warning (loc, result.value);
     }
 
+  /* We are typically called when parsing a prefix token at LOC acting on
+     ARG.  Reflect this by updating the source range of the result to
+     start at LOC and end at the end of ARG.  */
+  set_c_expr_source_range (&result,
+			   loc, arg.get_finish ());
+
   return result;
 }
 
@@ -3496,6 +3502,10 @@ parser_build_binary_op (location_t location, enum tree_code code,
 
   if (location != UNKNOWN_LOCATION)
     protected_set_expr_location (result.value, location);
+
+  set_c_expr_source_range (&result,
+			   arg1.get_start (),
+			   arg2.get_finish ());
 
   /* Check for cases such as x+y<<z which users are likely
      to misinterpret.  */

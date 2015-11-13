@@ -1,3 +1,10 @@
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_fully_fold_internal): Capture existing souce_range,
+	and store it on the result.
+	* c-opts.c (c_common_init_options): Set
+	global_dc->colorize_source_p.
+
 2015-11-12  James Norris  <jnorris@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 

@@ -773,7 +773,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
   va_copy (argp, ap);
 
   diagnostic_info diagnostic;
-  rich_location rich_loc (UNKNOWN_LOCATION);
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
   bool fatal_errors = global_dc->fatal_errors;
   pretty_printer *pp = global_dc->printer;
   output_buffer *tmp_buffer = pp->buffer;
@@ -1120,7 +1120,7 @@ gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
-  rich_location rich_loc (loc);
+  rich_location rich_loc (line_table, loc);
   bool ret;
 
   va_start (argp, gmsgid);
@@ -1138,7 +1138,7 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
-  rich_location rich_loc (UNKNOWN_LOCATION);
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
   bool ret;
 
   va_start (argp, gmsgid);
@@ -1158,7 +1158,7 @@ gfc_error_now (const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
-  rich_location rich_loc (UNKNOWN_LOCATION);
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   error_buffer.flag = true;
 
@@ -1176,7 +1176,7 @@ gfc_fatal_error (const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
-  rich_location rich_loc (UNKNOWN_LOCATION);
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_FATAL);
@@ -1242,7 +1242,7 @@ gfc_error (const char *gmsgid, va_list ap)
     }
 
   diagnostic_info diagnostic;
-  rich_location richloc (UNKNOWN_LOCATION);
+  rich_location richloc (line_table, UNKNOWN_LOCATION);
   bool fatal_errors = global_dc->fatal_errors;
   pretty_printer *pp = global_dc->printer;
   output_buffer *tmp_buffer = pp->buffer;
@@ -1288,7 +1288,7 @@ gfc_internal_error (const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
-  rich_location rich_loc (UNKNOWN_LOCATION);
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ICE);

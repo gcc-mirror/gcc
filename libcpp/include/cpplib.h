@@ -237,7 +237,8 @@ struct GTY(()) cpp_identifier {
 /* A preprocessing token.  This has been carefully packed and should
    occupy 16 bytes on 32-bit hosts and 24 bytes on 64-bit hosts.  */
 struct GTY(()) cpp_token {
-  source_location src_loc;	/* Location of first char of token.  */
+  source_location src_loc;	/* Location of first char of token,
+				   together with range of full token.  */
   ENUM_BITFIELD(cpp_ttype) type : CHAR_BIT;  /* token type */
   unsigned short flags;		/* flags - see above */
 

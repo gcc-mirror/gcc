@@ -938,6 +938,27 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       expanded_location xloc = expand_location (EXPR_LOCATION (node));
       indent_to (file, indent+4);
       fprintf (file, "%s:%d:%d", xloc.file, xloc.line, xloc.column);
+
+      /* Print the range, if any */
+      source_range r = EXPR_LOCATION_RANGE (node);
+      if (r.m_start)
+	{
+	  xloc = expand_location (r.m_start);
+	  fprintf (file, " start: %s:%d:%d", xloc.file, xloc.line, xloc.column);
+	}
+      else
+	{
+	  fprintf (file, " start: unknown");
+	}
+      if (r.m_finish)
+	{
+	  xloc = expand_location (r.m_finish);
+	  fprintf (file, " finish: %s:%d:%d", xloc.file, xloc.line, xloc.column);
+	}
+      else
+	{
+	  fprintf (file, " finish: unknown");
+	}
     }
 
   fprintf (file, ">");

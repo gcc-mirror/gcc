@@ -6719,10 +6719,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 	    continue;
 	  if (d->orig_block == NULL_TREE || block == d->orig_block)
 	    {
-	      if (d->new_block == NULL_TREE)
-		locus = LOCATION_LOCUS (locus);
-	      else
-		locus = COMBINE_LOCATION_DATA (line_table, locus, d->new_block);
+	      locus = set_block (locus, d->new_block);
 	      gimple_phi_arg_set_location (phi, i, locus);
 	    }
 	}
@@ -6782,9 +6779,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 	tree block = LOCATION_BLOCK (e->goto_locus);
 	if (d->orig_block == NULL_TREE
 	    || block == d->orig_block)
-	  e->goto_locus = d->new_block ?
-	      COMBINE_LOCATION_DATA (line_table, e->goto_locus, d->new_block) :
-	      LOCATION_LOCUS (e->goto_locus);
+	  e->goto_locus = set_block (e->goto_locus, d->new_block);
       }
 }
 

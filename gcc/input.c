@@ -887,6 +887,10 @@ dump_line_table_statistics (void)
 	   STAT_LABEL (s.adhoc_table_size));
   fprintf (stderr, "Ad-hoc table entries used:           %5ld\n",
 	   s.adhoc_table_entries_used);
+  fprintf (stderr, "optimized_ranges: %i\n",
+	   line_table->num_optimized_ranges);
+  fprintf (stderr, "unoptimized_ranges: %i\n",
+	   line_table->num_unoptimized_ranges);
 
   fprintf (stderr, "\n");
 }
@@ -917,13 +921,14 @@ write_digit (FILE *stream, int digit)
 
 static void
 write_digit_row (FILE *stream, int indent,
+		 const line_map_ordinary *map,
 		 source_location loc, int max_col, int divisor)
 {
   fprintf (stream, "%*c", indent, ' ');
   fprintf (stream, "|");
   for (int column = 1; column < max_col; column++)
     {
-      source_location column_loc = loc + column;
+      source_location column_loc = loc + (column << map->m_range_bits);
       write_digit (stream, column_loc / divisor);
     }
   fprintf (stream, "\n");
@@ -977,14 +982,20 @@ dump_location_info (FILE *stream)
       fprintf (stream, "  file: %s\n", ORDINARY_MAP_FILE_NAME (map));
       fprintf (stream, "  starting at line: %i\n",
 	       ORDINARY_MAP_STARTING_LINE_NUMBER (map));
+      fprintf (stream, "  column and range bits: %i\n",
+	       map->m_column_and_range_bits);
       fprintf (stream, "  column bits: %i\n",
-	       ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map));
+	       map->m_column_and_range_bits - map->m_range_bits);
+      fprintf (stream, "  range bits: %i\n",
+	       map->m_range_bits);
 
       /* Render the span of source lines that this "map" covers.  */
       for (source_location loc = MAP_START_LOCATION (map);
 	   loc < end_location;
-	   loc++)
+	   loc += (1 << map->m_range_bits) )
 	{
+	  gcc_assert (pure_location_p (line_table, loc) );
+
 	  expanded_location exploc
 	    = linemap_expand_location (line_table, map, loc);
 
@@ -1008,8 +1019,7 @@ dump_location_info (FILE *stream)
 		 Render the locations *within* the line, by underlining
 		 it, showing the source_location numeric values
 		 at each column.  */
-	      int max_col
-		= (1 << ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map)) - 1;
+	      int max_col = (1 << map->m_column_and_range_bits) - 1;
 	      if (max_col > line_size)
 		max_col = line_size + 1;
 
@@ -1017,17 +1027,17 @@ dump_location_info (FILE *stream)
 
 	      /* Thousands.  */
 	      if (end_location > 999)
-		write_digit_row (stream, indent, loc, max_col, 1000);
+		write_digit_row (stream, indent, map, loc, max_col, 1000);
 
 	      /* Hundreds.  */
 	      if (end_location > 99)
-		write_digit_row (stream, indent, loc, max_col, 100);
+		write_digit_row (stream, indent, map, loc, max_col, 100);
 
 	      /* Tens.  */
-	      write_digit_row (stream, indent, loc, max_col, 10);
+	      write_digit_row (stream, indent, map, loc, max_col, 10);
 
 	      /* Units.  */
-	      write_digit_row (stream, indent, loc, max_col, 1);
+	      write_digit_row (stream, indent, map, loc, max_col, 1);
 	    }
 	}
       fprintf (stream, "\n");

@@ -1,3 +1,40 @@
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (warn_defaults_to): Pass line_table to
+	rich_location ctor.
+	* c-errors.c (pedwarn_c99): Likewise.
+	(pedwarn_c90): Likewise.
+	* c-parser.c (set_c_expr_source_range): New functions.
+	(c_token::get_range): New method.
+	(c_token::get_finish): New method.
+	(c_parser_expr_no_commas): Call set_c_expr_source_range on the ret
+	based on the range from the start of the LHS to the end of the
+	RHS.
+	(c_parser_conditional_expression): Likewise, based on the range
+	from the start of the cond.value to the end of exp2.value.
+	(c_parser_binary_expression): Call set_c_expr_source_range on
+	the stack values for TRUTH_ANDIF_EXPR and TRUTH_ORIF_EXPR.
+	(c_parser_cast_expression): Call set_c_expr_source_range on ret
+	based on the cast_loc through to the end of the expr.
+	(c_parser_unary_expression): Likewise, based on the
+	op_loc through to the end of op.
+	(c_parser_sizeof_expression) Likewise, based on the start of the
+	sizeof token through to either the closing paren or the end of
+	expr.
+	(c_parser_postfix_expression): Likewise, using the token range,
+	or from the open paren through to the close paren for
+	parenthesized expressions.
+	(c_parser_postfix_expression_after_primary): Likewise, for
+	various kinds of expression.
+	* c-tree.h (struct c_expr): Add field "src_range".
+	(c_expr::get_start): New method.
+	(c_expr::get_finish): New method.
+	(set_c_expr_source_range): New decls.
+	* c-typeck.c (parser_build_unary_op): Call set_c_expr_source_range
+	on ret for prefix unary ops.
+	(parser_build_binary_op): Likewise, running from the start of
+	arg1.value through to the end of arg2.value.
+
 2015-11-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68320

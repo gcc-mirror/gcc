@@ -1263,6 +1263,7 @@ OBJS = \
 	fold-const-call.o \
 	function.o \
 	fwprop.o \
+	gcc-rich-location.o \
 	gcse.o \
 	gcse-common.o \
 	ggc-common.o \

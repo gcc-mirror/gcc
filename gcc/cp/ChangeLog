@@ -1,3 +1,7 @@
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (pedwarn_cxx98): Pass line_table to rich_location ctor.
+
 2015-11-12  James Norris  <jnorris@codesourcery.com>
 
 	* parser.c (cp_parser_oacc_declare): Remove unused.

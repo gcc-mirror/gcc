@@ -1740,11 +1740,7 @@ gimple_block (const gimple *g)
 static inline void
 gimple_set_block (gimple *g, tree block)
 {
-  if (block)
-    g->location =
-	COMBINE_LOCATION_DATA (line_table, g->location, block);
-  else
-    g->location = LOCATION_LOCUS (g->location);
+  g->location = set_block (g->location, block);
 }
 
 
