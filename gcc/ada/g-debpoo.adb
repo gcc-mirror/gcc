@@ -482,6 +482,7 @@ package body GNAT.Debug_Pools is
       --  Warning: secondary stack cannot be used here. When System.Memory
       --  implementation uses Debug_Pool, Print_Address can be called during
       --  secondary stack creation for foreign threads.
+
       Put (File, Image_C (Addr));
    end Print_Address;
 

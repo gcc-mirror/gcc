@@ -12604,22 +12604,15 @@ package body Sem_Prag is
 
             Obj_Id := Defining_Entity (Obj_Decl);
 
-            --  The object declaration must be a library-level variable with
-            --  an initialization expression. The expression must depend on
-            --  a variable, parameter, or another constant_after_elaboration,
-            --  but the compiler cannot detect this property, as this requires
-            --  full flow analysis (SPARK RM 3.3.1).
+            --  The object declaration must be a library-level variable which
+            --  is either explicitly initialized or obtains a value during the
+            --  elaboration of a package body (SPARK RM 3.3.1).
 
             if Ekind (Obj_Id) = E_Variable then
                if not Is_Library_Level_Entity (Obj_Id) then
                   Error_Pragma
                     ("pragma % must apply to a library level variable");
                   return;
-
-               elsif not Has_Init_Expression (Obj_Decl) then
-                  Error_Pragma
-                    ("pragma % must apply to a variable with initialization "
-                     & "expression");
                end if;
 
             --  Otherwise the pragma applies to a constant, which is illegal

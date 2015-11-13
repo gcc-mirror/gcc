@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,7 @@ package body System.Global_Locks is
       File    : String;
       Wait    : Duration := 0.1;
       Retries : Natural  := Natural'Last);
-   --  Create a lock file File in directory Dir. If the file  cannot be
+   --  Create a lock file File in directory Dir. If the file cannot be
    --  locked because someone already owns the lock, this procedure
    --  waits Wait seconds and retries at most Retries times. If the file
    --  still cannot be locked, Lock_Error is raised. The default is to try

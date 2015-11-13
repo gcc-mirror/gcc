@@ -178,7 +178,7 @@ void __gnat_sigtramp (int signo, void *si, void *ucontext,
   TCR(COMMON_LONG128_CFI(GR(27))) \
   TCR(COMMON_LONG128_CFI(GR(28))) \
   TCR(COMMON_LONG128_CFI(GR(29))) \
-  TCR(COMMON_LONG256_CFI(PC)) \
+  TCR(COMMON_LONG256_CFI(PC))
 
 /* Trampoline body block
    ---------------------  */

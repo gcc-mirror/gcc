@@ -324,9 +324,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
    propagation after the required low level adjustments.  */
 
 static void
-__gnat_error_handler (int sig,
-		      siginfo_t *si ATTRIBUTE_UNUSED,
-		      void *ucontext ATTRIBUTE_UNUSED)
+__gnat_error_handler (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *ucontext)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -683,7 +681,7 @@ __gnat_error_handler (int sig)
 }
 
 void
-__gnat_install_handler(void)
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -1930,10 +1928,9 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
 				 void *sc ATTRIBUTE_UNUSED)
 {
   /* In case of ARM exceptions, the registers context have the PC pointing
-     to the instruction that raised the signal. However the Unwinder expects
-     the instruction to be in the range ]PC,PC+1].
-      */
-  uintptr_t *pc_addr; /* address of the pc value to restore */
+     to the instruction that raised the signal.  However the unwinder expects
+     the instruction to be in the range ]PC,PC+1].  */
+  uintptr_t *pc_addr;
 #ifdef __RTP__
   mcontext_t *mcontext = &((ucontext_t *) sc)->uc_mcontext;
   pc_addr = (uintptr_t*)&mcontext->regs.pc;
@@ -1997,7 +1994,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
   __gnat_adjust_context_for_raise (sig, sc);
 #endif
 
-  #include "sigtramp.h"
+#include "sigtramp.h"
 
   __gnat_sigtramp (sig, (void *)si, (void *)sc,
 		   (__sigtramphandler_t *)&__gnat_map_signal);
@@ -2189,7 +2186,7 @@ __gnat_error_handler (int sig)
 }
 
 void
-__gnat_install_handler(void)
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -2252,7 +2249,7 @@ __gnat_error_handler (int sig)
 }
 
 void
-__gnat_install_handler(void)
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -2443,8 +2440,8 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 {
   __gnat_adjust_context_for_raise (sig, ucontext);
 
+  /* The Darwin libc comes with a signal trampoline, except for ARM64.  */
 #ifdef __arm64__
-  /* Use a trampoline so that the unwinder won't see the signal frame.  */
   __gnat_sigtramp (sig, (void *)si, ucontext,
 		   (__sigtramphandler_t *)&__gnat_map_signal);
 #else
@@ -2515,7 +2512,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 static void
 __gnat_map_signal (int sig,
 		   siginfo_t *si ATTRIBUTE_UNUSED,
-		   void *ucontext ATTRIBUTE_UNUSED)
+		   void *mcontext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -2546,9 +2543,7 @@ __gnat_map_signal (int sig,
 }
 
 static void
-__gnat_error_handler (int sig,
-		      siginfo_t *si ATTRIBUTE_UNUSED,
-		      void *ucontext ATTRIBUTE_UNUSED)
+__gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 {
   __gnat_adjust_context_for_raise (sig, ucontext);
 
