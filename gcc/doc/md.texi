@@ -4749,16 +4749,50 @@ specify field index and operand 0 place to store value into.
 Initialize the vector to given values.  Operand 0 is the vector to initialize
 and operand 1 is parallel containing values for individual fields.
 
+@cindex @code{vec_cmp@var{m}@var{n}} instruction pattern
+@item @samp{vec_cmp@var{m}@var{n}}
+Output a vector comparison.  Operand 0 of mode @var{n} is the destination for
+predicate in operand 1 which is a signed vector comparison with operands of
+mode @var{m} in operands 2 and 3.  Predicate is computed by element-wise
+evaluation of the vector comparison with a truth value of all-ones and a false
+value of all-zeros.
+
+@cindex @code{vec_cmpu@var{m}@var{n}} instruction pattern
+@item @samp{vec_cmpu@var{m}@var{n}}
+Similar to @code{vec_cmp@var{m}@var{n}} but perform unsigned vector comparison.
+
 @cindex @code{vcond@var{m}@var{n}} instruction pattern
 @item @samp{vcond@var{m}@var{n}}
 Output a conditional vector move.  Operand 0 is the destination to
 receive a combination of operand 1 and operand 2, which are of mode @var{m},
-dependent on the outcome of the predicate in operand 3 which is a
+dependent on the outcome of the predicate in operand 3 which is a signed
 vector comparison with operands of mode @var{n} in operands 4 and 5.  The
 modes @var{m} and @var{n} should have the same size.  Operand 0
 will be set to the value @var{op1} & @var{msk} | @var{op2} & ~@var{msk}
 where @var{msk} is computed by element-wise evaluation of the vector
 comparison with a truth value of all-ones and a false value of all-zeros.
+
+@cindex @code{vcondu@var{m}@var{n}} instruction pattern
+@item @samp{vcondu@var{m}@var{n}}
+Similar to @code{vcond@var{m}@var{n}} but performs unsigned vector
+comparison.
+
+@cindex @code{vcond_mask_@var{m}@var{n}} instruction pattern
+@item @samp{vcond_mask_@var{m}@var{n}}
+Similar to @code{vcond@var{m}@var{n}} but operand 3 holds a pre-computed
+result of vector comparison.
+
+@cindex @code{maskload@var{m}@var{n}} instruction pattern
+@item @samp{maskload@var{m}@var{n}}
+Perform a masked load of vector from memory operand 1 of mode @var{m}
+into register operand 0.  Mask is provided in register operand 2 of
+mode @var{n}.
+
+@cindex @code{maskstore@var{m}@var{n}} instruction pattern
+@item @samp{maskload@var{m}@var{n}}
+Perform a masked store of vector from register operand 1 of mode @var{m}
+into memory operand 0.  Mask is provided in register operand 2 of
+mode @var{n}.
 
 @cindex @code{vec_perm@var{m}} instruction pattern
 @item @samp{vec_perm@var{m}}

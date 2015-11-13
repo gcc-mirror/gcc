@@ -1,5 +1,15 @@
 2015-11-13  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* doc/md.texi (vec_cmp@var{m}@var{n}): New item.
+	(vec_cmpu@var{m}@var{n}): New item.
+	(vcond@var{m}@var{n}): Specify comparison is signed.
+	(vcondu@var{m}@var{n}): New item.
+	(vcond_mask_@var{m}@var{n}): New item.
+	(maskload@var{m}@var{n}): New item.
+	(maskstore@var{m}@var{n}): New item.
+
+2015-11-13  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* tree-vect-stmts.c (vectorizable_mask_load_store): Check
 	types of stored value and storage are compatible.
 
