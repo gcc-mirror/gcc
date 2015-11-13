@@ -1,3 +1,10 @@
+2015-11-13  Segher Boessenkool  <segher@kernel.crashing.org>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* combine.c (subst): Don't substitute or simplify when
+	handling register-wise widening multiply.
+	(force_to_mode): Likewise.
+
 2015-11-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/68264
