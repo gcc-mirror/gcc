@@ -1,3 +1,22 @@
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/diagnostic-token-ranges.c: New file.
+	* gcc.dg/diagnostic-tree-expr-ranges-2.c: New file.
+	* gcc.dg/plugin/diagnostic-test-expressions-1.c: New file.
+	* gcc.dg/plugin/diagnostic-test-show-trees-1.c: New file.
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c: New file.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c (get_loc): Add
+	line_table param when calling
+	linemap_position_for_line_and_column.
+	(test_show_locus): Pass line_table to rich_location ctors.
+	(plugin_init): Remove setting of global_dc->colorize_source_p.
+	* gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.c:
+	New file.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	diagnostic_plugin_test_tree_expression_range.c,
+	diagnostic-test-expressions-1.c, diagnostic_plugin_show_trees.c,
+	and diagnostic-test-show-trees-1.c.
+
 2015-11-13  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR tree-optimization/67682

@@ -37,7 +37,7 @@ pedwarn_c99 (location_t location, int opt, const char *gmsgid, ...)
   diagnostic_info diagnostic;
   va_list ap;
   bool warned = false;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
   /* If desired, issue the C99/C11 compat warning, which is more specific
@@ -76,7 +76,7 @@ pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
   /* Warnings such as -Wvla are the most specific ones.  */

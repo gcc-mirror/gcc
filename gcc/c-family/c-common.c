@@ -1187,6 +1187,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
   bool op0_const_self = true, op1_const_self = true, op2_const_self = true;
   bool nowarning = TREE_NO_WARNING (expr);
   bool unused_p;
+  source_range old_range;
 
   /* This function is not relevant to C++ because C++ folds while
      parsing, and may need changes to be correct for C++ when C++
@@ -1201,6 +1202,9 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       || kind == tcc_statement
       || code == SAVE_EXPR)
     return expr;
+
+  if (IS_EXPR_CODE_CLASS (kind))
+    old_range = EXPR_LOCATION_RANGE (expr);
 
   /* Operands of variable-length expressions (function calls) have
      already been folded, as have __builtin_* function calls, and such
@@ -1626,7 +1630,11 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       TREE_NO_WARNING (ret) = 1;
     }
   if (ret != expr)
-    protected_set_expr_location (ret, loc);
+    {
+      protected_set_expr_location (ret, loc);
+      if (IS_EXPR_CODE_CLASS (kind))
+	set_source_range (ret, old_range.m_start, old_range.m_finish);
+    }
   return ret;
 }
 

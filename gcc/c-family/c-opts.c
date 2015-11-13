@@ -245,6 +245,8 @@ c_common_init_options (unsigned int decoded_options_count,
 	    break;
 	  }
     }
+
+  global_dc->colorize_source_p = true;
 }
 
 /* Handle switch SCODE with argument ARG.  VALUE is true, unless no-

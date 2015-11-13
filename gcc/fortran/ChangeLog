@@ -1,3 +1,13 @@
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (gfc_warning): Pass line_table to rich_location ctor.
+	(gfc_warning_now_at): Likewise.
+	(gfc_warning_now): Likewise.
+	(gfc_error_now): Likewise.
+	(gfc_fatal_error): Likewise.
+	(gfc_error): Likewise.
+	(gfc_internal_error): Likewise.
+
 2015-11-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68318

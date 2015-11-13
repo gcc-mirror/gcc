@@ -867,7 +867,7 @@ diagnostic_append_note (diagnostic_context *context,
   diagnostic_info diagnostic;
   va_list ap;
   const char *saved_prefix;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_NOTE);
@@ -925,7 +925,7 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
   diagnostic_info diagnostic;
   va_list ap;
   bool ret;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
   if (kind == DK_PERMERROR)
@@ -952,7 +952,7 @@ inform (location_t location, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_NOTE);
@@ -981,7 +981,7 @@ inform_n (location_t location, int n, const char *singular_gmsgid,
 {
   diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, plural_gmsgid);
   diagnostic_set_info_translated (&diagnostic,
@@ -1000,7 +1000,7 @@ warning (int opt, const char *gmsgid, ...)
   diagnostic_info diagnostic;
   va_list ap;
   bool ret;
-  rich_location richloc (input_location);
+  rich_location richloc (line_table, input_location);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_WARNING);
@@ -1021,7 +1021,7 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
   diagnostic_info diagnostic;
   va_list ap;
   bool ret;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_WARNING);
@@ -1059,7 +1059,7 @@ warning_n (location_t location, int opt, int n, const char *singular_gmsgid,
   diagnostic_info diagnostic;
   va_list ap;
   bool ret;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, plural_gmsgid);
   diagnostic_set_info_translated (&diagnostic,
@@ -1091,7 +1091,7 @@ pedwarn (location_t location, int opt, const char *gmsgid, ...)
   diagnostic_info diagnostic;
   va_list ap;
   bool ret;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,  DK_PEDWARN);
@@ -1114,7 +1114,7 @@ permerror (location_t location, const char *gmsgid, ...)
   diagnostic_info diagnostic;
   va_list ap;
   bool ret;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
@@ -1150,7 +1150,7 @@ error (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (input_location);
+  rich_location richloc (line_table, input_location);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_ERROR);
@@ -1166,7 +1166,7 @@ error_n (location_t location, int n, const char *singular_gmsgid,
 {
   diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, plural_gmsgid);
   diagnostic_set_info_translated (&diagnostic,
@@ -1182,7 +1182,7 @@ error_at (location_t loc, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (loc);
+  rich_location richloc (line_table, loc);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_ERROR);
@@ -1213,7 +1213,7 @@ sorry (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (input_location);
+  rich_location richloc (line_table, input_location);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_SORRY);
@@ -1237,7 +1237,7 @@ fatal_error (location_t loc, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (loc);
+  rich_location richloc (line_table, loc);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_FATAL);
@@ -1256,7 +1256,7 @@ internal_error (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (input_location);
+  rich_location richloc (line_table, input_location);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_ICE);
@@ -1274,7 +1274,7 @@ internal_error_no_backtrace (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (input_location);
+  rich_location richloc (line_table, input_location);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_ICE_NOBT);
@@ -1351,7 +1351,7 @@ real_abort (void)
 DEBUG_FUNCTION void
 source_range::debug (const char *msg) const
 {
-  rich_location richloc (m_start);
+  rich_location richloc (line_table, m_start);
   richloc.add_range (m_start, m_finish, false);
   inform_at_rich_loc (&richloc, "%s", msg);
 }

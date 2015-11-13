@@ -1,3 +1,85 @@
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* errors.c (cpp_diagnostic): Pass pfile->line_table to
+	rich_location ctor.
+	(cpp_diagnostic_with_line): Likewise.
+	* include/cpplib.h (struct cpp_token): Update comment for src_loc
+	to indicate that the range of the token is "baked into" the
+	source_location.
+	* include/line-map.h (source_location): Update the descriptive
+	comment to reflect the packing scheme for short ranges, adding
+	worked examples of location encoding.
+	(struct line_map_ordinary): Drop field "column_bits" in favor
+	of field "m_column_and_range_bits"; add field "m_range_bits".
+	(ORDINARY_MAP_NUMBER_OF_COLUMN_BITS): Delete.
+	(location_adhoc_data): Add source_range field.
+	(struct line_maps): Add fields "default_range_bits",
+	"num_optimized_ranges" and "num_unoptimized_ranges".
+	(get_combined_adhoc_loc): Add source_range param.
+	(get_range_from_loc): New declaration.
+	(pure_location_p): New prototype.
+	(COMBINE_LOCATION_DATA):  Add source_range param.
+	(SOURCE_LINE): Update for renaming of column_bits.
+	(SOURCE_COLUMN): Likewise.  Shift the column right by the map's
+	range_bits.
+	(LAST_SOURCE_LINE_LOCATION): Update for renaming of column_bits.
+	(linemap_position_for_line_and_column): Add line_maps * params.
+	(rich_location::rich_location): Likewise.
+	* lex.c (_cpp_lex_direct): Capture the range of the token, baking
+	it into token->src_loc via a call to COMBINE_LOCATION_DATA.
+	* line-map.c (LINE_MAP_MAX_COLUMN_NUMBER): Reduce from 1U << 17 to
+	1U << 12.
+	(location_adhoc_data_hash): Add the src_range into
+	the hash value.
+	(location_adhoc_data_eq): Require equality of the src_range
+	values.
+	(can_be_stored_compactly_p): New function.
+	(get_combined_adhoc_loc): Add src_range param, and store it,
+	via a bit-packing scheme for short ranges, otherwise within the
+	lookaside table.  Remove the requirement that data is non-NULL.
+	(get_range_from_adhoc_loc): New function.
+	(get_range_from_loc): New function.
+	(pure_location_p): New function.
+	(linemap_add): Ensure that start_location has zero for the
+	range_bits, unless we're past LINE_MAP_MAX_LOCATION_WITH_COLS.
+	Initialize range_bits to zero.  Assert that the start_location
+	is "pure".
+	(linemap_line_start): Assert that the
+	column_and_range_bits >= range_bits.
+	Update determinination of whether we need to start a new map
+	using the effective column bits, without the range bits.
+	Use the set's default_range_bits in new maps, apart from
+	those with column_bits == 0, which should also have 0 range_bits.
+	Increase the column bits for new maps by the range bits.
+	When adding lines to an existing map, use set->highest_line
+	directly rather than offsetting highest by SOURCE_COLUMN.
+	Add assertions to sanity-check the return value.
+	(linemap_position_for_column): Offset to_column by range_bits.
+	Update set->highest_location if necessary.
+	(linemap_position_for_line_and_column): Add line_maps * param.
+	Update the calculation to offset the column by range_bits, and
+	conditionalize it on being <= LINE_MAP_MAX_LOCATION_WITH_COLS.
+	Bound it by LINEMAPS_MACRO_LOWEST_LOCATION.  Update
+	set->highest_location if necessary.
+	(linemap_position_for_loc_and_offset): Handle ad-hoc locations;
+	pass "set" to linemap_position_for_line_and_column.
+	(linemap_macro_map_loc_unwind_toward_spelling): Add line_maps
+	param.  Handle ad-hoc locations.
+	(linemap_location_in_system_header_p): Pass on "set" to call to
+	linemap_macro_map_loc_unwind_toward_spelling.
+	(linemap_macro_loc_to_spelling_point): Retain ad-hoc locations.
+	Pass on "set" to call to
+	linemap_macro_map_loc_unwind_toward_spelling.
+	(linemap_resolve_location): Retain ad-hoc locations.  Pass on
+	"set" to call to linemap_macro_map_loc_unwind_toward_spelling.
+	(linemap_unwind_toward_expansion):  Pass on "set" to call to
+	linemap_macro_map_loc_unwind_toward_spelling.
+	(linemap_expand_location): Extract the data pointer before
+	extracting the location.
+	(rich_location::rich_location): Add line_maps param; use it to
+	extract the range from the source_location.
+	* location-example.txt: Regenerate, showing new representation.
+
 2015-11-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* errors.c (cpp_diagnostic): Update for change in signature

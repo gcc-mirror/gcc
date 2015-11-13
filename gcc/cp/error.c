@@ -3673,7 +3673,7 @@ pedwarn_cxx98 (location_t location, int opt, const char *gmsgid, ...)
   diagnostic_info diagnostic;
   va_list ap;
   bool ret;
-  rich_location richloc (location);
+  rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,

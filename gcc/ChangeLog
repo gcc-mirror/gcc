@@ -1,3 +1,58 @@
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add gcc-rich-location.o.
+	* diagnostic.c (diagnostic_append_note): Pass line_table to
+	rich_location ctor.
+	(emit_diagnostic): Likewise.
+	(inform): Likewise.
+	(inform_n): Likewise.
+	(warning): Likewise.
+	(warning_at): Likewise.
+	(warning_n): Likewise.
+	(pedwarn): Likewise.
+	(permerror): Likewise.
+	(error): Likewise.
+	(error_n): Likewise.
+	(error_at): Likewise.
+	(sorry): Likewise.
+	(fatal_error): Likewise.
+	(internal_error): Likewise.
+	(internal_error_no_backtrace): Likewise.
+	(source_range::debug): Likewise.
+	* gcc-rich-location.c: New file.
+	* gcc-rich-location.h: New file.
+	* genmatch.c (fatal_at): Pass line_table to rich_location ctor.
+	(warning_at): Likewise.
+	* gimple.h (gimple_set_block): Use set_block function.
+	* input.c (dump_line_table_statistics): Dump stats on how many
+	ranges were optimized vs how many needed ad-hoc table.
+	(write_digit_row): Add "map" param; use its range_bits
+	to calculate the per-character offset.
+	(dump_location_info): Print the range and column bits for each
+	ordinary map.  Use the range bits to calculate the per-character
+	offset.  Pass the map as a new param to the various calls to
+	write_digit_row.  Eliminate uses of
+	ORDINARY_MAP_NUMBER_OF_COLUMN_BITS.
+	* print-tree.c (print_node): Print any source range information.
+	* rtl-error.c (diagnostic_for_asm): Likewise.
+	* toplev.c (general_init): Initialize line_table's
+	default_range_bits.
+	* tree-cfg.c (move_block_to_fn): Likewise.
+	(move_block_to_fn): Likewise.
+	* tree-inline.c (copy_phis_for_bb): Likewise.
+	* tree.c (tree_set_block): Likewise.
+	(get_pure_location): New function.
+	(set_source_range): New functions.
+	(set_block): New function.
+	(set_source_range): New functions.
+	* tree.h (CAN_HAVE_RANGE_P): New.
+	(EXPR_LOCATION_RANGE): New.
+	(EXPR_HAS_RANGE): New.
+	(get_expr_source_range): New inline function.
+	(DECL_LOCATION_RANGE): New.
+	(set_source_range): New decls.
+	(get_decl_source_range): New inline function.
+
 2015-11-13  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR tree-optimization/67682

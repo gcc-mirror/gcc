@@ -132,6 +132,17 @@ struct c_expr
      The type of an enum constant is a plain integer type, but this
      field will be the enum type.  */
   tree original_type;
+
+  /* The source range of this expression.  This is redundant
+     for node values that have locations, but not all node kinds
+     have locations (e.g. constants, and references to params, locals,
+     etc), so we stash a copy here.  */
+  source_range src_range;
+
+  /* Access to the first and last locations within the source spelling
+     of this expression.  */
+  location_t get_start () const { return src_range.m_start; }
+  location_t get_finish () const { return src_range.m_finish; }
 };
 
 /* Type alias for struct c_expr. This allows to use the structure
@@ -707,5 +718,13 @@ extern void pedwarn_c90 (location_t, int opt, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern bool pedwarn_c99 (location_t, int opt, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
+
+extern void
+set_c_expr_source_range (c_expr *expr,
+			 location_t start, location_t finish);
+
+extern void
+set_c_expr_source_range (c_expr *expr,
+			 source_range src_range);
 
 #endif /* ! GCC_C_TREE_H */

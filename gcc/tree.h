@@ -1096,9 +1096,24 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define EXPR_FILENAME(NODE) LOCATION_FILE (EXPR_CHECK ((NODE))->exp.locus)
 #define EXPR_LINENO(NODE) LOCATION_LINE (EXPR_CHECK (NODE)->exp.locus)
 
+#define CAN_HAVE_RANGE_P(NODE) (CAN_HAVE_LOCATION_P (NODE))
+#define EXPR_LOCATION_RANGE(NODE) (get_expr_source_range (EXPR_CHECK ((NODE))))
+
+#define EXPR_HAS_RANGE(NODE) \
+    (CAN_HAVE_RANGE_P (NODE) \
+     ? EXPR_LOCATION_RANGE (NODE).m_start != UNKNOWN_LOCATION \
+     : false)
+
 /* True if a tree is an expression or statement that can have a
    location.  */
 #define CAN_HAVE_LOCATION_P(NODE) ((NODE) && EXPR_P (NODE))
+
+static inline source_range
+get_expr_source_range (tree expr)
+{
+  location_t loc = EXPR_LOCATION (expr);
+  return get_range_from_loc (line_table, loc);
+}
 
 extern void protected_set_expr_location (tree, location_t);
 
@@ -2171,6 +2186,9 @@ extern machine_mode element_mode (const_tree t);
    builtin-ness is indicated by source location.  */
 #define DECL_IS_BUILTIN(DECL) \
   (LOCATION_LOCUS (DECL_SOURCE_LOCATION (DECL)) <= BUILTINS_LOCATION)
+
+#define DECL_LOCATION_RANGE(NODE) \
+  (get_decl_source_range (DECL_MINIMAL_CHECK (NODE)))
 
 /*  For FIELD_DECLs, this is the RECORD_TYPE, UNION_TYPE, or
     QUAL_UNION_TYPE node that the field is a member of.  For VAR_DECL,
@@ -5277,10 +5295,25 @@ type_with_alias_set_p (const_tree t)
   return false;
 }
 
+extern location_t set_block (location_t loc, tree block);
+
 extern void gt_ggc_mx (tree &);
 extern void gt_pch_nx (tree &);
 extern void gt_pch_nx (tree &, gt_pointer_operator, void *);
 
 extern bool nonnull_arg_p (const_tree);
+
+extern void
+set_source_range (tree expr, location_t start, location_t finish);
+
+extern void
+set_source_range (tree expr, source_range src_range);
+
+static inline source_range
+get_decl_source_range (tree decl)
+{
+  location_t loc = DECL_SOURCE_LOCATION (decl);
+  return get_range_from_loc (line_table, loc);
+}
 
 #endif  /* GCC_TREE_H  */

@@ -119,7 +119,7 @@ __attribute__((format (printf, 2, 3)))
 #endif
 fatal_at (const cpp_token *tk, const char *msg, ...)
 {
-  rich_location richloc (tk->src_loc);
+  rich_location richloc (line_table, tk->src_loc);
   va_list ap;
   va_start (ap, msg);
   error_cb (NULL, CPP_DL_FATAL, 0, &richloc, msg, &ap);
@@ -132,7 +132,7 @@ __attribute__((format (printf, 2, 3)))
 #endif
 fatal_at (source_location loc, const char *msg, ...)
 {
-  rich_location richloc (loc);
+  rich_location richloc (line_table, loc);
   va_list ap;
   va_start (ap, msg);
   error_cb (NULL, CPP_DL_FATAL, 0, &richloc, msg, &ap);
@@ -145,7 +145,7 @@ __attribute__((format (printf, 2, 3)))
 #endif
 warning_at (const cpp_token *tk, const char *msg, ...)
 {
-  rich_location richloc (tk->src_loc);
+  rich_location richloc (line_table, tk->src_loc);
   va_list ap;
   va_start (ap, msg);
   error_cb (NULL, CPP_DL_WARNING, 0, &richloc, msg, &ap);
@@ -158,7 +158,7 @@ __attribute__((format (printf, 2, 3)))
 #endif
 warning_at (source_location loc, const char *msg, ...)
 {
-  rich_location richloc (loc);
+  rich_location richloc (line_table, loc);
   va_list ap;
   va_start (ap, msg);
   error_cb (NULL, CPP_DL_WARNING, 0, &richloc, msg, &ap);

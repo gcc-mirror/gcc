@@ -2348,10 +2348,7 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 		  tree *n;
 		  n = id->decl_map->get (LOCATION_BLOCK (locus));
 		  gcc_assert (n);
-		  if (*n)
-		    locus = COMBINE_LOCATION_DATA (line_table, locus, *n);
-		  else
-		    locus = LOCATION_LOCUS (locus);
+		  locus = set_block (locus, *n);
 		}
 	      else
 		locus = LOCATION_LOCUS (locus);

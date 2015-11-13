@@ -11789,10 +11789,7 @@ tree_set_block (tree t, tree b)
 
   if (IS_EXPR_CODE_CLASS (c))
     {
-      if (b)
-	t->exp.locus = COMBINE_LOCATION_DATA (line_table, t->exp.locus, b);
-      else
-	t->exp.locus = LOCATION_LOCUS (t->exp.locus);
+      t->exp.locus = set_block (t->exp.locus, b);
     }
   else
     gcc_unreachable ();
@@ -13813,5 +13810,60 @@ nonnull_arg_p (const_tree arg)
   return false;
 }
 
+/* Given location LOC, strip away any packed range information
+   or ad-hoc information.  */
+
+static location_t
+get_pure_location (location_t loc)
+{
+  if (IS_ADHOC_LOC (loc))
+    loc
+      = line_table->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
+
+  if (loc >= LINEMAPS_MACRO_LOWEST_LOCATION (line_table))
+    return loc;
+
+  if (loc < RESERVED_LOCATION_COUNT)
+    return loc;
+
+  const line_map *map = linemap_lookup (line_table, loc);
+  const line_map_ordinary *ordmap = linemap_check_ordinary (map);
+
+  return loc & ~((1 << ordmap->m_range_bits) - 1);
+}
+
+/* Combine LOC and BLOCK to a combined adhoc loc, retaining any range
+   information.  */
+
+location_t
+set_block (location_t loc, tree block)
+{
+  location_t pure_loc = get_pure_location (loc);
+  source_range src_range = get_range_from_loc (line_table, loc);
+  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, block);
+}
+
+void
+set_source_range (tree expr, location_t start, location_t finish)
+{
+  source_range src_range;
+  src_range.m_start = start;
+  src_range.m_finish = finish;
+  set_source_range (expr, src_range);
+}
+
+void
+set_source_range (tree expr, source_range src_range)
+{
+  if (!EXPR_P (expr))
+    return;
+
+  location_t pure_loc = get_pure_location (EXPR_LOCATION (expr));
+  location_t adhoc = COMBINE_LOCATION_DATA (line_table,
+					    pure_loc,
+					    src_range,
+					    NULL);
+  SET_EXPR_LOCATION (expr, adhoc);
+}
 
 #include "gt-tree.h"

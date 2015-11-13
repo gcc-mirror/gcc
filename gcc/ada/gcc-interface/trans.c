@@ -9650,7 +9650,8 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus, bool clear_column)
     line = 1;
 
   /* Translate the location.  */
-  *locus = linemap_position_for_line_and_column (map, line, column);
+  *locus = linemap_position_for_line_and_column (line_table, map,
+						 line, column);
 
   return true;
 }
