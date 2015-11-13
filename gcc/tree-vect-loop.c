@@ -649,7 +649,32 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		    }
 		  return false;
 		}
+	      else if (VECTOR_BOOLEAN_TYPE_P (mask_type)
+		       != VECTOR_BOOLEAN_TYPE_P (vectype))
+		{
+		  if (dump_enabled_p ())
+		    {
+		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				       "not vectorized: mixed mask and "
+				       "nonmask vector types in statement, ");
+		      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+					 mask_type);
+		      dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
+		      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+					 vectype);
+		      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+		    }
+		  return false;
+		}
 	    }
+
+	  /* We may compare boolean value loaded as vector of integers.
+	     Fix mask_type in such case.  */
+	  if (mask_type
+	      && !VECTOR_BOOLEAN_TYPE_P (mask_type)
+	      && gimple_code (stmt) == GIMPLE_ASSIGN
+	      && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison)
+	    mask_type = build_same_sized_truth_vector_type (mask_type);
 	}
 
       /* No mask_type should mean loop invariant predicate.

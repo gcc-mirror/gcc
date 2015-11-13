@@ -1,3 +1,13 @@
+2015-11-13  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Check
+	mix of boolean and integer vectors in a single statement.
+	* tree-vect-slp.c (vect_mask_constant_operand_p): New.
+	(vect_get_constant_vectors): Use vect_mask_constant_operand_p to
+	determine constant type.
+	* tree-vect-stmts.c (vectorizable_comparison): Provide vectype
+	for loop invariants.
+
 2015-11-13  Alan Hayward <alan.hayward@arm.com>
 
 	PR tree-optimization/66558

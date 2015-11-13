@@ -2573,6 +2573,57 @@ vect_slp_bb (basic_block bb)
 }
 
 
+/* Return 1 if vector type of boolean constant which is OPNUM
+   operand in statement STMT is a boolean vector.  */
+
+static bool
+vect_mask_constant_operand_p (gimple *stmt, int opnum)
+{
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  enum tree_code code = gimple_expr_code (stmt);
+  tree op, vectype;
+  gimple *def_stmt;
+  enum vect_def_type dt;
+
+  /* For comparison and COND_EXPR type is chosen depending
+     on the other comparison operand.  */
+  if (TREE_CODE_CLASS (code) == tcc_comparison)
+    {
+      if (opnum)
+	op = gimple_assign_rhs1 (stmt);
+      else
+	op = gimple_assign_rhs2 (stmt);
+
+      if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &def_stmt,
+			       &dt, &vectype))
+	gcc_unreachable ();
+
+      return !vectype || VECTOR_BOOLEAN_TYPE_P (vectype);
+    }
+
+  if (code == COND_EXPR)
+    {
+      tree cond = gimple_assign_rhs1 (stmt);
+
+      if (TREE_CODE (cond) == SSA_NAME)
+	return false;
+
+      if (opnum)
+	op = TREE_OPERAND (cond, 1);
+      else
+	op = TREE_OPERAND (cond, 0);
+
+      if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &def_stmt,
+			       &dt, &vectype))
+	gcc_unreachable ();
+
+      return !vectype || VECTOR_BOOLEAN_TYPE_P (vectype);
+    }
+
+  return VECTOR_BOOLEAN_TYPE_P (STMT_VINFO_VECTYPE (stmt_vinfo));
+}
+
+
 /* For constant and loop invariant defs of SLP_NODE this function returns
    (vector) defs (VEC_OPRNDS) that will be used in the vectorized stmts.
    OP_NUM determines if we gather defs for operand 0 or operand 1 of the RHS of
@@ -2609,8 +2660,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
   /* Check if vector type is a boolean vector.  */
   if (TREE_CODE (TREE_TYPE (op)) == BOOLEAN_TYPE
-      && (VECTOR_BOOLEAN_TYPE_P (STMT_VINFO_VECTYPE (stmt_vinfo))
-	  || (code == COND_EXPR && op_num < 2)))
+      && vect_mask_constant_operand_p (stmt, op_num))
     vector_type
       = build_same_sized_truth_vector_type (STMT_VINFO_VECTYPE (stmt_vinfo));
   else
