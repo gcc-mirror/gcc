@@ -328,6 +328,7 @@ free_scop (scop_p scop)
     free_poly_bb (pbb);
 
   scop->pbbs.release ();
+  scop->drs.release ();
 
   isl_set_free (scop->param_context);
   isl_union_map_free (scop->must_raw);
