@@ -190,6 +190,8 @@ public:
 
   size_t elements () const { return m_table.elements (); }
 
+  void empty () { m_table.empty(); }
+
   class iterator
   {
   public:
