@@ -1,3 +1,10 @@
+2015-11-13  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR tree-optimization/67682
+	* tree-vect-slp.c (vect_split_slp_store_group): New.
+	(vect_analyze_slp_instance): During basic block SLP, recurse on
+	subgroups if vect_build_slp_tree fails after 1st vector.
+
 2015-11-13  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/65837

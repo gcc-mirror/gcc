@@ -16,12 +16,12 @@ main1 (unsigned int x, unsigned int y)
   unsigned int *pout = &out[0];
   unsigned int a0, a1, a2, a3;
 
-  /* Non isomorphic.  */
+  /* Non isomorphic, even 64-bit subgroups.  */
   a0 = *pin++ + 23;
-  a1 = *pin++ + 142;
+  a1 = *pin++ * 142;
   a2 = *pin++ + 2;
   a3 = *pin++ * 31;
-  
+
   *pout++ = a0 * x;
   *pout++ = a1 * y;
   *pout++ = a2 * x;
@@ -29,7 +29,7 @@ main1 (unsigned int x, unsigned int y)
 
   /* Check results.  */
   if (out[0] != (in[0] + 23) * x
-      || out[1] != (in[1] + 142) * y
+      || out[1] != (in[1] * 142) * y
       || out[2] != (in[2] + 2) * x
       || out[3] != (in[3] * 31) * y)
     abort();
@@ -47,4 +47,4 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "basic block vectorized" 0 "slp2" } } */
-  
+
