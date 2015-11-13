@@ -375,6 +375,11 @@ The sequence in which libgcc and libc are specified to the linker.
 By default this is @code{%G %L %G}.
 @end defmac
 
+@defmac POST_LINK_SPEC
+Define this macro to add additional steps to be executed after linker.
+The default value of this macro is empty string.
+@end defmac
+
 @defmac LINK_COMMAND_SPEC
 A C string constant giving the complete command line need to execute the
 linker.  When you do this, you will need to update your port each time a

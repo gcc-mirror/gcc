@@ -980,6 +980,10 @@ proper position among the other output files.  */
     %{%:sanitize(leak):" LIBLSAN_SPEC "}}}"
 #endif
 
+#ifndef POST_LINK_SPEC
+#define POST_LINK_SPEC ""
+#endif
+
 /*  This is the spec to use, once the code for creating the vtable
     verification runtime library, libvtv.so, has been created.  Currently
     the vtable verification runtime functions are in libstdc++, so we use
@@ -1022,7 +1026,7 @@ proper position among the other output files.  */
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} " SANITIZER_SPEC " \
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
-    %{!nostdlib:%{!nostartfiles:%E}} %{T*} }}}}}}"
+    %{!nostdlib:%{!nostartfiles:%E}} %{T*}  \n%(post_link) }}}}}}"
 #endif
 
 #ifndef LINK_LIBGCC_SPEC
@@ -1064,6 +1068,7 @@ static const char *linker_name_spec = LINKER_NAME;
 static const char *linker_plugin_file_spec = "";
 static const char *lto_wrapper_spec = "";
 static const char *lto_gcc_spec = "";
+static const char *post_link_spec = POST_LINK_SPEC;
 static const char *link_command_spec = LINK_COMMAND_SPEC;
 static const char *link_libgcc_spec = LINK_LIBGCC_SPEC;
 static const char *startfile_prefix_spec = STARTFILE_PREFIX_SPEC;
@@ -1572,6 +1577,7 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("linker_plugin_file",	&linker_plugin_file_spec),
   INIT_STATIC_SPEC ("lto_wrapper",		&lto_wrapper_spec),
   INIT_STATIC_SPEC ("lto_gcc",			&lto_gcc_spec),
+  INIT_STATIC_SPEC ("post_link",		&post_link_spec),
   INIT_STATIC_SPEC ("link_libgcc",		&link_libgcc_spec),
   INIT_STATIC_SPEC ("md_exec_prefix",		&md_exec_prefix),
   INIT_STATIC_SPEC ("md_startfile_prefix",	&md_startfile_prefix),

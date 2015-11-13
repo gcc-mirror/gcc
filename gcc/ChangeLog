@@ -1,3 +1,12 @@
+2015-11-13  Andris Pavenis  <andris.pavenis@iki.fi>
+
+	* gcc.c (POST_LINK_SPEC): Define if not already defined.
+	(LINK_COMMAND_SPEC): Use post_link.
+	(post_link_spec): New, initialize to POST_LINK_SPEC.
+	(post_link): Initialize new static spec.
+	* doc/tm.texi.in (POST_LINK_SPEC): Document.
+	* doc/tm.texi: Regenerated.
+
 2015-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR driver/67613
