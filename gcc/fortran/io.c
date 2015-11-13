@@ -1200,6 +1200,15 @@ gfc_match_format (void)
       return MATCH_ERROR;
     }
 
+  /* Before parsing the rest of a FORMAT statement, check F2008:c1206.  */
+  if ((gfc_current_state () == COMP_FUNCTION
+       || gfc_current_state () == COMP_SUBROUTINE)
+      && gfc_state_stack->previous->state == COMP_INTERFACE)
+    {
+      gfc_error ("FORMAT statement at %C cannot appear within an INTERFACE");
+      return MATCH_ERROR;
+    }
+
   if (gfc_statement_label == NULL)
     {
       gfc_error ("Missing format label at %C");

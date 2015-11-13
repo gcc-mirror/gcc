@@ -561,6 +561,15 @@ gfc_match_data (void)
   gfc_data *new_data;
   match m;
 
+  /* Before parsing the rest of a DATA statement, check F2008:c1206.  */
+  if ((gfc_current_state () == COMP_FUNCTION
+       || gfc_current_state () == COMP_SUBROUTINE)
+      && gfc_state_stack->previous->state == COMP_INTERFACE)
+    {
+      gfc_error ("DATA statement at %C cannot appear within an INTERFACE");
+      return MATCH_ERROR;
+    }
+
   set_in_match_data (true);
 
   for (;;)
@@ -5659,6 +5668,13 @@ gfc_match_entry (void)
 	  default:
 	    gfc_error ("Unexpected ENTRY statement at %C");
 	}
+      return MATCH_ERROR;
+    }
+
+  if ((state == COMP_SUBROUTINE || state == COMP_FUNCTION)
+      && gfc_state_stack->previous->state == COMP_INTERFACE)
+    {
+      gfc_error ("ENTRY statement at %C cannot appear within an INTERFACE");
       return MATCH_ERROR;
     }
 

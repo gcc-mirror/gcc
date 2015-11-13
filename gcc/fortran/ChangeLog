@@ -1,3 +1,10 @@
+2015-11-13  Steven G. Kargl  <kargl@gccc.gnu.org>
+
+	PR fortran/68319
+	* decl.c (gfc_match_data, gfc_match_entry): Enforce F2008:C1206.
+	* io.c (gfc_match_format): Ditto.
+	* match.c (gfc_match_st_function): Ditto.
+
 2015-11-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68318
