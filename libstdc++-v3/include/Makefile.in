@@ -950,6 +950,7 @@ experimental_headers = \
 	${experimental_srcdir}/optional \
 	${experimental_srcdir}/propagate_const \
 	${experimental_srcdir}/ratio \
+	${experimental_srcdir}/regex \
 	${experimental_srcdir}/set \
 	${experimental_srcdir}/string \
 	${experimental_srcdir}/string_view \

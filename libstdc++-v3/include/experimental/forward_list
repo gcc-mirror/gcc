@@ -36,6 +36,7 @@
 #else
 
 #include <forward_list>
+#include <experimental/memory_resource>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -59,6 +60,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION
+
+namespace pmr {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Tp>
+    using forward_list = std::forward_list<_Tp, polymorphic_allocator<_Tp>>;
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace pmr
+
 } // namespace fundamentals_v2
 } // namespace experimental
 } // namespace std

@@ -37,6 +37,7 @@
 
 #include <set>
 #include <experimental/bits/erase_if.h>
+#include <experimental/memory_resource>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -59,6 +60,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __detail::__erase_nodes_if(__cont, __pred); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
+
+namespace pmr {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Key, typename _Compare = less<_Key>>
+    using set = std::set<_Key, _Compare, polymorphic_allocator<_Key>>;
+
+  template<typename _Key, typename _Compare = less<_Key>>
+    using multiset = std::multiset<_Key, _Compare,
+				   polymorphic_allocator<_Key>>;
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace pmr
+
 } // namespace fundamentals_v2
 } // namespace experimental
 } // namespace std

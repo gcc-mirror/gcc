@@ -1,3 +1,19 @@
+2015-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/memory_resource: Add feature-test macro.
+	* include/experimental/regex: New.
+	* include/experimental/deque: Add alias template using PMR.
+	* include/experimental/forward_list: Likewise.
+	* include/experimental/list: Likewise.
+	* include/experimental/map: Likewise.
+	* include/experimental/set: Likewise.
+	* include/experimental/string: Likewise.
+	* include/experimental/unordered_map: Likewise.
+	* include/experimental/unordered_set: Likewise.
+	* include/experimental/vector: Likewise.
+
 2015-11-13  Fan You  <youfan.noey@gmail.com>
 
 	* include/Makefile.am: Add new headers.
