@@ -1,5 +1,13 @@
 2015-11-13  Martin Liska  <mliska@suse.cz>
 
+	* graphite-poly.c (free_scop): Release scop->drs vector.
+	* graphite-scop-detection.c (scop_detection::harmful_stmt_in_region):
+	Release dom vector.
+	(try_generate_gimple_bb): Use vNULL as a default initialization
+	for vectors.
+
+2015-11-13  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/68311
 	* ipa-icf.c (sem_item_optimizer::traverse_congruence_split):
 	Replace ctor with auto_vec and initialization in a loop.
