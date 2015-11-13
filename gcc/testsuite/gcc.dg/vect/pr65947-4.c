@@ -37,4 +37,5 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" { xfail { ! vect_max_reduc } } } } */
+/* { dg-final { scan-tree-dump-times "condition expression based on integer induction." 4 "vect" { xfail { ! vect_max_reduc } } } } */
 

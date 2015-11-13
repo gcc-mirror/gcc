@@ -48,3 +48,4 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" { xfail { ! vect_max_reduc } } } } */
+/* { dg-final { scan-tree-dump-not "condition expression based on integer induction." "vect" } } */

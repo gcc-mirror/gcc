@@ -1,3 +1,16 @@
+2015-11-13  Alan Hayward <alan.hayward@arm.com>
+
+	PR tree-optimization/66558
+	* gcc.dg/vect/pr65947-1.c: Add checks.
+	* gcc.dg/vect/pr65947-2.c: Add checks.
+	* gcc.dg/vect/pr65947-3.c: Add checks.
+	* gcc.dg/vect/pr65947-4.c: Add checks.
+	* gcc.dg/vect/pr65947-5.c: Add checks.
+	* gcc.dg/vect/pr65947-6.c: Add checks.
+	* gcc.dg/vect/pr65947-10.c: Add checks.
+	* gcc.dg/vect/pr65947-12.c: New test.
+	* gcc.dg/vect/pr65947-13.c: New test.
+
 2015-11-13  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Revert [ARM] Remove neon-testgen.ml and generated tests.

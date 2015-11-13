@@ -1,3 +1,9 @@
+2015-11-13  Alan Hayward <alan.hayward@arm.com>
+
+	PR tree-optimization/66558
+	* tree-vect-loop.c (is_integer_induction):Add.
+	(vectorizable_reduction): Add integer induction checks.
+
 2015-11-13  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Revert [ARM] Remove neon-testgen.ml and generated tests.
