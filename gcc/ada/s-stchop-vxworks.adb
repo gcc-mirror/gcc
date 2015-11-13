@@ -133,11 +133,11 @@ package body System.Stack_Checking.Operations is
       if Stack_Grows_Down then
          Limit :=
            Stack_Info.Base - Storage_Offset (Stack_Info.Size) +
-             Storage_Offset'(16#12_000#);
+             Storage_Offset'(12_000);
       else
          Limit :=
            Stack_Info.Base + Storage_Offset (Stack_Info.Size) -
-             Storage_Offset'(16#12_000#);
+             Storage_Offset'(12_000);
       end if;
 
       Stack_Limit := Limit;

@@ -1,3 +1,30 @@
+2015-11-13  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Check_Private_Overriding): Change
+	name of Parent_Is_Private to be Overrides_Private_Part_Op,
+	and use Unit_Declaration_Node.
+
+2015-11-13  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads: Minor comment fix.
+	* sem_ch6.adb: Minor reformatting.
+
+2015-11-13  Jerome Lambourg  <lambourg@adacore.com>
+
+	* tracebak.c: Do not use the GCC Unwinder to retrieve traceback
+	for x86_64-vx7.
+
+2015-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c [Darwin/arm64]: Fix typo.
+	* sigtramp-armios.c: Remove.
+	* sigtramp-ios.c: New file.
+
+2015-11-13  Doug Rupp  <rupp@adacore.com>
+
+	* s-stchop-vxworks.adb (Set_Stack_Limit_For_Current_Task): Set stack
+	limit to 12000 decimal vice 12000 hexadecimal.
+
 2015-11-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch9.adb, exp_fixd.adb, exp_util.adb, g-debpoo.adb,
