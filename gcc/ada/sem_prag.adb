@@ -9660,11 +9660,6 @@ package body Sem_Prag is
       --      No_Dependence => System.Multiprocessors.Dispatching_Domains
 
       procedure Set_Ravenscar_Profile (Profile : Profile_Name; N : Node_Id) is
-         Prefix_Entity   : Entity_Id;
-         Selector_Entity : Entity_Id;
-         Prefix_Node     : Node_Id;
-         Node            : Node_Id;
-
          procedure Set_Error_Msg_To_Profile_Name;
          --  Set Error_Msg_String and Error_Msg_Strlen to the name of the
          --  profile.
@@ -9674,16 +9669,26 @@ package body Sem_Prag is
          -----------------------------------
 
          procedure Set_Error_Msg_To_Profile_Name is
-            Pragma_Args     : constant List_Id :=
-                                Pragma_Argument_Associations (N);
-            Profile_Name    : constant Node_Id :=
-                                Get_Pragma_Arg (First (Pragma_Args));
+            Prof_Nam : constant Node_Id :=
+                         Get_Pragma_Arg
+                           (First (Pragma_Argument_Associations (N)));
+
          begin
-            Get_Name_String (Chars (Profile_Name));
-            Adjust_Name_Case (Sloc (Profile_Name));
+            Get_Name_String (Chars (Prof_Nam));
+            Adjust_Name_Case (Sloc (Prof_Nam));
             Error_Msg_Strlen := Name_Len;
             Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
          end Set_Error_Msg_To_Profile_Name;
+
+         --  Local variables
+
+         Nod     : Node_Id;
+         Pref    : Node_Id;
+         Pref_Id : Node_Id;
+         Sel_Id  : Node_Id;
+
+      --  Start of processing for Set_Ravenscar_Profile
+
       begin
          --  pragma Task_Dispatching_Policy (FIFO_Within_Priorities)
 
@@ -9747,52 +9752,56 @@ package body Sem_Prag is
          --    No_Dependence => Ada.Execution_Time.Group_Budget
          --    No_Dependence => Ada.Execution_Time.Timers
 
+         --  ??? The use of Name_Buffer here is suspicious. The names should
+         --  be registered in snames.ads-tmpl and used to build the qualified
+         --  names of units.
+
          if Ada_Version >= Ada_2005 then
             Name_Buffer (1 .. 3) := "ada";
             Name_Len := 3;
 
-            Prefix_Entity := Make_Identifier (Loc, Name_Find);
+            Pref_Id := Make_Identifier (Loc, Name_Find);
 
             Name_Buffer (1 .. 14) := "execution_time";
             Name_Len := 14;
 
-            Selector_Entity := Make_Identifier (Loc, Name_Find);
+            Sel_Id := Make_Identifier (Loc, Name_Find);
 
-            Prefix_Node :=
+            Pref :=
               Make_Selected_Component
                 (Sloc          => Loc,
-                 Prefix        => Prefix_Entity,
-                 Selector_Name => Selector_Entity);
+                 Prefix        => Pref_Id,
+                 Selector_Name => Sel_Id);
 
             Name_Buffer (1 .. 13) := "group_budgets";
             Name_Len := 13;
 
-            Selector_Entity := Make_Identifier (Loc, Name_Find);
+            Sel_Id := Make_Identifier (Loc, Name_Find);
 
-            Node :=
+            Nod :=
               Make_Selected_Component
                 (Sloc          => Loc,
-                 Prefix        => Prefix_Node,
-                 Selector_Name => Selector_Entity);
+                 Prefix        => Pref,
+                 Selector_Name => Sel_Id);
 
             Set_Restriction_No_Dependence
-              (Unit    => Node,
+              (Unit    => Nod,
                Warn    => Treat_Restrictions_As_Warnings,
                Profile => Ravenscar);
 
             Name_Buffer (1 .. 6) := "timers";
             Name_Len := 6;
 
-            Selector_Entity := Make_Identifier (Loc, Name_Find);
+            Sel_Id := Make_Identifier (Loc, Name_Find);
 
-            Node :=
+            Nod :=
               Make_Selected_Component
                 (Sloc          => Loc,
-                 Prefix        => Prefix_Node,
-                 Selector_Name => Selector_Entity);
+                 Prefix        => Pref,
+                 Selector_Name => Sel_Id);
 
             Set_Restriction_No_Dependence
-              (Unit    => Node,
+              (Unit    => Nod,
                Warn    => Treat_Restrictions_As_Warnings,
                Profile => Ravenscar);
          end if;
@@ -9805,32 +9814,32 @@ package body Sem_Prag is
             Name_Buffer (1 .. 6) := "system";
             Name_Len := 6;
 
-            Prefix_Entity := Make_Identifier (Loc, Name_Find);
+            Pref_Id := Make_Identifier (Loc, Name_Find);
 
             Name_Buffer (1 .. 15) := "multiprocessors";
             Name_Len := 15;
 
-            Selector_Entity := Make_Identifier (Loc, Name_Find);
+            Sel_Id := Make_Identifier (Loc, Name_Find);
 
-            Prefix_Node :=
+            Pref :=
               Make_Selected_Component
                 (Sloc          => Loc,
-                 Prefix        => Prefix_Entity,
-                 Selector_Name => Selector_Entity);
+                 Prefix        => Pref_Id,
+                 Selector_Name => Sel_Id);
 
             Name_Buffer (1 .. 19) := "dispatching_domains";
             Name_Len := 19;
 
-            Selector_Entity := Make_Identifier (Loc, Name_Find);
+            Sel_Id := Make_Identifier (Loc, Name_Find);
 
-            Node :=
+            Nod :=
               Make_Selected_Component
                 (Sloc          => Loc,
-                 Prefix        => Prefix_Node,
-                 Selector_Name => Selector_Entity);
+                 Prefix        => Pref,
+                 Selector_Name => Sel_Id);
 
             Set_Restriction_No_Dependence
-              (Unit    => Node,
+              (Unit    => Nod,
                Warn    => Treat_Restrictions_As_Warnings,
                Profile => Ravenscar);
          end if;
