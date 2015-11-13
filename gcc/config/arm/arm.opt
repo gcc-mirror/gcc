@@ -144,7 +144,7 @@ EnumValue
 Enum(arm_fp16_format_type) String(alternative) Value(ARM_FP16_FORMAT_ALTERNATIVE)
 
 mfpu=
-Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index)
+Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index) Save
 Specify the name of the target floating point hardware/format.
 
 mhard-float

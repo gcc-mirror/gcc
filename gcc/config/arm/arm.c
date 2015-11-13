@@ -2704,6 +2704,12 @@ static void
 arm_option_check_internal (struct gcc_options *opts)
 {
   int flags = opts->x_target_flags;
+  const struct arm_fpu_desc *fpu_desc = &all_fpus[opts->x_arm_fpu_index];
+
+  /* iWMMXt and NEON are incompatible.  */
+    if (TARGET_IWMMXT && TARGET_VFP
+      && ARM_FPU_FSET_HAS (fpu_desc->features, FPU_FL_NEON))
+    error ("iWMMXt and NEON are incompatible");
 
   /* Make sure that the processor choice does not conflict with any of the
      other command line choices.  */
@@ -3153,10 +3159,6 @@ arm_option_override (void)
 	if (TARGET_CALLEE_INTERWORKING)
 	  error ("AAPCS does not support -mcallee-super-interworking");
     }
-
-  /* iWMMXt and NEON are incompatible.  */
-  if (TARGET_IWMMXT && TARGET_NEON)
-    error ("iWMMXt and NEON are incompatible");
 
   /* __fp16 support currently assumes the core has ldrh.  */
   if (!arm_arch4 && arm_fp16_format != ARM_FP16_FORMAT_NONE)
@@ -25867,7 +25869,6 @@ arm_file_start (void)
 
   if (TARGET_BPABI)
     {
-      const char *fpu_name;
       if (arm_selected_arch)
         {
 	  /* armv7ve doesn't support any extensions.  */
@@ -25911,23 +25912,14 @@ arm_file_start (void)
       if (print_tune_info)
 	arm_print_tune_info ();
 
-      if (TARGET_SOFT_FLOAT)
+      if (! TARGET_SOFT_FLOAT && TARGET_VFP)
 	{
-	  fpu_name = "softvfp";
-	}
-      else
-	{
-	  fpu_name = arm_fpu_desc->name;
-	  if (arm_fpu_desc->model == ARM_FP_MODEL_VFP)
-	    {
-	      if (TARGET_HARD_FLOAT && TARGET_VFP_SINGLE)
-		arm_emit_eabi_attribute ("Tag_ABI_HardFP_use", 27, 1);
+	  if (TARGET_HARD_FLOAT && TARGET_VFP_SINGLE)
+	    arm_emit_eabi_attribute ("Tag_ABI_HardFP_use", 27, 1);
 
-	      if (TARGET_HARD_FLOAT_ABI)
-		arm_emit_eabi_attribute ("Tag_ABI_VFP_args", 28, 1);
-	    }
+	  if (TARGET_HARD_FLOAT_ABI)
+	    arm_emit_eabi_attribute ("Tag_ABI_VFP_args", 28, 1);
 	}
-      asm_fprintf (asm_out_file, "\t.fpu %s\n", fpu_name);
 
       /* Some of these attributes only apply when the corresponding features
          are used.  However we don't have any easy way of figuring this out.
@@ -29766,11 +29758,14 @@ static void
 arm_option_print (FILE *file, int indent, struct cl_target_option *ptr)
 {
   int flags = ptr->x_target_flags;
+  const struct arm_fpu_desc *fpu_desc = &all_fpus[ptr->x_arm_fpu_index];
 
   fprintf (file, "%*sselected arch %s\n", indent, "",
 	   TARGET_THUMB2_P (flags) ? "thumb2" :
 	   TARGET_THUMB_P (flags) ? "thumb1" :
 	   "arm");
+
+  fprintf (file, "%*sselected fpu %s\n", indent, "", fpu_desc->name);
 }
 
 /* Hook to determine if one function can safely inline another.  */
@@ -29978,6 +29973,9 @@ arm_declare_function_name (FILE *stream, const char *name, tree decl)
     }
   else
     fprintf (stream, "\t.arm\n");
+
+  asm_fprintf (asm_out_file, "\t.fpu %s\n", TARGET_SOFT_FLOAT
+	       ? "softvfp" : arm_fpu_desc->name);
 
   if (TARGET_POKE_FUNCTION_NAME)
     arm_poke_function_name (stream, (const char *) name);
