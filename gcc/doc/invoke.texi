@@ -354,6 +354,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
 -fdump-tree-vtable-verify @gol
 -fdump-tree-vrp@r{[}-@var{n}@r{]} @gol
+-fdump-tree-split-paths@r{[}-@var{n}@r{]} @gol
 -fdump-tree-storeccp@r{[}-@var{n}@r{]} @gol
 -fdump-final-insns=@var{file} @gol
 -fcompare-debug@r{[}=@var{opts}@r{]}  -fcompare-debug-second @gol
@@ -448,6 +449,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
 -fsemantic-interposition -fshrink-wrap -fsignaling-nans @gol
 -fsingle-precision-constant -fsplit-ivs-in-unroller @gol
+-fsplit-paths @gol
 -fsplit-wide-types -fssa-backprop -fssa-phiopt @gol
 -fstack-protector -fstack-protector-all -fstack-protector-strong @gol
 -fstack-protector-explicit -fstdarg-opt -fstrict-aliasing @gol
@@ -7171,6 +7173,11 @@ output on to @file{stderr}. If two conflicting dump filenames are
 given for the same pass, then the latter option overrides the earlier
 one.
 
+@item split-paths
+@opindex fdump-tree-split-paths
+Dump each function after splitting paths to loop backedges.  The file
+name is made by appending @file{.split-paths} to the source file name.
+
 @item all
 Turn on all options, except @option{raw}, @option{slim}, @option{verbose}
 and @option{lineno}.
@@ -7808,6 +7815,7 @@ also turns on the following optimization flags:
 -frerun-cse-after-loop  @gol
 -fsched-interblock  -fsched-spec @gol
 -fschedule-insns  -fschedule-insns2 @gol
+-fsplit-paths @gol
 -fstrict-aliasing -fstrict-overflow @gol
 -ftree-builtin-call-dce @gol
 -ftree-switch-conversion -ftree-tail-merge @gol
@@ -8821,7 +8829,7 @@ currently enabled, but may be enabled by @option{-O2} in the future.
 
 @item -ftree-sink
 @opindex ftree-sink
-Perform forward store motion  on trees.  This flag is
+Perform forward store motion on trees.  This flag is
 enabled by default at @option{-O} and higher.
 
 @item -ftree-bit-ccp
@@ -9126,6 +9134,12 @@ checks like array bound checks and null pointer checks.  This is
 enabled by default at @option{-O2} and higher.  Null pointer check
 elimination is only done if @option{-fdelete-null-pointer-checks} is
 enabled.
+
+@item -fsplit-paths
+@opindex fsplit-paths
+Split paths leading to loop backedges.  This can improve dead code
+elimination and common subexpression elimination.  This is enabled by
+default at @option{-O2} and above.
 
 @item -fsplit-ivs-in-unroller
 @opindex fsplit-ivs-in-unroller

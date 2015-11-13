@@ -390,6 +390,7 @@ extern gimple_opt_pass *make_pass_tree_loop_done (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_ch (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_ch_vect (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_ccp (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_split_paths (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_phi_only_cprop (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_build_ssa (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_build_alias (gcc::context *ctxt);

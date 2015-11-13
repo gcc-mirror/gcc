@@ -274,6 +274,7 @@ along with GCC; see the file COPYING3.  If not see
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_simduid_cleanup);
       NEXT_PASS (pass_lower_vector_ssa);
+      NEXT_PASS (pass_split_paths);
       NEXT_PASS (pass_cse_reciprocals);
       NEXT_PASS (pass_reassoc);
       NEXT_PASS (pass_strength_reduction);
