@@ -1,3 +1,9 @@
+2015-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr68306.c (dg-additional-options): Add i?86-*-* target.
+	* gcc.dg/pr68306-2.c (dg-additional-options): Ditto.
+	* gcc.dg/pr68306-3.c (dg-additional-options): Ditto.
+
 2015-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/diagnostic-token-ranges.c: New file.
