@@ -3200,8 +3200,7 @@ __gnat_kill (int pid, int sig, int close ATTRIBUTE_UNUSED)
     return;
   if (sig == 9)
     {
-      TerminateProcess (h, 0);
-      __gnat_win32_remove_handle (NULL, pid);
+      TerminateProcess (h, 1);
     }
   else if (sig == SIGINT)
     GenerateConsoleCtrlEvent (CTRL_C_EVENT, pid);
