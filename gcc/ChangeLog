@@ -11,6 +11,11 @@
 
 2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* config/nvptx/nvptx.c (nvptx_generate_vector_shuffle): Deal with
+	complex types.
+
+2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* gimplify.c (oacc_default_clause): Use inform for enclosing scope.
 
 2015-11-13  Tom de Vries  <tom@codesourcery.com>

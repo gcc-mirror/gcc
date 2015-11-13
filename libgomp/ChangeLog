@@ -1,3 +1,8 @@
+2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-dbl.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-flt.c: New.
+
 2015-11-12  James Norris  <jnorris@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 

@@ -3634,26 +3634,51 @@ nvptx_generate_vector_shuffle (location_t loc,
 {
   unsigned fn = NVPTX_BUILTIN_SHUFFLE;
   tree_code code = NOP_EXPR;
-  tree type = unsigned_type_node;
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (var));
+  tree arg_type = unsigned_type_node;
+  tree var_type = TREE_TYPE (var);
+  tree dest_type = var_type;
 
-  if (!INTEGRAL_MODE_P (mode))
+  if (TREE_CODE (var_type) == COMPLEX_TYPE)
+    var_type = TREE_TYPE (var_type);
+
+  if (TREE_CODE (var_type) == REAL_TYPE)
     code = VIEW_CONVERT_EXPR;
-  if (GET_MODE_SIZE (mode) == GET_MODE_SIZE (DImode))
+
+  if (TYPE_SIZE (var_type)
+      == TYPE_SIZE (long_long_unsigned_type_node))
     {
       fn = NVPTX_BUILTIN_SHUFFLELL;
-      type = long_long_unsigned_type_node;
+      arg_type = long_long_unsigned_type_node;
+    }
+  
+  tree call = nvptx_builtin_decl (fn, true);
+  tree bits = build_int_cst (unsigned_type_node, shift);
+  tree kind = build_int_cst (unsigned_type_node, SHUFFLE_DOWN);
+  tree expr;
+
+  if (var_type != dest_type)
+    {
+      /* Do real and imaginary parts separately.  */
+      tree real = fold_build1 (REALPART_EXPR, var_type, var);
+      real = fold_build1 (code, arg_type, real);
+      real = build_call_expr_loc (loc, call, 3, real, bits, kind);
+      real = fold_build1 (code, var_type, real);
+
+      tree imag = fold_build1 (IMAGPART_EXPR, var_type, var);
+      imag = fold_build1 (code, arg_type, imag);
+      imag = build_call_expr_loc (loc, call, 3, imag, bits, kind);
+      imag = fold_build1 (code, var_type, imag);
+
+      expr = fold_build2 (COMPLEX_EXPR, dest_type, real, imag);
+    }
+  else
+    {
+      expr = fold_build1 (code, arg_type, var);
+      expr = build_call_expr_loc (loc, call, 3, expr, bits, kind);
+      expr = fold_build1 (code, dest_type, expr);
     }
 
-  tree call = nvptx_builtin_decl (fn, true);
-  call = build_call_expr_loc
-    (loc, call, 3, fold_build1 (code, type, var),
-     build_int_cst (unsigned_type_node, shift),
-     build_int_cst (unsigned_type_node, SHUFFLE_DOWN));
-
-  call = fold_build1 (code, TREE_TYPE (dest_var), call);
-
-  gimplify_assign (dest_var, call, seq);
+  gimplify_assign (dest_var, expr, seq);
 }
 
 /* Insert code to locklessly update  *PTR with *PTR OP VAR just before
