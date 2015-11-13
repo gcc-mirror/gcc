@@ -895,7 +895,7 @@ proc check_v3_target_time { } {
 
 proc check_v3_target_namedlocale { args } {
     global et_namedlocale
-    global tool	
+    global tool
 
     set et_namedlocale 0
 
@@ -909,24 +909,41 @@ proc check_v3_target_namedlocale { args } {
       set f [open $src "w"]
       puts $f "#include <locale>"
       puts $f "#include <cstdio>"
-      puts $f "using namespace std;"	
+      puts $f "#include <cstring>"
+      puts $f "using namespace std;"
+      puts $f "char *transform_locale(const char *name)"
+      puts $f "{"
+      puts $f "    char *result = new char\[50\];"
+      puts $f "    strcpy(result, name);"
+      puts $f "#if defined __FreeBSD__ || defined __DragonFly__ || defined __NetBSD__"
+      puts $f "    /* fall-through */"
+      puts $f "#else"
+      puts $f "    if (strstr(result, \"ISO8859-15\")) {"
+      puts $f "        strcat(result, \"@euro\");"
+      puts $f "    }"
+      puts $f "#endif"
+      puts $f "    return result;"
+      puts $f "}"
       puts $f "int main (int argc, char** argv)"
       puts $f "{"
       puts $f "  if (argc < 2)"
       puts $f "  {"
       puts $f "    printf(\"locale support test not supported\\n\");"
       puts $f "    return 1;"
-      puts $f "  }"	
-      puts $f "  try"	
+      puts $f "  }"
+      puts $f "  const char *namedloc = transform_locale(*(argv + 1));"
+      puts $f "  try"
       puts $f "  {"
-      puts $f "    locale(*(argv + 1));"
+      puts $f "    locale((const char*)namedloc);"
+      puts $f "    delete namedloc;"
       puts $f "    return 0;"
       puts $f "  }"
       puts $f "  catch(...)"
       puts $f "  {"
-      puts $f "    printf(\"locale '%s' not supported\\n\", *(argv + 1));"
+      puts $f "    printf(\"locale '%s' not supported\\n\", namedloc);"
+      puts $f "    delete namedloc;"
       puts $f "    return 1;"
-      puts $f "  }"	
+      puts $f "  }"
       puts $f "}"
       close $f
 

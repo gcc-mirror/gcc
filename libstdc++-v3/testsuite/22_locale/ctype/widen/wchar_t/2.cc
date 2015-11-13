@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "en_US.ISO-8859-1" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
 
 // 2003-03-12  Petur Runolfsson  <peturr02@ru.is>
 
@@ -31,7 +31,7 @@ void test02()
   using namespace std;
   bool test __attribute__((unused)) = true;
 
-  locale loc = locale("en_US.ISO-8859-1");
+  locale loc = locale(ISO_8859(1,en_US));
   const ctype<wchar_t>& wct = use_facet<ctype<wchar_t> >(loc);
 
   char c = 0xff;

@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "fr_FR@euro" }
+// { dg-require-namedlocale "fr_FR.ISO8859-15" }
 
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -40,7 +40,7 @@ void test08()
 
   // basic construction and sanity check
   locale loc_c = locale::classic();
-  locale loc_fr = locale("fr_FR@euro");
+  locale loc_fr = locale(ISO_8859(15,fr_FR));
   VERIFY( loc_fr != loc_c );
 
   // create an ostream-derived object, cache the time_put facet

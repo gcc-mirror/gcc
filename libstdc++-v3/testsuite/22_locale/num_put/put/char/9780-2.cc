@@ -1,5 +1,5 @@
-// { dg-require-namedlocale "de_DE" }
-// { dg-require-namedlocale "es_ES" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
+// { dg-require-namedlocale "es_ES.ISO8859-15" }
 
 // Copyright (C) 2004-2015 Free Software Foundation, Inc.
 //
@@ -24,7 +24,7 @@
 
 // Make sure that formatted output uses the locale in the output stream.
 using namespace std;
-locale l1 = locale("de_DE");
+locale l1 = locale(ISO_8859(15,de_DE));
 const num_put<char>& np = use_facet<num_put<char> >(l1);
 const numpunct<char>& npunct = use_facet<numpunct<char> >(l1);
 
@@ -51,7 +51,7 @@ void test02()
 {
   bool test __attribute__((unused)) = true;
 
-  locale l2 = locale("es_ES");
+  locale l2 = locale(ISO_8859(15,es_ES));
   const numpunct<char>& npunct3 = use_facet<numpunct<char> >(l2);
   char c __attribute__((unused)) = npunct3.thousands_sep();
   string s = npunct3.grouping();

@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE.utf8" }
+// { dg-require-namedlocale "de_DE.UTF-8" }
 // { dg-options " -std=gnu++11 " }
 
 // 2014-04-14 Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
@@ -33,7 +33,7 @@ void test01()
   using namespace std;
   bool test __attribute__((unused)) = true;
   locale loc_c = locale::classic();
-  locale loc_de = locale("de_DE.utf8");
+  locale loc_de = locale("de_DE.UTF-8");
   VERIFY( loc_de != loc_c );
   wistringstream iss;
   iss.imbue(loc_de);

@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE.ISO-8859-15@euro" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2003-05-03  Petur Runolfsson <peturr02@ru.is>
 
@@ -36,7 +36,7 @@ void test01()
     putc(static_cast<unsigned char>(i), file);
   fclose(file);
 
-  locale loc (locale("de_DE.ISO-8859-15@euro"));
+  locale loc (locale(ISO_8859(15,de_DE)));
   wchar_t buf[1];
   wfilebuf fb;
   fb.pubimbue(loc);

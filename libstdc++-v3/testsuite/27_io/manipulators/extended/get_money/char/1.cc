@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++11" }
-// { dg-require-namedlocale "de_DE@euro" }
+// { dg-require-namedlocale "de_DE.ISO8859-1" }
 
 // 2010-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -28,7 +28,7 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::locale loc_de = std::locale("de_DE@euro");
+  std::locale loc_de = std::locale(ISO_8859(15,de_DE));
 
   std::istringstream iss;
   iss.imbue(loc_de);

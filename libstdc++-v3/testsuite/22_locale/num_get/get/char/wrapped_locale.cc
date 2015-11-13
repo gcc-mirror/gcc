@@ -1,6 +1,6 @@
-// { dg-require-namedlocale "ja_JP.eucjp" }
-// { dg-require-namedlocale "de_DE" }
-// { dg-require-namedlocale "en_HK" }
+// { dg-require-namedlocale "ja_JP.eucJP" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
+// { dg-require-namedlocale "en_HK.ISO8859-1" }
 
 // 2001-08-15 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -59,6 +59,6 @@ int main()
   two.push_back(&test04);
   two.push_back(&test05);
   two.push_back(&test06);
-  run_tests_wrapped_locale("ja_JP.eucjp", two);
+  run_tests_wrapped_locale("ja_JP.eucJP", two);
   return 0;
 }

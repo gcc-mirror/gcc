@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "en_US" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
 
 // Copyright (C) 2008-2015 Free Software Foundation, Inc.
 //
@@ -29,7 +29,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   locale other(locale("C"));
-  locale one(locale("en_US"), new ctype<char>());
+  locale one(locale(ISO_8859(1,en_US)), new ctype<char>());
   locale loc(other, one, locale::collate);
 
   VERIFY( one.name() == "*" );

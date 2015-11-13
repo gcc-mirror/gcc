@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "ja_JP.eucjp" }
+// { dg-require-namedlocale "ja_JP.eucJP" }
 
 // Copyright (C) 2009-2015 Free Software Foundation, Inc.
 //
@@ -29,7 +29,7 @@ void test01()
   using namespace std;
   bool test __attribute__((unused)) = true;
 
-  locale locf(locale("C"), "ja_JP.eucjp", locale::monetary);
+  locale locf(locale("C"), "ja_JP.eucJP", locale::monetary);
 
   const moneypunct<wchar_t, false>& mpf = 
     use_facet<moneypunct<wchar_t, false> >(locf);
@@ -40,7 +40,7 @@ void test01()
 
   VERIFY( mpf.curr_symbol() == mpf_copy.curr_symbol() );
 
-  locale loct(locale("C"), "ja_JP.eucjp", locale::monetary);
+  locale loct(locale("C"), "ja_JP.eucJP", locale::monetary);
 
   const moneypunct<wchar_t, true>& mpt = 
     use_facet<moneypunct<wchar_t, true> >(loct);

@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE.ISO-8859-15@euro" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2003-04-30  Petur Runolfsson <peturr02@ru.is>
 
@@ -35,7 +35,7 @@ void test01()
     putc(static_cast<unsigned char>(i), file);
   fclose(file);
 
-  locale loc (locale("de_DE.ISO-8859-15@euro"));
+  locale loc (locale(ISO_8859(15,de_DE)));
   locale::global(loc); // Set locale for stdin
 
   VERIFY( freopen(name, "r", stdin) );

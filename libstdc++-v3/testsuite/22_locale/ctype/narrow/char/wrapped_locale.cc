@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "ja_JP.eucjp" }
+// { dg-require-namedlocale "ja_JP.eucJP" }
 
 // 2001-08-15 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -37,6 +37,6 @@ int main()
   func_callback two;
   two.push_back(&test01);
   two.push_back(&test02);
-  run_tests_wrapped_locale("ja_JP.eucjp", two);
+  run_tests_wrapped_locale("ja_JP.eucJP", two);
   return 0;
 }

@@ -1,7 +1,7 @@
-// { dg-require-namedlocale "en_US" }
-// { dg-require-namedlocale "fr_FR" }
-// { dg-require-namedlocale "de_DE" }
-// { dg-require-namedlocale "ja_JP.eucjp" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
+// { dg-require-namedlocale "fr_FR.ISO8859-15" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
+// { dg-require-namedlocale "ja_JP.eucJP" }
 
 // 2001-08-15 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -40,6 +40,6 @@ int main()
   func_callback two;
   two.push_back(&test01);
   two.push_back(&test02);
-  run_tests_wrapped_locale("ja_JP.eucjp", two);
+  run_tests_wrapped_locale("ja_JP.eucJP", two);
   return 0;
 }

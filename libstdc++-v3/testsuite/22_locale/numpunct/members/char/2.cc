@@ -1,6 +1,6 @@
-// { dg-require-namedlocale "en_US" }
-// { dg-require-namedlocale "is_IS" }
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
+// { dg-require-namedlocale "is_IS.ISO8859-1" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2001-01-17 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -34,9 +34,9 @@ void test02()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_us = locale("en_US");
-  locale loc_is = locale("is_IS");
-  locale loc_de = locale("de_DE");
+  locale loc_us = locale(ISO_8859(1,en_US));
+  locale loc_is = locale(ISO_8859(1,is_IS));
+  locale loc_de = locale(ISO_8859(15,de_DE));
   VERIFY( loc_c != loc_de );
   VERIFY( loc_us != loc_is );
   VERIFY( loc_us != loc_de );

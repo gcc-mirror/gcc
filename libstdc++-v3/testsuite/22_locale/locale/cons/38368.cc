@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "en_US" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
 
 // Copyright (C) 2008-2015 Free Software Foundation, Inc.
 //
@@ -28,7 +28,7 @@ void test01()
   using namespace std;
   bool test __attribute__((unused)) = true;
 
-  locale loc(locale("C"), "en_US", locale::collate);
+  locale loc(locale("C"), ISO_8859(1,en_US), locale::collate);
   locale loc_copy(loc.name().c_str());
 
   const moneypunct<char, true>& mpunt =

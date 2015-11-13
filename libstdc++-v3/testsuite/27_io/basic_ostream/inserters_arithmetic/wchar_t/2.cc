@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // Copyright (C) 2005-2015 Free Software Foundation, Inc.
 //
@@ -39,7 +39,7 @@ test02()
   os2.setf(wios::fixed);
 
   // Check it can be done in a locale with grouping on.
-  locale loc2 = locale("de_DE");
+  locale loc2 = locale(ISO_8859(15,de_DE));
   os2.imbue(loc2);
   os2 << fixed << setprecision(3) << val2 << endl;
   os2 << endl;
