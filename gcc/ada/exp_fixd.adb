@@ -37,6 +37,7 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Snames;   use Snames;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -1695,6 +1696,7 @@ package body Exp_Fixd is
       Expr        : constant Node_Id   := Expression (N);
       Result_Type : constant Entity_Id := Etype (N);
       Small       : constant Ureal     := Small_Value (Result_Type);
+      Truncate    : Boolean;
 
    begin
       --  Optimize small = 1, where we can avoid the multiply completely
@@ -1704,14 +1706,25 @@ package body Exp_Fixd is
 
       --  Normal case where multiply is required
       --  Rounding is truncating for decimal fixed point types only,
-      --  see RM 4.6(29).
+      --  see RM 4.6(29), except if the conversion comes from an attribute
+      --  reference 'Round (RM 3.5.10 (14)): The attribute is implemented
+      --  by means of a conversion that must round.
 
       else
+         if Is_Decimal_Fixed_Point_Type (Result_Type) then
+            Truncate := Nkind (Original_Node (N)) /= N_Attribute_Reference
+               or else Get_Attribute_Id (Attribute_Name (Original_Node (N)))
+                /= Attribute_Round;
+         else
+            Truncate := False;
+         end if;
+
          Set_Result (N,
            Build_Multiply (N,
              Fpt_Value (Expr),
              Real_Literal (N, Ureal_1 / Small)),
-           Rng_Check, Trunc => Is_Decimal_Fixed_Point_Type (Result_Type));
+             Rng_Check,
+             Trunc => Truncate);
       end if;
    end Expand_Convert_Float_To_Fixed;
 
