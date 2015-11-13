@@ -1,3 +1,9 @@
+2015-11-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68318
+	* decl.c (get_proc_name): Increment reference count for ENTRY.
+	While here, fix comment and use postfix ++ for consistency.
+
 2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* array.c: Remove unused header files.
