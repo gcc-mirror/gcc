@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "en_HK" }
+// { dg-require-namedlocale "en_HK.ISO8859-1" }
 
 // 2004-03-15  Paolo Carlini  <pcarlini@suse.de>
 
@@ -36,7 +36,7 @@ void test01()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_hk = locale("en_HK");
+  locale loc_hk = locale(ISO_8859(1,en_HK));
   VERIFY( loc_c != loc_hk );
   
   iterator_type end, end01, end02;

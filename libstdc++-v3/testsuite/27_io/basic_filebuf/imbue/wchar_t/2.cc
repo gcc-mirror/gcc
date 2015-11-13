@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2003-05-13 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -43,7 +43,7 @@ void test02()
   VERIFY( p != bad);
 
   // According to 27.5.2.2.1, p1, loc == getloc() after pubimbue(loc).
-  locale loc_de = locale("de_DE");
+  locale loc_de = locale(ISO_8859(15,de_DE));
   locale ret = ob.pubimbue(loc_de);
   VERIFY( ob.getloc() == loc_de );
 }

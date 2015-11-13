@@ -1,5 +1,5 @@
-// { dg-require-namedlocale "en_US" }
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -36,10 +36,10 @@ void test07()
   std::filebuf ob;
   VERIFY( ob.getloc() == loc );
 
-  locale::global(locale("en_US"));
+  locale::global(locale(ISO_8859(1,en_US)));
   VERIFY( ob.getloc() == loc );
 
-  locale loc_de = locale("de_DE");
+  locale loc_de = locale(ISO_8859(15,de_DE));
   locale ret = ob.pubimbue(loc_de);
   VERIFY( ob.getloc() == loc_de );
   VERIFY( ret == loc );

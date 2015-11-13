@@ -1,5 +1,5 @@
 // { dg-do run { xfail { ! { *-*-linux* *-*-gnu* } } } }
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // Copyright (C) 2000-2015 Free Software Foundation, Inc.
 //
@@ -59,8 +59,8 @@ void test02()
       v_c[i] = mask_is;
     }   
 
-  // "de_DE"
-  locale loc_de = locale("de_DE");
+  // "de_DE.ISO8859-15"
+  locale loc_de = locale(ISO_8859(15,de_DE));
   const ctype<wchar_t>& ctype_de = use_facet<ctype<wchar_t> >(loc_de); 
   for (int i = 0; i < max; ++i)
     {

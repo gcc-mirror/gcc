@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 1999-09-20 bkoz
 
@@ -36,7 +36,7 @@ void test03()
   typedef std::ios_base::fmtflags fmtflags;
   typedef std::ios_base::iostate iostate;
   locale loc_c = locale::classic();
-  locale loc_de = locale("de_DE");
+  locale loc_de = locale(ISO_8859(15,de_DE));
   std::ios ios_01(0);
   std::ios ios_02(0);
   ios_01.imbue(loc_c);

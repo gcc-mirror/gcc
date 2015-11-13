@@ -36,13 +36,13 @@ void test01()
   if (wcin.get(c) && !isspace(c, wcin.getloc()))
     {
       str.push_back(c);
-      wcin.imbue(locale("en_US"));
+      wcin.imbue(locale(ISO_8859(1,en_US)));
     }
 
   if (wcin.get(c) && !isspace(c, wcin.getloc()))
     {
       str.push_back(c);
-      wcin.imbue(locale("fr_FR"));
+      wcin.imbue(locale(ISO_8859(15,fr_FR)));
     }
 
   while (wcin.get(c) && !isspace(c, wcin.getloc()))

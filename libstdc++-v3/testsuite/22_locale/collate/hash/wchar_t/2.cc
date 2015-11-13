@@ -2,9 +2,9 @@
 // { dg-xfail-if "" { "*-*-hpux11.23" } { "*" } { "" } } */
 // { dg-options "-finput-charset=ISO8859-1" }
 // { dg-require-iconv "ISO8859-1" }
-// { dg-require-namedlocale "en_US" }
-// { dg-require-namedlocale "fr_FR" }
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
+// { dg-require-namedlocale "fr_FR.ISO8859-15" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2001-08-15 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -30,7 +30,7 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-// Check German "de_DE" locale.
+// Check German "de_DE.ISO8859-15" locale.
 void test02()
 {
   using namespace std;
@@ -39,9 +39,9 @@ void test02()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_us = locale("en_US");
-  locale loc_fr = locale("fr_FR");
-  locale loc_de = locale("de_DE");
+  locale loc_us = locale(ISO_8859(1,en_US));
+  locale loc_fr = locale(ISO_8859(15,fr_FR));
+  locale loc_de = locale(ISO_8859(15,de_DE));
   VERIFY( loc_c != loc_de );
   VERIFY( loc_us != loc_fr );
   VERIFY( loc_us != loc_de );

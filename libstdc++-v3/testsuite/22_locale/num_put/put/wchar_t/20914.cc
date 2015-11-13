@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2005-04-17  Paolo Carlini  <pcarlini@suse.de>
 
@@ -32,7 +32,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   // A locale that expects grouping.
-  locale loc_de = locale("de_DE");
+  locale loc_de = locale(ISO_8859(15,de_DE));
 
   const wstring empty;
   wstring result;

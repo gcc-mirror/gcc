@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE@euro" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2003-10-24  Paolo Carlini  <pcarlini@suse.de>
 
@@ -34,7 +34,7 @@ void test01()
   bool test __attribute__((unused)) = true;
   
   // basic construction
-  locale loc_de = locale("de_DE@euro");
+  locale loc_de = locale(ISO_8859(15,de_DE));
 
   iterator_type end;
   istringstream iss;

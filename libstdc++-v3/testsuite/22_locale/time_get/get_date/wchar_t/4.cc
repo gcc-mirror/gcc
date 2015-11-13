@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "zh_TW" }
+// { dg-require-namedlocale "zh_TW.UTF-8" }
 
 // 2003-12-17  Paolo Carlini  <pcarlini@suse.de>
 
@@ -32,7 +32,7 @@ void test01()
 
   typedef istreambuf_iterator<wchar_t> iterator_type;
 
-  locale loc_tw = locale("zh_TW");
+  locale loc_tw = locale("zh_TW.UTF-8");
 
   iterator_type end;
 

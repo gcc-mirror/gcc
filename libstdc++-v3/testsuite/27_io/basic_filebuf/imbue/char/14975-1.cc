@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "en_US" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
 
 // 2004-04-16  Petur Runolfsson  <peturr02@ru.is>
 
@@ -43,7 +43,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   Buf fb;
-  locale loc_us = locale("en_US");
+  locale loc_us = locale(ISO_8859(1,en_US));
   fb.pubimbue(loc_us);
   fb.open("tmp_14975-1", ios_base::out);
   

@@ -1,6 +1,6 @@
-// { dg-require-namedlocale "de_DE" }
-// { dg-require-namedlocale "de_DE@euro" }
-// { dg-require-namedlocale "en_HK" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
+// { dg-require-namedlocale "en_HK.ISO8859-1" }
 
 // 2001-08-15 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -69,6 +69,6 @@ int main()
   two.push_back(&test06);
   two.push_back(&test07);
   two.push_back(&test08);
-  run_tests_wrapped_env("de_DE", "LANG", two);
+  run_tests_wrapped_env(ISO_8859(15,de_DE), "LANG", two);
   return 0;
 }

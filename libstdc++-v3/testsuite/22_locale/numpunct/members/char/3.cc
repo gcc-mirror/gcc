@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "it_IT" }
+// { dg-require-namedlocale "it_IT.ISO8859-15" }
 
 // 2001-01-24 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -30,7 +30,7 @@ void test02()
   
   bool test __attribute__((unused)) = true;
 
-  locale loc_it = locale("it_IT");
+  locale loc_it = locale(ISO_8859(15,it_IT));
 
   const numpunct<char>& nump_it = use_facet<numpunct<char> >(loc_it); 
 

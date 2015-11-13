@@ -1,5 +1,5 @@
-// { dg-require-namedlocale "en_HK" }
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "en_HK.ISO8859-1" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2001-09-21 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -35,8 +35,8 @@ void test02()
 
   // basic construction and sanity checks.
   locale loc_c = locale::classic();
-  locale loc_hk = locale("en_HK");
-  locale loc_de = locale("de_DE");
+  locale loc_hk = locale(ISO_8859(1,en_HK));
+  locale loc_de = locale(ISO_8859(15,de_DE));
   VERIFY( loc_hk != loc_c );
   VERIFY( loc_hk != loc_de );
 
@@ -54,7 +54,7 @@ void test02()
   // create "C" time objects
   const tm time_bday = __gnu_test::test_tm(0, 0, 12, 4, 3, 71, 0, 93, 0);
 
-  // inspection of named locales, de_DE
+  // inspection of named locales, de_DE.ISO8859-15
   iss.imbue(loc_de);
   iss.str(L"Sonntag");
   iterator_type is_it10(iss);

@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++11" }
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 27.6.3 template class basic_streambuf
 
@@ -105,7 +105,7 @@ void streambuf::test_swap() const
 
 int main()
 {
-  std::locale loc("de_DE");
+  std::locale loc(ISO_8859(15,de_DE));
   streambuf s(loc);
   s.test_copy();
   s.test_assign();

@@ -1,5 +1,5 @@
 // { dg-require-namedlocale "" }
-// { dg-require-namedlocale "en_US" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
 
 // Copyright (C) 2003-2015 Free Software Foundation, Inc.
 //
@@ -106,7 +106,7 @@ void test01(int iters)
 	      std::locale loc1 = std::locale("");
 	      std::locale loc2(loc1, std::locale::classic(),
 			       std::locale::numeric);
-	      std::locale loc3 = std::locale("en_US");
+	      std::locale loc3 = std::locale(ISO_8859(1,en_US));
 	      std::locale loc4(loc3, std::locale::classic(),
 			       std::locale::numeric);
 	    }

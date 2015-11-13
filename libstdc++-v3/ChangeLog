@@ -1,3 +1,360 @@
+2015-11-13  John Marino  <gnugcc@marino.st>
+
+	* testsuite/22_locale/codecvt/always_noconv/char/wrapped_env.cc:
+	Use portable locale name
+	* testsuite/22_locale/codecvt/always_noconv/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/encoding/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/in/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/max_length/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/out/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt_byname/50714.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/1.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/2.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/3.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/collate/hash/char/2.cc: Likewise.
+	* testsuite/22_locale/collate/hash/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/hash/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/collate/hash/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/collate/hash/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/hash/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/collate/transform/char/2.cc: Likewise.
+	* testsuite/22_locale/collate/transform/char/3.cc: Likewise.
+	* testsuite/22_locale/collate/transform/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/transform/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/collate/transform/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/collate/transform/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/collate/transform/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/collate/transform/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/collate_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/ctype/cons/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/cons/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/2.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/scan/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/scan/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/scan/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/scan/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/to/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/to/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/to/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/to/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/facet/2.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12352.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Likewise.
+	* testsuite/22_locale/locale/cons/2.cc: Likewise.
+	* testsuite/22_locale/locale/cons/38365.cc: Likewise.
+	* testsuite/22_locale/locale/cons/38368.cc: Likewise.
+	* testsuite/22_locale/locale/cons/4.cc: Likewise.
+	* testsuite/22_locale/locale/cons/40184.cc: Likewise.
+	* testsuite/22_locale/locale/cons/7.cc: Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/14071.cc: Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/2.cc: Likewise.
+	* testsuite/22_locale/messages/13631.cc: Likewise.
+	* testsuite/22_locale/messages/members/char/1.cc: Likewise.
+	* testsuite/22_locale/messages/members/char/2.cc: Likewise.
+	* testsuite/22_locale/messages/members/char/3.cc: Likewise.
+	* testsuite/22_locale/messages/members/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/messages/members/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/messages_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/1.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/10.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/11.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/11528.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/12.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/13.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/15.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/16.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/17.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/18.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/2.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/3.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/4.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/10.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/11.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/11528.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/12.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/13.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/15.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/16.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/17.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/18.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/money_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/9780-3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/moneypunct/40712.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/char/2.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/char/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/moneypunct/members/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/moneypunct/members/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/moneypunct/members/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/moneypunct_byname/named_equivalence.cc:
+	Likewise.
+	* testsuite/22_locale/num_get/get/char/1.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/3.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/5.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/6.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/9.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/9.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/20909.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/20914.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/5.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/9780-2.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/20909.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/20914.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/char/2.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/char/3.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/numpunct/members/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/numpunct/members/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/numpunct_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/time_get/date_order/char/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/date_order/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/date_order/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/date_order/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/12750.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/26701.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/12750.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/26701.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_time/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_time/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/38081-1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/38081-2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_year/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_put/put/char/17038.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/4.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/6.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/7.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/8.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/9780-1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/17038.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/8.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13007.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13582-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/14975-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/9322.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13007.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13171-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/14975-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/9322.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/9520.cc: Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_streambuf/cons/57394.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/char/13007-2.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/char/9322.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/13007-2.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/9322.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/imbue/char/9322.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/imbue/wchar_t/9322.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/get_money/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/get_money/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/get_time/char/2.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/get_time/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/put_time/char/2.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/put_time/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/objects/wchar_t/13582-1_xin.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/9520.cc: Likewise.
+	* testsuite/lib/libstdc++.exp (check_v3_target_namedlocale): Check
+	for named locale as appropriate for target.
+	* testsuite/util/testsuite_hooks.h (ISO_8859): Define macro to form
+	target's preferred form of locale name.
+
 2015-11-13  Jennifer Yao  <jenny.hyphen.fa@gmail.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

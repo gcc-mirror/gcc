@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "fr_FR" }
+// { dg-require-namedlocale "fr_FR.ISO8859-15" }
 
 // Copyright (C) 2014-2015 Free Software Foundation, Inc.
 //
@@ -27,7 +27,7 @@ void test01()
   // This is defined through CXXFLAGS in scripts/testsuite_flags[.in].
   const char* dir = LOCALEDIR;
 
-  std::locale l("fr_FR");
+  std::locale l(ISO_8859(15,fr_FR));
 
   typedef std::messages<char> messages;
 
@@ -63,7 +63,7 @@ void test02()
   // This is defined through CXXFLAGS in scripts/testsuite_flags[.in].
   const char* dir = LOCALEDIR;
 
-  std::locale l("fr_FR");
+  std::locale l(ISO_8859(15,fr_FR));
 
   typedef std::messages<wchar_t> messages;
 

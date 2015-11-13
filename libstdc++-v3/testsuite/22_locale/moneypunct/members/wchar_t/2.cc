@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2001-08-23 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -35,7 +35,7 @@ void test02()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_de = locale("de_DE");
+  locale loc_de = locale(ISO_8859(15,de_DE));
 
   // cache the moneypunct facets
   typedef moneypunct<wchar_t, true> __money_true;

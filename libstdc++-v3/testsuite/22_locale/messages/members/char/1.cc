@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2001-07-17 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -36,7 +36,7 @@ void test01()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_de = locale("de_DE");
+  locale loc_de = locale(ISO_8859(15,de_DE));
   VERIFY( loc_c != loc_de );
 
   // cache the messages facets
@@ -46,7 +46,7 @@ void test01()
   // string_type get(catalog, int, int, const string_type& ) const; 
   // void close(catalog) const;
 
-  // Check German (de_DE) locale.
+  // Check German (de_DE.ISO8859-15) locale.
   catalog cat_de = mssg_de.open("libstdc++", loc_c, dir);
   string s01 = mssg_de.get(cat_de, 0, 0, "please");
   string s02 = mssg_de.get(cat_de, 0, 0, "thank you");
