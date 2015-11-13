@@ -3073,6 +3073,7 @@ package body Sem_Ch4 is
          if not Is_Type (Nam) then
             if Is_Entity_Name (Name (N)) then
                Set_Entity (Name (N), Nam);
+               Set_Etype (Name (N), Etype (Nam));
 
             elsif Nkind (Name (N)) = N_Selected_Component then
                Set_Entity (Selector_Name (Name (N)),  Nam);
@@ -7456,6 +7457,9 @@ package body Sem_Ch4 is
          end if;
 
       else
+         --  If there are multiple indexing functions, build a function call
+         --  and analyze it for each of the possible interpretations.
+
          Indexing :=
            Make_Function_Call (Loc,
              Name                   =>
@@ -7464,6 +7468,8 @@ package body Sem_Ch4 is
 
          Set_Parent (Indexing, Parent (N));
          Set_Generalized_Indexing (N, Indexing);
+         Set_Etype (N, Any_Type);
+         Set_Etype (Name (Indexing), Any_Type);
 
          declare
             I       : Interp_Index;
@@ -7473,21 +7479,24 @@ package body Sem_Ch4 is
          begin
             Get_First_Interp (Func_Name, I, It);
             Set_Etype (Indexing, Any_Type);
+
             while Present (It.Nam) loop
                Analyze_One_Call (Indexing, It.Nam, False, Success);
 
                if Success then
-                  Set_Etype  (Name (Indexing), It.Typ);
-                  Set_Entity (Name (Indexing), It.Nam);
-                  Set_Etype (N, Etype (Indexing));
 
-                  --  Add implicit dereference interpretation
+                  --  Function in current interpretation is a valid candidate.
+                  --  Its result type is also a potential type for the
+                  --  original Indexed_Component node.
+
+                  Add_One_Interp (Name (Indexing), It.Nam, It.Typ);
+                  Add_One_Interp (N, It.Nam, It.Typ);
+
+                  --  Add implicit dereference interpretation to original node
 
                   if Has_Discriminants (Etype (It.Nam)) then
                      Check_Implicit_Dereference (N, Etype (It.Nam));
                   end if;
-
-                  exit;
                end if;
 
                Get_Next_Interp (I, It);

@@ -2673,7 +2673,6 @@ package body Sem_Ch13 is
 
                      Decorate (Aspect, Aitem);
                      Insert_Pragma (Aitem);
-                     goto Continue;
 
                   else
                      Error_Msg_NE
@@ -2681,6 +2680,8 @@ package body Sem_Ch13 is
                         & "object, single protected type or single task type",
                         Aspect, Id);
                   end if;
+
+                  goto Continue;
 
                --  SPARK_Mode
 

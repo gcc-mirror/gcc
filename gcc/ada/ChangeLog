@@ -1,3 +1,59 @@
+2015-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sigtramp-ios.c, init.c: Minor cosmetic tweaks.
+
+2015-11-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* s-gloloc.adb, g-debpoo.adb: Minor reformatting.
+
+2015-11-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Improve error
+	message for the case the iterable name (array or container)
+	is a component that depends on a discriminant.
+
+2015-11-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Indicate_Name_And_Type): If the analysis of
+	one interpretation succeeds, set type of name in call, for
+	completeness.
+	(Try_Container_Indexing): If there are multiple indexing
+	functions, collect possible interpretations that are compatible
+	with given parameters, and add implicit dereference types when
+	present.
+	* sem_util.adb (Build_Explicit_Dereference): If the expression
+	is an overloaded function call use the given discriminant to
+	resolve the call, and set properly the type of the call and of
+	the resulting dereference.
+
+2015-11-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Pragma Constant_After_Elaboration can
+	now apply to a variable without an initialization expression.
+
+2015-11-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb (Add_Matching_Formals): Parameter Actuals is now of mode
+	IN OUT. Create a new list when list Actuals is not present.
+	(Build_Contract_Wrapper): Create the wrapper
+	only when the entry has at least on checked contract case or
+	pre/postcondition. Ensure that the call to the original entry
+	lacks an actual parameter list when the entry appears without
+	formal parameters.
+	(Expand_Entry_Declaration): Code cleanup.
+
+2015-11-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Continue the analysis
+	after encountering an illegal aspect Part_Of.
+
+2015-11-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case
+	Overlaps_Storage): Add copies for nodes that represent the integer
+	addresses of the two actuals, to prevent identical nodes in the
+	tree, which the backend cannot handle properly.
+
 2015-11-13  Bob Duff  <duff@adacore.com>
 
 	* sem_ch6.adb (Check_Private_Overriding): Change

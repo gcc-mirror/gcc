@@ -1732,6 +1732,8 @@ package body Sem_Util is
       Disc : Entity_Id)
    is
       Loc : constant Source_Ptr := Sloc (Expr);
+      I   : Interp_Index;
+      It  : Interp;
 
    begin
       --  An entity of a type with a reference aspect is overloaded with
@@ -1744,6 +1746,29 @@ package body Sem_Util is
          Set_Etype (Expr, Etype (Entity (Expr)));
 
       elsif Nkind (Expr) = N_Function_Call then
+
+         --  If the name of the indexing function is overloaded, locate the one
+         --  whose return type has an implicit dereference on the desired
+         --  discriminant, and set entity and type of function call.
+
+         if Is_Overloaded (Name (Expr)) then
+            Get_First_Interp (Name (Expr), I, It);
+
+            while Present (It.Nam) loop
+               if Ekind ((It.Typ)) = E_Record_Type
+                 and then First_Entity ((It.Typ)) = Disc
+               then
+                  Set_Entity (Name (Expr), It.Nam);
+                  Set_Etype (Name (Expr), Etype (It.Nam));
+                  exit;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+
+         --  Set type of call from resolved function name.
+
          Set_Etype (Expr, Etype (Name (Expr)));
       end if;
 

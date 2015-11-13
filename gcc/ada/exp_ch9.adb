@@ -1234,7 +1234,9 @@ package body Exp_Ch9 is
       --  Conc_Typ. Obj_Id is the entity of the wrapper formal parameter which
       --  represents the concurrent object.
 
-      procedure Add_Matching_Formals (Formals : List_Id; Actuals : List_Id);
+      procedure Add_Matching_Formals
+        (Formals : List_Id;
+         Actuals : in out List_Id);
       --  Add formal parameters that match those of entry E to list Formals.
       --  The routine also adds matching actuals for the new formals to list
       --  Actuals.
@@ -1281,7 +1283,10 @@ package body Exp_Ch9 is
       -- Add_Matching_Formals --
       --------------------------
 
-      procedure Add_Matching_Formals (Formals : List_Id; Actuals : List_Id) is
+      procedure Add_Matching_Formals
+        (Formals : List_Id;
+         Actuals : in out List_Id)
+      is
          Formal     : Entity_Id;
          New_Formal : Entity_Id;
 
@@ -1300,6 +1305,10 @@ package body Exp_Ch9 is
                 Out_Present         => Out_Present (Parent (Formal)),
                 Parameter_Type      =>
                   New_Occurrence_Of (Etype (Formal), Loc)));
+
+            if No (Actuals) then
+               Actuals := New_List;
+            end if;
 
             Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));
             Next_Formal (Formal);
@@ -1327,7 +1336,7 @@ package body Exp_Ch9 is
       --  Local variables
 
       Items      : constant Node_Id := Contract (E);
-      Actuals    : List_Id;
+      Actuals    : List_Id := No_List;
       Call       : Node_Id;
       Call_Nam   : Node_Id;
       Decls      : List_Id := No_List;
@@ -1384,6 +1393,7 @@ package body Exp_Ch9 is
          while Present (Prag) loop
             if Nam_In (Pragma_Name (Prag), Name_Postcondition,
                                            Name_Precondition)
+              and then Is_Checked (Prag)
             then
                Has_Pragma := True;
                Transfer_Pragma (Prag, To => Decls);
@@ -1397,7 +1407,9 @@ package body Exp_Ch9 is
 
          Prag := Contract_Test_Cases (Items);
          while Present (Prag) loop
-            if Pragma_Name (Prag) = Name_Contract_Cases then
+            if Pragma_Name (Prag) = Name_Contract_Cases
+              and then Is_Checked (Prag)
+            then
                Has_Pragma := True;
                Transfer_Pragma (Prag, To => Decls);
             end if;
@@ -1455,16 +1467,15 @@ package body Exp_Ch9 is
              Expressions => New_List (New_Occurrence_Of (Index_Id, Loc)));
       end if;
 
-      Actuals := New_List;
-      Call    :=
-        Make_Procedure_Call_Statement (Loc,
-          Name                   => Call_Nam,
-          Parameter_Associations => Actuals);
-
       --  Add formal parameters to match those of the entry and build actuals
       --  for the entry call.
 
       Add_Matching_Formals (Formals, Actuals);
+
+      Call :=
+        Make_Procedure_Call_Statement (Loc,
+          Name                   => Call_Nam,
+          Parameter_Associations => Actuals);
 
       --  Add renaming declarations for the discriminants of the enclosing type
       --  as the various contract items may reference them.
@@ -9030,7 +9041,6 @@ package body Exp_Ch9 is
       Body_Id      : Entity_Id;
       Cdecls       : List_Id;
       Comp         : Node_Id;
-      Comp_Id      : Entity_Id;
       Current_Node : Node_Id := N;
       E_Count      : Int;
       Entries_Aggr : Node_Id;
@@ -9038,7 +9048,6 @@ package body Exp_Ch9 is
       Object_Comp  : Node_Id;
       Priv         : Node_Id;
       Rec_Decl     : Node_Id;
-      Sub          : Node_Id;
 
       procedure Check_Inlining (Subp : Entity_Id);
       --  If the original operation has a pragma Inline, propagate the flag
@@ -9051,9 +9060,9 @@ package body Exp_Ch9 is
       --  static because of a discriminant constraint we can specialize the
       --  warning by mentioning discriminants explicitly.
 
-      procedure Expand_Entry_Declaration (Comp : Entity_Id);
-      --  Create the subprograms for the barrier and for the body, and append
-      --  then to Entry_Bodies_Array.
+      procedure Expand_Entry_Declaration (Decl : Node_Id);
+      --  Create the entry barrier and the procedure body for entry declaration
+      --  Decl. All generated subprograms are added to Entry_Bodies_Array.
 
       function Static_Component_Size (Comp : Entity_Id) return Boolean;
       --  When compiling under the Ravenscar profile, private components must
@@ -9173,51 +9182,57 @@ package body Exp_Ch9 is
       -- Expand_Entry_Declaration --
       ------------------------------
 
-      procedure Expand_Entry_Declaration (Comp : Entity_Id) is
-         Bdef : Entity_Id;
-         Edef : Entity_Id;
+      procedure Expand_Entry_Declaration (Decl : Node_Id) is
+         Ent_Id : constant Entity_Id := Defining_Entity (Decl);
+         Bar_Id : Entity_Id;
+         Bod_Id : Entity_Id;
+         Subp   : Node_Id;
 
       begin
          E_Count := E_Count + 1;
-         Comp_Id := Defining_Identifier (Comp);
 
-         Edef :=
+         --  Create the protected body subprogram
+
+         Bod_Id :=
            Make_Defining_Identifier (Loc,
-             Chars => Build_Selected_Name (Prot_Typ, Comp_Id, 'E'));
-         Sub :=
+             Chars => Build_Selected_Name (Prot_Typ, Ent_Id, 'E'));
+         Set_Protected_Body_Subprogram (Ent_Id, Bod_Id);
+
+         Subp :=
            Make_Subprogram_Declaration (Loc,
              Specification =>
-               Build_Protected_Entry_Specification (Loc, Edef, Comp_Id));
+               Build_Protected_Entry_Specification (Loc, Bod_Id, Ent_Id));
 
-         Insert_After (Current_Node, Sub);
-         Analyze (Sub);
+         Insert_After (Current_Node, Subp);
+         Current_Node := Subp;
+
+         Analyze (Subp);
 
          --  Build a wrapper procedure to handle contract cases, preconditions,
          --  and postconditions.
 
-         Build_Contract_Wrapper (Comp_Id, N);
+         Build_Contract_Wrapper (Ent_Id, N);
 
-         Set_Protected_Body_Subprogram
-           (Defining_Identifier (Comp),
-            Defining_Unit_Name (Specification (Sub)));
+         --  Create the barrier function
 
-         Current_Node := Sub;
-
-         Bdef :=
+         Bar_Id :=
            Make_Defining_Identifier (Loc,
-             Chars => Build_Selected_Name (Prot_Typ, Comp_Id, 'B'));
-         Sub :=
+             Chars => Build_Selected_Name (Prot_Typ, Ent_Id, 'B'));
+         Set_Barrier_Function (Ent_Id, Bar_Id);
+
+         Subp :=
            Make_Subprogram_Declaration (Loc,
              Specification =>
-               Build_Barrier_Function_Specification (Loc, Bdef));
-         Set_Is_Entry_Barrier_Function (Sub);
+               Build_Barrier_Function_Specification (Loc, Bar_Id));
+         Set_Is_Entry_Barrier_Function (Subp);
 
-         Insert_After (Current_Node, Sub);
-         Analyze (Sub);
-         Set_Protected_Body_Subprogram (Bdef, Bdef);
-         Set_Barrier_Function (Comp_Id, Bdef);
-         Set_Scope (Bdef, Scope (Comp_Id));
-         Current_Node := Sub;
+         Insert_After (Current_Node, Subp);
+         Current_Node := Subp;
+
+         Analyze (Subp);
+
+         Set_Protected_Body_Subprogram (Bar_Id, Bar_Id);
+         Set_Scope (Bar_Id, Scope (Ent_Id));
 
          --  Collect pointers to the protected subprogram and the barrier
          --  of the current entry, for insertion into Entry_Bodies_Array.
@@ -9226,10 +9241,10 @@ package body Exp_Ch9 is
            Make_Aggregate (Loc,
              Expressions => New_List (
                Make_Attribute_Reference (Loc,
-                 Prefix         => New_Occurrence_Of (Bdef, Loc),
+                 Prefix         => New_Occurrence_Of (Bar_Id, Loc),
                  Attribute_Name => Name_Unrestricted_Access),
                Make_Attribute_Reference (Loc,
-                 Prefix         => New_Occurrence_Of (Edef, Loc),
+                 Prefix         => New_Occurrence_Of (Bod_Id, Loc),
                  Attribute_Name => Name_Unrestricted_Access))));
       end Expand_Entry_Declaration;
 
@@ -9259,6 +9274,10 @@ package body Exp_Ch9 is
       begin
          Append_Freeze_Action (Prot_Proc, RTS_Call);
       end Register_Handler;
+
+      --  Local variables
+
+      Sub : Node_Id;
 
    --  Start of processing for Expand_N_Protected_Type_Declaration
 
