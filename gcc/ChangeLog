@@ -67,8 +67,8 @@
 	(128-bit GPR splitters): Don't split a 128-bit move that is a
 	direct move between GPR and vector registers using ISA 3.0 direct
 	move instructions.
-	(<u>mul<mode><dmode>3): Add support for the ISA 3.0 integer
-	multiply-add instruction.
+	(maddld4): Add support for the ISA 3.0 integer multiply-add
+	instruction.
 
 	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Add ISA 3.0
 	debugging.
