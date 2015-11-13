@@ -1,3 +1,10 @@
+2015-11-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_analyze_loop_2): Add fatal parameter.
+	Signal fatal failure if early checks fail.
+	(vect_analyze_loop): If vect_analyze_loop_2 fails fatally
+	do not bother testing further vector sizes.
+
 2015-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (misaligned_operand): Return true if

@@ -1709,12 +1709,15 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
    for it.  The different analyses will record information in the
    loop_vec_info struct.  */
 static bool
-vect_analyze_loop_2 (loop_vec_info loop_vinfo)
+vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
 {
   bool ok;
   int max_vf = MAX_VECTORIZATION_FACTOR;
   int min_vf = 2;
   unsigned int n_stmts = 0;
+
+  /* The first group of checks is independent of the vector size.  */
+  fatal = true;
 
   /* Find all data references in the loop (which correspond to vdefs/vuses)
      and analyze their evolution in the loop.  */
@@ -1795,7 +1798,6 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
 
   /* Classify all cross-iteration scalar data-flow cycles.
      Cross-iteration cycles caused by virtual phis are analyzed separately.  */
-
   vect_analyze_scalar_cycles (loop_vinfo);
 
   vect_pattern_recog (loop_vinfo);
@@ -1824,6 +1826,9 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
 			 "unexpected pattern.\n");
       return false;
     }
+
+  /* While the rest of the analysis below depends on it in some way.  */
+  fatal = false;
 
   /* Analyze data dependences between the data-refs in the loop
      and adjust the maximum vectorization factor according to
@@ -2118,7 +2123,8 @@ vect_analyze_loop (struct loop *loop)
 	  return NULL;
 	}
 
-      if (vect_analyze_loop_2 (loop_vinfo))
+      bool fatal = false;
+      if (vect_analyze_loop_2 (loop_vinfo, fatal))
 	{
 	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
 
@@ -2128,7 +2134,8 @@ vect_analyze_loop (struct loop *loop)
       destroy_loop_vec_info (loop_vinfo, true);
 
       vector_sizes &= ~current_vector_size;
-      if (vector_sizes == 0
+      if (fatal
+	  || vector_sizes == 0
 	  || current_vector_size == 0)
 	return NULL;
 
