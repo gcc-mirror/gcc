@@ -1,3 +1,102 @@
+2015-11-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/constraints.md (we constraint): New constraint for
+	64-bit power9 vector support.
+	(wL constraint): New constraint for the element in a vector that
+	can be addressed by the MFVSRLD instruction.
+
+	* config/rs6000/rs6000-protos.h (convert_float128_to_int): Add
+	declaration.
+	(convert_int_to_float128): Likewise.
+	(rs6000_generate_compare): Add support for ISA 3.0 (power9)
+	hardware support for IEEE 128-bit floating point.
+	(rs6000_expand_float128_convert): Likewise.
+	(convert_float128_to_int): Likewise.
+	(convert_int_to_float128): Likewise.
+
+	* config/rs6000/rs6000.md (UNSPEC_ROUND_TO_ODD): New unspecs for
+	ISA 3.0 hardware IEEE 128-bit floating point.
+	(UNSPEC_IEEE128_MOVE): Likewise.
+	(UNSPEC_IEEE128_CONVERT): Likewise.
+	(FMA_F): Add support for IEEE 128-bit floating point hardware
+	support.
+	(Ff): Add support for DImode.
+	(Fv): Likewise.
+	(any_fix code iterator): New and updated iterators for IEEE
+	128-bit floating point hardware support.
+	(any_float code iterator): Likewise.
+	(s code attribute): Likewise.
+	(su code attribute): Likewise.
+	(az code attribute): Likewise.
+	(uns code attribute): Likewise.
+	(neg<mode>2, FLOAT128 iterator): Add support for IEEE 128-bit
+	floating point hardware support.
+	(abs<mode>2, FLOAT128 iterator): Likewise.
+	(add<mode>3, IEEE128 iterator): New insns for IEEE 128-bit
+	floating point hardware.
+	(sub<mode>3, IEEE128 iterator): Likewise.
+	(mul<mode>3, IEEE128 iterator): Likewise.
+	(div<mode>3, IEEE128 iterator): Likewise.
+	(copysign<mode>3, IEEE128 iterator): Likewise.
+	(sqrt<mode>2, IEEE128 iterator): Likewise.
+	(neg<mode>2, IEEE128 iterator): Likewise.
+	(abs<mode>2, IEEE128 iterator): Likewise.
+	(nabs<mode>2, IEEE128 iterator): Likewise.
+	(fma<mode>4_hw, IEEE128 iterator): Likewise.
+	(fms<mode>4_hw, IEEE128 iterator): Likewise.
+	(nfma<mode>4_hw, IEEE128 iterator): Likewise.
+	(nfms<mode>4_hw, IEEE128 iterator): Likewise.
+	(extend<SFDF:mode><IEEE128:mode>2_hw): Likewise.
+	(trunc<mode>df2_hw, IEEE128 iterator): Likewise.
+	(trunc<mode>sf2_hw, IEEE128 iterator): Likewise.
+	(fix_fixuns code attribute): Likewise.
+	(float_floatuns code attribute): Likewise.
+	(fix<uns>_<mode>si2_hw): Likewise.
+	(fix<uns>_<mode>di2_hw): Likewise.
+	(float<uns>_<mode>si2_hw): Likewise.
+	(float<uns>_<mode>di2_hw): Likewise.
+	(xscvqp<su>wz_<mode>): Likewise.
+	(xscvqp<su>dz_<mode>): Likewise.
+	(xscv<su>dqp_<mode): Likewise.
+	(ieee128_mfvsrd): Likewise.
+	(ieee128_mfvsrwz): Likewise.
+	(ieee128_mtvsrw): Likewise.
+	(ieee128_mtvsrd): Likewise.
+	(trunc<mode>df2_odd): Likewise.
+	(cmp<mode>_h): Likewise.
+	(128-bit GPR splitters): Don't split a 128-bit move that is a
+	direct move between GPR and vector registers using ISA 3.0 direct
+	move instructions.
+	(<u>mul<mode><dmode>3): Add support for the ISA 3.0 integer
+	multiply-add instruction.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Add ISA 3.0
+	debugging.
+	(rs6000_init_hard_regno_mode_ok): If ISA 3.0 and 64-bit, enable we
+	constraint.  Disable the VSX<->GPR direct move helpers if we have
+	the MFVSRLD and MTVSRDD instructions.
+	(rs6000_secondary_reload_simple_move): Add support for doing
+	vector direct moves directly without additional scratch registers
+	if we have ISA 3.0 instructions.
+	(rs6000_secondary_reload_direct_move): Update comments.
+	(rs6000_output_move_128bit): Add support for ISA 3.0 vector
+	instructions.
+
+	* config/rs6000/vsx.md (vsx_mov<mode>): Add support for ISA 3.0
+	direct move instructions.
+	(vsx_movti_64bit): Likewise.
+	(vsx_extract_<mode>): Likewise.
+
+	* config/rs6000/rs6000.h (VECTOR_ELEMENT_MFVSRLD_64BIT): New
+	macros for ISA 3.0 direct move instructions.
+	(TARGET_DIRECT_MOVE_128): Likewise.
+	(TARGET_MADDLD): Add support for the ISA 3.0 integer multiply-add
+	instruction.
+
+	* doc/md.texi (RS/6000 constraints): Document we, wF, wG, wL
+	constraints.  Update wa documentation to say not to use %x<n> on
+	instructions that only take Altivec registers.
+
 2015-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add gcc-rich-location.o.

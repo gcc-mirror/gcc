@@ -760,31 +760,31 @@
   "")
 
 (define_insn "*vsx_mov<mode>"
-  [(set (match_operand:VSX_M 0 "nonimmediate_operand" "=Z,<VSr>,<VSr>,?Z,?<VSa>,?<VSa>,wQ,?&r,??Y,??r,??r,<VSr>,?<VSa>,*r,v,wZ, v")
-	(match_operand:VSX_M 1 "input_operand" "<VSr>,Z,<VSr>,<VSa>,Z,<VSa>,r,wQ,r,Y,r,j,j,j,W,v,wZ"))]
+  [(set (match_operand:VSX_M 0 "nonimmediate_operand" "=Z,<VSr>,<VSr>,?Z,?<VSa>,?<VSa>,r,we,wQ,?&r,??Y,??r,??r,<VSr>,?<VSa>,*r,v,wZ,v")
+	(match_operand:VSX_M 1 "input_operand" "<VSr>,Z,<VSr>,<VSa>,Z,<VSa>,we,b,r,wQ,r,Y,r,j,j,j,W,v,wZ"))]
   "VECTOR_MEM_VSX_P (<MODE>mode)
    && (register_operand (operands[0], <MODE>mode) 
        || register_operand (operands[1], <MODE>mode))"
 {
   return rs6000_output_move_128bit (operands);
 }
-  [(set_attr "type" "vecstore,vecload,vecsimple,vecstore,vecload,vecsimple,load,store,store,load, *,vecsimple,vecsimple,*, *,vecstore,vecload")
-   (set_attr "length" "4,4,4,4,4,4,12,12,12,12,16,4,4,*,16,4,4")])
+  [(set_attr "type" "vecstore,vecload,vecsimple,vecstore,vecload,vecsimple,mffgpr,mftgpr,load,store,store,load, *,vecsimple,vecsimple,*, *,vecstore,vecload")
+   (set_attr "length" "4,4,4,4,4,4,8,4,12,12,12,12,16,4,4,*,16,4,4")])
 
 ;; Unlike other VSX moves, allow the GPRs even for reloading, since a normal
 ;; use of TImode is for unions.  However for plain data movement, slightly
 ;; favor the vector loads
 (define_insn "*vsx_movti_64bit"
-  [(set (match_operand:TI 0 "nonimmediate_operand" "=Z,wa,wa,wa,v,v,wZ,wQ,&r,Y,r,r,?r")
-	(match_operand:TI 1 "input_operand" "wa,Z,wa,O,W,wZ,v,r,wQ,r,Y,r,n"))]
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=Z,wa,wa,wa,r,we,v,v,wZ,wQ,&r,Y,r,r,?r")
+	(match_operand:TI 1 "input_operand" "wa,Z,wa,O,we,b,W,wZ,v,r,wQ,r,Y,r,n"))]
   "TARGET_POWERPC64 && VECTOR_MEM_VSX_P (TImode)
    && (register_operand (operands[0], TImode) 
        || register_operand (operands[1], TImode))"
 {
   return rs6000_output_move_128bit (operands);
 }
-  [(set_attr "type" "vecstore,vecload,vecsimple,vecsimple,vecsimple,vecstore,vecload,store,load,store,load,*,*")
-   (set_attr "length" "4,4,4,4,16,4,4,8,8,8,8,8,8")])
+  [(set_attr "type" "vecstore,vecload,vecsimple,vecsimple,mffgpr,mftgpr,vecsimple,vecstore,vecload,store,load,store,load,*,*")
+   (set_attr "length" "4,4,4,4,8,4,16,4,4,8,8,8,8,8,8")])
 
 (define_insn "*vsx_movti_32bit"
   [(set (match_operand:TI 0 "nonimmediate_operand" "=Z,wa,wa,wa,v, v,wZ,Q,Y,????r,????r,????r,r")
@@ -1909,11 +1909,11 @@
 ;; Optimize cases were we can do a simple or direct move.
 ;; Or see if we can avoid doing the move at all
 (define_insn "*vsx_extract_<mode>_internal1"
-  [(set (match_operand:<VS_scalar> 0 "register_operand" "=d,<VS_64reg>,r")
+  [(set (match_operand:<VS_scalar> 0 "register_operand" "=d,<VS_64reg>,r,r")
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "register_operand" "d,<VS_64reg>,<VS_64dm>")
+	 (match_operand:VSX_D 1 "register_operand" "d,<VS_64reg>,<VS_64dm>,<VS_64dm>")
 	 (parallel
-	  [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD")])))]
+	  [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD,wL")])))]
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_POWERPC64 && TARGET_DIRECT_MOVE"
 {
   int op0_regno = REGNO (operands[0]);
@@ -1923,14 +1923,16 @@
     return "nop";
 
   if (INT_REGNO_P (op0_regno))
-    return "mfvsrd %0,%x1";
+    return ((INTVAL (operands[2]) == VECTOR_ELEMENT_MFVSRLD_64BIT)
+	    ? "mfvsrdl %0,%x1"
+	    : "mfvsrd %0,%x1");
 
   if (FP_REGNO_P (op0_regno) && FP_REGNO_P (op1_regno))
     return "fmr %0,%1";
 
   return "xxlor %x0,%x1,%x1";
 }
-  [(set_attr "type" "fp,vecsimple,mftgpr")
+  [(set_attr "type" "fp,vecsimple,mftgpr,mftgpr")
    (set_attr "length" "4")])
 
 (define_insn "*vsx_extract_<mode>_internal2"
