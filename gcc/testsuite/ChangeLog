@@ -1,3 +1,11 @@
+2015-11-13  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR tree-optimization/67682
+	* gcc.dg/vect/bb-slp-7.c (main1): Make subgroups non-isomorphic.
+	* gcc.dg/vect/bb-slp-subgroups-1.c: New.
+	* gcc.dg/vect/bb-slp-subgroups-2.c: New.
+	* gcc.dg/vect/bb-slp-subgroups-3.c: New.
+
 2015-11-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/umaddl_combine_1.c: New test.
