@@ -1,3 +1,14 @@
+2015-11-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/68264
+	* tree-call-cdce.c (gen_one_condition): Update commentary.
+	(gen_conditions_for_pow_int_base): Invert the sense of the tests
+	passed to gen_one_condition.
+	(gen_conditions_for_domain): Likewise.  Use unordered comparisons.
+	(shrink_wrap_one_built_in_call): Invert the sense of the tests,
+	using EDGE_FALSE_VALUE for edges to the call block and
+	EDGE_TRUE_VALUE for the others.
+
 2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gimplify.c (oacc_default_clause): Use inform for enclosing scope.

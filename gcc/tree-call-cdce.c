@@ -51,10 +51,11 @@ along with GCC; see the file COPYING3.  If not see
              built_in_call (args)
 
     An actual simple example is :
-         log (x);   // Mostly dead call
+	 log (x);   // Mostly dead call
      ==>
-         if (x <= 0)
-             log (x);
+	 if (__builtin_islessequal (x, 0))
+	     log (x);
+
      With this change, call to log (x) is effectively eliminated, as
      in majority of the cases, log won't be called with x out of
      range.  The branch is totally predictable, so the branch cost
@@ -306,15 +307,13 @@ is_call_dce_candidate (gcall *call)
 }
 
 
-/* A helper function to generate gimple statements for
-   one bound comparison.  ARG is the call argument to
-   be compared with the bound, LBUB is the bound value
-   in integer, TCODE is the tree_code of the comparison,
-   TEMP_NAME1/TEMP_NAME2 are names of the temporaries,
-   CONDS is a vector holding the produced GIMPLE statements,
-   and NCONDS points to the variable holding the number
-   of logical comparisons.  CONDS is either empty or
-   a list ended with a null tree.  */
+/* A helper function to generate gimple statements for one bound
+   comparison, so that the built-in function is called whenever
+   TCODE <ARG, LBUB> is *false*.  TEMP_NAME1/TEMP_NAME2 are names
+   of the temporaries, CONDS is a vector holding the produced GIMPLE
+   statements, and NCONDS points to the variable holding the number of
+   logical comparisons.  CONDS is either empty or a list ended with a
+   null tree.  */
 
 static void
 gen_one_condition (tree arg, int lbub,
@@ -371,7 +370,7 @@ gen_conditions_for_domain (tree arg, inp_domain domain,
   if (domain.has_lb)
     gen_one_condition (arg, domain.lb,
                        (domain.is_lb_inclusive
-                        ? LT_EXPR : LE_EXPR),
+                        ? UNGE_EXPR : UNGT_EXPR),
                        "DCE_COND_LB", "DCE_COND_LB_TEST",
                        conds, nconds);
 
@@ -383,7 +382,7 @@ gen_conditions_for_domain (tree arg, inp_domain domain,
 
       gen_one_condition (arg, domain.ub,
                          (domain.is_ub_inclusive
-                          ? GT_EXPR : GE_EXPR),
+                          ? UNLE_EXPR : UNLT_EXPR),
                          "DCE_COND_UB", "DCE_COND_UB_TEST",
                          conds, nconds);
     }
@@ -395,7 +394,7 @@ gen_conditions_for_domain (tree arg, inp_domain domain,
    See candidate selection in check_pow.  Since the
    candidates' base values have a limited range,
    the guarded code generated for y are simple:
-   if (y > max_y)
+   if (__builtin_isgreater (y, max_y))
      pow (const, y);
    Note max_y can be computed separately for each
    const base, but in this implementation, we
@@ -480,11 +479,11 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
   /* For pow ((double)x, y), generate the following conditions:
      cond 1:
      temp1 = x;
-     if (temp1 <= 0)
+     if (__builtin_islessequal (temp1, 0))
 
      cond 2:
      temp2 = y;
-     if (temp2 > max_exp_real_cst)  */
+     if (__builtin_isgreater (temp2, max_exp_real_cst))  */
 
   /* Generate condition in reverse order -- first
      the condition for the exp argument.  */
@@ -508,7 +507,7 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
   stmt1 = gimple_build_assign (temp, base_val0);
   tempn = make_ssa_name (temp, stmt1);
   gimple_assign_set_lhs (stmt1, tempn);
-  stmt2 = gimple_build_cond (LE_EXPR, tempn, cst0, NULL_TREE, NULL_TREE);
+  stmt2 = gimple_build_cond (GT_EXPR, tempn, cst0, NULL_TREE, NULL_TREE);
 
   conds.quick_push (stmt1);
   conds.quick_push (stmt2);
@@ -797,11 +796,11 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
 
   bi_call_in_edge0 = split_block (bi_call_bb, cond_expr);
   bi_call_in_edge0->flags &= ~EDGE_FALLTHRU;
-  bi_call_in_edge0->flags |= EDGE_TRUE_VALUE;
+  bi_call_in_edge0->flags |= EDGE_FALSE_VALUE;
   guard_bb = bi_call_bb;
   bi_call_bb = bi_call_in_edge0->dest;
   join_tgt_in_edge_fall_thru = make_edge (guard_bb, join_tgt_bb,
-                                          EDGE_FALSE_VALUE);
+                                          EDGE_TRUE_VALUE);
 
   bi_call_in_edge0->probability = REG_BR_PROB_BASE * ERR_PROB;
   bi_call_in_edge0->count =
@@ -834,9 +833,9 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
       gcc_assert (cond_expr && gimple_code (cond_expr) == GIMPLE_COND);
       guard_bb_in_edge = split_block (guard_bb, cond_expr);
       guard_bb_in_edge->flags &= ~EDGE_FALLTHRU;
-      guard_bb_in_edge->flags |= EDGE_FALSE_VALUE;
+      guard_bb_in_edge->flags |= EDGE_TRUE_VALUE;
 
-      bi_call_in_edge = make_edge (guard_bb, bi_call_bb, EDGE_TRUE_VALUE);
+      bi_call_in_edge = make_edge (guard_bb, bi_call_bb, EDGE_FALSE_VALUE);
 
       bi_call_in_edge->probability = REG_BR_PROB_BASE * ERR_PROB;
       bi_call_in_edge->count =
