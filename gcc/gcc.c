@@ -42,6 +42,7 @@ compilation is specified by a string called a "spec".  */
 #include "opts.h"
 #include "params.h"
 #include "filenames.h"
+#include "spellcheck.h"
 
 
 
@@ -7601,6 +7602,45 @@ driver::maybe_putenv_OFFLOAD_TARGETS () const
   offload_targets = NULL;
 }
 
+/* Helper function for driver::handle_unrecognized_options.
+
+   Given an unrecognized option BAD_OPT (without the leading dash),
+   locate the closest reasonable matching option (again, without the
+   leading dash), or NULL.  */
+
+static const char *
+suggest_option (const char *bad_opt)
+{
+  const cl_option *best_option = NULL;
+  edit_distance_t best_distance = MAX_EDIT_DISTANCE;
+
+  for (unsigned int i = 0; i < cl_options_count; i++)
+    {
+      edit_distance_t dist = levenshtein_distance (bad_opt,
+						   cl_options[i].opt_text + 1);
+      if (dist < best_distance)
+	{
+	  best_distance = dist;
+	  best_option = &cl_options[i];
+	}
+    }
+
+  if (!best_option)
+    return NULL;
+
+  /* If more than half of the letters were misspelled, the suggestion is
+     likely to be meaningless.  */
+  if (best_option)
+    {
+      unsigned int cutoff = MAX (strlen (bad_opt),
+				 strlen (best_option->opt_text + 1)) / 2;
+      if (best_distance > cutoff)
+	return NULL;
+    }
+
+  return best_option->opt_text + 1;
+}
+
 /* Reject switches that no pass was interested in.  */
 
 void
@@ -7608,7 +7648,16 @@ driver::handle_unrecognized_options () const
 {
   for (size_t i = 0; (int) i < n_switches; i++)
     if (! switches[i].validated)
-      error ("unrecognized command line option %<-%s%>", switches[i].part1);
+      {
+	const char *hint = suggest_option (switches[i].part1);
+	if (hint)
+	  error ("unrecognized command line option %<-%s%>;"
+		 " did you mean %<-%s%>?",
+		 switches[i].part1, hint);
+	else
+	  error ("unrecognized command line option %<-%s%>",
+		 switches[i].part1);
+      }
 }
 
 /* Handle the various -print-* options, returning 0 if the driver

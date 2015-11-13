@@ -1,4 +1,4 @@
-/* Find near-matches for strings and identifiers.
+/* Find near-matches for strings.
    Copyright (C) 2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 
    This implementation uses the Wagner-Fischer algorithm.  */
 
-static edit_distance_t
+edit_distance_t
 levenshtein_distance (const char *s, int len_s,
 		      const char *t, int len_t)
 {
@@ -112,25 +112,10 @@ levenshtein_distance (const char *s, int len_s,
   return result;
 }
 
-/* Calculate Levenshtein distance between two nil-terminated strings.
-   This exists purely for the unit tests.  */
+/* Calculate Levenshtein distance between two nil-terminated strings.  */
 
 edit_distance_t
 levenshtein_distance (const char *s, const char *t)
 {
   return levenshtein_distance (s, strlen (s), t, strlen (t));
-}
-
-/* Calculate Levenshtein distance between two identifiers.  */
-
-edit_distance_t
-levenshtein_distance (tree ident_s, tree ident_t)
-{
-  gcc_assert (TREE_CODE (ident_s) == IDENTIFIER_NODE);
-  gcc_assert (TREE_CODE (ident_t) == IDENTIFIER_NODE);
-
-  return levenshtein_distance (IDENTIFIER_POINTER (ident_s),
-			       IDENTIFIER_LENGTH (ident_s),
-			       IDENTIFIER_POINTER (ident_t),
-			       IDENTIFIER_LENGTH (ident_t));
 }
