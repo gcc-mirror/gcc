@@ -283,18 +283,7 @@ The string argument, if given, is the message that will be associated
 with the exception occurrence if the exception is raised.  If no second
 argument is given, the default message is `file`:`nnn`,
 where `file` is the name of the source file containing the assert,
-and `nnn` is the line number of the assert.  A pragma is not a
-statement, so if a statement sequence contains nothing but a pragma
-assert, then a null statement is required in addition, as in:
-
-.. code-block:: ada
-
-  ...
-  if J > 3 then
-     pragma Assert (K > 3, "Bad value for K");
-     null;
-  end if;
-
+and `nnn` is the line number of the assert.
 
 Note that, as with the `if` statement to which it is equivalent, the
 type of the expression is either `Standard.Boolean`, or any type derived
@@ -4600,14 +4589,14 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Profile (Ravenscar | Restricted | Rational);
+  pragma Profile (Ravenscar | Restricted | Rational | GNAT_Extended_Ravenscar);
 
 
 This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma. This is a
 configuration pragma that establishes a set of configuration pragmas
 that depend on the argument. `Ravenscar` is standard in Ada 2005.
-The other two possibilities (`Restricted` or `Rational`)
+The other possibilities (`Restricted`, `Rational`, `GNAT_Extended_Ravenscar`)
 are implementation-defined. The set of configuration pragmas
 is defined in the following sections.
 
@@ -4719,6 +4708,20 @@ is defined in the following sections.
   ``Profile (Restricted)``,
   automatically causes the use of a simplified,
   more efficient version of the tasking run-time library.
+
+* Pragma Profile (GNAT_Extended_Ravenscar)
+
+  This profile corresponds to a GNAT specific extension of the
+  Ravenscar profile. The profile may change in the future although
+  only in a compatible way: some restrictions may be removed or
+  relaxed. It is defined as a variation of the Ravenscar profile.
+
+  The ``No_Implicit_Heap_Allocations`` restriction has been replaced
+  by ``No_Implicit_Task_Allocations`` and
+  ``No_Implicit_Protected_Object_Allocations``.
+
+  The ``Simple_Barriers`` restriction has been replaced by
+  ``Pure_Barriers``.
 
 * Pragma Profile (Restricted)
 
@@ -6047,8 +6050,8 @@ Syntax:
 This pragma specifies that the specified entity, which must be
 a variable declared in a library level package, is to be marked as
 "Thread Local Storage" (`TLS`). On systems supporting this (which
-include Solaris, GNU/Linux and VxWorks 6), this causes each thread
-(and hence each Ada task) to see a distinct copy of the variable.
+include Windows, Solaris, GNU/Linux and VxWorks 6), this causes each
+thread (and hence each Ada task) to see a distinct copy of the variable.
 
 The variable may not have default initialization, and if there is
 an explicit initialization, it must be either `null` for an

@@ -196,7 +196,7 @@ The GNAT Library Browser `gnatls`
 =================================
 
 .. index:: Library browser
-.. index: ! gnatls
+.. index:: ! gnatls
 
 `gnatls` is a tool that outputs information about compiled
 units. It gives the relationship between objects, unit names and source
@@ -1373,7 +1373,7 @@ Alternatively, you may run the script using the following command line:
   The Ada-to-XML converter *gnat2xml*
   ===================================
 
-  .. index: ! gnat2xml
+  .. index:: ! gnat2xml
   .. index:: XML generation
 
   The *gnat2xml* tool is an ASIS-based utility that converts
@@ -4178,10 +4178,10 @@ Alternatively, you may run the script using the following command line:
   Generated skeletons and harnesses are based on the AUnit testing framework.
   AUnit is an Ada adaptation of the xxxUnit testing frameworks, similar to JUnit
   for Java or CppUnit for C++. While it is advised that gnattest users read
-  the AUnit manual, deep knowledge of AUnit is not necessary for using gnattest.
+  the AUnit manual, deep knowledge of AUnit is not necessary for using *gnattest*.
   For correct operation of *gnattest*, AUnit should be installed and
-  aunit.gpr must be on the project path. This happens automatically when Aunit
-  is installed at its default location.
+  aunit.gpr must be on the project path. Except for some special circumstances
+  (e.g. a custom run-time is used), this should normally be the case out of the box.
 
 
   .. _Running_gnattest:
@@ -4200,7 +4200,7 @@ Alternatively, you may run the script using the following command line:
 
     ::
 
-        $ gnattest `-Pprojname` [`--harness-dir=dirname`] [`switches`] [`filename`] [-cargs `gcc_switches`]
+        $ gnattest `-Pprojname` [`switches`] [`filename`] [-cargs `gcc_switches`]
 
   where
 
@@ -4214,37 +4214,35 @@ Alternatively, you may run the script using the following command line:
       for which a test package will be created. The file name may be given with a
       path.
 
-  * :samp:`{gcc_switches}`
-      is a list of switches for
-      *gcc*. These switches will be passed on to all compiler invocations
-      made by *gnattest* to generate a set of ASIS trees. Here you can provide
-      ``-I`` switches to form the source search path,
-      use the ``-gnatec`` switch to set the configuration file,
-      use the ``-gnat05`` switch if sources should be compiled in
-      Ada 2005 mode, etc.
-
-
   * :samp:`{switches}`
       is an optional sequence of switches as described below.
+
+  * :samp:`{gcc_switches}`
+      is a list of additional switches for
+      *gcc* that will be passed to all compiler invocations
+      made by *gnattest* to generate a set of ASIS trees.
 
 
   *gnattest* results can be found in two different places.
 
   * *automatic harness*:
-      This is the harness code, which is located by default in "gnattest/harness" directory
-      that is created in the object directory of corresponding project file. All of
-      this code is generated completely automatically and can be destroyed and
-      regenerated at will. It is not recommended to modify this code manually, since
-      it could easily be overridden by mistake. The entry point in the harness code is
+      This is the harness code, which is located by default in
+      "gnattest/harness" directory created in the object directory of
+      the main project file. All of this code is generated completely
+      automatically and can be destroyed and regenerated at will, with the
+      exception of the file *gnattest_common.gpr*, which is created if absent,
+      but never overwritten. It is not recommended to modify other files
+      manually, since these modifications will be lost if *gnattest* is re-run.
+      The entry point in the harness code is
       the project file named *test_driver.gpr*. Tests can be compiled and run
       using a command such as:
 
       ::
 
-         $ gnatmake -P<harness-dir>/test_driver test_runner
+         $ gprbuild -P<harness-dir>/test_driver
 
-      Note that you might need to specify the necessary values of scenario variables
-      when you are not using the AUnit defaults.
+      Note that if you need to adjust any options used to compile the harness,
+      you can do so by editing the file *gnattest_common.gpr*.
 
   * *actual unit test skeletons*:
       A test skeleton for each visible subprogram is created in a separate file, if it
@@ -4297,9 +4295,8 @@ Alternatively, you may run the script using the following command line:
     .. index:: -v (gnattest)
 
   :samp:`-v`
-    Verbose mode: generates version information if specified by itself on the
-    command line.  If specified via GNATtest_Switches, produces output
-    about the execution of the tool.
+    Verbose mode: produces additional output about the execution of the tool.
+    When specified alone on the command line, prints tool version and exits.
 
 
     .. index:: -r (gnattest)
@@ -4318,7 +4315,9 @@ Alternatively, you may run the script using the following command line:
 
   :samp:`--RTS={rts-path}`
     Specifies the default location of the runtime library. Same meaning as the
-    equivalent *gnatmake* flag (:ref:`Switches_for_gnatmake`).
+    equivalent *gnatmake* flag (:ref:`Switches_for_gnatmake`). For restricted
+    profiles, *gnattest* takes into account the run-time limitations when
+    generating the harness.
 
 
     .. index:: --additional-tests (gnattest)
@@ -4406,7 +4405,7 @@ Alternatively, you may run the script using the following command line:
 
   :samp:`--validate-type-extensions`
     Enables substitution check: run all tests from all parents in order
-    to check substitutability in accordance with LSP.
+    to check substitutability in accordance with the Liskov substitution principle (LSP).
 
 
     .. index:: --skeleton-default (gnattest)
@@ -4504,12 +4503,12 @@ Alternatively, you may run the script using the following command line:
 
   Most of the command-line options can also be passed to the tool by adding
   special attributes to the project file. Those attributes should be put in
-  package gnattest. Here is the list of attributes:
+  package **Gnattest**. Here is the list of attributes:
 
 
   * ``Tests_Root``
        is used to select the same output mode as with the ``--tests-root`` option.
-       This attribute cannot be used together with Subdir or Tests_Dir.
+       This attribute cannot be used together with ``Subdir`` or ``Tests_Dir``.
 
   * ``Subdir``
        is used to select the same output mode as with the ``--subdir`` option.
@@ -4534,7 +4533,7 @@ Alternatively, you may run the script using the following command line:
 
   Each of those attributes can be overridden from the command line if needed.
   Other *gnattest* switches can also be passed via the project
-  file as an attribute list called GNATtest_Switches.
+  file as an attribute list called *Gnattest_Switches*.
 
 
   .. _Simple_gnattest_Example:
@@ -4549,7 +4548,7 @@ Alternatively, you may run the script using the following command line:
 
         <install_prefix>/share/examples/gnattest/simple
 
-  This project contains a simple package containing one subprogram. By running gnattest:
+  This project contains a simple package containing one subprogram. By running *gnattest*:
 
     ::
 
@@ -4563,7 +4562,7 @@ Alternatively, you may run the script using the following command line:
        $ gnatmake -Ptest_driver
        $ test_runner
 
-  One failed test with diagnosis ``test not implemented`` is reported.
+  One failed test with the diagnosis "test not implemented" is reported.
   Since no special output option was specified, the test package ``Simple.Tests``
   is located in:
 
@@ -4579,13 +4578,13 @@ Alternatively, you may run the script using the following command line:
   bodies and are surrounded by special comment sections. Those comment sections
   should not be removed or modified in order for gnattest to be able to regenerate
   test packages and keep already written tests in place.
-  The test routine Test_Inc_5eaee3 located at simple-test_data-tests.adb contains
-  a single statement: a call to procedure Assert. It has two arguments:
+  The test routine `Test_Inc_5eaee3` located at ``simple-test_data-tests.adb`` contains
+  a single statement: a call to procedure `Assert`. It has two arguments:
   the Boolean expression we want to check and the diagnosis message to display if
   the condition is false.
 
   That is where actual testing code should be written after a proper setup.
-  An actual check can be performed by replacing the Assert call with:
+  An actual check can be performed by replacing the `Assert` call with:
 
     ::
 
@@ -4601,13 +4600,13 @@ Alternatively, you may run the script using the following command line:
   ---------------------------------------------------
 
   Besides test routines themselves, each test package has a parent package
-  Test_Data that has two procedures: Set_Up and Tear_Down. This package is never
-  overwritten by the tool. Set_Up is called before each test routine of the
-  package and Tear_Down is called after each test routine. Those two procedures
+  `Test_Data` that has two procedures: `Set_Up` and `Tear_Down`. This package is never
+  overwritten by the tool. `Set_Up` is called before each test routine of the
+  package, and `Tear_Down` is called after each test routine. Those two procedures
   can be used to perform necessary initialization and finalization,
-  memory allocation, etc. Test type declared in Test_Data package is parent type
+  memory allocation, etc. Test type declared in `Test_Data` package is parent type
   for the test type of test package and can have user-defined components whose
-  values can be set by Set_Up routine and used in test routines afterwards.
+  values can be set by `Set_Up` routine and used in test routines afterwards.
 
 
   .. _Regenerating_Tests:
@@ -4615,25 +4614,25 @@ Alternatively, you may run the script using the following command line:
   Regenerating Tests
   ------------------
 
-  Bodies of test routines and test_data packages are never overridden after they
+  Bodies of test routines and `Test_Data` packages are never overridden after they
   have been created once. As long as the name of the subprogram, full expanded Ada
-  names, and the order of its parameters is the same, and comment sections are
-  intact the old test routine will fit in its place and no test skeleton will be
+  names and order of its parameters are the same, and comment sections are
+  intact, the old test routine will fit in its place and no test skeleton will be
   generated for the subprogram.
 
   This can be demonstrated with the previous example. By uncommenting declaration
-  and body of function Dec in simple.ads and simple.adb, running
+  and body of function Dec in ``simple.ads`` and ``simple.adb``, running
   *gnattest* on the project, and then running the test driver:
 
     ::
 
         $ gnattest --harness-dir=driver -Psimple.gpr
         $ cd obj/driver
-        $ gnatmake -Ptest_driver
+        $ gprbuild -Ptest_driver
         $ test_runner
 
   The old test is not replaced with a stub, nor is it lost, but a new test
-  skeleton is created for function Dec.
+  skeleton is created for function `Dec`.
 
   The only way of regenerating tests skeletons is to remove the previously created
   tests together with corresponding comment sections.
@@ -4654,7 +4653,7 @@ Alternatively, you may run the script using the following command line:
   *gnattest*).
 
   The default behavior of the test driver is set with the same switch
-  as passed to gnattest when generating the test driver.
+  as passed to *gnattest* when generating the test driver.
 
   Passing it to the driver generated on the first example:
 
@@ -4673,10 +4672,10 @@ Alternatively, you may run the script using the following command line:
   Creation of test skeletons for primitive operations of tagged types entails
   a number of features. Test routines for all primitives of a given tagged type
   are placed in a separate child package named according to the tagged type. For
-  example, if you have tagged type T in package P, all tests for primitives
-  of T will be in P.T_Test_Data.T_Tests.
+  example, if you have tagged type *T* in package *P*, all tests for primitives
+  of *T* will be in *P.T_Test_Data.T_Tests*.
 
-  Consider running gnattest on the second example (note: actual tests for this
+  Consider running *gnattest* on the second example (note: actual tests for this
   example already exist, so there's no need to worry if the tool reports that
   no new stubs were generated):
 
@@ -4686,28 +4685,28 @@ Alternatively, you may run the script using the following command line:
         $ gnattest --harness-dir=driver -Ptagged_rec.gpr
 
   Taking a closer look at the test type declared in the test package
-  Speed1.Controller_Test_Data is necessary. It is declared in:
+  *Speed1.Controller_Test_Data* is necessary. It is declared in:
 
     ::
 
         <install_prefix>/share/examples/gnattest/tagged_rec/obj/gnattest/tests
 
   Test types are direct or indirect descendants of
-  AUnit.Test_Fixtures.Test_Fixture type. In the case of nonprimitive tested
+  *AUnit.Test_Fixtures.Test_Fixture* type. In the case of non-primitive tested
   subprograms, the user doesn't need to be concerned with them. However,
   when generating test packages for primitive operations, there are some things
   the user needs to know.
 
-  Type Test_Controller has components that allow assignment of various
-  derivations of type Controller. And if you look at the specification of
-  package Speed2.Auto_Controller, you will see that Test_Auto_Controller
-  actually derives from Test_Controller rather than AUnit type Test_Fixture.
+  Type *Test_Controller* has components that allow assignment of various
+  derivations of type *Controller*. And if you look at the specification of
+  package *Speed2.Auto_Controller*, you will see that *Test_Auto_Controller*
+  actually derives from *Test_Controller* rather than AUnit type *Test_Fixture*.
   Thus, test types mirror the hierarchy of tested types.
 
-  The Set_Up procedure of Test_Data package corresponding to a test package
-  of primitive operations of type T assigns to Fixture a reference to an
-  object of that exact type T. Notice, however, that if the tagged type has
-  discriminants, the Set_Up only has a commented template for setting
+  The *Set_Up* procedure of *Test_Data* package corresponding to a test package
+  of primitive operations of type *T* assigns to *Fixture* a reference to an
+  object of that exact type *T*. Note, however, that if the tagged type has
+  discriminants, the *Set_Up* only has a commented template for setting
   up the fixture, since filling the discriminant with actual value is up
   to the user.
 
@@ -4728,7 +4727,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
         $ cd obj/driver
-        $ gnatmake -Ptest_driver
+        $ gprbuild -Ptest_driver
         $ test_runner
 
   There are 6 passed tests while there are only 5 testable subprograms. The test
@@ -4739,13 +4738,13 @@ Alternatively, you may run the script using the following command line:
   .. _Tagged_Type_Substitutability_Testing:
 
   Tagged Type Substitutability Testing
-  -------------------------------------
+  ------------------------------------
 
   *Tagged Type Substitutability Testing* is a way of verifying the global type
   consistency by testing. Global type consistency is a principle stating that if
-  S is a subtype of T (in Ada, S is a derived type of tagged type T),
-  then objects of type T may be replaced with objects of type S (that is,
-  objects of type S may be substituted for objects of type T), without
+  *S* is a subtype of *T* (in Ada, *S* is a derived type of tagged type *T*),
+  then objects of type *T* may be replaced with objects of type *S* (that is,
+  objects of type *S* may be substituted for objects of type *T*), without
   altering any of the desirable properties of the program. When the properties
   of the program are expressed in the form of subprogram preconditions and
   postconditions (let's call them pre and post), the principle is formulated as
@@ -4761,25 +4760,25 @@ Alternatively, you may run the script using the following command line:
   derived types.
 
   In the example used in the previous section, there was clearly a violation of
-  type consistency. The overriding primitive Adjust_Speed in package Speed2
+  type consistency. The overriding primitive *Adjust_Speed* in package *Speed2*
   removes the functionality of the overridden primitive and thus doesn't respect
   the consistency principle.
-  Gnattest has a special option to run overridden parent tests against objects
+  *Gnattest* has a special option to run overridden parent tests against objects
   of the type which have overriding primitives:
 
     ::
 
         $ gnattest --harness-dir=driver --validate-type-extensions -Ptagged_rec.gpr
         $ cd obj/driver
-        $ gnatmake -Ptest_driver
+        $ gprbuild -Ptest_driver
         $ test_runner
 
-  While all the tests pass by themselves, the parent test for Adjust_Speed fails
+  While all the tests pass by themselves, the parent test for *Adjust_Speed* fails
   against objects of the derived type.
 
   Non-overridden tests are already inherited for derived test types, so the
-  ``--validate-type-extensions`` enables the application of overriden tests to objects
-  of derived types.
+  ``--validate-type-extensions`` enables the application of overridden tests
+  to objects of derived types.
 
 
   .. _Testing_with_Contracts:
@@ -4787,13 +4786,13 @@ Alternatively, you may run the script using the following command line:
   Testing with Contracts
   ----------------------
 
-  *gnattest* supports pragmas Precondition, Postcondition, and Test_Case,
+  *gnattest* supports pragmas *Precondition*, *Postcondition*, and *Test_Case*,
   as well as the corresponding Ada 2012 aspects.
-  Test routines are generated, one per each Test_Case associated with a tested
+  Test routines are generated, one per each *Test_Case* associated with a tested
   subprogram. Those test routines have special wrappers for tested functions
   that have composition of pre- and postcondition of the subprogram with
-  "requires" and "ensures" of the Test_Case (depending on the mode, pre and post
-  either count for Nominal mode or do not count for Robustness mode).
+  "requires" and "ensures" of the *Test_Case* (depending on the mode, pre and post
+  either count for *Nominal* mode or do **not** count for *Robustness* mode).
 
   The third example demonstrates how this works:
 
@@ -4821,7 +4820,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
         $ cd obj/driver
-        $ gnatmake -Ptest_driver
+        $ gprbuild -Ptest_driver
         $ test_runner
 
   However, by changing 9.0 to 25.0 and 3.0 to 5.0, for example, you can get
@@ -4839,12 +4838,12 @@ Alternatively, you may run the script using the following command line:
   *gnattest* can add user-written tests to the main suite of the test
   driver. *gnattest* traverses the given packages and searches for test
   routines. All procedures with a single in out parameter of a type which is
-  derived from AUnit.Test_Fixtures.Test_Fixture and that are declared in package
+  derived from *AUnit.Test_Fixtures.Test_Fixture* and that are declared in package
   specifications are added to the suites and are then executed by the test driver.
-  (Set_Up and Tear_Down are filtered out.)
+  (*Set_Up* and *Tear_Down* are filtered out.)
 
   An example illustrates two ways of creating test harnesses for user-written
-  tests. Directory additional_tests contains an AUnit-based test driver written
+  tests. Directory `additional_tests` contains an AUnit-based test driver written
   by hand.
 
     ::
@@ -4858,7 +4857,7 @@ Alternatively, you may run the script using the following command line:
 
         gnattest -Padditional/harness/harness.gpr --harness-dir=harness_only \\
           --harness-only
-        gnatmake -Pharness_only/test_driver.gpr
+        gprbuild -Pharness_only/test_driver.gpr
         harness_only/test_runner
 
   Additional tests can also be executed together with generated tests:
@@ -4867,7 +4866,7 @@ Alternatively, you may run the script using the following command line:
 
         gnattest -Psimple.gpr --additional-tests=additional/harness/harness.gpr \\
           --harness-dir=mixing
-        gnatmake -Pmixing/test_driver.gpr
+        gprbuild -Pmixing/test_driver.gpr
         mixing/test_runner
 
 
@@ -4914,7 +4913,7 @@ Alternatively, you may run the script using the following command line:
   remain intact, while their bodies are replaced, and hide the original bodies by
   means of extending projects. Also, for each stubbed
   package, a child package with setter routines for each subprogram declaration
-  is created. These setters are meant to be used to set the behaviour of
+  is created. These setters are meant to be used to set the behavior of
   stubbed subprograms from within test cases.
 
   Note that subprograms belonging to the same package as the subprogram under
@@ -4930,8 +4929,9 @@ Alternatively, you may run the script using the following command line:
 
      Developing a stubs-based testing campaign requires
      good understanding of the infrastructure created by *gnattest* for
-     this purpose. We recommend following the stubbing tutorials provided
-     under :file:`<install_prefix>/share/examples/gnattest/stubbing*` before
+     this purpose. We recommend following the two stubbing tutorials
+     `simple_stubbing` and `advanced_stubbing` provided
+     under :file:`<install_prefix>/share/examples/gnattest` before
      attempting to use this powerful feature.
 
 
@@ -4951,38 +4951,18 @@ Alternatively, you may run the script using the following command line:
   Option ``--omit-sloc`` may be useful when putting test packages under version control.
 
 
-  .. _Support_for_other_platforms/run-times:
-
-  Support for other platforms/run-times
-  -------------------------------------
-
-  *gnattest* can be used to generate the test harness for platforms
-  and run-time libraries others than the default native target with the
-  default full run-time. For example, when using a limited run-time library
-  such as Zero FootPrint (ZFP), a simplified harness is generated.
-
-  Two variables are used to tell the underlying AUnit framework how to generate
-  the test harness: `PLATFORM`, which identifies the target, and
-  `RUNTIME`, used to determine the run-time library for which the harness
-  is generated. Corresponding prefix should also be used when calling
-  *gnattest* for non-native targets. For example, the following options
-  are used to generate the AUnit test harness for a PowerPC ELF target using
-  the ZFP run-time library:
-
-    ::
-
-        $ powerpc-elf-gnattest -Psimple.gpr -XPLATFORM=powerpc-elf -XRUNTIME=zfp
-
-
   .. _Current_Limitations:
 
   Current Limitations
   -------------------
 
-  The tool currently does not support following features:
+  The tool currently has the following limitations:
 
-  * generic tests for nested generic packages and their instantiations
-  * tests for protected subprograms and entries
-  * pragma No_Run_Time
-  * if pragmas for C and C++ interaction are used, manual adjustments might be
-    necessary to make the test driver compilable
+  * generic tests for nested generic packages and their instantiations are
+    not supported;
+  * tests for protected subprograms and entries are not supported;
+  * pragma *No_Run_Time* is not supported;
+  * if pragmas for interfacing with foreign languages are used, manual
+    adjustments might be necessary to make the test harness compilable;
+  * use of elaboration control pragmas may result in elaboration circularities
+    in the generated harness.

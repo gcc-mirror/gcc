@@ -1447,25 +1447,19 @@ some guidelines on debugging optimized code.
 Controlling Run-Time Checks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By default, GNAT generates all run-time checks, except integer overflow
-checks, stack overflow checks, and checks for access before elaboration on
-subprogram calls. The latter are not required in default mode, because all
+By default, GNAT generates all run-time checks, except stack overflow
+checks, and checks for access before elaboration on subprogram
+calls. The latter are not required in default mode, because all
 necessary checking is done at compile time.
 
 .. index:: -gnatp (gcc)
 .. index:: -gnato (gcc)
 
-Two gnat switches, *-gnatp* and *-gnato* allow this default to
-be modified. See :ref:`Run-Time_Checks`.
+The gnat switch, *-gnatp* allows this default to be modified. See
+:ref:`Run-Time_Checks`.
 
 Our experience is that the default is suitable for most development
 purposes.
-
-We treat integer overflow specially because these
-are quite expensive and in our experience are not as important as other
-run-time checks in the development process. Note that division by zero
-is not considered an overflow check, and divide by zero checks are
-generated where required by default.
 
 Elaboration checks are off by default, and also not needed by default, since
 GNAT uses a static elaboration analysis approach that avoids the need for
@@ -1942,11 +1936,9 @@ contain a single nested loop, if it can be vectorized when considered alone:
 
 The vectorizable operations depend on the targeted SIMD instruction set, but
 the adding and some of the multiplying operators are generally supported, as
-well as the logical operators for modular types.  Note that, in the former
-case, enabling overflow checks, for example with *-gnato*, totally
-disables vectorization.  The other checks are not supposed to have the same
-definitive effect, although compiling with *-gnatp* might well reveal
-cases where some checks do thwart vectorization.
+well as the logical operators for modular types. Note that compiling
+with *-gnatp* might well reveal cases where some checks do thwart
+vectorization.
 
 Type conversions may also prevent vectorization if they involve semantics that
 are not directly supported by the code generator or the SIMD instruction set.
@@ -3197,10 +3189,6 @@ If no digits follow the *-gnato*, then it is equivalent to
 causing all intermediate operations to be computed using the base
 type (`STRICT` mode).
 
-In addition to setting the mode used for computation of intermediate
-results, the `-gnato` switch also enables overflow checking (which
-is suppressed by default). It thus combines the effect of using
-a pragma `Overflow_Mode` and pragma `Unsuppress`.
 
 .. _Default_Settings:
 

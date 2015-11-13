@@ -461,14 +461,14 @@ scalar components.
 
 No_Implicit_Protected_Object_Allocations
 ----------------------------------------
-.. index: No_Implicit_Protected_Object_Allocations
+.. index:: No_Implicit_Protected_Object_Allocations
 
 [GNAT] No constructs are allowed to cause implicit heap allocation of a
 protected object.
 
 No_Implicit_Task_Allocations
 ----------------------------
-.. index: No_Implicit_Task_Allocations
+.. index:: No_Implicit_Task_Allocations
 
 [GNAT] No constructs are allowed to cause implicit heap allocation of a task.
 
@@ -765,6 +765,29 @@ where ``Name`` is the fully qualified entity, for example ::
 
    No_Use_Of_Entity => Ada.Text_IO.Put_Line
 
+Pure_Barriers
+-------------
+.. index:: Pure_Barriers
+
+[GNAT] This restriction ensures at compile time that protected entry
+barriers are restricted to:
+
+* simple boolean variables defined in the private part of the
+  protected type/object,
+* constant declarations,
+* named numbers,
+* enumeration literals,
+* integer literals,
+* real literals,
+* character literals,
+* implicitly defined comparison operators,
+* uses of the Standard."not" operator,
+* short-circuit operator
+
+This restriction is a relaxation of the Simple_Barriers restriction,
+but still ensures absence of side effects, exceptions, and recursion
+during the evaluation of the barriers.
+
 Simple_Barriers
 ---------------
 .. index:: Simple_Barriers
@@ -858,7 +881,7 @@ code generation. If it is used in conjunction with "semantics only"
 checking, then some cases of violations may be missed.
 
 No_Dynamic_Sized_Objects
---------------
+------------------------
 .. index:: No_Dynamic_Sized_Objects
 
 [GNAT] This restriction disallows certain constructs that might lead to the

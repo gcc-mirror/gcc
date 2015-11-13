@@ -2186,7 +2186,7 @@ binding you need to use a project file, and adding a single with_clause
 will give you full access to the Win32Ada binding sources and ensure
 that the proper libraries are passed to the linker.
 
-  .. code-block:: ada-project
+  .. code-block:: gpr
 
       with "win32ada";
       project P is
@@ -2213,7 +2213,7 @@ To use the wPOSIX binding you need to use a project file, and adding
 a single with_clause will give you full access to the wPOSIX binding
 sources and ensure that the proper libraries are passed to the linker.
 
-  .. code-block:: ada-project
+  .. code-block:: gpr
 
       with "wposix";
       project P is

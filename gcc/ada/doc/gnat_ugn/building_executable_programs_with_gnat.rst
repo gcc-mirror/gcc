@@ -1928,23 +1928,25 @@ Alphabetical List of All Switches
   *3*   Eliminate intermediate overflows (`ELIMINATED`)
   ===== ===============================================================
 
-  If only one digit appears then it applies to all
+  If only one digit appears, then it applies to all
   cases; if two digits are given, then the first applies outside
-  assertions, and the second within assertions.
+  assertions, pre/postconditions, and type invariants, and the second
+  applies within assertions, pre/postconditions, and type invariants.
 
   If no digits follow the *-gnato*, then it is equivalent to
   *-gnato11*,
-  causing all intermediate overflows to be handled in strict mode.
+  causing all intermediate overflows to be handled in strict
+  mode.
 
   This switch also causes arithmetic overflow checking to be performed
-  (as though `pragma Unsuppress (Overflow_Mode)` had been specified.
+  (as though `pragma Unsuppress (Overflow_Mode)` had been specified).
 
   The default if no option *-gnato* is given is that overflow handling
   is in `STRICT` mode (computations done using the base type), and that
   overflow checking is enabled.
 
   Note that division by zero is a separate check that is not
-  controlled by this switch (division by zero checking is on by default).
+  controlled by this switch (divide-by-zero checking is on by default).
 
   See also :ref:`Specifying_the_Desired_Mode`.
 
@@ -4038,31 +4040,64 @@ Debugging and Assertion Control
   .. index:: Assert
   .. index:: Debug
   .. index:: Assertions
+  .. index:: Precondition
+  .. index:: Postcondition
+  .. index:: Type invariants
+  .. index:: Subtype predicates
+
+  The `-gnata` option is equivalent to the following Assertion_Policy pragma::
+
+       pragma Assertion_Policy (Check);
+
+  Which is a shorthand for::
+
+       pragma Assertion_Policy
+         (Assert               => Check,
+          Static_Predicate     => Check,
+          Dynamic_Predicate    => Check,
+          Pre                  => Check,
+          Pre'Class            => Check,
+          Post                 => Check,
+          Post'Class           => Check,
+          Type_Invariant       => Check,
+          Type_Invariant'Class => Check);
 
   The pragmas `Assert` and `Debug` normally have no effect and
   are ignored. This switch, where :samp:`a` stands for assert, causes
-  `Assert` and `Debug` pragmas to be activated.
+  pragmas `Assert` and `Debug` to be activated. This switch also
+  causes preconditions, postconditions, subtype predicates, and
+  type invariants to be activated.
 
   The pragmas have the form::
 
        pragma Assert (<Boolean-expression> [, <static-string-expression>])
        pragma Debug (<procedure call>)
+       pragma Type_Invariant (<type-local-name>, <Boolean-expression>)
+       pragma Predicate (<type-local-name>, <Boolean-expression>)
+       pragma Precondition (<Boolean-expression>, <string-expression>)
+       pragma Postcondition (<Boolean-expression>, <string-expression>)
 
+  The aspects have the form::
+
+       with [Pre|Post|Type_Invariant|Dynamic_Predicate|Static_Predicate]
+         => <Boolean-expression>;
 
   The `Assert` pragma causes `Boolean-expression` to be tested.
   If the result is `True`, the pragma has no effect (other than
   possible side effects from evaluating the expression). If the result is
   `False`, the exception `Assert_Failure` declared in the package
-  `System.Assertions` is
-  raised (passing `static-string-expression`, if present, as the
-  message associated with the exception). If no string expression is
-  given the default is a string giving the file name and line number
-  of the pragma.
+  `System.Assertions` is raised (passing `static-string-expression`, if
+  present, as the message associated with the exception). If no string
+  expression is given, the default is a string containing the file name and
+  line number of the pragma.
 
   The `Debug` pragma causes `procedure` to be called. Note that
   `pragma Debug` may appear within a declaration sequence, allowing
   debugging procedures to be called between declarations.
 
+  For the aspect specification, the `<Boolean-expression>` is evaluated.
+  If the result is `True`, the aspect has no effect. If the result
+  is `False`, the exception `Assert_Failure` is raised.
 
 .. _Validity_Checking:
 
@@ -4871,11 +4906,11 @@ Run-Time Checks
 
 .. index:: Checks, stack overflow checking
 
-By default, the following checks are suppressed: integer overflow
-checks, stack overflow checks, and checks for access before
-elaboration on subprogram calls. All other checks, including range
-checks and array bounds checks, are turned on by default. The
-following *gcc* switches refine this default behavior.
+By default, the following checks are suppressed: stack overflow
+checks, and checks for access before elaboration on subprogram
+calls. All other checks, including overflow checks, range checks and
+array bounds checks, are turned on by default. The following *gcc*
+switches refine this default behavior.
 
 .. index:: -gnatp  (gcc)
 
@@ -5003,13 +5038,8 @@ following *gcc* switches refine this default behavior.
   checking is also quite expensive in time and space, since in general it
   requires the use of double length arithmetic.
 
-  Note again that the default is *-gnato00*,
-  so overflow checking is not performed in default mode. This means that out of
-  the box, with the default settings, GNAT does not do all the checks
-  expected from the language description in the Ada Reference Manual.
-  If you want all constraint checks to be performed, as described in this Manual,
-  then you must explicitly use the *-gnato??*
-  switch either on the *gnatmake* or *gcc* command.
+  Note again that the default is *-gnato11* (equivalent to *-gnato1*),
+  so overflow checking is performed in STRICT mode by default.
 
 
 .. index:: -gnatE  (gcc)
@@ -6897,7 +6927,7 @@ Here are some examples of `gnatbind` invovations:
 Linking with *gnatlink*
 =======================
 
-.. index: ! gnatlink
+.. index:: ! gnatlink
 
 This chapter discusses *gnatlink*, a tool that links
 an Ada program and builds an executable file. This utility

@@ -471,8 +471,8 @@ Elaboration order
 The implementation can choose any elaboration order consistent with the unit
 dependency relationship.  This freedom means that some orders can result in
 Program_Error being raised due to an 'Access Before Elaboration': an attempt
-to invoke a subprogram its body has been elaborated, or to instantiate a
-generic before the generic body has been elaborated.  By default GNAT
+to invoke a subprogram before its body has been elaborated, or to instantiate
+a generic before the generic body has been elaborated.  By default GNAT
 attempts to choose a safe order (one that will not encounter access before
 elaboration problems) by implicitly inserting `Elaborate` or
 `Elaborate_All` pragmas where
