@@ -2381,13 +2381,14 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
       uc->uc_mcontext->__ss.__rdx = t;
     }
 #elif defined(__arm64__)
+  /* Even though the CFI is marked as a signal frame, we need this.  */
   ucontext_t *uc = (ucontext_t *)ucontext;
   uc->uc_mcontext->__ss.__pc++;
 #endif
 }
 
 static void
-__gnat_map_signal (int sig, siginfo_t *si, void *ucontext ATTRIBUTE_UNUSED)
+__gnat_map_signal (int sig, siginfo_t *si, void *mcontext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -2398,6 +2399,17 @@ __gnat_map_signal (int sig, siginfo_t *si, void *ucontext ATTRIBUTE_UNUSED)
     case SIGBUS:
       if (__gnat_is_stack_guard ((unsigned long)si->si_addr))
 	{
+#ifdef __arm64__
+	  /* ??? This is a kludge to make stack checking work.  The problem is
+	     that the trampoline doesn't restore LR and, consequently, doesn't
+	     make it possible to unwind past an interrupted frame which hasn"t
+	     saved LR on the stack yet.  Therefore, for probes in the prologue
+	     (32-bit probes as opposed to standard 64-bit probes), we make the
+	     unwinder skip the not-yet-established frame altogether.  */
+	  mcontext_t mc = (mcontext_t)mcontext;
+	  if (!(*(unsigned int *)(mc->__ss.__pc-1) & ((unsigned int)1 << 30)))
+	    mc->__ss.__pc = mc->__ss.__lr;
+#endif
 	  exception = &storage_error;
 	  msg = "stack overflow";
 	}
@@ -2409,7 +2421,7 @@ __gnat_map_signal (int sig, siginfo_t *si, void *ucontext ATTRIBUTE_UNUSED)
 
       /* Reset the use of alt stack, so that the alt stack will be used
 	 for the next signal delivery.
-         The stack can't be used in case of stack checking.  */
+	 The stack can't be used in case of stack checking.  */
       syscall (SYS_sigreturn, NULL, UC_RESET_ALT_STACK);
       break;
 
@@ -2432,17 +2444,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
   __gnat_adjust_context_for_raise (sig, ucontext);
 
 #ifdef __arm64__
-  /* ??? Temporary kludge to make stack checking work.  The problem is
-     that the trampoline doesn't restore LR and, consequently, doesn't
-     make it possible to unwind past an interrupted frame which hasn"t
-     saved LR on the stack yet.  */
-  if (__gnat_is_stack_guard ((unsigned long)si->si_addr))
-    {
-      ucontext_t *uc = (ucontext_t *)ucontext;
-      uc->uc_mcontext->__ss.__pc = uc->uc_mcontext->__ss.__lr;
-    }
-
-    /* Use a trampoline so that the unwinder won't see the signal frame.  */
+  /* Use a trampoline so that the unwinder won't see the signal frame.  */
   __gnat_sigtramp (sig, (void *)si, ucontext,
 		   (__sigtramphandler_t *)&__gnat_map_signal);
 #else

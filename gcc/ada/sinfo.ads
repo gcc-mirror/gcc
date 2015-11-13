@@ -750,7 +750,7 @@ package Sinfo is
    --    to be sure to raise an ABE. This is used to trigger special handling
    --    of such cases, particularly in the instantiation case where we avoid
    --    instantiating the body if this flag is set. This flag is also present
-   --    in an N_Formal_Package_Declaration_Node since formal package
+   --    in an N_Formal_Package_Declaration node since formal package
    --    declarations are treated like instantiations, but it is always set to
    --    False in this context.
 
