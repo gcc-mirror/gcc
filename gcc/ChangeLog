@@ -1,3 +1,13 @@
+2015-11-13  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/65837
+	* config/arm/arm.c (arm_option_override): Move NEON check...
+	(arm_option_check_internal): here
+	(arm_file_start): Move .fpu print...
+	(arm_declare_function_name): here
+	(arm_option_print): Dump current fpu name.
+	* config/arm/arm.opt (arm_fpu_index): Mark Save.
+
 2015-11-13  Segher Boessenkool  <segher@kernel.crashing.org>
             Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
