@@ -4191,7 +4191,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
   tree bitsize;
   tree adjustment_def = NULL;
   tree vec_initial_def = NULL;
-  tree reduction_op, expr, def;
+  tree reduction_op, expr, def, initial_def = NULL;
   tree orig_name, scalar_result;
   imm_use_iterator imm_iter, phi_imm_iter;
   use_operand_p use_p, phi_use_p;
@@ -4252,9 +4252,10 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       /* Get at the scalar def before the loop, that defines the initial value
 	 of the reduction variable.  */
       gimple *def_stmt = SSA_NAME_DEF_STMT (reduction_op);
-      tree op = PHI_ARG_DEF_FROM_EDGE (def_stmt, loop_preheader_edge (loop));
+      initial_def = PHI_ARG_DEF_FROM_EDGE (def_stmt,
+					   loop_preheader_edge (loop));
       vec_initial_defs.create (1);
-      vec_initial_def = get_initial_def_for_reduction (stmt, op,
+      vec_initial_def = get_initial_def_for_reduction (stmt, initial_def,
 						       &adjustment_def);
       vec_initial_defs.quick_push (vec_initial_def);
     }
@@ -4270,9 +4271,25 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       def = vect_defs[i];
       for (j = 0; j < ncopies; j++)
         {
-          /* Set the loop-entry arg of the reduction-phi.  */
-          add_phi_arg (as_a <gphi *> (phi), vec_init_def,
-		       loop_preheader_edge (loop), UNKNOWN_LOCATION);
+	  /* Set the loop-entry arg of the reduction-phi.  */
+
+	  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+	      == INTEGER_INDUC_COND_REDUCTION)
+	    {
+	      /* Initialise the reduction phi to zero.  This prevents initial
+		 values of non-zero interferring with the reduction op.  */
+	      gcc_assert (ncopies == 1);
+	      gcc_assert (i == 0);
+
+	      tree vec_init_def_type = TREE_TYPE (vec_init_def);
+	      tree zero_vec = build_zero_cst (vec_init_def_type);
+
+	      add_phi_arg (as_a <gphi *> (phi), zero_vec,
+			   loop_preheader_edge (loop), UNKNOWN_LOCATION);
+	    }
+	  else
+	    add_phi_arg (as_a <gphi *> (phi), vec_init_def,
+			 loop_preheader_edge (loop), UNKNOWN_LOCATION);
 
           /* Set the loop-latch arg for the reduction-phi.  */
           if (j > 0)
@@ -4614,10 +4631,28 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	}
       else
 	tmp = build1 (reduc_code, scalar_type, new_phi_result);
+
       epilog_stmt = gimple_build_assign (new_scalar_dest, tmp);
       new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
       gimple_assign_set_lhs (epilog_stmt, new_temp);
       gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+
+      if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+	  == INTEGER_INDUC_COND_REDUCTION)
+	{
+	  /* Earlier we set the initial value to be zero.  Check the result
+	     and if it is zero then replace with the original initial
+	     value.  */
+	  tree zero = build_zero_cst (scalar_type);
+	  tree zcompare = build2 (EQ_EXPR, boolean_type_node, new_temp, zero);
+
+	  tmp = make_ssa_name (new_scalar_dest);
+	  epilog_stmt = gimple_build_assign (tmp, COND_EXPR, zcompare,
+					     initial_def, new_temp);
+	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	  new_temp = tmp;
+	}
+
       scalar_results.safe_push (new_temp);
     }
   else
@@ -5094,6 +5129,52 @@ vect_finalize_reduction:
 }
 
 
+/* Function is_nonwrapping_integer_induction.
+
+   Check if STMT (which is part of loop LOOP) both increments and
+   does not cause overflow.  */
+
+static bool
+is_nonwrapping_integer_induction (gimple *stmt, struct loop *loop)
+{
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  tree base = PHI_ARG_DEF_FROM_EDGE (stmt, loop_preheader_edge (loop));
+  tree step = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo);
+  tree lhs_type = TREE_TYPE (gimple_phi_result (stmt));
+  widest_int ni, max_loop_value, lhs_max;
+  bool overflow = false;
+
+  /* Make sure the loop is integer based.  */
+  if (TREE_CODE (base) != INTEGER_CST
+      || TREE_CODE (step) != INTEGER_CST)
+    return false;
+
+  /* Check that the induction increments.  */
+  if (tree_int_cst_sgn (step) == -1)
+    return false;
+
+  /* Check that the max size of the loop will not wrap.  */
+
+  if (TYPE_OVERFLOW_UNDEFINED (lhs_type))
+    return true;
+
+  if (! max_stmt_executions (loop, &ni))
+    return false;
+
+  max_loop_value = wi::mul (wi::to_widest (step), ni, TYPE_SIGN (lhs_type),
+			    &overflow);
+  if (overflow)
+    return false;
+
+  max_loop_value = wi::add (wi::to_widest (base), max_loop_value,
+			    TYPE_SIGN (lhs_type), &overflow);
+  if (overflow)
+    return false;
+
+  return (wi::min_precision (max_loop_value, TYPE_SIGN (lhs_type))
+	  <= TYPE_PRECISION (lhs_type));
+}
+
 /* Function vectorizable_reduction.
 
    Check if STMT performs a reduction operation that can be vectorized.
@@ -5192,6 +5273,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   tree def0, def1, tem, op0, op1 = NULL_TREE;
   bool first_p = true;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
+  bool cond_expr_is_nonwrapping_integer_induction = false;
 
   /* In case of reduction chain we switch to the first stmt in the chain, but
      we don't update STMT_INFO, since only the last stmt is marked as reduction
@@ -5335,6 +5417,16 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
           reduc_def_stmt = def_stmt;
           reduc_index = i;
         }
+
+      if (i == 1 && code == COND_EXPR && dt == vect_induction_def
+	  && is_nonwrapping_integer_induction (def_stmt, loop))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "condition expression based on integer "
+			     "induction.\n");
+	  cond_expr_is_nonwrapping_integer_induction = true;
+	}
     }
 
   is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, &def_stmt, &dt, &tem);
@@ -5364,6 +5456,11 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 		  (loop_vinfo, reduc_def_stmt,
 		  !nested_cycle, &dummy, false,
 		  &STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info));
+
+  if (cond_expr_is_nonwrapping_integer_induction
+      && STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == COND_REDUCTION)
+    STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = INTEGER_INDUC_COND_REDUCTION;
+
   if (orig_stmt)
     gcc_assert (tmp == orig_stmt
 		|| GROUP_FIRST_ELEMENT (vinfo_for_stmt (tmp)) == orig_stmt);
@@ -5491,6 +5588,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     {
       /* This is a reduction pattern: get the vectype from the type of the
          reduction variable, and get the tree-code from orig_stmt.  */
+      gcc_assert (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+		  == TREE_CODE_REDUCTION);
       orig_code = gimple_assign_rhs_code (orig_stmt);
       gcc_assert (vectype_out);
       vec_mode = TYPE_MODE (vectype_out);
@@ -5500,6 +5599,12 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       /* Regular reduction: use the same vectype and tree-code as used for
          the vector code inside the loop can be used for the epilog code. */
       orig_code = code;
+
+      /* For simple condition reductions, replace with the actual expression
+	 we want to base our reduction around.  */
+      if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+	  == INTEGER_INDUC_COND_REDUCTION)
+	orig_code = MAX_EXPR;
     }
 
   if (nested_cycle)
@@ -5520,7 +5625,9 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
   epilog_reduc_code = ERROR_MARK;
 
-  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == TREE_CODE_REDUCTION)
+  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == TREE_CODE_REDUCTION
+      || STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+		== INTEGER_INDUC_COND_REDUCTION)
     {
       if (reduction_code_for_scalar_code (orig_code, &epilog_reduc_code))
 	{
@@ -5545,6 +5652,19 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
 		  epilog_reduc_code = ERROR_MARK;
 		}
+	    }
+
+	  /* When epilog_reduc_code is ERROR_MARK then a reduction will be
+	     generated in the epilog using multiple expressions.  This does not
+	     work for condition reductions.  */
+	  if (epilog_reduc_code == ERROR_MARK
+	      && STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+			== INTEGER_INDUC_COND_REDUCTION)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "no reduc code for scalar code.\n");
+	      return false;
 	    }
 	}
       else
@@ -5580,7 +5700,9 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     }
 
   if ((double_reduc
-       || STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == COND_REDUCTION)
+       || STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == COND_REDUCTION
+       || STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+		== INTEGER_INDUC_COND_REDUCTION)
       && ncopies > 1)
     {
       if (dump_enabled_p ())
