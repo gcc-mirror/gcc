@@ -1,3 +1,7 @@
+2015-11-13  James Bowman  <james.bowman@ftdichip.com>
+
+        * config/ft32/ft32.md (*sne): New insn pattern.
+
 2015-11-12  Brad Lucier  <lucier@math.purdue.edu>
 
 	* gcc/cprop.c (is_too_expensive): Remove.
