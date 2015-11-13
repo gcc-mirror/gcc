@@ -3046,7 +3046,9 @@ sem_item_optimizer::traverse_congruence_split (congruence_class * const &cls,
 
   if (popcount > 0 && popcount < cls->members.length ())
     {
-      congruence_class* newclasses[2] = { new congruence_class (class_id++), new congruence_class (class_id++) };
+      auto_vec <congruence_class *, 2> newclasses;
+      newclasses.quick_push (new congruence_class (class_id++));
+      newclasses.quick_push (new congruence_class (class_id++));
 
       for (unsigned int i = 0; i < cls->members.length (); i++)
 	{
