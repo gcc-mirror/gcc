@@ -1,3 +1,8 @@
+2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_offload_nvptx): New.
+	* gcc.dg/goacc/nvptx-merged-loop.c: New.
+
 2015-11-13  Steven G. Kargl  <kargl@gccc.gnu.org>
 
 	PR fortran/68319

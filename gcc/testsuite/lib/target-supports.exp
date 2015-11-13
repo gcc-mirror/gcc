@@ -6716,3 +6716,11 @@ proc check_effective_target_vect_max_reduc { } {
     }
     return 0
 }
+
+# Return 1 if there is an nvptx offload compiler.
+
+proc check_effective_target_offload_nvptx { } {
+    return [check_no_compiler_messages offload_nvptx object {
+	int main () {return 0;}
+    } "-foffload=nvptx-none" ]
+}
