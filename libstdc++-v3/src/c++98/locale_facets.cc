@@ -72,7 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     ios_base::fmtflags __fltfield = __flags & ios_base::floatfield;
 
-#ifdef _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDIO
     // Precision is always used except for hexfloat format.
     if (__fltfield != (ios_base::fixed | ios_base::scientific))
 #endif
@@ -89,7 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       *__fptr++ = 'f';
     else if (__fltfield == ios_base::scientific)
       *__fptr++ = (__flags & ios_base::uppercase) ? 'E' : 'e';
-#ifdef _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDIO
     else if (__fltfield == (ios_base::fixed | ios_base::scientific))
       *__fptr++ = (__flags & ios_base::uppercase) ? 'A' : 'a';
 #endif

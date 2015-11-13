@@ -1,3 +1,97 @@
+2015-11-13  Jennifer Yao  <jenny.hyphen.fa@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/58393
+	PR libstdc++/61580
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Perform tests twice, with
+	-std=c++11 as well as -std=c++98, and define separate macros for each.
+	Cache the results of checking for complex math and wide character
+	functions. Reformat for readability.
+	* config.h.in: Regenerate.
+	* include/bits/c++config: Define _GLIBCXX_USE_C99_XXX macros to
+	either _GLIBCXX98_USE_C99_XXX or _GLIBCXX11_USE_C99_XXX according to
+	language standard in use.
+	* config/locale/dragonfly/c_locale.h (std::__convert_from_v): Replace
+	_GLIBCXX_USE_C99 with _GLIBCXX_USE_C99_STDIO.
+	* config/locale/generic/c_locale.h (std::__convert_from_v): Likewise.
+	* config/locale/gnu/c_locale.h (std::__convert_from_v): Likewise.
+	* config/os/bsd/dragonfly/os_defines.h: Define _GLIBCXX_USE_C99_STDIO,
+	_GLIBCXX_USE_C99_STDLIB, and _GLIBCXX_USE_C99_WCHAR.
+	* configure: Regenerate.
+	* include/bits/basic_string.h: Make numeric conversion functions
+	depend on _GLIBCXX_USE_C99_STDIO, _GLIBCXX_USE_C99_STDLIB, or
+	_GLIBCXX_USE_C99_WCHAR, instead of _GLIBCXX_USE_C99.
+	* include/ext/vstring.h: Likewise.
+	* include/bits/locale_facets.tcc (std::num_put::_M_insert_float):
+	Replace _GLIBCXX_USE_C99 with _GLIBCXX_USE_C99_STDIO.
+	* include/bits/locale_facets_nonio.tcc (std::money_put::do_put):
+	Likewise.
+	* include/c_compatibility/math.h: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_MATH.
+	* include/c_compatibility/wchar.h: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_WCHAR.
+	* include/c_global/cstdio: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_STDIO.
+	* include/c_global/cstdlib: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_STDLIB.
+	* include/c_global/cwchar: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_WCHAR.
+	* include/c_std/cstdio: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_STDIO.
+	* include/c_std/cstdlib: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_STDLIB.
+	* include/c_std/cwchar: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_WCHAR.
+	* include/tr1/cstdio: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_STDIO.
+	* include/tr1/cstdlib: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_STDLIB.
+	* include/tr1/cwchar: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_WCHAR.
+	* include/tr1/stdlib.h: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_STDLIB.
+	* src/c++98/locale_facets.cc (std::__num_base::_S_format_float):
+	Replace _GLIBCXX_USE_C99 with _GLIBCXX_USE_C99_STDIO.
+	* testsuite/18_support/exception_ptr/60612-terminate.cc: Replace
+	_GLIBCXX_USE_C99 with _GLIBCXX_USE_C99_STDLIB.
+	* testsuite/18_support/exception_ptr/60612-unexpected.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stod.cc
+	(test01): Replace _GLIBCXX_USE_C99 with _GLIBCXX_USE_C99_WCHAR.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/
+	stof.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/
+	stoi.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/
+	stol.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/
+	stold.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/
+	stoll.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/
+	stoul.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/
+	stoull.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/
+	to_wstring.cc: Likewise.
+	* testsuite/26_numerics/headers/cstdlib/13943.cc: Replace
+	_GLIBCXX_USE_C99 with _GLIBCXX_USE_C99_STDLIB.
+	* testsuite/26_numerics/headers/cstdlib/types_std_c++0x.cc: Likewise.
+	* testsuite/lib/libstdc++.exp (check_v3_target_string_conversions):
+	Change preprocessor #if conditional so that it uses
+	_GLIBCXX_USE_C99_STDIO, _GLIBCXX_USE_C99_STDLIB, and
+	_GLIBCXX_USE_C99_WCHAR, instead of _GLIBCXX_USE_C99.
+	* testsuite/tr1/8_c_compatibility/cmath/templates.cc: Replace
+	_GLIBCXX_USE_C99 with _GLIBCXX_USE_C99_MATH.
+	* testsuite/tr1/8_c_compatibility/cstdio/functions.cc: Replace
+	_GLIBCXX_USE_C99 with _GLIBCXX_USE_C99_STDIO.
+	* testsuite/tr1/8_c_compatibility/cstdlib/functions.cc: Replace
+	_GLIBCXX_USE_C99 with _GLIBCXX_USE_C99_STDLIB.
+	* testsuite/tr1/8_c_compatibility/cstdlib/types_std_tr1.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cwchar/functions.cc: Replace
+	_GLIBCXX_USE_C99 with _GLIBCXX_USE_C99_WCHAR.
+	* testsuite/util/testsuite_fs.h: Replace _GLIBCXX_USE_C99 with
+	_GLIBCXX_USE_C99_STDIO.
+
 2015-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/shared_ptr.h: Tweak comments.

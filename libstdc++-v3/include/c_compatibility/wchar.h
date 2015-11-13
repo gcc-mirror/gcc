@@ -103,7 +103,7 @@ using std::wmemmove;
 using std::wmemset;
 using std::wcsftime;
 
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_WCHAR
 using std::wcstold;
 using std::wcstoll;
 using std::wcstoull;

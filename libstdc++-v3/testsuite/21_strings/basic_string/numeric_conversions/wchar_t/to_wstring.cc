@@ -27,7 +27,7 @@
 void
 test01()
 {
-#ifdef _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_WCHAR
 
   bool test __attribute__((unused)) = true;
   using namespace std;

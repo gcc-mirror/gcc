@@ -56,7 +56,7 @@ using std::fabs;
 using std::floor;
 using std::fmod;
 
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_MATH
 using std::fpclassify;
 using std::isfinite;
 using std::isinf;

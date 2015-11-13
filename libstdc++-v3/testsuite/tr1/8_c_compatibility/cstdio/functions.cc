@@ -30,7 +30,7 @@ void test01(int dummy, ...)
   std::va_list ap;
   va_start(ap, dummy);
 
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDIO
 
   char* s = 0;
   const char* cs = 0;

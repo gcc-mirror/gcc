@@ -959,13 +959,13 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
     }
 
   // The following code uses vsnprintf (or vsprintf(), when
-  // _GLIBCXX_USE_C99 is not defined) to convert floating point values
-  // for insertion into a stream.  An optimization would be to replace
-  // them with code that works directly on a wide buffer and then use
-  // __pad to do the padding.  It would be good to replace them anyway
-  // to gain back the efficiency that C++ provides by knowing up front
-  // the type of the values to insert.  Also, sprintf is dangerous
-  // since may lead to accidental buffer overruns.  This
+  // _GLIBCXX_USE_C99_STDIO is not defined) to convert floating point
+  // values for insertion into a stream.  An optimization would be to
+  // replace them with code that works directly on a wide buffer and
+  // then use __pad to do the padding.  It would be good to replace
+  // them anyway to gain back the efficiency that C++ provides by
+  // knowing up front the type of the values to insert.  Also, sprintf
+  // is dangerous since may lead to accidental buffer overruns.  This
   // implementation follows the C++ standard fairly directly as
   // outlined in 22.2.2.2 [lib.locale.num.put]
   template<typename _CharT, typename _OutIter>
@@ -992,7 +992,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	char __fbuf[16];
 	__num_base::_S_format_float(__io, __fbuf, __mod);
 
-#ifdef _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDIO
 	// Precision is always used except for hexfloat format.
 	const bool __use_prec =
 	  (__io.flags() & ios_base::floatfield) != ios_base::floatfield;
