@@ -1,3 +1,9 @@
+2015-11-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/68311
+	* ipa-icf.c (sem_item_optimizer::traverse_congruence_split):
+	Replace ctor with auto_vec and initialization in a loop.
+
 2015-11-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68306
