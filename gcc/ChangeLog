@@ -1,3 +1,13 @@
+2015-11-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Revert [ARM] Remove neon-testgen.ml and generated tests.
+
+	2015-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	[ARM] Remove neon-testgen.ml and generated tests.
+
+	* config/arm/neon-testgen.ml: Remove.
+
 2015-11-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_analyze_loop_2): Add fatal parameter.
