@@ -4913,6 +4913,15 @@ gfc_match_st_function (void)
 
   sym->value = expr;
 
+  if ((gfc_current_state () == COMP_FUNCTION
+       || gfc_current_state () == COMP_SUBROUTINE)
+      && gfc_state_stack->previous->state == COMP_INTERFACE)
+    {
+      gfc_error ("Statement function at %L cannot appear within an INTERFACE",
+		 &expr->where);
+      return MATCH_ERROR;
+    }
+
   if (!gfc_notify_std (GFC_STD_F95_OBS, "Statement function at %C"))
     return MATCH_ERROR;
 
