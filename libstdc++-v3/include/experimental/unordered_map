@@ -37,6 +37,7 @@
 
 #include <unordered_map>
 #include <experimental/bits/erase_if.h>
+#include <experimental/memory_resource>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -61,6 +62,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __detail::__erase_nodes_if(__cont, __pred); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
+
+namespace pmr {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Key, typename _Tp, typename _Hash = hash<_Key>,
+	   typename _Pred = equal_to<_Key>>
+    using unordered_map
+      = std::unordered_map<_Key, _Tp, _Hash, _Pred,
+		 polymorphic_allocator<pair<const _Key, _Tp>>>;
+
+  template<typename _Key, typename _Tp, typename _Hash = hash<_Key>,
+	   typename _Pred = equal_to<_Key>>
+    using unordered_multimap
+      = std::unordered_multimap<_Key, _Tp, _Hash, _Pred,
+		      polymorphic_allocator<pair<const _Key, _Tp>>>;
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace pmr
+
 } // namespace fundamentals_v2
 } // namespace experimental
 } // namespace std

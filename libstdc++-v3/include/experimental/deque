@@ -37,6 +37,7 @@
 
 #include <deque>
 #include <algorithm>
+#include <experimental/memory_resource>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -63,6 +64,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION
+
+namespace pmr {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Tp>
+    using deque = std::deque<_Tp, polymorphic_allocator<_Tp>>;
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace pmr
+
 } // namespace fundamentals_v2
 } // namespace experimental
 } // namespace std

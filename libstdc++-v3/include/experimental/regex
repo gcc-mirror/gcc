@@ -1,4 +1,4 @@
-// <experimental/unordered_set> -*- C++ -*-
+// <experimental/regex> -*- C++ -*-
 
 // Copyright (C) 2015 Free Software Foundation, Inc.
 //
@@ -22,12 +22,12 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file experimental/unordered_set
+/** @file experimental/regex
  *  This is a TS C++ Library header.
  */
 
-#ifndef _GLIBCXX_EXPERIMENTAL_UNORDERED_SET
-#define _GLIBCXX_EXPERIMENTAL_UNORDERED_SET 1
+#ifndef _GLIBCXX_EXPERIMENTAL_REGEX
+#define _GLIBCXX_EXPERIMENTAL_REGEX 1
 
 #pragma GCC system_header
 
@@ -35,9 +35,8 @@
 # include <bits/c++14_warning.h>
 #else
 
-#include <unordered_set>
-#include <experimental/bits/erase_if.h>
-#include <experimental/memory_resource>
+#include <regex>
+#include <experimental/string>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -45,38 +44,22 @@ namespace experimental
 {
 inline namespace fundamentals_v2
 {
+namespace pmr
+{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
 
-  template<typename _Key, typename _Hash, typename _CPred, typename _Alloc,
-	   typename _Predicate>
-    inline void
-    erase_if(unordered_set<_Key, _Hash, _CPred, _Alloc>& __cont,
-	     _Predicate __pred)
-    { __detail::__erase_nodes_if(__cont, __pred); }
+  template<typename _BidirectionalIterator>
+    using match_results
+      = std::match_results<_BidirectionalIterator, polymorphic_allocator<
+			     sub_match<_BidirectionalIterator>>>;
 
-  template<typename _Key, typename _Hash, typename _CPred, typename _Alloc,
-	   typename _Predicate>
-    inline void
-    erase_if(unordered_multiset<_Key, _Hash, _CPred, _Alloc>& __cont,
-	     _Predicate __pred)
-    { __detail::__erase_nodes_if(__cont, __pred); }
+  typedef match_results<const char*> cmatch;
+  typedef match_results<const wchar_t*> wcmatch;
+  typedef match_results<string::const_iterator> smatch;
+  typedef match_results<wstring::const_iterator> wsmatch;
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
-namespace pmr {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Key, typename _Hash = hash<_Key>,
-	   typename _Pred = equal_to<_Key>>
-    using unordered_set
-      = std::unordered_set<_Key, _Hash, _Pred, polymorphic_allocator<_Key>>;
-
-  template<typename _Key, typename _Hash = hash<_Key>,
-	   typename _Pred = equal_to<_Key>>
-    using unordered_multiset
-      = std::unordered_multiset<_Key, _Hash, _Pred,
-				polymorphic_allocator<_Key>>;
-
+_GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace pmr
 
@@ -86,4 +69,4 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #endif // C++14
 
-#endif // _GLIBCXX_EXPERIMENTAL_UNORDERED_SET
+#endif // _GLIBCXX_EXPERIMENTAL_REGEX
