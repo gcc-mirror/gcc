@@ -1,3 +1,35 @@
+2015-11-13  Fan You  <youfan.noey@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/bits/shared_ptr.h: New.
+	* include/experimental/memory: Include new header.
+	* testsuite/experimental/memory/shared_ptr/assign/assign.cc: New.
+	* testsuite/experimental/memory/shared_ptr/cast/cast.cc: New.
+	* testsuite/experimental/memory/shared_ptr/comparison/comparison.cc:
+	New.
+	* testsuite/experimental/memory/shared_ptr/cons/alias_ctor.cc: New.
+	* testsuite/experimental/memory/shared_ptr/cons/alloc_ctor.cc: New.
+	* testsuite/experimental/memory/shared_ptr/cons/copy_ctor.cc: New.
+	* testsuite/experimental/memory/shared_ptr/cons/copy_ctor_neg.cc: New.
+	* testsuite/experimental/memory/shared_ptr/cons/default_ctor.cc: New.
+	* testsuite/experimental/memory/shared_ptr/cons/move_ctor.cc: New.
+	* testsuite/experimental/memory/shared_ptr/cons/pointer_ctor.cc: New.
+	* testsuite/experimental/memory/shared_ptr/cons/unique_ptr_ctor.cc:
+	New.
+	* testsuite/experimental/memory/shared_ptr/cons/weak_ptr_ctor.cc: New.
+	* testsuite/experimental/memory/shared_ptr/dest/dest.cc: New.
+	* testsuite/experimental/memory/shared_ptr/modifiers/reset.cc: New.
+	* testsuite/experimental/memory/shared_ptr/modifiers/swap.cc: New.
+	* testsuite/experimental/memory/shared_ptr/observers/bool_conv.cc:
+	New.
+	* testsuite/experimental/memory/shared_ptr/observers/operators.cc:
+	New.
+	* testsuite/experimental/memory/shared_ptr/observers/owner_before.cc:
+	New.
+	* testsuite/experimental/memory/shared_ptr/observers/use_count.cc: New.
+
 2015-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.am: Add new header.
