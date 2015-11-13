@@ -9,7 +9,7 @@ main (void)
   int m1 = 4, m2 = -5, m3 = 17;
 
 #pragma acc parallel copy(l)
-  #pragma acc loop collapse(3) reduction(+:l)
+  #pragma acc loop seq collapse(3) reduction(+:l)
     for (i = -2; i < m1; i++)
       for (j = m2; j < -2; j++)
 	{
