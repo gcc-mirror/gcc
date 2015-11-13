@@ -7296,7 +7296,8 @@ package body Sem_Ch4 is
 
             --  If the indexed component is a prefix it may be the first actual
             --  of a prefixed call. Retrieve the called entity, if any, and
-            --  check its first formal.
+            --  check its first formal. Determine if the context is a procedure
+            --  or function call.
 
             elsif Nkind (Parent (Par)) = N_Selected_Component then
                declare
@@ -7306,9 +7307,19 @@ package body Sem_Ch4 is
                begin
                   if Present (Nam)
                     and then Is_Overloadable (Nam)
-                    and then Present (First_Formal (Nam))
                   then
-                     return Ekind (First_Formal (Nam)) = E_In_Parameter;
+                     if Nkind (Parent (Parent (Par)))
+                        = N_Procedure_Call_Statement
+                     then
+                        return False;
+
+                     else
+                        if Ekind (Nam) = E_Function
+                          and then Present (First_Formal (Nam))
+                        then
+                           return Ekind (First_Formal (Nam)) = E_In_Parameter;
+                        end if;
+                     end if;
                   end if;
                end;
 
