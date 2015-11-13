@@ -3121,8 +3121,27 @@ asm ("xvadddp %0,%1,%2" : "=wa" (v1) : "wa" (v2), "wa" (v3));
 
 is not correct.
 
+If an instruction only takes Altivec registers, you do not want to use
+@code{%x<n>}.
+
+@smallexample
+asm ("xsaddqp %0,%1,%2" : "=v" (v1) : "v" (v2), "v" (v3));
+@end smallexample
+
+is correct because the @code{xsaddqp} instruction only takes Altivec
+registers, while:
+
+@smallexample
+asm ("xsaddqp %x0,%x1,%x2" : "=v" (v1) : "v" (v2), "v" (v3));
+@end smallexample
+
+is incorrect.
+
 @item wd
 VSX vector register to hold vector double data or NO_REGS.
+
+@item we
+VSX register if the -mpower9-vector -m64 options were used or NO_REGS.
 
 @item wf
 VSX vector register to hold vector float data or NO_REGS.
@@ -3186,6 +3205,16 @@ Floating point register if the LFIWZX instruction is enabled or NO_REGS.
 
 @item wD
 Int constant that is the element number of the 64-bit scalar in a vector.
+
+@item wF
+Memory operand suitable for power9 fusion load/stores.
+
+@item wG
+Memory operand suitable for TOC fusion memory references.
+
+@item wL
+Int constant that is the element number that the MFVSRLD instruction
+targets.
 
 @item wQ
 A memory address that will work with the @code{lq} and @code{stq}

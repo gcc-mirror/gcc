@@ -1,3 +1,13 @@
+2015-11-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/float128-hw.c: New test for IEEE 128-bit
+	hardware floating point support.
+
+	* gcc.target/powerpc/direct-move-vector.c: New test for 128-bit
+	vector direct move instructions.
+
+	* gcc.target/powerpc/maddld.c: New test.
+
 2015-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/pr68306.c (dg-additional-options): Add i?86-*-* target.
