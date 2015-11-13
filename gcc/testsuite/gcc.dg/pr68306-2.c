@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
-/* { dg-additional-options "-mno-sse -mno-mmx" { target x86_64-*-* } } */
+/* { dg-additional-options "-mno-sse -mno-mmx" { target i?86-*-* x86_64-*-* } } */
 
 struct {
     int tz_minuteswest;
