@@ -1,3 +1,8 @@
+2015-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (misaligned_operand): Return true if
+	operand is aligned to less than its natural alignmnet.
+
 2015-11-13  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* doc/md.texi (vec_cmp@var{m}@var{n}): New item.
