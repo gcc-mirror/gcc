@@ -1,3 +1,10 @@
+2015-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68306
+	* gcc.dg/pr68306.c: Adjust.
+	* gcc.dg/pr68306-2.c: New testcase.
+	* gcc.dg/pr68306-3.c: Likewise.
+
 2015-11-13  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* g++.dg/vect/simd-bool-comparison-1.cc: New test.

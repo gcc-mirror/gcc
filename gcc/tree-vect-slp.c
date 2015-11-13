@@ -1429,6 +1429,13 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 	{
 	  int i;
 	  gcc_checking_assert (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)));
+	  /* If the load is permuted then the alignment is determined by
+	     the first group element not by the first scalar stmt DR.  */
+	  if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
+	    {
+	      stmt = GROUP_FIRST_ELEMENT (stmt_info);
+	      stmt_info = vinfo_for_stmt (stmt);
+	    }
 	  vect_model_load_cost (stmt_info, ncopies_for_cost, false,
 				node, prologue_cost_vec, body_cost_vec);
 	  /* If the load is permuted record the cost for the permutation.
