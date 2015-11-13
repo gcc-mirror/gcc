@@ -6307,11 +6307,11 @@ package body Exp_Ch9 is
       --  If so, barrier may not be properly synchronized.
 
       function Is_Pure_Barrier (N : Node_Id) return Traverse_Result;
-      --  Check whether N follow the Pure_Barriers restriction. Return OK if
+      --  Check whether N follows the Pure_Barriers restriction. Return OK if
       --  so.
 
       function Is_Simple_Barrier_Name (N : Node_Id) return Boolean;
-      --  Check wether entity name N denotes a component of the protected
+      --  Check whether entity name N denotes a component of the protected
       --  object. This is used to check the Simple_Barrier restriction.
 
       ----------------------
@@ -6375,7 +6375,7 @@ package body Exp_Ch9 is
             return Scope (Entity (N)) = Current_Scope;
 
          --  Check for case of _object.all.field (note that the explicit
-         --  dereference gets inserted by analyze/expand of _object.field)
+         --  dereference gets inserted by analyze/expand of _object.field).
 
          else
             Renamed := Renamed_Object (Entity (N));
