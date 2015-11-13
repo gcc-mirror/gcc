@@ -916,22 +916,8 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
 static bool
 verify_data_ref_alignment (data_reference_p dr)
 {
-  enum dr_alignment_support supportable_dr_alignment;
-  gimple *stmt = DR_STMT (dr);
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-
-  /* For interleaving, only the alignment of the first access matters.   */
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-      && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
-    return true;
-
-  /* Strided accesses perform only component accesses, alignment is
-     irrelevant for them.  */
-  if (STMT_VINFO_STRIDED_P (stmt_info)
-      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    return true;
-
-  supportable_dr_alignment = vect_supportable_dr_alignment (dr, false);
+  enum dr_alignment_support supportable_dr_alignment
+    = vect_supportable_dr_alignment (dr, false);
   if (!supportable_dr_alignment)
     {
       if (dump_enabled_p ())
@@ -977,6 +963,18 @@ vect_verify_datarefs_alignment (loop_vec_info vinfo)
 
       if (!STMT_VINFO_RELEVANT_P (stmt_info))
 	continue;
+
+      /* For interleaving, only the alignment of the first access matters.   */
+      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+	  && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
+	return true;
+
+      /* Strided accesses perform only component accesses, alignment is
+	 irrelevant for them.  */
+      if (STMT_VINFO_STRIDED_P (stmt_info)
+	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+	return true;
+
       if (! verify_data_ref_alignment (dr))
 	return false;
     }
@@ -2100,28 +2098,22 @@ vect_analyze_data_refs_alignment (loop_vec_info vinfo)
 static bool
 vect_slp_analyze_and_verify_node_alignment (slp_tree node)
 {
-  unsigned i;
-  gimple *stmt;
-  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
+  /* We vectorize from the first scalar stmt in the node unless
+     the node is permuted in which case we start from the first
+     element in the group.  */
+  gimple *first_stmt = SLP_TREE_SCALAR_STMTS (node)[0];
+  if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
+    first_stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (first_stmt));
+
+  data_reference_p dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
+  if (! vect_compute_data_ref_alignment (dr)
+      || ! verify_data_ref_alignment (dr))
     {
-      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-
-      /* Strided accesses perform only component accesses, misalignment
-	 information is irrelevant for them.  */
-      if (STMT_VINFO_STRIDED_P (stmt_info)
-	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
-	continue;
-
-      data_reference_p dr = STMT_VINFO_DATA_REF (stmt_info);
-      if (! vect_compute_data_ref_alignment (dr)
-	  || ! verify_data_ref_alignment (dr))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: bad data alignment in basic "
-			     "block.\n");
-	  return false;
-	}
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: bad data alignment in basic "
+			 "block.\n");
+      return false;
     }
 
   return true;

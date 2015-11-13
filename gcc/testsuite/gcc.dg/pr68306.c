@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
+/* { dg-additional-options "-mno-sse -mno-mmx" { target x86_64-*-* } } */
 
 enum powerpc_pmc_type { PPC_PMC_IBM };
 struct {

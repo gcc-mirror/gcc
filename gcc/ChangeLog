@@ -1,3 +1,16 @@
+2015-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68306
+	* tree-vect-data-refs.c (verify_data_ref_alignment): Move
+	loop related checks ...
+	(vect_verify_datarefs_alignment): ... here.
+	(vect_slp_analyze_and_verify_node_alignment): Compute and
+	verify alignment of the single DR that it matters.
+	* tree-vect-stmts.c (vectorizable_store): Add an assert.
+	(vectorizable_load): Add a comment.
+	* tree-vect-slp.c (vect_analyze_slp_cost_1): Fix DR used
+	for determining load cost.
+
 2015-11-13  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* tree-vect-loop.c (vect_determine_vectorization_factor): Check
