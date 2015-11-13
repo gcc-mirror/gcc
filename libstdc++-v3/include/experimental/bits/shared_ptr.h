@@ -24,7 +24,7 @@
 
 /** @file experimental/bits/shared_ptr.h
  *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{memory}
+ *  Do not attempt to use it directly. @headername{experimental/memory}
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_SHARED_PTR_H
@@ -57,7 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /*
    * The specification of std::experimental::shared_ptr is slightly different
-   * to std::shared_ptr (specifically in terms of pointer "compatibility") so
+   * to std::shared_ptr (specifically in terms of "compatible" pointers) so
    * to implement std::experimental::shared_ptr without too much duplication
    * we make it derive from a partial specialization of std::__shared_ptr
    * using a special tag type, __libfund_v1.
