@@ -1,3 +1,7 @@
+2015-11-13  Kai Tietz  <ktietz70@googlemail.com>
+
+	* c-lex.c (interpret_float): Use fold_convert.
+
 2015-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (c_fully_fold_internal): Capture existing souce_range,

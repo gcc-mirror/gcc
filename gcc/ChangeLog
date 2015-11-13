@@ -1,3 +1,21 @@
+2015-11-13  Kai Tietz  <ktietz70@googlemail.com>
+	    Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* convert.c (maybe_fold_build1_loc): New.
+	(maybe_fold_build2_loc): New.
+	(convert_to_pointer_1): Split out from convert_to_pointer.
+	(convert_to_pointer_nofold): New.
+	(convert_to_real_1): Split out from convert_to_real.
+	(convert_to_real_nofold): New.
+	(convert_to_integer_1): Split out from convert_to_integer.
+	(convert_to_integer_nofold): New.
+	(convert_to_complex_1): Split out from convert_to_complex.
+	(convert_to_complex_nofold): New.
+	* convert.h: Declare new functions.
+	* tree-complex.c (create_one_component_var): Break up line to
+	avoid sequence point issues.
+
 2015-11-13  Jason Merrill  <jason@redhat.com>
 
 	* fold-const.c (fold_convert_const): Fold changing cv-quals on
