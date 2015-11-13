@@ -1,3 +1,8 @@
+2015-11-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68320
+	* c-parser.c (c_parser_for_statement): Treat unknown tokens as IDs.
+
 2015-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-typeck.c: Include spellcheck.h.

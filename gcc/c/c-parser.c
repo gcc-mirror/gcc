@@ -5757,12 +5757,12 @@ c_parser_for_statement (c_parser *parser, bool ivdep)
     {
       c_token *token = c_parser_peek_token (parser);
       tree decl = lookup_name (token->value);
-      if (decl == NULL_TREE)
-	;
+      if (decl == NULL_TREE || VAR_P (decl))
+	/* If DECL is null, we don't know what this token might be.  Treat
+	   it as an ID for better diagnostics; we'll error later on.  */
+	token->id_kind = C_ID_ID;
       else if (TREE_CODE (decl) == TYPE_DECL)
 	token->id_kind = C_ID_TYPENAME;
-      else if (VAR_P (decl))
-	token->id_kind = C_ID_ID;
     }
 
   token_indent_info next_tinfo
