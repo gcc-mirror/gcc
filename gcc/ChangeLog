@@ -1,5 +1,8 @@
 2015-11-13  Jason Merrill  <jason@redhat.com>
 
+	* fold-const.c (fold_convert_const): Fold changing cv-quals on
+	VECTOR_CST.
+
 	* hash-map.h (hash_map::empty): New.
 
 2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
