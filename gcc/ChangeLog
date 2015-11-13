@@ -1,5 +1,22 @@
 2015-11-13  David Malcolm  <dmalcolm@redhat.com>
 
+	PR driver/67613
+	* Makefile.in (GCC_OBJS): Add spellcheck.o.
+	(OBJS): Add spellcheck-tree.o.
+	* gcc.c: Include "spellcheck.h".
+	(suggest_option): New function.
+	(driver::handle_unrecognized_options): Call suggest_option to
+	provide a hint about misspelled options.
+	* spellcheck.c: Update file comment.
+	(levenshtein_distance): Convert 4-param implementation from static
+	to extern scope.  Remove note about unit tests from leading
+	comment for const char * implementation.  Move tree
+	implementation to...
+	* spellcheck-tree.c: New file.
+	* spellcheck.h (levenshtein_distance):  Add 4-param decl.
+
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
 	* Makefile.in (OBJS): Add spellcheck.o.
 	* spellcheck.c: New file.
 	* spellcheck.h: New file.

@@ -1,4 +1,4 @@
-/* Find near-matches for strings and identifiers.
+/* Find near-matches for identifiers.
    Copyright (C) 2015 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -17,20 +17,23 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_SPELLCHECK_H
-#define GCC_SPELLCHECK_H
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
+#include "tree.h"
+#include "spellcheck.h"
 
-typedef unsigned int edit_distance_t;
-const edit_distance_t MAX_EDIT_DISTANCE = UINT_MAX;
+/* Calculate Levenshtein distance between two identifiers.  */
 
-extern edit_distance_t
-levenshtein_distance (const char *s, int len_s,
-		      const char *t, int len_t);
+edit_distance_t
+levenshtein_distance (tree ident_s, tree ident_t)
+{
+  gcc_assert (TREE_CODE (ident_s) == IDENTIFIER_NODE);
+  gcc_assert (TREE_CODE (ident_t) == IDENTIFIER_NODE);
 
-extern edit_distance_t
-levenshtein_distance (const char *s, const char *t);
-
-extern edit_distance_t
-levenshtein_distance (tree ident_s, tree ident_t);
-
-#endif  /* GCC_SPELLCHECK_H  */
+  return levenshtein_distance (IDENTIFIER_POINTER (ident_s),
+			       IDENTIFIER_LENGTH (ident_s),
+			       IDENTIFIER_POINTER (ident_t),
+			       IDENTIFIER_LENGTH (ident_t));
+}
