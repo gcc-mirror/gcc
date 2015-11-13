@@ -1,3 +1,16 @@
+2015-11-13  Fan You  <youfan.noey@gmail.com>
+
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* include/bits/uses_allocator.h (__erased_type): Define.
+	(__uses_allocator_helper): Check for __erased_type.
+	* include/experimental/memory_resource: New.
+	* include/experimental/utlity: New.
+	* testsuite/experimental/type_erased_allocator/1.cc: New.
+	* testsuite/experimental/type_erased_allocator/1_neg.cc: New.
+	* testsuite/experimental/type_erased_allocator/2.cc: New.
+	* testsuite/experimental/type_erased_allocator/uses_allocator.cc: New.
+
 2015-11-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/56158

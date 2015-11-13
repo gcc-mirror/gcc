@@ -656,6 +656,7 @@ experimental_headers = \
 	${experimental_srcdir}/list \
 	${experimental_srcdir}/map \
 	${experimental_srcdir}/memory \
+	${experimental_srcdir}/memory_resource \
 	${experimental_srcdir}/numeric \
 	${experimental_srcdir}/optional \
 	${experimental_srcdir}/propagate_const \
@@ -668,6 +669,7 @@ experimental_headers = \
 	${experimental_srcdir}/type_traits \
 	${experimental_srcdir}/unordered_map \
 	${experimental_srcdir}/unordered_set \
+	${experimental_srcdir}/utility \
 	${experimental_srcdir}/vector \
 	${experimental_filesystem_headers}
 
