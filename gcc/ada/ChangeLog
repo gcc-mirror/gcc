@@ -1,3 +1,16 @@
+2015-11-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Constant_Indexing_OK): If the indexing is the
+	prefix of a procedure call assume that constant indexing is
+	not chosen.
+
+2015-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sigtramp.h: Fix formatting throughout, do not include other
+	headers, add missing preprocessor condition and 'extern' keywords.
+	* sigtramp-armdroid.c: Include <sys/ucontext.h>.
+	* init.c [Android]: Likewise.
+
 2015-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* init.c [Darwin/arm64] (__gnat_sigtramp): Do not increment PC,

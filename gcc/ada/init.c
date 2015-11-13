@@ -2530,6 +2530,7 @@ __gnat_install_handler (void)
 /*******************/
 
 #include <signal.h>
+#include <sys/ucontext.h>
 #include "sigtramp.h"
 
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE

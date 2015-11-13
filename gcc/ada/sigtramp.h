@@ -29,44 +29,35 @@
  *                                                                          *
  ****************************************************************************/
 
-/* On targets where this is implemented, we resort to a signal handler
-   trampoline to set-up the DWARF Call Frame Information that let unwinders
-   walk through the signal frame up into the interrupted application code.
-   This file introduces the relevant declarations.  */
-
-/* This file should only be #included on targets that do implement the
-   trampoline, which needs to expose the following interface:  */
+/* On targets where this is implemented, we resort to a signal trampoline to
+   set up the DWARF Call Frame Information that lets unwinders walk through
+   the signal frame up into the interrupted user code.  This file introduces
+   the relevant declarations.  It should only be #included on targets that do
+   implement the signal trampoline.  */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef __ANDROID__
-#include <stdlib.h>
-#include <sys/ucontext.h>
-#endif
+/* This typedef signature sometimes conflicts with the sighandler_t from
+   system headers so call it something unique.  */
+typedef void __sigtramphandler_t (int signo, void *siginfo, void *sigcontext);
 
-  /* This typedef signature sometimes conflicts with the sighandler_t from
-     system headers so call it something unique.  */
-  typedef void __sigtramphandler_t (int signo, void *siginfo, void *sigcontext);
-
-#if CPU == SIMNT || CPU == SIMPENTIUM || CPU == SIMLINUX
-  /* Vxsim requires a specially compiled handler.  */
-  void __gnat_sigtramp_vxsim  (int signo, void *siginfo, void *sigcontext,
-			 __sigtramphandler_t * handler);
+#if defined(__vxworks) && (CPU == SIMNT || CPU == SIMPENTIUM || CPU == SIMLINUX)
+/* Vxsim requires a specially compiled handler.  */
+extern void __gnat_sigtramp_vxsim (int signo, void *siginfo, void *sigcontext,
+				   __sigtramphandler_t * handler);
 #else
-  void __gnat_sigtramp  (int signo, void *siginfo, void *sigcontext,
-			 __sigtramphandler_t * handler);
+extern void __gnat_sigtramp (int signo, void *siginfo, void *sigcontext,
+			     __sigtramphandler_t * handler);
 #endif
 
-  /* To be called from an established signal handler.  Setup the DWARF CFI
-     bits letting unwinders walk through the signal frame up into the
-     interrupted application code, and then call HANDLER (SIGNO, SIGINFO,
-     SIGCONTEXT).
+/* The signal trampoline is to be called from an established signal handler.
+   It sets up the DWARF CFI and calls HANDLER (SIGNO, SIGINFO, SIGCONTEXT).
 
-     The sigtramp construct makes it so that the unwinder jumps over it + the
-     signal handler + the kernel frame. For a typical backtrace from the raise
-     function:
+   The trampoline construct makes it so that the unwinder jumps over it + the
+   signal handler + the kernel frame.  For a typical backtrace from the raise
+   function:
 
      #0  __gnat_Unwind_RaiseException
      #1  Raise_From_Signal_Handler
@@ -76,11 +67,11 @@ extern "C" {
      #5  <kernel frame>
      #6  interrupted function
 
-     The unwinder will unwind frames 0, 1 and 2 as usual. But the CFI of frame
-     3 is set up as if the caller of frame 3 was frame 6 so, when frame 3 is
-     unwound, the unwinder ends up in frame 6 directly. It's possible to do so
-     since the kernel has saved the context of frame 6 and passed it on to
-     __gnat_sigtramp.  */
+   The unwinder will unwind frames 0, 1 and 2 as usual.  But the CFI of frame
+   3 is set up as if the caller of frame 3 was frame 6 so, when frame 3 is
+   unwound, the unwinder ends up in frame 6 directly.  It's possible to do so
+   because the kernel has saved the context of frame 6 and passed it on to
+   __gnat_error_handler and __gnat_sigtramp.  */
 
 #ifdef __cplusplus
 }

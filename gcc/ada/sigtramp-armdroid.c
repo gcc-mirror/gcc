@@ -33,6 +33,8 @@
  * ARM-Android version of the __gnat_sigtramp service *
  ******************************************************/
 
+#include <sys/ucontext.h>
+
 #include "sigtramp.h"
 /* See sigtramp.h for a general explanation of functionality.  */
 
