@@ -1662,11 +1662,10 @@ or alternatively, using the form recommended by the RM:
     for B'Address use Addr;
 
 
-In both of these cases, `A`
-and `B` become aliased to one another via the
-address clause. This use of address clauses to overlay
-variables, achieving an effect similar to unchecked
-conversion was erroneous in Ada 83, but in Ada 95 and Ada 2005
+In both of these cases, `A` and `B` become aliased to one another
+via the address clause. This use of address clauses to overlay
+variables, achieving an effect similar to unchecked conversion
+was erroneous in Ada 83, but in Ada 95 and Ada 2005
 the effect is implementation defined. Furthermore, the
 Ada RM specifically recommends that in a situation
 like this, `B` should be subject to the following
@@ -1677,10 +1676,14 @@ implementation advice (RM 13.3(19)):
    optimizations based on assumptions of no aliases."
 
 GNAT follows this recommendation, and goes further by also applying
-this recommendation to the overlaid variable (`A`
-in the above example) in this case. This means that the overlay
-works "as expected", in that a modification to one of the variables
-will affect the value of the other.
+this recommendation to the overlaid variable (`A` in the above example)
+in this case. This means that the overlay works "as expected", in that
+a modification to one of the variables will affect the value of the other.
+
+More generally, GNAT interprets this recommendation conservatively for
+address clauses: in the cases other than overlays, it considers that the
+object is effectively subject to pragma `Volatile` and implements the
+associated semantics.
 
 Note that when address clause overlays are used in this way, there is an
 issue of unintentional initialization, as shown by this example:
@@ -1803,12 +1806,9 @@ operations, for example:
       Temp.A := 32;
       Mem := Temp;
 
-For a full access (reference or modification) of the variable (Mem) in
-this case, as in the above examples, GNAT guarantees that the entire atomic
-word will be accessed. It is not clear whether the RM requires this. For
-example in the above, can the compiler reference only the Mem.A field as
-an optimization? Whatever the answer to this question is, GNAT makes the
-guarantee that for such a reference, the entire word is read or written.
+For a full access (reference or modification) of the variable (Mem) in this
+case, as in the above examples, GNAT guarantees that the entire atomic word
+will be accessed, in accordance with the RM C.6(15) clause.
 
 A problem arises with a component access such as:
 
@@ -1834,6 +1834,9 @@ a warning in such a case:
 It is best to be explicit in this situation, by either declaring the
 components to be atomic if you want the byte store, or explicitly writing
 the full word access sequence if that is what the hardware requires.
+Alternatively, if the full word access sequence is required, GNAT also
+provides the pragma `Volatile_Full_Access` which can be used in lieu of
+pragma `Atomic` and will give the additional guarantee.
 
 
 .. _Effect_of_Convention_on_Representation:

@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , November 12, 2015
+GNAT User's Guide for Native Platforms , November 13, 2015
 
 AdaCore
 
@@ -5720,19 +5720,19 @@ types). This simplifies the definition of operations that use type checking
 to perform dimensional checks:
 @end itemize
 
-@c code-block: ada
-@c 
-@c   type Distance is new Long_Float;
-@c   type Time     is new Long_Float;
-@c   type Velocity is new Long_Float;
-@c   function "/" (D : Distance; T : Time)
-@c     return Velocity;
-@c   pragma Import (Intrinsic, "/");
-@c 
-@c This common idiom is often programmed with a generic definition and an
-@c explicit body. The pragma makes it simpler to introduce such declarations.
-@c It incurs no overhead in compilation time or code size, because it is
-@c implemented as a single machine instruction.
+@example
+  type Distance is new Long_Float;
+  type Time     is new Long_Float;
+  type Velocity is new Long_Float;
+  function "/" (D : Distance; T : Time)
+    return Velocity;
+  pragma Import (Intrinsic, "/");
+
+This common idiom is often programmed with a generic definition and an
+explicit body. The pragma makes it simpler to introduce such declarations.
+It incurs no overhead in compilation time or code size, because it is
+implemented as a single machine instruction.
+@end example
 
 
 @itemize *
@@ -9617,23 +9617,25 @@ Eliminate intermediate overflows (@cite{ELIMINATED})
 @end multitable
 
 
-If only one digit appears then it applies to all
+If only one digit appears, then it applies to all
 cases; if two digits are given, then the first applies outside
-assertions, and the second within assertions.
+assertions, pre/postconditions, and type invariants, and the second
+applies within assertions, pre/postconditions, and type invariants.
 
 If no digits follow the @emph{-gnato}, then it is equivalent to
 @emph{-gnato11},
-causing all intermediate overflows to be handled in strict mode.
+causing all intermediate overflows to be handled in strict
+mode.
 
 This switch also causes arithmetic overflow checking to be performed
-(as though @cite{pragma Unsuppress (Overflow_Mode)} had been specified.
+(as though @cite{pragma Unsuppress (Overflow_Mode)} had been specified).
 
 The default if no option @emph{-gnato} is given is that overflow handling
 is in @cite{STRICT} mode (computations done using the base type), and that
 overflow checking is enabled.
 
 Note that division by zero is a separate check that is not
-controlled by this switch (division by zero checking is on by default).
+controlled by this switch (divide-by-zero checking is on by default).
 
 See also @ref{fd,,Specifying the Desired Mode}.
 @end table
@@ -12534,30 +12536,75 @@ When no switch @emph{-gnatw} is used, this is equivalent to:
 
 @geindex Assertions
 
+@geindex Precondition
+
+@geindex Postcondition
+
+@geindex Type invariants
+
+@geindex Subtype predicates
+
+The @cite{-gnata} option is equivalent to the following Assertion_Policy pragma:
+
+@example
+pragma Assertion_Policy (Check);
+@end example
+
+Which is a shorthand for:
+
+@example
+pragma Assertion_Policy
+  (Assert               => Check,
+   Static_Predicate     => Check,
+   Dynamic_Predicate    => Check,
+   Pre                  => Check,
+   Pre'Class            => Check,
+   Post                 => Check,
+   Post'Class           => Check,
+   Type_Invariant       => Check,
+   Type_Invariant'Class => Check);
+@end example
+
 The pragmas @cite{Assert} and @cite{Debug} normally have no effect and
 are ignored. This switch, where @code{a} stands for assert, causes
-@cite{Assert} and @cite{Debug} pragmas to be activated.
+pragmas @cite{Assert} and @cite{Debug} to be activated. This switch also
+causes preconditions, postconditions, subtype predicates, and
+type invariants to be activated.
 
 The pragmas have the form:
 
 @example
 pragma Assert (<Boolean-expression> [, <static-string-expression>])
 pragma Debug (<procedure call>)
+pragma Type_Invariant (<type-local-name>, <Boolean-expression>)
+pragma Predicate (<type-local-name>, <Boolean-expression>)
+pragma Precondition (<Boolean-expression>, <string-expression>)
+pragma Postcondition (<Boolean-expression>, <string-expression>)
+@end example
+
+The aspects have the form:
+
+@example
+with [Pre|Post|Type_Invariant|Dynamic_Predicate|Static_Predicate]
+  => <Boolean-expression>;
 @end example
 
 The @cite{Assert} pragma causes @cite{Boolean-expression} to be tested.
 If the result is @cite{True}, the pragma has no effect (other than
 possible side effects from evaluating the expression). If the result is
 @cite{False}, the exception @cite{Assert_Failure} declared in the package
-@cite{System.Assertions} is
-raised (passing @cite{static-string-expression}, if present, as the
-message associated with the exception). If no string expression is
-given the default is a string giving the file name and line number
-of the pragma.
+@cite{System.Assertions} is raised (passing @cite{static-string-expression}, if
+present, as the message associated with the exception). If no string
+expression is given, the default is a string containing the file name and
+line number of the pragma.
 
 The @cite{Debug} pragma causes @cite{procedure} to be called. Note that
 @cite{pragma Debug} may appear within a declaration sequence, allowing
 debugging procedures to be called between declarations.
+
+For the aspect specification, the @cite{<Boolean-expression>} is evaluated.
+If the result is @cite{True}, the aspect has no effect. If the result
+is @cite{False}, the exception @cite{Assert_Failure} is raised.
 @end table
 
 @node Validity Checking,Style Checking,Debugging and Assertion Control,Compiler Switches
@@ -13575,11 +13622,11 @@ The switch @code{-gnatyN} clears any previously set style checks.
 @geindex Checks
 @geindex stack overflow checking
 
-By default, the following checks are suppressed: integer overflow
-checks, stack overflow checks, and checks for access before
-elaboration on subprogram calls. All other checks, including range
-checks and array bounds checks, are turned on by default. The
-following @emph{gcc} switches refine this default behavior.
+By default, the following checks are suppressed: stack overflow
+checks, and checks for access before elaboration on subprogram
+calls. All other checks, including overflow checks, range checks and
+array bounds checks, are turned on by default. The following @emph{gcc}
+switches refine this default behavior.
 
 @geindex -gnatp (gcc)
 
@@ -13731,13 +13778,8 @@ subscript), or a wild jump (from an out of range case value). Overflow
 checking is also quite expensive in time and space, since in general it
 requires the use of double length arithmetic.
 
-Note again that the default is @emph{-gnato00},
-so overflow checking is not performed in default mode. This means that out of
-the box, with the default settings, GNAT does not do all the checks
-expected from the language description in the Ada Reference Manual.
-If you want all constraint checks to be performed, as described in this Manual,
-then you must explicitly use the @emph{-gnato??}
-switch either on the @emph{gnatmake} or @emph{gcc} command.
+Note again that the default is @emph{-gnato11} (equivalent to @emph{-gnato1}),
+so overflow checking is performed in STRICT mode by default.
 @end table
 
 @geindex -gnatE (gcc)
@@ -16133,7 +16175,7 @@ since gnatlink will not be able to find the generated file.
 @section Linking with @emph{gnatlink}
 
 
-@c index: ! gnatlink
+@geindex gnatlink
 
 This chapter discusses @emph{gnatlink}, a tool that links
 an Ada program and builds an executable file. This utility
@@ -17030,22 +17072,22 @@ subtrees rooted at subdirectories ".svn". To do that, attribute
 @strong{Ignore_Source_Sub_Dirs} can be used. It specifies the list of simple
 file names for the roots of these undesirable directory subtrees.
 
-@c code-block: ada-project
-@c 
-@c for Source_Dirs use ("./**");
-@c for Ignore_Source_Sub_Dirs use (".svn");
+@example
+for Source_Dirs use ("./**");
+for Ignore_Source_Sub_Dirs use (".svn");
+@end example
 @end itemize
 
 When applied to the simple example, and because we generally prefer to have
 the project file at the toplevel directory rather than mixed with the sources,
 we will create the following file
 
-@c code-block: ada-project
-@c 
-@c build.gpr
-@c project Build is
-@c    for Source_Dirs use ("common");  --  <<<<
-@c end Build;
+@example
+build.gpr
+project Build is
+   for Source_Dirs use ("common");  --  <<<<
+end Build;
+@end example
 
 Once source directories have been specified, one may need to indicate
 source files of interest. By default, all source files present in the source
@@ -17199,12 +17241,12 @@ the project directory, that is the directory containing the project file.
 
 For our example, we can specify the object dir in this way:
 
-@c code-block: ada-project
-@c 
-@c project Build is
-@c    for Source_Dirs use ("common");
-@c    for Object_Dir use "obj";   --  <<<<
-@c end Build;
+@example
+project Build is
+   for Source_Dirs use ("common");
+   for Object_Dir use "obj";   --  <<<<
+end Build;
+@end example
 
 As mentioned earlier, there is a single object directory per project. As a
 result, if you have an existing system where the object files are spread across
@@ -17231,13 +17273,13 @@ In the case of the example, let's place the executable in the root
 of the hierarchy, ie the same directory as @code{build.gpr}. Hence
 the project file is now
 
-@c code-block: ada-project
-@c 
-@c project Build is
-@c    for Source_Dirs use ("common");
-@c    for Object_Dir use "obj";
-@c    for Exec_Dir use ".";  --   <<<<
-@c end Build;
+@example
+project Build is
+   for Source_Dirs use ("common");
+   for Object_Dir use "obj";
+   for Exec_Dir use ".";  --   <<<<
+end Build;
+@end example
 
 @node Main Subprograms,Tools Options in Project Files,Object and Exec Directory,Building With Projects
 @anchor{gnat_ugn/gnat_project_manager id6}@anchor{15c}@anchor{gnat_ugn/gnat_project_manager main-subprograms}@anchor{15d}
@@ -17267,14 +17309,14 @@ command line when invoking a builder, and editors like
 @emph{GPS} will be able to create extra menus to spawn or debug the
 corresponding executables.
 
-@c code-block: ada-project
-@c 
-@c project Build is
-@c    for Source_Dirs use ("common");
-@c    for Object_Dir use "obj";
-@c    for Exec_Dir use ".";
-@c    for Main use ("proc.adb");  --   <<<<
-@c end Build;
+@example
+project Build is
+   for Source_Dirs use ("common");
+   for Object_Dir use "obj";
+   for Exec_Dir use ".";
+   for Main use ("proc.adb");  --   <<<<
+end Build;
+@end example
 
 If this attribute is defined in the project, then spawning the builder
 with a command such as
@@ -17333,26 +17375,26 @@ Our example project file can be extended with the following empty packages. At
 this stage, they could all be omitted since they are empty, but they show which
 packages would be involved in the build process.
 
-@c code-block: ada-project
-@c 
-@c project Build is
-@c    for Source_Dirs use ("common");
-@c    for Object_Dir use "obj";
-@c    for Exec_Dir use ".";
-@c    for Main use ("proc.adb");
-@c 
-@c    package Builder is  --<<<  for gprbuild
-@c    end Builder;
-@c 
-@c    package Compiler is --<<<  for the compiler
-@c    end Compiler;
-@c 
-@c    package Binder is   --<<<  for the binder
-@c    end Binder;
-@c 
-@c    package Linker is   --<<<  for the linker
-@c    end Linker;
-@c end Build;
+@example
+project Build is
+   for Source_Dirs use ("common");
+   for Object_Dir use "obj";
+   for Exec_Dir use ".";
+   for Main use ("proc.adb");
+
+   package Builder is  --<<<  for gprbuild
+   end Builder;
+
+   package Compiler is --<<<  for the compiler
+   end Compiler;
+
+   package Binder is   --<<<  for the binder
+   end Binder;
+
+   package Linker is   --<<<  for the linker
+   end Linker;
+end Build;
+@end example
 
 Let's first examine the compiler switches. As stated in the initial description
 of the example, we want to compile all files with @emph{-O2}. This is a
@@ -17381,11 +17423,11 @@ In this example, we want to compile all Ada source files with the switch
 @emph{-O2}, and the resulting project file is as follows
 (only the @cite{Compiler} package is shown):
 
-@c code-block: ada-project
-@c 
-@c package Compiler is
-@c   for Default_Switches ("Ada") use ("-O2");
-@c end Compiler;
+@example
+package Compiler is
+  for Default_Switches ("Ada") use ("-O2");
+end Compiler;
+@end example
 @end quotation
 
 @geindex Switches (GNAT Project Manager)
@@ -17402,26 +17444,25 @@ attribute (indexed on the file name) can be used and will override the
 switches defined by @emph{Default_Switches}. Our project file would
 become:
 
-@c code-block: ada-project
-@c 
-@c 
-@c package Compiler is
-@c    for Default_Switches ("Ada")
-@c        use ("-O2");
-@c    for Switches ("proc.adb")
-@c        use ("-O0");
-@c end Compiler;
+@example
+package Compiler is
+   for Default_Switches ("Ada")
+       use ("-O2");
+   for Switches ("proc.adb")
+       use ("-O0");
+end Compiler;
+@end example
 
 @cite{Switches} may take a pattern as an index, such as in:
 
-@c code-block: ada-project
-@c 
-@c package Compiler is
-@c   for Default_Switches ("Ada")
-@c       use ("-O2");
-@c   for Switches ("pkg*")
-@c       use ("-O0");
-@c end Compiler;
+@example
+package Compiler is
+  for Default_Switches ("Ada")
+      use ("-O2");
+  for Switches ("pkg*")
+      use ("-O0");
+end Compiler;
+@end example
 
 Sources @code{pkg.adb} and @code{pkg-child.adb} would be compiled with -O0,
 not -O2.
@@ -18708,16 +18749,16 @@ but, for some reason, cannot be rebuilt. For instance, it is the case when some
 of the library sources are not available. Such library projects need to use the
 @cite{Externally_Built} attribute as in the example below:
 
-@c code-block: ada-project
-@c 
-@c library project Extern_Lib is
-@c    for Languages    use ("Ada", "C");
-@c    for Source_Dirs  use ("lib_src");
-@c    for Library_Dir  use "lib2";
-@c    for Library_Kind use "dynamic";
-@c    for Library_Name use "l2";
-@c    for Externally_Built use "true";  --  <<<<
-@c end Extern_Lib;
+@example
+library project Extern_Lib is
+   for Languages    use ("Ada", "C");
+   for Source_Dirs  use ("lib_src");
+   for Library_Dir  use "lib2";
+   for Library_Kind use "dynamic";
+   for Library_Name use "l2";
+   for Externally_Built use "true";  --  <<<<
+end Extern_Lib;
+@end example
 
 In the case of externally built libraries, the @cite{Object_Dir}
 attribute does not need to be specified because it will never be
@@ -20255,13 +20296,6 @@ or given a file name to find out its language for proper processing.
 See @ref{14b,,Naming Schemes}.
 @end quotation
 
-@c only: PRO or GPL
-@c 
-@c *Pretty_Printer*
-@c   This package specifies the options used when calling the formatting tool
-@c   *gnatpp* via the *gnat* driver. Its attributes
-@c   **Default_Switches** and **Switches** have the same semantics as for the
-@c   package `Builder`.
 
 @item @emph{Remote}
 
@@ -23402,7 +23436,7 @@ where @cite{gnatclean} was invoked.
 
 @geindex Library browser
 
-@c index: ! gnatls
+@geindex gnatls
 
 @cite{gnatls} is a tool that outputs information about compiled
 units. It gives the relationship between objects, unit names and source
@@ -26838,26 +26872,20 @@ some guidelines on debugging optimized code.
 @subsubsection Controlling Run-Time Checks
 
 
-By default, GNAT generates all run-time checks, except integer overflow
-checks, stack overflow checks, and checks for access before elaboration on
-subprogram calls. The latter are not required in default mode, because all
+By default, GNAT generates all run-time checks, except stack overflow
+checks, and checks for access before elaboration on subprogram
+calls. The latter are not required in default mode, because all
 necessary checking is done at compile time.
 
 @geindex -gnatp (gcc)
 
 @geindex -gnato (gcc)
 
-Two gnat switches, @emph{-gnatp} and @emph{-gnato} allow this default to
-be modified. See @ref{fe,,Run-Time Checks}.
+The gnat switch, @emph{-gnatp} allows this default to be modified. See
+@ref{fe,,Run-Time Checks}.
 
 Our experience is that the default is suitable for most development
 purposes.
-
-We treat integer overflow specially because these
-are quite expensive and in our experience are not as important as other
-run-time checks in the development process. Note that division by zero
-is not considered an overflow check, and divide by zero checks are
-generated where required by default.
 
 Elaboration checks are off by default, and also not needed by default, since
 GNAT uses a static elaboration analysis approach that avoids the need for
@@ -27415,11 +27443,9 @@ end Sum;
 
 The vectorizable operations depend on the targeted SIMD instruction set, but
 the adding and some of the multiplying operators are generally supported, as
-well as the logical operators for modular types.  Note that, in the former
-case, enabling overflow checks, for example with @emph{-gnato}, totally
-disables vectorization.  The other checks are not supposed to have the same
-definitive effect, although compiling with @emph{-gnatp} might well reveal
-cases where some checks do thwart vectorization.
+well as the logical operators for modular types. Note that compiling
+with @emph{-gnatp} might well reveal cases where some checks do thwart
+vectorization.
 
 Type conversions may also prevent vectorization if they involve semantics that
 are not directly supported by the code generator or the SIMD instruction set.
@@ -28510,11 +28536,6 @@ If no digits follow the @emph{-gnato}, then it is equivalent to
 @emph{-gnato11},
 causing all intermediate operations to be computed using the base
 type (@cite{STRICT} mode).
-
-In addition to setting the mode used for computation of intermediate
-results, the @cite{-gnato} switch also enables overflow checking (which
-is suppressed by default). It thus combines the effect of using
-a pragma @cite{Overflow_Mode} and pragma @cite{Unsuppress}.
 
 @node Default Settings,Implementation Notes,Specifying the Desired Mode,Overflow Check Handling in GNAT
 @anchor{gnat_ugn/gnat_and_program_execution id58}@anchor{24d}@anchor{gnat_ugn/gnat_and_program_execution default-settings}@anchor{24e}

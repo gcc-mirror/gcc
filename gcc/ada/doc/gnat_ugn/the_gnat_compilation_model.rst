@@ -3629,7 +3629,7 @@ Convention identifiers are recognized by GNAT:
     to perform dimensional checks:
 
 
-  .. code-block: ada
+  .. code-block:: ada
 
       type Distance is new Long_Float;
       type Time     is new Long_Float;

@@ -259,7 +259,7 @@ There are several ways of defining source directories:
   file names for the roots of these undesirable directory subtrees.
 
 
-  .. code-block: ada-project
+  .. code-block:: gpr
 
         for Source_Dirs use ("./**");
         for Ignore_Source_Sub_Dirs use (".svn");
@@ -270,7 +270,7 @@ the project file at the toplevel directory rather than mixed with the sources,
 we will create the following file
 
 
-.. code-block: ada-project
+.. code-block:: gpr
 
      build.gpr
      project Build is
@@ -420,7 +420,7 @@ the project directory, that is the directory containing the project file.
 
 For our example, we can specify the object dir in this way:
 
-.. code-block: ada-project
+.. code-block:: gpr
 
        project Build is
           for Source_Dirs use ("common");
@@ -452,7 +452,7 @@ In the case of the example, let's place the executable in the root
 of the hierarchy, ie the same directory as :file:`build.gpr`. Hence
 the project file is now
 
-.. code-block: ada-project
+.. code-block:: gpr
 
        project Build is
           for Source_Dirs use ("common");
@@ -489,7 +489,7 @@ command line when invoking a builder, and editors like
 *GPS* will be able to create extra menus to spawn or debug the
 corresponding executables.
 
-.. code-block: ada-project
+.. code-block:: gpr
 
        project Build is
           for Source_Dirs use ("common");
@@ -557,7 +557,7 @@ Our example project file can be extended with the following empty packages. At
 this stage, they could all be omitted since they are empty, but they show which
 packages would be involved in the build process.
 
-.. code-block: ada-project
+.. code-block:: gpr
 
        project Build is
           for Source_Dirs use ("common");
@@ -603,7 +603,7 @@ Several attributes can be used to specify the switches:
   *-O2*, and the resulting project file is as follows
   (only the `Compiler` package is shown):
 
-  .. code-block: ada-project
+  .. code-block:: gpr
 
        package Compiler is
          for Default_Switches ("Ada") use ("-O2");
@@ -621,7 +621,7 @@ Several attributes can be used to specify the switches:
   switches defined by *Default_Switches*. Our project file would
   become:
 
-  .. code-block: ada-project
+  .. code-block:: gpr
 
 
       package Compiler is
@@ -634,7 +634,7 @@ Several attributes can be used to specify the switches:
 
   `Switches` may take a pattern as an index, such as in:
 
-  .. code-block: ada-project
+  .. code-block:: gpr
 
       package Compiler is
         for Default_Switches ("Ada")
@@ -1793,7 +1793,7 @@ but, for some reason, cannot be rebuilt. For instance, it is the case when some
 of the library sources are not available. Such library projects need to use the
 `Externally_Built` attribute as in the example below:
 
-.. code-block: ada-project
+.. code-block:: gpr
 
      library project Extern_Lib is
         for Languages    use ("Ada", "C");
@@ -3180,7 +3180,7 @@ The following packages are currently supported in project files
   or given a file name to find out its language for proper processing.
   See :ref:`Naming_Schemes`.
 
- .. only: PRO or GPL
+ .. only:: PRO or GPL
 
   *Pretty_Printer*
     This package specifies the options used when calling the formatting tool
