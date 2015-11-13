@@ -1,3 +1,8 @@
+2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-c++-common/goacc/data-default-1.c: Correct expected
+	diagnostic.
+
 2015-11-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68306

@@ -1,3 +1,7 @@
+2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gimplify.c (oacc_default_clause): Use inform for enclosing scope.
+
 2015-11-13  Tom de Vries  <tom@codesourcery.com>
 
 	* gen-pass-instances.awk (handle_line): Rename prefix_len var to
