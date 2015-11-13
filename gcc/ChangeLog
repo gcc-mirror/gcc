@@ -1,3 +1,21 @@
+2015-11-13  Ajit Agarwal  <ajitkum@xilinx.com>
+	    Jeff Law  <law@redhat.com>
+
+	* Makefile.in (OBJS): Add gimple-ssa-split-paths.o
+	* common.opt (-fsplit-paths): New flag controlling path splitting.
+	* doc/invoke.texi (fsplit-paths): Document.
+	* opts.c (default_options_table): Add -fsplit-paths to -O2.
+	* passes.def: Add split_paths pass.
+	* timevar.def (TV_SPLIT_PATHS): New timevar.
+	* tracer.c: Include "tracer.h"
+	(ignore_bb_p): No longer static.
+	(transform_duplicate): New function, broken out of tail_duplicate.
+	(tail_duplicate): Use transform_duplicate.
+	* tracer.h (ignore_bb_p): Declare
+	(transform_duplicate): Likewise.
+	* tree-pass.h (make_pass_split_paths): Declare.
+	* gimple-ssa-split-paths.c: New file.
+
 2015-11-13  Kai Tietz  <ktietz70@googlemail.com>
 	    Marek Polacek  <polacek@redhat.com>
 	    Jason Merrill  <jason@redhat.com>

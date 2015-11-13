@@ -1,3 +1,8 @@
+2015-11-13  Ajit Agarwal  <ajitkum@xilinx.com>
+            Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/split-path-1.c: New test.
+
 2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-c++-common/goacc/loop-auto-1.c: New.
