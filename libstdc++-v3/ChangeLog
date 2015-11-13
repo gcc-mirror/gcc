@@ -1,3 +1,10 @@
+2015-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/random: New.
+	* testsuite/experimental/random/randint.cc: New.
+
 2015-11-13  John Marino  <gnugcc@marino.st>
 
 	* testsuite/22_locale/codecvt/always_noconv/char/wrapped_env.cc:
