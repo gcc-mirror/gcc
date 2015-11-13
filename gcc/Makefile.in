@@ -1403,6 +1403,7 @@ OBJS = \
 	shrink-wrap.o \
 	simplify-rtx.o \
 	sparseset.o \
+	spellcheck.o \
 	sreal.o \
 	stack-ptr-mod.o \
 	statistics.o \
