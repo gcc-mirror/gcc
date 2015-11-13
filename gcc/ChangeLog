@@ -1,3 +1,8 @@
+2015-11-13  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Check
+	types of stored value and storage are compatible.
+
 2015-11-13  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	* gcc.c (POST_LINK_SPEC): Define if not already defined.

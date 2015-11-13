@@ -1688,6 +1688,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   bool nested_in_vect_loop = nested_in_vect_loop_p (loop, stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree rhs_vectype = NULL_TREE;
   tree mask_vectype;
   tree elem_type;
   gimple *new_stmt;
@@ -1757,6 +1758,13 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!mask_vectype)
     return false;
 
+  if (is_store)
+    {
+      tree rhs = gimple_call_arg (stmt, 3);
+      if (!vect_is_simple_use (rhs, loop_vinfo, &def_stmt, &dt, &rhs_vectype))
+	return false;
+    }
+
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       gimple *def_stmt;
@@ -1790,15 +1798,10 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   else if (!VECTOR_MODE_P (TYPE_MODE (vectype))
 	   || !can_vec_mask_load_store_p (TYPE_MODE (vectype),
 					  TYPE_MODE (mask_vectype),
-					  !is_store))
+					  !is_store)
+	   || (rhs_vectype
+	       && !useless_type_conversion_p (vectype, rhs_vectype)))
     return false;
-
-  if (is_store)
-    {
-      tree rhs = gimple_call_arg (stmt, 3);
-      if (!vect_is_simple_use (rhs, loop_vinfo, &def_stmt, &dt))
-	return false;
-    }
 
   if (!vec_stmt) /* transformation not required.  */
     {
