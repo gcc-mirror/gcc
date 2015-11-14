@@ -330,8 +330,7 @@ package System.OS_Interface is
    --  returns the stack base of the specified thread. Only call this function
    --  when Stack_Base_Available is True.
 
-   function Get_Page_Size return size_t;
-   function Get_Page_Size return Address;
+   function Get_Page_Size return int;
    pragma Import (C, Get_Page_Size, "getpagesize");
    --  Returns the size of a page
 
