@@ -1,3 +1,8 @@
+2015-11-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/init/vbase1.C: XFAIL powerpc*-*-*.
+	* g++.dg/cpp/ucn-1.C: Expect error for dollar sign identifier on AIX.
+
 2015-11-13  Ajit Agarwal  <ajitkum@xilinx.com>
             Jeff Law  <law@redhat.com>
 
