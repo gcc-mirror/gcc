@@ -8589,33 +8589,24 @@ stabilize_vla_size (tree size)
   cp_walk_tree (&size, stabilize_save_expr_r, &pset, &pset);
 }
 
-/* Helper function for compute_array_index_type.  Look for SIZEOF_EXPR
-   not inside of SAVE_EXPR and fold them.  */
+/* Reduce a SIZEOF_EXPR to its value.  */
 
-static tree
-fold_sizeof_expr_r (tree *expr_p, int *walk_subtrees, void *data)
+tree
+fold_sizeof_expr (tree t)
 {
-  tree expr = *expr_p;
-  if (TREE_CODE (expr) == SAVE_EXPR || TYPE_P (expr))
-    *walk_subtrees = 0;
-  else if (TREE_CODE (expr) == SIZEOF_EXPR)
-    {
-      *(bool *)data = true;
-      if (SIZEOF_EXPR_TYPE_P (expr))
-	expr = cxx_sizeof_or_alignof_type (TREE_TYPE (TREE_OPERAND (expr, 0)),
-					   SIZEOF_EXPR, false);
-      else if (TYPE_P (TREE_OPERAND (expr, 0)))
-	expr = cxx_sizeof_or_alignof_type (TREE_OPERAND (expr, 0), SIZEOF_EXPR,
-					   false);
-      else
-        expr = cxx_sizeof_or_alignof_expr (TREE_OPERAND (expr, 0), SIZEOF_EXPR,
-					   false);
-      if (expr == error_mark_node)
-        expr = size_one_node;
-      *expr_p = expr;
-      *walk_subtrees = 0;
-    }
-  return NULL;
+  tree r;
+  if (SIZEOF_EXPR_TYPE_P (t))
+    r = cxx_sizeof_or_alignof_type (TREE_TYPE (TREE_OPERAND (t, 0)),
+				    SIZEOF_EXPR, false);
+  else if (TYPE_P (TREE_OPERAND (t, 0)))
+    r = cxx_sizeof_or_alignof_type (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+				    false);
+  else
+    r = cxx_sizeof_or_alignof_expr (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+				    false);
+  if (r == error_mark_node)
+    r = size_one_node;
+  return r;
 }
 
 /* Given the SIZE (i.e., number of elements) in an array, compute an
@@ -8708,7 +8699,18 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
       SET_TYPE_STRUCTURAL_EQUALITY (itype);
       return itype;
     }
-  
+
+  if (TREE_CODE (size) != INTEGER_CST)
+    {
+      tree folded = cp_fully_fold (size);
+      if (TREE_CODE (folded) == INTEGER_CST)
+	pedwarn (location_of (size), OPT_Wpedantic,
+		 "size of array is not an integral constant-expression");
+      /* Use the folded result for VLAs, too; it will have resolved
+	 SIZEOF_EXPR.  */
+      size = folded;
+    }
+
   /* Normally, the array-bound will be a constant.  */
   if (TREE_CODE (size) == INTEGER_CST)
     {
@@ -8795,25 +8797,13 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 				  cp_convert (ssizetype, integer_one_node,
 					      complain),
 				  complain);
-      itype = fold (itype);
+      itype = maybe_constant_value (itype);
       processing_template_decl = saved_processing_template_decl;
 
       if (!TREE_CONSTANT (itype))
 	{
 	  /* A variable sized array.  */
 	  itype = variable_size (itype);
-
-	  if (TREE_CODE (itype) != SAVE_EXPR)
-	    {
-	      /* Look for SIZEOF_EXPRs in itype and fold them, otherwise
-		 they might survive till gimplification.  */
-	      tree newitype = itype;
-	      bool found = false;
-	      cp_walk_tree_without_duplicates (&newitype,
-					       fold_sizeof_expr_r, &found);
-	      if (found)
-		itype = variable_size (fold (newitype));
-	    }
 
 	  stabilize_vla_size (itype);
 
@@ -13514,7 +13504,7 @@ incremented enumerator value is too large for %<long%>");
 		   "type %<%T%>", value, ENUM_UNDERLYING_TYPE (enumtype));
 
           /* Convert the value to the appropriate type.  */
-          value = convert (ENUM_UNDERLYING_TYPE (enumtype), value);
+          value = fold_convert (ENUM_UNDERLYING_TYPE (enumtype), value);
         }
     }
 

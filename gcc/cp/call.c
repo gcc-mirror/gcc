@@ -4748,7 +4748,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	  tree cmp_type = build_same_sized_truth_vector_type (arg1_type);
 	  arg1 = build2 (NE_EXPR, cmp_type, arg1, build_zero_cst (arg1_type));
 	}
-      return fold_build3 (VEC_COND_EXPR, arg2_type, arg1, arg2, arg3);
+      return build3_loc (loc, VEC_COND_EXPR, arg2_type, arg1, arg2, arg3);
     }
 
   /* [expr.cond]
@@ -5152,9 +5152,6 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 
  valid_operands:
   result = build3_loc (loc, COND_EXPR, result_type, arg1, arg2, arg3);
-  if (!cp_unevaluated_operand)
-    /* Avoid folding within decltype (c++/42013) and noexcept.  */
-    result = fold_if_not_in_template (result);
 
   /* We can't use result_type below, as fold might have returned a
      throw_expr.  */
@@ -5690,8 +5687,8 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 		 decaying an enumerator to its value.  */
 	      if (complain & tf_warning)
 		warn_logical_operator (loc, code, boolean_type_node,
-				       code_orig_arg1, arg1,
-				       code_orig_arg2, arg2);
+				       code_orig_arg1, fold (arg1),
+				       code_orig_arg2, fold (arg2));
 
 	      arg2 = convert_like (conv, arg2, complain);
 	    }
@@ -5729,7 +5726,8 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
     case TRUTH_OR_EXPR:
       if (complain & tf_warning)
 	warn_logical_operator (loc, code, boolean_type_node,
-			       code_orig_arg1, arg1, code_orig_arg2, arg2);
+			       code_orig_arg1, fold (arg1),
+			       code_orig_arg2, fold (arg2));
       /* Fall through.  */
     case GT_EXPR:
     case LT_EXPR:
@@ -5740,9 +5738,10 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
       if ((complain & tf_warning)
 	  && ((code_orig_arg1 == BOOLEAN_TYPE)
 	      ^ (code_orig_arg2 == BOOLEAN_TYPE)))
-	maybe_warn_bool_compare (loc, code, arg1, arg2);
+	maybe_warn_bool_compare (loc, code, fold (arg1),
+				 fold (arg2));
       if (complain & tf_warning && warn_tautological_compare)
-	warn_tautological_cmp (loc, code, arg1, arg2);
+	warn_tautological_cmp (loc, code, fold (arg1), fold (arg2));
       /* Fall through.  */
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -6496,7 +6495,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  imag = perform_implicit_conversion (TREE_TYPE (totype),
 					      imag, complain);
 	  expr = build2 (COMPLEX_EXPR, totype, real, imag);
-	  return fold_if_not_in_template (expr);
+	  return expr;
 	}
       expr = reshape_init (totype, expr, complain);
       expr = get_target_expr_sfinae (digest_init (totype, expr, complain),
@@ -6737,7 +6736,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 		    "implicit conversion from %qT to %qT when passing "
 		    "argument to function",
 		    arg_type, double_type_node);
-      arg = convert_to_real (double_type_node, arg);
+      arg = convert_to_real_nofold (double_type_node, arg);
     }
   else if (NULLPTR_TYPE_P (arg_type))
     arg = null_pointer_node;
@@ -6982,7 +6981,7 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
   bitfield_type = is_bitfield_expr_with_lowered_type (val);
   if (bitfield_type 
       && TYPE_PRECISION (TREE_TYPE (val)) < TYPE_PRECISION (type))
-    val = convert_to_integer (TYPE_MAIN_VARIANT (bitfield_type), val);
+    val = convert_to_integer_nofold (TYPE_MAIN_VARIANT (bitfield_type), val);
 
   if (val == error_mark_node)
     ;
@@ -7502,7 +7501,19 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   gcc_assert (j <= nargs);
   nargs = j;
 
-  check_function_arguments (TREE_TYPE (fn), nargs, argarray);
+  /* Avoid to do argument-transformation, if warnings for format, and for
+     nonnull are disabled.  Just in case that at least one of them is active
+     the check_function_arguments function might warn about something.  */
+
+  if (warn_nonnull || warn_format || warn_suggest_attribute_format)
+    {
+      tree *fargs = (!nargs ? argarray
+			    : (tree *) alloca (nargs * sizeof (tree)));
+      for (j = 0; j < nargs; j++)
+	fargs[j] = maybe_constant_value (argarray[j]);
+
+      check_function_arguments (TREE_TYPE (fn), nargs, fargs);
+    }
 
   /* Avoid actually calling copy constructors and copy assignment operators,
      if possible.  */
@@ -7693,7 +7704,6 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
 		tsubst_flags_t complain)
 {
   tree fndecl;
-  int optimize_sav;
 
   /* Remember roughly where this call is.  */
   location_t loc = EXPR_LOC_OR_LOC (fn, input_location);
@@ -7705,9 +7715,18 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
   /* Check that arguments to builtin functions match the expectations.  */
   if (fndecl
       && DECL_BUILT_IN (fndecl)
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-      && !check_builtin_function_arguments (fndecl, nargs, argarray))
-    return error_mark_node;
+      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    {
+      int i;
+
+      /* We need to take care that values to BUILT_IN_NORMAL
+         are reduced.  */
+      for (i = 0; i < nargs; i++)
+	argarray[i] = maybe_constant_value (argarray[i]);
+
+      if (!check_builtin_function_arguments (fndecl, nargs, argarray))
+	return error_mark_node;
+    }
 
     /* If it is a built-in array notation function, then the return type of
      the function is the element type of the array passed in as array 
@@ -7740,17 +7759,6 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
 	  return fn;
 	}
     }
-
-  /* Some built-in function calls will be evaluated at compile-time in
-     fold ().  Set optimize to 1 when folding __builtin_constant_p inside
-     a constexpr function so that fold_builtin_1 doesn't fold it to 0.  */
-  optimize_sav = optimize;
-  if (!optimize && fndecl && DECL_IS_BUILTIN_CONSTANT_P (fndecl)
-      && current_function_decl
-      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
-    optimize = 1;
-  fn = fold_if_not_in_template (fn);
-  optimize = optimize_sav;
 
   if (VOID_TYPE_P (TREE_TYPE (fn)))
     return fn;

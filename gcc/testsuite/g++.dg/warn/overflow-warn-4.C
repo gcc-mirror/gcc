@@ -17,7 +17,7 @@ enum e {
   /* But as in DR#031, the 1/0 in an evaluated subexpression means the
      whole expression violates the constraints.  */
   E4 = 0 * (1 / 0), /* { dg-warning "division by zero" } */
-  /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { xfail *-*-* } 19 } */
+  /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { target c++ } 19 } */
   E5 = INT_MAX + 1, /* { dg-warning "integer overflow in expression" } */
   /* { dg-error "overflow in constant expression" "constant" { target *-*-* } 21 } */
   /* { dg-error "enumerator value for 'E5' is not an integer constant" "enum error" { target *-*-* } 21 } */
@@ -59,7 +59,7 @@ void *p = 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } 
 /* { dg-error "invalid conversion from 'int' to 'void" "null" { target *-*-* } 58 } */
 
 void *q = 0 * (1 / 0); /* { dg-warning "division by zero" } */
-/* { dg-error "invalid conversion from 'int' to 'void*'" "null" { xfail *-*-* } 61 } */
+/* { dg-error "invalid conversion from 'int' to 'void" "null" { target *-*-* } 61 } */
 void *r = (1 ? 0 : INT_MAX+1); /* { dg-bogus "integer overflow in expression" "" { xfail *-*-* } } */
 
 void
@@ -68,7 +68,7 @@ g (int i)
   switch (i)
     {
     case 0 * (1/0): /* { dg-warning "division by zero" } */
-      ;
+      ;  /* { dg-error "is not a constant expression" "const" { target *-*-* } 70 } */
     case 1 + 0 * (INT_MAX + 1): /* { dg-warning "integer overflow in expression" } */
       /* { dg-error "overflow in constant expression" "constant" { target *-*-* } 72 } */
       ;
@@ -131,3 +131,9 @@ h2i (int x)
   ui = INT_MIN;
   ui = x ? INT_MIN : 1U;
 }
+/* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 19 } */
+/* { dg-error "invalid conversion from" "convert" { target c++11 } 63 } */
+/* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 34 } */
+/* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 70 } */
+/* { dg-error "width not an integer constant" "bit.field" { target c++ } 34 } */
+/* { dg-error "is not a constant expression" "division" { target c++ } 34 } */

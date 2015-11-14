@@ -2562,9 +2562,26 @@ finish_unary_op_expr (location_t loc, enum tree_code code, tree expr,
 		      tsubst_flags_t complain)
 {
   tree result = build_x_unary_op (loc, code, expr, complain);
-  if ((complain & tf_warning)
-      && TREE_OVERFLOW_P (result) && !TREE_OVERFLOW_P (expr))
-    overflow_warning (input_location, result);
+  tree result_ovl, expr_ovl;
+
+  if (!(complain & tf_warning))
+    return result;
+
+  result_ovl = result;
+  expr_ovl = expr;
+
+  if (!processing_template_decl)
+    expr_ovl = cp_fully_fold (expr_ovl);
+
+  if (!CONSTANT_CLASS_P (expr_ovl)
+      || TREE_OVERFLOW_P (expr_ovl))
+    return result;
+
+  if (!processing_template_decl)
+    result_ovl = cp_fully_fold (result_ovl);
+
+  if (CONSTANT_CLASS_P (result_ovl) && TREE_OVERFLOW_P (result_ovl))
+    overflow_warning (input_location, result_ovl);
 
   return result;
 }
@@ -4476,6 +4493,11 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     low_bound = mark_rvalue_use (low_bound);
   if (length)
     length = mark_rvalue_use (length);
+  /* We need to reduce to real constant-values for checks below.  */
+  if (length)
+    length = fold_simple (length);
+  if (low_bound)
+    low_bound = fold_simple (low_bound);
   if (low_bound
       && TREE_CODE (low_bound) == INTEGER_CST
       && TYPE_PRECISION (TREE_TYPE (low_bound))
@@ -7440,6 +7462,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
   if (init && EXPR_HAS_LOCATION (init))
     elocus = EXPR_LOCATION (init);
 
+  cond = cp_fully_fold (cond);
   switch (TREE_CODE (cond))
     {
     case GT_EXPR:
@@ -7475,6 +7498,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
   diff = build_x_binary_op (elocus, MINUS_EXPR, TREE_OPERAND (cond, 1),
 			    ERROR_MARK, iter, ERROR_MARK, NULL,
 			    tf_warning_or_error);
+  diff = cp_fully_fold (diff);
   if (error_operand_p (diff))
     return true;
   if (TREE_CODE (TREE_TYPE (diff)) != INTEGER_TYPE)
@@ -7536,7 +7560,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 		  if (TREE_CODE (rhs) == MINUS_EXPR)
 		    {
 		      incr = build1 (NEGATE_EXPR, TREE_TYPE (diff), incr);
-		      incr = fold_if_not_in_template (incr);
+		      incr = fold_simple (incr);
 		    }
 		  if (TREE_CODE (incr) != INTEGER_CST
 		      && (TREE_CODE (incr) != NOP_EXPR

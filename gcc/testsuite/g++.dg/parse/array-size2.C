@@ -14,7 +14,7 @@ extern void bar (char *, char *);
 void
 foo (void)
 {
-  char g[(char *) &((struct S *) 0)->b - (char *) 0];
-  char h[(__SIZE_TYPE__) &((struct S *) 8)->b];
+  char g[(char *) &((struct S *) 0)->b - (char *) 0]; // { dg-error "constant" }
+  char h[(__SIZE_TYPE__) &((struct S *) 8)->b];	      // { dg-error "constant" "" { xfail *-*-* } }
   bar (g, h);
 }

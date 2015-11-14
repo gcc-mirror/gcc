@@ -6211,7 +6211,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
   /* 14.3.2/5: The null pointer{,-to-member} conversion is applied
      to a non-type argument of "nullptr".  */
   if (expr == nullptr_node && TYPE_PTR_OR_PTRMEM_P (type))
-    expr = convert (type, expr);
+    expr = fold_simple (convert (type, expr));
 
   /* In C++11, integral or enumeration non-type template arguments can be
      arbitrary constant expressions.  Pointer and pointer to

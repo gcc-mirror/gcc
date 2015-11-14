@@ -1,3 +1,65 @@
+2015-11-13  Kai Tietz  <ktietz70@googlemail.com>
+	    Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_conditional_expr_1, convert_like_real)
+	(convert_arg_to_ellipsis, convert_for_arg_passing): Don't fold.
+	(build_new_op_1, build_over_call, build_cxx_call): Fold for warnings.
+	* class.c (build_base_path, determine_primary_bases)
+	(update_vtable_entry_for_fn, check_bitfield_decl)
+	(layout_nonempty_base_or_field, layout_empty_base)
+	(propagate_binfo_offsets, include_empty_classes)
+	(layout_class_type, build_vbase_offset_vtbl_entries): Use
+	fold_convert.
+	* constexpr.c (cxx_eval_builtin_function_call): Fold away the NOP_EXPR.
+	(cxx_eval_call_expression): Handle MEM_REF.
+	(cxx_eval_pointer_plus_expression): Fold the second operand.
+	(cxx_eval_constant_expression): Handle MEM_REF, UNARY_PLUS_EXPR.
+	(fold_simple_1, fold_simple): New.
+	(maybe_constant_value_1): Factor out from maybe_constant_value.
+	(cv_cache, maybe_constant_value): Cache results.
+	(maybe_constant_init): Handle null input.
+	(potential_constant_expression_1): Handle RESULT_DECL, EMPTY_CLASS_EXPR.
+	* cp-array-notation.c (build_array_notation_ref): Fold operands.
+	* cp-gimplify.c (cp_fold_r, cp_fold): New.
+	(cp_genericize_r): Use fold_convert.  Don't fold SIZEOF_EXPR.
+	(cp_genericize): Fold everything.
+	(contains_label_1, contains_label_p): New.
+	(cp_fold, cp_fully_fold): New.
+	* cp-tree.h (class cache_map): New.
+	* cvt.c (cp_convert_to_pointer, ocp_convert): Use convert_to_*_nofold.
+	(cp_convert_and_check): Use cp_fully_fold.
+	(convert, convert_force): Don't fold.
+	* decl.c (fold_sizeof_expr): Change from fold_sizeof_expr_r.
+	(compute_array_index_type): Use cp_fully_fold.
+	(build_enumerator): Use fold_convert.
+	* decl2.c (get_guard_cond, set_guard): Use fold_convert.
+	* init.c (build_zero_init_1): Fold zero-initializers.
+	(build_new_1): Fold nelts calculations.
+	(build_vec_delete_1): Fold conversions.
+	(build_vec_init): Fold maxindex.
+	* parser.c (cp_parser_binary_expression): Fold LHS of || and &&.
+	(cp_parser_question_colon_clause): Fold LHS.
+	* pt.c (convert_nontype_argument): Fold nullptr conversion.
+	* semantics.c (finish_unary_op_expr): Fold for warnings.
+	(handle_omp_array_sections_1): Fold length and low bound.
+	(handle_omp_for_class_iterator): Fold various things.
+	* tree.c (builtin_valid_in_constant_expr_p): Add
+	BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE.
+	(convert_bitfield_to_declared_type): Don't fold.
+	(handle_init_priority_attribute): Fold.
+	(fold_if_not_in_template): Remove.
+	* typeck.c (decay_conversion, build_class_member_access_expr)
+	(build_simple_component_ref, cp_build_array_ref, build_vec_cmp)
+	(cp_pointer_int_sum, pointer_diff): Don't fold.
+	(cp_build_binary_op): Fold for warnings and PMF ops.
+	(cp_build_unary_op): Fold negation of a constant, nothing else.
+	(expand_ptrmemfunc_cst): Fold operations.
+	* typeck2.c (split_nonconstant_init): Fold initializer.
+	(store_init_value): Likewise.
+	(check_narrowing): Try folding.
+	* config-lang.in (gtfiles): Add cp-gimplify.c.
+
 2015-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (pedwarn_cxx98): Pass line_table to rich_location ctor.

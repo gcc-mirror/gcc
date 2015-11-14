@@ -303,9 +303,19 @@ xvalue_p (const_tree ref)
 bool
 builtin_valid_in_constant_expr_p (const_tree decl)
 {
-  /* At present BUILT_IN_CONSTANT_P is the only builtin we're allowing
-     in constant-expressions.  We may want to add other builtins later. */
-  return DECL_IS_BUILTIN_CONSTANT_P (decl);
+  if (!(TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl)))
+    /* Not a built-in.  */
+    return false;
+  switch (DECL_FUNCTION_CODE (decl))
+    {
+    case BUILT_IN_CONSTANT_P:
+    case BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE:
+      /* These have constant results even if their operands are
+	 non-constant.  */
+      return true;
+    default:
+      return false;
+    }
 }
 
 /* Build a TARGET_EXPR, initializing the DECL with the VALUE.  */
@@ -681,8 +691,8 @@ convert_bitfield_to_declared_type (tree expr)
 
   bitfield_type = is_bitfield_expr_with_lowered_type (expr);
   if (bitfield_type)
-    expr = convert_to_integer (TYPE_MAIN_VARIANT (bitfield_type),
-			       expr);
+    expr = convert_to_integer_nofold (TYPE_MAIN_VARIANT (bitfield_type),
+				      expr);
   return expr;
 }
 
@@ -3479,10 +3489,13 @@ handle_init_priority_attribute (tree* node,
 
   STRIP_NOPS (initp_expr);
   initp_expr = default_conversion (initp_expr);
+  if (initp_expr)
+    initp_expr = maybe_constant_value (initp_expr);
 
   if (!initp_expr || TREE_CODE (initp_expr) != INTEGER_CST)
     {
       error ("requested init_priority is not an integer constant");
+      cxx_constant_value (initp_expr);
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -4255,26 +4268,6 @@ stabilize_init (tree init, tree *initp)
   /* The initialization is being performed via a bitwise copy -- and
      the item copied may have side effects.  */
   return !TREE_SIDE_EFFECTS (init);
-}
-
-/* Like "fold", but should be used whenever we might be processing the
-   body of a template.  */
-
-tree
-fold_if_not_in_template (tree expr)
-{
-  /* In the body of a template, there is never any need to call
-     "fold".  We will call fold later when actually instantiating the
-     template.  Integral constant expressions in templates will be
-     evaluated via instantiate_non_dependent_expr, as necessary.  */
-  if (processing_template_decl)
-    return expr;
-
-  /* Fold C++ front-end specific tree codes.  */
-  if (TREE_CODE (expr) == UNARY_PLUS_EXPR)
-    return fold_convert (TREE_TYPE (expr), TREE_OPERAND (expr, 0));
-
-  return fold (expr);
 }
 
 /* Returns true if a cast to TYPE may appear in an integral constant
