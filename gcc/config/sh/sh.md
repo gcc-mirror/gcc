@@ -11078,7 +11078,7 @@ label:
   operands[2] = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
   operands[3] = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
 
-  if (!TARGET_SHMEDIA
+  if (!TARGET_SHMEDIA && !TARGET_FDPIC
       && flag_stack_protect
       && GET_CODE (operands[1]) == CONST
       && GET_CODE (XEXP (operands[1], 0)) == UNSPEC
