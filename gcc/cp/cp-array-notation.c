@@ -1380,7 +1380,12 @@ build_array_notation_ref (location_t loc, tree array, tree start, tree length,
     
   if (!stride) 
     stride = build_one_cst (ptrdiff_type_node);
-  
+
+  stride = maybe_constant_value (stride);
+  length = maybe_constant_value (length);
+  if (start)
+    start = maybe_constant_value (start);
+
   /* When dealing with templates, triplet type-checking will be done in pt.c 
      after type substitution.  */
   if (processing_template_decl 

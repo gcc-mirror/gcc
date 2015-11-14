@@ -6778,7 +6778,7 @@ cp_parser_array_notation (location_t loc, cp_parser *parser, tree *init_index,
 	 2. ARRAY [ EXP : EXP ]
 	 3. ARRAY [ EXP : EXP : EXP ]  */
 
-      *init_index = cp_parser_expression (parser);	
+      *init_index = cp_parser_expression (parser);
       if (cp_lexer_peek_token (parser->lexer)->type != CPP_COLON)
 	{  
 	  /* This indicates that we have a normal array expression.  */
@@ -8522,9 +8522,11 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
       /* For "false && x" or "true || x", x will never be executed;
 	 disable warnings while evaluating it.  */
       if (current.tree_type == TRUTH_ANDIF_EXPR)
-	c_inhibit_evaluation_warnings += current.lhs == truthvalue_false_node;
+	c_inhibit_evaluation_warnings +=
+	  cp_fully_fold (current.lhs) == truthvalue_false_node;
       else if (current.tree_type == TRUTH_ORIF_EXPR)
-	c_inhibit_evaluation_warnings += current.lhs == truthvalue_true_node;
+	c_inhibit_evaluation_warnings +=
+	  cp_fully_fold (current.lhs) == truthvalue_true_node;
 
       /* Extract another operand.  It may be the RHS of this expression
 	 or the LHS of a new, higher priority expression.  */
@@ -8571,9 +8573,11 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 
       /* Undo the disabling of warnings done above.  */
       if (current.tree_type == TRUTH_ANDIF_EXPR)
-	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_false_node;
+	c_inhibit_evaluation_warnings -=
+	  cp_fully_fold (current.lhs) == truthvalue_false_node;
       else if (current.tree_type == TRUTH_ORIF_EXPR)
-	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_true_node;
+	c_inhibit_evaluation_warnings -=
+	  cp_fully_fold (current.lhs) == truthvalue_true_node;
 
       if (warn_logical_not_paren
 	  && TREE_CODE_CLASS (current.tree_type) == tcc_comparison
@@ -8659,7 +8663,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 static tree
 cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
 {
-  tree expr;
+  tree expr, folded_logical_or_expr = cp_fully_fold (logical_or_expr);
   tree assignment_expr;
   struct cp_token *token;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
@@ -8674,7 +8678,8 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
                "ISO C++ does not allow ?: with omitted middle operand");
       /* Implicit true clause.  */
       expr = NULL_TREE;
-      c_inhibit_evaluation_warnings += logical_or_expr == truthvalue_true_node;
+      c_inhibit_evaluation_warnings +=
+	folded_logical_or_expr == truthvalue_true_node;
       warn_for_omitted_condop (token->location, logical_or_expr);
     }
   else
@@ -8682,11 +8687,12 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
       bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
       parser->colon_corrects_to_scope_p = false;
       /* Parse the expression.  */
-      c_inhibit_evaluation_warnings += logical_or_expr == truthvalue_false_node;
+      c_inhibit_evaluation_warnings +=
+	folded_logical_or_expr == truthvalue_false_node;
       expr = cp_parser_expression (parser);
       c_inhibit_evaluation_warnings +=
-	((logical_or_expr == truthvalue_true_node)
-	 - (logical_or_expr == truthvalue_false_node));
+	((folded_logical_or_expr == truthvalue_true_node)
+	 - (folded_logical_or_expr == truthvalue_false_node));
       parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
     }
 
@@ -8694,7 +8700,8 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
   cp_parser_require (parser, CPP_COLON, RT_COLON);
   /* Parse the assignment-expression.  */
   assignment_expr = cp_parser_assignment_expression (parser);
-  c_inhibit_evaluation_warnings -= logical_or_expr == truthvalue_true_node;
+  c_inhibit_evaluation_warnings -=
+    folded_logical_or_expr == truthvalue_true_node;
 
   /* Build the conditional-expression.  */
   return build_x_conditional_expr (loc, logical_or_expr,

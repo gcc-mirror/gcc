@@ -1035,6 +1035,8 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
   force_folding_builtin_constant_p = true;
   new_call = fold_build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
 					CALL_EXPR_FN (t), nargs, args);
+  /* Fold away the NOP_EXPR from fold_builtin_n.  */
+  new_call = fold (new_call);
   force_folding_builtin_constant_p = save_ffbcp;
   VERIFY_CONSTANT (new_call);
   return new_call;
@@ -1274,6 +1276,16 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       CONSTRUCTOR_NO_IMPLICIT_ZERO (ctor) = true;
       ctx->values->put (new_ctx.object, ctor);
       ctx = &new_ctx;
+    }
+  else if (DECL_BY_REFERENCE (DECL_RESULT (fun))
+	   && TREE_CODE (t) != AGGR_INIT_EXPR)
+    {
+      /* convert_to_void stripped our AGGR_INIT_EXPR, in which case we don't
+	 care about a constant value.  ??? we could still optimize away the
+	 call.  */
+      gcc_assert (ctx->quiet && !ctx->object);
+      *non_constant_p = true;
+      return t;
     }
 
   bool non_constant_args = false;
@@ -2540,6 +2552,17 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
   tree orig_op0 = TREE_OPERAND (t, 0);
   bool empty_base = false;
 
+  /* We can handle a MEM_REF like an INDIRECT_REF, if MEM_REF's second
+     operand is an integer-zero.  Otherwise reject the MEM_REF for now.  */
+
+  if (TREE_CODE (t) == MEM_REF
+      && (!TREE_OPERAND (t, 1) || !integer_zerop (TREE_OPERAND (t, 1))))
+    {
+      gcc_assert (ctx->quiet);
+      *non_constant_p = true;
+      return t;
+    }
+
   /* First try to simplify it directly.  */
   tree r = cxx_fold_indirect_ref (EXPR_LOCATION (t), TREE_TYPE (t), orig_op0,
 				  &empty_base);
@@ -3073,6 +3096,8 @@ cxx_eval_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
   if (TREE_CODE (op00) != ADDR_EXPR)
     return NULL_TREE;
 
+  op01 = cxx_eval_constant_expression (ctx, op01, lval,
+				       non_constant_p, overflow_p);
   op00 = TREE_OPERAND (op00, 0);
 
   /* &A[i] p+ j => &A[i + j] */
@@ -3333,6 +3358,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       /* These differ from cxx_eval_unary_expression in that this doesn't
 	 check for a constant operand or result; an address can be
 	 constant without its operand being, and vice versa.  */
+    case MEM_REF:
     case INDIRECT_REF:
       r = cxx_eval_indirect_ref (ctx, t, lval,
 				 non_constant_p, overflow_p);
@@ -3370,17 +3396,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case SIZEOF_EXPR:
-      if (SIZEOF_EXPR_TYPE_P (t))
-	r = cxx_sizeof_or_alignof_type (TREE_TYPE (TREE_OPERAND (t, 0)),
-					SIZEOF_EXPR, false);
-      else if (TYPE_P (TREE_OPERAND (t, 0)))
-	r = cxx_sizeof_or_alignof_type (TREE_OPERAND (t, 0), SIZEOF_EXPR,
-					false);
-      else
-	r = cxx_sizeof_or_alignof_expr (TREE_OPERAND (t, 0), SIZEOF_EXPR,
-					false);
-      if (r == error_mark_node)
-	r = size_one_node;
+      r = fold_sizeof_expr (t);
       VERIFY_CONSTANT (r);
       break;
 
@@ -3538,8 +3554,11 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case CONVERT_EXPR:
     case VIEW_CONVERT_EXPR:
     case NOP_EXPR:
+    case UNARY_PLUS_EXPR:
       {
+	enum tree_code tcode = TREE_CODE (t);
 	tree oldop = TREE_OPERAND (t, 0);
+
 	tree op = cxx_eval_constant_expression (ctx, oldop,
 						lval,
 						non_constant_p, overflow_p);
@@ -3559,11 +3578,14 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    *non_constant_p = true;
 	    return t;
 	  }
-	if (op == oldop)
+	if (op == oldop && tcode != UNARY_PLUS_EXPR)
 	  /* We didn't fold at the top so we could check for ptr-int
 	     conversion.  */
 	  return fold (t);
-	r = fold_build1 (TREE_CODE (t), type, op);
+	if (tcode == UNARY_PLUS_EXPR)
+	  r = fold_convert (TREE_TYPE (t), op);
+	else
+	  r = fold_build1 (tcode, type, op);
 	/* Conversion of an out-of-range value has implementation-defined
 	   behavior; the language considers it different from arithmetic
 	   overflow, which is undefined.  */
@@ -3831,12 +3853,86 @@ cxx_constant_value (tree t, tree decl)
   return cxx_eval_outermost_constant_expr (t, false, true, decl);
 }
 
+/* Helper routine for fold_simple function.  Either return simplified
+   expression T, otherwise NULL_TREE.
+   In contrast to cp_fully_fold, and to maybe_constant_value, we try to fold
+   even if we are within template-declaration.  So be careful on call, as in
+   such case types can be undefined.  */
+
+static tree
+fold_simple_1 (tree t)
+{
+  tree op1;
+  enum tree_code code = TREE_CODE (t);
+
+  switch (code)
+    {
+    case INTEGER_CST:
+    case REAL_CST:
+    case VECTOR_CST:
+    case FIXED_CST:
+    case COMPLEX_CST:
+      return t;
+
+    case SIZEOF_EXPR:
+      return fold_sizeof_expr (t);
+
+    case ABS_EXPR:
+    case CONJ_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case NEGATE_EXPR:
+    case BIT_NOT_EXPR:
+    case TRUTH_NOT_EXPR:
+    case NOP_EXPR:
+    case VIEW_CONVERT_EXPR:
+    case CONVERT_EXPR:
+    case FLOAT_EXPR:
+    case FIX_TRUNC_EXPR:
+    case FIXED_CONVERT_EXPR:
+    case ADDR_SPACE_CONVERT_EXPR:
+
+      op1 = TREE_OPERAND (t, 0);
+
+      t = const_unop (code, TREE_TYPE (t), op1);
+      if (!t)
+	return NULL_TREE;
+
+      if (CONVERT_EXPR_CODE_P (code)
+	  && TREE_OVERFLOW_P (t) && !TREE_OVERFLOW_P (op1))
+	TREE_OVERFLOW (t) = false;
+      return t;
+
+    default:
+      return NULL_TREE;
+    }
+}
+
+/* If T is a simple constant expression, returns its simplified value.
+   Otherwise returns T.  In contrast to maybe_constant_value do we
+   simplify only few operations on constant-expressions, and we don't
+   try to simplify constexpressions.  */
+
+tree
+fold_simple (tree t)
+{
+  tree r = NULL_TREE;
+  if (processing_template_decl)
+    return t;
+
+  r = fold_simple_1 (t);
+  if (!r)
+    r = t;
+
+  return r;
+}
+
 /* If T is a constant expression, returns its reduced value.
    Otherwise, if T does not have TREE_CONSTANT set, returns T.
    Otherwise, returns a version of T without TREE_CONSTANT.  */
 
-tree
-maybe_constant_value (tree t, tree decl)
+static tree
+maybe_constant_value_1 (tree t, tree decl)
 {
   tree r;
 
@@ -3860,6 +3956,24 @@ maybe_constant_value (tree t, tree decl)
 		       || (TREE_CONSTANT (t) && !TREE_CONSTANT (r))
 		       || !cp_tree_equal (r, t));
   return r;
+}
+
+static GTY((cache, deletable)) cache_map cv_cache;
+
+/* If T is a constant expression, returns its reduced value.
+   Otherwise, if T does not have TREE_CONSTANT set, returns T.
+   Otherwise, returns a version of T without TREE_CONSTANT.  */
+
+tree
+maybe_constant_value (tree t, tree decl)
+{
+  tree ret = cv_cache.get (t);
+  if (!ret)
+    {
+      ret = maybe_constant_value_1 (t, decl);
+      cv_cache.put (t, ret);
+    }
+  return ret;
 }
 
 /* Like maybe_constant_value but first fully instantiate the argument.
@@ -3927,6 +4041,8 @@ fold_non_dependent_expr (tree t)
 tree
 maybe_constant_init (tree t, tree decl)
 {
+  if (!t)
+    return t;
   if (TREE_CODE (t) == EXPR_STMT)
     t = TREE_OPERAND (t, 0);
   if (TREE_CODE (t) == CONVERT_EXPR
@@ -4037,6 +4153,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
       /* We can see a FIELD_DECL in a pointer-to-member expression.  */
     case FIELD_DECL:
     case PARM_DECL:
+    case RESULT_DECL:
     case USING_DECL:
     case USING_STMT:
     case PLACEHOLDER_EXPR:
@@ -4624,6 +4741,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case TAG_DEFN:
       /* We can see these in statement-expressions.  */
       return true;
+
+    case EMPTY_CLASS_EXPR:
+      return false;
 
     default:
       if (objc_is_property_ref (t))

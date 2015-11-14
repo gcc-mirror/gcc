@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { c } } } */
 /* { dg-options "-fdump-tree-original" } */
 /* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 

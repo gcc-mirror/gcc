@@ -47,3 +47,6 @@ right (int x)
   r += -1U >> x;
   return r;
 }
+
+/* { dg-error "not an integer constant" "no constant" { target c++ } 9 } */
+/* { dg-error "left operand of shift expression" "shift" { target c++ } 9 } */

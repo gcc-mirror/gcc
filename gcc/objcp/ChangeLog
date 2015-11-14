@@ -1,3 +1,7 @@
+2015-11-13  Jason Merrill  <jason@redhat.com>
+
+	* config-lang.in (gtfiles): Add cp-gimplify.c.
+
 2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* objcp-decl.c: Remove unused header files.

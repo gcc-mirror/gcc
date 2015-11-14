@@ -1945,8 +1945,6 @@ decay_conversion (tree exp,
 
   code = TREE_CODE (type);
 
-  /* FIXME remove for delayed folding.  */
-  exp = scalar_constant_value (exp);
   if (error_operand_p (exp))
     return error_mark_node;
 
@@ -2439,7 +2437,6 @@ build_class_member_access_expr (tree object, tree member,
 
       result = build3_loc (input_location, COMPONENT_REF, member_type,
 			   object, member, NULL_TREE);
-      result = fold_if_not_in_template (result);
 
       /* Mark the expression const or volatile, as appropriate.  Even
 	 though we've dealt with the type above, we still have to mark the
@@ -2852,9 +2849,9 @@ build_simple_component_ref (tree object, tree member)
 {
   tree type = cp_build_qualified_type (TREE_TYPE (member),
 				       cp_type_quals (TREE_TYPE (object)));
-  return fold_build3_loc (input_location,
-			  COMPONENT_REF, type,
-			  object, member, NULL_TREE);
+  return build3_loc (input_location,
+		     COMPONENT_REF, type,
+		     object, member, NULL_TREE);
 }
 
 /* Return an expression for the MEMBER_NAME field in the internal
@@ -3173,8 +3170,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_SIDE_EFFECTS (array));
       TREE_THIS_VOLATILE (rval)
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_THIS_VOLATILE (array));
-      ret = require_complete_type_sfinae (fold_if_not_in_template (rval),
-					  complain);
+      ret = require_complete_type_sfinae (rval, complain);
       protected_set_expr_location (ret, loc);
       if (non_lvalue)
 	ret = non_lvalue_loc (loc, ret);
@@ -3921,7 +3917,6 @@ build_vec_cmp (tree_code code, tree type,
   tree minus_one_vec = build_minus_one_cst (type);
   tree cmp_type = build_same_sized_truth_vector_type(type);
   tree cmp = build2 (code, cmp_type, arg0, arg1);
-  cmp = fold_if_not_in_template (cmp);
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }
 
@@ -3976,7 +3971,7 @@ cp_build_binary_op (location_t location,
      convert it to this type.  */
   tree final_type = 0;
 
-  tree result;
+  tree result, result_ovl;
   tree orig_type = NULL;
 
   /* Nonzero if this is an operation like MIN or MAX which can
@@ -4599,7 +4594,7 @@ cp_build_binary_op (location_t location,
 	      op0 = cp_build_binary_op (location,
 					TRUTH_ANDIF_EXPR, e1, e2,
 					complain);
-	      op1 = cp_convert (TREE_TYPE (op0), integer_one_node, complain); 
+	      op1 = cp_convert (TREE_TYPE (op0), integer_one_node, complain);
 	    }
      	  else 
 	    {
@@ -4640,10 +4635,12 @@ cp_build_binary_op (location_t location,
 	    op1 = save_expr (op1);
 
 	  pfn0 = pfn_from_ptrmemfunc (op0);
+	  pfn0 = cp_fully_fold (pfn0);
 	  /* Avoid -Waddress warnings (c++/64877).  */
 	  if (TREE_CODE (pfn0) == ADDR_EXPR)
 	    TREE_NO_WARNING (pfn0) = 1;
 	  pfn1 = pfn_from_ptrmemfunc (op1);
+	  pfn1 = cp_fully_fold (pfn1);
 	  delta0 = delta_from_ptrmemfunc (op0);
 	  delta1 = delta_from_ptrmemfunc (op1);
 	  if (TARGET_PTRMEMFUNC_VBIT_LOCATION
@@ -4997,10 +4994,7 @@ cp_build_binary_op (location_t location,
 		  gcc_unreachable();
 		}
 	    }
-	  real = fold_if_not_in_template (real);
-	  imag = fold_if_not_in_template (imag);
 	  result = build2 (COMPLEX_EXPR, result_type, real, imag);
-	  result = fold_if_not_in_template (result);
 	  return result;
 	}
 
@@ -5028,20 +5022,12 @@ cp_build_binary_op (location_t location,
 
       if (short_compare)
 	{
-	  /* Don't write &op0, etc., because that would prevent op0
-	     from being kept in a register.
-	     Instead, make copies of the our local variables and
-	     pass the copies by reference, then copy them back afterward.  */
-	  tree xop0 = op0, xop1 = op1, xresult_type = result_type;
+	  /* We call shorten_compare only for diagnostic-reason.  */
+	  tree xop0 = fold_simple (op0), xop1 = fold_simple (op1),
+	       xresult_type = result_type;
 	  enum tree_code xresultcode = resultcode;
-	  tree val
-	    = shorten_compare (location, &xop0, &xop1, &xresult_type,
+	  shorten_compare (location, &xop0, &xop1, &xresult_type,
 			       &xresultcode);
-	  if (val != 0)
-	    return cp_convert (boolean_type_node, val, complain);
-	  op0 = xop0, op1 = xop1;
-	  converted = 1;
-	  resultcode = xresultcode;
 	}
 
       if ((short_compare || code == MIN_EXPR || code == MAX_EXPR)
@@ -5060,9 +5046,9 @@ cp_build_binary_op (location_t location,
 	  tree oop1 = maybe_constant_value (orig_op1);
 
 	  if (TREE_CODE (oop0) != INTEGER_CST)
-	    oop0 = orig_op0;
+	    oop0 = cp_fully_fold (orig_op0);
 	  if (TREE_CODE (oop1) != INTEGER_CST)
-	    oop1 = orig_op1;
+	    oop1 = cp_fully_fold (orig_op1);
 	  warn_for_sign_compare (location, oop0, oop1, op0, op1, 
 				 result_type, resultcode);
 	}
@@ -5117,18 +5103,30 @@ cp_build_binary_op (location_t location,
     }
 
   result = build2 (resultcode, build_type, op0, op1);
-  result = fold_if_not_in_template (result);
   if (final_type != 0)
     result = cp_convert (final_type, result, complain);
 
-  if (TREE_OVERFLOW_P (result) 
-      && !TREE_OVERFLOW_P (op0) 
-      && !TREE_OVERFLOW_P (op1))
-    overflow_warning (location, result);
-
   if (instrument_expr != NULL)
-    result = fold_build2 (COMPOUND_EXPR, TREE_TYPE (result),
-			  instrument_expr, result);
+    result = build2 (COMPOUND_EXPR, TREE_TYPE (result),
+		     instrument_expr, result);
+
+  if (!processing_template_decl)
+    {
+      op0 = cp_fully_fold (op0);
+      /* Only consider the second argument if the first isn't overflowed.  */
+      if (!CONSTANT_CLASS_P (op0) || TREE_OVERFLOW_P (op0))
+	return result;
+      op1 = cp_fully_fold (op1);
+      if (!CONSTANT_CLASS_P (op1) || TREE_OVERFLOW_P (op1))
+	return result;
+    }
+  else if (!CONSTANT_CLASS_P (op0) || !CONSTANT_CLASS_P (op1)
+	   || TREE_OVERFLOW_P (op0) || TREE_OVERFLOW_P (op1))
+    return result;
+
+  result_ovl = fold_build2 (resultcode, build_type, op0, op1);
+  if (TREE_OVERFLOW_P (result_ovl))
+    overflow_warning (location, result_ovl);
 
   return result;
 }
@@ -5178,8 +5176,7 @@ cp_pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop,
   complete_type (TREE_TYPE (res_type));
 
   return pointer_int_sum (input_location, resultcode, ptrop,
-			  fold_if_not_in_template (intop),
-			  complain & tf_warning_or_error);
+			  intop, complain & tf_warning_or_error);
 }
 
 /* Return a tree for the difference of pointers OP0 and OP1.
@@ -5255,7 +5252,7 @@ pointer_diff (tree op0, tree op1, tree ptrtype, tsubst_flags_t complain)
 
   result = build2 (EXACT_DIV_EXPR, restype, op0,
 		   cp_convert (restype, op1, complain));
-  return fold_if_not_in_template (result);
+  return result;
 }
 
 /* Construct and perhaps optimize a tree representation
@@ -5771,6 +5768,10 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	    /* Make sure the result is not an lvalue: a unary plus or minus
 	       expression is always a rvalue.  */
 	    arg = rvalue (arg);
+
+	    if (code == NEGATE_EXPR && CONSTANT_CLASS_P (arg))
+	      /* Immediately fold negation of a constant.  */
+	      return fold_build1 (code, TREE_TYPE (arg), arg);
 	  }
       }
       break;
@@ -5835,10 +5836,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       arg = build_real_imag_expr (input_location, code, arg);
-      if (arg == error_mark_node)
-	return arg;
-      else
-	return fold_if_not_in_template (arg);
+      return arg;
 
     case PREINCREMENT_EXPR:
     case POSTINCREMENT_EXPR:
@@ -6005,7 +6003,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
     {
       if (argtype == 0)
 	argtype = TREE_TYPE (arg);
-      return fold_if_not_in_template (build1 (code, argtype, arg));
+      return build1 (code, argtype, arg);
     }
 
   if (complain & tf_error)
@@ -6999,7 +6997,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
     return rvalue (expr);
   else if ((TYPE_PTRFN_P (type) && TYPE_PTRFN_P (intype))
 	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
-    return fold_if_not_in_template (build_nop (type, expr));
+    return build_nop (type, expr);
   else if ((TYPE_PTRDATAMEM_P (type) && TYPE_PTRDATAMEM_P (intype))
 	   || (TYPE_PTROBV_P (type) && TYPE_PTROBV_P (intype)))
     {
@@ -7027,7 +7025,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
       if (warn_strict_aliasing <= 2)
 	strict_aliasing_warning (intype, type, sexpr);
 
-      return fold_if_not_in_template (build_nop (type, expr));
+      return build_nop (type, expr);
     }
   else if ((TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype))
 	   || (TYPE_PTRFN_P (intype) && TYPE_PTROBV_P (type)))
@@ -7038,13 +7036,13 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	warning (OPT_Wconditionally_supported,
 		 "casting between pointer-to-function and pointer-to-object "
 		 "is conditionally-supported");
-      return fold_if_not_in_template (build_nop (type, expr));
+      return build_nop (type, expr);
     }
   else if (VECTOR_TYPE_P (type))
-    return fold_if_not_in_template (convert_to_vector (type, expr));
+    return convert_to_vector (type, expr);
   else if (VECTOR_TYPE_P (intype)
 	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
-    return fold_if_not_in_template (convert_to_integer (type, expr));
+    return convert_to_integer_nofold (type, expr);
   else
     {
       if (valid_p)
@@ -7896,8 +7894,7 @@ get_delta_difference (tree from, tree to,
       }
   }
 
-  return fold_if_not_in_template (convert_to_integer (ptrdiff_type_node,
-						      result));
+  return convert_to_integer (ptrdiff_type_node, result);
 }
 
 /* Return a constructor for the pointer-to-member-function TYPE using
@@ -8078,41 +8075,35 @@ expand_ptrmemfunc_cst (tree cst, tree *delta, tree *pfn)
 	 fn; the call will do the opposite adjustment.  */
       tree orig_class = DECL_CONTEXT (fn);
       tree binfo = binfo_or_else (orig_class, fn_class);
-      *delta = build2 (PLUS_EXPR, TREE_TYPE (*delta),
-		       *delta, BINFO_OFFSET (binfo));
-      *delta = fold_if_not_in_template (*delta);
+      *delta = fold_build2 (PLUS_EXPR, TREE_TYPE (*delta),
+			    *delta, BINFO_OFFSET (binfo));
 
       /* We set PFN to the vtable offset at which the function can be
 	 found, plus one (unless ptrmemfunc_vbit_in_delta, in which
 	 case delta is shifted left, and then incremented).  */
       *pfn = DECL_VINDEX (fn);
-      *pfn = build2 (MULT_EXPR, integer_type_node, *pfn,
-		     TYPE_SIZE_UNIT (vtable_entry_type));
-      *pfn = fold_if_not_in_template (*pfn);
+      *pfn = fold_build2 (MULT_EXPR, integer_type_node, *pfn,
+			  TYPE_SIZE_UNIT (vtable_entry_type));
 
       switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
 	{
 	case ptrmemfunc_vbit_in_pfn:
-	  *pfn = build2 (PLUS_EXPR, integer_type_node, *pfn,
-			 integer_one_node);
-	  *pfn = fold_if_not_in_template (*pfn);
+	  *pfn = fold_build2 (PLUS_EXPR, integer_type_node, *pfn,
+			      integer_one_node);
 	  break;
 
 	case ptrmemfunc_vbit_in_delta:
-	  *delta = build2 (LSHIFT_EXPR, TREE_TYPE (*delta),
-			   *delta, integer_one_node);
-	  *delta = fold_if_not_in_template (*delta);
-	  *delta = build2 (PLUS_EXPR, TREE_TYPE (*delta),
-			   *delta, integer_one_node);
-	  *delta = fold_if_not_in_template (*delta);
+	  *delta = fold_build2 (LSHIFT_EXPR, TREE_TYPE (*delta),
+				*delta, integer_one_node);
+	  *delta = fold_build2 (PLUS_EXPR, TREE_TYPE (*delta),
+				*delta, integer_one_node);
 	  break;
 
 	default:
 	  gcc_unreachable ();
 	}
 
-      *pfn = build_nop (TYPE_PTRMEMFUNC_FN_TYPE (type), *pfn);
-      *pfn = fold_if_not_in_template (*pfn);
+      *pfn = fold_convert (TYPE_PTRMEMFUNC_FN_TYPE (type), *pfn);
     }
 }
 

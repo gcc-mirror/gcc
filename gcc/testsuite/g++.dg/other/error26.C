@@ -2,5 +2,5 @@
 
 void foo(__complex__ double x)
 {
-  __builtin_conj(x)(); // { dg-error "~x" }
+  __builtin_conj(x)(); // { dg-error "function" }
 }

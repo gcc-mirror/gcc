@@ -5447,6 +5447,42 @@ extern cp_parameter_declarator *no_parameters;
 /* True if we saw "#pragma GCC java_exceptions".  */
 extern bool pragma_java_exceptions;
 
+/* Data structure for a mapping from tree to tree that's only used as a cache;
+   we don't GC-mark trees in the map, and we clear the map when collecting
+   garbage.  Global variables of this type must be marked
+   GTY((cache,deletable)) so that the gt_cleare_cache function is called by
+   ggc_collect but we don't try to load the map pointer from a PCH.
+
+   FIXME improve to use keep_cache_entry.  */
+class cache_map
+{
+  /* Use a lazily initialized pointer rather than a map member since a
+     hash_map can't be constructed in a static initializer.  */
+  hash_map<tree, tree> *map;
+
+public:
+  tree get (tree key)
+  {
+    if (map)
+      if (tree *slot = map->get (key))
+	return *slot;
+    return NULL_TREE;
+  }
+
+  bool put (tree key, tree val)
+  {
+    if (!map)
+      map = new hash_map<tree, tree>;
+    return map->put (key, val);
+  }
+
+  friend inline void gt_cleare_cache (cache_map &cm)
+  {
+    if (cm.map)
+      cm.map->empty();
+  }
+};
+
 /* in call.c */
 extern bool check_dtor_name			(tree, tree);
 bool magic_varargs_p                            (tree);
@@ -6474,7 +6510,6 @@ extern tree cp_walk_subtrees (tree*, int*, walk_tree_fn,
 	walk_tree_1 (tp, func, data, pset, cp_walk_subtrees)
 #define cp_walk_tree_without_duplicates(tp,func,data) \
 	walk_tree_without_duplicates_1 (tp, func, data, cp_walk_subtrees)
-extern tree fold_if_not_in_template		(tree);
 extern tree rvalue				(tree);
 extern tree convert_bitfield_to_declared_type   (tree);
 extern tree cp_save_expr			(tree);
@@ -6705,6 +6740,7 @@ extern tree cxx_omp_clause_dtor			(tree, tree);
 extern void cxx_omp_finish_clause		(tree, gimple_seq *);
 extern bool cxx_omp_privatize_by_reference	(const_tree);
 extern bool cxx_omp_disregard_value_expr	(tree, bool);
+extern tree cp_fully_fold			(tree);
 
 /* in name-lookup.c */
 extern void suggest_alternatives_for            (location_t, tree);
@@ -6796,12 +6832,14 @@ extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE);
 extern tree fold_non_dependent_expr		(tree);
+extern tree fold_simple				(tree);
 extern bool is_sub_constant_expr                (tree);
 extern bool reduced_constant_expression_p       (tree);
 extern bool is_instantiation_of_constexpr       (tree);
 extern bool var_in_constexpr_fn                 (tree);
 extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
+extern tree fold_sizeof_expr			(tree);
 
 /* In c-family/cilk.c */
 extern bool cilk_valid_spawn                    (tree);
