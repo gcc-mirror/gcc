@@ -1,3 +1,9 @@
+2015-11-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/67803
+	* array.c (gfc_match_array_constructor): If array constructor included
+	a CHARACTER typespec, check array elements for compatible type.
+
 2015-11-13  Steven G. Kargl  <kargl@gccc.gnu.org>
 
 	PR fortran/68319
