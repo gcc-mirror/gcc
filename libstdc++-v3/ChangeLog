@@ -1,3 +1,10 @@
+2015-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/capacity/char/18654.cc: Use
+	real minimum capacity.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/18654.cc:
+	Likewise.
+
 2015-11-13  David Edelsohn  <dje.gcc@gmail.com>
 
 	* testsuite/experimental/random/randint.cc: Add dg-add-options tls.
