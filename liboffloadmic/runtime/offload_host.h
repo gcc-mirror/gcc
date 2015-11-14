@@ -376,6 +376,9 @@ extern "C" bool __offload_target_image_is_executable(const void *target_image);
 extern "C" bool __offload_register_image(const void* image);
 extern "C" void __offload_unregister_image(const void* image);
 
+// Registers asynchronous task completion callback
+extern "C" void __offload_register_task_callback(void (*cb)(void *));
+
 // Initializes offload runtime library.
 DLL_LOCAL extern int __offload_init_library(void);
 

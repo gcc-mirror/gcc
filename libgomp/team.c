@@ -193,7 +193,7 @@ gomp_new_team (unsigned nthreads)
   team->ordered_release = (void *) &team->implicit_task[nthreads];
   team->ordered_release[0] = &team->master_release;
 
-  team->task_queue = NULL;
+  priority_queue_init (&team->task_queue);
   team->task_count = 0;
   team->task_queued_count = 0;
   team->task_running_count = 0;
@@ -214,6 +214,7 @@ free_team (struct gomp_team *team)
 #endif
   gomp_barrier_destroy (&team->barrier);
   gomp_mutex_destroy (&team->task_lock);
+  priority_queue_free (&team->task_queue);
   free (team);
 }
 
@@ -271,6 +272,8 @@ gomp_free_thread (void *arg __attribute__((unused)))
       free (pool);
       thr->thread_pool = NULL;
     }
+  if (thr->ts.level == 0 && __builtin_expect (thr->ts.team != NULL, 0))
+    gomp_team_end ();
   if (thr->task != NULL)
     {
       struct gomp_task *task = thr->task;
@@ -300,7 +303,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   struct gomp_thread **affinity_thr = NULL;
 
   thr = gomp_thread ();
-  nested = thr->ts.team != NULL;
+  nested = thr->ts.level;
   pool = thr->thread_pool;
   task = thr->task;
   icv = task ? &task->icv : &gomp_global_icv;

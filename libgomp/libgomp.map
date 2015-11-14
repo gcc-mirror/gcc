@@ -407,3 +407,8 @@ GOMP_PLUGIN_1.0 {
 	GOMP_PLUGIN_async_unmap_vars;
 	GOMP_PLUGIN_acc_thread;
 };
+
+GOMP_PLUGIN_1.1 {
+  global:
+	GOMP_PLUGIN_target_task_completion;
+} GOMP_PLUGIN_1.0;

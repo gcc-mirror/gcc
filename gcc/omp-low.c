@@ -13951,8 +13951,10 @@ lower_omp_ordered (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gomp_ordered *ord_stmt = as_a <gomp_ordered *> (stmt);
   gcall *x;
   gbind *bind;
-  bool simd
-    = find_omp_clause (gimple_omp_ordered_clauses (ord_stmt), OMP_CLAUSE_SIMD);
+  bool simd = find_omp_clause (gimple_omp_ordered_clauses (ord_stmt),
+			       OMP_CLAUSE_SIMD);
+  bool threads = find_omp_clause (gimple_omp_ordered_clauses (ord_stmt),
+				  OMP_CLAUSE_THREADS);
 
   if (find_omp_clause (gimple_omp_ordered_clauses (ord_stmt),
 		       OMP_CLAUSE_DEPEND))
@@ -13975,7 +13977,8 @@ lower_omp_ordered (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   if (simd)
     {
-      x = gimple_build_call_internal (IFN_GOMP_SIMD_ORDERED_START, 0);
+      x = gimple_build_call_internal (IFN_GOMP_SIMD_ORDERED_START, 1,
+				      build_int_cst (NULL_TREE, threads));
       cfun->has_simduid_loops = true;
     }
   else
@@ -13989,7 +13992,8 @@ lower_omp_ordered (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gimple_omp_set_body (stmt, NULL);
 
   if (simd)
-    x = gimple_build_call_internal (IFN_GOMP_SIMD_ORDERED_END, 0);
+    x = gimple_build_call_internal (IFN_GOMP_SIMD_ORDERED_END, 1,
+				    build_int_cst (NULL_TREE, threads));
   else
     x = gimple_build_call (builtin_decl_explicit (BUILT_IN_GOMP_ORDERED_END),
 			   0);

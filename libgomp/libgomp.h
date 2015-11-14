@@ -50,6 +50,22 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+/* Needed for memset in priority_queue.c.  */
+#if _LIBGOMP_CHECKING_
+# ifdef STRING_WITH_STRINGS
+#  include <string.h>
+#  include <strings.h>
+# else
+#  ifdef HAVE_STRING_H
+#   include <string.h>
+#  else
+#   ifdef HAVE_STRINGS_H
+#    include <strings.h>
+#   endif
+#  endif
+# endif
+#endif
+
 #ifdef HAVE_ATTRIBUTE_VISIBILITY
 # pragma GCC visibility push(hidden)
 #endif
@@ -65,6 +81,44 @@ enum memmodel
   MEMMODEL_SEQ_CST = 5
 };
 
+/* alloc.c */
+
+extern void *gomp_malloc (size_t) __attribute__((malloc));
+extern void *gomp_malloc_cleared (size_t) __attribute__((malloc));
+extern void *gomp_realloc (void *, size_t);
+
+/* Avoid conflicting prototypes of alloca() in system headers by using
+   GCC's builtin alloca().  */
+#define gomp_alloca(x)  __builtin_alloca(x)
+
+/* error.c */
+
+extern void gomp_vdebug (int, const char *, va_list);
+extern void gomp_debug (int, const char *, ...)
+	__attribute__ ((format (printf, 2, 3)));
+#define gomp_vdebug(KIND, FMT, VALIST) \
+  do { \
+    if (__builtin_expect (gomp_debug_var, 0)) \
+      (gomp_vdebug) ((KIND), (FMT), (VALIST)); \
+  } while (0)
+#define gomp_debug(KIND, ...) \
+  do { \
+    if (__builtin_expect (gomp_debug_var, 0)) \
+      (gomp_debug) ((KIND), __VA_ARGS__); \
+  } while (0)
+extern void gomp_verror (const char *, va_list);
+extern void gomp_error (const char *, ...)
+	__attribute__ ((format (printf, 1, 2)));
+extern void gomp_vfatal (const char *, va_list)
+	__attribute__ ((noreturn));
+extern void gomp_fatal (const char *, ...)
+	__attribute__ ((noreturn, format (printf, 1, 2)));
+
+struct gomp_task;
+struct gomp_taskgroup;
+struct htab;
+
+#include "priority_queue.h"
 #include "sem.h"
 #include "mutex.h"
 #include "bar.h"
@@ -298,6 +352,7 @@ extern gomp_mutex_t gomp_managed_threads_lock;
 #endif
 extern unsigned long gomp_max_active_levels_var;
 extern bool gomp_cancel_var;
+extern int gomp_max_task_priority_var;
 extern unsigned long long gomp_spin_count_var, gomp_throttled_spin_count_var;
 extern unsigned long gomp_available_cpus, gomp_managed_threads;
 extern unsigned long *gomp_nthreads_var_list, gomp_nthreads_var_list_len;
@@ -318,12 +373,13 @@ enum gomp_task_kind
   /* Task created by GOMP_task and waiting to be run.  */
   GOMP_TASK_WAITING,
   /* Task currently executing or scheduled and about to execute.  */
-  GOMP_TASK_TIED
+  GOMP_TASK_TIED,
+  /* Used for target tasks that have vars mapped and async run started,
+     but not yet completed.  Once that completes, they will be readded
+     into the queues as GOMP_TASK_WAITING in order to perform the var
+     unmapping.  */
+  GOMP_TASK_ASYNC_RUNNING
 };
-
-struct gomp_task;
-struct gomp_taskgroup;
-struct htab;
 
 struct gomp_task_depend_entry
 {
@@ -352,8 +408,8 @@ struct gomp_taskwait
 {
   bool in_taskwait;
   bool in_depend_wait;
+  /* Number of tasks we are waiting for.  */
   size_t n_depend;
-  struct gomp_task *last_parent_depends_on;
   gomp_sem_t taskwait_sem;
 };
 
@@ -361,26 +417,10 @@ struct gomp_taskwait
 
 struct gomp_task
 {
-  /* Parent circular list.  See children description below.  */
+  /* Parent of this task.  */
   struct gomp_task *parent;
-  /* Circular list representing the children of this task.
-
-     In this list we first have parent_depends_on ready to run tasks,
-     then !parent_depends_on ready to run tasks, and finally already
-     running tasks.  */
-  struct gomp_task *children;
-  struct gomp_task *next_child;
-  struct gomp_task *prev_child;
-  /* Circular task_queue in `struct gomp_team'.
-
-     GOMP_TASK_WAITING tasks come before GOMP_TASK_TIED tasks.  */
-  struct gomp_task *next_queue;
-  struct gomp_task *prev_queue;
-  /* Circular queue in gomp_taskgroup->children.
-
-     GOMP_TASK_WAITING tasks come before GOMP_TASK_TIED tasks.  */
-  struct gomp_task *next_taskgroup;
-  struct gomp_task *prev_taskgroup;
+  /* Children of this task.  */
+  struct priority_queue children_queue;
   /* Taskgroup this task belongs in.  */
   struct gomp_taskgroup *taskgroup;
   /* Tasks that depend on this task.  */
@@ -389,8 +429,19 @@ struct gomp_task
   struct gomp_taskwait *taskwait;
   /* Number of items in DEPEND.  */
   size_t depend_count;
-  /* Number of tasks in the DEPENDERS field above.  */
+  /* Number of tasks this task depends on.  Once this counter reaches
+     0, we have no unsatisfied dependencies, and this task can be put
+     into the various queues to be scheduled.  */
   size_t num_dependees;
+
+  /* Priority of this task.  */
+  int priority;
+  /* The priority node for this task in each of the different queues.
+     We put this here to avoid allocating space for each priority
+     node.  Then we play offsetof() games to convert between pnode[]
+     entries and the gomp_task in which they reside.  */
+  struct priority_node pnode[3];
+
   struct gomp_task_icv icv;
   void (*fn) (void *);
   void *fn_data;
@@ -407,20 +458,31 @@ struct gomp_task
   struct gomp_task_depend_entry depend[];
 };
 
+/* This structure describes a single #pragma omp taskgroup.  */
+
 struct gomp_taskgroup
 {
   struct gomp_taskgroup *prev;
-  /* Circular list of tasks that belong in this taskgroup.
-
-     Tasks are chained by next/prev_taskgroup within gomp_task, and
-     are sorted by GOMP_TASK_WAITING tasks, and then GOMP_TASK_TIED
-     tasks.  */
-  struct gomp_task *children;
+  /* Queue of tasks that belong in this taskgroup.  */
+  struct priority_queue taskgroup_queue;
   bool in_taskgroup_wait;
   bool cancelled;
   gomp_sem_t taskgroup_sem;
   size_t num_children;
 };
+
+/* Various state of OpenMP async offloading tasks.  */
+enum gomp_target_task_state
+{
+  GOMP_TARGET_TASK_DATA,
+  GOMP_TARGET_TASK_BEFORE_MAP,
+  GOMP_TARGET_TASK_FALLBACK,
+  GOMP_TARGET_TASK_READY_TO_RUN,
+  GOMP_TARGET_TASK_RUNNING,
+  GOMP_TARGET_TASK_FINISHED
+};
+
+/* This structure describes a target task.  */
 
 struct gomp_target_task
 {
@@ -430,6 +492,10 @@ struct gomp_target_task
   size_t *sizes;
   unsigned short *kinds;
   unsigned int flags;
+  enum gomp_target_task_state state;
+  struct target_mem_desc *tgt;
+  struct gomp_task *task;
+  struct gomp_team *team;
   void *hostaddrs[];
 };
 
@@ -495,9 +561,8 @@ struct gomp_team
   struct gomp_work_share work_shares[8];
 
   gomp_mutex_t task_lock;
-  /* Scheduled tasks.  Chain fields are next/prev_queue within a
-     gomp_task.  */
-  struct gomp_task *task_queue;
+  /* Scheduled tasks.  */
+  struct priority_queue task_queue;
   /* Number of all GOMP_TASK_{WAITING,TIED} tasks in the team.  */
   unsigned int task_count;
   /* Number of GOMP_TASK_WAITING tasks currently waiting to be scheduled.  */
@@ -627,39 +692,6 @@ extern bool gomp_affinity_init_level (int, unsigned long, bool);
 extern void gomp_affinity_print_place (void *);
 extern void gomp_get_place_proc_ids_8 (int, int64_t *);
 
-/* alloc.c */
-
-extern void *gomp_malloc (size_t) __attribute__((malloc));
-extern void *gomp_malloc_cleared (size_t) __attribute__((malloc));
-extern void *gomp_realloc (void *, size_t);
-
-/* Avoid conflicting prototypes of alloca() in system headers by using
-   GCC's builtin alloca().  */
-#define gomp_alloca(x)  __builtin_alloca(x)
-
-/* error.c */
-
-extern void gomp_vdebug (int, const char *, va_list);
-extern void gomp_debug (int, const char *, ...)
-	__attribute__ ((format (printf, 2, 3)));
-#define gomp_vdebug(KIND, FMT, VALIST) \
-  do { \
-    if (__builtin_expect (gomp_debug_var, 0)) \
-      (gomp_vdebug) ((KIND), (FMT), (VALIST)); \
-  } while (0)
-#define gomp_debug(KIND, ...) \
-  do { \
-    if (__builtin_expect (gomp_debug_var, 0)) \
-      (gomp_debug) ((KIND), __VA_ARGS__); \
-  } while (0)
-extern void gomp_verror (const char *, va_list);
-extern void gomp_error (const char *, ...)
-	__attribute__ ((format (printf, 1, 2)));
-extern void gomp_vfatal (const char *, va_list)
-	__attribute__ ((noreturn));
-extern void gomp_fatal (const char *, ...)
-	__attribute__ ((noreturn, format (printf, 1, 2)));
-
 /* iter.c */
 
 extern int gomp_iter_static_next (long *, long *);
@@ -715,10 +747,10 @@ extern void gomp_init_task (struct gomp_task *, struct gomp_task *,
 extern void gomp_end_task (void);
 extern void gomp_barrier_handle_tasks (gomp_barrier_state_t);
 extern void gomp_task_maybe_wait_for_dependencies (void **);
-extern void gomp_create_target_task (struct gomp_device_descr *,
+extern bool gomp_create_target_task (struct gomp_device_descr *,
 				     void (*) (void *), size_t, void **,
 				     size_t *, unsigned short *, unsigned int,
-				     void **);
+				     void **, enum gomp_target_task_state);
 
 static void inline
 gomp_finish_task (struct gomp_task *task)
@@ -739,8 +771,9 @@ extern void gomp_free_thread (void *);
 
 extern void gomp_init_targets_once (void);
 extern int gomp_get_num_devices (void);
-extern void gomp_target_task_fn (void *);
+extern bool gomp_target_task_fn (void *);
 
+/* Splay tree definitions.  */
 typedef struct splay_tree_node_s *splay_tree_node;
 typedef struct splay_tree_s *splay_tree;
 typedef struct splay_tree_key_s *splay_tree_key;
@@ -799,6 +832,21 @@ struct splay_tree_key_s {
   /* Asynchronous reference count.  */
   uintptr_t async_refcount;
 };
+
+/* The comparison function.  */
+
+static inline int
+splay_compare (splay_tree_key x, splay_tree_key y)
+{
+  if (x->host_start == x->host_end
+      && y->host_start == y->host_end)
+    return 0;
+  if (x->host_end <= y->host_start)
+    return -1;
+  if (x->host_start >= y->host_end)
+    return 1;
+  return 0;
+}
 
 #include "splay-tree.h"
 
@@ -877,6 +925,7 @@ struct gomp_device_descr
   void *(*host2dev_func) (int, void *, const void *, size_t);
   void *(*dev2dev_func) (int, void *, const void *, size_t);
   void (*run_func) (int, void *, void *);
+  void (*async_run_func) (int, void *, void *, void *);
 
   /* Splay tree containing information about mapped memory regions.  */
   struct splay_tree_s mem_map;
@@ -1016,4 +1065,34 @@ extern int gomp_test_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 # define ialias_call(fn) fn
 #endif
 
+/* Helper function for priority_node_to_task() and
+   task_to_priority_node().
+
+   Return the offset from a task to its priority_node entry.  The
+   priority_node entry is has a type of TYPE.  */
+
+static inline size_t
+priority_queue_offset (enum priority_queue_type type)
+{
+  return offsetof (struct gomp_task, pnode[(int) type]);
+}
+
+/* Return the task associated with a priority NODE of type TYPE.  */
+
+static inline struct gomp_task *
+priority_node_to_task (enum priority_queue_type type,
+		       struct priority_node *node)
+{
+  return (struct gomp_task *) ((char *) node - priority_queue_offset (type));
+}
+
+/* Return the priority node of type TYPE for a given TASK.  */
+
+static inline struct priority_node *
+task_to_priority_node (enum priority_queue_type type,
+		       struct gomp_task *task)
+{
+  return (struct priority_node *) ((char *) task
+				   + priority_queue_offset (type));
+}
 #endif /* LIBGOMP_H */
