@@ -15831,10 +15831,10 @@ fi
       linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
 	enable_clocale_flag=gnu
 	;;
-      darwin* | freebsd*)
+      darwin*)
 	enable_clocale_flag=darwin
 	;;
-      dragonfly*)
+      dragonfly* | freebsd*)
 	enable_clocale_flag=dragonfly
 	;;
       openbsd*)
@@ -15965,8 +15965,8 @@ $as_echo "generic" >&6; }
       CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
       ;;
     darwin)
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: darwin or freebsd" >&5
-$as_echo "darwin or freebsd" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: darwin" >&5
+$as_echo "darwin" >&6; }
 
       CLOCALE_H=config/locale/generic/c_locale.h
       CLOCALE_CC=config/locale/generic/c_locale.cc
@@ -15983,8 +15983,8 @@ $as_echo "darwin or freebsd" >&6; }
       ;;
 
     dragonfly)
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: dragonfly" >&5
-$as_echo "dragonfly" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: dragonfly or freebsd" >&5
+$as_echo "dragonfly or freebsd" >&6; }
 
       CLOCALE_H=config/locale/dragonfly/c_locale.h
       CLOCALE_CC=config/locale/dragonfly/c_locale.cc
