@@ -38,7 +38,7 @@ void test01()
 
 #if _GLIBCXX_USE_CXX11_ABI
   // Can't shrink below small string size.
-  const size_type minsize = 2 << 1;
+  const size_type minsize = wstring().capacity() + 1;
 #else
   // Exact shrink-to-size and shrink-to-fit
   const size_type minsize = 2 << 0;
