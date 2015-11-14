@@ -4,7 +4,7 @@
 	* g++.dg/cpp/ucn-1.C: Expect error for dollar sign identifier on AIX.
 
 2015-11-13  Ajit Agarwal  <ajitkum@xilinx.com>
-            Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/split-path-1.c: New test.
 
@@ -79,8 +79,7 @@
 
 2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* c-c++-common/goacc/data-default-1.c: Correct expected
-	diagnostic.
+	* c-c++-common/goacc/data-default-1.c: Correct expected diagnostic.
 
 2015-11-13  Richard Biener  <rguenther@suse.de>
 
@@ -4231,7 +4230,7 @@
 2015-11-11  Richard Biener  <rguenth@gcc.gnu.org>
 	    Jiong Wang	    <jiong.wang@arm.com>
 
-	* gcc.dg/tree-ssa/pr68234.c: New testcase. 
+	* gcc.dg/tree-ssa/pr68234.c: New testcase.
 
 2015-11-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
@@ -4541,6 +4540,17 @@
 	* gcc.target/arm/interrupt-1.c: Likewise.
 	* gcc.target/arm/interrupt-2.c: Likewise.
 	* gcc.target/arm/unaligned-memcpy-4.c: Likewise.
+
+2015-11-06  Benedikt Huber  <benedikt.huber@theobroma-systems.com>
+	    Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
+
+	* gcc.target/aarch64/rsqrt_asm_check_common.h: Common
+	macros for assembly checks.
+	* gcc.target/aarch64/rsqrt_asm_check_negative_1.c: Make sure
+	frsqrts and frsqrte are not emitted.
+	* gcc.target/aarch64/rsqrt_asm_check_1.c: Make sure
+	frsqrts and frsqrte are emitted.
+	* gcc.target/aarch64/rsqrt_1.c: Functional tests for rsqrt.
 
 2015-11-06  Thomas Schwinge  <thomas@codesourcery.com>
 
