@@ -1,3 +1,8 @@
+2015-11-13  Rich Felker <dalias@libc.org>
+
+	* config/sh/sh.md (symGOT_load): Suppress __stack_chk_guard
+	address loading hack for FDPIC targets.
+
 2015-11-13  Ajit Agarwal  <ajitkum@xilinx.com>
 	    Jeff Law  <law@redhat.com>
 
