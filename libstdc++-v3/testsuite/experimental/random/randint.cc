@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++14" }
 // { dg-require-effective-target tls_runtime }
+// { dg-add-options tls }
 
 // Copyright (C) 2015 Free Software Foundation, Inc.
 //
