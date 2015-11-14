@@ -1,3 +1,12 @@
+2015-11-14  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Change locale implementation
+	from darwin to DragonFly.
+	* configure: Regenerate.
+	* config/os/bsd/freebsd/ctype_configure_char.cc: Improve locale
+	support, do it the same as DragonFly.
+	* config/os/bsd/freebsd/os_defines.h: Add fine grained C99 defines.
+
 2015-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string/capacity/char/18654.cc: Use
