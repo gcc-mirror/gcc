@@ -9,7 +9,7 @@ int main()
 
   int c\u0041c;		// { dg-error "not valid in an identifier" }
 		// $ is OK on most targets; not part of basic source char set
-  int c\u0024c;	// { dg-error "not valid in an identifier" { target { powerpc-ibm-aix* } } }
+  int c\u0024c;	// { dg-error "not valid in an identifier" "" { target { powerpc-ibm-aix* } } }
 
   U"\uD800";		  // { dg-error "not a valid universal character" }
 }
