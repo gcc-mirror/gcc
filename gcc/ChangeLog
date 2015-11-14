@@ -48,8 +48,7 @@
 
 2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* gcc/omp-low.c (scan_sharing_clauses): Accept INDEPENDENT, AUTO &
-	SEQ.
+	* gcc/omp-low.c (scan_sharing_clauses): Accept INDEPENDENT, AUTO & SEQ.
 	(oacc_loop_fixed_partitions): Correct return type to bool.
 	(oacc_loop_auto_partitions): New.
 	(oacc_loop_partition): Take mask argument, call
@@ -76,8 +75,7 @@
 	ISA 3.0 hardware IEEE 128-bit floating point.
 	(UNSPEC_IEEE128_MOVE): Likewise.
 	(UNSPEC_IEEE128_CONVERT): Likewise.
-	(FMA_F): Add support for IEEE 128-bit floating point hardware
-	support.
+	(FMA_F): Add support for IEEE 128-bit floating point hardware support.
 	(Ff): Add support for DImode.
 	(Fv): Likewise.
 	(any_fix code iterator): New and updated iterators for IEEE
@@ -228,7 +226,7 @@
 	* config/arm/arm.opt (arm_fpu_index): Mark Save.
 
 2015-11-13  Segher Boessenkool  <segher@kernel.crashing.org>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* combine.c (subst): Don't substitute or simplify when
 	handling register-wise widening multiply.
@@ -379,7 +377,7 @@
 
 2015-11-13  James Bowman  <james.bowman@ftdichip.com>
 
-        * config/ft32/ft32.md (*sne): New insn pattern.
+	* config/ft32/ft32.md (*sne): New insn pattern.
 
 2015-11-12  Brad Lucier  <lucier@math.purdue.edu>
 
@@ -393,13 +391,13 @@
 	Expand warning to add required size of max-gcse-memory.
 	(one_pre_gcse_pass): Use it.
 	(one_code_hoisting_pass): Use it.
- 	* gcc/params.def (max-gcse-memory): Increase from 50MB to 128MB.
+	* gcc/params.def (max-gcse-memory): Increase from 50MB to 128MB.
 
 2015-11-12  James Norris  <jnorris@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
 	* gimple-pretty-print.c (dump_gimple_omp_target): Handle
-	GF_OMP_TARGET_KIND_OACC_DECLARE. 
+	GF_OMP_TARGET_KIND_OACC_DECLARE.
 	* gimple.h (enum gf_mask): Add GF_OMP_TARGET_KIND_OACC_DECLARE.
 	(is_gomple_omp_oacc): Handle GF_OMP_TARGET_KIND_OACC_DECLARE.
 	* gimplify.c (oacc_declare_returns): New.
@@ -432,7 +430,7 @@
 	* config/arm/arm-tables.opt, config/arm/arm-tune.md: Regenerated.
 	* config/arm/bpabi.h (BE8_LINK_SPEC): Add qdf24xx support.
 	* doc/invoke.texi (AArch64 Options/-mtune): Add "qdf24xx".
-	(ARM Options/-mtune); Likewise.
+	(ARM Options/-mtune): Likewise.
 
 2015-11-12  Martin Liska  <mliska@suse.cz>
 
@@ -442,8 +440,7 @@
 	introduced init_opts_obstack.
 	* lto-wrapper.c (main): Likewise.
 	* opts.c (init_opts_obstack): New function.
-	(init_options_struct): Call newly
-	introduced init_opts_obstack.
+	(init_options_struct): Call newly introduced init_opts_obstack.
 	* opts.h (init_options_struct): Declare.
 
 2015-11-12  Martin Liska  <mliska@suse.cz>
@@ -542,8 +539,7 @@
 2015-11-12  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* expr.c (do_store_flag): Expand vector comparison as
-	VEC_COND_EXPR if vector comparison is not supported
-	by target.
+	VEC_COND_EXPR if vector comparison is not supported by target.
 
 2015-11-12  Renlin Li  <renlin.li@arm.com>
 
@@ -819,11 +815,9 @@
 	ORT_ACC_DATA, ORT_ACC_PARALLEL, ORT_ACC_KERNELS.  Adjust ORT_NONE.
 	(gimple_add_tmp_var): Add ORT_ACC checks.
 	(gimplify_var_or_parm_decl): Likewise.
-	(omp_firstprivatize_variable): Likewise. Use ORT_TARGET_DATA as a
-	mask.
+	(omp_firstprivatize_variable): Likewise. Use ORT_TARGET_DATA as a mask.
 	(omp_add_variable): Look in outer contexts for openacc and allow
-	reductions with other sharing. Add ORT_ACC and ORT_TARGET_DATA
-	checks.
+	reductions with other sharing. Add ORT_ACC and ORT_TARGET_DATA checks.
 	(omp_notice_variable, omp_is_private, omp_check_private): Add
 	ORT_ACC checks.
 	(gimplify_scan_omp_clauses: Treat ORT_ACC as ORT_WORKSHARE.
@@ -831,8 +825,7 @@
 	(gimplify_oacc_cache): Specify ORT_ACC.
 	(gimplify_omp_workshare): Adjust OpenACC region types.
 	(gimplify_omp_target_update): Likewise.
-	* omp-low.c (scan_sharing_clauses): Remove Openacc
-	firstprivate sorry.
+	* omp-low.c (scan_sharing_clauses): Remove Openacc firstprivate sorry.
 	(lower-rec_input_clauses): Don't handle openacc firstprivate
 	references here.
 	(lower_omp_target): Emit initializers for openacc firstprivate vars.
@@ -890,20 +883,16 @@
 	architecture.
 	(arc_compute_function_type): Likewise.
 	(arc_print_operand): Handle new ARCv2 punctuation characters.
-	(arc_return_in_memory): ARCv2 ABI returns in registers up to 16
-	bytes.
+	(arc_return_in_memory): ARCv2 ABI returns in registers up to 16 bytes.
 	(workaround_arc_anomaly, arc_asm_insn_p, arc_loop_hazard): New
 	function.
 	(arc_reorg, arc_hazard): Use it.
-	* config/arc/arc.h (TARGET_CPU_CPP_BUILTINS): Define __HS__ and
-	__EM__.
+	* config/arc/arc.h (TARGET_CPU_CPP_BUILTINS): Define __HS__ and __EM__.
 	(ASM_SPEC): Add ARCv2 options.
 	(TARGET_NORM): ARC HS has norm instructions by default.
-	(TARGET_OPTFPE): Use optimized floating point emulation for ARC
-	HS.
+	(TARGET_OPTFPE): Use optimized floating point emulation for ARC HS.
 	(TARGET_AT_DBR_CONDEXEC): Only for ARC600 family.
-	(TARGET_EM, TARGET_HS, TARGET_V2, TARGET_MPYW, TARGET_MULTI):
-	Define.
+	(TARGET_EM, TARGET_HS, TARGET_V2, TARGET_MPYW, TARGET_MULTI): Define.
 	(SIGNED_INT16, TARGET_MPY, TARGET_ARC700_MPY, TARGET_ANY_MPY):
 	Likewise.
 	(TARGET_ARC600_FAMILY, TARGET_ARCOMPACT_FAMILY): Likewise.
@@ -1136,8 +1125,7 @@
 	* optabs-tree.c (expand_vec_cond_expr_p): Use
 	get_vcond_mask_icode for VEC_COND_EXPR with mask.
 	* optabs.c (expand_vec_cond_mask_expr): New.
-	(expand_vec_cond_expr): Use get_vcond_mask_icode
-	when possible.
+	(expand_vec_cond_expr): Use get_vcond_mask_icode when possible.
 	* optabs.def (vcond_mask_optab): New.
 	* tree-vect-patterns.c (vect_recog_bool_pattern): Don't
 	generate redundant comparison for COND_EXPR.
@@ -1210,12 +1198,10 @@
 	* tree-vect-patterns.c (check_bool_pattern): Check fails
 	if we can vectorize comparison directly.
 	(search_type_for_mask): New.
-	(vect_recog_bool_pattern): Support cases when bool pattern
-	check fails.
+	(vect_recog_bool_pattern): Support cases when bool pattern check fails.
 	* tree-vect-slp.c (vect_build_slp_tree_1): Allow
 	comparison statements.
-	(vect_get_constant_vectors): Support boolean vector
-	constants.
+	(vect_get_constant_vectors): Support boolean vector constants.
 	* config/i386/i386-protos.h (ix86_expand_mask_vec_cmp): New.
 	(ix86_expand_int_vec_cmp): New.
 	(ix86_expand_fp_vec_cmp): New.
@@ -1331,8 +1317,7 @@
 	(fusion_addis_mem_combo_store): Likewise.
 	(fusion_offsettable_mem_operand): Likewise.
 
-	* config/rs6000/rs6000-protos.h (emit_fusion_addis): Add
-	declarations.
+	* config/rs6000/rs6000-protos.h (emit_fusion_addis): Add declarations.
 	(emit_fusion_load_store): Likewise.
 	(fusion_p9_p): Likewise.
 	(expand_fusion_p9_load): Likewise.
@@ -1345,8 +1330,7 @@
 	elements for power9 fusion.
 	(rs6000_debug_print_mode): Rework debug information to print more
 	information about fusion.
-	(rs6000_init_hard_regno_mode_ok): Setup for power9 fusion
-	support.
+	(rs6000_init_hard_regno_mode_ok): Setup for power9 fusion support.
 	(rs6000_legitimate_address_p): Recognize toc fusion as a valid
 	offsettable memory address.
 	(rs6000_rtx_costs): Update costs for new ISA 3.0 instructions.
@@ -1375,8 +1359,7 @@
 	(QHSI mode iterator): New iterator for power9 fusion.
 	(GPR_FUSION): Likewise.
 	(FPR_FUSION): Likewise.
-	(mod<mode>3): Add support for ISA 3.0
-	modulus instructions.
+	(mod<mode>3): Add support for ISA 3.0 modulus instructions.
 	(umod<mode>3): Likewise.
 	(divmod peephole): Likewise.
 	(udivmod peephole): Likewise.
@@ -1468,16 +1451,14 @@
 	(POWERPC_MASKS): Add new ISA 3.0 switches.
 	(power9 cpu): Add power9 cpu.
 
-	* config/rs6000/rs6000.h (ASM_CPU_POWER9_SPEC): Add support for
-	power9.
+	* config/rs6000/rs6000.h (ASM_CPU_POWER9_SPEC): Add support for power9.
 	(ASM_CPU_SPEC): Likewise.
 	(EXTRA_SPECS): Likewise.
 
 	* config/rs6000/rs6000-opts.h (enum processor_type): Add
 	PROCESSOR_POWER9.
 
-	* config/rs6000/rs6000.c (power9_cost): Initial cost setup for
-	power9.
+	* config/rs6000/rs6000.c (power9_cost): Initial cost setup for power9.
 	(rs6000_debug_reg_global): Add support for power9 fusion.
 	(rs6000_setup_reg_addr_masks): Cache mode size.
 	(rs6000_option_override_internal): Until real power9 tuning is
@@ -1485,8 +1466,7 @@
 	(rs6000_setup_reg_addr_masks): Do not allow pre-increment,
 	pre-decrement, or pre-modify on SFmode/DFmode if we allow the use
 	of Altivec registers.
-	(rs6000_option_override_internal): Add support for ISA 3.0
-	switches.
+	(rs6000_option_override_internal): Add support for ISA 3.0 switches.
 	(rs6000_loop_align): Add support for power9 cpu.
 	(rs6000_file_start): Likewise.
 	(rs6000_adjust_cost): Likewise.
@@ -1540,8 +1520,7 @@
 2015-11-09  Martin Liska  <mliska@suse.cz>
 
 	* gcc.c (record_temp_file): Release name string.
-	* ifcvt.c (noce_convert_multiple_sets): Use auto_vec instead
-	of vec.
+	* ifcvt.c (noce_convert_multiple_sets): Use auto_vec instead of vec.
 	* lra-lives.c (free_live_range_list): Utilize
 	lra_live_range_pool for allocation and deallocation.
 	(create_live_range): Likewise.
@@ -1550,8 +1529,7 @@
 	(remove_some_program_points_and_update_live_ranges): Likewise.
 	(lra_create_live_ranges_1): Release point_freq_vec that can
 	be not freed from previous iteration of the function.
-	* tree-eh.c (lower_try_finally_switch): Use auto_vec instead of
-	vec.
+	* tree-eh.c (lower_try_finally_switch): Use auto_vec instead of vec.
 	* tree-sra.c (sra_deinitialize): Release all vectors in
 	base_access_vec.
 	* tree-ssa-dom.c (free_dom_edge_info): Make the function extern.
@@ -1569,8 +1547,7 @@
 2015-11-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68248
-	* tree-vect-generic.c (expand_vector_operations_1): Handle
-	scalar rhs2.
+	* tree-vect-generic.c (expand_vector_operations_1): Handle scalar rhs2.
 
 2015-11-09  Richard Biener  <rguenther@suse.de>
 
@@ -1615,33 +1592,28 @@
 	(frv_print_operand): Pass mode to frv_print_operand_address calls.
 	* config/mn10300/mn10300.c (mn10300_print_operand): Pass mode to
 	output_address.
-	* config/cris/cris.c (cris_print_operand_address): Add MODE
-	argument.
+	* config/cris/cris.c (cris_print_operand_address): Add MODE argument.
 	(cris_print_operand): Pass mode to output_address calls.
-	* config/spu/spu.c (print_operand): Pass mode to output_address
-	calls.
+	* config/spu/spu.c (print_operand): Pass mode to output_address calls.
 	* config/aarch64/aarch64.h (aarch64_print_operand)
 	(aarch64_print_operand_address): Remove prototypes.
 	* config/aarch64/aarch64.c (aarch64_memory_reference_mode): Delete
 	global.
-	(aarch64_print_operand): Make static. Update calls to
-	output_address.
+	(aarch64_print_operand): Make static. Update calls to output_address.
 	(aarch64_print_operand_address): Add MODE argument. Use instead of
 	aarch64_memory_reference_mode global.
 	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS): Define target
 	hooks.
 	* config/aarch64/aarch64.h (PRINT_OPERAND, PRINT_OPERAND_ADDRESS):
 	Delete macro definitions.
-	* config/pa/pa.c (pa_print_operand): Pass mode in output_address
-	calls.
+	* config/pa/pa.c (pa_print_operand): Pass mode in output_address calls.
 	* config/xtensa/xtensa.c (print_operand): Pass mode in
 	output_address calls.
 	* config/h8300/h8300.c (h8300_print_operand_address): Add MODE
 	argument.
 	(h83000_print_operand): Update calls to h8300_print_operand_address
 	and output_address.
-	* config/ia64/ia64.c (ia64_print_operand_address): Add MODE
-	argument.
+	* config/ia64/ia64.c (ia64_print_operand_address): Add MODE argument.
 	* config/tilepro/tilepro.c (output_memory_reference_mode): Delete
 	global.
 	(tilepro_print_operand): Pass mode to output_address.
@@ -1687,18 +1659,15 @@
 	output_address call.
 	(c6x_print_address_operand): Update calls to output_address.
 	(c6x_print_operand_address): Pass mode to above.
-	* config/v850/v850.c (v850_print_operand_address): Add MODE
-	argument.
+	* config/v850/v850.c (v850_print_operand_address): Add MODE argument.
 	(v850_print_operand): Pass mode to v850_print_operand_address,
 	output_address.
-	* config/mmix/mmix.c (mmix_print_operand_address): Add MODE
-	argument.
+	* config/mmix/mmix.c (mmix_print_operand_address): Add MODE argument.
 	(mmix_print_operand): Pass mode in output_address calls.
 	* config/sh/sh.c (sh_print_operand_address): Add MODE argument.
 	(sh_print_operand): Pass mem mode to output_address,
 	sh_print_operand_address.
-	* config/cr16/cr16.c (cr16_print_operand_address): Add MODE
-	argument.
+	* config/cr16/cr16.c (cr16_print_operand_address): Add MODE argument.
 	(cr16_print_operand): Pass mode to output_address,
 	cr16_print_operand_address.
 	* config/bfin/bfin.c (print_address_operand): Pass VOIDmode to
@@ -1710,16 +1679,14 @@
 	(nios2_print_operand_address): Add MODE argument. Update call to
 	nios2_print_operand_address.
 	* config/s390/s390.c (print_operand): Pass mode to output_address.
-	* config/m32c/m32c.c (m32c_print_operand_address): Add MODE
-	argument.
+	* config/m32c/m32c.c (m32c_print_operand_address): Add MODE argument.
 	* config/arc/arc.c (arc_print_operand): Pass VOIDmode to
 	output_address.
 	* config/arm/arm.c (arm_print_operand_address): Add MODE argument.
 	Use instead of output_memory_reference_mode.
 	(output_memory_reference_mode): Delete global.
 	(arm_print_operand): Pass mem mode to output_address.
-	* config/m32r/m32r.c (m32r_print_operand_address): Add MODE
-	argument.
+	* config/m32r/m32r.c (m32r_print_operand_address): Add MODE argument.
 	(m32r_print_operand): Pass mode to output_address.
 	* config/msp430/msp430.c (msp430_print_operand_addr): Add MODE
 	argument.
@@ -1752,8 +1719,7 @@
 
 	* config/sol2.h (SUPPORTS_INIT_PRIORITY): Define to
 	HAVE_INITFINI_ARRAY_SUPPORT.
-	* config/initfini-array.h: Check HAVE_INITFINI_ARRAY_SUPPORT
-	value.
+	* config/initfini-array.h: Check HAVE_INITFINI_ARRAY_SUPPORT value.
 
 	* configure.ac (gcc_cv_as_sparc_nobits): Remove.
 	* config/sparc/sparc.c (sparc_solaris_elf_asm_named_section):
@@ -1983,8 +1949,7 @@
 	types with different TYPE_REVERSE_STORAGE_ORDER flag.
 	* gimplify.c (gimplify_expr) <MEM_REF>: Propagate the
 	REF_REVERSE_STORAGE_ORDER flag.
-	* lto-streamer-out.c (hash_tree): Deal with
-	TYPE_REVERSE_STORAGE_ORDER.
+	* lto-streamer-out.c (hash_tree): Deal with TYPE_REVERSE_STORAGE_ORDER.
 	* output.h (assemble_real): Adjust prototype.
 	* print-tree.c (print_node): Convey TYPE_REVERSE_STORAGE_ORDER.
 	* stor-layout.c (finish_record_layout): Propagate the
@@ -1993,8 +1958,7 @@
 	(TYPE_SATURATING): Adjust.
 	(REF_REVERSE_STORAGE_ORDER): Document.
 	* tree-dfa.c (get_ref_base_and_extent): Add PREVERSE parameter and
-	set it to true upon encoutering a reference with reverse storage
-	order.
+	set it to true upon encoutering a reference with reverse storage order.
 	* tree-dfa.h (get_ref_base_and_extent): Adjust prototype.
 	* tree-inline.c (remap_gimple_op_r): Propagate the
 	REF_REVERSE_STORAGE_ORDER flag.
@@ -2072,8 +2036,7 @@
 	(compute_known_type_jump_func): Likewise.
 	(determine_known_aggregate_parts): Likewise.
 	(ipa_get_adjustment_candidate): Likewise.
-	(ipa_modify_call_arguments): Set REF_REVERSE_STORAGE_ORDER on
-	MEM_REF.
+	(ipa_modify_call_arguments): Set REF_REVERSE_STORAGE_ORDER on MEM_REF.
 	* ipa-prop.h (ipa_parm_adjustment): Add REVERSE field.
 	(build_ref_for_offset): Adjust prototype.
 	* simplify-rtx.c (delegitimize_mem_from_attrs): Adjust call to
@@ -2135,13 +2098,12 @@
 	(do_structure_copy): Likewise.
 	* tree-vect-data-refs.c (vect_check_gather): Adjust call to
 	get_inner_reference.
-	(vect_analyze_data_refs): Likewise.  Bail out if reverse storage
-	order.
+	(vect_analyze_data_refs): Likewise.  Bail out if reverse storage order.
 	* tsan.c (instrument_expr): Adjust call to get_inner_reference.
 	* ubsan.c (instrument_bool_enum_load): Likewise.
 	(instrument_object_size): Likewise.
 	* var-tracking.c (track_expr_p): Adjust call to
-	get_ref_base_and_extent
+	get_ref_base_and_extent.
 	* config/mips/mips.c (r10k_safe_mem_expr_p): Adjust call to
 	get_inner_reference.
 	* config/s390/s390.c (s390_expand_atomic): Adjust call to
@@ -2268,7 +2230,7 @@
 	* doc/md.texi (multi-alternative constraints): Don't document
 	alternatives inherently tied to reload for the user documentation.
 
-2015-11-06  Michael Collison  <michael.collison@linaro.org
+2015-11-06  Michael Collison  <michael.collison@linaro.org>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	Revert:
@@ -2280,8 +2242,7 @@
 
 2015-11-06  Jakub Jelinek  <jakub@redhat.com>
 
-	* gimplify.c (gimplify_omp_ordered): Fix up diagnostics
-	wording.
+	* gimplify.c (gimplify_omp_ordered): Fix up diagnostics wording.
 	* omp-low.c (check_omp_nesting_restrictions): Update for the
 	various new OpenMP 4.5 nesting restrictions, clarified
 	nesting glossary, closely nested region relationship clarified
@@ -2496,13 +2457,6 @@
 	code when applicable.
 	* config/aarch64/aarch64.md: Added enum entries.
 	* config/aarch64/aarch64.opt: Added option -mlow-precision-recip-sqrt.
-	* testsuite/gcc.target/aarch64/rsqrt_asm_check_common.h: Common
-	macros for assembly checks.
-	* testsuite/gcc.target/aarch64/rsqrt_asm_check_negative_1.c: Make sure
-	frsqrts and frsqrte are not emitted.
-	* testsuite/gcc.target/aarch64/rsqrt_asm_check_1.c: Make sure
-	frsqrts and frsqrte are emitted.
-	* testsuite/gcc.target/aarch64/rsqrt_1.c: Functional tests for rsqrt.
 
 2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
 
