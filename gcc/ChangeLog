@@ -1,3 +1,11 @@
+2015-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_omp_ordered): Add argument to GOMP_SMD_ORDERED_*
+	internal calls - 0 if ordered simd and 1 for ordered threads simd.
+	* tree-vectorizer.c (adjust_simduid_builtins): If GOMP_SIMD_ORDERED_*
+	argument is 1, replace it with GOMP_ordered_* call instead of removing
+	it.
+
 2015-11-13  Rich Felker <dalias@libc.org>
 
 	* config/sh/sh.md (symGOT_load): Suppress __stack_chk_guard

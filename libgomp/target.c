@@ -92,23 +92,6 @@ gomp_realloc_unlock (void *old, size_t size)
   return ret;
 }
 
-/* The comparison function.  */
-
-attribute_hidden int
-splay_compare (splay_tree_key x, splay_tree_key y)
-{
-  if (x->host_start == x->host_end
-      && y->host_start == y->host_end)
-    return 0;
-  if (x->host_end <= y->host_start)
-    return -1;
-  if (x->host_start >= y->host_end)
-    return 1;
-  return 0;
-}
-
-#include "splay-tree.h"
-
 attribute_hidden void
 gomp_init_targets_once (void)
 {
@@ -1365,17 +1348,7 @@ GOMP_target (int device, void (*fn) (void *), const void *unused,
   struct target_mem_desc *tgt_vars
     = gomp_map_vars (devicep, mapnum, hostaddrs, NULL, sizes, kinds, false,
 		     GOMP_MAP_VARS_TARGET);
-  struct gomp_thread old_thr, *thr = gomp_thread ();
-  old_thr = *thr;
-  memset (thr, '\0', sizeof (*thr));
-  if (gomp_places_list)
-    {
-      thr->place = old_thr.place;
-      thr->ts.place_partition_len = gomp_places_list_len;
-    }
   devicep->run_func (devicep->target_id, fn_addr, (void *) tgt_vars->tgt_start);
-  gomp_free_thread (thr);
-  *thr = old_thr;
   gomp_unmap_vars (tgt_vars, true);
 }
 
@@ -1404,10 +1377,52 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
   (void) num_teams;
   (void) thread_limit;
 
-  /* If there are depend clauses, but nowait is not present,
-     block the parent task until the dependencies are resolved
-     and then just continue with the rest of the function as if it
-     is a merged task.  */
+  if (flags & GOMP_TARGET_FLAG_NOWAIT)
+    {
+      struct gomp_thread *thr = gomp_thread ();
+      /* Create a team if we don't have any around, as nowait
+	 target tasks make sense to run asynchronously even when
+	 outside of any parallel.  */
+      if (__builtin_expect (thr->ts.team == NULL, 0))
+	{
+	  struct gomp_team *team = gomp_new_team (1);
+	  struct gomp_task *task = thr->task;
+	  struct gomp_task_icv *icv = task ? &task->icv : &gomp_global_icv;
+	  team->prev_ts = thr->ts;
+	  thr->ts.team = team;
+	  thr->ts.team_id = 0;
+	  thr->ts.work_share = &team->work_shares[0];
+	  thr->ts.last_work_share = NULL;
+#ifdef HAVE_SYNC_BUILTINS
+	  thr->ts.single_count = 0;
+#endif
+	  thr->ts.static_trip = 0;
+	  thr->task = &team->implicit_task[0];
+	  gomp_init_task (thr->task, NULL, icv);
+	  if (task)
+	    {
+	      thr->task = task;
+	      gomp_end_task ();
+	      free (task);
+	      thr->task = &team->implicit_task[0];
+	    }
+	  else
+	    pthread_setspecific (gomp_thread_destructor, thr);
+	}
+      if (thr->ts.team
+	  && !thr->task->final_task)
+	{
+	  gomp_create_target_task (devicep, fn, mapnum, hostaddrs,
+				   sizes, kinds, flags, depend,
+				   GOMP_TARGET_TASK_BEFORE_MAP);
+	  return;
+	}
+    }
+
+  /* If there are depend clauses, but nowait is not present
+     (or we are in a final task), block the parent task until the
+     dependencies are resolved and then just continue with the rest
+     of the function as if it is a merged task.  */
   if (depend != NULL)
     {
       struct gomp_thread *thr = gomp_thread ();
@@ -1427,17 +1442,7 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
   struct target_mem_desc *tgt_vars
     = gomp_map_vars (devicep, mapnum, hostaddrs, NULL, sizes, kinds, true,
 		     GOMP_MAP_VARS_TARGET);
-  struct gomp_thread old_thr, *thr = gomp_thread ();
-  old_thr = *thr;
-  memset (thr, '\0', sizeof (*thr));
-  if (gomp_places_list)
-    {
-      thr->place = old_thr.place;
-      thr->ts.place_partition_len = gomp_places_list_len;
-    }
   devicep->run_func (devicep->target_id, fn_addr, (void *) tgt_vars->tgt_start);
-  gomp_free_thread (thr);
-  *thr = old_thr;
   gomp_unmap_vars (tgt_vars, true);
 }
 
@@ -1544,23 +1549,25 @@ GOMP_target_update_ext (int device, size_t mapnum, void **hostaddrs,
 	      && thr->ts.team
 	      && !thr->task->final_task)
 	    {
-	      gomp_create_target_task (devicep, (void (*) (void *)) NULL,
-				       mapnum, hostaddrs, sizes, kinds,
-				       flags | GOMP_TARGET_FLAG_UPDATE,
-				       depend);
-	      return;
+	      if (gomp_create_target_task (devicep, (void (*) (void *)) NULL,
+					   mapnum, hostaddrs, sizes, kinds,
+					   flags | GOMP_TARGET_FLAG_UPDATE,
+					   depend, GOMP_TARGET_TASK_DATA))
+		return;
 	    }
+	  else
+	    {
+	      struct gomp_team *team = thr->ts.team;
+	      /* If parallel or taskgroup has been cancelled, don't start new
+		 tasks.  */
+	      if (team
+		  && (gomp_team_barrier_cancelled (&team->barrier)
+		      || (thr->task->taskgroup
+			  && thr->task->taskgroup->cancelled)))
+		return;
 
-	  struct gomp_team *team = thr->ts.team;
-	  /* If parallel or taskgroup has been cancelled, don't start new
-	     tasks.  */
-	  if (team
-	      && (gomp_team_barrier_cancelled (&team->barrier)
-		  || (thr->task->taskgroup
-		      && thr->task->taskgroup->cancelled)))
-	    return;
-
-	  gomp_task_maybe_wait_for_dependencies (depend);
+	      gomp_task_maybe_wait_for_dependencies (depend);
+	    }
 	}
     }
 
@@ -1664,22 +1671,25 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 	      && thr->ts.team
 	      && !thr->task->final_task)
 	    {
-	      gomp_create_target_task (devicep, (void (*) (void *)) NULL,
-				       mapnum, hostaddrs, sizes, kinds,
-				       flags, depend);
-	      return;
+	      if (gomp_create_target_task (devicep, (void (*) (void *)) NULL,
+					   mapnum, hostaddrs, sizes, kinds,
+					   flags, depend,
+					   GOMP_TARGET_TASK_DATA))
+		return;
 	    }
+	  else
+	    {
+	      struct gomp_team *team = thr->ts.team;
+	      /* If parallel or taskgroup has been cancelled, don't start new
+		 tasks.  */
+	      if (team
+		  && (gomp_team_barrier_cancelled (&team->barrier)
+		      || (thr->task->taskgroup
+			  && thr->task->taskgroup->cancelled)))
+		return;
 
-	  struct gomp_team *team = thr->ts.team;
-	  /* If parallel or taskgroup has been cancelled, don't start new
-	     tasks.  */
-	  if (team
-	      && (gomp_team_barrier_cancelled (&team->barrier)
-		  || (thr->task->taskgroup
-		      && thr->task->taskgroup->cancelled)))
-	    return;
-
-	  gomp_task_maybe_wait_for_dependencies (depend);
+	      gomp_task_maybe_wait_for_dependencies (depend);
+	    }
 	}
     }
 
@@ -1711,38 +1721,65 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
     gomp_exit_data (devicep, mapnum, hostaddrs, sizes, kinds);
 }
 
-void
+bool
 gomp_target_task_fn (void *data)
 {
   struct gomp_target_task *ttask = (struct gomp_target_task *) data;
+  struct gomp_device_descr *devicep = ttask->devicep;
+
   if (ttask->fn != NULL)
     {
-      /* GOMP_target_ext */
+      if (devicep == NULL
+	  || !(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400))
+	{
+	  ttask->state = GOMP_TARGET_TASK_FALLBACK;
+	  gomp_target_fallback_firstprivate (ttask->fn, ttask->mapnum,
+					     ttask->hostaddrs, ttask->sizes,
+					     ttask->kinds);
+	  return false;
+	}
+
+      if (ttask->state == GOMP_TARGET_TASK_FINISHED)
+	{
+	  gomp_unmap_vars (ttask->tgt, true);
+	  return false;
+	}
+
+      void *fn_addr = gomp_get_target_fn_addr (devicep, ttask->fn);
+      ttask->tgt
+	= gomp_map_vars (devicep, ttask->mapnum, ttask->hostaddrs, NULL,
+			 ttask->sizes, ttask->kinds, true,
+			 GOMP_MAP_VARS_TARGET);
+      ttask->state = GOMP_TARGET_TASK_READY_TO_RUN;
+
+      devicep->async_run_func (devicep->target_id, fn_addr,
+			       (void *) ttask->tgt->tgt_start, (void *) ttask);
+      return true;
     }
-  else if (ttask->devicep == NULL
-	   || !(ttask->devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400))
-    return;
+  else if (devicep == NULL
+	   || !(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400))
+    return false;
 
   size_t i;
   if (ttask->flags & GOMP_TARGET_FLAG_UPDATE)
-    gomp_update (ttask->devicep, ttask->mapnum, ttask->hostaddrs, ttask->sizes,
+    gomp_update (devicep, ttask->mapnum, ttask->hostaddrs, ttask->sizes,
 		 ttask->kinds, true);
   else if ((ttask->flags & GOMP_TARGET_FLAG_EXIT_DATA) == 0)
     for (i = 0; i < ttask->mapnum; i++)
       if ((ttask->kinds[i] & 0xff) == GOMP_MAP_STRUCT)
 	{
-	  gomp_map_vars (ttask->devicep, ttask->sizes[i] + 1,
-			 &ttask->hostaddrs[i], NULL, &ttask->sizes[i],
-			 &ttask->kinds[i], true, GOMP_MAP_VARS_ENTER_DATA);
+	  gomp_map_vars (devicep, ttask->sizes[i] + 1, &ttask->hostaddrs[i],
+			 NULL, &ttask->sizes[i], &ttask->kinds[i], true,
+			 GOMP_MAP_VARS_ENTER_DATA);
 	  i += ttask->sizes[i];
 	}
       else
-	gomp_map_vars (ttask->devicep, 1, &ttask->hostaddrs[i], NULL,
-		       &ttask->sizes[i], &ttask->kinds[i],
-		       true, GOMP_MAP_VARS_ENTER_DATA);
+	gomp_map_vars (devicep, 1, &ttask->hostaddrs[i], NULL, &ttask->sizes[i],
+		       &ttask->kinds[i], true, GOMP_MAP_VARS_ENTER_DATA);
   else
-    gomp_exit_data (ttask->devicep, ttask->mapnum, ttask->hostaddrs,
-		    ttask->sizes, ttask->kinds);
+    gomp_exit_data (devicep, ttask->mapnum, ttask->hostaddrs, ttask->sizes,
+		    ttask->kinds);
+  return false;
 }
 
 void
@@ -2187,6 +2224,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   if (device->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
     {
       DLSYM (run);
+      DLSYM (async_run);
       DLSYM (dev2dev);
     }
   if (device->capabilities & GOMP_OFFLOAD_CAP_OPENACC_200)

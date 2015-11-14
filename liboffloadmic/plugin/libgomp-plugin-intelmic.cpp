@@ -192,11 +192,23 @@ GOMP_OFFLOAD_get_num_devices (void)
 
 static void
 offload (const char *file, uint64_t line, int device, const char *name,
-	 int num_vars, VarDesc *vars, VarDesc2 *vars2)
+	 int num_vars, VarDesc *vars, VarDesc2 *vars2, const void **async_data)
 {
   OFFLOAD ofld = __offload_target_acquire1 (&device, file, line);
   if (ofld)
-    __offload_offload1 (ofld, name, 0, num_vars, vars, vars2, 0, NULL, NULL);
+    {
+      if (async_data == NULL)
+	__offload_offload1 (ofld, name, 0, num_vars, vars, vars2, 0, NULL,
+			    NULL);
+      else
+	{
+	  OffloadFlags flags;
+	  flags.flags = 0;
+	  flags.bits.omp_async = 1;
+	  __offload_offload3 (ofld, name, 0, num_vars, vars, NULL, 0, NULL,
+			      async_data, 0, NULL, flags, NULL);
+	}
+    }
   else
     {
       fprintf (stderr, "%s:%d: Offload target acquire failed\n", file, line);
@@ -208,6 +220,10 @@ static void
 register_main_image ()
 {
   __offload_register_image (&main_target_image);
+
+  /* liboffloadmic will call GOMP_PLUGIN_target_task_completion when
+     asynchronous task on target is completed.  */
+  __offload_register_task_callback (GOMP_PLUGIN_target_task_completion);
 }
 
 /* liboffloadmic loads and runs offload_target_main on all available devices
@@ -218,7 +234,7 @@ GOMP_OFFLOAD_init_device (int device)
   TRACE ("");
   pthread_once (&main_image_is_registered, register_main_image);
   offload (__FILE__, __LINE__, device, "__offload_target_init_proc", 0,
-	   NULL, NULL);
+	   NULL, NULL, NULL);
 }
 
 extern "C" void
@@ -240,7 +256,7 @@ get_target_table (int device, int &num_funcs, int &num_vars, void **&table)
   VarDesc2 vd1g[2] = { { "num_funcs", 0 }, { "num_vars", 0 } };
 
   offload (__FILE__, __LINE__, device, "__offload_target_table_p1", 2,
-	   vd1, vd1g);
+	   vd1, vd1g, NULL);
 
   int table_size = num_funcs + 2 * num_vars;
   if (table_size > 0)
@@ -254,7 +270,7 @@ get_target_table (int device, int &num_funcs, int &num_vars, void **&table)
       VarDesc2 vd2g = { "table", 0 };
 
       offload (__FILE__, __LINE__, device, "__offload_target_table_p2", 1,
-	       &vd2, &vd2g);
+	       &vd2, &vd2g, NULL);
     }
 }
 
@@ -401,8 +417,8 @@ GOMP_OFFLOAD_alloc (int device, size_t size)
   vd1[1].size = sizeof (void *);
   VarDesc2 vd1g[2] = { { "size", 0 }, { "tgt_ptr", 0 } };
 
-  offload (__FILE__, __LINE__, device, "__offload_target_alloc", 2, vd1, vd1g);
-
+  offload (__FILE__, __LINE__, device, "__offload_target_alloc", 2, vd1, vd1g,
+	   NULL);
   return tgt_ptr;
 }
 
@@ -416,7 +432,8 @@ GOMP_OFFLOAD_free (int device, void *tgt_ptr)
   vd1.size = sizeof (void *);
   VarDesc2 vd1g = { "tgt_ptr", 0 };
 
-  offload (__FILE__, __LINE__, device, "__offload_target_free", 1, &vd1, &vd1g);
+  offload (__FILE__, __LINE__, device, "__offload_target_free", 1, &vd1, &vd1g,
+	   NULL);
 }
 
 extern "C" void *
@@ -435,7 +452,7 @@ GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr,
   VarDesc2 vd1g[2] = { { "tgt_ptr", 0 }, { "size", 0 } };
 
   offload (__FILE__, __LINE__, device, "__offload_target_host2tgt_p1", 2,
-	   vd1, vd1g);
+	   vd1, vd1g, NULL);
 
   VarDesc vd2 = vd_host2tgt;
   vd2.ptr = (void *) host_ptr;
@@ -443,7 +460,7 @@ GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr,
   VarDesc2 vd2g = { "var", 0 };
 
   offload (__FILE__, __LINE__, device, "__offload_target_host2tgt_p2", 1,
-	   &vd2, &vd2g);
+	   &vd2, &vd2g, NULL);
 
   return tgt_ptr;
 }
@@ -464,7 +481,7 @@ GOMP_OFFLOAD_dev2host (int device, void *host_ptr, const void *tgt_ptr,
   VarDesc2 vd1g[2] = { { "tgt_ptr", 0 }, { "size", 0 } };
 
   offload (__FILE__, __LINE__, device, "__offload_target_tgt2host_p1", 2,
-	   vd1, vd1g);
+	   vd1, vd1g, NULL);
 
   VarDesc vd2 = vd_tgt2host;
   vd2.ptr = (void *) host_ptr;
@@ -472,7 +489,7 @@ GOMP_OFFLOAD_dev2host (int device, void *host_ptr, const void *tgt_ptr,
   VarDesc2 vd2g = { "var", 0 };
 
   offload (__FILE__, __LINE__, device, "__offload_target_tgt2host_p2", 1,
-	   &vd2, &vd2g);
+	   &vd2, &vd2g, NULL);
 
   return host_ptr;
 }
@@ -495,22 +512,32 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst_ptr, const void *src_ptr,
   VarDesc2 vd1g[3] = { { "dst_ptr", 0 }, { "src_ptr", 0 }, { "size", 0 } };
 
   offload (__FILE__, __LINE__, device, "__offload_target_tgt2tgt", 3, vd1,
-	   vd1g);
+	   vd1g, NULL);
 
   return dst_ptr;
 }
 
 extern "C" void
+GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
+			void *async_data)
+{
+  TRACE ("(device = %d, tgt_fn = %p, tgt_vars = %p, async_data = %p)", device,
+	 tgt_fn, tgt_vars, async_data);
+
+  VarDesc vd[2] = { vd_host2tgt, vd_host2tgt };
+  vd[0].ptr = &tgt_fn;
+  vd[0].size = sizeof (void *);
+  vd[1].ptr = &tgt_vars;
+  vd[1].size = sizeof (void *);
+
+  offload (__FILE__, __LINE__, device, "__offload_target_run", 2, vd, NULL,
+	   (const void **) async_data);
+}
+
+extern "C" void
 GOMP_OFFLOAD_run (int device, void *tgt_fn, void *tgt_vars)
 {
-  TRACE ("(tgt_fn = %p, tgt_vars = %p)", tgt_fn, tgt_vars);
+  TRACE ("(device = %d, tgt_fn = %p, tgt_vars = %p)", device, tgt_fn, tgt_vars);
 
-  VarDesc vd1[2] = { vd_host2tgt, vd_host2tgt };
-  vd1[0].ptr = &tgt_fn;
-  vd1[0].size = sizeof (void *);
-  vd1[1].ptr = &tgt_vars;
-  vd1[1].size = sizeof (void *);
-  VarDesc2 vd1g[2] = { { "tgt_fn", 0 }, { "tgt_vars", 0 } };
-
-  offload (__FILE__, __LINE__, device, "__offload_target_run", 2, vd1, vd1g);
+  GOMP_OFFLOAD_async_run (device, tgt_fn, tgt_vars, NULL);
 }

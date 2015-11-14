@@ -63,6 +63,7 @@ struct addr_pair
 extern void *GOMP_PLUGIN_malloc (size_t) __attribute__ ((malloc));
 extern void *GOMP_PLUGIN_malloc_cleared (size_t) __attribute__ ((malloc));
 extern void *GOMP_PLUGIN_realloc (void *, size_t);
+void GOMP_PLUGIN_target_task_completion (void *);
 
 extern void GOMP_PLUGIN_debug (int, const char *, ...)
 	__attribute__ ((format (printf, 2, 3)));

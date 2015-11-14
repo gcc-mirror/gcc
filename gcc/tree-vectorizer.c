@@ -177,6 +177,21 @@ adjust_simduid_builtins (hash_table<simduid_to_vf> *htab)
 	      break;
 	    case IFN_GOMP_SIMD_ORDERED_START:
 	    case IFN_GOMP_SIMD_ORDERED_END:
+	      if (integer_onep (gimple_call_arg (stmt, 0)))
+		{
+		  enum built_in_function bcode
+		    = (ifn == IFN_GOMP_SIMD_ORDERED_START
+		       ? BUILT_IN_GOMP_ORDERED_START
+		       : BUILT_IN_GOMP_ORDERED_END);
+		  gimple *g
+		    = gimple_build_call (builtin_decl_explicit (bcode), 0);
+		  tree vdef = gimple_vdef (stmt);
+		  gimple_set_vdef (g, vdef);
+		  SSA_NAME_DEF_STMT (vdef) = g;
+		  gimple_set_vuse (g, gimple_vuse (stmt));
+		  gsi_replace (&i, g, true);
+		  continue;
+		}
 	      gsi_remove (&i, true);
 	      unlink_stmt_vdef (stmt);
 	      continue;

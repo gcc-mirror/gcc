@@ -31,7 +31,6 @@
 #include "libgomp.h"
 #include "gomp-constants.h"
 #include "oacc-int.h"
-#include "splay-tree.h"
 #include <stdint.h>
 #include <assert.h>
 

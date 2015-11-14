@@ -297,6 +297,8 @@ gomp_doacross_init (unsigned ncounts, long *counts, long chunk_size)
 
   if (ws->sched == GFS_STATIC)
     num_ents = team->nthreads;
+  else if (ws->sched == GFS_GUIDED)
+    num_ents = counts[0];
   else
     num_ents = (counts[0] - 1) / chunk_size + 1;
   if (num_bits <= MAX_COLLAPSED_BITS)
@@ -366,6 +368,8 @@ GOMP_doacross_post (long *counts)
 
   if (__builtin_expect (ws->sched == GFS_STATIC, 1))
     ent = thr->ts.team_id;
+  else if (ws->sched == GFS_GUIDED)
+    ent = counts[0];
   else
     ent = counts[0] / doacross->chunk_size;
   unsigned long *array = (unsigned long *) (doacross->array
@@ -426,6 +430,8 @@ GOMP_doacross_wait (long first, ...)
       else
 	ent = first / ws->chunk_size % thr->ts.team->nthreads;
     }
+  else if (ws->sched == GFS_GUIDED)
+    ent = first;
   else
     ent = first / doacross->chunk_size;
   unsigned long *array = (unsigned long *) (doacross->array
@@ -520,6 +526,8 @@ gomp_doacross_ull_init (unsigned ncounts, gomp_ull *counts, gomp_ull chunk_size)
 
   if (ws->sched == GFS_STATIC)
     num_ents = team->nthreads;
+  else if (ws->sched == GFS_GUIDED)
+    num_ents = counts[0];
   else
     num_ents = (counts[0] - 1) / chunk_size + 1;
   if (num_bits <= MAX_COLLAPSED_BITS)
@@ -595,6 +603,8 @@ GOMP_doacross_ull_post (gomp_ull *counts)
 
   if (__builtin_expect (ws->sched == GFS_STATIC, 1))
     ent = thr->ts.team_id;
+  else if (ws->sched == GFS_GUIDED)
+    ent = counts[0];
   else
     ent = counts[0] / doacross->chunk_size_ull;
 
@@ -676,6 +686,8 @@ GOMP_doacross_ull_wait (gomp_ull first, ...)
       else
 	ent = first / ws->chunk_size_ull % thr->ts.team->nthreads;
     }
+  else if (ws->sched == GFS_GUIDED)
+    ent = first;
   else
     ent = first / doacross->chunk_size_ull;
 

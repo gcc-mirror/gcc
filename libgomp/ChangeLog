@@ -1,3 +1,104 @@
+2015-11-14  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* ordered.c (gomp_doacross_init, GOMP_doacross_post,
+	GOMP_doacross_wait, gomp_doacross_ull_init, GOMP_doacross_ull_post,
+	GOMP_doacross_ull_wait): For GFS_GUIDED don't divide number of
+	iterators or IV by chunk size.
+	* parallel.c (gomp_resolve_num_threads): Don't assume that
+	if thr->ts.team is non-NULL, then pool must be non-NULL.
+	* libgomp-plugin.h (GOMP_PLUGIN_target_task_completion): Declare.
+	* libgomp.map (GOMP_PLUGIN_1.1): New symbol version, export
+	GOMP_PLUGIN_target_task_completion.
+	* Makefile.am (libgomp_la_SOURCES): Add priority_queue.c.
+	* Makefile.in: Regenerate.
+	* libgomp.h: Shuffle prototypes and forward definitions around so
+	priority queues can be defined.
+	(enum gomp_task_kind): Add GOMP_TASK_ASYNC_RUNNING.
+	(enum gomp_target_task_state): New enum.
+	(struct gomp_target_task): Add state, tgt, task and team fields.
+	(gomp_create_target_task): Change return type to bool, add
+	state argument.
+	(gomp_target_task_fn): Change return type to bool.
+	(struct gomp_device_descr): Add async_run_func.
+	(struct gomp_task): Remove children, next_child, prev_child,
+	next_queue, prev_queue, next_taskgroup, prev_taskgroup.
+	Add pnode field.
+	(struct gomp_taskgroup): Remove children.
+	Add taskgroup_queue.
+	(struct gomp_team): Change task_queue type to a priority queue.
+	(splay_compare): Define inline.
+	(priority_queue_offset): New.
+	(priority_node_to_task): New.
+	(task_to_priority_node): New.
+	* oacc-mem.c: Do not include splay-tree.h.
+	* priority_queue.c: New file.
+	* priority_queue.h: New file.
+	* splay-tree.c: Do not include splay-tree.h.
+	(splay_tree_foreach_internal): New.
+	(splay_tree_foreach): New.
+	* splay-tree.h: Become re-entrant if splay_tree_prefix is defined.
+	(splay_tree_callback): Define typedef.
+	* target.c (splay_compare): Move to libgomp.h.
+	(GOMP_target): Don't adjust *thr in any way around running offloaded
+	task.
+	(GOMP_target_ext): Likewise.  Handle target nowait.
+	(GOMP_target_update_ext, GOMP_target_enter_exit_data): Check
+	return value from gomp_create_target_task, if false, fallthrough
+	as if no dependencies exist.
+	(gomp_target_task_fn): Change return type to bool, return true
+	if the task should have another part scheduled later.  Handle
+	target nowait.
+	(gomp_load_plugin_for_device): Initialize async_run.
+	* task.c (gomp_init_task): Initialize children_queue.
+	(gomp_clear_parent_in_list): New.
+	(gomp_clear_parent_in_tree): New.
+	(gomp_clear_parent): Handle priorities.
+	(GOMP_task): Likewise.
+	(priority_queue_move_task_first,
+	gomp_target_task_completion, GOMP_PLUGIN_target_task_completion):
+	New functions.
+	(gomp_create_target_task): Use priority queues.  Change return type
+	to bool, add state argument, return false if for async
+	{{enter,exit} data,update} constructs no dependencies need to be
+	waited for, handle target nowait.  Set task->fn to NULL instead of
+	gomp_target_task_fn.
+	(verify_children_queue): Remove.
+	(priority_list_upgrade_task): New.
+	(priority_queue_upgrade_task): New.
+	(verify_task_queue): Remove.
+	(priority_list_downgrade_task): New.
+	(priority_queue_downgrade_task): New.
+	(gomp_task_run_pre): Use priority queues.
+	Abstract code out to priority_queue_downgrade_task.
+	(gomp_task_run_post_handle_dependers): Use priority queues.
+	(gomp_task_run_post_remove_parent): Likewise.
+	(gomp_task_run_post_remove_taskgroup): Likewise.
+	(gomp_barrier_handle_tasks): Likewise.  Handle target nowait target
+	tasks specially.
+	(GOMP_taskwait): Likewise.
+	(gomp_task_maybe_wait_for_dependencies): Likewise.  Abstract code to
+	priority-queue_upgrade_task.
+	(GOMP_taskgroup_start): Use priority queues.
+	(GOMP_taskgroup_end): Likewise.  Handle target nowait target tasks
+	specially.  If taskgroup is NULL, and thr->ts.level is 0, act as a
+	barrier.
+	* taskloop.c (GOMP_taskloop): Handle priorities.
+	* team.c (gomp_new_team): Call priority_queue_init.
+	(free_team): Call priority_queue_free.
+	(gomp_free_thread): Call gomp_team_end if thr->ts.team is artificial
+	team created for target nowait in implicit parallel region.
+	(gomp_team_start): For nested check, test thr->ts.level instead of
+	thr->ts.team != NULL.
+	* testsuite/libgomp.c/doacross-3.c: New test.
+	* testsuite/libgomp.c/ordered-5.c: New test.
+	* testsuite/libgomp.c/priority.c: New test.
+	* testsuite/libgomp.c/target-31.c: New test.
+	* testsuite/libgomp.c/target-32.c: New test.
+	* testsuite/libgomp.c/target-33.c: New test.
+	* testsuite/libgomp.c/target-34.c: New test.
+
 2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: New.

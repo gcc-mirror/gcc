@@ -1,3 +1,8 @@
+2015-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): Don't mark
+	GOMP_MAP_FIRSTPRIVATE_POINTER decls addressable.
+
 2015-11-13  Kai Tietz  <ktietz70@googlemail.com>
 	    Marek Polacek  <polacek@redhat.com>
 	    Jason Merrill  <jason@redhat.com>

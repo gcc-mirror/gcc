@@ -1,3 +1,20 @@
+2015-11-14  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* runtime/offload_host.cpp (task_completion_callback): New
+	variable.
+	(offload_proxy_task_completed_ooo): Call task_completion_callback.
+	(__offload_register_task_callback): New function.
+	* runtime/offload_host.h (__offload_register_task_callback): New
+	declaration.
+	* plugin/libgomp-plugin-intelmic.cpp (offload): Add async_data
+	argument, handle async offloading.
+	(register_main_image): Call register_main_image.
+	(GOMP_OFFLOAD_init_device, get_target_table, GOMP_OFFLOAD_alloc,
+	GOMP_OFFLOAD_free, GOMP_OFFLOAD_host2dev, GOMP_OFFLOAD_dev2host,
+	GOMP_OFFLOAD_dev2dev) Adjust offload callers.
+	(GOMP_OFFLOAD_async_run): New function.
+	(GOMP_OFFLOAD_run): Implement using GOMP_OFFLOAD_async_run.
+
 2015-10-26  Ilya Verbin  <ilya.verbin@intel.com>
 	    Aleksander Ivanushenko  <aleksander.ivanushenko@intel.com>
 

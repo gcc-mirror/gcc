@@ -6581,6 +6581,9 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	    }
 	  else if (!processing_template_decl
 		   && TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE
+		   && (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
+		       || (OMP_CLAUSE_MAP_KIND (c)
+			   != GOMP_MAP_FIRSTPRIVATE_POINTER))
 		   && !cxx_mark_addressable (t))
 	    remove = true;
 	  else if (!(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP

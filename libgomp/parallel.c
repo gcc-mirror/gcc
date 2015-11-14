@@ -85,7 +85,7 @@ gomp_resolve_num_threads (unsigned specified, unsigned count)
      nested parallel, so there is just one thread in the
      contention group as well, no need to handle it atomically.  */
   pool = thr->thread_pool;
-  if (thr->ts.team == NULL)
+  if (thr->ts.team == NULL || pool == NULL)
     {
       num_threads = max_num_threads;
       if (num_threads > icv->thread_limit_var)

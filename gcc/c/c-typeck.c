@@ -12918,7 +12918,10 @@ c_finish_omp_clauses (tree clauses, bool is_omp, bool declare_simd)
 			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
-	  else if (!c_mark_addressable (t))
+	  else if ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
+		    || (OMP_CLAUSE_MAP_KIND (c)
+			!= GOMP_MAP_FIRSTPRIVATE_POINTER))
+		   && !c_mark_addressable (t))
 	    remove = true;
 	  else if (!(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		     && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
