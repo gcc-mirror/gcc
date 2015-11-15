@@ -1,3 +1,42 @@
+2015-11-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/50221
+	PR fortran/68216
+	PR fortran/63932
+	PR fortran/66408
+	* trans_array.c (gfc_conv_scalarized_array_ref): Pass the
+	symbol decl for deferred character length array references.
+	* trans-stmt.c (gfc_trans_allocate): Keep the string lengths
+	to update deferred length character string lengths.
+	* trans-types.c (gfc_get_dtype_rank_type); Use the string
+	length of deferred character types for the dtype size.
+	* trans.c (gfc_build_array_ref): For references to deferred
+	character arrays, use the domain max value, if it is a variable
+	to set the 'span' and use pointer arithmetic for acces to the
+	element.
+	(trans_code): Set gfc_current_locus for diagnostic purposes.
+
+	PR fortran/67674
+	* trans-expr.c (gfc_conv_procedure_call): Do not fix deferred
+	string lengths of components.
+
+	PR fortran/49954
+	* resolve.c (deferred_op_assign): New function.
+	(gfc_resolve_code): Call it.
+	* trans-array.c (concat_str_length): New function.
+	(gfc_alloc_allocatable_for_assignment): Jump directly to alloc/
+	realloc blocks for deferred character length arrays because the
+	string length might change, even if the shape is the same. Call
+	concat_str_length to obtain the string length for concatenation
+	since it is needed to compute the lhs string length.
+	Set the descriptor dtype appropriately for the new string
+	length.
+	* trans-expr.c (gfc_trans_assignment_1): Use the rse string
+	length for all characters, other than deferred types. For
+	concatenation operators, push the rse.pre block to the inner
+	most loop so that the temporary pointer and the assignments
+	are properly placed.
+
 2015-11-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67803
