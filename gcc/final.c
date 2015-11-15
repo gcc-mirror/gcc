@@ -88,9 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbxout.h"
 #endif
 
-#ifdef SDB_DEBUGGING_INFO
 #include "sdbout.h"
-#endif
 
 /* Most ports that aren't using cc0 don't need to define CC_STATUS_INIT.
    So define a null default for it to save conditionalization later.  */
@@ -4644,10 +4642,8 @@ rest_of_clean_state (void)
   /* In case the function was not output,
      don't leave any temporary anonymous types
      queued up for sdb output.  */
-#ifdef SDB_DEBUGGING_INFO
-  if (write_symbols == SDB_DEBUG)
+  if (SDB_DEBUGGING_INFO && write_symbols == SDB_DEBUG)
     sdbout_types (NULL_TREE);
-#endif
 
   flag_rerun_cse_after_global_opts = 0;
   reload_completed = 0;

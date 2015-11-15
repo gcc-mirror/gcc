@@ -1,5 +1,17 @@
 2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h: New definition of SDB_DEBUGGING_INFO.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Adjust.
+	* final.c (rest_of_clean_state): Remove check if
+	SDB_DEBUGGING_INFO is defined.
+	* function.c (number_blocks): Likewise.
+	* output.h: Likewise.
+	* sdbout.c: Likewise.
+	* toplev.c (process_options): Likewise.
+
+2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* gsyms.h (enum sdb_type): Remove code for
 	EXTENDED_SDB_BASIC_TYPES.
 	(enum sdb_masks): Likewise.

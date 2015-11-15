@@ -42,6 +42,7 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "gsyms.h"
 #include "tm.h"
 #include "debug.h"
 #include "tree.h"
@@ -65,8 +66,6 @@ static GTY(()) vec<tree, va_gc> *deferred_global_decls;
 static GTY(()) tree preinit_symbols;
 static GTY(()) bool sdbout_initialized;
 
-#ifdef SDB_DEBUGGING_INFO
-
 #include "rtl.h"
 #include "regs.h"
 #include "flags.h"
@@ -75,7 +74,6 @@ static GTY(()) bool sdbout_initialized;
 #include "output.h"
 #include "diagnostic-core.h"
 #include "tm_p.h"
-#include "gsyms.h"
 #include "langhooks.h"
 #include "target.h"
 
@@ -1647,7 +1645,5 @@ sdbout_init (const char *input_file_name ATTRIBUTE_UNUSED)
     sdbout_symbol (TREE_VALUE (t), 0);
   preinit_symbols = 0;
 }
-
-#endif /* SDB_DEBUGGING_INFO */
 
 #include "gt-sdbout.h"

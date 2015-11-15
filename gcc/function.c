@@ -4671,7 +4671,7 @@ number_blocks (tree fn)
   /* For SDB and XCOFF debugging output, we start numbering the blocks
      from 1 within each function, rather than keeping a running
      count.  */
-#if defined (SDB_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+#if SDB_DEBUGGING_INFO || defined (XCOFF_DEBUGGING_INFO)
   if (write_symbols == SDB_DEBUG || write_symbols == XCOFF_DEBUG)
     next_block_index = 1;
 #endif
