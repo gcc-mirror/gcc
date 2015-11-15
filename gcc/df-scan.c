@@ -3714,7 +3714,6 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
     }
 #endif
 
-#ifdef EH_RETURN_HANDLER_RTX
   if ((!targetm.have_epilogue () || ! epilogue_completed)
       && crtl->calls_eh_return)
     {
@@ -3722,7 +3721,6 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
       if (tmp && REG_P (tmp))
 	df_mark_reg (tmp, exit_block_uses);
     }
-#endif
 
   /* Mark function return value.  */
   diddle_return_value (df_mark_reg, (void*) exit_block_uses);

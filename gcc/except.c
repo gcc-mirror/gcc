@@ -2255,11 +2255,10 @@ expand_eh_return (void)
     emit_insn (targetm.gen_eh_return (crtl->eh.ehr_handler));
   else
     {
-#ifdef EH_RETURN_HANDLER_RTX
-      emit_move_insn (EH_RETURN_HANDLER_RTX, crtl->eh.ehr_handler);
-#else
-      error ("__builtin_eh_return not supported on this target");
-#endif
+      if (rtx handler = EH_RETURN_HANDLER_RTX)
+	emit_move_insn (handler, crtl->eh.ehr_handler);
+      else
+	error ("__builtin_eh_return not supported on this target");
     }
 
   emit_label (around_label);
