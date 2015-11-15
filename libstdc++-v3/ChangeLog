@@ -1,3 +1,10 @@
+2015-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/68353
+	* include/bits/basic_string.h: Test value of _GLIBCXX_USE_C99_WCHAR
+	not whether it is defined.
+	* include/ext/vstring.h: Likewise.
+
 2015-11-14  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Change locale implementation
