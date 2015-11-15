@@ -7793,7 +7793,7 @@ handle_vtv_comdat_section (section *sect, const_tree decl ATTRIBUTE_UNUSED)
 				 | SECTION_LINKONCE,
 				 DECL_NAME (decl));
   in_section = sect;
-#elif defined (TARGET_PECOFF)
+#else
   /* Neither OBJECT_FORMAT_PE, nor OBJECT_FORMAT_COFF is set here.
      Therefore the following check is used.
      In case a the target is PE or COFF a comdat group section
@@ -7820,8 +7820,8 @@ handle_vtv_comdat_section (section *sect, const_tree decl ATTRIBUTE_UNUSED)
 				     DECL_NAME (decl));
       in_section = sect;
     }
-#else
-  switch_to_section (sect);
+  else
+    switch_to_section (sect);
 #endif
 }
 

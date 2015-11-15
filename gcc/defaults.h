@@ -1301,6 +1301,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define REVERSE_CONDITION(code, mode) reverse_condition (code)
 #endif
 
+#ifndef TARGET_PECOFF
+#define TARGET_PECOFF 0
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 
