@@ -1305,6 +1305,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_PECOFF 0
 #endif
 
+#ifndef EH_RETURN_HANDLER_RTX
+#define EH_RETURN_HANDLER_RTX NULL
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 

@@ -1,5 +1,11 @@
 2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (EH_RETURN_HANDLER_RTX): New default definition.
+	* df-scan.c (df_get_exit_block_use_set): Adjust.
+	* except.c (expand_eh_return): Likewise.
+
+2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config/i386/i386.h (TARGET_PECOFF): Remove define.
 	* defaults.h (TARGET_PECOFF): New default definition.
 	* varasm.c (handle_vtv_comdat_section): Adjust.
