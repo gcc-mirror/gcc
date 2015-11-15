@@ -309,9 +309,7 @@ extern rtx_sequence *final_sequence;
 /* The line number of the beginning of the current function.  Various
    md code needs this so that it can output relative linenumbers.  */
 
-#ifdef SDB_DEBUGGING_INFO /* Avoid undef sym in certain broken linkers.  */
 extern int sdb_begin_function_line;
-#endif
 
 /* File in which assembler code is being written.  */
 
