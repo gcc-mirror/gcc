@@ -1,3 +1,9 @@
+2015-11-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/on_exit.c: New file.
+	* config/rs6000/t-aix-cxa (LIB2ADDEH): Build on_exit.c.
+	* config/rs6000/libgcc-aix-cxa.ver (on_exit): Add symbol to exports.
+
 2015-11-11  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/dp-hack.h: Add support for ARCHS.
