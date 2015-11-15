@@ -1,5 +1,11 @@
 2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config/i386/i386.h (TARGET_PECOFF): Remove define.
+	* defaults.h (TARGET_PECOFF): New default definition.
+	* varasm.c (handle_vtv_comdat_section): Adjust.
+
+2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* defaults.h: New definition of SDB_DEBUGGING_INFO.
 	* doc/tm.texi: Regenerate.
 	* doc/tm.texi.in: Adjust.
