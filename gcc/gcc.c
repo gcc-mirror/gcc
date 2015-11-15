@@ -4392,12 +4392,10 @@ process_command (unsigned int decoded_options_count,
 			   CL_DRIVER, &handlers, global_dc);
     }
 
-#ifdef ENABLE_OFFLOADING
   /* If the user didn't specify any, default to all configured offload
      targets.  */
-  if (offload_targets == NULL)
+  if (ENABLE_OFFLOADING && offload_targets == NULL)
     handle_foffload_option (OFFLOAD_TARGETS);
-#endif
 
   if (output_file
       && strcmp (output_file, "-") != 0

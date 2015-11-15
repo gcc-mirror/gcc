@@ -1,5 +1,9 @@
 2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* parser.c (cp_parser_omp_declare_target): Adjust.
+
+2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* vtable-class-hierarchy.c (vtv_generate_init_routine): Adjust.
 
 2015-11-14  Jason Merrill  <jason@redhat.com>

@@ -499,9 +499,8 @@ cgraph_node::create (tree decl)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
     {
       node->offloadable = 1;
-#ifdef ENABLE_OFFLOADING
-      g->have_offload = true;
-#endif
+      if (ENABLE_OFFLOADING)
+	g->have_offload = true;
     }
 
   node->register_symbol ();

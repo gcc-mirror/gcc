@@ -2424,9 +2424,9 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
 	if (is_gimple_omp_offloaded (octx->stmt))
 	  {
 	    cgraph_node::get_create (decl)->offloadable = 1;
-#ifdef ENABLE_OFFLOADING
-	    g->have_offload = true;
-#endif
+	    if (ENABLE_OFFLOADING)
+	      g->have_offload = true;
+
 	    break;
 	  }
     }
@@ -12613,10 +12613,9 @@ expand_omp_target (struct omp_region *region)
       node->parallelized_function = 1;
       cgraph_node::add_new_function (child_fn, true);
 
-#ifdef ENABLE_OFFLOADING
       /* Add the new function to the offload table.  */
-      vec_safe_push (offload_funcs, child_fn);
-#endif
+      if (ENABLE_OFFLOADING)
+	vec_safe_push (offload_funcs, child_fn);
 
       bool need_asm = DECL_ASSEMBLER_NAME_SET_P (current_function_decl)
 		      && !DECL_ASSEMBLER_NAME_SET_P (child_fn);
@@ -12628,11 +12627,10 @@ expand_omp_target (struct omp_region *region)
 	assign_assembler_name_if_neeeded (child_fn);
       cgraph_edge::rebuild_edges ();
 
-#ifdef ENABLE_OFFLOADING
       /* Prevent IPA from removing child_fn as unreachable, since there are no
 	 refs from the parent function to child_fn in offload LTO mode.  */
-      cgraph_node::get (child_fn)->mark_force_output ();
-#endif
+      if (ENABLE_OFFLOADING)
+	cgraph_node::get (child_fn)->mark_force_output ();
 
       /* Some EH regions might become dead, see PR34608.  If
 	 pass_cleanup_cfg isn't the first pass to happen with the

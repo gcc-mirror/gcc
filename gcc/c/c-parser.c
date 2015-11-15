@@ -16300,14 +16300,15 @@ c_parser_omp_declare_target (c_parser *parser)
 	  if (node != NULL)
 	    {
 	      node->offloadable = 1;
-#ifdef ENABLE_OFFLOADING
-	      g->have_offload = true;
-	      if (is_a <varpool_node *> (node))
+	      if (ENABLE_OFFLOADING)
 		{
-		  vec_safe_push (offload_vars, t);
-		  node->force_output = 1;
+		  g->have_offload = true;
+		  if (is_a <varpool_node *> (node))
+		    {
+		      vec_safe_push (offload_vars, t);
+		      node->force_output = 1;
+		    }
 		}
-#endif
 	    }
 	}
     }
