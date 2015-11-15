@@ -331,6 +331,18 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
 
   type = TREE_TYPE (type);
 
+  /* Use pointer arithmetic for deferred character length array
+     references.  */
+  if (type && TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_MAXVAL (TYPE_DOMAIN (type)) != NULL_TREE
+      && TREE_CODE (TYPE_MAXVAL (TYPE_DOMAIN (type))) == VAR_DECL
+      && decl
+      && DECL_CONTEXT (TYPE_MAXVAL (TYPE_DOMAIN (type)))
+					== DECL_CONTEXT (decl))
+    span = TYPE_MAXVAL (TYPE_DOMAIN (type));
+  else
+    span = NULL_TREE;
+
   if (DECL_P (base))
     TREE_ADDRESSABLE (base) = 1;
 
@@ -345,8 +357,9 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
 		|| TREE_CODE (decl) == PARM_DECL)
        && ((GFC_DECL_SUBREF_ARRAY_P (decl)
 	    && !integer_zerop (GFC_DECL_SPAN (decl)))
-	   || GFC_DECL_CLASS (decl)))
-      || vptr)
+	   || GFC_DECL_CLASS (decl)
+	   || span != NULL_TREE))
+      || vptr != NULL_TREE)
     {
       if (decl)
 	{
@@ -376,6 +389,8 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
 	    }
 	  else if (GFC_DECL_SUBREF_ARRAY_P (decl))
 	    span = GFC_DECL_SPAN (decl);
+	  else if (span)
+	    span = fold_convert (gfc_array_index_type, span);
 	  else
 	    gcc_unreachable ();
 	}
@@ -1620,6 +1635,7 @@ trans_code (gfc_code * code, tree cond)
 	  gfc_add_expr_to_block (&block, res);
 	}
 
+      gfc_current_locus = code->loc;
       gfc_set_backend_locus (&code->loc);
 
       switch (code->op)

@@ -5599,7 +5599,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  else
 	    {
 	      tmp = parmse.string_length;
-	      if (TREE_CODE (tmp) != VAR_DECL)
+	      if (TREE_CODE (tmp) != VAR_DECL
+		  && TREE_CODE (tmp) != COMPONENT_REF)
 		tmp = gfc_evaluate_now (parmse.string_length, &se->pre);
 	      parmse.string_length = gfc_build_addr_expr (NULL_TREE, tmp);
 	    }
@@ -9250,8 +9251,10 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     }
 
   /* Stabilize a string length for temporaries.  */
-  if (expr2->ts.type == BT_CHARACTER)
+  if (expr2->ts.type == BT_CHARACTER && !expr2->ts.deferred)
     string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
+  else if (expr2->ts.type == BT_CHARACTER)
+    string_length = rse.string_length;
   else
     string_length = NULL_TREE;
 
@@ -9285,8 +9288,14 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      the function call must happen before the (re)allocation of the lhs -
      otherwise the character length of the result is not known.
      NOTE: This relies on having the exact dependence of the length type
-     parameter available to the caller; gfortran saves it in the .mod files.  */
-  if (flag_realloc_lhs && expr2->ts.type == BT_CHARACTER && expr1->ts.deferred)
+     parameter available to the caller; gfortran saves it in the .mod files.
+     NOTE ALSO: The concatenation operation generates a temporary pointer,
+     whose allocation must go to the innermost loop.  */
+  if (flag_realloc_lhs
+      && expr2->ts.type == BT_CHARACTER && expr1->ts.deferred
+      && !(lss != gfc_ss_terminator
+	   && expr2->expr_type == EXPR_OP
+	   && expr2->value.op.op == INTRINSIC_CONCAT))
     gfc_add_block_to_block (&block, &rse.pre);
 
   /* Nullify the allocatable components corresponding to those of the lhs

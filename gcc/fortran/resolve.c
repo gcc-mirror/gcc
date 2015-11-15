@@ -10222,6 +10222,50 @@ resolve_ptr_fcn_assign (gfc_code **code, gfc_namespace *ns)
 }
 
 
+/* Deferred character length assignments from an operator expression
+   require a temporary because the character length of the lhs can
+   change in the course of the assignment.  */
+
+static bool
+deferred_op_assign (gfc_code **code, gfc_namespace *ns)
+{
+  gfc_expr *tmp_expr;
+  gfc_code *this_code;
+
+  if (!((*code)->expr1->ts.type == BT_CHARACTER
+	 && (*code)->expr1->ts.deferred && (*code)->expr1->rank
+	 && (*code)->expr2->expr_type == EXPR_OP))
+    return false;
+
+  if (!gfc_check_dependency ((*code)->expr1, (*code)->expr2, 1))
+    return false;
+
+  tmp_expr = get_temp_from_expr ((*code)->expr1, ns);
+  tmp_expr->where = (*code)->loc;
+
+  /* A new charlen is required to ensure that the variable string
+     length is different to that of the original lhs.  */
+  tmp_expr->ts.u.cl = gfc_get_charlen();
+  tmp_expr->symtree->n.sym->ts.u.cl = tmp_expr->ts.u.cl;
+  tmp_expr->ts.u.cl->next = (*code)->expr2->ts.u.cl->next;
+  (*code)->expr2->ts.u.cl->next = tmp_expr->ts.u.cl;
+
+  tmp_expr->symtree->n.sym->ts.deferred = 1;
+
+  this_code = build_assignment (EXEC_ASSIGN,
+				(*code)->expr1,
+				gfc_copy_expr (tmp_expr),
+				NULL, NULL, (*code)->loc);
+
+  (*code)->expr1 = tmp_expr;
+
+  this_code->next = (*code)->next;
+  (*code)->next = this_code;
+
+  return true;
+}
+
+
 /* Given a block of code, recursively resolve everything pointed to by this
    code block.  */
 
@@ -10426,6 +10470,11 @@ start:
 	      else
 		goto call;
 	    }
+
+	  /* Check for dependencies in deferred character length array
+	     assignments and generate a temporary, if necessary.  */
+	  if (code->op == EXEC_ASSIGN && deferred_op_assign (&code, ns))
+	    break;
 
 	  /* F03 7.4.1.3 for non-allocatable, non-pointer components.  */
 	  if (code->op != EXEC_CALL && code->expr1->ts.type == BT_DERIVED
@@ -10801,7 +10850,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
       sym->binding_label = NULL;
 
     }
-  else if (sym->attr.flavor == FL_VARIABLE && module 
+  else if (sym->attr.flavor == FL_VARIABLE && module
 	   && (strcmp (module, gsym->mod_name) != 0
 	       || strcmp (sym->name, gsym->sym_name) != 0))
     {

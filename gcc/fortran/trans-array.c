@@ -3164,7 +3164,8 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
     index = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
 			     index, info->offset);
 
-  if (expr && is_subref_array (expr))
+  if (expr && (is_subref_array (expr)
+	       || (expr->ts.deferred && expr->expr_type == EXPR_VARIABLE)))
     decl = expr->symtree->n.sym->backend_decl;
 
   tmp = build_fold_indirect_ref_loc (input_location, info->data);
@@ -8499,6 +8500,75 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
 }
 
 
+static tree
+concat_str_length (gfc_expr* expr)
+{
+  tree type;
+  tree len1;
+  tree len2;
+  gfc_se se;
+
+  type = gfc_typenode_for_spec (&expr->value.op.op1->ts);
+  len1 = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+  if (len1 == NULL_TREE)
+    {
+      if (expr->value.op.op1->expr_type == EXPR_OP)
+	len1 = concat_str_length (expr->value.op.op1);
+      else if (expr->value.op.op1->expr_type == EXPR_CONSTANT)
+	len1 = build_int_cst (gfc_charlen_type_node,
+			expr->value.op.op1->value.character.length);
+      else if (expr->value.op.op1->ts.u.cl->length)
+	{
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_expr (&se, expr->value.op.op1->ts.u.cl->length);
+	  len1 = se.expr;
+	}
+      else
+	{
+	  /* Last resort!  */
+	  gfc_init_se (&se, NULL);
+	  se.want_pointer = 1;
+	  se.descriptor_only = 1;
+	  gfc_conv_expr (&se, expr->value.op.op1);
+	  len1 = se.string_length;
+	}
+    }
+
+  type = gfc_typenode_for_spec (&expr->value.op.op2->ts);
+  len2 = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+  if (len2 == NULL_TREE)
+    {
+      if (expr->value.op.op2->expr_type == EXPR_OP)
+	len2 = concat_str_length (expr->value.op.op2);
+      else if (expr->value.op.op2->expr_type == EXPR_CONSTANT)
+	len2 = build_int_cst (gfc_charlen_type_node,
+			expr->value.op.op2->value.character.length);
+      else if (expr->value.op.op2->ts.u.cl->length)
+	{
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_expr (&se, expr->value.op.op2->ts.u.cl->length);
+	  len2 = se.expr;
+	}
+      else
+	{
+	  /* Last resort!  */
+	  gfc_init_se (&se, NULL);
+	  se.want_pointer = 1;
+	  se.descriptor_only = 1;
+	  gfc_conv_expr (&se, expr->value.op.op2);
+	  len2 = se.string_length;
+	}
+    }
+
+  gcc_assert(len1 && len2);
+  len1 = fold_convert (gfc_charlen_type_node, len1);
+  len2 = fold_convert (gfc_charlen_type_node, len2);
+
+  return fold_build2_loc (input_location, PLUS_EXPR,
+			  gfc_charlen_type_node, len1, len2);
+}
+
+
 /* Allocate the lhs of an assignment to an allocatable array, otherwise
    reallocate it.  */
 
@@ -8596,6 +8666,12 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   /* Allocate if data is NULL.  */
   cond_null = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
 			 array1, build_int_cst (TREE_TYPE (array1), 0));
+
+  if (expr1->ts.deferred)
+    cond_null = gfc_evaluate_now (boolean_true_node, &fblock);
+  else
+    cond_null= gfc_evaluate_now (cond_null, &fblock);
+
   tmp = build3_v (COND_EXPR, cond_null,
 		  build1_v (GOTO_EXPR, jump_label1),
 		  build_empty_stmt (input_location));
@@ -8684,7 +8760,13 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 
   cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
 			  size1, size2);
-  neq_size = gfc_evaluate_now (cond, &fblock);
+
+  /* If the lhs is deferred length, assume that the element size
+     changes and force a reallocation.  */
+  if (expr1->ts.deferred)
+    neq_size = gfc_evaluate_now (boolean_true_node, &fblock);
+  else
+    neq_size = gfc_evaluate_now (cond, &fblock);
 
   /* Deallocation of allocatable components will have to occur on
      reallocation.  Fix the old descriptor now.  */
@@ -8789,6 +8871,12 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
       else
 	{
 	  tmp = expr2->ts.u.cl->backend_decl;
+	  if (!tmp && expr2->expr_type == EXPR_OP
+	      && expr2->value.op.op == INTRINSIC_CONCAT)
+	    {
+	      tmp = concat_str_length (expr2);
+	      expr2->ts.u.cl->backend_decl = gfc_evaluate_now (tmp, &fblock);
+	    }
 	  tmp = fold_convert (TREE_TYPE (expr1->ts.u.cl->backend_decl), tmp);
 	}
 
@@ -8815,6 +8903,22 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   size2 = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
 			   size2, size_one_node);
   size2 = gfc_evaluate_now (size2, &fblock);
+
+  /* For deferred character length, the 'size' field of the dtype might
+     have changed so set the dtype.  */
+  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc))
+      && expr1->ts.type == BT_CHARACTER && expr1->ts.deferred)
+    {
+      tree type;
+      tmp = gfc_conv_descriptor_dtype (desc);
+      if (expr2->ts.u.cl->backend_decl)
+	type = gfc_typenode_for_spec (&expr2->ts);
+      else
+	type = gfc_typenode_for_spec (&expr1->ts);
+
+      gfc_add_modify (&fblock, tmp,
+		      gfc_get_dtype_rank_type (expr1->rank,type));
+    }
 
   /* Realloc expression.  Note that the scalarizer uses desc.data
      in the array reference - (*desc.data)[<element>].  */
@@ -8858,8 +8962,16 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 			     1, size2);
   gfc_conv_descriptor_data_set (&alloc_block,
 				desc, tmp);
-  tmp = gfc_conv_descriptor_dtype (desc);
-  gfc_add_modify (&alloc_block, tmp, gfc_get_dtype (TREE_TYPE (desc)));
+
+  /* We already set the dtype in the case of deferred character
+     length arrays.  */
+  if (!(GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc))
+        && expr1->ts.type == BT_CHARACTER && expr1->ts.deferred))
+    {
+      tmp = gfc_conv_descriptor_dtype (desc);
+      gfc_add_modify (&alloc_block, tmp, gfc_get_dtype (TREE_TYPE (desc)));
+    }
+
   if ((expr1->ts.type == BT_DERIVED)
 	&& expr1->ts.u.derived->attr.alloc_comp)
     {

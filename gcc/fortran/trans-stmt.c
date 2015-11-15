@@ -5086,6 +5086,7 @@ gfc_trans_allocate (gfc_code * code)
   tree label_finish;
   tree memsz;
   tree al_vptr, al_len;
+  tree def_str_len = NULL_TREE;
   /* If an expr3 is present, then store the tree for accessing its
      _vptr, and _len components in the variables, respectively.  The
      element size, i.e. _vptr%size, is stored in expr3_esize.  Any of
@@ -5463,6 +5464,7 @@ gfc_trans_allocate (gfc_code * code)
 	  expr3_esize = fold_build2_loc (input_location, MULT_EXPR,
 					 TREE_TYPE (se_sz.expr),
 					 tmp, se_sz.expr);
+	  def_str_len = gfc_evaluate_now (se_sz.expr, &block);
 	}
     }
 
@@ -5514,6 +5516,17 @@ gfc_trans_allocate (gfc_code * code)
 
       se.want_pointer = 1;
       se.descriptor_only = 1;
+
+      if (expr->ts.type == BT_CHARACTER
+	  && expr->ts.deferred
+	  && TREE_CODE (expr->ts.u.cl->backend_decl) == VAR_DECL
+	  && def_str_len != NULL_TREE)
+	{
+	  tmp = expr->ts.u.cl->backend_decl;
+	  gfc_add_modify (&block, tmp,
+			  fold_convert (TREE_TYPE (tmp), def_str_len));
+	}
+
       gfc_conv_expr (&se, expr);
       if (expr->ts.type == BT_CHARACTER && expr->ts.deferred)
 	/* se.string_length now stores the .string_length variable of expr
