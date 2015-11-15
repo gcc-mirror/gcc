@@ -1,3 +1,11 @@
+2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* gsyms.h (enum sdb_type): Remove code for
+	EXTENDED_SDB_BASIC_TYPES.
+	(enum sdb_masks): Likewise.
+	* sdbout.c (plain_type_1): Likewise.
+	* system.h: Poison EXTENDED_SDB_BASIC_TYPES macro.
+
 2015-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_omp_ordered): Add argument to GOMP_SMD_ORDERED_*
