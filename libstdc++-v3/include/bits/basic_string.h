@@ -5503,7 +5503,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   }
 #endif // _GLIBCXX_USE_C99_STDIO
 
-#if defined(_GLIBCXX_USE_WCHAR_T) && defined(_GLIBCXX_USE_C99_WCHAR)
+#if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_WCHAR
   inline int 
   stoi(const wstring& __str, size_t* __idx = 0, int __base = 10)
   { return __gnu_cxx::__stoa<long, int>(&std::wcstol, "stoi", __str.c_str(),
