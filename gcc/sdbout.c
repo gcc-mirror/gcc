@@ -516,13 +516,9 @@ plain_type_1 (tree type, int level)
 	  return T_FLOAT;
 	if (precision == DOUBLE_TYPE_SIZE)
 	  return T_DOUBLE;
-#ifdef EXTENDED_SDB_BASIC_TYPES
-	if (precision == LONG_DOUBLE_TYPE_SIZE)
-	  return T_LNGDBL;
-#else
 	if (precision == LONG_DOUBLE_TYPE_SIZE)
 	  return T_DOUBLE;	/* better than nothing */
-#endif
+
 	return 0;
       }
 
