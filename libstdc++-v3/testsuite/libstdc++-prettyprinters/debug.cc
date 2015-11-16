@@ -70,6 +70,10 @@ main()
   std::map<std::string, int>::iterator mpiter = mp.begin();
 // { dg-final { note-test mpiter {{first = "zardoz", second = 23}} } }
 
+  // PR 67440
+  const std::set<int> const_intset = {2, 3};
+// { dg-final { note-test const_intset {std::__debug::set with 2 elements = {[0] = 2, [1] = 3}} } }
+
   std::set<std::string> sp;
   sp.insert("clownfish");
   sp.insert("barrel");
