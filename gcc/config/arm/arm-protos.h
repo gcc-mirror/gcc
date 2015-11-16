@@ -214,6 +214,7 @@ extern void arm_mark_dllimport (tree);
 extern bool arm_change_mode_p (tree);
 #endif
 
+extern void arm_init_neon_builtins (void);
 extern tree arm_valid_target_attribute_tree (tree, struct gcc_options *,
 					     struct gcc_options *);
 extern void arm_pr_long_calls (struct cpp_reader *);

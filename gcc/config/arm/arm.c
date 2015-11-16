@@ -29846,6 +29846,9 @@ arm_valid_target_attribute_tree (tree args, struct gcc_options *opts,
   /* Do any overrides, such as global options arch=xxx.  */
   arm_option_override_internal (opts, opts_set);
 
+  if (TARGET_NEON)
+    arm_init_neon_builtins ();
+
   return build_target_option_node (opts);
 }
 

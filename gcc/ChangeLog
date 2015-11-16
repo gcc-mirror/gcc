@@ -1,6 +1,18 @@
 2015-11-16  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/65837
+	* config/arm/arm-protos.h (arm_init_neon_builtins): Declare.
+	* config/arm/arm.c (arm_valid_target_attribute_tree): Call
+	arm_init_neon_builtins.
+	* config/arm/arm-builtins.c (arm_init_neon_builtins): Split into...
+	(arm_init_neon_builtins_internal)
+	(arm_init_crypto_builtins_internal):
+	Test and set neon_set_p, neon_crypto_set_p.
+	(neon_set_p, neon_crypto_set_p): New static booleans.
+
+2015-11-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/65837
 	* config/arm/arm.c (arm_fpu_desc): Remove.
 	(all_fpus): Make global.
 	(arm_option_override): Use FPU TARGET accessors.
