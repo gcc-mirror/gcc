@@ -172,6 +172,9 @@ along with GCC; see the file COPYING3.  If not see
     destructive update for the associating op, and keep the destructive
     update together for vector sum reduction recognition.  */
 
+/* Enable insertion of __builtin_powi calls during execute_reassoc.  See
+   point 3a in the pass header comment.  */
+static bool reassoc_insert_powi_p;
 
 /* Statistics */
 static struct
@@ -3940,7 +3943,7 @@ acceptable_pow_call (gimple *stmt, tree *base, HOST_WIDE_INT *exponent)
   tree fndecl, arg1;
   REAL_VALUE_TYPE c, cint;
 
-  if (!first_pass_instance
+  if (!reassoc_insert_powi_p
       || !flag_unsafe_math_optimizations
       || !is_gimple_call (stmt)
       || !has_single_use (gimple_call_lhs (stmt)))
@@ -4856,7 +4859,7 @@ reassociate_bb (basic_block bb)
 	      if (rhs_code == MULT_EXPR)
 		attempt_builtin_copysign (&ops);
 
-	      if (first_pass_instance
+	      if (reassoc_insert_powi_p
 		  && rhs_code == MULT_EXPR
 		  && flag_unsafe_math_optimizations)
 		powi_result = attempt_builtin_powi (stmt, &ops);
@@ -5111,11 +5114,14 @@ fini_reassoc (void)
   loop_optimizer_finalize ();
 }
 
-/* Gate and execute functions for Reassociation.  */
+/* Gate and execute functions for Reassociation.  If INSERT_POWI_P, enable
+   insertion of __builtin_powi calls.  */
 
 static unsigned int
-execute_reassoc (void)
+execute_reassoc (bool insert_powi_p)
 {
+  reassoc_insert_powi_p = insert_powi_p;
+
   init_reassoc ();
 
   do_reassoc ();
@@ -5145,14 +5151,24 @@ class pass_reassoc : public gimple_opt_pass
 {
 public:
   pass_reassoc (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_reassoc, ctxt)
+    : gimple_opt_pass (pass_data_reassoc, ctxt), insert_powi_p (false)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_reassoc (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      insert_powi_p = param;
+    }
   virtual bool gate (function *) { return flag_tree_reassoc != 0; }
-  virtual unsigned int execute (function *) { return execute_reassoc (); }
+  virtual unsigned int execute (function *)
+    { return execute_reassoc (insert_powi_p); }
 
+ private:
+  /* Enable insertion of __builtin_powi calls during execute_reassoc.  See
+     point 3a in the pass header comment.  */
+  bool insert_powi_p;
 }; // class pass_reassoc
 
 } // anon namespace
