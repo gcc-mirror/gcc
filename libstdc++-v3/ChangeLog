@@ -1,3 +1,13 @@
+2015-11-16  Doug Evans  <dje@google.com>
+
+	PR libstdc++/67440
+	* python/libstdcxx/v6/printers.py (find_type): Handle "const" in
+	type name.
+	* testsuite/libstdc++-prettyprinters/debug.cc: Add test for
+	const set<int>.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Ditto.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Ditto.
+
 2015-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/68353
