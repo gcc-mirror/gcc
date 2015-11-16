@@ -1,5 +1,10 @@
 2015-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/rs6000/rs6000.c (rs6000_emit_probe_stack_rang): Adjust.
+	(output_probe_stack_range): Rotate the loop and simplify.
+
+2015-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* config/i386/i386.c (ix86_adjust_stack_and_probe): Adjust and use
 	an lea instruction when possible.
 	(output_adjust_stack_and_probe): Rotate the loop and simplify.
