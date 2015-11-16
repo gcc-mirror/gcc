@@ -81,6 +81,13 @@ opt_pass::clone ()
   internal_error ("pass %s does not support cloning", name);
 }
 
+void
+opt_pass::set_pass_param (unsigned int, bool)
+{
+  internal_error ("pass %s needs a set_pass_param implementation to handle the"
+		  " extra argument in NEXT_PASS", name);
+}
+
 bool
 opt_pass::gate (function *)
 {
@@ -1572,6 +1579,12 @@ pass_manager::pass_manager (context *ctxt)
     p = next_pass_1 (p, PASS ## _ ## NUM, PASS ## _1);  \
   } while (0)
 
+#define NEXT_PASS_WITH_ARG(PASS, NUM, ARG)		\
+    do {						\
+      NEXT_PASS (PASS, NUM);				\
+      PASS ## _ ## NUM->set_pass_param (0, ARG);	\
+    } while (0)
+
 #define TERMINATE_PASS_LIST() \
   *p = NULL;
 
@@ -1581,6 +1594,7 @@ pass_manager::pass_manager (context *ctxt)
 #undef PUSH_INSERT_PASSES_WITHIN
 #undef POP_INSERT_PASSES
 #undef NEXT_PASS
+#undef NEXT_PASS_WITH_ARG
 #undef TERMINATE_PASS_LIST
 
   /* Register the passes with the tree dump code.  */

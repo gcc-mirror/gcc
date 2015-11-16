@@ -171,7 +171,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_return_slot);
       NEXT_PASS (pass_fre);
       NEXT_PASS (pass_merge_phi);
-      NEXT_PASS (pass_vrp);
+      NEXT_PASS (pass_vrp, true /* warn_array_bounds_p */);
       NEXT_PASS (pass_chkp_opt);
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_stdarg);
@@ -281,7 +281,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_tracer);
       NEXT_PASS (pass_dominator);
       NEXT_PASS (pass_strlen);
-      NEXT_PASS (pass_vrp);
+      NEXT_PASS (pass_vrp, false /* warn_array_bounds_p */);
       /* The only const/copy propagation opportunities left after
 	 DOM and VRP should be due to degenerate PHI nodes.  So rather than
 	 run the full propagators, run a specialized pass which

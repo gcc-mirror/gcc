@@ -83,6 +83,7 @@ public:
 
      The default implementation prints an error message and aborts.  */
   virtual opt_pass *clone ();
+  virtual void set_pass_param (unsigned int, bool);
 
   /* This pass and all sub-passes are executed only if the function returns
      true.  The default implementation returns true.  */
