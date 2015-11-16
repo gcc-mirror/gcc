@@ -78,7 +78,9 @@ along with GCC; see the file COPYING3.  If not see
       PUSH_INSERT_PASSES_WITHIN (pass_all_early_optimizations)
 	  NEXT_PASS (pass_remove_cgraph_callee_edges);
 	  NEXT_PASS (pass_object_sizes, true /* insert_min_max_p */);
-	  NEXT_PASS (pass_ccp);
+	  /* Don't record nonzero bits before IPA to avoid
+	     using too much memory.  */
+	  NEXT_PASS (pass_ccp, false /* nonzero_p */);
 	  /* After CCP we rewrite no longer addressed locals into SSA
 	     form if possible.  */
 	  NEXT_PASS (pass_forwprop);
@@ -157,7 +159,7 @@ along with GCC; see the file COPYING3.  If not see
       /* Initial scalar cleanups before alias computation.
 	 They ensure memory accesses are not indirect wherever possible.  */
       NEXT_PASS (pass_strip_predict_hints);
-      NEXT_PASS (pass_ccp);
+      NEXT_PASS (pass_ccp, true /* nonzero_p */);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
       NEXT_PASS (pass_complete_unrolli);
@@ -209,7 +211,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);
-      NEXT_PASS (pass_ccp);
+      NEXT_PASS (pass_ccp, true /* nonzero_p */);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
       NEXT_PASS (pass_cse_sincos);
@@ -319,7 +321,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_lower_complex);
       NEXT_PASS (pass_lower_vector_ssa);
       /* Perform simple scalar cleanup which is constant/copy propagation.  */
-      NEXT_PASS (pass_ccp);
+      NEXT_PASS (pass_ccp, true /* nonzero_p */);
       NEXT_PASS (pass_object_sizes);
       /* Fold remaining builtins.  */
       NEXT_PASS (pass_fold_builtins);

@@ -1,5 +1,16 @@
 2015-11-16  Tom de Vries  <tom@codesourcery.com>
 
+	* passes.def: Add arg to pass_ccp pass instantiation.
+	* tree-ssa-ccp.c (ccp_finalize): Add param nonzero_p.  Use nonzero_p
+	instead of first_pass_instance.
+	(do_ssa_ccp): Add and handle param nonzero_p.
+	(pass_ccp::pass_ccp): Initialize nonzero_p.
+	(pass_ccp::set_pass_param): New member function.  Set nonzero_p.
+	(pass_ccp::execute): Call do_ssa_ccp with extra arg.
+	(pass_ccp::nonzero_p): New private member.
+
+2015-11-16  Tom de Vries  <tom@codesourcery.com>
+
 	* passes.def: Add arg to pass_object_sizes pass instantiation.
 	* tree-object-size.c (pass_object_sizes::pass_object_sizes): Initialize
 	insert_min_max_p.

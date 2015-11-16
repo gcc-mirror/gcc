@@ -886,12 +886,12 @@ do_dbg_cnt (void)
 
 
 /* Do final substitution of propagated values, cleanup the flowgraph and
-   free allocated storage.
+   free allocated storage.  If NONZERO_P, record nonzero bits.
 
    Return TRUE when something was optimized.  */
 
 static bool
-ccp_finalize (void)
+ccp_finalize (bool nonzero_p)
 {
   bool something_changed;
   unsigned i;
@@ -912,7 +912,7 @@ ccp_finalize (void)
 	      && (!INTEGRAL_TYPE_P (TREE_TYPE (name))
 		  /* Don't record nonzero bits before IPA to avoid
 		     using too much memory.  */
-		  || first_pass_instance)))
+		  || !nonzero_p)))
 	continue;
 
       val = get_value (name);
@@ -2394,16 +2394,17 @@ ccp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 }
 
 
-/* Main entry point for SSA Conditional Constant Propagation.  */
+/* Main entry point for SSA Conditional Constant Propagation.  If NONZERO_P,
+   record nonzero bits.  */
 
 static unsigned int
-do_ssa_ccp (void)
+do_ssa_ccp (bool nonzero_p)
 {
   unsigned int todo = 0;
   calculate_dominance_info (CDI_DOMINATORS);
   ccp_initialize ();
   ssa_propagate (ccp_visit_stmt, ccp_visit_phi_node);
-  if (ccp_finalize ())
+  if (ccp_finalize (nonzero_p))
     todo = (TODO_cleanup_cfg | TODO_update_ssa);
   free_dominance_info (CDI_DOMINATORS);
   return todo;
@@ -2429,14 +2430,22 @@ class pass_ccp : public gimple_opt_pass
 {
 public:
   pass_ccp (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_ccp, ctxt)
+    : gimple_opt_pass (pass_data_ccp, ctxt), nonzero_p (false)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_ccp (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      nonzero_p = param;
+    }
   virtual bool gate (function *) { return flag_tree_ccp != 0; }
-  virtual unsigned int execute (function *) { return do_ssa_ccp (); }
+  virtual unsigned int execute (function *) { return do_ssa_ccp (nonzero_p); }
 
+ private:
+  /* Determines whether the pass instance records nonzero bits.  */
+  bool nonzero_p;
 }; // class pass_ccp
 
 } // anon namespace
