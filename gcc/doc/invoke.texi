@@ -13644,6 +13644,8 @@ because NEON hardware does not fully implement the IEEE 754 standard for
 floating-point arithmetic (in particular denormal values are treated as
 zero), so the use of NEON instructions may lead to a loss of precision.
 
+You can also set the fpu name at function level by using the @code{target("fpu=")} function attributes (@pxref{ARM Function Attributes}) or pragmas (@pxref{Function Specific Option Pragmas}).
+
 @item -mfp16-format=@var{name}
 @opindex mfp16-format
 Specify the format of the @code{__fp16} half-precision floating-point type.

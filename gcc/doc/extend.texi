@@ -3701,9 +3701,16 @@ architecture level.
 @item arm
 @cindex @code{target("arm")} function attribute, ARM
 Force code generation in the ARM (A32) ISA.
-@end table
 
 Functions from different modes can be inlined in the caller's mode.
+
+@item fpu=
+@cindex @code{target("fpu=")} function attribute, ARM
+Specifies the fpu for which to tune the performance of this function.
+The behavior and permissible arguments are the same as for the @option{-mfpu=}
+command-line option.
+
+@end table
 
 @end table
 
