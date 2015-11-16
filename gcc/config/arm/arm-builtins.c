@@ -1109,7 +1109,7 @@ arm_init_neon_builtins (void)
       arm_init_neon_builtins_internal ();
     }
 
-  if (!neon_crypto_set_p && TARGET_CRYPTO && TARGET_HARD_FLOAT)
+  if (! neon_crypto_set_p && TARGET_CRYPTO && TARGET_HARD_FLOAT)
     {
       neon_crypto_set_p = true;
       arm_init_crypto_builtins_internal ();
