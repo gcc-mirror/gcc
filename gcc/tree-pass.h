@@ -629,12 +629,6 @@ extern void ipa_read_optimization_summaries (void);
 extern void register_one_dump_file (opt_pass *);
 extern bool function_called_by_processed_nodes_p (void);
 
-/* Set to true if the pass is called the first time during compilation of the
-   current function.  Note that using this information in the optimization
-   passes is considered not to be clean, and it should be avoided if
-   possible.  */
-extern bool first_pass_instance;
-
 /* Declare for plugins.  */
 extern void do_per_function_toporder (void (*) (function *, void *), void *);
 
