@@ -2387,7 +2387,7 @@ write_global_references (struct output_block *ob,
 
   for (index = 0; index < size; index++)
     {
-      uint32_t slot_num;
+      unsigned slot_num;
 
       t = lto_tree_ref_encoder_get_tree (encoder, index);
       streamer_tree_cache_lookup (ob->writer_cache, t, &slot_num);
@@ -2422,7 +2422,7 @@ lto_output_decl_state_refs (struct output_block *ob,
 			    struct lto_out_decl_state *state)
 {
   unsigned i;
-  uint32_t ref;
+  unsigned ref;
   tree decl;
 
   /* Write reference to FUNCTION_DECL.  If there is not function,
