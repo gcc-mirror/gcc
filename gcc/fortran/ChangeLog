@@ -1,3 +1,12 @@
+2015-11-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/58027
+	PR fortran/60993
+	* expr.c (gfc_check_init_expr): Prevent a redundant check when a
+	__convert_* function was inserted into an array constructor.
+	(gfc_check_assign_symbol): Check for an initialization expression
+	when a __convert_* was inserted.
+
 2015-11-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/50221
