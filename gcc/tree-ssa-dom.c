@@ -536,14 +536,26 @@ class pass_dominator : public gimple_opt_pass
 {
 public:
   pass_dominator (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_dominator, ctxt)
+    : gimple_opt_pass (pass_data_dominator, ctxt),
+      may_peel_loop_headers_p (false)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_dominator (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      may_peel_loop_headers_p = param;
+    }
   virtual bool gate (function *) { return flag_tree_dom != 0; }
   virtual unsigned int execute (function *);
 
+ private:
+  /* This flag is used to prevent loops from being peeled repeatedly in jump
+     threading; it will be removed once we preserve loop structures throughout
+     the compilation -- we will be able to mark the affected loops directly in
+     jump threading, and avoid peeling them next time.  */
+  bool may_peel_loop_headers_p;
 }; // class pass_dominator
 
 unsigned int
@@ -619,7 +631,7 @@ pass_dominator::execute (function *fun)
   free_all_edge_infos ();
 
   /* Thread jumps, creating duplicate blocks as needed.  */
-  cfg_altered |= thread_through_all_blocks (first_pass_instance);
+  cfg_altered |= thread_through_all_blocks (may_peel_loop_headers_p);
 
   if (cfg_altered)
     free_dominance_info (CDI_DOMINATORS);

@@ -190,7 +190,7 @@ along with GCC; see the file COPYING3.  If not see
 	 propagations have already run, but before some more dead code
 	 is removed, and this place fits nicely.  Remember this when
 	 trying to move or duplicate pass_dominator somewhere earlier.  */
-      NEXT_PASS (pass_dominator);
+      NEXT_PASS (pass_dominator, true /* may_peel_loop_headers_p */);
       /* At this point the majority of const/copy propagations
 	 are exposed.  Go ahead and identify paths that should never
 	 be executed in a conforming program and isolate those paths.
@@ -279,7 +279,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_reassoc, false /* insert_powi_p */);
       NEXT_PASS (pass_strength_reduction);
       NEXT_PASS (pass_tracer);
-      NEXT_PASS (pass_dominator);
+      NEXT_PASS (pass_dominator, false /* may_peel_loop_headers_p */);
       NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_vrp, false /* warn_array_bounds_p */);
       /* The only const/copy propagation opportunities left after
