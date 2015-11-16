@@ -1,3 +1,9 @@
+2015-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68117
+	* cfgexpand.c (pass_expand::execute): Destroy the edge
+	redirection var map before setting RTL CFG hooks.
+
 2015-11-16  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/i386/sse.md (reduc_splus_v8df): Rename to...
