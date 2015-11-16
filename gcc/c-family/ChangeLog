@@ -1,3 +1,9 @@
+2015-11-16  Marek Polacek  <polacek@redhat.com>
+
+	* c-ada-spec.c (dump_ada_template): Use RECORD_OR_UNION_TYPE_P.
+	* c-common.c (c_common_get_alias_set): Likewise.
+	(handle_visibility_attribute): Likewise.
+
 2015-11-16  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* c-common.c (handle_simd_attribute): New.
