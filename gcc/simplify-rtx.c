@@ -1462,6 +1462,13 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	    }
 	}
 
+      /* (sign_extend:M (lshiftrt:N <X> (const_int I))) is better as
+         (zero_extend:M (lshiftrt:N <X> (const_int I))) if I is not 0.  */
+      if (GET_CODE (op) == LSHIFTRT
+	  && CONST_INT_P (XEXP (op, 1))
+	  && XEXP (op, 1) != const0_rtx)
+	return simplify_gen_unary (ZERO_EXTEND, mode, op, GET_MODE (op));
+
 #if defined(POINTERS_EXTEND_UNSIGNED)
       /* As we do not know which address space the pointer is referring to,
 	 we can do this only if the target does not support different pointer
