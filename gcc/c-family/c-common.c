@@ -5344,19 +5344,15 @@ c_common_get_alias_set (tree t)
 	   TREE_CODE (t2) == POINTER_TYPE;
 	   t2 = TREE_TYPE (t2))
 	;
-      if (TREE_CODE (t2) != RECORD_TYPE
-	  && TREE_CODE (t2) != ENUMERAL_TYPE
-	  && TREE_CODE (t2) != QUAL_UNION_TYPE
-	  && TREE_CODE (t2) != UNION_TYPE)
+      if (!RECORD_OR_UNION_TYPE_P (t2)
+	  && TREE_CODE (t2) != ENUMERAL_TYPE)
 	return -1;
       if (TYPE_SIZE (t2) == 0)
 	return -1;
     }
   /* These are the only cases that need special handling.  */
-  if (TREE_CODE (t) != RECORD_TYPE
+  if (!RECORD_OR_UNION_TYPE_P (t)
       && TREE_CODE (t) != ENUMERAL_TYPE
-      && TREE_CODE (t) != QUAL_UNION_TYPE
-      && TREE_CODE (t) != UNION_TYPE
       && TREE_CODE (t) != POINTER_TYPE)
     return -1;
   /* Undefined? */
@@ -8644,7 +8640,7 @@ handle_visibility_attribute (tree *node, tree name, tree args,
     {
       if (TREE_CODE (*node) == ENUMERAL_TYPE)
 	/* OK */;
-      else if (TREE_CODE (*node) != RECORD_TYPE && TREE_CODE (*node) != UNION_TYPE)
+      else if (!RECORD_OR_UNION_TYPE_P (*node))
 	{
 	  warning (OPT_Wattributes, "%qE attribute ignored on non-class types",
 		   name);

@@ -1758,8 +1758,7 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
 
       /* We are interested in concrete template instantiations only: skip
 	 partially specialized nodes.  */
-      if ((TREE_CODE (instance) == RECORD_TYPE
-	   || TREE_CODE (instance) == UNION_TYPE)
+      if (RECORD_OR_UNION_TYPE_P (instance)
 	  && cpp_check && cpp_check (instance, HAS_DEPENDENT_TEMPLATE_ARGS))
 	continue;
 
