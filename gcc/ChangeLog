@@ -1,3 +1,9 @@
+2015-11-16  David Wohlferd  <dw@LimeGreenSocks.com>
+
+	* doc/md.texi ('#' and '*' constraint modifiers): Do not include these
+	in the user documentation. 
+	(define_peephole2, define_split): Similarly.
+
 2015-11-16 Andris Pavenis <andris.pavenis@iki.fi>
 
 	* lto-streamer-out.c (write_global_references): Adjust integer type.
