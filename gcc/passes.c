@@ -151,7 +151,6 @@ debug_pass (void)
 
 /* Global variables used to communicate with passes.  */
 bool in_gimple_form;
-bool first_pass_instance;
 
 
 /* This is called from various places for FUNCTION_DECL, VAR_DECL,
@@ -2004,9 +2003,6 @@ execute_todo (unsigned int flags)
     gcc_assert (flags & TODO_update_ssa_any);
 
   timevar_push (TV_TODO);
-
-  /* Inform the pass whether it is the first time it is run.  */
-  first_pass_instance = (flags & TODO_mark_first_instance) != 0;
 
   statistics_fini_pass ();
 

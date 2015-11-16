@@ -1,5 +1,11 @@
 2015-11-16  Tom de Vries  <tom@codesourcery.com>
 
+	* passes.c (first_pass_instance): Remove variable.
+	(execute_todo): Remove setting of first_pass_instance.
+	* tree-pass.h (first_pass_instance): Remove declaration.
+
+2015-11-16  Tom de Vries  <tom@codesourcery.com>
+
 	* passes.def: Add arg to pass_ccp pass instantiation.
 	* tree-ssa-ccp.c (ccp_finalize): Add param nonzero_p.  Use nonzero_p
 	instead of first_pass_instance.
