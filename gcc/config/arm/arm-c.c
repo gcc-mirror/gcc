@@ -129,18 +129,22 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 
   if (TARGET_ARM_FP)
     builtin_define_with_int_value ("__ARM_FP", TARGET_ARM_FP);
+  else
+    cpp_undef (pfile, "__ARM_FP");
+
   if (arm_fp16_format == ARM_FP16_FORMAT_IEEE)
     builtin_define ("__ARM_FP16_FORMAT_IEEE");
   if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
     builtin_define ("__ARM_FP16_FORMAT_ALTERNATIVE");
-  if (TARGET_FMA)
-    builtin_define ("__ARM_FEATURE_FMA");
 
+  def_or_undef_macro (pfile, "__ARM_FEATURE_FMA", TARGET_FMA);
   def_or_undef_macro (pfile, "__ARM_NEON__", TARGET_NEON);
   def_or_undef_macro (pfile, "__ARM_NEON", TARGET_NEON);
 
   if (TARGET_NEON_FP)
     builtin_define_with_int_value ("__ARM_NEON_FP", TARGET_NEON_FP);
+  else
+    cpp_undef (pfile, "__ARM_NEON_FP");
 
   /* Add a define for interworking. Needed when building libgcc.a.  */
   if (arm_cpp_interwork)
