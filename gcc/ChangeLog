@@ -1,3 +1,29 @@
+2015-11-16  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/i386/sse.md (reduc_splus_v8df): Rename to...
+	(reduc_plus_scal_v8df): ...here; reduce to temp and extract scalar.
+
+	(reduc_splus_v4df): Rename to...
+	(reduc_plus_scal_v4df): ...here; reduce to temp and extract scalar.
+
+	(reduc_splus_v2df): Rename to...
+	(reduc_plus_scal_v2df): ...here; reduce to temp and extract scalar.
+
+	(reduc_splus_v16sf): Rename to...
+	(reduc_plus_scal_v16sf): ...here; reduce to temp and extract scalar.
+
+	(reduc_splus_v8sf): Rename to...
+	(reduc_plus_scal_v8sf): ...here; reduce to temp and extract scalar.
+
+	(reduc_splus_v4sf): Rename to...
+	(reduc_plus_scal_v4sf): ...here; reduce to temp and extract scalar.
+
+	(reduc_<code>_<mode>, all 3 variants): Rename each to...
+	(reduc_<code>_scal_<mode>): ...here; reduce to temp and extract scalar.
+
+	(reduc_umin_v8hf): Rename to...
+	(reduc_umin_scal_v8hf): ...here; reduce to temp and extract scalar.
+
 2015-11-16  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* omp-low.c (pass_omp_simd_clone::gate): If target allows - call

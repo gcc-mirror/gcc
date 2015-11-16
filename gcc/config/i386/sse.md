@@ -2441,73 +2441,85 @@
    (set_attr "prefix_rep" "1,*")
    (set_attr "mode" "V4SF")])
 
-(define_expand "reduc_splus_v8df"
-  [(match_operand:V8DF 0 "register_operand")
+(define_expand "reduc_plus_scal_v8df"
+  [(match_operand:DF 0 "register_operand")
    (match_operand:V8DF 1 "register_operand")]
   "TARGET_AVX512F"
 {
-  ix86_expand_reduc (gen_addv8df3, operands[0], operands[1]);
+  rtx tmp = gen_reg_rtx (V8DFmode);
+  ix86_expand_reduc (gen_addv8df3, tmp, operands[1]);
+  emit_insn (gen_vec_extractv8df (operands[0], tmp, const0_rtx));
   DONE;
 })
 
-(define_expand "reduc_splus_v4df"
-  [(match_operand:V4DF 0 "register_operand")
+(define_expand "reduc_plus_scal_v4df"
+  [(match_operand:DF 0 "register_operand")
    (match_operand:V4DF 1 "register_operand")]
   "TARGET_AVX"
 {
   rtx tmp = gen_reg_rtx (V4DFmode);
   rtx tmp2 = gen_reg_rtx (V4DFmode);
+  rtx vec_res = gen_reg_rtx (V4DFmode);
   emit_insn (gen_avx_haddv4df3 (tmp, operands[1], operands[1]));
   emit_insn (gen_avx_vperm2f128v4df3 (tmp2, tmp, tmp, GEN_INT (1)));
-  emit_insn (gen_addv4df3 (operands[0], tmp, tmp2));
+  emit_insn (gen_addv4df3 (vec_res, tmp, tmp2));
+  emit_insn (gen_vec_extractv4df (operands[0], vec_res, const0_rtx));
   DONE;
 })
 
-(define_expand "reduc_splus_v2df"
-  [(match_operand:V2DF 0 "register_operand")
+(define_expand "reduc_plus_scal_v2df"
+  [(match_operand:DF 0 "register_operand")
    (match_operand:V2DF 1 "register_operand")]
   "TARGET_SSE3"
 {
-  emit_insn (gen_sse3_haddv2df3 (operands[0], operands[1], operands[1]));
+  rtx tmp = gen_reg_rtx (V2DFmode);
+  emit_insn (gen_sse3_haddv2df3 (tmp, operands[1], operands[1]));
+  emit_insn (gen_vec_extractv2df (operands[0], tmp, const0_rtx));
   DONE;
 })
 
-(define_expand "reduc_splus_v16sf"
-  [(match_operand:V16SF 0 "register_operand")
+(define_expand "reduc_plus_scal_v16sf"
+  [(match_operand:SF 0 "register_operand")
    (match_operand:V16SF 1 "register_operand")]
   "TARGET_AVX512F"
 {
-  ix86_expand_reduc (gen_addv16sf3, operands[0], operands[1]);
+  rtx tmp = gen_reg_rtx (V16SFmode);
+  ix86_expand_reduc (gen_addv16sf3, tmp, operands[1]);
+  emit_insn (gen_vec_extractv16sf (operands[0], tmp, const0_rtx));
   DONE;
 })
 
-(define_expand "reduc_splus_v8sf"
-  [(match_operand:V8SF 0 "register_operand")
+(define_expand "reduc_plus_scal_v8sf"
+  [(match_operand:SF 0 "register_operand")
    (match_operand:V8SF 1 "register_operand")]
   "TARGET_AVX"
 {
   rtx tmp = gen_reg_rtx (V8SFmode);
   rtx tmp2 = gen_reg_rtx (V8SFmode);
+  rtx vec_res = gen_reg_rtx (V8SFmode);
   emit_insn (gen_avx_haddv8sf3 (tmp, operands[1], operands[1]));
   emit_insn (gen_avx_haddv8sf3 (tmp2, tmp, tmp));
   emit_insn (gen_avx_vperm2f128v8sf3 (tmp, tmp2, tmp2, GEN_INT (1)));
-  emit_insn (gen_addv8sf3 (operands[0], tmp, tmp2));
+  emit_insn (gen_addv8sf3 (vec_res, tmp, tmp2));
+  emit_insn (gen_vec_extractv8sf (operands[0], vec_res, const0_rtx));
   DONE;
 })
 
-(define_expand "reduc_splus_v4sf"
-  [(match_operand:V4SF 0 "register_operand")
+(define_expand "reduc_plus_scal_v4sf"
+  [(match_operand:SF 0 "register_operand")
    (match_operand:V4SF 1 "register_operand")]
   "TARGET_SSE"
 {
+  rtx vec_res = gen_reg_rtx (V4SFmode);
   if (TARGET_SSE3)
     {
       rtx tmp = gen_reg_rtx (V4SFmode);
       emit_insn (gen_sse3_haddv4sf3 (tmp, operands[1], operands[1]));
-      emit_insn (gen_sse3_haddv4sf3 (operands[0], tmp, tmp));
+      emit_insn (gen_sse3_haddv4sf3 (vec_res, tmp, tmp));
     }
   else
-    ix86_expand_reduc (gen_addv4sf3, operands[0], operands[1]);
+    ix86_expand_reduc (gen_addv4sf3, vec_res, operands[1]);
+  emit_insn (gen_vec_extractv4sf (operands[0], vec_res, const0_rtx));
   DONE;
 })
 
@@ -2521,43 +2533,51 @@
    (V8DI "TARGET_AVX512F") (V16SF "TARGET_AVX512F")
    (V8DF "TARGET_AVX512F")])
 
-(define_expand "reduc_<code>_<mode>"
+(define_expand "reduc_<code>_scal_<mode>"
   [(smaxmin:REDUC_SMINMAX_MODE
-     (match_operand:REDUC_SMINMAX_MODE 0 "register_operand")
+     (match_operand:<ssescalarmode> 0 "register_operand")
      (match_operand:REDUC_SMINMAX_MODE 1 "register_operand"))]
   ""
 {
-  ix86_expand_reduc (gen_<code><mode>3, operands[0], operands[1]);
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
+  emit_insn (gen_vec_extract<mode> (operands[0], tmp, const0_rtx));
   DONE;
 })
 
-(define_expand "reduc_<code>_<mode>"
+(define_expand "reduc_<code>_scal_<mode>"
   [(umaxmin:VI_AVX512BW
-     (match_operand:VI_AVX512BW 0 "register_operand")
+     (match_operand:<ssescalarmode> 0 "register_operand")
      (match_operand:VI_AVX512BW 1 "register_operand"))]
   "TARGET_AVX512F"
 {
-  ix86_expand_reduc (gen_<code><mode>3, operands[0], operands[1]);
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
+  emit_insn (gen_vec_extract<mode> (operands[0], tmp, const0_rtx));
   DONE;
 })
 
-(define_expand "reduc_<code>_<mode>"
+(define_expand "reduc_<code>_scal_<mode>"
   [(umaxmin:VI_256
-     (match_operand:VI_256 0 "register_operand")
+     (match_operand:<ssescalarmode> 0 "register_operand")
      (match_operand:VI_256 1 "register_operand"))]
   "TARGET_AVX2"
 {
-  ix86_expand_reduc (gen_<code><mode>3, operands[0], operands[1]);
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
+  emit_insn (gen_vec_extract<mode> (operands[0], tmp, const0_rtx));
   DONE;
 })
 
-(define_expand "reduc_umin_v8hi"
+(define_expand "reduc_umin_scal_v8hi"
   [(umin:V8HI
-     (match_operand:V8HI 0 "register_operand")
+     (match_operand:HI 0 "register_operand")
      (match_operand:V8HI 1 "register_operand"))]
   "TARGET_SSE4_1"
 {
-  ix86_expand_reduc (gen_uminv8hi3, operands[0], operands[1]);
+  rtx tmp = gen_reg_rtx (V8HImode);
+  ix86_expand_reduc (gen_uminv8hi3, tmp, operands[1]);
+  emit_insn (gen_vec_extractv8hi (operands[0], tmp, const0_rtx));
   DONE;
 })
 
