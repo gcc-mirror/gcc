@@ -1,3 +1,9 @@
+2015-11-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (VSX_L): Do not include IBM extended double
+	128-bit types, just types that fit in a single vector.
+	* config/rs6000/rs6000.md (FMOVE128_GPR): Likewise.
+
 2015-11-16  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* doc/md.texi ('#' and '*' constraint modifiers): Do not include these
