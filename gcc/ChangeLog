@@ -1,5 +1,17 @@
 2015-11-16  Tom de Vries  <tom@codesourcery.com>
 
+	* passes.def: Add arg to pass_reassoc pass instantiation.
+	* tree-ssa-reassoc.c (reassoc_insert_powi_p): New static variable.
+	(acceptable_pow_call, reassociate_bb): Use reassoc_insert_powi_p instead
+	of first_pass_instance.
+	(execute_reassoc): Add and handle insert_powi_p parameter.
+	(pass_reassoc::insert_powi_p): New private member.
+	(pass_reassoc::pass_reassoc): Initialize insert_powi_p.
+	(pass_reassoc::set_pass_param): New member function.  Set insert_powi_p.
+	(pass_reassoc::execute): Call execute_reassoc with extra arg.
+
+2015-11-16  Tom de Vries  <tom@codesourcery.com>
+
 	* gdbhooks.py (class PassNames): Handle extra arg NEXT_PASS argument.
 	* gen-pass-instances.awk (handle_line): Same.
 	* pass_manager.h (class pass_manager): Define and undefine
