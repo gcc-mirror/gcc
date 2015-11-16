@@ -3769,6 +3769,10 @@ check_case_bounds (location_t loc, tree type, tree orig_type,
   min_value = TYPE_MIN_VALUE (orig_type);
   max_value = TYPE_MAX_VALUE (orig_type);
 
+  /* We'll really need integer constants here.  */
+  case_low = fold (case_low);
+  case_high = fold (case_high);
+
   /* Case label is less than minimum for type.  */
   if (tree_int_cst_compare (case_low, min_value) < 0
       && tree_int_cst_compare (case_high, min_value) < 0)
