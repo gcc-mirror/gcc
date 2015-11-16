@@ -2850,8 +2850,10 @@ proc check_effective_target_arm_neon_ok_nocache { } {
     if { [check_effective_target_arm32] } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon" "-mfpu=neon -mfloat-abi=softfp"} {
 	    if { [check_no_compiler_messages_nocache arm_neon_ok object {
-		#include "arm_neon.h"
 		int dummy;
+		#ifndef __ARM_NEON__
+		#error not NEON
+		#endif
 		/* Avoid the case where a test adds -mfpu=neon, but the toolchain is
 		   configured for -mcpu=arm926ej-s, for example.  */
 		#if __ARM_ARCH < 7
