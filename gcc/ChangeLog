@@ -1,5 +1,10 @@
 2015-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc.c (sparc_emit_probe_stack_range): Adjust.
+	(output_probe_stack_range): Rotate the loop and simplify.
+
+2015-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* config/rs6000/rs6000.c (rs6000_emit_probe_stack_rang): Adjust.
 	(output_probe_stack_range): Rotate the loop and simplify.
 
