@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_all_early_optimizations);
       PUSH_INSERT_PASSES_WITHIN (pass_all_early_optimizations)
 	  NEXT_PASS (pass_remove_cgraph_callee_edges);
-	  NEXT_PASS (pass_object_sizes);
+	  NEXT_PASS (pass_object_sizes, true /* insert_min_max_p */);
 	  NEXT_PASS (pass_ccp);
 	  /* After CCP we rewrite no longer addressed locals into SSA
 	     form if possible.  */
@@ -164,7 +164,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_backprop);
       NEXT_PASS (pass_phiprop);
       NEXT_PASS (pass_forwprop);
-      NEXT_PASS (pass_object_sizes);
+      NEXT_PASS (pass_object_sizes, false /* insert_min_max_p */);
       /* pass_build_alias is a dummy pass that ensures that we
 	 execute TODO_rebuild_alias at this point.  */
       NEXT_PASS (pass_build_alias);

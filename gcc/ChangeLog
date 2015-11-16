@@ -1,5 +1,16 @@
 2015-11-16  Tom de Vries  <tom@codesourcery.com>
 
+	* passes.def: Add arg to pass_object_sizes pass instantiation.
+	* tree-object-size.c (pass_object_sizes::pass_object_sizes): Initialize
+	insert_min_max_p.
+	(pass_object_sizes::set_pass_param): New member function.  Set
+	insert_min_max_p.
+	(pass_object_sizes::insert_min_max_p): New private member.
+	(pass_object_sizes::execute): Use insert_min_max_p instead of
+	first_pass_instance.
+
+2015-11-16  Tom de Vries  <tom@codesourcery.com>
+
 	* passes.def: Add arg to pass_dominator pass instantiation.
 	* tree-pass.h (first_pass_instance): Remove pass_dominator-related bit
 	of comment.
