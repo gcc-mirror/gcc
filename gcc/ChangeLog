@@ -1,3 +1,14 @@
+2015-11-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2015-11-16  Oleg Endo  <olegendo@gcc.gnu.org>
+	            Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/68277
+	* config/sh/sh.md (addsi3_scr): Handle reg overlap of operands[0] and
+	operands[2].
+	(*addsi3): Add another insn_and_split variant for reload.
+
 2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/67265
