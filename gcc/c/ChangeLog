@@ -1,3 +1,8 @@
+2015-11-16  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* c-parser.c (c_finish_omp_declare_simd): Look for
+	"simd" attribute as well. Update error message.
+
 2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* c-parser.c (c_parser_omp_declare_target): Adjust.

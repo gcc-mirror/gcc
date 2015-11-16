@@ -1,3 +1,9 @@
+2015-11-16  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* c-c++-common/attr-simd.c: New test.
+	* c-c++-common/attr-simd-2.c: New test.
+	* c-c++-common/attr-simd-3.c: New test.
+
 2015-11-16  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/vclz.c: Correctly place INHIB_OPTIMIZATION.

@@ -1,3 +1,9 @@
+2015-11-16  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* omp-low.c (pass_omp_simd_clone::gate): If target allows - call
+	without additional conditions.
+	* doc/extend.texi (@item simd): New.
+
 2015-11-16  Tom de Vries  <tom@codesourcery.com>
 
 	* passes.c (first_pass_instance): Remove variable.

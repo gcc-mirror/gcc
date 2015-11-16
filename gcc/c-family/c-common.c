@@ -387,6 +387,7 @@ static tree handle_warn_unused_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int,
 					       bool *);
+static tree handle_simd_attribute (tree *, tree, tree, int, bool *);
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
@@ -817,6 +818,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_omp_declare_simd_attribute, false },
   { "cilk simd function",     0, -1, true,  false, false,
 			      handle_omp_declare_simd_attribute, false },
+  { "simd",		      0, 0, true,  false, false,
+			      handle_simd_attribute, false },
   { "omp declare target",     0, 0, true, false, false,
 			      handle_omp_declare_target_attribute, false },
   { "alloc_align",	      1, 1, false, true, true,
@@ -9018,6 +9021,35 @@ handle_warn_unused_attribute (tree *node, tree name,
 static tree
 handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *)
 {
+  return NULL_TREE;
+}
+
+/* Handle a "simd" attribute.  */
+
+static tree
+handle_simd_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      if (lookup_attribute ("cilk simd function",
+			    DECL_ATTRIBUTES (*node)) != NULL)
+	{
+	  error_at (DECL_SOURCE_LOCATION (*node),
+		    "%<__simd__%> attribute cannot be used in the same "
+		    "function marked as a Cilk Plus SIMD-enabled function");
+	  *no_add_attrs = true;
+	}
+      else
+	DECL_ATTRIBUTES (*node)
+	  = tree_cons (get_identifier ("omp declare simd"),
+		       NULL_TREE, DECL_ATTRIBUTES (*node));
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
   return NULL_TREE;
 }
 

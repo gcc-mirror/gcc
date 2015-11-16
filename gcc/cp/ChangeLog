@@ -1,3 +1,8 @@
+2015-11-16  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* parser.c (cp_parser_late_parsing_cilk_simd_fn_info): Look for
+	"simd" attribute as well. Update error message.
+
 2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* parser.c (cp_parser_omp_declare_target): Adjust.

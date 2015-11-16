@@ -16141,10 +16141,13 @@ c_finish_omp_declare_simd (c_parser *parser, tree fndecl, tree parms,
 			   vec<c_token> clauses)
 {
   if (flag_cilkplus
-      && clauses.exists () && !vec_safe_is_empty (parser->cilk_simd_fn_tokens))
+      && (clauses.exists ()
+	  || lookup_attribute ("simd", DECL_ATTRIBUTES (fndecl)))
+      && !vec_safe_is_empty (parser->cilk_simd_fn_tokens))
     {
-      error ("%<#pragma omp declare simd%> cannot be used in the same "
-	     "function marked as a Cilk Plus SIMD-enabled function");
+      error ("%<#pragma omp declare simd%> or %<simd%> attribute cannot be "
+	     "used in the same function marked as a Cilk Plus SIMD-enabled "
+	     "function");
       vec_free (parser->cilk_simd_fn_tokens);
       return;
     }
@@ -16182,6 +16185,16 @@ c_finish_omp_declare_simd (c_parser *parser, tree fndecl, tree parms,
       parser->tokens = parser->cilk_simd_fn_tokens->address ();
       parser->tokens_avail = vec_safe_length (parser->cilk_simd_fn_tokens);
       is_cilkplus_cilk_simd_fn = true;
+
+      if (lookup_attribute ("simd", DECL_ATTRIBUTES (fndecl)) != NULL)
+	{
+	  error_at (DECL_SOURCE_LOCATION (fndecl),
+		    "%<__simd__%> attribute cannot be used in the same "
+		    "function marked as a Cilk Plus SIMD-enabled function");
+	  vec_free (parser->cilk_simd_fn_tokens);
+	  return;
+	}
+
     }
   else
     {
@@ -16213,12 +16226,12 @@ c_finish_omp_declare_simd (c_parser *parser, tree fndecl, tree parms,
       if (c != NULL_TREE)
 	c = tree_cons (NULL_TREE, c, NULL_TREE);
       if (is_cilkplus_cilk_simd_fn) 
-	{ 
+	{
 	  tree k = build_tree_list (get_identifier ("cilk simd function"), 
 				    NULL_TREE);
 	  TREE_CHAIN (k) = DECL_ATTRIBUTES (fndecl);
 	  DECL_ATTRIBUTES (fndecl) = k;
-	} 
+	}
       c = build_tree_list (get_identifier ("omp declare simd"), c);
       TREE_CHAIN (c) = DECL_ATTRIBUTES (fndecl);
       DECL_ATTRIBUTES (fndecl) = c;

@@ -1,3 +1,9 @@
+2015-11-16  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* c-common.c (handle_simd_attribute): New.
+	(struct attribute_spec): Add entry for "simd".
+	(handle_simd_attribute): New.
+
 2015-11-13  Kai Tietz  <ktietz70@googlemail.com>
 
 	* c-lex.c (interpret_float): Use fold_convert.
