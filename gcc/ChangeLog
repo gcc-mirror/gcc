@@ -1,3 +1,8 @@
+2015-11-15  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	PR middle-end/68366
+	* sdbout.c: Include emit-rtl.h and function.h.
+
 2015-11-15  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/i386/freebsd.h (SUBTARGET32_DEFAULT_CPU): Change to i586.
