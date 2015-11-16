@@ -631,11 +631,8 @@ extern bool function_called_by_processed_nodes_p (void);
 
 /* Set to true if the pass is called the first time during compilation of the
    current function.  Note that using this information in the optimization
-   passes is considered not to be clean, and it should be avoided if possible.
-   This flag is currently used to prevent loops from being peeled repeatedly
-   in jump threading; it will be removed once we preserve loop structures
-   throughout the compilation -- we will be able to mark the affected loops
-   directly in jump threading, and avoid peeling them next time.  */
+   passes is considered not to be clean, and it should be avoided if
+   possible.  */
 extern bool first_pass_instance;
 
 /* Declare for plugins.  */

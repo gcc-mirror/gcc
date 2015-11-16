@@ -1,5 +1,18 @@
 2015-11-16  Tom de Vries  <tom@codesourcery.com>
 
+	* passes.def: Add arg to pass_dominator pass instantiation.
+	* tree-pass.h (first_pass_instance): Remove pass_dominator-related bit
+	of comment.
+	* tree-ssa-dom.c (pass_dominator::pass_dominator): Initialize
+	may_peel_loop_headers_p.
+	(pass_dominator::set_pass_param): New member function.  Set
+	may_peel_loop_headers_p.
+	(pass_dominator::may_peel_loop_headers_p): New private member.
+	(pass_dominator::execute): Use may_peel_loop_headers_p instead of
+	first_pass_instance.
+
+2015-11-16  Tom de Vries  <tom@codesourcery.com>
+
 	* passes.def: Add arg to pass_reassoc pass instantiation.
 	* tree-ssa-reassoc.c (reassoc_insert_powi_p): New static variable.
 	(acceptable_pow_call, reassociate_bb): Use reassoc_insert_powi_p instead
