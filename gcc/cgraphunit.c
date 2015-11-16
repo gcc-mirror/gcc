@@ -2505,6 +2505,7 @@ cgraph_node::create_wrapper (cgraph_node *target)
   memset (&thunk, 0, sizeof (cgraph_thunk_info));
   thunk.thunk_p = true;
   create_edge (target, NULL, count, CGRAPH_FREQ_BASE);
+  callees->can_throw_external = !TREE_NOTHROW (target->decl);
 
   tree arguments = DECL_ARGUMENTS (decl);
 

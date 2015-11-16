@@ -1,3 +1,10 @@
+2015-11-16  Charles Baylis  <charles.baylis@linaro.org>
+
+	Backport from mainline r227407
+	PR ipa/67280
+	* cgraphunit.c (cgraph_node::create_wrapper): Set can_throw_external
+	in new callgraph edge.
+
 2015-11-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
