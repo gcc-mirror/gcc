@@ -1,3 +1,7 @@
+2015-11-16  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vclz.c: Correctly place INHIB_OPTIMIZATION.
+
 2015-11-16  Christian Bruel  <christian.bruel@st.com>
 
 	* lib/target-supports.exp (check_effective_target_arm_neon_ok_nocache):
