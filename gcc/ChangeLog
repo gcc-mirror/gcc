@@ -1,6 +1,18 @@
 2015-11-16  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/65837
+	* config/arm/arm-c.c (arm_cpu_builtins): Set or reset
+	__ARM_FEATURE_CRYPTO, __VFP_FP__, __ARM_NEON__
+	(arm_pragma_target_parse): Change check for arm_cpu_builtins.
+	undefine __ARM_FP.
+	* config/arm/arm.c (arm_can_inline_p): Check FPUs.
+	(arm_valid_target_attribute_rec): Handle -mfpu attribute target.
+	* doc/invoke.texi (-mfpu=): Mention attribute and pragma.
+	* doc/extend.texi (-mfpu=): Describe attribute.
+
+2015-11-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/65837
 	* config/arm/arm-protos.h (arm_init_neon_builtins): Declare.
 	* config/arm/arm.c (arm_valid_target_attribute_tree): Call
 	arm_init_neon_builtins.

@@ -29759,11 +29759,36 @@ arm_option_print (FILE *file, int indent, struct cl_target_option *ptr)
 /* Hook to determine if one function can safely inline another.  */
 
 static bool
-arm_can_inline_p (tree caller ATTRIBUTE_UNUSED, tree callee ATTRIBUTE_UNUSED)
+arm_can_inline_p (tree caller, tree callee)
 {
-  /* Overidde default hook: Always OK to inline between different modes. 
-     Function with mode specific instructions, e.g using asm, must be explicitely 
-     protected with noinline.  */
+  tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
+  tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+
+  struct cl_target_option *caller_opts
+	= TREE_TARGET_OPTION (caller_tree ? caller_tree
+					   : target_option_default_node);
+
+  struct cl_target_option *callee_opts
+	= TREE_TARGET_OPTION (callee_tree ? callee_tree
+					   : target_option_default_node);
+
+  const struct arm_fpu_desc *caller_fpu
+    = &all_fpus[caller_opts->x_arm_fpu_index];
+  const struct arm_fpu_desc *callee_fpu
+    = &all_fpus[callee_opts->x_arm_fpu_index];
+
+  /* Callee's fpu features should be a subset of the caller's.  */
+  if ((caller_fpu->features & callee_fpu->features) != callee_fpu->features)
+    return false;
+
+  /* Need same model and regs.  */
+  if (callee_fpu->model != caller_fpu->model
+      || callee_fpu->regs != callee_fpu->regs)
+    return false;
+
+  /* OK to inline between different modes.
+     Function with mode specific instructions, e.g using asm,
+     must be explicitly protected with noinline.  */
   return true;
 }
 
@@ -29794,6 +29819,7 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
   if (TREE_CODE (args) == TREE_LIST)
     {
       bool ret = true;
+
       for (; args; args = TREE_CHAIN (args))
 	if (TREE_VALUE (args)
 	    && !arm_valid_target_attribute_rec (TREE_VALUE (args), opts))
@@ -29808,30 +29834,38 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
     }
 
   char *argstr = ASTRDUP (TREE_STRING_POINTER (args));
-  while (argstr && *argstr != '\0')
+  char *q;
+
+  while ((q = strtok (argstr, ",")) != NULL)
     {
-      while (ISSPACE (*argstr))
-	argstr++;
+      while (ISSPACE (*q)) ++q;
 
-      if (!strcmp (argstr, "thumb"))
-	{
+      argstr = NULL;
+      if (!strncmp (q, "thumb", 5))
 	  opts->x_target_flags |= MASK_THUMB;
-	  arm_option_check_internal (opts);
-	  return true;
-	}
 
-      if (!strcmp (argstr, "arm"))
-	{
+      else if (!strncmp (q, "arm", 3))
 	  opts->x_target_flags &= ~MASK_THUMB;
-	  arm_option_check_internal (opts);
-	  return true;
+
+      else if (!strncmp (q, "fpu=", 4))
+	{
+	  if (! opt_enum_arg_to_value (OPT_mfpu_, q+4,
+				       &opts->x_arm_fpu_index, CL_TARGET))
+	    {
+	      error ("invalid fpu for attribute(target(\"%s\"))", q);
+	      return false;
+	    }
+	}
+      else
+	{
+	  error ("attribute(target(\"%s\")) is unknown", q);
+	  return false;
 	}
 
-      warning (0, "attribute(target(\"%s\")) is unknown", argstr);
-      return false;
+      arm_option_check_internal (opts);
     }
 
-  return false;
+  return true;
 }
 
 /* Return a TARGET_OPTION_NODE tree of the target options listed or NULL.  */

@@ -1,3 +1,12 @@
+2015-11-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/65837
+	gcc.target/arm/lto/pr65837_0.c
+	gcc.target/arm/attr-neon2.c
+	gcc.target/arm/attr-neon.c
+	gcc.target/arm/attr-neon-builtin-fail.c
+	gcc.target/arm/attr-crypto.c
+
 2015-11-16  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/bb-slp-32.c: Adjust testcase.
@@ -4782,7 +4791,7 @@
 	PR c++-common/67882
 	* c-c++-common/builtin-offsetof-2.c: New test.
 
-2015-11-03  Dominique d'Humieres <dominiq@lps.ens.fr>
+015-11-03  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/67982
 	* gfortran.dg/warn_unused_function_3.f90: New test.
