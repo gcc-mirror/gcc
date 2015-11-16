@@ -1,3 +1,13 @@
+2015-11-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm-cores.def (cortex-a35): New.
+	* config/arm/arm.c (arm_cortex_a35_tune): New.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add cortex-a35.
+	* config/arm/t-aprofile: Likewise.
+	* doc/invoke.texi (-mcpu): Likewise.
+
 2015-11-16  Jim Wilson  <jim.wilson@linaro.org>
 
 	* config/arm/t-aprofile (MULTILIB_MATCHES): Add lines for exynos-m1
