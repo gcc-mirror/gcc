@@ -1,3 +1,8 @@
+2015-11-16 Andris Pavenis <andris.pavenis@iki.fi>
+
+	* lto-streamer-out.c (write_global_references): Adjust integer type.
+	(lto_output_decl_state_refs): Likewise.
+
 2015-11-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/arm-cores.def (cortex-a35): New.
