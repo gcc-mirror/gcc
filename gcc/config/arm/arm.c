@@ -1937,6 +1937,29 @@ const struct tune_params arm_cortex_a15_tune =
   tune_params::SCHED_AUTOPREF_FULL
 };
 
+const struct tune_params arm_cortex_a35_tune =
+{
+  arm_9e_rtx_costs,
+  &cortexa53_extra_costs,
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  1,						/* Issue rate.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_TRUE,
+  FUSE_OPS (tune_params::FUSE_MOVW_MOVT),
+  tune_params::SCHED_AUTOPREF_OFF
+};
+
 const struct tune_params arm_cortex_a53_tune =
 {
   arm_9e_rtx_costs,
