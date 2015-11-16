@@ -1,3 +1,11 @@
+2015-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (ix86_adjust_stack_and_probe): Adjust and use
+	an lea instruction when possible.
+	(output_adjust_stack_and_probe): Rotate the loop and simplify.
+	(ix86_emit_probe_stack_range): Adjust.
+	(output_probe_stack_range): Rotate the loop and simplify.
+
 2015-11-16  Christian Bruel  <christian.bruel@st.com>
 
 	* config/arm/arm_neon.h: Remove #ifndef check on __ARM_NEON.

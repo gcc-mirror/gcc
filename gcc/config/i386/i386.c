@@ -12139,10 +12139,10 @@ ix86_adjust_stack_and_probe (const HOST_WIDE_INT size)
   rtx size_rtx = GEN_INT (size), last;
 
   /* See if we have a constant small number of probes to generate.  If so,
-     that's the easy case.  The run-time loop is made up of 11 insns in the
+     that's the easy case.  The run-time loop is made up of 9 insns in the
      generic case while the compile-time loop is made up of 3+2*(n-1) insns
      for n # of intervals.  */
-  if (size <= 5 * PROBE_INTERVAL)
+  if (size <= 4 * PROBE_INTERVAL)
     {
       HOST_WIDE_INT i, adjust;
       bool first_probe = true;
@@ -12209,19 +12209,27 @@ ix86_adjust_stack_and_probe (const HOST_WIDE_INT size)
 					     - (PROBE_INTERVAL + dope))));
 
       /* LAST_ADDR = SP_0 + PROBE_INTERVAL + ROUNDED_SIZE.  */
-      emit_move_insn (sr.reg, GEN_INT (-rounded_size));
-      emit_insn (gen_rtx_SET (sr.reg,
-			      gen_rtx_PLUS (Pmode, sr.reg,
-					    stack_pointer_rtx)));
+      if (rounded_size <= (HOST_WIDE_INT_1 << 31))
+	emit_insn (gen_rtx_SET (sr.reg,
+				plus_constant (Pmode, stack_pointer_rtx,
+					       -rounded_size)));
+      else
+	{
+	  emit_move_insn (sr.reg, GEN_INT (-rounded_size));
+	  emit_insn (gen_rtx_SET (sr.reg,
+				  gen_rtx_PLUS (Pmode, sr.reg,
+						stack_pointer_rtx)));
+	}
 
 
       /* Step 3: the loop
 
-	 while (SP != LAST_ADDR)
+	 do
 	   {
 	     SP = SP + PROBE_INTERVAL
 	     probe at SP
 	   }
+	 while (SP != LAST_ADDR)
 
 	 adjusts SP and probes to PROBE_INTERVAL + N * PROBE_INTERVAL for
 	 values of N from 1 until it is equal to ROUNDED_SIZE.  */
@@ -12277,23 +12285,16 @@ const char *
 output_adjust_stack_and_probe (rtx reg)
 {
   static int labelno = 0;
-  char loop_lab[32], end_lab[32];
+  char loop_lab[32];
   rtx xops[2];
 
-  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno);
-  ASM_GENERATE_INTERNAL_LABEL (end_lab, "LPSRE", labelno++);
+  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno++);
 
+  /* Loop.  */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
 
-  /* Jump to END_LAB if SP == LAST_ADDR.  */
-  xops[0] = stack_pointer_rtx;
-  xops[1] = reg;
-  output_asm_insn ("cmp%z0\t{%1, %0|%0, %1}", xops);
-  fputs ("\tje\t", asm_out_file);
-  assemble_name_raw (asm_out_file, end_lab);
-  fputc ('\n', asm_out_file);
-
   /* SP = SP + PROBE_INTERVAL.  */
+  xops[0] = stack_pointer_rtx;
   xops[1] = GEN_INT (PROBE_INTERVAL);
   output_asm_insn ("sub%z0\t{%1, %0|%0, %1}", xops);
 
@@ -12301,11 +12302,15 @@ output_adjust_stack_and_probe (rtx reg)
   xops[1] = const0_rtx;
   output_asm_insn ("or%z0\t{%1, (%0)|DWORD PTR [%0], %1}", xops);
 
-  fprintf (asm_out_file, "\tjmp\t");
+  /* Test if SP == LAST_ADDR.  */
+  xops[0] = stack_pointer_rtx;
+  xops[1] = reg;
+  output_asm_insn ("cmp%z0\t{%1, %0|%0, %1}", xops);
+
+  /* Branch.  */
+  fputs ("\tjne\t", asm_out_file);
   assemble_name_raw (asm_out_file, loop_lab);
   fputc ('\n', asm_out_file);
-
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, end_lab);
 
   return "";
 }
@@ -12317,10 +12322,10 @@ static void
 ix86_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 {
   /* See if we have a constant small number of probes to generate.  If so,
-     that's the easy case.  The run-time loop is made up of 7 insns in the
+     that's the easy case.  The run-time loop is made up of 6 insns in the
      generic case while the compile-time loop is made up of n insns for n #
      of intervals.  */
-  if (size <= 7 * PROBE_INTERVAL)
+  if (size <= 6 * PROBE_INTERVAL)
     {
       HOST_WIDE_INT i;
 
@@ -12364,11 +12369,12 @@ ix86_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 
       /* Step 3: the loop
 
-	 while (TEST_ADDR != LAST_ADDR)
+	 do
 	   {
 	     TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
 	     probe at TEST_ADDR
 	   }
+	 while (TEST_ADDR != LAST_ADDR)
 
          probes at FIRST + N * PROBE_INTERVAL for values of N from 1
          until it is equal to ROUNDED_SIZE.  */
@@ -12400,23 +12406,16 @@ const char *
 output_probe_stack_range (rtx reg, rtx end)
 {
   static int labelno = 0;
-  char loop_lab[32], end_lab[32];
+  char loop_lab[32];
   rtx xops[3];
 
-  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno);
-  ASM_GENERATE_INTERNAL_LABEL (end_lab, "LPSRE", labelno++);
+  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno++);
 
+  /* Loop.  */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
 
-  /* Jump to END_LAB if TEST_ADDR == LAST_ADDR.  */
-  xops[0] = reg;
-  xops[1] = end;
-  output_asm_insn ("cmp%z0\t{%1, %0|%0, %1}", xops);
-  fputs ("\tje\t", asm_out_file);
-  assemble_name_raw (asm_out_file, end_lab);
-  fputc ('\n', asm_out_file);
-
   /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
+  xops[0] = reg;
   xops[1] = GEN_INT (PROBE_INTERVAL);
   output_asm_insn ("sub%z0\t{%1, %0|%0, %1}", xops);
 
@@ -12426,11 +12425,15 @@ output_probe_stack_range (rtx reg, rtx end)
   xops[2] = const0_rtx;
   output_asm_insn ("or%z0\t{%2, (%0,%1)|DWORD PTR [%0+%1], %2}", xops);
 
-  fprintf (asm_out_file, "\tjmp\t");
+  /* Test if TEST_ADDR == LAST_ADDR.  */
+  xops[0] = reg;
+  xops[1] = end;
+  output_asm_insn ("cmp%z0\t{%1, %0|%0, %1}", xops);
+
+  /* Branch.  */
+  fputs ("\tjne\t", asm_out_file);
   assemble_name_raw (asm_out_file, loop_lab);
   fputc ('\n', asm_out_file);
-
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, end_lab);
 
   return "";
 }
