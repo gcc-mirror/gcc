@@ -1,3 +1,18 @@
+2015-11-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/65837
+	* config/arm/arm.c (arm_fpu_desc): Remove.
+	(all_fpus): Make global.
+	(arm_option_override): Use FPU TARGET accessors.
+	(arm_declare_function_name): Likewise.
+	* config/arm/arm.h (TARGET_VFP, TARGET_VFPD32, TARGET_VFP5)
+	(TARGET_VFP_SINGLE, TARGET_VFP_DOUBLE, TARGET_NEON_FP16)
+	(TARGET_FP16, TARGET_FMA, TARGET_FPU_ARMV8, TARGET_CRYPTO)
+	(TARGET_NEON): Likewise.
+	(all_fpus): Declare extern.
+	(TARGET_FPU_NAME, TARGET_FPU_MODEL, TARGET_FPU_REV)
+	(TARGET_FPU_REGS, TARGET_FPU_FEATURES): Define all_fpus accessors.
+
 2015-11-15  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	PR middle-end/68366
