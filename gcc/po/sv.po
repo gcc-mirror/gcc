@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: gcc 5.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-07-02 12:31+0000\n"
-"PO-Revision-Date: 2015-07-30 10:38+0200\n"
+"PO-Revision-Date: 2015-11-14 12:24+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -6209,7 +6209,7 @@ msgstr "Varna för funktioner som kan vara kandidater för formatattribut"
 
 #: c-family/c.opt:587
 msgid "Suggest that the override keyword be used when the declaration of a virtual"
-msgstr "Föreslå att använda nyckelorder override när deklarationen av en virtuell funktion åsidosätter en annan"
+msgstr "Föreslå att använda nyckelordet override när deklarationen av en virtuell funktion åsidosätter en annan"
 
 #: c-family/c.opt:592
 msgid "Warn about enumerated switches, with no default, missing a case"
@@ -38275,7 +38275,7 @@ msgstr "anakronistisk gammaldags basklassinitierare"
 #: cp/parser.c:12818
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed in this context (a qualified member initializer is implicitly a type)"
-msgstr "nyckelordet %<typename%> är inte tillåtet i detta sammanhang (en kvalificerat medlemsinitierare är implicit en typ)"
+msgstr "nyckelordet %<typename%> är inte tillåtet i detta sammanhang (en kvalificerad medlemsinitierare är implicit en typ)"
 
 #: cp/parser.c:13167
 #, gcc-internal-format
