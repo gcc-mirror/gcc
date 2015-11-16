@@ -759,9 +759,6 @@ const struct tune_params *current_tune;
 /* Which floating point hardware to schedule for.  */
 int arm_fpu_attr;
 
-/* Which floating popint hardware to use.  */
-const struct arm_fpu_desc *arm_fpu_desc;
-
 /* Used for Thumb call_via trampolines.  */
 rtx thumb_call_via_label[14];
 static int thumb_call_reg_needed;
@@ -2224,14 +2221,13 @@ char arm_arch_name[] = "__ARM_ARCH_0UNK__";
 
 /* Available values for -mfpu=.  */
 
-static const struct arm_fpu_desc all_fpus[] =
+const struct arm_fpu_desc all_fpus[] =
 {
 #define ARM_FPU(NAME, MODEL, REV, VFP_REGS, FEATURES) \
   { NAME, MODEL, REV, VFP_REGS, FEATURES },
 #include "arm-fpus.def"
 #undef ARM_FPU
 };
-
 
 /* Supported TLS relocations.  */
 
@@ -3139,17 +3135,13 @@ arm_option_override (void)
       gcc_assert (ok);
     }
 
-  arm_fpu_desc = &all_fpus[arm_fpu_index];
-
-  switch (arm_fpu_desc->model)
-    {
-    case ARM_FP_MODEL_VFP:
-      arm_fpu_attr = FPU_VFP;
-      break;
-
-    default:
-      gcc_unreachable();
-    }
+  /* If soft-float is specified then don't use FPU.  */
+  if (TARGET_SOFT_FLOAT)
+    arm_fpu_attr = FPU_NONE;
+  else if (TARGET_VFP)
+    arm_fpu_attr = FPU_VFP;
+  else
+    gcc_unreachable();
 
   if (TARGET_AAPCS_BASED)
     {
@@ -3163,10 +3155,6 @@ arm_option_override (void)
   /* __fp16 support currently assumes the core has ldrh.  */
   if (!arm_arch4 && arm_fp16_format != ARM_FP16_FORMAT_NONE)
     sorry ("__fp16 and no ldrh");
-
-  /* If soft-float is specified then don't use FPU.  */
-  if (TARGET_SOFT_FLOAT)
-    arm_fpu_attr = FPU_NONE;
 
   if (TARGET_AAPCS_BASED)
     {
@@ -29974,8 +29962,8 @@ arm_declare_function_name (FILE *stream, const char *name, tree decl)
   else
     fprintf (stream, "\t.arm\n");
 
-  asm_fprintf (asm_out_file, "\t.fpu %s\n", TARGET_SOFT_FLOAT
-	       ? "softvfp" : arm_fpu_desc->name);
+  asm_fprintf (asm_out_file, "\t.fpu %s\n",
+	       TARGET_SOFT_FLOAT ? "softvfp" : TARGET_FPU_NAME);
 
   if (TARGET_POKE_FUNCTION_NAME)
     arm_poke_function_name (stream, (const char *) name);
