@@ -1,3 +1,9 @@
+2015-11-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/68330
+	* simplify-rtx.c (simplify_unary_operation_1): Simplify SIGN_EXTEND
+	of LSHIFTRT by a non-zero constant integer.
+
 2015-11-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68306
