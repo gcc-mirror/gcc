@@ -1,6 +1,7 @@
 LIB2ADDEH += $(srcdir)/config/rs6000/cxa_atexit.c \
 	$(srcdir)/config/rs6000/cxa_finalize.c \
-	$(srcdir)/config/rs6000/atexit.c
+	$(srcdir)/config/rs6000/atexit.c \
+	$(srcdir)/config/rs6000/on_exit.c
 
 LIB2ADD_ST += $(srcdir)/config/rs6000/aixinitfini.c
 

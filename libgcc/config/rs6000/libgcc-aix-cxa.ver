@@ -10,4 +10,5 @@ GCC_4.9 {
 
 GCC_5 {
   atexit
+  on_exit
 }
