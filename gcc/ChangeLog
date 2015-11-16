@@ -1,5 +1,11 @@
 2015-11-16  Christian Bruel  <christian.bruel@st.com>
 
+	* config/arm/arm_neon.h: Remove #ifndef check on __ARM_NEON.
+	Replace #ifdef __ARM_FEATURE_CRYPTO, __ARM_FEATURE_FMA, __ARM_FP
+	with appropriate pragma GCC target.
+
+2015-11-16  Christian Bruel  <christian.bruel@st.com>
+
 	PR target/65837
 	* config/arm/arm-c.c (arm_cpu_builtins): Conditionally set and reset
 	__ARM_FEATURE_FMA and __ARM_NEON_FP, __ARM_FP.
