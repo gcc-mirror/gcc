@@ -1,3 +1,8 @@
+2015-11-16  Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/arm/t-aprofile (MULTILIB_MATCHES): Add lines for exynos-m1
+	and qdf24xx and xgene1 to match -march=armv8-a.
+
 2015-11-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/68330
