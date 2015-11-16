@@ -18407,10 +18407,7 @@ public:
 bool
 pass_omp_simd_clone::gate (function *)
 {
-  return ((flag_openmp || flag_openmp_simd
-	   || flag_cilkplus
-	   || (in_lto_p && !flag_wpa))
-	  && (targetm.simd_clone.compute_vecsize_and_simdlen != NULL));
+  return targetm.simd_clone.compute_vecsize_and_simdlen != NULL;
 }
 
 } // anon namespace

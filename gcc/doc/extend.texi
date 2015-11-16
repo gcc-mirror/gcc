@@ -3143,6 +3143,22 @@ one compiled with @option{-msse4.1} and another with @option{-mavx}.
 At the function call it will create resolver @code{ifunc}, that will
 dynamically call a clone suitable for current architecture.
 
+@item simd
+@cindex @code{simd} function attribute.
+This attribute enables creation of one or more function versions that
+can process multiple arguments using SIMD instructions from a
+single invocation.  Specifying this attribute allows compiler to
+assume that such versions are available at link time (provided
+in the same or another translation unit).  Generated versions are
+target dependent and described in corresponding Vector ABI document.  For
+x86_64 target this document can be found
+@w{@uref{https://sourceware.org/glibc/wiki/libmvec?action=AttachFile&do=view&target=VectorABI.txt,here}}.
+The attribute should not be used together with Cilk Plus @code{vector}
+attribute on the same function.
+If the attribute is specified and @code{#pragma omp declare simd}
+present on a declaration and @code{-fopenmp} or @code{-fopenmp-simd}
+switch is specified, then the attribute is ignored.
+
 @item target (@var{options})
 @cindex @code{target} function attribute
 Multiple target back ends implement the @code{target} attribute
