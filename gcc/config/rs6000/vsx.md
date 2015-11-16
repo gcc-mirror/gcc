@@ -46,8 +46,6 @@
 (define_mode_iterator VSX_F [V4SF V2DF])
 
 ;; Iterator for logical types supported by VSX
-;; Note, IFmode won't actually be used since it isn't a VSX type, but it simplifies
-;; the code by using 128-bit iterators for floating point.
 (define_mode_iterator VSX_L [V16QI
 			     V8HI
 			     V4SI
@@ -57,8 +55,7 @@
 			     V1TI
 			     TI
 			     (KF	"FLOAT128_VECTOR_P (KFmode)")
-			     (TF	"FLOAT128_VECTOR_P (TFmode)")
-			     (IF	"FLOAT128_VECTOR_P (IFmode)")])
+			     (TF	"FLOAT128_VECTOR_P (TFmode)")])
 
 ;; Iterator for memory move.  Handle TImode specially to allow
 ;; it to use gprs as well as vsx registers.
