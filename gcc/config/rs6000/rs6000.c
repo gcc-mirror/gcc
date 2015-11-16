@@ -24233,11 +24233,12 @@ rs6000_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 
       /* Step 3: the loop
 
-	 while (TEST_ADDR != LAST_ADDR)
+	 do
 	   {
 	     TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
 	     probe at TEST_ADDR
 	   }
+	 while (TEST_ADDR != LAST_ADDR)
 
 	 probes at FIRST + N * PROBE_INTERVAL for values of N from 1
 	 until it is equal to ROUNDED_SIZE.  */
@@ -24263,38 +24264,34 @@ const char *
 output_probe_stack_range (rtx reg1, rtx reg2)
 {
   static int labelno = 0;
-  char loop_lab[32], end_lab[32];
+  char loop_lab[32];
   rtx xops[2];
 
-  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno);
-  ASM_GENERATE_INTERNAL_LABEL (end_lab, "LPSRE", labelno++);
+  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno++);
 
+  /* Loop.  */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
 
-  /* Jump to END_LAB if TEST_ADDR == LAST_ADDR.  */
+  /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
   xops[0] = reg1;
+  xops[1] = GEN_INT (-PROBE_INTERVAL);
+  output_asm_insn ("addi %0,%0,%1", xops);
+
+  /* Probe at TEST_ADDR.  */
+  xops[1] = gen_rtx_REG (Pmode, 0);
+  output_asm_insn ("stw %1,0(%0)", xops);
+
+  /* Test if TEST_ADDR == LAST_ADDR.  */
   xops[1] = reg2;
   if (TARGET_64BIT)
     output_asm_insn ("cmpd 0,%0,%1", xops);
   else
     output_asm_insn ("cmpw 0,%0,%1", xops);
 
-  fputs ("\tbeq 0,", asm_out_file);
-  assemble_name_raw (asm_out_file, end_lab);
-  fputc ('\n', asm_out_file);
-
-  /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
-  xops[1] = GEN_INT (-PROBE_INTERVAL);
-  output_asm_insn ("addi %0,%0,%1", xops);
-
-  /* Probe at TEST_ADDR and branch.  */
-  xops[1] = gen_rtx_REG (Pmode, 0);
-  output_asm_insn ("stw %1,0(%0)", xops);
-  fprintf (asm_out_file, "\tb ");
+  /* Branch.  */
+  fputs ("\tbne 0,", asm_out_file);
   assemble_name_raw (asm_out_file, loop_lab);
   fputc ('\n', asm_out_file);
-
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, end_lab);
 
   return "";
 }
