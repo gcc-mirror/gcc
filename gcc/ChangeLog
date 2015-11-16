@@ -1,3 +1,10 @@
+2015-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68306
+	* tree-vect-data-refs.c (vect_verify_datarefs_alignment): Fix
+	bogus copying from verify_data_ref_alignment and use continue
+	instead of return.
+
 2015-11-16  Oleg Endo  <olegendo@gcc.gnu.org>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 
