@@ -1,3 +1,9 @@
+2015-11-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/65837
+	* config/arm/arm-c.c (arm_cpu_builtins): Conditionally set and reset
+	__ARM_FEATURE_FMA and __ARM_NEON_FP, __ARM_FP.
+
 2015-11-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.c (cortexa57_branch_costs): New.
