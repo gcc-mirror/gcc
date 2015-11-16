@@ -1,3 +1,20 @@
+2015-11-16  Tom de Vries  <tom@codesourcery.com>
+
+	* gdbhooks.py (class PassNames): Handle extra arg NEXT_PASS argument.
+	* gen-pass-instances.awk (handle_line): Same.
+	* pass_manager.h (class pass_manager): Define and undefine
+	NEXT_PASS_WITH_ARG.
+	* passes.c (opt_pass::set_pass_param): New function.
+	(pass_manager::pass_manager): Define and undefine NEXT_PASS_WITH_ARG.
+	* passes.def: Add extra arg to NEXT_PASS (pass_vrp).
+	* tree-pass.h (gimple_opt::set_pass_param): Declare.
+	* tree-vrp.c (vrp_finalize, execute_vrp): Add and handle
+	warn_array_bounds_p parameter.
+	(pass_vrp::pass_vrp): Initialize warn_array_bounds_p.
+	(pass_vrp::set_pass_param): New function.
+	(pass_vrp::execute): Add warn_array_bounds_p arg to execute_vrp call.
+	(pass_vrp::warn_array_bounds_p): New private member.
+
 2015-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_emit_probe_stack_range): Adjust.

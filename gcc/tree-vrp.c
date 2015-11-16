@@ -10183,7 +10183,7 @@ finalize_jump_threads (void)
 /* Traverse all the blocks folding conditionals with known ranges.  */
 
 static void
-vrp_finalize (void)
+vrp_finalize (bool warn_array_bounds_p)
 {
   size_t i;
 
@@ -10199,7 +10199,7 @@ vrp_finalize (void)
   substitute_and_fold (op_with_constant_singleton_value_range,
 		       vrp_fold_stmt, false);
 
-  if (warn_array_bounds && first_pass_instance)
+  if (warn_array_bounds && warn_array_bounds_p)
     check_all_array_refs ();
 
   /* We must identify jump threading opportunities before we release
@@ -10289,7 +10289,7 @@ vrp_finalize (void)
    probabilities to aid branch prediction.  */
 
 static unsigned int
-execute_vrp (void)
+execute_vrp (bool warn_array_bounds_p)
 {
   int i;
   edge e;
@@ -10313,7 +10313,7 @@ execute_vrp (void)
 
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
-  vrp_finalize ();
+  vrp_finalize (warn_array_bounds_p);
 
   free_numbers_of_iterations_estimates (cfun);
 
@@ -10386,14 +10386,22 @@ class pass_vrp : public gimple_opt_pass
 {
 public:
   pass_vrp (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_vrp, ctxt)
+    : gimple_opt_pass (pass_data_vrp, ctxt), warn_array_bounds_p (false)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_vrp (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      warn_array_bounds_p = param;
+    }
   virtual bool gate (function *) { return flag_tree_vrp != 0; }
-  virtual unsigned int execute (function *) { return execute_vrp (); }
+  virtual unsigned int execute (function *)
+    { return execute_vrp (warn_array_bounds_p); }
 
+ private:
+  bool warn_array_bounds_p;
 }; // class pass_vrp
 
 } // anon namespace
