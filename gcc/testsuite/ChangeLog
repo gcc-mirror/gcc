@@ -1,3 +1,7 @@
+2015-11-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/torture/pr68264.c: Use dg-add-options ieee.
+
 2015-11-17  Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
 
 	* gcc.dg/tree-ssa/ifc-8.c: New test.
@@ -33,11 +37,11 @@
 2015-11-16  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/65837
-	gcc.target/arm/lto/pr65837_0.c
-	gcc.target/arm/attr-neon2.c
-	gcc.target/arm/attr-neon.c
-	gcc.target/arm/attr-neon-builtin-fail.c
-	gcc.target/arm/attr-crypto.c
+	* gcc.target/arm/lto/pr65837_0.c
+	* gcc.target/arm/attr-neon2.c
+	* gcc.target/arm/attr-neon.c
+	* gcc.target/arm/attr-neon-builtin-fail.c
+	* gcc.target/arm/attr-crypto.c
 
 2015-11-16  Richard Biener  <rguenther@suse.de>
 

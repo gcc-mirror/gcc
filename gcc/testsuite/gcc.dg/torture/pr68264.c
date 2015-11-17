@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-add-options ieee } */
 /* { dg-require-effective-target fenv_exceptions } */
 
 #include <fenv.h>
