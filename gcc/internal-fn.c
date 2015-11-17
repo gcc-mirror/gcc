@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dojump.h"
 #include "expr.h"
 #include "ubsan.h"
+#include "recog.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -73,6 +74,8 @@ init_internal_fns ()
 #define load_lanes_direct { -1, -1 }
 #define mask_store_direct { 3, 2 }
 #define store_lanes_direct { 0, 0 }
+#define unary_direct { 0, 0 }
+#define binary_direct { 0, 0 }
 
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
@@ -2070,6 +2073,58 @@ expand_GOACC_REDUCTION (gcall *stmt ATTRIBUTE_UNUSED)
   gcc_unreachable ();
 }
 
+/* Expand call STMT using OPTAB, which has a single output operand and
+   NARGS input operands.  */
+
+static void
+expand_direct_optab_fn (gcall *stmt, direct_optab optab, unsigned int nargs)
+{
+  expand_operand *ops = XALLOCAVEC (expand_operand, nargs + 1);
+
+  internal_fn fn = gimple_call_internal_fn (stmt);
+  tree_pair types = direct_internal_fn_types (fn, stmt);
+  insn_code icode = direct_optab_handler (optab, TYPE_MODE (types.first));
+
+  tree lhs = gimple_call_lhs (stmt);
+  tree lhs_type = TREE_TYPE (lhs);
+  rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  create_output_operand (&ops[0], lhs_rtx, insn_data[icode].operand[0].mode);
+
+  for (unsigned int i = 0; i < nargs; ++i)
+    {
+      tree rhs = gimple_call_arg (stmt, i);
+      tree rhs_type = TREE_TYPE (rhs);
+      rtx rhs_rtx = expand_normal (rhs);
+      if (INTEGRAL_TYPE_P (rhs_type))
+	create_convert_operand_from (&ops[i + 1], rhs_rtx,
+				     TYPE_MODE (rhs_type),
+				     TYPE_UNSIGNED (rhs_type));
+      else
+	create_input_operand (&ops[i + 1], rhs_rtx, TYPE_MODE (rhs_type));
+    }
+
+  expand_insn (icode, nargs + 1, ops);
+  if (!rtx_equal_p (lhs_rtx, ops[0].value))
+    {
+      if (INTEGRAL_TYPE_P (lhs_type))
+	/* Convert the operand to the required type, which is useful
+	   for things that return an int regardless of the size of
+	   the input.  If the value produced by the instruction is
+	   smaller than required, assume that it is signed.  */
+	convert_move (lhs_rtx, ops[0].value, 0);
+      else
+	emit_move_insn (lhs_rtx, ops[0].value);
+    }
+}
+
+/* Expanders for optabs that can use expand_direct_optab_fn.  */
+
+#define expand_unary_optab_fn(STMT, OPTAB) \
+  expand_direct_optab_fn (STMT, OPTAB, 1)
+
+#define expand_binary_optab_fn(STMT, OPTAB) \
+  expand_direct_optab_fn (STMT, OPTAB, 2)
+
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
    Return the types that should be used to determine whether the
@@ -2121,6 +2176,8 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types)
   return get_multi_vector_move (types.first, optab) != CODE_FOR_nothing;
 }
 
+#define direct_unary_optab_supported_p direct_optab_supported_p
+#define direct_binary_optab_supported_p direct_optab_supported_p
 #define direct_mask_load_optab_supported_p direct_optab_supported_p
 #define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_optab_supported_p direct_optab_supported_p
