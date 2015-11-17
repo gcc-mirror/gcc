@@ -1,3 +1,10 @@
+2015-11-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-a35): New.
+	* config/aarch64/aarch64.c (cortexa35_tunings): New.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (-mcpu): Add Cortex-A35
+
 2015-11-17  Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
 
 	* tree-if-conv.c: Include varasm.h

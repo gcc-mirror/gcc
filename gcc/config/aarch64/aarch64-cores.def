@@ -40,6 +40,7 @@
 
 /* V8 Architecture Processors.  */
 
+AARCH64_CORE("cortex-a35",  cortexa35, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa35, "0x41", "0xd04")
 AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa53, "0x41", "0xd03")
 AARCH64_CORE("cortex-a57",  cortexa57, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, "0x41", "0xd07")
 AARCH64_CORE("cortex-a72",  cortexa72, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa72, "0x41", "0xd08")
