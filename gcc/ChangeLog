@@ -1,5 +1,10 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-patterns.c: Include internal-fn.h.
+	(vect_recog_pow_pattern): Use IFN_SQRT instead of BUILT_IN_SQRT*.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree.h (BUILTIN_EXP10_P, BUILTIN_EXPONENT_P, BUILTIN_SQRT_P)
 	(BUILTIN_CBRT_P, BUILTIN_ROOT_P): Delete.
 
