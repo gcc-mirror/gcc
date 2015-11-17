@@ -1924,7 +1924,7 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
 
   /* We do not warn for constants because they are typical of macro
      expansions that test for features, sizeof, and similar.  */
-  if (CONSTANT_CLASS_P (lhs) || CONSTANT_CLASS_P (rhs))
+  if (CONSTANT_CLASS_P (fold (lhs)) || CONSTANT_CLASS_P (fold (rhs)))
     return;
 
   /* Don't warn for e.g.
