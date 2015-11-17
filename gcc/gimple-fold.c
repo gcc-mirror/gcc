@@ -3369,7 +3369,7 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	}
     }
   else if (rcode.is_fn_code ()
-	   && gimple_call_builtin_p (stmt, rcode))
+	   && gimple_call_combined_fn (stmt) == rcode)
     {
       unsigned i;
       for (i = 0; i < gimple_call_num_args (stmt); ++i)

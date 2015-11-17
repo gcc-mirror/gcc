@@ -2510,32 +2510,33 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       exps (EXP2 EXP10 POW10 EXP  EXP10 POW10 EXP   EXP2)
   (simplify
    (logs (exps @0))
-   (with {
-     tree x;
-     switch (exps)
-       {
-       CASE_FLT_FN (BUILT_IN_EXP):
-         /* Prepare to do logN(exp(exponent)) -> exponent*logN(e).  */
-	 x = build_real_truncate (type, dconst_e ());
-         break;
-       CASE_FLT_FN (BUILT_IN_EXP2):
-         /* Prepare to do logN(exp2(exponent)) -> exponent*logN(2).  */
-         x = build_real (type, dconst2);
-         break;
-       CASE_FLT_FN (BUILT_IN_EXP10):
-       CASE_FLT_FN (BUILT_IN_POW10):
-	 /* Prepare to do logN(exp10(exponent)) -> exponent*logN(10).  */
-	 {
-	   REAL_VALUE_TYPE dconst10;
-	   real_from_integer (&dconst10, VOIDmode, 10, SIGNED);
-	   x = build_real (type, dconst10);
-	 }
-         break;
-       default:
-	 gcc_unreachable ();
-       }
-     }
-    (mult (logs { x; }) @0))))
+   (if (SCALAR_FLOAT_TYPE_P (type))
+    (with {
+      tree x;
+      switch (exps)
+	{
+	CASE_CFN_EXP:
+	  /* Prepare to do logN(exp(exponent)) -> exponent*logN(e).  */
+	  x = build_real_truncate (type, dconst_e ());
+	  break;
+	CASE_CFN_EXP2:
+	  /* Prepare to do logN(exp2(exponent)) -> exponent*logN(2).  */
+	  x = build_real (type, dconst2);
+	  break;
+	CASE_CFN_EXP10:
+	CASE_CFN_POW10:
+	  /* Prepare to do logN(exp10(exponent)) -> exponent*logN(10).  */
+	  {
+	    REAL_VALUE_TYPE dconst10;
+	    real_from_integer (&dconst10, VOIDmode, 10, SIGNED);
+	    x = build_real (type, dconst10);
+	  }
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      }
+     (mult (logs { x; }) @0)))))
 
  (for logs (LOG LOG
             LOG2 LOG2
@@ -2543,23 +2544,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       exps (SQRT CBRT)
   (simplify
    (logs (exps @0))
-   (with {
-     tree x;
-     switch (exps)
-       {
-       CASE_FLT_FN (BUILT_IN_SQRT):
-	 /* Prepare to do logN(sqrt(x)) -> 0.5*logN(x).  */
-	 x = build_real (type, dconsthalf);
-         break;
-       CASE_FLT_FN (BUILT_IN_CBRT):
-	 /* Prepare to do logN(cbrt(x)) -> (1/3)*logN(x).  */
-         x = build_real_truncate (type, dconst_third ());
-         break;
-       default:
-	 gcc_unreachable ();
-       }
-     }
-    (mult { x; } (logs @0)))))
+   (if (SCALAR_FLOAT_TYPE_P (type))
+    (with {
+      tree x;
+      switch (exps)
+	{
+	CASE_CFN_SQRT:
+	  /* Prepare to do logN(sqrt(x)) -> 0.5*logN(x).  */
+	  x = build_real (type, dconsthalf);
+	  break;
+	CASE_CFN_CBRT:
+	  /* Prepare to do logN(cbrt(x)) -> (1/3)*logN(x).  */
+	  x = build_real_truncate (type, dconst_third ());
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      }
+     (mult { x; } (logs @0))))))
 
  /* logN(pow(x,exponent)) -> exponent*logN(x).  */
  (for logs (LOG LOG2 LOG10)
@@ -2616,7 +2618,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* hypot(x,0) and hypot(0,x) -> abs(x).  */
 (simplify
- (hypot:c @0 real_zerop@1)
+ (HYPOT:c @0 real_zerop@1)
  (abs @0))
 
 /* pow(1,x) -> 1.  */
@@ -2684,7 +2686,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (rdiv (SIN:s @0) (TAN:s @0))
   (if (! HONOR_NANS (@0)
        && ! HONOR_INFINITIES (@0))
-   (cos @0)))
+   (COS @0)))
 
  /* Simplify tan(x) / sin(x) -> 1.0 / cos(x). */
  (simplify

@@ -11063,6 +11063,22 @@ build_call_expr (tree fndecl, int n, ...)
   return build_call_expr_loc_array (UNKNOWN_LOCATION, fndecl, n, argarray);
 }
 
+/* Build an internal call to IFN, with arguments ARGS[0:N-1] and with return
+   type TYPE.  This is just like CALL_EXPR, except its CALL_EXPR_FN is NULL.
+   It will get gimplified later into an ordinary internal function.  */
+
+tree
+build_call_expr_internal_loc_array (location_t loc, internal_fn ifn,
+				    tree type, int n, const tree *args)
+{
+  tree t = build_call_1 (type, NULL_TREE, n);
+  for (int i = 0; i < n; ++i)
+    CALL_EXPR_ARG (t, i) = args[i];
+  SET_EXPR_LOCATION (t, loc);
+  CALL_EXPR_IFN (t) = ifn;
+  return t;
+}
+
 /* Build internal call expression.  This is just like CALL_EXPR, except
    its CALL_EXPR_FN is NULL.  It will get gimplified later into ordinary
    internal function.  */
@@ -11072,16 +11088,52 @@ build_call_expr_internal_loc (location_t loc, enum internal_fn ifn,
 			      tree type, int n, ...)
 {
   va_list ap;
+  tree *argarray = XALLOCAVEC (tree, n);
   int i;
 
-  tree fn = build_call_1 (type, NULL_TREE, n);
   va_start (ap, n);
   for (i = 0; i < n; i++)
-    CALL_EXPR_ARG (fn, i) = va_arg (ap, tree);
+    argarray[i] = va_arg (ap, tree);
   va_end (ap);
-  SET_EXPR_LOCATION (fn, loc);
-  CALL_EXPR_IFN (fn) = ifn;
-  return fn;
+  return build_call_expr_internal_loc_array (loc, ifn, type, n, argarray);
+}
+
+/* Return a function call to FN, if the target is guaranteed to support it,
+   or null otherwise.
+
+   N is the number of arguments, passed in the "...", and TYPE is the
+   type of the return value.  */
+
+tree
+maybe_build_call_expr_loc (location_t loc, combined_fn fn, tree type,
+			   int n, ...)
+{
+  va_list ap;
+  tree *argarray = XALLOCAVEC (tree, n);
+  int i;
+
+  va_start (ap, n);
+  for (i = 0; i < n; i++)
+    argarray[i] = va_arg (ap, tree);
+  va_end (ap);
+  if (internal_fn_p (fn))
+    {
+      internal_fn ifn = as_internal_fn (fn);
+      if (direct_internal_fn_p (ifn))
+	{
+	  tree_pair types = direct_internal_fn_types (ifn, type, argarray);
+	  if (!direct_internal_fn_supported_p (ifn, types))
+	    return NULL_TREE;
+	}
+      return build_call_expr_internal_loc_array (loc, ifn, type, n, argarray);
+    }
+  else
+    {
+      tree fndecl = builtin_decl_implicit (as_builtin_fn (fn));
+      if (!fndecl)
+	return NULL_TREE;
+      return build_call_expr_loc_array (loc, fndecl, n, argarray);
+    }
 }
 
 /* Create a new constant string literal and return a char* pointer to it.

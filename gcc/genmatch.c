@@ -230,6 +230,12 @@ enum built_in_function {
 END_BUILTINS
 };
 
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) IFN_##CODE,
+enum internal_fn {
+#include "internal-fn.def"
+  IFN_LAST
+};
+
 /* Return true if CODE represents a commutative tree code.  Otherwise
    return false.  */
 bool
@@ -341,13 +347,15 @@ struct operator_id : public id_base
   const char *tcc;
 };
 
-/* Identifier that maps to a builtin function code.  */
+/* Identifier that maps to a builtin or internal function code.  */
 
 struct fn_id : public id_base
 {
   fn_id (enum built_in_function fn_, const char *id_)
       : id_base (id_base::FN, id_), fn (fn_) {}
-  enum built_in_function fn;
+  fn_id (enum internal_fn fn_, const char *id_)
+      : id_base (id_base::FN, id_), fn (int (END_BUILTINS) + int (fn_)) {}
+  unsigned int fn;
 };
 
 struct simplify;
@@ -447,10 +455,12 @@ add_operator (enum tree_code code, const char *id,
   *slot = op;
 }
 
-/* Add a builtin identifier to the hash.  */
+/* Add a built-in or internal function identifier to the hash.  ID is
+   the name of its CFN_* enumeration value.  */
 
+template <typename T>
 static void
-add_builtin (enum built_in_function code, const char *id)
+add_function (T code, const char *id)
 {
   fn_id *fn = new fn_id (code, id);
   id_base **slot = operators->find_slot_with_hash (fn, fn->hashval, INSERT);
@@ -485,30 +495,32 @@ get_operator (const char *id)
       return op;
     }
 
-  /* Try all-uppercase.  */
-  char *id2 = xstrdup (id);
-  for (unsigned i = 0; i < strlen (id2); ++i)
-    id2[i] = TOUPPER (id2[i]);
-  new (&tem) id_base (id_base::CODE, id2);
-  op = operators->find_with_hash (&tem, tem.hashval);
-  if (op)
+  char *id2;
+  bool all_upper = true;
+  bool all_lower = true;
+  for (unsigned int i = 0; id[i]; ++i)
+    if (ISUPPER (id[i]))
+      all_lower = false;
+    else if (ISLOWER (id[i]))
+      all_upper = false;
+  if (all_lower)
     {
-      free (id2);
-      return op;
+      /* Try in caps with _EXPR appended.  */
+      id2 = ACONCAT ((id, "_EXPR", NULL));
+      for (unsigned int i = 0; id2[i]; ++i)
+	id2[i] = TOUPPER (id2[i]);
     }
+  else if (all_upper && strncmp (id, "IFN_", 4) == 0)
+    /* Try CFN_ instead of IFN_.  */
+    id2 = ACONCAT (("CFN_", id + 4, NULL));
+  else if (all_upper && strncmp (id, "BUILT_IN_", 9) == 0)
+    /* Try prepending CFN_.  */
+    id2 = ACONCAT (("CFN_", id, NULL));
+  else
+    return NULL;
 
-  /* Try _EXPR appended.  */
-  id2 = (char *)xrealloc (id2, strlen (id2) + sizeof ("_EXPR") + 1);
-  strcat (id2, "_EXPR");
   new (&tem) id_base (id_base::CODE, id2);
-  op = operators->find_with_hash (&tem, tem.hashval);
-  if (op)
-    {
-      free (id2);
-      return op;
-    }
-
-  return 0;
+  return operators->find_with_hash (&tem, tem.hashval);
 }
 
 typedef hash_map<nofree_string_hash, unsigned> cid_map_t;
@@ -2207,17 +2219,18 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
       else
 	{
 	  fprintf_indent (f, indent, "{\n");
-	  fprintf_indent (f, indent, "  tree decl = builtin_decl_implicit (%s);\n",
-			  opr_name);
-	  fprintf_indent (f, indent, "  if (!decl) return NULL_TREE;\n");
-	  fprintf_indent (f, indent, "  res = build_call_expr_loc (loc, "
-			  "decl, %d", ops.length());
+	  fprintf_indent (f, indent, "  res = maybe_build_call_expr_loc (loc, "
+			  "%s, %s, %d", opr_name, type, ops.length());
 	}
       for (unsigned i = 0; i < ops.length (); ++i)
 	fprintf (f, ", ops%d[%u]", depth, i);
       fprintf (f, ");\n");
       if (opr->kind != id_base::CODE)
-	fprintf_indent (f, indent, "}\n");
+	{
+	  fprintf_indent (f, indent, "  if (!res)\n");
+	  fprintf_indent (f, indent, "    return NULL_TREE;\n");
+	  fprintf_indent (f, indent, "}\n");
+	}
       if (*opr == CONVERT_EXPR)
 	{
 	  indent -= 2;
@@ -2665,20 +2678,14 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
       if (fns_len)
 	{
 	  fprintf_indent (f, indent,
-			  "%sif (gimple_call_builtin_p (def_stmt, BUILT_IN_NORMAL))\n",
+			  "%sif (gcall *def = dyn_cast <gcall *>"
+			  " (def_stmt))\n",
 			  exprs_len ? "else " : "");
 	  fprintf_indent (f, indent,
-			  "  {\n");
-	  fprintf_indent (f, indent,
-			  "    gcall *def = as_a <gcall *> (def_stmt);\n");
-	  fprintf_indent (f, indent,
-			  "    tree fndecl = gimple_call_fndecl (def);\n");
-	  fprintf_indent (f, indent,
-			  "    switch (DECL_FUNCTION_CODE (fndecl))\n");
-	  fprintf_indent (f, indent,
-			  "      {\n");
+			  "  switch (gimple_call_combined_fn (def))\n");
 
-	  indent += 6;
+	  indent += 4;
+	  fprintf_indent (f, indent, "{\n");
 	  for (unsigned i = 0; i < fns_len; ++i)
 	    {
 	      expr *e = as_a <expr *>(fns[i]->op);
@@ -2691,8 +2698,7 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 
 	  fprintf_indent (f, indent, "default:;\n");
 	  fprintf_indent (f, indent, "}\n");
-	  indent -= 6;
-	  fprintf_indent (f, indent, "  }\n");
+	  indent -= 4;
 	}
 
       indent -= 6;
@@ -2719,17 +2725,11 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
       fprintf_indent (f, indent,
 		      "case CALL_EXPR:\n");
       fprintf_indent (f, indent,
-		      "  {\n");
-      fprintf_indent (f, indent,
-		      "    tree fndecl = get_callee_fndecl (%s);\n",
+		      "  switch (get_call_combined_fn (%s))\n",
 		      kid_opname);
       fprintf_indent (f, indent,
-		      "    if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)\n");
-      fprintf_indent (f, indent,
-		      "      switch (DECL_FUNCTION_CODE (fndecl))\n");
-      fprintf_indent (f, indent,
-		      "        {\n");
-      indent += 8;
+		      "    {\n");
+      indent += 4;
 
       for (unsigned j = 0; j < generic_fns.length (); ++j)
 	{
@@ -2742,12 +2742,11 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 	  fprintf_indent (f, indent, "    break;\n");
 	  fprintf_indent (f, indent, "  }\n");
 	}
+      fprintf_indent (f, indent, "default:;\n");
 
-      indent -= 8;
-      fprintf_indent (f, indent, "          default:;\n");
-      fprintf_indent (f, indent, "        }\n");
-      fprintf_indent (f, indent, "    break;\n");
-      fprintf_indent (f, indent, "  }\n");
+      indent -= 4;
+      fprintf_indent (f, indent, "    }\n");
+      fprintf_indent (f, indent, "  break;\n");
     }
 
   /* Close switch (TREE_CODE ()).  */
@@ -3108,24 +3107,18 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 				    *e->operation == CONVERT_EXPR
 				    ? "NOP_EXPR" : e->operation->id);
 		  else
-		    {
-		      fprintf_indent (f, indent,
-				      "{\n");
-		      fprintf_indent (f, indent,
-				      "  tree decl = builtin_decl_implicit (%s);\n",
-				      e->operation->id);
-		      fprintf_indent (f, indent,
-				      "  if (!decl) return NULL_TREE;\n");
-		      fprintf_indent (f, indent,
-				      "  res = build_call_expr_loc "
-				      "(loc, decl, %d",
-				      e->ops.length());
-		    }
+		    fprintf_indent (f, indent,
+				    "res = maybe_build_call_expr_loc (loc, "
+				    "%s, type, %d", e->operation->id,
+				    e->ops.length());
 		  for (unsigned j = 0; j < e->ops.length (); ++j)
 		    fprintf (f, ", res_op%d", j);
 		  fprintf (f, ");\n");
 		  if (!is_a <operator_id *> (opr))
-		    fprintf_indent (f, indent, "}\n");
+		    {
+		      fprintf_indent (f, indent, "if (!res)\n");
+		      fprintf_indent (f, indent, "  return NULL_TREE;\n");
+		    }
 		}
 	    }
 	}
@@ -3225,7 +3218,7 @@ dt_simplify::gen (FILE *f, int indent, bool gimple)
 			    s->for_subst_vec[i].first->id,
 			    s->for_subst_vec[i].second->id);
 	  else if (is_a <fn_id *> (s->for_subst_vec[i].second))
-	    fprintf_indent (f, indent, "enum built_in_function %s = %s;\n",
+	    fprintf_indent (f, indent, "combined_fn %s = %s;\n",
 			    s->for_subst_vec[i].first->id,
 			    s->for_subst_vec[i].second->id);
 	  else
@@ -3380,7 +3373,7 @@ decision_tree::gen (FILE *f, bool gimple)
 	    fprintf (f, ", enum tree_code ARG_UNUSED (%s)",
 		     s->s->s->for_subst_vec[i].first->id);
 	  else if (is_a <fn_id *> (s->s->s->for_subst_vec[i].second))
-	    fprintf (f, ", enum built_in_function ARG_UNUSED (%s)",
+	    fprintf (f, ", combined_fn ARG_UNUSED (%s)",
 		     s->s->s->for_subst_vec[i].first->id);
 	}
 
@@ -4603,12 +4596,12 @@ main (int argc, char **argv)
   add_operator (SYM, # SYM, # TYPE, NARGS);
 #define END_OF_BASE_TREE_CODES
 #include "tree.def"
-add_operator (CONVERT0, "CONVERT0", "tcc_unary", 1);
-add_operator (CONVERT1, "CONVERT1", "tcc_unary", 1);
-add_operator (CONVERT2, "CONVERT2", "tcc_unary", 1);
-add_operator (VIEW_CONVERT0, "VIEW_CONVERT0", "tcc_unary", 1);
-add_operator (VIEW_CONVERT1, "VIEW_CONVERT1", "tcc_unary", 1);
-add_operator (VIEW_CONVERT2, "VIEW_CONVERT2", "tcc_unary", 1);
+add_operator (CONVERT0, "convert0", "tcc_unary", 1);
+add_operator (CONVERT1, "convert1", "tcc_unary", 1);
+add_operator (CONVERT2, "convert2", "tcc_unary", 1);
+add_operator (VIEW_CONVERT0, "view_convert0", "tcc_unary", 1);
+add_operator (VIEW_CONVERT1, "view_convert1", "tcc_unary", 1);
+add_operator (VIEW_CONVERT2, "view_convert2", "tcc_unary", 1);
 #undef END_OF_BASE_TREE_CODES
 #undef DEFTREECODE
 
@@ -4616,8 +4609,12 @@ add_operator (VIEW_CONVERT2, "VIEW_CONVERT2", "tcc_unary", 1);
      ???  Cannot use N (name) as that is targetm.emultls.get_address
      for BUILT_IN_EMUTLS_GET_ADDRESS ... */
 #define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
-  add_builtin (ENUM, # ENUM);
+  add_function (ENUM, "CFN_" # ENUM);
 #include "builtins.def"
+
+#define DEF_INTERNAL_FN(CODE, NAME, FNSPEC) \
+  add_function (IFN_##CODE, "CFN_" #CODE);
+#include "internal-fn.def"
 
   /* Parse ahead!  */
   parser p (r);

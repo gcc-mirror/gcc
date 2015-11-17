@@ -3957,6 +3957,10 @@ extern tree build_call_expr_loc (location_t, tree, int, ...);
 extern tree build_call_expr (tree, int, ...);
 extern tree build_call_expr_internal_loc (location_t, enum internal_fn,
 					  tree, int, ...);
+extern tree build_call_expr_internal_loc (location_t, enum internal_fn,
+					  tree, int, tree *);
+extern tree maybe_build_call_expr_loc (location_t, combined_fn, tree,
+				       int, ...);
 extern tree build_string_literal (int, const char *);
 
 /* Construct various nodes representing data types.  */
