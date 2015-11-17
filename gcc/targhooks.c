@@ -1093,8 +1093,8 @@ default_get_mask_mode (unsigned nunits, unsigned vector_size)
   gcc_assert (elem_size * nunits == vector_size);
 
   vector_mode = mode_for_vector (elem_mode, nunits);
-  if (VECTOR_MODE_P (vector_mode)
-      && !targetm.vector_mode_supported_p (vector_mode))
+  if (!VECTOR_MODE_P (vector_mode)
+      || !targetm.vector_mode_supported_p (vector_mode))
     vector_mode = BLKmode;
 
   return vector_mode;
