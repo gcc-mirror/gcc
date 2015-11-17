@@ -1,5 +1,10 @@
 2015-11-17  Bernd Schmidt  <bschmidt@redhat.com>
 
+	* regrename.c (regrename_find_superclass): New function, code moved
+	from ...
+	(rename_chains): ... here.  Call it.
+	* regrename.h (regrename_find_superclass): Declare.
+
 	* regrename.c (record_out_operands): Terminate earlyclobbered
 	operands here.
 
