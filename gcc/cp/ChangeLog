@@ -1,3 +1,9 @@
+2015-11-17  Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/68361
+	* cvt.c (cp_convert_and_check): Use warning_sentinel to suppress
+	-Wparentheses.
+
 2015-11-16  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (cxx_eval_builtin_function_call): Use cp_fully_fold
