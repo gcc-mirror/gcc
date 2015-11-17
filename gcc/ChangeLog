@@ -1,5 +1,10 @@
 2015-11-17  Tom de Vries  <tom@codesourcery.com>
 
+	* tree-ssa-ccp.c (do_ssa_ccp): Clear LOOP_CLOSED_SSA in loops state if
+	something changed.
+
+2015-11-17  Tom de Vries  <tom@codesourcery.com>
+
 	* cfgloop.h (struct loop): Add in_oacc_kernels_region field.
 	* omp-low.c (mark_loops_in_oacc_kernels_region): New function.
 	(expand_omp_target): Call mark_loops_in_oacc_kernels_region.
