@@ -478,6 +478,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fmove_loop_invariants, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_pta, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fssa_phiopt, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_builtin_call_dce, NULL, 1 },
 
     /* -O2 optimizations.  */
     { OPT_LEVELS_2_PLUS, OPT_finline_small_functions, NULL, 1 },
@@ -503,7 +504,6 @@ static const struct default_options default_options_table[] =
       REORDER_BLOCKS_ALGORITHM_STC },
     { OPT_LEVELS_2_PLUS, OPT_freorder_functions, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_vrp, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_ftree_builtin_call_dce, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_pre, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_switch_conversion, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fipa_cp, NULL, 1 },

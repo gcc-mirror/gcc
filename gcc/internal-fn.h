@@ -160,6 +160,7 @@ extern tree_pair direct_internal_fn_types (internal_fn, tree, tree *);
 extern tree_pair direct_internal_fn_types (internal_fn, gcall *);
 extern bool direct_internal_fn_supported_p (internal_fn, tree_pair);
 extern bool direct_internal_fn_supported_p (internal_fn, tree);
+extern bool set_edom_supported_p (void);
 
 extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);
