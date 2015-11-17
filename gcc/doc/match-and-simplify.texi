@@ -323,6 +323,11 @@ is the same as
   (POW (abs @@0) (mult @@1 @{ built_real (TREE_TYPE (@@1), dconsthalf); @}))))
 @end smallexample
 
+@code{for}s and operator lists can include the special identifier
+@code{null} that matches nothing and can never be generated.  This can
+be used to pad an operator list so that it has a standard form,
+even if there isn't a suitable operator for every form.
+
 Another building block are @code{with} expressions in the
 result expression which nest the generated code in a new C block
 followed by its argument:

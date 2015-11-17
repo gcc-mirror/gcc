@@ -1,5 +1,19 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/match-and-simplify.texi: Document the "null" identifier.
+	* genmatch.c (id_base::NULL_ID): New kind.
+	(null_id): New variable.
+	(get_operator): Add a parameter that says whether null identifiers
+	are allowed.
+	(contains_id): New function.
+	(lower_for): Skip substitutions that would have a null_id in
+	either the match or the result.
+	(parser::parse_for): Allow the null identifier to be used.
+	(parser::parse_operator_list): Likewise.
+	(main): Initialize null_id.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* match.pd: Use HYPOT and COS rather than hypot and cos.
 	Use CASE_CFN_* macros.  Guard log/exp folds with
 	SCALAR_FLOAT_TYPE_P.
