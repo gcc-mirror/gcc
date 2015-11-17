@@ -1103,7 +1103,7 @@ See RS/6000 and PowerPC Options.
 -mprefetchwt1 -mclflushopt -mxsavec -mxsaves @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
 -mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mmwaitx -mthreads @gol
--mno-align-stringops  -minline-all-stringops @gol
+-mms-bitfields -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy} @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
@@ -23430,6 +23430,142 @@ on thread-safe exception handling must compile and link all code with the
 @option{-mthreads} option.  When compiling, @option{-mthreads} defines
 @option{-D_MT}; when linking, it links in a special thread helper library
 @option{-lmingwthrd} which cleans up per-thread exception-handling data.
+
+@item -mms-bitfields
+@itemx -mno-ms-bitfields
+@opindex mms-bitfields
+@opindex mno-ms-bitfields
+
+Enable/disable bit-field layout compatible with the native Microsoft
+Windows compiler.  
+
+If @code{packed} is used on a structure, or if bit-fields are used,
+it may be that the Microsoft ABI lays out the structure differently
+than the way GCC normally does.  Particularly when moving packed
+data between functions compiled with GCC and the native Microsoft compiler
+(either via function call or as data in a file), it may be necessary to access
+either format.
+
+This option is enabled by default for Microsoft Windows
+targets.  This behavior can also be controlled locally by use of variable
+or type attributes.  For more information, see @ref{x86 Variable Attributes}
+and @ref{x86 Type Attributes}.
+
+The Microsoft structure layout algorithm is fairly simple with the exception
+of the bit-field packing.  
+The padding and alignment of members of structures and whether a bit-field 
+can straddle a storage-unit boundary are determine by these rules:
+
+@enumerate
+@item Structure members are stored sequentially in the order in which they are
+declared: the first member has the lowest memory address and the last member
+the highest.
+
+@item Every data object has an alignment requirement.  The alignment requirement
+for all data except structures, unions, and arrays is either the size of the
+object or the current packing size (specified with either the
+@code{aligned} attribute or the @code{pack} pragma),
+whichever is less.  For structures, unions, and arrays,
+the alignment requirement is the largest alignment requirement of its members.
+Every object is allocated an offset so that:
+
+@smallexample
+offset % alignment_requirement == 0
+@end smallexample
+
+@item Adjacent bit-fields are packed into the same 1-, 2-, or 4-byte allocation
+unit if the integral types are the same size and if the next bit-field fits
+into the current allocation unit without crossing the boundary imposed by the
+common alignment requirements of the bit-fields.
+@end enumerate
+
+MSVC interprets zero-length bit-fields in the following ways:
+
+@enumerate
+@item If a zero-length bit-field is inserted between two bit-fields that
+are normally coalesced, the bit-fields are not coalesced.
+
+For example:
+
+@smallexample
+struct
+ @{
+   unsigned long bf_1 : 12;
+   unsigned long : 0;
+   unsigned long bf_2 : 12;
+ @} t1;
+@end smallexample
+
+@noindent
+The size of @code{t1} is 8 bytes with the zero-length bit-field.  If the
+zero-length bit-field were removed, @code{t1}'s size would be 4 bytes.
+
+@item If a zero-length bit-field is inserted after a bit-field, @code{foo}, and the
+alignment of the zero-length bit-field is greater than the member that follows it,
+@code{bar}, @code{bar} is aligned as the type of the zero-length bit-field.
+
+For example:
+
+@smallexample
+struct
+ @{
+   char foo : 4;
+   short : 0;
+   char bar;
+ @} t2;
+
+struct
+ @{
+   char foo : 4;
+   short : 0;
+   double bar;
+ @} t3;
+@end smallexample
+
+@noindent
+For @code{t2}, @code{bar} is placed at offset 2, rather than offset 1.
+Accordingly, the size of @code{t2} is 4.  For @code{t3}, the zero-length
+bit-field does not affect the alignment of @code{bar} or, as a result, the size
+of the structure.
+
+Taking this into account, it is important to note the following:
+
+@enumerate
+@item If a zero-length bit-field follows a normal bit-field, the type of the
+zero-length bit-field may affect the alignment of the structure as whole. For
+example, @code{t2} has a size of 4 bytes, since the zero-length bit-field follows a
+normal bit-field, and is of type short.
+
+@item Even if a zero-length bit-field is not followed by a normal bit-field, it may
+still affect the alignment of the structure:
+
+@smallexample
+struct
+ @{
+   char foo : 6;
+   long : 0;
+ @} t4;
+@end smallexample
+
+@noindent
+Here, @code{t4} takes up 4 bytes.
+@end enumerate
+
+@item Zero-length bit-fields following non-bit-field members are ignored:
+
+@smallexample
+struct
+ @{
+   char foo;
+   long : 0;
+   char bar;
+ @} t5;
+@end smallexample
+
+@noindent
+Here, @code{t5} takes up 2 bytes.
+@end enumerate
+
 
 @item -mno-align-stringops
 @opindex mno-align-stringops

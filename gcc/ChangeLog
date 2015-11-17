@@ -1,3 +1,17 @@
+2015-11-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/56036
+	* doc/invoke.texi (Option Summary): Add -mms-bitfields to x86
+	option list.
+	(x86 Options): Add -mms-bitfields and -mno-ms-bitfields.  Move
+	discussion of the Microsoft structure layout details here from
+	its former home in extend.texi.
+	* doc/extend.texi (x86 Variable Attributes): Replace detailed
+	discussion with pointer to its new location.  Add cross-reference
+	to corresponding type attributes.
+	(x86 Type Attributes): Add cross-references to command-line options
+	and variable attributes.
+
 2015-11-17  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR middle-end/68134
