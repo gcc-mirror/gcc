@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cilk.h"
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
+#include "internal-fn.h"
 
 
 struct target_builtins default_target_builtins;
@@ -1899,6 +1900,63 @@ tree
 mathfn_built_in (tree type, enum built_in_function fn)
 {
   return mathfn_built_in_1 (type, fn, /*implicit=*/ 1);
+}
+
+/* If BUILT_IN_NORMAL function FNDECL has an associated internal function,
+   return its code, otherwise return IFN_LAST.  Note that this function
+   only tests whether the function is defined in internals.def, not whether
+   it is actually available on the target.  */
+
+internal_fn
+associated_internal_fn (tree fndecl)
+{
+  gcc_checking_assert (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL);
+  tree return_type = TREE_TYPE (TREE_TYPE (fndecl));
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+#define DEF_INTERNAL_FLT_FN(NAME, FLAGS, OPTAB, TYPE) \
+    CASE_FLT_FN (BUILT_IN_##NAME): return IFN_##NAME;
+#include "internal-fn.def"
+
+    CASE_FLT_FN (BUILT_IN_POW10):
+      return IFN_EXP10;
+
+    CASE_FLT_FN (BUILT_IN_DREM):
+      return IFN_REMAINDER;
+
+    CASE_FLT_FN (BUILT_IN_SCALBN):
+    CASE_FLT_FN (BUILT_IN_SCALBLN):
+      if (REAL_MODE_FORMAT (TYPE_MODE (return_type))->b == 2)
+	return IFN_LDEXP;
+      return IFN_LAST;
+
+    default:
+      return IFN_LAST;
+    }
+}
+
+/* If CALL is a call to a BUILT_IN_NORMAL function that could be replaced
+   on the current target by a call to an internal function, return the
+   code of that internal function, otherwise return IFN_LAST.  The caller
+   is responsible for ensuring that any side-effects of the built-in
+   call are dealt with correctly.  E.g. if CALL sets errno, the caller
+   must decide that the errno result isn't needed or make it available
+   in some other way.  */
+
+internal_fn
+replacement_internal_fn (gcall *call)
+{
+  if (gimple_call_builtin_p (call, BUILT_IN_NORMAL))
+    {
+      internal_fn ifn = associated_internal_fn (gimple_call_fndecl (call));
+      if (ifn != IFN_LAST)
+	{
+	  tree_pair types = direct_internal_fn_types (ifn, call);
+	  if (direct_internal_fn_supported_p (ifn, types))
+	    return ifn;
+	}
+    }
+  return IFN_LAST;
 }
 
 /* If errno must be maintained, expand the RTL to check if the result,

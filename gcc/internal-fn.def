@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 
      DEF_INTERNAL_FN (NAME, FLAGS, FNSPEC)
      DEF_INTERNAL_OPTAB_FN (NAME, FLAGS, OPTAB, TYPE)
+     DEF_INTERNAL_FLT_FN (NAME, FLAGS, OPTAB, TYPE)
 
    where NAME is the name of the function, FLAGS is a set of
    ECF_* flags and FNSPEC is a string describing functions fnspec.
@@ -46,6 +47,11 @@ along with GCC; see the file COPYING3.  If not see
 
    - mask_store: currently just maskstore
    - store_lanes: currently just vec_store_lanes
+
+   DEF_INTERNAL_FLT_FN is like DEF_INTERNAL_OPTAB_FN, but in addition,
+   the function implements the computational part of a built-in math
+   function BUILT_IN_<NAME>{F,,L}.  Unlike some built-in functions,
+   these internal functions never set errno.
 
    Each entry must have a corresponding expander of the form:
 
@@ -64,11 +70,54 @@ along with GCC; see the file COPYING3.  If not see
   DEF_INTERNAL_FN (NAME, FLAGS | ECF_LEAF, NULL)
 #endif
 
+#ifndef DEF_INTERNAL_FLT_FN
+#define DEF_INTERNAL_FLT_FN(NAME, FLAGS, OPTAB, TYPE) \
+  DEF_INTERNAL_OPTAB_FN (NAME, FLAGS, OPTAB, TYPE)
+#endif
+
 DEF_INTERNAL_OPTAB_FN (MASK_LOAD, ECF_PURE, maskload, mask_load)
 DEF_INTERNAL_OPTAB_FN (LOAD_LANES, ECF_CONST, vec_load_lanes, load_lanes)
 
 DEF_INTERNAL_OPTAB_FN (MASK_STORE, 0, maskstore, mask_store)
 DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)
+
+/* Unary math functions.  */
+DEF_INTERNAL_FLT_FN (ACOS, ECF_CONST, acos, unary)
+DEF_INTERNAL_FLT_FN (ASIN, ECF_CONST, asin, unary)
+DEF_INTERNAL_FLT_FN (ATAN, ECF_CONST, atan, unary)
+DEF_INTERNAL_FLT_FN (COS, ECF_CONST, cos, unary)
+DEF_INTERNAL_FLT_FN (EXP, ECF_CONST, exp, unary)
+DEF_INTERNAL_FLT_FN (EXP10, ECF_CONST, exp10, unary)
+DEF_INTERNAL_FLT_FN (EXP2, ECF_CONST, exp2, unary)
+DEF_INTERNAL_FLT_FN (EXPM1, ECF_CONST, expm1, unary)
+DEF_INTERNAL_FLT_FN (LOG, ECF_CONST, log, unary)
+DEF_INTERNAL_FLT_FN (LOG10, ECF_CONST, log10, unary)
+DEF_INTERNAL_FLT_FN (LOG1P, ECF_CONST, log1p, unary)
+DEF_INTERNAL_FLT_FN (LOG2, ECF_CONST, log2, unary)
+DEF_INTERNAL_FLT_FN (LOGB, ECF_CONST, logb, unary)
+DEF_INTERNAL_FLT_FN (SIGNIFICAND, ECF_CONST, significand, unary)
+DEF_INTERNAL_FLT_FN (SIN, ECF_CONST, sin, unary)
+DEF_INTERNAL_FLT_FN (SQRT, ECF_CONST, sqrt, unary)
+DEF_INTERNAL_FLT_FN (TAN, ECF_CONST, tan, unary)
+
+/* FP rounding.  */
+DEF_INTERNAL_FLT_FN (CEIL, ECF_CONST, ceil, unary)
+DEF_INTERNAL_FLT_FN (FLOOR, ECF_CONST, floor, unary)
+DEF_INTERNAL_FLT_FN (NEARBYINT, ECF_CONST, nearbyint, unary)
+DEF_INTERNAL_FLT_FN (RINT, ECF_CONST, rint, unary)
+DEF_INTERNAL_FLT_FN (ROUND, ECF_CONST, round, unary)
+DEF_INTERNAL_FLT_FN (TRUNC, ECF_CONST, btrunc, unary)
+
+/* Binary math functions.  */
+DEF_INTERNAL_FLT_FN (ATAN2, ECF_CONST, atan2, binary)
+DEF_INTERNAL_FLT_FN (COPYSIGN, ECF_CONST, copysign, binary)
+DEF_INTERNAL_FLT_FN (FMOD, ECF_CONST, fmod, binary)
+DEF_INTERNAL_FLT_FN (POW, ECF_CONST, pow, binary)
+DEF_INTERNAL_FLT_FN (REMAINDER, ECF_CONST, remainder, binary)
+DEF_INTERNAL_FLT_FN (SCALB, ECF_CONST, scalb, binary)
+
+/* FP scales.  */
+DEF_INTERNAL_FLT_FN (LDEXP, ECF_CONST, ldexp, binary)
 
 DEF_INTERNAL_FN (GOMP_SIMD_LANE, ECF_NOVOPS | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (GOMP_SIMD_VF, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
@@ -114,5 +163,6 @@ DEF_INTERNAL_FN (GOACC_LOOP, ECF_PURE | ECF_NOTHROW, NULL)
 /* OpenACC reduction abstraction.  See internal-fn.h  for usage.  */
 DEF_INTERNAL_FN (GOACC_REDUCTION, ECF_NOTHROW | ECF_LEAF, NULL)
 
+#undef DEF_INTERNAL_FLT_FN
 #undef DEF_INTERNAL_OPTAB_FN
 #undef DEF_INTERNAL_FN

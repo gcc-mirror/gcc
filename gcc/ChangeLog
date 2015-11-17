@@ -1,5 +1,24 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.h (associated_internal_fn): Declare.
+	(replacement_internal_fn): Likewise.
+	* builtins.c: Include internal-fn.h
+	(associated_internal_fn, replacement_internal_fn): New functions.
+	* internal-fn.def (DEF_INTERNAL_FLT_FN): New macro.
+	(ACOS, ASIN, ATAN, COS, EXP, EXP10, EXP2, EXPM1, LOG, LOG10, LOG1P)
+	(LOG2, LOGB, SIGNIFICAND, SIN, SQRT, TAN, CEIL, FLOOR, NEARBYINT)
+	(RINT, ROUND, TRUNC, ATAN2, COPYSIGN, FMOD, POW, REMAINDER, SCALB)
+	(LDEXP): New functions.
+	* internal-fn.c: Include recog.h.
+	(unary_direct, binary_direct): New macros.
+	(expand_direct_optab_fn): New function.
+	(expand_unary_optab_fn): New macro.
+	(expand_binary_optab_fn): Likewise.
+	(direct_unary_optab_supported_p): Likewise.
+	(direct_binary_optab_supported_p): Likewise.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* coretypes.h (tree_pair): New type.
 	* internal-fn.def (DEF_INTERNAL_OPTAB_FN): New macro.  Use it
 	for MASK_LOAD, LOAD_LANES, MASK_STORE and STORE_LANES.
