@@ -9317,6 +9317,25 @@ get_callee_fndecl (const_tree call)
   return NULL_TREE;
 }
 
+/* If CALL_EXPR CALL calls a normal built-in function or an internal function,
+   return the associated function code, otherwise return CFN_LAST.  */
+
+combined_fn
+get_call_combined_fn (const_tree call)
+{
+  /* It's invalid to call this function with anything but a CALL_EXPR.  */
+  gcc_assert (TREE_CODE (call) == CALL_EXPR);
+
+  if (!CALL_EXPR_FN (call))
+    return as_combined_fn (CALL_EXPR_IFN (call));
+
+  tree fndecl = get_callee_fndecl (call);
+  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    return as_combined_fn (DECL_FUNCTION_CODE (fndecl));
+
+  return CFN_LAST;
+}
+
 #define TREE_MEM_USAGE_SPACES 40
 
 /* Print debugging information about tree nodes generated during the compile,
@@ -13864,6 +13883,20 @@ set_source_range (tree expr, source_range src_range)
 					    src_range,
 					    NULL);
   SET_EXPR_LOCATION (expr, adhoc);
+}
+
+/* Return the name of combined function FN, for debugging purposes.  */
+
+const char *
+combined_fn_name (combined_fn fn)
+{
+  if (builtin_fn_p (fn))
+    {
+      tree fndecl = builtin_decl_explicit (as_builtin_fn (fn));
+      return IDENTIFIER_POINTER (DECL_NAME (fndecl));
+    }
+  else
+    return internal_fn_name (as_internal_fn (fn));
 }
 
 #include "gt-tree.h"

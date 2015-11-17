@@ -2531,6 +2531,27 @@ gimple_call_builtin_p (const gimple *stmt, enum built_in_function code)
   return false;
 }
 
+/* If CALL is a call to a combined_fn (i.e. an internal function or
+   a normal built-in function), return its code, otherwise return
+   CFN_LAST.  */
+
+combined_fn
+gimple_call_combined_fn (const gimple *stmt)
+{
+  if (const gcall *call = dyn_cast <const gcall *> (stmt))
+    {
+      if (gimple_call_internal_p (call))
+	return as_combined_fn (gimple_call_internal_fn (call));
+
+      tree fndecl = gimple_call_fndecl (stmt);
+      if (fndecl
+	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+	  && gimple_builtin_call_types_compatible_p (stmt, fndecl))
+	return as_combined_fn (DECL_FUNCTION_CODE (fndecl));
+    }
+  return CFN_LAST;
+}
+
 /* Return true if STMT clobbers memory.  STMT is required to be a
    GIMPLE_ASM.  */
 

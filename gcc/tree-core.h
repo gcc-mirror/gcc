@@ -184,6 +184,35 @@ enum built_in_function {
   END_BUILTINS
 };
 
+/* Internal functions.  */
+enum internal_fn {
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) IFN_##CODE,
+#include "internal-fn.def"
+  IFN_LAST
+};
+
+/* An enum that combines target-independent built-in functions with
+   internal functions, so that they can be treated in a similar way.
+   The numbers for built-in functions are the same as for the
+   built_in_function enum.  The numbers for internal functions
+   start at END_BUITLINS.  */
+enum combined_fn {
+#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
+  CFN_##ENUM = int (ENUM),
+#include "builtins.def"
+
+#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND)
+#define DEF_BUILTIN_CHKP(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
+  CFN_##ENUM##_CHKP = int (ENUM##_CHKP),
+#include "builtins.def"
+
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
+  CFN_##CODE = int (END_BUILTINS) + int (IFN_##CODE),
+#include "internal-fn.def"
+
+  CFN_LAST
+};
+
 /* Tree code classes.  Each tree_code has an associated code class
    represented by a TREE_CODE_CLASS.  */
 enum tree_code_class {
@@ -764,13 +793,6 @@ enum annot_expr_kind {
   annot_expr_no_vector_kind,
   annot_expr_vector_kind,
   annot_expr_kind_last
-};
-
-/* Internal functions.  */
-enum internal_fn {
-#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) IFN_##CODE,
-#include "internal-fn.def"
-  IFN_LAST
 };
 
 /*---------------------------------------------------------------------------

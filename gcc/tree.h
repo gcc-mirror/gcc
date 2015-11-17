@@ -22,6 +22,58 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree-core.h"
 
+/* Convert a target-independent built-in function code to a combined_fn.  */
+
+inline combined_fn
+as_combined_fn (built_in_function fn)
+{
+  return combined_fn (int (fn));
+}
+
+/* Convert an internal function code to a combined_fn.  */
+
+inline combined_fn
+as_combined_fn (internal_fn fn)
+{
+  return combined_fn (int (fn) + int (END_BUILTINS));
+}
+
+/* Return true if CODE is a target-independent built-in function.  */
+
+inline bool
+builtin_fn_p (combined_fn code)
+{
+  return int (code) < int (END_BUILTINS);
+}
+
+/* Return the target-independent built-in function represented by CODE.
+   Only valid if builtin_fn_p (CODE).  */
+
+inline built_in_function
+as_builtin_fn (combined_fn code)
+{
+  gcc_checking_assert (builtin_fn_p (code));
+  return built_in_function (int (code));
+}
+
+/* Return true if CODE is an internal function.  */
+
+inline bool
+internal_fn_p (combined_fn code)
+{
+  return int (code) >= int (END_BUILTINS);
+}
+
+/* Return the internal function represented by CODE.  Only valid if
+   internal_fn_p (CODE).  */
+
+inline internal_fn
+as_internal_fn (combined_fn code)
+{
+  gcc_checking_assert (internal_fn_p (code));
+  return internal_fn (int (code) - int (END_BUILTINS));
+}
+
 /* Macros for initializing `tree_contains_struct'.  */
 #define MARK_TS_BASE(C)					\
   do {							\
@@ -4529,6 +4581,7 @@ extern unsigned crc32_unsigned (unsigned, unsigned);
 extern void clean_symbol_name (char *);
 extern tree get_file_function_name (const char *);
 extern tree get_callee_fndecl (const_tree);
+extern combined_fn get_call_combined_fn (const_tree);
 extern int type_num_arguments (const_tree);
 extern bool associative_tree_code (enum tree_code);
 extern bool commutative_tree_code (enum tree_code);
@@ -4554,6 +4607,7 @@ extern tree lhd_gcc_personality (void);
 extern void assign_assembler_name_if_neeeded (tree);
 extern void warn_deprecated_use (tree, tree);
 extern void cache_integer_cst (tree);
+extern const char *combined_fn_name (combined_fn);
 
 /* Return the memory model from a host integer.  */
 static inline enum memmodel

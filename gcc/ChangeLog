@@ -1,3 +1,16 @@
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-core.h (internal_fn): Move immediately after the definition
+	of built_in_function.
+	(combined_fn): New enum.
+	* tree.h (as_combined_fn, builtin_fn_p, as_builtin_fn)
+	(internal_fn_p, as_internal_fn): New functions.
+	(get_call_combined_fn, combined_fn_name): Declare.
+	* tree.c (get_call_combined_fn): New function.
+	(combined_fn_name): Likewise.
+	* gimple.h (gimple_call_combined_fn): Declare.
+	* gimple.c (gimple_call_combined_fn): New function.
+
 2015-11-17  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/68308
