@@ -1,3 +1,8 @@
+2015-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/68308
+	* g++.dg/init/new46.C: New test.
+
 2015-11-17  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/65751

@@ -2715,7 +2715,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
       size = size_binop (MULT_EXPR, size, fold_convert (sizetype, nelts));
 
-      if (TREE_CONSTANT (outer_nelts))
+      if (INTEGER_CST == TREE_CODE (outer_nelts))
 	{
 	  if (tree_int_cst_lt (max_outer_nelts_tree, outer_nelts))
 	    {
@@ -3330,7 +3330,8 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 	 non-class type and its value before converting to std::size_t is
 	 less than zero. ... If the expression is a constant expression,
 	 the program is ill-fomed.  */
-      if (TREE_CONSTANT (cst_nelts) && tree_int_cst_sgn (cst_nelts) == -1)
+      if (INTEGER_CST == TREE_CODE (cst_nelts)
+	  && tree_int_cst_sgn (cst_nelts) == -1)
 	{
 	  if (complain & tf_error)
 	    error ("size of array is negative");
