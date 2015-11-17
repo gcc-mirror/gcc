@@ -534,9 +534,15 @@ default_invalid_within_doloop (const rtx_insn *insn)
 /* Mapping of builtin functions to vectorized variants.  */
 
 tree
-default_builtin_vectorized_function (tree fndecl ATTRIBUTE_UNUSED,
-				     tree type_out ATTRIBUTE_UNUSED,
-				     tree type_in ATTRIBUTE_UNUSED)
+default_builtin_vectorized_function (unsigned int, tree, tree)
+{
+  return NULL_TREE;
+}
+
+/* Mapping of target builtin functions to vectorized variants.  */
+
+tree
+default_builtin_md_vectorized_function (tree, tree, tree)
 {
   return NULL_TREE;
 }

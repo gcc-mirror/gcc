@@ -38,6 +38,7 @@
 #include "expr.h"
 #include "langhooks.h"
 #include "gimple-iterator.h"
+#include "case-cfn-macros.h"
 
 #define v8qi_UP  V8QImode
 #define v4hi_UP  V4HImode
@@ -1258,7 +1259,8 @@ aarch64_expand_builtin (tree exp,
 }
 
 tree
-aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
+aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
+				     tree type_in)
 {
   machine_mode in_mode, out_mode;
   int in_n, out_n;
@@ -1282,130 +1284,119 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 	: (AARCH64_CHECK_BUILTIN_MODE (2, S) \
 	   ? aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_##N##v2sf] \
 	   : NULL_TREE)))
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+  switch (fn)
     {
-      enum built_in_function fn = DECL_FUNCTION_CODE (fndecl);
-      switch (fn)
-	{
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
   (out_mode == N##Fmode && out_n == C \
    && in_mode == N##Fmode && in_n == C)
-	case BUILT_IN_FLOOR:
-	case BUILT_IN_FLOORF:
-	  return AARCH64_FIND_FRINT_VARIANT (floor);
-	case BUILT_IN_CEIL:
-	case BUILT_IN_CEILF:
-	  return AARCH64_FIND_FRINT_VARIANT (ceil);
-	case BUILT_IN_TRUNC:
-	case BUILT_IN_TRUNCF:
-	  return AARCH64_FIND_FRINT_VARIANT (btrunc);
-	case BUILT_IN_ROUND:
-	case BUILT_IN_ROUNDF:
-	  return AARCH64_FIND_FRINT_VARIANT (round);
-	case BUILT_IN_NEARBYINT:
-	case BUILT_IN_NEARBYINTF:
-	  return AARCH64_FIND_FRINT_VARIANT (nearbyint);
-	case BUILT_IN_SQRT:
-	case BUILT_IN_SQRTF:
-	  return AARCH64_FIND_FRINT_VARIANT (sqrt);
+    CASE_CFN_FLOOR:
+      return AARCH64_FIND_FRINT_VARIANT (floor);
+    CASE_CFN_CEIL:
+      return AARCH64_FIND_FRINT_VARIANT (ceil);
+    CASE_CFN_TRUNC:
+      return AARCH64_FIND_FRINT_VARIANT (btrunc);
+    CASE_CFN_ROUND:
+      return AARCH64_FIND_FRINT_VARIANT (round);
+    CASE_CFN_NEARBYINT:
+      return AARCH64_FIND_FRINT_VARIANT (nearbyint);
+    CASE_CFN_SQRT:
+      return AARCH64_FIND_FRINT_VARIANT (sqrt);
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
   (out_mode == SImode && out_n == C \
    && in_mode == N##Imode && in_n == C)
-        case BUILT_IN_CLZ:
-          {
-            if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-              return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_clzv4si];
-            return NULL_TREE;
-          }
-	case BUILT_IN_CTZ:
-          {
-	    if (AARCH64_CHECK_BUILTIN_MODE (2, S))
-	      return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_ctzv2si];
-	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-	      return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_ctzv4si];
-	    return NULL_TREE;
-          }
+    CASE_CFN_CLZ:
+      {
+	if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	  return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_clzv4si];
+	return NULL_TREE;
+      }
+    CASE_CFN_CTZ:
+      {
+	if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	  return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_ctzv2si];
+	else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	  return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_ctzv4si];
+	return NULL_TREE;
+      }
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
   (out_mode == N##Imode && out_n == C \
    && in_mode == N##Fmode && in_n == C)
-	case BUILT_IN_LFLOOR:
-	case BUILT_IN_LFLOORF:
-	case BUILT_IN_LLFLOOR:
-	case BUILT_IN_IFLOORF:
-	  {
-	    enum aarch64_builtins builtin;
-	    if (AARCH64_CHECK_BUILTIN_MODE (2, D))
-	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lfloorv2dfv2di;
-	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lfloorv4sfv4si;
-	    else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
-	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lfloorv2sfv2si;
-	    else
-	      return NULL_TREE;
+    CASE_CFN_IFLOOR:
+    CASE_CFN_LFLOOR:
+    CASE_CFN_LLFLOOR:
+      {
+	enum aarch64_builtins builtin;
+	if (AARCH64_CHECK_BUILTIN_MODE (2, D))
+	  builtin = AARCH64_SIMD_BUILTIN_UNOP_lfloorv2dfv2di;
+	else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	  builtin = AARCH64_SIMD_BUILTIN_UNOP_lfloorv4sfv4si;
+	else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	  builtin = AARCH64_SIMD_BUILTIN_UNOP_lfloorv2sfv2si;
+	else
+	  return NULL_TREE;
 
-	    return aarch64_builtin_decls[builtin];
-	  }
-	case BUILT_IN_LCEIL:
-	case BUILT_IN_LCEILF:
-	case BUILT_IN_LLCEIL:
-	case BUILT_IN_ICEILF:
-	  {
-	    enum aarch64_builtins builtin;
-	    if (AARCH64_CHECK_BUILTIN_MODE (2, D))
-	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lceilv2dfv2di;
-	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lceilv4sfv4si;
-	    else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
-	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lceilv2sfv2si;
-	    else
-	      return NULL_TREE;
+	return aarch64_builtin_decls[builtin];
+      }
+    CASE_CFN_ICEIL:
+    CASE_CFN_LCEIL:
+    CASE_CFN_LLCEIL:
+      {
+	enum aarch64_builtins builtin;
+	if (AARCH64_CHECK_BUILTIN_MODE (2, D))
+	  builtin = AARCH64_SIMD_BUILTIN_UNOP_lceilv2dfv2di;
+	else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	  builtin = AARCH64_SIMD_BUILTIN_UNOP_lceilv4sfv4si;
+	else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	  builtin = AARCH64_SIMD_BUILTIN_UNOP_lceilv2sfv2si;
+	else
+	  return NULL_TREE;
 
-	    return aarch64_builtin_decls[builtin];
-	  }
-	case BUILT_IN_LROUND:
-	case BUILT_IN_IROUNDF:
-	  {
-	    enum aarch64_builtins builtin;
-	    if (AARCH64_CHECK_BUILTIN_MODE (2, D))
-	      builtin =	AARCH64_SIMD_BUILTIN_UNOP_lroundv2dfv2di;
-	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-	      builtin =	AARCH64_SIMD_BUILTIN_UNOP_lroundv4sfv4si;
-	    else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
-	      builtin =	AARCH64_SIMD_BUILTIN_UNOP_lroundv2sfv2si;
-	    else
-	      return NULL_TREE;
+	return aarch64_builtin_decls[builtin];
+      }
+    CASE_CFN_IROUND:
+    CASE_CFN_LROUND:
+    CASE_CFN_LLROUND:
+      {
+	enum aarch64_builtins builtin;
+	if (AARCH64_CHECK_BUILTIN_MODE (2, D))
+	  builtin =	AARCH64_SIMD_BUILTIN_UNOP_lroundv2dfv2di;
+	else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	  builtin =	AARCH64_SIMD_BUILTIN_UNOP_lroundv4sfv4si;
+	else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	  builtin =	AARCH64_SIMD_BUILTIN_UNOP_lroundv2sfv2si;
+	else
+	  return NULL_TREE;
 
-	    return aarch64_builtin_decls[builtin];
-	  }
-	case BUILT_IN_BSWAP16:
+	return aarch64_builtin_decls[builtin];
+      }
+    case CFN_BUILT_IN_BSWAP16:
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
   (out_mode == N##Imode && out_n == C \
    && in_mode == N##Imode && in_n == C)
-	  if (AARCH64_CHECK_BUILTIN_MODE (4, H))
-	    return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv4hi];
-	  else if (AARCH64_CHECK_BUILTIN_MODE (8, H))
-	    return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv8hi];
-	  else
-	    return NULL_TREE;
-	case BUILT_IN_BSWAP32:
-	  if (AARCH64_CHECK_BUILTIN_MODE (2, S))
-	    return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv2si];
-	  else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-	    return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv4si];
-	  else
-	    return NULL_TREE;
-	case BUILT_IN_BSWAP64:
-	  if (AARCH64_CHECK_BUILTIN_MODE (2, D))
-	    return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv2di];
-	  else
-	    return NULL_TREE;
-	default:
-	  return NULL_TREE;
-      }
+      if (AARCH64_CHECK_BUILTIN_MODE (4, H))
+	return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv4hi];
+      else if (AARCH64_CHECK_BUILTIN_MODE (8, H))
+	return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv8hi];
+      else
+	return NULL_TREE;
+    case CFN_BUILT_IN_BSWAP32:
+      if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv2si];
+      else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv4si];
+      else
+	return NULL_TREE;
+    case CFN_BUILT_IN_BSWAP64:
+      if (AARCH64_CHECK_BUILTIN_MODE (2, D))
+	return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv2di];
+      else
+	return NULL_TREE;
+    default:
+      return NULL_TREE;
     }
 
   return NULL_TREE;

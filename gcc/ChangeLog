@@ -1,5 +1,49 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (builtin_vectorized_function): Take a combined_fn (in
+	the form of an unsigned int) rather than a function decl.
+	(builtin_md_vectorized_function): New.
+	* targhooks.h (default_builtin_vectorized_function): Replace the
+	fndecl argument with an unsigned int.
+	(default_builtin_md_vectorized_function): Declare.
+	* targhooks.c (default_builtin_vectorized_function): Replace the
+	fndecl argument with an unsigned int.
+	(default_builtin_md_vectorized_function): New function.
+	* doc/tm.texi.in (TARGET_VECTORIZE_BUILTIN_MD_VECTORIZED_FUNCTION):
+	New hook.
+	* doc/tm.texi: Regenerate.
+	* tree-vect-stmts.c (vectorizable_function): Update call to
+	builtin_vectorized_function, also passing internal functions.
+	Call builtin_md_vectorized_function for target-specific builtins.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_builtin_vectorized_function): Replace fndecl argument
+	with an unsigned int.
+	* config/aarch64/aarch64-builtins.c: Include case-cfn-macros.h.
+	(aarch64_builtin_vectorized_function): Update after above changes.
+	Use CASE_CFN_*.
+	* config/arm/arm-protos.h (arm_builtin_vectorized_function): Replace
+	fndecl argument with an unsigned int.
+	* config/arm/arm-builtins.c: Include case-cfn-macros.h
+	(arm_builtin_vectorized_function): Update after above changes.
+	Use CASE_CFN_*.
+	* config/i386/i386.c: Include case-cfn-macros.h
+	(ix86_veclib_handler): Take a combined_fn rather than a
+	built_in_function.
+	(ix86_veclibabi_svml, ix86_veclibabi_acml): Likewise.  Use
+	mathfn_built_in rather than calling builtin_decl_implicit directly.
+	(ix86_builtin_vectorized_function) Update after above changes.
+	Use CASE_CFN_*.
+	* config/rs6000/rs6000.c: Include case-cfn-macros.h
+	(rs6000_builtin_vectorized_libmass): Replace fndecl argument
+	with a combined_fn.  Use CASE_CFN_*.  Use mathfn_built_in rather
+	than calling builtin_decl_implicit directly.
+	(rs6000_builtin_vectorized_function): Update after above changes.
+	Use CASE_CFN_*.  Move BUILT_IN_MD to...
+	(rs6000_builtin_md_vectorized_function): ...this new function.
+	(TARGET_VECTORIZE_BUILTIN_MD_VECTORIZED_FUNCTION): Define.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-patterns.c: Include internal-fn.h.
 	(vect_recog_pow_pattern): Use IFN_SQRT instead of BUILT_IN_SQRT*.
 

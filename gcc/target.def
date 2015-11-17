@@ -1728,18 +1728,28 @@ the argument @var{OFF} to @code{REALIGN_LOAD}, in which case the low\n\
 log2(@var{VS}) @minus{} 1 bits of @var{addr} will be considered.",
  tree, (void), NULL)
 
-/* Returns a code for builtin that realizes vectorized version of
-   function, or NULL_TREE if not available.  */
+/* Returns a built-in function that realizes the vectorized version of
+   a target-independent function, or NULL_TREE if not available.  */
 DEFHOOK
 (builtin_vectorized_function,
  "This hook should return the decl of a function that implements the\n\
-vectorized variant of the builtin function with builtin function code\n\
+vectorized variant of the function with the @code{combined_fn} code\n\
 @var{code} or @code{NULL_TREE} if such a function is not available.\n\
-The value of @var{fndecl} is the builtin function declaration.  The\n\
+The return type of the vectorized function shall be of vector type\n\
+@var{vec_type_out} and the argument types should be @var{vec_type_in}.",
+ tree, (unsigned code, tree vec_type_out, tree vec_type_in),
+ default_builtin_vectorized_function)
+
+/* Returns a built-in function that realizes the vectorized version of
+   a target-specific function, or NULL_TREE if not available.  */
+DEFHOOK
+(builtin_md_vectorized_function,
+ "This hook should return the decl of a function that implements the\n\
+vectorized variant of target built-in function @code{fndecl}.  The\n\
 return type of the vectorized function shall be of vector type\n\
 @var{vec_type_out} and the argument types should be @var{vec_type_in}.",
  tree, (tree fndecl, tree vec_type_out, tree vec_type_in),
- default_builtin_vectorized_function)
+ default_builtin_md_vectorized_function)
 
 /* Returns a function declaration for a builtin that realizes the
    vector conversion, or NULL_TREE if not available.  */
