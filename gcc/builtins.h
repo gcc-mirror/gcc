@@ -61,6 +61,7 @@ extern void expand_builtin_setjmp_setup (rtx, rtx);
 extern void expand_builtin_setjmp_receiver (rtx);
 extern void expand_builtin_update_setjmp_buf (rtx);
 extern tree mathfn_built_in (tree, enum built_in_function fn);
+extern tree mathfn_built_in (tree, combined_fn);
 extern rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, machine_mode);
 extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, machine_mode);
 extern rtx expand_builtin_saveregs (void);

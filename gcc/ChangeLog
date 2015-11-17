@@ -1,5 +1,18 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.h (mathfn_built_in): Add a variant that takes
+	a combined_fn.
+	* builtins.c: Include case-cfn-macros.h.
+	(CASE_MATHFN): Use CASE_CFN_*.
+	(CASE_MATHFN_REENT): Use CFN_ codes.
+	(mathfn_built_in_2, mathfn_built_in_1): Replace built_in_function
+	argument with a combined_fn.
+	(mathfn_built_in): Add a variant that takes a combined_fn.
+	(expand_builtin_int_roundingfn_2): Update callers accordingly.
+	(fold_builtin_sincos, fold_builtin_classify): Likewise.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-patterns.c: Include case-cfn-macros.h.
 	(vect_recog_pow_pattern): Use combined_fn instead of built-in codes.
 
