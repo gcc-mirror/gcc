@@ -10907,7 +10907,7 @@ int g (int c)
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void *__builtin_assume_aligned (const void *@var{exp}, size_t @var{align}, ...)
+@deftypefn {Built-in Function} {void *} __builtin_assume_aligned (const void *@var{exp}, size_t @var{align}, ...)
 This function returns its first argument, and allows the compiler
 to assume that the returned pointer is at least @var{align} bytes
 aligned.  This built-in can have either two or three arguments,

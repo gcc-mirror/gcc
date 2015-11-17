@@ -1,3 +1,9 @@
+2015-11-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR 65129
+	* doc/extend.texi (__builtin_assume_aligned): Fix formatting of
+	return value.
+
 2015-11-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (VSX_L): Do not include IBM extended double
