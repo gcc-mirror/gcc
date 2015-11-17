@@ -1,3 +1,8 @@
+2015-11-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/t-visium (MULTILIB_OPTIONS): Add muser-mode.
+	(MULTILIB_DIRNAMES): Adjust accordingly.
+
 2015-11-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-cores.def (cortex-a35): New.
