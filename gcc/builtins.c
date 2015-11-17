@@ -1916,6 +1916,8 @@ associated_internal_fn (tree fndecl)
     {
 #define DEF_INTERNAL_FLT_FN(NAME, FLAGS, OPTAB, TYPE) \
     CASE_FLT_FN (BUILT_IN_##NAME): return IFN_##NAME;
+#define DEF_INTERNAL_INT_FN(NAME, FLAGS, OPTAB, TYPE) \
+    CASE_INT_FN (BUILT_IN_##NAME): return IFN_##NAME;
 #include "internal-fn.def"
 
     CASE_FLT_FN (BUILT_IN_POW10):
