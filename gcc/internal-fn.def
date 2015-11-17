@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
      DEF_INTERNAL_FN (NAME, FLAGS, FNSPEC)
      DEF_INTERNAL_OPTAB_FN (NAME, FLAGS, OPTAB, TYPE)
      DEF_INTERNAL_FLT_FN (NAME, FLAGS, OPTAB, TYPE)
+     DEF_INTERNAL_INT_FN (NAME, FLAGS, OPTAB, TYPE)
 
    where NAME is the name of the function, FLAGS is a set of
    ECF_* flags and FNSPEC is a string describing functions fnspec.
@@ -53,6 +54,10 @@ along with GCC; see the file COPYING3.  If not see
    function BUILT_IN_<NAME>{F,,L}.  Unlike some built-in functions,
    these internal functions never set errno.
 
+   DEF_INTERNAL_INT_FN is like DEF_INTERNAL_OPTAB_FN, but in addition
+   says that the function extends the C-level BUILT_IN_<NAME>{,L,LL,IMAX}
+   group of functions to any integral mode (including vector modes).
+
    Each entry must have a corresponding expander of the form:
 
      void expand_NAME (gimple_call stmt)
@@ -72,6 +77,11 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef DEF_INTERNAL_FLT_FN
 #define DEF_INTERNAL_FLT_FN(NAME, FLAGS, OPTAB, TYPE) \
+  DEF_INTERNAL_OPTAB_FN (NAME, FLAGS, OPTAB, TYPE)
+#endif
+
+#ifndef DEF_INTERNAL_INT_FN
+#define DEF_INTERNAL_INT_FN(NAME, FLAGS, OPTAB, TYPE) \
   DEF_INTERNAL_OPTAB_FN (NAME, FLAGS, OPTAB, TYPE)
 #endif
 
@@ -119,6 +129,14 @@ DEF_INTERNAL_FLT_FN (SCALB, ECF_CONST, scalb, binary)
 /* FP scales.  */
 DEF_INTERNAL_FLT_FN (LDEXP, ECF_CONST, ldexp, binary)
 
+/* Unary integer ops.  */
+DEF_INTERNAL_INT_FN (CLRSB, ECF_CONST, clrsb, unary)
+DEF_INTERNAL_INT_FN (CLZ, ECF_CONST, clz, unary)
+DEF_INTERNAL_INT_FN (CTZ, ECF_CONST, ctz, unary)
+DEF_INTERNAL_INT_FN (FFS, ECF_CONST, ffs, unary)
+DEF_INTERNAL_INT_FN (PARITY, ECF_CONST, parity, unary)
+DEF_INTERNAL_INT_FN (POPCOUNT, ECF_CONST, popcount, unary)
+
 DEF_INTERNAL_FN (GOMP_SIMD_LANE, ECF_NOVOPS | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (GOMP_SIMD_VF, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (GOMP_SIMD_LAST_LANE, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
@@ -163,6 +181,7 @@ DEF_INTERNAL_FN (GOACC_LOOP, ECF_PURE | ECF_NOTHROW, NULL)
 /* OpenACC reduction abstraction.  See internal-fn.h  for usage.  */
 DEF_INTERNAL_FN (GOACC_REDUCTION, ECF_NOTHROW | ECF_LEAF, NULL)
 
+#undef DEF_INTERNAL_INT_FN
 #undef DEF_INTERNAL_FLT_FN
 #undef DEF_INTERNAL_OPTAB_FN
 #undef DEF_INTERNAL_FN

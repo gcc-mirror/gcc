@@ -1,5 +1,11 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* internal-fn.def (DEF_INTERNAL_INT_FN): New macro.
+	(CLRSB, CLZ, CTZ, FFS, PARITY, POPCOUNT): New functions.
+	* builtins.c (associated_internal_fn): Handle them.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.h (associated_internal_fn): Declare.
 	(replacement_internal_fn): Likewise.
 	* builtins.c: Include internal-fn.h
