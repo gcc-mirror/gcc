@@ -876,7 +876,7 @@ endif
 # Shorthand variables for dependency lists.
 DUMPFILE_H = $(srcdir)/../libcpp/include/line-map.h dumpfile.h
 VEC_H = vec.h statistics.h $(GGC_H)
-HASH_TABLE_H = $(HASHTAB_H) hash-table.h
+HASH_TABLE_H = $(HASHTAB_H) hash-table.h $(GGC_H)
 EXCEPT_H = except.h $(HASHTAB_H)
 TARGET_DEF = target.def target-hooks-macros.h target-insns.def
 C_TARGET_DEF = c-family/c-target.def target-hooks-macros.h
@@ -1570,6 +1570,7 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  tm-preds.h tm-constrs.h checksum-options gimple-match.c generic-match.c \
  tree-check.h min-insn-modes.c insn-modes.c insn-modes.h \
  genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
+ case-cfn-macros.h \
  xgcc$(exeext) cpp$(exeext) $(FULL_DRIVER_NAME) \
  $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(SPECS) collect2$(exeext) gcc-ar$(exeext) gcc-nm$(exeext) \
@@ -2247,6 +2248,14 @@ s-constrs-h: $(MD_DEPS) build/genpreds$(build_exeext)
 	$(SHELL) $(srcdir)/../move-if-change tmp-constrs.h tm-constrs.h
 	$(STAMP) s-constrs-h
 
+s-case-cfn-macros: build/gencfn-macros$(build_exeext)
+	$(RUN_GEN) build/gencfn-macros$(build_exeext) -c \
+	  > tmp-case-cfn-macros.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-case-cfn-macros.h \
+	  case-cfn-macros.h
+	$(STAMP) s-case-cfn-macros
+case-cfn-macros.h: s-case-cfn-macros; @true
+
 target-hooks-def.h: s-target-hooks-def-h; @true
 # make sure that when we build info files, the used tm.texi is up to date.
 $(srcdir)/doc/tm.texi: s-tm-texi; @true
@@ -2434,7 +2443,7 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_H) multilib.h \
        $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
-       c-family/c-target-hooks-def.h params.list
+       c-family/c-target-hooks-def.h params.list case-cfn-macros.h
 
 #
 # How to compile object files to run on the build machine.
@@ -2581,6 +2590,8 @@ build/genmddump.o : genmddump.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
 build/genmatch.o : genmatch.c $(BCONFIG_H) $(SYSTEM_H) \
   coretypes.h errors.h $(HASH_TABLE_H) hash-map.h $(GGC_H) is-a.h \
   tree.def builtins.def
+build/gencfn-macros.o : gencfn-macros.c $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h errors.h $(HASH_TABLE_H) hash-set.h builtins.def internal-fn.def
 
 # Compile the programs that generate insn-* from the machine description.
 # They are compiled with $(COMPILER_FOR_BUILD), and associated libraries,
@@ -2597,7 +2608,7 @@ genprogmd = $(genprogrtl) mddeps constants enums
 $(genprogmd:%=build/gen%$(build_exeext)): $(BUILD_MD)
 
 # All these programs need to report errors.
-genprogerr = $(genprogmd) genrtl modes gtype hooks
+genprogerr = $(genprogmd) genrtl modes gtype hooks cfn-macros
 $(genprogerr:%=build/gen%$(build_exeext)): $(BUILD_ERRORS)
 
 # Remaining build programs.
@@ -2607,6 +2618,7 @@ genprog = $(genprogerr) check checksum condmd match
 build/genautomata$(build_exeext) : BUILD_LIBS += -lm
 
 build/genrecog$(build_exeext) : build/hash-table.o build/inchash.o
+build/gencfn-macros$(build_exeext) : build/hash-table.o build/ggc-none.o
 
 # For stage1 and when cross-compiling use the build libcpp which is
 # built with NLS disabled.  For stage2+ use the host library and
