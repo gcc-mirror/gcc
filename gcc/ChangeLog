@@ -1,5 +1,31 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* fold-const.h (negate_mathfn_p): Take a combined_fn rather
+	than a built_in_function.
+	(tree_call_nonnegative_warnv_p): Take a combined_fn rather than
+	a function decl.
+	(integer_valued_real_call_p): Likewise.
+	* fold-const.c: Include case-cfn-macros.h
+	(negate_mathfn_p): Take a combined_fn rather than a built_in_function.
+	(negate_expr_p): Update accordingly.
+	(tree_call_nonnegative_warnv_p): Take a combined_fn rather than
+	a function decl.
+	(integer_valued_real_call_p): Likewise.
+	(tree_invalid_nonnegative_warnv_p): Update accordingly.
+	(integer_valued_real_p): Likewise.
+	* gimple-fold.c (gimple_call_nonnegative_warnv_p): Update call
+	to tree_call_nonnegative_warnv_p.
+	(gimple_call_integer_valued_real_p): Likewise
+	integer_valued_real_call_p.
+	* gimple-ssa-backprop.c: Include case-cfn-macros.h.
+	(backprop::process_builtin_call_use): Extend to combined_fn.
+	(strip_sign_op_1): Likewise.
+	(backprop::process_use): Don't check for built-in calls here.
+	(backprop::execute): Likewise.
+	(backprop::optimize_builtin_call): Update call to negate_mathfn_p.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* fold-const-call.h (fold_const_call): Replace built_in_function
 	arguments with combined_fn arguments.
 	* fold-const-call.c: Include case-cfn-macros.h.

@@ -6202,7 +6202,7 @@ gimple_call_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
     gimple_call_arg (stmt, 1) : NULL_TREE;
 
   return tree_call_nonnegative_warnv_p (gimple_expr_type (stmt),
-					gimple_call_fndecl (stmt),
+					gimple_call_combined_fn (stmt),
 					arg0,
 					arg1,
 					strict_overflow_p, depth);
@@ -6295,7 +6295,7 @@ gimple_call_integer_valued_real_p (gimple *stmt, int depth)
   tree arg1 = (gimple_call_num_args (stmt) > 1
 	       ? gimple_call_arg (stmt, 1)
 	       : NULL_TREE);
-  return integer_valued_real_call_p (gimple_call_fndecl (stmt),
+  return integer_valued_real_call_p (gimple_call_combined_fn (stmt),
 				     arg0, arg1, depth);
 }
 
