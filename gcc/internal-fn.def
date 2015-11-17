@@ -26,29 +26,56 @@ along with GCC; see the file COPYING3.  If not see
    and its operands are more naturally represented as a GIMPLE_CALL
    than a GIMPLE_ASSIGN.
 
-   Each entry in this file has the form:
+   Each entry in this file has one of the forms:
 
      DEF_INTERNAL_FN (NAME, FLAGS, FNSPEC)
+     DEF_INTERNAL_OPTAB_FN (NAME, FLAGS, OPTAB, TYPE)
 
    where NAME is the name of the function, FLAGS is a set of
    ECF_* flags and FNSPEC is a string describing functions fnspec.
    
+   DEF_INTERNAL_OPTAB_FN defines an internal function that maps to a
+   direct optab.  The function should only be called with a given
+   set of types if the associated optab is available for the modes
+   of those types.  OPTAB says what optab to use (without the trailing
+   "_optab") and TYPE categorizes the optab based on its inputs and
+   outputs.  The possible types of optab are:
+
+   - mask_load: currently just maskload
+   - load_lanes: currently just vec_load_lanes
+
+   - mask_store: currently just maskstore
+   - store_lanes: currently just vec_store_lanes
+
    Each entry must have a corresponding expander of the form:
 
      void expand_NAME (gimple_call stmt)
 
-   where STMT is the statement that performs the call.  */
+   where STMT is the statement that performs the call.  These are generated
+   automatically for optab functions and call out to a function or macro
+   called expand_<TYPE>_optab_fn.  */
 
-DEF_INTERNAL_FN (LOAD_LANES, ECF_CONST | ECF_LEAF, NULL)
-DEF_INTERNAL_FN (STORE_LANES, ECF_CONST | ECF_LEAF, NULL)
+#ifndef DEF_INTERNAL_FN
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC)
+#endif
+
+#ifndef DEF_INTERNAL_OPTAB_FN
+#define DEF_INTERNAL_OPTAB_FN(NAME, FLAGS, OPTAB, TYPE) \
+  DEF_INTERNAL_FN (NAME, FLAGS | ECF_LEAF, NULL)
+#endif
+
+DEF_INTERNAL_OPTAB_FN (MASK_LOAD, ECF_PURE, maskload, mask_load)
+DEF_INTERNAL_OPTAB_FN (LOAD_LANES, ECF_CONST, vec_load_lanes, load_lanes)
+
+DEF_INTERNAL_OPTAB_FN (MASK_STORE, 0, maskstore, mask_store)
+DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)
+
 DEF_INTERNAL_FN (GOMP_SIMD_LANE, ECF_NOVOPS | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (GOMP_SIMD_VF, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (GOMP_SIMD_LAST_LANE, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (GOMP_SIMD_ORDERED_START, ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (GOMP_SIMD_ORDERED_END, ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (LOOP_VECTORIZED, ECF_NOVOPS | ECF_LEAF | ECF_NOTHROW, NULL)
-DEF_INTERNAL_FN (MASK_LOAD, ECF_PURE | ECF_LEAF, NULL)
-DEF_INTERNAL_FN (MASK_STORE, ECF_LEAF, NULL)
 DEF_INTERNAL_FN (ANNOTATE,  ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (UBSAN_NULL, ECF_LEAF | ECF_NOTHROW, ".R.")
 DEF_INTERNAL_FN (UBSAN_BOUNDS, ECF_LEAF | ECF_NOTHROW, NULL)
@@ -87,4 +114,5 @@ DEF_INTERNAL_FN (GOACC_LOOP, ECF_PURE | ECF_NOTHROW, NULL)
 /* OpenACC reduction abstraction.  See internal-fn.h  for usage.  */
 DEF_INTERNAL_FN (GOACC_REDUCTION, ECF_NOTHROW | ECF_LEAF, NULL)
 
+#undef DEF_INTERNAL_OPTAB_FN
 #undef DEF_INTERNAL_FN
