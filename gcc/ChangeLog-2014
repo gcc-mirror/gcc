@@ -42946,7 +42946,7 @@
 	specifically allow DDmode, since that does not use the SPE SIMD
 	instructions.
 
-2014-03-21  Mark Wielaard  <mjw@redhat.com>
+2014-04-15  Mark Wielaard  <mjw@redhat.com>
 
 	* dwarf2out.c (gen_enumeration_type_die): Add DW_AT_const_value
 	as unsigned or int depending on type and value used.
