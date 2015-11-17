@@ -7348,7 +7348,7 @@ fold_builtin_sincos (location_t loc,
   if (TREE_CODE (arg0) == REAL_CST)
     {
       tree complex_type = build_complex_type (type);
-      call = fold_const_call (fn, complex_type, arg0);
+      call = fold_const_call (as_combined_fn (fn), complex_type, arg0);
     }
   if (!call)
     {
@@ -8193,7 +8193,7 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
   if (TREE_CODE (arg0) == ERROR_MARK)
     return NULL_TREE;
 
-  if (tree ret = fold_const_call (fcode, type, arg0))
+  if (tree ret = fold_const_call (as_combined_fn (fcode), type, arg0))
     return ret;
 
   switch (fcode)
@@ -8320,7 +8320,7 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
       || TREE_CODE (arg1) == ERROR_MARK)
     return NULL_TREE;
 
-  if (tree ret = fold_const_call (fcode, type, arg0, arg1))
+  if (tree ret = fold_const_call (as_combined_fn (fcode), type, arg0, arg1))
     return ret;
 
   switch (fcode)
@@ -8419,7 +8419,8 @@ fold_builtin_3 (location_t loc, tree fndecl,
       || TREE_CODE (arg2) == ERROR_MARK)
     return NULL_TREE;
 
-  if (tree ret = fold_const_call (fcode, type, arg0, arg1, arg2))
+  if (tree ret = fold_const_call (as_combined_fn (fcode), type,
+				  arg0, arg1, arg2))
     return ret;
 
   switch (fcode)

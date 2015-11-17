@@ -1,5 +1,17 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* fold-const-call.h (fold_const_call): Replace built_in_function
+	arguments with combined_fn arguments.
+	* fold-const-call.c: Include case-cfn-macros.h.
+	(fold_const_call_ss, fold_const_call_cs, fold_const_call_sc)
+	(fold_const_call_cc, fold_const_call_sss, fold_const_call_ccc)
+	(fold_const_call_ssss, fold_const_call_1, fold_const_call): Replace
+	built_in_function arguments with combined_fn arguments.
+	* builtins.c (fold_builtin_sincos, fold_builtin_1, fold_builtin_2)
+	(fold_builtin_3): Update calls to fold_const_call.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* Makefile.in (HASH_TABLE_H): Add GGC_H.
 	(MOSTLYCLEANFILES, generated_files): Add case-fn-macros.h.
 	(s-case-cfn-macros, case-cfn-macros.h, build/gencfn-macros.o)
