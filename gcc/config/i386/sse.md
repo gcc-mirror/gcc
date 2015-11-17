@@ -892,30 +892,30 @@
 	case MODE_V16SF:
 	case MODE_V8SF:
 	case MODE_V4SF:
-	  if (TARGET_AVX
+	  if ((TARGET_AVX || TARGET_IAMCU)
 	      && (misaligned_operand (operands[0], <MODE>mode)
 		  || misaligned_operand (operands[1], <MODE>mode)))
-	    return "vmovups\t{%1, %0|%0, %1}";
+	    return "%vmovups\t{%1, %0|%0, %1}";
 	  else
 	    return "%vmovaps\t{%1, %0|%0, %1}";
 
 	case MODE_V8DF:
 	case MODE_V4DF:
 	case MODE_V2DF:
-	  if (TARGET_AVX
+	  if ((TARGET_AVX || TARGET_IAMCU)
 	      && (misaligned_operand (operands[0], <MODE>mode)
 		  || misaligned_operand (operands[1], <MODE>mode)))
-	    return "vmovupd\t{%1, %0|%0, %1}";
+	    return "%vmovupd\t{%1, %0|%0, %1}";
 	  else
 	    return "%vmovapd\t{%1, %0|%0, %1}";
 
 	case MODE_OI:
 	case MODE_TI:
-	  if (TARGET_AVX
+	  if ((TARGET_AVX || TARGET_IAMCU)
 	      && (misaligned_operand (operands[0], <MODE>mode)
 		  || misaligned_operand (operands[1], <MODE>mode)))
 	    return TARGET_AVX512VL ? "vmovdqu64\t{%1, %0|%0, %1}"
-				   : "vmovdqu\t{%1, %0|%0, %1}";
+				   : "%vmovdqu\t{%1, %0|%0, %1}";
 	  else
 	    return TARGET_AVX512VL ? "vmovdqa64\t{%1, %0|%0, %1}"
 				   : "%vmovdqa\t{%1, %0|%0, %1}";
