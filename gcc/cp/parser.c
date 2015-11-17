@@ -1976,7 +1976,7 @@ static tree cp_parser_postfix_open_square_expression
 static tree cp_parser_postfix_dot_deref_expression
   (cp_parser *, enum cpp_ttype, tree, bool, cp_id_kind *, location_t);
 static vec<tree, va_gc> *cp_parser_parenthesized_expression_list
-  (cp_parser *, int, bool, bool, bool *, bool = false);
+  (cp_parser *, int, bool, bool, bool *);
 /* Values for the second parameter of cp_parser_parenthesized_expression_list.  */
 enum { non_attr = 0, normal_attr = 1, id_attr = 2 };
 static void cp_parser_pseudo_destructor_name
@@ -6502,8 +6502,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    args = (cp_parser_parenthesized_expression_list
 		    (parser, non_attr,
 		     /*cast_p=*/false, /*allow_expansion_p=*/true,
-		     /*non_constant_p=*/NULL,
-		     /*want_literal_zero_p=*/warn_memset_transposed_args));
+		     /*non_constant_p=*/NULL));
 	    if (is_builtin_constant_p)
 	      {
 		parser->integral_constant_expression_p
@@ -6577,22 +6576,14 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		    && DECL_BUILT_IN_CLASS (postfix_expression) == BUILT_IN_NORMAL
 		    && DECL_FUNCTION_CODE (postfix_expression) == BUILT_IN_MEMSET
 		    && vec_safe_length (args) == 3
+		    && TREE_CODE ((*args)[2]) == INTEGER_CST
 		    && integer_zerop ((*args)[2])
-		    && LITERAL_ZERO_P ((*args)[2])
-		    && !(integer_zerop ((*args)[1])
-			 && LITERAL_ZERO_P ((*args)[1])))
+		    && !(TREE_CODE ((*args)[1]) == INTEGER_CST
+			 && integer_zerop ((*args)[1])))
 		  warning (OPT_Wmemset_transposed_args,
 			   "%<memset%> used with constant zero length "
 			   "parameter; this could be due to transposed "
 			   "parameters");
-
-		/* Replace LITERAL_ZERO_P INTEGER_CSTs with normal ones
-		   to avoid leaking those into folder and middle-end.  */
-		unsigned int i;
-		tree arg;
-		FOR_EACH_VEC_SAFE_ELT (args, i, arg)
-		  if (TREE_CODE (arg) == INTEGER_CST && LITERAL_ZERO_P (arg))
-		    (*args)[i] = build_int_cst (TREE_TYPE (arg), 0);
 	      }
 
 	    if (TREE_CODE (postfix_expression) == COMPONENT_REF)
@@ -7085,10 +7076,6 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
   return postfix_expression;
 }
 
-/* Cache of LITERAL_ZERO_P constants.  */
-
-static GTY(()) tree literal_zeros[itk_none];
-
 /* Parse a parenthesized expression-list.
 
    expression-list:
@@ -7113,18 +7100,14 @@ static GTY(()) tree literal_zeros[itk_none];
    plain identifier argument, normal_attr for an attribute that wants
    an expression, or non_attr if we aren't parsing an attribute list.  If
    NON_CONSTANT_P is non-NULL, *NON_CONSTANT_P indicates whether or
-   not all of the expressions in the list were constant.
-   WANT_LITERAL_ZERO_P is true if the caller is interested in
-   LITERAL_ZERO_P INTEGER_CSTs.  FIXME: once we don't fold everything
-   immediately, this can be removed.  */
+   not all of the expressions in the list were constant.  */
 
 static vec<tree, va_gc> *
 cp_parser_parenthesized_expression_list (cp_parser* parser,
 					 int is_attribute_list,
 					 bool cast_p,
                                          bool allow_expansion_p,
-					 bool *non_constant_p,
-					 bool want_literal_zero_p)
+					 bool *non_constant_p)
 {
   vec<tree, va_gc> *expression_list;
   bool fold_expr_p = is_attribute_list != non_attr;
@@ -7187,51 +7170,8 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 		  *non_constant_p = true;
 	      }
 	    else
-	      {
-		expr = NULL_TREE;
-		cp_token *tok = cp_lexer_peek_token (parser->lexer);
-		switch (tok->type)
-		  {
-		  case CPP_NUMBER:
-		  case CPP_CHAR:
-		  case CPP_WCHAR:
-		  case CPP_CHAR16:
-		  case CPP_CHAR32:
-		  case CPP_UTF8CHAR:
-		    /* If a parameter is literal zero alone, remember it
-		       for -Wmemset-transposed-args warning.  */
-		    if (integer_zerop (tok->u.value)
-			&& !TREE_OVERFLOW (tok->u.value)
-			&& want_literal_zero_p
-			&& (cp_lexer_peek_nth_token (parser->lexer, 2)->type
-			    == CPP_COMMA
-			    || cp_lexer_peek_nth_token (parser->lexer, 2)->type
-			       == CPP_CLOSE_PAREN))
-		      {
-			unsigned int i;
-			for (i = 0; i < itk_none; ++i)
-			  if (TREE_TYPE (tok->u.value) == integer_types[i])
-			    break;
-			if (i < itk_none && literal_zeros[i])
-			  expr = literal_zeros[i];
-			else
-			  {
-			    expr = copy_node (tok->u.value);
-			    LITERAL_ZERO_P (expr) = 1;
-			    if (i < itk_none)
-			      literal_zeros[i] = expr;
-			  }
-			/* Consume the 0 token (or '\0', 0LL etc.).  */
-			cp_lexer_consume_token (parser->lexer);
-		      }
-		    break;
-		  default:
-		    break;
-		  }
-		if (expr == NULL_TREE)
-		  expr = cp_parser_assignment_expression (parser, /*pidk=*/NULL,
-							  cast_p);
-	      }
+	      expr = cp_parser_assignment_expression (parser, /*pidk=*/NULL,
+						      cast_p);
 
 	    if (fold_expr_p)
 	      expr = instantiate_non_dependent_expr (expr);
