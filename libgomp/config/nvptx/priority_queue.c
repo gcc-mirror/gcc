@@ -1,0 +1,1 @@
+/* Empty stub for omp task priority support.  */
