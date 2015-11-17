@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "dumpfile.h"
 #include "builtins.h"
+#include "internal-fn.h"
 #include "case-cfn-macros.h"
 
 /* Pattern recognition functions  */
@@ -1054,18 +1055,13 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
   if (TREE_CODE (exp) == REAL_CST
       && real_equal (&TREE_REAL_CST (exp), &dconsthalf))
     {
-      tree newfn = mathfn_built_in (TREE_TYPE (base), BUILT_IN_SQRT);
       *type_in = get_vectype_for_scalar_type (TREE_TYPE (base));
-      if (*type_in)
+      if (*type_in && direct_internal_fn_supported_p (IFN_SQRT, *type_in))
 	{
-	  gcall *stmt = gimple_build_call (newfn, 1, base);
-	  if (vectorizable_function (stmt, *type_in, *type_in)
-	      != NULL_TREE)
-	    {
-	      var = vect_recog_temp_ssa_var (TREE_TYPE (base), stmt);
-	      gimple_call_set_lhs (stmt, var);
-	      return stmt;
-	    }
+	  gcall *stmt = gimple_build_call_internal (IFN_SQRT, 1, base);
+	  var = vect_recog_temp_ssa_var (TREE_TYPE (base), stmt);
+	  gimple_call_set_lhs (stmt, var);
+	  return stmt;
 	}
     }
 
