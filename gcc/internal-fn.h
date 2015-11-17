@@ -123,6 +123,44 @@ internal_fn_fnspec (enum internal_fn fn)
   return internal_fn_fnspec_array[(int) fn];
 }
 
+/* Describes an internal function that maps directly to an optab.  */
+struct direct_internal_fn_info
+{
+  /* optabs can be parameterized by one or two modes.  These fields describe
+     how to select those modes from the types of the return value and
+     arguments.  A value of -1 says that the mode is determined by the
+     return type while a value N >= 0 says that the mode is determined by
+     the type of argument N.  A value of -2 says that this internal
+     function isn't directly mapped to an optab.  */
+  signed int type0 : 8;
+  signed int type1 : 8;
+};
+
+extern const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1];
+
+/* Return true if FN is mapped directly to an optab.  */
+
+inline bool
+direct_internal_fn_p (internal_fn fn)
+{
+  return direct_internal_fn_array[fn].type0 >= -1;
+}
+
+/* Return optab information about internal function FN.  Only meaningful
+   if direct_internal_fn_p (FN).  */
+
+inline const direct_internal_fn_info &
+direct_internal_fn (internal_fn fn)
+{
+  gcc_checking_assert (direct_internal_fn_p (fn));
+  return direct_internal_fn_array[fn];
+}
+
+extern tree_pair direct_internal_fn_types (internal_fn, tree, tree *);
+extern tree_pair direct_internal_fn_types (internal_fn, gcall *);
+extern bool direct_internal_fn_supported_p (internal_fn, tree_pair);
+extern bool direct_internal_fn_supported_p (internal_fn, tree);
+
 extern void expand_internal_call (gcall *);
 
 #endif

@@ -66,13 +66,27 @@ init_internal_fns ()
   internal_fn_fnspec_array[IFN_LAST] = 0;
 }
 
+/* Create static initializers for the information returned by
+   direct_internal_fn.  */
+#define not_direct { -2, -2 }
+#define mask_load_direct { -1, 2 }
+#define load_lanes_direct { -1, -1 }
+#define mask_store_direct { 3, 2 }
+#define store_lanes_direct { 0, 0 }
+
+const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
+#define DEF_INTERNAL_OPTAB_FN(CODE, FLAGS, OPTAB, TYPE) TYPE##_direct,
+#include "internal-fn.def"
+  not_direct
+};
+
 /* ARRAY_TYPE is an array of vector modes.  Return the associated insn
-   for load-lanes-style optab OPTAB.  The insn must exist.  */
+   for load-lanes-style optab OPTAB, or CODE_FOR_nothing if none.  */
 
 static enum insn_code
 get_multi_vector_move (tree array_type, convert_optab optab)
 {
-  enum insn_code icode;
   machine_mode imode;
   machine_mode vmode;
 
@@ -80,15 +94,13 @@ get_multi_vector_move (tree array_type, convert_optab optab)
   imode = TYPE_MODE (array_type);
   vmode = TYPE_MODE (TREE_TYPE (array_type));
 
-  icode = convert_optab_handler (optab, imode, vmode);
-  gcc_assert (icode != CODE_FOR_nothing);
-  return icode;
+  return convert_optab_handler (optab, imode, vmode);
 }
 
-/* Expand LOAD_LANES call STMT.  */
+/* Expand LOAD_LANES call STMT using optab OPTAB.  */
 
 static void
-expand_LOAD_LANES (gcall *stmt)
+expand_load_lanes_optab_fn (gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[2];
   tree type, lhs, rhs;
@@ -106,13 +118,13 @@ expand_LOAD_LANES (gcall *stmt)
 
   create_output_operand (&ops[0], target, TYPE_MODE (type));
   create_fixed_operand (&ops[1], mem);
-  expand_insn (get_multi_vector_move (type, vec_load_lanes_optab), 2, ops);
+  expand_insn (get_multi_vector_move (type, optab), 2, ops);
 }
 
-/* Expand STORE_LANES call STMT.  */
+/* Expand STORE_LANES call STMT using optab OPTAB.  */
 
 static void
-expand_STORE_LANES (gcall *stmt)
+expand_store_lanes_optab_fn (gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[2];
   tree type, lhs, rhs;
@@ -130,7 +142,7 @@ expand_STORE_LANES (gcall *stmt)
 
   create_fixed_operand (&ops[0], target);
   create_input_operand (&ops[1], reg, TYPE_MODE (type));
-  expand_insn (get_multi_vector_move (type, vec_store_lanes_optab), 2, ops);
+  expand_insn (get_multi_vector_move (type, optab), 2, ops);
 }
 
 static void
@@ -1867,8 +1879,10 @@ expand_LOOP_VECTORIZED (gcall *)
   gcc_unreachable ();
 }
 
+/* Expand MASK_LOAD call STMT using optab OPTAB.  */
+
 static void
-expand_MASK_LOAD (gcall *stmt)
+expand_mask_load_optab_fn (gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[3];
   tree type, lhs, rhs, maskt;
@@ -1889,13 +1903,15 @@ expand_MASK_LOAD (gcall *stmt)
   create_output_operand (&ops[0], target, TYPE_MODE (type));
   create_fixed_operand (&ops[1], mem);
   create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
-  expand_insn (convert_optab_handler (maskload_optab, TYPE_MODE (type),
+  expand_insn (convert_optab_handler (optab, TYPE_MODE (type),
 				      TYPE_MODE (TREE_TYPE (maskt))),
 	       3, ops);
 }
 
+/* Expand MASK_STORE call STMT using optab OPTAB.  */
+
 static void
-expand_MASK_STORE (gcall *stmt)
+expand_mask_store_optab_fn (gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[3];
   tree type, lhs, rhs, maskt;
@@ -1914,7 +1930,7 @@ expand_MASK_STORE (gcall *stmt)
   create_fixed_operand (&ops[0], mem);
   create_input_operand (&ops[1], reg, TYPE_MODE (type));
   create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
-  expand_insn (convert_optab_handler (maskstore_optab, TYPE_MODE (type),
+  expand_insn (convert_optab_handler (optab, TYPE_MODE (type),
 				      TYPE_MODE (TREE_TYPE (maskt))),
 	       3, ops);
 }
@@ -2053,6 +2069,104 @@ expand_GOACC_REDUCTION (gcall *stmt ATTRIBUTE_UNUSED)
 {
   gcc_unreachable ();
 }
+
+/* RETURN_TYPE and ARGS are a return type and argument list that are
+   in principle compatible with FN (which satisfies direct_internal_fn_p).
+   Return the types that should be used to determine whether the
+   target supports FN.  */
+
+tree_pair
+direct_internal_fn_types (internal_fn fn, tree return_type, tree *args)
+{
+  const direct_internal_fn_info &info = direct_internal_fn (fn);
+  tree type0 = (info.type0 < 0 ? return_type : TREE_TYPE (args[info.type0]));
+  tree type1 = (info.type1 < 0 ? return_type : TREE_TYPE (args[info.type1]));
+  return tree_pair (type0, type1);
+}
+
+/* CALL is a call whose return type and arguments are in principle
+   compatible with FN (which satisfies direct_internal_fn_p).  Return the
+   types that should be used to determine whether the target supports FN.  */
+
+tree_pair
+direct_internal_fn_types (internal_fn fn, gcall *call)
+{
+  const direct_internal_fn_info &info = direct_internal_fn (fn);
+  tree op0 = (info.type0 < 0
+	      ? gimple_call_lhs (call)
+	      : gimple_call_arg (call, info.type0));
+  tree op1 = (info.type1 < 0
+	      ? gimple_call_lhs (call)
+	      : gimple_call_arg (call, info.type1));
+  return tree_pair (TREE_TYPE (op0), TREE_TYPE (op1));
+}
+
+/* Return true if OPTAB is supported for TYPES (whose modes should be
+   the same).  Used for simple direct optabs.  */
+
+static bool
+direct_optab_supported_p (direct_optab optab, tree_pair types)
+{
+  machine_mode mode = TYPE_MODE (types.first);
+  gcc_checking_assert (mode == TYPE_MODE (types.second));
+  return direct_optab_handler (optab, mode) != CODE_FOR_nothing;
+}
+
+/* Return true if load/store lanes optab OPTAB is supported for
+   array type TYPES.first.  */
+
+static bool
+multi_vector_optab_supported_p (convert_optab optab, tree_pair types)
+{
+  return get_multi_vector_move (types.first, optab) != CODE_FOR_nothing;
+}
+
+#define direct_mask_load_optab_supported_p direct_optab_supported_p
+#define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
+#define direct_mask_store_optab_supported_p direct_optab_supported_p
+#define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
+
+/* Return true if FN is supported for the types in TYPES.  The types
+   are those associated with the "type0" and "type1" fields of FN's
+   direct_internal_fn_info structure.  */
+
+bool
+direct_internal_fn_supported_p (internal_fn fn, tree_pair types)
+{
+  switch (fn)
+    {
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
+    case IFN_##CODE: break;
+#define DEF_INTERNAL_OPTAB_FN(CODE, FLAGS, OPTAB, TYPE) \
+    case IFN_##CODE: \
+      return direct_##TYPE##_optab_supported_p (OPTAB##_optab, types);
+#include "internal-fn.def"
+
+    case IFN_LAST:
+      break;
+    }
+  gcc_unreachable ();
+}
+
+/* Return true if FN is supported for type TYPE.  The caller knows that
+   the "type0" and "type1" fields of FN's direct_internal_fn_info
+   structure are the same.  */
+
+bool
+direct_internal_fn_supported_p (internal_fn fn, tree type)
+{
+  const direct_internal_fn_info &info = direct_internal_fn (fn);
+  gcc_checking_assert (info.type0 == info.type1);
+  return direct_internal_fn_supported_p (fn, tree_pair (type, type));
+}
+
+#define DEF_INTERNAL_OPTAB_FN(CODE, FLAGS, OPTAB, TYPE) \
+  static void						\
+  expand_##CODE (gcall *stmt)				\
+  {							\
+    expand_##TYPE##_optab_fn (stmt, OPTAB##_optab);	\
+  }
+#include "internal-fn.def"
 
 /* Routines to expand each internal function, indexed by function number.
    Each routine has the prototype:

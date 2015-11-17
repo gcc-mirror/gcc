@@ -1,5 +1,35 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* coretypes.h (tree_pair): New type.
+	* internal-fn.def (DEF_INTERNAL_OPTAB_FN): New macro.  Use it
+	for MASK_LOAD, LOAD_LANES, MASK_STORE and STORE_LANES.
+	* internal-fn.h (direct_internal_fn_info): New structure.
+	(direct_internal_fn_array): Declare.
+	(direct_internal_fn_p, direct_internal_fn): New functions.
+	(direct_internal_fn_types, direct_internal_fn_supported_p): Declare.
+	* internal-fn.c (not_direct, mask_load_direct, load_lanes_direct)
+	(mask_store_direct, store_lanes_direct): New macros.
+	(direct_internal_fn_array) New array.
+	(get_multi_vector_move): Return the optab handler without asserting
+	that it is available.
+	(expand_LOAD_LANES): Rename to...
+	(expand_load_lanes_optab_fn): ...this and add an optab argument.
+	(expand_STORE_LANES): Rename to...
+	(expand_store_lanes_optab_fn): ...this and add an optab argument.
+	(expand_MASK_LOAD): Rename to...
+	(expand_mask_load_optab_fn): ...this and add an optab argument.
+	(expand_MASK_STORE): Rename to...
+	(expand_mask_store_optab_fn): ...this and add an optab argument.
+	(direct_internal_fn_types, direct_optab_supported_p)
+	(multi_vector_optab_supported_p, direct_internal_fn_supported_p)
+	(direct_internal_fn_supported_p): New functions.
+	(direct_mask_load_optab_supported_p): New macro.
+	(direct_load_lanes_optab_supported_p): Likewise.
+	(direct_mask_store_optab_supported_p): Likewise.
+	(direct_store_lanes_optab_supported_p): Likewise.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-core.h (internal_fn): Move immediately after the definition
 	of built_in_function.
 	(combined_fn): New enum.

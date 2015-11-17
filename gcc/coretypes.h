@@ -251,6 +251,8 @@ namespace gcc {
   class context;
 }
 
+typedef std::pair <tree, tree> tree_pair;
+
 #else
 
 struct _dont_use_rtx_here_;
