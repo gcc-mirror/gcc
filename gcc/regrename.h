@@ -72,7 +72,8 @@ struct du_chain
 struct operand_rr_info
 {
   /* The number of chains recorded for this operand.  */
-  int n_chains;
+  short n_chains;
+  bool failed;
   /* Holds either the chain for the operand itself, or for the registers in
      a memory operand.  */
   struct du_chain *chains[MAX_REGS_PER_ADDRESS];

@@ -203,8 +203,13 @@ mark_conflict (struct du_head *chains, unsigned id)
 static void
 record_operand_use (struct du_head *head, struct du_chain *this_du)
 {
-  if (cur_operand == NULL)
+  if (cur_operand == NULL || cur_operand->failed)
     return;
+  if (head->cannot_rename)
+    {
+      cur_operand->failed = true;
+      return;
+    }
   gcc_assert (cur_operand->n_chains < MAX_REGS_PER_ADDRESS);
   cur_operand->heads[cur_operand->n_chains] = head;
   cur_operand->chains[cur_operand->n_chains++] = this_du;
