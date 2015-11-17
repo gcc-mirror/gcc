@@ -1,3 +1,11 @@
+2015-11-17  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR target/66785
+	* regrename.c (record_operand_use): Keep track of failed operands
+	and stop appending if we see any.
+	* regrename.h (struct operand_rr_info): Add a failed field and shrink
+	n_chains to short.
+
 2015-11-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR 48568
