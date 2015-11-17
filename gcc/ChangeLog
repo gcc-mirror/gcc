@@ -1,5 +1,10 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-patterns.c: Include case-cfn-macros.h.
+	(vect_recog_pow_pattern): Use combined_fn instead of built-in codes.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-ssa-math-opts.c: Include case-cfn-macros.h.
 	(execute_cse_sincos_1): Use combined_fn instead of built-in codes.
 	(pass_cse_sincos::execute): Likewise.

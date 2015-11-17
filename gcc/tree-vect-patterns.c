@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "dumpfile.h"
 #include "builtins.h"
+#include "case-cfn-macros.h"
 
 /* Pattern recognition functions  */
 static gimple *vect_recog_widen_sum_pattern (vec<gimple *> *, tree *,
@@ -1009,23 +1010,17 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
 			tree *type_out)
 {
   gimple *last_stmt = (*stmts)[0];
-  tree fn, base, exp = NULL;
+  tree base, exp = NULL;
   gimple *stmt;
   tree var;
 
   if (!is_gimple_call (last_stmt) || gimple_call_lhs (last_stmt) == NULL)
     return NULL;
 
-  fn = gimple_call_fndecl (last_stmt);
-  if (fn == NULL_TREE || DECL_BUILT_IN_CLASS (fn) != BUILT_IN_NORMAL)
-   return NULL;
-
-  switch (DECL_FUNCTION_CODE (fn))
+  switch (gimple_call_combined_fn (last_stmt))
     {
-    case BUILT_IN_POWIF:
-    case BUILT_IN_POWI:
-    case BUILT_IN_POWF:
-    case BUILT_IN_POW:
+    CASE_CFN_POW:
+    CASE_CFN_POWI:
       base = gimple_call_arg (last_stmt, 0);
       exp = gimple_call_arg (last_stmt, 1);
       if (TREE_CODE (exp) != REAL_CST
