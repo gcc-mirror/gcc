@@ -1558,6 +1558,8 @@ record_out_operands (rtx_insn *insn, bool earlyclobber, insn_rr_info *insn_info)
 	cur_operand = insn_info->op_info + i;
 
       prev_open = open_chains;
+      if (earlyclobber)
+	scan_rtx (insn, loc, cl, terminate_write, OP_OUT);
       scan_rtx (insn, loc, cl, mark_write, OP_OUT);
 
       /* ??? Many targets have output constraints on the SET_DEST
