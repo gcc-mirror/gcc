@@ -65,7 +65,8 @@ set_c_expr_source_range (c_expr *expr,
 {
   expr->src_range.m_start = start;
   expr->src_range.m_finish = finish;
-  set_source_range (expr->value, start, finish);
+  if (expr->value)
+    set_source_range (expr->value, start, finish);
 }
 
 void
@@ -73,7 +74,8 @@ set_c_expr_source_range (c_expr *expr,
 			 source_range src_range)
 {
   expr->src_range = src_range;
-  set_source_range (expr->value, src_range);
+  if (expr->value)
+    set_source_range (expr->value, src_range);
 }
 
 
@@ -4268,7 +4270,8 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
 	    break;
 	}
     }
-  if (c_parser_next_token_is_not (parser, CPP_CLOSE_BRACE))
+  c_token *next_tok = c_parser_peek_token (parser);
+  if (next_tok->type != CPP_CLOSE_BRACE)
     {
       ret.value = error_mark_node;
       ret.original_code = ERROR_MARK;
@@ -4278,9 +4281,11 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
       obstack_free (&braced_init_obstack, NULL);
       return ret;
     }
+  location_t close_loc = next_tok->location;
   c_parser_consume_token (parser);
   ret = pop_init_level (brace_loc, 0, &braced_init_obstack);
   obstack_free (&braced_init_obstack, NULL);
+  set_c_expr_source_range (&ret, brace_loc, close_loc);
   return ret;
 }
 
@@ -6723,6 +6728,8 @@ c_parser_unary_expression (c_parser *parser)
 	{
 	  ret.value = finish_label_address_expr
 	    (c_parser_peek_token (parser)->value, op_loc);
+	  set_c_expr_source_range (&ret, op_loc,
+				   c_parser_peek_token (parser)->get_finish ());
 	  c_parser_consume_token (parser);
 	}
       else
@@ -7366,11 +7373,13 @@ c_parser_postfix_expression (c_parser *parser)
 	    }
 	  stmt = c_begin_stmt_expr ();
 	  c_parser_compound_statement_nostart (parser);
+	  location_t close_loc = c_parser_peek_token (parser)->location;
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				     "expected %<)%>");
 	  pedwarn (loc, OPT_Wpedantic,
 		   "ISO C forbids braced-groups within expressions");
 	  expr.value = c_finish_stmt_expr (brace_loc, stmt);
+	  set_c_expr_source_range (&expr, loc, close_loc);
 	  mark_exp_read (expr.value);
 	}
       else if (c_token_starts_typename (c_parser_peek_2nd_token (parser)))
@@ -7421,6 +7430,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  expr.value = fname_decl (loc,
 				   c_parser_peek_token (parser)->keyword,
 				   c_parser_peek_token (parser)->value);
+	  set_c_expr_source_range (&expr, loc, loc);
 	  c_parser_consume_token (parser);
 	  break;
 	case RID_PRETTY_FUNCTION_NAME:
@@ -7429,6 +7439,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  expr.value = fname_decl (loc,
 				   c_parser_peek_token (parser)->keyword,
 				   c_parser_peek_token (parser)->value);
+	  set_c_expr_source_range (&expr, loc, loc);
 	  c_parser_consume_token (parser);
 	  break;
 	case RID_C99_FUNCTION_NAME:
@@ -7437,45 +7448,51 @@ c_parser_postfix_expression (c_parser *parser)
 	  expr.value = fname_decl (loc,
 				   c_parser_peek_token (parser)->keyword,
 				   c_parser_peek_token (parser)->value);
+	  set_c_expr_source_range (&expr, loc, loc);
 	  c_parser_consume_token (parser);
 	  break;
 	case RID_VA_ARG:
-	  c_parser_consume_token (parser);
-	  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
-	    {
-	      expr.value = error_mark_node;
-	      break;
-	    }
-	  e1 = c_parser_expr_no_commas (parser, NULL);
-	  mark_exp_read (e1.value);
-	  e1.value = c_fully_fold (e1.value, false, NULL);
-	  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
-	    {
-	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
-	      expr.value = error_mark_node;
-	      break;
-	    }
-	  loc = c_parser_peek_token (parser)->location;
-	  t1 = c_parser_type_name (parser);
-	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
-				     "expected %<)%>");
-	  if (t1 == NULL)
-	    {
-	      expr.value = error_mark_node;
-	    }
-	  else
-	    {
-	      tree type_expr = NULL_TREE;
-	      expr.value = c_build_va_arg (loc, e1.value,
-					   groktypename (t1, &type_expr, NULL));
-	      if (type_expr)
-		{
-		  expr.value = build2 (C_MAYBE_CONST_EXPR,
-				       TREE_TYPE (expr.value), type_expr,
-				       expr.value);
-		  C_MAYBE_CONST_EXPR_NON_CONST (expr.value) = true;
-		}
-	    }
+	  {
+	    location_t start_loc = loc;
+	    c_parser_consume_token (parser);
+	    if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+	      {
+		expr.value = error_mark_node;
+		break;
+	      }
+	    e1 = c_parser_expr_no_commas (parser, NULL);
+	    mark_exp_read (e1.value);
+	    e1.value = c_fully_fold (e1.value, false, NULL);
+	    if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+	      {
+		c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+		expr.value = error_mark_node;
+		break;
+	      }
+	    loc = c_parser_peek_token (parser)->location;
+	    t1 = c_parser_type_name (parser);
+	    location_t end_loc = c_parser_peek_token (parser)->get_finish ();
+	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+				       "expected %<)%>");
+	    if (t1 == NULL)
+	      {
+		expr.value = error_mark_node;
+	      }
+	    else
+	      {
+		tree type_expr = NULL_TREE;
+		expr.value = c_build_va_arg (loc, e1.value,
+					     groktypename (t1, &type_expr, NULL));
+		if (type_expr)
+		  {
+		    expr.value = build2 (C_MAYBE_CONST_EXPR,
+					 TREE_TYPE (expr.value), type_expr,
+					 expr.value);
+		    C_MAYBE_CONST_EXPR_NON_CONST (expr.value) = true;
+		  }
+		set_c_expr_source_range (&expr, start_loc, end_loc);
+	      }
+	  }
 	  break;
 	case RID_OFFSETOF:
 	  c_parser_consume_token (parser);
@@ -7561,9 +7578,11 @@ c_parser_postfix_expression (c_parser *parser)
 	      }
 	    else
 	      c_parser_error (parser, "expected identifier");
+	    location_t end_loc = c_parser_peek_token (parser)->get_finish ();
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
 	    expr.value = fold_offsetof (offsetof_ref);
+	    set_c_expr_source_range (&expr, loc, end_loc);
 	  }
 	  break;
 	case RID_CHOOSE_EXPR:
@@ -7951,6 +7970,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
 	       : init.original_code == C_MAYBE_CONST_EXPR);
   non_const |= !type_expr_const;
   expr.value = build_compound_literal (start_loc, type, init.value, non_const);
+  set_c_expr_source_range (&expr, init.src_range);
   expr.original_code = ERROR_MARK;
   expr.original_type = NULL;
   if (type != error_mark_node && type_expr)
@@ -17545,6 +17565,8 @@ c_parser_transaction_expression (c_parser *parser, enum rid keyword)
 	"%<__transaction_atomic%> without transactional memory support enabled"
 	: "%<__transaction_relaxed %> "
 	"without transactional memory support enabled"));
+
+  set_c_expr_source_range (&ret, loc, loc);
 
   return ret;
 }

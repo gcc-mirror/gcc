@@ -1,3 +1,16 @@
+2015-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-expressions-1.c (vector): New
+	macro.
+	(test_braced_init): New function.
+	(test_statement_expression): New function.
+	(test_address_of_label): New function.
+	(test_transaction_expressions): New function.
+	(test_keywords): New function.
+	(test_builtin_va_arg): New function.
+	(test_builtin_offsetof): New function.
+	* lib/multiline.exp (_build_multiline_regex): Escape braces.
+
 2015-11-17  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/68308

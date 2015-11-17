@@ -1,3 +1,19 @@
+2015-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (set_c_expr_source_range): Bulletproof both
+	overloaded implementations against NULL expr->value.
+	(c_parser_braced_init): Set src_range for "ret" to a sane pair of
+	values.
+	(c_parser_unary_expression): Likewise when handling addresses of
+	labels.
+	(c_parser_postfix_expression): Likewise for statement expressions,
+	for __FUNCTION__, __PRETTY_FUNCTION_ and __func__ keywords, for
+	__builtin_va_arg, and for __builtin_offset_of.
+	(c_parser_postfix_expression_after_paren_type): Initialize expr's
+	src_range using the range of the braced initializer.
+	(c_parser_transaction_expression): Set src_range for "ret" to a
+	sane pair of values.
+
 2015-11-16  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* c-parser.c (c_finish_omp_declare_simd): Look for
