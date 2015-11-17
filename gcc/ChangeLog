@@ -6,7 +6,7 @@
 
 2015-11-17  Sandra Loosemore  <sandra@codesourcery.com>
 
-	PR target/56036
+	PR target/53587
 	* doc/invoke.texi (Option Summary): Add -mms-bitfields to x86
 	option list.
 	(x86 Options): Add -mms-bitfields and -mno-ms-bitfields.  Move
