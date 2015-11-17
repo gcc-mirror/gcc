@@ -139,6 +139,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "builtins.h"
 #include "tree-chkp.h"
+#include "cfgloop.h"
 
 
 /* Possible lattice values.  */
@@ -2402,10 +2403,17 @@ do_ssa_ccp (bool nonzero_p)
 {
   unsigned int todo = 0;
   calculate_dominance_info (CDI_DOMINATORS);
+
   ccp_initialize ();
   ssa_propagate (ccp_visit_stmt, ccp_visit_phi_node);
   if (ccp_finalize (nonzero_p))
-    todo = (TODO_cleanup_cfg | TODO_update_ssa);
+    {
+      todo = (TODO_cleanup_cfg | TODO_update_ssa);
+
+      /* ccp_finalize does not preserve loop-closed ssa.  */
+      loops_state_clear (LOOP_CLOSED_SSA);
+    }
+
   free_dominance_info (CDI_DOMINATORS);
   return todo;
 }
