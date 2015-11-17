@@ -69,13 +69,13 @@ init_internal_fns ()
 
 /* Create static initializers for the information returned by
    direct_internal_fn.  */
-#define not_direct { -2, -2 }
-#define mask_load_direct { -1, 2 }
-#define load_lanes_direct { -1, -1 }
-#define mask_store_direct { 3, 2 }
-#define store_lanes_direct { 0, 0 }
-#define unary_direct { 0, 0 }
-#define binary_direct { 0, 0 }
+#define not_direct { -2, -2, false }
+#define mask_load_direct { -1, 2, false }
+#define load_lanes_direct { -1, -1, false }
+#define mask_store_direct { 3, 2, false }
+#define store_lanes_direct { 0, 0, false }
+#define unary_direct { 0, 0, true }
+#define binary_direct { 0, 0, true }
 
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
