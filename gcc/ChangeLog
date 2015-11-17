@@ -1,5 +1,10 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/i386/i386.c (ix86_builtin_vectorized_function): Remove
+	entries that map directly to optabs.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* internal-fn.h (direct_internal_fn_info): Add vectorizable flag.
 	* internal-fn.c (direct_internal_fn_array): Update accordingly.
 	* tree-vectorizer.h (vectorizable_function): Delete.
