@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
 #include "dbgcnt.h"
+#include "case-cfn-macros.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2612,10 +2613,10 @@ static int ix86_tune_defaulted;
 static int ix86_arch_specified;
 
 /* Vectorization library interface and handlers.  */
-static tree (*ix86_veclib_handler) (enum built_in_function, tree, tree);
+static tree (*ix86_veclib_handler) (combined_fn, tree, tree);
 
-static tree ix86_veclibabi_svml (enum built_in_function, tree, tree);
-static tree ix86_veclibabi_acml (enum built_in_function, tree, tree);
+static tree ix86_veclibabi_svml (combined_fn, tree, tree);
+static tree ix86_veclibabi_acml (combined_fn, tree, tree);
 
 /* Processor target table, indexed by processor number */
 struct ptt
@@ -41989,21 +41990,19 @@ ix86_store_returned_bounds (rtx slot, rtx bounds)
   emit_move_insn (slot, bounds);
 }
 
-/* Returns a function decl for a vectorized version of the builtin function
-   with builtin function code FN and the result vector type TYPE, or NULL_TREE
+/* Returns a function decl for a vectorized version of the combined function
+   with combined_fn code FN and the result vector type TYPE, or NULL_TREE
    if it is not available.  */
 
 static tree
-ix86_builtin_vectorized_function (tree fndecl, tree type_out,
+ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 				  tree type_in)
 {
   machine_mode in_mode, out_mode;
   int in_n, out_n;
-  enum built_in_function fn = DECL_FUNCTION_CODE (fndecl);
 
   if (TREE_CODE (type_out) != VECTOR_TYPE
-      || TREE_CODE (type_in) != VECTOR_TYPE
-      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+      || TREE_CODE (type_in) != VECTOR_TYPE)
     return NULL_TREE;
 
   out_mode = TYPE_MODE (TREE_TYPE (type_out));
@@ -42013,7 +42012,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 
   switch (fn)
     {
-    case BUILT_IN_SQRT:
+    CASE_CFN_SQRT:
       if (out_mode == DFmode && in_mode == DFmode)
 	{
 	  if (out_n == 2 && in_n == 2)
@@ -42023,17 +42022,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  else if (out_n == 8 && in_n == 8)
 	    return ix86_get_builtin (IX86_BUILTIN_SQRTPD512);
 	}
-      break;
-
-    case BUILT_IN_EXP2F:
-      if (out_mode == SFmode && in_mode == SFmode)
-	{
-	  if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_EXP2PS);
-	}
-      break;
-
-    case BUILT_IN_SQRTF:
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42045,9 +42033,17 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
-    case BUILT_IN_IFLOOR:
-    case BUILT_IN_LFLOOR:
-    case BUILT_IN_LLFLOOR:
+    CASE_CFN_EXP2:
+      if (out_mode == SFmode && in_mode == SFmode)
+	{
+	  if (out_n == 16 && in_n == 16)
+	    return ix86_get_builtin (IX86_BUILTIN_EXP2PS);
+	}
+      break;
+
+    CASE_CFN_IFLOOR:
+    CASE_CFN_LFLOOR:
+    CASE_CFN_LLFLOOR:
       /* The round insn does not trap on denormals.  */
       if (flag_trapping_math || !TARGET_ROUND)
 	break;
@@ -42061,15 +42057,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  else if (out_n == 16 && in_n == 8)
 	    return ix86_get_builtin (IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX512);
 	}
-      break;
-
-    case BUILT_IN_IFLOORF:
-    case BUILT_IN_LFLOORF:
-    case BUILT_IN_LLFLOORF:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
-	break;
-
       if (out_mode == SImode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42079,9 +42066,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
-    case BUILT_IN_ICEIL:
-    case BUILT_IN_LCEIL:
-    case BUILT_IN_LLCEIL:
+    CASE_CFN_ICEIL:
+    CASE_CFN_LCEIL:
+    CASE_CFN_LLCEIL:
       /* The round insn does not trap on denormals.  */
       if (flag_trapping_math || !TARGET_ROUND)
 	break;
@@ -42095,15 +42082,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  else if (out_n == 16 && in_n == 8)
 	    return ix86_get_builtin (IX86_BUILTIN_CEILPD_VEC_PACK_SFIX512);
 	}
-      break;
-
-    case BUILT_IN_ICEILF:
-    case BUILT_IN_LCEILF:
-    case BUILT_IN_LLCEILF:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
-	break;
-
       if (out_mode == SImode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42113,9 +42091,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
-    case BUILT_IN_IRINT:
-    case BUILT_IN_LRINT:
-    case BUILT_IN_LLRINT:
+    CASE_CFN_IRINT:
+    CASE_CFN_LRINT:
+    CASE_CFN_LLRINT:
       if (out_mode == SImode && in_mode == DFmode)
 	{
 	  if (out_n == 4 && in_n == 2)
@@ -42123,11 +42101,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  else if (out_n == 8 && in_n == 4)
 	    return ix86_get_builtin (IX86_BUILTIN_VEC_PACK_SFIX256);
 	}
-      break;
-
-    case BUILT_IN_IRINTF:
-    case BUILT_IN_LRINTF:
-    case BUILT_IN_LLRINTF:
       if (out_mode == SImode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42137,9 +42110,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
-    case BUILT_IN_IROUND:
-    case BUILT_IN_LROUND:
-    case BUILT_IN_LLROUND:
+    CASE_CFN_IROUND:
+    CASE_CFN_LROUND:
+    CASE_CFN_LLROUND:
       /* The round insn does not trap on denormals.  */
       if (flag_trapping_math || !TARGET_ROUND)
 	break;
@@ -42153,15 +42126,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  else if (out_n == 16 && in_n == 8)
 	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX512);
 	}
-      break;
-
-    case BUILT_IN_IROUNDF:
-    case BUILT_IN_LROUNDF:
-    case BUILT_IN_LLROUNDF:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
-	break;
-
       if (out_mode == SImode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42171,7 +42135,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
-    case BUILT_IN_COPYSIGN:
+    CASE_CFN_COPYSIGN:
       if (out_mode == DFmode && in_mode == DFmode)
 	{
 	  if (out_n == 2 && in_n == 2)
@@ -42181,9 +42145,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  else if (out_n == 8 && in_n == 8)
 	    return ix86_get_builtin (IX86_BUILTIN_CPYSGNPD512);
 	}
-      break;
-
-    case BUILT_IN_COPYSIGNF:
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42195,7 +42156,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
-    case BUILT_IN_FLOOR:
+    CASE_CFN_FLOOR:
       /* The round insn does not trap on denormals.  */
       if (flag_trapping_math || !TARGET_ROUND)
 	break;
@@ -42207,13 +42168,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  else if (out_n == 4 && in_n == 4)
 	    return ix86_get_builtin (IX86_BUILTIN_FLOORPD256);
 	}
-      break;
-
-    case BUILT_IN_FLOORF:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
-	break;
-
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42223,7 +42177,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
-    case BUILT_IN_CEIL:
+    CASE_CFN_CEIL:
       /* The round insn does not trap on denormals.  */
       if (flag_trapping_math || !TARGET_ROUND)
 	break;
@@ -42235,13 +42189,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  else if (out_n == 4 && in_n == 4)
 	    return ix86_get_builtin (IX86_BUILTIN_CEILPD256);
 	}
-      break;
-
-    case BUILT_IN_CEILF:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
-	break;
-
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42251,7 +42198,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
-    case BUILT_IN_TRUNC:
+    CASE_CFN_TRUNC:
       /* The round insn does not trap on denormals.  */
       if (flag_trapping_math || !TARGET_ROUND)
 	break;
@@ -42263,13 +42210,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  else if (out_n == 4 && in_n == 4)
 	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPD256);
 	}
-      break;
-
-    case BUILT_IN_TRUNCF:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
-	break;
-
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42279,7 +42219,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
-    case BUILT_IN_RINT:
+    CASE_CFN_RINT:
       /* The round insn does not trap on denormals.  */
       if (flag_trapping_math || !TARGET_ROUND)
 	break;
@@ -42291,13 +42231,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  else if (out_n == 4 && in_n == 4)
 	    return ix86_get_builtin (IX86_BUILTIN_RINTPD256);
 	}
-      break;
-
-    case BUILT_IN_RINTF:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
-	break;
-
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42307,7 +42240,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
-    case BUILT_IN_ROUND:
+    CASE_CFN_ROUND:
       /* The round insn does not trap on denormals.  */
       if (flag_trapping_math || !TARGET_ROUND)
 	break;
@@ -42319,13 +42252,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  else if (out_n == 4 && in_n == 4)
 	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPD_AZ256);
 	}
-      break;
-
-    case BUILT_IN_ROUNDF:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
-	break;
-
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42335,7 +42261,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
-    case BUILT_IN_FMA:
+    CASE_CFN_FMA:
       if (out_mode == DFmode && in_mode == DFmode)
 	{
 	  if (out_n == 2 && in_n == 2)
@@ -42343,9 +42269,6 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	  if (out_n == 4 && in_n == 4)
 	    return ix86_get_builtin (IX86_BUILTIN_VFMADDPD256);
 	}
-      break;
-
-    case BUILT_IN_FMAF:
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
@@ -42361,8 +42284,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 
   /* Dispatch to a handler for a vectorization library.  */
   if (ix86_veclib_handler)
-    return ix86_veclib_handler ((enum built_in_function) fn, type_out,
-				type_in);
+    return ix86_veclib_handler (combined_fn (fn), type_out, type_in);
 
   return NULL_TREE;
 }
@@ -42371,7 +42293,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
    a library with vectorized intrinsics.  */
 
 static tree
-ix86_veclibabi_svml (enum built_in_function fn, tree type_out, tree type_in)
+ix86_veclibabi_svml (combined_fn fn, tree type_out, tree type_in)
 {
   char name[20];
   tree fntype, new_fndecl, args;
@@ -42394,47 +42316,26 @@ ix86_veclibabi_svml (enum built_in_function fn, tree type_out, tree type_in)
 
   switch (fn)
     {
-    case BUILT_IN_EXP:
-    case BUILT_IN_LOG:
-    case BUILT_IN_LOG10:
-    case BUILT_IN_POW:
-    case BUILT_IN_TANH:
-    case BUILT_IN_TAN:
-    case BUILT_IN_ATAN:
-    case BUILT_IN_ATAN2:
-    case BUILT_IN_ATANH:
-    case BUILT_IN_CBRT:
-    case BUILT_IN_SINH:
-    case BUILT_IN_SIN:
-    case BUILT_IN_ASINH:
-    case BUILT_IN_ASIN:
-    case BUILT_IN_COSH:
-    case BUILT_IN_COS:
-    case BUILT_IN_ACOSH:
-    case BUILT_IN_ACOS:
-      if (el_mode != DFmode || n != 2)
-	return NULL_TREE;
-      break;
-
-    case BUILT_IN_EXPF:
-    case BUILT_IN_LOGF:
-    case BUILT_IN_LOG10F:
-    case BUILT_IN_POWF:
-    case BUILT_IN_TANHF:
-    case BUILT_IN_TANF:
-    case BUILT_IN_ATANF:
-    case BUILT_IN_ATAN2F:
-    case BUILT_IN_ATANHF:
-    case BUILT_IN_CBRTF:
-    case BUILT_IN_SINHF:
-    case BUILT_IN_SINF:
-    case BUILT_IN_ASINHF:
-    case BUILT_IN_ASINF:
-    case BUILT_IN_COSHF:
-    case BUILT_IN_COSF:
-    case BUILT_IN_ACOSHF:
-    case BUILT_IN_ACOSF:
-      if (el_mode != SFmode || n != 4)
+    CASE_CFN_EXP:
+    CASE_CFN_LOG:
+    CASE_CFN_LOG10:
+    CASE_CFN_POW:
+    CASE_CFN_TANH:
+    CASE_CFN_TAN:
+    CASE_CFN_ATAN:
+    CASE_CFN_ATAN2:
+    CASE_CFN_ATANH:
+    CASE_CFN_CBRT:
+    CASE_CFN_SINH:
+    CASE_CFN_SIN:
+    CASE_CFN_ASINH:
+    CASE_CFN_ASIN:
+    CASE_CFN_COSH:
+    CASE_CFN_COS:
+    CASE_CFN_ACOSH:
+    CASE_CFN_ACOS:
+      if ((el_mode != DFmode || n != 2)
+	  && (el_mode != SFmode || n != 4))
 	return NULL_TREE;
       break;
 
@@ -42442,11 +42343,12 @@ ix86_veclibabi_svml (enum built_in_function fn, tree type_out, tree type_in)
       return NULL_TREE;
     }
 
-  bname = IDENTIFIER_POINTER (DECL_NAME (builtin_decl_implicit (fn)));
+  tree fndecl = mathfn_built_in (TREE_TYPE (type_in), fn);
+  bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
 
-  if (fn == BUILT_IN_LOGF)
+  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_LOGF)
     strcpy (name, "vmlsLn4");
-  else if (fn == BUILT_IN_LOG)
+  else if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_LOG)
     strcpy (name, "vmldLn2");
   else if (n == 4)
     {
@@ -42460,9 +42362,7 @@ ix86_veclibabi_svml (enum built_in_function fn, tree type_out, tree type_in)
   name[4] &= ~0x20;
 
   arity = 0;
-  for (args = DECL_ARGUMENTS (builtin_decl_implicit (fn));
-       args;
-       args = TREE_CHAIN (args))
+  for (args = DECL_ARGUMENTS (fndecl); args; args = TREE_CHAIN (args))
     arity++;
 
   if (arity == 1)
@@ -42485,7 +42385,7 @@ ix86_veclibabi_svml (enum built_in_function fn, tree type_out, tree type_in)
    a library with vectorized intrinsics.  */
 
 static tree
-ix86_veclibabi_acml (enum built_in_function fn, tree type_out, tree type_in)
+ix86_veclibabi_acml (combined_fn fn, tree type_out, tree type_in)
 {
   char name[20] = "__vr.._";
   tree fntype, new_fndecl, args;
@@ -42511,30 +42411,23 @@ ix86_veclibabi_acml (enum built_in_function fn, tree type_out, tree type_in)
 
   switch (fn)
     {
-    case BUILT_IN_SIN:
-    case BUILT_IN_COS:
-    case BUILT_IN_EXP:
-    case BUILT_IN_LOG:
-    case BUILT_IN_LOG2:
-    case BUILT_IN_LOG10:
-      name[4] = 'd';
-      name[5] = '2';
-      if (el_mode != DFmode
-	  || n != 2)
-	return NULL_TREE;
-      break;
-
-    case BUILT_IN_SINF:
-    case BUILT_IN_COSF:
-    case BUILT_IN_EXPF:
-    case BUILT_IN_POWF:
-    case BUILT_IN_LOGF:
-    case BUILT_IN_LOG2F:
-    case BUILT_IN_LOG10F:
-      name[4] = 's';
-      name[5] = '4';
-      if (el_mode != SFmode
-	  || n != 4)
+    CASE_CFN_SIN:
+    CASE_CFN_COS:
+    CASE_CFN_EXP:
+    CASE_CFN_LOG:
+    CASE_CFN_LOG2:
+    CASE_CFN_LOG10:
+      if (el_mode == DFmode && n == 2)
+	{
+	  name[4] = 'd';
+	  name[5] = '2';
+	}
+      else if (el_mode == SFmode && n == 4)
+	{
+	  name[4] = 's';
+	  name[5] = '4';
+	}
+      else
 	return NULL_TREE;
       break;
 
@@ -42542,13 +42435,12 @@ ix86_veclibabi_acml (enum built_in_function fn, tree type_out, tree type_in)
       return NULL_TREE;
     }
 
-  bname = IDENTIFIER_POINTER (DECL_NAME (builtin_decl_implicit (fn)));
+  tree fndecl = mathfn_built_in (TREE_TYPE (type_in), fn);
+  bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
   sprintf (name + 7, "%s", bname+10);
 
   arity = 0;
-  for (args = DECL_ARGUMENTS (builtin_decl_implicit (fn));
-       args;
-       args = TREE_CHAIN (args))
+  for (args = DECL_ARGUMENTS (fndecl); args; args = TREE_CHAIN (args))
     arity++;
 
   if (arity == 1)

@@ -83,7 +83,8 @@ extern bool default_has_ifunc_p (void);
 
 extern const char * default_invalid_within_doloop (const rtx_insn *);
 
-extern tree default_builtin_vectorized_function (tree, tree, tree);
+extern tree default_builtin_vectorized_function (unsigned int, tree, tree);
+extern tree default_builtin_md_vectorized_function (tree, tree, tree);
 
 extern tree default_builtin_vectorized_conversion (unsigned int, tree, tree);
 

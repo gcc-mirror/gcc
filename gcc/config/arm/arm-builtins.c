@@ -35,6 +35,7 @@
 #include "explow.h"
 #include "expr.h"
 #include "langhooks.h"
+#include "case-cfn-macros.h"
 
 #define SIMD_MAX_BUILTIN_ARGS 5
 
@@ -2842,7 +2843,7 @@ arm_expand_builtin (tree exp,
 }
 
 tree
-arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
+arm_builtin_vectorized_function (unsigned int fn, tree type_out, tree type_in)
 {
   machine_mode in_mode, out_mode;
   int in_n, out_n;
@@ -2879,19 +2880,16 @@ arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
       ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##v4sf, false) \
       : NULL_TREE))
 
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+  switch (fn)
     {
-      enum built_in_function fn = DECL_FUNCTION_CODE (fndecl);
-      switch (fn)
-        {
-          case BUILT_IN_FLOORF:
-            return ARM_FIND_VRINT_VARIANT (vrintm);
-          case BUILT_IN_CEILF:
-            return ARM_FIND_VRINT_VARIANT (vrintp);
-          case BUILT_IN_TRUNCF:
-            return ARM_FIND_VRINT_VARIANT (vrintz);
-          case BUILT_IN_ROUNDF:
-            return ARM_FIND_VRINT_VARIANT (vrinta);
+    CASE_CFN_FLOOR:
+      return ARM_FIND_VRINT_VARIANT (vrintm);
+    CASE_CFN_CEIL:
+      return ARM_FIND_VRINT_VARIANT (vrintp);
+    CASE_CFN_TRUNC:
+      return ARM_FIND_VRINT_VARIANT (vrintz);
+    CASE_CFN_ROUND:
+      return ARM_FIND_VRINT_VARIANT (vrinta);
 #undef ARM_CHECK_BUILTIN_MODE_1
 #define ARM_CHECK_BUILTIN_MODE_1(C) \
   (out_mode == SImode && out_n == C \
@@ -2910,52 +2908,51 @@ arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
    : (ARM_CHECK_BUILTIN_MODE (4) \
      ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##uv4sfv4si, false) \
      : NULL_TREE))
-          case BUILT_IN_LROUNDF:
-            return out_unsigned_p
-                     ? ARM_FIND_VCVTU_VARIANT (vcvta)
-                     : ARM_FIND_VCVT_VARIANT (vcvta);
-          case BUILT_IN_LCEILF:
-            return out_unsigned_p
-                     ? ARM_FIND_VCVTU_VARIANT (vcvtp)
-                     : ARM_FIND_VCVT_VARIANT (vcvtp);
-          case BUILT_IN_LFLOORF:
-            return out_unsigned_p
-                     ? ARM_FIND_VCVTU_VARIANT (vcvtm)
-                     : ARM_FIND_VCVT_VARIANT (vcvtm);
+    CASE_CFN_LROUND:
+      return (out_unsigned_p
+	      ? ARM_FIND_VCVTU_VARIANT (vcvta)
+	      : ARM_FIND_VCVT_VARIANT (vcvta));
+    CASE_CFN_LCEIL:
+      return (out_unsigned_p
+	      ? ARM_FIND_VCVTU_VARIANT (vcvtp)
+	      : ARM_FIND_VCVT_VARIANT (vcvtp));
+    CASE_CFN_LFLOOR:
+      return (out_unsigned_p
+	      ? ARM_FIND_VCVTU_VARIANT (vcvtm)
+	      : ARM_FIND_VCVT_VARIANT (vcvtm));
 #undef ARM_CHECK_BUILTIN_MODE
 #define ARM_CHECK_BUILTIN_MODE(C, N) \
   (out_mode == N##mode && out_n == C \
    && in_mode == N##mode && in_n == C)
-          case BUILT_IN_BSWAP16:
-            if (ARM_CHECK_BUILTIN_MODE (4, HI))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv4hi, false);
-            else if (ARM_CHECK_BUILTIN_MODE (8, HI))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv8hi, false);
-            else
-              return NULL_TREE;
-          case BUILT_IN_BSWAP32:
-            if (ARM_CHECK_BUILTIN_MODE (2, SI))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv2si, false);
-            else if (ARM_CHECK_BUILTIN_MODE (4, SI))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv4si, false);
-            else
-              return NULL_TREE;
-          case BUILT_IN_BSWAP64:
-            if (ARM_CHECK_BUILTIN_MODE (2, DI))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv2di, false);
-            else
-              return NULL_TREE;
-	  case BUILT_IN_COPYSIGNF:
-	    if (ARM_CHECK_BUILTIN_MODE (2, SF))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_copysignfv2sf, false);
-	    else if (ARM_CHECK_BUILTIN_MODE (4, SF))
-              return arm_builtin_decl (ARM_BUILTIN_NEON_copysignfv4sf, false);
-	    else
-	      return NULL_TREE;
+    case CFN_BUILT_IN_BSWAP16:
+      if (ARM_CHECK_BUILTIN_MODE (4, HI))
+	return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv4hi, false);
+      else if (ARM_CHECK_BUILTIN_MODE (8, HI))
+	return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv8hi, false);
+      else
+	return NULL_TREE;
+    case CFN_BUILT_IN_BSWAP32:
+      if (ARM_CHECK_BUILTIN_MODE (2, SI))
+	return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv2si, false);
+      else if (ARM_CHECK_BUILTIN_MODE (4, SI))
+	return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv4si, false);
+      else
+	return NULL_TREE;
+    case CFN_BUILT_IN_BSWAP64:
+      if (ARM_CHECK_BUILTIN_MODE (2, DI))
+	return arm_builtin_decl (ARM_BUILTIN_NEON_bswapv2di, false);
+      else
+	return NULL_TREE;
+    CASE_CFN_COPYSIGN:
+      if (ARM_CHECK_BUILTIN_MODE (2, SF))
+	return arm_builtin_decl (ARM_BUILTIN_NEON_copysignfv2sf, false);
+      else if (ARM_CHECK_BUILTIN_MODE (4, SF))
+	return arm_builtin_decl (ARM_BUILTIN_NEON_copysignfv4sf, false);
+      else
+	return NULL_TREE;
 
-          default:
-            return NULL_TREE;
-        }
+    default:
+      return NULL_TREE;
     }
   return NULL_TREE;
 }

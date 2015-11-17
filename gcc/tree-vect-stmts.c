@@ -1648,20 +1648,20 @@ vect_finish_stmt_generation (gimple *stmt, gimple *vec_stmt,
 tree
 vectorizable_function (gcall *call, tree vectype_out, tree vectype_in)
 {
-  tree fndecl = gimple_call_fndecl (call);
-
-  /* We only handle functions that do not read or clobber memory -- i.e.
-     const or novops ones.  */
-  if (!(gimple_call_flags (call) & (ECF_CONST | ECF_NOVOPS)))
+  /* We only handle functions that do not read or clobber memory.  */
+  if (gimple_vuse (call))
     return NULL_TREE;
 
-  if (!fndecl
-      || TREE_CODE (fndecl) != FUNCTION_DECL
-      || !DECL_BUILT_IN (fndecl))
-    return NULL_TREE;
+  combined_fn fn = gimple_call_combined_fn (call);
+  if (fn != CFN_LAST)
+    return targetm.vectorize.builtin_vectorized_function
+      (fn, vectype_out, vectype_in);
 
-  return targetm.vectorize.builtin_vectorized_function (fndecl, vectype_out,
-						        vectype_in);
+  if (gimple_call_builtin_p (call, BUILT_IN_MD))
+    return targetm.vectorize.builtin_md_vectorized_function
+      (gimple_call_fndecl (call), vectype_out, vectype_in);
+
+  return NULL_TREE;
 }
 
 
