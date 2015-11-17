@@ -2107,20 +2107,14 @@ cp_fold (tree x)
 	int i, m, sv = optimize, nw = sv, changed = 0;
 	tree callee = get_callee_fndecl (x);
 
+	/* Some built-in function calls will be evaluated at compile-time in
+	   fold ().  Set optimize to 1 when folding __builtin_constant_p inside
+	   a constexpr function so that fold_builtin_1 doesn't fold it to 0.  */
 	if (callee && DECL_BUILT_IN (callee) && !optimize
 	    && DECL_IS_BUILTIN_CONSTANT_P (callee)
 	    && current_function_decl
 	    && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
 	  nw = 1;
-	optimize = nw;
-	r = fold (x);
-	optimize = sv;
-
-	if (TREE_CODE (r) != CALL_EXPR)
-	  {
-	    x = cp_fold (r);
-	    break;
-	  }
 
 	x = copy_node (x);
 
@@ -2145,11 +2139,11 @@ cp_fold (tree x)
 
 	optimize = nw;
 
-	/* Invoke maybe_constant_value for functions being declared
-	   constexpr, and are no AGGR_INIT_EXPRs ...
+	/* Invoke maybe_constant_value for functions declared
+	   constexpr and not called with AGGR_INIT_EXPRs.
 	   TODO:
-	   Due issues in maybe_constant_value for CALL_EXPR with
-	   arguments passed by reference, it is disabled.  */
+	   Do constexpr expansion of expressions where the call itself is not
+	   constant, but the call followed by an INDIRECT_REF is.  */
 	if (callee && DECL_DECLARED_CONSTEXPR_P (callee))
           r = maybe_constant_value (x);
 	optimize = sv;
