@@ -1,3 +1,9 @@
+2015-11-18  Alan Modra  <amodra@gmail.com>
+
+	* configure.ac (POWERPC64_TOC_POINTER_ALIGNMENT): Pass -z norelro
+	to ld.
+	* configure: Regenerate.
+
 2015-11-17  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-loop.c (pass_tree_loop_init::execute): Improve comments.
