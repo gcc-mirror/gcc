@@ -1,5 +1,12 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-ssa-reassoc.c: Include case-cfn-macros.h.
+	(stmt_is_power_of_op): Use combined_fn instead of built-in codes.
+	(decrement_power, acceptable_pow_call): Likewise.
+	(attempt_builtin_copysign): Likewise.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vrp.c: Include case-cfn-macros.h.
 	(extract_range_basic): Switch on combined_fn rather than handling
 	built-in functions and internal functions separately.
