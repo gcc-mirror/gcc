@@ -1,3 +1,10 @@
+2015-11-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR 48568
+	* doc/extend.texi (Common Function Attributes) [visibility]:
+	Add cross-references to matching variable and type attributes.
+	(Common Variable Attributes) [visibility]: Add missing entry.
+
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/rs6000/rs6000.c (rs6000_builtin_vectorized_function): Remove

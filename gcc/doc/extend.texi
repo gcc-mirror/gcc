@@ -3216,6 +3216,9 @@ class itself is instantiated.
 @item visibility ("@var{visibility_type}")
 @cindex @code{visibility} function attribute
 This attribute affects the linkage of the declaration to which it is attached.
+It can be applied to variables (@pxref{Common Variable Attributes}) and types
+(@pxref{Common Type Attributes}) as well as functions.
+
 There are four supported @var{visibility_type} values: default,
 hidden, protected or internal visibility.
 
@@ -5659,6 +5662,12 @@ struct S  __attribute__ ((vector_size (16))) foo;
 @noindent
 is invalid even if the size of the structure is the same as the size of
 the @code{int}.
+
+@item visibility ("@var{visibility_type}")
+@cindex @code{visibility} variable attribute
+This attribute affects the linkage of the declaration to which it is attached.
+The @code{visibility} attribute is described in
+@ref{Common Function Attributes}.
 
 @item weak
 @cindex @code{weak} variable attribute
