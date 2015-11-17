@@ -3465,7 +3465,17 @@ scev_const_prop (void)
 
 	  /* Replace the uses of the name.  */
 	  if (name != ev)
-	    replace_uses_by (name, ev);
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Replacing uses of: ");
+		  print_generic_expr (dump_file, name, 0);
+		  fprintf (dump_file, " with: ");
+		  print_generic_expr (dump_file, ev, 0);
+		  fprintf (dump_file, "\n");
+		}
+	      replace_uses_by (name, ev);
+	    }
 
 	  if (!ssa_names_to_remove)
 	    ssa_names_to_remove = BITMAP_ALLOC (NULL);
