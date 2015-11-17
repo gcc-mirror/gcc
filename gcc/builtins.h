@@ -50,6 +50,7 @@ extern struct target_builtins *this_target_builtins;
 extern bool force_folding_builtin_constant_p;
 
 extern bool is_builtin_fn (tree);
+extern bool called_as_built_in (tree);
 extern bool get_object_alignment_1 (tree, unsigned int *,
 				    unsigned HOST_WIDE_INT *);
 extern unsigned int get_object_alignment (tree);

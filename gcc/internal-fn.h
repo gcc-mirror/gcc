@@ -162,5 +162,6 @@ extern bool direct_internal_fn_supported_p (internal_fn, tree_pair);
 extern bool direct_internal_fn_supported_p (internal_fn, tree);
 
 extern void expand_internal_call (gcall *);
+extern void expand_internal_call (internal_fn, gcall *);
 
 #endif

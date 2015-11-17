@@ -1,5 +1,33 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.h (called_as_built_in): Declare.
+	* builtins.c (called_as_built_in): Make external.
+	* internal-fn.h (expand_internal_call): Define a variant that
+	specifies the internal function explicitly.
+	* internal-fn.c (expand_load_lanes_optab_fn)
+	(expand_store_lanes_optab_fn, expand_ANNOTATE, expand_GOMP_SIMD_LANE)
+	(expand_GOMP_SIMD_VF, expand_GOMP_SIMD_LAST_LANE)
+	(expand_GOMP_SIMD_ORDERED_START, expand_GOMP_SIMD_ORDERED_END)
+	(expand_UBSAN_NULL, expand_UBSAN_BOUNDS, expand_UBSAN_VPTR)
+	(expand_UBSAN_OBJECT_SIZE, expand_ASAN_CHECK, expand_TSAN_FUNC_EXIT)
+	(expand_UBSAN_CHECK_ADD, expand_UBSAN_CHECK_SUB)
+	(expand_UBSAN_CHECK_MUL, expand_ADD_OVERFLOW, expand_SUB_OVERFLOW)
+	(expand_MUL_OVERFLOW, expand_LOOP_VECTORIZED)
+	(expand_mask_load_optab_fn, expand_mask_store_optab_fn)
+	(expand_ABNORMAL_DISPATCHER, expand_BUILTIN_EXPECT, expand_VA_ARG)
+	(expand_UNIQUE, expand_GOACC_DIM_SIZE, expand_GOACC_DIM_POS)
+	(expand_GOACC_LOOP, expand_GOACC_REDUCTION, expand_direct_optab_fn)
+	(expand_unary_optab_fn, expand_binary_optab_fn): Add an internal_fn
+	argument.
+	(internal_fn_expanders): Update prototype.
+	(expand_internal_call): Define a variant that specifies the
+	internal function explicitly. Use it to implement the previous
+	interface.
+	* cfgexpand.c (expand_call_stmt): Try to expand calls to built-in
+	functions as calls to internal functions.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* Makefile.in (MOSTLYCLEANFILES): Add cfn-operators.pd.
 	(generated_files): Likewise.
 	(s-cfn-operators, cfn-operators.pd): New rules.

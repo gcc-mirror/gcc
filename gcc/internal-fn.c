@@ -103,7 +103,7 @@ get_multi_vector_move (tree array_type, convert_optab optab)
 /* Expand LOAD_LANES call STMT using optab OPTAB.  */
 
 static void
-expand_load_lanes_optab_fn (gcall *stmt, convert_optab optab)
+expand_load_lanes_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[2];
   tree type, lhs, rhs;
@@ -127,7 +127,7 @@ expand_load_lanes_optab_fn (gcall *stmt, convert_optab optab)
 /* Expand STORE_LANES call STMT using optab OPTAB.  */
 
 static void
-expand_store_lanes_optab_fn (gcall *stmt, convert_optab optab)
+expand_store_lanes_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[2];
   tree type, lhs, rhs;
@@ -149,7 +149,7 @@ expand_store_lanes_optab_fn (gcall *stmt, convert_optab optab)
 }
 
 static void
-expand_ANNOTATE (gcall *)
+expand_ANNOTATE (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -157,7 +157,7 @@ expand_ANNOTATE (gcall *)
 /* This should get expanded in adjust_simduid_builtins.  */
 
 static void
-expand_GOMP_SIMD_LANE (gcall *)
+expand_GOMP_SIMD_LANE (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -165,7 +165,7 @@ expand_GOMP_SIMD_LANE (gcall *)
 /* This should get expanded in adjust_simduid_builtins.  */
 
 static void
-expand_GOMP_SIMD_VF (gcall *)
+expand_GOMP_SIMD_VF (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -173,7 +173,7 @@ expand_GOMP_SIMD_VF (gcall *)
 /* This should get expanded in adjust_simduid_builtins.  */
 
 static void
-expand_GOMP_SIMD_LAST_LANE (gcall *)
+expand_GOMP_SIMD_LAST_LANE (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -181,7 +181,7 @@ expand_GOMP_SIMD_LAST_LANE (gcall *)
 /* This should get expanded in adjust_simduid_builtins.  */
 
 static void
-expand_GOMP_SIMD_ORDERED_START (gcall *)
+expand_GOMP_SIMD_ORDERED_START (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -189,7 +189,7 @@ expand_GOMP_SIMD_ORDERED_START (gcall *)
 /* This should get expanded in adjust_simduid_builtins.  */
 
 static void
-expand_GOMP_SIMD_ORDERED_END (gcall *)
+expand_GOMP_SIMD_ORDERED_END (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -197,7 +197,7 @@ expand_GOMP_SIMD_ORDERED_END (gcall *)
 /* This should get expanded in the sanopt pass.  */
 
 static void
-expand_UBSAN_NULL (gcall *)
+expand_UBSAN_NULL (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -205,7 +205,7 @@ expand_UBSAN_NULL (gcall *)
 /* This should get expanded in the sanopt pass.  */
 
 static void
-expand_UBSAN_BOUNDS (gcall *)
+expand_UBSAN_BOUNDS (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -213,7 +213,7 @@ expand_UBSAN_BOUNDS (gcall *)
 /* This should get expanded in the sanopt pass.  */
 
 static void
-expand_UBSAN_VPTR (gcall *)
+expand_UBSAN_VPTR (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -221,7 +221,7 @@ expand_UBSAN_VPTR (gcall *)
 /* This should get expanded in the sanopt pass.  */
 
 static void
-expand_UBSAN_OBJECT_SIZE (gcall *)
+expand_UBSAN_OBJECT_SIZE (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -229,7 +229,7 @@ expand_UBSAN_OBJECT_SIZE (gcall *)
 /* This should get expanded in the sanopt pass.  */
 
 static void
-expand_ASAN_CHECK (gcall *)
+expand_ASAN_CHECK (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -237,7 +237,7 @@ expand_ASAN_CHECK (gcall *)
 /* This should get expanded in the tsan pass.  */
 
 static void
-expand_TSAN_FUNC_EXIT (gcall *)
+expand_TSAN_FUNC_EXIT (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -1639,7 +1639,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 /* Expand UBSAN_CHECK_ADD call STMT.  */
 
 static void
-expand_UBSAN_CHECK_ADD (gcall *stmt)
+expand_UBSAN_CHECK_ADD (internal_fn, gcall *stmt)
 {
   location_t loc = gimple_location (stmt);
   tree lhs = gimple_call_lhs (stmt);
@@ -1652,7 +1652,7 @@ expand_UBSAN_CHECK_ADD (gcall *stmt)
 /* Expand UBSAN_CHECK_SUB call STMT.  */
 
 static void
-expand_UBSAN_CHECK_SUB (gcall *stmt)
+expand_UBSAN_CHECK_SUB (internal_fn, gcall *stmt)
 {
   location_t loc = gimple_location (stmt);
   tree lhs = gimple_call_lhs (stmt);
@@ -1668,7 +1668,7 @@ expand_UBSAN_CHECK_SUB (gcall *stmt)
 /* Expand UBSAN_CHECK_MUL call STMT.  */
 
 static void
-expand_UBSAN_CHECK_MUL (gcall *stmt)
+expand_UBSAN_CHECK_MUL (internal_fn, gcall *stmt)
 {
   location_t loc = gimple_location (stmt);
   tree lhs = gimple_call_lhs (stmt);
@@ -1853,7 +1853,7 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
 /* Expand ADD_OVERFLOW STMT.  */
 
 static void
-expand_ADD_OVERFLOW (gcall *stmt)
+expand_ADD_OVERFLOW (internal_fn, gcall *stmt)
 {
   expand_arith_overflow (PLUS_EXPR, stmt);
 }
@@ -1861,7 +1861,7 @@ expand_ADD_OVERFLOW (gcall *stmt)
 /* Expand SUB_OVERFLOW STMT.  */
 
 static void
-expand_SUB_OVERFLOW (gcall *stmt)
+expand_SUB_OVERFLOW (internal_fn, gcall *stmt)
 {
   expand_arith_overflow (MINUS_EXPR, stmt);
 }
@@ -1869,7 +1869,7 @@ expand_SUB_OVERFLOW (gcall *stmt)
 /* Expand MUL_OVERFLOW STMT.  */
 
 static void
-expand_MUL_OVERFLOW (gcall *stmt)
+expand_MUL_OVERFLOW (internal_fn, gcall *stmt)
 {
   expand_arith_overflow (MULT_EXPR, stmt);
 }
@@ -1877,7 +1877,7 @@ expand_MUL_OVERFLOW (gcall *stmt)
 /* This should get folded in tree-vectorizer.c.  */
 
 static void
-expand_LOOP_VECTORIZED (gcall *)
+expand_LOOP_VECTORIZED (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -1885,7 +1885,7 @@ expand_LOOP_VECTORIZED (gcall *)
 /* Expand MASK_LOAD call STMT using optab OPTAB.  */
 
 static void
-expand_mask_load_optab_fn (gcall *stmt, convert_optab optab)
+expand_mask_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[3];
   tree type, lhs, rhs, maskt;
@@ -1914,7 +1914,7 @@ expand_mask_load_optab_fn (gcall *stmt, convert_optab optab)
 /* Expand MASK_STORE call STMT using optab OPTAB.  */
 
 static void
-expand_mask_store_optab_fn (gcall *stmt, convert_optab optab)
+expand_mask_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[3];
   tree type, lhs, rhs, maskt;
@@ -1939,12 +1939,12 @@ expand_mask_store_optab_fn (gcall *stmt, convert_optab optab)
 }
 
 static void
-expand_ABNORMAL_DISPATCHER (gcall *)
+expand_ABNORMAL_DISPATCHER (internal_fn, gcall *)
 {
 }
 
 static void
-expand_BUILTIN_EXPECT (gcall *stmt)
+expand_BUILTIN_EXPECT (internal_fn, gcall *stmt)
 {
   /* When guessing was done, the hints should be already stripped away.  */
   gcc_assert (!flag_guess_branch_prob || optimize == 0 || seen_error ());
@@ -1964,7 +1964,7 @@ expand_BUILTIN_EXPECT (gcall *stmt)
    should never be called.  */
 
 static void
-expand_VA_ARG (gcall *stmt ATTRIBUTE_UNUSED)
+expand_VA_ARG (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -1972,7 +1972,7 @@ expand_VA_ARG (gcall *stmt ATTRIBUTE_UNUSED)
 /* Expand the IFN_UNIQUE function according to its first argument.  */
 
 static void
-expand_UNIQUE (gcall *stmt)
+expand_UNIQUE (internal_fn, gcall *stmt)
 {
   rtx pattern = NULL_RTX;
   enum ifn_unique_kind kind
@@ -2018,7 +2018,7 @@ expand_UNIQUE (gcall *stmt)
 /* The size of an OpenACC compute dimension.  */
 
 static void
-expand_GOACC_DIM_SIZE (gcall *stmt)
+expand_GOACC_DIM_SIZE (internal_fn, gcall *stmt)
 {
   tree lhs = gimple_call_lhs (stmt);
 
@@ -2039,7 +2039,7 @@ expand_GOACC_DIM_SIZE (gcall *stmt)
 /* The position of an OpenACC execution engine along one compute axis.  */
 
 static void
-expand_GOACC_DIM_POS (gcall *stmt)
+expand_GOACC_DIM_POS (internal_fn, gcall *stmt)
 {
   tree lhs = gimple_call_lhs (stmt);
 
@@ -2060,7 +2060,7 @@ expand_GOACC_DIM_POS (gcall *stmt)
 /* This is expanded by oacc_device_lower pass.  */
 
 static void
-expand_GOACC_LOOP (gcall *stmt ATTRIBUTE_UNUSED)
+expand_GOACC_LOOP (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -2068,20 +2068,20 @@ expand_GOACC_LOOP (gcall *stmt ATTRIBUTE_UNUSED)
 /* This is expanded by oacc_device_lower pass.  */
 
 static void
-expand_GOACC_REDUCTION (gcall *stmt ATTRIBUTE_UNUSED)
+expand_GOACC_REDUCTION (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
 
-/* Expand call STMT using OPTAB, which has a single output operand and
-   NARGS input operands.  */
+/* Expand a call to FN using the operands in STMT.  FN has a single
+   output operand and NARGS input operands.  */
 
 static void
-expand_direct_optab_fn (gcall *stmt, direct_optab optab, unsigned int nargs)
+expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
+			unsigned int nargs)
 {
   expand_operand *ops = XALLOCAVEC (expand_operand, nargs + 1);
 
-  internal_fn fn = gimple_call_internal_fn (stmt);
   tree_pair types = direct_internal_fn_types (fn, stmt);
   insn_code icode = direct_optab_handler (optab, TYPE_MODE (types.first));
 
@@ -2119,11 +2119,11 @@ expand_direct_optab_fn (gcall *stmt, direct_optab optab, unsigned int nargs)
 
 /* Expanders for optabs that can use expand_direct_optab_fn.  */
 
-#define expand_unary_optab_fn(STMT, OPTAB) \
-  expand_direct_optab_fn (STMT, OPTAB, 1)
+#define expand_unary_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 1)
 
-#define expand_binary_optab_fn(STMT, OPTAB) \
-  expand_direct_optab_fn (STMT, OPTAB, 2)
+#define expand_binary_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 2)
 
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
@@ -2219,9 +2219,9 @@ direct_internal_fn_supported_p (internal_fn fn, tree type)
 
 #define DEF_INTERNAL_OPTAB_FN(CODE, FLAGS, OPTAB, TYPE) \
   static void						\
-  expand_##CODE (gcall *stmt)				\
+  expand_##CODE (internal_fn fn, gcall *stmt)		\
   {							\
-    expand_##TYPE##_optab_fn (stmt, OPTAB##_optab);	\
+    expand_##TYPE##_optab_fn (fn, stmt, OPTAB##_optab);	\
   }
 #include "internal-fn.def"
 
@@ -2231,16 +2231,24 @@ direct_internal_fn_supported_p (internal_fn fn, tree type)
        expand_<NAME> (gcall *stmt)
 
    where STMT is the statement that performs the call. */
-static void (*const internal_fn_expanders[]) (gcall *) = {
+static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) expand_##CODE,
 #include "internal-fn.def"
   0
 };
+
+/* Expand STMT as though it were a call to internal function FN.  */
+
+void
+expand_internal_call (internal_fn fn, gcall *stmt)
+{
+  internal_fn_expanders[fn] (fn, stmt);
+}
 
 /* Expand STMT, which is a call to internal function FN.  */
 
 void
 expand_internal_call (gcall *stmt)
 {
-  internal_fn_expanders[(int) gimple_call_internal_fn (stmt)] (stmt);
+  expand_internal_call (gimple_call_internal_fn (stmt), stmt);
 }
