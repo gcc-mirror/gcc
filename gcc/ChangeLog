@@ -1,5 +1,17 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* internal-fn.h (direct_internal_fn_info): Add vectorizable flag.
+	* internal-fn.c (direct_internal_fn_array): Update accordingly.
+	* tree-vectorizer.h (vectorizable_function): Delete.
+	* tree-vect-stmts.c: Include internal-fn.h.
+	(vectorizable_internal_function): New function.
+	(vectorizable_function): Inline into...
+	(vectorizable_call): ...here.  Explicitly reject calls that read
+	from or write to memory.  Try using an internal function before
+	falling back on the old vectorizable_function behavior.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (builtin_vectorized_function): Take a combined_fn (in
 	the form of an unsigned int) rather than a function decl.
 	(builtin_md_vectorized_function): New.

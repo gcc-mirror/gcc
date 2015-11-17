@@ -134,6 +134,14 @@ struct direct_internal_fn_info
      function isn't directly mapped to an optab.  */
   signed int type0 : 8;
   signed int type1 : 8;
+  /* True if the function is pointwise, so that it can be vectorized by
+     converting the return type and all argument types to vectors of the
+     same number of elements.  E.g. we can vectorize an IFN_SQRT on
+     floats as an IFN_SQRT on vectors of N floats.
+
+     This only needs 1 bit, but occupies the full 16 to ensure a nice
+     layout.  */
+  unsigned int vectorizable : 16;
 };
 
 extern const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1];
