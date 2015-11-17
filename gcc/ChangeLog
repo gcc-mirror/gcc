@@ -1,5 +1,9 @@
 2015-11-17  Tom de Vries  <tom@codesourcery.com>
 
+	* tree-ssa-loop.c (pass_tree_loop_init::execute): Improve comments.
+
+2015-11-17  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-scalar-evolution.c (scev_const_prop): Dump details if replacing
 	uses of ssa_name with constant.
 
