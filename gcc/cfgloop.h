@@ -191,6 +191,9 @@ struct GTY ((chain_next ("%h.next"))) loop {
   /* True if we should try harder to vectorize this loop.  */
   bool force_vectorize;
 
+  /* True if the loop is part of an oacc kernels region.  */
+  bool in_oacc_kernels_region;
+
   /* For SIMD loops, this is a unique identifier of the loop, referenced
      by IFN_GOMP_SIMD_VF, IFN_GOMP_SIMD_LANE and IFN_GOMP_SIMD_LAST_LANE
      builtins.  */

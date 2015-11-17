@@ -1021,6 +1021,7 @@ copy_loop_info (struct loop *loop, struct loop *target)
   target->estimate_state = loop->estimate_state;
   target->warned_aggressive_loop_optimizations
     |= loop->warned_aggressive_loop_optimizations;
+  target->in_oacc_kernels_region = loop->in_oacc_kernels_region;
 }
 
 /* Copies copy of LOOP as subloop of TARGET loop, placing newly
