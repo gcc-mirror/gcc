@@ -1,5 +1,15 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* Makefile.in (HASH_TABLE_H): Add GGC_H.
+	(MOSTLYCLEANFILES, generated_files): Add case-fn-macros.h.
+	(s-case-cfn-macros, case-cfn-macros.h, build/gencfn-macros.o)
+	(build/gencfn-macros$(build_exeext): New rules.
+	(genprogerr): Add cfn-macros.
+	* hash-set.h (hash_set): Use the traits value_type as the key.
+	* gencfn-macros.c: New file.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* internal-fn.def (DEF_INTERNAL_INT_FN): New macro.
 	(CLRSB, CLZ, CTZ, FFS, PARITY, POPCOUNT): New functions.
 	* builtins.c (associated_internal_fn): Handle them.
