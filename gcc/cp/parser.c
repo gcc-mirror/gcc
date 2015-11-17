@@ -7662,6 +7662,8 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 
       /* Consume the operator token.  */
       token = cp_lexer_consume_token (parser->lexer);
+      enum cpp_ttype op_ttype = cp_lexer_peek_token (parser->lexer)->type;
+
       /* Parse the cast-expression.  */
       cast_expression
 	= cp_parser_cast_expression (parser,
@@ -7693,8 +7695,25 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	  non_constant_p = unary_operator == PREINCREMENT_EXPR
 			   ? NIC_PREINCREMENT : NIC_PREDECREMENT;
 	  /* Fall through.  */
-	case UNARY_PLUS_EXPR:
 	case NEGATE_EXPR:
+	  /* Immediately fold negation of a constant, unless the constant is 0
+	     (since -0 == 0) or it would overflow.  */
+	  if (unary_operator == NEGATE_EXPR && op_ttype == CPP_NUMBER
+	      && CONSTANT_CLASS_P (cast_expression)
+	      && !integer_zerop (cast_expression)
+	      && !TREE_OVERFLOW (cast_expression))
+	    {
+	      tree folded = fold_build1 (unary_operator,
+					 TREE_TYPE (cast_expression),
+					 cast_expression);
+	      if (CONSTANT_CLASS_P (folded) && !TREE_OVERFLOW (folded))
+		{
+		  expression = folded;
+		  break;
+		}
+	    }
+	  /* Fall through.  */
+	case UNARY_PLUS_EXPR:
 	case TRUTH_NOT_EXPR:
 	  expression = finish_unary_op_expr (loc, unary_operator,
 					     cast_expression, complain);
