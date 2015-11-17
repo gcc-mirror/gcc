@@ -1,3 +1,8 @@
+2015-11-17  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR middle-end/68134
+	* gcc.dg/pr68134.c: New test.
+
 2015-11-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/68143
