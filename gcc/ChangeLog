@@ -1,3 +1,17 @@
+2015-11-17  Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+
+	* tree-if-conv.c: Include varasm.h
+	(ref_DR_map): Define.
+	(baseref_DR_map): Like wise
+	(struct ifc_dr): Add new tree predicate field.
+	(hash_memrefs_baserefs_and_store_DRs_read_written_info): New function.
+	(memrefs_read_or_written_unconditionally): Remove.
+	(write_memrefs_written_at_least_once): Remove.
+	(ifcvt_memrefs_wont_trap): Use hash maps to query
+	unconditional read/written information.
+	(if_convertible_loop_p_1):  Initialize hash maps and predicates
+	before hashing data references and delete hashmaps at the end.
+
 2015-11-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
 	PR 56036
