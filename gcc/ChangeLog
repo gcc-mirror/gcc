@@ -10,6 +10,14 @@
 	* config/aarch64/aarch64-tune.md: Regenerate.
 	* doc/invoke.texi (-mcpu): Add Cortex-A35
 
+2015-11-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68263
+	* config/i386/i386.h (BIGGEST_ALIGNMENT): Always define
+	to 32 for IAMCU.
+	* config/i386/sse.md (*mov<mode>_internal): Always enable
+	AVX and SSE unaligned moves for IAMCU.
+
 2015-11-17  Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
 
 	* tree-if-conv.c: Include varasm.h
@@ -45,7 +53,7 @@
 2015-11-16  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* doc/md.texi ('#' and '*' constraint modifiers): Do not include these
-	in the user documentation. 
+	in the user documentation.
 	(define_peephole2, define_split): Similarly.
 
 2015-11-16 Andris Pavenis <andris.pavenis@iki.fi>
@@ -317,8 +325,7 @@
 
 2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
-	* gsyms.h (enum sdb_type): Remove code for
-	EXTENDED_SDB_BASIC_TYPES.
+	* gsyms.h (enum sdb_type): Remove code for EXTENDED_SDB_BASIC_TYPES.
 	(enum sdb_masks): Likewise.
 	* sdbout.c (plain_type_1): Likewise.
 	* system.h: Poison EXTENDED_SDB_BASIC_TYPES macro.
