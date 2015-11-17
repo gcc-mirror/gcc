@@ -1,5 +1,47 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* match.pd: Use HYPOT and COS rather than hypot and cos.
+	Use CASE_CFN_* macros.  Guard log/exp folds with
+	SCALAR_FLOAT_TYPE_P.
+	* genmatch.c (internal_fn): New enum.
+	(fn_id::fn): Change to an unsigned int.
+	(fn_id::fn_id): Accept internal_fn too.
+	(add_builtin): Rename to...
+	(add_function): ...this and turn into a template.
+	(get_operator): Only try one variation if the original name fails.
+	Only add _EXPR if the original name was all lower case.
+	Try converting internal and built-in function names to their
+	CFN equivalents.
+	(expr::gen_transform): Use maybe_build_call_expr_loc for generic.
+	(dt_simplify::gen_1): Likewise.
+	(dt_node::gen_kids_1): Use gimple_call_combined_fn for gimple
+	and get_call_combined_fn for generic.
+	(dt_simplify::gen): Use combined_fn as the type of fn_ids.
+	(decision_tree::gen): Likewise.
+	(main): Use lower case in the strings for {VIEW_,}CONVERT[012].
+	Use add_function rather than add_builtin.  Register internal
+	functions too.
+	* generic-match-head.c: Include case-cfn-macros.h.
+	* gimple-fold.c (replace_stmt_with_simplification): Use
+	gimple_call_combined_fn to test whether we can keep an
+	existing call.
+	* gimple-match.h (code_helper): Replace built_in_function
+	with combined_fn.
+	* gimple-match-head.c: Include fold-const-call.h, internal-fn.h
+	and case-fn-macros.h.
+	(gimple_resimplify1): Use fold_const_call.
+	(gimple_resimplify2, gimple_resimplify3): Likewise.
+	(build_call_internal, build_call): New functions.
+	(maybe_push_res_to_seq): Use them.
+	(gimple_simplify): Use fold_const_call.  Set *rcode to a combined_fn
+	rather than a built-in function.
+	* tree.h (build_call_expr_internal_loc): Declare.
+	(maybe_build_call_expr_loc): Likewise.
+	* tree.c (build_call_expr_internal_loc_array): New function.
+	(maybe_build_call_expr_loc): Likewise.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.h (mathfn_built_in): Add a variant that takes
 	a combined_fn.
 	* builtins.c: Include case-cfn-macros.h.
