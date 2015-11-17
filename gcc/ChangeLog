@@ -1,5 +1,34 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (expand_errno_check, expand_builtin_mathfn)
+	(expand_builtin_mathfn_2): Delete.
+	(expand_builtin): Remove handling of functions with
+	internal function equivalents.
+	* internal-fn.def (SET_EDOM): New internal function.
+	* internal-fn.h (set_edom_supported_p): Declare.
+	* internal-fn.c (expand_SET_EDOM): New function.
+	(set_edom_supported_p): Likewise.
+	* tree-call-cdce.c: Include builtins.h and internal-fn.h.
+	Rewrite comment at head of file.
+	(is_call_dce_candidate): Rename to...
+	(can_test_argument_range): ...this.  Don't check gimple_call_lhs
+	or gimple_call_builtin_p here.
+	(edom_only_function): New function.
+	(shrink_wrap_one_built_in_call_with_conds): New function, split out
+	from...
+	(shrink_wrap_one_built_in_call): ...here.
+	(can_use_internal_fn, use_internal_fn): New functions.
+	(shrink_wrap_conditional_dead_built_in_calls): Call use_internal_fn
+	for calls that have an lhs.
+	(pass_call_cdce::gate): Remove optimize_function_for_speed_p check.
+	(pass_call_cdce::execute): Skip blocks that are optimized for size.
+	Check gimple_call_builtin_p here.  Use can_use_internal_fn for
+	calls with an lhs.
+	* opts.c (default_options_table): Enable -ftree-builtin-call-cdce
+	at -O and above.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.h (called_as_built_in): Declare.
 	* builtins.c (called_as_built_in): Make external.
 	* internal-fn.h (expand_internal_call): Define a variant that

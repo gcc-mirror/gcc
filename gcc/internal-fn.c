@@ -2073,6 +2073,24 @@ expand_GOACC_REDUCTION (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* Set errno to EDOM.  */
+
+static void
+expand_SET_EDOM (internal_fn, gcall *)
+{
+#ifdef TARGET_EDOM
+#ifdef GEN_ERRNO_RTX
+  rtx errno_rtx = GEN_ERRNO_RTX;
+#else
+  rtx errno_rtx = gen_rtx_MEM (word_mode, gen_rtx_SYMBOL_REF (Pmode, "errno"));
+#endif
+  emit_move_insn (errno_rtx,
+		  gen_int_mode (TARGET_EDOM, GET_MODE (errno_rtx)));
+#else
+  gcc_unreachable ();
+#endif
+}
+
 /* Expand a call to FN using the operands in STMT.  FN has a single
    output operand and NARGS input operands.  */
 
@@ -2215,6 +2233,18 @@ direct_internal_fn_supported_p (internal_fn fn, tree type)
   const direct_internal_fn_info &info = direct_internal_fn (fn);
   gcc_checking_assert (info.type0 == info.type1);
   return direct_internal_fn_supported_p (fn, tree_pair (type, type));
+}
+
+/* Return true if IFN_SET_EDOM is supported.  */
+
+bool
+set_edom_supported_p (void)
+{
+#ifdef TARGET_EDOM
+  return true;
+#else
+  return false;
+#endif
 }
 
 #define DEF_INTERNAL_OPTAB_FN(CODE, FLAGS, OPTAB, TYPE) \

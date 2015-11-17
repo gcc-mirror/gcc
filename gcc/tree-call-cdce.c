@@ -33,46 +33,77 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
+#include "builtins.h"
+#include "internal-fn.h"
 
 
-/* Conditional dead call elimination
+/* This pass serves two closely-related purposes:
 
-   Some builtin functions can set errno on error conditions, but they
-   are otherwise pure.  If the result of a call to such a function is
-   not used, the compiler can still not eliminate the call without
-   powerful interprocedural analysis to prove that the errno is not
-   checked.  However, if the conditions under which the error occurs
-   are known, the compiler can conditionally dead code eliminate the
-   calls by shrink-wrapping the semi-dead calls into the error condition:
+   1. It conditionally executes calls that set errno if (a) the result of
+      the call is unused and (b) a simple range check on the arguments can
+      detect most cases where errno does not need to be set.
 
-        built_in_call (args)
-          ==>
-        if (error_cond (args))
-             built_in_call (args)
+      This is the "conditional dead-code elimination" that gave the pass
+      its original name, since the call is dead for most argument values.
+      The calls for which it helps are usually part of the C++ abstraction
+      penalty exposed after inlining.
 
-    An actual simple example is :
+   2. It looks for calls to built-in functions that set errno and whose
+      result is used.  It checks whether there is an associated internal
+      function that doesn't set errno and whether the target supports
+      that internal function.  If so, the pass uses the internal function
+      to compute the result of the built-in function but still arranges
+      for errno to be set when necessary.  There are two ways of setting
+      errno:
+
+      a. by protecting the original call with the same argument checks as (1)
+
+      b. by protecting the original call with a check that the result
+	 of the internal function is not equal to itself (i.e. is NaN).
+
+      (b) requires that NaNs are the only erroneous results.  It is not
+      appropriate for functions like log, which returns ERANGE for zero
+      arguments.  (b) is also likely to perform worse than (a) because it
+      requires the result to be calculated first.  The pass therefore uses
+      (a) when it can and uses (b) as a fallback.
+
+      For (b) the pass can replace the original call with a call to
+      IFN_SET_EDOM, if the target supports direct assignments to errno.
+
+   In both cases, arguments that require errno to be set should occur
+   rarely in practice.  Checks of the errno result should also be rare,
+   but the compiler would need powerful interprocedural analysis to
+   prove that errno is not checked.  It's much easier to add argument
+   checks or result checks instead.
+
+     An example of (1) is:
+
 	 log (x);   // Mostly dead call
      ==>
 	 if (__builtin_islessequal (x, 0))
 	     log (x);
 
      With this change, call to log (x) is effectively eliminated, as
-     in majority of the cases, log won't be called with x out of
+     in the majority of the cases, log won't be called with x out of
      range.  The branch is totally predictable, so the branch cost
      is low.
+
+     An example of (2) is:
+
+	y = sqrt (x);
+     ==>
+	y = IFN_SQRT (x);
+	if (__builtin_isless (x, 0))
+	    sqrt (x);
+
+     In the vast majority of cases we should then never need to call sqrt.
 
    Note that library functions are not supposed to clear errno to zero without
    error.  See IEEE Std 1003.1, section 2.3 Error Numbers, and section 7.5:3 of
    ISO/IEC 9899 (C99).
 
    The condition wrapping the builtin call is conservatively set to avoid too
-   aggressive (wrong) shrink wrapping.  The optimization is called conditional
-   dead call elimination because the call is eliminated under the condition
-   that the input arguments would not lead to domain or range error (for
-   instance when x <= 0 for a log (x) call), however the chances that the error
-   condition is hit is very low (those builtin calls which are conditionally
-   dead are usually part of the C++ abstraction penalty exposed after
-   inlining).  */
+   aggressive (wrong) shrink wrapping.  */
 
 
 /* A structure for representing input domain of
@@ -251,28 +282,15 @@ check_builtin_call (gcall *bcall)
   return check_target_format (arg);
 }
 
-/* A helper function to determine if a builtin function call is a
-   candidate for conditional DCE.  Returns true if the builtin call
-   is a candidate.  */
+/* Return true if built-in function call CALL calls a math function
+   and if we know how to test the range of its arguments to detect _most_
+   situations in which errno is not set.  The test must err on the side
+   of treating non-erroneous values as potentially erroneous.  */
 
 static bool
-is_call_dce_candidate (gcall *call)
+can_test_argument_range (gcall *call)
 {
-  tree fn;
-  enum built_in_function fnc;
-
-  /* Only potentially dead calls are considered.  */
-  if (gimple_call_lhs (call))
-    return false;
-
-  fn = gimple_call_fndecl (call);
-  if (!fn
-      || !DECL_BUILT_IN (fn)
-      || (DECL_BUILT_IN_CLASS (fn) != BUILT_IN_NORMAL))
-    return false;
-
-  fnc = DECL_FUNCTION_CODE (fn);
-  switch (fnc)
+  switch (DECL_FUNCTION_CODE (gimple_call_fndecl (call)))
     {
     /* Trig functions.  */
     CASE_FLT_FN (BUILT_IN_ACOS):
@@ -306,6 +324,31 @@ is_call_dce_candidate (gcall *call)
   return false;
 }
 
+/* Return true if CALL can produce a domain error (EDOM) but can never
+   produce a pole, range overflow or range underflow error (all ERANGE).
+   This means that we can tell whether a function would have set errno
+   by testing whether the result is a NaN.  */
+
+static bool
+edom_only_function (gcall *call)
+{
+  switch (DECL_FUNCTION_CODE (gimple_call_fndecl (call)))
+    {
+    CASE_FLT_FN (BUILT_IN_ACOS):
+    CASE_FLT_FN (BUILT_IN_ASIN):
+    CASE_FLT_FN (BUILT_IN_ATAN):
+    CASE_FLT_FN (BUILT_IN_COS):
+    CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
+    CASE_FLT_FN (BUILT_IN_SIN):
+    CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN (BUILT_IN_FMOD):
+    CASE_FLT_FN (BUILT_IN_REMAINDER):
+      return true;
+
+    default:
+      return false;
+    }
+}
 
 /* A helper function to generate gimple statements for one bound
    comparison, so that the built-in function is called whenever
@@ -703,32 +746,23 @@ gen_shrink_wrap_conditions (gcall *bi_call, vec<gimple *> conds,
 /* Probability of the branch (to the call) is taken.  */
 #define ERR_PROB 0.01
 
-/* The function to shrink wrap a partially dead builtin call
-   whose return value is not used anywhere, but has to be kept
-   live due to potential error condition.  Returns true if the
-   transformation actually happens.  */
+/* Shrink-wrap BI_CALL so that it is only called when one of the NCONDS
+   conditions in CONDS is false.
+
+   Return true on success, in which case the cfg will have been updated.  */
 
 static bool
-shrink_wrap_one_built_in_call (gcall *bi_call)
+shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
+					  unsigned int nconds)
 {
   gimple_stmt_iterator bi_call_bsi;
   basic_block bi_call_bb, join_tgt_bb, guard_bb;
   edge join_tgt_in_edge_from_call, join_tgt_in_edge_fall_thru;
   edge bi_call_in_edge0, guard_bb_in_edge;
-  unsigned tn_cond_stmts, nconds;
+  unsigned tn_cond_stmts;
   unsigned ci;
   gimple *cond_expr = NULL;
   gimple *cond_expr_start;
-
-  auto_vec<gimple *, 12> conds;
-  gen_shrink_wrap_conditions (bi_call, conds, &nconds);
-
-  /* This can happen if the condition generator decides
-     it is not beneficial to do the transformation.  Just
-     return false and do not do any transformation for
-     the call.  */
-  if (nconds == 0)
-    return false;
 
   /* The cfg we want to create looks like this:
 
@@ -868,6 +902,117 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
   return true;
 }
 
+/* Shrink-wrap BI_CALL so that it is only called when it might set errno
+   (but is always called if it would set errno).
+
+   Return true on success, in which case the cfg will have been updated.  */
+
+static bool
+shrink_wrap_one_built_in_call (gcall *bi_call)
+{
+  unsigned nconds = 0;
+  auto_vec<gimple *, 12> conds;
+  gen_shrink_wrap_conditions (bi_call, conds, &nconds);
+  /* This can happen if the condition generator decides
+     it is not beneficial to do the transformation.  Just
+     return false and do not do any transformation for
+     the call.  */
+  if (nconds == 0)
+    return false;
+  return shrink_wrap_one_built_in_call_with_conds (bi_call, conds, nconds);
+}
+
+/* Return true if built-in function call CALL could be implemented using
+   a combination of an internal function to compute the result and a
+   separate call to set errno.  */
+
+static bool
+can_use_internal_fn (gcall *call)
+{
+  /* Only replace calls that set errno.  */
+  if (!gimple_vdef (call))
+    return false;
+
+  /* Punt if we can't conditionalize the call.  */
+  basic_block bb = gimple_bb (call);
+  if (stmt_ends_bb_p (call) && !find_fallthru_edge (bb->succs))
+    return false;
+
+  /* See whether there is an internal function for this built-in.  */
+  if (replacement_internal_fn (call) == IFN_LAST)
+    return false;
+
+  /* See whether we can catch all cases where errno would be set,
+     while still avoiding the call in most cases.  */
+  if (!can_test_argument_range (call)
+      && !edom_only_function (call))
+    return false;
+
+  return true;
+}
+
+/* Implement built-in function call CALL using an internal function.
+   Return true on success, in which case the cfg will have changed.  */
+
+static bool
+use_internal_fn (gcall *call)
+{
+  unsigned nconds = 0;
+  auto_vec<gimple *, 12> conds;
+  gen_shrink_wrap_conditions (call, conds, &nconds);
+  if (nconds == 0 && !edom_only_function (call))
+    return false;
+
+  internal_fn ifn = replacement_internal_fn (call);
+  gcc_assert (ifn != IFN_LAST);
+
+  /* Construct the new call, with the same arguments as the original one.  */
+  auto_vec <tree, 16> args;
+  unsigned int nargs = gimple_call_num_args (call);
+  for (unsigned int i = 0; i < nargs; ++i)
+    args.safe_push (gimple_call_arg (call, i));
+  gcall *new_call = gimple_build_call_internal_vec (ifn, args);
+  gimple_set_location (new_call, gimple_location (call));
+
+  /* Transfer the LHS to the new call.  */
+  tree lhs = gimple_call_lhs (call);
+  gimple_call_set_lhs (new_call, lhs);
+  gimple_call_set_lhs (call, NULL_TREE);
+  SSA_NAME_DEF_STMT (lhs) = new_call;
+
+  /* Insert the new call.  */
+  gimple_stmt_iterator gsi = gsi_for_stmt (call);
+  gsi_insert_before (&gsi, new_call, GSI_SAME_STMT);
+
+  if (nconds == 0)
+    {
+      /* Skip the call if LHS == LHS.  If we reach here, EDOM is the only
+	 valid errno value and it is used iff the result is NaN.  */
+      conds.quick_push (gimple_build_cond (EQ_EXPR, lhs, lhs,
+					   NULL_TREE, NULL_TREE));
+      nconds++;
+
+      /* Try replacing the original call with a direct assignment to
+	 errno, via an internal function.  */
+      if (set_edom_supported_p () && !stmt_ends_bb_p (call))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (call);
+	  gcall *new_call = gimple_build_call_internal (IFN_SET_EDOM, 0);
+	  gimple_set_vuse (new_call, gimple_vuse (call));
+	  gimple_set_vdef (new_call, gimple_vdef (call));
+	  SSA_NAME_DEF_STMT (gimple_vdef (new_call)) = new_call;
+	  gimple_set_location (new_call, gimple_location (call));
+	  gsi_replace (&gsi, new_call, false);
+	  call = new_call;
+	}
+    }
+
+  if (!shrink_wrap_one_built_in_call_with_conds (call, conds, nconds))
+    /* It's too late to back out now.  */
+    gcc_unreachable ();
+  return true;
+}
+
 /* The top level function for conditional dead code shrink
    wrapping transformation.  */
 
@@ -884,7 +1029,10 @@ shrink_wrap_conditional_dead_built_in_calls (vec<gcall *> calls)
   for (; i < n ; i++)
     {
       gcall *bi_call = calls[i];
-      changed |= shrink_wrap_one_built_in_call (bi_call);
+      if (gimple_call_lhs (bi_call))
+	changed |= use_internal_fn (bi_call);
+      else
+	changed |= shrink_wrap_one_built_in_call (bi_call);
     }
 
   return changed;
@@ -913,13 +1061,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  virtual bool gate (function *)
     {
       /* The limit constants used in the implementation
 	 assume IEEE floating point format.  Other formats
 	 can be supported in the future if needed.  */
-      return flag_tree_builtin_call_dce != 0
-       	&& optimize_function_for_speed_p (fun);
+      return flag_tree_builtin_call_dce != 0;
     }
 
   virtual unsigned int execute (function *);
@@ -935,11 +1082,20 @@ pass_call_cdce::execute (function *fun)
   auto_vec<gcall *> cond_dead_built_in_calls;
   FOR_EACH_BB_FN (bb, fun)
     {
+      /* Skip blocks that are being optimized for size, since our
+	 transformation always increases code size.  */
+      if (optimize_bb_for_size_p (bb))
+	continue;
+
       /* Collect dead call candidates.  */
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
         {
 	  gcall *stmt = dyn_cast <gcall *> (gsi_stmt (i));
-          if (stmt && is_call_dce_candidate (stmt))
+          if (stmt
+	      && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL)
+	      && (gimple_call_lhs (stmt)
+		  ? can_use_internal_fn (stmt)
+		  : can_test_argument_range (stmt)))
             {
               if (dump_file && (dump_flags & TDF_DETAILS))
                 {
