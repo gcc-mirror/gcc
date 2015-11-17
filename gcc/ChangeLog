@@ -1,3 +1,9 @@
+2015-11-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
+
+	PR 56036
+	* doc/invoke.texi (Optimize Options): Move @end table to the right
+	place.
+
 2015-11-16  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR 65129

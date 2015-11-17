@@ -7867,10 +7867,10 @@ that do not interfere with debugging. It should be the optimization
 level of choice for the standard edit-compile-debug cycle, offering
 a reasonable level of optimization while maintaining fast compilation
 and a good debugging experience.
+@end table
 
 If you use multiple @option{-O} options, with or without level numbers,
 the last such option is the one that is effective.
-@end table
 
 Options of the form @option{-f@var{flag}} specify machine-independent
 flags.  Most flags have both positive and negative forms; the negative
