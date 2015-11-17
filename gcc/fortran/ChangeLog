@@ -1,3 +1,7 @@
+2015-11-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* primary.c (gfc_match_structure_constructor): Fix whitespace.
+
 2015-11-17  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/65751
