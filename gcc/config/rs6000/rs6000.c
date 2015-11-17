@@ -5311,19 +5311,6 @@ rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
 
   switch (fn)
     {
-    CASE_CFN_CLZ:
-      if (TARGET_P8_VECTOR && in_mode == out_mode && out_n == in_n)
-	{
-	  if (out_mode == QImode && out_n == 16)
-	    return rs6000_builtin_decls[P8V_BUILTIN_VCLZB];
-	  else if (out_mode == HImode && out_n == 8)
-	    return rs6000_builtin_decls[P8V_BUILTIN_VCLZH];
-	  else if (out_mode == SImode && out_n == 4)
-	    return rs6000_builtin_decls[P8V_BUILTIN_VCLZW];
-	  else if (out_mode == DImode && out_n == 2)
-	    return rs6000_builtin_decls[P8V_BUILTIN_VCLZD];
-	}
-      break;
     CASE_CFN_COPYSIGN:
       if (VECTOR_UNIT_VSX_P (V2DFmode)
 	  && out_mode == DFmode && out_n == 2
@@ -5337,29 +5324,6 @@ rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
 	return rs6000_builtin_decls[ALTIVEC_BUILTIN_COPYSIGN_V4SF];
-      break;
-    CASE_CFN_POPCOUNT:
-      if (TARGET_P8_VECTOR && in_mode == out_mode && out_n == in_n)
-	{
-	  if (out_mode == QImode && out_n == 16)
-	    return rs6000_builtin_decls[P8V_BUILTIN_VPOPCNTB];
-	  else if (out_mode == HImode && out_n == 8)
-	    return rs6000_builtin_decls[P8V_BUILTIN_VPOPCNTH];
-	  else if (out_mode == SImode && out_n == 4)
-	    return rs6000_builtin_decls[P8V_BUILTIN_VPOPCNTW];
-	  else if (out_mode == DImode && out_n == 2)
-	    return rs6000_builtin_decls[P8V_BUILTIN_VPOPCNTD];
-	}
-      break;
-    CASE_CFN_SQRT:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVSQRTDP];
-      if (VECTOR_UNIT_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVSQRTSP];
       break;
     CASE_CFN_CEIL:
       if (VECTOR_UNIT_VSX_P (V2DFmode)
