@@ -1,5 +1,10 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree.h (BUILTIN_EXP10_P, BUILTIN_EXPONENT_P, BUILTIN_SQRT_P)
+	(BUILTIN_CBRT_P, BUILTIN_ROOT_P): Delete.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (expand_errno_check, expand_builtin_mathfn)
 	(expand_builtin_mathfn_2): Delete.
 	(expand_builtin): Remove handling of functions with
