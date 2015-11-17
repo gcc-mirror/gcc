@@ -1,3 +1,8 @@
+2015-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++66059
+	* include/std/utility (_Build_index_tuple): Optimise.
+
 2015-11-16  Doug Evans  <dje@google.com>
 
 	PR libstdc++/67440
