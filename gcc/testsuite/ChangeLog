@@ -1,3 +1,8 @@
+2015-11-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/68143
+	* gcc.c-torture/execute/pr68143_1.c: New test.
+
 2015-11-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/torture/pr68264.c: Use dg-add-options ieee.
