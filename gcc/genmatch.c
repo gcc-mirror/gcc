@@ -297,7 +297,7 @@ commutative_ternary_tree_code (enum tree_code code)
 
 struct id_base : nofree_ptr_hash<id_base>
 {
-  enum id_kind { CODE, FN, PREDICATE, USER } kind;
+  enum id_kind { CODE, FN, PREDICATE, USER, NULL_ID } kind;
 
   id_base (id_kind, const char *, int = -1);
 
@@ -323,6 +323,9 @@ id_base::equal (const id_base *op1,
   return (op1->hashval == op2->hashval
 	  && strcmp (op1->id, op2->id) == 0);
 }
+
+/* The special id "null", which matches nothing.  */
+static id_base *null_id;
 
 /* Hashtable of known pattern operators.  This is pre-seeded from
    all known tree codes and all known builtin function ids.  */
@@ -479,11 +482,14 @@ operator==(id_base &id, enum tree_code code)
   return false;
 }
 
-/* Lookup the identifier ID.  */
+/* Lookup the identifier ID.  Allow "null" if ALLOW_NULL.  */
 
 id_base *
-get_operator (const char *id)
+get_operator (const char *id, bool allow_null = false)
 {
+  if (allow_null && strcmp (id, "null") == 0)
+    return null_id;
+
   id_base tem (id_base::CODE, id);
 
   id_base *op = operators->find_with_hash (&tem, tem.hashval);
@@ -1115,6 +1121,40 @@ lower_cond (simplify *s, vec<simplify *>& simplifiers)
     }
 }
 
+/* Return true if O refers to ID.  */
+
+bool
+contains_id (operand *o, user_id *id)
+{
+  if (capture *c = dyn_cast<capture *> (o))
+    return c->what && contains_id (c->what, id);
+
+  if (expr *e = dyn_cast<expr *> (o))
+    {
+      if (e->operation == id)
+	return true;
+      for (unsigned i = 0; i < e->ops.length (); ++i)
+	if (contains_id (e->ops[i], id))
+	  return true;
+      return false;
+    }
+
+  if (with_expr *w = dyn_cast <with_expr *> (o))
+    return (contains_id (w->with, id)
+	    || contains_id (w->subexpr, id));
+
+  if (if_expr *ife = dyn_cast <if_expr *> (o))
+    return (contains_id (ife->cond, id)
+	    || contains_id (ife->trueexpr, id)
+	    || (ife->falseexpr && contains_id (ife->falseexpr, id)));
+
+  if (c_expr *ce = dyn_cast<c_expr *> (o))
+    return ce->capture_ids && ce->capture_ids->get (id->id);
+
+  return false;
+}
+
+
 /* In AST operand O replace operator ID with operator WITH.  */
 
 operand *
@@ -1270,15 +1310,28 @@ lower_for (simplify *sin, vec<simplify *>& simplifiers)
 	      operand *result_op = s->result;
 	      vec<std::pair<user_id *, id_base *> > subst;
 	      subst.create (n_ids);
+	      bool skip = false;
 	      for (unsigned i = 0; i < n_ids; ++i)
 		{
 		  user_id *id = ids[i];
 		  id_base *oper = id->substitutes[j % id->substitutes.length ()];
+		  if (oper == null_id
+		      && (contains_id (match_op, id)
+			  || contains_id (result_op, id)))
+		    {
+		      skip = true;
+		      break;
+		    }
 		  subst.quick_push (std::make_pair (id, oper));
 		  match_op = replace_id (match_op, id, oper);
 		  if (result_op
 		      && !can_delay_subst)
 		    result_op = replace_id (result_op, id, oper);
+		}
+	      if (skip)
+		{
+		  subst.release ();
+		  continue;
 		}
 	      simplify *ns = new simplify (s->kind, match_op, result_op,
 					   vNULL, s->capture_ids);
@@ -4242,7 +4295,7 @@ parser::parse_for (source_location)
 
       /* Insert the user defined operators into the operator hash.  */
       const char *id = get_ident ();
-      if (get_operator (id) != NULL)
+      if (get_operator (id, true) != NULL)
 	fatal_at (token, "operator already defined");
       user_id *op = new user_id (id);
       id_base **slot = operators->find_slot_with_hash (op, op->hashval, INSERT);
@@ -4256,7 +4309,7 @@ parser::parse_for (source_location)
       while ((token = peek_ident ()) != 0)
 	{
 	  const char *oper = get_ident ();
-	  id_base *idb = get_operator (oper);
+	  id_base *idb = get_operator (oper, true);
 	  if (idb == NULL)
 	    fatal_at (token, "no such operator '%s'", oper);
 	  if (*idb == CONVERT0 || *idb == CONVERT1 || *idb == CONVERT2
@@ -4346,7 +4399,7 @@ parser::parse_operator_list (source_location)
   const cpp_token *token = peek (); 
   const char *id = get_ident ();
 
-  if (get_operator (id) != 0)
+  if (get_operator (id, true) != 0)
     fatal_at (token, "operator %s already defined", id);
 
   user_id *op = new user_id (id, true);
@@ -4356,7 +4409,7 @@ parser::parse_operator_list (source_location)
     {
       token = peek (); 
       const char *oper = get_ident ();
-      id_base *idb = get_operator (oper);
+      id_base *idb = get_operator (oper, true);
       
       if (idb == 0)
 	fatal_at (token, "no such operator '%s'", oper);
@@ -4589,6 +4642,8 @@ main (int argc, char **argv)
     return 1;
   cpp_define (r, gimple ? "GIMPLE=1": "GENERIC=1");
   cpp_define (r, gimple ? "GENERIC=0": "GIMPLE=0");
+
+  null_id = new id_base (id_base::NULL_ID, "null");
 
   /* Pre-seed operators.  */
   operators = new hash_table<id_base> (1024);
