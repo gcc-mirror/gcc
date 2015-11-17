@@ -1,3 +1,8 @@
+2015-11-16  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_builtin_function_call): Use cp_fully_fold
+	to fold arguments to __builtin_constant_p.
+
 2015-11-16  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* parser.c (cp_parser_late_parsing_cilk_simd_fn_info): Look for
