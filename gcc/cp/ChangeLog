@@ -1,5 +1,9 @@
 2015-11-17  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (LITERAL_ZERO_P): Remove.
+	* parser.c (cp_parser_postfix_expression, literal_zeros)
+	(cp_parser_parenthesized_expression_list): Don't mess with it.
+
 	* parser.c (cp_parser_unary_expression): Fold -constant here.
 	* typeck.c (cp_build_unary_op): Not here.
 

@@ -4517,10 +4517,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define SIZEOF_EXPR_TYPE_P(NODE) \
   TREE_LANG_FLAG_0 (SIZEOF_EXPR_CHECK (NODE))
 
-/* True if INTEGER_CST is a zero literal seen in function argument list.  */
-#define LITERAL_ZERO_P(NODE) \
-  (INTEGER_CST_CHECK (NODE)->base.nothrow_flag)
-
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types {
   none_type = 0, /* Not a tag type.  */
