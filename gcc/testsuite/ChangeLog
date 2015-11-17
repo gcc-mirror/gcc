@@ -1,3 +1,9 @@
+2015-11-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/58027
+	PR fortran/60993
+	* gfortran.dg/pr58027.f90: New test.
+
 2015-11-14  Steven G. Kargl  <kargl@gcc.gnu.org>
  
 	PR fortran/67803
