@@ -1,3 +1,7 @@
+2015-11-17  Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+
+	* gcc.dg/tree-ssa/ifc-8.c: New test.
+
 2015-11-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/68362

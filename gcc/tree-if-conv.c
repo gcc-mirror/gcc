@@ -110,12 +110,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "dbgcnt.h"
 #include "tree-hash-traits.h"
+#include "varasm.h"
 
 /* List of basic blocks in if-conversion-suitable order.  */
 static basic_block *ifc_bbs;
 
 /* Apply more aggressive (extended) if-conversion if true.  */
 static bool aggressive_if_conv;
+
+/* Hash table to store references, DR pairs.  */
+static hash_map<tree_operand_hash, data_reference_p> *ref_DR_map;
+
+/* Hash table to store base reference, DR pairs.  */
+static hash_map<tree_operand_hash, data_reference_p> *baseref_DR_map;
 
 /* Structure used to predicate basic blocks.  This is attached to the
    ->aux field of the BBs in the loop to be if-converted.  */
@@ -580,139 +587,71 @@ struct ifc_dr {
 
   /* -1 when not initialized, 0 when false, 1 when true.  */
   int rw_unconditionally;
+
+  tree predicate;
 };
 
 #define IFC_DR(DR) ((struct ifc_dr *) (DR)->aux)
 #define DR_WRITTEN_AT_LEAST_ONCE(DR) (IFC_DR (DR)->written_at_least_once)
 #define DR_RW_UNCONDITIONALLY(DR) (IFC_DR (DR)->rw_unconditionally)
 
-/* Returns true when the memory references of STMT are read or written
-   unconditionally.  In other words, this function returns true when
-   for every data reference A in STMT there exist other accesses to
-   a data reference with the same base with predicates that add up (OR-up) to
-   the true predicate: this ensures that the data reference A is touched
-   (read or written) on every iteration of the if-converted loop.  */
-
-static bool
-memrefs_read_or_written_unconditionally (gimple *stmt,
-					 vec<data_reference_p> drs)
+/* Iterates over DR's and stores refs, DR and base refs, DR pairs in
+   HASH tables.  While storing them in HASH table, it checks if the
+   reference is unconditionally read or written and stores that as a flag
+   information.  For base reference it checks if it is written atlest once
+   unconditionally and stores it as flag information along with DR.
+   In other words for every data reference A in STMT there exist other
+   accesses to a data reference with the same base with predicates that
+   add up (OR-up) to the true predicate: this ensures that the data
+   reference A is touched (read or written) on every iteration of the
+   if-converted loop.  */
+static void
+hash_memrefs_baserefs_and_store_DRs_read_written_info (data_reference_p a)
 {
-  int i, j;
-  data_reference_p a, b;
-  tree ca = bb_predicate (gimple_bb (stmt));
 
-  for (i = 0; drs.iterate (i, &a); i++)
-    if (DR_STMT (a) == stmt)
-      {
-	bool found = false;
-	int x = DR_RW_UNCONDITIONALLY (a);
+  data_reference_p *master_dr, *base_master_dr;
+  tree ref = DR_REF (a);
+  tree base_ref = DR_BASE_OBJECT (a);
+  tree ca = bb_predicate (gimple_bb (DR_STMT (a)));
+  bool exist1, exist2;
 
-	if (x == 0)
-	  return false;
+  while (TREE_CODE (ref) == COMPONENT_REF
+	 || TREE_CODE (ref) == IMAGPART_EXPR
+	 || TREE_CODE (ref) == REALPART_EXPR)
+    ref = TREE_OPERAND (ref, 0);
 
-	if (x == 1)
-	  continue;
+  master_dr = &ref_DR_map->get_or_insert (ref, &exist1);
 
-	for (j = 0; drs.iterate (j, &b); j++)
-          {
-            tree ref_base_a = DR_REF (a);
-            tree ref_base_b = DR_REF (b);
+  if (!exist1)
+    {
+      IFC_DR (a)->predicate = ca;
+      *master_dr = a;
+    }
+  else
+    IFC_DR (*master_dr)->predicate
+	= fold_or_predicates
+		(EXPR_LOCATION (IFC_DR (*master_dr)->predicate),
+		 ca, IFC_DR (*master_dr)->predicate);
 
-            if (DR_STMT (b) == stmt)
-              continue;
+  if (is_true_predicate (IFC_DR (*master_dr)->predicate))
+    DR_RW_UNCONDITIONALLY (*master_dr) = 1;
 
-            while (TREE_CODE (ref_base_a) == COMPONENT_REF
-                   || TREE_CODE (ref_base_a) == IMAGPART_EXPR
-                   || TREE_CODE (ref_base_a) == REALPART_EXPR)
-              ref_base_a = TREE_OPERAND (ref_base_a, 0);
+  base_master_dr = &baseref_DR_map->get_or_insert (base_ref,&exist2);
 
-            while (TREE_CODE (ref_base_b) == COMPONENT_REF
-                   || TREE_CODE (ref_base_b) == IMAGPART_EXPR
-                   || TREE_CODE (ref_base_b) == REALPART_EXPR)
-              ref_base_b = TREE_OPERAND (ref_base_b, 0);
+  if (!exist2)
+    {
+      IFC_DR (a)->predicate = ca;
+      *base_master_dr = a;
+    }
+  else
+    IFC_DR (*base_master_dr)->predicate
+	= fold_or_predicates
+		(EXPR_LOCATION (IFC_DR (*base_master_dr)->predicate),
+		 ca, IFC_DR (*base_master_dr)->predicate);
 
-  	    if (operand_equal_p (ref_base_a, ref_base_b, 0))
-	      {
-	        tree cb = bb_predicate (gimple_bb (DR_STMT (b)));
-
-	        if (DR_RW_UNCONDITIONALLY (b) == 1
-		    || is_true_predicate (cb)
-		    || is_true_predicate (ca
-                        = fold_or_predicates (EXPR_LOCATION (cb), ca, cb)))
-		  {
-		    DR_RW_UNCONDITIONALLY (a) = 1;
-  		    DR_RW_UNCONDITIONALLY (b) = 1;
-		    found = true;
-		    break;
-		  }
-               }
-	    }
-
-	if (!found)
-	  {
-	    DR_RW_UNCONDITIONALLY (a) = 0;
-	    return false;
-	  }
-      }
-
-  return true;
-}
-
-/* Returns true when the memory references of STMT are unconditionally
-   written.  In other words, this function returns true when for every
-   data reference A written in STMT, there exist other writes to the
-   same data reference with predicates that add up (OR-up) to the true
-   predicate: this ensures that the data reference A is written on
-   every iteration of the if-converted loop.  */
-
-static bool
-write_memrefs_written_at_least_once (gimple *stmt,
-				     vec<data_reference_p> drs)
-{
-  int i, j;
-  data_reference_p a, b;
-  tree ca = bb_predicate (gimple_bb (stmt));
-
-  for (i = 0; drs.iterate (i, &a); i++)
-    if (DR_STMT (a) == stmt
-	&& DR_IS_WRITE (a))
-      {
-	bool found = false;
-	int x = DR_WRITTEN_AT_LEAST_ONCE (a);
-
-	if (x == 0)
-	  return false;
-
-	if (x == 1)
-	  continue;
-
-	for (j = 0; drs.iterate (j, &b); j++)
-	  if (DR_STMT (b) != stmt
-	      && DR_IS_WRITE (b)
-	      && same_data_refs_base_objects (a, b))
-	    {
-	      tree cb = bb_predicate (gimple_bb (DR_STMT (b)));
-
-	      if (DR_WRITTEN_AT_LEAST_ONCE (b) == 1
-		  || is_true_predicate (cb)
-		  || is_true_predicate (ca = fold_or_predicates (EXPR_LOCATION (cb),
-								 ca, cb)))
-		{
-		  DR_WRITTEN_AT_LEAST_ONCE (a) = 1;
-		  DR_WRITTEN_AT_LEAST_ONCE (b) = 1;
-		  found = true;
-		  break;
-		}
-	    }
-
-	if (!found)
-	  {
-	    DR_WRITTEN_AT_LEAST_ONCE (a) = 0;
-	    return false;
-	  }
-      }
-
-  return true;
+  if (DR_IS_WRITE (a)
+      && (is_true_predicate (IFC_DR (*base_master_dr)->predicate)))
+    DR_WRITTEN_AT_LEAST_ONCE (*base_master_dr) = 1;
 }
 
 /* Return true when the memory references of STMT won't trap in the
@@ -731,13 +670,50 @@ write_memrefs_written_at_least_once (gimple *stmt,
    iteration.  To check that the memory accesses are correctly formed
    and that we are allowed to read and write in these locations, we
    check that the memory accesses to be if-converted occur at every
-   iteration unconditionally.  */
+   iteration unconditionally.
 
+   Returns true for the memory reference in STMT, same memory reference
+   is read or written unconditionally atleast once and the base memory
+   reference is written unconditionally once.  This is to check reference
+   will not write fault.  Also retuns true if the memory reference is
+   unconditionally read once then we are conditionally writing to memory
+   which is defined as read and write and is bound to the definition
+   we are seeing.  */
 static bool
-ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> refs)
+ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
 {
-  return write_memrefs_written_at_least_once (stmt, refs)
-    && memrefs_read_or_written_unconditionally (stmt, refs);
+  data_reference_p *master_dr, *base_master_dr;
+  data_reference_p a = drs[gimple_uid (stmt) - 1];
+
+  tree ref_base_a = DR_REF (a);
+  tree base = DR_BASE_OBJECT (a);
+
+  gcc_assert (DR_STMT (a) == stmt);
+
+  while (TREE_CODE (ref_base_a) == COMPONENT_REF
+	 || TREE_CODE (ref_base_a) == IMAGPART_EXPR
+	 || TREE_CODE (ref_base_a) == REALPART_EXPR)
+    ref_base_a = TREE_OPERAND (ref_base_a, 0);
+
+  master_dr = ref_DR_map->get (ref_base_a);
+  base_master_dr = baseref_DR_map->get (base);
+
+  gcc_assert (master_dr != NULL && base_master_dr != NULL);
+
+  if (DR_RW_UNCONDITIONALLY (*master_dr) == 1)
+    {
+      if (DR_WRITTEN_AT_LEAST_ONCE (*base_master_dr) == 1)
+	return true;
+      else
+	{
+	  tree base_tree = get_base_address (DR_REF (a));
+	  if (DECL_P (base_tree)
+	      && decl_binds_to_current_def_p (base_tree)
+	      && !TREE_READONLY (base_tree))
+	  return true;
+	}
+    }
+  return false;
 }
 
 /* Wrapper around gimple_could_trap_p refined for the needs of the
@@ -1280,6 +1256,7 @@ if_convertible_loop_p_1 (struct loop *loop,
 	  case GIMPLE_CALL:
 	  case GIMPLE_DEBUG:
 	  case GIMPLE_COND:
+	    gimple_set_uid (gsi_stmt (gsi), 0);
 	    break;
 	  default:
 	    return false;
@@ -1288,13 +1265,20 @@ if_convertible_loop_p_1 (struct loop *loop,
 
   data_reference_p dr;
 
+  ref_DR_map = new hash_map<tree_operand_hash, data_reference_p>;
+  baseref_DR_map = new hash_map<tree_operand_hash, data_reference_p>;
+
+  predicate_bbs (loop);
+
   for (i = 0; refs->iterate (i, &dr); i++)
     {
       dr->aux = XNEW (struct ifc_dr);
       DR_WRITTEN_AT_LEAST_ONCE (dr) = -1;
       DR_RW_UNCONDITIONALLY (dr) = -1;
+      if (gimple_uid (DR_STMT (dr)) == 0)
+	gimple_set_uid (DR_STMT (dr), i + 1);
+      hash_memrefs_baserefs_and_store_DRs_read_written_info (dr);
     }
-  predicate_bbs (loop);
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -1391,6 +1375,13 @@ if_convertible_loop_p (struct loop *loop, bool *any_mask_load_store)
 
   free_data_refs (refs);
   free_dependence_relations (ddrs);
+
+  delete ref_DR_map;
+  ref_DR_map = NULL;
+
+  delete baseref_DR_map;
+  baseref_DR_map = NULL;
+
   return res;
 }
 
