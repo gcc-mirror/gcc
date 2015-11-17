@@ -102,6 +102,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "alloc-pool.h"
 #include "tree-hash-traits.h"
+#include "case-cfn-macros.h"
 
 namespace {
 
@@ -337,26 +338,29 @@ backprop::pop_from_worklist ()
 void
 backprop::process_builtin_call_use (gcall *call, tree rhs, usage_info *info)
 {
-  enum built_in_function fn = DECL_FUNCTION_CODE (gimple_call_fndecl (call));
+  combined_fn fn = gimple_call_combined_fn (call);
   tree lhs = gimple_call_lhs (call);
   switch (fn)
     {
-    CASE_FLT_FN (BUILT_IN_COS):
-    CASE_FLT_FN (BUILT_IN_COSH):
-    CASE_FLT_FN (BUILT_IN_CCOS):
-    CASE_FLT_FN (BUILT_IN_CCOSH):
-    CASE_FLT_FN (BUILT_IN_HYPOT):
+    case CFN_LAST:
+      break;
+
+    CASE_CFN_COS:
+    CASE_CFN_COSH:
+    CASE_CFN_CCOS:
+    CASE_CFN_CCOSH:
+    CASE_CFN_HYPOT:
       /* The signs of all inputs are ignored.  */
       info->flags.ignore_sign = true;
       break;
 
-    CASE_FLT_FN (BUILT_IN_COPYSIGN):
+    CASE_CFN_COPYSIGN:
       /* The sign of the first input is ignored.  */
       if (rhs != gimple_call_arg (call, 1))
 	info->flags.ignore_sign = true;
       break;
 
-    CASE_FLT_FN (BUILT_IN_POW):
+    CASE_CFN_POW:
       {
 	/* The sign of the first input is ignored as long as the second
 	   input is an even real.  */
@@ -369,7 +373,7 @@ backprop::process_builtin_call_use (gcall *call, tree rhs, usage_info *info)
 	break;
       }
 
-    CASE_FLT_FN (BUILT_IN_FMA):
+    CASE_CFN_FMA:
       /* In X * X + Y, where Y is distinct from X, the sign of X doesn't
 	 matter.  */
       if (gimple_call_arg (call, 0) == rhs
@@ -472,10 +476,7 @@ backprop::process_use (gimple *stmt, tree rhs, usage_info *info)
     }
 
   if (gcall *call = dyn_cast <gcall *> (stmt))
-    {
-      if (gimple_call_builtin_p (call, BUILT_IN_NORMAL))
-	process_builtin_call_use (call, rhs, info);
-    }
+    process_builtin_call_use (call, rhs, info);
   else if (gassign *assign = dyn_cast <gassign *> (stmt))
     process_assign_use (assign, rhs, info);
   else if (gphi *phi = dyn_cast <gphi *> (stmt))
@@ -686,17 +687,14 @@ strip_sign_op_1 (tree rhs)
 	break;
       }
   else if (gcall *call = dyn_cast <gcall *> (def_stmt))
-    {
-      if (gimple_call_builtin_p (call, BUILT_IN_NORMAL))
-	switch (DECL_FUNCTION_CODE (gimple_call_fndecl (call)))
-	  {
-	  CASE_FLT_FN (BUILT_IN_COPYSIGN):
-	    return gimple_call_arg (call, 0);
+    switch (gimple_call_combined_fn (call))
+      {
+      CASE_CFN_COPYSIGN:
+	return gimple_call_arg (call, 0);
 
-	  default:
-	    break;
-	  }
-    }
+      default:
+	break;
+      }
 
   return NULL_TREE;
 }
@@ -758,11 +756,10 @@ backprop::complete_change (gimple *stmt)
 void
 backprop::optimize_builtin_call (gcall *call, tree lhs, const usage_info *info)
 {
-  tree fndecl = gimple_call_fndecl (call);
-  enum built_in_function fn = DECL_FUNCTION_CODE (fndecl);
   /* If we have an f such that -f(x) = f(-x), and if the sign of the result
      doesn't matter, strip any sign operations from the input.  */
-  if (info->flags.ignore_sign && negate_mathfn_p (fn))
+  if (info->flags.ignore_sign
+      && negate_mathfn_p (gimple_call_combined_fn (call)))
     {
       tree new_arg = strip_sign_op (gimple_call_arg (call, 0));
       if (new_arg)
@@ -889,10 +886,7 @@ backprop::execute ()
 	  tree var = m_vars[i].first;
 	  gimple *stmt = SSA_NAME_DEF_STMT (var);
 	  if (gcall *call = dyn_cast <gcall *> (stmt))
-	    {
-	      if (gimple_call_builtin_p (call, BUILT_IN_NORMAL))
-		optimize_builtin_call (call, var, info);
-	    }
+	    optimize_builtin_call (call, var, info);
 	  else if (gassign *assign = dyn_cast <gassign *> (stmt))
 	    optimize_assign (assign, var, info);
 	  else if (gphi *phi = dyn_cast <gphi *> (stmt))

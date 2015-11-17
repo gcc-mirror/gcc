@@ -137,12 +137,12 @@ extern bool tree_unary_nonnegative_warnv_p (enum tree_code, tree, tree,
 extern bool tree_binary_nonnegative_warnv_p (enum tree_code, tree, tree, tree,
 					     bool *, int);
 extern bool tree_single_nonnegative_warnv_p (tree, bool *, int);
-extern bool tree_call_nonnegative_warnv_p (tree, tree, tree, tree, bool *,
-					   int);
+extern bool tree_call_nonnegative_warnv_p (tree, combined_fn, tree, tree,
+					   bool *, int);
 
 extern bool integer_valued_real_unary_p (tree_code, tree, int);
 extern bool integer_valued_real_binary_p (tree_code, tree, tree, int);
-extern bool integer_valued_real_call_p (tree, tree, tree, int);
+extern bool integer_valued_real_call_p (combined_fn, tree, tree, int);
 extern bool integer_valued_real_single_p (tree, int);
 extern bool integer_valued_real_p (tree, int = 0);
 
@@ -179,7 +179,7 @@ extern tree sign_bit_p (tree, const_tree);
 extern tree exact_inverse (tree, tree);
 extern tree const_unop (enum tree_code, tree, tree);
 extern tree const_binop (enum tree_code, tree, tree, tree);
-extern bool negate_mathfn_p (enum built_in_function);
+extern bool negate_mathfn_p (combined_fn);
 extern const char *c_getstr (tree);
 
 /* Return OFF converted to a pointer offset type suitable as offset for
