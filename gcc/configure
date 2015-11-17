@@ -28058,7 +28058,7 @@ _start:
 x:	.quad .TOC.
 EOF
       if $gcc_cv_as -a64 -o conftest.o conftest.s > /dev/null 2>&1 \
-         && $gcc_cv_ld $emul_name -o conftest conftest.o > /dev/null 2>&1; then
+         && $gcc_cv_ld $emul_name -z norelro -o conftest conftest.o > /dev/null 2>&1; then
         gcc_cv_ld_toc_align=`$gcc_cv_nm conftest | ${AWK} '/\.TOC\./ { match ($0, "0[[:xdigit:]]*", a); print strtonum ("0x" substr(a[0], length(a[0])-3)) }'`
       fi
       rm -f conftest conftest.o conftest.s
