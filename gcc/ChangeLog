@@ -1,5 +1,18 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* Makefile.in (MOSTLYCLEANFILES): Add cfn-operators.pd.
+	(generated_files): Likewise.
+	(s-cfn-operators, cfn-operators.pd): New rules.
+	(s-match): Depend on cfn-operators.pd.
+	* gencfn-macros.c: Expand comment to describe -o behavior.
+	(print_define_operator_list): New function.
+	(main): Accept -o.  Call print_define_operator_list.
+	* genmatch.c (main): Add the current directory to the include path.
+	* match.pd (DEFINE_MATH_FN): Delete.  Include cfn-operators.pd
+	instead.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* doc/match-and-simplify.texi: Document the "null" identifier.
 	* genmatch.c (id_base::NULL_ID): New kind.
 	(null_id): New variable.

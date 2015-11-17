@@ -47,10 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 (define_operator_list simple_comparison         lt   le   eq ne ge   gt)
 (define_operator_list swapped_simple_comparison gt   ge   eq ne le   lt)
 
-/* Define an operand list for math function FN, with float, double and
-   long double variants (in that order).  */
-#define DEFINE_MATH_FN(FN) \
-  (define_operator_list FN BUILT_IN_##FN##F BUILT_IN_##FN BUILT_IN_##FN##L)
+#include "cfn-operators.pd"
 
 /* Define operand lists for math rounding functions {,i,l,ll}FN,
    where the versions prefixed with "i" return an int, those prefixed with
@@ -62,10 +59,6 @@ along with GCC; see the file COPYING3.  If not see
      X<FN> for all double functions, in the same order
      X<FN>L for all long double functions, in the same order.  */
 #define DEFINE_INT_AND_FLOAT_ROUND_FN(FN) \
-  DEFINE_MATH_FN (FN) \
-  DEFINE_MATH_FN (I##FN) \
-  DEFINE_MATH_FN (L##FN) \
-  DEFINE_MATH_FN (LL##FN) \
   (define_operator_list X##FN##F BUILT_IN_I##FN##F \
 				 BUILT_IN_L##FN##F \
 				 BUILT_IN_LL##FN##F) \
@@ -75,39 +68,6 @@ along with GCC; see the file COPYING3.  If not see
   (define_operator_list X##FN##L BUILT_IN_I##FN##L \
 				 BUILT_IN_L##FN##L \
 				 BUILT_IN_LL##FN##L)
-
-DEFINE_MATH_FN (LOG)
-DEFINE_MATH_FN (EXP)
-DEFINE_MATH_FN (LOG2)
-DEFINE_MATH_FN (EXP2)
-DEFINE_MATH_FN (LOG10)
-DEFINE_MATH_FN (EXP10)
-DEFINE_MATH_FN (POW)
-DEFINE_MATH_FN (POW10)
-DEFINE_MATH_FN (POWI)
-DEFINE_MATH_FN (SQRT)
-DEFINE_MATH_FN (CBRT)
-DEFINE_MATH_FN (SIN)
-DEFINE_MATH_FN (COS)
-DEFINE_MATH_FN (TAN)
-DEFINE_MATH_FN (ATAN)
-DEFINE_MATH_FN (COSH)
-DEFINE_MATH_FN (CEXP)
-DEFINE_MATH_FN (CEXPI)
-DEFINE_MATH_FN (CPROJ)
-DEFINE_MATH_FN (CCOS)
-DEFINE_MATH_FN (CCOSH)
-DEFINE_MATH_FN (HYPOT)
-DEFINE_MATH_FN (COPYSIGN)
-DEFINE_MATH_FN (CABS)
-DEFINE_MATH_FN (TRUNC)
-DEFINE_MATH_FN (NEARBYINT)
-DEFINE_MATH_FN (SIGNBIT)
-DEFINE_MATH_FN (FMIN)
-DEFINE_MATH_FN (FMAX)
-DEFINE_MATH_FN (LDEXP)
-DEFINE_MATH_FN (SCALBN)
-DEFINE_MATH_FN (SCALBLN)
 
 DEFINE_INT_AND_FLOAT_ROUND_FN (FLOOR)
 DEFINE_INT_AND_FLOAT_ROUND_FN (CEIL)

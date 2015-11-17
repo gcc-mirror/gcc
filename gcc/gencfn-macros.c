@@ -40,7 +40,27 @@ along with GCC; see the file COPYING3.  If not see
       case CFN_BUILT_IN_SQRTL:
       case CFN_SQRT:
 
-   The macros for groups with no internal function drop the last line.  */
+   The macros for groups with no internal function drop the last line.
+
+   When run with -o, the generator prints a similar list of
+   define_operator_list directives, for use by match.pd.  Each operator
+   list starts with the built-in functions, in order of ascending type width.
+   This is followed by an entry for the internal function, or "null" if there
+   is no internal function for the group.  For example:
+
+     (define_operator_list SQRT
+	 BUILT_IN_SQRTF
+	 BUILT_IN_SQRT
+	 BUILT_IN_SQRTL
+	 IFN_SQRT)
+
+   and:
+
+     (define_operator_list CABS
+	 BUILT_IN_CABSF
+	 BUILT_IN_CABS
+	 BUILT_IN_CABSL
+	 null)  */
 
 #include "bconfig.h"
 #include "system.h"
@@ -89,6 +109,23 @@ print_case_cfn (const char *name, bool internal_p,
   printf ("\n");
 }
 
+/* Print an operator list for all combined functions related to NAME,
+   with the null-terminated list of suffixes in SUFFIXES.  INTERNAL_P
+   says whether CFN_<NAME> also exists.  */
+
+static void
+print_define_operator_list (const char *name, bool internal_p,
+			    const char *const *suffixes)
+{
+  printf ("(define_operator_list %s\n", name);
+  for (unsigned int i = 0; suffixes[i]; ++i)
+    printf ("    BUILT_IN_%s%s\n", name, suffixes[i]);
+  if (internal_p)
+    printf ("    IFN_%s)\n", name);
+  else
+    printf ("    null)\n");
+}
+
 const char *const builtin_names[] = {
 #define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
   #ENUM,
@@ -126,9 +163,10 @@ main (int argc, char **argv)
   progname = argv[0];
   if (argc != 2
       || argv[1][0] != '-'
-      || argv[1][1] != 'c'
+      || !strchr ("co", argv[1][1])
       || argv[1][2])
-    fatal ("usage: %s -c > file", progname);
+    fatal ("usage: %s [-c|-o] > file", progname);
+  int type = argv[1][1];
 
   /* Collect the set of built-in and internal functions.  */
   string_set builtins;
@@ -165,7 +203,11 @@ main (int argc, char **argv)
 	    if (is_group (&builtins, root, suffix_lists[j]))
 	      {
 		bool internal_p = internal_fns.contains (root);
-		print_case_cfn (root, internal_p, suffix_lists[j]);
+		if (type == 'c')
+		  print_case_cfn (root, internal_p, suffix_lists[j]);
+		else
+		  print_define_operator_list (root, internal_p,
+					      suffix_lists[j]);
 	      }
 	}
     }

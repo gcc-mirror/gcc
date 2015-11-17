@@ -1570,7 +1570,7 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  tm-preds.h tm-constrs.h checksum-options gimple-match.c generic-match.c \
  tree-check.h min-insn-modes.c insn-modes.c insn-modes.h \
  genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
- case-cfn-macros.h \
+ case-cfn-macros.h cfn-operators.pd \
  xgcc$(exeext) cpp$(exeext) $(FULL_DRIVER_NAME) \
  $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(SPECS) collect2$(exeext) gcc-ar$(exeext) gcc-nm$(exeext) \
@@ -2256,6 +2256,14 @@ s-case-cfn-macros: build/gencfn-macros$(build_exeext)
 	$(STAMP) s-case-cfn-macros
 case-cfn-macros.h: s-case-cfn-macros; @true
 
+s-cfn-operators: build/gencfn-macros$(build_exeext)
+	$(RUN_GEN) build/gencfn-macros$(build_exeext) -o \
+	  > tmp-cfn-operators.pd
+	$(SHELL) $(srcdir)/../move-if-change tmp-cfn-operators.pd \
+	  cfn-operators.pd
+	$(STAMP) s-cfn-operators
+cfn-operators.pd: s-cfn-operators; @true
+
 target-hooks-def.h: s-target-hooks-def-h; @true
 # make sure that when we build info files, the used tm.texi is up to date.
 $(srcdir)/doc/tm.texi: s-tm-texi; @true
@@ -2322,7 +2330,7 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 gimple-match.c: s-match gimple-match-head.c ; @true
 generic-match.c: s-match generic-match-head.c ; @true
 
-s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd
+s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd cfn-operators.pd
 	$(RUN_GEN) build/genmatch$(build_exeext) --gimple $(srcdir)/match.pd \
 	    > tmp-gimple-match.c
 	$(RUN_GEN) build/genmatch$(build_exeext) --generic $(srcdir)/match.pd \
@@ -2443,7 +2451,8 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_H) multilib.h \
        $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
-       c-family/c-target-hooks-def.h params.list case-cfn-macros.h
+       c-family/c-target-hooks-def.h params.list case-cfn-macros.h \
+       cfn-operators.pd
 
 #
 # How to compile object files to run on the build machine.

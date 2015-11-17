@@ -4638,6 +4638,13 @@ main (int argc, char **argv)
   cpp_callbacks *cb = cpp_get_callbacks (r);
   cb->error = error_cb;
 
+  /* Add the build directory to the #include "" search path.  */
+  cpp_dir *dir = XCNEW (cpp_dir);
+  dir->name = getpwd ();
+  if (!dir->name)
+    dir->name = ASTRDUP (".");
+  cpp_set_include_chains (r, dir, NULL, false);
+
   if (!cpp_read_main_file (r, input))
     return 1;
   cpp_define (r, gimple ? "GIMPLE=1": "GENERIC=1");
