@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
 #include "internal-fn.h"
+#include "case-cfn-macros.h"
 
 
 struct target_builtins default_target_builtins;
@@ -1751,120 +1752,121 @@ expand_builtin_classify_type (tree exp)
    determines which among a set of three builtin math functions is
    appropriate for a given type mode.  The `F' and `L' cases are
    automatically generated from the `double' case.  */
-#define CASE_MATHFN(BUILT_IN_MATHFN) \
-  case BUILT_IN_MATHFN: case BUILT_IN_MATHFN##F: case BUILT_IN_MATHFN##L: \
-  fcode = BUILT_IN_MATHFN; fcodef = BUILT_IN_MATHFN##F ; \
-  fcodel = BUILT_IN_MATHFN##L ; break;
+#define CASE_MATHFN(MATHFN) \
+  CASE_CFN_##MATHFN: \
+  fcode = BUILT_IN_##MATHFN; fcodef = BUILT_IN_##MATHFN##F ; \
+  fcodel = BUILT_IN_##MATHFN##L ; break;
 /* Similar to above, but appends _R after any F/L suffix.  */
-#define CASE_MATHFN_REENT(BUILT_IN_MATHFN) \
-  case BUILT_IN_MATHFN##_R: case BUILT_IN_MATHFN##F_R: case BUILT_IN_MATHFN##L_R: \
-  fcode = BUILT_IN_MATHFN##_R; fcodef = BUILT_IN_MATHFN##F_R ; \
-  fcodel = BUILT_IN_MATHFN##L_R ; break;
+#define CASE_MATHFN_REENT(MATHFN) \
+  case CFN_BUILT_IN_##MATHFN##_R: \
+  case CFN_BUILT_IN_##MATHFN##F_R: \
+  case CFN_BUILT_IN_##MATHFN##L_R: \
+  fcode = BUILT_IN_##MATHFN##_R; fcodef = BUILT_IN_##MATHFN##F_R ; \
+  fcodel = BUILT_IN_##MATHFN##L_R ; break;
 
 /* Return a function equivalent to FN but operating on floating-point
    values of type TYPE, or END_BUILTINS if no such function exists.
-   This is purely an operation on built-in function codes; it does not
-   guarantee that the target actually has an implementation of the
-   function.  */
+   This is purely an operation on function codes; it does not guarantee
+   that the target actually has an implementation of the function.  */
 
 static built_in_function
-mathfn_built_in_2 (tree type, built_in_function fn)
+mathfn_built_in_2 (tree type, combined_fn fn)
 {
   built_in_function fcode, fcodef, fcodel;
 
   switch (fn)
     {
-      CASE_MATHFN (BUILT_IN_ACOS)
-      CASE_MATHFN (BUILT_IN_ACOSH)
-      CASE_MATHFN (BUILT_IN_ASIN)
-      CASE_MATHFN (BUILT_IN_ASINH)
-      CASE_MATHFN (BUILT_IN_ATAN)
-      CASE_MATHFN (BUILT_IN_ATAN2)
-      CASE_MATHFN (BUILT_IN_ATANH)
-      CASE_MATHFN (BUILT_IN_CBRT)
-      CASE_MATHFN (BUILT_IN_CEIL)
-      CASE_MATHFN (BUILT_IN_CEXPI)
-      CASE_MATHFN (BUILT_IN_COPYSIGN)
-      CASE_MATHFN (BUILT_IN_COS)
-      CASE_MATHFN (BUILT_IN_COSH)
-      CASE_MATHFN (BUILT_IN_DREM)
-      CASE_MATHFN (BUILT_IN_ERF)
-      CASE_MATHFN (BUILT_IN_ERFC)
-      CASE_MATHFN (BUILT_IN_EXP)
-      CASE_MATHFN (BUILT_IN_EXP10)
-      CASE_MATHFN (BUILT_IN_EXP2)
-      CASE_MATHFN (BUILT_IN_EXPM1)
-      CASE_MATHFN (BUILT_IN_FABS)
-      CASE_MATHFN (BUILT_IN_FDIM)
-      CASE_MATHFN (BUILT_IN_FLOOR)
-      CASE_MATHFN (BUILT_IN_FMA)
-      CASE_MATHFN (BUILT_IN_FMAX)
-      CASE_MATHFN (BUILT_IN_FMIN)
-      CASE_MATHFN (BUILT_IN_FMOD)
-      CASE_MATHFN (BUILT_IN_FREXP)
-      CASE_MATHFN (BUILT_IN_GAMMA)
-      CASE_MATHFN_REENT (BUILT_IN_GAMMA) /* GAMMA_R */
-      CASE_MATHFN (BUILT_IN_HUGE_VAL)
-      CASE_MATHFN (BUILT_IN_HYPOT)
-      CASE_MATHFN (BUILT_IN_ILOGB)
-      CASE_MATHFN (BUILT_IN_ICEIL)
-      CASE_MATHFN (BUILT_IN_IFLOOR)
-      CASE_MATHFN (BUILT_IN_INF)
-      CASE_MATHFN (BUILT_IN_IRINT)
-      CASE_MATHFN (BUILT_IN_IROUND)
-      CASE_MATHFN (BUILT_IN_ISINF)
-      CASE_MATHFN (BUILT_IN_J0)
-      CASE_MATHFN (BUILT_IN_J1)
-      CASE_MATHFN (BUILT_IN_JN)
-      CASE_MATHFN (BUILT_IN_LCEIL)
-      CASE_MATHFN (BUILT_IN_LDEXP)
-      CASE_MATHFN (BUILT_IN_LFLOOR)
-      CASE_MATHFN (BUILT_IN_LGAMMA)
-      CASE_MATHFN_REENT (BUILT_IN_LGAMMA) /* LGAMMA_R */
-      CASE_MATHFN (BUILT_IN_LLCEIL)
-      CASE_MATHFN (BUILT_IN_LLFLOOR)
-      CASE_MATHFN (BUILT_IN_LLRINT)
-      CASE_MATHFN (BUILT_IN_LLROUND)
-      CASE_MATHFN (BUILT_IN_LOG)
-      CASE_MATHFN (BUILT_IN_LOG10)
-      CASE_MATHFN (BUILT_IN_LOG1P)
-      CASE_MATHFN (BUILT_IN_LOG2)
-      CASE_MATHFN (BUILT_IN_LOGB)
-      CASE_MATHFN (BUILT_IN_LRINT)
-      CASE_MATHFN (BUILT_IN_LROUND)
-      CASE_MATHFN (BUILT_IN_MODF)
-      CASE_MATHFN (BUILT_IN_NAN)
-      CASE_MATHFN (BUILT_IN_NANS)
-      CASE_MATHFN (BUILT_IN_NEARBYINT)
-      CASE_MATHFN (BUILT_IN_NEXTAFTER)
-      CASE_MATHFN (BUILT_IN_NEXTTOWARD)
-      CASE_MATHFN (BUILT_IN_POW)
-      CASE_MATHFN (BUILT_IN_POWI)
-      CASE_MATHFN (BUILT_IN_POW10)
-      CASE_MATHFN (BUILT_IN_REMAINDER)
-      CASE_MATHFN (BUILT_IN_REMQUO)
-      CASE_MATHFN (BUILT_IN_RINT)
-      CASE_MATHFN (BUILT_IN_ROUND)
-      CASE_MATHFN (BUILT_IN_SCALB)
-      CASE_MATHFN (BUILT_IN_SCALBLN)
-      CASE_MATHFN (BUILT_IN_SCALBN)
-      CASE_MATHFN (BUILT_IN_SIGNBIT)
-      CASE_MATHFN (BUILT_IN_SIGNIFICAND)
-      CASE_MATHFN (BUILT_IN_SIN)
-      CASE_MATHFN (BUILT_IN_SINCOS)
-      CASE_MATHFN (BUILT_IN_SINH)
-      CASE_MATHFN (BUILT_IN_SQRT)
-      CASE_MATHFN (BUILT_IN_TAN)
-      CASE_MATHFN (BUILT_IN_TANH)
-      CASE_MATHFN (BUILT_IN_TGAMMA)
-      CASE_MATHFN (BUILT_IN_TRUNC)
-      CASE_MATHFN (BUILT_IN_Y0)
-      CASE_MATHFN (BUILT_IN_Y1)
-      CASE_MATHFN (BUILT_IN_YN)
+    CASE_MATHFN (ACOS)
+    CASE_MATHFN (ACOSH)
+    CASE_MATHFN (ASIN)
+    CASE_MATHFN (ASINH)
+    CASE_MATHFN (ATAN)
+    CASE_MATHFN (ATAN2)
+    CASE_MATHFN (ATANH)
+    CASE_MATHFN (CBRT)
+    CASE_MATHFN (CEIL)
+    CASE_MATHFN (CEXPI)
+    CASE_MATHFN (COPYSIGN)
+    CASE_MATHFN (COS)
+    CASE_MATHFN (COSH)
+    CASE_MATHFN (DREM)
+    CASE_MATHFN (ERF)
+    CASE_MATHFN (ERFC)
+    CASE_MATHFN (EXP)
+    CASE_MATHFN (EXP10)
+    CASE_MATHFN (EXP2)
+    CASE_MATHFN (EXPM1)
+    CASE_MATHFN (FABS)
+    CASE_MATHFN (FDIM)
+    CASE_MATHFN (FLOOR)
+    CASE_MATHFN (FMA)
+    CASE_MATHFN (FMAX)
+    CASE_MATHFN (FMIN)
+    CASE_MATHFN (FMOD)
+    CASE_MATHFN (FREXP)
+    CASE_MATHFN (GAMMA)
+    CASE_MATHFN_REENT (GAMMA) /* GAMMA_R */
+    CASE_MATHFN (HUGE_VAL)
+    CASE_MATHFN (HYPOT)
+    CASE_MATHFN (ILOGB)
+    CASE_MATHFN (ICEIL)
+    CASE_MATHFN (IFLOOR)
+    CASE_MATHFN (INF)
+    CASE_MATHFN (IRINT)
+    CASE_MATHFN (IROUND)
+    CASE_MATHFN (ISINF)
+    CASE_MATHFN (J0)
+    CASE_MATHFN (J1)
+    CASE_MATHFN (JN)
+    CASE_MATHFN (LCEIL)
+    CASE_MATHFN (LDEXP)
+    CASE_MATHFN (LFLOOR)
+    CASE_MATHFN (LGAMMA)
+    CASE_MATHFN_REENT (LGAMMA) /* LGAMMA_R */
+    CASE_MATHFN (LLCEIL)
+    CASE_MATHFN (LLFLOOR)
+    CASE_MATHFN (LLRINT)
+    CASE_MATHFN (LLROUND)
+    CASE_MATHFN (LOG)
+    CASE_MATHFN (LOG10)
+    CASE_MATHFN (LOG1P)
+    CASE_MATHFN (LOG2)
+    CASE_MATHFN (LOGB)
+    CASE_MATHFN (LRINT)
+    CASE_MATHFN (LROUND)
+    CASE_MATHFN (MODF)
+    CASE_MATHFN (NAN)
+    CASE_MATHFN (NANS)
+    CASE_MATHFN (NEARBYINT)
+    CASE_MATHFN (NEXTAFTER)
+    CASE_MATHFN (NEXTTOWARD)
+    CASE_MATHFN (POW)
+    CASE_MATHFN (POWI)
+    CASE_MATHFN (POW10)
+    CASE_MATHFN (REMAINDER)
+    CASE_MATHFN (REMQUO)
+    CASE_MATHFN (RINT)
+    CASE_MATHFN (ROUND)
+    CASE_MATHFN (SCALB)
+    CASE_MATHFN (SCALBLN)
+    CASE_MATHFN (SCALBN)
+    CASE_MATHFN (SIGNBIT)
+    CASE_MATHFN (SIGNIFICAND)
+    CASE_MATHFN (SIN)
+    CASE_MATHFN (SINCOS)
+    CASE_MATHFN (SINH)
+    CASE_MATHFN (SQRT)
+    CASE_MATHFN (TAN)
+    CASE_MATHFN (TANH)
+    CASE_MATHFN (TGAMMA)
+    CASE_MATHFN (TRUNC)
+    CASE_MATHFN (Y0)
+    CASE_MATHFN (Y1)
+    CASE_MATHFN (YN)
 
-      default:
-	return END_BUILTINS;
-      }
+    default:
+      return END_BUILTINS;
+    }
 
   if (TYPE_MAIN_VARIANT (type) == double_type_node)
     return fcode;
@@ -1882,7 +1884,7 @@ mathfn_built_in_2 (tree type, built_in_function fn)
    return null.  */
 
 static tree
-mathfn_built_in_1 (tree type, enum built_in_function fn, bool implicit_p)
+mathfn_built_in_1 (tree type, combined_fn fn, bool implicit_p)
 {
   built_in_function fcode2 = mathfn_built_in_2 (type, fn);
   if (fcode2 == END_BUILTINS)
@@ -1894,12 +1896,21 @@ mathfn_built_in_1 (tree type, enum built_in_function fn, bool implicit_p)
   return builtin_decl_explicit (fcode2);
 }
 
-/* Like mathfn_built_in_1(), but always use the implicit array.  */
+/* Like mathfn_built_in_1, but always use the implicit array.  */
+
+tree
+mathfn_built_in (tree type, combined_fn fn)
+{
+  return mathfn_built_in_1 (type, fn, /*implicit=*/ 1);
+}
+
+/* Like mathfn_built_in_1, but take a built_in_function and
+   always use the implicit array.  */
 
 tree
 mathfn_built_in (tree type, enum built_in_function fn)
 {
-  return mathfn_built_in_1 (type, fn, /*implicit=*/ 1);
+  return mathfn_built_in_1 (type, as_combined_fn (fn), /*implicit=*/ 1);
 }
 
 /* If BUILT_IN_NORMAL function FNDECL has an associated internal function,
@@ -2919,8 +2930,8 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
 	 a call to lround in the hope that the target provides at least some
 	 C99 functions.  This should result in the best user experience for
 	 not full C99 targets.  */
-      tree fallback_fndecl = mathfn_built_in_1 (TREE_TYPE (arg),
-						fallback_fn, 0);
+      tree fallback_fndecl = mathfn_built_in_1
+	(TREE_TYPE (arg), as_combined_fn (fallback_fn), 0);
 
       exp = build_call_nofold_loc (EXPR_LOCATION (exp),
 				   fallback_fndecl, 1, arg);
@@ -7340,7 +7351,7 @@ fold_builtin_sincos (location_t loc,
   type = TREE_TYPE (arg0);
 
   /* Calculate the result when the argument is a constant.  */
-  built_in_function fn = mathfn_built_in_2 (type, BUILT_IN_CEXPI);
+  built_in_function fn = mathfn_built_in_2 (type, CFN_BUILT_IN_CEXPI);
   if (fn == END_BUILTINS)
     return NULL_TREE;
 
@@ -7931,7 +7942,8 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
 	/* In a boolean context, GCC will fold the inner COND_EXPR to
 	   1.  So e.g. "if (isinf_sign(x))" would be folded to just
 	   "if (isinf(x) ? 1 : 0)" which becomes "if (isinf(x))". */
-	tree signbit_fn = mathfn_built_in_1 (TREE_TYPE (arg), BUILT_IN_SIGNBIT, 0);
+	tree signbit_fn = mathfn_built_in_1
+	  (TREE_TYPE (arg), CFN_BUILT_IN_SIGNBIT, 0);
 	tree isinf_fn = builtin_decl_explicit (BUILT_IN_ISINF);
 	tree tmp = NULL_TREE;
 
