@@ -5768,10 +5768,6 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	    /* Make sure the result is not an lvalue: a unary plus or minus
 	       expression is always a rvalue.  */
 	    arg = rvalue (arg);
-
-	    if (code == NEGATE_EXPR && CONSTANT_CLASS_P (arg))
-	      /* Immediately fold negation of a constant.  */
-	      return fold_build1 (code, TREE_TYPE (arg), arg);
 	  }
       }
       break;
