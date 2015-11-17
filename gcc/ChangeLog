@@ -1,5 +1,11 @@
 2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vrp.c: Include case-cfn-macros.h.
+	(extract_range_basic): Switch on combined_fn rather than handling
+	built-in functions and internal functions separately.
+
+2015-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* fold-const.h (negate_mathfn_p): Take a combined_fn rather
 	than a built_in_function.
 	(tree_call_nonnegative_warnv_p): Take a combined_fn rather than
