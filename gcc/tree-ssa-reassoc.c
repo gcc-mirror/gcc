@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "builtins.h"
 #include "gimplify.h"
+#include "case-cfn-macros.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less
@@ -1038,21 +1039,13 @@ oecount_cmp (const void *p1, const void *p2)
 static bool
 stmt_is_power_of_op (gimple *stmt, tree op)
 {
-  tree fndecl;
-
   if (!is_gimple_call (stmt))
     return false;
 
-  fndecl = gimple_call_fndecl (stmt);
-
-  if (!fndecl
-      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
-    return false;
-
-  switch (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)))
+  switch (gimple_call_combined_fn (stmt))
     {
-    CASE_FLT_FN (BUILT_IN_POW):
-    CASE_FLT_FN (BUILT_IN_POWI):
+    CASE_CFN_POW:
+    CASE_CFN_POWI:
       return (operand_equal_p (gimple_call_arg (stmt, 0), op, 0));
       
     default:
@@ -1071,9 +1064,9 @@ decrement_power (gimple *stmt)
   HOST_WIDE_INT power;
   tree arg1;
 
-  switch (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)))
+  switch (gimple_call_combined_fn (stmt))
     {
-    CASE_FLT_FN (BUILT_IN_POW):
+    CASE_CFN_POW:
       arg1 = gimple_call_arg (stmt, 1);
       c = TREE_REAL_CST (arg1);
       power = real_to_integer (&c) - 1;
@@ -1081,7 +1074,7 @@ decrement_power (gimple *stmt)
       gimple_call_set_arg (stmt, 1, build_real (TREE_TYPE (arg1), cint));
       return power;
 
-    CASE_FLT_FN (BUILT_IN_POWI):
+    CASE_CFN_POWI:
       arg1 = gimple_call_arg (stmt, 1);
       power = TREE_INT_CST_LOW (arg1) - 1;
       gimple_call_set_arg (stmt, 1, build_int_cst (TREE_TYPE (arg1), power));
@@ -3940,7 +3933,7 @@ break_up_subtract (gimple *stmt, gimple_stmt_iterator *gsip)
 static bool
 acceptable_pow_call (gimple *stmt, tree *base, HOST_WIDE_INT *exponent)
 {
-  tree fndecl, arg1;
+  tree arg1;
   REAL_VALUE_TYPE c, cint;
 
   if (!reassoc_insert_powi_p
@@ -3949,15 +3942,9 @@ acceptable_pow_call (gimple *stmt, tree *base, HOST_WIDE_INT *exponent)
       || !has_single_use (gimple_call_lhs (stmt)))
     return false;
 
-  fndecl = gimple_call_fndecl (stmt);
-
-  if (!fndecl
-      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
-    return false;
-
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (gimple_call_combined_fn (stmt))
     {
-    CASE_FLT_FN (BUILT_IN_POW):
+    CASE_CFN_POW:
       if (flag_errno_math)
 	return false;
 
@@ -3979,7 +3966,7 @@ acceptable_pow_call (gimple *stmt, tree *base, HOST_WIDE_INT *exponent)
 
       break;
 
-    CASE_FLT_FN (BUILT_IN_POWI):
+    CASE_CFN_POWI:
       *base = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
 
@@ -4639,35 +4626,40 @@ attempt_builtin_copysign (vec<operand_entry *> *ops)
 	  && has_single_use (oe->op))
 	{
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (oe->op);
-	  if (gimple_call_builtin_p (def_stmt, BUILT_IN_NORMAL))
+	  if (gcall *old_call = dyn_cast <gcall *> (def_stmt))
 	    {
-	      tree fndecl = gimple_call_fndecl (def_stmt);
 	      tree arg0, arg1;
-	      switch (DECL_FUNCTION_CODE (fndecl))
+	      switch (gimple_call_combined_fn (old_call))
 		{
-		CASE_FLT_FN (BUILT_IN_COPYSIGN):
-		  arg0 = gimple_call_arg (def_stmt, 0);
-		  arg1 = gimple_call_arg (def_stmt, 1);
+		CASE_CFN_COPYSIGN:
+		  arg0 = gimple_call_arg (old_call, 0);
+		  arg1 = gimple_call_arg (old_call, 1);
 		  /* The first argument of copysign must be a constant,
 		     otherwise there's nothing to do.  */
 		  if (TREE_CODE (arg0) == REAL_CST)
 		    {
-		      tree mul = const_binop (MULT_EXPR, TREE_TYPE (cst),
-					      cst, arg0);
+		      tree type = TREE_TYPE (arg0);
+		      tree mul = const_binop (MULT_EXPR, type, cst, arg0);
 		      /* If we couldn't fold to a single constant, skip it.
 			 That happens e.g. for inexact multiplication when
 			 -frounding-math.  */
 		      if (mul == NULL_TREE)
 			break;
-		      /* Instead of adjusting the old DEF_STMT, let's build
-			 a new call to not leak the LHS and prevent keeping
-			 bogus debug statements.  DCE will clean up the old
-			 call.  */
-		      gcall *call = gimple_build_call (fndecl, 2, mul, arg1);
-		      tree lhs = make_ssa_name (TREE_TYPE (arg0));
-		      gimple_call_set_lhs (call, lhs);
-		      gimple_set_location (call, gimple_location (def_stmt));
-		      insert_stmt_after (call, def_stmt);
+		      /* Instead of adjusting OLD_CALL, let's build a new
+			 call to not leak the LHS and prevent keeping bogus
+			 debug statements.  DCE will clean up the old call.  */
+		      gcall *new_call;
+		      if (gimple_call_internal_p (old_call))
+			new_call = gimple_build_call_internal
+			  (IFN_COPYSIGN, 2, mul, arg1);
+		      else
+			new_call = gimple_build_call
+			  (gimple_call_fndecl (old_call), 2, mul, arg1);
+		      tree lhs = make_ssa_name (type);
+		      gimple_call_set_lhs (new_call, lhs);
+		      gimple_set_location (new_call,
+					   gimple_location (old_call));
+		      insert_stmt_after (new_call, old_call);
 		      /* We've used the constant, get rid of it.  */
 		      ops->pop ();
 		      bool cst1_neg = real_isneg (TREE_REAL_CST_PTR (cst));
@@ -4677,7 +4669,7 @@ attempt_builtin_copysign (vec<operand_entry *> *ops)
 			  tree negrhs = make_ssa_name (TREE_TYPE (lhs));
 			  gimple *negate_stmt
 			    = gimple_build_assign (negrhs, NEGATE_EXPR, lhs);
-			  insert_stmt_after (negate_stmt, call);
+			  insert_stmt_after (negate_stmt, new_call);
 			  oe->op = negrhs;
 			}
 		      else
@@ -4686,18 +4678,12 @@ attempt_builtin_copysign (vec<operand_entry *> *ops)
 			{
 			  fprintf (dump_file, "Optimizing copysign: ");
 			  print_generic_expr (dump_file, cst, 0);
-			  fprintf (dump_file, " * ");
-			  print_generic_expr (dump_file,
-					      gimple_call_fn (def_stmt), 0);
-			  fprintf (dump_file, " (");
+			  fprintf (dump_file, " * COPYSIGN (");
 			  print_generic_expr (dump_file, arg0, 0);
 			  fprintf (dump_file, ", ");
 			  print_generic_expr (dump_file, arg1, 0);
-			  fprintf (dump_file, ") into %s",
+			  fprintf (dump_file, ") into %sCOPYSIGN (",
 				   cst1_neg ? "-" : "");
-			  print_generic_expr (dump_file,
-					      gimple_call_fn (def_stmt), 0);
-			  fprintf (dump_file, " (");
 			  print_generic_expr (dump_file, mul, 0);
 			  fprintf (dump_file, ", ");
 			  print_generic_expr (dump_file, arg1, 0);
