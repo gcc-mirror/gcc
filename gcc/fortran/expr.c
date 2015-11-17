@@ -3632,11 +3632,10 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	       || (lvalue->ts.type == BT_DERIVED
 		   && (lvalue->ts.u.derived->attr.is_bind_c
 		       || lvalue->ts.u.derived->attr.sequence))))
-	gfc_error ("Data-pointer-object &L must be unlimited "
-		   "polymorphic, a sequence derived type or of a "
-		   "type with the BIND attribute assignment at %L "
-		   "to be compatible with an unlimited polymorphic "
-		   "target", &lvalue->where);
+	gfc_error ("Data-pointer-object at %L must be unlimited "
+		   "polymorphic, or of a type with the BIND or SEQUENCE "
+		   "attribute, to be compatible with an unlimited "
+		   "polymorphic target", &lvalue->where);
       else
 	gfc_error ("Different types in pointer assignment at %L; "
 		   "attempted assignment of %s to %s", &lvalue->where,

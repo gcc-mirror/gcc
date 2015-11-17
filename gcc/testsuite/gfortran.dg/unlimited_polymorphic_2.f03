@@ -48,7 +48,7 @@ contains
     call foo (y)
 
     y => tgt ! This is OK, of course.
-    tgt => y ! { dg-error "must be unlimited polymorphic" }
+    tgt => y ! { dg-error "Data-pointer-object at .1. must be unlimited polymorphic" }
 
     select type (y) ! This is the correct way to accomplish the previous
       type is (integer)
