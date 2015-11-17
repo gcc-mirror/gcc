@@ -1,3 +1,9 @@
+2015-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/68308
+	* cp/init.c (build_new_1): Check for expression constness
+	the right way.
+
 2015-11-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/56036
