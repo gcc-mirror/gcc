@@ -1,5 +1,10 @@
 2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Use case #1
+	for the renaming of an address.
+
+2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (fold_constant_decl_in_expr) <ARRAY_REF>: If
 	the index is not itself constant then bail out.
 
