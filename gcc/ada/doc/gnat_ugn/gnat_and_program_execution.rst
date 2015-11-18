@@ -2999,9 +2999,9 @@ exception raised because of the intermediate overflow (and we really
 would prefer this precondition to be considered True at run time).
 
 
-.. _Overflow_Checking_Modes_in_GNAT:
+.. _Management_of_Overflows_in_GNAT:
 
-Overflow Checking Modes in GNAT
+Management of Overflows in GNAT
 -------------------------------
 
 To deal with the portability issue, and with the problem of
@@ -3202,7 +3202,7 @@ The default mode for overflow checks is
       General => Strict
 
 which causes all computations both inside and outside assertions to use
-the base type. In addition overflow checks are suppressed.
+the base type.
 
 This retains compatibility with previous versions of
 GNAT which suppressed overflow checks by default and always
@@ -3220,8 +3220,6 @@ is equivalent to
 
 which causes overflow checking of all intermediate overflows
 both inside and outside assertions against the base type.
-This provides compatibility
-with this switch as implemented in previous versions of GNAT.
 
 The pragma `Suppress (Overflow_Check)` disables overflow
 checking, but it has no effect on the method used for computing

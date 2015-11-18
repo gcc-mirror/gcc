@@ -1306,6 +1306,17 @@ Alphabetical List of All Switches
   :ref:`Optimization_and_Strict_Aliasing` for details.
 
 
+.. index:: -fno-strict-overflow  (gcc)
+
+:samp:`-fno-strict-overflow`
+  Causes the compiler to avoid assumptions regarding the rules of signed
+  integer overflow. These rules specify that signed integer overflow will
+  result in a Constraint_Error exception at run time and are enforced in
+  default mode by the compiler, so this switch should not be necessary in
+  normal operating mode. It might be useful in conjunction with *-gnato0*
+  for very peculiar cases of low-level programming.
+
+
 .. index:: -fstack-check  (gcc)
 
 :samp:`-fstack-check`
@@ -1546,6 +1557,17 @@ Alphabetical List of All Switches
   Check for overflow on all floating-point operations, including those
   for unconstrained predefined types. See description of pragma
   `Check_Float_Overflow` in GNAT RM.
+
+
+.. index:: -gnateg  (gcc)
+
+:samp:`-gnateg`
+:samp:`-gnatceg`
+
+  The `-gnatc` switch must always be specified before this switch, e.g.
+  `-gnatceg`. Generate a C header from the Ada input file. See
+  :ref:`Generating_C_Headers_for_Ada_Specifications` for more
+  information.
 
 
 .. index:: -gnateG  (gcc)
