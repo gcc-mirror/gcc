@@ -2675,10 +2675,13 @@ package body Sem_Ch7 is
          --  If this is a private type with a full view (for example a local
          --  subtype of a private type declared elsewhere), ensure that the
          --  full view is also removed from visibility: it may be exposed when
-         --  swapping views in an instantiation.
+         --  swapping views in an instantiation. Similarly, ensure that the
+         --  use-visibility is properly set on both views.
 
          if Is_Type (Id) and then Present (Full_View (Id)) then
-            Set_Is_Immediately_Visible (Full_View (Id), False);
+            Set_Is_Immediately_Visible     (Full_View (Id), False);
+            Set_Is_Potentially_Use_Visible (Full_View (Id),
+              Is_Potentially_Use_Visible (Id));
          end if;
 
          if Is_Tagged_Type (Id) and then Ekind (Id) = E_Record_Type then

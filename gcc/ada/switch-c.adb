@@ -579,6 +579,13 @@ package body Switch.C is
                   --  -gnateg (generate C code)
 
                   when 'g' =>
+                     --  Special check, -gnateg must occur after -gnatc
+
+                     if Operating_Mode /= Check_Semantics then
+                        Osint.Fail
+                          ("gnateg requires previous occurrence of -gnatc");
+                     end if;
+
                      Generate_C_Code := True;
                      Ptr := Ptr + 1;
 
