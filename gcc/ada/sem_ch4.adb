@@ -7437,7 +7437,14 @@ package body Sem_Ch4 is
          Arg := First (Exprs);
          while Present (Arg) loop
             New_Arg := Relocate_Node (Arg);
-            Save_Interps (Arg, New_Arg);
+
+            --  The arguments can be parameter associations, in which case the
+            --  explicit actual parameter carries the overloadings.
+
+            if Nkind (New_Arg) /= N_Parameter_Association then
+               Save_Interps (Arg, New_Arg);
+            end if;
+
             Append (New_Arg, Assoc);
             Next (Arg);
          end loop;
