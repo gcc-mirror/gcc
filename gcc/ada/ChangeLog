@@ -1,5 +1,13 @@
 2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/misc.c: Move global variables to the top of the file.
+	(gnat_handle_option): Remove obsolete ATTRIBUTE_UNUSED markers.
+	(gnat_init_options): Minor tweak.
+	(gnat_post_options): Set -fstrict-overflow if not done by the user.
+	(internal_error_function): Minor reformatting.
+
+2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Use case #1
 	for the renaming of an address.
 
@@ -269,7 +277,6 @@
 2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	PR ada/66242
-
 	* exp_ch3.adb (Default_Initialize_Object): Reimplemented. Abort
 	defer / undefer pairs are now encapsulated in a block with
 	an AT END handler. Partial finalization now takes restriction
@@ -7919,7 +7926,6 @@
 2015-03-01  Arnaud Charlet  <charlet@adacore.com>
 
 	PR ada/65259
-
 	* doc/gnat_ugn/gnat_project_manager.rst,
 	doc/gnat_ugn/platform_specific_information.rst: Remove reference to
 	image, too troublesome with texi format.

@@ -1,3 +1,7 @@
+2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt52.adb: New test.
+
 2015-11-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.dg/goacc/nvptx-sese-1.c: New.
