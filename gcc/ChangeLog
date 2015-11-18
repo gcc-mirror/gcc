@@ -1,3 +1,18 @@
+2015-11-18  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-uninit.c (convert_control_dep_chain_into_preds):
+	Fix GNU coding style.
+	(find_def_preds): Use auto_vec.
+	(destroy_predicate_vecs): Change signature of the function.
+	(prune_uninit_phi_opnds_in_unrealizable_paths): Use the
+	new signature.
+	(simplify_preds_4): Use destroy_predicate_vecs instread of
+	just releasing preds vector.
+	(normalize_preds): Likewise.
+	(is_use_properly_guarded): Use new signature of
+	destroy_predicate_vecs.
+	(find_uninit_use): Likewise.
+
 2015-11-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67790

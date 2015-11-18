@@ -628,9 +628,9 @@ convert_control_dep_chain_into_preds (vec<edge> *dep_chains,
         }
 
       if (!has_valid_pred)
-        break;
+	break;
       else
-        preds->safe_push (t_chain);
+	preds->safe_push (t_chain);
     }
   return has_valid_pred;
 }
@@ -682,7 +682,7 @@ find_predicates (pred_chain_union *preds,
 
 static void
 collect_phi_def_edges (gphi *phi, basic_block cd_root,
-                       vec<edge> *edges,
+		       auto_vec<edge> *edges,
 		       hash_set<gimple *> *visited_phis)
 {
   size_t i, n;
@@ -739,7 +739,7 @@ find_def_preds (pred_chain_union *preds, gphi *phi)
   size_t num_chains = 0, i, n;
   vec<edge> dep_chains[MAX_NUM_CHAINS];
   auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
-  vec<edge> def_edges = vNULL;
+  auto_vec<edge> def_edges;
   bool has_valid_pred = false;
   basic_block phi_bb, cd_root = 0;
 
@@ -829,14 +829,14 @@ dump_predicates (gimple *usestmt, pred_chain_union preds,
 /* Destroys the predicate set *PREDS.  */
 
 static void
-destroy_predicate_vecs (pred_chain_union preds)
+destroy_predicate_vecs (pred_chain_union *preds)
 {
   size_t i;
 
-  size_t n = preds.length ();
+  size_t n = preds->length ();
   for (i = 0; i < n; i++)
-    preds[i].release ();
-  preds.release ();
+    (*preds)[i].release ();
+  preds->release ();
 }
 
 
@@ -1103,7 +1103,7 @@ prune_uninit_phi_opnds_in_unrealizable_paths (gphi *phi,
 					    uninit_opnds2,
 					    &def_preds,
 					    visited_phis);
-	      destroy_predicate_vecs (def_preds);
+	      destroy_predicate_vecs (&def_preds);
 	      if (!ok)
 		return false;
             }
@@ -1769,7 +1769,8 @@ simplify_preds_4 (pred_chain_union *preds)
             continue;
           s_preds.safe_push ((*preds)[i]);
         }
-      preds->release ();
+
+      destroy_predicate_vecs (preds);
       (*preds) = s_preds;
       s_preds = vNULL;
     }
@@ -2148,7 +2149,7 @@ normalize_preds (pred_chain_union preds, gimple *use_or_def, bool is_use)
       dump_predicates (use_or_def, norm_preds, is_use ? "[USE]:\n" : "[DEF]:\n");
     }
 
-  preds.release ();
+  destroy_predicate_vecs (&preds);
   return norm_preds;
 }
 
@@ -2199,7 +2200,7 @@ is_use_properly_guarded (gimple *use_stmt,
 
   if (!has_valid_preds)
     {
-      destroy_predicate_vecs (preds);
+      destroy_predicate_vecs (&preds);
       return false;
     }
 
@@ -2210,7 +2211,7 @@ is_use_properly_guarded (gimple *use_stmt,
 
   if (is_properly_guarded)
     {
-      destroy_predicate_vecs (preds);
+      destroy_predicate_vecs (&preds);
       return true;
     }
 
@@ -2220,7 +2221,7 @@ is_use_properly_guarded (gimple *use_stmt,
 
       if (!has_valid_preds)
 	{
-	  destroy_predicate_vecs (preds);
+	  destroy_predicate_vecs (&preds);
 	  return false;
 	}
 
@@ -2233,7 +2234,7 @@ is_use_properly_guarded (gimple *use_stmt,
 
   is_properly_guarded = is_superset_of (*def_preds, preds);
 
-  destroy_predicate_vecs (preds);
+  destroy_predicate_vecs (&preds);
   return is_properly_guarded;
 }
 
@@ -2306,7 +2307,7 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
         }
     }
 
-  destroy_predicate_vecs (def_preds);
+  destroy_predicate_vecs (&def_preds);
   return ret;
 }
 
