@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -208,35 +208,31 @@ package body Ada.Directories is
 
       else
          declare
-            --  We need to resolve links because of A.16(47), since we must not
-            --  return alternative names for files.
-
-            Norm    : constant String := Normalize_Pathname (Name);
             Last_DS : constant Natural :=
               Strings.Fixed.Index (Name, Dir_Seps, Going => Strings.Backward);
 
          begin
             if Last_DS = 0 then
 
-               --  There is no directory separator, returns current working
-               --  directory.
+               --  There is no directory separator, returns "." representing
+               --  the current working directory.
 
-               return Current_Directory;
+               return ".";
 
             --  If Name indicates a root directory, raise Use_Error, because
             --  it has no containing directory.
 
-            elsif Norm = "/"
+            elsif Name = "/"
               or else
                 (Windows
                   and then
-                    (Norm = "\"
+                  (Name = "\"
                       or else
-                        (Norm'Length = 3
-                          and then Norm (Norm'Last - 1 .. Norm'Last) = ":\"
-                          and then (Norm (Norm'First) in 'a' .. 'z'
+                        (Name'Length = 3
+                          and then Name (Name'Last - 1 .. Name'Last) = ":\"
+                          and then (Name (Name'First) in 'a' .. 'z'
                                      or else
-                                       Norm (Norm'First) in 'A' .. 'Z'))))
+                                       Name (Name'First) in 'A' .. 'Z'))))
             then
                raise Use_Error with
                  "directory """ & Name & """ has no containing directory";
@@ -270,15 +266,10 @@ package body Ada.Directories is
                      Last := Last - 1;
                   end loop;
 
-                  --  Special case of current directory, identified by "."
-
-                  if Last = 1 and then Result (1) = '.' then
-                     return Current_Directory;
-
                   --  Special case of "..": the current directory may be a root
                   --  directory.
 
-                  elsif Last = 2 and then Result (1 .. 2) = ".." then
+                  if Last = 2 and then Result (1 .. 2) = ".." then
                      return Containing_Directory (Current_Directory);
 
                   else

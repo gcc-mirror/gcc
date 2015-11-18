@@ -7103,6 +7103,7 @@ package body Einfo is
 
       Is_CLS : constant Boolean :=
                  Id = Pragma_Abstract_State             or else
+                 Id = Pragma_Attach_Handler             or else
                  Id = Pragma_Async_Readers              or else
                  Id = Pragma_Async_Writers              or else
                  Id = Pragma_Constant_After_Elaboration or else
@@ -7113,6 +7114,7 @@ package body Einfo is
                  Id = Pragma_Global                     or else
                  Id = Pragma_Initial_Condition          or else
                  Id = Pragma_Initializes                or else
+                 Id = Pragma_Interrupt_Handler          or else
                  Id = Pragma_Part_Of                    or else
                  Id = Pragma_Refined_Depends            or else
                  Id = Pragma_Refined_Global             or else

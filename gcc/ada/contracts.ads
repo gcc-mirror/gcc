@@ -38,6 +38,7 @@ package Contracts is
    --    Abstract_State
    --    Async_Readers
    --    Async_Writers
+   --    Attach_Handler
    --    Constant_After_Elaboration
    --    Contract_Cases
    --    Depends
@@ -47,6 +48,7 @@ package Contracts is
    --    Global
    --    Initial_Condition
    --    Initializes
+   --    Interrupt_Handler
    --    Part_Of
    --    Postcondition
    --    Precondition

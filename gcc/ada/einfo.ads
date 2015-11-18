@@ -8035,6 +8035,8 @@ package Einfo is
    --    Abstract_State
    --    Async_Readers
    --    Async_Writers
+   --    Attach_Handler
+   --    Constant_After_Elaboration
    --    Contract_Cases
    --    Depends
    --    Effective_Reads
@@ -8042,6 +8044,7 @@ package Einfo is
    --    Global
    --    Initial_Condition
    --    Initializes
+   --    Interrupt_Handler
    --    Part_Of
    --    Precondition
    --    Postcondition
@@ -8050,6 +8053,7 @@ package Einfo is
    --    Refined_Post
    --    Refined_State
    --    Test_Case
+   --    Volatile_Function
 
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record

@@ -1,5 +1,36 @@
 2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* contracts.adb (Add_Contract_Item): Chain pragmas Attach_Handler
+	and Interrupt_Handler on the classifications list of a [generic]
+	procedure N_Contract node.
+	* contracts.ads (Add_Contract_Item): Update the comment on usage.
+	* einfo.adb (Get_Pragma): Pragmas Attach_Handler and
+	Interrupt_Handler are found on the classifications list of
+	N_Contract nodes.
+	* einfo.ads (Get_Pragma): Update the comment on usage.
+	* sem_prag.adb (Process_Interrupt_Or_Attach_Handler): Code
+	reformatting. Store the pragma as a contract item.
+
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Available_Subtype): Use only in GNATprove
+	mode. When generating code it may be necessary to create itypes
+	at the point of use of a selected component, for example in the
+	expansion of a record equality operation.
+
+2015-11-18  Vincent Celier  <celier@adacore.com>
+
+	* s-os_lib.adb (Normalize_Pathname.Get_Directory): When
+	invoking Normalize_Pathname, use the same values for parameters
+	Resolve_Links and Case_Sensitive as the parent Normalize_Pathname.
+
+2015-11-18  Vincent Celier  <celier@adacore.com>
+
+	* a-direct.adb (Containing_Directory): Return "." when the result
+	is the current directory, not specified as an absolute path name.
+
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_aggr.adb (Is_Completely_Hidden_Discriminant): New routine.
 	(Init_Hidden_Discriminants): Code reformatting. Do not initialize
 	a completely hidden discriminant.
