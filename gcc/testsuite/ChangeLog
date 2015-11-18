@@ -1,5 +1,11 @@
 2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/loop_optimization19.adb: New test.
+	* gnat.dg/loop_optimization20.adb: Likewise.
+	* gnat.dg/loop_optimization21.ad[sb]: Likewise.
+
+2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/opt52.adb: New test.
 
 2015-11-18  Nathan Sidwell  <nathan@codesourcery.com>

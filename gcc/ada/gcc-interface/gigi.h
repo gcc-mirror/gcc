@@ -408,17 +408,18 @@ enum standard_datatypes
   /* Identifier for the name of the Exception_Data type.  */
   ADT_exception_data_name_id,
 
-  /* Types and decls used by our temporary exception mechanism.  See
-     init_gigi_decls for details.  */
+  /* Types and decls used by the SJLJ exception mechanism.  */
   ADT_jmpbuf_type,
   ADT_jmpbuf_ptr_type,
   ADT_get_jmpbuf_decl,
   ADT_set_jmpbuf_decl,
   ADT_get_excptr_decl,
+  ADT_not_handled_by_others_decl,
   ADT_setjmp_decl,
-  ADT_longjmp_decl,
   ADT_update_setjmp_buf_decl,
   ADT_raise_nodefer_decl,
+
+  /* Types and decls used by the ZCX exception mechanism.  */
   ADT_reraise_zcx_decl,
   ADT_set_exception_parameter_decl,
   ADT_begin_handler_decl,
@@ -427,6 +428,7 @@ enum standard_datatypes
   ADT_others_decl,
   ADT_all_others_decl,
   ADT_unhandled_others_decl,
+
   ADT_LAST};
 
 /* Define kind of exception information associated with raise statements.  */
@@ -475,13 +477,14 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 #define get_jmpbuf_decl gnat_std_decls[(int) ADT_get_jmpbuf_decl]
 #define set_jmpbuf_decl gnat_std_decls[(int) ADT_set_jmpbuf_decl]
 #define get_excptr_decl gnat_std_decls[(int) ADT_get_excptr_decl]
+#define not_handled_by_others_decl \
+	  gnat_std_decls[(int) ADT_not_handled_by_others_decl]
 #define setjmp_decl gnat_std_decls[(int) ADT_setjmp_decl]
-#define longjmp_decl gnat_std_decls[(int) ADT_longjmp_decl]
 #define update_setjmp_buf_decl gnat_std_decls[(int) ADT_update_setjmp_buf_decl]
 #define raise_nodefer_decl gnat_std_decls[(int) ADT_raise_nodefer_decl]
 #define reraise_zcx_decl gnat_std_decls[(int) ADT_reraise_zcx_decl]
 #define set_exception_parameter_decl \
-          gnat_std_decls[(int) ADT_set_exception_parameter_decl]
+	  gnat_std_decls[(int) ADT_set_exception_parameter_decl]
 #define begin_handler_decl gnat_std_decls[(int) ADT_begin_handler_decl]
 #define others_decl gnat_std_decls[(int) ADT_others_decl]
 #define all_others_decl gnat_std_decls[(int) ADT_all_others_decl]
@@ -896,16 +899,10 @@ extern tree build_call_raise_range (int msg, Node_Id gnat_node,
    same as build_constructor in the language-independent tree.c.  */
 extern tree gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v);
 
-/* Return a COMPONENT_REF to access a field that is given by COMPONENT,
-   an IDENTIFIER_NODE giving the name of the field, FIELD, a FIELD_DECL,
-   for the field, or both.  Don't fold the result if NO_FOLD_P.  */
-extern tree build_simple_component_ref (tree record_variable, tree component,
-					tree field, bool no_fold_p);
-
-/* Likewise, but generate a Constraint_Error if the reference could not be
-   found.  */
-extern tree build_component_ref (tree record_variable, tree component,
-                                 tree field, bool no_fold_p);
+/* Return a COMPONENT_REF to access FIELD in RECORD, or NULL_EXPR and generate
+   a Constraint_Error if the field is not found in the record.  Don't fold the
+   result if NO_FOLD is true.  */
+extern tree build_component_ref (tree record, tree field, bool no_fold);
 
 /* Build a GCC tree to call an allocation or deallocation function.
    If GNU_OBJ is nonzero, it is an object to deallocate.  Otherwise,
