@@ -1,3 +1,8 @@
+2015-11-18  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/65751
+	* gfortran.dg/unlimited_polymorphic_2.f03: Update test.
+
 2015-11-18  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

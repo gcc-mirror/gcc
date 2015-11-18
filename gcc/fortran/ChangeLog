@@ -1,3 +1,8 @@
+2015-11-18  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/65751
+	* expr.c (gfc_check_pointer_assign): Fix error message.
+
 2015-11-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/58027
