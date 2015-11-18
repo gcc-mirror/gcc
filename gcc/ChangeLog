@@ -1,3 +1,21 @@
+2015-11-18  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* regrename.h (struct du_head): Add target_data_1 and target_data_2
+	fields.
+	* regrename.c (create_new_chain): Clear entire struct after allocating.
+
+	* config/i386/i386.opt (mmitigate-rop): New option.
+	* doc/invoke.texi (mmitigate-rop): Document.
+	* config/i386/i386.c: Include "regrename.h".
+	(ix86_rop_should_change_byte_p, reg_encoded_number,
+	ix86_get_modrm_for_rop, set_rop_modrm_reg_bits, ix86_mitigate_rop): New
+	static functions.
+	(ix86_reorg): Call ix86_mitigate_rop if -fmitigate-rop.
+	* config/i386/i386.md (attr "modrm_class"): New.
+	(cmp<mode>_ccno_1, mov<mode>_xor, movstrict<mode>_xor,
+	x86_mov<mode>cc_0_m1. x86_mov<mode>cc_0_m1_se)
+	(x86_mov<mode>cc_0_m1_neg): Override modrm_class attribute.
+
 2015-11-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/68405

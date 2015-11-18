@@ -227,13 +227,10 @@ create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
   struct du_chain *this_du;
   int nregs;
 
+  memset (head, 0, sizeof *head);
   head->next_chain = open_chains;
   head->regno = this_regno;
   head->nregs = this_nregs;
-  head->need_caller_save_reg = 0;
-  head->cannot_rename = 0;
-  head->renamed = 0;
-  head->tied_chain = NULL;
 
   id_to_chain.safe_push (head);
   head->id = current_id++;
