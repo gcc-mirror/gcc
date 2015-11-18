@@ -1,3 +1,14 @@
+2015-11-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* interfac.ads (Unsigned_24): New type.
+	* sem_ch13.adb (Validate_Unchecked_Conversion): Disable error on
+	unconstrained arrays in Relaxed_RM_Semantics mode.
+
+2015-11-18  Vincent Celier  <celier@adacore.com>
+
+	* bcheck.adb (Check_Consistent_Dynamic_Elaboration_Checking): No
+	warning is withed unit is the interface of a Stand-Alone Library.
+
 2015-11-18  Thomas Quinot  <quinot@adacore.com>
 
 	* s-os_lib.ads, s-os_lib.adb(Normalize_Pathname): Support the case of
