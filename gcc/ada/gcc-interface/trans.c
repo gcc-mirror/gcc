@@ -997,6 +997,9 @@ fold_constant_decl_in_expr (tree exp)
 
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
+      /* If the index is not itself constant, then nothing can be folded.  */
+      if (!TREE_CONSTANT (TREE_OPERAND (exp, 1)))
+	return exp;
       op0 = fold_constant_decl_in_expr (TREE_OPERAND (exp, 0));
       if (op0 == TREE_OPERAND (exp, 0))
 	return exp;
