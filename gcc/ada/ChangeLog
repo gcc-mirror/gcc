@@ -1,3 +1,10 @@
+2015-11-18  Doug Rupp  <rupp@adacore.com>
+
+	* s-parame-vxworks.adb: Reduce default stack size for stack
+	limit check to a reasonable value
+	* s-tpopsp-vxworks.adb: Make Stack_Limit a task variable for vx5 and
+	vxmils.
+
 2015-11-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Analyze_Assignment): Diagnose assignment where
