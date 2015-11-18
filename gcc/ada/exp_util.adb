@@ -6586,8 +6586,8 @@ package body Exp_Util is
       if Is_Private_Type (Unc_Typ)
         and then Has_Unknown_Discriminants (Unc_Typ)
       then
-         --  The caller requests a unque external name for both the private and
-         --  the full subtype.
+         --  The caller requests a unique external name for both the private
+         --  and the full subtype.
 
          if Present (Related_Id) then
             Full_Subtyp :=

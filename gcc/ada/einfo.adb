@@ -7301,11 +7301,11 @@ package body Einfo is
         and then Present (Non_Limited_View (Id));
    end Has_Non_Limited_View;
 
-   -----------------------------
-   -- Has_Non_Null_Refinement --
-   -----------------------------
+   -------------------------------------
+   -- Has_Non_Null_Visible_Refinement --
+   -------------------------------------
 
-   function Has_Non_Null_Refinement (Id : E) return B is
+   function Has_Non_Null_Visible_Refinement (Id : E) return B is
    begin
       --  "Refinement" is a concept applicable only to abstract states
 
@@ -7322,7 +7322,7 @@ package body Einfo is
       end if;
 
       return False;
-   end Has_Non_Null_Refinement;
+   end Has_Non_Null_Visible_Refinement;
 
    -----------------------------
    -- Has_Null_Abstract_State --
@@ -7337,11 +7337,11 @@ package body Einfo is
           and then Is_Null_State (Node (First_Elmt (Abstract_States (Id))));
    end Has_Null_Abstract_State;
 
-   -------------------------
-   -- Has_Null_Refinement --
-   -------------------------
+   ---------------------------------
+   -- Has_Null_Visible_Refinement --
+   ---------------------------------
 
-   function Has_Null_Refinement (Id : E) return B is
+   function Has_Null_Visible_Refinement (Id : E) return B is
    begin
       --  "Refinement" is a concept applicable only to abstract states
 
@@ -7358,7 +7358,7 @@ package body Einfo is
       end if;
 
       return False;
-   end Has_Null_Refinement;
+   end Has_Null_Visible_Refinement;
 
    --------------------
    -- Has_Unmodified --

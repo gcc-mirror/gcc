@@ -1761,9 +1761,10 @@ package Einfo is
 --       E_Abstract_State entities. True if their Non_Limited_View attribute
 --       is present.
 
---    Has_Non_Null_Refinement (synth)
---       Defined in E_Abstract_State entities. True if the state has at least
---       one variable or state constituent in aspect/pragma Refined_State.
+--    Has_Non_Null_Visible_Refinement (synth)
+--       Defined in E_Abstract_State entities. True if the state has a visible
+--       refinement of at least one variable or state constituent as expressed
+--       in aspect/pragma Refined_State.
 
 --    Has_Non_Standard_Rep (Flag75) [implementation base type only]
 --       Defined in all type entities. Set when some representation clause
@@ -1779,9 +1780,9 @@ package Einfo is
 --       Defined in package entities. True if the package is subject to a null
 --       Abstract_State aspect/pragma.
 
---    Has_Null_Refinement (synth)
---       Defined in E_Abstract_State entities. True if the state has a null
---       refinement in aspect/pragma Refined_State.
+--    Has_Null_Visible_Refinement (synth)
+--       Defined in E_Abstract_State entities. True if the state has a visible
+--       null refinement as expressed in aspect/pragma Refined_State.
 
 --    Has_Object_Size_Clause (Flag172)
 --       Defined in entities for types and subtypes. Set if an Object_Size
@@ -5525,8 +5526,8 @@ package Einfo is
    --    From_Limited_With                   (Flag159)
    --    Has_Visible_Refinement              (Flag263)
    --    Has_Non_Limited_View                (synth)
-   --    Has_Non_Null_Refinement             (synth)
-   --    Has_Null_Refinement                 (synth)
+   --    Has_Non_Null_Visible_Refinement     (synth)
+   --    Has_Null_Visible_Refinement         (synth)
    --    Is_External_State                   (synth)
    --    Is_Null_State                       (synth)
    --    Is_Synchronized_State               (synth)
@@ -7255,9 +7256,9 @@ package Einfo is
    function Has_Entries                         (Id : E) return B;
    function Has_Foreign_Convention              (Id : E) return B;
    function Has_Non_Limited_View                (Id : E) return B;
-   function Has_Non_Null_Refinement             (Id : E) return B;
+   function Has_Non_Null_Visible_Refinement     (Id : E) return B;
    function Has_Null_Abstract_State             (Id : E) return B;
-   function Has_Null_Refinement                 (Id : E) return B;
+   function Has_Null_Visible_Refinement         (Id : E) return B;
    function Implementation_Base_Type            (Id : E) return E;
    function Is_Base_Type                        (Id : E) return B;
    function Is_Boolean_Type                     (Id : E) return B;

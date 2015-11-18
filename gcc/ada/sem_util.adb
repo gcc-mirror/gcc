@@ -9078,6 +9078,25 @@ package body Sem_Util is
       end if;
    end Has_No_Obvious_Side_Effects;
 
+   -----------------------------
+   -- Has_Non_Null_Refinement --
+   -----------------------------
+
+   function Has_Non_Null_Refinement (Id : Entity_Id) return Boolean is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+
+      --  For a refinement to be non-null, the first constituent must be
+      --  anything other than null.
+
+      if Present (Refinement_Constituents (Id)) then
+         return
+           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) /= N_Null;
+      end if;
+
+      return False;
+   end Has_Non_Null_Refinement;
+
    ------------------------
    -- Has_Null_Exclusion --
    ------------------------
@@ -9167,6 +9186,25 @@ package body Sem_Util is
          return False;
       end if;
    end Has_Null_Extension;
+
+   -------------------------
+   -- Has_Null_Refinement --
+   -------------------------
+
+   function Has_Null_Refinement (Id : Entity_Id) return Boolean is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+
+      --  For a refinement to be null, the state's sole constituent must be a
+      --  null.
+
+      if Present (Refinement_Constituents (Id)) then
+         return
+           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) = N_Null;
+      end if;
+
+      return False;
+   end Has_Null_Refinement;
 
    -------------------------------
    -- Has_Overriding_Initialize --
