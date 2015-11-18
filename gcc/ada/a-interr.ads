@@ -83,7 +83,11 @@ package Ada.Interrupts is
      Global     => null;
 
    function Get_CPU
-     (Interrupt : Interrupt_ID) return System.Multiprocessors.CPU_Range;
+     (Interrupt : Interrupt_ID) return System.Multiprocessors.CPU_Range
+   with
+     SPARK_Mode,
+     Volatile_Function,
+     Global => Ada.Task_Identification.Tasking_State;
 
 private
    pragma Inline (Is_Reserved);
