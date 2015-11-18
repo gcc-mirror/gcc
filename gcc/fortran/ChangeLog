@@ -1,3 +1,9 @@
+2015-11-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/43996
+	* simplify.c (gfc_simplify_spread): Issue error for too large array 
+	constructor in a PARAMETER statement.
+
 2015-11-18  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/65751
