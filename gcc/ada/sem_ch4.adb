@@ -7425,12 +7425,20 @@ package body Sem_Ch4 is
          Check_Compiler_Unit ("generalized indexing", N);
       end if;
 
+      --  Create argument list for function call that represents generalized
+      --  indexing. Note that indices (i.e. actuals) may themselves be
+      --  overloaded.
+
       declare
-         Arg : Node_Id;
+         Arg     : Node_Id;
+         New_Arg : Node_Id;
+
       begin
          Arg := First (Exprs);
          while Present (Arg) loop
-            Append (Relocate_Node (Arg), Assoc);
+            New_Arg := Relocate_Node (Arg);
+            Save_Interps (Arg, New_Arg);
+            Append (New_Arg, Assoc);
             Next (Arg);
          end loop;
       end;

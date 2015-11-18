@@ -746,6 +746,19 @@ package System.OS_Lib is
    --  POSIX OS or a ctrl-C event on Windows, allowing the process a chance to
    --  terminate properly using a corresponding handler.
 
+   procedure Kill_Process_Tree (Pid : Process_Id; Hard_Kill : Boolean := True);
+   --  Kill the process designated by Pid and all it's children processes.
+   --  Does nothing if Pid is Invalid_Pid or on platforms where it is not
+   --  supported, such as VxWorks. Hard_Kill is True by default, and when True
+   --  the processes are terminated immediately. If Hard_Kill is False, then a
+   --  signal SIGINT is sent to the processes on POSIX OS or a ctrl-C event
+   --  on Windows, allowing the processes a chance to terminate properly
+   --  using a corresponding handler.
+   --
+   --  Note that this routine is not atomic and is supported only on Linux
+   --  and Windows. On other OS it will only kill the process identified by
+   --  Pid.
+
    function Non_Blocking_Spawn
      (Program_Name : String;
       Args         : Argument_List) return Process_Id;
