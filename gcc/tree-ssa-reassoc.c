@@ -4441,6 +4441,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 							   power));
 	      gimple_call_set_lhs (pow_stmt, iter_result);
 	      gimple_set_location (pow_stmt, gimple_location (stmt));
+	      gimple_set_uid (pow_stmt, gimple_uid (stmt));
 	      gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4524,6 +4525,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 		  mul_stmt = gimple_build_assign (target_ssa, MULT_EXPR,
 						  op1, op2);
 		  gimple_set_location (mul_stmt, gimple_location (stmt));
+		  gimple_set_uid (mul_stmt, gimple_uid (stmt));
 		  gsi_insert_before (&gsi, mul_stmt, GSI_SAME_STMT);
 		  rf1->repr = target_ssa;
 
@@ -4541,6 +4543,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 						       power));
 	  gimple_call_set_lhs (pow_stmt, iter_result);
 	  gimple_set_location (pow_stmt, gimple_location (stmt));
+	  gimple_set_uid (pow_stmt, gimple_uid (stmt));
 	  gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
 	}
 
@@ -4552,6 +4555,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 	  mul_stmt = gimple_build_assign (new_result, MULT_EXPR,
 					  result, iter_result);
 	  gimple_set_location (mul_stmt, gimple_location (stmt));
+	  gimple_set_uid (mul_stmt, gimple_uid (stmt));
 	  gsi_insert_before (&gsi, mul_stmt, GSI_SAME_STMT);
 	  gimple_set_visited (mul_stmt, true);
 	  result = new_result;
@@ -4908,6 +4912,7 @@ reassociate_bb (basic_block bb)
 		      mul_stmt = gimple_build_assign (lhs, MULT_EXPR,
 						      powi_result, target_ssa);
 		      gimple_set_location (mul_stmt, gimple_location (stmt));
+		      gimple_set_uid (mul_stmt, gimple_uid (stmt));
 		      gsi_insert_after (&gsi, mul_stmt, GSI_NEW_STMT);
 		    }
 		}

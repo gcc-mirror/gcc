@@ -1,3 +1,10 @@
+2015-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68157
+	* tree-ssa-reassoc.c (attempt_builtin_powi): Set uid of
+	pow_stmt or mul_stmt from stmt's uid.
+	(reassociate_bb): Set uid of mul_stmt from stmt's uid.
+
 2015-11-18  Martin Liska  <mliska@suse.cz>
 
 	* haifa-sched.c (haifa_finish_h_i_d): Release reg_set_list.
