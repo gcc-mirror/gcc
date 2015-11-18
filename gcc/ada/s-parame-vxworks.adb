@@ -58,7 +58,7 @@ package body System.Parameters is
    begin
       if Default_Stack_Size = -1 then
          if Stack_Check_Limits then
-            return 60 * 1024;
+            return 32 * 1024;
             --  Extra stack to allow for 12K exception area.
          else
             return 20 * 1024;

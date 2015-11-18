@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2015, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,6 +44,18 @@ package body Specific is
    --  implementation. This mechanism is used to minimize impact on other
    --  targets.
 
+   Stack_Limit : aliased System.Address;
+
+   pragma Import (C, Stack_Limit, "__gnat_stack_limit");
+
+   type Set_Stack_Limit_Proc_Acc is access procedure;
+   pragma Convention (C, Set_Stack_Limit_Proc_Acc);
+
+   Set_Stack_Limit_Hook : Set_Stack_Limit_Proc_Acc;
+   pragma Import (C, Set_Stack_Limit_Hook, "__gnat_set_stack_limit_hook");
+   --  Procedure to be called when a task is created to set stack limit if
+   --  limit checking is used.
+
    ----------------
    -- Initialize --
    ----------------
@@ -80,12 +92,29 @@ package body Specific is
          return;
       end if;
 
-      if taskVarGet (0, ATCB_Key'Access) = ERROR then
-         Result := taskVarAdd (0, ATCB_Key'Access);
+      if not Is_Valid_Task then
+         Result := taskVarAdd (Self_Id.Common.LL.Thread, ATCB_Key'Access);
          pragma Assert (Result = OK);
+
+         if Stack_Check_Limits
+           and then Result /= ERROR
+           and then Set_Stack_Limit_Hook /= null
+         then
+            --  This will be initialized from taskInfoGet() once the task is
+            --  is running.
+
+            Result :=
+              taskVarAdd (Self_Id.Common.LL.Thread, Stack_Limit'Access);
+            pragma Assert (Result /= ERROR);
+         end if;
       end if;
 
-      ATCB_Key := To_Address (Self_Id);
+      Result :=
+        taskVarSet
+          (Self_Id.Common.LL.Thread,
+           ATCB_Key'Access,
+           To_Address (Self_Id));
+      pragma Assert (Result /= ERROR);
    end Set;
 
    ----------
