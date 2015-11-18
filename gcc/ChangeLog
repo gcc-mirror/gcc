@@ -1,5 +1,21 @@
 2015-11-18  Aditya Kumar  <aditya.k7@samsung.com>
 
+	* graphite-isl-ast-to-gimple.c (copy_loop_phi_args): Change the return
+	type to bool for early exit.
+	(translate_isl_ast_to_gimple::copy_loop_phi_nodes): Early return
+	in case of error.
+	(translate_isl_ast_to_gimple::copy_loop_close_phi_args): Same.
+	(add_phi_arg_for_new_expr): Enable codegen for if-block where one
+	predecessor dominates the other.
+	(translate_isl_ast_to_gimple::copy_cond_phi_args): Fix. When the
+	element is not found it returns -1.
+	(translate_isl_ast_to_gimple::translate_pending_phi_nodes): Bail
+	out early when codegen fails.
+	(graphite_regenerate_ast_isl): Remove codegen region when pending
+	phis could not be generated.
+
+2015-11-18  Aditya Kumar  <aditya.k7@samsung.com>
+
 	* graphite-isl-ast-to-gimple.c (struct ast_build_info): Remove semicolon.
 	(class translate_isl_ast_to_gimple): Indentation.
 	(translate_pending_phi_nodes): Comment.

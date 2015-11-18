@@ -352,7 +352,7 @@ class translate_isl_ast_to_gimple
   /* Copy the PHI arguments from OLD_PHI to the NEW_PHI.  The arguments to
      NEW_PHI must be found unless they can be POSTPONEd for later.  */
 
-  void copy_loop_phi_args (gphi *old_phi, init_back_edge_pair_t &ibp_old_bb,
+  bool copy_loop_phi_args (gphi *old_phi, init_back_edge_pair_t &ibp_old_bb,
 			   gphi *new_phi, init_back_edge_pair_t &ibp_new_bb,
 			   bool postpone);
 
@@ -1928,7 +1928,7 @@ get_edges (basic_block bb)
 /* Copy the PHI arguments from OLD_PHI to the NEW_PHI.  The arguments to NEW_PHI
    must be found unless they can be POSTPONEd for later.  */
 
-void
+bool
 translate_isl_ast_to_gimple::
 copy_loop_phi_args (gphi *old_phi, init_back_edge_pair_t &ibp_old_bb,
 		    gphi *new_phi, init_back_edge_pair_t &ibp_new_bb,
@@ -1969,8 +1969,9 @@ copy_loop_phi_args (gphi *old_phi, init_back_edge_pair_t &ibp_old_bb,
 	}
       else
 	/* Either we should add the arg to phi or, we should postpone.  */
-	gcc_unreachable ();
+	return false;
     }
+  return true;
 }
 
 /* Copy loop phi nodes from BB to NEW_BB.  */
@@ -2006,7 +2007,8 @@ translate_isl_ast_to_gimple::copy_loop_phi_nodes (basic_block bb,
       tree new_res = create_new_def_for (res, new_phi,
 					 gimple_phi_result_ptr (new_phi));
       set_rename (res, new_res);
-      copy_loop_phi_args (phi, ibp_old_bb, new_phi, ibp_new_bb, true);
+      codegen_error = !copy_loop_phi_args (phi, ibp_old_bb, new_phi,
+					  ibp_new_bb, true);
       update_stmt (new_phi);
     }
 
@@ -2126,7 +2128,9 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
       /* A close phi must come from a loop-phi having an init value.  */
       if (!init)
 	{
-	  gcc_assert (postpone);
+	  if (!postpone)
+	    return false;
+
 	  region->incomplete_phis.safe_push (std::make_pair (phi, new_phi));
 	  if (dump_file)
 	    {
@@ -2199,7 +2203,7 @@ add_phi_arg_for_new_expr (tree old_phi_args[2], tree new_phi_args[2],
 			  gphi *phi, gphi *new_phi,
 			  basic_block new_bb)
 {
-  basic_block def_pred[2];
+  basic_block def_pred[2] = { NULL, NULL };
   int not_found_bb_index = -1;
   for (int i = 0; i < 2; i++)
     {
@@ -2208,11 +2212,14 @@ add_phi_arg_for_new_expr (tree old_phi_args[2], tree new_phi_args[2],
       if (TREE_CODE (old_phi_args[i]) == INTEGER_CST)
 	def_pred[i] = get_def_bb_for_const (new_bb,
 					    gimple_phi_arg_edge (phi, i)->src);
-      else
+      else if (new_phi_args[i] && (TREE_CODE (new_phi_args[i]) == SSA_NAME))
 	def_pred[i] = gimple_bb (SSA_NAME_DEF_STMT (new_phi_args[i]));
+
       if (!def_pred[i])
 	{
-	  gcc_assert (not_found_bb_index == -1);
+	  /* When non are available bail out.  */
+	  if (not_found_bb_index != -1)
+	    return false;
 	  not_found_bb_index = i;
 	}
     }
@@ -2220,32 +2227,54 @@ add_phi_arg_for_new_expr (tree old_phi_args[2], tree new_phi_args[2],
   /* Here we are pattern matching on the structure of CFG w.r.t. old one.  */
   if (old_bb_dominating_edge)
     {
-      return false;
+      if (not_found_bb_index != -1)
+	return false;
+
       basic_block new_pred1 = (*new_bb->preds)[0]->src;
       basic_block new_pred2 = (*new_bb->preds)[1]->src;
       vec <basic_block> *bbs
 	= region->copied_bb_map->get (old_bb_non_dominating_edge->src);
-      gcc_assert (bbs);
+
+      /* Could not find a mapping.  */
+      if (!bbs)
+	return false;
+
       basic_block new_pred = NULL;
       basic_block b;
       int i;
       FOR_EACH_VEC_ELT (*bbs, i, b)
-	if (new_pred1 == b || new_pred2 == b)
-	  {
-	    gcc_assert (!new_pred);
-	    new_pred = b;
-	  }
+	{
+	  if (dominated_by_p (CDI_DOMINATORS, new_pred1, b))
+	    {
+	      /* FIXME: If we have already found new_pred then we have to
+		 disambiguate, bail out for now.  */
+	      if (new_pred)
+		return false;
+	      new_pred = new_pred1;
+	    }
+	  if (dominated_by_p (CDI_DOMINATORS, new_pred2, b))
+	    {
+	      /* FIXME: If we have already found new_pred then we have to either
+		 it dominates both or we have to disambiguate, bail out.  */
+	      if (new_pred)
+		return false;
+	      new_pred = new_pred2;
+	    }
+	}
 
-      gcc_assert (new_pred);
+      if (!new_pred)
+	return false;
 
       edge new_non_dominating_edge = find_edge (new_pred, new_bb);
+      gcc_assert (new_non_dominating_edge);
+      /* FIXME: Validate each args just like in loop-phis.  */
       /* By the process of elimination we first insert insert phi-edge for
 	 non-dominating pred which is computed above and then we insert the
 	 remaining one.  */
       int inserted_edge = 0;
       for (; inserted_edge < 2; inserted_edge++)
 	{
-	  edge new_bb_pred_edge = gimple_phi_arg_edge (phi, inserted_edge);
+	  edge new_bb_pred_edge = gimple_phi_arg_edge (new_phi, inserted_edge);
 	  if (new_non_dominating_edge == new_bb_pred_edge)
 	    {
 	      add_phi_arg (new_phi, new_phi_args[inserted_edge],
@@ -2254,21 +2283,25 @@ add_phi_arg_for_new_expr (tree old_phi_args[2], tree new_phi_args[2],
 	      break;
 	    }
 	}
+      if (inserted_edge == 2)
+	return false;
 
-      int edge_dominating = 0;
-      if (inserted_edge == 0)
-	edge_dominating = 1;
+      int edge_dominating = inserted_edge == 0 ? 1 : 0;
 
       edge new_dominating_edge = NULL;
-      for (int i; i < 2; i++)
+      for (inserted_edge = 0; inserted_edge < 2; inserted_edge++)
 	{
-	  edge e = gimple_phi_arg_edge (new_phi, i);
+	  edge e = gimple_phi_arg_edge (new_phi, inserted_edge);
 	  if (e != new_non_dominating_edge)
-	    new_dominating_edge = e;
+	    {
+	      new_dominating_edge = e;
+	      add_phi_arg (new_phi, new_phi_args[edge_dominating],
+			   new_dominating_edge,
+			   get_loc (old_phi_args[inserted_edge]));
+	      break;
+	    }
 	}
-
-      add_phi_arg (new_phi, new_phi_args[edge_dominating], new_dominating_edge,
-		   get_loc (old_phi_args[inserted_edge]));
+      gcc_assert (new_dominating_edge);
     }
   else
     {
@@ -2366,47 +2399,48 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
 	}
 
       /* If the phi-arg was a parameter.  */
-      if (vec_find (region->params, old_name))
+      if (vec_find (region->params, old_name) != -1)
 	{
 	  new_phi_args [i] = old_name;
 	  if (dump_file)
 	    {
 	      fprintf (dump_file,
 		       "\n[codegen] parameter argument to phi, new_expr: ");
-	      print_gimple_stmt (dump_file, new_phi, 0, 0);
+	      print_generic_expr (dump_file, new_phi_args[i], 0);
 	    }
-	  continue;
-	}
-
-      /* If the phi-arg is scev-analyzeable but only in the first stage.  */
-      if (postpone && is_gimple_reg (old_name)
-	  && scev_analyzable_p (old_name, region->region))
-	{
-	  gimple_seq stmts;
-	  tree new_expr = get_rename_from_scev (old_name, &stmts, loop, new_bb,
-						old_bb, iv_map);
-	  if (codegen_error_p ())
-	    return false;
-
-	  gcc_assert (new_expr);
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "\n[codegen] scev analyzeable, new_expr: ");
-	      print_generic_expr (dump_file, new_expr, 0);
-	    }
-	  gsi_insert_earliest (stmts);
-	  new_phi_args [i] = new_name;
 	  continue;
 	}
 
       gimple *old_def_stmt = SSA_NAME_DEF_STMT (old_name);
       if (!old_def_stmt || gimple_code (old_def_stmt) == GIMPLE_NOP)
-	/* If the phi arg was a function arg, or wasn't defined, just use the
-	   old name.  */
-	gcc_unreachable ();
-      //add_phi_arg (new_phi, old_name, new_e, get_loc (old_name));
-      else if (postpone)
+	/* FIXME: If the phi arg was a function arg, or wasn't defined, just use
+	   the old name.  */
+	return false;
+
+      if (postpone)
 	{
+	  /* If the phi-arg is scev-analyzeable but only in the first stage.  */
+	  if (is_gimple_reg (old_name)
+	      && scev_analyzable_p (old_name, region->region))
+	    {
+	      gimple_seq stmts;
+	      tree new_expr = get_rename_from_scev (old_name, &stmts, loop,
+						    new_bb, old_bb, iv_map);
+	      if (codegen_error_p ())
+		return false;
+
+	      gcc_assert (new_expr);
+	      if (dump_file)
+		{
+		  fprintf (dump_file,
+			   "\n[codegen] scev analyzeable, new_expr: ");
+		  print_generic_expr (dump_file, new_expr, 0);
+		}
+	      gsi_insert_earliest (stmts);
+	      new_phi_args [i] = new_name;
+	      continue;
+	    }
+
 	  /* Postpone code gen for later for back-edges.  */
 	  region->incomplete_phis.safe_push (std::make_pair (phi, new_phi));
 
@@ -2420,8 +2454,14 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
 	  continue;
 	}
       else
-	gcc_unreachable ();
+	/* Either we should add the arg to phi or, we should postpone.  */
+	return false;
     }
+
+  /* If none of the args have been determined in the first stage then wait until
+     later.  */
+  if (postpone && !new_phi_args[0] && !new_phi_args[1])
+    return true;
 
   return add_phi_arg_for_new_expr (old_phi_args, new_phi_args,
 				   old_bb_dominating_edge,
@@ -2721,12 +2761,12 @@ translate_isl_ast_to_gimple::translate_pending_phi_nodes ()
 
       auto_vec <tree, 1> iv_map;
       if (bb_contains_loop_phi_nodes (new_bb))
-	copy_loop_phi_args (old_phi, ibp_old_bb, new_phi,
-			    ibp_new_bb, false);
+	codegen_error = !copy_loop_phi_args (old_phi, ibp_old_bb, new_phi,
+					    ibp_new_bb, false);
       else if (bb_contains_loop_close_phi_nodes (new_bb))
-	copy_loop_close_phi_args (old_bb, new_bb, false);
-      else if (!copy_cond_phi_args (old_phi, new_phi, iv_map, false))
-	gcc_unreachable ();
+	codegen_error = !copy_loop_close_phi_args (old_bb, new_bb, false);
+      else
+	codegen_error = !copy_cond_phi_args (old_phi, new_phi, iv_map, false);
 
       if (dump_file)
 	{
@@ -2986,9 +3026,13 @@ graphite_regenerate_ast_isl (scop_p scop)
 	  recompute_all_dominators ();
 	  graphite_verify ();
 	}
-      else if (dump_file)
-	fprintf (dump_file, "\n[codegen] unsuccessful in translating"
-		 " pending phis, reverting back to the original code.");
+      else
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "\n[codegen] unsuccessful in translating"
+		     " pending phis, reverting back to the original code.");
+	  set_ifsese_condition (if_region, integer_zero_node);
+	}
     }
 
   free (if_region->true_region);
