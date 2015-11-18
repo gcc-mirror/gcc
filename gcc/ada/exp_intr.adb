@@ -1071,10 +1071,17 @@ package body Exp_Intr is
 
          --  If the designated type is tagged, the finalization call must
          --  dispatch because the designated type may not be the actual type
-         --  of the object.
+         --  of the object. If the type is synchronized, the deallocation
+         --  applies to the corresponding record type.
 
          if Is_Tagged_Type (Desig_Typ) then
-            if not Is_Class_Wide_Type (Desig_Typ) then
+            if Is_Concurrent_Type (Desig_Typ) then
+               Obj_Ref :=
+                 Unchecked_Convert_To
+                   (Class_Wide_Type (Corresponding_Record_Type (Desig_Typ)),
+                      Obj_Ref);
+
+            elsif not Is_Class_Wide_Type (Desig_Typ) then
                Obj_Ref :=
                  Unchecked_Convert_To (Class_Wide_Type (Desig_Typ), Obj_Ref);
             end if;

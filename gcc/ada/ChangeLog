@@ -1,3 +1,18 @@
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb (Is_Completely_Hidden_Discriminant): New routine.
+	(Init_Hidden_Discriminants): Code reformatting. Do not initialize
+	a completely hidden discriminant.
+	* a-interr.ads (Get_CPU): Added SPARK_Mode, Volatile_Function
+	and Global aspects on the function.
+
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_intr.adb (Expand_Unc_Deallocation): If the designated
+	type is a concurrent type, the deallocation applies to the
+	corresponding record type, or to its class-wide type if the type
+	is tagged.
+
 2015-11-18  Doug Rupp  <rupp@adacore.com>
 
 	* s-parame-vxworks.adb: Reduce default stack size for stack

@@ -2124,11 +2124,51 @@ package body Exp_Aggr is
       -------------------------------
 
       procedure Init_Hidden_Discriminants (Typ : Entity_Id; List : List_Id) is
-         Btype        : Entity_Id;
-         Parent_Type  : Entity_Id;
-         Disc         : Entity_Id;
-         Discr_Val    : Elmt_Id;
+         function Is_Completely_Hidden_Discriminant
+           (Discr : Entity_Id) return Boolean;
+         --  Determine whether Discr is a completely hidden discriminant of
+         --  type Typ.
+
+         ---------------------------------------
+         -- Is_Completely_Hidden_Discriminant --
+         ---------------------------------------
+
+         function Is_Completely_Hidden_Discriminant
+           (Discr : Entity_Id) return Boolean
+         is
+            Item : Entity_Id;
+
+         begin
+            --  Use First/Next_Entity as First/Next_Discriminant do not yield
+            --  completely hidden discriminants.
+
+            Item := First_Entity (Typ);
+            while Present (Item) loop
+               if Ekind (Item) = E_Discriminant
+                 and then Is_Completely_Hidden (Item)
+                 and then Chars (Original_Record_Component (Item)) =
+                          Chars (Discr)
+               then
+                  return True;
+               end if;
+
+               Next_Entity (Item);
+            end loop;
+
+            return False;
+         end Is_Completely_Hidden_Discriminant;
+
+         --  Local variables
+
+         Base_Typ     : Entity_Id;
+         Discr        : Entity_Id;
+         Discr_Constr : Elmt_Id;
+         Discr_Init   : Node_Id;
+         Discr_Val    : Node_Id;
          In_Aggr_Type : Boolean;
+         Par_Typ      : Entity_Id;
+
+      --  Start of processing for Init_Hidden_Discriminants
 
       begin
          --  The constraints on the hidden discriminants, if present, are kept
@@ -2139,67 +2179,84 @@ package body Exp_Aggr is
 
          In_Aggr_Type := True;
 
-         Btype := Base_Type (Typ);
-         while Is_Derived_Type (Btype)
+         Base_Typ := Base_Type (Typ);
+         while Is_Derived_Type (Base_Typ)
            and then
-             (Present (Stored_Constraint (Btype))
+             (Present (Stored_Constraint (Base_Typ))
                or else
                  (In_Aggr_Type and then Present (Stored_Constraint (Typ))))
          loop
-            Parent_Type := Etype (Btype);
+            Par_Typ := Etype (Base_Typ);
 
-            if not Has_Discriminants (Parent_Type) then
+            if not Has_Discriminants (Par_Typ) then
                return;
             end if;
 
-            Disc := First_Discriminant (Parent_Type);
+            Discr := First_Discriminant (Par_Typ);
 
             --  We know that one of the stored-constraint lists is present
 
-            if Present (Stored_Constraint (Btype)) then
-               Discr_Val := First_Elmt (Stored_Constraint (Btype));
+            if Present (Stored_Constraint (Base_Typ)) then
+               Discr_Constr := First_Elmt (Stored_Constraint (Base_Typ));
 
             --  For private extension, stored constraint may be on full view
 
-            elsif Is_Private_Type (Btype)
-              and then Present (Full_View (Btype))
-              and then Present (Stored_Constraint (Full_View (Btype)))
+            elsif Is_Private_Type (Base_Typ)
+              and then Present (Full_View (Base_Typ))
+              and then Present (Stored_Constraint (Full_View (Base_Typ)))
             then
-               Discr_Val := First_Elmt (Stored_Constraint (Full_View (Btype)));
+               Discr_Constr :=
+                 First_Elmt (Stored_Constraint (Full_View (Base_Typ)));
 
             else
-               Discr_Val := First_Elmt (Stored_Constraint (Typ));
+               Discr_Constr := First_Elmt (Stored_Constraint (Typ));
             end if;
 
-            while Present (Discr_Val) and then Present (Disc) loop
+            while Present (Discr) and then Present (Discr_Constr) loop
+               Discr_Val := Node (Discr_Constr);
 
-               --  Only those discriminants of the parent that are not
-               --  renamed by discriminants of the derived type need to
-               --  be added explicitly.
+               --  The parent discriminant is renamed in the derived type,
+               --  nothing to initialize.
 
-               if not Is_Entity_Name (Node (Discr_Val))
-                 or else Ekind (Entity (Node (Discr_Val))) /= E_Discriminant
+               --    type Deriv_Typ (Discr : ...)
+               --      is new Parent_Typ (Discr => Discr);
+
+               if Is_Entity_Name (Discr_Val)
+                 and then Ekind (Entity (Discr_Val)) = E_Discriminant
                then
-                  Comp_Expr :=
-                    Make_Selected_Component (Loc,
-                      Prefix        => New_Copy_Tree (Target),
-                      Selector_Name => New_Occurrence_Of (Disc, Loc));
+                  null;
 
-                  Instr :=
+               --  When the parent discriminant is constrained at the type
+               --  extension level, it does not appear in the derived type.
+
+               --    type Deriv_Typ (Discr : ...)
+               --      is new Parent_Typ (Discr        => Discr,
+               --                         Hidden_Discr => Expression);
+
+               elsif Is_Completely_Hidden_Discriminant (Discr) then
+                  null;
+
+               --  Otherwise initialize the discriminant
+
+               else
+                  Discr_Init :=
                     Make_OK_Assignment_Statement (Loc,
-                      Name       => Comp_Expr,
-                      Expression => New_Copy_Tree (Node (Discr_Val)));
+                      Name       =>
+                        Make_Selected_Component (Loc,
+                          Prefix        => New_Copy_Tree (Target),
+                          Selector_Name => New_Occurrence_Of (Discr, Loc)),
+                      Expression => New_Copy_Tree (Discr_Val));
 
-                  Set_No_Ctrl_Actions (Instr);
-                  Append_To (List, Instr);
+                  Set_No_Ctrl_Actions (Discr_Init);
+                  Append_To (List, Discr_Init);
                end if;
 
-               Next_Discriminant (Disc);
-               Next_Elmt (Discr_Val);
+               Next_Elmt (Discr_Constr);
+               Next_Discriminant (Discr);
             end loop;
 
             In_Aggr_Type := False;
-            Btype := Base_Type (Parent_Type);
+            Base_Typ := Base_Type (Par_Typ);
          end loop;
       end Init_Hidden_Discriminants;
 
