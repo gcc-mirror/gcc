@@ -59,7 +59,6 @@ get_exit_bb (sese_l &s)
 }
 
 /* Returns the index of V where ELEM can be found. -1 Otherwise.  */
-
 template<typename T>
 int
 vec_find (const vec<T> &v, const T &elem)
@@ -109,21 +108,10 @@ extern sese_info_p new_sese_info (edge, edge);
 extern void free_sese_info (sese_info_p);
 extern void sese_insert_phis_for_liveouts (sese_info_p, basic_block, edge, edge);
 extern void build_sese_loop_nests (sese_info_p);
-extern edge copy_bb_and_scalar_dependences (basic_block, sese_info_p, edge,
-					    vec<tree> , bool *);
 extern struct loop *outermost_loop_in_sese (sese_l &, basic_block);
 extern tree scalar_evolution_in_region (sese_l &, loop_p, tree);
+extern bool scev_analyzable_p (tree, sese_l &);
 extern bool invariant_in_sese_p_rec (tree, sese_l &, bool *);
-extern bool bb_contains_loop_phi_nodes (basic_block);
-extern bool bb_contains_loop_close_phi_nodes (basic_block);
-extern std::pair<edge, edge> get_edges (basic_block bb);
-extern void copy_loop_phi_args (gphi *, init_back_edge_pair_t &,
-				gphi *, init_back_edge_pair_t &,
-				sese_info_p, bool);
-extern bool copy_loop_close_phi_args (basic_block, basic_block,
-				      sese_info_p, bool);
-extern bool copy_cond_phi_args (gphi *, gphi *, vec<tree>,
-				sese_info_p, bool);
 
 /* Check that SESE contains LOOP.  */
 
@@ -358,36 +346,6 @@ nb_common_loops (sese_l &region, gimple_poly_bb_p gbb1, gimple_poly_bb_p gbb2)
   loop_p common = find_common_loop (l1, l2);
 
   return sese_loop_depth (region, common);
-}
-
-/* Return true when DEF can be analyzed in REGION by the scalar
-   evolution analyzer.  */
-
-static inline bool
-scev_analyzable_p (tree def, sese_l &region)
-{
-  loop_p loop;
-  tree scev;
-  tree type = TREE_TYPE (def);
-
-  /* When Graphite generates code for a scev, the code generator
-     expresses the scev in function of a single induction variable.
-     This is unsafe for floating point computations, as it may replace
-     a floating point sum reduction with a multiplication.  The
-     following test returns false for non integer types to avoid such
-     problems.  */
-  if (!INTEGRAL_TYPE_P (type)
-      && !POINTER_TYPE_P (type))
-    return false;
-
-  loop = loop_containing_stmt (SSA_NAME_DEF_STMT (def));
-  scev = scalar_evolution_in_region (region, loop, def);
-
-  return !chrec_contains_undetermined (scev)
-    && (TREE_CODE (scev) != SSA_NAME
-	|| !defined_in_sese_p (scev, region))
-    && (tree_does_not_contain_chrecs (scev)
-	|| evolution_function_is_affine_p (scev));
 }
 
 #endif
