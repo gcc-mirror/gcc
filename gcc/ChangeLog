@@ -1,3 +1,10 @@
+2015-11-18  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
+
+	* config/avr/avr-mcus.def: Add new avr4 devices atmega48pb and
+	atmega88pb. Add new avr5 devices ata5791, ata8210, ata8510, atmega168pb
+	and atmega328pb.
+	* doc/avr-mmcu.texi: Regenerate.
+
 2015-11-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/nvptx.c (bb_pair_t, bb_pair_vec_t): New types.
