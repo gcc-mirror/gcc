@@ -2722,6 +2722,12 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
       return MATCH_ERROR;
     }
 
+  /* If a structure constructor is in a DATA statement, then each entity
+     in the structure constructor must be a constant.  Try to reduce the
+     expression here.  */
+  if (gfc_in_match_data ())
+    gfc_reduce_init_expr (e);
+ 
   *result = e;
   return MATCH_YES;
 }

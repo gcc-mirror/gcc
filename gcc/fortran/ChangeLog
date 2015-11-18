@@ -1,5 +1,11 @@
 2015-11-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/59910
+	* primary.c (gfc_match_structure_constructor): Reduce a structure
+	constructor in a DATA statement.
+
+2015-11-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/43996
 	* simplify.c (gfc_simplify_spread): Issue error for too large array 
 	constructor in a PARAMETER statement.
