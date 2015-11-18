@@ -505,19 +505,17 @@ package System.OS_Lib is
       Resolve_Links  : Boolean := True;
       Case_Sensitive : Boolean := True) return String;
    --  Returns a file name as an absolute path name, resolving all relative
-   --  directories, and symbolic links. The parameter Directory is a fully
-   --  resolved path name for a directory, or the empty string (the default).
-   --  Name is the name of a file, which is either relative to the given
-   --  directory name, if Directory is non-null, or to the current working
-   --  directory if Directory is null. The result returned is the normalized
-   --  name of the file. For most cases, if two file names designate the same
-   --  file through different paths, Normalize_Pathname will return the same
-   --  canonical name in both cases. However, there are cases when this is not
-   --  true; for example, this is not true in Unix for two hard links
-   --  designating the same file.
+   --  directories, and symbolic links. If Name is a relative path, it is
+   --  interpreted relative to Directory, or to the current directory if
+   --  Directory is the empty string (the default). The result returned is
+   --  the normalized name of the file, containing no "." or ".." components,
+   --  and no duplicated directory separators. For most cases, if two file
+   --  names designate the same file through different paths,
+   --  Normalize_Pathname will return the same canonical name in both cases.
+   --  However, there are cases when this is not true; for example, this is
+   --  not true in Unix for two hard links designating the same file.
    --
-   --  On Windows, the returned path will start with a drive letter except
-   --  when Directory is not empty and does not include a drive letter. If
+   --  On Windows, the returned path will start with a drive letter. If
    --  Directory is empty (the default) and Name is a relative path or an
    --  absolute path without drive letter, the letter of the current drive
    --  will start the returned path. If Case_Sensitive is True (the default),

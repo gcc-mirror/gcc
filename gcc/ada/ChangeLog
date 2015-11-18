@@ -1,3 +1,17 @@
+2015-11-18  Thomas Quinot  <quinot@adacore.com>
+
+	* s-os_lib.ads, s-os_lib.adb(Normalize_Pathname): Support the case of
+	an unresolved Directory argument, by recursively resolving it
+	against the current dir.
+
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): A function declaration that
+	returns a class-wide type must have freeing deferred, so that it
+	is not frozen before the class-wide type and its root type are
+	frozen. This is significant when there may be a limited view of
+	the class_wide type in another package.
+
 2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Has_Non_Null_Refinement): Rename to

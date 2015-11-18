@@ -10423,6 +10423,17 @@ package body Sem_Ch6 is
 
       if Nkind (Related_Nod) = N_Function_Specification then
          Analyze_Return_Type (Related_Nod);
+
+         --  If return type is class-wide, subprogram freezing may be
+         --  delayed as well.
+
+         if Is_Class_Wide_Type (Etype (Current_Scope))
+           and then not Is_Thunk (Current_Scope)
+           and then Nkind (Unit_Declaration_Node (Current_Scope)) =
+             N_Subprogram_Declaration
+         then
+            Set_Has_Delayed_Freeze (Current_Scope);
+         end if;
       end if;
 
       --  Now set the kind (mode) of each formal

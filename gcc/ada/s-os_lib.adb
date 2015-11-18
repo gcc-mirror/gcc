@@ -2081,33 +2081,34 @@ package body System.OS_Lib is
       -------------------
 
       function Get_Directory (Dir : String) return String is
-         Result : String (1 .. Dir'Length + 1);
-         Length : constant Natural := Dir'Length;
-
       begin
          --  Directory given, add directory separator if needed
 
-         if Length > 0 then
-            Result (1 .. Length) := Dir;
+         if Dir'Length > 0 then
+            declare
+               Result : String   :=
+                          Normalize_Pathname (Dir, "") & Directory_Separator;
+               Last   : Positive := Result'Last - 1;
 
-            --  On Windows, change all '/' to '\'
+            begin
+               --  On Windows, change all '/' to '\'
 
-            if On_Windows then
-               for J in 1 .. Length loop
-                  if Result (J) = '/' then
-                     Result (J) := Directory_Separator;
-                  end if;
-               end loop;
-            end if;
+               if On_Windows then
+                  for J in Result'First .. Last - 1 loop
+                     if Result (J) = '/' then
+                        Result (J) := Directory_Separator;
+                     end if;
+                  end loop;
+               end if;
 
-            --  Add directory separator, if needed
+               --  Include additional directory separator, if needed
 
-            if Result (Length) = Directory_Separator then
-               return Result (1 .. Length);
-            else
-               Result (Result'Length) := Directory_Separator;
-               return Result;
-            end if;
+               if Result (Last) /= Directory_Separator then
+                  Last := Last + 1;
+               end if;
+
+               return Result (Result'First .. Last);
+            end;
 
          --  Directory name not given, get current directory
 
