@@ -467,8 +467,7 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
   if (TREE_CODE (p1) == CONSTRUCTOR)
     p1_array = CONSTRUCTOR_ELT (p1, 0)->value;
   else
-    p1_array = build_component_ref (p1, NULL_TREE,
-				    TYPE_FIELDS (TREE_TYPE (p1)), true);
+    p1_array = build_component_ref (p1, TYPE_FIELDS (TREE_TYPE (p1)), true);
 
   p1_array_is_null
     = fold_build2_loc (loc, EQ_EXPR, result_type, p1_array,
@@ -478,8 +477,7 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
   if (TREE_CODE (p2) == CONSTRUCTOR)
     p2_array = CONSTRUCTOR_ELT (p2, 0)->value;
   else
-    p2_array = build_component_ref (p2, NULL_TREE,
-				    TYPE_FIELDS (TREE_TYPE (p2)), true);
+    p2_array = build_component_ref (p2, TYPE_FIELDS (TREE_TYPE (p2)), true);
 
   p2_array_is_null
     = fold_build2_loc (loc, EQ_EXPR, result_type, p2_array,
@@ -500,15 +498,15 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
     p1_bounds = CONSTRUCTOR_ELT (p1, 1)->value;
   else
     p1_bounds
-      = build_component_ref (p1, NULL_TREE,
-			     DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (p1))), true);
+      = build_component_ref (p1, DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (p1))),
+			     true);
 
   if (TREE_CODE (p2) == CONSTRUCTOR)
     p2_bounds = CONSTRUCTOR_ELT (p2, 1)->value;
   else
     p2_bounds
-      = build_component_ref (p2, NULL_TREE,
-			     DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (p2))), true);
+      = build_component_ref (p2, DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (p2))),
+			     true);
 
   same_bounds
     = fold_build2_loc (loc, EQ_EXPR, result_type, p1_bounds, p2_bounds);
@@ -1942,80 +1940,65 @@ gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v)
   return result;
 }
 
-/* Return a COMPONENT_REF to access a field that is given by COMPONENT,
-   an IDENTIFIER_NODE giving the name of the field, or FIELD, a FIELD_DECL,
-   for the field.  Don't fold the result if NO_FOLD_P is true.
+/* Return a COMPONENT_REF to access FIELD in RECORD, or NULL_TREE if the field
+   is not found in the record.  Don't fold the result if NO_FOLD is true.  */
 
-   We also handle the fact that we might have been passed a pointer to the
-   actual record and know how to look for fields in variant parts.  */
-
-tree
-build_simple_component_ref (tree record_variable, tree component, tree field,
-			    bool no_fold_p)
+static tree
+build_simple_component_ref (tree record, tree field, bool no_fold)
 {
-  tree record_type = TYPE_MAIN_VARIANT (TREE_TYPE (record_variable));
-  tree base, ref;
+  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (record));
+  tree ref;
 
-  gcc_assert (RECORD_OR_UNION_TYPE_P (record_type)
-	      && COMPLETE_TYPE_P (record_type)
-	      && (component == NULL_TREE) != (field == NULL_TREE));
+  gcc_assert (RECORD_OR_UNION_TYPE_P (type) && COMPLETE_TYPE_P (type));
 
-  /* If no field was specified, look for a field with the specified name in
-     the current record only.  */
-  if (!field)
-    for (field = TYPE_FIELDS (record_type);
-	 field;
-	 field = DECL_CHAIN (field))
-      if (DECL_NAME (field) == component)
-	break;
+  /* Try to fold a conversion from another record or union type unless the type
+     contains a placeholder as it might be needed for a later substitution.  */
+  if (TREE_CODE (record) == VIEW_CONVERT_EXPR
+      && RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (record, 0)))
+      && !type_contains_placeholder_p (type))
+    {
+      tree op = TREE_OPERAND (record, 0);
 
-  if (!field)
-    return NULL_TREE;
+      /* If this is an unpadding operation, convert the underlying object to
+	 the unpadded type directly.  */
+      if (TYPE_IS_PADDING_P (type) && field == TYPE_FIELDS (type))
+	return convert (TREE_TYPE (field), op);
+
+      /* Otherwise try to access FIELD directly in the underlying type, but
+	 make sure that the form of the reference doesn't change too much;
+	 this can happen for an unconstrained bit-packed array type whose
+	 constrained form can be an integer type.  */
+      ref = build_simple_component_ref (op, field, no_fold);
+      if (ref && TREE_CODE (TREE_TYPE (ref)) == TREE_CODE (TREE_TYPE (field)))
+	return ref;
+    }
 
   /* If this field is not in the specified record, see if we can find a field
      in the specified record whose original field is the same as this one.  */
-  if (DECL_CONTEXT (field) != record_type)
+  if (DECL_CONTEXT (field) != type)
     {
       tree new_field;
 
       /* First loop through normal components.  */
-      for (new_field = TYPE_FIELDS (record_type);
+      for (new_field = TYPE_FIELDS (type);
 	   new_field;
 	   new_field = DECL_CHAIN (new_field))
 	if (SAME_FIELD_P (field, new_field))
 	  break;
 
-      /* Next, see if we're looking for an inherited component in an extension.
-	 If so, look through the extension directly, unless the type contains
-	 a placeholder, as it might be needed for a later substitution.  */
-      if (!new_field
-	  && TREE_CODE (record_variable) == VIEW_CONVERT_EXPR
-	  && TYPE_ALIGN_OK (record_type)
-	  && !type_contains_placeholder_p (record_type)
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (record_variable, 0)))
-	     == RECORD_TYPE
-	  && TYPE_ALIGN_OK (TREE_TYPE (TREE_OPERAND (record_variable, 0))))
-	{
-	  ref = build_simple_component_ref (TREE_OPERAND (record_variable, 0),
-					    NULL_TREE, field, no_fold_p);
-	  if (ref)
-	    return ref;
-	}
-
       /* Next, loop through DECL_INTERNAL_P components if we haven't found the
 	 component in the first search.  Doing this search in two steps is
 	 required to avoid hidden homonymous fields in the _Parent field.  */
       if (!new_field)
-	for (new_field = TYPE_FIELDS (record_type);
+	for (new_field = TYPE_FIELDS (type);
 	     new_field;
 	     new_field = DECL_CHAIN (new_field))
-	  if (DECL_INTERNAL_P (new_field))
+	  if (DECL_INTERNAL_P (new_field)
+	      && RECORD_OR_UNION_TYPE_P (TREE_TYPE (new_field)))
 	    {
 	      tree field_ref
-		= build_simple_component_ref (record_variable,
-					      NULL_TREE, new_field, no_fold_p);
-	      ref = build_simple_component_ref (field_ref, NULL_TREE, field,
-						no_fold_p);
+		= build_simple_component_ref (record, new_field, no_fold);
+	      ref = build_simple_component_ref (field_ref, field, no_fold);
 	      if (ref)
 		return ref;
 	    }
@@ -2033,95 +2016,49 @@ build_simple_component_ref (tree record_variable, tree component, tree field,
       && TREE_OVERFLOW (DECL_FIELD_OFFSET (field)))
     return NULL_TREE;
 
-  /* We have found a suitable field.  Before building the COMPONENT_REF, get
-     the base object of the record variable if possible.  */
-  base = record_variable;
+  ref = build3 (COMPONENT_REF, TREE_TYPE (field), record, field, NULL_TREE);
 
-  if (TREE_CODE (record_variable) == VIEW_CONVERT_EXPR)
-    {
-      tree inner_variable = TREE_OPERAND (record_variable, 0);
-      tree inner_type = TYPE_MAIN_VARIANT (TREE_TYPE (inner_variable));
-
-      /* Look through a conversion between type variants.  This is transparent
-	 as far as the field is concerned.  */
-      if (inner_type == record_type)
-	base = inner_variable;
-
-      /* Look through a conversion between original and packable version, but
-	 the field needs to be adjusted in this case.  */
-      else if (RECORD_OR_UNION_TYPE_P (inner_type)
-	       && TYPE_NAME (inner_type) == TYPE_NAME (record_type))
-	{
-	  tree new_field;
-
-	  for (new_field = TYPE_FIELDS (inner_type);
-	       new_field;
-	       new_field = DECL_CHAIN (new_field))
-	    if (SAME_FIELD_P (field, new_field))
-	      break;
-	  if (new_field)
-	    {
-	      field = new_field;
-	      base = inner_variable;
-	    }
-	}
-    }
-
-  ref = build3 (COMPONENT_REF, TREE_TYPE (field), base, field, NULL_TREE);
-
-  if (TREE_READONLY (record_variable)
+  if (TREE_READONLY (record)
       || TREE_READONLY (field)
-      || TYPE_READONLY (record_type))
+      || TYPE_READONLY (type))
     TREE_READONLY (ref) = 1;
 
-  if (TREE_THIS_VOLATILE (record_variable)
+  if (TREE_THIS_VOLATILE (record)
       || TREE_THIS_VOLATILE (field)
-      || TYPE_VOLATILE (record_type))
+      || TYPE_VOLATILE (type))
     TREE_THIS_VOLATILE (ref) = 1;
 
-  if (no_fold_p)
+  if (no_fold)
     return ref;
 
   /* The generic folder may punt in this case because the inner array type
      can be self-referential, but folding is in fact not problematic.  */
-  if (TREE_CODE (base) == CONSTRUCTOR
-      && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (base)))
+  if (TREE_CODE (record) == CONSTRUCTOR
+      && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (record)))
     {
-      unsigned int len = CONSTRUCTOR_NELTS (base);
-      gcc_assert (len > 0);
-
-      if (field == CONSTRUCTOR_ELT (base, 0)->index)
-	return CONSTRUCTOR_ELT (base, 0)->value;
-
-      if (len > 1)
-	{
-	  if (field == CONSTRUCTOR_ELT (base, 1)->index)
-	    return CONSTRUCTOR_ELT (base, 1)->value;
-	}
-      else
-	return NULL_TREE;
-
+      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (record);
+      unsigned HOST_WIDE_INT idx;
+      tree index, value;
+      FOR_EACH_CONSTRUCTOR_ELT (elts, idx, index, value)
+       if (index == field)
+	return value;
       return ref;
     }
 
   return fold (ref);
 }
 
-/* Likewise, but generate a Constraint_Error if the reference could not be
-   found.  */
+/* Likewise, but return NULL_EXPR and generate a Constraint_Error if the
+   field is not found in the record.  */
 
 tree
-build_component_ref (tree record_variable, tree component, tree field,
-		     bool no_fold_p)
+build_component_ref (tree record, tree field, bool no_fold)
 {
-  tree ref = build_simple_component_ref (record_variable, component, field,
-					 no_fold_p);
+  tree ref = build_simple_component_ref (record, field, no_fold);
   if (ref)
     return ref;
 
-  /* If FIELD was specified, assume this is an invalid user field so raise
-     Constraint_Error.  Otherwise, we have no type to return so abort.  */
-  gcc_assert (field);
+  /* Assume this is an invalid user field so raise Constraint_Error.  */
   return build1 (NULL_EXPR, TREE_TYPE (field),
 		 build_call_raise (CE_Discriminant_Check_Failed, Empty,
 				   N_Raise_Constraint_Error));
@@ -2230,8 +2167,8 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
 	= build_unary_op (INDIRECT_REF, NULL_TREE, aligning_record_addr);
 
       tree aligning_field
-	= build_component_ref (aligning_record, NULL_TREE,
-			       TYPE_FIELDS (aligning_type), false);
+	= build_component_ref (aligning_record, TYPE_FIELDS (aligning_type),
+			       false);
 
       tree aligning_field_addr
         = build_unary_op (ADDR_EXPR, NULL_TREE, aligning_field);
@@ -2416,7 +2353,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
       else
 	storage_init
 	  = build_binary_op (INIT_EXPR, NULL_TREE,
-			     build_component_ref (storage_deref, NULL_TREE,
+			     build_component_ref (storage_deref,
 						  TYPE_FIELDS (storage_type),
 						  false),
 			     build_template (template_type, type, NULL_TREE));
@@ -2883,10 +2820,11 @@ done:
 tree
 gnat_invariant_expr (tree expr)
 {
-  tree type = TREE_TYPE (expr), t;
+  const tree type = TREE_TYPE (expr);
 
   expr = remove_conversions (expr, false);
 
+  /* Look through temporaries created to capture values.  */
   while ((TREE_CODE (expr) == CONST_DECL
 	  || (TREE_CODE (expr) == VAR_DECL && TREE_READONLY (expr)))
 	 && decl_function_context (expr) == current_function_decl
@@ -2908,7 +2846,27 @@ gnat_invariant_expr (tree expr)
   if (TREE_CONSTANT (expr))
     return fold_convert (type, expr);
 
-  t = expr;
+  /* Skip overflow checks since they don't change the invariantness.  */
+  if (TREE_CODE (expr) == COND_EXPR
+      && TREE_CODE (COND_EXPR_THEN (expr)) == COMPOUND_EXPR
+      && TREE_CODE (TREE_OPERAND (COND_EXPR_THEN (expr), 0)) == CALL_EXPR
+      && get_callee_fndecl (TREE_OPERAND (COND_EXPR_THEN (expr), 0))
+         == gnat_raise_decls[CE_Overflow_Check_Failed])
+    expr = COND_EXPR_ELSE (expr);
+
+  /* Deal with addition or subtraction of constants.  */
+  if (TREE_CODE (expr) == PLUS_EXPR || TREE_CODE (expr) == MINUS_EXPR)
+    {
+      tree op0 = gnat_invariant_expr (TREE_OPERAND (expr, 0));
+      tree op1 = TREE_OPERAND (expr, 1);
+      if (op0 && TREE_CONSTANT (op1))
+	return fold_build2 (TREE_CODE (expr), type, op0, op1);
+      else
+	return NULL_TREE;
+    }
+
+  bool invariant_p = false;
+  tree t = expr;
 
   while (true)
     {
@@ -2917,6 +2875,7 @@ gnat_invariant_expr (tree expr)
 	case COMPONENT_REF:
 	  if (TREE_OPERAND (t, 2) != NULL_TREE)
 	    return NULL_TREE;
+	  invariant_p |= DECL_INVARIANT_P (TREE_OPERAND (t, 1));
 	  break;
 
 	case ARRAY_REF:
@@ -2928,16 +2887,16 @@ gnat_invariant_expr (tree expr)
 	  break;
 
 	case BIT_FIELD_REF:
-	case VIEW_CONVERT_EXPR:
 	case REALPART_EXPR:
 	case IMAGPART_EXPR:
+	case VIEW_CONVERT_EXPR:
+	CASE_CONVERT:
 	  break;
 
 	case INDIRECT_REF:
-	  if (!TREE_READONLY (t)
-	      || TREE_SIDE_EFFECTS (t)
-	      || !TREE_THIS_NOTRAP (t))
+	  if ((!invariant_p && !TREE_READONLY (t)) || TREE_SIDE_EFFECTS (t))
 	    return NULL_TREE;
+	  invariant_p = false;
 	  break;
 
 	default:
@@ -2956,7 +2915,7 @@ object:
 	  || decl_function_context (t) != current_function_decl))
     return fold_convert (type, expr);
 
-  if (!TREE_READONLY (t))
+  if (!invariant_p && !TREE_READONLY (t))
     return NULL_TREE;
 
   if (TREE_CODE (t) == PARM_DECL)
