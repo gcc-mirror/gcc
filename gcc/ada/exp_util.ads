@@ -445,10 +445,12 @@ package Exp_Util is
      (N             : Node_Id;
       Unc_Type      : Entity_Id;
       Subtype_Indic : Node_Id;
-      Exp           : Node_Id);
+      Exp           : Node_Id;
+      Related_Id    : Entity_Id := Empty);
    --  Build a constrained subtype from the initial value in object
    --  declarations and/or allocations when the type is indefinite (including
-   --  class-wide).
+   --  class-wide). Set Related_Id to request an external name for the subtype
+   --  rather than an internal temporary.
 
    function Finalize_Address (Typ : Entity_Id) return Entity_Id;
    --  Locate TSS primitive Finalize_Address in type Typ. Return Empty if the
@@ -780,11 +782,13 @@ package Exp_Util is
    --  Predicate_Check is suppressed then a null statement is returned instead.
 
    function Make_Subtype_From_Expr
-     (E       : Node_Id;
-      Unc_Typ : Entity_Id) return Node_Id;
+     (E          : Node_Id;
+      Unc_Typ    : Entity_Id;
+      Related_Id : Entity_Id := Empty) return Node_Id;
    --  Returns a subtype indication corresponding to the actual type of an
-   --  expression E. Unc_Typ is an unconstrained array or record, or
-   --  a classwide type.
+   --  expression E. Unc_Typ is an unconstrained array or record, or a class-
+   --  wide type. Set Related_Id to request an external name for the subtype
+   --  rather than an internal temporary.
 
    function Matching_Standard_Type (Typ : Entity_Id) return Entity_Id;
    --  Given a scalar subtype Typ, returns a matching type in standard that

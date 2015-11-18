@@ -2152,7 +2152,8 @@ package body Exp_Util is
      (N             : Node_Id;
       Unc_Type      : Entity_Id;
       Subtype_Indic : Node_Id;
-      Exp           : Node_Id)
+      Exp           : Node_Id;
+      Related_Id    : Entity_Id := Empty)
    is
       Loc     : constant Source_Ptr := Sloc (N);
       Exp_Typ : constant Entity_Id  := Etype (Exp);
@@ -2357,7 +2358,7 @@ package body Exp_Util is
       else
          Remove_Side_Effects (Exp);
          Rewrite (Subtype_Indic,
-           Make_Subtype_From_Expr (Exp, Unc_Type));
+           Make_Subtype_From_Expr (Exp, Unc_Type, Related_Id));
       end if;
    end Expand_Subtype_From_Expr;
 
@@ -6566,8 +6567,9 @@ package body Exp_Util is
    --  3. If Expr is class-wide, creates an implicit class-wide subtype
 
    function Make_Subtype_From_Expr
-     (E       : Node_Id;
-      Unc_Typ : Entity_Id) return Node_Id
+     (E          : Node_Id;
+      Unc_Typ    : Entity_Id;
+      Related_Id : Entity_Id := Empty) return Node_Id
    is
       List_Constr : constant List_Id    := New_List;
       Loc         : constant Source_Ptr := Sloc (E);
@@ -6584,17 +6586,31 @@ package body Exp_Util is
       if Is_Private_Type (Unc_Typ)
         and then Has_Unknown_Discriminants (Unc_Typ)
       then
+         --  The caller requests a unque external name for both the private and
+         --  the full subtype.
+
+         if Present (Related_Id) then
+            Full_Subtyp :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_External_Name (Chars (Related_Id), 'C'));
+            Priv_Subtyp :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_External_Name (Chars (Related_Id), 'P'));
+
+         else
+            Full_Subtyp := Make_Temporary (Loc, 'C');
+            Priv_Subtyp := Make_Temporary (Loc, 'P');
+         end if;
+
          --  Prepare the subtype completion. Use the base type to find the
          --  underlying type because the type may be a generic actual or an
          --  explicit subtype.
 
-         Utyp        := Underlying_Type (Base_Type (Unc_Typ));
-         Full_Subtyp := Make_Temporary (Loc, 'C');
-         Full_Exp    :=
+         Utyp := Underlying_Type (Base_Type (Unc_Typ));
+
+         Full_Exp :=
            Unchecked_Convert_To (Utyp, Duplicate_Subexpr_No_Checks (E));
          Set_Parent (Full_Exp, Parent (E));
-
-         Priv_Subtyp := Make_Temporary (Loc, 'P');
 
          Insert_Action (E,
            Make_Subtype_Declaration (Loc,

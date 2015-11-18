@@ -3073,7 +3073,7 @@ package body Sem_Ch4 is
          if not Is_Type (Nam) then
             if Is_Entity_Name (Name (N)) then
                Set_Entity (Name (N), Nam);
-               Set_Etype (Name (N), Etype (Nam));
+               Set_Etype  (Name (N), Etype (Nam));
 
             elsif Nkind (Name (N)) = N_Selected_Component then
                Set_Entity (Selector_Name (Name (N)),  Nam);
