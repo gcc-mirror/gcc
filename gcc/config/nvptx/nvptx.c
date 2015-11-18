@@ -3657,7 +3657,7 @@ nvptx_process_pars (parallel *par)
 
   if (par->mask & GOMP_DIM_MASK (GOMP_DIM_MAX))
     /* No propagation needed for a call.  */;
- else if (par->mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
+  else if (par->mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
     {
       nvptx_wpropagate (false, par->forked_block, par->forked_insn);
       nvptx_wpropagate (true, par->forked_block, par->fork_insn);
@@ -3694,7 +3694,7 @@ nvptx_neuter_pars (parallel *par, unsigned modes, unsigned outer)
       if ((outer | me) & GOMP_DIM_MASK (mode))
 	{} /* Mode is partitioned: no neutering.  */
       else if (!(modes & GOMP_DIM_MASK (mode)))
-	{} /* Mode is not used: nothing to do.  */  
+	{} /* Mode is not used: nothing to do.  */
       else if (par->inner_mask & GOMP_DIM_MASK (mode)
 	       || !par->forked_insn)
 	/* Partitioned in inner parallels, or we're not a partitioned
@@ -3910,31 +3910,17 @@ nvptx_record_offload_symbol (tree decl)
     case FUNCTION_DECL:
       {
 	tree attr = get_oacc_fn_attrib (decl);
-	tree dims = NULL_TREE;
+	tree dims = TREE_VALUE (attr);
 	unsigned ix;
 
-	if (attr)
-	  dims = TREE_VALUE (attr);
 	fprintf (asm_out_file, "//:FUNC_MAP \"%s\"",
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
 
-	for (ix = 0; ix != GOMP_DIM_MAX; ix++)
+	for (ix = 0; ix != GOMP_DIM_MAX; ix++, dims = TREE_CHAIN (dims))
 	  {
-	    int size = 1;
+	    int size = TREE_INT_CST_LOW (TREE_VALUE (dims));
 
-	    /* TODO: This check can go away once the dimension default
-	       machinery is merged to trunk.  */
-	    if (dims)
-	      {
-		tree dim = TREE_VALUE (dims);
-
-		if (dim)
-		  size = TREE_INT_CST_LOW (dim);
-
-		gcc_assert (!TREE_PURPOSE (dims));
-		dims = TREE_CHAIN (dims);
-	      }
-	    
+	    gcc_assert (!TREE_PURPOSE (dims));
 	    fprintf (asm_out_file, ", %#x", size);
 	  }
 
@@ -4186,8 +4172,7 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
    routine might spawn a loop.  It is negative for non-routines.  */
 
 static bool
-nvptx_goacc_validate_dims (tree ARG_UNUSED (decl), int *ARG_UNUSED (dims),
-			   int ARG_UNUSED (fn_level))
+nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
 {
   bool changed = false;
 

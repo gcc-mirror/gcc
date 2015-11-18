@@ -1,3 +1,10 @@
+2015-11-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_process_pars): Fix whitespace.
+	(nvptx_record_offload_symbol): Remove code compensating for lack
+	of default dimension handling.
+	(nvptx_goacc_validate_dims): Remove incorrect ARG_UNUSED markers.
+
 2015-11-18  Aditya Kumar  <aditya.k7@samsung.com>
 
 	* graphite-isl-ast-to-gimple.c (copy_loop_phi_args): Change the return
