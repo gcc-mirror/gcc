@@ -8353,7 +8353,69 @@ gnat_gimplify_stmt (tree *stmt_p)
     }
 }
 
-/* Force references to each of the entities in packages withed by GNAT_NODE.
+/* Force a reference to each of the entities in GNAT_PACKAGE recursively.
+
+   This routine is exclusively called in type_annotate mode, to compute DDA
+   information for types in withed units, for ASIS use.  */
+
+static void
+elaborate_all_entities_for_package (Entity_Id gnat_package)
+{
+  Entity_Id gnat_entity;
+
+  for (gnat_entity = First_Entity (gnat_package);
+       Present (gnat_entity);
+       gnat_entity = Next_Entity (gnat_entity))
+    {
+      const Entity_Kind kind = Ekind (gnat_entity);
+
+      /* We are interested only in entities visible from the main unit.  */
+      if (!Is_Public (gnat_entity))
+	continue;
+
+      /* Skip stuff internal to the compiler.  */
+      if (Convention (gnat_entity) == Convention_Intrinsic)
+	continue;
+      if (kind == E_Operator)
+	continue;
+      if (IN (kind, Subprogram_Kind) && Is_Intrinsic_Subprogram (gnat_entity))
+	continue;
+
+      /* Skip named numbers.  */
+      if (IN (kind, Named_Kind))
+	continue;
+
+      /* Skip generic declarations.  */
+      if (IN (kind, Generic_Unit_Kind))
+	continue;
+
+      /* Skip package bodies.  */
+      if (kind == E_Package_Body)
+	continue;
+
+      /* Skip limited views that point back to the main unit.  */
+      if (IN (kind, Incomplete_Kind)
+	  && From_Limited_With (gnat_entity)
+	  && In_Extended_Main_Code_Unit (Non_Limited_View (gnat_entity)))
+	continue;
+
+      /* Skip types that aren't frozen.  */
+      if (IN (kind, Type_Kind) && !Is_Frozen (gnat_entity))
+	continue;
+
+      /* Recurse on real packages that aren't in the main unit.  */
+      if (kind == E_Package)
+	{
+	  if (No (Renamed_Entity (gnat_entity))
+	      && !In_Extended_Main_Code_Unit (gnat_entity))
+	    elaborate_all_entities_for_package (gnat_entity);
+	}
+      else
+	gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
+    }
+}
+
+/* Force a reference to each of the entities in packages withed by GNAT_NODE.
    Operate recursively but check that we aren't elaborating something more
    than once.
 
@@ -8363,7 +8425,7 @@ gnat_gimplify_stmt (tree *stmt_p)
 static void
 elaborate_all_entities (Node_Id gnat_node)
 {
-  Entity_Id gnat_with_clause, gnat_entity;
+  Entity_Id gnat_with_clause;
 
   /* Process each unit only once.  As we trace the context of all relevant
      units transitively, including generic bodies, we may encounter the
@@ -8381,35 +8443,17 @@ elaborate_all_entities (Node_Id gnat_node)
 	&& !present_gnu_tree (Library_Unit (gnat_with_clause))
 	&& Library_Unit (gnat_with_clause) != Library_Unit (Cunit (Main_Unit)))
       {
-	elaborate_all_entities (Library_Unit (gnat_with_clause));
+	Node_Id gnat_unit = Library_Unit (gnat_with_clause);
+	Entity_Id gnat_entity = Entity (Name (gnat_with_clause));
 
-	if (Ekind (Entity (Name (gnat_with_clause))) == E_Package)
+	elaborate_all_entities (gnat_unit);
+
+	if (Ekind (gnat_entity) == E_Package)
+	  elaborate_all_entities_for_package (gnat_entity);
+
+	else if (Ekind (gnat_entity) == E_Generic_Package)
 	  {
-	    for (gnat_entity = First_Entity (Entity (Name (gnat_with_clause)));
-		 Present (gnat_entity);
-		 gnat_entity = Next_Entity (gnat_entity))
-	      if (Is_Public (gnat_entity)
-		  && Convention (gnat_entity) != Convention_Intrinsic
-		  && Ekind (gnat_entity) != E_Package
-		  && Ekind (gnat_entity) != E_Package_Body
-		  && Ekind (gnat_entity) != E_Operator
-		  && !(IN (Ekind (gnat_entity), Type_Kind)
-		       && !Is_Frozen (gnat_entity))
-		  && !(IN (Ekind (gnat_entity), Incomplete_Kind)
-		       && From_Limited_With (gnat_entity)
-		       && In_Extended_Main_Code_Unit
-			  (Non_Limited_View (gnat_entity)))
-		  && !((Ekind (gnat_entity) == E_Procedure
-			|| Ekind (gnat_entity) == E_Function)
-		       && Is_Intrinsic_Subprogram (gnat_entity))
-		  && !IN (Ekind (gnat_entity), Named_Kind)
-		  && !IN (Ekind (gnat_entity), Generic_Unit_Kind))
-		gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
-	  }
-	else if (Ekind (Entity (Name (gnat_with_clause))) == E_Generic_Package)
-	  {
-	    Node_Id gnat_body
-	      = Corresponding_Body (Unit (Library_Unit (gnat_with_clause)));
+	    Node_Id gnat_body = Corresponding_Body (Unit (gnat_unit));
 
 	    /* Retrieve compilation unit node of generic body.  */
 	    while (Present (gnat_body)

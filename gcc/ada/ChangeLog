@@ -1,5 +1,11 @@
 2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (elaborate_all_entities_for_package): New
+	function extracted from...  Recurse on packages.
+	(elaborate_all_entities): ...here.  Call it on packages.
+
+2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (DECL_INVARIANT_P): New macro.
 	* gcc-interface/gigi.h (enum standard_datatypes): Remove
 	ADT_longjmp_decl and add ADT_not_handled_by_others_decl.
