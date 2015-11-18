@@ -2390,7 +2390,7 @@ building. The syntax looks like
         for External ("BUILD") use "PRODUCTION";
 
         package Builder is
-           for Switches ("Ada") use ("-q");
+           for Global_Compilation_Switches ("Ada") use ("-g");
         end Builder;
      end Agg;
 

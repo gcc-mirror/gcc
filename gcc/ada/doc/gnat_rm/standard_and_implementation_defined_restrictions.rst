@@ -772,7 +772,7 @@ Pure_Barriers
 [GNAT] This restriction ensures at compile time that protected entry
 barriers are restricted to:
 
-* simple boolean variables defined in the private part of the
+* simple variables defined in the private part of the
   protected type/object,
 * constant declarations,
 * named numbers,
