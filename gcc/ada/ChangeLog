@@ -1,3 +1,8 @@
+2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (fold_constant_decl_in_expr) <ARRAY_REF>: If
+	the index is not itself constant then bail out.
+
 2015-11-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Try_Container_Indexing): When constructing the
