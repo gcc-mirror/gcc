@@ -1,3 +1,17 @@
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing): When constructing the
+	parameter list for the potentially overloaded calls to indexing
+	functions, do not propagate overloadings if the actual is a named
+	association: overloadings appear directly on the expression in
+	the association.
+
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Interface_Present_In_Ancestor): If the type is
+	incomplete, the list of ancestors is found either on the full
+	view or the non-limited view of the type.
+
 2015-11-18  Nicolas Roche  <roche@adacore.com>
 
 	* sysdep.c (__gnat_localtime_tzoff): On Windows platform

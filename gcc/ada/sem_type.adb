@@ -2619,8 +2619,16 @@ package body Sem_Type is
       end if;
 
       if Ekind (Target_Typ) = E_Incomplete_Type then
-         pragma Assert (Present (Non_Limited_View (Target_Typ)));
-         Target_Typ := Non_Limited_View (Target_Typ);
+
+         --  We must have either a full view or a non-limited view of the type
+         --  to locate the list of ancestors.
+
+         if Present (Full_View (Target_Typ)) then
+            Target_Typ := Full_View (Target_Typ);
+         else
+            pragma Assert (Present (Non_Limited_View (Target_Typ)));
+            Target_Typ := Non_Limited_View (Target_Typ);
+         end if;
 
          --  Protect the frontend against previously detected errors
 
