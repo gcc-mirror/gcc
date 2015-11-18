@@ -9147,17 +9147,24 @@ haifa_finish_h_i_d (void)
 {
   int i;
   haifa_insn_data_t data;
-  struct reg_use_data *use, *next;
+  reg_use_data *use, *next_use;
+  reg_set_data *set, *next_set;
 
   FOR_EACH_VEC_ELT (h_i_d, i, data)
     {
       free (data->max_reg_pressure);
       free (data->reg_pressure);
-      for (use = data->reg_use_list; use != NULL; use = next)
+      for (use = data->reg_use_list; use != NULL; use = next_use)
 	{
-	  next = use->next_insn_use;
+	  next_use = use->next_insn_use;
 	  free (use);
 	}
+      for (set = data->reg_set_list; set != NULL; set = next_set)
+	{
+	  next_set = set->next_insn_set;
+	  free (set);
+	}
+
     }
   h_i_d.release ();
 }
