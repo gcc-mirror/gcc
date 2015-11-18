@@ -4120,8 +4120,8 @@ cdx_and_immed (rtx op)
       HOST_WIDE_INT ival = INTVAL (op);
       return (ival == 1 || ival == 2 || ival == 3 || ival == 4
 	      || ival == 8 || ival == 0xf || ival == 0x10
-	      || ival == 0x10 || ival == 0x1f || ival == 0x20
-	      || ival == 0x3f || ival == 0x3f || ival == 0x7f
+	      || ival == 0x1f || ival == 0x20
+	      || ival == 0x3f || ival == 0x7f
 	      || ival == 0x80 || ival == 0xff || ival == 0x7ff
 	      || ival == 0xff00 || ival == 0xffff);
     }
