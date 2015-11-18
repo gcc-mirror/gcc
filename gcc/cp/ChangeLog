@@ -1,3 +1,7 @@
+2015-11-17  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* cp-gimplify.c (cp_fold_r): Add support for OACC_LOOP.
+
 2015-11-17  Jason Merrill  <jason@redhat.com>
 
 	PR bootstrap/68346
