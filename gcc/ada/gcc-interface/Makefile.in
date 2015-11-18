@@ -691,10 +691,11 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(target_cpu) $(target_vendor)
   ifeq ($(strip $(filter-out vthreads,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
     s-thread.adb<s-thread-ae653.adb \
+    s-osvers.ads<s-osvers-vxworks-653.ads \
     $(DUMMY_SOCKETS_TARGET_PAIRS)
 
     GNATRTL_SOCKETS_OBJS =
-    EXTRA_GNATRTL_NONTASKING_OBJS += s-thread.o
+    EXTRA_GNATRTL_NONTASKING_OBJS += s-thread.o s-osvers.o
   else
     LIBGNAT_TARGET_PAIRS += \
     g-socthi.ads<g-socthi-vxworks.ads \
@@ -735,6 +736,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksmils,$(target_cpu) $(target_vendo
   s-tasinf.ads<s-tasinf-vxworks.ads \
   s-taspri.ads<s-taspri-vxworks.ads \
   s-thread.adb<s-thread-ae653.adb \
+  s-osvers.ads<s-osvers-vxworks-mils.ads \
   s-tpopsp.adb<s-tpopsp-vxworks.adb \
   s-vxwork.ads<s-vxwork-ppc.ads \
   system.ads<system-vxworks-ppc-mils.ads \
@@ -746,7 +748,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksmils,$(target_cpu) $(target_vendo
   mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
   indepsw.adb<indepsw-gnu.adb
 
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-thread.o
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-thread.o s-osvers.o
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o sigtramp-vxworks.o
@@ -764,7 +766,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksmils,$(target_cpu) $(target_vendo
 endif
 
 # VxWorksae / VxWorks 653 for x86 (vxsim) - ?? VxWorks mils not implemented
-ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(target_cpu) $(target_vendor) $(target_os))),)
+ifeq ($(strip $(filter-out %86 wrs vxworksae,$(target_cpu) $(target_vendor) $(target_os))),)
   # target pairs for kernel + vthreads runtime
   LIBGNAT_TARGET_PAIRS = \
   a-elchha.adb<a-elchha-vxworks-ppc-full.adb \
@@ -805,10 +807,11 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(target_cpu) $(target_
   ifeq ($(strip $(filter-out vthreads,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
     s-thread.adb<s-thread-ae653.adb \
+    s-osvers.ads<s-osvers-vxworks-653.ads \
     $(DUMMY_SOCKETS_TARGET_PAIRS)
 
     GNATRTL_SOCKETS_OBJS =
-    EXTRA_GNATRTL_NONTASKING_OBJS += s-thread.o
+    EXTRA_GNATRTL_NONTASKING_OBJS += s-thread.o s-osvers.o
   else
     LIBGNAT_TARGET_PAIRS += \
     g-socthi.ads<g-socthi-vxworks.ads \
@@ -2493,7 +2496,7 @@ LIBGNAT_OBJS = adadecode.o adaint.o argv.o aux-io.o 			\
 #  from ADA_INCLUDE_SRCS.
 
 LIBGNAT_SRCS = $(patsubst %.o,%.c,$(LIBGNAT_OBJS))			\
-  adadecode.h adaint.h env.h gsocket.h raise.h				\
+  adadecode.h adaint.h env.h gsocket.h raise.h standard.ads.h		\
   tb-gcc.c thread.c $(EXTRA_LIBGNAT_SRCS)
 
 # GNATRTL_NONTASKING_OBJS and GNATRTL_TASKING_OBJS can be found in
@@ -2705,11 +2708,6 @@ install-gcc-specs:
 	done
 
 install-gnatlib: ../stamp-gnatlib-$(RTSDIR) install-gcc-specs
-#	Create the directory before deleting it, in case the directory is
-#	a list of directories (as it may be on VMS). This ensures we are
-#	deleting the right one.
-	-$(MKDIR) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
-	-$(MKDIR) $(DESTDIR)$(ADA_INCLUDE_DIR)
 	$(RMDIR) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
 	$(RMDIR) $(DESTDIR)$(ADA_INCLUDE_DIR)
 	-$(MKDIR) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
@@ -2745,7 +2743,7 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR) install-gcc-specs
 	   fi; \
 	done
 # This copy must be done preserving the date on the original file.
-	for file in $(RTSDIR)/*.ad?; do \
+	for file in $(RTSDIR)/*.ad[sb]*; do \
 	    $(INSTALL_DATA_DATE) $$file $(DESTDIR)$(ADA_INCLUDE_DIR); \
 	done
 	cd $(DESTDIR)$(ADA_INCLUDE_DIR); $(CHMOD) a-wx *.adb
