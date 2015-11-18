@@ -6484,6 +6484,10 @@ package body Sem_Ch8 is
       --  This simplifies value tracing in GNATProve. For consistency, both
       --  the entity name and the subtype come from the constrained component.
 
+      --  This is only used in GNATProve mode: when generating code it may be
+      --  necessary to create an itype in the scope of use of the selected
+      --  component, e.g. in the context of a expanded record equality.
+
       function Is_Reference_In_Subunit return Boolean;
       --  In a subunit, the scope depth is not a proper measure of hiding,
       --  because the context of the proper body may itself hide entities in
@@ -6499,17 +6503,19 @@ package body Sem_Ch8 is
          Comp : Entity_Id;
 
       begin
-         Comp := First_Entity (Etype (P));
-         while Present (Comp) loop
-            if Chars (Comp) = Chars (Selector_Name (N)) then
-               Set_Etype (N, Etype (Comp));
-               Set_Entity (Selector_Name (N), Comp);
-               Set_Etype  (Selector_Name (N), Etype (Comp));
-               return True;
-            end if;
+         if GNATprove_Mode then
+            Comp := First_Entity (Etype (P));
+            while Present (Comp) loop
+               if Chars (Comp) = Chars (Selector_Name (N)) then
+                  Set_Etype  (N, Etype (Comp));
+                  Set_Entity (Selector_Name (N), Comp);
+                  Set_Etype  (Selector_Name (N), Etype (Comp));
+                  return True;
+               end if;
 
-            Next_Component (Comp);
-         end loop;
+               Next_Component (Comp);
+            end loop;
+         end if;
 
          return False;
       end Available_Subtype;

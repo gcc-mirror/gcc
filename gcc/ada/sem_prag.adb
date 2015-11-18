@@ -8768,30 +8768,28 @@ package body Sem_Prag is
       -----------------------------------------
 
       procedure Process_Interrupt_Or_Attach_Handler is
-         Arg1_X       : constant Node_Id   := Get_Pragma_Arg (Arg1);
-         Handler_Proc : constant Entity_Id := Entity (Arg1_X);
-         Proc_Scope   : constant Entity_Id := Scope (Handler_Proc);
+         Handler  : constant Entity_Id := Entity (Get_Pragma_Arg (Arg1));
+         Prot_Typ : constant Entity_Id := Scope (Handler);
 
       begin
          --  A pragma that applies to a Ghost entity becomes Ghost for the
          --  purposes of legality checks and removal of ignored Ghost code.
 
-         Mark_Pragma_As_Ghost (N, Handler_Proc);
-         Set_Is_Interrupt_Handler (Handler_Proc);
+         Mark_Pragma_As_Ghost (N, Handler);
+         Set_Is_Interrupt_Handler (Handler);
 
          --  If the pragma is not associated with a handler procedure within a
          --  protected type, then it must be for a nonprotected procedure for
          --  the AAMP target, in which case we don't associate a representation
          --  item with the procedure's scope.
 
-         if Ekind (Proc_Scope) = E_Protected_Type then
-            if Prag_Id = Pragma_Interrupt_Handler
-                 or else
-               Prag_Id = Pragma_Attach_Handler
-            then
-               Record_Rep_Item (Proc_Scope, N);
-            end if;
+         if Ekind (Prot_Typ) = E_Protected_Type then
+            Record_Rep_Item (Prot_Typ, N);
          end if;
+
+         --  Chain the pragma on the contract for completeness
+
+         Add_Contract_Item (N, Handler);
       end Process_Interrupt_Or_Attach_Handler;
 
       --------------------------------------------------

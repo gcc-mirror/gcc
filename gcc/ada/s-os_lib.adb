@@ -2087,7 +2087,9 @@ package body System.OS_Lib is
          if Dir'Length > 0 then
             declare
                Result : String   :=
-                          Normalize_Pathname (Dir, "") & Directory_Separator;
+                          Normalize_Pathname
+                            (Dir, "", Resolve_Links, Case_Sensitive) &
+                             Directory_Separator;
                Last   : Positive := Result'Last - 1;
 
             begin

@@ -153,10 +153,12 @@ package body Contracts is
          end if;
 
       --  Entry or subprogram declarations, the applicable pragmas are:
+      --    Attach_Handler
       --    Contract_Cases
       --    Depends
       --    Extensions_Visible
       --    Global
+      --    Interrupt_Handler
       --    Postcondition
       --    Precondition
       --    Test_Case
@@ -168,11 +170,10 @@ package body Contracts is
                               E_Generic_Procedure,
                               E_Procedure)
       then
-         if Nam_In (Prag_Nam, Name_Postcondition, Name_Precondition) then
-            Add_Pre_Post_Condition;
-
-         elsif Nam_In (Prag_Nam, Name_Contract_Cases, Name_Test_Case) then
-            Add_Contract_Test_Case;
+         if Nam_In (Prag_Nam, Name_Attach_Handler, Name_Interrupt_Handler)
+           and then Ekind_In (Id, E_Generic_Procedure, E_Procedure)
+         then
+            Add_Classification;
 
          elsif Nam_In (Prag_Nam, Name_Depends,
                                  Name_Extensions_Visible,
@@ -184,6 +185,12 @@ package body Contracts is
            and then Ekind_In (Id, E_Function, E_Generic_Function)
          then
             Add_Classification;
+
+         elsif Nam_In (Prag_Nam, Name_Contract_Cases, Name_Test_Case) then
+            Add_Contract_Test_Case;
+
+         elsif Nam_In (Prag_Nam, Name_Postcondition, Name_Precondition) then
+            Add_Pre_Post_Condition;
 
          --  The pragma is not a proper contract item
 
