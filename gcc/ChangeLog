@@ -1,3 +1,16 @@
+2015-11-18  Richard Henderson  <rth@redhat.com>
+
+	Backport from mainline
+	PR rtl-opt/67609
+	* config/i386/i386.c (ix86_cannot_change_mode_class): Tighten
+	sse check to the exact conditions of PR 67609.
+
+	* config/i386/i386.c (ix86_cannot_change_mode_class): Disallow
+	narrowing subregs on SSE and MMX registers.
+	* doc/tm.texi.in (CANNOT_CHANGE_MODE_CLASS): Clarify when subregs that
+	appear to be sub-words of multi-register pseudos must be rejected.
+	* doc/tm.texi: Regenerate.
+
 2015-11-18  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
