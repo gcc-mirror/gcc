@@ -2605,6 +2605,631 @@ nvptx_discover_pars (bb_insn_map_t *map)
   return par;
 }
 
+/* Analyse a group of BBs within a partitioned region and create N
+   Single-Entry-Single-Exit regions.  Some of those regions will be
+   trivial ones consisting of a single BB.  The blocks of a
+   partitioned region might form a set of disjoint graphs -- because
+   the region encloses a differently partitoned sub region.
+
+   We use the linear time algorithm described in 'Finding Regions Fast:
+   Single Entry Single Exit and control Regions in Linear Time'
+   Johnson, Pearson & Pingali.  That algorithm deals with complete
+   CFGs, where a back edge is inserted from END to START, and thus the
+   problem becomes one of finding equivalent loops.
+
+   In this case we have a partial CFG.  We complete it by redirecting
+   any incoming edge to the graph to be from an arbitrary external BB,
+   and similarly redirecting any outgoing edge to be to  that BB.
+   Thus we end up with a closed graph.
+
+   The algorithm works by building a spanning tree of an undirected
+   graph and keeping track of back edges from nodes further from the
+   root in the tree to nodes nearer to the root in the tree.  In the
+   description below, the root is up and the tree grows downwards.
+
+   We avoid having to deal with degenerate back-edges to the same
+   block, by splitting each BB into 3 -- one for input edges, one for
+   the node itself and one for the output edges.  Such back edges are
+   referred to as 'Brackets'.  Cycle equivalent nodes will have the
+   same set of brackets.
+   
+   Determining bracket equivalency is done by maintaining a list of
+   brackets in such a manner that the list length and final bracket
+   uniquely identify the set.
+
+   We use coloring to mark all BBs with cycle equivalency with the
+   same color.  This is the output of the 'Finding Regions Fast'
+   algorithm.  Notice it doesn't actually find the set of nodes within
+   a particular region, just unorderd sets of nodes that are the
+   entries and exits of SESE regions.
+   
+   After determining cycle equivalency, we need to find the minimal
+   set of SESE regions.  Do this with a DFS coloring walk of the
+   complete graph.  We're either 'looking' or 'coloring'.  When
+   looking, and we're in the subgraph, we start coloring the color of
+   the current node, and remember that node as the start of the
+   current color's SESE region.  Every time we go to a new node, we
+   decrement the count of nodes with thet color.  If it reaches zero,
+   we remember that node as the end of the current color's SESE region
+   and return to 'looking'.  Otherwise we color the node the current
+   color.
+
+   This way we end up with coloring the inside of non-trivial SESE
+   regions with the color of that region.  */
+
+/* A pair of BBs.  We use this to represent SESE regions.  */
+typedef std::pair<basic_block, basic_block> bb_pair_t;
+typedef auto_vec<bb_pair_t> bb_pair_vec_t;
+
+/* A node in the undirected CFG.  The discriminator SECOND indicates just
+   above or just below the BB idicated by FIRST.  */
+typedef std::pair<basic_block, int> pseudo_node_t;
+
+/* A bracket indicates an edge towards the root of the spanning tree of the
+   undirected graph.  Each bracket has a color, determined
+   from the currrent set of brackets.  */
+struct bracket
+{
+  pseudo_node_t back; /* Back target */
+
+  /* Current color and size of set.  */
+  unsigned color;
+  unsigned size;
+
+  bracket (pseudo_node_t back_)
+  : back (back_), color (~0u), size (~0u)
+  {
+  }
+
+  unsigned get_color (auto_vec<unsigned> &color_counts, unsigned length)
+  {
+    if (length != size)
+      {
+	size = length;
+	color = color_counts.length ();
+	color_counts.quick_push (0);
+      }
+    color_counts[color]++;
+    return color;
+  }
+};
+
+typedef auto_vec<bracket> bracket_vec_t;
+
+/* Basic block info for finding SESE regions.    */
+
+struct bb_sese
+{
+  int node;  /* Node number in spanning tree.  */
+  int parent; /* Parent node number.  */
+
+  /* The algorithm splits each node A into Ai, A', Ao. The incoming
+     edges arrive at pseudo-node Ai and the outgoing edges leave at
+     pseudo-node Ao.  We have to remember which way we arrived at a
+     particular node when generating the spanning tree.  dir > 0 means
+     we arrived at Ai, dir < 0 means we arrived at Ao.  */
+  int dir;
+
+  /* Lowest numbered pseudo-node reached via a backedge from thsis
+     node, or any descendant.  */
+  pseudo_node_t high;
+
+  int color;  /* Cycle-equivalence color  */
+
+  /* Stack of brackets for this node.  */
+  bracket_vec_t brackets;
+
+  bb_sese (unsigned node_, unsigned p, int dir_)
+  :node (node_), parent (p), dir (dir_)
+  {
+  }
+  ~bb_sese ();
+
+  /* Push a bracket ending at BACK.  */
+  void push (const pseudo_node_t &back)
+  {
+    if (dump_file)
+      fprintf (dump_file, "Pushing backedge %d:%+d\n",
+	       back.first ? back.first->index : 0, back.second);
+    brackets.safe_push (bracket (back));
+  }
+  
+  void append (bb_sese *child);
+  void remove (const pseudo_node_t &);
+
+  /* Set node's color.  */
+  void set_color (auto_vec<unsigned> &color_counts)
+  {
+    color = brackets.last ().get_color (color_counts, brackets.length ());
+  }
+};
+
+bb_sese::~bb_sese ()
+{
+}
+
+/* Destructively append CHILD's brackets.  */
+
+void
+bb_sese::append (bb_sese *child)
+{
+  if (int len = child->brackets.length ())
+    {
+      int ix;
+
+      if (dump_file)
+	{
+	  for (ix = 0; ix < len; ix++)
+	    {
+	      const pseudo_node_t &pseudo = child->brackets[ix].back;
+	      fprintf (dump_file, "Appending (%d)'s backedge %d:%+d\n",
+		       child->node, pseudo.first ? pseudo.first->index : 0,
+		       pseudo.second);
+	    }
+	}
+      if (!brackets.length ())
+	std::swap (brackets, child->brackets);
+      else
+	{
+	  brackets.reserve (len);
+	  for (ix = 0; ix < len; ix++)
+	    brackets.quick_push (child->brackets[ix]);
+	}
+    }
+}
+
+/* Remove brackets that terminate at PSEUDO.  */
+
+void
+bb_sese::remove (const pseudo_node_t &pseudo)
+{
+  unsigned removed = 0;
+  int len = brackets.length ();
+
+  for (int ix = 0; ix < len; ix++)
+    {
+      if (brackets[ix].back == pseudo)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Removing backedge %d:%+d\n",
+		     pseudo.first ? pseudo.first->index : 0, pseudo.second);
+	  removed++;
+	}
+      else if (removed)
+	brackets[ix-removed] = brackets[ix];
+    }
+  while (removed--)
+    brackets.pop ();
+}
+
+/* Accessors for BB's aux pointer.  */
+#define BB_SET_SESE(B, S) ((B)->aux = (S))
+#define BB_GET_SESE(B) ((bb_sese *)(B)->aux)
+
+/* DFS walk creating SESE data structures.  Only cover nodes with
+   BB_VISITED set.  Append discovered blocks to LIST.  We number in
+   increments of 3 so that the above and below pseudo nodes can be
+   implicitly numbered too.  */
+
+static int
+nvptx_sese_number (int n, int p, int dir, basic_block b,
+		   auto_vec<basic_block> *list)
+{
+  if (BB_GET_SESE (b))
+    return n;
+
+  if (dump_file)
+    fprintf (dump_file, "Block %d(%d), parent (%d), orientation %+d\n",
+	     b->index, n, p, dir);
+  
+  BB_SET_SESE (b, new bb_sese (n, p, dir));
+  p = n;
+      
+  n += 3;
+  list->quick_push (b);
+
+  /* First walk the nodes on the 'other side' of this node, then walk
+     the nodes on the same side.  */
+  for (unsigned ix = 2; ix; ix--)
+    {
+      vec<edge, va_gc> *edges = dir > 0 ? b->succs : b->preds;
+      size_t offset = (dir > 0 ? offsetof (edge_def, dest)
+		       : offsetof (edge_def, src));
+      edge e;
+      edge_iterator (ei);
+
+      FOR_EACH_EDGE (e, ei, edges)
+	{
+	  basic_block target = *(basic_block *)((char *)e + offset);
+	  
+	  if (target->flags & BB_VISITED)
+	    n = nvptx_sese_number (n, p, dir, target, list);
+	}
+      dir = -dir;
+    }
+  return n;
+}
+
+/* Process pseudo node above (DIR < 0) or below (DIR > 0) ME.
+   EDGES are the outgoing edges and OFFSET is the offset to the src
+   or dst block on the edges.   */
+
+static void
+nvptx_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
+		   vec<edge, va_gc> *edges, size_t offset)
+{
+  edge e;
+  edge_iterator (ei);
+  int hi_back = depth;
+  pseudo_node_t node_back (0, depth);
+  int hi_child = depth;
+  pseudo_node_t node_child (0, depth);
+  basic_block child = NULL;
+  unsigned num_children = 0;
+  int usd = -dir * sese->dir;
+
+  if (dump_file)
+    fprintf (dump_file, "\nProcessing %d(%d) %+d\n",
+	     me->index, sese->node, dir);
+
+  if (dir < 0)
+    {
+      /* This is the above pseudo-child.  It has the BB itself as an
+	 additional child node.  */
+      node_child = sese->high;
+      hi_child = node_child.second;
+      if (node_child.first)
+	hi_child += BB_GET_SESE (node_child.first)->node;
+      num_children++;
+    }
+
+  /* Examine each edge.
+     - if it is a child (a) append its bracket list and (b) record
+          whether it is the child with the highest reaching bracket.
+     - if it is an edge to ancestor, record whether it's the highest
+          reaching backlink.  */
+  FOR_EACH_EDGE (e, ei, edges)
+    {
+      basic_block target = *(basic_block *)((char *)e + offset);
+
+      if (bb_sese *t_sese = BB_GET_SESE (target))
+	{
+	  if (t_sese->parent == sese->node && !(t_sese->dir + usd))
+	    {
+	      /* Child node.  Append its bracket list. */
+	      num_children++;
+	      sese->append (t_sese);
+
+	      /* Compare it's hi value.  */
+	      int t_hi = t_sese->high.second;
+
+	      if (basic_block child_hi_block = t_sese->high.first)
+		t_hi += BB_GET_SESE (child_hi_block)->node;
+
+	      if (hi_child > t_hi)
+		{
+		  hi_child = t_hi;
+		  node_child = t_sese->high;
+		  child = target;
+		}
+	    }
+	  else if (t_sese->node < sese->node + dir
+		   && !(dir < 0 && sese->parent == t_sese->node))
+	    {
+	      /* Non-parental ancestor node -- a backlink.  */
+	      int d = usd * t_sese->dir;
+	      int back = t_sese->node + d;
+	
+	      if (hi_back > back)
+		{
+		  hi_back = back;
+		  node_back = pseudo_node_t (target, d);
+		}
+	    }
+	}
+      else
+	{ /* Fallen off graph, backlink to entry node.  */
+	  hi_back = 0;
+	  node_back = pseudo_node_t (0, 0);
+	}
+    }
+
+  /* Remove any brackets that terminate at this pseudo node.  */
+  sese->remove (pseudo_node_t (me, dir));
+
+  /* Now push any backlinks from this pseudo node.  */
+  FOR_EACH_EDGE (e, ei, edges)
+    {
+      basic_block target = *(basic_block *)((char *)e + offset);
+      if (bb_sese *t_sese = BB_GET_SESE (target))
+	{
+	  if (t_sese->node < sese->node + dir
+	      && !(dir < 0 && sese->parent == t_sese->node))
+	    /* Non-parental ancestor node - backedge from me.  */
+	    sese->push (pseudo_node_t (target, usd * t_sese->dir));
+	}
+      else
+	{
+	  /* back edge to entry node */
+	  sese->push (pseudo_node_t (0, 0));
+	}
+    }
+  
+ /* If this node leads directly or indirectly to a no-return region of
+     the graph, then fake a backedge to entry node.  */
+  if (!sese->brackets.length () || !edges || !edges->length ())
+    {
+      hi_back = 0;
+      node_back = pseudo_node_t (0, 0);
+      sese->push (node_back);
+    }
+
+  /* Record the highest reaching backedge from us or a descendant.  */
+  sese->high = hi_back < hi_child ? node_back : node_child;
+
+  if (num_children > 1)
+    {
+      /* There is more than one child -- this is a Y shaped piece of
+	 spanning tree.  We have to insert a fake backedge from this
+	 node to the highest ancestor reached by not-the-highest
+	 reaching child.  Note that there may be multiple children
+	 with backedges to the same highest node.  That's ok and we
+	 insert the edge to that highest node.  */
+      hi_child = depth;
+      if (dir < 0 && child)
+	{
+	  node_child = sese->high;
+	  hi_child = node_child.second;
+	  if (node_child.first)
+	    hi_child += BB_GET_SESE (node_child.first)->node;
+	}
+
+      FOR_EACH_EDGE (e, ei, edges)
+	{
+	  basic_block target = *(basic_block *)((char *)e + offset);
+
+	  if (target == child)
+	    /* Ignore the highest child. */
+	    continue;
+
+	  bb_sese *t_sese = BB_GET_SESE (target);
+	  if (!t_sese)
+	    continue;
+	  if (t_sese->parent != sese->node)
+	    /* Not a child. */
+	    continue;
+
+	  /* Compare its hi value.  */
+	  int t_hi = t_sese->high.second;
+
+	  if (basic_block child_hi_block = t_sese->high.first)
+	    t_hi += BB_GET_SESE (child_hi_block)->node;
+
+	  if (hi_child > t_hi)
+	    {
+	      hi_child = t_hi;
+	      node_child = t_sese->high;
+	    }
+	}
+      
+      sese->push (node_child);
+    }
+}
+
+
+/* DFS walk of BB graph.  Color node BLOCK according to COLORING then
+   proceed to successors.  Set SESE entry and exit nodes of
+   REGIONS.  */
+
+static void
+nvptx_sese_color (auto_vec<unsigned> &color_counts, bb_pair_vec_t &regions,
+		  basic_block block, int coloring)
+{
+  bb_sese *sese = BB_GET_SESE (block);
+
+  if (block->flags & BB_VISITED)
+    {
+      /* If we've already encountered this block, either we must not
+	 be coloring, or it must have been colored the current color.  */
+      gcc_assert (coloring < 0 || (sese && coloring == sese->color));
+      return;
+    }
+  
+  block->flags |= BB_VISITED;
+
+  if (sese)
+    {
+      if (coloring < 0)
+	{
+	  /* Start coloring a region.  */
+	  regions[sese->color].first = block;
+	  coloring = sese->color;
+	}
+
+      if (!--color_counts[sese->color] && sese->color == coloring)
+	{
+	  /* Found final block of SESE region.  */
+	  regions[sese->color].second = block;
+	  coloring = -1;
+	}
+      else
+	/* Color the node, so we can assert on revisiting the node
+	   that the graph is indeed SESE.  */
+	sese->color = coloring;
+    }
+  else
+    /* Fallen off the subgraph, we cannot be coloring.  */
+    gcc_assert (coloring < 0);
+
+  /* Walk each successor block.  */
+  if (block->succs && block->succs->length ())
+    {
+      edge e;
+      edge_iterator ei;
+      
+      FOR_EACH_EDGE (e, ei, block->succs)
+	nvptx_sese_color (color_counts, regions, e->dest, coloring);
+    }
+  else
+    gcc_assert (coloring < 0);
+}
+
+/* Find minimal set of SESE regions covering BLOCKS.  REGIONS might
+   end up with NULL entries in it.  */
+
+static void
+nvptx_find_sese (auto_vec<basic_block> &blocks, bb_pair_vec_t &regions)
+{
+  basic_block block;
+  int ix;
+
+  /* First clear each BB of the whole function.  */ 
+  FOR_EACH_BB_FN (block, cfun)
+    {
+      block->flags &= ~BB_VISITED;
+      BB_SET_SESE (block, 0);
+    }
+  block = EXIT_BLOCK_PTR_FOR_FN (cfun);
+  block->flags &= ~BB_VISITED;
+  BB_SET_SESE (block, 0);
+  block = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  block->flags &= ~BB_VISITED;
+  BB_SET_SESE (block, 0);
+
+  /* Mark blocks in the function that are in this graph.  */
+  for (ix = 0; blocks.iterate (ix, &block); ix++)
+    block->flags |= BB_VISITED;
+
+  /* Counts of nodes assigned to each color.  There cannot be more
+     colors than blocks (and hopefully there will be fewer).  */
+  auto_vec<unsigned> color_counts;
+  color_counts.reserve (blocks.length ());
+
+  /* Worklist of nodes in the spanning tree.  Again, there cannot be
+     more nodes in the tree than blocks (there will be fewer if the
+     CFG of blocks is disjoint).  */
+  auto_vec<basic_block> spanlist;
+  spanlist.reserve (blocks.length ());
+
+  /* Make sure every block has its cycle class determined.  */
+  for (ix = 0; blocks.iterate (ix, &block); ix++)
+    {
+      if (BB_GET_SESE (block))
+	/* We already met this block in an earlier graph solve.  */
+	continue;
+
+      if (dump_file)
+	fprintf (dump_file, "Searching graph starting at %d\n", block->index);
+      
+      /* Number the nodes reachable from block initial DFS order.  */
+      int depth = nvptx_sese_number (2, 0, +1, block, &spanlist);
+
+      /* Now walk in reverse DFS order to find cycle equivalents.  */
+      while (spanlist.length ())
+	{
+	  block = spanlist.pop ();
+	  bb_sese *sese = BB_GET_SESE (block);
+
+	  /* Do the pseudo node below.  */
+	  nvptx_sese_pseudo (block, sese, depth, +1,
+			     sese->dir > 0 ? block->succs : block->preds,
+			     (sese->dir > 0 ? offsetof (edge_def, dest)
+			      : offsetof (edge_def, src)));
+	  sese->set_color (color_counts);
+	  /* Do the pseudo node above.  */
+	  nvptx_sese_pseudo (block, sese, depth, -1,
+			     sese->dir < 0 ? block->succs : block->preds,
+			     (sese->dir < 0 ? offsetof (edge_def, dest)
+			      : offsetof (edge_def, src)));
+	}
+      if (dump_file)
+	fprintf (dump_file, "\n");
+    }
+
+  if (dump_file)
+    {
+      unsigned count;
+      const char *comma = "";
+      
+      fprintf (dump_file, "Found %d cycle equivalents\n",
+	       color_counts.length ());
+      for (ix = 0; color_counts.iterate (ix, &count); ix++)
+	{
+	  fprintf (dump_file, "%s%d[%d]={", comma, ix, count);
+
+	  comma = "";
+	  for (unsigned jx = 0; blocks.iterate (jx, &block); jx++)
+	    if (BB_GET_SESE (block)->color == ix)
+	      {
+		block->flags |= BB_VISITED;
+		fprintf (dump_file, "%s%d", comma, block->index);
+		comma=",";
+	      }
+	  fprintf (dump_file, "}");
+	  comma = ", ";
+	}
+      fprintf (dump_file, "\n");
+   }
+  
+  /* Now we've colored every block in the subgraph.  We now need to
+     determine the minimal set of SESE regions that cover that
+     subgraph.  Do this with a DFS walk of the complete function.
+     During the walk we're either 'looking' or 'coloring'.  When we
+     reach the last node of a particular color, we stop coloring and
+     return to looking.  */
+
+  /* There cannot be more SESE regions than colors.  */
+  regions.reserve (color_counts.length ());
+  for (ix = color_counts.length (); ix--;)
+    regions.quick_push (bb_pair_t (0, 0));
+
+  for (ix = 0; blocks.iterate (ix, &block); ix++)
+    block->flags &= ~BB_VISITED;
+
+  nvptx_sese_color (color_counts, regions, ENTRY_BLOCK_PTR_FOR_FN (cfun), -1);
+
+  if (dump_file)
+    {
+      const char *comma = "";
+      int len = regions.length ();
+      
+      fprintf (dump_file, "SESE regions:");
+      for (ix = 0; ix != len; ix++)
+	{
+	  basic_block from = regions[ix].first;
+	  basic_block to = regions[ix].second;
+
+	  if (from)
+	    {
+	      fprintf (dump_file, "%s %d{%d", comma, ix, from->index);
+	      if (to != from)
+		fprintf (dump_file, "->%d", to->index);
+
+	      int color = BB_GET_SESE (from)->color;
+
+	      /* Print the blocks within the region (excluding ends).  */
+	      FOR_EACH_BB_FN (block, cfun)
+		{
+		  bb_sese *sese = BB_GET_SESE (block);
+
+		  if (sese && sese->color == color
+		      && block != from && block != to)
+		    fprintf (dump_file, ".%d", block->index);
+		}
+	      fprintf (dump_file, "}");
+	    }
+	  comma = ",";
+	}
+      fprintf (dump_file, "\n\n");
+    }
+  
+  for (ix = 0; blocks.iterate (ix, &block); ix++)
+    delete BB_GET_SESE (block);
+}
+
+#undef BB_SET_SESE
+#undef BB_GET_SESE
+
 /* Propagate live state at the start of a partitioned region.  BLOCK
    provides the live register information, and might not contain
    INSN. Propagation is inserted just after INSN. RW indicates whether
@@ -3086,14 +3711,36 @@ nvptx_neuter_pars (parallel *par, unsigned modes, unsigned outer)
 
   if (neuter_mask)
     {
-      int ix;
-      int len = par->blocks.length ();
+      int ix, len;
 
-      for (ix = 0; ix != len; ix++)
+      if (nvptx_optimize)
 	{
-	  basic_block block = par->blocks[ix];
+	  /* Neuter whole SESE regions.  */
+	  bb_pair_vec_t regions;
 
-	  nvptx_single (neuter_mask, block, block);
+	  nvptx_find_sese (par->blocks, regions);
+	  len = regions.length ();
+	  for (ix = 0; ix != len; ix++)
+	    {
+	      basic_block from = regions[ix].first;
+	      basic_block to = regions[ix].second;
+
+	      if (from)
+		nvptx_single (neuter_mask, from, to);
+	      else
+		gcc_assert (!to);
+	    }
+	}
+      else
+	{
+	  /* Neuter each BB individually.  */
+	  len = par->blocks.length ();
+	  for (ix = 0; ix != len; ix++)
+	    {
+	      basic_block block = par->blocks[ix];
+
+	      nvptx_single (neuter_mask, block, block);
+	    }
 	}
     }
 
