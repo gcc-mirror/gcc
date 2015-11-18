@@ -74,6 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-chkp.h"
 #include "dbgcnt.h"
 #include "case-cfn-macros.h"
+#include "regrename.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -3972,6 +3973,15 @@ ix86_debug_options (void)
     fputs ("<no options>\n\n", stderr);
 
   return;
+}
+
+/* Return true if T is one of the bytes we should avoid with
+   -fmitigate-rop.  */
+
+static bool
+ix86_rop_should_change_byte_p (int t)
+{
+  return t == 0xc2 || t == 0xc3 || t == 0xca || t == 0xcb;
 }
 
 static const char *stringop_alg_names[] = {
@@ -27303,6 +27313,100 @@ ix86_instantiate_decls (void)
       instantiate_decl_rtl (s->rtl);
 }
 
+/* Return the number used for encoding REG, in the range 0..7.  */
+
+static int
+reg_encoded_number (rtx reg)
+{
+  unsigned regno = REGNO (reg);
+  switch (regno)
+    {
+    case AX_REG:
+      return 0;
+    case CX_REG:
+      return 1;
+    case DX_REG:
+      return 2;
+    case BX_REG:
+      return 3;
+    case SP_REG:
+      return 4;
+    case BP_REG:
+      return 5;
+    case SI_REG:
+      return 6;
+    case DI_REG:
+      return 7;
+    default:
+      break;
+    }
+  if (IN_RANGE (regno, FIRST_STACK_REG, LAST_STACK_REG))
+    return regno - FIRST_STACK_REG;
+  if (IN_RANGE (regno, FIRST_SSE_REG, LAST_SSE_REG))
+    return regno - FIRST_SSE_REG;
+  if (IN_RANGE (regno, FIRST_MMX_REG, LAST_MMX_REG))
+    return regno - FIRST_MMX_REG;
+  if (IN_RANGE (regno, FIRST_REX_SSE_REG, LAST_REX_SSE_REG))
+    return regno - FIRST_REX_SSE_REG;
+  if (IN_RANGE (regno, FIRST_REX_INT_REG, LAST_REX_INT_REG))
+    return regno - FIRST_REX_INT_REG;
+  if (IN_RANGE (regno, FIRST_MASK_REG, LAST_MASK_REG))
+    return regno - FIRST_MASK_REG;
+  if (IN_RANGE (regno, FIRST_BND_REG, LAST_BND_REG))
+    return regno - FIRST_BND_REG;
+  return -1;
+}
+
+/* Given an insn INSN with NOPERANDS OPERANDS, return the modr/m byte used
+   in its encoding if it could be relevant for ROP mitigation, otherwise
+   return -1.  If POPNO0 and POPNO1 are nonnull, store the operand numbers
+   used for calculating it into them.  */
+
+static int
+ix86_get_modrm_for_rop (rtx_insn *insn, rtx *operands, int noperands,
+			int *popno0 = 0, int *popno1 = 0)
+{
+  if (asm_noperands (PATTERN (insn)) >= 0)
+    return -1;
+  int has_modrm = get_attr_modrm (insn);
+  if (!has_modrm)
+    return -1;
+  enum attr_modrm_class cls = get_attr_modrm_class (insn);
+  rtx op0, op1;
+  switch (cls)
+    {
+    case MODRM_CLASS_OP02:
+      gcc_assert (noperands >= 3);
+      if (popno0)
+	{
+	  *popno0 = 0;
+	  *popno1 = 2;
+	}
+      op0 = operands[0];
+      op1 = operands[2];
+      break;
+    case MODRM_CLASS_OP01:
+      gcc_assert (noperands >= 2);
+      if (popno0)
+	{
+	  *popno0 = 0;
+	  *popno1 = 1;
+	}
+      op0 = operands[0];
+      op1 = operands[1];
+      break;
+    default:
+      return -1;
+    }
+  if (REG_P (op0) && REG_P (op1))
+    {
+      int enc0 = reg_encoded_number (op0);
+      int enc1 = reg_encoded_number (op1);
+      return 0xc0 + (enc1 << 3) + enc0;
+    }
+  return -1;
+}
+
 /* Check whether x86 address PARTS is a pc-relative address.  */
 
 static bool
@@ -45098,6 +45202,215 @@ ix86_seh_fixup_eh_fallthru (void)
     }
 }
 
+/* Given a register number BASE, the lowest of a group of registers, update
+   regsets IN and OUT with the registers that should be avoided in input
+   and output operands respectively when trying to avoid generating a modr/m
+   byte for -fmitigate-rop.  */
+
+static void
+set_rop_modrm_reg_bits (int base, HARD_REG_SET &in, HARD_REG_SET &out)
+{
+  SET_HARD_REG_BIT (out, base);
+  SET_HARD_REG_BIT (out, base + 1);
+  SET_HARD_REG_BIT (in, base + 2);
+  SET_HARD_REG_BIT (in, base + 3);
+}
+
+/* Called if -fmitigate_rop is in effect.  Try to rewrite instructions so
+   that certain encodings of modr/m bytes do not occur.  */
+static void
+ix86_mitigate_rop (void)
+{
+  HARD_REG_SET input_risky;
+  HARD_REG_SET output_risky;
+  HARD_REG_SET inout_risky;
+
+  CLEAR_HARD_REG_SET (output_risky);
+  CLEAR_HARD_REG_SET (input_risky);
+  SET_HARD_REG_BIT (output_risky, AX_REG);
+  SET_HARD_REG_BIT (output_risky, CX_REG);
+  SET_HARD_REG_BIT (input_risky, BX_REG);
+  SET_HARD_REG_BIT (input_risky, DX_REG);
+  set_rop_modrm_reg_bits (FIRST_SSE_REG, input_risky, output_risky);
+  set_rop_modrm_reg_bits (FIRST_REX_INT_REG, input_risky, output_risky);
+  set_rop_modrm_reg_bits (FIRST_REX_SSE_REG, input_risky, output_risky);
+  set_rop_modrm_reg_bits (FIRST_EXT_REX_SSE_REG, input_risky, output_risky);
+  set_rop_modrm_reg_bits (FIRST_MASK_REG, input_risky, output_risky);
+  set_rop_modrm_reg_bits (FIRST_BND_REG, input_risky, output_risky);
+  COPY_HARD_REG_SET (inout_risky, input_risky);
+  IOR_HARD_REG_SET (inout_risky, output_risky);
+
+  compute_bb_for_insn ();
+  df_note_add_problem ();
+  df_analyze ();
+
+  regrename_init (true);
+  regrename_analyze (NULL);
+
+  auto_vec<du_head_p> cands;
+  
+  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+
+      if (GET_CODE (PATTERN (insn)) == USE
+	  || GET_CODE (PATTERN (insn)) == CLOBBER)
+	continue;
+
+      extract_insn (insn);
+
+      int opno0, opno1;
+      int modrm = ix86_get_modrm_for_rop (insn, recog_data.operand,
+					  recog_data.n_operands, &opno0,
+					  &opno1);
+
+      if (!ix86_rop_should_change_byte_p (modrm))
+	continue;
+
+      insn_rr_info *info = &insn_rr[INSN_UID (insn)];
+
+      /* This happens when regrename has to fail a block.  */
+      if (!info->op_info)
+	continue;
+
+      if (info->op_info[opno0].n_chains != 0)
+	{
+	  gcc_assert (info->op_info[opno0].n_chains == 1);
+	  du_head_p op0c;
+	  op0c = regrename_chain_from_id (info->op_info[opno0].heads[0]->id);
+	  if (op0c->target_data_1 + op0c->target_data_2 == 0
+	      && !op0c->cannot_rename)
+	    cands.safe_push (op0c);
+
+	  op0c->target_data_1++;
+	}
+      if (info->op_info[opno1].n_chains != 0)
+	{
+	  gcc_assert (info->op_info[opno1].n_chains == 1);
+	  du_head_p op1c;
+	  op1c = regrename_chain_from_id (info->op_info[opno1].heads[0]->id);
+	  if (op1c->target_data_1 + op1c->target_data_2 == 0
+	      && !op1c->cannot_rename)
+	    cands.safe_push (op1c);
+
+	  op1c->target_data_2++;
+	}
+    }
+
+  int i;
+  du_head_p head;
+  FOR_EACH_VEC_ELT (cands, i, head)
+    {
+      int old_reg, best_reg;
+      HARD_REG_SET unavailable;
+
+      CLEAR_HARD_REG_SET (unavailable);
+      if (head->target_data_1)
+	IOR_HARD_REG_SET (unavailable, output_risky);
+      if (head->target_data_2)
+	IOR_HARD_REG_SET (unavailable, input_risky);
+
+      int n_uses;
+      reg_class superclass = regrename_find_superclass (head, &n_uses,
+							&unavailable);
+      old_reg = head->regno;
+      best_reg = find_rename_reg (head, superclass, &unavailable,
+				  old_reg, false);
+      bool ok = regrename_do_replace (head, best_reg);
+      gcc_assert (ok);
+      if (dump_file)
+	fprintf (dump_file, "Chain %d renamed as %s in %s\n", head->id,
+		 reg_names[best_reg], reg_class_names[superclass]);
+
+    }
+  
+  regrename_finish ();
+
+  df_analyze ();
+
+  basic_block bb;
+  regset_head live;
+
+  INIT_REG_SET (&live);
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      rtx_insn *insn;
+
+      COPY_REG_SET (&live, DF_LR_OUT (bb));
+      df_simulate_initialize_backwards (bb, &live);
+
+      FOR_BB_INSNS_REVERSE (bb, insn)
+	{
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+
+	  df_simulate_one_insn_backwards (bb, insn, &live);
+
+	  if (GET_CODE (PATTERN (insn)) == USE
+	      || GET_CODE (PATTERN (insn)) == CLOBBER)
+	    continue;
+
+	  extract_insn (insn);
+	  constrain_operands_cached (insn, reload_completed);
+	  int opno0, opno1;
+	  int modrm = ix86_get_modrm_for_rop (insn, recog_data.operand,
+					      recog_data.n_operands, &opno0,
+					      &opno1);
+	  if (modrm < 0
+	      || !ix86_rop_should_change_byte_p (modrm)
+	      || opno0 == opno1)
+	    continue;
+
+	  rtx oldreg = recog_data.operand[opno1];
+	  preprocess_constraints (insn);
+	  const operand_alternative *alt = which_op_alt ();
+
+	  int i;
+	  for (i = 0; i < recog_data.n_operands; i++)
+	    if (i != opno1
+		&& alt[i].earlyclobber
+		&& reg_overlap_mentioned_p (recog_data.operand[i],
+					    oldreg))
+	      break;
+
+	  if (i < recog_data.n_operands)
+	    continue;
+
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "attempting to fix modrm byte in insn %d:"
+		     " reg %d class %s", INSN_UID (insn), REGNO (oldreg),
+		     reg_class_names[alt[opno1].cl]);
+
+	  HARD_REG_SET unavailable;
+	  REG_SET_TO_HARD_REG_SET (unavailable, &live);
+	  SET_HARD_REG_BIT (unavailable, REGNO (oldreg));
+	  IOR_COMPL_HARD_REG_SET (unavailable, call_used_reg_set);
+	  IOR_HARD_REG_SET (unavailable, fixed_reg_set);
+	  IOR_HARD_REG_SET (unavailable, output_risky);
+	  IOR_COMPL_HARD_REG_SET (unavailable,
+				  reg_class_contents[alt[opno1].cl]);
+
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	      if (!TEST_HARD_REG_BIT (unavailable, i))
+		break;
+	  if (i == FIRST_PSEUDO_REGISTER)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, ", none available\n");
+	      continue;
+	    }
+	  if (dump_file)
+	    fprintf (dump_file, " -> %d\n", i);
+	  rtx newreg = gen_rtx_REG (recog_data.operand_mode[opno1], i);
+	  validate_change (insn, recog_data.operand_loc[opno1], newreg, false);
+	  insn = emit_insn_before (gen_move_insn (newreg, oldreg), insn);
+	}
+    }
+}
+
 /* Implement machine specific optimizations.  We implement padding of returns
    for K8 CPUs and pass to avoid 4 jumps in the single 16 byte window.  */
 static void
@@ -45107,6 +45420,9 @@ ix86_reorg (void)
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
   compute_bb_for_insn ();
 
+  if (flag_mitigate_rop)
+    ix86_mitigate_rop ();
+  
   if (TARGET_SEH && current_function_has_exception_handlers ())
     ix86_seh_fixup_eh_fallthru ();
 

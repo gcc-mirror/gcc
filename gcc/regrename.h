@@ -49,6 +49,10 @@ struct du_head
   unsigned int cannot_rename:1;
   /* Nonzero if the chain has already been renamed.  */
   unsigned int renamed:1;
+
+  /* Fields for use by target code.  */
+  unsigned int target_data_1;
+  unsigned int target_data_2;
 };
 
 typedef struct du_head *du_head_p;

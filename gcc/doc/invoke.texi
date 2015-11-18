@@ -1116,7 +1116,8 @@ See RS/6000 and PowerPC Options.
 -m32 -m64 -mx32 -m16 -miamcu -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -mrecord-mcount -mnop-mcount -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
--malign-data=@var{type} -mstack-protector-guard=@var{guard}}
+-malign-data=@var{type} -mstack-protector-guard=@var{guard} @gol
+-mmitigate-rop}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll @gol
@@ -23707,6 +23708,13 @@ Generate stack protection code using canary at @var{guard}.  Supported
 locations are @samp{global} for global canary or @samp{tls} for per-thread
 canary in the TLS block (the default).  This option has effect only when
 @option{-fstack-protector} or @option{-fstack-protector-all} is specified.
+
+@item -mmitigate-rop
+@opindex mmitigate-rop
+Try to avoid generating code sequences that contain unintended return
+opcodes, to mitigate against certain forms of attack. At the moment,
+this option is limited in what it can do and should not be relied
+on to provide serious protection.
 
 @end table
 
