@@ -447,12 +447,13 @@ package body Bcheck is
    ---------------------------------------------------
 
    --  The rule here is that if a unit has dynamic elaboration checks,
-   --  then any unit it withs must meeting one of the following criteria:
+   --  then any unit it withs must meet one of the following criteria:
 
    --    1. There is a pragma Elaborate_All for the with'ed unit
    --    2. The with'ed unit was compiled with dynamic elaboration checks
    --    3. The with'ed unit has pragma Preelaborate or Pure
    --    4. It is an internal GNAT unit (including children of GNAT)
+   --    5. It is an interface of a Stand-Aline Library
 
    procedure Check_Consistent_Dynamic_Elaboration_Checking is
    begin
@@ -494,6 +495,11 @@ package body Bcheck is
                               --  Case 4. With'ed unit is internal file
 
                               elsif Is_Internal_File_Name (WU.Sfile) then
+                                 null;
+
+                              --  Case 5. With'ed unit is a SAL interface
+
+                              elsif WU.SAL_Interface then
                                  null;
 
                               --  Issue warning, not one of the safe cases

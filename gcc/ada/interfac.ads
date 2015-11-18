@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -64,6 +64,11 @@ package Interfaces is
 
    type Unsigned_16 is mod 2 ** 16;
    for Unsigned_16'Size use 16;
+
+   type Unsigned_24 is mod 2 ** 24;
+   for Unsigned_24'Size use 24;
+   --  Declare this type for compatibility with legacy Ada compilers.
+   --  This is particularly useful in the context of CodePeer analysis.
 
    type Unsigned_32 is mod 2 ** 32;
    for Unsigned_32'Size use 32;

@@ -13570,9 +13570,13 @@ package body Sem_Ch13 is
          Target := Underlying_Type (Target);
       end if;
 
-      --  Source may be unconstrained array, but not target
+      --  Source may be unconstrained array, but not target, except in relaxed
+      --  semantics mode.
 
-      if Is_Array_Type (Target) and then not Is_Constrained (Target) then
+      if Is_Array_Type (Target)
+        and then not Is_Constrained (Target)
+        and then not Relaxed_RM_Semantics
+      then
          Error_Msg_N
            ("unchecked conversion to unconstrained array not allowed", N);
          return;
