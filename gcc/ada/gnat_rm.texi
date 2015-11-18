@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , November 13, 2015
+GNAT Reference Manual , November 18, 2015
 
 AdaCore
 
@@ -1369,8 +1369,50 @@ sequence).
 @section Pragma Abstract_State
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.4.
+Syntax:
+
+@example
+pragma Abstract_State (ABSTRACT_STATE_LIST);
+
+ABSTRACT_STATE_LIST ::=
+     null
+  |  STATE_NAME_WITH_OPTIONS
+  | (STATE_NAME_WITH_OPTIONS @{, STATE_NAME_WITH_OPTIONS@} )
+
+STATE_NAME_WITH_OPTIONS ::=
+     STATE_NAME
+  | (STATE_NAME with OPTION_LIST)
+
+OPTION_LIST ::= OPTION @{, OPTION@}
+
+OPTION ::=
+    SIMPLE_OPTION
+  | NAME_VALUE_OPTION
+
+SIMPLE_OPTION ::= Ghost | Synchronous
+
+NAME_VALUE_OPTION ::=
+    Part_Of => ABSTRACT_STATE
+  | External [=> EXTERNAL_PROPERTY_LIST]
+
+EXTERNAL_PROPERTY_LIST ::=
+     EXTERNAL_PROPERTY
+  | (EXTERNAL_PROPERTY @{, EXTERNAL_PROPERTY@} )
+
+EXTERNAL_PROPERTY ::=
+    Async_Readers    [=> boolean_EXPRESSION]
+  | Async_Writers    [=> boolean_EXPRESSION]
+  | Effective_Reads  [=> boolean_EXPRESSION]
+  | Effective_Writes [=> boolean_EXPRESSION]
+    others            => boolean_EXPRESSION
+
+STATE_NAME ::= defining_identifier
+
+ABSTRACT_STATE ::= name
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Abstract_State} in
+the SPARK 2014 Reference Manual, section 7.1.4.
 
 @node Pragma Ada_83,Pragma Ada_95,Pragma Abstract_State,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-ada-83}@anchor{1d}
@@ -1858,16 +1900,28 @@ case, and it is recommended that these two options not be used together.
 @section Pragma Async_Readers
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.2.
+Syntax:
+
+@example
+pragma Asynch_Readers   [ (boolean_EXPRESSION) ];
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Async_Readers} in
+the SPARK 2014 Reference Manual, section 7.1.2.
 
 @node Pragma Async_Writers,Pragma Attribute_Definition,Pragma Async_Readers,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-async-writers}@anchor{2b}
 @section Pragma Async_Writers
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.2.
+Syntax:
+
+@example
+pragma Asynch_Writers   [ (boolean_EXPRESSION) ];
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Async_Writers} in
+the SPARK 2014 Reference Manual, section 7.1.2.
 
 @node Pragma Attribute_Definition,Pragma C_Pass_By_Copy,Pragma Async_Writers,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-attribute-definition}@anchor{2c}
@@ -2421,8 +2475,14 @@ clause), the GNAT uses the default alignment as described previously.
 @section Pragma Constant_After_Elaboration
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 3.3.1.
+Syntax:
+
+@example
+pragma Constant_After_Elaboration [ (boolean_EXPRESSION) ];
+@end example
+
+For the semantics of this pragma, see the entry for aspect
+@cite{Constant_After_Elaboration} in the SPARK 2014 Reference Manual, section 3.3.1.
 
 @node Pragma Contract_Cases,Pragma Convention_Identifier,Pragma Constant_After_Elaboration,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-contract-cases}@anchor{3c}
@@ -2434,9 +2494,13 @@ section 3.3.1.
 Syntax:
 
 @example
-pragma Contract_Cases (
-   Condition => Consequence
- @{,Condition => Consequence@});
+pragma Contract_Cases ((CONTRACT_CASE @{, CONTRACT_CASE));
+
+CONTRACT_CASE ::= CASE_GUARD => CONSEQUENCE
+
+CASE_GUARD ::= boolean_EXPRESSION | others
+
+CONSEQUENCE ::= boolean_EXPRESSION
 @end example
 
 The @cite{Contract_Cases} pragma allows defining fine-grain specifications
@@ -2684,8 +2748,14 @@ See Ada 2012 Reference Manual for details.
 @section Pragma Default_Initial_Condition
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.3.3.
+Syntax:
+
+@example
+pragma Default_Initial_Condition [ (null | boolean_EXPRESSION) ];
+@end example
+
+For the semantics of this pragma, see the entry for aspect
+@cite{Default_Initial_Condition} in the SPARK 2014 Reference Manual, section 7.3.3.
 
 @node Pragma Debug,Pragma Debug_Policy,Pragma Default_Initial_Condition,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-debug}@anchor{45}
@@ -2825,8 +2895,33 @@ See Ada 2012 Reference Manual for details.
 @section Pragma Depends
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.1.5.
+Syntax:
+
+@example
+pragma Depends (DEPENDENCY_RELATION);
+
+DEPENDENCY_RELATION ::=
+     null
+  | (DEPENDENCY_CLAUSE @{, DEPENDENCY_CLAUSE@})
+
+DEPENDENCY_CLAUSE ::=
+    OUTPUT_LIST =>[+] INPUT_LIST
+  | NULL_DEPENDENCY_CLAUSE
+
+NULL_DEPENDENCY_CLAUSE ::= null => INPUT_LIST
+
+OUTPUT_LIST ::= OUTPUT | (OUTPUT @{, OUTPUT@})
+
+INPUT_LIST ::= null | INPUT | (INPUT @{, INPUT@})
+
+OUTPUT ::= NAME | FUNCTION_RESULT
+INPUT  ::= NAME
+
+where FUNCTION_RESULT is a function Result attribute_reference
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Depends} in the
+SPARK 2014 Reference Manual, section 6.1.5.
 
 @node Pragma Detect_Blocking,Pragma Disable_Atomic_Synchronization,Pragma Depends,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-detect-blocking}@anchor{4a}
@@ -2892,16 +2987,28 @@ See Ada 2012 Reference Manual for details.
 @section Pragma Effective_Reads
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.2.
+Syntax:
+
+@example
+pragma Effective_Reads  [ (boolean_EXPRESSION) ];
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Effective_Reads} in
+the SPARK 2014 Reference Manual, section 7.1.2.
 
 @node Pragma Effective_Writes,Pragma Elaboration_Checks,Pragma Effective_Reads,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-effective-writes}@anchor{4e}
 @section Pragma Effective_Writes
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.2.
+Syntax:
+
+@example
+pragma Effective_Writes [ (boolean_EXPRESSION) ];
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Effective_Writes}
+in the SPARK 2014 Reference Manual, section 7.1.2.
 
 @node Pragma Elaboration_Checks,Pragma Eliminate,Pragma Effective_Writes,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-elaboration-checks}@anchor{4f}
@@ -3349,8 +3456,14 @@ is constrained.
 @section Pragma Extensions_Visible
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.1.7.
+Syntax:
+
+@example
+pragma Extensions_Visible [ (boolean_EXPRESSION) ];
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Extensions_Visible}
+in the SPARK 2014 Reference Manual, section 6.1.7.
 
 @node Pragma External,Pragma External_Name_Casing,Pragma Extensions_Visible,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-external}@anchor{5a}
@@ -3568,16 +3681,39 @@ No other value of digits is permitted.
 @section Pragma Ghost
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.9.
+Syntax:
+
+@example
+pragma Ghost [ (boolean_EXPRESSION) ];
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Ghost} in the SPARK
+2014 Reference Manual, section 6.9.
 
 @node Pragma Global,Pragma Ident,Pragma Ghost,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-global}@anchor{61}
 @section Pragma Global
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.1.4.
+Syntax:
+
+@example
+pragma Global (GLOBAL_SPECIFICATION);
+
+GLOBAL_SPECIFICATION ::=
+     null
+  | (GLOBAL_LIST)
+  | (MODED_GLOBAL_LIST @{, MODED_GLOBAL_LIST@})
+
+MODED_GLOBAL_LIST ::= MODE_SELECTOR => GLOBAL_LIST
+
+MODE_SELECTOR ::= In_Out | Input | Output | Proof_In
+GLOBAL_LIST   ::= GLOBAL_ITEM | (GLOBAL_ITEM @{, GLOBAL_ITEM@})
+GLOBAL_ITEM   ::= NAME
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Global} in the
+SPARK 2014 Reference Manual, section 6.1.4.
 
 @node Pragma Ident,Pragma Ignore_Pragma,Pragma Global,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-ident}@anchor{62}
@@ -3972,8 +4108,14 @@ tight packing).
 @section Pragma Initial_Condition
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.6.
+Syntax:
+
+@example
+pragma Initial_Condition (boolean_EXPRESSION);
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Initial_Condition}
+in the SPARK 2014 Reference Manual, section 7.1.6.
 
 @node Pragma Initialize_Scalars,Pragma Initializes,Pragma Initial_Condition,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-initialize-scalars}@anchor{6e}
@@ -4043,8 +4185,27 @@ User's Guide) when using this pragma.
 @section Pragma Initializes
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.5.
+Syntax:
+
+@example
+pragma Initializes (INITIALIZATION_LIST);
+
+INITIALIZATION_LIST ::=
+     null
+  | (INITIALIZATION_ITEM @{, INITIALIZATION_ITEM@})
+
+INITIALIZATION_ITEM ::= name [=> INPUT_LIST]
+
+INPUT_LIST ::=
+     null
+  |  INPUT
+  | (INPUT @{, INPUT@})
+
+INPUT ::= name
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Initializes} in the
+SPARK 2014 Reference Manual, section 7.1.5.
 
 @node Pragma Inline_Always,Pragma Inline_Generic,Pragma Initializes,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-inline-always}@anchor{70}
@@ -5400,8 +5561,16 @@ See Ada 2012 Reference Manual for details.
 @section Pragma Part_Of
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.2.6.
+Syntax:
+
+@example
+pragma Part_Of (ABSTRACT_STATE);
+
+ABSTRACT_STATE ::= NAME
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Part_Of} in the
+SPARK 2014 Reference Manual, section 7.2.6.
 
 @node Pragma Passive,Pragma Persistent_BSS,Pragma Part_Of,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-passive}@anchor{95}
@@ -6430,32 +6599,98 @@ which is the preferred method of setting the @cite{Ravenscar} profile.
 @section Pragma Refined_Depends
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.1.5.
+Syntax:
+
+@example
+pragma Refined_Depends (DEPENDENCY_RELATION);
+
+DEPENDENCY_RELATION ::=
+     null
+  | (DEPENDENCY_CLAUSE @{, DEPENDENCY_CLAUSE@})
+
+DEPENDENCY_CLAUSE ::=
+    OUTPUT_LIST =>[+] INPUT_LIST
+  | NULL_DEPENDENCY_CLAUSE
+
+NULL_DEPENDENCY_CLAUSE ::= null => INPUT_LIST
+
+OUTPUT_LIST ::= OUTPUT | (OUTPUT @{, OUTPUT@})
+
+INPUT_LIST ::= null | INPUT | (INPUT @{, INPUT@})
+
+OUTPUT ::= NAME | FUNCTION_RESULT
+INPUT  ::= NAME
+
+where FUNCTION_RESULT is a function Result attribute_reference
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Refined_Depends} in
+the SPARK 2014 Reference Manual, section 6.1.5.
 
 @node Pragma Refined_Global,Pragma Refined_Post,Pragma Refined_Depends,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-refined-global}@anchor{ac}
 @section Pragma Refined_Global
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.1.4.
+Syntax:
+
+@example
+pragma Refined_Global (GLOBAL_SPECIFICATION);
+
+GLOBAL_SPECIFICATION ::=
+     null
+  | (GLOBAL_LIST)
+  | (MODED_GLOBAL_LIST @{, MODED_GLOBAL_LIST@})
+
+MODED_GLOBAL_LIST ::= MODE_SELECTOR => GLOBAL_LIST
+
+MODE_SELECTOR ::= In_Out | Input | Output | Proof_In
+GLOBAL_LIST   ::= GLOBAL_ITEM | (GLOBAL_ITEM @{, GLOBAL_ITEM@})
+GLOBAL_ITEM   ::= NAME
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Refined_Global} in
+the SPARK 2014 Reference Manual, section 6.1.4.
 
 @node Pragma Refined_Post,Pragma Refined_State,Pragma Refined_Global,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-refined-post}@anchor{ad}
 @section Pragma Refined_Post
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.2.7.
+Syntax:
+
+@example
+pragma Refined_Post (boolean_EXPRESSION);
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Refined_Post} in
+the SPARK 2014 Reference Manual, section 7.2.7.
 
 @node Pragma Refined_State,Pragma Relative_Deadline,Pragma Refined_Post,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-refined-state}@anchor{ae}
 @section Pragma Refined_State
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.2.2.
+Syntax:
+
+@example
+pragma Refined_State (REFINEMENT_LIST);
+
+REFINEMENT_LIST ::=
+  (REFINEMENT_CLAUSE @{, REFINEMENT_CLAUSE@})
+
+REFINEMENT_CLAUSE ::= state_NAME => CONSTITUENT_LIST
+
+CONSTITUENT_LIST ::=
+     null
+  |  CONSTITUENT
+  | (CONSTITUENT @{, CONSTITUENT@})
+
+CONSTITUENT ::= object_NAME | state_NAME
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Refined_State} in
+the SPARK 2014 Reference Manual, section 7.2.2.
 
 @node Pragma Relative_Deadline,Pragma Remote_Access_Type,Pragma Refined_State,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-relative-deadline}@anchor{af}
@@ -8093,8 +8328,14 @@ It is not permissible to specify @cite{Volatile_Full_Access} for a composite
 @section Pragma Volatile_Function
 
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.2.
+Syntax:
+
+@example
+pragma Volatile_Function [ (boolean_EXPRESSION) ];
+@end example
+
+For the semantics of this pragma, see the entry for aspect @cite{Volatile_Function}
+in the SPARK 2014 Reference Manual, section 7.1.2.
 
 @node Pragma Warning_As_Error,Pragma Warnings,Pragma Volatile_Function,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-warning-as-error}@anchor{e0}
@@ -12208,7 +12449,7 @@ barriers are restricted to:
 @itemize *
 
 @item 
-simple boolean variables defined in the private part of the
+simple variables defined in the private part of the
 protected type/object,
 
 @item 
