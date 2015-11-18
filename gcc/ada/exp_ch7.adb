@@ -1323,13 +1323,6 @@ package body Exp_Ch7 is
       ----------------------
 
       procedure Create_Finalizer is
-         Body_Id    : Entity_Id;
-         Fin_Body   : Node_Id;
-         Fin_Spec   : Node_Id;
-         Jump_Block : Node_Id;
-         Label      : Node_Id;
-         Label_Id   : Entity_Id;
-
          function New_Finalizer_Name return Name_Id;
          --  Create a fully qualified name of a package spec or body finalizer.
          --  The generated name is of the form: xx__yy__finalize_[spec|body].
@@ -1379,6 +1372,15 @@ package body Exp_Ch7 is
 
             return Name_Find;
          end New_Finalizer_Name;
+
+         --  Local variables
+
+         Body_Id    : Entity_Id;
+         Fin_Body   : Node_Id;
+         Fin_Spec   : Node_Id;
+         Jump_Block : Node_Id;
+         Label      : Node_Id;
+         Label_Id   : Entity_Id;
 
       --  Start of processing for Create_Finalizer
 
@@ -1532,16 +1534,17 @@ package body Exp_Ch7 is
 
          --  Protect the statements with abort defer/undefer. This is only when
          --  aborts are allowed and the clean up statements require deferral or
-         --  there are controlled objects to be finalized.
+         --  there are controlled objects to be finalized. Note that the abort
+         --  defer/undefer pair does not require an extra block because each
+         --  finalization exception is caught in its corresponding finalization
+         --  block. As a result, the call to Abort_Defer always takes place.
 
          if Abort_Allowed and then (Defer_Abort or Has_Ctrl_Objs) then
             Prepend_To (Finalizer_Stmts,
-              Make_Procedure_Call_Statement (Loc,
-                Name => New_Occurrence_Of (RTE (RE_Abort_Defer), Loc)));
+              Build_Runtime_Call (Loc, RE_Abort_Defer));
 
             Append_To (Finalizer_Stmts,
-              Make_Procedure_Call_Statement (Loc,
-                Name => New_Occurrence_Of (RTE (RE_Abort_Undefer), Loc)));
+              Build_Runtime_Call (Loc, RE_Abort_Undefer));
          end if;
 
          --  The local exception does not need to be reraised for library-level
@@ -1596,7 +1599,8 @@ package body Exp_Ch7 is
                  Defining_Unit_Name => Body_Id),
              Declarations               => Finalizer_Decls,
              Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc, Finalizer_Stmts));
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => Finalizer_Stmts));
 
          --  Step 4: Spec and body insertion, analysis
 
@@ -2806,9 +2810,7 @@ package body Exp_Ch7 is
 
          else
             --  Generate:
-            --    [Deep_]Finalize (Obj);  --  No_Exception_Propagation
-
-            --    begin                   --  Exception handlers allowed
+            --    begin
             --       [Deep_]Finalize (Obj);
 
             --    exception
@@ -4727,6 +4729,8 @@ package body Exp_Ch7 is
          --       Raised : Boolean := False;
 
          --    begin
+         --       Abort_Defer;
+
          --       begin
          --          Hook_N := null;
          --          [Deep_]Finalize (Ctrl_Trans_Obj_N);
@@ -4752,26 +4756,8 @@ package body Exp_Ch7 is
          --       if Raised and not Abrt then
          --          Raise_From_Controlled_Operation (Ex);
          --       end if;
-         --    end;
 
-         --  When restriction No_Exception_Propagation is active, the expansion
-         --  is as follows:
-
-         --    type Ptr_Typ_1 is access all Ctrl_Trans_Obj_1_Typ;
-         --    Hook_1 : Ptr_Typ_1 := null;
-         --    Ctrl_Trans_Obj_1 : ...;
-         --    Hook_1 := Ctrl_Trans_Obj_1'Unrestricted_Access;
-         --    . . .
-         --    type Ptr_Typ_N is access all Ctrl_Trans_Obj_N_Typ;
-         --    Hook_N : Ptr_Typ_N := null;
-         --    Ctrl_Trans_Obj_N : ...;
-         --    Hook_N := Ctrl_Trans_Obj_N'Unrestricted_Access;
-
-         --    begin
-         --       Hook_N := null;
-         --       [Deep_]Finalize (Ctrl_Trans_Obj_N);
-         --       Hook_1 := null;
-         --       [Deep_]Finalize (Ctrl_Trans_Obj_1);
+         --       Abort_Undefer_Direct;
          --    end;
 
          --  Recognize a scenario where the transient context is an object
@@ -4983,6 +4969,7 @@ package body Exp_Ch7 is
                --  When exception propagation is enabled wrap the hook clear
                --  statement and the finalization call into a block to catch
                --  potential exceptions raised during finalization. Generate:
+
                --    begin
                --       [Temp := null;]
                --       [Deep_]Finalize (Obj_Ref);
@@ -5037,6 +5024,20 @@ package body Exp_Ch7 is
          end loop;
 
          if Present (Blk_Decl) then
+
+            --  Note that the abort defer / undefer pair does not require an
+            --  extra block because each finalization exception is caught in
+            --  its corresponding finalization block. As a result, the call to
+            --  Abort_Defer always takes place.
+
+            if Abort_Allowed then
+               Prepend_To (Blk_Stmts,
+                 Build_Runtime_Call (Loc, RE_Abort_Defer));
+
+               Append_To (Blk_Stmts,
+                 Build_Runtime_Call (Loc, RE_Abort_Undefer));
+            end if;
+
             Insert_After_And_Analyze (Blk_Ins, Blk_Decl);
          end if;
       end Process_Transient_Objects;
@@ -5428,10 +5429,13 @@ package body Exp_Ch7 is
       function Build_Adjust_Or_Finalize_Statements
         (Typ : Entity_Id) return List_Id
       is
-         Comp_Typ        : constant Entity_Id  := Component_Type (Typ);
-         Index_List      : constant List_Id    := New_List;
-         Loc             : constant Source_Ptr := Sloc (Typ);
-         Num_Dims        : constant Int        := Number_Dimensions (Typ);
+         Comp_Typ       : constant Entity_Id  := Component_Type (Typ);
+         Exceptions_OK  : constant Boolean    :=
+                            not Restriction_Active (No_Exception_Propagation);
+         Index_List     : constant List_Id    := New_List;
+         Loc            : constant Source_Ptr := Sloc (Typ);
+         Num_Dims       : constant Int        := Number_Dimensions (Typ);
+
          Finalizer_Decls : List_Id := No_List;
          Finalizer_Data  : Finalization_Exception_Data;
          Call            : Node_Id;
@@ -5441,9 +5445,6 @@ package body Exp_Ch7 is
          J               : Entity_Id;
          Loop_Id         : Entity_Id;
          Stmts           : List_Id;
-
-         Exceptions_OK : constant Boolean :=
-                           not Restriction_Active (No_Exception_Propagation);
 
          procedure Build_Indexes;
          --  Generate the indexes used in the dimension loops
@@ -5492,9 +5493,7 @@ package body Exp_Ch7 is
 
          --  Generate the block which houses the adjust or finalize call:
 
-         --    <adjust or finalize call>;  --  No_Exception_Propagation
-
-         --    begin                       --  Exception handlers allowed
+         --    begin
          --       <adjust or finalize call>
 
          --    exception
@@ -5567,7 +5566,7 @@ package body Exp_Ch7 is
          --    begin
          --       <core loop>
 
-         --       if Raised and then not Abort then  --  Expection handlers OK
+         --       if Raised and then not Abort then
          --          Raise_From_Controlled_Operation (E);
          --       end if;
          --    end;
@@ -5575,8 +5574,7 @@ package body Exp_Ch7 is
          Stmts := New_List (Core_Loop);
 
          if Exceptions_OK then
-            Append_To (Stmts,
-              Build_Raise_Statement (Finalizer_Data));
+            Append_To (Stmts, Build_Raise_Statement (Finalizer_Data));
          end if;
 
          return
@@ -5593,11 +5591,14 @@ package body Exp_Ch7 is
       ---------------------------------
 
       function Build_Initialize_Statements (Typ : Entity_Id) return List_Id is
-         Comp_Typ        : constant Entity_Id  := Component_Type (Typ);
-         Final_List      : constant List_Id    := New_List;
-         Index_List      : constant List_Id    := New_List;
-         Loc             : constant Source_Ptr := Sloc (Typ);
-         Num_Dims        : constant Int        := Number_Dimensions (Typ);
+         Comp_Typ       : constant Entity_Id  := Component_Type (Typ);
+         Exceptions_OK  : constant Boolean    :=
+                            not Restriction_Active (No_Exception_Propagation);
+         Final_List     : constant List_Id    := New_List;
+         Index_List     : constant List_Id    := New_List;
+         Loc            : constant Source_Ptr := Sloc (Typ);
+         Num_Dims       : constant Int        := Number_Dimensions (Typ);
+
          Counter_Id      : Entity_Id;
          Dim             : Int;
          F               : Node_Id;
@@ -5610,9 +5611,6 @@ package body Exp_Ch7 is
          J               : Node_Id;
          Loop_Id         : Node_Id;
          Stmts           : List_Id;
-
-         Exceptions_OK : constant Boolean :=
-                           not Restriction_Active (No_Exception_Propagation);
 
          function Build_Counter_Assignment return Node_Id;
          --  Generate the following assignment:
@@ -5751,9 +5749,7 @@ package body Exp_Ch7 is
          --    if Counter > 0 then
          --       Counter := Counter - 1;
          --    else
-         --       [Deep_]Finalize (V (F1, ..., FN));  --  No_Except_Propagation
-
-         --       begin                               --  Exceptions allowed
+         --       begin
          --          [Deep_]Finalize (V (F1, ..., FN));
          --       exception
          --          when others =>
@@ -5852,18 +5848,17 @@ package body Exp_Ch7 is
 
          --       <final loop>
 
-         --       if Raised and then not Abort then  --  Exception handlers OK
+         --       if Raised and then not Abort then
          --          Raise_From_Controlled_Operation (E);
          --       end if;
 
-         --       raise;  --  Exception handlers OK
+         --       raise;
          --    end;
 
          Stmts := New_List (Build_Counter_Assignment, Final_Loop);
 
          if Exceptions_OK then
-            Append_To (Stmts,
-              Build_Raise_Statement (Finalizer_Data));
+            Append_To (Stmts, Build_Raise_Statement (Finalizer_Data));
             Append_To (Stmts, Make_Raise_Statement (Loc));
          end if;
 
@@ -6243,16 +6238,16 @@ package body Exp_Ch7 is
       -----------------------------
 
       function Build_Adjust_Statements (Typ : Entity_Id) return List_Id is
-         Loc             : constant Source_Ptr := Sloc (Typ);
-         Typ_Def         : constant Node_Id := Type_Definition (Parent (Typ));
+         Exceptions_OK  : constant Boolean    :=
+                            not Restriction_Active (No_Exception_Propagation);
+         Loc            : constant Source_Ptr := Sloc (Typ);
+         Typ_Def        : constant Node_Id := Type_Definition (Parent (Typ));
+
          Bod_Stmts       : List_Id;
          Finalizer_Data  : Finalization_Exception_Data;
          Finalizer_Decls : List_Id := No_List;
          Rec_Def         : Node_Id;
          Var_Case        : Node_Id;
-
-         Exceptions_OK : constant Boolean :=
-                           not Restriction_Active (No_Exception_Propagation);
 
          function Process_Component_List_For_Adjust
            (Comps : Node_Id) return List_Id;
@@ -6285,11 +6280,9 @@ package body Exp_Ch7 is
                Adj_Stmt : Node_Id;
 
             begin
-               --  Generate:
-               --    [Deep_]Adjust (V.Id);  --  No_Exception_Propagation
-
-               --    begin                  --  Exception handlers allowed
+               --    begin
                --       [Deep_]Adjust (V.Id);
+
                --    exception
                --       when others =>
                --          if not Raised then
@@ -6523,10 +6516,9 @@ package body Exp_Ch7 is
                        Skip_Self => True);
 
                   --  Generate:
-                  --    Deep_Adjust (V._parent, False);  --  No_Except_Propagat
-
-                  --    begin                            --  Exceptions OK
+                  --    begin
                   --       Deep_Adjust (V._parent, False);
+
                   --    exception
                   --       when Id : others =>
                   --          if not Raised then
@@ -6568,10 +6560,9 @@ package body Exp_Ch7 is
 
                --  Generate:
                --    if F then
-               --       Adjust (V);  --  No_Exception_Propagation
-
-               --       begin        --  Exception handlers allowed
+               --       begin
                --          Adjust (V);
+
                --       exception
                --          when others =>
                --             if not Raised then
@@ -6635,8 +6626,7 @@ package body Exp_Ch7 is
 
          else
             if Exceptions_OK then
-               Append_To (Bod_Stmts,
-                 Build_Raise_Statement (Finalizer_Data));
+               Append_To (Bod_Stmts, Build_Raise_Statement (Finalizer_Data));
             end if;
 
             return
@@ -6654,17 +6644,17 @@ package body Exp_Ch7 is
       -------------------------------
 
       function Build_Finalize_Statements (Typ : Entity_Id) return List_Id is
-         Loc             : constant Source_Ptr := Sloc (Typ);
-         Typ_Def         : constant Node_Id := Type_Definition (Parent (Typ));
+         Exceptions_OK  : constant Boolean    :=
+                            not Restriction_Active (No_Exception_Propagation);
+         Loc            : constant Source_Ptr := Sloc (Typ);
+         Typ_Def        : constant Node_Id := Type_Definition (Parent (Typ));
+
          Bod_Stmts       : List_Id;
          Counter         : Int := 0;
          Finalizer_Data  : Finalization_Exception_Data;
          Finalizer_Decls : List_Id := No_List;
          Rec_Def         : Node_Id;
          Var_Case        : Node_Id;
-
-         Exceptions_OK : constant Boolean :=
-                           not Restriction_Active (No_Exception_Propagation);
 
          function Process_Component_List_For_Finalize
            (Comps : Node_Id) return List_Id;
@@ -7096,10 +7086,9 @@ package body Exp_Ch7 is
                        Skip_Self => True);
 
                   --  Generate:
-                  --    Deep_Finalize (V._parent, False);  --  No_Except_Propag
-
-                  --    begin                              --  Exceptions OK
+                  --    begin
                   --       Deep_Finalize (V._parent, False);
+
                   --    exception
                   --       when Id : others =>
                   --          if not Raised then
@@ -7142,10 +7131,9 @@ package body Exp_Ch7 is
 
                --  Generate:
                --    if F then
-               --       Finalize (V);  --  No_Exception_Propagation
-
                --       begin
                --          Finalize (V);
+
                --       exception
                --          when others =>
                --             if not Raised then
@@ -7207,8 +7195,7 @@ package body Exp_Ch7 is
 
          else
             if Exceptions_OK then
-               Append_To (Bod_Stmts,
-                 Build_Raise_Statement (Finalizer_Data));
+               Append_To (Bod_Stmts, Build_Raise_Statement (Finalizer_Data));
             end if;
 
             return
