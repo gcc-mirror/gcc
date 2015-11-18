@@ -1,3 +1,11 @@
+2015-11-18  Jason Merrill  <jason@redhat.com>
+
+	* ggc-page.c (ggc_globals): Change finalizers and vec_finalizers
+	to be vecs of vecs.
+	(add_finalizer): Split out from ggc_internal_alloc.
+	(ggc_handle_finalizers): Run finalizers for the current depth.
+	(init_ggc, ggc_pch_read): Reserve space for finalizers.
+
 2015-11-18  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/68410
