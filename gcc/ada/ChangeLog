@@ -1,3 +1,22 @@
+2015-11-18  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c, s-os_lib.adb, s-os_lib.ads (Kill_Process_Tree): New.
+
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Check_Nonvolatile_Function_Profile): Place the error
+	message concerning the return type on the result definition.
+	(Is_Volatile_Function): A function with a parameter of a protected
+	type is a protected function if it is defined within a protected
+	definition.
+
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing): When building the
+	parameter list for the function call on indexing functions,
+	preserve overloading of the parameters, which may themselves be
+	generalized indexing operations.
+
 2015-11-13  Arnaud Charlet  <charlet@adacore.com>
 
 	PR ada/68345

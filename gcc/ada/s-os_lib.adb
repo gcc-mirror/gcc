@@ -1609,6 +1609,27 @@ package body System.OS_Lib is
       end if;
    end Kill;
 
+   -----------------------
+   -- Kill_Process_Tree --
+   -----------------------
+
+   procedure Kill_Process_Tree
+     (Pid : Process_Id; Hard_Kill : Boolean := True)
+   is
+      SIGKILL : constant := 9;
+      SIGINT  : constant := 2;
+
+      procedure C_Kill_PT (Pid : Process_Id; Sig_Num : Integer);
+      pragma Import (C, C_Kill_PT, "__gnat_killprocesstree");
+
+   begin
+      if Hard_Kill then
+         C_Kill_PT (Pid, SIGKILL);
+      else
+         C_Kill_PT (Pid, SIGINT);
+      end if;
+   end Kill_Process_Tree;
+
    -------------------------
    -- Locate_Exec_On_Path --
    -------------------------

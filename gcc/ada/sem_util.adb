@@ -3120,9 +3120,9 @@ package body Sem_Util is
       --  Inspect the return type
 
       if Is_Effectively_Volatile (Etype (Func_Id)) then
-         Error_Msg_N
+         Error_Msg_NE
            ("nonvolatile function & cannot have a volatile return type",
-            Func_Id);
+            Result_Definition (Parent (Func_Id)), Func_Id);
       end if;
    end Check_Nonvolatile_Function_Profile;
 
@@ -14010,6 +14010,7 @@ package body Sem_Util is
       if Is_Primitive (Func_Id)
         and then Present (First_Formal (Func_Id))
         and then Is_Protected_Type (Etype (First_Formal (Func_Id)))
+        and then Etype (First_Formal (Func_Id)) = Scope (Func_Id)
       then
          return True;
 
