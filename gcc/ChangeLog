@@ -1,3 +1,32 @@
+2015-11-18  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68067
+	* fold-const.c (negate_expr_p): We cannot negate plus or minus
+	if overflow is not wrapping.  Likewise multiplication unless
+	one operand is constant and not power of two.
+	(fold_negate_expr): Adjust accordingly.
+
+	2015-10-26  Richard Biener  <rguenther@suse.de>
+		Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR middle-end/67443
+	* alias.c (ao_ref_from_mem): Remove promoted subreg handling.
+	Properly prune ref->ref for accesses outside of ref.
+
+	2015-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68017
+	* tree-tailcall.c (eliminate_tail_call): Remove stmts backwards.
+
+	2015-09-23   Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67662
+	* fold-const.c (fold_binary_loc): Do not reassociate two vars with
+	undefined overflow unless they will cancel out.
+
 2015-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68157

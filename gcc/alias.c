@@ -364,15 +364,16 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
       || !MEM_SIZE_KNOWN_P (mem))
     return true;
 
-  /* If the base decl is a parameter we can have negative MEM_OFFSET in
-     case of promoted subregs on bigendian targets.  Trust the MEM_EXPR
-     here.  */
+  /* If MEM_OFFSET/MEM_SIZE get us outside of ref->offset/ref->max_size
+     drop ref->ref.  */
   if (MEM_OFFSET (mem) < 0
-      && (MEM_SIZE (mem) + MEM_OFFSET (mem)) * BITS_PER_UNIT == ref->size)
-    return true;
+      || (ref->max_size != -1
+	  && ((MEM_OFFSET (mem) + MEM_SIZE (mem)) * BITS_PER_UNIT
+	      > ref->max_size)))
+    ref->ref = NULL_TREE;
 
-  /* Otherwise continue and refine size and offset we got from analyzing
-     MEM_EXPR by using MEM_SIZE and MEM_OFFSET.  */
+  /* Refine size and offset we got from analyzing MEM_EXPR by using
+     MEM_SIZE and MEM_OFFSET.  */
 
   ref->offset += MEM_OFFSET (mem) * BITS_PER_UNIT;
   ref->size = MEM_SIZE (mem) * BITS_PER_UNIT;

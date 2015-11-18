@@ -1,3 +1,28 @@
+2015-11-18  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68067
+	* gcc.dg/torture/pr68067-1.c: New testcase.
+	* gcc.dg/torture/pr68067-2.c: Likewise.
+
+	2015-10-26  Richard Biener  <rguenther@suse.de>
+		Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR middle-end/67443
+	* gcc.target/s390/pr67443.c: New testcase.
+
+	2015-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68017
+	* gcc.dg/torture/pr68017.c: New testcase.
+
+	2015-09-23   Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67662
+	* gcc.dg/ubsan/pr67662.c: New testcase.
+
 2015-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68157

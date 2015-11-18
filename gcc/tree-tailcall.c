@@ -875,17 +875,21 @@ eliminate_tail_call (struct tailcall *t)
      possibly unreachable code in other blocks is removed later in
      cfg cleanup.  */
   gsi = t->call_gsi;
-  gsi_next (&gsi);
-  while (!gsi_end_p (gsi))
+  gimple_stmt_iterator gsi2 = gsi_last_bb (gimple_bb (gsi_stmt (gsi)));
+  while (gsi_stmt (gsi2) != gsi_stmt (gsi))
     {
-      gimple t = gsi_stmt (gsi);
+      gimple t = gsi_stmt (gsi2);
       /* Do not remove the return statement, so that redirect_edge_and_branch
 	 sees how the block ends.  */
-      if (gimple_code (t) == GIMPLE_RETURN)
-	break;
-
-      gsi_remove (&gsi, true);
-      release_defs (t);
+      if (gimple_code (t) != GIMPLE_RETURN)
+	{
+	  gimple_stmt_iterator gsi3 = gsi2;
+	  gsi_prev (&gsi2);
+	  gsi_remove (&gsi3, true);
+	  release_defs (t);
+	}
+      else
+	gsi_prev (&gsi2);
     }
 
   /* Number of executions of function has reduced by the tailcall.  */
