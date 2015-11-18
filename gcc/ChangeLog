@@ -1,3 +1,9 @@
+2015-11-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/68410
+	* config/nios2/nios2.c (cdx_and_immed): Remove duplicate tests
+	from || expression.
+
 2015-11-18  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
 
 	* config/avr/avr-mcus.def: Add new avr4 devices atmega48pb and
