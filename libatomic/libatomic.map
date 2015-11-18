@@ -99,3 +99,12 @@ LIBATOMIC_1.1 {
   global:
 	__atomic_feraiseexcept;
 } LIBATOMIC_1.0;
+LIBATOMIC_1.2 {
+  global:
+	atomic_thread_fence;
+	atomic_signal_fence;
+	atomic_flag_test_and_set;
+	atomic_flag_test_and_set_explicit;
+	atomic_flag_clear;
+	atomic_flag_clear_explicit;
+} LIBATOMIC_1.1;

@@ -11503,7 +11503,7 @@ fi
 
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=2:0:1
+libtool_VERSION=3:0:2
 
 
 # Check for used threading-model

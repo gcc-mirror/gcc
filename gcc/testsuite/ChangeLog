@@ -1,3 +1,9 @@
+2015-11-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/65083
+	* gcc.dg/atomic/stdatomic-fence-2.c,
+	gcc.dg/atomic/stdatomic-flag-2.c: New tests.
+
 2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization19.adb: New test.

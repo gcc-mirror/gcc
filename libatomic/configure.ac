@@ -149,7 +149,7 @@ AC_SUBST(enable_static)
 AM_MAINTAINER_MODE
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=2:0:1
+libtool_VERSION=3:0:2
 AC_SUBST(libtool_VERSION)
 
 # Check for used threading-model
