@@ -6419,7 +6419,12 @@ package body Exp_Ch9 is
                        E_Enumeration_Literal =>
                      return OK;
 
-                  when E_Variable =>
+                  when E_Component |
+                       E_Variable  =>
+
+                     --  A variable in the protected type is expanded as a
+                     --  component.
+
                      if Is_Simple_Barrier_Name (N) then
                         return OK;
                      end if;

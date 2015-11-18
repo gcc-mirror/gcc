@@ -1,3 +1,30 @@
+2015-11-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Add a check requiring
+	-gnatc with -gnateg.
+
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb (Uninstall_Declarations): Before swapping private
+	and full views, ensure that the potential use visbility of the
+	two views is consistent.
+
+2015-11-18  Doug Rupp  <rupp@adacore.com>
+
+	* s-parame-vxworks.adb: Increase default stack size for targets
+	using stack limit checking.
+
+2015-11-18  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-interr.adb, a-interr.ads (Ada.Interrupts.Get_CPU): Add this
+	function that was added to Ada 2005 returning the processor where
+	interrupt handlers execute.
+
+2015-11-18  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Is_Pure_Barrier): Handle expanded component
+	declaration of a protected definition.
+
 2015-11-18  Ed Falis  <falis@adacore.com>
 
 	* s-soflin.adb, s-stchop-vxworks.adb: Code clean ups.
