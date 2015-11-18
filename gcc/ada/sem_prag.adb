@@ -9998,7 +9998,7 @@ package body Sem_Prag is
          --  ABSTRACT_STATE_LIST ::=
          --     null
          --  |  STATE_NAME_WITH_OPTIONS
-         --  | (STATE_NAME_WITH_OPTIONS {, STATE_NAME_WITH_OPTIONS} )
+         --  | (STATE_NAME_WITH_OPTIONS {, STATE_NAME_WITH_OPTIONS})
 
          --  STATE_NAME_WITH_OPTIONS ::=
          --     STATE_NAME
@@ -10018,7 +10018,7 @@ package body Sem_Prag is
 
          --  EXTERNAL_PROPERTY_LIST ::=
          --     EXTERNAL_PROPERTY
-         --  | (EXTERNAL_PROPERTY {, EXTERNAL_PROPERTY} )
+         --  | (EXTERNAL_PROPERTY {, EXTERNAL_PROPERTY})
 
          --  EXTERNAL_PROPERTY ::=
          --    Async_Readers    [=> boolean_EXPRESSION]
@@ -13412,8 +13412,8 @@ package body Sem_Prag is
          --  pragma Depends (DEPENDENCY_RELATION);
 
          --  DEPENDENCY_RELATION ::=
-         --    null
-         --  | DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE}
+         --     null
+         --  | (DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE})
 
          --  DEPENDENCY_CLAUSE ::=
          --    OUTPUT_LIST =>[+] INPUT_LIST
@@ -14945,9 +14945,9 @@ package body Sem_Prag is
          --  pragma Global (GLOBAL_SPECIFICATION);
 
          --  GLOBAL_SPECIFICATION ::=
-         --    null
-         --  | GLOBAL_LIST
-         --  | MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST}
+         --     null
+         --  | (GLOBAL_LIST)
+         --  | (MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST})
 
          --  MODED_GLOBAL_LIST ::= MODE_SELECTOR => GLOBAL_LIST
 
@@ -15689,20 +15689,18 @@ package body Sem_Prag is
          -- Initializes --
          -----------------
 
-         --  pragma Initializes (INITIALIZATION_SPEC);
-
-         --  INITIALIZATION_SPEC ::= null | INITIALIZATION_LIST
+         --  pragma Initializes (INITIALIZATION_LIST);
 
          --  INITIALIZATION_LIST ::=
-         --    INITIALIZATION_ITEM
-         --    | (INITIALIZATION_ITEM {, INITIALIZATION_ITEM})
+         --     null
+         --  | (INITIALIZATION_ITEM {, INITIALIZATION_ITEM})
 
          --  INITIALIZATION_ITEM ::= name [=> INPUT_LIST]
 
          --  INPUT_LIST ::=
-         --    null
-         --    | INPUT
-         --    | (INPUT {, INPUT})
+         --     null
+         --  |  INPUT
+         --  | (INPUT {, INPUT})
 
          --  INPUT ::= name
 
@@ -19287,8 +19285,8 @@ package body Sem_Prag is
          --  pragma Refined_Depends (DEPENDENCY_RELATION);
 
          --  DEPENDENCY_RELATION ::=
-         --    null
-         --  | DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE}
+         --     null
+         --  | (DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE})
 
          --  DEPENDENCY_CLAUSE ::=
          --    OUTPUT_LIST =>[+] INPUT_LIST
@@ -19363,9 +19361,9 @@ package body Sem_Prag is
          --  pragma Refined_Global (GLOBAL_SPECIFICATION);
 
          --  GLOBAL_SPECIFICATION ::=
-         --    null
-         --  | GLOBAL_LIST
-         --  | MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST}
+         --     null
+         --  | (GLOBAL_LIST)
+         --  | (MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST})
 
          --  MODED_GLOBAL_LIST ::= MODE_SELECTOR => GLOBAL_LIST
 
@@ -19488,15 +19486,14 @@ package body Sem_Prag is
          --  pragma Refined_State (REFINEMENT_LIST);
 
          --  REFINEMENT_LIST ::=
-         --    REFINEMENT_CLAUSE
-         --    | (REFINEMENT_CLAUSE {, REFINEMENT_CLAUSE})
+         --    (REFINEMENT_CLAUSE {, REFINEMENT_CLAUSE})
 
          --  REFINEMENT_CLAUSE ::= state_NAME => CONSTITUENT_LIST
 
          --  CONSTITUENT_LIST ::=
-         --    null
-         --    | CONSTITUENT
-         --    | (CONSTITUENT {, CONSTITUENT})
+         --     null
+         --  |  CONSTITUENT
+         --  | (CONSTITUENT {, CONSTITUENT})
 
          --  CONSTITUENT ::= object_NAME | state_NAME
 

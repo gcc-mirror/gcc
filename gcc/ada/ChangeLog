@@ -1,5 +1,29 @@
 2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch4.adb: Minor reformatting.
+
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Expand_Subtype_From_Expr): Add new formal
+	parameter Related_Id and propagate it to Make_Subtype_From_Expr.
+	(Make_Subtype_From_Expr): Add new formal parameter
+	Related_Id. Create external entities when requested by the caller.
+	* exp_util.ads (Expand_Subtype_From_Expr): Add new formal
+	parameter Related_Id. Update the comment on usage.
+	(Make_Subtype_From_Expr): Add new formal parameter
+	Related_Id. Update the comment on usage.
+	* sem_ch3.adb (Analyze_Object_Declaration): Add local variable
+	Related_Id. Generate an external constrained subtype when the
+	object is a public symbol.
+
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Update the grammars of pragmas
+	Abstract_State, Depends, Global, Initializes, Refined_Depends,
+	Refined_Global and Refined_State.
+
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_util.adb (Has_Full_Default_Initialization):
 	Perform the test for the presence of pragma
 	Default_Initial_Condition prior to the specialized type
