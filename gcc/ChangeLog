@@ -1,3 +1,78 @@
+2015-11-18  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-isl-ast-to-gimple.c (struct ast_build_info): Remove semicolon.
+	(class translate_isl_ast_to_gimple): Indentation.
+	(translate_pending_phi_nodes): Comment.
+	(add_parameters_to_ivs_params): Moved from sese.c inside class
+	translate_isl_ast_to_gimple.
+	(get_max_schedule_dimensions): Same.
+	(generate_isl_context): Same.
+	(extend_schedule): Same.
+	(generate_isl_schedule): Same.
+	(set_options): Same.
+	(scop_to_isl_ast): Same.
+	(is_valid_rename): Same.
+	(get_rename): Same.
+	(get_rename_from_scev): Same.
+	(get_def_bb_for_const): Same.
+	(get_new_name): Same.
+	(collect_all_ssa_names): Same.
+	(copy_loop_phi_args): Same.
+	(copy_loop_phi_nodes): Same.
+	(copy_loop_close_phi_args): Same.
+	(copy_loop_close_phi_nodes): Same.
+	(copy_cond_phi_args): Same.
+	(copy_cond_phi_nodes): Same.
+	(graphite_copy_stmts_from_block): Same.
+	(copy_bb_and_scalar_dependences): Same.
+	(add_phi_arg_for_new_expr): Same.
+	(rename_uses): Same.
+	(set_rename): Same.
+	(set_rename_for_each_def): Same.
+	(gsi_insert_earliest): Same.
+	(rename_all_uses): Same.
+	(codegen_error_p): Same.
+	(print_isl_ast_node): Same.
+	(translate_isl_ast_for_loop): Call function codegen_error_p.
+	(translate_isl_ast_to_gimple::translate_isl_ast): Same.
+	(translate_isl_ast_node_user): Make nb_loops const and release
+	iv_map before exit.
+	(get_true_edge_from_guard_bb): Move all free-functions early.
+	(get_false_edge_from_guard_bb): Same.
+	(bb_contains_loop_close_phi_nodes): Same.
+	(bb_contains_loop_phi_nodes): Same.
+	(is_loop_closed_ssa_use):  Same.
+	(number_of_phi_nodes): Same.
+	(phi_uses_name): Same.
+	(later_of_the_two): Same.
+	(substitute_ssa_name):
+	(get_edges): Same.
+	(get_loc): Same.
+	(get_loop_init_value): Same.
+	(find_init_value): Same.
+	(find_init_value_close_phi): Same.
+	(ast_build_before_for): Same.
+	(graphite_regenerate_ast_isl): Formatting changes.
+	* graphite-scop-detection.c (build_cross_bb_scalars_use): Same.
+	* sese.c (get_rename): Move to graphite-isl-ast-to-gimple.c
+	(set_rename): Same.
+	(gsi_insert_earliest): Same.
+	(collect_all_ssa_names): Same.
+	(rename_all_uses): Same.
+	(rename_uses): Same.
+	(get_def_bb_for_const): Same.
+	(copy_loop_phi_nodes): Same.
+	(copy_loop_close_phi_args): Same.
+	(copy_loop_close_phi_nodes): Same.
+	(copy_cond_phi_args): Same.
+	(copy_cond_phi_nodes): Same.
+	(set_rename_for_each_def): Same.
+	(graphite_copy_stmts_from_block): Same.
+	(copy_bb_and_scalar_dependences): Same.
+	(if_region_set_false_region): Same.
+	(scev_analyzable_p): Same.
+	* sese.h: Delete extern functions moved to graphite-isl-ast-to-gimple.c.
+
 2015-11-18  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/i386/freebsd.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Bring in the

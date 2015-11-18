@@ -1717,9 +1717,9 @@ build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
   gimple *def_stmt = SSA_NAME_DEF_STMT (use);
   if (gimple_bb (def_stmt) != gimple_bb (use_stmt))
     {
-      DEBUG_PRINT (dp << "Adding scalar read:\n";
+      DEBUG_PRINT (dp << "\nAdding scalar read:";
 		   print_generic_expr (dump_file, use, 0);
-		   dp << "From stmt:\n";
+		   dp << "\nFrom stmt:";
 		   print_gimple_stmt (dump_file, use_stmt, 0, 0));
       reads->safe_push (std::make_pair (use_stmt, use));
     }
