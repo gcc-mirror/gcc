@@ -23308,7 +23308,7 @@ package body Sem_Prag is
 
                return
                  Ekind (Item_Id) = E_Abstract_State
-                   and then Has_Null_Refinement (Item_Id);
+                   and then Has_Null_Visible_Refinement (Item_Id);
             else
                return False;
             end if;
@@ -23359,7 +23359,7 @@ package body Sem_Prag is
                   --  An abstract state with visible null refinement matches
                   --  null or Empty (special case).
 
-                  if Has_Null_Refinement (Dep_Item_Id)
+                  if Has_Null_Visible_Refinement (Dep_Item_Id)
                     and then (No (Ref_Item) or else Nkind (Ref_Item) = N_Null)
                   then
                      Record_Item (Dep_Item_Id);
@@ -23368,7 +23368,7 @@ package body Sem_Prag is
                   --  An abstract state with visible non-null refinement
                   --  matches one of its constituents.
 
-                  elsif Has_Non_Null_Refinement (Dep_Item_Id) then
+                  elsif Has_Non_Null_Visible_Refinement (Dep_Item_Id) then
                      if Is_Entity_Name (Ref_Item) then
                         Ref_Item_Id := Entity_Of (Ref_Item);
 
@@ -23698,7 +23698,7 @@ package body Sem_Prag is
                   --  Ensure that all of the constituents are utilized as
                   --  outputs in pragma Refined_Depends.
 
-                  elsif Has_Non_Null_Refinement (Item_Id) then
+                  elsif Has_Non_Null_Visible_Refinement (Item_Id) then
                      Check_Constituent_Usage (Item_Id);
                   end if;
                end if;
@@ -24270,7 +24270,7 @@ package body Sem_Prag is
                --  Ensure that one of the three coverage variants is satisfied
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then Has_Non_Null_Refinement (Item_Id)
+                 and then Has_Non_Null_Visible_Refinement (Item_Id)
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -24361,7 +24361,7 @@ package body Sem_Prag is
                --  is of mode Input.
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then Has_Non_Null_Refinement (Item_Id)
+                 and then Has_Non_Null_Visible_Refinement (Item_Id)
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -24455,7 +24455,7 @@ package body Sem_Prag is
                --  have mode Output.
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then Has_Non_Null_Refinement (Item_Id)
+                 and then Has_Non_Null_Visible_Refinement (Item_Id)
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -24545,7 +24545,7 @@ package body Sem_Prag is
                --  is of mode Proof_In
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then Has_Non_Null_Refinement (Item_Id)
+                 and then Has_Non_Null_Visible_Refinement (Item_Id)
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -24750,10 +24750,10 @@ package body Sem_Prag is
             --  be null in which case there are no constituents.
 
             if Ekind (Item_Id) = E_Abstract_State then
-               if Has_Null_Refinement (Item_Id) then
+               if Has_Null_Visible_Refinement (Item_Id) then
                   Has_Null_State := True;
 
-               elsif Has_Non_Null_Refinement (Item_Id) then
+               elsif Has_Non_Null_Visible_Refinement (Item_Id) then
                   Append_New_Elmt (Item_Id, States);
 
                   if Item_Mode = Name_Input then

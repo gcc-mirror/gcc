@@ -1,5 +1,34 @@
 2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* einfo.adb (Has_Non_Null_Refinement): Rename to
+	Has_Non_Null_Visible_Refinement.
+	(Has_Null_Refinement): Rename to Has_Null_Visible_Refinement.
+	* einfo.ads Update the documentation of
+	attribute Has_Non_Null_Refinement and attribute Has_Null_Refinement.
+	(Has_Non_Null_Refinement): Rename to Has_Non_Null_Visible_Refinement
+	and update occurrences in entities.
+	(Has_Null_Refinement): Rename to Has_Null_Visible_Refinement and update
+	occurrences in entities.
+	* sem_prag.adb (Check_In_Out_States): Update the calls to
+	Has_[Non_]Null_Refinement.
+	(Check_Input_States): Update the
+	calls to Has_[Non_]Null_Refinement.
+	(Check_Output_States): Update the calls to Has_[Non_]Null_Refinement.
+	(Check_Proof_In_States): Update the calls to Has_[Non_]Null_Refinement.
+	(Collect_Global_Item): Update the calls to Has_[Non_]Null_Refinement.
+	(Is_Null_Refined_State): Update the calls to Has_[Non_]Null_Refinement.
+	(Match_Item): Update the calls to Has_[Non_]Null_Refinement.
+	* sem_util.adb (Has_Non_Null_Refinement): New routine.
+	(Has_Null_Refinement): New routine.
+	* sem_util.ads (Has_Non_Null_Refinement): New routine.
+	(Has_Null_Refinement): New routine.
+
+2015-11-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb: Minor reformatting and typo fixes.
+
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch4.adb: Minor reformatting.
 
 2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>

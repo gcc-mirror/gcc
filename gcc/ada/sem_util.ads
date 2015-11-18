@@ -1059,8 +1059,18 @@ package Sem_Util is
    --  routine in Remove_Side_Effects is much more extensive and perhaps could
    --  be shared, so that this routine would be more accurate.
 
+   function Has_Non_Null_Refinement (Id : Entity_Id) return Boolean;
+   --  Determine whether abstract state Id has at least one nonnull constituent
+   --  as expressed in pragma Refined_State. This function does not take into
+   --  account the visible refinement region of abstract state Id.
+
    function Has_Null_Exclusion (N : Node_Id) return Boolean;
    --  Determine whether node N has a null exclusion
+
+   function Has_Null_Refinement (Id : Entity_Id) return Boolean;
+   --  Determine whether abstract state Id has a null refinement as expressed
+   --  in pragma Refined_State. This function does not take into account the
+   --  visible refinement region of abstract state Id.
 
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
