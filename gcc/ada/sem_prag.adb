@@ -957,6 +957,16 @@ package body Sem_Prag is
 
                      if Ekind (Item_Id) = E_Abstract_State then
                         Append_New_Elmt (Item_Id, States_Seen);
+
+                     --  The variable may eventually become a constituent of a
+                     --  single protected/task type. Record the reference now
+                     --  and verify its legality when analyzing the contract of
+                     --  the variable (SPARK RM 9.3).
+
+                     elsif Ekind (Item_Id) = E_Variable then
+                        Record_Possible_Part_Of_Reference
+                          (Var_Id => Item_Id,
+                           Ref    => Item);
                      end if;
 
                      if Ekind_In (Item_Id, E_Abstract_State,
@@ -2209,6 +2219,16 @@ package body Sem_Prag is
 
                if Ekind (Item_Id) = E_Abstract_State then
                   Append_New_Elmt (Item_Id, States_Seen);
+
+               --  The variable may eventually become a constituent of a single
+               --  protected/task type. Record the reference now and verify its
+               --  legality when analyzing the contract of the variable
+               --  (SPARK RM 9.3).
+
+               elsif Ekind (Item_Id) = E_Variable then
+                  Record_Possible_Part_Of_Reference
+                    (Var_Id => Item_Id,
+                     Ref    => Item);
                end if;
 
                if Ekind_In (Item_Id, E_Abstract_State, E_Constant, E_Variable)
@@ -25451,6 +25471,17 @@ package body Sem_Prag is
                                               E_Variable)
                   then
                      Match_Constituent (Constit_Id);
+
+                     --  The variable may eventually become a constituent of a
+                     --  single protected/task type. Record the reference now
+                     --  and verify its legality when analyzing the contract of
+                     --  the variable (SPARK RM 9.3).
+
+                     if Ekind (Constit_Id) = E_Variable then
+                        Record_Possible_Part_Of_Reference
+                          (Var_Id => Constit_Id,
+                           Ref    => Constit);
+                     end if;
 
                   --  Otherwise the constituent is illegal
 

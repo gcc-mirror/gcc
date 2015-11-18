@@ -7240,6 +7240,15 @@ package body Sem_Res is
             then
                Check_Elab_Call (N);
             end if;
+
+            --  The variable may eventually become a constituent of a single
+            --  protected/task type. Record the reference now and verify its
+            --  legality when analyzing the contract of the variable
+            --  (SPARK RM 9.3).
+
+            if Ekind (E) = E_Variable then
+               Record_Possible_Part_Of_Reference (E, N);
+            end if;
          end if;
 
          --  A Ghost entity must appear in a specific context
