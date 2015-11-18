@@ -1,3 +1,8 @@
+2015-11-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/reduction.c: New.
+	* config/nvptx/t-nvptx (LIB2ADD): Add it.
+
 2015-11-15  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/on_exit.c: New file.

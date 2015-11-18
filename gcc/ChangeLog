@@ -1,3 +1,12 @@
+2015-11-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.c (global_lock_var): New.
+	(nvptx_global_lock_addr): New.
+	(nvptx_lockless_update): Recomment and adjust for clarity.
+	(nvptx_lockfull_update): New.
+	(nvptx_reduction_update): New.
+	(nvptx_goacc_reduction_fini): Call it.
+
 2015-11-18  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* regrename.h (struct du_head): Add target_data_1 and target_data_2
