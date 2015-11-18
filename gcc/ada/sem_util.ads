@@ -252,6 +252,10 @@ package Sem_Util is
    --  not necessarily mean that CE could be raised, but a response of True
    --  means that for sure CE cannot be raised.
 
+   procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id);
+   --  Verify the legality of reference Ref to variable Var_Id when the
+   --  variable is a constituent of a single protected/task type.
+
    procedure Check_Dynamically_Tagged_Expression
      (Expr        : Node_Id;
       Typ         : Entity_Id;
@@ -1921,6 +1925,14 @@ package Sem_Util is
    --  (e for spec, t for body, see Lib.Xref spec for details). The
    --  parameter Ent gives the entity to which the End_Label refers,
    --  and to which cross-references are to be generated.
+
+   procedure Record_Possible_Part_Of_Reference
+     (Var_Id : Entity_Id;
+      Ref    : Node_Id);
+   --  Save reference Ref to variable Var_Id when the variable is subject to
+   --  pragma Part_Of. If the variable is known to be a constituent of a single
+   --  protected/task type, the legality of the reference is verified and the
+   --  save does not take place.
 
    function Referenced (Id : Entity_Id; Expr : Node_Id) return Boolean;
    --  Determine whether entity Id is referenced within expression Expr

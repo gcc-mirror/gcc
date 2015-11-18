@@ -1,3 +1,42 @@
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* atree.adb (Elist11): New routine.
+	(Set_Elist11): New routine.
+	* atree.ads (Elist11): New routine.
+	(Set_Elist11): New routine.
+	* atree.h: Define Elist11.
+	* contracts.adb (Analyze_Object_Contract): Verify the legality
+	of all references to a variable given that the variable is a
+	constituent of a single protected/task type.
+	* einfo.adb: Part_Of_References now utilizes Elist11.
+	(Part_Of_References): New routine.
+	(Set_Part_Of_References): New routine.
+	(Write_Field11_Name): Add output for Part_Of_References.
+	* einfo.ads New attribute Part_Of_References along with usage
+	in entities.
+	(Part_Of_References): New routine along with
+	pragma Inline.
+	(Set_Part_Of_References): New routine along with pragma Inline.
+	* sem_prag.adb (Analyze_Constituent): Record a possible
+	reference to a concurrent constituent.
+	(Analyze_Global_Item): Record a possible reference to a concurrent
+	constituent.
+	(Analyze_Input_Output): Record a possible reference to a
+	concurrent constituent.
+	* sem_res.adb (Resolve_Entity_Name): Record a possible reference
+	to a concurrent constituent.
+	* sem_util.adb (Check_Part_Of_Reference): New routine.
+	(Record_Possible_Part_Of_Reference): New routine.
+	* sem_util.ads (Check_Part_Of_Reference): New routine.
+	(Record_Possible_Part_Of_Reference): New routine.
+
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Minimized_Eliminated):
+	An if_expression is the proper place to apply the overflow
+	minimization procedure if its context is not an enclosing
+	arithmetic expression.
+
 2015-11-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat_ugn/gnat_project_manager.rst,

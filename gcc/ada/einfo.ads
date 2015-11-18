@@ -3696,6 +3696,12 @@ package Einfo is
 --       constituents that are subject to indicator Part_Of (both aspect and
 --       option variants).
 
+--    Part_Of_References (Elist11)
+--       Present in variable entities. Contains all references to the variable
+--       when it is subject to pragma Part_Of. If the variable is a constituent
+--       of a single protected/task type, the references are examined as they
+--       must appear only within the type defintion and the corresponding body.
+
 --    Partial_View_Has_Unknown_Discr (Flag280)
 --       Present in all types. Set to Indicate that the partial view of a type
 --       has unknown discriminants. A default initialization of an object of
@@ -6431,6 +6437,7 @@ package Einfo is
    --    Hiding_Loop_Variable                (Node8)
    --    Current_Value                       (Node9)
    --    Part_Of_Constituents                (Elist10)
+   --    Part_Of_References                  (Elist11)
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)
    --    Alignment                           (Uint14)
@@ -7089,6 +7096,7 @@ package Einfo is
    function Packed_Array_Impl_Type              (Id : E) return E;
    function Parent_Subtype                      (Id : E) return E;
    function Part_Of_Constituents                (Id : E) return L;
+   function Part_Of_References                  (Id : E) return L;
    function Partial_View_Has_Unknown_Discr      (Id : E) return B;
    function Pending_Access_Types                (Id : E) return L;
    function Postconditions_Proc                 (Id : E) return E;
@@ -7756,6 +7764,7 @@ package Einfo is
    procedure Set_Packed_Array_Impl_Type          (Id : E; V : E);
    procedure Set_Parent_Subtype                  (Id : E; V : E);
    procedure Set_Part_Of_Constituents            (Id : E; V : L);
+   procedure Set_Part_Of_References              (Id : E; V : L);
    procedure Set_Partial_View_Has_Unknown_Discr  (Id : E; V : B := True);
    procedure Set_Pending_Access_Types            (Id : E; V : L);
    procedure Set_Postconditions_Proc             (Id : E; V : E);
@@ -8582,6 +8591,7 @@ package Einfo is
    pragma Inline (Parameter_Mode);
    pragma Inline (Parent_Subtype);
    pragma Inline (Part_Of_Constituents);
+   pragma Inline (Part_Of_References);
    pragma Inline (Partial_View_Has_Unknown_Discr);
    pragma Inline (Pending_Access_Types);
    pragma Inline (Postconditions_Proc);
@@ -9043,6 +9053,7 @@ package Einfo is
    pragma Inline (Set_Packed_Array_Impl_Type);
    pragma Inline (Set_Parent_Subtype);
    pragma Inline (Set_Part_Of_Constituents);
+   pragma Inline (Set_Part_Of_References);
    pragma Inline (Set_Partial_View_Has_Unknown_Discr);
    pragma Inline (Set_Pending_Access_Types);
    pragma Inline (Set_Postconditions_Proc);

@@ -95,13 +95,14 @@ package body Einfo is
    --    Normalized_Position_Max         Uint10
    --    Part_Of_Constituents            Elist10
 
+   --    Block_Node                      Node11
    --    Component_Bit_Offset            Uint11
    --    Full_View                       Node11
    --    Entry_Component                 Node11
    --    Enumeration_Pos                 Uint11
    --    Generic_Homonym                 Node11
+   --    Part_Of_References              Elist11
    --    Protected_Body_Subprogram       Node11
-   --    Block_Node                      Node11
 
    --    Barrier_Function                Node12
    --    Enumeration_Rep                 Uint12
@@ -2860,6 +2861,12 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
       return Elist10 (Id);
    end Part_Of_Constituents;
+
+   function Part_Of_References (Id : E) return L is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      return Elist11 (Id);
+   end Part_Of_References;
 
    function Partial_View_Has_Unknown_Discr (Id : E) return B is
    begin
@@ -5896,6 +5903,12 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
       Set_Elist10 (Id, V);
    end Set_Part_Of_Constituents;
+
+   procedure Set_Part_Of_References (Id : E; V : L) is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      Set_Elist11 (Id, V);
+   end Set_Part_Of_References;
 
    procedure Set_Partial_View_Has_Unknown_Discr (Id : E; V : B := True) is
    begin
@@ -9363,10 +9376,13 @@ package body Einfo is
          when E_Generic_Package                            =>
             Write_Str ("Generic_Homonym");
 
-         when E_Function                                   |
-              E_Procedure                                  |
-              E_Entry                                      |
-              E_Entry_Family                               =>
+         when E_Variable                                   =>
+            Write_Str ("Part_Of_References");
+
+         when E_Entry                                      |
+              E_Entry_Family                               |
+              E_Function                                   |
+              E_Procedure                                  =>
             Write_Str ("Protected_Body_Subprogram");
 
          when others                                       =>

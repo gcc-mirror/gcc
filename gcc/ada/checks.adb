@@ -1208,7 +1208,18 @@ package body Checks is
         or else (Nkind (P) = N_Range
                   and then Nkind (Parent (P)) in N_Membership_Test)
       then
-         return;
+         --  If_Expressions and Case_Expressions are treated as arithmetic
+         --  ops, but if they appear in an assignment or similar contexts
+         --  there is no overflow check that starts from that parent node,
+         --  so apply check now.
+
+         if Nkind_In (P, N_If_Expression, N_Case_Expression)
+           and then not Is_Signed_Integer_Arithmetic_Op (Parent (P))
+         then
+            null;
+         else
+            return;
+         end if;
       end if;
 
       --  Otherwise, we have a top level arithmetic operation node, and this
@@ -1302,7 +1313,7 @@ package body Checks is
             Analyze_And_Resolve (Op);
          end;
 
-      --  Here we know the result is Long_Long_Integer'Base, of that it has
+      --  Here we know the result is Long_Long_Integer'Base, or that it has
       --  been rewritten because the parent operation is a conversion. See
       --  Apply_Arithmetic_Overflow_Strict.Conversion_Optimization.
 
