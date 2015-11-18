@@ -1261,10 +1261,10 @@ package body Checks is
          --  This block is inserted (using Insert_Actions), and then the node
          --  is replaced with a reference to Rnn.
 
-         --  A special case arises if our parent is a conversion node. In this
-         --  case no point in generating a conversion to Result_Type, we will
-         --  let the parent handle this. Note that this special case is not
-         --  just about optimization. Consider
+         --  If our parent is a conversion node then there is no point in
+         --  generating a conversion to Result_Type, we will let the parent
+         --  handle this. Note that this special case is not just about
+         --  optimization. Consider
 
          --      A,B,C : Integer;
          --      ...

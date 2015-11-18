@@ -57,6 +57,9 @@ package Sem_Util is
    --  for the current unit. The declarations are added in the current scope,
    --  so the caller should push a new scope as required before the call.
 
+   function Add_Suffix (E : Entity_Id; Suffix : Character) return Name_Id;
+   --  Returns the name of E adding Suffix
+
    function Address_Integer_Convert_OK (T1, T2 : Entity_Id) return Boolean;
    --  Given two types, returns True if we are in Allow_Integer_Address mode
    --  and one of the types is (a descendent of) System.Address (and this type
@@ -327,13 +330,9 @@ package Sem_Util is
    --  and post-state.
 
    procedure Check_Unused_Body_States (Body_Id : Entity_Id);
-   --  Verify that all abstract states and object declared in the state space
-   --  of a package body denoted by entity Body_Id are used as constituents.
-   --  Emit an error if this is not the case.
-
-   function Collect_Body_States (Body_Id : Entity_Id) return Elist_Id;
-   --  Gather the entities of all abstract states and objects declared in the
-   --  body state space of package body Body_Id.
+   --  Verify that all abstract states and objects declared in the state space
+   --  of package body Body_Id are used as constituents. Emit an error if this
+   --  is not the case.
 
    procedure Check_Unprotected_Access
      (Context : Node_Id;
@@ -341,6 +340,10 @@ package Sem_Util is
    --  Check whether the expression is a pointer to a protected component,
    --  and the context is external to the protected operation, to warn against
    --  a possible unlocked access to data.
+
+   function Collect_Body_States (Body_Id : Entity_Id) return Elist_Id;
+   --  Gather the entities of all abstract states and objects declared in the
+   --  body state space of package body Body_Id.
 
    procedure Collect_Interfaces
      (T               : Entity_Id;
@@ -1113,12 +1116,6 @@ package Sem_Util is
    function Has_Suffix (E : Entity_Id; Suffix : Character) return Boolean;
    --  Returns true if the last character of E is Suffix. Used in Assertions.
 
-   function Add_Suffix (E : Entity_Id; Suffix : Character) return Name_Id;
-   --  Returns the name of E adding Suffix
-
-   function Remove_Suffix (E : Entity_Id; Suffix : Character) return Name_Id;
-   --  Returns the name of E without Suffix
-
    function Has_Tagged_Component (Typ : Entity_Id) return Boolean;
    --  Returns True if Typ is a composite type (array or record) which is
    --  either itself a tagged type, or has a component (recursively) which is
@@ -1126,8 +1123,12 @@ package Sem_Util is
    --  component is present. This function is used to check if "=" has to be
    --  expanded into a bunch component comparisons.
 
+   function Has_Undefined_Reference (Expr : Node_Id) return Boolean;
+   --  Given arbitrary expression Expr, determine whether it contains at
+   --  least one name whose entity is Any_Id.
+
    function Has_Volatile_Component (Typ : Entity_Id) return Boolean;
-   --  Given an arbitrary type, determine whether it contains at least one
+   --  Given arbitrary type Typ, determine whether it contains at least one
    --  volatile component.
 
    function Implementation_Kind (Subp : Entity_Id) return Name_Id;
@@ -1553,6 +1554,14 @@ package Sem_Util is
    --  . machine_emax = 2**7
    --  . machine_emin = 3 - machine_emax
 
+   function Is_Single_Protected_Object (Id : Entity_Id) return Boolean;
+   --  Determine whether arbitrary entity Id denotes the anonymous object
+   --  created for a single protected type.
+
+   function Is_Single_Task_Object (Id : Entity_Id) return Boolean;
+   --  Determine whether arbitrary entity Id denotes the anonymous object
+   --  created for a single task type.
+
    function Is_SPARK_05_Initialization_Expr (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents an initialization
    --  expression in SPARK 2005, suitable for initializing an object in an
@@ -1950,6 +1959,9 @@ package Sem_Util is
    --  the removal performed by this routine does not affect the visibility of
    --  existing homonyms.
 
+   function Remove_Suffix (E : Entity_Id; Suffix : Character) return Name_Id;
+   --  Returns the name of E without Suffix
+
    function Rep_To_Pos_Flag (E : Entity_Id; Loc : Source_Ptr) return Node_Id;
    --  This is used to construct the second argument in a call to Rep_To_Pos
    --  which is Standard_True if range checks are enabled (E is an entity to
@@ -1962,13 +1974,6 @@ package Sem_Util is
    --  believe a request to suppress exceptions if possible, and further
    --  more there is at least one case in the generated code (the code for
    --  array assignment in a loop) that depends on this suppression.
-
-   procedure Report_Unused_Body_States
-     (Body_Id : Entity_Id;
-      States  : Elist_Id);
-   --  Emit errors for each abstract state or object found in list States that
-   --  is declared in package body Body_Id, but is not used as constituent in a
-   --  state refinement.
 
    procedure Require_Entity (N : Node_Id);
    --  N is a node which should have an entity value if it is an entity name.

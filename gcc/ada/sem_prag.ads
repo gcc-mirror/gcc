@@ -181,8 +181,12 @@ package Sem_Prag is
    procedure Analyze_Pragma (N : Node_Id);
    --  Analyze procedure for pragma reference node N
 
-   procedure Analyze_Contract_Cases_In_Decl_Part (N : Node_Id);
-   --  Perform full analysis of delayed pragma Contract_Cases
+   procedure Analyze_Contract_Cases_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty);
+   --  Perform full analysis of delayed pragma Contract_Cases. Freeze_Id is the
+   --  entity of [generic] package body or [generic] subprogram body which
+   --  caused "freezing" of the related contract where the pragma resides.
 
    procedure Analyze_Depends_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Depends. This routine is also
@@ -205,11 +209,20 @@ package Sem_Prag is
    procedure Analyze_Initializes_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Initializes
 
-   procedure Analyze_Part_Of_In_Decl_Part (N : Node_Id);
-   --  Perform full analysis of delayed pragma Part_Of
+   procedure Analyze_Part_Of_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty);
+   --  Perform full analysis of delayed pragma Part_Of. Freeze_Id is the entity
+   --  of [generic] package body or [generic] subprogram body which caused the
+   --  "freezing" of the related contract where the pragma resides.
 
-   procedure Analyze_Pre_Post_Condition_In_Decl_Part (N : Node_Id);
-   --  Perform full analysis of pragmas Precondition and Postcondition
+   procedure Analyze_Pre_Post_Condition_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty);
+   --  Perform full analysis of pragmas Precondition and Postcondition.
+   --  Freeze_Id denotes the entity of [generic] package body or [generic]
+   --  subprogram body which caused "freezing" of the related contract where
+   --  the pragma resides.
 
    procedure Analyze_Refined_Depends_In_Decl_Part (N : Node_Id);
    --  Preform full analysis of delayed pragma Refined_Depends. This routine

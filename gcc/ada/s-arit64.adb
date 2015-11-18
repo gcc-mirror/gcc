@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -577,7 +577,9 @@ package body System.Arith_64 is
    ----------------
 
    function To_Neg_Int (A : Uns64) return Int64 is
-      R : constant Int64 := -To_Int (A);
+      R : constant Int64 := (if A = 2**63 then Int64'First else -To_Int (A));
+      --  Note that we can't just use the expression of the Else, because it
+      --  overflows for A = 2**63.
    begin
       if R <= 0 then
          return R;

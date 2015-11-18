@@ -1,3 +1,119 @@
+2015-11-18  Nicolas Roche  <roche@adacore.com>
+
+	* sysdep.c (__gnat_localtime_tzoff): On Windows platform
+	GetTimeZoneInformation function is thread-safe. Thus there
+	is no need to lock the runtime in the implementation of
+	__gnat_localtime_tzoff on that platform.
+
+2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-arit64.adb (To_Neg_Int): Add a special case for 2**63 input.
+
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* contracts.adb (Analyze_Contracts): New routine.
+	(Analyze_Enclosing_Package_Body_Contract): Removed.
+	(Analyze_Entry_Or_Subprogram_Contract): Add formal parameter
+	Freeze_Id.  Propagate the entity of the freezing body to vaious
+	analysis routines.
+	(Analyze_Initial_Declaration_Contract): Removed.
+	(Analyze_Object_Contract): Add formal parameter
+	Freeze_Id. Propagate the entity of the freezing body to vaious
+	analysis routines.
+	(Analyze_Previous_Contracts): New routine.
+	* contracts.ads (Analyze_Enclosing_Package_Body_Contract): Removed.
+	(Analyze_Contracts): New routine.
+	(Analyze_Entry_Or_Subprogram_Contract): Add formal
+	parameter Freeze_Id and update the comment on usage.
+	(Analyze_Initial_Declaration_Contract): Removed.
+	(Analyze_Object_Contract): Add formal parameter Freeze_Id and
+	update the comment on usage.
+	(Analyze_Previous_Contracts): New routine.
+	* sem_ch3.adb (Analyze_Declarations): Use Analyze_Contracts to
+	analyze all contracts of eligible constructs.
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body):
+	A body no longer freezes the contract of its initial
+	declaration. This effect is achieved through different means.
+	(Analyze_Subprogram_Body_Helper): A body now freezes the contracts
+	of all eligible constructs that precede it. A body no longer
+	freezes the contract of its initial declaration. This effect is
+	achieved through different means.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): A body now freezes
+	the contracts of all eligible constructs that precede it. A body
+	no longer freezes the contract of its initial declaration. This
+	effect is achieved through different means.
+	* sem_ch9.adb (Analyze_Entry_Body): A body now freezes
+	the contracts of all eligible constructs that precede
+	it. A body no longer freezes the contract of its initial
+	declaration. This effect is achieved through different means.
+	(Analyze_Protected_Body): A body now freezes the contracts
+	of all eligible constructs that precede it. A body no longer
+	freezes the contract of its initial declaration. This effect
+	is achieved through different means.
+	(Analyze_Task_Body): A
+	body now freezes the contracts of all eligible constructs that
+	precede it. A body no longer freezes the contract of its initial
+	declaration. This effect is achieved through different means.
+	* sem_prag.adb (Add_Item_To_Name_Buffer): Single protected/task
+	objects now output their respective current instance of xxx
+	type messages.	(Analyze_Contract_Cases_In_Decl_Part): Add
+	formal parameter Freeze_Id. Emit a clarification message
+	when an undefined entity may the byproduct of contract
+	freezing.
+	(Analyze_Part_Of_In_Decl_Part): Add formal
+	parameter Freeze_Id. Emit a clarification message when an
+	undefined entity may the byproduct of contract freezing.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Add formal
+	parameter Freeze_Id. Emit a clarification message when an
+	undefined entity may the byproduct of contract freezing.
+	(Analyze_Refined_State_In_Decl_Part): Do not report unused body
+	states as constituents of single protected/task types may not
+	bave been identified yet.
+	(Collect_Subprogram_Inputs_Outputs):
+	Reimplemented.	(Contract_Freeze_Error): New routine.
+	(Process_Overloadable): Use predicate Is_Single_Task_Object.
+	* sem_prag.ads (Analyze_Contract_Cases_In_Decl_Part):
+	Add formal parameter Freeze_Id and update the comment
+	on usage.
+	(Analyze_Part_Of_In_Decl_Part): Add formal
+	parameter Freeze_Id and update the comment on usage.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Add formal parameter
+	Freeze_Id and update the comment on usage.
+	* sem_util.adb (Check_Unused_Body_States): Remove global
+	variable Legal_Constits. The routine now reports unused
+	body states regardless of whether constituents are
+	legal or not.
+	(Collect_Body_States): A constituent of a
+	single protected/task type is not a visible state of a
+	package body.
+	(Collect_Visible_States): A constituent
+	of a single protected/task type is not a visible
+	state of a package body.
+	(Has_Undefined_Reference): New routine.
+	(Is_Single_Concurrent_Object): Reimplemented.
+	(Is_Single_Protected_Object): New routine.
+	(Is_Single_Task_Object): New routine.
+	(Is_Visible_Object): New routine.
+	(Report_Unused_Body_States): Moved to Check_Unused_Body_States.
+	* sem_util.ads (Check_Unused_Body_States): Update the comment on usage.
+	(Has_Undefined_Reference): New routine.
+	(Is_Single_Protected_Object): New routine.
+	(Is_Single_Task_Object): New routine.
+	(Report_Unused_Body_States): Moved to Check_Unused_Body_States.
+
+2015-11-18  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* Makefile.rtl, impunit.adb: Add g-strhas.ads.
+	* g-strhas.ads: New file.
+	* s-strhas.ads: Add a comment to redirect users to g-strhas.ads.
+
+2015-11-18  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb (Check_Internal_Call_Continue): Fix the case
+	where the call in question is to a renaming of a subprogram that
+	can be safely called without ABE.
+	* checks.adb: Minor edits.
+
 2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* atree.adb (Elist11): New routine.
