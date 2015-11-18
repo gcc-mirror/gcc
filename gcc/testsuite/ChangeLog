@@ -1,3 +1,8 @@
+2015-11-18  Ajit Agarwal  <ajitkum@xilinx.com>
+
+	* gcc.dg/tree-ssa/split-path-1.c: Fix the testcase
+	to avoid undefined behaviour.
+
 2015-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68157
