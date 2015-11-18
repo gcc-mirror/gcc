@@ -22949,6 +22949,8 @@ ix86_expand_mask_vec_cmp (rtx operands[])
     case GEU:
     case LTU:
       unspec_code = UNSPEC_UNSIGNED_PCMP;
+      break;
+
     default:
       unspec_code = UNSPEC_PCMP;
     }

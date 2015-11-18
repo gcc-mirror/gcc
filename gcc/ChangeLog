@@ -1,3 +1,9 @@
+2015-11-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/68405
+	* config/i386/i386.c (ix86_expand_mask_vec_cmp): Add missing
+	break.
+
 2015-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68157
