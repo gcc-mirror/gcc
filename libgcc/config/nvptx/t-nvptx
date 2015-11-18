@@ -1,6 +1,7 @@
 LIB2ADD=$(srcdir)/config/nvptx/malloc.asm \
 	$(srcdir)/config/nvptx/free.asm \
-	$(srcdir)/config/nvptx/realloc.c
+	$(srcdir)/config/nvptx/realloc.c \
+	$(srcdir)/config/nvptx/reduction.c
 
 LIB2ADDEH=
 LIB2FUNCS_EXCLUDE=__main
