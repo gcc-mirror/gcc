@@ -3259,7 +3259,11 @@ void __gnat_killprocesstree (int pid, int sig_num)
   /* kill process */
 
   __gnat_kill (pid, sig_num, 1);
-#else
+
+#elif defined (__vxworks)
+  /* not implemented */
+
+#elif defined (__linux__)
   DIR *dir;
   struct dirent *d;
 
@@ -3307,6 +3311,8 @@ void __gnat_killprocesstree (int pid, int sig_num)
 
   /* kill process */
 
+  __gnat_kill (pid, sig_num, 1);
+#else
   __gnat_kill (pid, sig_num, 1);
 #endif
   /* Note on Solaris it is possible to read /proc/<PID>/status.

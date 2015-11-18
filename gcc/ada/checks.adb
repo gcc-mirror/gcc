@@ -2359,9 +2359,19 @@ package body Checks is
 
          --  Ensure that the actual is an object that is not passed by value.
          --  Elementary types are always passed by value, therefore actuals of
-         --  such types cannot lead to aliasing.
+         --  such types cannot lead to aliasing. An aggregate is an object in
+         --  Ada 2012, but an actual that is an aggregate cannot overlap with
+         --  another actual.
 
-         if Is_Object_Reference (Original_Actual (Actual_1))
+         if Nkind (Original_Actual (Actual_1)) = N_Aggregate
+           or else
+             (Nkind (Original_Actual (Actual_1)) = N_Qualified_Expression
+                and then Nkind (Expression (Original_Actual (Actual_1))) =
+                           N_Aggregate)
+         then
+            null;
+
+         elsif Is_Object_Reference (Original_Actual (Actual_1))
            and then not Is_Elementary_Type (Etype (Original_Actual (Actual_1)))
          then
             Actual_2 := Next_Actual (Actual_1);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                      Copyright (C) 2002-2010, AdaCore                    --
+--                      Copyright (C) 2002-2015, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,10 +39,18 @@ package body GNAT.Ctrl_C is
    procedure C_Handler;
    pragma Convention (C, C_Handler);
 
+   ---------------
+   -- C_Handler --
+   ---------------
+
    procedure C_Handler is
    begin
       Ada_Handler.all;
    end C_Handler;
+
+   ---------------------
+   -- Install_Handler --
+   ---------------------
 
    procedure Install_Handler (Handler : Handler_Type) is
       procedure Internal (Handler : C_Handler_Type);

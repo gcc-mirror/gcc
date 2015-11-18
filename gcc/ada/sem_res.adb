@@ -7231,9 +7231,13 @@ package body Sem_Res is
                   & "(SPARK RM 7.1.3(12))", N);
             end if;
 
-            --  Check possible elaboration issues with respect to variables
+            --  Check for possible elaboration issues with respect to reads of
+            --  variables. The act of renaming the variable is not considered a
+            --  read as it simply establishes an alias.
 
-            if Ekind (E) = E_Variable then
+            if Ekind (E) = E_Variable
+              and then Nkind (Par) /= N_Object_Renaming_Declaration
+            then
                Check_Elab_Call (N);
             end if;
          end if;

@@ -53,7 +53,7 @@
 --     1. Configuration pragmas, that must appear at the start of the file.
 --        Any such pragmas automatically apply to any unit compiled in the
 --        presence of this system file. Only a limited set of such pragmas
---        may appear as documented in the corresponding section below,
+--        may appear as documented in the corresponding section below.
 
 --     2. Target parameters. These are boolean constants that are defined
 --        in the private part of the package giving fixed information
@@ -107,7 +107,7 @@ package Targparm is
    --  If a pragma Detect_Blocking appears, then the flag Opt.Detect_Blocking
    --  is set to True.
 
-   --  if a pragma Suppress_Exception_Locations appears, then the flag
+   --  If a pragma Suppress_Exception_Locations appears, then the flag
    --  Opt.Exception_Locations_Suppressed is set to True.
 
    --  If a pragma Profile with a valid profile argument appears, then

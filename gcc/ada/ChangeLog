@@ -1,3 +1,34 @@
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Has_Full_Default_Initialization):
+	Perform the test for the presence of pragma
+	Default_Initial_Condition prior to the specialized type
+	checks. Add a missing case where the lack of a pragma argument
+	yields full default initialization.
+
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Do not check
+	for elaboration issues when a variable appears as the name of
+	an object renaming declaration as this constitutes an aliasing,
+	not a read.
+
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Overlap_Check): An actual that is an aggregate
+	cannot overlap with another actual, and no check should be
+	generated for it.
+	* targparm.ads: Fix typos.
+
+2015-11-18  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c: Routine __gnat_killprocesstree only implemented on
+	Linux and Windows.
+
+2015-11-18  Pascal Obry  <obry@adacore.com>
+
+	* g-ctrl_c.adb: Minor style fixes.
+
 2015-11-18  Pascal Obry  <obry@adacore.com>
 
 	* adaint.c, s-os_lib.adb, s-os_lib.ads (Kill_Process_Tree): New.
