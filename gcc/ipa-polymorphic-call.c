@@ -123,6 +123,8 @@ bool
 possible_placement_new (tree type, tree expected_type,
 			HOST_WIDE_INT cur_offset)
 {
+  if (cur_offset < 0)
+    return true;
   return ((TREE_CODE (type) != RECORD_TYPE
 	   || !TYPE_BINFO (type)
 	   || cur_offset >= POINTER_SIZE
@@ -197,6 +199,8 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 	   && tree_to_shwi (TYPE_SIZE (outer_type)) >= 0
 	   && tree_to_shwi (TYPE_SIZE (outer_type)) <= offset)
    {
+     bool der = maybe_derived_type; /* clear_outer_type will reset it.  */
+     bool dyn = dynamic;
      clear_outer_type (otr_type);
      type = otr_type;
      cur_offset = 0;
@@ -205,7 +209,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 	For dynamic types, we really do not have information about
 	size of the memory location.  It is possible that completely
 	different type is stored after outer_type.  */
-     if (!maybe_derived_type && !dynamic)
+     if (!der && !dyn)
        {
 	 clear_speculation ();
 	 invalid = true;
@@ -467,8 +471,10 @@ no_useful_type_info:
 		    return true;
 		}
 	      else
-		clear_speculation ();
-	      return true;
+		{
+		  clear_speculation ();
+	          return true;
+		}
 	    }
 	  else
 	    {
@@ -501,15 +507,18 @@ contains_type_p (tree outer_type, HOST_WIDE_INT offset,
   if (offset < 0)
     return false;
   if (TYPE_SIZE (outer_type) && TYPE_SIZE (otr_type)
-      && TREE_CODE (outer_type) == INTEGER_CST
-      && TREE_CODE (otr_type) == INTEGER_CST
-      && wi::ltu_p (wi::to_offset (outer_type), (wi::to_offset (otr_type) + offset)))
+      && TREE_CODE (TYPE_SIZE (outer_type)) == INTEGER_CST
+      && TREE_CODE (TYPE_SIZE (otr_type)) == INTEGER_CST
+      && wi::ltu_p (wi::to_offset (TYPE_SIZE (outer_type)),
+		    (wi::to_offset (TYPE_SIZE (otr_type)) + offset)))
     return false;
 
   context.offset = offset;
   context.outer_type = TYPE_MAIN_VARIANT (outer_type);
   context.maybe_derived_type = false;
-  return context.restrict_to_inner_class (otr_type, consider_placement_new, consider_bases);
+  context.dynamic = false;
+  return context.restrict_to_inner_class (otr_type, consider_placement_new,
+					  consider_bases);
 }
 
 
@@ -1441,7 +1450,21 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 	    && TYPE_SIZE (type)
 	    && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	    && tree_fits_shwi_p (TYPE_SIZE (type))
-	    && tree_to_shwi (TYPE_SIZE (type)) + offset > tci->offset)
+	    && tree_to_shwi (TYPE_SIZE (type)) + offset > tci->offset
+	    /* Some inlined constructors may look as follows:
+		  _3 = operator new (16);
+		  MEM[(struct  &)_3] ={v} {CLOBBER};
+		  MEM[(struct CompositeClass *)_3]._vptr.CompositeClass
+		    = &MEM[(void *)&_ZTV14CompositeClass + 16B];
+		  _7 = &MEM[(struct CompositeClass *)_3].object;
+		  EmptyClass::EmptyClass (_7);
+
+	       When determining dynamic type of _3 and because we stop at first
+	       dynamic type found, we would stop on EmptyClass::EmptyClass (_7).
+	       In this case the emptyclass is not even polymorphic and we miss
+	       it is contained in an outer type that is polymorphic.  */
+
+	    && (tci->offset == offset || contains_polymorphic_type_p (type)))
 	  {
 	    record_known_type (tci, type, tci->offset - offset);
 	    return true;
@@ -1519,6 +1542,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   /* Remember OFFSET before it is modified by restrict_to_inner_class.
      This is because we do not update INSTANCE when walking inwards.  */
   HOST_WIDE_INT instance_offset = offset;
+  tree instance_outer_type = outer_type;
 
   if (otr_type)
     otr_type = TYPE_MAIN_VARIANT (otr_type);
@@ -1599,7 +1623,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 	}
     }
  
-  /* If we failed to look up the refernece in code, build our own.  */
+  /* If we failed to look up the reference in code, build our own.  */
   if (!instance_ref)
     {
       /* If the statement in question does not use memory, we can't tell
@@ -1629,13 +1653,13 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
       print_generic_expr (dump_file, otr_object, TDF_SLIM);
       fprintf (dump_file, "  Outer instance pointer: ");
       print_generic_expr (dump_file, instance, TDF_SLIM);
-      fprintf (dump_file, " offset: %i (bits)", (int)offset);
+      fprintf (dump_file, " offset: %i (bits)", (int)instance_offset);
       fprintf (dump_file, " vtbl reference: ");
       print_generic_expr (dump_file, instance_ref, TDF_SLIM);
       fprintf (dump_file, "\n");
     }
 
-  tci.offset = offset;
+  tci.offset = instance_offset;
   tci.instance = instance;
   tci.vtbl_ptr_ref = instance_ref;
   gcc_assert (TREE_CODE (instance) != MEM_REF);
@@ -1701,9 +1725,12 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 	  && !dynamic
 	  && !tci.seen_unanalyzed_store
 	  && !tci.multiple_types_encountered
-	  && offset == tci.offset
-	  && types_same_for_odr (tci.known_current_type,
-				 outer_type)))
+	  && ((offset == tci.offset
+	       && types_same_for_odr (tci.known_current_type,
+				      outer_type))
+	       || (instance_offset == offset
+		   && types_same_for_odr (tci.known_current_type,
+					  instance_outer_type)))))
     {
       if (!outer_type || tci.seen_unanalyzed_store)
 	return false;

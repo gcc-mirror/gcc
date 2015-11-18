@@ -2790,9 +2790,8 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	{
 	  vec<edge> exits;
 	  edge ex;
-	  unsigned int j, i;
+	  unsigned int j;
 	  struct tree_niter_desc niter_desc;
-	  basic_block *body = get_loop_body (loop);
 	  bb_predicate = *(struct predicate *) loop->header->aux;
 
 	  exits = get_loop_exit_edges (loop);
@@ -2818,46 +2817,32 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	    }
 	  exits.release ();
 
-	  for (i = 0; i < loop->num_nodes; i++)
+	  for (gphi_iterator gsi = gsi_start_phis (loop->header);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
-	      gimple_stmt_iterator gsi;
-	      bb_predicate = *(struct predicate *) body[i]->aux;
-	      for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi);
-		   gsi_next (&gsi))
-		{
-		  gimple stmt = gsi_stmt (gsi);
-		  affine_iv iv;
-		  ssa_op_iter iter;
-		  tree use;
-
-		  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
-		  {
-		    predicate will_be_nonconstant;
-
-		    if (!simple_iv
-			(loop, loop_containing_stmt (stmt), use, &iv, true)
-			|| is_gimple_min_invariant (iv.step))
-		      continue;
-		    will_be_nonconstant
-		      = will_be_nonconstant_expr_predicate (fbi.info, info,
-							    iv.step,
-							    nonconstant_names);
-		    if (!true_predicate_p (&will_be_nonconstant))
-		      will_be_nonconstant
-			 = and_predicates (info->conds,
-					   &bb_predicate,
-					   &will_be_nonconstant);
-		    if (!true_predicate_p (&will_be_nonconstant)
-			&& !false_predicate_p (&will_be_nonconstant))
-		      /* This is slightly inprecise.  We may want to represent
-			 each loop with independent predicate.  */
-		      loop_stride =
-			and_predicates (info->conds, &loop_stride,
-					&will_be_nonconstant);
-		  }
-		}
+	      gphi *phi = gsi.phi ();
+	      tree use = gimple_phi_result (phi);
+	      affine_iv iv;
+	      predicate will_be_nonconstant;
+	      if (virtual_operand_p (use)
+		  || !simple_iv (loop, loop, use, &iv, true)
+		  || is_gimple_min_invariant (iv.step))
+		continue;
+	      will_be_nonconstant
+		= will_be_nonconstant_expr_predicate (fbi.info, info,
+						      iv.step,
+						      nonconstant_names);
+	      if (!true_predicate_p (&will_be_nonconstant))
+		will_be_nonconstant = and_predicates (info->conds,
+						      &bb_predicate,
+						      &will_be_nonconstant);
+	      if (!true_predicate_p (&will_be_nonconstant)
+		  && !false_predicate_p (&will_be_nonconstant))
+		/* This is slightly inprecise.  We may want to represent
+		   each loop with independent predicate.  */
+		loop_stride = and_predicates (info->conds, &loop_stride,
+					      &will_be_nonconstant);
 	    }
-	  free (body);
 	}
       set_hint_predicate (&inline_summaries->get (node)->loop_iterations,
 			  loop_iterations);

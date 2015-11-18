@@ -1,3 +1,44 @@
+2015-11-18  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/68057
+	PR ipa/68220
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_type): Fix ordering
+	issue when offset is out of range.
+	(contains_type_p): Fix out of range check, clear dynamic flag.
+
+	2015-10-23  Jan Hubicka  <hubicka@ucw.cz>
+ 
+	PR ipa/pr67600
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::get_dynamic_type): Do not confuse
+	instance offset with offset of outer type.
+ 
+	2015-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/67783
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Re-add
+	code that analyzes IVs on each stmt but in a cheaper way avoiding
+	quadratic behavior.
+
+	2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
+ 
+	PR ipa/67056
+	* ipa-polymorphic-call.c (possible_placement_new): If cur_offset
+	is negative we don't know the type.
+	(check_stmt_for_type_change): Skip constructors of non-polymorphic
+	types as those won't help devirutalization.
+
+	2015-08-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/66098
+	PR c/66711
+	* diagnostic.c (diagnostic_classify_diagnostic): Take -Werror into
+	account when deciding what was the command-line status.
+
 2015-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
