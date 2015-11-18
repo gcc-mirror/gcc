@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                    S Y S T E M . S T R I N G _ H A S H                   --
+--                      G N A T . S T R I N G _ H A S H                     --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2015, Free Software Foundation, Inc.         --
+--             Copyright (C) 2015, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,28 +37,7 @@
 --  cryptographically strong hashes, or for application which wish to use very
 --  wide hash values as pseudo unique identifiers. In such cases please refer
 --  to GNAT.SHA1 and GNAT.MD5.
---
---  Note: this package is in the System hierarchy so that it can be directly
---  be used by other predefined packages. User access to this package is via
---  a renaming of this package in GNAT.String_Hash (file g-strhas.ads).
 
-package System.String_Hash is
-   pragma Pure;
+with System.String_Hash;
 
-   generic
-      type Char_Type is (<>);
-      --  The character type composing the key string type
-
-      type Key_Type is array (Positive range <>) of Char_Type;
-      --  The string type to use as a hash key
-
-      type Hash_Type is mod <>;
-      --  The type to be returned as a hash value. This must be a 32-bit
-      --  unsigned type with full range 0 .. 2**32-1, no other type is allowed
-      --  for this instantiation (checked in the body by Compile_Time_Error).
-
-   function Hash (Key : Key_Type) return Hash_Type;
-   pragma Inline (Hash);
-   --  Compute a hash value for a key
-
-end System.String_Hash;
+package GNAT.String_Hash renames System.String_Hash;

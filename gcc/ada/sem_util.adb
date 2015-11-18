@@ -3717,16 +3717,14 @@ package body Sem_Util is
    ------------------------------
 
    procedure Check_Unused_Body_States (Body_Id : Entity_Id) is
-      Legal_Constits : Boolean := True;
-      --  This flag designates whether all constituents of pragma Refined_State
-      --  are legal. The flag is used to suppress the generation of potentially
-      --  misleading error messages due to a malformed pragma.
-
       procedure Process_Refinement_Clause
         (Clause : Node_Id;
          States : Elist_Id);
       --  Inspect all constituents of refinement clause Clause and remove any
       --  matches from body state list States.
+
+      procedure Report_Unused_Body_States (States : Elist_Id);
+      --  Emit errors for each abstract state or object found in list States
 
       -------------------------------
       -- Process_Refinement_Clause --
@@ -3747,10 +3745,6 @@ package body Sem_Util is
             Constit_Id : Entity_Id;
 
          begin
-            if Error_Posted (Constit) then
-               Legal_Constits := False;
-            end if;
-
             --  Guard against illegal constituents. Only abstract states and
             --  objects can appear on the right hand side of a refinement.
 
@@ -3794,10 +3788,63 @@ package body Sem_Util is
          end if;
       end Process_Refinement_Clause;
 
+      -------------------------------
+      -- Report_Unused_Body_States --
+      -------------------------------
+
+      procedure Report_Unused_Body_States (States : Elist_Id) is
+         Posted     : Boolean := False;
+         State_Elmt : Elmt_Id;
+         State_Id   : Entity_Id;
+
+      begin
+         if Present (States) then
+            State_Elmt := First_Elmt (States);
+            while Present (State_Elmt) loop
+               State_Id := Node (State_Elmt);
+
+               --  Constants are part of the hidden state of a package, but the
+               --  compiler cannot determine whether they have variable input
+               --  (SPARK RM 7.1.1(2)) and cannot classify them properly as a
+               --  hidden state. Do not emit an error when a constant does not
+               --  participate in a state refinement, even though it acts as a
+               --  hidden state.
+
+               if Ekind (State_Id) = E_Constant then
+                  null;
+
+               --  Generate an error message of the form:
+
+               --    body of package ... has unused hidden states
+               --      abstract state ... defined at ...
+               --      variable ... defined at ...
+
+               else
+                  if not Posted then
+                     Posted := True;
+                     SPARK_Msg_N
+                       ("body of package & has unused hidden states", Body_Id);
+                  end if;
+
+                  Error_Msg_Sloc := Sloc (State_Id);
+
+                  if Ekind (State_Id) = E_Abstract_State then
+                     SPARK_Msg_NE
+                       ("\abstract state & defined #", Body_Id, State_Id);
+
+                  else
+                     SPARK_Msg_NE ("\variable & defined #", Body_Id, State_Id);
+                  end if;
+               end if;
+
+                  Next_Elmt (State_Elmt);
+            end loop;
+         end if;
+      end Report_Unused_Body_States;
+
       --  Local variables
 
-      Prag    : constant Node_Id   :=
-                  Get_Pragma (Body_Id, Pragma_Refined_State);
+      Prag    : constant Node_Id := Get_Pragma (Body_Id, Pragma_Refined_State);
       Spec_Id : constant Entity_Id := Spec_Entity (Body_Id);
       Clause  : Node_Id;
       States  : Elist_Id;
@@ -3806,8 +3853,8 @@ package body Sem_Util is
 
    begin
       --  Inspect the clauses of pragma Refined_State and determine whether all
-      --  visible states declared within the body of the package participate in
-      --  the refinement.
+      --  visible states declared within the package body participate in the
+      --  refinement.
 
       if Present (Prag) then
          Clause := Expression (Get_Argument (Prag, Spec_Id));
@@ -3828,12 +3875,10 @@ package body Sem_Util is
             Process_Refinement_Clause (Clause, States);
          end if;
 
-         --  Ensure that all abstract states and objects declared in the body
-         --  state space of the related package are utilized as constituents.
+         --  Ensure that all abstract states and objects declared in the
+         --  package body state space are utilized as constituents.
 
-         if Legal_Constits then
-            Report_Unused_Body_States (Body_Id, States);
-         end if;
+         Report_Unused_Body_States (States);
       end if;
    end Check_Unused_Body_States;
 
@@ -3842,6 +3887,10 @@ package body Sem_Util is
    -------------------------
 
    function Collect_Body_States (Body_Id : Entity_Id) return Elist_Id is
+      function Is_Visible_Object (Obj_Id : Entity_Id) return Boolean;
+      --  Determine whether object Obj_Id is a suitable visible state of a
+      --  package body.
+
       procedure Collect_Visible_States
         (Pack_Id : Entity_Id;
          States  : in out Elist_Id);
@@ -3874,13 +3923,8 @@ package body Sem_Util is
             elsif Ekind (Item_Id) = E_Abstract_State then
                Append_New_Elmt (Item_Id, States);
 
-            --  Do not consider objects that map generic formals to their
-            --  actuals, as the formals cannot be named from the outside and
-            --  participate in refinement.
-
             elsif Ekind_In (Item_Id, E_Constant, E_Variable)
-              and then No (Corresponding_Generic_Association
-                             (Declaration_Node (Item_Id)))
+              and then Is_Visible_Object (Item_Id)
             then
                Append_New_Elmt (Item_Id, States);
 
@@ -3894,6 +3938,34 @@ package body Sem_Util is
          end loop;
       end Collect_Visible_States;
 
+      -----------------------
+      -- Is_Visible_Object --
+      -----------------------
+
+      function Is_Visible_Object (Obj_Id : Entity_Id) return Boolean is
+      begin
+         --  Objects that map generic formals to their actuals are not visible
+         --  from outside the generic instantiation.
+
+         if Present (Corresponding_Generic_Association
+                       (Declaration_Node (Obj_Id)))
+         then
+            return False;
+
+         --  Constituents of a single protected/task type act as components of
+         --  the type and are not visible from outside the type.
+
+         elsif Ekind (Obj_Id) = E_Variable
+           and then Present (Encapsulating_State (Obj_Id))
+           and then Is_Single_Concurrent_Object (Encapsulating_State (Obj_Id))
+         then
+            return False;
+
+         else
+            return True;
+         end if;
+      end Is_Visible_Object;
+
       --  Local variables
 
       Body_Decl : constant Node_Id := Unit_Declaration_Node (Body_Id);
@@ -3905,7 +3977,9 @@ package body Sem_Util is
 
    begin
       --  Inspect the declarations of the body looking for source objects,
-      --  packages and package instantiations.
+      --  packages and package instantiations. Note that even though this
+      --  processing is very similar to Collect_Visible_States, a package
+      --  body does not have a First/Next_Entity list.
 
       Decl := First (Declarations (Body_Decl));
       while Present (Decl) loop
@@ -3916,7 +3990,9 @@ package body Sem_Util is
          if Nkind (Decl) = N_Object_Declaration then
             Item_Id := Defining_Entity (Decl);
 
-            if Comes_From_Source (Item_Id) then
+            if Comes_From_Source (Item_Id)
+              and then Is_Visible_Object (Item_Id)
+            then
                Append_New_Elmt (Item_Id, States);
             end if;
 
@@ -7254,8 +7330,7 @@ package body Sem_Util is
    function Fix_Msg (Id : Entity_Id; Msg : String) return String is
       Is_Task   : constant Boolean :=
                     Ekind_In (Id, E_Task_Body, E_Task_Type)
-                      or else (Is_Single_Concurrent_Object (Id)
-                                and then Ekind (Etype (Id)) = E_Task_Type);
+                      or else Is_Single_Task_Object (Id);
       Msg_Last  : constant Natural := Msg'Last;
       Msg_Index : Natural;
       Res       : String (Msg'Range) := (others => ' ');
@@ -9992,6 +10067,47 @@ package body Sem_Util is
          return False;
       end if;
    end Has_Tagged_Component;
+
+   -----------------------------
+   -- Has_Undefined_Reference --
+   -----------------------------
+
+   function Has_Undefined_Reference (Expr : Node_Id) return Boolean is
+      Has_Undef_Ref : Boolean := False;
+      --  Flag set when expression Expr contains at least one undefined
+      --  reference.
+
+      function Is_Undefined_Reference (N : Node_Id) return Traverse_Result;
+      --  Determine whether N denotes a reference and if it does, whether it is
+      --  undefined.
+
+      ----------------------------
+      -- Is_Undefined_Reference --
+      ----------------------------
+
+      function Is_Undefined_Reference (N : Node_Id) return Traverse_Result is
+      begin
+         if Is_Entity_Name (N)
+           and then Present (Entity (N))
+           and then Entity (N) = Any_Id
+         then
+            Has_Undef_Ref := True;
+            return Abandon;
+         end if;
+
+         return OK;
+      end Is_Undefined_Reference;
+
+      procedure Find_Undefined_References is
+        new Traverse_Proc (Is_Undefined_Reference);
+
+   --  Start of processing for Has_Undefined_Reference
+
+   begin
+      Find_Undefined_References (Expr);
+
+      return Has_Undef_Ref;
+   end Has_Undefined_Reference;
 
    ----------------------------
    -- Has_Volatile_Component --
@@ -13414,8 +13530,7 @@ package body Sem_Util is
    function Is_Single_Concurrent_Object (Id : Entity_Id) return Boolean is
    begin
       return
-        Ekind (Id) = E_Variable
-          and then Is_Single_Concurrent_Type (Etype (Id));
+        Is_Single_Protected_Object (Id) or else Is_Single_Task_Object (Id);
    end Is_Single_Concurrent_Object;
 
    -------------------------------
@@ -13455,6 +13570,30 @@ package body Sem_Util is
         and then Machine_Emax_Value (E) = Uint_2 ** Uint_7
         and then Machine_Emin_Value (E) = Uint_3 - (Uint_2 ** Uint_7);
    end Is_Single_Precision_Floating_Point_Type;
+
+   --------------------------------
+   -- Is_Single_Protected_Object --
+   --------------------------------
+
+   function Is_Single_Protected_Object (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Ekind (Id) = E_Variable
+          and then Ekind (Etype (Id)) = E_Protected_Type
+          and then Is_Single_Concurrent_Type (Etype (Id));
+   end Is_Single_Protected_Object;
+
+   ---------------------------
+   -- Is_Single_Task_Object --
+   ---------------------------
+
+   function Is_Single_Task_Object (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Ekind (Id) = E_Variable
+          and then Ekind (Etype (Id)) = E_Task_Type
+          and then Is_Single_Concurrent_Type (Etype (Id));
+   end Is_Single_Task_Object;
 
    -------------------------------------
    -- Is_SPARK_05_Initialization_Expr --
@@ -17633,63 +17772,6 @@ package body Sem_Util is
       return New_Occurrence_Of
                (Boolean_Literals (not Range_Checks_Suppressed (E)), Loc);
    end Rep_To_Pos_Flag;
-
-   -------------------------------
-   -- Report_Unused_Body_States --
-   -------------------------------
-
-   procedure Report_Unused_Body_States
-     (Body_Id : Entity_Id;
-      States  : Elist_Id)
-   is
-      Posted     : Boolean := False;
-      State_Elmt : Elmt_Id;
-      State_Id   : Entity_Id;
-
-   begin
-      if Present (States) then
-         State_Elmt := First_Elmt (States);
-         while Present (State_Elmt) loop
-            State_Id := Node (State_Elmt);
-
-            --  Constants are part of the hidden state of a package, but the
-            --  compiler cannot determine whether they have variable input
-            --  (SPARK RM 7.1.1(2)) and cannot classify them properly as a
-            --  hidden state. Do not emit an error when a constant does not
-            --  participate in a state refinement, even though it acts as a
-            --  hidden state.
-
-            if Ekind (State_Id) = E_Constant then
-               null;
-
-            --  Generate an error message of the form:
-
-            --    body of package ... has unused hidden states
-            --      abstract state ... defined at ...
-            --      variable ... defined at ...
-
-            else
-               if not Posted then
-                  Posted := True;
-                  SPARK_Msg_N
-                    ("body of package & has unused hidden states", Body_Id);
-               end if;
-
-               Error_Msg_Sloc := Sloc (State_Id);
-
-               if Ekind (State_Id) = E_Abstract_State then
-                  SPARK_Msg_NE
-                    ("\abstract state & defined #", Body_Id, State_Id);
-
-               else
-                  SPARK_Msg_NE ("\variable & defined #", Body_Id, State_Id);
-               end if;
-            end if;
-
-            Next_Elmt (State_Elmt);
-         end loop;
-      end if;
-   end Report_Unused_Body_States;
 
    --------------------
    -- Require_Entity --

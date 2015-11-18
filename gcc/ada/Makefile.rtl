@@ -455,6 +455,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-sptabo$(objext) \
   g-sptain$(objext) \
   g-sptavs$(objext) \
+  g-strhas$(objext) \
   g-string$(objext) \
   g-strspl$(objext) \
   g-table$(objext) \

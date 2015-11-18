@@ -1294,15 +1294,6 @@ package body Sem_Ch6 is
             Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
          end if;
 
-         --  A generic subprogram body "freezes" the contract of its initial
-         --  declaration. This analysis depends on attribute Corresponding_Spec
-         --  being set. Only bodies coming from source should cause this type
-         --  of "freezing".
-
-         if Comes_From_Source (N) then
-            Analyze_Initial_Declaration_Contract (N);
-         end if;
-
          Analyze_Declarations (Declarations (N));
          Check_Completion;
 
@@ -2988,7 +2979,8 @@ package body Sem_Ch6 is
 
    begin
       --  A [generic] subprogram body "freezes" the contract of the nearest
-      --  enclosing package body:
+      --  enclosing package body and all other contracts encountered in the
+      --  same declarative part upto and excluding the subprogram body:
 
       --    package body Nearest_Enclosing_Package
       --      with Refined_State => (State => Constit)
@@ -3009,7 +3001,7 @@ package body Sem_Ch6 is
       --  Original_Node.
 
       if Comes_From_Source (Original_Node (N)) then
-         Analyze_Enclosing_Package_Body_Contract (N);
+         Analyze_Previous_Contracts (N);
       end if;
 
       --  Generic subprograms are handled separately. They always have a
@@ -3785,14 +3777,6 @@ package body Sem_Ch6 is
 
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
-      end if;
-
-      --  A subprogram body "freezes" the contract of its initial declaration.
-      --  This analysis depends on attribute Corresponding_Spec being set. Only
-      --  bodies coming from source should cause this type of "freezing".
-
-      if Comes_From_Source (N) then
-         Analyze_Initial_Declaration_Contract (N);
       end if;
 
       Analyze_Declarations (Declarations (N));

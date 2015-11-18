@@ -312,6 +312,7 @@ package body Impunit is
     ("g-sptabo", F),  -- GNAT.Spitbol.Table_Boolean
     ("g-sptain", F),  -- GNAT.Spitbol.Table_Integer
     ("g-sptavs", F),  -- GNAT.Spitbol.Table_Vstring
+    ("g-strhas", F),  -- GNAT.String_Hash
     ("g-string", F),  -- GNAT.Strings
     ("g-strspl", F),  -- GNAT.String_Split
     ("g-sse   ", F),  -- GNAT.SSE
