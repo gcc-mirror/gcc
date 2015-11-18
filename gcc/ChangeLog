@@ -1,5 +1,9 @@
 2015-11-18  Martin Liska  <mliska@suse.cz>
 
+	* haifa-sched.c (haifa_finish_h_i_d): Release reg_set_list.
+
+2015-11-18  Martin Liska  <mliska@suse.cz>
+
 	* tree-ssa-uninit.c (convert_control_dep_chain_into_preds):
 	Fix GNU coding style.
 	(find_def_preds): Use auto_vec.
