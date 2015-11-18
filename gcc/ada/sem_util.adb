@@ -8852,9 +8852,41 @@ package body Sem_Util is
    -------------------------------------
 
    function Has_Full_Default_Initialization (Typ : Entity_Id) return Boolean is
+      Arg  : Node_Id;
       Comp : Entity_Id;
+      Prag : Node_Id;
 
    begin
+      --  A private type and its full view is fully default initialized when it
+      --  is subject to pragma Default_Initial_Condition without an argument or
+      --  with a non-null argument. Since any type may act as the full view of
+      --  a private type, this check must be performed prior to the specialized
+      --  tests below.
+
+      if Has_Default_Init_Cond (Typ)
+        or else Has_Inherited_Default_Init_Cond (Typ)
+      then
+         Prag := Get_Pragma (Typ, Pragma_Default_Initial_Condition);
+
+         --  Pragma Default_Initial_Condition must be present if one of the
+         --  related entity flags is set.
+
+         pragma Assert (Present (Prag));
+         Arg := First (Pragma_Argument_Associations (Prag));
+
+         --  A non-null argument guarantees full default initialization
+
+         if Present (Arg) then
+            return Nkind (Arg) /= N_Null;
+
+         --  Otherwise the missing argument defaults the pragma to "True" which
+         --  is considered a non-null argument (see above).
+
+         else
+            return True;
+         end if;
+      end if;
+
       --  A scalar type is fully default initialized if it is subject to aspect
       --  Default_Value.
 
@@ -8911,20 +8943,6 @@ package body Sem_Util is
 
       elsif Is_Task_Type (Typ) then
          return True;
-      end if;
-
-      --  A private type and by extension its full view is fully default
-      --  initialized if it is subject to pragma Default_Initial_Condition
-      --  with a non-null argument or inherits the pragma from a parent type.
-      --  Since any type can act as the full view of a private type, this check
-      --  is separated from the circuitry above.
-
-      if Has_Default_Init_Cond (Typ)
-        or else Has_Inherited_Default_Init_Cond (Typ)
-      then
-         return
-           Nkind (First (Pragma_Argument_Associations (Get_Pragma
-             (Typ, Pragma_Default_Initial_Condition)))) /= N_Null;
 
       --  Otherwise the type is not fully default initialized
 
