@@ -1,3 +1,8 @@
+2015-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR bootstrap/68406
+	* hash-set.h (hash_set::traverse): Expand Key typedef.
+
 2015-11-18  Martin Liska  <mliska@suse.cz>
 
 	* config/arm/arm.c (arm_valid_target_attribute_p): Finalize
