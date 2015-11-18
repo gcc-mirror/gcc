@@ -201,9 +201,9 @@ package body Exp_Ch3 is
    --  subprogram they rename is not frozen when the type is frozen.
 
    procedure Insert_Component_Invariant_Checks
-     (N   : Node_Id;
-     Typ  : Entity_Id;
-     Proc : Node_Id);
+     (N    : Node_Id;
+      Typ  : Entity_Id;
+      Proc : Node_Id);
    --  If a composite type has invariants and also has components with defined
    --  invariants. the component invariant procedure is inserted into the user-
    --  defined invariant procedure and added to the checks to be performed.
@@ -5197,8 +5197,8 @@ package body Exp_Ch3 is
                if Ekind (Comp) = E_Component
                  and then Chars (Comp) = Chars (Old_Comp)
                then
-                  Set_Discriminant_Checking_Func (Comp,
-                    Discriminant_Checking_Func (Old_Comp));
+                  Set_Discriminant_Checking_Func
+                    (Comp, Discriminant_Checking_Func (Old_Comp));
                end if;
 
                Next_Component (Old_Comp);
@@ -6083,20 +6083,19 @@ package body Exp_Ch3 is
 
          --  Local variables
 
-         Abrt_Blk   : Node_Id;
-         Abrt_HSS   : Node_Id;
-         Abrt_Id    : Entity_Id;
-         Abrt_Stmts : List_Id;
-         Aggr_Init  : Node_Id;
-         Comp_Init  : List_Id := No_List;
-         Fin_Call   : Node_Id;
-         Fin_Stmts  : List_Id := No_List;
-         Obj_Init   : Node_Id := Empty;
-         Obj_Ref    : Node_Id;
+         Exceptions_OK : constant Boolean :=
+                           not Restriction_Active (No_Exception_Propagation);
 
-         Dummy : Entity_Id;
-         --  This variable captures a dummy internal entity, see the comment
-         --  associated with its use.
+         Abrt_Blk    : Node_Id;
+         Abrt_Blk_Id : Entity_Id;
+         Abrt_HSS    : Node_Id;
+         Aggr_Init   : Node_Id;
+         AUD         : Entity_Id;
+         Comp_Init   : List_Id := No_List;
+         Fin_Call    : Node_Id;
+         Init_Stmts  : List_Id := No_List;
+         Obj_Init    : Node_Id := Empty;
+         Obj_Ref     : Node_Id;
 
       --  Start of processing for Default_Initialize_Object
 
@@ -6112,19 +6111,25 @@ package body Exp_Ch3 is
             return;
          end if;
 
-         --  Step 1: Initialize the object
+         --  The expansion performed by this routine is as follows:
 
-         if Needs_Finalization (Typ) and then not No_Initialization (N) then
-            Obj_Init :=
-              Make_Init_Call
-                (Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
-                 Typ     => Typ);
-         end if;
+         --    begin
+         --       Abort_Defer;
+         --       Type_Init_Proc (Obj);
 
-         --  Step 2: Initialize the components of the object
+         --       begin
+         --          [Deep_]Initialize (Obj);
 
-         --  Do not initialize the components if their initialization is
-         --  prohibited.
+         --       exception
+         --          when others =>
+         --             [Deep_]Finalize (Obj, Self => False);
+         --             raise;
+         --       end;
+         --    at end
+         --       Abort_Undefer_Direct;
+         --    end;
+
+         --  Initialize the components of the object
 
          if Has_Non_Null_Base_Init_Proc (Typ)
            and then not No_Initialization (N)
@@ -6154,7 +6159,8 @@ package body Exp_Ch3 is
                elsif Build_Equivalent_Aggregate then
                   null;
 
-               --  Otherwise invoke the type init proc
+               --  Otherwise invoke the type init proc, generate:
+               --    Type_Init_Proc (Obj);
 
                else
                   Obj_Ref := New_Object_Reference;
@@ -6182,41 +6188,35 @@ package body Exp_Ch3 is
             Analyze_And_Resolve (Expression (N), Typ);
          end if;
 
-         --  Step 3: Add partial finalization and abort actions, generate:
+         --  Initialize the object, generate:
+         --    [Deep_]Initialize (Obj);
 
-         --    Type_Init_Proc (Obj);
+         if Needs_Finalization (Typ) and then not No_Initialization (N) then
+            Obj_Init :=
+              Make_Init_Call
+                (Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
+                 Typ     => Typ);
+         end if;
+
+         --  Build a special finalization block when both the object and its
+         --  controlled components are to be initialized. The block finalizes
+         --  the components if the object initialization fails. Generate:
+
          --    begin
-         --       Deep_Initialize (Obj);
+         --       <Obj_Init>
+
          --    exception
          --       when others =>
-         --          Deep_Finalize (Obj, Self => False);
+         --          <Fin_Call>
          --          raise;
          --    end;
-
-         --  Step 3a: Build the finalization block (if applicable)
-
-         --  The finalization block is required when both the object and its
-         --  controlled components are to be initialized. The block finalizes
-         --  the components if the object initialization fails.
 
          if Has_Controlled_Component (Typ)
            and then Present (Comp_Init)
            and then Present (Obj_Init)
-           and then not Restriction_Active (No_Exception_Propagation)
+           and then Exceptions_OK
          then
-            --  Generate:
-            --    Type_Init_Proc (Obj);
-
-            Fin_Stmts := Comp_Init;
-
-            --  Generate:
-            --    begin
-            --       Deep_Initialize (Obj);
-            --    exception
-            --       when others =>
-            --          Deep_Finalize (Obj, Self => False);
-            --          raise;
-            --    end;
+            Init_Stmts := Comp_Init;
 
             Fin_Call :=
               Make_Final_Call
@@ -6232,7 +6232,7 @@ package body Exp_Ch3 is
 
                Set_No_Elaboration_Check (Fin_Call);
 
-               Append_To (Fin_Stmts,
+               Append_To (Init_Stmts,
                  Make_Block_Statement (Loc,
                    Declarations               => No_List,
 
@@ -6250,100 +6250,93 @@ package body Exp_Ch3 is
                              Make_Raise_Statement (Loc)))))));
             end if;
 
-         --  Finalization is not required, the initialization calls are passed
-         --  to the abort block building circuitry, generate:
+         --  Otherwise finalization is not required, the initialization calls
+         --  are passed to the abort block building circuitry, generate:
 
          --    Type_Init_Proc (Obj);
-         --    Deep_Initialize (Obj);
+         --    [Deep_]Initialize (Obj);
 
          else
             if Present (Comp_Init) then
-               Fin_Stmts := Comp_Init;
+               Init_Stmts := Comp_Init;
             end if;
 
             if Present (Obj_Init) then
-               if No (Fin_Stmts) then
-                  Fin_Stmts := New_List;
+               if No (Init_Stmts) then
+                  Init_Stmts := New_List;
                end if;
 
-               Append_To (Fin_Stmts, Obj_Init);
+               Append_To (Init_Stmts, Obj_Init);
             end if;
          end if;
 
-         --  Step 3b: Build the abort block (if applicable)
+         --  Build an abort block to protect the initialization calls
 
-         --  The abort block is required when aborts are allowed in order to
-         --  protect both initialization calls.
+         if Abort_Allowed
+           and then Present (Comp_Init)
+           and then Present (Obj_Init)
+         then
+            --  Generate:
+            --    Abort_Defer;
 
-         if Present (Comp_Init) and then Present (Obj_Init) then
-            if Abort_Allowed then
+            Prepend_To (Init_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
 
-               --  Generate:
-               --    Abort_Defer;
+            --  When exceptions are propagated, abort deferral must take place
+            --  in the presence of initialization or finalization exceptions.
+            --  Generate:
 
-               Prepend_To
-                 (Fin_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
+            --    begin
+            --       Abort_Defer;
+            --       <Init_Stmts>
+            --    at end
+            --       Abort_Undefer_Direct;
+            --    end;
 
-               --  Generate:
-               --    begin
-               --       Abort_Defer;
-               --       <finalization statements>
-               --    at end
-               --       Abort_Undefer_Direct;
-               --    end;
+            if Exceptions_OK then
+               AUD := RTE (RE_Abort_Undefer_Direct);
 
-               declare
-                  AUD : constant Entity_Id := RTE (RE_Abort_Undefer_Direct);
-
-               begin
-                  Abrt_HSS :=
-                    Make_Handled_Sequence_Of_Statements (Loc,
-                      Statements  => Fin_Stmts,
-                      At_End_Proc => New_Occurrence_Of (AUD, Loc));
-
-                  --  Present the Abort_Undefer_Direct function to the backend
-                  --  so that it can inline the call to the function.
-
-                  Add_Inlined_Body (AUD, N);
-               end;
+               Abrt_HSS :=
+                 Make_Handled_Sequence_Of_Statements (Loc,
+                   Statements  => Init_Stmts,
+                   At_End_Proc => New_Occurrence_Of (AUD, Loc));
 
                Abrt_Blk :=
                  Make_Block_Statement (Loc,
-                   Declarations               => No_List,
                    Handled_Statement_Sequence => Abrt_HSS);
 
-               Add_Block_Identifier (Abrt_Blk, Abrt_Id);
-               Expand_At_End_Handler (Abrt_HSS, Abrt_Id);
+               Add_Block_Identifier  (Abrt_Blk, Abrt_Blk_Id);
+               Expand_At_End_Handler (Abrt_HSS, Abrt_Blk_Id);
 
-               Abrt_Stmts := New_List (Abrt_Blk);
+               --  Present the Abort_Undefer_Direct function to the backend so
+               --  that it can inline the call to the function.
 
-            --  Abort is not required
+               Add_Inlined_Body (AUD, N);
+
+               Init_Stmts := New_List (Abrt_Blk);
+
+            --  Otherwise exceptions are not propagated. Generate:
+
+            --    Abort_Defer;
+            --    <Init_Stmts>
+            --    Abort_Undefer;
 
             else
-               --  Generate a dummy entity to ensure that the internal symbols
-               --  are in sync when a unit is compiled with and without aborts.
-               --  The entity is a block with proper scope and type.
-
-               Dummy := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
-               Set_Etype (Dummy, Standard_Void_Type);
-               Abrt_Stmts := Fin_Stmts;
+               Append_To (Init_Stmts,
+                 Build_Runtime_Call (Loc, RE_Abort_Undefer));
             end if;
-
-         --  No initialization calls present
-
-         else
-            Abrt_Stmts := Fin_Stmts;
          end if;
 
-         --  Step 4: Insert the whole initialization sequence into the tree
-         --  If the object has a delayed freeze, as will be the case when
-         --  it has aspect specifications, the initialization sequence is
-         --  part of the freeze actions.
+         --  Insert the whole initialization sequence into the tree. If the
+         --  object has a delayed freeze, as will be the case when it has
+         --  aspect specifications, the initialization sequence is part of
+         --  the freeze actions.
 
-         if Has_Delayed_Freeze (Def_Id) then
-            Append_Freeze_Actions (Def_Id, Abrt_Stmts);
-         else
-            Insert_Actions_After (After, Abrt_Stmts);
+         if Present (Init_Stmts) then
+            if Has_Delayed_Freeze (Def_Id) then
+               Append_Freeze_Actions (Def_Id, Init_Stmts);
+            else
+               Insert_Actions_After (After, Init_Stmts);
+            end if;
          end if;
       end Default_Initialize_Object;
 

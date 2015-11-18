@@ -4315,15 +4315,18 @@ package body Exp_Ch9 is
       if Nkind (Op_Spec) = N_Function_Specification then
          if Exc_Safe then
             R := Make_Temporary (Loc, 'R');
+
             Unprot_Call :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => R,
-                Constant_Present => True,
-                Object_Definition => New_Copy (Result_Definition (N_Op_Spec)),
-                Expression =>
+                Constant_Present    => True,
+                Object_Definition   =>
+                  New_Copy (Result_Definition (N_Op_Spec)),
+                Expression          =>
                   Make_Function_Call (Loc,
-                    Name => Make_Identifier (Loc,
-                      Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
+                    Name                   =>
+                      Make_Identifier (Loc,
+                        Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
                     Parameter_Associations => Uactuals));
 
             Return_Stmt :=
@@ -4331,12 +4334,14 @@ package body Exp_Ch9 is
                 Expression => New_Occurrence_Of (R, Loc));
 
          else
-            Unprot_Call := Make_Simple_Return_Statement (Loc,
-              Expression => Make_Function_Call (Loc,
-                Name =>
-                  Make_Identifier (Loc,
-                    Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
-                Parameter_Associations => Uactuals));
+            Unprot_Call :=
+              Make_Simple_Return_Statement (Loc,
+                Expression =>
+                  Make_Function_Call (Loc,
+                    Name                   =>
+                      Make_Identifier (Loc,
+                        Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
+                    Parameter_Associations => Uactuals));
          end if;
 
          Lock_Kind := RE_Lock_Read_Only;
@@ -4344,7 +4349,7 @@ package body Exp_Ch9 is
       else
          Unprot_Call :=
            Make_Procedure_Call_Statement (Loc,
-             Name =>
+             Name                   =>
                Make_Identifier (Loc, Chars (Defining_Unit_Name (N_Op_Spec))),
              Parameter_Associations => Uactuals);
 
@@ -4354,10 +4359,11 @@ package body Exp_Ch9 is
       --  Wrap call in block that will be covered by an at_end handler
 
       if not Exc_Safe then
-         Unprot_Call := Make_Block_Statement (Loc,
-           Handled_Statement_Sequence =>
-             Make_Handled_Sequence_Of_Statements (Loc,
-               Statements => New_List (Unprot_Call)));
+         Unprot_Call :=
+           Make_Block_Statement (Loc,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Unprot_Call)));
       end if;
 
       --  Make the protected subprogram body. This locks the protected
@@ -4379,21 +4385,20 @@ package body Exp_Ch9 is
 
       Object_Parm :=
         Make_Attribute_Reference (Loc,
-           Prefix =>
+           Prefix         =>
              Make_Selected_Component (Loc,
                Prefix        => Make_Identifier (Loc, Name_uObject),
                Selector_Name => Make_Identifier (Loc, Name_uObject)),
            Attribute_Name => Name_Unchecked_Access);
 
-      Lock_Stmt := Make_Procedure_Call_Statement (Loc,
-        Name => Lock_Name,
-        Parameter_Associations => New_List (Object_Parm));
+      Lock_Stmt :=
+        Make_Procedure_Call_Statement (Loc,
+          Name                   => Lock_Name,
+          Parameter_Associations => New_List (Object_Parm));
 
       if Abort_Allowed then
          Stmts := New_List (
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Abort_Defer), Loc),
-             Parameter_Associations => Empty_List),
+           Build_Runtime_Call (Loc, RE_Abort_Defer),
            Lock_Stmt);
 
       else
@@ -4417,20 +4422,21 @@ package body Exp_Ch9 is
          Build_Protected_Subprogram_Call_Cleanup (Op_Spec, Pid, Loc, Stmts);
 
          if Nkind (Op_Spec) = N_Function_Specification then
-            Append (Return_Stmt, Stmts);
-            Append (Make_Block_Statement (Loc,
-              Declarations => New_List (Unprot_Call),
-              Handled_Statement_Sequence =>
-                Make_Handled_Sequence_Of_Statements (Loc,
-                  Statements => Stmts)), Pre_Stmts);
+            Append_To (Stmts, Return_Stmt);
+            Append_To (Pre_Stmts,
+              Make_Block_Statement (Loc,
+                Declarations               => New_List (Unprot_Call),
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => Stmts)));
             Stmts := Pre_Stmts;
          end if;
       end if;
 
       Sub_Body :=
         Make_Subprogram_Body (Loc,
-          Declarations => Empty_List,
-          Specification => P_Op_Spec,
+          Declarations               => Empty_List,
+          Specification              => P_Op_Spec,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts));
 
@@ -4594,11 +4600,7 @@ package body Exp_Ch9 is
       --    Abort_Undefer;
 
       if Abort_Allowed then
-         Append_To (Stmts,
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (RTE (RE_Abort_Undefer), Loc),
-             Parameter_Associations => Empty_List));
+         Append_To (Stmts, Build_Runtime_Call (Loc, RE_Abort_Undefer));
       end if;
    end Build_Protected_Subprogram_Call_Cleanup;
 
@@ -7169,6 +7171,8 @@ package body Exp_Ch9 is
                Name => New_Occurrence_Of (Proc, Loc)));
       end Rewrite_Abortable_Part;
 
+   --  Start of processing for Expand_N_Asynchronous_Select
+
    begin
       Process_Statements_For_Controlled_Objects (Trig);
       Process_Statements_For_Controlled_Objects (Abrt);
@@ -7426,23 +7430,19 @@ package body Exp_Ch9 is
                       Name_uDisp_Asynchronous_Select),
                     Loc),
 
-                Parameter_Associations =>
-                  New_List (
-                    New_Copy_Tree (Obj),             --  <object>
-                    New_Occurrence_Of (S, Loc),       --  S
-                    Make_Attribute_Reference (Loc,   --  P'Address
-                      Prefix         => New_Occurrence_Of (P, Loc),
-                      Attribute_Name => Name_Address),
-                    Make_Identifier (Loc, Name_uD),  --  D
-                    New_Occurrence_Of (B, Loc))));    --  B
+                Parameter_Associations => New_List (
+                  New_Copy_Tree (Obj),             --  <object>
+                  New_Occurrence_Of (S, Loc),      --  S
+                  Make_Attribute_Reference (Loc,   --  P'Address
+                    Prefix         => New_Occurrence_Of (P, Loc),
+                    Attribute_Name => Name_Address),
+                  Make_Identifier (Loc, Name_uD),  --  D
+                  New_Occurrence_Of (B, Loc))));   --  B
 
             --  Generate:
             --    Abort_Defer;
 
-            Prepend_To (TaskE_Stmts,
-              Make_Procedure_Call_Statement (Loc,
-                Name => New_Occurrence_Of (RTE (RE_Abort_Defer), Loc),
-                Parameter_Associations => No_List));
+            Prepend_To (TaskE_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
 
             --  Generate:
             --    Abort_Undefer;
@@ -7450,10 +7450,8 @@ package body Exp_Ch9 is
 
             Cleanup_Stmts := New_Copy_List_Tree (Astats);
 
-            Prepend_To (Cleanup_Stmts,
-              Make_Procedure_Call_Statement (Loc,
-                Name => New_Occurrence_Of (RTE (RE_Abort_Undefer), Loc),
-                Parameter_Associations => No_List));
+            Prepend_To
+              (Cleanup_Stmts, Build_Runtime_Call (Loc, RE_Abort_Undefer));
 
             --  Wrap the statements in a block. Exp_Ch7.Expand_Cleanup_Actions
             --  will generate a _clean for the additional status flag.
@@ -7640,9 +7638,7 @@ package body Exp_Ch9 is
 
             Hdle := New_List (Build_Abort_Block_Handler (Loc));
 
-            Prepend_To (Astats,
-              Make_Procedure_Call_Statement (Loc,
-                Name => New_Occurrence_Of (RTE (RE_Abort_Undefer), Loc)));
+            Prepend_To (Astats, Build_Runtime_Call (Loc, RE_Abort_Undefer));
 
             Abortable_Block :=
               Make_Block_Statement (Loc,
@@ -7788,17 +7784,14 @@ package body Exp_Ch9 is
              Has_Created_Identifier => True,
              Is_Asynchronous_Call_Block => True);
 
+         --  Aborts are not deferred at beginning of exception handlers in
+         --  ZCX.
+
          if Exception_Mechanism = Back_End_Exceptions then
-
-            --  Aborts are not deferred at beginning of exception handlers
-            --  in ZCX.
-
             Handler_Stmt := Make_Null_Statement (Loc);
 
          else
-            Handler_Stmt := Make_Procedure_Call_Statement (Loc,
-              Name => New_Occurrence_Of (RTE (RE_Abort_Undefer), Loc),
-              Parameter_Associations => No_List);
+            Handler_Stmt := Build_Runtime_Call (Loc, RE_Abort_Undefer);
          end if;
 
          Stmts := New_List (
@@ -7881,9 +7874,7 @@ package body Exp_Ch9 is
 
          Hdle := New_List (Build_Abort_Block_Handler (Loc));
 
-         Prepend_To (Astats,
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Abort_Undefer), Loc)));
+         Prepend_To (Astats, Build_Runtime_Call (Loc, RE_Abort_Undefer));
 
          Abortable_Block :=
            Make_Block_Statement (Loc,
@@ -7927,10 +7918,7 @@ package body Exp_Ch9 is
 
          --  Protected the call against abort
 
-         Prepend_To (Stmts,
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Abort_Defer), Loc),
-             Parameter_Associations => Empty_List));
+         Prepend_To (Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
       end if;
 
       Set_Entry_Cancel_Parameter (Blk_Ent, Cancel_Param);
@@ -10762,9 +10750,7 @@ package body Exp_Ch9 is
             --  analysis with unknown calls, so don't do it.
 
             if not CodePeer_Mode then
-               Call :=
-                 Make_Procedure_Call_Statement (Eloc,
-                   Name => New_Occurrence_Of (RTE (RE_Abort_Undefer), Eloc));
+               Call := Build_Runtime_Call (Loc, RE_Abort_Undefer);
                Insert_Before
                  (First (Statements (Handled_Statement_Sequence
                                        (Accept_Statement (Alt)))),

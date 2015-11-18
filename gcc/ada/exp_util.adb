@@ -9453,19 +9453,4 @@ package body Exp_Util is
         and then not Is_Predicate_Function_M (S);
    end Within_Internal_Subprogram;
 
-   ----------------------------
-   -- Wrap_Cleanup_Procedure --
-   ----------------------------
-
-   procedure Wrap_Cleanup_Procedure (N : Node_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
-      Stseq : constant Node_Id    := Handled_Statement_Sequence (N);
-      Stmts : constant List_Id    := Statements (Stseq);
-   begin
-      if Abort_Allowed then
-         Prepend_To (Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
-         Append_To  (Stmts, Build_Runtime_Call (Loc, RE_Abort_Undefer));
-      end if;
-   end Wrap_Cleanup_Procedure;
-
 end Exp_Util;

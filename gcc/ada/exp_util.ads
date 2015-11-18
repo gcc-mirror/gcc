@@ -1020,15 +1020,6 @@ package Exp_Util is
    --  predefined primitive operation. Some expansion activity (e.g. predicate
    --  checks) is disabled in such.
 
-   procedure Wrap_Cleanup_Procedure (N : Node_Id);
-   --  Given an N_Subprogram_Body node, this procedure adds an Abort_Defer call
-   --  at the start of the statement sequence, and an Abort_Undefer call at the
-   --  end of the statement sequence. All cleanup routines (i.e. those that are
-   --  called from "at end" handlers) must defer abort on entry and undefer
-   --  abort on exit. Note that it is assumed that the code for the procedure
-   --  does not contain any return statements which would allow the flow of
-   --  control to escape doing the undefer call.
-
 private
    pragma Inline (Duplicate_Subexpr);
    pragma Inline (Force_Evaluation);

@@ -1022,6 +1022,7 @@ package body Exp_Intr is
 
       Abrt_Blk    : Node_Id := Empty;
       Abrt_Blk_Id : Entity_Id;
+      Abrt_HSS    : Node_Id;
       AUD         : Entity_Id;
       Fin_Blk     : Node_Id;
       Fin_Call    : Node_Id;
@@ -1030,10 +1031,6 @@ package body Exp_Intr is
       Free_Nod    : Node_Id;
       Gen_Code    : Node_Id;
       Obj_Ref     : Node_Id;
-
-      Dummy : Entity_Id;
-      --  This variable captures an unused dummy internal entity, see the
-      --  comment associated with its use.
 
    begin
       --  Nothing to do if we know the argument is null
@@ -1048,10 +1045,10 @@ package body Exp_Intr is
       --    Ex     : Exception_Occurrence;
       --    Raised : Boolean := False;
 
-      --    begin                             --  aborts allowed
+      --    begin
       --       Abort_Defer;
 
-      --       begin                          --  exception propagation allowed
+      --       begin
       --          [Deep_]Finalize (Obj_Ref);
 
       --       exception
@@ -1121,50 +1118,51 @@ package body Exp_Intr is
                     Exception_Handlers => New_List (
                       Build_Exception_Handler (Fin_Data))));
 
-            --  The finalization action must be protected by an abort defer
-            --  undefer pair when aborts are allowed. Generate:
-
-            --    begin
-            --       Abort_Defer;
-            --       <Fin_Blk>
-            --    at end
-            --       Abort_Undefer_Direct;
-            --    end;
-
-            if Abort_Allowed then
-               AUD := RTE (RE_Abort_Undefer_Direct);
-
-               Abrt_Blk :=
-                 Make_Block_Statement (Loc,
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements  => New_List (
-                         Build_Runtime_Call (Loc, RE_Abort_Defer),
-                         Fin_Blk),
-                       At_End_Proc => New_Occurrence_Of (AUD, Loc)));
-
-               Add_Block_Identifier (Abrt_Blk, Abrt_Blk_Id);
-
-               --  Present the Abort_Undefer_Direct function to the backend so
-               --  that it can inline the call to the function.
-
-               Add_Inlined_Body (AUD, N);
-               Append_To (Stmts, Abrt_Blk);
-
-            --  Otherwise aborts are not allowed. Generate a dummy entity to
-            --  ensure that the internal symbols are in sync when a unit is
-            --  compiled with and without aborts.
-
-            else
-               Dummy := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
-               Append_To (Stmts, Fin_Blk);
-            end if;
-
          --  Otherwise exception propagation is not allowed
 
          else
-            Append_To (Stmts, Fin_Call);
+            Fin_Blk := Fin_Call;
          end if;
+
+         --  The finalization action must be protected by an abort defer and
+         --  undefer pair when aborts are allowed. Generate:
+
+         --    begin
+         --       Abort_Defer;
+         --       <Fin_Blk>
+         --    at end
+         --       Abort_Undefer_Direct;
+         --    end;
+
+         if Abort_Allowed then
+            AUD := RTE (RE_Abort_Undefer_Direct);
+
+            Abrt_HSS :=
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements  => New_List (
+                  Build_Runtime_Call (Loc, RE_Abort_Defer),
+                  Fin_Blk),
+                At_End_Proc => New_Occurrence_Of (AUD, Loc));
+
+            Abrt_Blk :=
+              Make_Block_Statement (Loc,
+                Handled_Statement_Sequence => Abrt_HSS);
+
+            Add_Block_Identifier  (Abrt_Blk, Abrt_Blk_Id);
+            Expand_At_End_Handler (Abrt_HSS, Abrt_Blk_Id);
+
+            --  Present the Abort_Undefer_Direct function to the backend so
+            --  that it can inline the call to the function.
+
+            Add_Inlined_Body (AUD, N);
+
+         --  Otherwise aborts are not allowed
+
+         else
+            Abrt_Blk := Fin_Blk;
+         end if;
+
+         Append_To (Stmts, Abrt_Blk);
       end if;
 
       --  For a task type, call Free_Task before freeing the ATCB. We used to
@@ -1174,8 +1172,8 @@ package body Exp_Intr is
       --  (the task will be freed once it terminates).
 
       if Is_Task_Type (Desig_Typ) then
-         Append_To
-           (Stmts, Cleanup_Task (N, Duplicate_Subexpr_No_Checks (Arg)));
+         Append_To (Stmts,
+           Cleanup_Task (N, Duplicate_Subexpr_No_Checks (Arg)));
 
       --  For composite types that contain tasks, recurse over the structure
       --  to build the selectors for the task subcomponents.
@@ -1411,15 +1409,6 @@ package body Exp_Intr is
 
       Rewrite (N, Gen_Code);
       Analyze (N);
-
-      --  If we generated a block with an At_End_Proc, expand the exception
-      --  handler. We need to wait until after everything else is analyzed.
-
-      if Present (Abrt_Blk) then
-         Expand_At_End_Handler
-           (HSS    => Handled_Statement_Sequence (Abrt_Blk),
-            Blk_Id => Entity (Identifier (Abrt_Blk)));
-      end if;
    end Expand_Unc_Deallocation;
 
    -----------------------
