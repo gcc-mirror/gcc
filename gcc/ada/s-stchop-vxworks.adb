@@ -60,10 +60,9 @@ package body System.Stack_Checking.Operations is
    --  VxWorks MILS includes the necessary routine in taskLib, so nothing
    --  special needs to be done there.
 
-   Stack_Limit : Address :=
-                   Boolean'Pos (Stack_Grows_Down) * Address'First
-                   + Boolean'Pos (not Stack_Grows_Down) * Address'Last;
-   pragma Export (C, Stack_Limit, "__gnat_stack_limit");
+   Stack_Limit : Address;
+
+   pragma Import (C, Stack_Limit, "__gnat_stack_limit");
 
    --  Stack_Limit contains the limit of the stack. This variable is later made
    --  a task variable (by calling taskVarAdd) and then correctly set to the
@@ -91,7 +90,6 @@ package body System.Stack_Checking.Operations is
 
    procedure Initialize_Stack_Limit is
    begin
-      --  For the environment task
 
       Set_Stack_Limit_For_Current_Task;
 
@@ -126,6 +124,7 @@ package body System.Stack_Checking.Operations is
       Limit : System.Address;
 
    begin
+
       --  Get stack bounds from VxWorks
 
       Get_Stack_Info (Stack_Info'Access);
@@ -141,6 +140,6 @@ package body System.Stack_Checking.Operations is
       end if;
 
       Stack_Limit := Limit;
-   end Set_Stack_Limit_For_Current_Task;
 
+   end Set_Stack_Limit_For_Current_Task;
 end System.Stack_Checking.Operations;

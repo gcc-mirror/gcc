@@ -453,7 +453,7 @@ package body Bcheck is
    --    2. The with'ed unit was compiled with dynamic elaboration checks
    --    3. The with'ed unit has pragma Preelaborate or Pure
    --    4. It is an internal GNAT unit (including children of GNAT)
-   --    5. It is an interface of a Stand-Aline Library
+   --    5. It is an interface of a Stand-Alone Library
 
    procedure Check_Consistent_Dynamic_Elaboration_Checking is
    begin

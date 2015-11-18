@@ -1,3 +1,11 @@
+2015-11-18  Ed Falis  <falis@adacore.com>
+
+	* s-soflin.adb, s-stchop-vxworks.adb: Code clean ups.
+
+2015-11-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* bcheck.adb: Minor editorial changes.
+
 2015-11-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* interfac.ads (Unsigned_24): New type.

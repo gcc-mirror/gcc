@@ -49,6 +49,12 @@ package body System.Soft_Links is
    NT_TSD : TSD;
    --  Note: we rely on the default initialization of NT_TSD
 
+   --  Needed for Vx6Cert (Vx653mc) GOS cert and ravenscar-cert runtimes,
+   --  VxMILS cert, ravenscar-cert and full runtimes, Vx 5 default runtime
+   Stack_Limit : aliased System.Address;
+
+   pragma Export (C, Stack_Limit, "__gnat_stack_limit");
+
    --------------------
    -- Abort_Defer_NT --
    --------------------
