@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -368,7 +368,7 @@ package body Ada.Strings.Wide_Wide_Maps is
          Wide_Wide_Character_Mapping_Values_Access);
 
    begin
-      if Object.Map /=  Null_Map'Unrestricted_Access then
+      if Object.Map /= Null_Map'Unrestricted_Access then
          Free (Object.Map);
       end if;
    end Finalize;

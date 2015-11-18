@@ -1250,6 +1250,12 @@ package body Exp_Ch11 is
    --  Start of processing for Expand_N_Exception_Declaration
 
    begin
+      --  Nothing to do when generating C code
+
+      if Generate_C_Code then
+         return;
+      end if;
+
       --  Definition of the external name: nam : constant String := "A.B.NAME";
 
       Ex_Id :=

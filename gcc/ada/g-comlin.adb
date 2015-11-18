@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -556,6 +556,10 @@ package body GNAT.Command_Line is
            and then Switches (Index .. Last) =
                       Arg (Arg'First .. Arg'First + Last - Index)
            and then Last - Index + 1 > Switch_Length
+           and then
+             (P /= Parameter_With_Space_Or_Equal
+               or else Arg'Last = Arg'First + Last - Index
+               or else Arg (Arg'First + Last - Index + 1) = '=')
          then
             Param             := P;
             Index_In_Switches := Index;

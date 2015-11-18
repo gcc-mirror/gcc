@@ -98,7 +98,7 @@ package body System.Soft_Links is
 
       --  Finalize all library-level controlled objects if needed
 
-      if Finalize_Library_Objects /=  null then
+      if Finalize_Library_Objects /= null then
          Finalize_Library_Objects.all;
       end if;
    end Adafinal_NT;

@@ -506,6 +506,15 @@ package body Sem_Ch5 is
          Ghost_Mode := Save_Ghost_Mode;
          return;
 
+      --  A class-wide type may be a limited view. This illegal case is not
+      --  caught by previous checks.
+
+      elsif Ekind (T1) = E_Class_Wide_Type
+        and then From_Limited_With (T1)
+      then
+         Error_Msg_NE ("invalid use of limited view of&", Lhs, T1);
+         return;
+
       --  Enforce RM 3.9.3 (8): the target of an assignment operation cannot be
       --  abstract. This is only checked when the assignment Comes_From_Source,
       --  because in some cases the expander generates such assignments (such

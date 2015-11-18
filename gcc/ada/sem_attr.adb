@@ -10776,6 +10776,13 @@ package body Sem_Attr is
                      elsif In_Open_Scopes (Subp_Id) then
                         null;
 
+                     --  If reference to the expression function appears in an
+                     --  inner scope, for example as an actual in an instance,
+                     --  this is not a freeze point either.
+
+                     elsif Scope (Subp_Id) /= Current_Scope then
+                        null;
+
                       --  Analyze the body of the expression function to freeze
                       --  the expression. This takes care of the case where the
                       --  'Access is part of dispatch table initialization and
