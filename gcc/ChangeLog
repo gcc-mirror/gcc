@@ -1,3 +1,14 @@
+2015-11-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.c (bb_pair_t, bb_pair_vec_t): New types.
+	(pseudo_node_t, struct bracket, bracket_vec_t): New types.
+	(struct bb_sese): New struct.
+	(bb_sese::~bb_sese, bb_sese::append, bb_sese::remove): New.
+	(BB_GET_SESE, BB_SET_SESE): Define.
+	(nvptx_sese_number, nvptx_sese_pseudo, nvptx_sese_color): New.
+	(nvptx_find_sese): New.
+	(nvptx_neuter_pars): Find SESE regions when optimizing.
+
 2015-11-18  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (use_toc_relative_ref): Ignore
