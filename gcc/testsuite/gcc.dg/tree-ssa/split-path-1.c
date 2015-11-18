@@ -3,16 +3,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
-#define RGBMAX 255
+#define RGBMAX 255 
 
-int
+unsigned char
 test()
 {
   int i, Pels;
-  unsigned char sum = 0;
+  int sum = 0;
   unsigned char xr, xg, xb;
-  unsigned char xc, xm, xy, xk;
+  unsigned char xc, xm, xy, xk = 0;
   unsigned char *ReadPtr, *EritePtr;
 
   ReadPtr = ( unsigned char *) malloc (sizeof (unsigned char) * 100);
@@ -23,7 +24,7 @@ test()
        ReadPtr[i] = 100 - i;
      }
 
-  for (i = 0; i < 100; i++)
+  for (i = 0; i < 24; i++)
      {
        xr = *ReadPtr++;
        xg = *ReadPtr++;
@@ -50,7 +51,8 @@ test()
        *EritePtr++ = xm;
        *EritePtr++ = xy;
        *EritePtr++ = xk;
-       sum += *EritePtr;
+       sum += *(--EritePtr);
+       
     }
   return sum;
 }
@@ -58,7 +60,7 @@ test()
 int
 main()
 {
-  if (test() != 33)
+  if (test() != 196)
     abort();
 
   return 0;
