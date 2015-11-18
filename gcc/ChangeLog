@@ -1,3 +1,14 @@
+2015-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67790
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Remove
+	IL rewrite for MINUS_EXPR reductions, rename back to ...
+	(vect_is_simple_reduction): ... this, removing the wrapper.
+	(vect_force_simple_reduction): Adjust.
+	(vectorizable_reduction): Adjust reduc_index for MINUS_EXPR
+	reductions and make use if reduc_index in all places.  For
+	the final reduction of MINUS_EXPR use PLUS_EXPR.
+
 2015-11-18  Alan Modra  <amodra@gmail.com>
 
 	* configure.ac (POWERPC64_TOC_POINTER_ALIGNMENT): Pass -z norelro
