@@ -5991,8 +5991,8 @@ gfc_simplify_spacing (gfc_expr *x)
 gfc_expr *
 gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_expr)
 {
-  gfc_expr *result = 0L;
-  int i, j, dim, ncopies;
+  gfc_expr *result = NULL;
+  int nelem, i, j, dim, ncopies;
   mpz_t size;
 
   if ((!gfc_is_constant_expr (source)
@@ -6019,8 +6019,20 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
   else
     mpz_init_set_ui (size, 1);
 
-  if (mpz_get_si (size)*ncopies > flag_max_array_constructor)
-    return NULL;
+  nelem = mpz_get_si (size) * ncopies;
+  if (nelem > flag_max_array_constructor)
+    {
+      if (gfc_current_ns->sym_root->n.sym->attr.flavor == FL_PARAMETER)
+	{
+	  gfc_error ("The number of elements (%d) in the array constructor "
+		     "at %L requires an increase of the allowed %d upper "
+		     "limit.  See %<-fmax-array-constructor%> option.",
+		     nelem, &source->where, flag_max_array_constructor);
+	  return &gfc_bad_expr;
+	}
+      else
+	return NULL;
+    }
 
   if (source->expr_type == EXPR_CONSTANT)
     {
