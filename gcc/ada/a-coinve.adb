@@ -1076,9 +1076,22 @@ package body Ada.Containers.Indefinite_Vectors is
    ------------------------
 
    function Get_Element_Access
-     (Position : Cursor) return not null Element_Access is
+     (Position : Cursor) return not null Element_Access
+   is
+      Ptr : constant Element_Access :=
+              Position.Container.Elements.EA (Position.Index);
+
    begin
-      return Position.Container.Elements.EA (Position.Index);
+      --  An indefinite vector may contain spaces that hold no elements.
+      --  Any iteration over an indefinite vector with spaces will raise
+      --  Constraint_Error.
+
+      if Ptr = null then
+         raise Constraint_Error;
+
+      else
+         return Ptr;
+      end if;
    end Get_Element_Access;
 
    -----------------

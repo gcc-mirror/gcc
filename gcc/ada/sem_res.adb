@@ -8119,7 +8119,11 @@ package body Sem_Res is
          Resolve (P);
       end if;
 
-      if Is_Access_Type (Etype (P)) then
+      --  If the prefix might be null, add an access check
+
+      if Is_Access_Type (Etype (P))
+        and then not Can_Never_Be_Null (Etype (P))
+      then
          Apply_Access_Check (N);
       end if;
 

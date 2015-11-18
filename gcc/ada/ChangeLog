@@ -1,3 +1,71 @@
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Diagnose assignment where
+	left-hand side has a limited view of a class-wide type.
+	* sem_ch6.adb (Detected_And_Exchange): Do not install a non-limited
+	view if the scope of the type of the formal is visible through
+	a limited_with_clause, even if the non-limited view is available.
+
+2015-11-18  Emmanuel Briot  <briot@adacore.com>
+
+	* s-pooglo.ads: Make Global_Pool_Object aliased.
+
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Access): If the prefix
+	is an expression function, do not analyze the generated body if
+	the current scope is not the scope of the expression function,
+	as may happen if the attribute is an actual in an instantiation.
+	* sem_ch10.adb, sem_ch12.adb, a-stzmap.adb, s-soflin.adb,
+	a-stwima.adb: Fix typos.
+
+2015-11-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Exception_Declaration): No-op when
+	generating C code.
+
+2015-11-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	PR ada/66242
+
+	* exp_ch3.adb (Default_Initialize_Object): Reimplemented. Abort
+	defer / undefer pairs are now encapsulated in a block with
+	an AT END handler. Partial finalization now takes restriction
+	No_Exception_Propagation into account when generating blocks.
+	* exp_ch7.adb Various reformattings.
+	(Create_Finalizer): Change
+	the generation of abort defer / undefer pairs and explain the
+	lack of an AT END handler.
+	(Process_Transient_Objects): Add generation of abort defer/undefer
+	pairs.
+	* exp_ch9.adb Various reformattings.
+	(Build_Protected_Subprogram_Body): Use
+	Build_Runtime_Call to construct a call to Abort_Defer.
+	(Build_Protected_Subprogram_Call_Cleanup): Use
+	Build_Runtime_Call to construct a call to Abort_Undefer.
+	(Expand_N_Asynchronous_Select): Use Build_Runtime_Call to
+	construct a call to Abort_Defer.
+	* exp_intr.adb (Expand_Unc_Deallocation): Abort defer
+	/ undefer pairs are now encapsulated in a block with
+	an AT END handler. Finalization now takes restriction
+	No_Exception_Propagation into account when generating blocks.
+	* exp_util.ads, exp_util.adb (Wrap_Cleanup_Procedure): Removed.
+
+2015-11-18  Vincent Celier  <celier@adacore.com>
+
+	* g-comlin.adb (Find_Longest_Matching_Switch): Do not take into
+	account a switch ending with '=' when the actual command line
+	switch is not followed with a space or '='.
+
+2015-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Explicit_Dereference): Do not add an access
+	check if the type of the prefix is known to exclude null.
+	* a-coinve.adb (Get_Element_Access): The function returns an
+	access type that excludes null, so add an explicit check for
+	a null element pointer, which is created when Insert_Spaces is
+	called on an indefinite vector container.
+
 2015-11-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* switch-c.adb (Scan_Front_End_Switches): Add a check requiring
