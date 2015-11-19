@@ -1,3 +1,9 @@
+2015-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68412
+	* gcc.dg/pr68412-2.c: New test.
+	* gcc.dg/pr68412.c: New test.
+
 2015-11-19  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/tree-ssa/vrp98.c: New testcase.
