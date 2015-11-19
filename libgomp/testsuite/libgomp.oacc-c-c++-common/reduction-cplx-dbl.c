@@ -3,10 +3,11 @@
 
 /* Double float has 53 bits of fraction. */
 #define FRAC (1.0 / (1LL << 48))
+typedef double _Complex Type;
 
-int close_enough (double _Complex a, double _Complex b)
+int close_enough (Type a, Type b)
 {
-  double _Complex diff = a - b;
+  Type diff = a - b;
   double mag2_a = __real__(a) * __real__ (a) + __imag__ (a) * __imag__ (a);
   double mag2_diff = (__real__(diff) * __real__ (diff)
 		     + __imag__ (diff) * __imag__ (diff));
@@ -17,9 +18,9 @@ int close_enough (double _Complex a, double _Complex b)
 #define N 100
 
 static int __attribute__ ((noinline))
-vector (double _Complex ary[N], double _Complex sum, double _Complex prod)
+vector (Type ary[N], Type sum, Type prod)
 {
-  double _Complex tsum = 0, tprod = 1;
+  Type tsum = 0, tprod = 1;
 
 #pragma acc parallel vector_length(32) copyin(ary[0:N]) copy (tsum, tprod)
   {
@@ -41,9 +42,9 @@ vector (double _Complex ary[N], double _Complex sum, double _Complex prod)
 }
 
 static int __attribute__ ((noinline))
-worker (double _Complex ary[N], double _Complex sum, double _Complex prod)
+worker (Type ary[N], Type sum, Type prod)
 {
-  double _Complex tsum = 0, tprod = 1;
+  Type tsum = 0, tprod = 1;
 
 #pragma acc parallel num_workers(32) copyin(ary[0:N]) copy (tsum, tprod)
   {
@@ -65,9 +66,9 @@ worker (double _Complex ary[N], double _Complex sum, double _Complex prod)
 }
 
 static int __attribute__ ((noinline))
-gang (double _Complex ary[N], double _Complex sum, double _Complex prod)
+gang (Type ary[N], Type sum, Type prod)
 {
-  double _Complex tsum = 0, tprod = 1;
+  Type tsum = 0, tprod = 1;
 
 #pragma acc parallel num_gangs (32) copyin(ary[0:N]) copy (tsum, tprod)
   {
@@ -90,7 +91,7 @@ gang (double _Complex ary[N], double _Complex sum, double _Complex prod)
 
 int main (void)
 {
-  double _Complex ary[N], sum = 0, prod = 1;
+  Type ary[N], sum = 0, prod = 1;
 
   for (int ix = 0; ix < N;  ix++)
     {

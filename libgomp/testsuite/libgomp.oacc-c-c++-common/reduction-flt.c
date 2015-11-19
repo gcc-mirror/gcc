@@ -1,18 +1,15 @@
 
-#include <complex.h>
-
 /* Single float has 23 bits of fraction. */
 #define FRAC (1.0f / (1 << 20))
-typedef float _Complex Type;
+typedef float Type;
 
 int close_enough (Type a, Type b)
 {
   Type diff = a - b;
-  float mag2_a = __real__(a) * __real__ (a) + __imag__ (a) * __imag__ (a);
-  float mag2_diff = (__real__(diff) * __real__ (diff)
-		     + __imag__ (diff) * __imag__ (diff));
+  if (diff < 0)
+    diff = -diff;
 
-  return mag2_diff / mag2_a < (FRAC * FRAC);
+  return diff / a < FRAC;
 }
 
 #define N 100
@@ -97,7 +94,7 @@ int main (void)
     {
       float frac = ix * (1.0f / 1024) + 1.0f;
       
-      ary[ix] = frac + frac * 2.0i - 1.0i;
+      ary[ix] = frac;
       sum += ary[ix];
       prod *= ary[ix];
     }

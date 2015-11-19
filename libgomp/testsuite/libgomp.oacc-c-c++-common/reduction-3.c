@@ -22,15 +22,15 @@ main(void)
   result = 0;
   vresult = 0;
 
-  /* '+' reductions.  */
+  /* 'max' reductions.  */
 #pragma acc parallel vector_length (vl) copy(result)
-#pragma acc loop reduction (+:result)
+#pragma acc loop reduction (max:result)
   for (i = 0; i < n; i++)
-    result += array[i];
+    result = result > array[i] ? result : array[i];
 
   /* Verify the reduction.  */
   for (i = 0; i < n; i++)
-    vresult += array[i];
+    vresult = vresult > array[i] ? vresult : array[i];
 
   if (result != vresult)
     abort ();
@@ -38,51 +38,18 @@ main(void)
   result = 0;
   vresult = 0;
 
-  /* '*' reductions.  */
+  /* 'min' reductions.  */
 #pragma acc parallel vector_length (vl) copy(result)
-#pragma acc loop reduction (*:result)
+#pragma acc loop reduction (min:result)
   for (i = 0; i < n; i++)
-    result *= array[i];
+    result = result < array[i] ? result : array[i];
 
   /* Verify the reduction.  */
   for (i = 0; i < n; i++)
-    vresult *= array[i];
+    vresult = vresult < array[i] ? vresult : array[i];
 
-  if (fabs(result - vresult) > .0001)
+  if (result != vresult)
     abort ();
-//   result = 0;
-//   vresult = 0;
-// 
-//   /* 'max' reductions.  */
-// #pragma acc parallel vector_length (vl)
-// #pragma acc loop reduction (+:result)
-//   for (i = 0; i < n; i++)
-//       result = result > array[i] ? result : array[i];
-// 
-//   /* Verify the reduction.  */
-//   for (i = 0; i < n; i++)
-//       vresult = vresult > array[i] ? vresult : array[i];
-// 
-//   printf("%d != %d\n", result, vresult);
-//   if (result != vresult)
-//     abort ();
-// 
-//   result = 0;
-//   vresult = 0;
-// 
-//   /* 'min' reductions.  */
-// #pragma acc parallel vector_length (vl)
-// #pragma acc loop reduction (+:result)
-//   for (i = 0; i < n; i++)
-//       result = result < array[i] ? result : array[i];
-// 
-//   /* Verify the reduction.  */
-//   for (i = 0; i < n; i++)
-//       vresult = vresult < array[i] ? vresult : array[i];
-// 
-//   printf("%d != %d\n", result, vresult);
-//   if (result != vresult)
-//     abort ();
 
   result = 5;
   vresult = 5;
