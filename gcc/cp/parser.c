@@ -25868,6 +25868,7 @@ cp_parser_sizeof_pack (cp_parser *parser)
   else if (TREE_CODE (expr) == CONST_DECL)
     expr = DECL_INITIAL (expr);
   expr = make_pack_expansion (expr);
+  PACK_EXPANSION_SIZEOF_P (expr) = true;
 
   if (paren)
     cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
