@@ -429,13 +429,13 @@ public:
     tree a;
 @};
 
-class GTY((tag("1")) some_subclass : public example_base
+class GTY((tag("1"))) some_subclass : public example_base
 @{
 public:
     tree b;
 @};
 
-class GTY((tag("2")) some_other_subclass : public example_base
+class GTY((tag("2"))) some_other_subclass : public example_base
 @{
 public:
     tree c;
