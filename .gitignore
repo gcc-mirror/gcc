@@ -35,6 +35,8 @@ TAGS.sub
 .local.vimrc
 .lvimrc
 
+.clang-format
+
 .gdbinit
 .gdb_history
 
