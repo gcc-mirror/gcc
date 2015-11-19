@@ -1,3 +1,8 @@
+2015-11-19  Nathan Sidwell  <nathanacm.org>
+
+	* config/nvptx/nvptx.md (atomic_compare_and_swap<mode>_1,
+	atomic_exchange<mode>): Input values can be immediates.
+
 2015-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/61313

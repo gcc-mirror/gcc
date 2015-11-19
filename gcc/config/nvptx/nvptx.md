@@ -1494,8 +1494,8 @@
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
 	(unspec_volatile:SDIM
 	  [(match_operand:SDIM 1 "memory_operand" "+m")
-	   (match_operand:SDIM 2 "nvptx_register_operand" "R")
-	   (match_operand:SDIM 3 "nvptx_register_operand" "R")
+	   (match_operand:SDIM 2 "nvptx_nonmemory_operand" "Ri")
+	   (match_operand:SDIM 3 "nvptx_nonmemory_operand" "Ri")
 	   (match_operand:SI 4 "const_int_operand")]
 	  UNSPECV_CAS))
    (set (match_dup 1)
@@ -1510,7 +1510,7 @@
 	   (match_operand:SI 3 "const_int_operand")]		;; model
 	  UNSPECV_XCHG))
    (set (match_dup 1)
-	(match_operand:SDIM 2 "nvptx_register_operand" "R"))]	;; input
+	(match_operand:SDIM 2 "nvptx_nonmemory_operand" "Ri"))]	;; input
   ""
   "%.\\tatom%A1.exch.b%T0\\t%0, %1, %2;")
 
