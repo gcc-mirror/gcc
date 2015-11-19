@@ -1125,38 +1125,6 @@ translate_isl_ast_to_gimple::translate_isl_ast (loop_p context_loop,
     }
 }
 
-/* Returns the first successor edge of BB with EDGE_TRUE_VALUE flag set.  */
-
-edge
-get_true_edge_from_guard_bb (basic_block bb)
-{
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (e->flags & EDGE_TRUE_VALUE)
-      return e;
-
-  gcc_unreachable ();
-  return NULL;
-}
-
-/* Returns the first successor edge of BB with EDGE_TRUE_VALUE flag cleared.  */
-
-edge
-get_false_edge_from_guard_bb (basic_block bb)
-{
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (!(e->flags & EDGE_TRUE_VALUE))
-      return e;
-
-  gcc_unreachable ();
-  return NULL;
-}
-
 /* Return true when BB contains loop close phi nodes.  A loop close phi node is
    at the exit of loop which takes one argument that is the last value of the
    variable being used out of the loop.  */
