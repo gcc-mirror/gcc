@@ -715,7 +715,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
 
   if (count < 0)
     {
-      cpp_errno (pfile, CPP_DL_ERROR, file->path);
+      cpp_errno_filename (pfile, CPP_DL_ERROR, file->path);
       free (buf);
       return false;
     }
@@ -1053,7 +1053,8 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file, int angle_brackets)
       /* If the preprocessor output (other than dependency information) is
          being used, we must also flag an error.  */
       if (CPP_OPTION (pfile, deps.need_preprocessor_output))
-	cpp_errno (pfile, CPP_DL_FATAL, file->path);
+	cpp_errno_filename (pfile, CPP_DL_FATAL,
+			    file->path ? file->path : file->name);
     }
   else
     {
@@ -1067,9 +1068,11 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file, int angle_brackets)
       if (CPP_OPTION (pfile, deps.style) == DEPS_NONE
           || print_dep
           || CPP_OPTION (pfile, deps.need_preprocessor_output))
-	cpp_errno (pfile, CPP_DL_FATAL, file->path);
+	cpp_errno_filename (pfile, CPP_DL_FATAL,
+			    file->path ? file->path : file->name);
       else
-	cpp_errno (pfile, CPP_DL_WARNING, file->path);
+	cpp_errno_filename (pfile, CPP_DL_WARNING,
+			    file->path ? file->path : file->name);
     }
 }
 

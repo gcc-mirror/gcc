@@ -227,8 +227,18 @@ cpp_warning_with_line_syshdr (cpp_reader *pfile, int reason,
 bool
 cpp_errno (cpp_reader *pfile, int level, const char *msgid)
 {
-  if (msgid[0] == '\0')
-    msgid = _("stdout");
+  return cpp_error (pfile, level, "%s: %s", _(msgid), xstrerror (errno));
+}
 
-  return cpp_error (pfile, level, "%s: %s", msgid, xstrerror (errno));
+/* Print a warning or error, depending on the value of LEVEL.  Include
+   information from errno.  Unlike cpp_errno, the argument is a filename
+   that is not localized, but "" is replaced with localized "stdout".  */
+
+bool
+cpp_errno_filename (cpp_reader *pfile, int level, const char *filename)
+{
+  if (filename[0] == '\0')
+    filename = _("stdout");
+
+  return cpp_error (pfile, level, "%s: %s", filename, xstrerror (errno));
 }
