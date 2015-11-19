@@ -1062,10 +1062,14 @@ scop_detection::harmful_stmt_in_region (sese_l scop) const
   basic_block bb;
   FOR_EACH_VEC_ELT (dom, i, bb)
     {
-      DEBUG_PRINT (dp << "\nVisiting bb_" << bb->index);
+      DEBUG_PRINT (dp << "Visiting bb_" << bb->index << "\n");
 
       /* We don't want to analyze any bb outside sese.  */
       if (!dominated_by_p (CDI_POST_DOMINATORS, bb, exit_bb))
+	continue;
+
+      /* Basic blocks dominated by the scop->exit are not in the scop.  */
+      if (bb != exit_bb && dominated_by_p (CDI_DOMINATORS, bb, exit_bb))
 	continue;
 
       /* The basic block should not be part of an irreducible loop.  */
