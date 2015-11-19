@@ -893,7 +893,8 @@ update_uses (df_ref use)
       if (DF_REF_ID (use) >= (int) use_def_ref.length ())
         use_def_ref.safe_grow_cleared (DF_REF_ID (use) + 1);
 
-      gcc_checking_assert (sparseset_bit_p (active_defs_check, regno));
+      if (flag_checking)
+	gcc_assert (sparseset_bit_p (active_defs_check, regno));
       use_def_ref[DF_REF_ID (use)] = active_defs[regno];
     }
 }

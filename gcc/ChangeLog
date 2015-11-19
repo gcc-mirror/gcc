@@ -1,3 +1,8 @@
+2015-11-19  Michael Matz  <matz@suse.de>
+
+	* fwprop.c (update_uses): Use flag_checking instead of
+	gcc_checking_assert.
+
 2015-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/gty.texi (Support for inheritance): Fix missing
