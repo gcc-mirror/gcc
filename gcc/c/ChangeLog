@@ -1,3 +1,9 @@
+2015-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68412
+	* c-typeck.c (parser_build_binary_op): Properly handle
+	C_MAYBE_CONST_EXPR before calling warn_tautological_cmp.
+
 2015-11-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (set_c_expr_source_range): Bulletproof both

@@ -3512,7 +3512,28 @@ parser_build_binary_op (location_t location, enum tree_code code,
 			   code1, arg1.value, code2, arg2.value);
 
   if (warn_tautological_compare)
-    warn_tautological_cmp (location, code, arg1.value, arg2.value);
+    {
+      tree lhs = arg1.value;
+      tree rhs = arg2.value;
+      if (TREE_CODE (lhs) == C_MAYBE_CONST_EXPR)
+	{
+	  if (C_MAYBE_CONST_EXPR_PRE (lhs) != NULL_TREE
+	      && TREE_SIDE_EFFECTS (C_MAYBE_CONST_EXPR_PRE (lhs)))
+	    lhs = NULL_TREE;
+	  else
+	    lhs = C_MAYBE_CONST_EXPR_EXPR (lhs);
+	}
+      if (TREE_CODE (rhs) == C_MAYBE_CONST_EXPR)
+	{
+	  if (C_MAYBE_CONST_EXPR_PRE (rhs) != NULL_TREE
+	      && TREE_SIDE_EFFECTS (C_MAYBE_CONST_EXPR_PRE (rhs)))
+	    rhs = NULL_TREE;
+	  else
+	    rhs = C_MAYBE_CONST_EXPR_EXPR (rhs);
+	}
+      if (lhs != NULL_TREE && rhs != NULL_TREE)
+	warn_tautological_cmp (location, code, lhs, rhs);
+    }
 
   if (warn_logical_not_paren
       && TREE_CODE_CLASS (code) == tcc_comparison
