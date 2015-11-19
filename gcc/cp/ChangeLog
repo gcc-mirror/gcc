@@ -1,3 +1,31 @@
+2015-11-19  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parser.h (struct cp_omp_declare_simd_data): Add clauses member.
+	(struct cp_parser): Change type the of oacc_routine to
+	cp_omp_declare_simd_data.
+	* parser.c (cp_ensure_no_oacc_routine): Rework to use
+	cp_omp_declare_simd_data.
+	(cp_parser_simple_declaration): Remove boolean first.  Update call to
+	cp_parser_init_declarator. Don't NULL out oacc_routine.
+	(cp_parser_init_declarator): Remove boolean first parameter.  Update
+	calls to cp_finalize_oacc_routine.
+	(cp_parser_late_return_type_opt): Handle acc routines.
+	(cp_parser_member_declaration): Remove first variable.  Handle
+	acc routines like omp declare simd.
+	(cp_parser_function_definition_from_specifiers_and_declarator): Update
+	call to cp_finalize_oacc_routine.
+	(cp_parser_single_declaration): Update call to
+	cp_parser_init_declarator.
+	(cp_parser_save_member_function_body): Remove first_decl parameter.
+	Update call to cp_finalize_oacc_routine.
+	(cp_parser_finish_oacc_routine): Delete.
+	(cp_parser_oacc_routine): Rework to use cp_omp_declare_simd_data.
+	(cp_parser_late_parsing_oacc_routine): New function.
+	(cp_finalize_oacc_routine): Remove first argument.  Add more error
+	handling and set the acc routine and 'omp declare target' attributes.
+	(cp_parser_pragma): Remove unnecessary call to
+	cp_ensure_no_oacc_routine.
+
 2015-11-17  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* cp-gimplify.c (cp_fold_r): Add support for OACC_LOOP.
