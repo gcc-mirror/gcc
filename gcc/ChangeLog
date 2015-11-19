@@ -1,3 +1,14 @@
+2015-11-19  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/68341
+	* graphite-isl-ast-to-gimple.c (get_rename_from_scev): Remove
+	gcc_unreachable and safely fail codegen.
+	(copy_loop_close_phi_args): Do not insert merge phis in a basic
+	block with loop phi nodes.
+	(edge_for_new_close_phis): New.
+	(copy_bb_and_scalar_dependences): Call edge_for_new_close_phis.
+
 2015-11-19  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.h (SUPPORTS_WEAK): Define.
