@@ -1,3 +1,10 @@
+2015-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.h (SUPPORTS_WEAK): Define.
+	* config/nvptx/nvptx.c (nvptx_write_function_decl): Support
+	DECL_WEAK.
+	(nvptx_declare_objec_name): Likewise.
+
 2015-11-19  Aditya Kumar  <aditya.k7@samsung.com>
 
 	* graphite-isl-ast-to-gimple.c (get_true_edge_from_guard_bb): Move...
