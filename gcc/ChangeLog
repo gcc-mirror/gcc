@@ -1,3 +1,9 @@
+2015-11-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR bootstrap/68393
+	* internal-fn.c (expand_direct_optab_fn): Handle SUBREG_PROMOTED_VAR_P
+	destinations.
+
 2015-11-18  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/68198
