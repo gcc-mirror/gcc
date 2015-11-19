@@ -1,3 +1,8 @@
+2015-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/67770
+	* gcc.target/i386/pr67770.c: New test.
+
 2015-11-18  Jeff Law  <law@redhat.com>
 
         PR tree-optimization/68198
