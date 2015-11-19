@@ -1,3 +1,9 @@
+2015-11-18  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/68198
+	* gcc.dg/tree-ssa/pr66752-3.c: Update expected output for VRP1.
+	* gcc.dg/tree-ssa/pr68198.c: New test.
+
 2015-11-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/59910

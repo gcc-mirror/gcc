@@ -2370,11 +2370,13 @@ static bool
 valid_jump_thread_path (vec<jump_thread_edge *> *path)
 {
   unsigned len = path->length ();
-  bool multiway_branch = false;
+  bool threaded_multiway_branch = false;
+  bool multiway_branch_in_path = false;
   bool threaded_through_latch = false;
 
   /* Check that the path is connected and see if there's a multi-way
-     branch on the path.  */
+     branch on the path and whether or not a multi-way branch
+     is threaded.  */
   for (unsigned int j = 0; j < len - 1; j++)
     {
       edge e = (*path)[j]->e;
@@ -2394,7 +2396,12 @@ valid_jump_thread_path (vec<jump_thread_edge *> *path)
 	threaded_through_latch = true;
 
       gimple *last = last_stmt (e->dest);
-      multiway_branch |= (last && gimple_code (last) == GIMPLE_SWITCH);
+      if (j == len - 2)
+	threaded_multiway_branch
+	  |= (last && gimple_code (last) == GIMPLE_SWITCH);
+      else
+	multiway_branch_in_path
+	  |= (last && gimple_code (last) == GIMPLE_SWITCH);
     }
 
   /* If we are trying to thread through the loop latch to a block in the
@@ -2402,8 +2409,33 @@ valid_jump_thread_path (vec<jump_thread_edge *> *path)
      irreducible loop.  We avoid that unless the jump thread has a multi-way
      branch, in which case we have deemed it worth losing other
      loop optimizations later if we can eliminate the multi-way branch.  */
-  if (!multiway_branch && threaded_through_latch)
-    return false;
+  if (!threaded_multiway_branch && threaded_through_latch)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file,
+		   "Thread through latch without threading a multiway "
+		   "branch.\n");
+	  dump_jump_thread_path (dump_file, *path, false);
+	}
+      return false;
+    }
+
+  /* When there is a multi-way branch on the path, then threading can
+     explode the CFG due to duplicating the edges for that multi-way
+     branch.  So like above, only allow a multi-way branch on the path
+     if we actually thread a multi-way branch.  */
+  if (!threaded_multiway_branch && multiway_branch_in_path)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file,
+		   "Thread through multiway branch without threading "
+		   "a multiway branch.\n");
+	  dump_jump_thread_path (dump_file, *path, false);
+	}
+      return false;
+    }
 
   return true;
 }
@@ -2494,11 +2526,8 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 
       /* Do not jump-thread twice from the same block.  */
       if (bitmap_bit_p (threaded_blocks, entry->src->index)
-	  /* Verify that the jump thread path is still valid: a
-	     previous jump-thread may have changed the CFG, and
-	     invalidated the current path or the requested jump
-	     thread might create irreducible loops which should
-	     generally be avoided.  */
+	  /* We may not want to realize this jump thread path
+	     for various reasons.  So check it first.  */
 	  || !valid_jump_thread_path (path))
 	{
 	  /* Remove invalid FSM jump-thread paths.  */

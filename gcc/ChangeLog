@@ -1,3 +1,12 @@
+2015-11-18  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/68198
+	* tree-ssa-threadupdate.c (valid_jump_thread_path): Distinguish
+	between threading a multi-way branch and a thread path that contains
+	a multi-way branch.  Disallow the case where a path contains a
+	multi-way branch and does not thread a multi-way branch.
+	(thread_through_all_blocks): Update comment.
+
 2015-11-18  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/65083

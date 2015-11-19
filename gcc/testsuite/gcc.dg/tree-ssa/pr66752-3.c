@@ -32,8 +32,10 @@ foo (int N, int c, int b, int *a)
    pt--;
 }
 
-/* There are 3 FSM jump threading opportunities.  */
-/* { dg-final { scan-tree-dump-times "FSM" 3 "vrp1"} } */
+/* There are 3 FSM jump threading opportunities, one of which will
+   get cancelled.  */
+/* { dg-final { scan-tree-dump-times "Registering FSM" 3 "vrp1"} } */
+/* { dg-final { scan-tree-dump-times "Cancelling FSM" 1 "vrp1"} } */
 
 /* There should be no assignments or references to FLAG.  */
 /* { dg-final { scan-tree-dump-not "flag" "optimized"} } */
