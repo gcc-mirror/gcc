@@ -1,3 +1,9 @@
+2015-11-19  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb (Check_Internal_Call_Continue): Correction to previous
+	change: correctly handle generic formals/actuals that look like
+	renamings.
+
 2015-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (elaborate_all_entities_for_package): New

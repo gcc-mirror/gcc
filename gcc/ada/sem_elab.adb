@@ -2407,7 +2407,7 @@ package body Sem_Elab is
                Error_Msg_NE
                  ("cannot call& before body seen<<", N, Orig_Ent);
 
-            else
+            elsif not Is_Generic_Actual_Subprogram (Orig_Ent) then
                Insert_Check := False;
             end if;
 
