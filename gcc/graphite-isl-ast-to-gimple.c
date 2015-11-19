@@ -399,6 +399,11 @@ class translate_isl_ast_to_gimple
   edge copy_bb_and_scalar_dependences (basic_block bb, edge next_e,
 				       vec<tree> iv_map);
 
+  /* Given a basic block containing close-phi it returns the new basic block
+     where to insert a copy of the close-phi nodes.  All the uses in close phis
+     should come from a single loop otherwise it returns NULL.  */
+  edge edge_for_new_close_phis (basic_block bb);
+
   /* Add NEW_NAME as the ARGNUM-th arg of NEW_PHI which is in NEW_BB.
      DOMINATING_PRED is the predecessor basic block of OLD_BB which dominates
      the other pred of OLD_BB as well.  If no such basic block exists then it is
@@ -1628,8 +1633,8 @@ translate_isl_ast_to_gimple::rename_all_uses (tree new_expr, basic_block new_bb,
   return new_expr;
 }
 
-/* For ops which are scev_analyzeable, we can regenerate a new name from
-its scalar evolution around LOOP.  */
+/* For ops which are scev_analyzeable, we can regenerate a new name from its
+   scalar evolution around LOOP.  */
 
 tree
 translate_isl_ast_to_gimple::
@@ -1670,9 +1675,7 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
       basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_expr));
       if (bb && !dominated_by_p (CDI_DOMINATORS, new_bb, bb))
 	{
-	  /* FIXME: Remove if bootstrap passes.  */
 	  codegen_error = true;
-	  gcc_unreachable ();
 	  return build_zero_cst (TREE_TYPE (old_name));
 	}
     }
@@ -1685,9 +1688,7 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
       basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_expr));
       if (bb && !dominated_by_p (CDI_DOMINATORS, new_bb, bb))
 	{
-	  /* FIXME: Remove if bootstrap passes.  */
 	  codegen_error = true;
-	  gcc_unreachable ();
 	  return build_zero_cst (TREE_TYPE (old_name));
 	}
     }
@@ -2047,7 +2048,7 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
 {
   /* The successor of bb having close phi should be a merge of the diamond
      inserted to guard the loop during codegen.  */
-  basic_block close_phi_merge_bb = single_succ (new_bb);
+  basic_block succ_new_bb = single_succ (new_bb);
 
   for (gphi_iterator psi = gsi_start_phis (old_bb); !gsi_end_p (psi);
        gsi_next (&psi))
@@ -2087,10 +2088,11 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
 
       /* When there is no loop guard around this codegenerated loop, there is no
 	 need to collect the close-phi arg.  */
-      if (2 != EDGE_COUNT (close_phi_merge_bb->preds))
+      if (2 != EDGE_COUNT (succ_new_bb->preds)
+	  || bb_contains_loop_phi_nodes (succ_new_bb))
 	continue;
 
-      /* Add a PHI in the close_phi_merge_bb for each close phi of the loop.  */
+      /* Add a PHI in the succ_new_bb for each close phi of the loop.  */
       tree init = find_init_value_close_phi (new_phi);
 
       /* A close phi must come from a loop-phi having an init value.  */
@@ -2108,8 +2110,7 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
 	  continue;
 	}
 
-      gphi *merge_phi = create_phi_node (SSA_NAME_VAR (res),
-			  		 close_phi_merge_bb);
+      gphi *merge_phi = create_phi_node (SSA_NAME_VAR (res), succ_new_bb);
       tree merge_res = create_new_def_for (res, merge_phi,
 					   gimple_phi_result_ptr (merge_phi));
       set_rename (res, merge_res);
@@ -2118,8 +2119,8 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
       add_phi_arg (merge_phi, new_res, from_loop, get_loc (old_name));
 
       /* The edge coming from loop guard.  */
-      edge other = from_loop == (*close_phi_merge_bb->preds)[0]
-	? (*close_phi_merge_bb->preds)[1] : (*close_phi_merge_bb->preds)[0];
+      edge other = from_loop == (*succ_new_bb->preds)[0]
+	? (*succ_new_bb->preds)[1] : (*succ_new_bb->preds)[0];
 
       add_phi_arg (merge_phi, init, other, get_loc (old_name));
       if (dump_file)
@@ -2573,6 +2574,47 @@ translate_isl_ast_to_gimple::graphite_copy_stmts_from_block (basic_block bb,
   return true;
 }
 
+
+/* Given a basic block containing close-phi it returns the new basic block where
+   to insert a copy of the close-phi nodes.  All the uses in close phis should
+   come from a single loop otherwise it returns NULL.  */
+
+edge
+translate_isl_ast_to_gimple::edge_for_new_close_phis (basic_block bb)
+{
+  /* Make sure that NEW_BB is the new_loop->exit->dest.  We find the definition
+     of close phi in the original code and then find the mapping of basic block
+     defining that variable.  If there are multiple close-phis and they are
+     defined in different loops (in the original or in the new code) because of
+     loop splitting, then we bail out.  */
+  loop_p new_loop = NULL;
+  for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);
+       gsi_next (&psi))
+    {
+      gphi *phi = psi.phi ();
+      tree name = gimple_phi_arg_def (phi, 0);
+      basic_block old_loop_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+
+      vec <basic_block> *bbs = region->copied_bb_map->get (old_loop_bb);
+      if (!bbs || bbs->length () != 1)
+	/* This is one of the places which shows preserving original structure
+	   is not always possible, as we may need to insert close PHI for a loop
+	   where the latch does not have any mapping, or the mapping is
+	   ambiguous.  */
+	return NULL;
+
+      if (!new_loop)
+	new_loop = (*bbs)[0]->loop_father;
+      else if (new_loop != (*bbs)[0]->loop_father)
+	return NULL;
+    }
+
+  if (!new_loop)
+    return NULL;
+
+  return single_exit (new_loop);
+}
+
 /* Copies BB and includes in the copied BB all the statements that can
    be reached following the use-def chains from the memory accesses,
    and returns the next edge following this new block.  codegen_error is
@@ -2626,30 +2668,16 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
 	fprintf (dump_file, "\n[codegen] bb_%d contains close phi nodes",
 		 bb->index);
 
-      /* Make sure that NEW_BB is the loop->exit->dest.  */
-      edge e = single_pred_edge (new_bb);
-      basic_block phi_bb = new_bb;
-      if (e->src->loop_father == e->dest->loop_father)
+      edge e = edge_for_new_close_phis (bb);
+      if (!e)
 	{
-	  /* This is one of the places which shows preserving original structure
-	     is not always possible, as we may need to insert close PHI for a
-	     loop where the latch does not have any mapping, or the mapping is
-	     ambiguous.  */
-	  basic_block old_loop_bb = single_pred_edge (bb)->src;
-	  vec <basic_block> *bbs = region->copied_bb_map->get (old_loop_bb);
-	  if (!bbs || bbs->length () != 1)
-	    {
-	      codegen_error = true;
-	      return NULL;
-	    }
-
-	  basic_block new_loop_bb = (*bbs)[0];
-	  loop_p new_loop = new_loop_bb->loop_father;
-	  phi_bb = single_exit (new_loop)->dest;
-	  e = single_pred_edge (phi_bb);
+	  codegen_error = true;
+	  return NULL;
 	}
 
-      gcc_assert (e->src->loop_father != e->dest->loop_father);
+      basic_block phi_bb = split_edge (e);
+      gcc_assert (single_pred_edge (phi_bb)->src->loop_father
+		  != single_pred_edge (phi_bb)->dest->loop_father);
 
       if (!copy_loop_close_phi_nodes (bb, phi_bb))
 	{
