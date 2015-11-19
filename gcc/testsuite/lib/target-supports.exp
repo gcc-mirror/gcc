@@ -292,6 +292,12 @@ proc check_weak_available { } {
 	return 0
     }
 
+    # nvptx (nearly) supports it
+
+    if { [istarget nvptx-*-*] } {
+	return 1
+    }
+
     # ELF and ECOFF support it. a.out does with gas/gld but may also with
     # other linkers, so we should try it
 

@@ -2,6 +2,8 @@
 /* { dg-require-weak "" } */
 /* { dg-options "-fno-common" } */
 /* { dg-skip-if "" { x86_64-*-mingw* } { "*" } { "" } } */
+/* NVPTX's weak is applied to the definition,  not declaration.  */
+/* { dg-skip-if "" { nvptx-*-* } { "*" } { "" } } */
 
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?a" } } */
 /* { dg-final { scan-assembler-not "weak\[^ \t\]*\[ \t\]_?b" } } */

@@ -379,7 +379,7 @@ nvptx_write_function_decl (std::stringstream &s, const char *name, const_tree de
   if (DECL_EXTERNAL (decl))
     s << ".extern ";
   else if (TREE_PUBLIC (decl))
-    s << ".visible ";
+    s << (DECL_WEAK (decl) ? ".weak " : ".visible ");
 
   if (kernel)
     s << ".entry ";
@@ -1780,8 +1780,9 @@ nvptx_declare_object_name (FILE *file, const char *name, const_tree decl)
       size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
       const char *section = nvptx_section_for_decl (decl);
       fprintf (file, "\t%s%s .align %d .u%d ",
-	       TREE_PUBLIC (decl) ? " .visible" : "", section,
-	       DECL_ALIGN (decl) / BITS_PER_UNIT,
+	       !TREE_PUBLIC (decl) ? ""
+	       : DECL_WEAK (decl) ? ".weak" : ".visible",
+	       section, DECL_ALIGN (decl) / BITS_PER_UNIT,
 	       decl_chunk_size * BITS_PER_UNIT);
       assemble_name (file, name);
       if (size > 0)

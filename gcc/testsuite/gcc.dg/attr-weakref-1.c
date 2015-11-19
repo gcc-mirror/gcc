@@ -1,10 +1,12 @@
 // { dg-do run }
 // { dg-require-weak "" }
 // On darwin, we use attr-weakref-1-darwin.c.
+
 // This test requires support for undefined weak symbols.  This support
-// is not available on hppa*-*-hpux*.  The test is skipped rather than
+// is not available on the following targets.  The test is skipped rather than
 // xfailed to suppress the warning that would otherwise arise.
-// { dg-skip-if "" { "hppa*-*-hpux*" "*-*-aix*" } "*" { "" } }
+// { dg-skip-if "" { "hppa*-*-hpux*" "*-*-aix*" "nvptx-*-*" } "*" { "" } }
+
 // For kernel modules and static RTPs, the loader treats undefined weak
 // symbols in the same way as undefined strong symbols.  The test
 // therefore fails to load, so skip it.
