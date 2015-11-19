@@ -203,6 +203,7 @@ struct cp_omp_declare_simd_data {
   bool error_seen; /* Set if error has been reported.  */
   bool fndecl_seen; /* Set if one fn decl/definition has been seen already.  */
   vec<cp_token_cache_ptr> tokens;
+  tree clauses;
 };
 
 
@@ -371,8 +372,8 @@ struct GTY(()) cp_parser {
      necessary.  */
   cp_omp_declare_simd_data * GTY((skip)) cilk_simd_fn_info;
 
-  /* OpenACC routine clauses for subsequent decl/defn.  */
-  tree oacc_routine;
+  /* Parsing information for #pragma acc routine.  */
+  cp_omp_declare_simd_data * GTY((skip)) oacc_routine;
   
   /* Nonzero if parsing a parameter list where 'auto' should trigger an implicit
      template parameter.  */
