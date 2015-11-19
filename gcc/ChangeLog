@@ -1,3 +1,9 @@
+2015-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/68408
+	* config/sparc/sp-elf.h (CTORS_SECTION_ASM_OP): Undefine.
+	(DTORS_SECTION_ASM_OP): Likewise.
+
 2015-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/67265
