@@ -5358,4 +5358,18 @@ get_decl_source_range (tree decl)
   return get_range_from_loc (line_table, loc);
 }
 
+/* Return true if it makes sense to promote/demote from_type to to_type. */
+inline bool
+desired_pro_or_demotion_p (const_tree to_type, const_tree from_type)
+{
+  unsigned int to_type_precision = TYPE_PRECISION (to_type);
+
+  /* OK to promote if to_type is no bigger than word_mode. */
+  if (to_type_precision <= GET_MODE_PRECISION (word_mode))
+    return true;
+
+  /* Otherwise, allow only if narrowing or same precision conversions. */
+  return to_type_precision <= TYPE_PRECISION (from_type);
+}
+
 #endif  /* GCC_TREE_H  */

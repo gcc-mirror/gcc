@@ -9459,7 +9459,8 @@ simplify_cond_using_ranges (gcond *stmt)
       innerop = gimple_assign_rhs1 (def_stmt);
 
       if (TREE_CODE (innerop) == SSA_NAME
-	  && !POINTER_TYPE_P (TREE_TYPE (innerop)))
+	  && !POINTER_TYPE_P (TREE_TYPE (innerop))
+         && desired_pro_or_demotion_p (TREE_TYPE (innerop), TREE_TYPE (op0)))
 	{
 	  value_range *vr = get_value_range (innerop);
 

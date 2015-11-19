@@ -1,3 +1,8 @@
+2015-11-19  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* tree.h (desired_pro_or_demotion_p): New function.
+	* tree-vrp.c (simplify_cond_using_ranges): Call it.
+
 2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
