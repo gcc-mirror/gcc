@@ -1,5 +1,12 @@
 2015-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR lto/61313
+	* configure.ac (PLUGIN_LD_SUFFIX): Do not touch the value specified
+	by the user.
+	* configure: Regenerate.
+
+2015-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR target/68408
 	* config/sparc/sp-elf.h (CTORS_SECTION_ASM_OP): Undefine.
 	(DTORS_SECTION_ASM_OP): Likewise.
