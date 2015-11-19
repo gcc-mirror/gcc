@@ -3551,6 +3551,20 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       *walk_subtrees = 0;
       return NULL_TREE;
 
+    case DECLTYPE_TYPE:
+      {
+	/* When traversing a DECLTYPE_TYPE_EXPR, we need to set
+	   type_pack_expansion_p to false so that any placeholders
+	   within the expression don't get marked as parameter packs.  */
+	bool type_pack_expansion_p = ppd->type_pack_expansion_p;
+	ppd->type_pack_expansion_p = false;
+	cp_walk_tree (&DECLTYPE_TYPE_EXPR (t), &find_parameter_packs_r,
+		      ppd, ppd->visited);
+	ppd->type_pack_expansion_p = type_pack_expansion_p;
+	*walk_subtrees = 0;
+	return NULL_TREE;
+      }
+
     default:
       return NULL_TREE;
     }

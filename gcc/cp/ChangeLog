@@ -1,3 +1,9 @@
+2015-11-19  Ryan Burn  <contact@rnburn.com>
+
+	PR c++/68396
+	* pt.c (find_parameter_packs_r) [DECLTYPE_TYPE]: When traversing
+	the DECLTYPE_TYPE_EXPR, set type_pack_expansion_p to false.
+
 2015-11-19  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* parser.h (struct cp_omp_declare_simd_data): Add clauses member.
