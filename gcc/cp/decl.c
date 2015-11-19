@@ -2907,14 +2907,16 @@ decl_jump_unsafe (tree decl)
   return 0;
 }
 
-/* A subroutine of check_previous_goto_1 to identify a branch to the user.  */
+/* A subroutine of check_previous_goto_1 and check_goto to identify a branch
+   to the user.  */
 
 static bool
-identify_goto (tree decl, const location_t *locus)
+identify_goto (tree decl, location_t loc, const location_t *locus,
+	       diagnostic_t diag_kind)
 {
-  bool complained = (decl
-		     ? permerror (input_location, "jump to label %qD", decl)
-		     : permerror (input_location, "jump to case label"));
+  bool complained
+    = (decl ? emit_diagnostic (diag_kind, loc, 0, "jump to label %qD", decl)
+	    : emit_diagnostic (diag_kind, loc, 0, "jump to case label"));
   if (complained && locus)
     inform (*locus, "  from here");
   return complained;
@@ -2931,15 +2933,17 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 		       bool exited_omp, const location_t *locus)
 {
   cp_binding_level *b;
-  bool identified = false, complained = false;
+  bool complained = false;
+  int identified = 0;
   bool saw_eh = false, saw_omp = false;
 
   if (exited_omp)
     {
-      complained = identify_goto (decl, locus);
+      complained = identify_goto (decl, input_location, locus, DK_ERROR);
       if (complained)
 	inform (input_location, "  exits OpenMP structured block");
-      identified = saw_omp = true;
+      saw_omp = true;
+      identified = 2;
     }
 
   for (b = current_binding_level; b ; b = b->level_chain)
@@ -2956,8 +2960,9 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 
 	  if (!identified)
 	    {
-	      complained = identify_goto (decl, locus);
-	      identified = true;
+	      complained = identify_goto (decl, input_location, locus,
+					  DK_PERMERROR);
+	      identified = 1;
 	    }
 	  if (complained)
 	    {
@@ -2974,10 +2979,11 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	break;
       if ((b->kind == sk_try || b->kind == sk_catch) && !saw_eh)
 	{
-	  if (!identified)
+	  if (identified < 2)
 	    {
-	      complained = identify_goto (decl, locus);
-	      identified = true;
+	      complained = identify_goto (decl, input_location, locus,
+					  DK_ERROR);
+	      identified = 2;
 	    }
 	  if (complained)
 	    {
@@ -2990,10 +2996,11 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	}
       if (b->kind == sk_omp && !saw_omp)
 	{
-	  if (!identified)
+	  if (identified < 2)
 	    {
-	      complained = identify_goto (decl, locus);
-	      identified = true;
+	      complained = identify_goto (decl, input_location, locus,
+					  DK_ERROR);
+	      identified = 2;
 	    }
 	  if (complained)
 	    inform (input_location, "  enters OpenMP structured block");
@@ -3025,7 +3032,8 @@ void
 check_goto (tree decl)
 {
   struct named_label_entry *ent, dummy;
-  bool saw_catch = false, identified = false, complained = false;
+  bool saw_catch = false, complained = false;
+  int identified = 0;
   tree bad;
   unsigned ix;
 
@@ -3068,10 +3076,12 @@ check_goto (tree decl)
   if (ent->in_try_scope || ent->in_catch_scope
       || ent->in_omp_scope || !vec_safe_is_empty (ent->bad_decls))
     {
-      complained = permerror (input_location, "jump to label %q+D", decl);
-      if (complained)
-	inform (input_location, "  from here");
-      identified = true;
+      diagnostic_t diag_kind = DK_PERMERROR;
+      if (ent->in_try_scope || ent->in_catch_scope || ent->in_omp_scope)
+	diag_kind = DK_ERROR;
+      complained = identify_goto (decl, DECL_SOURCE_LOCATION (decl),
+				  &input_location, diag_kind);
+      identified = 1 + (diag_kind == DK_ERROR);
     }
 
   FOR_EACH_VEC_SAFE_ELT (ent->bad_decls, ix, bad)
@@ -3081,6 +3091,12 @@ check_goto (tree decl)
       if (u > 1 && DECL_ARTIFICIAL (bad))
 	{
 	  /* Can't skip init of __exception_info.  */
+	  if (identified == 1)
+	    {
+	      complained = identify_goto (decl, DECL_SOURCE_LOCATION (decl),
+					  &input_location, DK_ERROR);
+	      identified = 2;
+	    }
 	  if (complained)
 	    inform (DECL_SOURCE_LOCATION (bad), "  enters catch block");
 	  saw_catch = true;
@@ -3117,13 +3133,12 @@ check_goto (tree decl)
 	    break;
 	  if (b->kind == sk_omp)
 	    {
-	      if (!identified)
+	      if (identified < 2)
 		{
-		  complained = permerror (input_location,
-					  "jump to label %q+D", decl);
-		  if (complained)
-		    inform (input_location, "  from here");
-		  identified = true;
+		  complained = identify_goto (decl,
+					      DECL_SOURCE_LOCATION (decl),
+					      &input_location, DK_ERROR);
+		  identified = 2;
 		}
 	      if (complained)
 		inform (input_location, "  exits OpenMP structured block");

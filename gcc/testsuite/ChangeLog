@@ -1,5 +1,8 @@
 2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/67409
+	* g++.dg/eh/goto3.C: New test.
+
 	PR rtl-optimization/68376
 	* gcc.c-torture/execute/pr68376-1.c: New test.
 	* gcc.c-torture/execute/pr68376-2.c: New test.
