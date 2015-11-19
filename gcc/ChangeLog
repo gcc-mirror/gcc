@@ -1,3 +1,9 @@
+2015-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/67770
+	* config/i386/i386.md (simple_return): Disable if
+	ix86_static_chain_on_stack is true.
+
 2015-11-18  Richard Henderson  <rth@redhat.com>
 
 	Backport from mainline
