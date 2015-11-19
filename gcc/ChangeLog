@@ -1,5 +1,9 @@
 2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/68376
+	* ifcvt.c (noce_try_abs): Disable one_cmpl optimization if
+	encountering x <= 0 ? ~x : x or x > 0 ? ~x : x.
+
 	PR target/67770
 	* config/i386/i386.md (simple_return): Disable if
 	ix86_static_chain_on_stack is true.
