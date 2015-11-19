@@ -1,3 +1,8 @@
+2015-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/68431
+	* tree-vrp.c (extract_range_from_binary_expr_1): Fix condition.
+
 2015-11-19  Nathan Sidwell  <nathanacm.org>
 
 	* config/nvptx/nvptx.md (atomic_compare_and_swap<mode>_1,

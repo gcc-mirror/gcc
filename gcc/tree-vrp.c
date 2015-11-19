@@ -2975,7 +2975,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
 		  if (vr1.type == VR_RANGE
 		      && !symbolic_range_p (&vr0)
 		      && !symbolic_range_p (&vr1)
-		      && !compare_values (vr1.min, zero))
+		      && compare_values (vr1.min, zero) != 0)
 		    max = int_const_binop (code, vr0.max, vr1.min);
 		  else
 		    max = zero;
