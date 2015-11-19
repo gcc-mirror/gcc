@@ -1,3 +1,39 @@
+2015-11-19  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (struct TargetImageDesc): New.
+	(ImgDescMap): New typedef.
+	(image_descriptors): New static var.
+	(init): Allocate image_descriptors.
+	(offload): Remove vars2 argument.  Pass NULL to __offload_offload1
+	instead of vars2.
+	(unregister_main_image): New static function.
+	(register_main_image): Call unregister_main_image at exit.
+	(GOMP_OFFLOAD_init_device): Print device number, fix offload args.
+	(GOMP_OFFLOAD_fini_device): Likewise.
+	(get_target_table): Remove vd1g and vd2g, don't pass them to offload.
+	(offload_image): Remove declaration of the struct TargetImage.
+	Free table.  Insert new descriptor into image_descriptors.
+	(GOMP_OFFLOAD_unload_image): Call __offload_unregister_image, free
+	the corresponding descriptor, and remove it from address_table and
+	image_descriptors.
+	(GOMP_OFFLOAD_alloc): Print device number, remove vd1g.
+	(GOMP_OFFLOAD_free): Likewise.
+	(GOMP_OFFLOAD_host2dev): Print device number, remove vd1g and vd2g.
+	(GOMP_OFFLOAD_dev2host): Likewise.
+	(GOMP_OFFLOAD_run): Print device number, remove vd1g.
+	* plugin/offload_target_main.cpp (__offload_target_table_p1): Remove
+	vd2, don't pass it to __offload_target_enter.
+	(__offload_target_table_p2): Likewise.
+	(__offload_target_alloc): Likewise.
+	(__offload_target_free): Likewise.
+	(__offload_target_host2tgt_p1): Likewise.
+	(__offload_target_host2tgt_p2): Likewise.
+	(__offload_target_tgt2host_p1): Likewise.
+	(__offload_target_tgt2host_p2): Likewise.
+	(__offload_target_run): Likewise.
+	(__offload_target_tgt2tgt): Remove vd1g, don't pass it to
+	__offload_target_enter.
+
 2015-11-14  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* runtime/offload_host.cpp (task_completion_callback): New
@@ -11,7 +47,7 @@
 	(register_main_image): Call register_main_image.
 	(GOMP_OFFLOAD_init_device, get_target_table, GOMP_OFFLOAD_alloc,
 	GOMP_OFFLOAD_free, GOMP_OFFLOAD_host2dev, GOMP_OFFLOAD_dev2host,
-	GOMP_OFFLOAD_dev2dev) Adjust offload callers.
+	GOMP_OFFLOAD_dev2dev): Adjust offload callers.
 	(GOMP_OFFLOAD_async_run): New function.
 	(GOMP_OFFLOAD_run): Implement using GOMP_OFFLOAD_async_run.
 

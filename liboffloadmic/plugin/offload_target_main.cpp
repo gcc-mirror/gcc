@@ -1,6 +1,6 @@
 /* Plugin for offload execution on Intel MIC devices.
 
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014-2015 Free Software Foundation, Inc.
 
    Contributed by Ilya Verbin <ilya.verbin@intel.com>.
 
@@ -139,14 +139,13 @@ __offload_target_table_p1 (OFFLOAD ofldt)
   int num_vars = (var_table_end - var_table_begin) / 2;
   TRACE ("(num_funcs = %d, num_vars = %d)", num_funcs, num_vars);
 
-  VarDesc vd1[2] = { vd_tgt2host, vd_tgt2host };
-  vd1[0].ptr = &num_funcs;
-  vd1[0].size = sizeof (num_funcs);
-  vd1[1].ptr = &num_vars;
-  vd1[1].size = sizeof (num_vars);
-  VarDesc2 vd2[2] = { { "num_funcs", 0 }, { "num_vars", 0 } };
+  VarDesc vd[2] = { vd_tgt2host, vd_tgt2host };
+  vd[0].ptr = &num_funcs;
+  vd[0].size = sizeof (num_funcs);
+  vd[1].ptr = &num_vars;
+  vd[1].size = sizeof (num_vars);
 
-  __offload_target_enter (ofldt, 2, vd1, vd2);
+  __offload_target_enter (ofldt, 2, vd, NULL);
   __offload_target_leave (ofldt);
 }
 
@@ -166,13 +165,11 @@ __offload_target_table_p2 (OFFLOAD ofldt)
   void **table = (void **) malloc (table_size);
   TRACE ("(table_size = %d)", table_size);
 
-  VarDesc vd1;
-  vd1 = vd_tgt2host;
-  vd1.ptr = table;
-  vd1.size = table_size;
-  VarDesc2 vd2 = { "table", 0 };
+  VarDesc vd = vd_tgt2host;
+  vd.ptr = table;
+  vd.size = table_size;
 
-  __offload_target_enter (ofldt, 1, &vd1, &vd2);
+  __offload_target_enter (ofldt, 1, &vd, NULL);
 
   void **p;
   int i = 0;
@@ -193,14 +190,13 @@ __offload_target_alloc (OFFLOAD ofldt)
   size_t size = 0;
   void *ptr = NULL;
 
-  VarDesc vd1[2] = { vd_host2tgt, vd_tgt2host };
-  vd1[0].ptr = &size;
-  vd1[0].size = sizeof (size);
-  vd1[1].ptr = &ptr;
-  vd1[1].size = sizeof (void *);
-  VarDesc2 vd2[2] = { { "size", 0 }, { "ptr", 0 } };
+  VarDesc vd[2] = { vd_host2tgt, vd_tgt2host };
+  vd[0].ptr = &size;
+  vd[0].size = sizeof (size);
+  vd[1].ptr = &ptr;
+  vd[1].size = sizeof (void *);
 
-  __offload_target_enter (ofldt, 2, vd1, vd2);
+  __offload_target_enter (ofldt, 2, vd, NULL);
   ptr = malloc (size);
   TRACE ("(size = %d): ptr = %p", size, ptr);
   __offload_target_leave (ofldt);
@@ -212,12 +208,11 @@ __offload_target_free (OFFLOAD ofldt)
 {
   void *ptr = 0;
 
-  VarDesc vd1 = vd_host2tgt;
-  vd1.ptr = &ptr;
-  vd1.size = sizeof (void *);
-  VarDesc2 vd2 = { "ptr", 0 };
+  VarDesc vd = vd_host2tgt;
+  vd.ptr = &ptr;
+  vd.size = sizeof (void *);
 
-  __offload_target_enter (ofldt, 1, &vd1, &vd2);
+  __offload_target_enter (ofldt, 1, &vd, NULL);
   TRACE ("(ptr = %p)", ptr);
   free (ptr);
   __offload_target_leave (ofldt);
@@ -231,14 +226,13 @@ __offload_target_host2tgt_p1 (OFFLOAD ofldt)
   void *var_ptr = NULL;
   size_t var_size = 0;
 
-  VarDesc vd1[2] = { vd_host2tgt, vd_host2tgt };
-  vd1[0].ptr = &var_ptr;
-  vd1[0].size = sizeof (void *);
-  vd1[1].ptr = &var_size;
-  vd1[1].size = sizeof (var_size);
-  VarDesc2 vd2[2] = { { "var_ptr", 0 }, { "var_size", 0 } };
+  VarDesc vd[2] = { vd_host2tgt, vd_host2tgt };
+  vd[0].ptr = &var_ptr;
+  vd[0].size = sizeof (void *);
+  vd[1].ptr = &var_size;
+  vd[1].size = sizeof (var_size);
 
-  __offload_target_enter (ofldt, 2, vd1, vd2);
+  __offload_target_enter (ofldt, 2, vd, NULL);
   TRACE ("(var_ptr = %p, var_size = %d)", var_ptr, var_size);
   last_var_ptr = var_ptr;
   last_var_size = var_size;
@@ -252,12 +246,11 @@ __offload_target_host2tgt_p2 (OFFLOAD ofldt)
   TRACE ("(last_var_ptr = %p, last_var_size = %d)",
 	 last_var_ptr, last_var_size);
 
-  VarDesc vd1 = vd_host2tgt;
-  vd1.ptr = last_var_ptr;
-  vd1.size = last_var_size;
-  VarDesc2 vd2 = { "var", 0 };
+  VarDesc vd = vd_host2tgt;
+  vd.ptr = last_var_ptr;
+  vd.size = last_var_size;
 
-  __offload_target_enter (ofldt, 1, &vd1, &vd2);
+  __offload_target_enter (ofldt, 1, &vd, NULL);
   __offload_target_leave (ofldt);
 }
 
@@ -269,14 +262,13 @@ __offload_target_tgt2host_p1 (OFFLOAD ofldt)
   void *var_ptr = NULL;
   size_t var_size = 0;
 
-  VarDesc vd1[2] = { vd_host2tgt, vd_host2tgt };
-  vd1[0].ptr = &var_ptr;
-  vd1[0].size = sizeof (void *);
-  vd1[1].ptr = &var_size;
-  vd1[1].size = sizeof (var_size);
-  VarDesc2 vd2[2] = { { "var_ptr", 0 }, { "var_size", 0 } };
+  VarDesc vd[2] = { vd_host2tgt, vd_host2tgt };
+  vd[0].ptr = &var_ptr;
+  vd[0].size = sizeof (void *);
+  vd[1].ptr = &var_size;
+  vd[1].size = sizeof (var_size);
 
-  __offload_target_enter (ofldt, 2, vd1, vd2);
+  __offload_target_enter (ofldt, 2, vd, NULL);
   TRACE ("(var_ptr = %p, var_size = %d)", var_ptr, var_size);
   last_var_ptr = var_ptr;
   last_var_size = var_size;
@@ -290,12 +282,11 @@ __offload_target_tgt2host_p2 (OFFLOAD ofldt)
   TRACE ("(last_var_ptr = %p, last_var_size = %d)",
 	 last_var_ptr, last_var_size);
 
-  VarDesc vd1 = vd_tgt2host;
-  vd1.ptr = last_var_ptr;
-  vd1.size = last_var_size;
-  VarDesc2 vd2 = { "var", 0 };
+  VarDesc vd = vd_tgt2host;
+  vd.ptr = last_var_ptr;
+  vd.size = last_var_size;
 
-  __offload_target_enter (ofldt, 1, &vd1, &vd2);
+  __offload_target_enter (ofldt, 1, &vd, NULL);
   __offload_target_leave (ofldt);
 }
 
@@ -307,16 +298,15 @@ __offload_target_tgt2tgt (OFFLOAD ofldt)
   void *dst_ptr = NULL;
   size_t size = 0;
 
-  VarDesc vd1[3] = { vd_host2tgt, vd_host2tgt, vd_host2tgt };
-  vd1[0].ptr = &dst_ptr;
-  vd1[0].size = sizeof (void *);
-  vd1[1].ptr = &src_ptr;
-  vd1[1].size = sizeof (void *);
-  vd1[2].ptr = &size;
-  vd1[2].size = sizeof (size);
-  VarDesc2 vd1g[3] = { { "dst_ptr", 0 }, { "src_ptr", 0 }, { "size", 0 } };
+  VarDesc vd[3] = { vd_host2tgt, vd_host2tgt, vd_host2tgt };
+  vd[0].ptr = &dst_ptr;
+  vd[0].size = sizeof (void *);
+  vd[1].ptr = &src_ptr;
+  vd[1].size = sizeof (void *);
+  vd[2].ptr = &size;
+  vd[2].size = sizeof (size);
 
-  __offload_target_enter (ofldt, 3, vd1, vd1g);
+  __offload_target_enter (ofldt, 3, vd, NULL);
   TRACE ("(dst_ptr = %p, src_ptr = %p, size = %d)", dst_ptr, src_ptr, size);
   memcpy (dst_ptr, src_ptr, size);
   __offload_target_leave (ofldt);
@@ -329,14 +319,13 @@ __offload_target_run (OFFLOAD ofldt)
   void *fn_ptr;
   void *vars_ptr;
 
-  VarDesc vd1[2] = { vd_host2tgt, vd_host2tgt };
-  vd1[0].ptr = &fn_ptr;
-  vd1[0].size = sizeof (void *);
-  vd1[1].ptr = &vars_ptr;
-  vd1[1].size = sizeof (void *);
-  VarDesc2 vd2[2] = { { "fn_ptr", 0 }, { "vars_ptr", 0 } };
+  VarDesc vd[2] = { vd_host2tgt, vd_host2tgt };
+  vd[0].ptr = &fn_ptr;
+  vd[0].size = sizeof (void *);
+  vd[1].ptr = &vars_ptr;
+  vd[1].size = sizeof (void *);
 
-  __offload_target_enter (ofldt, 2, vd1, vd2);
+  __offload_target_enter (ofldt, 2, vd, NULL);
   TRACE ("(fn_ptr = %p, vars_ptr = %p)", fn_ptr, vars_ptr);
   void (*fn)(void *) = (void (*)(void *)) fn_ptr;
   fn (vars_ptr);
