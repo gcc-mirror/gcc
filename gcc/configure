@@ -27947,6 +27947,8 @@ $as_echo "#define HAVE_cloog 1" >>confdefs.h
 
   # Check whether isl_schedule_constraints_compute_schedule is available;
   # it's new in ISL-0.13.
+  # Check whether isl_options_set_schedule_serialize_sccs is available;
+  # it's new in ISL-0.15.
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $ISLINC"
   saved_LIBS="$LIBS"
@@ -27975,12 +27977,41 @@ rm -f core conftest.err conftest.$ac_objext \
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_schedule_constraints_compute_schedule" >&5
 $as_echo "$ac_has_isl_schedule_constraints_compute_schedule" >&6; }
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking for isl_options_set_schedule_serialize_sccs" >&5
+$as_echo_n "checking Checking for isl_options_set_schedule_serialize_sccs... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <isl/schedule.h>
+int
+main ()
+{
+isl_options_set_schedule_serialize_sccs (NULL, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_has_isl_options_set_schedule_serialize_sccs=yes
+else
+  ac_has_isl_options_set_schedule_serialize_sccs=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_options_set_schedule_serialize_sccs" >&5
+$as_echo "$ac_has_isl_options_set_schedule_serialize_sccs" >&6; }
+
   LIBS="$saved_LIBS"
   CFLAGS="$saved_CFLAGS"
 
   if test x"$ac_has_isl_schedule_constraints_compute_schedule" = x"yes"; then
 
 $as_echo "#define HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE 1" >>confdefs.h
+
+  fi
+
+  if test x"$ac_has_isl_options_set_schedule_serialize_sccs" = x"yes"; then
+
+$as_echo "#define HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS 1" >>confdefs.h
 
   fi
 fi

@@ -5535,6 +5535,8 @@ if test "x${CLOOGLIBS}" != "x" ; then
 
   # Check whether isl_schedule_constraints_compute_schedule is available;
   # it's new in ISL-0.13.
+  # Check whether isl_options_set_schedule_serialize_sccs is available;
+  # it's new in ISL-0.15.
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $ISLINC"
   saved_LIBS="$LIBS"
@@ -5547,12 +5549,24 @@ if test "x${CLOOGLIBS}" != "x" ; then
               [ac_has_isl_schedule_constraints_compute_schedule=no])
   AC_MSG_RESULT($ac_has_isl_schedule_constraints_compute_schedule)
 
+  AC_MSG_CHECKING([Checking for isl_options_set_schedule_serialize_sccs])
+  AC_TRY_LINK([#include <isl/schedule.h>],
+              [isl_options_set_schedule_serialize_sccs (NULL, 0);],
+              [ac_has_isl_options_set_schedule_serialize_sccs=yes],
+              [ac_has_isl_options_set_schedule_serialize_sccs=no])
+  AC_MSG_RESULT($ac_has_isl_options_set_schedule_serialize_sccs)
+
   LIBS="$saved_LIBS"
   CFLAGS="$saved_CFLAGS"
 
   if test x"$ac_has_isl_schedule_constraints_compute_schedule" = x"yes"; then
      AC_DEFINE(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE, 1,
                [Define if isl_schedule_constraints_compute_schedule exists.])
+  fi
+
+  if test x"$ac_has_isl_options_set_schedule_serialize_sccs" = x"yes"; then
+     AC_DEFINE(HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS, 1,
+               [Define if isl_options_set_schedule_serialize_sccs exists.])
   fi
 fi
 
