@@ -1,3 +1,11 @@
+2015-11-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68422
+	* cp-tree.h (PACK_EXPANSION_SIZEOF_P): New.
+	* parser.c (cp_parser_sizeof_pack): Set it.
+	* pt.c 	(tsubst_copy) [SIZEOF_EXPR]: Likewise.
+	(tsubst_pack_expansion): Improve T... shortcut for expression packs.
+
 2015-11-19  Ryan Burn  <contact@rnburn.com>
 
 	PR c++/68396
