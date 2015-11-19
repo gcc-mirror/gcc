@@ -1,3 +1,9 @@
+2015-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68117
+	* tree-ssa.c (delete_tree_ssa): Revert removal of call to
+	redirect_edge_var_map_destroy.
+
 2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/67770

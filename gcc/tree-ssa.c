@@ -1126,6 +1126,9 @@ delete_tree_ssa (struct function *fn)
   fn->gimple_df->decls_to_pointers = NULL;
   fn->gimple_df->modified_noreturn_calls = NULL;
   fn->gimple_df = NULL;
+
+  /* We no longer need the edge variable maps.  */
+  redirect_edge_var_map_destroy ();
 }
 
 /* Return true if EXPR is a useless type conversion, otherwise return
