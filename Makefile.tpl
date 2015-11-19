@@ -889,6 +889,15 @@ vimrc: $(srcdir)/.local.vimrc $(srcdir)/.lvimrc
 
 .PHONY: vimrc
 
+# clang-format config
+
+$(srcdir)/.clang-format:
+	$(LN_S) contrib/clang-format $@
+
+clang-format: $(srcdir)/.clang-format
+
+.PHONY: clang-format
+
 # Installation targets.
 
 .PHONY: install uninstall

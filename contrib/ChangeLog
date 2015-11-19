@@ -1,3 +1,7 @@
+2015-11-19  Martin Liska  <mliska@suse.cz>
+
+	* clang-format: New file.
+
 2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* header-tools: New.  Directory containing a set of tools for

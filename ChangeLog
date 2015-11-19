@@ -1,3 +1,9 @@
+2015-11-19  Martin Liska  <mliska@suse.cz>
+
+	* .gitignore: Add .clang-format to ignored files.
+	* Makefile.in: Add clang-format.
+	* Makefile.tpl: Likewise.
+
 2015-11-13  Tsvetkova Alexandra  <aleksandra.tsvetkova@intel.com>
 
 	* configure.ac: Enable libmpx by default.
