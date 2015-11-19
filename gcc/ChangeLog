@@ -1,3 +1,12 @@
+2015-11-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	Revert
+	2015-11-18  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (use_toc_relative_ref): Ignore
+	type-limits warning.
+
+
 2015-11-19  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* tree.h (desired_pro_or_demotion_p): New function.
