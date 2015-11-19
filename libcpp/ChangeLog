@@ -1,3 +1,15 @@
+2015-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/60736
+	* include/cpplib.h (cpp_errno_filename): New prototype.
+	* errors.c (cpp_errno): Don't handle msgid "" specially, use
+	_(msgid) instead of msgid as argument to cpp_error.
+	(cpp_errno_filename): New function.
+	* files.c (read_file_guts): Use cpp_errno_filename instead of
+	cpp_errno.
+	(open_file_failed): Likewise.  Use file->name if file->path is NULL
+	in diagnostics.
+
 2015-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* errors.c (cpp_diagnostic): Pass pfile->line_table to

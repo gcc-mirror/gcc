@@ -986,6 +986,9 @@ extern bool cpp_warning_syshdr (cpp_reader *, int, const char *msgid, ...)
 /* Output a diagnostic with "MSGID: " preceding the
    error string of errno.  No location is printed.  */
 extern bool cpp_errno (cpp_reader *, int, const char *msgid);
+/* Similarly, but with "FILENAME: " instead of "MSGID: ", where
+   the filename is not localized.  */
+extern bool cpp_errno_filename (cpp_reader *, int, const char *filename);
 
 /* Same as cpp_error, except additionally specifies a position as a
    (translation unit) physical line and physical column.  If the line is
