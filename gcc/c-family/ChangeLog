@@ -1,3 +1,8 @@
+2015-11-18  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (shorten_compare): Don't -Wtype-limits if the
+	non-constant operand comes from a macro.
+
 2015-11-17  Jason Merrill  <jason@redhat.com>
 
 	PR bootstrap/68346
