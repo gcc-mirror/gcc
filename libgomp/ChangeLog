@@ -1,3 +1,14 @@
+2015-11-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libgomp.oacc-c-c++-common/reduction-dbl.c: New.
+	* libgomp.oacc-c-c++-common/reduction-flt.c: New.
+	* libgomp.oacc-c-c++-common/reduction-cplx-dbl.c: Use typedef.
+	* libgomp.oacc-c-c++-common/reduction-cplx-flt.c: Use typedef.
+	* libgomp.oacc-c-c++-common/reduction-2.c: Uncomment broken tests
+	and fix.
+	* libgomp.oacc-c-c++-common/reduction-3.c: Likewise.
+	* libgomp.oacc-c-c++-common/reduction-4.c: Likewise.
+
 2015-11-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-flt.c: Add
