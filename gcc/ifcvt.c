@@ -2595,12 +2595,49 @@ noce_try_abs (struct noce_if_info *if_info)
 
   /* Work around funny ideas get_condition has wrt canonicalization.
      Note that these rtx constants are known to be CONST_INT, and
-     therefore imply integer comparisons.  */
+     therefore imply integer comparisons.
+     The one_cmpl case is more complicated, as we want to handle
+     only x < 0 ? ~x : x or x >= 0 ? ~x : x but not
+     x <= 0 ? ~x : x or x > 0 ? ~x : x, as the latter two
+     have different result for x == 0.  */
   if (c == constm1_rtx && GET_CODE (cond) == GT)
-    ;
+    {
+      if (one_cmpl && negate)
+	return FALSE;
+    }
   else if (c == const1_rtx && GET_CODE (cond) == LT)
-    ;
-  else if (c != CONST0_RTX (GET_MODE (b)))
+    {
+      if (one_cmpl && !negate)
+	return FALSE;
+    }
+  else if (c == CONST0_RTX (GET_MODE (b)))
+    {
+      if (one_cmpl)
+	switch (GET_CODE (cond))
+	  {
+	  case GT:
+	    if (!negate)
+	      return FALSE;
+	    break;
+	  case GE:
+	    /* >= 0 is the same case as above > -1.  */
+	    if (negate)
+	      return FALSE;
+	    break;
+	  case LT:
+	    if (negate)
+	      return FALSE;
+	    break;
+	  case LE:
+	    /* <= 0 is the same case as above < 1.  */
+	    if (!negate)
+	      return FALSE;
+	    break;
+	  default:
+	    return FALSE;
+	  }
+    }
+  else
     return FALSE;
 
   /* Determine what sort of operation this is.  */

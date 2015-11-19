@@ -1,5 +1,9 @@
 2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/68376
+	* gcc.c-torture/execute/pr68376-1.c: New test.
+	* gcc.c-torture/execute/pr68376-2.c: New test.
+
 	PR target/67770
 	* gcc.target/i386/pr67770.c: New test.
 

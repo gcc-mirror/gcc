@@ -1,3 +1,9 @@
+2015-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/68376
+	* ifcvt.c (noce_try_abs): Disable one_cmpl optimization if
+	encountering x <= 0 ? ~x : x or x > 0 ? ~x : x.
+
 2015-11-19  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/68117
