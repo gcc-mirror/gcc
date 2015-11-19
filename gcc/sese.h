@@ -236,9 +236,9 @@ typedef struct ifsese_s {
 
 extern void if_region_set_false_region (ifsese, sese_info_p);
 extern ifsese move_sese_in_condition (sese_info_p);
+extern void set_ifsese_condition (ifsese, tree);
 extern edge get_true_edge_from_guard_bb (basic_block);
 extern edge get_false_edge_from_guard_bb (basic_block);
-extern void set_ifsese_condition (ifsese, tree);
 
 static inline edge
 if_region_entry (ifsese if_region)

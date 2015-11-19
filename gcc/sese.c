@@ -355,6 +355,38 @@ outermost_loop_in_sese (sese_l &region, basic_block bb)
   return nest;
 }
 
+/* Returns the first successor edge of BB with EDGE_TRUE_VALUE flag set.  */
+
+edge
+get_true_edge_from_guard_bb (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (e->flags & EDGE_TRUE_VALUE)
+      return e;
+
+  gcc_unreachable ();
+  return NULL;
+}
+
+/* Returns the first successor edge of BB with EDGE_TRUE_VALUE flag cleared.  */
+
+edge
+get_false_edge_from_guard_bb (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (!(e->flags & EDGE_TRUE_VALUE))
+      return e;
+
+  gcc_unreachable ();
+  return NULL;
+}
+
 /* Sets the false region of an IF_REGION to REGION.  */
 
 void

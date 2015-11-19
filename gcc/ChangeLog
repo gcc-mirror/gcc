@@ -1,3 +1,10 @@
+2015-11-19  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-isl-ast-to-gimple.c (get_true_edge_from_guard_bb): Move...
+	(get_false_edge_from_guard_bb): Move...
+	* sese.c (get_false_edge_from_guard_bb)
+	(get_true_edge_from_guard_bb): ... here.
+
 2015-11-19  David Edelsohn  <dje.gcc@gmail.com>
 
 	Revert
