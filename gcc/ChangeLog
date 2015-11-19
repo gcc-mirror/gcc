@@ -1,6 +1,13 @@
 2015-11-19  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	PR tree-optimization/68428
+	* graphite-scop-detection.c (harmful_stmt_in_region): Do not iterate
+	over basic blocks outside the scop.
+
+2015-11-19  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	PR tree-optimization/68341
 	* graphite-isl-ast-to-gimple.c (get_rename_from_scev): Remove
 	gcc_unreachable and safely fail codegen.
