@@ -1,3 +1,8 @@
+2015-11-19  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/tree-ssa/vrp98.c: New testcase.
+	* gcc.target/avr/uint8-single-reg.c: New testcase.
+
 2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/67409
