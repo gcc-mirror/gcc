@@ -247,6 +247,45 @@ struct iv_cand
 			   smaller type.  */
 };
 
+/* Hashtable entry for common candidate derived from iv uses.  */
+struct iv_common_cand
+{
+  tree base;
+  tree step;
+  /* IV uses from which this common candidate is derived.  */
+  vec<iv_use *> uses;
+  hashval_t hash;
+};
+
+/* Hashtable helpers.  */
+
+struct iv_common_cand_hasher : free_ptr_hash <iv_common_cand>
+{
+  static inline hashval_t hash (const iv_common_cand *);
+  static inline bool equal (const iv_common_cand *, const iv_common_cand *);
+};
+
+/* Hash function for possible common candidates.  */
+
+inline hashval_t
+iv_common_cand_hasher::hash (const iv_common_cand *ccand)
+{
+  return ccand->hash;
+}
+
+/* Hash table equality function for common candidates.  */
+
+inline bool
+iv_common_cand_hasher::equal (const iv_common_cand *ccand1,
+			      const iv_common_cand *ccand2)
+{
+  return (ccand1->hash == ccand2->hash
+	  && operand_equal_p (ccand1->base, ccand2->base, 0)
+	  && operand_equal_p (ccand1->step, ccand2->step, 0)
+	  && (TYPE_PRECISION (TREE_TYPE (ccand1->base))
+	      == TYPE_PRECISION (TREE_TYPE (ccand2->base))));
+}
+
 /* Loop invariant expression hashtable entry.  */
 struct iv_inv_expr_ent
 {
@@ -254,8 +293,6 @@ struct iv_inv_expr_ent
   int id;
   hashval_t hash;
 };
-
-/* The data used by the induction variable optimizations.  */
 
 /* Hashtable helpers.  */
 
@@ -322,6 +359,12 @@ struct ivopts_data
 
   /* Cache used by tree_to_aff_combination_expand.  */
   hash_map<tree, name_expansion *> *name_expansion_cache;
+
+  /* The hashtable of common candidates derived from iv uses.  */
+  hash_table<iv_common_cand_hasher> *iv_common_cand_tab;
+
+  /* The common candidates.  */
+  vec<iv_common_cand *> iv_common_cands;
 
   /* The maximum invariant id.  */
   unsigned max_inv_id;
@@ -894,6 +937,8 @@ tree_ssa_iv_optimize_init (struct ivopts_data *data)
   data->inv_expr_tab = new hash_table<iv_inv_expr_hasher> (10);
   data->inv_expr_id = 0;
   data->name_expansion_cache = NULL;
+  data->iv_common_cand_tab = new hash_table<iv_common_cand_hasher> (10);
+  data->iv_common_cands.create (20);
   decl_rtl_to_reset.create (20);
   gcc_obstack_init (&data->iv_obstack);
 }
@@ -3063,6 +3108,96 @@ add_iv_candidate_for_bivs (struct ivopts_data *data)
     }
 }
 
+/* Record common candidate {BASE, STEP} derived from USE in hashtable.  */
+
+static void
+record_common_cand (struct ivopts_data *data, tree base,
+		    tree step, struct iv_use *use)
+{
+  struct iv_common_cand ent;
+  struct iv_common_cand **slot;
+
+  gcc_assert (use != NULL);
+
+  ent.base = base;
+  ent.step = step;
+  ent.hash = iterative_hash_expr (base, 0);
+  ent.hash = iterative_hash_expr (step, ent.hash);
+
+  slot = data->iv_common_cand_tab->find_slot (&ent, INSERT);
+  if (*slot == NULL)
+    {
+      *slot = XNEW (struct iv_common_cand);
+      (*slot)->base = base;
+      (*slot)->step = step;
+      (*slot)->uses.create (8);
+      (*slot)->hash = ent.hash;
+      data->iv_common_cands.safe_push ((*slot));
+    }
+  (*slot)->uses.safe_push (use);
+  return;
+}
+
+/* Comparison function used to sort common candidates.  */
+
+static int
+common_cand_cmp (const void *p1, const void *p2)
+{
+  unsigned n1, n2;
+  const struct iv_common_cand *const *const ccand1
+    = (const struct iv_common_cand *const *)p1;
+  const struct iv_common_cand *const *const ccand2
+    = (const struct iv_common_cand *const *)p2;
+
+  n1 = (*ccand1)->uses.length ();
+  n2 = (*ccand2)->uses.length ();
+  return n2 - n1;
+}
+
+/* Adds IV candidates based on common candidated recorded.  */
+
+static void
+add_iv_candidate_derived_from_uses (struct ivopts_data *data)
+{
+  unsigned i, j;
+  struct iv_cand *cand_1, *cand_2;
+
+  data->iv_common_cands.qsort (common_cand_cmp);
+  for (i = 0; i < data->iv_common_cands.length (); i++)
+    {
+      struct iv_common_cand *ptr = data->iv_common_cands[i];
+
+      /* Only add IV candidate if it's derived from multiple uses.  */
+      if (ptr->uses.length () <= 1)
+	break;
+
+      cand_1 = NULL;
+      cand_2 = NULL;
+      if (ip_normal_pos (data->current_loop))
+	cand_1 = add_candidate_1 (data, ptr->base, ptr->step,
+				  false, IP_NORMAL, NULL, NULL);
+
+      if (ip_end_pos (data->current_loop)
+	  && allow_ip_end_pos_p (data->current_loop))
+	cand_2 = add_candidate_1 (data, ptr->base, ptr->step,
+				  false, IP_END, NULL, NULL);
+
+      /* Bind deriving uses and the new candidates.  */
+      for (j = 0; j < ptr->uses.length (); j++)
+	{
+	  struct iv_use *use = ptr->uses[j];
+	  if (cand_1)
+	    bitmap_set_bit (use->related_cands, cand_1->id);
+	  if (cand_2)
+	    bitmap_set_bit (use->related_cands, cand_2->id);
+	}
+    }
+
+  /* Release data since it is useless from this point.  */
+  data->iv_common_cand_tab->empty ();
+  data->iv_common_cands.truncate (0);
+}
+
 /* Adds candidates based on the value of USE's iv.  */
 
 static void
@@ -3075,19 +3210,59 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
 
   add_candidate (data, iv->base, iv->step, false, use);
 
-  /* The same, but with initial value zero.  Make such variable important,
-     since it is generic enough so that possibly many uses may be based
-     on it.  */
+  /* Record common candidate for use in case it can be shared by others.  */
+  record_common_cand (data, iv->base, iv->step, use);
+
+  /* Record common candidate with initial value zero.  */
   basetype = TREE_TYPE (iv->base);
   if (POINTER_TYPE_P (basetype))
     basetype = sizetype;
-  add_candidate (data, build_int_cst (basetype, 0), iv->step, true, use);
+  record_common_cand (data, build_int_cst (basetype, 0), iv->step, use);
 
-  /* Third, try removing the constant offset.  Make sure to even
-     add a candidate for &a[0] vs. (T *)&a.  */
-  base = strip_offset (iv->base, &offset);
-  if (offset || base != iv->base)
-    add_candidate (data, base, iv->step, false, use);
+  /* Record common candidate with constant offset stripped in base.  */
+    {
+      base = strip_offset (iv->base, &offset);
+      if (offset || base != iv->base)
+	record_common_cand (data, base, iv->step, use);
+    }
+
+  /* Record common candidate with base_object removed in base.  */
+  if (iv->base_object != NULL)
+    {
+      unsigned i;
+      aff_tree aff_base;
+      tree step, base_object = iv->base_object;
+
+      base = iv->base;
+      step = iv->step;
+      STRIP_NOPS (base);
+      STRIP_NOPS (step);
+      STRIP_NOPS (base_object);
+      tree_to_aff_combination (base, TREE_TYPE (base), &aff_base);
+      for (i = 0; i < aff_base.n; i++)
+	{
+	  if (aff_base.elts[i].coef != 1)
+	    continue;
+
+	  if (operand_equal_p (aff_base.elts[i].val, base_object, 0))
+	    break;
+	}
+      if (i < aff_base.n)
+	{
+	  aff_combination_remove_elt (&aff_base, i);
+	  base = aff_combination_to_tree (&aff_base);
+	  basetype = TREE_TYPE (base);
+	  if (POINTER_TYPE_P (basetype))
+	    basetype = sizetype;
+
+	  step = fold_convert (basetype, step);
+	  record_common_cand (data, base, step, use);
+	  /* Also record common candidate with offset stripped.  */
+	  base = strip_offset (base, &offset);
+	  if (offset)
+	    record_common_cand (data, base, step, use);
+	}
+    }
 
   /* At last, add auto-incremental candidates.  Make such variables
      important since other iv uses with same base object may be based
@@ -3123,10 +3298,10 @@ add_iv_candidate_for_uses (struct ivopts_data *data)
 	  gcc_unreachable ();
 	}
     }
+  add_iv_candidate_derived_from_uses (data);
 }
 
-/* Record important candidates and add them to related_cands bitmaps
-   if needed.  */
+/* Record important candidates and add them to related_cands bitmaps.  */
 
 static void
 record_important_candidates (struct ivopts_data *data)
@@ -3145,22 +3320,11 @@ record_important_candidates (struct ivopts_data *data)
   data->consider_all_candidates = (n_iv_cands (data)
 				   <= CONSIDER_ALL_CANDIDATES_BOUND);
 
-  if (data->consider_all_candidates)
+  /* Add important candidates to uses' related_cands bitmaps.  */
+  for (i = 0; i < n_iv_uses (data); i++)
     {
-      /* We will not need "related_cands" bitmaps in this case,
-	 so release them to decrease peak memory consumption.  */
-      for (i = 0; i < n_iv_uses (data); i++)
-	{
-	  use = iv_use (data, i);
-	  BITMAP_FREE (use->related_cands);
-	}
-    }
-  else
-    {
-      /* Add important candidates to the related_cands bitmaps.  */
-      for (i = 0; i < n_iv_uses (data); i++)
-	bitmap_ior_into (iv_use (data, i)->related_cands,
-			 data->important_candidates);
+      use = iv_use (data, i);
+      bitmap_ior_into (use->related_cands, data->important_candidates);
     }
 }
 
@@ -6532,7 +6696,7 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
      too many ivs.  The approach from few ivs to more seems more likely to be
      successful -- starting from few ivs, replacing an expensive use by a
      specific iv should always be a win.  */
-  EXECUTE_IF_SET_IN_BITMAP (data->important_candidates, 0, i, bi)
+  EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, i, bi)
     {
       cand = iv_cand (data, i);
 
@@ -7441,6 +7605,9 @@ free_loop_data (struct ivopts_data *data)
 
   data->inv_expr_tab->empty ();
   data->inv_expr_id = 0;
+
+  data->iv_common_cand_tab->empty ();
+  data->iv_common_cands.truncate (0);
 }
 
 /* Finalizes data structures used by the iv optimization pass.  LOOPS is the
@@ -7460,6 +7627,9 @@ tree_ssa_iv_optimize_finalize (struct ivopts_data *data)
   delete data->inv_expr_tab;
   data->inv_expr_tab = NULL;
   free_affine_expand_cache (&data->name_expansion_cache);
+  delete data->iv_common_cand_tab;
+  data->iv_common_cand_tab = NULL;
+  data->iv_common_cands.release ();
   obstack_free (&data->iv_obstack, NULL);
 }
 

@@ -1,3 +1,24 @@
+2015-11-20  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/52272
+	* tree-ssa-loop-ivopts.c (struct iv_common_cand): New struct.
+	(struct iv_common_cand_hasher): New struct.
+	(iv_common_cand_hasher::hash): New function.
+	(iv_common_cand_hasher::equal): New function.
+	(struct ivopts_data): New fields, iv_common_cand_tab and
+	iv_common_cands.
+	(tree_ssa_iv_optimize_init): Initialize above fields.
+	(record_common_cand, common_cand_cmp): New functions.
+	(add_iv_candidate_derived_from_uses): New function.
+	(add_iv_candidate_for_use): Record iv_common_cands derived from
+	iv use in hash table, instead of adding candidates directly.
+	(add_iv_candidate_for_uses): Call add_iv_candidate_derived_from_uses.
+	(record_important_candidates): Add important candidates to iv uses'
+	related_cands.  Always keep related_cands for future use.
+	(try_add_cand_for): Use iv uses' related_cands.
+	(free_loop_data, tree_ssa_iv_optimize_finalize): Release new fields
+	in struct ivopts_data, iv_common_cand_tab and iv_common_cands.
+
 2015-11-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.md ("bswaphi2"): New pattern.
