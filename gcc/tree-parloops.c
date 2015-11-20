@@ -2539,6 +2539,9 @@ try_create_reduction_list (loop_p loop,
 
   gcc_assert (exit);
 
+  /* Try to get rid of exit phis.  */
+  final_value_replacement_loop (loop);
+
   gather_scalar_reductions (loop, reduction_list);
 
 

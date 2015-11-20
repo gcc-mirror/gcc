@@ -1,3 +1,12 @@
+2015-11-20  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68373
+	* tree-scalar-evolution.c (final_value_replacement_loop): Factor out of ...
+	(scev_const_prop): ... here.
+	* tree-scalar-evolution.h (final_value_replacement_loop): Declare.
+	* tree-parloops.c (try_create_reduction_list): Call
+	final_value_replacement_loop.
+
 2015-11-20  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/52272
