@@ -56,8 +56,7 @@
 2015-11-19  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.h (SUPPORTS_WEAK): Define.
-	* config/nvptx/nvptx.c (nvptx_write_function_decl): Support
-	DECL_WEAK.
+	* config/nvptx/nvptx.c (nvptx_write_function_decl): Support DECL_WEAK.
 	(nvptx_declare_objec_name): Likewise.
 
 2015-11-19  Aditya Kumar  <aditya.k7@samsung.com>
@@ -96,7 +95,7 @@
 	PR tree-optimization/68431
 	* tree-vrp.c (extract_range_from_binary_expr_1): Fix condition.
 
-2015-11-19  Nathan Sidwell  <nathanacm.org>
+2015-11-19  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.md (atomic_compare_and_swap<mode>_1,
 	atomic_exchange<mode>): Input values can be immediates.
@@ -180,7 +179,8 @@
 
 2015-11-18  Aditya Kumar  <aditya.k7@samsung.com>
 
-	* graphite-isl-ast-to-gimple.c (struct ast_build_info): Remove semicolon.
+	* graphite-isl-ast-to-gimple.c (struct ast_build_info): Remove
+	semicolon.
 	(class translate_isl_ast_to_gimple): Indentation.
 	(translate_pending_phi_nodes): Comment.
 	(add_parameters_to_ivs_params): Moved from sese.c inside class
@@ -335,8 +335,7 @@
 2015-11-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/68405
-	* config/i386/i386.c (ix86_expand_mask_vec_cmp): Add missing
-	break.
+	* config/i386/i386.c (ix86_expand_mask_vec_cmp): Add missing break.
 
 2015-11-18  Jakub Jelinek  <jakub@redhat.com>
 

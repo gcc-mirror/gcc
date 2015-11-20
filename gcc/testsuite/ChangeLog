@@ -78,7 +78,7 @@
 
 2015-11-18  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/68198
+	PR tree-optimization/68198
 	* gcc.dg/tree-ssa/pr66752-3.c: Update expected output for VRP1.
 	* gcc.dg/tree-ssa/pr68198.c: New test.
 
@@ -139,8 +139,7 @@
 
 2015-11-17  David Malcolm  <dmalcolm@redhat.com>
 
-	* gcc.dg/plugin/diagnostic-test-expressions-1.c (vector): New
-	macro.
+	* gcc.dg/plugin/diagnostic-test-expressions-1.c (vector): New macro.
 	(test_braced_init): New function.
 	(test_statement_expression): New function.
 	(test_address_of_label): New function.
