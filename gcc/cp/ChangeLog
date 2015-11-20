@@ -1,3 +1,17 @@
+2015-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67354
+	* cp-tree.h (defer_mangling_aliases): Declare.
+	(generate_mangling_aliases): New prototype.
+	* decl2.c (defer_mangling_aliases): New variable.
+	(note_mangling_alias): Use !defer_mangling_aliases
+	instead of at_eof.
+	(generate_mangling_aliases): No longer static. Clear
+	defer_mangling_aliases.
+	* optimize.c (maybe_thunk_body): Defer emitting mangling aliases
+	if !defer_mangling_aliases until the fns are put into the same
+	comdat group.
+
 2015-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* cp-tree.h (lookup_member_fuzzy): New decl.

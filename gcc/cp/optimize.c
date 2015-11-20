@@ -270,7 +270,11 @@ maybe_thunk_body (tree fn, bool force)
     }
   else if (HAVE_COMDAT_GROUP)
     {
+      /* At eof, defer creation of mangling aliases temporarily.  */
+      bool save_defer_mangling_aliases = defer_mangling_aliases;
+      defer_mangling_aliases = true;
       tree comdat_group = cdtor_comdat_group (fns[1], fns[0]);
+      defer_mangling_aliases = save_defer_mangling_aliases;
       cgraph_node::get_create (fns[0])->set_comdat_group (comdat_group);
       cgraph_node::get_create (fns[1])->add_to_same_comdat_group
 	(cgraph_node::get_create (fns[0]));
@@ -281,6 +285,9 @@ maybe_thunk_body (tree fn, bool force)
 	   virtual, it goes into the same comdat group as well.  */
 	cgraph_node::get_create (fns[2])->add_to_same_comdat_group
 	  (symtab_node::get (fns[0]));
+      /* Emit them now that the thunks are same comdat group aliases.  */
+      if (!save_defer_mangling_aliases)
+	generate_mangling_aliases ();
       TREE_PUBLIC (fn) = false;
       DECL_EXTERNAL (fn) = false;
       DECL_INTERFACE_KNOWN (fn) = true;
