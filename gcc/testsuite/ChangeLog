@@ -1,3 +1,7 @@
+2015-11-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/bswap-1.c: New test.
+
 2015-11-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/pfpo.c: New test.
