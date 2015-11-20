@@ -132,6 +132,8 @@ GTM::gtm_thread::gtm_thread ()
   number_of_threads_changed(number_of_threads - 1, number_of_threads);
   serial_lock.write_unlock ();
 
+  init_cpp_exceptions ();
+
   if (pthread_once(&thr_release_once, thread_exit_init))
     GTM_fatal("Initializing thread release TLS key failed.");
   // Any non-null value is sufficient to trigger destruction of this
@@ -383,6 +385,11 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
 #endif
     }
 
+  // Log the number of uncaught exceptions if we might have to roll back this
+  // state.
+  if (tx->cxa_uncaught_count_ptr != 0)
+    tx->cxa_uncaught_count = *tx->cxa_uncaught_count_ptr;
+
   // Run dispatch-specific restart code. Retry until we succeed.
   GTM::gtm_restart_reason rr;
   while ((rr = disp->begin_or_restart()) != NO_RESTART)
@@ -411,7 +418,7 @@ GTM::gtm_transaction_cp::save(gtm_thread* tx)
   id = tx->id;
   prop = tx->prop;
   cxa_catch_count = tx->cxa_catch_count;
-  cxa_unthrown = tx->cxa_unthrown;
+  cxa_uncaught_count = tx->cxa_uncaught_count;
   disp = abi_disp();
   nesting = tx->nesting;
 }
@@ -583,7 +590,6 @@ GTM::gtm_thread::trycommit ()
       undolog.commit ();
       // Reset further transaction state.
       cxa_catch_count = 0;
-      cxa_unthrown = NULL;
       restart_total = 0;
 
       // Ensure privatization safety, if necessary.

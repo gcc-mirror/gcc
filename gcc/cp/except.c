@@ -662,6 +662,16 @@ do_free_exception (tree ptr)
       /* Declare void __cxa_free_exception (void *) throw().  */
       fn = declare_library_fn (fn, void_type_node, ptr_type_node,
 			       ECF_NOTHROW | ECF_LEAF);
+
+      if (flag_tm)
+	{
+	  tree fn2 = get_identifier ("_ITM_cxa_free_exception");
+	  if (!get_global_value_if_present (fn2, &fn2))
+	    fn2 = declare_library_fn (fn2, void_type_node,
+				      ptr_type_node,
+				      ECF_NOTHROW | ECF_LEAF | ECF_TM_PURE);
+	  record_tm_replacement (fn, fn2);
+	}
     }
 
   return cp_build_function_call_nary (fn, tf_warning_or_error, ptr, NULL_TREE);
