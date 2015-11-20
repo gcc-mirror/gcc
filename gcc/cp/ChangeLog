@@ -43,6 +43,19 @@
 	* pt.c (find_parameter_packs_r) [DECLTYPE_TYPE]: When traversing
 	the DECLTYPE_TYPE_EXPR, set type_pack_expansion_p to false.
 
+2015-11-19  Jakub Jelinek  <jakub@redhat.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/67409
+	* decl.c (identify_goto): Add LOC and DIAG_KIND arguments, call
+	emit_diagnostic instead of permerror.
+	(check_previous_goto_1): Adjust identify_goto callers, treat all
+	cases but crossing initialization and entering scope of decl with
+	non-trivial dtor as unconditional hard errors.
+	(check_goto): Use identify_goto.  Treat all cases but crossing
+	initialization and entering scope of decl with non-trivial dtor
+	as unconditional hard errors.
+
 2015-11-19  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* parser.h (struct cp_omp_declare_simd_data): Add clauses member.
