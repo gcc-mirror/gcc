@@ -1,3 +1,11 @@
+2015-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/68221
+	* testsuite/libgomp.c/reduction-11.c: Remove xfail.
+	* testsuite/libgomp.c/reduction-12.c: Likewise.
+	* testsuite/libgomp.c++/reduction-11.C: Likewise.
+	* testsuite/libgomp.c++/reduction-12.C: Likewise.
+
 2015-11-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* libgomp.oacc-c-c++-common/reduction-dbl.c: New.

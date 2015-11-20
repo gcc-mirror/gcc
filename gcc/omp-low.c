@@ -4444,11 +4444,13 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 
 	      if (!integer_zerop (bias))
 		{
-		  bias = fold_convert_loc (clause_loc, sizetype, bias);
-		  bias = fold_build1_loc (clause_loc, NEGATE_EXPR,
-					  sizetype, bias);
-		  x = fold_build2_loc (clause_loc, POINTER_PLUS_EXPR,
-				       TREE_TYPE (x), x, bias);
+		  bias = fold_convert_loc (clause_loc, pointer_sized_int_node,
+					   bias);
+		  yb = fold_convert_loc (clause_loc, pointer_sized_int_node,
+					 x);
+		  yb = fold_build2_loc (clause_loc, MINUS_EXPR,
+					pointer_sized_int_node, yb, bias);
+		  x = fold_convert_loc (clause_loc, TREE_TYPE (x), yb);
 		  yb = create_tmp_var (ptype, name);
 		  gimplify_assign (yb, x, ilist);
 		  x = yb;
