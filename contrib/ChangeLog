@@ -1,3 +1,8 @@
+2015-11-20  Martin Liska  <mliska@suse.cz>
+
+	* clang-format: Split content of a list to multiple
+	lines.
+
 2015-11-19  Martin Liska  <mliska@suse.cz>
 
 	* clang-format: Enhance list of FOR_EACH macros.
