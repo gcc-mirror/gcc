@@ -268,17 +268,26 @@ transactions.
 @example
 void _ITM_commitTransactionEH(void *exc_ptr) ITM_REGPARM;
 void *_ITM_cxa_allocate_exception (size_t);
+void _ITM_cxa_free_exception (void *exc_ptr);
 void _ITM_cxa_throw (void *obj, void *tinfo, void *dest);
 void *_ITM_cxa_begin_catch (void *exc_ptr);
 void _ITM_cxa_end_catch (void);
 @end example
 
-@code{_ITM_commitTransactionEH} must be called to commit a transaction if an
-exception could be in flight at this position in the code. @code{exc_ptr} is
-the current exception or zero if there is no current exception.
+The EH scheme changed in version 6 of GCC.  Previously, the compiler
+added a call to @code{_ITM_commitTransactionEH} to commit a transaction if
+an exception could be in flight at this position in the code; @code{exc_ptr} is
+the address of the current exception and must be non-zero.  Now, the
+compiler must catch all exceptions that are about to be thrown out of a
+transaction and call @code{_ITM_commitTransactionEH} from the catch clause,
+with @code{exc_ptr} being zero.
+
+Note that the old EH scheme never worked completely in GCC's implementation;
+libitm currently does not try to be compatible with the old scheme.
+
 The @code{_ITM_cxa...} functions are transactional wrappers for the respective
 @code{__cxa...} functions and must be called instead of these in transactional
-code.
+code.  @code{_ITM_cxa_free_exception} is new in GCC 6.
 
 To support this EH scheme, libstdc++ needs to provide one additional function
 (@code{_cxa_tm_cleanup}), which is used by the TM to clean up the exception
@@ -289,7 +298,8 @@ void __cxa_tm_cleanup (void *unthrown_obj, void *cleanup_exc,
                        unsigned int caught_count);
 @end example
 
-@code{unthrown_obj} is non-null if the program called
+Since GCC 6, @code{unthrown_obj} is not used anymore and always null;
+prior to that, @code{unthrown_obj} is non-null if the program called
 @code{__cxa_allocate_exception} for this exception but did not yet called
 @code{__cxa_throw} for it. @code{cleanup_exc} is non-null if the program is
 currently processing a cleanup along an exception path but has not caught this
@@ -405,6 +415,10 @@ void _ITM_free (void *) ITM_PURE;
 These functions are essentially transactional wrappers for @code{malloc},
 @code{calloc}, and @code{free}. Within transactions, the compiler should
 replace calls to the original functions with calls to the wrapper functions.
+
+libitm also provides transactional clones of C++ memory management functions
+such as global operator new and delete.  They are part of libitm for historic
+reasons but do not need to be part of this ABI.
 
 
 @section [No changes] Future Enhancements to the ABI

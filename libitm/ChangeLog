@@ -1,3 +1,29 @@
+2015-11-19  Torvald Riegel  <triegel@redhat.com>
+
+	* testsuite/libitm.c++/eh-5.C: New.
+	* libitm.h (_ITM_cxa_free_exception): New.
+	* libitm.map (_ITM_cxa_free_exception): Add it.
+	* libitm.texi: Update ABI docs.
+	* libitm_i.h (gtm_transaction_cp::cxa_unthrown): Remove.
+	(gtm_transaction_cp::cxa_uncaught_count): Add.
+	(gtm_thread::cxa_unthrown): Remove.
+	(gtm_thread::cxa_uncaught_count_ptr): Add.
+	(gtm_thread::cxa_uncaught_count): Add.
+	(gtm_thread::drop_references_allocations): Rename to...
+	(gtm_thread::discard_allocation): ... this and adapt.
+	(gtm_thread::init_cpp_exceptions): New.
+	* beginend.cc (gtm_thread::gtm_thread): Adapt EH handling.
+	(gtm_thread::begin_transaction): Likewise.
+	(gtm_transaction_cp::save): Likewise.
+	(gtm_thread::trycommit): Likewise.
+	* eh_cpp.cc: Add overview comments.
+	(__cxa_eh_globals, __cxa_get_globals, __cxa_free_exception): Declare.
+	(free_any_exception, _ITM_cxa_free_exception): New.
+	(gtm_thread::init_cpp_exceptions): Define.
+	(_ITM_cxa_allocate_exception, _ITM_cxa_throw): Adapt.
+	(_ITM_cxa_begin_catch, _ITM_cxa_end_catch): Likewise.
+	(gtm_thread::revert_cpp_exceptions): Likewise.
+
 2015-11-09  Torvald Riegel  <triegel@redhat.com>
 
 	* alloc_cpp.cc (_ZdlPvX, _ZdlPvXRKSt9nothrow_t, _ZGTtdlPvX,

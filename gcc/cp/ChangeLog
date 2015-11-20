@@ -1,3 +1,7 @@
+2015-11-19  Torvald Riegel  <triegel@redhat.com>
+
+	* except.c (do_free_exception): Use transactional wrapper.
+
 2015-11-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68422
