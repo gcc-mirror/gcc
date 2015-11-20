@@ -1,3 +1,18 @@
+2015-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 62314
+	* gcc.dg/fixits.c: New file.
+	* gcc.dg/plugin/diagnostic-test-show-locus-ascii-bw.c
+	(test_fixit_insert): New.
+	(test_fixit_remove): New.
+	(test_fixit_replace): New.
+	* gcc.dg/plugin/diagnostic-test-show-locus-ascii-color.c
+	(test_fixit_insert): New.
+	(test_fixit_remove): New.
+	(test_fixit_replace): New.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(test_show_locus): Add tests of rendering fixit hints.
+
 2015-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/68339

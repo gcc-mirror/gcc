@@ -1,3 +1,11 @@
+2015-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 62314
+	* c-typeck.c (should_suggest_deref_p): New function.
+	(build_component_ref): Special-case POINTER_TYPE when
+	generating a "not a structure of union"  error message, and
+	suggest a "->" rather than a ".", providing a fix-it hint.
+
 2015-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-typeck.c (lookup_field_fuzzy): Move determination of closest

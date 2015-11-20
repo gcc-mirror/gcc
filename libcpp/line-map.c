@@ -1947,6 +1947,28 @@ line_table_dump (FILE *stream, struct line_maps *set, unsigned int num_ordinary,
     }
 }
 
+/* struct source_range.  */
+
+/* Is there any part of this range on the given line?  */
+
+bool
+source_range::intersects_line_p (const char *file, int line) const
+{
+  expanded_location exploc_start
+    = linemap_client_expand_location_to_spelling_point (m_start);
+  if (file != exploc_start.file)
+    return false;
+  if (line < exploc_start.line)
+      return false;
+  expanded_location exploc_finish
+    = linemap_client_expand_location_to_spelling_point (m_finish);
+  if (file != exploc_finish.file)
+    return false;
+  if (line > exploc_finish.line)
+      return false;
+  return true;
+}
+
 /* class rich_location.  */
 
 /* Construct a rich_location with location LOC as its initial range.  */
@@ -1954,7 +1976,8 @@ line_table_dump (FILE *stream, struct line_maps *set, unsigned int num_ordinary,
 rich_location::rich_location (line_maps *set, source_location loc) :
   m_loc (loc),
   m_num_ranges (0),
-  m_have_expanded_location (false)
+  m_have_expanded_location (false),
+  m_num_fixit_hints (0)
 {
   /* Set up the 0th range, extracting any range from LOC.  */
   source_range src_range = get_range_from_loc (set, loc);
@@ -1968,10 +1991,19 @@ rich_location::rich_location (line_maps *set, source_location loc) :
 rich_location::rich_location (source_range src_range)
 : m_loc (src_range.m_start),
   m_num_ranges (0),
-  m_have_expanded_location (false)
+  m_have_expanded_location (false),
+  m_num_fixit_hints (0)
 {
   /* Set up the 0th range: */
   add_range (src_range, true);
+}
+
+/* The destructor for class rich_location.  */
+
+rich_location::~rich_location ()
+{
+  for (unsigned int i = 0; i < m_num_fixit_hints; i++)
+    delete m_fixit_hints[i];
 }
 
 /* Get an expanded_location for this rich_location's primary
@@ -2076,4 +2108,104 @@ rich_location::set_range (unsigned int idx, source_range src_range,
       /* Mark any cached value here as dirty.  */
       m_have_expanded_location = false;
     }
+}
+
+/* Add a fixit-hint, suggesting insertion of NEW_CONTENT
+   at WHERE.  */
+
+void
+rich_location::add_fixit_insert (source_location where,
+				 const char *new_content)
+{
+  linemap_assert (m_num_fixit_hints < MAX_FIXIT_HINTS);
+  m_fixit_hints[m_num_fixit_hints++]
+    = new fixit_insert (where, new_content);
+}
+
+/* Add a fixit-hint, suggesting removal of the content at
+   SRC_RANGE.  */
+
+void
+rich_location::add_fixit_remove (source_range src_range)
+{
+  linemap_assert (m_num_fixit_hints < MAX_FIXIT_HINTS);
+  m_fixit_hints[m_num_fixit_hints++] = new fixit_remove (src_range);
+}
+
+/* Add a fixit-hint, suggesting replacement of the content at
+   SRC_RANGE with NEW_CONTENT.  */
+
+void
+rich_location::add_fixit_replace (source_range src_range,
+				  const char *new_content)
+{
+  linemap_assert (m_num_fixit_hints < MAX_FIXIT_HINTS);
+  m_fixit_hints[m_num_fixit_hints++]
+    = new fixit_replace (src_range, new_content);
+}
+
+/* class fixit_insert.  */
+
+fixit_insert::fixit_insert (source_location where,
+			    const char *new_content)
+: m_where (where),
+  m_bytes (xstrdup (new_content)),
+  m_len (strlen (new_content))
+{
+}
+
+fixit_insert::~fixit_insert ()
+{
+  free (m_bytes);
+}
+
+/* Implementation of fixit_hint::affects_line_p for fixit_insert.  */
+
+bool
+fixit_insert::affects_line_p (const char *file, int line)
+{
+  expanded_location exploc
+    = linemap_client_expand_location_to_spelling_point (m_where);
+  if (file == exploc.file)
+    if (line == exploc.line)
+      return true;
+  return false;
+}
+
+/* class fixit_remove.  */
+
+fixit_remove::fixit_remove (source_range src_range)
+: m_src_range (src_range)
+{
+}
+
+/* Implementation of fixit_hint::affects_line_p for fixit_remove.  */
+
+bool
+fixit_remove::affects_line_p (const char *file, int line)
+{
+  return m_src_range.intersects_line_p (file, line);
+}
+
+/* class fixit_replace.  */
+
+fixit_replace::fixit_replace (source_range src_range,
+			      const char *new_content)
+: m_src_range (src_range),
+  m_bytes (xstrdup (new_content)),
+  m_len (strlen (new_content))
+{
+}
+
+fixit_replace::~fixit_replace ()
+{
+  free (m_bytes);
+}
+
+/* Implementation of fixit_hint::affects_line_p for fixit_replace.  */
+
+bool
+fixit_replace::affects_line_p (const char *file, int line)
+{
+  return m_src_range.intersects_line_p (file, line);
 }

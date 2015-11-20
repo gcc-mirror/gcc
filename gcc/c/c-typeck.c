@@ -2277,6 +2277,33 @@ lookup_field_fuzzy (tree type, tree component)
   return find_closest_identifier (component, &candidates);
 }
 
+/* Support function for build_component_ref's error-handling.
+
+   Given DATUM_TYPE, and "DATUM.COMPONENT", where DATUM is *not* a
+   struct or union, should we suggest "DATUM->COMPONENT" as a hint?  */
+
+static bool
+should_suggest_deref_p (tree datum_type)
+{
+  /* We don't do it for Objective-C, since Objective-C 2.0 dot-syntax
+     allows "." for ptrs; we could be handling a failed attempt
+     to access a property.  */
+  if (c_dialect_objc ())
+    return false;
+
+  /* Only suggest it for pointers...  */
+  if (TREE_CODE (datum_type) != POINTER_TYPE)
+    return false;
+
+  /* ...to structs/unions.  */
+  tree underlying_type = TREE_TYPE (datum_type);
+  enum tree_code code = TREE_CODE (underlying_type);
+  if (code == RECORD_TYPE || code == UNION_TYPE)
+    return true;
+  else
+    return false;
+}
+
 /* Make an expression to refer to the COMPONENT field of structure or
    union value DATUM.  COMPONENT is an IDENTIFIER_NODE.  LOC is the
    location of the COMPONENT_REF.  */
@@ -2368,6 +2395,18 @@ build_component_ref (location_t loc, tree datum, tree component)
       while (field);
 
       return ref;
+    }
+  else if (should_suggest_deref_p (type))
+    {
+      /* Special-case the error message for "ptr.field" for the case
+	 where the user has confused "." vs "->".  */
+      rich_location richloc (line_table, loc);
+      /* "loc" should be the "." token.  */
+      richloc.add_fixit_replace (source_range::from_location (loc), "->");
+      error_at_rich_loc (&richloc,
+			 "%qE is a pointer; did you mean to use %<->%>?",
+			 datum);
+      return error_mark_node;
     }
   else if (code != ERROR_MARK)
     error_at (loc,
