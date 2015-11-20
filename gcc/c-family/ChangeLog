@@ -1,3 +1,8 @@
+2015-11-19  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (shorten_compare): But look through macros from
+	system headers.
+
 2015-11-18  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (shorten_compare): Don't -Wtype-limits if the
