@@ -2274,33 +2274,7 @@ lookup_field_fuzzy (tree type, tree component)
   lookup_field_fuzzy_find_candidates (type, component,
 				      &candidates);
 
-  /* Now determine which is closest.  */
-  int i;
-  tree identifier;
-  tree best_identifier = NULL;
-  edit_distance_t best_distance = MAX_EDIT_DISTANCE;
-  FOR_EACH_VEC_ELT (candidates, i, identifier)
-    {
-      gcc_assert (TREE_CODE (identifier) == IDENTIFIER_NODE);
-      edit_distance_t dist = levenshtein_distance (component, identifier);
-      if (dist < best_distance)
-	{
-	  best_distance = dist;
-	  best_identifier = identifier;
-	}
-    }
-
-  /* If more than half of the letters were misspelled, the suggestion is
-     likely to be meaningless.  */
-  if (best_identifier)
-    {
-      unsigned int cutoff = MAX (IDENTIFIER_LENGTH (component),
-				 IDENTIFIER_LENGTH (best_identifier)) / 2;
-      if (best_distance > cutoff)
-	return NULL;
-    }
-
-  return best_identifier;
+  return find_closest_identifier (component, &candidates);
 }
 
 /* Make an expression to refer to the COMPONENT field of structure or

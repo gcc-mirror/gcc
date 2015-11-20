@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "intl.h"
 #include "toplev.h"
+#include "spellcheck.h"
 
 static int is_subobject_of_p (tree, tree);
 static tree dfs_lookup_base (tree, void *);
@@ -1350,6 +1351,144 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
 			   (IDENTIFIER_TYPENAME_P (name)
 			   ? TREE_TYPE (name): NULL_TREE));
   return rval;
+}
+
+/* Helper class for lookup_member_fuzzy.  */
+
+class lookup_field_fuzzy_info
+{
+ public:
+  lookup_field_fuzzy_info (bool want_type_p) :
+    m_want_type_p (want_type_p), m_candidates () {}
+
+  void fuzzy_lookup_fnfields (tree type);
+  void fuzzy_lookup_field (tree type);
+
+  /* If true, we are looking for types, not data members.  */
+  bool m_want_type_p;
+  /* The result: a vec of identifiers.  */
+  auto_vec<tree> m_candidates;
+};
+
+/* Locate all methods within TYPE, append them to m_candidates.  */
+
+void
+lookup_field_fuzzy_info::fuzzy_lookup_fnfields (tree type)
+{
+  vec<tree, va_gc> *method_vec;
+  tree fn;
+  size_t i;
+
+  if (!CLASS_TYPE_P (type))
+    return;
+
+  method_vec = CLASSTYPE_METHOD_VEC (type);
+  if (!method_vec)
+    return;
+
+  for (i = 0; vec_safe_iterate (method_vec, i, &fn); ++i)
+    if (fn)
+      m_candidates.safe_push (DECL_NAME (OVL_CURRENT (fn)));
+}
+
+/* Locate all fields within TYPE, append them to m_candidates.  */
+
+void
+lookup_field_fuzzy_info::fuzzy_lookup_field (tree type)
+{
+  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
+      || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM
+      || TREE_CODE (type) == TYPENAME_TYPE)
+    /* The TYPE_FIELDS of a TEMPLATE_TYPE_PARM and
+       BOUND_TEMPLATE_TEMPLATE_PARM are not fields at all;
+       instead TYPE_FIELDS is the TEMPLATE_PARM_INDEX.
+       The TYPE_FIELDS of TYPENAME_TYPE is its TYPENAME_TYPE_FULLNAME.  */
+    return;
+
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      if (!m_want_type_p || DECL_DECLARES_TYPE_P (field))
+	if (DECL_NAME (field))
+	  m_candidates.safe_push (DECL_NAME (field));
+    }
+}
+
+
+/* Helper function for lookup_member_fuzzy, called via dfs_walk_all
+   DATA is really a lookup_field_fuzzy_info.  Look for a field with
+   the name indicated there in BINFO.  Gathers pertinent identifiers into
+   m_candidates.  */
+
+static tree
+lookup_field_fuzzy_r (tree binfo, void *data)
+{
+  lookup_field_fuzzy_info *lffi = (lookup_field_fuzzy_info *) data;
+  tree type = BINFO_TYPE (binfo);
+
+  /* First, look for functions.  */
+  if (!lffi->m_want_type_p)
+    lffi->fuzzy_lookup_fnfields (type);
+
+  /* Look for data member and types.  */
+  lffi->fuzzy_lookup_field (type);
+
+  return NULL_TREE;
+}
+
+/* Like lookup_member, but try to find the closest match for NAME,
+   rather than an exact match, and return an identifier (or NULL_TREE).
+   Do not complain.  */
+
+tree
+lookup_member_fuzzy (tree xbasetype, tree name, bool want_type_p)
+{
+  tree type = NULL_TREE, basetype_path = NULL_TREE;
+  struct lookup_field_fuzzy_info lffi (want_type_p);
+
+  /* rval_binfo is the binfo associated with the found member, note,
+     this can be set with useful information, even when rval is not
+     set, because it must deal with ALL members, not just non-function
+     members.  It is used for ambiguity checking and the hidden
+     checks.  Whereas rval is only set if a proper (not hidden)
+     non-function member is found.  */
+
+  if (name == error_mark_node
+      || xbasetype == NULL_TREE
+      || xbasetype == error_mark_node)
+    return NULL_TREE;
+
+  gcc_assert (identifier_p (name));
+
+  if (TREE_CODE (xbasetype) == TREE_BINFO)
+    {
+      type = BINFO_TYPE (xbasetype);
+      basetype_path = xbasetype;
+    }
+  else
+    {
+      if (!RECORD_OR_UNION_CODE_P (TREE_CODE (xbasetype)))
+	return NULL_TREE;
+      type = xbasetype;
+      xbasetype = NULL_TREE;
+    }
+
+  type = complete_type (type);
+
+  /* Make sure we're looking for a member of the current instantiation in the
+     right partial specialization.  */
+  if (flag_concepts && dependent_type_p (type))
+    type = currently_open_class (type);
+
+  if (!basetype_path)
+    basetype_path = TYPE_BINFO (type);
+
+  if (!basetype_path)
+    return NULL_TREE;
+
+  /* Populate lffi.m_candidates.  */
+  dfs_walk_all (basetype_path, &lookup_field_fuzzy_r, NULL, &lffi);
+
+  return find_closest_identifier (name, &lffi.m_candidates);
 }
 
 /* Like lookup_member, except that if we find a function member we

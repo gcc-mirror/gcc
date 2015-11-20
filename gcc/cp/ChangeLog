@@ -1,3 +1,16 @@
+2015-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h (lookup_member_fuzzy): New decl.
+	* search.c: Include spellcheck.h.
+	(class lookup_field_fuzzy_info): New class.
+	(lookup_field_fuzzy_info::fuzzy_lookup_fnfields): New.
+	(lookup_field_fuzzy_info::fuzzy_lookup_field): New.
+	(lookup_field_fuzzy_r): New.
+	(lookup_member_fuzzy): New.
+	* typeck.c (finish_class_member_access_expr): When issuing
+	a "has no member named" error, call lookup_member_fuzzy, and
+	offer any result as a suggestion.
+
 2015-11-19  Torvald Riegel  <triegel@redhat.com>
 
 	* except.c (do_free_exception): Use transactional wrapper.
