@@ -1,5 +1,16 @@
 2015-11-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.c (arm_option_override): Require TARGET_32BIT
+	for unaligned_access.
+	* config/arm/arm.md (unaligned_loadsi): Remove redundant TARGET_32BIT
+	from matching condition.
+	(unaligned_loadhis): Likewise.
+	(unaligned_loadhiu): Likewise.
+	(unaligned_storesi): Likewise.
+	(unaligned_storehi): Likewise.
+
+2015-11-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR target/68149
 	* config/arm/arm.md (unaligned_loaddi): Delete.
 	(unaligned_storedi): Likewise.

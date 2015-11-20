@@ -3282,7 +3282,8 @@ arm_option_override (void)
     }
 
   /* Enable -munaligned-access by default for
-     - all ARMv6 architecture-based processors
+     - all ARMv6 architecture-based processors when compiling for a 32-bit ISA
+     i.e. Thumb2 and ARM state only.
      - ARMv7-A, ARMv7-R, and ARMv7-M architecture-based processors.
      - ARMv8 architecture-base processors.
 
@@ -3292,7 +3293,7 @@ arm_option_override (void)
 
   if (unaligned_access == 2)
     {
-      if (arm_arch6 && (arm_arch_notm || arm_arch7))
+      if (TARGET_32BIT && arm_arch6 && (arm_arch_notm || arm_arch7))
 	unaligned_access = 1;
       else
 	unaligned_access = 0;
