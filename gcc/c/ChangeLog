@@ -1,3 +1,8 @@
+2015-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-typeck.c (lookup_field_fuzzy): Move determination of closest
+	candidate into a new function, find_closest_identifier.
+
 2015-11-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68412
