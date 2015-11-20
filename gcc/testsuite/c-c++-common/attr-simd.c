@@ -11,7 +11,7 @@ int simd_attr (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "simd_attr\[ \\t\]simdclone|vector" "optimized" } } */
+/* { dg-final { scan-tree-dump "simd_attr\[ \\t\]simdclone|vector" "optimized" { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVbN4_simd_attr:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVbM4_simd_attr:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVcN4_simd_attr:" 1 { target { i?86-*-* x86_64-*-* } } } } */
@@ -29,7 +29,7 @@ int simd_attr2 (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "simd_attr2\[ \\t\]simdclone|vector" "optimized" } } */
+/* { dg-final { scan-tree-dump "simd_attr2\[ \\t\]simdclone|vector" "optimized" { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVbN4_simd_attr2:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVbM4_simd_attr2:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVcN4_simd_attr2:" 1 { target { i?86-*-* x86_64-*-* } } } } */
