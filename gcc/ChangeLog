@@ -1,3 +1,9 @@
+2015-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/md.texi (Standard Names): Move entry for addptr3 around,
+	add entries for addv4, subv4, mulv4, umulv4 and negv3, fixes
+	glitch in entries for cbranch4 and jump.
+
 2015-11-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline
