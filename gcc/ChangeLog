@@ -1,3 +1,9 @@
+2015-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/68339
+	* omp-low.c (expand_simd_clones): Call node->get_body () before
+	allocating stuff in GC.
+
 2015-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/md.texi (Standard Names): Move entry for addptr3 around,

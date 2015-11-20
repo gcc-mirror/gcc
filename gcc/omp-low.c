@@ -13619,6 +13619,10 @@ expand_simd_clones (struct cgraph_node *node)
       && TYPE_ARG_TYPES (TREE_TYPE (node->decl)) == NULL_TREE)
     return;
 
+  /* Call this before creating clone_info, as it might ggc_collect.  */
+  if (node->definition && node->has_gimple_body_p ())
+    node->get_body ();
+
   do
     {
       /* Start with parsing the "omp declare simd" attribute(s).  */

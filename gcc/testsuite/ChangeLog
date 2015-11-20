@@ -1,3 +1,8 @@
+2015-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/68339
+	* gcc.dg/vect/pr68339.c: New test.
+
 2015-11-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline
