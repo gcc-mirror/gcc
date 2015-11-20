@@ -1,7 +1,14 @@
+2015-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/md.texi (Standard Names): Move entry for addptr3 around,
+	add entries for addv4, subv4, mulv4, umulv4 and negv3, fixes
+	glitch in entries for cbranch4 and jump.
+
 2015-11-20  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68373
-	* tree-scalar-evolution.c (final_value_replacement_loop): Factor out of ...
+	* tree-scalar-evolution.c (final_value_replacement_loop): Factor out
+	of ...
 	(scev_const_prop): ... here.
 	* tree-scalar-evolution.h (final_value_replacement_loop): Declare.
 	* tree-parloops.c (try_create_reduction_list): Call
