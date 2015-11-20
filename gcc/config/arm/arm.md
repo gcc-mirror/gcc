@@ -4219,7 +4219,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=l,r")
 	(unspec:SI [(match_operand:SI 1 "memory_operand" "Uw,m")]
 		   UNSPEC_UNALIGNED_LOAD))]
-  "unaligned_access && TARGET_32BIT"
+  "unaligned_access"
   "ldr%?\t%0, %1\t@ unaligned"
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
@@ -4232,7 +4232,7 @@
 	(sign_extend:SI
 	  (unspec:HI [(match_operand:HI 1 "memory_operand" "Uw,Uh")]
 		     UNSPEC_UNALIGNED_LOAD)))]
-  "unaligned_access && TARGET_32BIT"
+  "unaligned_access"
   "ldrsh%?\t%0, %1\t@ unaligned"
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
@@ -4245,7 +4245,7 @@
 	(zero_extend:SI
 	  (unspec:HI [(match_operand:HI 1 "memory_operand" "Uw,m")]
 		     UNSPEC_UNALIGNED_LOAD)))]
-  "unaligned_access && TARGET_32BIT"
+  "unaligned_access"
   "ldrh%?\t%0, %1\t@ unaligned"
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
@@ -4257,7 +4257,7 @@
   [(set (match_operand:SI 0 "memory_operand" "=Uw,m")
 	(unspec:SI [(match_operand:SI 1 "s_register_operand" "l,r")]
 		   UNSPEC_UNALIGNED_STORE))]
-  "unaligned_access && TARGET_32BIT"
+  "unaligned_access"
   "str%?\t%1, %0\t@ unaligned"
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
@@ -4269,7 +4269,7 @@
   [(set (match_operand:HI 0 "memory_operand" "=Uw,m")
 	(unspec:HI [(match_operand:HI 1 "s_register_operand" "l,r")]
 		   UNSPEC_UNALIGNED_STORE))]
-  "unaligned_access && TARGET_32BIT"
+  "unaligned_access"
   "strh%?\t%1, %0\t@ unaligned"
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")

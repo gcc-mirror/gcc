@@ -1,3 +1,7 @@
+2015-11-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/armv6-unaligned-load-ice.c: New test.
+
 2015-11-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68237
