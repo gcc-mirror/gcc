@@ -1,3 +1,8 @@
+2015-11-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	* gcc.target/s390/bswap-1.c: New test.
+
 2015-11-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	Backport from mainline
