@@ -1,3 +1,9 @@
+2015-11-20  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-parloops.c (build_new_reduction): Fix trailing whitespace in
+	dump-file string.
+	(try_create_reduction_list): Same.  Fix typo in dump-file string.
+
 2015-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/md.texi (Standard Names): Move entry for addptr3 around,
