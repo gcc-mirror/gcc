@@ -1,10 +1,10 @@
-2015-11-20  Paul Thomas  <pault@gcc.gnu.org>
+2015-11-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68237
 	* decl.c (gfc_match_submod_proc): Test the interface symbol
 	before accessing its attributes.
 
-2015-11-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+2015-11-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/66762
 	(gfc_get_symbol_decl): Test for attr.used_in_submodule as well
