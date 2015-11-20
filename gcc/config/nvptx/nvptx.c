@@ -3895,6 +3895,19 @@ nvptx_cannot_copy_insn_p (rtx_insn *insn)
       return false;
     }
 }
+
+/* Section anchors do not work.  Initialization for flag_section_anchor
+   probes the existence of the anchoring target hooks and prevents
+   anchoring if they don't exist.  However, we may be being used with
+   a host-side compiler that does support anchoring, and hence see
+   the anchor flag set (as it's not recalculated).  So provide an
+   implementation denying anchoring.  */
+
+static bool
+nvptx_use_anchors_for_symbol_p (const_rtx ARG_UNUSED (a))
+{
+  return false;
+}
 
 /* Record a symbol for mkoffload to enter into the mapping table.  */
 
@@ -4913,6 +4926,9 @@ nvptx_goacc_reduction (gcall *call)
 
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P nvptx_cannot_copy_insn_p
+
+#undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
+#define TARGET_USE_ANCHORS_FOR_SYMBOL_P nvptx_use_anchors_for_symbol_p
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS nvptx_init_builtins
